@@ -235,6 +235,7 @@ template <class Class, class Policies>
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DerivableDefaultConstructorCreator_O<Class>::entry_point);
+    maybe_register_symbol_using_dladdr((void*)DerivableDefaultConstructorCreator_O<Class>::entry_point);
     return gc::As_unsafe<core::Creator_sp>(gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate(entryPoint));
   }
   virtual std::string name() const { return this->mm_name;}
@@ -366,7 +367,7 @@ public:
   {
     typedef policies<PTypes...> Policies;
     Policies curPolicies;
-    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&f,sizeof(f));
+    maybe_register_symbol_using_dladdr(*(void**)&f,sizeof(f),name);
     walk_policy(curPolicies,pols...);
     return this->virtual_def(name, f, curPolicies,reg::null_type());
   }
@@ -602,7 +603,7 @@ private:
   derivable_class_& virtual_def(char const* name, F const& fn
                                 , Default const& default_, Policies const&, boost::mpl::false_)
   {
-    maybe_test_function_pointer_dladdr_dlsym(name,(void*)fn,sizeof(fn));
+    maybe_register_symbol_using_dladdr((void*)fn,sizeof(fn),name);
     this->add_member(
                      new detail::memfun_registration<T, F, Policies>(
                                                                      name, fn, Policies()));
@@ -620,7 +621,7 @@ private:
   template <class F, class Policies>
   derivable_class_ &virtual_def(char const *name, F const &fn,
                                 Policies const &policies, reg::null_type) {
-    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&fn,sizeof(fn));
+    maybe_register_symbol_using_dladdr(*(void**)&fn,sizeof(fn),name);
     this->add_member( new detail::memfun_registration<T, F, Policies>(name, fn, policies));
     return *this;
   }
@@ -673,7 +674,7 @@ public:
     if (this->m_init_counter) {
       ss << this->m_init_counter;
     }
-    maybe_test_function_pointer_dladdr_dlsym(ss.str(),(void*)sig,sizeof(sig));
+    maybe_register_symbol_using_dladdr((void*)sig,sizeof(sig),ss.str());
     this->def_constructor_(ss.str(),&sig,policies<>(),"","","");
     this->m_init_counter++;
     return *this;

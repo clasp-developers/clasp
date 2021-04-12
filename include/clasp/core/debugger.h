@@ -184,21 +184,32 @@ struct SymbolEntry {
 
 
 struct SymbolTable {
+#if 0
   char* _SymbolNames;
   uint   _End;
   uint   _Capacity;
   uintptr_t _SymbolsLowAddress;
   uintptr_t _SymbolsHighAddress;
+#endif
   uintptr_t _StackmapStart;
   uintptr_t _StackmapEnd;
-  std::vector<SymbolEntry> _Symbols;
-  SymbolTable() : _End(0), _Capacity(1024), _SymbolsLowAddress(~0), _SymbolsHighAddress(0), _StackmapStart(0), _StackmapEnd(0) {
-    this->_SymbolNames = (char*)malloc(this->_Capacity);
+//  std::vector<SymbolEntry> _Symbols;
+  SymbolTable() :
+#if 0
+  _End(0),
+    _Capacity(1024),
+    _SymbolsLowAddress(~0),
+    _SymbolsHighAddress(0),
+#endif
+    _StackmapStart(0),
+    _StackmapEnd(0) {
+//    this->_SymbolNames = (char*)malloc(this->_Capacity);
   }
   ~SymbolTable() {
   };
   void addSymbol(std::string symbol, uintptr_t start, char type);
 
+#if 0
   // Shrink the symbol table to the minimimum size
   void optimize() {
     if (this->_End>0) {
@@ -211,15 +222,16 @@ struct SymbolTable {
       this->_Capacity = 0;
     }
   }
+#endif
   // Return true if a symbol is found that matches the address
-  bool findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index);
-  void sort(); 
-  bool is_sorted() const;
+//  bool findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index);
+//  void sort(); 
+//  bool is_sorted() const;
   
-  std::vector<SymbolEntry>::iterator begin() { return this->_Symbols.begin(); };
-  std::vector<SymbolEntry>::iterator end() { return this->_Symbols.end(); };
-  std::vector<SymbolEntry>::const_iterator begin() const { return this->_Symbols.begin(); };
-  std::vector<SymbolEntry>::const_iterator end() const { return this->_Symbols.end(); };
+//  std::vector<SymbolEntry>::iterator begin() { return this->_Symbols.begin(); };
+//  std::vector<SymbolEntry>::iterator end() { return this->_Symbols.end(); };
+//  std::vector<SymbolEntry>::const_iterator begin() const { return this->_Symbols.begin(); };
+//  std::vector<SymbolEntry>::const_iterator end() const { return this->_Symbols.end(); };
 };
 
 

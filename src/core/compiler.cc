@@ -1027,9 +1027,13 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
   std::string str_error{ "" };
   void *p_sym = nullptr;
   dlerror(); // clear any earlier error
+//  printf("%s:%d:%s  pc_symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, pc_symbol );
   p_sym = dlsym( p_handle, pc_symbol );
   if( p_sym == nullptr ) {
     str_error = dlerror();
+  }
+  if (globals_->_AccumulateSymbols) {
+    maybe_register_symbol_using_dladdr(p_sym);
   }
   return std::make_tuple( p_sym, str_error );
 }
@@ -1069,7 +1073,8 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
     SIMPLE_ERROR(BF("Illegal handle argument[%s] for dlsym only a pointer or :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(ohandle));
   }
   string ts = name->get_std_string();
-  printf("%s:%d:%s  handle = %p  symbol = |%s|\n", __FILE__, __LINE__, __FUNCTION__, handle, ts.c_str());
+  
+//  printf("%s:%d:%s  handle = %p  symbol = |%s|\n", __FILE__, __LINE__, __FUNCTION__, handle, ts.c_str());
   auto result = do_dlsym(handle, ts.c_str());
   void * p_sym = std::get<0>( result );
   if( p_sym == nullptr ) {

@@ -228,6 +228,7 @@ struct globals_t {
   DebugStream *_DebugStream;
   uint _SingleStepLevel;
   int _TraceLevel;
+  bool _AccumulateSymbols;
   std::atomic<int> _DebuggerLevel;
   /*! Global environment initialization hooks can be added until
 	  the environment is started up.
@@ -276,6 +277,7 @@ struct globals_t {
                 _StackSampleCount(0),
                 _StackSampleSize(0),
                 _StackSampleMax(0),
+                _AccumulateSymbols(false),
                 _Argc(0),
                 _ReplCounter(1),
                 _Bundle(NULL),

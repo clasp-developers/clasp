@@ -82,6 +82,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "--resource-dir       - Options directory is treated as the executable directory\n"
              "                       and it is used to start the search for resource directories\n"
              "-s/--verbose         - Print more info while booting\n"
+             "-y/--symbols         - Accumulate symbols while starting up. These can be recovered calling (core:mangled-symbol-names)\n"
              "-f/--feature feature - Add the feature to *features*\n"
              "-e/--eval {form}     - Evaluate a form\n"
              "-l/--load {file}     - LOAD the file\n"
@@ -114,6 +115,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
              "export CLASP_DEBUGGER_SUPPORT=1 Generate files that lldb/gdb/udb can use to debug clasp.\n"
+             "export CLASP_SNAPSHOT=1  Debug snapshot generation.\n"
              "export CLASP_DONT_HANDLE_CRASH_SIGNALS=1  Don't insert signal handlers for crash signals.\n"
              "export CLASP_GC_MESSAGES=1 Print a message when garbage collection takes place.\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
@@ -200,6 +202,8 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_NoRc = true;
     } else if (arg == "-w" || arg == "--wait") {
       options->_PauseForDebugger = true;
+    } else if (arg == "-y" || arg == "--symbols") {
+      options->_AccumulateSymbols = true;
     } else if (arg == "-m" || arg == "--disable-mpi") {
       options->_DisableMpi = true;
     } else if (arg == "-n" || arg == "--noinit") {
@@ -259,6 +263,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _Stage('c'),
     _ImageFile(""),
     _ImageType(cloImage),
+    _AccumulateSymbols(false),
     _GotRandomNumberSeed(false),
     _RandomNumberSeed(0),
     _NoInform(false),
@@ -285,6 +290,9 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       iarg++;
     } else if (arg == "--verbose") {
       this->_SilentStartup = false;
+      iarg++;
+    } else if (arg == "--symbols") {
+      this->_AccumulateSymbols = true;
       iarg++;
     }
     iarg++;

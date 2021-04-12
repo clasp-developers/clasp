@@ -1,7 +1,7 @@
 #! /bin/bash
 PID=$1
 TIME=${2:-60s}
-RATE=${3:-97}
+RATE=${3:-997}
 FRAMES=${4:-6000}
 ## in case there is no symbols file
 #sudo rm -f /tmp/out-$1.user_stacks && sudo dtrace -p $PID -x ustackframes=${FRAMES} -n  "profile-$RATE /pid == $PID && arg1 / { @[ustack()] = count(); } tick-$TIME { exit(0); }" -o /tmp/out-$1.user_stacks

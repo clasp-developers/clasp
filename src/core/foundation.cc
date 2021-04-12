@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/write_object.h>
+#include <clasp/core/hashTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/documentation.h>
@@ -1680,52 +1681,72 @@ uint32_t lisp_random()
 
 size_t global_pointerCount = 0;
 size_t global_goodPointerCount = 0;
-std::vector<std::string> global_mangledFunctionNames;
+std::set<std::string> global_mangledSymbols;
+std::set<uintptr_t> global_addresses;
 
-void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* functionPointer, size_t size ) {
-  if ((uintptr_t)functionPointer < 1024) return; // This means it's a virtual method.
-  global_pointerCount++;
-  Dl_info info;
+void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size, const std::string& name ) {
+  if (globals_->_AccumulateSymbols) {
+    if (global_addresses.count((uintptr_t)functionPointer) == 0 ) {
+      if ((uintptr_t)functionPointer < 1024) return; // This means it's a virtual method.
+      global_pointerCount++;
+      Dl_info info;
 #if defined(_TARGET_OS_LINUX)
-  const Elf64_Sym* extra_info;
-  int ret = dladdr1( functionPointer, &info, (void**)&extra_info, RTLD_DL_SYMENT );
+      const Elf64_Sym* extra_info;
+      int ret = dladdr1( functionPointer, &info, (void**)&extra_info, RTLD_DL_SYMENT );
 #else
-  int ret = dladdr( functionPointer, &info );
+      int ret = dladdr( functionPointer, &info );
 #endif
-  if ( ret == 0 ) {
-    printf("%s:%d %lu/%lu FAIL dladdr returned 0x0 for %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, name.c_str());
-    return;
+      if ( ret == 0 ) {
+        printf("%s:%d %lu/%lu FAIL dladdr returned 0x0 for %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, name.c_str());
+        return;
+      }
+      if (!info.dli_sname) {
+        printf("%s:%d %lu/%lu FAIL dladdr could not find a symbol to match %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, name.c_str());
+        return;
+      }
+      if (info.dli_saddr != functionPointer) {
+        printf("%s:%d %lu/%lu FAIL dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, info.dli_saddr, name.c_str());
+        return;
+      }
+      if (dlsym( RTLD_DEFAULT, info.dli_sname ) == 0 ) {
+        printf("%s:%d %lu/%lu FAIL dlsym could not find name %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
+        return;
+      }
+      global_mangledSymbols.insert(info.dli_sname);
+      global_goodPointerCount++;
+      return;
+    }
   }
-  if (!info.dli_sname) {
-    printf("%s:%d %lu/%lu FAIL dladdr could not find a symbol to match %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, name.c_str());
-    return;
-  }
-  if (info.dli_saddr != functionPointer) {
-    printf("%s:%d %lu/%lu FAIL dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, info.dli_saddr, name.c_str());
-    return;
-  }
-  if (dlsym( RTLD_DEFAULT, info.dli_sname ) == 0 ) {
-    printf("%s:%d %lu/%lu FAIL dlsym could not find name %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
-    return;
-  }
-  global_mangledFunctionNames.push_back(info.dli_sname);
-  global_goodPointerCount++;
-  return;
 }
 
 
 namespace core {
 CL_LAMBDA(&optional (stream-designator t));
-CL_DEFUN void core__mangledFunctionNames(T_sp stream_designator) {
+CL_DEFUN void core__mangledSymbols(T_sp stream_designator) {
   T_sp stream = coerce::outputStreamDesignator(stream_designator);
-  write_bf_stream(BF("# Dumping %lu mangled function names\n" ) % global_mangledFunctionNames.size(), stream);
-  for ( size_t ii=0; ii<::global_mangledFunctionNames.size(); ++ii ) {
+  write_bf_stream(BF("# Dumping %lu mangled function names\n" ) % global_mangledSymbols.size(), stream);
+  for ( auto entry : ::global_mangledSymbols ) {
 #ifdef _TARGET_OS_DARWIN
     clasp_write_char('_',stream);
 #endif
-    clasp_write_string(::global_mangledFunctionNames[ii],stream);
+    clasp_write_string(entry,stream);
     clasp_terpri(stream);
   }
+  if (comp::_sym_STARprimitivesSTAR.boundp() && comp::_sym_STARprimitivesSTAR->symbolValue().notnilp()) {
+    List_sp keys = gc::As<HashTable_sp>(comp::_sym_STARprimitivesSTAR->symbolValue())->keysAsCons();
+    for ( auto cur : keys ) {
+      T_sp key = CONS_CAR(cur);      
+      clasp_write_char('_',stream);
+      clasp_write_string(gc::As<String_sp>(key)->get_std_string(),stream);
+      clasp_terpri(stream);
+    }
+  }
+  clasp_write_string("__mh_execute_header",stream);
+  clasp_terpri(stream);
+  clasp_write_string("_cc_throw",stream);
+  clasp_terpri(stream);
+  clasp_write_string("__ZTIN4core6UnwindE",stream);
+  clasp_terpri(stream);
 };
 
 };

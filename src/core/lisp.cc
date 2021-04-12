@@ -332,10 +332,6 @@ Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize)
   ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
   _lisp->initialize();
   _lisp->setupMpi(mpiEnabled, mpiRank, mpiSize);
-#if 0
-  ::globals_ = new globals_t();
-  globals_->_DebugStream = new DebugStream(mpiRank);
-#endif
   LOG(BF("The lisp environment DebugStream has been created"));
   Lisp_O::finalizeSpecialSymbols();
   return _lisp;
@@ -1327,6 +1323,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   globals_->_Interactive = options._Interactive;
   globals_->_RCFileName = options._RCFileName;
   globals_->_NoRc = options._NoRc;
+  globals_->_AccumulateSymbols = options._AccumulateSymbols;
   if (options._GotRandomNumberSeed) {
     seedRandomNumberGenerators(options._RandomNumberSeed);
   } else {
@@ -2360,7 +2357,6 @@ int Lisp_O::run() {
       } else {
         Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
         DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
-//        printf("%s:%d About to load: %s\n", __FILE__, __LINE__, _rep_(initPathname).c_str());
         T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
         if (result.nilp()) {
           T_sp err = result.second();
@@ -2380,7 +2376,7 @@ int Lisp_O::run() {
           printf("Could not load %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
         }
       }
-    } else {
+    } else if (globals_->_Interactive) {
       _BLOCK_TRACE("Interactive REPL");
       this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
       this->print(BF("Low level repl\n"));
@@ -2390,6 +2386,9 @@ int Lisp_O::run() {
     exit_code = 0;
   } catch (core::ExitProgramException &ee) {
     exit_code = ee.getExitResult();
+  }
+  if (globals_->_AccumulateSymbols) {
+    core::core__mangledSymbols(_lisp->_true());
   }
   return exit_code;
 };

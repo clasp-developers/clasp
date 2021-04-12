@@ -1,5 +1,5 @@
 "/usr/bin/ld" \
--exported_symbols_list insanity.txt \
+-exported_symbols_list ../../tools-for-build/test-symbols.list \
 -demangle \
 -lto_library \
 /opt/llvm-project-tot/lib/libLTO.dylib \

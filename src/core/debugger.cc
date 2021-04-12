@@ -496,6 +496,7 @@ DebugInfo& debugInfo() {
 
 
 
+#if 0
 bool SymbolTable::findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index) {
   if (this->_Symbols.size() == 0) return false;
   SymbolEntry& lastSymbol = this->_Symbols[this->_Symbols.size()-1];
@@ -536,7 +537,9 @@ bool SymbolTable::findSymbolForAddress(uintptr_t address,const char*& symbol, ui
     return true;
   }
 };
+#endif
 
+#if 0
 void SymbolTable::addSymbol(std::string symbol, uintptr_t start, char type) {
   BT_LOG(("name: %s start: %p  type |%c|\n",symbol.c_str(),(void*)start,type));
   if (start < this->_SymbolsLowAddress) this->_SymbolsLowAddress = start;
@@ -561,6 +564,7 @@ void SymbolTable::sort() {
     // printf("%s:%d:%s Sort the SymbolTable here\n", __FILE__, __LINE__, __FUNCTION__ );
   sort::quickSortMemory<SymbolEntry>(&this->_Symbols[0],0,this->_Symbols.size());
 }
+#endif
 
 
 std::string backtrace_frame(size_t index, BacktraceEntry* frame)
@@ -822,7 +826,7 @@ bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
   map<string,OpenDynamicLibraryInfo>::iterator fi = debugInfo()._OpenDynamicLibraryHandles.find(libraryName);
   bool exists = (fi!=debugInfo()._OpenDynamicLibraryHandles.end());
   if (exists) {
-    if (fi->second._SymbolTable._SymbolNames) free((void*)(fi->second._SymbolTable._SymbolNames));
+//    if (fi->second._SymbolTable._SymbolNames) free((void*)(fi->second._SymbolTable._SymbolNames));
     BT_LOG(("What about the stackmaps for this library - you need to remove them as well - I should probably NOT store stackmaps for libraries - but fetch them every time we need a backtrace!\n"));
     if (fi->second._Handle==0) {
       printf("%s:%d:%s You cannot remove the library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
@@ -925,6 +929,9 @@ bool library_with_name( const std::string& name, bool isExecutable, std::string&
 
 bool lookup_address_main(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type, bool& foundLibrary, std::string& libraryName, uintptr_t& libraryStart )
 {
+  printf("%s:%d:%s    Replace this function with a DWARF version\n", __FILE__, __LINE__, __FUNCTION__ );
+  return false;
+#if 0
   foundLibrary = false;
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   size_t index;
@@ -951,6 +958,7 @@ bool lookup_address_main(uintptr_t address, const char*& symbol, uintptr_t& star
     }
   }
   return false;
+#endif
 }
 
 bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type) {
@@ -962,6 +970,7 @@ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, ui
 
 
 
+#if 0
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size)
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
@@ -1037,9 +1046,9 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
     }
   }
 }
+#endif
 
-
-
+#if 0
 bool SymbolTable::is_sorted() const
 {
   uintptr_t prev_address = 0;
@@ -1052,6 +1061,7 @@ bool SymbolTable::is_sorted() const
   }
   return true;
 }
+#endif
 
 SYMBOL_EXPORT_SC_(CorePkg,start_debugger_with_backtrace);
 CL_DEFUN void core__start_debugger_with_backtrace(T_sp backtrace) {

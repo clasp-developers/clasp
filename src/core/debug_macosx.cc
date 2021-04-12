@@ -303,6 +303,7 @@ mygetsectiondata(
   return(0);
 }
 
+#if 0
 SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header) {
 //  printf("%s:%d:%s is_executable(%d) filename= %s  header = %p  exec_header = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, filename, (void*)header, (void*)exec_header);
   int baddigit = 0;
@@ -424,7 +425,7 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
   }
   return symbol_table;
 }
-
+#endif
 
 uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size)
 {
@@ -451,12 +452,12 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 
 
 void startup_register_loaded_objects(add_dynamic_library* callback) {
- printf("%s:%d:%s Registering loaded objects\n", __FILE__, __LINE__, __FUNCTION__);
+// printf("%s:%d:%s Registering loaded objects\n", __FILE__, __LINE__, __FUNCTION__);
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
   for ( size_t idx = 0; idx<num_loaded; ++idx ) {
     const char* filename = _dyld_get_image_name(idx);
-    printf("%s:%d:%s Must be a full path!!!    filename = %s\n", __FILE__, __LINE__, __FUNCTION__, filename );
+//    printf("%s:%d:%s Must be a full path!!!    filename = %s\n", __FILE__, __LINE__, __FUNCTION__, filename );
     std::string libname(filename);
     uintptr_t library_origin = (uintptr_t)_dyld_get_image_header(idx);
     bool is_executable = (idx==0);
@@ -502,6 +503,7 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
   }
 //  printf("%s:%d:%s Executable header _mh_execute_header %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)exec_header);
   SymbolTable symbol_table;
+#if 0
   if (library_origin!=0) {
     if (is_executable) {
       symbol_table = load_macho_symbol_table(is_executable,libraryName.c_str(),(uintptr_t)0x100000000,exec_header); // hard code origin
@@ -516,6 +518,7 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
   } else {
     printf("%s:%d:%s Could not find start of library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
   }
+#endif
   size_t section_size;
 //  printf("%s:%d:%s About to load_stackmap_info library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin );
   uintptr_t p_section = load_stackmap_info(libraryName.c_str(),library_origin,section_size);
@@ -538,12 +541,14 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
     General_O general;
     uintptr_t seek = *(uintptr_t*)&general; // get vtable
     found = vmmap(seek,vtableRegionStart,vtableRegionEnd,false);
+#if 0
     printf("%s:%d:%s       Looking for \n"
            "vtable region  %p-%p    [ %lu ]\n",
            __FILE__, __LINE__, __FUNCTION__,
            (void*)(vtableRegionStart),
            (void*)(vtableRegionEnd),
            (vtableRegionEnd-vtableRegionStart));
+#endif
   }
   OpenDynamicLibraryInfo odli(is_executable,
                               libraryName,handle,symbol_table,

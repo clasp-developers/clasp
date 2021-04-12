@@ -226,6 +226,7 @@ struct function_registration : registration {
     core::Symbol_sp symbol = core::lispify_intern(m_name, core::lisp_currentPackageName());
     using VariadicType = TEMPLATED_FUNCTION_VariadicFunctor<FunctionPointerType, Policies>;
     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::entry_point);
+    maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
     core::BuiltinClosure_sp functoid = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,functionPtr));
     core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
     core::validateFunctionDescription(__FILE__,__LINE__,functoid);
@@ -253,7 +254,7 @@ scope_* fndef(char const *name, F f, Policies const &policies, string const &lam
 
 template <class F>
 scope_* fndef(char const *name, F f, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
-  maybe_test_function_pointer_dladdr_dlsym(name,(void*)f,sizeof(f));
+  maybe_register_symbol_using_dladdr((void*)f,sizeof(f),name);
   return fndef(name, f, policies<>(), lambdalist, declares, docstring);
 }
 #endif

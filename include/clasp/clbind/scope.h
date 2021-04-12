@@ -67,7 +67,7 @@ struct CLBIND_API scope_ {
     void def(char const *name, F f, PTypes... pols) { // const char* clambdalist=NULL, const char* cdeclares=NULL) {
       typedef policies<PTypes...> Policies;
       Policies curPolicies;
-      maybe_test_function_pointer_dladdr_dlsym(name,(void*)f,sizeof(f));
+      maybe_register_symbol_using_dladdr((void*)f,sizeof(f),name);
       walk_policy(curPolicies,pols...);
       LOG_SCOPE(("%s:%d function %s to chain of %p\n", __FILE__, __LINE__, name, this ));
       scope_ fnscope(std::unique_ptr<detail::registration>(new detail::function_registration<F, Policies>(name, f, curPolicies)));

@@ -4776,7 +4776,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
     // Create a new JITDylib_sp object
     this->_MainJITDylib = core::RP_Create_wrapped<JITDylib_O>(&this->_LLJIT->getMainJITDylib());
   }
-  printf("%s:%d Creating ClaspJIT_O  globalPrefix = %c\n", __FILE__, __LINE__, this->_LLJIT->getDataLayout().getGlobalPrefix());
+//  printf("%s:%d Creating ClaspJIT_O  globalPrefix = %c\n", __FILE__, __LINE__, this->_LLJIT->getDataLayout().getGlobalPrefix());
   this->_LLJIT->getMainJITDylib().addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
 }
 

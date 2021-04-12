@@ -359,7 +359,7 @@ template <typename X>
 using deque = std::deque<X>;
 
 
-void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* functionPointer, size_t size);
+void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size=sizeof(void*), const std::string& name="");
 
 
 #ifdef WIN32
@@ -1131,6 +1131,7 @@ List_sp clasp_grab_rest_args(va_list args, int nargs);
 
 namespace core {
   extern size_t debug_InvocationHistoryFrame;
+  void core__mangledSymbols(T_sp stream_designator);
 };
 
 

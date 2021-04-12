@@ -32,6 +32,7 @@
 #   e.g. node.change_ext() returns a new node instance... you've been warned!
 
 import os, sys, logging
+import subprocess
 import time, datetime
 import glob
 import copy
@@ -41,7 +42,8 @@ try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
-
+    
+from waflib.Tools import cxx
 from waflib import Utils, Logs, Task, TaskGen
 import waflib.Options
 from waflib.Tools import c_preproc
@@ -960,7 +962,7 @@ def configure(cfg):
         if ("DEBUG_CCLASP_LISP" not in cfg.env.DEBUG_OPTIONS):
             cfg.env.DEBUG_OPTIONS.append(["DEBUG_CCLASP_LISP"])
 
-    cfg.load("why")
+#    cfg.load("why")
     cfg.check_waf_version(mini = '1.7.5')
     cfg.env['DEST_OS'] = cfg.env['DEST_OS'] or Utils.unversioned_sys_platform()
     update_exe_search_path(cfg)
@@ -1494,9 +1496,9 @@ def build(bld):
     bld.extensions_gcinterface_include_files = []
     bld.extensions_builders = []
 
+    bld.iclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='i'))
     bld.bclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='b'))
     bld.cclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='c'))
-    bld.iclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='i'))
 
     bld.cclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'c')
     bld.cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % bld.variant_obj.fasl_dir(stage='c')))
@@ -1567,15 +1569,19 @@ def build(bld):
     cxx_all_bitcode_node = bld.path.find_or_declare(bld.variant_obj.cxx_all_bitcode_name())
     out_dir_node = bld.path.find_dir(out)
     bclasp_symlink_node = out_dir_node.make_node("bclasp")
-    bld_task = bld.program(source = clasp_c_source_files,
-                           features='cxx cxxprogram c cprogram increase_weight',
-                           includes = include_dirs,
-                           target = [bld.iclasp_executable],
-                           install_path = '${PREFIX}/bin')
-    #make_run_dsymutil_task(bld, 'i', iclasp_lto_o)
-    print("bld_task = %s" % bld_task)
-    print("bld_task.source = %s" % bld_task.source)
-    print("bld_task.target = %s" % bld_task.target)
+    bld.clasp_taskgen = bld.program(source = clasp_c_source_files,
+                              features='cxx cxxprogram c cprogram increase_weight',
+                              includes = include_dirs,
+                              target = [bld.iclasp_executable],
+                              install_path = '${PREFIX}/bin')
+
+    bld.clasp_taskgen.post()
+    idx = 0
+    bld.iclasp_link_task = None
+    for tsk in bld.clasp_taskgen.tasks:
+         idx += 1
+         if (tsk.__class__.__name__ == "cxxprogram"):
+             bld.iclasp_link_task = tsk
     if (bld.stage_val <= -1):
         log.info("Creating run_aclasp task")
 
@@ -1603,7 +1609,7 @@ def build(bld):
 
         #link aclasp from output files
         aclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'a')
-        print("About to setup link_fasl task: %s -> %s" % (aclasp_common_lisp_output_name_list, aclasp_link_product))
+#        print("About to setup link_fasl task: %s -> %s" % (aclasp_common_lisp_output_name_list, aclasp_link_product))
         task = link_fasl(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          builtins_bitcode_node,
@@ -1696,110 +1702,147 @@ def build(bld):
             if (generate_dwarf(bld)):
                 cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl.dwarf" % bld.variant_obj.fasl_dir(stage = 'c'))
                 install('lib/clasp/', cclasp_asdf_dwarf_file)
-
             clasp_symlink_node = out_dir_node.make_node("clasp")
             log.debug("clasp_symlink_node =  %s", clasp_symlink_node)
             if (os.path.islink(clasp_symlink_node.abspath())):
                 os.unlink(clasp_symlink_node.abspath())
-    if ( bld.stage_val >= 4):
-        log.debug("building bld.stage = %s  bld.stage_val = %d", bld.stage, bld.stage_val )
-        if (bld.env.CLASP_BUILD_MODE=='faso'
-            or bld.env.CLASP_BUILD_MODE == "fasoll"
-            or bld.env.CLASP_BUILD_MODE == "fasobc" ):
-            task = symlink_executable(env=bld.env)
-            task.set_inputs(bld.iclasp_executable)
-            task.set_outputs(bld.cclasp_executable)
-            bld.add_to_group(task)
-            task = symlink_executable(env=bld.env)
-            task.set_inputs(bld.iclasp_executable)
-            task.set_outputs(clasp_symlink_node)
-            bld.add_to_group(task)
-            #raise Exception("build executable for faso mode = %s" % bld.cclasp_executable)
-        else:
-            task = link_executable(env = bld.env)
-            task.set_inputs(cclasp_common_lisp_output_name_list +
-                            [cxx_all_bitcode_node])
-            log.info("About to try and recurse into extensions again")
-            bld.recurse('extensions')
-            if ( bld.env['DEST_OS'] == DARWIN_OS ):
-                if (bld.env.LTO_FLAG):
-                    cclasp_lto_o = bld.path.find_or_declare('%s_exec.lto.o' % bld.variant_obj.executable_name(stage = 'c'))
-                    task.set_outputs([bld.cclasp_executable,
-                                      cclasp_lto_o])
-                else:
-                    cclasp_lto_o = None
-                    task.set_outputs([bld.cclasp_executable])
-            else:
-                cclasp_lto_o = None
-                task.set_outputs(bld.cclasp_executable)
-            log.debug("link_executable for cclasp %s -> %s", task.inputs, task.outputs)
-            bld.add_to_group(task)
+        dummy = dummy_task(env=bld.env)
+        bld.add_to_group(dummy)
+        print("Building exported symbols")
+        export_file = bld.path.find_or_declare("generated/exported_symbols_list")
+        export_symbols_list_task = export_symbols_list(env=bld.env)
+        export_symbols_list_task.set_inputs([bld.iclasp_executable, bld.cclasp_link_product] + bld.iclasp_link_task.inputs)
+        export_symbols_list_task.set_outputs([export_file])
+        bld.add_to_group(export_symbols_list_task)
+        print("Done adding task for export_symbols_list")
+        bld.add_group()
+        env2 = bld.env.derive()
+        env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",export_file.abspath()])
+        link2 = cxx.cxxprogram(env=env2)
+        link2.run_after = [export_symbols_list_task]
+        print("bld.iclasp_link_task.inputs = %s" % bld.iclasp_link_task.inputs)
+        link2.set_inputs( [export_file] + bld.iclasp_link_task.inputs)
+        link2.set_outputs( [ bld.cclasp_executable ] )
+        bld.add_to_group(link2)
+        # print("Added link2")
+        # print(" link2 -> %s" % dir(link2 ))
+        # print(" link2.run_str -> %s" % link2.run_str )
+        # print(" link2.before -> %s" % link2.before )
+        # print(" link2.outputs -> %s" % link2.outputs )
+        # print(" bld.cclasp_executable -> %s" % bld.cclasp_executable )
+        task = symlink_executable(env=bld.env)
+        task.set_inputs(bld.iclasp_executable)
+        task.set_outputs(bld.cclasp_executable)
+        bld.add_to_group(task)
 
-            make_run_dsymutil_task(bld, 'c', cclasp_lto_o)
+#     if ( bld.stage_val >= 4):
+#         log.debug("building bld.stage = %s  bld.stage_val = %d", bld.stage, bld.stage_val )
+#         if (bld.env.CLASP_BUILD_MODE=='faso'
+#             or bld.env.CLASP_BUILD_MODE == "fasoll"
+#             or bld.env.CLASP_BUILD_MODE == "fasobc" ):
+#             #raise Exception("build executable for faso mode = %s" % bld.cclasp_executable)
+# #            bld.add_group()
+            
+#             # task = symlink_executable(env=bld.env)
+#             # task.set_inputs(bld.iclasp_executable)
+#             # task.set_outputs(bld.cclasp_executable)
+#             # bld.add_to_group(task)
+#             # task = symlink_executable(env=bld.env)
+#             # task.set_inputs(bld.iclasp_executable)
+#             # task.set_outputs(clasp_symlink_node)
+#             # bld.add_to_group(task)
+            
+#         else:
+#             task = link_executable(env = bld.env)
+#             task.set_inputs(cclasp_common_lisp_output_name_list +
+#                             [cxx_all_bitcode_node])
+#             log.info("About to try and recurse into extensions again")
+#             bld.recurse('extensions')
+#             if ( bld.env['DEST_OS'] == DARWIN_OS ):
+#                 if (bld.env.LTO_FLAG):
+#                     cclasp_lto_o = bld.path.find_or_declare('%s_exec.lto.o' % bld.variant_obj.executable_name(stage = 'c'))
+#                     task.set_outputs([bld.cclasp_executable,
+#                                       cclasp_lto_o])
+#                 else:
+#                     cclasp_lto_o = None
+#                     task.set_outputs([bld.cclasp_executable])
+#             else:
+#                 cclasp_lto_o = None
+#                 task.set_outputs(bld.cclasp_executable)
+#             log.debug("link_executable for cclasp %s -> %s", task.inputs, task.outputs)
+#             bld.add_to_group(task)
 
-            install('bin/%s' % bld.cclasp_executable.name, bld.cclasp_executable, chmod = Utils.O755)
-            bld.symlink_as('${PREFIX}/bin/clasp', bld.cclasp_executable.name)
-            task = symlink_executable(env=bld.env)
-            task.set_inputs(bld.cclasp_executable)
-            task.set_outputs(clasp_symlink_node)
-            bld.add_to_group(task)
+#             make_run_dsymutil_task(bld, 'c', cclasp_lto_o)
+
+#             install('bin/%s' % bld.cclasp_executable.name, bld.cclasp_executable, chmod = Utils.O755)
+#             bld.symlink_as('${PREFIX}/bin/clasp', bld.cclasp_executable.name)
+#             task = symlink_executable(env=bld.env)
+#             task.set_inputs(bld.cclasp_executable)
+#             task.set_outputs(clasp_symlink_node)
+#             bld.add_to_group(task)
+
+
+
+
 #            os.symlink(bld.cclasp_executable.abspath(), clasp_symlink_node.abspath())
 #        else:
 #            os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())
-    if ( bld.stage_val >= 5):
-        #
-        # Now generate the snapshot
-        #
-        cclasp_snapshot_product = bld.variant_obj.snapshot_node(bld,stage = 'c')
-        print("cclasp_snapshot_product = %s class -> %s" % (cclasp_snapshot_product, cclasp_snapshot_product.__class__))
-        # above will output: cclasp_snapshot_product = /home/meister/Development/cando-future/build/boehmprecise/generated/cclasp-boehmprecise-image.snapshot class -> <class 'waflib.Node.Nod3'>
-        task_snapshot = link_snapshot(env=bld.env)
-        print("task_snapshot = %s class %s" % (task_snapshot, inspect.getmro(task_snapshot.__class__)))
-        task_snapshot.set_inputs([bld.iclasp_executable,
-                                  bld.cclasp_link_product,
-                                  builtins_bitcode_node,
-                                  intrinsics_bitcode_node])
-        task_snapshot.set_outputs([cclasp_snapshot_product])
-        bld.add_to_group(task_snapshot)
-        #
-        # Copy the bld_task for the main executable
-        # Change the target to 'zclasp'
-        # Add a source: src/main/snapshot.c
-        #  Also add the source: cclasp_snapshot_product above because snapshot.c will .objbin load it
-        #
-        bld_task.post()
-        print("len(bld_task.tasks) = %d" % len(bld_task.tasks))
-        idx = 0
-        cxxprogram_task = None
-        for tsk in bld_task.tasks:
-            print("[%d] tsk.__class__.__name__ = %s" % (idx, tsk.__class__.__name__))
-            idx += 1
-            if (tsk.__class__.__name__ == "cxxprogram"):
-                cxxprogram_task = tsk
-#        print("cxxprogram_task = %s" % cxxprogram_task)
-#        print("cxxprogram_task.inputs = %s" % cxxprogram_task.inputs)
-#        print("cxxprogram_task.outputs = %s" % cxxprogram_task.outputs)
-        zbld_task = bld_task.create_task("cxxprogram",src=cxxprogram_task.inputs)
-#        print("zbld_task = %s" % zbld_task )
-        obj_task = bld_task.create_task("c")
-#        print("obj_task = %s" % obj_task )
-        obj_task.inputs = [bld.path.find_node("src/main/snapshot.c")]
-        snapshot_obj = bld.variant_obj.snapshot_object_node(bld,stage = 'c')
-        obj_task.outputs = [snapshot_obj]
-        print("obj_task.inputs = %s" % obj_task.inputs )
-        print("obj_task.outputs = %s" % obj_task.outputs )
-        obj_task.set_run_after(task_snapshot)
-        bld.add_to_group(obj_task)
-        dclasp_target = bld.path.find_or_declare("dclasp")
-        zbld_task.outputs = [ dclasp_target ]
-        zbld_task.inputs.append(obj_task.outputs[0])
-#        zbld_task.source.append(cclasp_snapshot_product)
-#        print("zbld_task.source = %s" % zbld_task.source)
-#        print("zbld_task.target = %s" % zbld_task.target)
-        zbld_task.set_run_after(obj_task)
-        bld.add_to_group(zbld_task)
-        install('lib/clasp/', cclasp_snapshot_product)
-    log.pprint('BLUE', 'build() has finished')
+
+#     if ( bld.stage_val >= 6):
+#         print("Building snapshots")
+#         #
+#         # Now generate the snapshot
+#         #
+#         cclasp_snapshot_product = bld.variant_obj.snapshot_node(bld,stage = 'c')
+#         print("cclasp_snapshot_product = %s class -> %s" % (cclasp_snapshot_product, cclasp_snapshot_product.__class__))
+#         # above will output: cclasp_snapshot_product = /home/meister/Development/cando-future/build/boehmprecise/generated/cclasp-boehmprecise-image.snapshot class -> <class 'waflib.Node.Nod3'>
+#         task_snapshot = link_snapshot(env=bld.env)
+#         print("task_snapshot = %s class %s" % (task_snapshot, inspect.getmro(task_snapshot.__class__)))
+#         task_snapshot.set_inputs([bld.iclasp_executable,
+#                                   bld.cclasp_link_product,
+#                                   builtins_bitcode_node,
+#                                   intrinsics_bitcode_node])
+#         task_snapshot.set_outputs([cclasp_snapshot_product])
+#         bld.add_to_group(task_snapshot)
+#         #
+#         # Copy the bld_task for the main executable
+#         # Change the target to 'zclasp'
+#         # Add a source: src/main/snapshot.c
+#         #  Also add the source: cclasp_snapshot_product above because snapshot.c will .objbin load it
+#         #
+#         bld_taskgen.post()
+#         print("len(bld_taskgen.tasks) = %d" % len(bld_taskgen.tasks))
+#         idx = 0
+#         cxxprogram_task = None
+#         for tsk in bld_taskgen.tasks:
+# #            print("[%d] tsk.__class__.__name__ = %s" % (idx, tsk.__class__.__name__))
+#             idx += 1
+#             if (tsk.__class__.__name__ == "cxxprogram"):
+#                 cxxprogram_task = tsk
+# #        print("cxxprogram_task = %s" % cxxprogram_task)
+#         print("cxxprogram_task.inputs = %s" % cxxprogram_task.inputs)
+#         print("cxxprogram_task.outputs = %s" % cxxprogram_task.outputs)
+#         zbld_task = bld_taskgen.create_task("cxxprogram",src=cxxprogram_task.inputs)
+# #        print("zbld_task = %s" % zbld_task )
+#         obj_task = bld_taskgen.create_task("c")
+# #        print("obj_task = %s" % obj_task )
+#         obj_task.inputs = [bld.path.find_node("src/main/snapshot.c")]
+#         snapshot_obj = bld.variant_obj.snapshot_object_node(bld,stage = 'c')
+#         obj_task.outputs = [snapshot_obj]
+#         print("obj_task.inputs = %s" % obj_task.inputs )
+#         print("obj_task.outputs = %s" % obj_task.outputs )
+#         obj_task.set_run_after(task_snapshot)
+#         bld.add_to_group(obj_task)
+#         dclasp_target = bld.path.find_or_declare("dclasp")
+#         zbld_task.outputs = [ dclasp_target ]
+#         zbld_task.inputs.append(obj_task.outputs[0])
+# #        zbld_task.source.append(cclasp_snapshot_product)
+# #        print("zbld_task.source = %s" % zbld_task.source)
+# #        print("zbld_task.target = %s" % zbld_task.target)
+#         zbld_task.set_run_after(obj_task)
+#         bld.add_to_group(zbld_task)
+#         install('lib/clasp/', cclasp_snapshot_product)
+#     log.pprint('BLUE', 'build() has finished')
 
 #
 # This function builds classes for every target that can be invoked by waf
@@ -2360,3 +2403,58 @@ def increase_weight(self):
             or task.__str__().find("src/gctools/exposeClasses")!=-1
             or task.__str__().find("src/gctools/gc_interface")!=-1 ):
             task.weight = 3
+
+#nm -Ugm `find . -name '*.o'` | grep " external _" | grep -oE '[^ ]+$' | sort | uniq
+#nm -Ugj `find . -name '*.o'` | grep '_ZTVN' | sort | uniq
+#cat ../../tools-for-build/extra-symbols.list
+
+
+class dummy_task(Task.Task):
+    def run(self):
+        print("Dummy task")
+        cmd = [ "echo", "Ignore \"no symbols\" above" ]
+        return self.exec_command(cmd)
+
+extra_symbols = [
+    "___cxa_begin_catch",
+    "___cxa_end_catch",
+    "___gxx_personality_v0",
+    "__longjmp",
+    "__mh_execute_header",
+    "__setjmp",
+    "_cc_invoke_sub_run_all_function",
+    "_cc_throw",
+    "_debugBreak",
+    "_invisible_makeValueFrameSetParent",
+    "_ltvc_mlf_create_basic_call",
+    "_ltvc_mlf_init_basic_call"
+]
+class export_symbols_list(Task.Task):
+    def run(self):
+        externals = []
+        # Get everything already external
+        print("Ignore symbols missing")
+        cmd = [ self.inputs[0].abspath(), "-y", "-N" ]
+        result = subprocess.check_output(cmd)
+        nm_lines = result.splitlines()
+        for line in nm_lines:
+            externals.append(line)
+        # Get the vtables
+        for obj in self.inputs[2:]:
+            cmd = [ '/usr/bin/nm', "-Ugj", obj.abspath() ]
+            result = subprocess.check_output(cmd)
+            nm_lines = result.splitlines()
+            for line in nm_lines:
+                if ( line.find("__ZTV")>=0 ):
+                    externals.append(line)
+                elif (line.find("_wrapped_") >= 0):
+                    externals.append(line)
+        externals_set = set(externals)
+        text_file = open(self.outputs[0].abspath(),"w")
+        for entry in sorted(externals_set):
+            text_file.write(entry)
+            text_file.write('\n')
+        text_file.close()
+        cmd = [ "echo", "Ignore \"no symbols\" above" ]
+        return self.exec_command(cmd)
+

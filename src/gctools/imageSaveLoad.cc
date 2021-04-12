@@ -122,6 +122,8 @@
 
 namespace imageSaveLoad {
 
+bool global_debugSnapshot = false;
+
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
 
 
@@ -360,8 +362,20 @@ struct ISLInfo {
 //
 #define NO_STOMP_FORWARDING 1
 
+//
+// If you want to test the stomp forwarding by comparing it to NO_STOMP_FORWARDING use this
+//
+//#define TEST_STOMP_FORWARDING 1
+
 void set_forwarding_pointer(gctools::Header_s* header, char* new_client, ISLInfo* info ) {
-#ifdef NO_STOMP_FORWARDING
+#if defined(TEST_STOMP_FORWARDING)
+  info->_forwarding[(uintptr_t)header] = (uintptr_t)new_client;
+  header->_stamp_wtag_mtag.setFwdPointer(new_client);
+  if ((uintptr_t)header->_stamp_wtag_mtag.fwdPointer() != (uintptr_t)new_client) {
+    printf("%s:%d:%s Forwarding pointer written and read don't match\n");
+    abort();
+  }
+#elif defined(NO_STOMP_FORWARDING)
   info->_forwarding[(uintptr_t)header] = (uintptr_t)new_client;
 #else
   header->_stamp_wtag_mtag.setFwdPointer(new_client);
@@ -369,16 +383,35 @@ void set_forwarding_pointer(gctools::Header_s* header, char* new_client, ISLInfo
 }
 
 bool is_forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
-#ifdef NO_STOMP_FORWARDING
+#if defined(TEST_STOMP_FORWARDING)
   auto result = info->_forwarding.find((uintptr_t)header);
-  return (result != info->_forwarding.end());
+  bool noStompResult = (result != info->_forwarding.end());
+  bool stompResult = header->_stamp_wtag_mtag.fwdP();
+  if (noStompResult!=stompResult) {
+    printf("%s:%d:%s results don't match\n");
+    abort();
+  }
+  return stompResult;
+#elif defined(NO_STOMP_FORWARDING)
+  auto result = info->_forwarding.find((uintptr_t)header);
+  bool noStompResult = (result != info->_forwarding.end());
+  return noStompResult;
 #else
-  return header->_stamp_wtag_mtag.fwdP();
+  bool stompResult = header->_stamp_wtag_mtag.fwdP();
+  return stompResult;
 #endif
 }
 
 uintptr_t forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
-#ifdef NO_STOMP_FORWARDING
+#if defined(TEST_STOMP_FORWARDING)
+  uintptr_t noStompResult =  info->_forwarding[(uintptr_t)header];
+  uintptr_t stompResult = (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
+  if (noStompResult!=stompResult) {
+    printf("%s:%d:%s results don't match\n");
+    abort();
+  }
+  return stompResult;
+#elif defined(NO_STOMP_FORWARDING)
   return info->_forwarding[(uintptr_t)header];
 #else
   return (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
@@ -1281,35 +1314,37 @@ struct SaveSymbolCallback : public core::SymbolCallback {
         abort();
       }
       std::string saveName(info.dli_sname);
-      uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,saveName.c_str() );
-      if (!dlsymAddr) {
-        printf("%s:%d:%s FAIL! address %lu/%lu save the address %p resolved to the symbol %s but that could not be dlsym'd back to an address\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               ii, this->_Library._GroupedPointers.size(),
-               (void*)address,
-               saveName.c_str()
+      if (global_debugSnapshot) {
+        uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,saveName.c_str() );
+        if (!dlsymAddr) {
+          printf("%s:%d:%s FAIL! address %lu/%lu save the address %p resolved to the symbol %s but that could not be dlsym'd back to an address\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 ii, this->_Library._GroupedPointers.size(),
+                 (void*)address,
+                 saveName.c_str()
                );
         // abort();
-      } else if ( (address-dlsymAddr) > 64 ) {
-        printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               ii, this->_Library._GroupedPointers.size(),
-               (void*)address,
-               (void*)dlsymAddr,
-               (address - dlsymAddr),
-               saveName.c_str()
-               );
-      } else {
+        } else if ( (address-dlsymAddr) > 64 ) {
+          printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 ii, this->_Library._GroupedPointers.size(),
+                 (void*)address,
+                 (void*)dlsymAddr,
+                 (address - dlsymAddr),
+                 saveName.c_str()
+                 );
+        } else {
 #if 0
-        printf("%s:%d:%s PASS! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               ii, this->_Library._GroupedPointers.size(),
-               (void*)address,
-               (void*)dlsymAddr,
-               (address - dlsymAddr),
-               saveName.c_str()
-               );
+          printf("%s:%d:%s PASS! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 ii, this->_Library._GroupedPointers.size(),
+                 (void*)address,
+                 (void*)dlsymAddr,
+                 (address - dlsymAddr),
+                 saveName.c_str()
+                 );
 #endif
+        }
       }
       uint addressOffset = (address - (uintptr_t)info.dli_saddr);
       this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
@@ -1492,6 +1527,8 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib) {
 }
   
 void image_save(const std::string& filename) {
+  global_debugSnapshot = getenv("DEBUG_SNAPSHOT")!=NULL;
+  
   //
   // Release object files
   //
@@ -1888,6 +1925,7 @@ struct CodeFixup_t {
 };
 
 int image_load( void* maybeStartOfImage, void* maybeEndOfImage, const std::string& filename ) {
+  global_debugSnapshot = getenv("DEBUG_SNAPSHOT")!=NULL;
   // When loading forwarding pointers must always forward into GC managed objects
   size_t loadTimeID = 0;
   globalFwdMustBeInGCMemory = true;

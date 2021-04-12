@@ -186,6 +186,9 @@ LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
   llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
+    if (gc::IsA<llvmo::Library_sp>(code)) {
+      maybe_register_symbol_using_dladdr((void*)entry_point);
+    }
   }
   GC_ALLOCATE_VARIADIC(LocalEntryPoint_O, ep, fdesc, (void*)entry_point, code );
   return ep;
@@ -195,6 +198,9 @@ GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp fdesc,
   llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
+    if (gc::IsA<llvmo::Library_sp>(code)) {
+      maybe_register_symbol_using_dladdr((void*)entry_point);
+    }
   }
   GC_ALLOCATE_VARIADIC(GlobalEntryPoint_O, ep, fdesc, (void*)entry_point, code );
   return ep;

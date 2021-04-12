@@ -60,6 +60,7 @@ struct CommandLineOptions {
   ImageTypeEnum _ImageType;
   bool _GotRandomNumberSeed;
   long _RandomNumberSeed;
+  bool _AccumulateSymbols;
   bool _NoInform;
   bool _NoPrint;
   bool _DebuggerDisabled;

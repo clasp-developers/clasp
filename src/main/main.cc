@@ -344,6 +344,9 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     // Create the one global CommandLineOptions object and do some minimal argument processing
   core::global_options = new core::CommandLineOptions(argc, argv);
   (core::global_options->_ProcessArguments)(core::global_options);
+  ::globals_ = new core::globals_t();
+  globals_->_AccumulateSymbols = core::global_options->_AccumulateSymbols;
+  globals_->_DebugStream = new core::DebugStream(mpiRank);
   if (!core::global_options->_DontLoadImage && // YES load the image
       core::global_options->_ImageType == core::cloSnapshot // YES its a snapshot
       ) {
@@ -351,9 +354,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     printf("%s:%d:%s Loading the snapshot %s\n",
            __FILE__, __LINE__, __FUNCTION__, core::global_options->_ImageFile.c_str());
     llvmo::initialize_llvm();
-    ::globals_ = new core::globals_t();
-    globals_->_DebugStream = new core::DebugStream(mpiRank);
-
 
     //
     // Set up the arguments
@@ -371,8 +371,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     printf("Core image loading is not supported unless precise GC is turned on\n");
 #endif
   } else {
-    ::globals_ = new core::globals_t();
-    globals_->_DebugStream = new core::DebugStream(mpiRank);
     core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
 
     gctools::GcToolsExposer_O GcToolsPkg(_lisp);

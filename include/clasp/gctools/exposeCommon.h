@@ -178,7 +178,7 @@ NOINLINE void expose_function(const std::string& pkg_sym,
                               RT (*fp)(ARGS...),
                               const std::string& lambdaList)
 {
-  maybe_test_function_pointer_dladdr_dlsym(pkg_sym,*(void**)&fp,sizeof(fp));
+  maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),pkg_sym);
   std::string pkgName;
   std::string symbolName;
   core::colon_split(pkg_sym,pkgName,symbolName);
