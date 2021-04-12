@@ -81,7 +81,7 @@
        inserter
        (make-instance 'mv-foreign-call
          :function-name (cc-ast:function-name ast)
-         :inputs (mapcar #'first args) :outputs (list output)))
+         :inputs args :outputs (list output)))
       output)))
 
 (defclass foreign-call-pointer (bir:one-output bir:instruction)
@@ -96,7 +96,7 @@
        inserter
        (make-instance 'foreign-call-pointer
          :foreign-types (cc-ast:foreign-types ast)
-         :inputs (mapcar #'first args) :outputs (list out)))
+         :inputs args :outputs (list out)))
       (list out))))
 
 (defclass defcallback (bir:no-output bir:instruction)
