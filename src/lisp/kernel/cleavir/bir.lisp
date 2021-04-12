@@ -341,42 +341,42 @@
 
 ;;;
 
-(macrolet ((defprimop (name ninputs (&rest out))
+(macrolet ((defprimop (name ninputs out)
              `(progn
-                (cleavir-primop-info:defprimop ,name ,ninputs (,@out))
+                (cleavir-primop-info:defprimop ,name ,ninputs ,out)
                 (cleavir-cst-to-ast:defprimop ,name))))
-  (defprimop core::vector-length 1 (:object))
-  (defprimop core::%displacement 1 (:object))
-  (defprimop core::%displaced-index-offset 1 (:object))
-  (defprimop core::%array-total-size 1 (:object))
-  (defprimop core::%array-rank 1 (:object))
-  (defprimop core::%array-dimension 2 (:object))
+  (defprimop core::vector-length 1 :value)
+  (defprimop core::%displacement 1 :value)
+  (defprimop core::%displaced-index-offset 1 :value)
+  (defprimop core::%array-total-size 1 :value)
+  (defprimop core::%array-rank 1 :value)
+  (defprimop core::%array-dimension 2 :value)
 
-  (defprimop core:instance-rack 1 (:object))
-  (defprimop core:instance-rack-set 2 ())
+  (defprimop core:instance-rack 1 :value)
+  (defprimop core:instance-rack-set 2 :effect)
 
-  (defprimop core:rack-ref 2 (:object))
-  (defprimop core:rack-set 3 ())
+  (defprimop core:rack-ref 2 :value)
+  (defprimop core:rack-set 3 :effect)
 
-  (defprimop core:vaslist-pop 1 (:object))
-  (defprimop core:vaslist-length 1 (:object)))
+  (defprimop core:vaslist-pop 1 :value)
+  (defprimop core:vaslist-length 1 :value))
 
-(macrolet ((defprimop (name ninputs (&rest out) ast &rest readers)
+(macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn
-                (cleavir-primop-info:defprimop ,name ,ninputs (,@out))
+                (cleavir-primop-info:defprimop ,name ,ninputs ,out)
                 (ast-to-bir:defprimop ,name ,ast ,@readers))))
-  (defprimop setf-fdefinition 1 (:object)
+  (defprimop setf-fdefinition 1 :value
     cc-ast:setf-fdefinition-ast cleavir-ast:name-ast)
   
-  (defprimop core::instance-cas 4 (:object) cc-ast:slot-cas-ast
+  (defprimop core::instance-cas 4 :value cc-ast:slot-cas-ast
     cc-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:object-ast
     cleavir-ast:slot-number-ast)
 
-  (defprimop core::header-stamp 1 (:object)
+  (defprimop core::header-stamp 1 :value
     cc-ast:header-stamp-ast cleavir-ast:arg-ast)
-  (defprimop core::derivable-stamp 1 (:object)
+  (defprimop core::derivable-stamp 1 :value
     cc-ast:derivable-stamp-ast cleavir-ast:arg-ast)
-  (defprimop core::wrapped-stamp 1 (:object)
+  (defprimop core::wrapped-stamp 1 :value
     cc-ast:wrapped-stamp-ast cleavir-ast:arg-ast)
-  (defprimop core::rack-stamp 1 (:object)
+  (defprimop core::rack-stamp 1 :value
     cc-ast:rack-stamp-ast cleavir-ast:arg-ast))
