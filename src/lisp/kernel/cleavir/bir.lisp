@@ -16,32 +16,22 @@
       (ast-to-bir:begin inserter during)
       (let ((rv (ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
                                         inserter system)))
-        (cond ((eq rv :no-return) :no-return)
-              ((listp rv)
-               (let* ((next (ast-to-bir:make-iblock
-                             inserter :dynamic-environment ode)))
-                 (ast-to-bir:terminate
-                  inserter
-                  (make-instance 'bir:jump
-                    :inputs () :outputs () :next (list next)))
-                 (ast-to-bir:begin inserter next))
-               rv)
-              (t
-               ;; We need to pass the values through a phi so that
-               ;; unwind-dynenv can deal with them. KLUDGEy?
-               (let* ((next (ast-to-bir:make-iblock
-                             inserter :dynamic-environment ode))
-                      (phi (make-instance 'bir:phi
-                             :iblock next)))
-                 (setf (bir:inputs next) (list phi))
-                 (ast-to-bir:terminate
-                  inserter
-                  (make-instance 'bir:jump
-                    :inputs (ast-to-bir:adapt
-                             inserter rv :multiple-values)
-                    :outputs (list phi) :next (list next)))
-                 (ast-to-bir:begin inserter next)
-                 phi)))))))
+        (if (eq rv :no-return)
+            :no-return
+            ;; We need to pass the values through a phi so that
+            ;; unwind-dynenv can deal with them. KLUDGEy?
+            (let* ((next (ast-to-bir:make-iblock
+                          inserter :dynamic-environment ode))
+                   (phi (make-instance 'bir:phi
+                          :iblock next)))
+              (setf (bir:inputs next) (list phi))
+              (ast-to-bir:terminate
+               inserter
+               (make-instance 'bir:jump
+                 :inputs (ast-to-bir:adapt inserter rv :multiple-values)
+                 :outputs (list phi) :next (list next)))
+              (ast-to-bir:begin inserter next)
+              phi))))))
 
 (defclass bind (bir:dynamic-environment bir:no-output bir:terminator1) ())
 
