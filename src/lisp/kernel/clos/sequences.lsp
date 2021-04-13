@@ -712,44 +712,43 @@
     (core::error-not-a-sequence sequence)))
 (defmethod sequence:delete-duplicates
     ((sequence sequence) &key from-end test test-not (start 0) end key)
-  (core::with-tests (test test-not key)
-    (let ((c 0))
-      (sequence:with-sequence-iterator
-          (state1 limit from-end step endp elt setelt nil copy)
-          (sequence :start start :end end :from-end from-end)
-        (let ((state2 (funcall copy sequence state1)))
-          (flet ((finish ()
-                   (if from-end
+  (let ((c 0) (key (core:coerce-fdesignator key)))
+    (sequence:with-sequence-iterator
+        (state1 limit from-end step endp elt setelt nil copy)
+      (sequence :start start :end end :from-end from-end)
+      (let ((state2 (funcall copy sequence state1)))
+        (flet ((finish ()
+                 (if from-end
+                     (replace sequence sequence
+                              :start1 start :end1 (- (length sequence) c)
+                              :start2 (+ start c) :end2 (length sequence))
+                     (unless (or (null end) (= end (length sequence)))
                        (replace sequence sequence
-                                :start1 start :end1 (- (length sequence) c)
-                                :start2 (+ start c) :end2 (length sequence))
-                       (unless (or (null end) (= end (length sequence)))
-                         (replace sequence sequence
-                                  :start2 end :start1 (- end c)
-                                  :end1 (- (length sequence) c))))
-                   (sequence:adjust-sequence sequence (- (length sequence) c))))
-            (declare (dynamic-extent #'finish))
-            (do ((end (or end (length sequence)))
-                 (s 0 (1+ s)))
-                ((funcall endp sequence state2 limit from-end) (finish))
-              (let ((e (funcall elt sequence state2)))
-                (loop
-                  ;; Does the element exist in the previous sequence?
-                  (if (position (key e) sequence
-                                :test test :test-not test-not :key key
-                                :start (if from-end start (+ start s 1))
-                                :end (if from-end (- end s 1) end))
-                      (progn
-                        (incf c)
-                        (incf s)
-                        (setq state2 (funcall step sequence state2 from-end))
-                        (when (funcall endp sequence state2 limit from-end)
-                          (return-from sequence:delete-duplicates (finish)))
-                        (setq e (funcall elt sequence state2)))
-                      (return)))
-                (funcall setelt e sequence state1))
-              (setq state1 (funcall step sequence state1 from-end))
-              (setq state2 (funcall step sequence state2 from-end)))))))))
+                                :start2 end :start1 (- end c)
+                                :end1 (- (length sequence) c))))
+                 (sequence:adjust-sequence sequence (- (length sequence) c))))
+          (declare (dynamic-extent #'finish))
+          (do ((end (or end (length sequence)))
+               (s 0 (1+ s)))
+              ((funcall endp sequence state2 limit from-end) (finish))
+            (let ((e (funcall elt sequence state2)))
+              (loop
+                 ;; Does the element exist in the previous sequence?
+                 (if (position (funcall key e) sequence
+                               :test test :test-not test-not :key key
+                               :start (if from-end start (+ start s 1))
+                               :end (if from-end (- end s 1) end))
+                     (progn
+                       (incf c)
+                       (incf s)
+                       (setq state2 (funcall step sequence state2 from-end))
+                       (when (funcall endp sequence state2 limit from-end)
+                         (return-from sequence:delete-duplicates (finish)))
+                       (setq e (funcall elt sequence state2)))
+                     (return)))
+              (funcall setelt e sequence state1))
+            (setq state1 (funcall step sequence state1 from-end))
+            (setq state2 (funcall step sequence state2 from-end))))))))
 
 (defgeneric sequence:remove-duplicates
     (sequence &key from-end test test-not start end key)

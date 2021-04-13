@@ -51,8 +51,7 @@
 			  (if ,%test-not
 			      (coerce-fdesignator ,%test-not)
 			      #'eql))))
-       (declare (function ,%test-fn)
-                (ignorable ,%test-fn))
+       (declare (function ,%test-fn))
        (macrolet ((compare (v1 v2)
 		    `(locally (declare (optimize (safety 0) (speed 3)))
 		       (if ,',%test-not
