@@ -382,6 +382,15 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
       end_of_snapshot = (void*)((char*)start_of_snapshot + size);
     }
 #endif
+#ifdef _TARGET_OS_LINUX
+    void* start_of_snapshot = NULL;
+    void* end_of_snapshot = NULL;
+    extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_start;
+    extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_end;
+    start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
+    end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
+    printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
+#endif
     exit_code = imageSaveLoad::image_load( (void*)start_of_snapshot, (void*)end_of_snapshot, core::global_options->_ImageFile );
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");

@@ -356,7 +356,7 @@ CL_DEFUN void core__walk_loaded_objects()
 
 
 
-
+#if 0
 SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintptr_t& stackmap_start, size_t& stackmap_size)
 {
 //  printf("%s:%d:%s  %s memory-start %p\n", __FILE__, __LINE__, __FUNCTION__, filename, (void*)start );
@@ -436,7 +436,7 @@ SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintp
   close(fd);
   return symbol_table;
 }
-
+#endif
 int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
 {
   ScanInfo* scan_callback_info = (ScanInfo*)data;
@@ -529,7 +529,6 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
   return 0;
 }
 
-
 void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory)
 {
   ScanInfo scan(NULL);
@@ -544,7 +543,6 @@ void startup_register_loaded_objects(add_dynamic_library* callback)
   ScanInfo scan(callback);
   dl_iterate_phdr(elf_startup_loaded_object_callback,&scan);
 }
-
 
 
 
@@ -591,7 +589,8 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
 //  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
   uintptr_t stackmap_start;
   size_t section_size;
-  SymbolTable symbol_table = load_linux_symbol_table(libraryName.c_str(),library_origin,stackmap_start,section_size);
+//  SymbolTable symbol_table = load_linux_symbol_table(libraryName.c_str(),library_origin,stackmap_start,section_size);
+  SymbolTable symbol_table;
   if (is_executable) {
     symbol_table._StackmapStart = stackmap_start;
     symbol_table._StackmapEnd = stackmap_start+section_size;
@@ -601,12 +600,12 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
       symbol_table._StackmapEnd = stackmap_start+section_size+library_origin;
     }
   }
-  symbol_table.optimize();
-  symbol_table.sort();
-  if (!symbol_table.is_sorted()) {
-    printf("%s:%d The symbol table for %s is not sorted\n", __FILE__, __LINE__, libraryName.c_str());
-    abort();
-  }
+//  symbol_table.optimize();
+//  symbol_table.sort();
+//  if (!symbol_table.is_sorted()) {
+//    printf("%s:%d The symbol table for %s is not sorted\n", __FILE__, __LINE__, libraryName.c_str());
+//    abort();
+//  }
   BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t library_end = (gctools::clasp_ptr_t)library_origin;
   OpenDynamicLibraryInfo odli(is_executable,libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end,

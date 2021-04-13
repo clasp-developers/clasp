@@ -33,6 +33,9 @@ def options(bld):
 def build1(bld):
     bld.recurse(" ".join(subdirectories()),name="build1")
 
+def build3(bld):
+    bld.recurse(" ".join(subdirectories()),name="build3")
+    
 def build5(bld):
     bld.recurse(" ".join(subdirectories()),name="build5")
 

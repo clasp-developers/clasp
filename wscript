@@ -33,6 +33,7 @@
 
 import os, sys, logging
 import subprocess
+import select
 import time, datetime
 import glob
 import copy
@@ -1705,33 +1706,48 @@ def build(bld):
             log.debug("clasp_symlink_node =  %s", clasp_symlink_node)
             if (os.path.islink(clasp_symlink_node.abspath())):
                 os.unlink(clasp_symlink_node.abspath())
+                
         dummy = dummy_task(env=bld.env)
         bld.add_to_group(dummy)
         print("Building exported symbols")
         bld.exported_symbols_file = bld.path.find_or_declare("generated/exported_symbols_list")
-        export_symbols_list_task = export_symbols_list(env=bld.env)
-        export_symbols_list_task.set_inputs([bld.iclasp_executable, bld.cclasp_link_product] + bld.iclasp_link_task.inputs)
-        export_symbols_list_task.set_outputs([bld.exported_symbols_file])
-        bld.add_to_group(export_symbols_list_task)
-        print("Done adding task for export_symbols_list")
-        bld.add_group()
-        env2 = bld.env.derive()
-        env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
-        link2 = cxx.cxxprogram(env=env2)
-        link2.run_after = [export_symbols_list_task]
-        link2.set_inputs( [bld.exported_symbols_file] + bld.iclasp_link_task.inputs)
-        link2.set_outputs( [ bld.cclasp_executable ] )
-        bld.add_to_group(link2)
+        if (bld.env["DEST_OS"] == DARWIN_OS):
+            export_symbols_list_task = export_symbols_list(env=bld.env)
+            export_symbols_list_task.set_inputs([bld.iclasp_executable, bld.cclasp_link_product] + bld.iclasp_link_task.inputs)
+            export_symbols_list_task.set_outputs([bld.exported_symbols_file])
+            bld.add_to_group(export_symbols_list_task)
+            print("Done adding task for export_symbols_list")
+            bld.add_group()
+            env2 = bld.env.derive()
+            env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
+            link2 = cxx.cxxprogram(env=env2)
+            link2.run_after = [export_symbols_list_task]
+            link2.set_inputs( [bld.exported_symbols_file] + bld.iclasp_link_task.inputs)
+            link2.set_outputs( [ bld.cclasp_executable ] )
+            bld.add_to_group(link2)
+        elif (bld.env["DEST_OS"] == LINUX_OS ):
+            task = symlink_executable(env=bld.env)
+            task.set_inputs(bld.iclasp_executable)
+            task.set_outputs(bld.cclasp_executable)
+            bld.add_to_group(task)
+        else:
+            print("What do you do with other OSs?")
+            exit(1)
+        #
+        # Now build stage 3 is done in the main wscript - recurse into the extensions
+        #
+        bld.recurse('extensions',name='build3')
+            
         # print("Added link2")
         # print(" link2 -> %s" % dir(link2 ))
         # print(" link2.run_str -> %s" % link2.run_str )
         # print(" link2.before -> %s" % link2.before )
         # print(" link2.outputs -> %s" % link2.outputs )
         # print(" bld.cclasp_executable -> %s" % bld.cclasp_executable )
-        task = symlink_executable(env=bld.env)
-        task.set_inputs(bld.iclasp_executable)
-        task.set_outputs(bld.cclasp_executable)
-        bld.add_to_group(task)
+        # task = symlink_executable(env=bld.env)
+        # task.set_inputs(bld.iclasp_executable)
+        # task.set_outputs(bld.cclasp_executable)
+        # bld.add_to_group(task)
 
     if (bld.stage_val >= 5):
         print("About to try and recurse for bld.stage_val = %d" % bld.stage_val )
@@ -1937,14 +1953,6 @@ class link_fasl(clasp_task):
 
     def display(self):
         return "link_fasl.display() would be VERY long - remove display() to display\n"
-
-class symlink_executable(clasp_task):
-    def run(self):
-        cmd = [ 'ln', '-s', '-f',
-                self.inputs[0].abspath(),
-                self.outputs[0].abspath()
-        ];
-        return self.exec_command(cmd)
 
 class link_executable(clasp_task):
     def run(self):
@@ -2418,6 +2426,36 @@ class dummy_task(Task.Task):
         cmd = [ "echo", "Ignore \"no symbols\" above" ]
         return self.exec_command(cmd)
 
+
+def runCmdLargeOutput(cmd):
+    outf = StringIO()
+    serr = StringIO()
+    proc = subprocess.Popen(cmd, bufsize=8192, shell=False, \
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    dataend = False
+    while (proc.returncode is None) or (not dataend):
+        proc.poll()
+        dataend = False
+        
+        ready = select.select([proc.stdout, proc.stderr], [], [], 1.0)
+        
+        if proc.stderr in ready[0]:
+            data = proc.stderr.read(1024)
+            if len(data) > 0:
+                serr.write(data)
+                
+        if proc.stdout in ready[0]:
+            data = proc.stdout.read(1024)
+            if len(data) == 0: # Read of zero bytes means EOF
+                dataend = True
+            else:
+                outf.write(data)
+    strerr = serr.getvalue()
+    if (len(strerr)>0):
+        print("Errors running %s" % cmd )
+        print("%s" % strerr )
+    return outf.getvalue()
+
 extra_symbols = [
     "___cxa_begin_catch",
     "___cxa_end_catch",
@@ -2438,20 +2476,24 @@ class export_symbols_list(Task.Task):
         # Get everything already external
         print("Ignore symbols missing")
         cmd = [ self.inputs[0].abspath(), "-y", "-N" ]
-        result = subprocess.check_output(cmd)
+        result = runCmdLargeOutput(cmd);
         nm_lines = result.splitlines()
         for line in nm_lines:
             externals.append(line)
         # Get the vtables
         for obj in self.inputs[2:]:
-            cmd = [ '/usr/bin/nm', "-Ugj", obj.abspath() ]
-            result = subprocess.check_output(cmd)
+            if (self.bld.env["DEST_OS"] == DARWIN_OS):
+                cmd = [ '/usr/bin/nm', "-Ugj", obj.abspath() ]
+            else:
+                cmd = [ 'nm', '--defined-only', obj.abspath() ]
+            result = runCmdLargeOutput(cmd);
             nm_lines = result.splitlines()
             for line in nm_lines:
-                if ( line.find("__ZTV")>=0 ):
-                    externals.append(line)
-                elif (line.find("_wrapped_") >= 0):
-                    externals.append(line)
+                symbol = line.split()[-1]
+                if ( symbol.find("__ZTV")>=0 ):
+                    externals.append(symbol)
+                elif (symbol.find("_wrapped_") >= 0):
+                    externals.append(symbol)
         externals_set = set(externals)
         text_file = open(self.outputs[0].abspath(),"w")
         for entry in sorted(externals_set):

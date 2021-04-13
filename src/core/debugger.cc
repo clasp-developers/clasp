@@ -970,7 +970,6 @@ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, ui
 
 
 
-#if 0
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size)
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
@@ -981,7 +980,9 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
 //    printf("%s:%d:%s Could not find handle for library %s\n", __FILE__, __LINE__, __FUNCTION__, fname.c_str());
   } else {
     SymbolTable& symbol_table = it->second._SymbolTable;
+#if 0
     symbol_table_size += sizeof(SymbolEntry)*symbol_table._Symbols.size()+symbol_table._Capacity;
+#endif
     if (backtrace.size()==0) {
       WRITE_DEBUG_IO(BF("Library filename: %s\n") % filename);
       WRITE_DEBUG_IO(BF("Library symbol_table _SymbolNames %p _End %u  _Capacity %u  _StackmapStart %p    _StackmapEnd %p\n")
@@ -990,6 +991,9 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
     }
     if (backtrace.size() == 0) {
       uintptr_t prev_address = 0;
+#if 1
+      printf("%s:%d:%s I disabled the symbol tables for now - use DWARF\n", __FILE__, __LINE__, __FUNCTION__ );
+#else
       for (auto entry : symbol_table ) {
         WRITE_DEBUG_IO(BF("Symbol start %p type %c name %s\n") % (void*)entry._Address % entry._Type % entry.symbol(symbol_table._SymbolNames));
         if (prev_address>= entry._Address) {
@@ -997,7 +1001,11 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
         }
         prev_address = entry._Address;
       }
+#endif
     } else {
+      printf("%s:%d:%s I disabled symbol list searching for now - use DWARF instead I think\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0
+      // Disable _Symbols search for now - we want to switch to DWARF for this
       if (symbol_table._Symbols.size()>0) {
         for ( size_t j=0; j<backtrace.size(); ++j ) {
           size_t index;
@@ -1036,6 +1044,7 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
           }
         }
       }
+#endif
     }
     uintptr_t address = symbol_table._StackmapStart;
     uintptr_t endAddress = symbol_table._StackmapEnd;
@@ -1046,7 +1055,6 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
     }
   }
 }
-#endif
 
 #if 0
 bool SymbolTable::is_sorted() const

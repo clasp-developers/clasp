@@ -207,7 +207,7 @@ struct SymbolTable {
   }
   ~SymbolTable() {
   };
-  void addSymbol(std::string symbol, uintptr_t start, char type);
+//  void addSymbol(std::string symbol, uintptr_t start, char type);
 
 #if 0
   // Shrink the symbol table to the minimimum size

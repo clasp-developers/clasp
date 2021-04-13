@@ -344,3 +344,11 @@ class link_snapshot(clasp_task):
         return self.exec_command(cmd)
     
 
+class symlink_executable(clasp_task):
+    def run(self):
+        cmd = [ 'ln', '-s', '-f',
+                self.inputs[0].abspath(),
+                self.outputs[0].abspath()
+        ];
+        return self.exec_command(cmd)
+
