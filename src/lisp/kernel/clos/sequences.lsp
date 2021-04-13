@@ -372,11 +372,10 @@
 (defmethod sequence:nsubstitute (new old (sequence sequence)
                                  &key (start 0)
                                       end from-end test test-not count key)
-  (declare (ignore start end))
   (let ((c 0))
     (core::with-tests (test test-not key)
-      (core::do-general-subsequence (e sequence :from-end from-end
-                                                :setter setelt)
+      (core::do-general-subsequence (e sequence start end :from-end from-end
+                                                          :setter setelt)
         (when (and count (>= c count)) (return))
         (when (core::compare old (key e)) (incf c) (setelt new)))))
   sequence)
@@ -389,11 +388,10 @@
     (core::error-not-a-sequence sequence)))
 (defmethod sequence:nsubstitute-if (new pred (sequence sequence)
                                     &key (start 0) end from-end count key)
-  (declare (ignore start end))
   (let ((c 0) (pred (core:coerce-fdesignator pred)))
     (core::with-key (key)
-      (core::do-general-subsequence (e sequence :from-end from-end
-                                                :setter setelt)
+      (core::do-general-subsequence (e sequence start end :from-end from-end
+                                                          :setter setelt)
         (when (and count (>= c count)) (return))
         (when (funcall pred (key e)) (incf c) (setelt new)))))
   sequence)
@@ -406,11 +404,10 @@
     (core::error-not-a-sequence sequence)))
 (defmethod sequence:nsubstitute-if-not (new pred (sequence sequence)
                                         &key (start 0) end from-end count key)
-  (declare (ignore start end))
   (let ((c 0) (pred (core:coerce-fdesignator pred)))
     (core::with-key (key)
-      (core::do-general-subsequence (e sequence :from-end from-end
-                                                :setter setelt)
+      (core::do-general-subsequence (e sequence start end :from-end from-end
+                                                          :setter setelt)
         (when (and count (>= c count)) (return))
         (unless (funcall pred (key e)) (incf c) (setelt new)))))
   sequence)
