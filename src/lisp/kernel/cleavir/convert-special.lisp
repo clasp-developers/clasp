@@ -127,6 +127,7 @@
            (cleavir-env:policy (cleavir-env:optimize-info env))
            'type-check-ftype-arguments))
         (required (cleavir-ctype:values-required ctype system)))
+    (declare (ignore insert-type-checks))
     (cond ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
                (null required))
            ast)
@@ -263,6 +264,7 @@
 
 (defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::fence)) cst env (system clasp-cleavir:clasp))
+  (declare (ignore env))
   (cst:db origin (f order) cst
           (declare (ignore f))
           (make-instance 'cc-ast:fence-ast :order (cst:raw order))))

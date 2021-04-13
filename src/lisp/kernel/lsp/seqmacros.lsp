@@ -51,7 +51,8 @@
 			  (if ,%test-not
 			      (coerce-fdesignator ,%test-not)
 			      #'eql))))
-       (declare (function ,%test-fn))
+       (declare (function ,%test-fn)
+                (ignorable ,%test-fn))
        (macrolet ((compare (v1 v2)
 		    `(locally (declare (optimize (safety 0) (speed 3)))
 		       (if ,',%test-not
@@ -224,7 +225,8 @@
       (once-only (start)
         `(sequence:with-sequence-iterator (,%it ,%limit ,%from-end
                                                 ,%step ,%endp ,%elt ,%set)
-             (,sequence :start ,start :end ,end :from-end ,from-end)
+           (,sequence :start ,start :end ,end :from-end ,from-end)
+           (declare (ignorable ,%set ,%elt))
            (do (,@(when indexp `((,index ,start (1+ ,index))))
                 (,%it ,%it (reckless
                             (funcall ,%step ,sequence ,%it ,%from-end))))

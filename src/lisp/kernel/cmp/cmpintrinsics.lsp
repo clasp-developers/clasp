@@ -863,6 +863,7 @@ have it call the main-function"
             (with-irbuilder (irbuilder-body)
               (let ((bc-main-function
                       (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer")))
+                (declare (ignore bc-main-function))
                 (irc-create-call ctor-fn nil)
                 (irc-ret-void))))
           (add-llvm.used *the-module* outer-fn)))

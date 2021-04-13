@@ -239,7 +239,7 @@
 (defgeneric sequence:count-if-not (pred sequence &key from-end start end key)
   (:argument-precedence-order sequence pred)
   (:method (pred (sequence t) &rest kwargs)
-    (declare (ignore pred wargs))
+    (declare (ignore pred kwargs))
     (core::error-not-a-sequence sequence)))
 (defmethod sequence:count-if-not
     (pred (sequence sequence) &key from-end (start 0) end key)
@@ -264,6 +264,7 @@
 (defgeneric sequence:find-if (pred sequence &key from-end start end key)
   (:argument-precedence-order sequence pred)
   (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred kwargs))
     (core::error-not-a-sequence sequence)))
 (defmethod sequence:find-if
     (pred (sequence sequence) &key from-end (start 0) end key)
@@ -370,7 +371,8 @@
     (core::error-not-a-sequence sequence)))
 (defmethod sequence:nsubstitute (new old (sequence sequence)
                                  &key (start 0)
-                                   end from-end test test-not count key)
+                                      end from-end test test-not count key)
+  (declare (ignore start end))
   (let ((c 0))
     (core::with-tests (test test-not key)
       (core::do-general-subsequence (e sequence :from-end from-end
@@ -387,6 +389,7 @@
     (core::error-not-a-sequence sequence)))
 (defmethod sequence:nsubstitute-if (new pred (sequence sequence)
                                     &key (start 0) end from-end count key)
+  (declare (ignore start end))
   (let ((c 0) (pred (core:coerce-fdesignator pred)))
     (core::with-key (key)
       (core::do-general-subsequence (e sequence :from-end from-end
@@ -403,6 +406,7 @@
     (core::error-not-a-sequence sequence)))
 (defmethod sequence:nsubstitute-if-not (new pred (sequence sequence)
                                         &key (start 0) end from-end count key)
+  (declare (ignore start end))
   (let ((c 0) (pred (core:coerce-fdesignator pred)))
     (core::with-key (key)
       (core::do-general-subsequence (e sequence :from-end from-end
@@ -964,7 +968,7 @@
         (iep (make-array length :element-type (array-element-type sequence)
                                 :initial-element initial-element))
         (icp (make-array length :element-type (array-element-type sequence)
-                                :initial-element initial-element))
+                                :initial-contents initial-contents))
         (t (make-array length :element-type (array-element-type sequence)))))
 
 (defmethod sequence:adjust-sequence

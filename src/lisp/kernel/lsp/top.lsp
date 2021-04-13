@@ -429,7 +429,7 @@ Use special code 0 to cancel this operation.")
     (continue ())))
 
 (defun terminal-interrupt (&key process (correctablep t))
-  (declare (ignore correctablep))
+  (declare (ignore process correctablep))
   #+threads
   (mp:without-interrupts
    (let* ((suspended '())
@@ -730,6 +730,7 @@ Use special code 0 to cancel this operation.")
   (values))
 
 (defun clasp-backtrace (&optional (n 99999999))
+  (declare (ignore n))
   (core:btcl))
 
 (defun tpl-backtrace (&optional count)
@@ -770,6 +771,7 @@ Use special code 0 to cancel this operation.")
   (when string (apropos string pkg)))
 
 (defun tpl-document-command (&optional symbol)
+  (declare (ignore symbol))
   (error "tpl-document-command doesn't work because clasp doesn't supply help")
   #+(or)(when symbol (help symbol)))
 
@@ -946,6 +948,7 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
            (break-level *break-level*)
            (*break-env* nil)
 	   (cmp:*implicit-compile-hook* #'cmp:implicit-compile-hook-default))
+      (declare (ignore break-level))
       (check-default-debugger-runaway)
       #+threads
       ;; We give our process priority for grabbing the console.

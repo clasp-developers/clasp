@@ -66,6 +66,7 @@
                    (column-pos (+ column-start (length ", column ")))
                    (start-line-start (search ", start line" line))
                    (line-no (parse-integer line :start line-pos :end column-start)))
+              (declare (ignore column-pos start-line-start))
               (push (cons :line-info-line line-no) info)
               (go done)))))
        (go top)

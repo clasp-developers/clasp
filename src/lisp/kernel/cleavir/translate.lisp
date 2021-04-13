@@ -410,6 +410,7 @@
   (cmp:irc-br (first next)))
 
 (defmethod undo-dynenv ((dynenv cc-bir:bind) tmv)
+  (declare (ignore tmv))
   (%intrinsic-call "cc_resetTLSymbolValue" (dynenv-storage dynenv)))
 
 (defmethod translate-terminator
@@ -947,16 +948,19 @@
          (error "BUG: Don't know how to translate primop ~a" name))))
 
 (defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-read) abi)
+  (declare (ignore abi))
   (out (cmp:gen-rack-ref (in (first (bir:inputs inst)))
                          (in (second (bir:inputs inst)))
                          :order (cmp::order-spec->order (cc-bir:order inst)))
        (first (bir:outputs inst))))
 (defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-write) abi)
+  (declare (ignore abi))
   (cmp:gen-rack-set (in (second (bir:inputs inst)))
                     (in (third (bir:inputs inst)))
                     (in (first (bir:inputs inst)))
                     :order (cmp::order-spec->order (cc-bir:order inst))))
 (defmethod translate-simple-instruction ((inst cc-bir:cas-rack) abi)
+  (declare (ignore abi))
   (out (cmp:irc-cmpxchg (cmp::irc-rack-slot-address
                          (in (third (bir:inputs inst)))
                          (cmp::irc-untag-fixnum
@@ -1224,6 +1228,7 @@
 (defun layout-main-function* (the-function ir
                               body-irbuilder body-block
                               abi &key (linkage 'llvm-sys:internal-linkage))
+  (declare (ignore linkage))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (cmp:with-irbuilder (body-irbuilder)
       (with-catch-pad-prep
@@ -1340,6 +1345,7 @@
 
 (defun layout-procedure (function lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))
+  (declare (ignore linkage))
   (when (xep-needed-p function)
     (layout-xep-function function lambda-name abi))
   (layout-main-function function lambda-name abi))
@@ -1515,6 +1521,7 @@ COMPILE-FILE will use the default *clasp-env*."
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
          (cst-to-ast:*compiler* 'cl:compile)
          (ast (cst->ast cst env)))
+    (declare (ignorable constants-table))
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv

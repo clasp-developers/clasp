@@ -64,8 +64,8 @@
          (undef           (llvm-sys:undef-value-get cmp:%exception-struct% ))
          (lpad.val        (llvm-sys:create-insert-value ehbuilder undef exn7 '(0) "lpad.val"))
          (lpad.val8       (llvm-sys:create-insert-value ehbuilder lpad.val sel '(1) "lpad.val8"))
-         (_               (llvm-sys:create-resume ehbuilder lpad.val8)))
-    (declare (ignore _))
+         (_1              (llvm-sys:create-resume ehbuilder lpad.val8)))
+    (declare (ignore _ _1))
     ehresume))
 
 (defun alloca-exn.slot ()
@@ -272,6 +272,7 @@
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
                                           tags)
+  (declare (ignore tags))
   ;; We found in the landing pad that we were supposed to jump into this frame.
   ;; However, no relevant catch has transferred control.
   ;; This is a bug in the compiler.

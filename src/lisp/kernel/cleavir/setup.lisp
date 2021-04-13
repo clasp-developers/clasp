@@ -193,6 +193,7 @@
 
 ;;; So that we can dump ASTs (for DEFUNs with an inline expansion)
 (defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
+  (declare (ignore environment))
   (values `(allocate-instance ,(class-of ast))
           `(initialize-instance
             ,ast
