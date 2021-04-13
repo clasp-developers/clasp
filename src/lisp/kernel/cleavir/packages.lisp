@@ -101,7 +101,8 @@
   (:use #:cl)
   (:local-nicknames (#:bir #:cleavir-bir))
   (:export #:reduce-module-typeqs)
-  (:export #:reduce-module-primops))
+  (:export #:reduce-module-primops)
+  (:export #:insert-value-coercion-into-module))
 
 (defpackage #:clasp-cleavir-bmir
   (:nicknames #:cc-bmir)

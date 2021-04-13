@@ -99,3 +99,94 @@
 
 (defun reduce-module-primops (module)
   (cleavir-set:mapset nil #'reduce-primops (bir:functions module)))
+
+;;;
+
+
+;; Given an instruction, determine what rtype it outputs.
+(defgeneric definition-rtype (instruction))
+;; usually correct default
+(defmethod definition-rtype ((inst bir:instruction)) :object)
+(defmethod definition-rtype ((inst bir:abstract-call)) :multiple-values)
+(defmethod definition-rtype ((inst bir:values-save)) :multiple-values)
+(defmethod definition-rtype ((inst bir:values-collect)) :multiple-values)
+(defmethod definition-rtype ((inst cc-bir:mv-foreign-call)) :multiple-values)
+;; FIXME: will be removed (?)
+(defmethod definition-rtype ((inst bir:fixed-to-multiple)) :multiple-values)
+
+(defun insert-value-coercion (instruction)
+  ;; TODO:
+  ;; Insert FTMs before inputs that need multiple values,
+  ;; and MTFs after outputs that need fixed values.
+  ;; This is a very simple way to try to minimize the multiple values we have
+  ;; alive at any given time.
+  (cond
+    ((and (bir:outputs instruction)
+          (not (typep instruction '(or bir:jump bir:thei bir:unwind))))
+     (let* ((out (first (bir:outputs instruction)))
+            (source (definition-rtype instruction))
+            (dest (cc-bmir:rtype out)))
+       (assert (null (rest (bir:outputs instruction))))
+       (cond ((not dest)) ; datum is unused, so no coercion is necessary
+             ((eq source dest)) ; they already agree, no coercion
+             ((eq dest :multiple-values)
+              (assert (eq source :object))
+              (let* ((mv (make-instance 'bir:output))
+                     (ftm (make-instance 'bir:fixed-to-multiple
+                            :outputs (list mv))))
+                (bir:insert-instruction-after ftm instruction)
+                (bir:replace-uses mv out)
+                (setf (bir:inputs ftm) (list out))
+                t))
+             ((eq dest :object)
+              (assert (eq source :multiple-values))
+              (let* ((fx (make-instance 'bir:output))
+                     (mtf (make-instance 'bir:multiple-to-fixed
+                            :outputs (list fx))))
+                (bir:insert-instruction-after mtf instruction)
+                (bir:replace-uses fx out)
+                (setf (bir:inputs mtf) (list out))
+                t))
+             (t (error "BUG: impossible dest ~a for ~a" dest out)))))
+    ((typep instruction 'bir:catch)
+     (loop for eblock in (rest (bir:next instruction))
+           for starti = (bir:start eblock)
+           do (loop for phi in (bir:inputs eblock)
+                    when (eq (cc-bmir:rtype phi) :object)
+                      do (let* ((fx (make-instance 'bir:output))
+                                (mtf (make-instance 'bir:multiple-to-fixed
+                                       :outputs (list fx))))
+                           (bir:insert-instruction-before mtf starti)
+                           (bir:replace-uses fx phi)
+                           (setf (bir:inputs mtf) (list phi))))))))
+
+(defun insert-argument-ftm (argument starti)
+  (when (eq (cc-bmir:rtype argument) :multiple-values)
+    (let* ((mv (make-instance 'bir:output))
+           (ftm (make-instance 'bir:fixed-to-multiple
+                  :outputs (list mv))))
+      (bir:insert-instruction-before ftm starti)
+      (bir:replace-uses mv argument)
+      (setf (bir:inputs ftm) (list argument)))))
+
+(defun insert-value-coercion-into-function (function)
+  ;; Insert after instructions
+  (cleavir-bir:map-local-instructions #'insert-value-coercion function)
+  ;; Insert FTM after any arguments that need it
+  ;; (do this second so that we don't useless consider the mtf outputs)
+  (let ((starti (bir:start (bir:start function))))
+    (bir:map-lambda-list
+     (lambda (state item index)
+       (declare (ignore state index))
+       (cond ((not (listp item))
+              (insert-argument-ftm item starti))
+             ((= (length item) 2)
+              (insert-argument-ftm (first item) starti)
+              (insert-argument-ftm (second item) starti))
+             ((= (length item) 3)
+              (insert-argument-ftm (second item) starti)
+              (insert-argument-ftm (third item) starti))))
+     (bir:lambda-list function))))
+
+(defun insert-value-coercion-into-module (module)
+  (bir:map-functions #'insert-value-coercion-into-function module))

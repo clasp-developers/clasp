@@ -28,10 +28,9 @@
               (ast-to-bir:terminate
                inserter
                (make-instance 'bir:jump
-                 :inputs (ast-to-bir:adapt inserter rv :multiple-values)
-                 :outputs (list phi) :next (list next)))
+                 :inputs rv :outputs (list phi) :next (list next)))
               (ast-to-bir:begin inserter next)
-              phi))))))
+              (list phi)))))))
 
 (defclass bind (bir:dynamic-environment bir:no-output bir:terminator1) ())
 
@@ -71,7 +70,7 @@
        (make-instance 'mv-foreign-call
          :function-name (cc-ast:function-name ast)
          :inputs args :outputs (list output)))
-      output)))
+      (list output))))
 
 (defclass foreign-call-pointer (bir:one-output bir:instruction)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
@@ -179,7 +178,7 @@
        (make-instance 'cc-bmir:store
          :order (cc-ast:order ast)
          :inputs (list (first args) mr2-out)))))
-  ())
+  :no-value)
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:atomic-rplacd-ast)
                                    inserter system)
   (ast-to-bir:with-compiled-asts (args ((cleavir-ast:object-ast ast)
@@ -196,7 +195,7 @@
        (make-instance 'cc-bmir:store
          :order (cc-ast:order ast)
          :inputs (list (first args) mr2-out)))))
-  ())
+  :no-value)
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:cas-car-ast) inserter system)
   (ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)
                                         (cleavir-ast:value-ast ast)
@@ -258,7 +257,7 @@
     (ast-to-bir:insert
      inserter
      (make-instance 'atomic-rack-write :order (cc-ast:order ast) :inputs args)))
-  ())
+  :no-value)
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:cas-rack-ast) inserter system)
   (ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)
                                         (cleavir-ast:value-ast ast)
@@ -299,7 +298,7 @@
      (make-instance 'vset
        :order (cc-ast:order ast)
        :element-type (cleavir-ast:element-type ast) :inputs args)))
-  ())
+  :no-value)
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:vcas-ast) inserter system)
   (ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)
                                         (cleavir-ast:value-ast ast)

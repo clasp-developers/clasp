@@ -427,8 +427,20 @@
 (defmethod translate-simple-instruction ((instruction bir:writevar)
                                          abi)
   (declare (ignore abi))
-  (variable-out (in (first (bir:inputs instruction)))
-                (first (bir:outputs instruction))))
+  (let ((i (in (first (bir:inputs instruction)))))
+    (unless (llvm-sys:type-equal cmp:%t*% (llvm-sys:get-type i))
+      (cleavir-bir-disassembler:display
+       (bir:module (bir:function instruction)))
+      (error "~a has wrong rtype; definitions ~a with definition-rtypes ~a; input rtype ~a"
+             (first (bir:inputs instruction))
+             (bir:definitions (first (bir:inputs instruction)))
+             (cleavir-set:mapset
+              'list
+              #'cc-bir-to-bmir::definition-rtype
+              (bir:definitions (first (bir:inputs instruction))))
+             (cc-bmir:rtype (first (bir:inputs instruction)))))
+              
+    (variable-out i (first (bir:outputs instruction)))))
 
 (defmethod translate-simple-instruction ((instruction bir:readvar) abi)
   (declare (ignore abi))
@@ -1365,6 +1377,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   (bir-transformations:module-generate-type-checks module)
+  (cc-bir-to-bmir:insert-value-coercion-into-module module)
   ;; These should happen last since they are like "post passes" which
   ;; do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.

@@ -23,8 +23,8 @@
 ;;;
 
 (defgeneric rtype (datum))
-(defmethod rtype ((datum bir:argument)) :object)
 (defmethod rtype ((datum bir:variable)) :object)
+
 ;; Given a user (instruction) and a datum, determine the rtype required.
 (defgeneric use-rtype (instruction datum))
 (defmethod use-rtype ((inst bir:instruction) (datum bir:datum))
@@ -52,11 +52,11 @@
 (defmethod use-rtype ((inst bir:multiple-to-fixed) (datum bir:datum))
   :multiple-values)
 (defmethod use-rtype ((inst bir:thei) (datum bir:datum))
-  ;; KLUDGE KLUDGE KLUDGE
-  (let ((out (first (cleavir-bir:outputs inst))))
-    (if (cleavir-bir:transitive-use out)
-        (transitive-rtype out)
-        :multiple-values)))
+  ;; actual type tests, which need multiple values, should have been turned
+  ;; into mv calls by this point. but out of an abundance of caution,
+  (if (symbolp (bir:type-check-function inst))
+      (rtype (first (bir:outputs inst)))
+      :multiple-values))
              
 ;; Determine the rtype of a datum by chasing transitive use.
 (defun transitive-rtype (datum)
@@ -69,5 +69,6 @@
             (bir:instruction (return (use-rtype use datum)))))))
 (defmethod rtype ((datum bir:phi)) (transitive-rtype datum))
 (defmethod rtype ((datum bir:output)) (transitive-rtype datum))
+(defmethod rtype ((datum bir:argument)) (transitive-rtype datum))
 (defmethod rtype ((datum bir:load-time-value)) :object)
 (defmethod rtype ((datum bir:constant)) :object)
