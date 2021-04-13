@@ -352,9 +352,38 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   ::globals_ = new core::globals_t();
   globals_->_AccumulateSymbols = core::global_options->_AccumulateSymbols;
   globals_->_DebugStream = new core::DebugStream(mpiRank);
+#ifdef USE_PRECISE_GC
+#  ifdef _TARGET_OS_DARWIN
+    const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
+    size_t size;
+    void* start_of_snapshot = getsectiondata(exec_header,
+                                             "__CLASP",
+                                             "__clasp",
+                                             &size);
+    printf("%s:%d:%s getsectiondata returned %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot);
+    void* end_of_snapshot = NULL;
+    if (start_of_snapshot) {
+      end_of_snapshot = (void*)((char*)start_of_snapshot + size);
+    }
+#  endif
+#  ifdef _TARGET_OS_LINUX
+    void* start_of_snapshot = NULL;
+    void* end_of_snapshot = NULL;
+    extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_start;
+    extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_end;
+    start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
+    end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
+    if (start_of_snapshot) {
+      printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
+    } else {
+      printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
+    }
+#  endif
+#endif
   if (!core::global_options->_DontLoadImage && // YES load the image
-      core::global_options->_ImageType == core::cloSnapshot // YES its a snapshot
-      ) {
+      ( core::global_options->_ImageType == core::cloSnapshot // YES its a snapshot
+        || start_of_snapshot != NULL) // We found an embedded snapshot
+        ) {
 #ifdef USE_PRECISE_GC
     printf("%s:%d:%s Loading the snapshot %s\n",
            __FILE__, __LINE__, __FUNCTION__, core::global_options->_ImageFile.c_str());
@@ -369,28 +398,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     for (int i = 0; i < argc; ++i) {
       globals_->_Argv.push_back(string(argv[i]));
     }
-#ifdef _TARGET_OS_DARWIN
-    const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
-    size_t size;
-    void* start_of_snapshot = getsectiondata(exec_header,
-                                             "__CLASP",
-                                             "__clasp",
-                                             &size);
-    printf("%s:%d:%s getsectiondata returned %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot);
-    void* end_of_snapshot = NULL;
-    if (start_of_snapshot) {
-      end_of_snapshot = (void*)((char*)start_of_snapshot + size);
-    }
-#endif
-#ifdef _TARGET_OS_LINUX
-    void* start_of_snapshot = NULL;
-    void* end_of_snapshot = NULL;
-    extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_start;
-    extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_end;
-    start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
-    end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
-    printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
-#endif
     exit_code = imageSaveLoad::image_load( (void*)start_of_snapshot, (void*)end_of_snapshot, core::global_options->_ImageFile );
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");

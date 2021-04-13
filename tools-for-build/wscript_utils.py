@@ -1,3 +1,4 @@
+from waflib.Tools import cxx
 import sys, logging, os, subprocess
 from waflib import Logs, Task, TaskGen
 import waflib.Options
@@ -352,3 +353,17 @@ class symlink_executable(clasp_task):
         ];
         return self.exec_command(cmd)
 
+
+class embed_command_line_cxxprogram(cxx.cxxprogram):
+    def exec_command(self,cmd,**kw):
+        text_file = open("/tmp/link_command", "w")
+        for line in cmd:
+            text_file.write(line)
+            text_file.write('\n')
+        text_file.close()
+        if (self.bld.env["DEST_OS"] == LINUX_OS ):
+            cmd2 = [ 'objcopy', '--input', 'binary', '--output', 'elf64-x86-64', '--binary-architecture', 'i386', "/tmp/link_command", "/tmp/link_command.o"]
+            super(embed_command_line_cxxprogram,self).exec_command(cmd2)
+            cmd = cmd + [ "/tmp/link_command.o" ]
+        log.info("Caught exec_command cmd = %s" % cmd)
+        return super(embed_command_line_cxxprogram,self).exec_command(cmd,**kw)

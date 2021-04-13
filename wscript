@@ -1721,6 +1721,7 @@ def build(bld):
             env2 = bld.env.derive()
             env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
             link2 = cxx.cxxprogram(env=env2)
+            link2.name = "foo"
             link2.run_after = [export_symbols_list_task]
             link2.set_inputs( [bld.exported_symbols_file] + bld.iclasp_link_task.inputs)
             link2.set_outputs( [ bld.cclasp_executable ] )
