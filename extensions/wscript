@@ -30,8 +30,11 @@ def configure(cfg):
 def options(bld):
     bld.recurse(" ".join(subdirectories()))
 
-def build(bld):
-    bld.recurse(" ".join(subdirectories()))
+def build1(bld):
+    bld.recurse(" ".join(subdirectories()),name="build1")
+
+def build5(bld):
+    bld.recurse(" ".join(subdirectories()),name="build5")
 
 def analyze_clasp(bld):
     bld.recurse(" ".join(subdirectories()))

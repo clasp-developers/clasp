@@ -35,7 +35,7 @@ THE SOFTWARE.
 // ---------------------------------------------------------------------------
 //  SYSTEM INCLUDES
 // ---------------------------------------------------------------------------
-
+#include <dlfcn.h>
 #include <string>
 #include <algorithm>
 #include <cstdlib>
@@ -87,6 +87,11 @@ THE SOFTWARE.
 #include <clasp/mpip/mpiPackage.h>
 #include <clasp/mpip/claspMpi.h>
 #endif
+
+#ifdef _TARGET_OS_DARWIN
+#include <mach-o/getsect.h>
+#endif
+
 
 namespace llvmo {
 void initialize_llvm(int argc, char **argv);
@@ -364,9 +369,20 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     for (int i = 0; i < argc; ++i) {
       globals_->_Argv.push_back(string(argv[i]));
     }
-    extern const char __attribute__((weak)) start_of_snapshot;
-    extern const char __attribute__((weak)) end_of_snapshot;
-    exit_code = imageSaveLoad::image_load( (void*)&start_of_snapshot, (void*)&end_of_snapshot, core::global_options->_ImageFile );
+#ifdef _TARGET_OS_DARWIN
+    const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
+    size_t size;
+    void* start_of_snapshot = getsectiondata(exec_header,
+                                             "__CLASP",
+                                             "__clasp",
+                                             &size);
+    printf("%s:%d:%s getsectiondata returned %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot);
+    void* end_of_snapshot = NULL;
+    if (start_of_snapshot) {
+      end_of_snapshot = (void*)((char*)start_of_snapshot + size);
+    }
+#endif
+    exit_code = imageSaveLoad::image_load( (void*)start_of_snapshot, (void*)end_of_snapshot, core::global_options->_ImageFile );
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");
 #endif

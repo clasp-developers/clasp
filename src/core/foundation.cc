@@ -1745,6 +1745,8 @@ CL_DEFUN void core__mangledSymbols(T_sp stream_designator) {
   clasp_terpri(stream);
   clasp_write_string("_cc_throw",stream);
   clasp_terpri(stream);
+//  clasp_write_string("_start_of_snapshot",stream); clasp_terpri(stream);
+//  clasp_write_string("_end_of_snapshot",stream); clasp_terpri(stream);
   clasp_write_string("__ZTIN4core6UnwindE",stream);
   clasp_terpri(stream);
 };

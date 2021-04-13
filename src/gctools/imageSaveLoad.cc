@@ -360,16 +360,19 @@ struct ISLInfo {
 //
 // If you don't want forwarding to stomp on the headers use the following
 //
-#define NO_STOMP_FORWARDING 1
+//#define NO_STOMP_FORWARDING 1
 
 //
 // If you want to test the stomp forwarding by comparing it to NO_STOMP_FORWARDING use this
 //
-//#define TEST_STOMP_FORWARDING 1
+#define TEST_STOMP_FORWARDING 1
 
 void set_forwarding_pointer(gctools::Header_s* header, char* new_client, ISLInfo* info ) {
 #if defined(TEST_STOMP_FORWARDING)
   info->_forwarding[(uintptr_t)header] = (uintptr_t)new_client;
+  if ((intptr_t)new_client < 0) {
+    printf("%s:%d:%s Writing a bad forwarding pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)new_client);
+  }
   header->_stamp_wtag_mtag.setFwdPointer(new_client);
   if ((uintptr_t)header->_stamp_wtag_mtag.fwdPointer() != (uintptr_t)new_client) {
     printf("%s:%d:%s Forwarding pointer written and read don't match\n");
@@ -1924,15 +1927,23 @@ struct CodeFixup_t {
   CodeFixup_t(llvmo::Code_O* o, llvmo::Code_O* n) : _oldCode(o), _newCode(n) {};
 };
 
-int image_load( void* maybeStartOfImage, void* maybeEndOfImage, const std::string& filename ) {
+
+int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
   global_debugSnapshot = getenv("DEBUG_SNAPSHOT")!=NULL;
+  if (global_debugSnapshot) {
+    if (maybeStartOfSnapshot) {
+      printf("%s:%d using maybeStartOfSnapshot %p\n", __FILE__, __LINE__, maybeStartOfSnapshot );
+    } else {
+      printf("%s:%d NOT using maybeStartOfSnapshot\n", __FILE__, __LINE__ );
+    }
+  }
   // When loading forwarding pointers must always forward into GC managed objects
   size_t loadTimeID = 0;
   globalFwdMustBeInGCMemory = true;
   core::FunctionDescription_O funcdes;
   DBG_SL(BF("FunctionDescription_O vtable pointer is: %p\n") % *(void**)&funcdes );
   DBG_SL(BF(" image_load entered\n"));
-  if (filename.size() == 0 && maybeStartOfImage == NULL) {
+  if (filename.size() == 0 && maybeStartOfSnapshot == NULL) {
     printf("You must specify a snapshot with -i or one must be embedded within the executable\n");
     std::exit(1);
   }
@@ -1947,10 +1958,10 @@ int image_load( void* maybeStartOfImage, void* maybeEndOfImage, const std::strin
       close(fd);
       SIMPLE_ERROR(BF("Could not mmap %s because of %s") % filename % strerror(errno));
     }
-  } else if (maybeStartOfImage && maybeEndOfImage && (maybeStartOfImage<maybeEndOfImage)) {
-    size_t size = (uintptr_t)maybeEndOfImage - (uintptr_t)maybeStartOfImage;
+  } else if (maybeStartOfSnapshot && maybeEndOfSnapshot && (maybeStartOfSnapshot<maybeEndOfSnapshot)) {
+    size_t size = (uintptr_t)maybeEndOfSnapshot - (uintptr_t)maybeStartOfSnapshot;
     memory = malloc(size);
-    memcpy( memory, maybeStartOfImage, size);
+    memcpy( memory, maybeStartOfSnapshot, size);
   } else {
     printf("There is no snapshot file or embedded\n");
     abort();
@@ -1958,7 +1969,7 @@ int image_load( void* maybeStartOfImage, void* maybeEndOfImage, const std::strin
   ISLFileHeader* fileHeader = reinterpret_cast<ISLFileHeader*>(memory);
   char* objectFilesStartAddress = (char*)memory + fileHeader->_ObjectFileStart;
   if (!fileHeader->good_magic()) {
-    printf("The file is not an image file\n");
+    printf("The file is not an image file magic_value should be %p - read... %p\n", (void*)MAGIC_NUMBER, (void*)fileHeader->_Magic );
     exit(1);
   }
   gctools::clasp_ptr_t islbuffer = (gctools::clasp_ptr_t)((char*)memory + fileHeader->_MemoryStart);
@@ -2522,7 +2533,7 @@ int image_load( void* maybeStartOfImage, void* maybeEndOfImage, const std::strin
 //  memset(memory,0xc0,fsize);
 #else  
   printf("%s:%d:%s munmap'ing loaded image - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
-  if (maybeStartOfImage==NULL) {
+  if (maybeStartOfSnapshot==NULL) {
     int res = munmap( memory, fsize );
     if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
   } else {

@@ -1505,8 +1505,8 @@ def build(bld):
 
     bld.set_group('compiling/c++')
 
-    bld.recurse('extensions')
-
+    bld.recurse('extensions',name='build1')
+    
     log.info("There are %d extensions_builders", len(bld.extensions_builders))
     for x in bld.extensions_builders:
         x.run()
@@ -1656,7 +1656,6 @@ def build(bld):
                          builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_cclasp))
         cclasp_common_lisp_output_name_list = bld.variant_obj.common_lisp_output_name_list(bld,bld.clasp_cclasp,stage='c')
-        log.debug("find_or_declare cclasp_common_lisp_output_name_list = %s", cclasp_common_lisp_output_name_list)
         task.set_outputs(cclasp_common_lisp_output_name_list)
         bld.add_to_group(task)
 
@@ -1709,19 +1708,18 @@ def build(bld):
         dummy = dummy_task(env=bld.env)
         bld.add_to_group(dummy)
         print("Building exported symbols")
-        export_file = bld.path.find_or_declare("generated/exported_symbols_list")
+        bld.exported_symbols_file = bld.path.find_or_declare("generated/exported_symbols_list")
         export_symbols_list_task = export_symbols_list(env=bld.env)
         export_symbols_list_task.set_inputs([bld.iclasp_executable, bld.cclasp_link_product] + bld.iclasp_link_task.inputs)
-        export_symbols_list_task.set_outputs([export_file])
+        export_symbols_list_task.set_outputs([bld.exported_symbols_file])
         bld.add_to_group(export_symbols_list_task)
         print("Done adding task for export_symbols_list")
         bld.add_group()
         env2 = bld.env.derive()
-        env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",export_file.abspath()])
+        env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
         link2 = cxx.cxxprogram(env=env2)
         link2.run_after = [export_symbols_list_task]
-        print("bld.iclasp_link_task.inputs = %s" % bld.iclasp_link_task.inputs)
-        link2.set_inputs( [export_file] + bld.iclasp_link_task.inputs)
+        link2.set_inputs( [bld.exported_symbols_file] + bld.iclasp_link_task.inputs)
         link2.set_outputs( [ bld.cclasp_executable ] )
         bld.add_to_group(link2)
         # print("Added link2")
@@ -1734,6 +1732,11 @@ def build(bld):
         task.set_inputs(bld.iclasp_executable)
         task.set_outputs(bld.cclasp_executable)
         bld.add_to_group(task)
+
+    if (bld.stage_val >= 5):
+        print("About to try and recurse for bld.stage_val = %d" % bld.stage_val )
+        bld.recurse('extensions',name='build5')
+        print("Done recurse for bld.stage_val = %d" % bld.stage_val )
 
 #     if ( bld.stage_val >= 4):
 #         log.debug("building bld.stage = %s  bld.stage_val = %d", bld.stage, bld.stage_val )
