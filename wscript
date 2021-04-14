@@ -386,15 +386,9 @@ def stage_value(ctx,s):
     elif ( s == 'b' ):
         sval = 2
     elif ( s == 'c' ):
-        sval = 4
-    elif ( s == 'd' ):
-        sval = 5
-    elif ( s == 'f' ):
         sval = 3
-    elif ( s == 'rebuild' ):
-        sval = 0
-    elif ( s == 'dangerzone' ):
-        sval = 0
+    elif ( s == 'd' ):
+        sval = 4
     else:
         ctx.fatal("Illegal stage: %s" % s)
     return sval
@@ -1707,8 +1701,12 @@ def build(bld):
             if (os.path.islink(clasp_symlink_node.abspath())):
                 os.unlink(clasp_symlink_node.abspath())
                 
-        dummy = dummy_task(env=bld.env)
-        bld.add_to_group(dummy)
+        #
+        # Now build stage 3 is done in the main wscript - recurse into the extensions
+        #
+        bld.recurse('extensions',name='build3')
+            
+    if (bld.stage_val >= 4):
         print("Building exported symbols")
         bld.exported_symbols_file = bld.path.find_or_declare("generated/exported_symbols_list")
         if (bld.env["DEST_OS"] == DARWIN_OS):
@@ -1734,139 +1732,11 @@ def build(bld):
         else:
             print("What do you do with other OSs?")
             exit(1)
-        #
-        # Now build stage 3 is done in the main wscript - recurse into the extensions
-        #
         bld.recurse('extensions',name='build3')
-            
-        # print("Added link2")
-        # print(" link2 -> %s" % dir(link2 ))
-        # print(" link2.run_str -> %s" % link2.run_str )
-        # print(" link2.before -> %s" % link2.before )
-        # print(" link2.outputs -> %s" % link2.outputs )
-        # print(" bld.cclasp_executable -> %s" % bld.cclasp_executable )
-        # task = symlink_executable(env=bld.env)
-        # task.set_inputs(bld.iclasp_executable)
-        # task.set_outputs(bld.cclasp_executable)
-        # bld.add_to_group(task)
 
-    if (bld.stage_val >= 5):
-        print("About to try and recurse for bld.stage_val = %d" % bld.stage_val )
-        bld.recurse('extensions',name='build5')
-        print("Done recurse for bld.stage_val = %d" % bld.stage_val )
+    if ( bld.stage_val >= 4):
+        bld.recurse('extensions',name='build4')
 
-#     if ( bld.stage_val >= 4):
-#         log.debug("building bld.stage = %s  bld.stage_val = %d", bld.stage, bld.stage_val )
-#         if (bld.env.CLASP_BUILD_MODE=='faso'
-#             or bld.env.CLASP_BUILD_MODE == "fasoll"
-#             or bld.env.CLASP_BUILD_MODE == "fasobc" ):
-#             #raise Exception("build executable for faso mode = %s" % bld.cclasp_executable)
-# #            bld.add_group()
-            
-#             # task = symlink_executable(env=bld.env)
-#             # task.set_inputs(bld.iclasp_executable)
-#             # task.set_outputs(bld.cclasp_executable)
-#             # bld.add_to_group(task)
-#             # task = symlink_executable(env=bld.env)
-#             # task.set_inputs(bld.iclasp_executable)
-#             # task.set_outputs(clasp_symlink_node)
-#             # bld.add_to_group(task)
-            
-#         else:
-#             task = link_executable(env = bld.env)
-#             task.set_inputs(cclasp_common_lisp_output_name_list +
-#                             [cxx_all_bitcode_node])
-#             log.info("About to try and recurse into extensions again")
-#             bld.recurse('extensions')
-#             if ( bld.env['DEST_OS'] == DARWIN_OS ):
-#                 if (bld.env.LTO_FLAG):
-#                     cclasp_lto_o = bld.path.find_or_declare('%s_exec.lto.o' % bld.variant_obj.executable_name(stage = 'c'))
-#                     task.set_outputs([bld.cclasp_executable,
-#                                       cclasp_lto_o])
-#                 else:
-#                     cclasp_lto_o = None
-#                     task.set_outputs([bld.cclasp_executable])
-#             else:
-#                 cclasp_lto_o = None
-#                 task.set_outputs(bld.cclasp_executable)
-#             log.debug("link_executable for cclasp %s -> %s", task.inputs, task.outputs)
-#             bld.add_to_group(task)
-
-#             make_run_dsymutil_task(bld, 'c', cclasp_lto_o)
-
-#             install('bin/%s' % bld.cclasp_executable.name, bld.cclasp_executable, chmod = Utils.O755)
-#             bld.symlink_as('${PREFIX}/bin/clasp', bld.cclasp_executable.name)
-#             task = symlink_executable(env=bld.env)
-#             task.set_inputs(bld.cclasp_executable)
-#             task.set_outputs(clasp_symlink_node)
-#             bld.add_to_group(task)
-
-
-
-
-#            os.symlink(bld.cclasp_executable.abspath(), clasp_symlink_node.abspath())
-#        else:
-#            os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())
-
-#     if ( bld.stage_val >= 6):
-#         print("Building snapshots")
-#         #
-#         # Now generate the snapshot
-#         #
-#         cclasp_snapshot_product = bld.variant_obj.snapshot_node(bld,stage = 'c')
-#         print("cclasp_snapshot_product = %s class -> %s" % (cclasp_snapshot_product, cclasp_snapshot_product.__class__))
-#         # above will output: cclasp_snapshot_product = /home/meister/Development/cando-future/build/boehmprecise/generated/cclasp-boehmprecise-image.snapshot class -> <class 'waflib.Node.Nod3'>
-#         task_snapshot = link_snapshot(env=bld.env)
-#         print("task_snapshot = %s class %s" % (task_snapshot, inspect.getmro(task_snapshot.__class__)))
-#         task_snapshot.set_inputs([bld.iclasp_executable,
-#                                   bld.cclasp_link_product,
-#                                   builtins_bitcode_node,
-#                                   intrinsics_bitcode_node])
-#         task_snapshot.set_outputs([cclasp_snapshot_product])
-#         bld.add_to_group(task_snapshot)
-#         #
-#         # Copy the bld_task for the main executable
-#         # Change the target to 'zclasp'
-#         # Add a source: src/main/snapshot.c
-#         #  Also add the source: cclasp_snapshot_product above because snapshot.c will .objbin load it
-#         #
-#         bld_taskgen.post()
-#         print("len(bld_taskgen.tasks) = %d" % len(bld_taskgen.tasks))
-#         idx = 0
-#         cxxprogram_task = None
-#         for tsk in bld_taskgen.tasks:
-# #            print("[%d] tsk.__class__.__name__ = %s" % (idx, tsk.__class__.__name__))
-#             idx += 1
-#             if (tsk.__class__.__name__ == "cxxprogram"):
-#                 cxxprogram_task = tsk
-# #        print("cxxprogram_task = %s" % cxxprogram_task)
-#         print("cxxprogram_task.inputs = %s" % cxxprogram_task.inputs)
-#         print("cxxprogram_task.outputs = %s" % cxxprogram_task.outputs)
-#         zbld_task = bld_taskgen.create_task("cxxprogram",src=cxxprogram_task.inputs)
-# #        print("zbld_task = %s" % zbld_task )
-#         obj_task = bld_taskgen.create_task("c")
-# #        print("obj_task = %s" % obj_task )
-#         obj_task.inputs = [bld.path.find_node("src/main/snapshot.c")]
-#         snapshot_obj = bld.variant_obj.snapshot_object_node(bld,stage = 'c')
-#         obj_task.outputs = [snapshot_obj]
-#         print("obj_task.inputs = %s" % obj_task.inputs )
-#         print("obj_task.outputs = %s" % obj_task.outputs )
-#         obj_task.set_run_after(task_snapshot)
-#         bld.add_to_group(obj_task)
-#         dclasp_target = bld.path.find_or_declare("dclasp")
-#         zbld_task.outputs = [ dclasp_target ]
-#         zbld_task.inputs.append(obj_task.outputs[0])
-# #        zbld_task.source.append(cclasp_snapshot_product)
-# #        print("zbld_task.source = %s" % zbld_task.source)
-# #        print("zbld_task.target = %s" % zbld_task.target)
-#         zbld_task.set_run_after(obj_task)
-#         bld.add_to_group(zbld_task)
-#         install('lib/clasp/', cclasp_snapshot_product)
-#     log.pprint('BLUE', 'build() has finished')
-
-#
-# This function builds classes for every target that can be invoked by waf
-#
 def init(ctx):
     from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext
     log.pprint('BLUE', "Running init() - this constructs the matrix of legal waf operation names")
