@@ -82,7 +82,8 @@ void process_clasp_arguments(CommandLineOptions* options)
              "--resource-dir       - Options directory is treated as the executable directory\n"
              "                       and it is used to start the search for resource directories\n"
              "-s/--verbose         - Print more info while booting\n"
-             "-y/--symbols         - Accumulate symbols while starting up. These can be recovered calling (core:mangled-symbol-names)\n"
+             "-y/--symbols {file}  - Accumulate symbols while starting up. These can be recovered calling (core:mangled-symbol-names <stream>).\n"
+             "                       They are written out to the {file} on exit.\n"
              "-f/--feature feature - Add the feature to *features*\n"
              "-e/--eval {form}     - Evaluate a form\n"
              "-l/--load {file}     - LOAD the file\n"
@@ -203,7 +204,9 @@ void process_clasp_arguments(CommandLineOptions* options)
     } else if (arg == "-w" || arg == "--wait") {
       options->_PauseForDebugger = true;
     } else if (arg == "-y" || arg == "--symbols") {
-      options->_AccumulateSymbols = true;
+      options->_ExportedSymbolsAccumulate = true;
+      options->_ExportedSymbolsFilename = options->_RawArguments[iarg+1];
+      iarg++;
     } else if (arg == "-m" || arg == "--disable-mpi") {
       options->_DisableMpi = true;
     } else if (arg == "-n" || arg == "--noinit") {
@@ -263,7 +266,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _Stage('c'),
     _ImageFile(""),
     _ImageType(cloImage),
-    _AccumulateSymbols(false),
+    _ExportedSymbolsAccumulate(false),
     _GotRandomNumberSeed(false),
     _RandomNumberSeed(0),
     _NoInform(false),
@@ -292,7 +295,9 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       this->_SilentStartup = false;
       iarg++;
     } else if (arg == "--symbols") {
-      this->_AccumulateSymbols = true;
+      this->_ExportedSymbolsAccumulate = true;
+      iarg++;
+      this->_ExportedSymbolsFilename = this->_RawArguments[iarg];
       iarg++;
     }
     iarg++;

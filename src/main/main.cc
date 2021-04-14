@@ -350,7 +350,8 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   core::global_options = new core::CommandLineOptions(argc, argv);
   (core::global_options->_ProcessArguments)(core::global_options);
   ::globals_ = new core::globals_t();
-  globals_->_AccumulateSymbols = core::global_options->_AccumulateSymbols;
+  globals_->_ExportedSymbolsAccumulate = core::global_options->_ExportedSymbolsAccumulate;
+  globals_->_ExportedSymbolsFilename = core::global_options->_ExportedSymbolsFilename;
   globals_->_DebugStream = new core::DebugStream(mpiRank);
 #ifdef USE_PRECISE_GC
 #  ifdef _TARGET_OS_DARWIN
@@ -379,6 +380,9 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
       printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
     }
 #  endif
+#else
+    void* start_of_snapshot = NULL;
+    void* end_of_snapshot = NULL;
 #endif
   if (!core::global_options->_DontLoadImage && // YES load the image
       ( core::global_options->_ImageType == core::cloSnapshot // YES its a snapshot

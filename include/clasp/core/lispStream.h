@@ -658,12 +658,14 @@ claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 
 
 T_sp cl__open(T_sp filename,
-             T_sp direction,
-             T_sp element_type,
-             T_sp if_exists, bool iesp,
-             T_sp if_does_not_exist, bool idnesp,
-             T_sp external_format,
-             T_sp cstream);
+              T_sp direction = kw::_sym_input,
+              T_sp element_type = cl::_sym_base_char,
+              T_sp if_exists = _Nil<core::T_O>(),
+              bool iesp = false,
+              T_sp if_does_not_exist = _Nil<core::T_O>(),
+              bool idnesp = false,
+              T_sp external_format = kw::_sym_default,
+              T_sp cstream = lisp_true() );
 T_mv cl__read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
 
 T_sp clasp_openRead(T_sp pathDesig);

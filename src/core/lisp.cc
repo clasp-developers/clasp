@@ -1323,7 +1323,8 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   globals_->_Interactive = options._Interactive;
   globals_->_RCFileName = options._RCFileName;
   globals_->_NoRc = options._NoRc;
-  globals_->_AccumulateSymbols = options._AccumulateSymbols;
+  globals_->_ExportedSymbolsAccumulate = options._ExportedSymbolsAccumulate;
+  globals_->_ExportedSymbolsFilename = options._ExportedSymbolsFilename;
   if (options._GotRandomNumberSeed) {
     seedRandomNumberGenerators(options._RandomNumberSeed);
   } else {
@@ -2387,8 +2388,11 @@ int Lisp_O::run() {
   } catch (core::ExitProgramException &ee) {
     exit_code = ee.getExitResult();
   }
-  if (globals_->_AccumulateSymbols) {
+  if (globals_->_ExportedSymbolsAccumulate) {
+    T_sp stream = core::cl__open(core::SimpleBaseString_O::make(globals_->_ExportedSymbolsFilename),
+                                 kw::_sym_output);
     core::core__mangledSymbols(_lisp->_true());
+    cl__close(stream);
   }
   return exit_code;
 };
