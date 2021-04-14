@@ -1031,6 +1031,7 @@ Convert colons to underscores"
     (write-if-changed symbol-info build-path (safe-app-config :symbols_scraped_inc_h app-config))
     (write-if-changed enum-info build-path (safe-app-config :enum_inc_h app-config))
     (write-if-changed startups-info build-path (safe-app-config :pregcstartup_inc_h app-config))
+    (write-if-changed initializers-info build-path (safe-app-config :initializers_inc_h app-config))
     (write-if-changed exposes-info build-path (safe-app-config :expose_inc_h app-config))
     (write-if-changed terminators-info build-path (safe-app-config :terminators_inc_h app-config))
     (multiple-value-bind (direct-call-c-code direct-call-cl-code c-code-info cl-code-info)
