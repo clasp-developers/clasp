@@ -129,9 +129,6 @@ namespace imageSaveLoad {
 
 bool global_debugSnapshot = false;
 
-FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
-
-
 bool globalFwdMustBeInGCMemory = false;
 #define DEBUG_SL_FFWD 1
 
