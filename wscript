@@ -1500,7 +1500,7 @@ def build(bld):
 
     bld.set_group('compiling/c++')
 
-    bld.recurse('extensions',name='build1')
+    bld.recurse('extensions',name='build')
     
     log.info("There are %d extensions_builders", len(bld.extensions_builders))
     for x in bld.extensions_builders:

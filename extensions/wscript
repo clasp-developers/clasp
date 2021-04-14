@@ -11,11 +11,9 @@ def subdirectories():
     return subdirs
 
 def build_extension(bld):
-    print("    In Development/cando/extensions  build_extension")
     bld.recurse(" ".join(subdirectories()))
 
 def grovel(bld):
-    print("    In Development/cando/extensions  grovel")
     bld.recurse(" ".join(subdirectories()))
 
 def configure(cfg):
@@ -30,8 +28,8 @@ def configure(cfg):
 def options(bld):
     bld.recurse(" ".join(subdirectories()))
 
-def build1(bld):
-    bld.recurse(" ".join(subdirectories()),name="build1")
+def build(bld):
+    bld.recurse(" ".join(subdirectories()))
 
 def build3(bld):
     bld.recurse(" ".join(subdirectories()),name="build3")

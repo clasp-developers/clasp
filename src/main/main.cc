@@ -93,6 +93,13 @@ THE SOFTWARE.
 #endif
 
 
+#ifndef SCRAPING
+#define ALL_EXPOSES_EXTERN
+#include EXPOSE_INC_H
+#undef ALL_EXPOSES_EXTERN
+#endif
+
+
 namespace llvmo {
 void initialize_llvm(int argc, char **argv);
 
@@ -425,6 +432,11 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     _lisp->installPackage(&SocketsPkg);
     _lisp->installPackage(&ServeEventPkg);
     _lisp->installPackage(&AsttoolingPkg);
+#ifndef SCRAPING
+# define ALL_EXPOSES_CALLS
+# include EXPOSE_INC_H
+# undef ALL_EXPOSES_CALLS
+#endif
 
     core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
     core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
