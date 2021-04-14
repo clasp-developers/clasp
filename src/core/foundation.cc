@@ -1685,7 +1685,7 @@ std::set<std::string> global_mangledSymbols;
 std::set<uintptr_t> global_addresses;
 
 void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size, const std::string& name ) {
-  if (globals_->_AccumulateSymbols) {
+  if (globals_->_ExportedSymbolsAccumulate) {
     if (global_addresses.count((uintptr_t)functionPointer) == 0 ) {
       if ((uintptr_t)functionPointer < 1024) return; // This means it's a virtual method.
       global_pointerCount++;
