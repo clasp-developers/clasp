@@ -34,6 +34,11 @@
 #include <clasp/gctools/imageSaveLoad.h>
 
 
+namespace imageSaveLoad {
+FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
+};
+
+
 #ifdef USE_PRECISE_GC
 
 #if 0
