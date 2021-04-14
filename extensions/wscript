@@ -36,8 +36,8 @@ def build1(bld):
 def build3(bld):
     bld.recurse(" ".join(subdirectories()),name="build3")
     
-def build5(bld):
-    bld.recurse(" ".join(subdirectories()),name="build5")
+def build4(bld):
+    bld.recurse(" ".join(subdirectories()),name="build4")
 
 def analyze_clasp(bld):
     bld.recurse(" ".join(subdirectories()))
