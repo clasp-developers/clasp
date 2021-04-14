@@ -2476,11 +2476,7 @@ class export_symbols_list(Task.Task):
         externals = []
         # Get everything already external
         print("Ignore symbols missing")
-        cmd = [ self.inputs[0].abspath(), "-y", "-N" ]
-        result = runCmdLargeOutput(cmd);
-        nm_lines = result.splitlines()
-        for line in nm_lines:
-            externals.append(line)
+        cmd = [ self.inputs[0].abspath(), "-y", self.outputs[0].abspath(), "-N" ]
         # Get the vtables
         for obj in self.inputs[2:]:
             if (self.bld.env["DEST_OS"] == DARWIN_OS):
@@ -2496,7 +2492,7 @@ class export_symbols_list(Task.Task):
                 elif (symbol.find("_wrapped_") >= 0):
                     externals.append(symbol)
         externals_set = set(externals)
-        text_file = open(self.outputs[0].abspath(),"w")
+        text_file = open(self.outputs[0].abspath(),"a+")
         for entry in sorted(externals_set):
             text_file.write(entry)
             text_file.write('\n')
