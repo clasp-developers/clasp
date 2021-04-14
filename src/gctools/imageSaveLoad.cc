@@ -34,6 +34,11 @@
 #include <clasp/gctools/imageSaveLoad.h>
 
 
+namespace imageSaveLoad {
+FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
+};
+
+
 #ifdef USE_PRECISE_GC
 
 #if 0
@@ -123,9 +128,6 @@
 namespace imageSaveLoad {
 
 bool global_debugSnapshot = false;
-
-FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
-
 
 bool globalFwdMustBeInGCMemory = false;
 #define DEBUG_SL_FFWD 1
