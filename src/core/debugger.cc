@@ -1003,7 +1003,7 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
       }
 #endif
     } else {
-      printf("%s:%d:%s I disabled symbol list searching for now - use DWARF instead I think\n", __FILE__, __LINE__, __FUNCTION__ );
+//      printf("%s:%d:%s I disabled symbol list searching for now - use DWARF instead I think\n", __FILE__, __LINE__, __FUNCTION__ );
 #if 0
       // Disable _Symbols search for now - we want to switch to DWARF for this
       if (symbol_table._Symbols.size()>0) {
