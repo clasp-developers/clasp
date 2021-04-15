@@ -1,7 +1,7 @@
 
 from io import StringIO
 
-verbose = True
+verbose = False
 layout = None
 debugger = None
 
