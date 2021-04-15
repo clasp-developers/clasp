@@ -459,15 +459,14 @@ class StringOutputStream_O : public StringStream_O {
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
   virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
-
-public: // ctor/dtor for classes with shared virtual base
-        //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
-        //    virtual ~StringStream_O() {};
+public:
+  static StringOutputStream_sp make() { GC_ALLOCATE(StringOutputStream_O,ss); return ss; }
 public: // instance variables here
   String_sp _Contents;
 
 public: // Functions here
   void fill(const string &data);
+  void clear();
   String_sp getAndReset();
 }; // StringStream class
 };

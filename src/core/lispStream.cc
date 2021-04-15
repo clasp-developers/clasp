@@ -5993,6 +5993,12 @@ void StringOutputStream_O::fill(const string &data) {
 }
 
 /*! Get the contents and reset them */
+void StringOutputStream_O::clear() {
+  StringOutputStreamOutputString(this->asSmartPtr()) = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
+  StreamOutputColumn(this->asSmartPtr()) = 0;
+};
+
+/*! Get the contents and reset them */
 String_sp StringOutputStream_O::getAndReset() {
   String_sp contents = this->_Contents;
   // This is not unicode safe
