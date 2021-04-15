@@ -636,6 +636,16 @@ CL_DEFUN bool core__no_thread_local_bindingp(T_sp object) {
   return gctools::tagged_no_thread_local_bindingp(object.raw_());
 }
 
+/*! For debugging only - return the address of whatever word contains the
+    symbol-value for this symbol.  It's either &_GlobalValue or the address
+    of the thread local vector slot at _BindingIdx */
+CL_DEFUN Pointer_sp core__symbol_value_address(Symbol_sp s) {
+  if (s->_BindingIdx == NO_THREAD_LOCAL_BINDINGS) {
+    return Pointer_O::create((void*)&s->_GlobalValue);
+  }
+  return Pointer_O::create((void*)my_thread->bindings().thread_local_reference(s->_BindingIdx));
+}
+
 
 SYMBOL_EXPORT_SC_(KeywordPkg,vtable);
 SYMBOL_EXPORT_SC_(KeywordPkg,name);

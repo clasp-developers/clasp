@@ -8192,10 +8192,16 @@ public:
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, 0, "only" },
 // StampWtag = llvmo::Library_O/175
 { class_kind, STAMPWTAG_llvmo__Library_O, sizeof(llvmo::Library_O), 0, IS_POLYMORPHIC, "llvmo::Library_O" },
+//      field: "_Executable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
+ {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Library_O),_Executable), 0, "_Executable" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Start" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Library_O),_Start), 0, "_Start" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_End" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Library_O),_End), 0, "_End" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_VtableStart" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Library_O),_VtableStart), 0, "_VtableStart" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_VtableEnd" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Library_O),_VtableEnd), 0, "_VtableEnd" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Library_O),_Name), 0, "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // StampWtag = llvmo::DINodeArray_O/179
@@ -11062,10 +11068,10 @@ public:
 { class_kind, STAMPWTAG_core__Sigset_O, sizeof(core::Sigset_O), 0, IS_POLYMORPHIC, "core::Sigset_O" },
 //      field: "_sigset" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "(anonymous)" :NAME "")
 //      field: ".__clang_max_align_nonce1" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")
-// {  fixed_field, ctype_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Sigset_O),_sigset.__clang_max_align_nonce1), 0, "_sigset.__clang_max_align_nonce1" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
+ {  fixed_field, ctype_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Sigset_O),_sigset.__clang_max_align_nonce1), 0, "_sigset.__clang_max_align_nonce1" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_sigset" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "(anonymous)" :NAME "")
 //      field: ".__clang_max_align_nonce2" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long double")
-// {  fixed_field, ctype_long_double, sizeof(long double), __builtin_offsetof(SAFE_TYPE_MACRO(core::Sigset_O),_sigset.__clang_max_align_nonce2), 0, "_sigset.__clang_max_align_nonce2" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
+ {  fixed_field, ctype_long_double, sizeof(long double), __builtin_offsetof(SAFE_TYPE_MACRO(core::Sigset_O),_sigset.__clang_max_align_nonce2), 0, "_sigset.__clang_max_align_nonce2" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 // StampWtag = core::Environment_O/1403
 { class_kind, STAMPWTAG_core__Environment_O, sizeof(core::Environment_O), 0, IS_POLYMORPHIC, "core::Environment_O" },
 // StampWtag = core::GlueEnvironment_O/1407

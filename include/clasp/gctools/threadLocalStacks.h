@@ -32,7 +32,7 @@ namespace core {
     T_sp thread_local_value(const Symbol_O*) const;
     void set_thread_local_value(T_sp, const Symbol_O*);
     bool thread_local_boundp(const Symbol_O*) const;
-  private:
+  public:
     T_sp* thread_local_reference(const uint32_t) const;
   };
 #pragma GCC visibility pop
