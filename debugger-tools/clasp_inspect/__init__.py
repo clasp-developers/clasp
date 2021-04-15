@@ -1,7 +1,7 @@
 
 from io import StringIO
 
-verbose = True
+verbose = False
 layout = None
 debugger = None
 
@@ -10,7 +10,7 @@ def dbg_print(msg):
         print(msg)
 
 def load_clasp_layout():
-    print( "Loading /tmp/clasp_layout.py 2")
+    #print( "Loading /tmp/clasp_layout.py 2")
     filename = "/tmp/clasp_layout.py"
     with open(filename, "rb") as source_file:
         code = compile(source_file.read(), filename, "exec")
@@ -342,9 +342,9 @@ class Cons_O(T_O):
         car = translate_tagged_ptr(self._debugger,self.car())
         cdr = translate_tagged_ptr(self._debugger,self.cdr())
         if (cdr.consp()):
-            return ("(%s %s)" % ( car, cdr ))
+            return ("(%s %s)\n" % ( car, cdr ))
         else:
-            return ("(%s . %s )" % ( car, cdr))
+            return ("(%s . %s )\n" % ( car, cdr))
         
 class General_O(T_O):
     def __init__(self,debugger,tclient):
@@ -591,10 +591,10 @@ def do_lisp_print(debugger_mod,arg):
     return obj
 
 def do_lisp_inspect(debugger_mod,arg):
-    print( "In inspect args: %s" % arg )
+    #print( "In inspect args: %s" % arg )
     tptr = arg_to_tptr(debugger_mod,arg)
     obj = any_tagged_ptr(debugger_mod,tptr)
-    print( "any_tagged_ptr returned: %s" % obj.__repr__())
+    print( "any_tagged_ptr returned:\n %s" % obj.__repr__())
     return obj
 
 
