@@ -54,7 +54,9 @@ namespace core {
     void fields(Record_sp node);
   public:
     T_sp find(T_sp key, T_sp defval);
+    T_sp findEqual(T_sp key, T_sp defval);
     void setf(T_sp key, T_sp val);
+    void setfEqual(T_sp key, T_sp val);
     CL_LISPIFY_NAME("map_size");
     CL_DEFMETHOD   int size() const { return this->map.size(); };
     CL_LISPIFY_NAME("map_capacity");

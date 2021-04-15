@@ -27,6 +27,11 @@ THE SOFTWARE.
 #ifndef gc_gcSmallMap_H
 #define gc_gcSmallMap_H
 
+
+namespace core {
+bool cl__equal(T_sp x, T_sp y);
+};
+
 namespace gctools {
 
 struct SmallMapGetError : public std::exception {};
@@ -63,6 +68,16 @@ public:
     return it;
   }
 
+  iterator findEqual(Key k) {
+    iterator it;
+    for (it = this->begin(); it != this->end(); ++it) {
+      if (core::cl__equal(it->first,k)) {
+        return it;
+      }
+    }
+    return it;
+  }
+
   bool contains(Key k) const {
     return this->find(k) != this->end();
   }
@@ -73,6 +88,18 @@ public:
 
   pair<iterator, bool> insert(const value_type &val) {
     iterator it = this->find(val.first);
+    if (it == this->end()) {
+      this->push_back(val);
+      return make_pair(this->end() - 1, true);
+    }
+    value_type temp = *this->begin();
+    *this->begin() = *it;
+    *it = temp;
+    return make_pair(this->begin(), false);
+  }
+
+  pair<iterator, bool> insertEqual(const value_type &val) {
+    iterator it = this->findEqual(val.first);
     if (it == this->end()) {
       this->push_back(val);
       return make_pair(this->end() - 1, true);
@@ -116,8 +143,13 @@ public:
     return (*((this->insert(std::make_pair(k, mapped_type()))).first)).second;
   }
 
+  /* Add the (k,v) pair using EQ comparison */
   void set(const key_type &k, const mapped_type &v) {
     (*((this->insert(std::make_pair(k, mapped_type()))).first)).second = v;
+  }
+  /* Add the (k,v) pair using EQUAL comparison */
+  void setEqual(const key_type &k, const mapped_type &v) {
+    (*((this->insertEqual(std::make_pair(k, mapped_type()))).first)).second = v;
   }
 };
 
