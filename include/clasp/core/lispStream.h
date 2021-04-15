@@ -468,6 +468,7 @@ public: // instance variables here
 
 public: // Functions here
   void fill(const string &data);
+  void clear();
   String_sp getAndReset();
 }; // StringStream class
 };
