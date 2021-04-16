@@ -1426,8 +1426,8 @@ void operating_system_backtrace(std::vector<BacktraceEntry>& bt_entries)
 #define START_BACKTRACE_SIZE 512
 #define MAX_BACKTRACE_SIZE_LOG2 20
   size_t num = START_BACKTRACE_SIZE;
+  void** buffer = (void**)calloc(sizeof(void*), num);
   for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
-    void** buffer = (void**)calloc(sizeof(void*), num);
     size_t returned = backtrace(buffer,num);
     if (returned < num) {
       bt_entries.resize(returned);
@@ -1447,17 +1447,7 @@ void operating_system_backtrace(std::vector<BacktraceEntry>& bt_entries)
   printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
   abort();
 }
-
-
-#if 0
-CL_DEFUN core__operating_system_backtrace() {
-  std::vector<BacktraceEntry>& backtrace_;
-  operating_system_backtrace(backtrace_);
-  for ( size_t ii = 0; ii<backtrace_.size(); ii++ ) {
-    
-#endif
-
-    
+  
 bool maybe_demangle(const std::string& fnName, std::string& output)
 {
   char *funcname = (char *)malloc(1024);
@@ -1694,15 +1684,6 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace) {
   fill_in_interpreted_frames(backtrace);
 };
 
-SYMBOL_EXPORT_SC_(CorePkg,backtrace_frame_fix_names);
-CL_DOCSTRING("Call the thunk after setting core:*stack-top-hint* to somewhere in the current stack frame.");
-CL_DEFUN T_mv core__call_with_stack_top_hint(Function_sp thunk)
-{
-  size_t temporary_stack_top;
-  DynamicScopeManager scope(_sym_STARstack_top_hintSTAR, Pointer_O::create((void*)&temporary_stack_top));
-  return eval::funcall(thunk);
-}
-
 Frame_sp lisp_frame_from_backtrace_entry(BacktraceEntry& entry, bool args_as_pointers) {
   Symbol_sp stype;
   T_sp fname;
@@ -1760,20 +1741,13 @@ std::string Frame_O::__repr__() const {
 
 List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_as_pointers)
 {
-  uintptr_t stack_top_hint = ~0;
-  if (_sym_STARstack_top_hintSTAR->symbolValue().notnilp()) {
-    if (gc::IsA<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue())) {
-      Pointer_sp stack_top_hint_ptr = gc::As_unsafe<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue());
-      stack_top_hint = (uintptr_t)stack_top_hint_ptr->ptr();
-    }
-  }
   BT_LOG((" building backtrace as list\n" ));
     // Move the frames into Common Lisp
   uintptr_t bp = (uintptr_t)__builtin_frame_address(0);
   T_sp prev_entry = _Nil<T_O>();
   ql::list result;
   for ( size_t i=1; i<backtrace.size(); ++i ) {
-    if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0 && backtrace[i]._BasePointer<stack_top_hint) {
+    if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0) {
       Frame_sp entry = lisp_frame_from_backtrace_entry(backtrace[i], args_as_pointers);
       // Link up frames
       if (prev_entry.notnilp()) {
@@ -1787,7 +1761,6 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
       printf("%s:%d Skipping frame %lu name %s\n", __FILE__, __LINE__, i, backtrace[i]._SymbolName.c_str());
       printf("%s:%d bp<backtrace[i]._BasePointer -> %d\n", __FILE__, __LINE__, bp<backtrace[i]._BasePointer);
       printf("%s:%d backtrace[i]._BasePointer!=0 -> %d\n", __FILE__, __LINE__, backtrace[i]._BasePointer!=0);
-      printf("%s:%d backtrace[i]._BasePointer<stack_top_hint -> %d\n", __FILE__, __LINE__, backtrace[i]._BasePointer<stack_top_hint);
 #endif
     }
   }
@@ -1797,18 +1770,11 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
 // Fill in backtrace frames, relying on the built in doubly linked list structure.
 T_sp backtrace_stack(std::vector<BacktraceEntry>& backtrace, bool args_as_pointers)
 {
-  uintptr_t stack_top_hint = ~0;
-  if (_sym_STARstack_top_hintSTAR->symbolValue().notnilp()) {
-    if (gc::IsA<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue())) {
-      Pointer_sp stack_top_hint_ptr = gc::As_unsafe<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue());
-      stack_top_hint = (uintptr_t)stack_top_hint_ptr->ptr();
-    }
-  }
   uintptr_t bp = (uintptr_t)__builtin_frame_address(0);
   T_sp prev_entry = _Nil<T_O>();
   T_sp first_entry = _Nil<T_O>();
   for ( size_t i=1; i<backtrace.size(); ++i ) {
-    if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0 && backtrace[i]._BasePointer<stack_top_hint) {
+    if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0) {
       Frame_sp entry = lisp_frame_from_backtrace_entry(backtrace[i], args_as_pointers);
       // Link up frames
       if (first_entry.notnilp()) {
@@ -1840,7 +1806,7 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
 CL_LAMBDA(closure);
 CL_DECLARE();
 CL_DOCSTRING("Call the closure with one argument, a frame representing the current continuation, which has dynamic extent.");
-CL_DEFUN T_mv core__call_with_frame(Function_sp closure, bool args_as_pointers) {
+CL_DEFUN T_mv core__call_with_frame(Function_sp closure) {
   std::vector<BacktraceEntry> backtrace;
   fill_backtrace(backtrace);
   return eval::funcall(closure, backtrace_stack(backtrace, false));
