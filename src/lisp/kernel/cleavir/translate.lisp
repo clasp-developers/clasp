@@ -93,14 +93,6 @@
 ;;; Ditto
 (defgeneric translate-primop (opname instruction))
 
-;;; In CSTs and stuff the origin is (spi . spi). Use the head.
-(defun origin-spi (origin)
-  (if (consp origin) (car origin) origin))
-
-(defun ensure-origin (origin &optional (num 999905))
-  (or origin
-      (core:make-source-pos-info "no-source-info-available" num num num)))
-
 ;;; Put in source info.
 (defmethod translate-simple-instruction :around
     ((instruction bir:instruction) abi)
