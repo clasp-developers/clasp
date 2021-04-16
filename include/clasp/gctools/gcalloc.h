@@ -212,7 +212,7 @@ inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_hea
 #endif
 
 #ifdef USE_BOEHM
-inline Header_s* do_boehm_normal_allocation(const Header_s::StampWtagMtag& the_header,  size_t size) 
+inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_header,  size_t size) 
 {
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
@@ -593,7 +593,7 @@ namespace gctools {
       template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-        Header_s* base = do_boehm_normal_allocation(the_header,size);
+        Header_s* base = do_boehm_general_allocation(the_header,size);
         pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
         new (ptr) OT(std::forward<ARGS>(args)...);
         smart_pointer_type sp = smart_ptr<value_type>(ptr);
@@ -612,7 +612,7 @@ namespace gctools {
     static smart_pointer_type image_save_load_allocate(imageSaveLoad::image_save_load_init_s* image_save_load_init) {
         size_t sizeWithHeader = sizeof(Header_s)+(image_save_load_init->_clientEnd-image_save_load_init->_clientStart);
 #ifdef USE_BOEHM
-        Header_s* base = do_boehm_normal_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
+        Header_s* base = do_boehm_general_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
 #ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = image_save_load_init->_headStart->_source;
@@ -704,7 +704,7 @@ When would I ever want the GC to automatically collect objects but not move them
     template <typename... ARGS>
     static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_normal_allocation(the_header,size);
+      Header_s* base = do_boehm_general_allocation(the_header,size);
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
       smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -726,7 +726,7 @@ When would I ever want the GC to automatically collect objects but not move them
 
     static smart_pointer_type image_save_load_allocate(imageSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_normal_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_general_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
 #ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = image_save_load_init->_headStart->_source;
@@ -1138,7 +1138,7 @@ public:
   gc::tagged_pointer<container_type> allocate_kind(const Header_s::StampWtagMtag& the_header, size_type num, const void * = 0) {
 #ifdef USE_BOEHM
     size_t size = sizeof_container_with_header<TY>(num);
-    Header_s* base = do_boehm_normal_allocation(the_header,size);
+    Header_s* base = do_boehm_general_allocation(the_header,size);
     container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
     handle_all_queued_interrupts();
     return gctools::tagged_pointer<container_type>(myAddress);
@@ -1243,7 +1243,7 @@ public:
 #ifdef USE_BOEHM
     size_t size = sizeof_container_with_header<TY>(num);
     // prepend a one pointer header with a pointer to the typeinfo.name
-    Header_s* base = do_boehm_normal_allocation(the_header,size);
+    Header_s* base = do_boehm_general_allocation(the_header,size);
     container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
     handle_all_queued_interrupts();
     return myAddress;
@@ -1438,7 +1438,7 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate(Header_s::StampWtagMtag the_header, const VT &val) {
-    size_t size = sizeof_with_small_header<container_type>();
+    size_t size = sizeof_with_header<container_type>();
 #ifdef USE_BOEHM
     Header_s* base = do_boehm_weak_allocation(the_header,size);
     container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
@@ -1477,7 +1477,7 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<value_type> allocate(Header_s::StampWtagMtag the_header, const contained_type &val) {
-    size_t size = sizeof_with_small_header<VT>();
+    size_t size = sizeof_with_header<VT>();
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);

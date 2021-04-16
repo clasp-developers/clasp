@@ -773,10 +773,6 @@ namespace gctools {
   template <class T>
     inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
 
-  template <class T>
-    inline size_t sizeof_with_small_header() { return AlignUp(sizeof(T)) + sizeof(Header_s::StampWtagMtag); }
-
-
 /*! Size of containers given the number of elements */
   template <typename Cont_impl>
     size_t sizeof_container(size_t n) {
