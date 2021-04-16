@@ -157,7 +157,6 @@ const char *obj_name(gctools::stamp_t stamp) {
 #define GC_DEALLOCATOR_METHOD
 void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
   void* client = &*obj;
-  printf("%s:%d About to obj_deallocate_unmanaged_instance %s\n", __FILE__, __LINE__, _rep_(obj).c_str() );
   // The client must have a valid header
 #if defined(USE_MPS) || defined(USE_PRECISE_GC)
   #ifndef RUNNING_MPSPREP
@@ -838,10 +837,8 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::Pointer_O);
      Init_class_kind(clasp_ffi::ForeignData_O);
      Init_class_kind(core::CxxObject_O);
-     Init_class_kind(core::NativeVector_float_O);
      Init_class_kind(llvmo::MDBuilder_O);
      Init_class_kind(mp::ConditionVariable_O);
-     Init_class_kind(core::NativeVector_double_O);
      Init_class_kind(core::NativeVector_int_O);
      Init_class_kind(llvmo::FunctionCallee_O);
      Init_class_kind(llvmo::DINodeArray_O);

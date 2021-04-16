@@ -85,6 +85,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/commonLispPackage.h>
 #include <clasp/core/keywordPackage.h>
+#include <clasp/core/package.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/hashTableEql.h>
@@ -98,7 +99,6 @@ THE SOFTWARE.
 //#include <clasp/core/clcenv.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/print.h>
-#include <clasp/core/genericFunction.h>
 #include <clasp/core/multipleValues.h>
 #if defined(XML_ARCHIVE)
 #include <xmlLoadArchive.h>
@@ -109,7 +109,6 @@ THE SOFTWARE.
 #endif // defined(OLD_SERIALIZE)
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/numerics.h>
-//#i n c l u d e "genericFunction.h"
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
@@ -962,74 +961,102 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
    * something, it will try to grab the lock, and it will fail because we already have it.
    * Additionally, CLHS specifies that the errors are CORRECTABLE, so we could hypothetically have the user
    * in the debugger while the package system is locked - that won't work.
-   * Instead we do this: Enter a loop. Grab the lock. Try the operation. If the operation succeeds, just return.
-   * If it fails, goto (yes, really) outside the lock scope so that we ungrab it, and signal an error there.
-   * FIXME: This is set up to be correctable, thus the loop, but SIMPLE_ERROR doesn't actually allow correction.
+   * Instead we do this: Grab the lock. Try the operation. If the operation succeeds, just return.
+   * If it fails, goto (yes, really) outside the lock scope so that we ungrab it, and signal an cerror there.
    * */
-  while (true) {
-    string usedNickName;
-    string packageUsingNickName;
-    {
-      WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
-      SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
-      T_sp it = this->_Roots._PackageNameIndexMap->gethash(sname);
-      if (it.notnilp()) {
-        goto name_exists;
-      }
-      LOG(BF("Creating package with name[%s]") % name);
-      Package_sp newPackage = Package_O::create(name);
-      int packageIndex = this->_Roots._Packages.size();
-      {
-    //            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.raw_());
-        this->_Roots._PackageNameIndexMap->setf_gethash(sname,make_fixnum(packageIndex));
-        this->_Roots._Packages.push_back(newPackage);
-      }
-      {
-        List_sp cnicknames(_Nil<T_O>());
-        for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
-          string nickName = *it;
-          SimpleBaseString_sp snickName = SimpleBaseString_O::make(nickName);
-          if (this->_Roots._PackageNameIndexMap->gethash(snickName).notnilp() && nickName != name) {
-            T_sp tindex = this->_Roots._PackageNameIndexMap->gethash(snickName);
-            ASSERT(tindex.fixnump());
-            int existingIndex = tindex.unsafe_fixnum();
-            usedNickName = nickName;
-            packageUsingNickName = this->_Roots._Packages[existingIndex]->getName();
-            goto nickname_exists;
-          }
-          this->_Roots._PackageNameIndexMap->setf_gethash(snickName,make_fixnum(packageIndex));
-          cnicknames = Cons_O::create(snickName, cnicknames);
-        }
-        newPackage->setNicknames(cnicknames);
-      }
-      for ( auto x : shadow ) {
-        SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
-//        printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->get_std_string().c_str());
-        newPackage->shadow(sx);
-      }
-      for (list<string>::const_iterator jit = usePackages.begin(); jit != usePackages.end(); jit++) {
-        Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
-        LOG(BF("Using package[%s]") % usePkg->getName());
-        newPackage->usePackage(usePkg);
-      }
-      if (globals_->_MakePackageCallback != NULL) {
-        LOG(BF("Calling _MakePackageCallback with package[%s]") % name);
-        globals_->_MakePackageCallback(name, _lisp);
-      } else {
-        LOG(BF("_MakePackageCallback is NULL - not calling callback"));
-      }
-      return newPackage;
+ start:
+  string usedNickName;
+  Package_sp packageUsingNickName;
+  Package_sp existing_package;
+  {
+    WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
+    SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
+    T_sp it = this->_Roots._PackageNameIndexMap->gethash(sname);
+    if (it.notnilp()) {
+      ASSERT(it.fixnump());
+      int existing_package_id = it.unsafe_fixnum();
+      existing_package = this->_Roots._Packages[existing_package_id];
+      goto name_exists;
     }
-    // FIXME: These ought to be correctable.
-    // When SIMPLE_ERROR is replaced with something that can do corrections, the continues will be necessary.
-    // Corrections will mean, essentially, setting the name and nicknames variables.
-  name_exists:
-    SIMPLE_PACKAGE_ERROR("There already exists a package with name: ~a", name);
-    continue;
-  nickname_exists:
-    SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]" , usedNickName , packageUsingNickName);
-    continue;
+    // first check the nicknames, before we create the package, so that we
+    // don't leave packages partly created
+    for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
+      string nickName = *it;
+      SimpleBaseString_sp snickName = SimpleBaseString_O::make(nickName);
+      T_sp nit = this->_Roots._PackageNameIndexMap->gethash(snickName);
+      if (nit.notnilp() && nickName != name) {
+        ASSERT(nit.fixnump());
+        int existingIndex = nit.unsafe_fixnum();
+        usedNickName = nickName;
+        packageUsingNickName = this->_Roots._Packages[existingIndex];
+        goto nickname_exists;
+      }
+    }
+    // Now we know that there is no conflict about the package name or
+    // nicknames, so actually create the package
+    LOG(BF("Creating package with name[%s]") % name);
+    Package_sp newPackage = Package_O::create(name);
+    int packageIndex = this->_Roots._Packages.size();
+    {
+      this->_Roots._PackageNameIndexMap->setf_gethash(sname, make_fixnum(packageIndex));
+      this->_Roots._Packages.push_back(newPackage);
+    }
+    {
+      List_sp cnicknames(_Nil<T_O>());
+      for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
+        string nickName = *it;
+        SimpleBaseString_sp snickName = SimpleBaseString_O::make(nickName);
+        T_sp nit2 = this->_Roots._PackageNameIndexMap->gethash(snickName);
+        if (nit2.notnilp() && nickName != name) {
+          // should not happen, since we just tested that
+          ASSERT(nit2.fixnump());
+          int existingIndex = nit2.unsafe_fixnum();
+          usedNickName = nickName;
+          packageUsingNickName = this->_Roots._Packages[existingIndex];
+          goto nickname_exists;
+        }
+        this->_Roots._PackageNameIndexMap->setf_gethash(snickName,make_fixnum(packageIndex));
+        cnicknames = Cons_O::create(snickName, cnicknames);
+      }
+      newPackage->setNicknames(cnicknames);
+    }
+    for ( auto x : shadow ) {
+      SimpleBaseString_sp sx = SimpleBaseString_O::make(x);
+      newPackage->shadow(sx);
+    }
+    for (list<string>::const_iterator jit = usePackages.begin();
+         jit != usePackages.end(); jit++) {
+      Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
+      LOG(BF("Using package[%s]") % usePkg->getName());
+      newPackage->usePackage(usePkg);
+    }
+    if (globals_->_MakePackageCallback != NULL) {
+      LOG(BF("Calling _MakePackageCallback with package[%s]") % name);
+      globals_->_MakePackageCallback(name, _lisp);
+    } else {
+      LOG(BF("_MakePackageCallback is NULL - not calling callback"));
+    }
+    return newPackage;
   }
+  // A correctable error is signaled if the package-name or any of the nicknames
+  // is already the name or nickname of an existing package.
+  // The correction is to delete the existing package.
+  name_exists:
+    CEpackage_error("There already exists a package with name: ~a",
+                    "Delete existing package",
+                    existing_package,
+                    1,
+                    SimpleBaseString_O::make(name));
+    cl__delete_package(existing_package);
+    goto start;
+  nickname_exists:
+    CEpackage_error("There already exists a package with nickname: ~a",
+                    "Delete existing package",
+                    existing_package,
+                    1,
+                    SimpleBaseString_O::make(name));
+    cl__delete_package(existing_package);
+    goto start;
 }
 
 T_sp Lisp_O::findPackage_no_lock(const string &name, bool errorp) const {

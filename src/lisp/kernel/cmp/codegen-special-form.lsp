@@ -366,6 +366,7 @@ and put the values into the activation frame for new-env."
 
 (defun codegen-fill-let*-environment (new-env reqvars
                                       exps parent-env evaluate-env)
+  (declare (ignorable parent-env))
   "Evaluate each of the exps in the evaluate-env environment
 and put the values into the activation frame for new-env."
   (cmp-log "entered codegen-fill-let*-environment%N")
@@ -852,8 +853,7 @@ jump to blocks within this tagbody."
 	     (fn-lambda (generate-lambda-block fn-name fn-lambda-list fn-raw-body))
 	     (fn-classified (function-info function-env fn-name))
 	     (fn-index (or (cadddr fn-classified) (error "Could not find lexical function ~a" fn-name)))
-	     (target (irc-intrinsic "functionFrameReference" (irc-load result-af) (jit-constant-i32 fn-index)
-			       (bformat nil "%s-ref-%d" (llvm-sys:get-name result-af) fn-index) )))
+	     (target (irc-intrinsic "functionFrameReference" (irc-load result-af) (jit-constant-i32 fn-index) )))
 	(codegen-closure target fn-lambda closure-env)))))
 
 (defun codegen-flet/labels (operator-symbol result rest env)
@@ -1457,7 +1457,8 @@ jump to blocks within this tagbody."
       (irc-rack-write (irc-load rackt)
                       (irc-untag-fixnum
                        (irc-load indext) %size_t% "slot-location")
-                      nv)
+                      nv
+                      :order order)
       (irc-t*-result nv result))))
 
 (defun codegen-cas-rack (result rest env)

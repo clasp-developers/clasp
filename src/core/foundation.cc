@@ -45,7 +45,6 @@ THE SOFTWARE.
 #include <clasp/core/ql.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/lispStream.h>
-//#i n c l u d e "genericFunction.h"
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>

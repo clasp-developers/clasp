@@ -341,18 +341,17 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun codegen (result form env)
 ;;;  (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result)
-  (multiple-value-bind (source-directory source-filename lineno column)
-      (dbg-set-current-source-pos form)
-    (cmp-log "codegen stack-used[%d bytes]%N" (stack-used))
-    (cmp-log "codegen evaluate-depth[%d]  %s%N" (evaluate-depth) form)
-    ;;
-    ;; If a *code-walker* is defined then invoke the code-walker
-    ;; with the current form and environment
-    (when *code-walker*
-      (setq form (funcall *code-walker* form env)))
-    (cond ((symbolp form) (codegen-symbol-value result form env))
-          ((consp form) (codegen-cons result form env))
-          (t (codegen-literal result form env)))))
+  (dbg-set-current-source-pos form)
+  (cmp-log "codegen stack-used[%d bytes]%N" (stack-used))
+  (cmp-log "codegen evaluate-depth[%d]  %s%N" (evaluate-depth) form)
+  ;;
+  ;; If a *code-walker* is defined then invoke the code-walker
+  ;; with the current form and environment
+  (when *code-walker*
+    (setq form (funcall *code-walker* form env)))
+  (cond ((symbolp form) (codegen-symbol-value result form env))
+        ((consp form) (codegen-cons result form env))
+        (t (codegen-literal result form env))))
 
 (defun compile-thunk (name form env optimize)
   "Compile the form into an llvm function and return that function"
@@ -369,11 +368,11 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                                               :docstring nil
                                                               :declares nil
                                                               :spi core:*current-source-pos-info*))
-                            (let* ((given-name (llvm-sys:get-name fn)))
-                              ;; Map the function argument names
-                              (cmp-log "Creating repl function with name: %s%N" given-name)
-                              ;;	(break "codegen repl form") 
-                              (codegen result form fn-env)))))
+                            ;; Map the function argument names
+                            (cmp-log "Creating repl function with name: %s%N"
+                                     (llvm-sys:get-name fn))
+                            ;;	(break "codegen repl form") 
+                            (codegen result form fn-env))))
       (cmp-log "Dumping the repl function%N")
       (cmp-log-dump-function top-level-func)
       (unless *suppress-llvm-output* (irc-verify-function top-level-func t))

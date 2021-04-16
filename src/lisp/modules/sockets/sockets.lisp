@@ -137,6 +137,7 @@ directly instantiated."))
 (defmethod shared-initialize :after ((socket socket) slot-names
                                      &key protocol type
                                      &allow-other-keys)
+  (declare (ignore slot-names))
   (let* ((proto-num
           (cond ((and protocol (keywordp protocol))
                  (get-protocol-by-name (string-downcase (symbol-name protocol))))
@@ -274,6 +275,7 @@ SB-SYS:MAKE-FD-STREAM."))
 
 (defmethod socket-receive ((socket socket) buffer length
                            &key oob peek waitall element-type)
+  (declare (ignore element-type))
   (unless (or buffer length)
     (error "You have to supply either buffer or length!"))
   (unless length

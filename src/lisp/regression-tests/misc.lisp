@@ -234,3 +234,14 @@
                                       (format t "Ignoring everything~%"))))))
         (error (e)
           (values nil e))))
+
+(test test-issue-1158
+      (block nil
+        (tagbody
+           (multiple-value-call
+               (lambda (x y)
+                 (declare (ignore x))
+                 (when (zerop y) (go 2)))
+             (values 3 0))
+         1 (return nil)
+         2 (return t))))

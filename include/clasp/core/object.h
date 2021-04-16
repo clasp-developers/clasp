@@ -600,7 +600,7 @@ namespace core {
     SIMPLE_ERROR_SPRINTF("Bad equal comparison");
   };
 
-  extern int basic_compare(Number_sp na, Number_sp nb);
+  extern bool basic_equalp(Number_sp na, Number_sp nb);
 
   bool cl__equalp(T_sp x, T_sp y);
 };

@@ -271,6 +271,7 @@ function in a different order."
 
 (defmacro atomic-pop-explicit ((place &rest keys &key order &allow-other-keys)
                                &environment env)
+  (declare (ignore order))
   (multiple-value-bind (vars vals old new read write cas)
       (apply #'get-atomic-expansion place :environment env keys)
     (declare (ignore write))
@@ -317,7 +318,8 @@ function in a different order."
                until (eq ,old (setf ,old ,cas))
                finally (return-from ,bname ,new))))))
 
-(defmacro atomic-pushnew (item place &rest keys &key test test-not key)  
+(defmacro atomic-pushnew (item place &rest keys &key test test-not key)
+  (declare (ignore test test-not key))
   "As CL:PUSHNEW, but as an atomic RMW operation.
 ITEM, the subforms of PLACE, and the keywords are evaluated exactly once in the
 same order as they are for CL:PUSHNEW, specified in CLHS 5.1.1.1."

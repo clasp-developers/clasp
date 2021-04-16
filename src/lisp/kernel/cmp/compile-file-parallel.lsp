@@ -79,7 +79,7 @@
   (values))
 
 (defun ast-job-to-module (job &key optimize optimize-level)
-  (let ((module (cmp::llvm-create-module (format nil "module~a" (ast-job-form-index job))))
+  (let ((module (llvm-create-module (format nil "module~a" (ast-job-form-index job))))
         (core:*current-source-pos-info* (ast-job-current-source-pos-info job)))
     (with-module (:module module
                   :optimize (when optimize #'optimize-module-for-compile-file)
@@ -219,7 +219,7 @@ multithreaded performance that we should explore."
                       #+cclasp(cleavir-cst-to-ast:*compiler*
                                . ',cleavir-cst-to-ast:*compiler*)
                       #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
-                      (cmp::*global-function-refs* . ',cmp::*global-function-refs*))))))
+                      (*global-function-refs* . ',*global-function-refs*))))))
       (unwind-protect
            (loop
              ;; Required to update the source pos info. FIXME!?
@@ -235,8 +235,8 @@ multithreaded performance that we should explore."
                     (_ (when (eq cst eof-value) (return nil)))
                     (form (cst:raw cst))
                     (pre-ast
-                      (if cmp::*debug-compile-file*
-                          (clasp-cleavir::compiler-time
+                      (if *debug-compile-file*
+                          (with-compiler-timer ()
                            (clasp-cleavir-translate-bir::cst->ast cst))
                           (clasp-cleavir-translate-bir::cst->ast cst)))
                     (ast (clasp-cleavir-translate-bir::wrap-ast pre-ast)))
@@ -257,7 +257,7 @@ multithreaded performance that we should explore."
                  (when compile-from-module
                    (let ((module (ast-job-to-module ast-job :optimize optimize :optimize-level optimize-level)))
                      (setf (ast-job-module ast-job) module)))
-                 (when *compile-print* (cmp::describe-form form))
+                 (when *compile-print* (describe-form form))
                  (unless ast-only
                    (push ast-job ast-jobs)
                    (core:atomic-enqueue ast-queue ast-job))
@@ -278,7 +278,7 @@ multithreaded performance that we should explore."
             do (mp:process-join thread)
                (cfp-log "Process-join of thread ~a~%" (mp:process-name thread))))
     (dolist (job ast-jobs)
-      (let ((cmp:*default-condition-origin*
+      (let ((*default-condition-origin*
               (ignore-errors (cleavir-ast:origin (ast-job-ast job)))))
         (mapc #'signal (ast-job-other-conditions job))
         ;; The WARN calls here never actually print warnings - the
@@ -306,13 +306,14 @@ multithreaded performance that we should explore."
 
 (defun compile-file-to-result (given-input-pathname
                                &key
-                                 output-type
-                                 output-path
-                                 environment
-                                 (optimize t)
-                                 (optimize-level *optimization-level*)
-                                 ast-only
-                                 write-bitcode)
+                               output-type
+                               output-path
+                               environment
+                               (optimize t)
+                               (optimize-level *optimization-level*)
+                               ast-only
+                               write-bitcode
+                               external-format)
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -322,7 +323,8 @@ Compile a lisp source file into an LLVM module."
   (let* ((*package* *package*)
          (clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
-         (source-sin (open given-input-pathname :direction :input)))
+         (source-sin (open given-input-pathname :direction :input :external-format (or external-format :default))))
+    (declare (ignore clasp-source))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
         (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
@@ -417,7 +419,7 @@ Each bitcode filename will contain the form-index.")
                                 (cleanup nil)
                                 (write-bitcode *compile-file-parallel-write-bitcode*))
   "See CLHS compile-file."
-  (declare (ignore external-format type cleanup))
+  (declare (ignore type cleanup))
   (setf output-type (maybe-fixup-output-type output-type output-type-p))
   (let ((*compile-file-parallel* t))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
@@ -448,7 +450,8 @@ Each bitcode filename will contain the form-index.")
                      :optimize optimize
                      :optimize-level optimize-level
                      :ast-only ast-only
-                     :write-bitcode write-bitcode)))
+                     :write-bitcode write-bitcode
+                     :external-format external-format)))
               (cond (dry-run (format t "Doing nothing further~%") nil)
                     ((null output-path)
                      (error "The output-file is nil for input filename ~a~%" input-file))
@@ -477,4 +480,4 @@ Each bitcode filename will contain the form-index.")
         (do-compile-file))))
 
 (eval-when (:load-toplevel)
-  (setf *compile-file-parallel* cmp:*use-compile-file-parallel*))
+  (setf *compile-file-parallel* *use-compile-file-parallel*))

@@ -86,8 +86,8 @@ CL_DEFUN Function_sp coerce_fdesignator(T_sp obj) {
 
 namespace core {
 namespace coerce {
-core::Package_sp packageDesignator(core::T_sp obj) {
-  // TODO: Add support for Unicode package names
+core::T_sp packageDesignatorInternal(core::T_sp obj, bool errorp){
+    // TODO: Add support for Unicode package names
   String_sp packageName;
   if (Package_sp apkg = obj.asOrNull<Package_O>()) {
     return apkg;
@@ -111,7 +111,16 @@ core::Package_sp packageDesignator(core::T_sp obj) {
     Package_sp pkg = gc::As<Package_sp>(tpkg);
     return pkg;
   }
-  PACKAGE_ERROR(packageName);
+  if (errorp)
+    PACKAGE_ERROR(packageName);
+  else return _Nil<T_O>();
+}
+
+core::T_sp packageDesignatorNoError(core::T_sp obj) {
+  return packageDesignatorInternal(obj, false);
+}
+core::Package_sp packageDesignator(core::T_sp obj) {
+  return gc::As<Package_sp>(packageDesignatorInternal(obj, true));
 }
 };
 };

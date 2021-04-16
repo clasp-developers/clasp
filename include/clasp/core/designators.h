@@ -54,6 +54,8 @@ extern Path_sp pathDesignator(T_sp obj);
  
 /*! Return a Package by interpreting a package designator */
 extern Package_sp packageDesignator(T_sp obj);
+ /*! Return a Package by interpreting a package designator, or nil if not found */
+extern T_sp packageDesignatorNoError(T_sp obj);
 
 /*! Return the name of a Package by interpreting a package or a string as a name */
 extern string packageNameDesignator(T_sp obj);

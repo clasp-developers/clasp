@@ -64,8 +64,8 @@
          (undef           (llvm-sys:undef-value-get cmp:%exception-struct% ))
          (lpad.val        (llvm-sys:create-insert-value ehbuilder undef exn7 '(0) "lpad.val"))
          (lpad.val8       (llvm-sys:create-insert-value ehbuilder lpad.val sel '(1) "lpad.val8"))
-         (_               (llvm-sys:create-resume ehbuilder lpad.val8)))
-    (declare (ignore _))
+         (_1              (llvm-sys:create-resume ehbuilder lpad.val8)))
+    (declare (ignore _ _1))
     ehresume))
 
 (defun alloca-exn.slot ()
@@ -172,10 +172,6 @@
 
 (defgeneric compute-maybe-entry-processor (dynenv tags))
 
-;; Does this iblock have nonlocal entrances?
-(defun has-entrances-p (iblock)
-  (not (cleavir-set:empty-set-p (cleavir-bir:entrances iblock))))
-
 ;; Is this iblock a place unknown values are nonlocally returned to?
 (defun nonlocal-valued-p (iblock)
   (let ((inputs (cleavir-bir:inputs iblock)))
@@ -276,6 +272,7 @@
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
                                           tags)
+  (declare (ignore tags))
   ;; We found in the landing pad that we were supposed to jump into this frame.
   ;; However, no relevant catch has transferred control.
   ;; This is a bug in the compiler.

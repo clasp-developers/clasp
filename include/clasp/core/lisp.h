@@ -428,7 +428,8 @@ public:
   int _MpiSize;
   /*! Keep track of every new environment that is created */
   std::atomic<uint> _EnvironmentId;
- public:
+
+public:
 #ifdef CLASP_THREADS
   void add_process(mp::Process_sp process);
   void remove_process(mp::Process_sp process);

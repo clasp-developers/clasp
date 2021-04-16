@@ -717,13 +717,11 @@ Otherwise do a variable shift."
     (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
 
-(defun irc-store (val destination &optional (label "") (is-volatile nil))
-  ;; Mismatch in store type is a very common bug we hit when rewriting codegen.
+(defun irc-store (val destination &optional (is-volatile nil))
+  ;; Mismatch in store types is a very common bug we hit when rewriting codegen.
   ;; LLVM doesn't deal with it gracefully except with a debug build, so we just
   ;; check it ourselves. We also check that types are in the same context-
   ;; another reasonably common issue.
-  ;; FIXME: Label is unused - llvm store doesn't return a value so it can't have one.
-  ;; Fix code so it doesn't pass a label here, if possible, then remove the parameter.
   (let ((val-type (llvm-sys:get-type val))
         (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
     ;;(bformat t "irc-store val-type: %s    dest-contained-type: %s%N" val-type dest-contained-type)
@@ -739,9 +737,9 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
 
 (defun irc-store-atomic (val destination
-                         &key (label "") (is-volatile nil) (align 8)
-                           (order 'llvm-sys:monotonic))
-  (let ((inst (irc-store val destination label is-volatile)))
+                         &key (is-volatile nil) (align 8)
+                              (order 'llvm-sys:monotonic))
+  (let ((inst (irc-store val destination is-volatile)))
     (llvm-sys:set-alignment inst align) ; atomic stores require an explicit alignment.
     (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
@@ -1006,6 +1004,7 @@ But no irbuilders or basic-blocks. Return the fn."
         (column (function-info-column function-info))
         (filepos (function-info-filepos function-info))
         (declares (function-info-declares function-info)))
+    (declare (ignorable source-info-name))
     (multiple-value-bind (found-source-info n l c f)
         (parse-declares-for-source-info declares)
       (when found-source-info
@@ -1392,13 +1391,8 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-intrinsic-invoke (function-name args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
   (irc-intrinsic-call-or-invoke function-name args label landing-pad))
   
-(defun irc-intrinsic (function-name &rest args &aux (label ""))
-  (let* ((last-arg (car (last args)))
-	 (real-args args))
-    (when (stringp last-arg)
-      (setq real-args (nbutlast args))
-      (setq label last-arg))
-    (irc-intrinsic-call-or-invoke function-name args label *current-unwind-landing-pad-dest*)))
+(defun irc-intrinsic (function-name &rest args)
+  (irc-intrinsic-call-or-invoke function-name args))
 
 ;; Helper functions
 

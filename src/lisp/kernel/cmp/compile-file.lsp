@@ -36,6 +36,7 @@
 (defvar *compiler-timer-protection* nil)
 
 (defun do-compiler-timer (closure &rest args &key message report-link-time verbose override)
+  (declare (ignorable message report-link-time verbose))
   (cond (override
 	 (let* ((*compiler-timer-protection* nil))
 	   (apply #'do-compiler-timer closure args)))
@@ -49,12 +50,12 @@
                 (llvm-sys:*number-of-clang-links* 0))
            (multiple-value-prog1
                (do-compiler-timer closure)
-             (let ((llvm-finalization-time llvm-sys:*accumulated-llvm-finalization-time*)
-                   (compiler-real-time (/ (- (get-internal-real-time) *compiler-real-time*) (float internal-time-units-per-second)))
-                   (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
-                   (link-time llvm-sys:*accumulated-clang-link-time*))
-               (when verbose
-                 #+(or)
+             #+(or)
+             (when verbose
+               (let ((llvm-finalization-time llvm-sys:*accumulated-llvm-finalization-time*)
+                     (compiler-real-time (/ (- (get-internal-real-time) *compiler-real-time*) (float internal-time-units-per-second)))
+                     (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
+                     (link-time llvm-sys:*accumulated-clang-link-time*))
                  (let* ((link-string (if report-link-time
                                         (core:bformat nil " link(%.1f)" link-time)
                                         ""))
@@ -78,8 +79,10 @@
                    (finish-output)))))))
         (t (funcall closure))))
 
-(defmacro with-compiler-timer ((&key message report-link-time verbose override) &rest body)
-  `(do-compiler-timer (lambda () (progn ,@body)) :message ,message :report-link-time ,report-link-time :verbose ,verbose))
+(defmacro with-compiler-timer ((&key message report-link-time verbose)
+                               &body body)
+  `(do-compiler-timer (lambda () (progn ,@body))
+     :message ,message :report-link-time ,report-link-time :verbose ,verbose))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -175,6 +178,7 @@ and the pathname of the source file - this will also be used as the module initi
                    (_ (llvm-sys:set-enable-tail-merge target-pass-config nil))
                    (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
                    (data-layout (llvm-sys:create-data-layout target-machine)))
+              (declare (ignore _))
               (llvm-sys:set-data-layout module data-layout)
               (llvm-sys:pass-manager-add pm tli)
               (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module)))))))
@@ -196,6 +200,7 @@ and the pathname of the source file - this will also be used as the module initi
    *compile-file-source-debug-lineno* *compile-file-source-debug-offset*))
 
 (defun bclasp-loop-read-and-compile-file-forms (source-sin environment)
+  (declare (ignore environment))
   (let ((eof-value (gensym)))
     (loop
       ;; Required to update the source pos info. FIXME!?
@@ -226,7 +231,9 @@ and the pathname of the source file - this will also be used as the module initi
                                  environment
                                  image-startup-position
                                  (optimize t)
-                                 (optimize-level *optimization-level*))
+                                 (optimize-level *optimization-level*)
+                                 external-format)
+  (declare (ignore output-type type))
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -241,9 +248,8 @@ Compile a lisp source file into an LLVM module."
 				    :pathname given-input-pathname
 				    :format-control "compile-file-to-module could not find the file ~s to open it"
 				    :format-arguments (list given-input-pathname))))
-         (source-sin (open input-pathname :direction :input))
-         (module (llvm-create-module (namestring input-pathname)))
-	 (module-name (cf-module-name type given-input-pathname)))
+         (source-sin (open input-pathname :direction :input :external-format (or external-format :default)))
+         (module (llvm-create-module (namestring input-pathname))))
     (or module (error "module is NIL"))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
@@ -379,7 +385,8 @@ Compile a lisp source file into an LLVM module."
                                                   :environment environment
                                                   :image-startup-position image-startup-position
                                                   :optimize optimize
-                                                  :optimize-level optimize-level)))
+                                                  :optimize-level optimize-level
+                                                  :external-format external-format)))
               (compile-file-output-module module output-file output-type output-path input-file type
                                           :position image-startup-position)
               (when output-info-pathname (generate-info input-file output-info-pathname))

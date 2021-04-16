@@ -131,7 +131,7 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function)
          * from some call to ecl_musleep() Queue the interrupt for any
          * process stage that can potentially receive a signal  */
   if (function.notnilp() && (process->_Phase >= mp::Nascent)) {
-    printf("%s:%d clasp_interrupt_process queuing signal\n", __FILE__, __LINE__);
+    // printf("%s:%d clasp_interrupt_process queuing signal\n", __FILE__, __LINE__);
     function = core::coerce::functionDesignator(function);
     queue_signal_or_interrupt(process->_ThreadInfo, function, true);
   }
@@ -209,9 +209,9 @@ void handle_queued_signal_or_interrupt(core::T_sp signal_code) {
 void handle_all_queued_interrupts()
 {
   while (my_thread->_PendingInterrupts.consp()) {
-    printf("%s:%d:%s Handling a signal - there are pending interrupts\n", __FILE__, __LINE__, __FUNCTION__ );
+    // printf("%s:%d:%s Handling a signal - there are pending interrupts\n", __FILE__, __LINE__, __FUNCTION__ );
     core::T_sp sig = pop_signal_or_interrupt(my_thread);
-    printf("%s:%d:%s Handling a signal: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sig).c_str() );
+    // printf("%s:%d:%s Handling a signal: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sig).c_str() );
     handle_queued_signal_or_interrupt(sig);
   }
 }

@@ -43,6 +43,7 @@
 (defvar *dbg-function-metadata-cache*)
 
 (defun dbg-create-function-type (difile function-type)
+  (declare (ignore difile function-type))
   "Currently create a bogus function type"
   (let ((arg-array (llvm-sys:get-or-create-type-array
 		    *the-module-dibuilder*
@@ -265,6 +266,7 @@
     (llvm-sys:set-current-debug-location irbuilder (get-dilocation spi))))
 
 (defun dbg-set-current-source-pos (form)
+  (declare (ignorable form))
   (when *dbg-generate-dwarf*
     (setq *dbg-set-current-source-pos* t)
     (when *current-source-pos-info*

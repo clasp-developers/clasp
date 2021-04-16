@@ -46,7 +46,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/genericFunction.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>

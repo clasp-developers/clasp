@@ -292,30 +292,39 @@
 
 (defun translate-sjlj-catch (catch successors)
   ;; Call setjmp, switch on the result.
-  (let ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
+  (let ((normal-successor (first successors))
+        (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
     (out (cmp:irc-bit-cast bufp cmp:%t*%) catch)
-    (let* ((sj (%intrinsic-call "_setjmp" (list bufp)))
-           (blocks (loop repeat (length (rest successors))
-                         collect (cmp:irc-basic-block-create
-                                  "catch-restore")))
-           (default (cmp:irc-basic-block-create "catch-default"))
-           (sw (cmp:irc-switch sj default (length successors))))
-      (cmp:irc-begin-block default)
-      (cmp:irc-unreachable)
-      (cmp:irc-add-case sw (%i32 0) (first successors))
-      (loop for succ in (rest successors)
-            for block in blocks
-            for iblock in (rest (bir:next catch))
-            for phi = (when (and (= (length (bir:inputs iblock)) 1)
-                                 (eq (bir:rtype
-                                      (first (bir:inputs iblock)))
-                                     :multiple-values))
-                        (first (bir:inputs iblock)))
-            for i from 1
-            do (cmp:irc-add-case sw (%i32 i) block)
-               (cmp:irc-begin-block block)
-               (when phi (phi-out (restore-multiple-value-0) phi block))
-               (cmp:irc-br succ)))))
+    (multiple-value-bind (iblocks blocks successors)
+        ;; We only care about iblocks that are actually unwound to.
+        (loop for iblock in (rest (bir:next catch))
+              for successor in (rest successors)
+              when (has-entrances-p iblock)
+                collect iblock into iblocks
+                and collect (cmp:irc-basic-block-create "catch-restore")
+                      into blocks
+                and collect successor into successors
+              finally (return (values iblocks blocks successors)))
+      (let* ((sj (%intrinsic-call "_setjmp" (list bufp)))
+             (default (cmp:irc-basic-block-create "catch-default"))
+             (sw (cmp:irc-switch sj default (1+ (length iblocks)))))
+        (cmp:irc-begin-block default)
+        (cmp:irc-unreachable)
+        (cmp:irc-add-case sw (%i32 0) normal-successor)
+        (loop for succ in successors
+              for block in blocks
+              for iblock in iblocks
+              for destination-id = (get-destination-id iblock)
+              for phi = (when (and (= (length (bir:inputs iblock)) 1)
+                                   (eq (bir:rtype
+                                        (first (bir:inputs iblock)))
+                                       :multiple-values))
+                          (first (bir:inputs iblock)))
+              ;; 1+ because we can't pass 0 to longjmp, as in unwind below.
+              do (cmp:irc-add-case sw (%i32 (1+ destination-id)) block)
+                 (cmp:irc-begin-block block)
+                 (when phi (phi-out (restore-multiple-value-0) phi block))
+                 (cmp:irc-br succ))))))
 
 (defmethod translate-terminator ((instruction bir:catch) abi next)
   (declare (ignore abi))
@@ -357,7 +366,7 @@
         ;;  the dynamic environment must just be the function.)
         (let ((bufp (cmp:irc-bit-cast cont cmp::%jmp-buf-tag*%)))
           (%intrinsic-invoke-if-landing-pad-or-call
-           ;; `+ because we can't pass 0 to longjmp.
+           ;; 1+ because we can't pass 0 to longjmp.
            "_longjmp" (list bufp (%i32 (1+ destination-id)))))
         ;; C++ exception
         (cmp:with-landing-pad (never-entry-landing-pad
@@ -401,6 +410,7 @@
   (cmp:irc-br (first next)))
 
 (defmethod undo-dynenv ((dynenv cc-bir:bind) tmv)
+  (declare (ignore tmv))
   (%intrinsic-call "cc_resetTLSymbolValue" (dynenv-storage dynenv)))
 
 (defmethod translate-terminator
@@ -437,10 +447,10 @@
   ;; We must force all closure initializers to run before a call.
   (force-initializers))
 
-(defmethod translate-simple-instruction ((instruction bir:leti) abi)
+;; LETI is a subclass of WRITEVAR, so we use a :before to bind the var.
+(defmethod translate-simple-instruction :before ((instruction bir:leti) abi)
   (declare (ignore abi))
-  (bind-variable (first (bir:outputs instruction)))
-  (call-next-method))
+  (bind-variable (first (bir:outputs instruction))))
 
 (defmethod translate-simple-instruction ((instruction bir:writevar)
                                          abi)
@@ -940,16 +950,19 @@
          (error "BUG: Don't know how to translate primop ~a" name))))
 
 (defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-read) abi)
+  (declare (ignore abi))
   (out (cmp:gen-rack-ref (in (first (bir:inputs inst)))
                          (in (second (bir:inputs inst)))
                          :order (cmp::order-spec->order (cc-bir:order inst)))
        (first (bir:outputs inst))))
 (defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-write) abi)
+  (declare (ignore abi))
   (cmp:gen-rack-set (in (second (bir:inputs inst)))
                     (in (third (bir:inputs inst)))
                     (in (first (bir:inputs inst)))
                     :order (cmp::order-spec->order (cc-bir:order inst))))
 (defmethod translate-simple-instruction ((inst cc-bir:cas-rack) abi)
+  (declare (ignore abi))
   (out (cmp:irc-cmpxchg (cmp::irc-rack-slot-address
                          (in (third (bir:inputs inst)))
                          (cmp::irc-untag-fixnum
@@ -1218,6 +1231,7 @@
 (defun layout-main-function* (the-function ir
                               body-irbuilder body-block
                               abi &key (linkage 'llvm-sys:internal-linkage))
+  (declare (ignore linkage))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (cmp:with-irbuilder (body-irbuilder)
       (with-catch-pad-prep
@@ -1332,6 +1346,7 @@
 
 (defun layout-procedure (function lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))
+  (declare (ignore linkage))
   (when (xep-needed-p function)
     (layout-xep-function function lambda-name abi))
   (layout-main-function function lambda-name abi))
@@ -1369,8 +1384,8 @@
     ;; Assign IDs to unwind destinations.
     (let ((i 0))
       (cleavir-set:doset (entrance (bir:entrances function))
-                         (setf (gethash entrance *unwind-ids*) i)
-                         (incf i)))
+        (setf (gethash entrance *unwind-ids*) i)
+        (incf i)))
     (setf (gethash function *function-info*)
           (allocate-llvm-function-info function :linkage linkage)))
   (allocate-module-constants module)
@@ -1456,14 +1471,24 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defvar *dis* nil)
 
+(defun ver (module msg)
+  (handler-bind
+      ((error
+         (lambda (e)
+           (declare (ignore e))
+           (warn msg))))
+    (cleavir-bir:verify module)))
+
 (defun bir-transformations (module system)
-  (when *dis*
-    (bir::print-disasm
-     (bir:disassemble module)))
+  (ver module "start")
   (bir-transformations:module-eliminate-catches module)
+  (ver module "elim catches")
   (bir-transformations:find-module-local-calls module)
+  (ver module "local calls")
   (bir-transformations:module-optimize-variables module)
+  (ver module "optimize vars")
   (bir-transformations:meta-evaluate-module module system)
+  (ver module "meta")
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   (bir-transformations:module-generate-type-checks module)
@@ -1473,6 +1498,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (bir-transformations:determine-function-environments module)
   (bir-transformations:determine-closure-extents module)
   (bir-transformations:determine-variable-extents module)
+  (when *dis* (cleavir-bir-disassembler:display module))
   (values))
 
 (defun translate-ast (ast &key (abi *abi-x86-64*)
@@ -1496,6 +1522,7 @@ COMPILE-FILE will use the default *clasp-env*."
          ordered-raw-constants-list constants-table startup-shutdown-id
          (cst-to-ast:*compiler* 'cl:compile)
          (ast (cst->ast cst env)))
+    (declare (ignorable constants-table))
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-shutdown-id)
         (literal:with-rtv

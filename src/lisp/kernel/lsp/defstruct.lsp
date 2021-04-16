@@ -891,8 +891,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
                         copier predicate named
                         print-function print-object initial-offset)
       (parse-defstruct-options name&opts)
-    (let ((slot-descriptions slots) name-offset documentation
-          standard-constructor)
+    (let ((slot-descriptions slots) name-offset documentation)
       ;; Skip the documentation string.
       (when (and (not (endp slot-descriptions))
                  (stringp (car slot-descriptions)))
@@ -920,12 +919,6 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
       (when initial-offset
         (setq slot-descriptions
               (append (make-list initial-offset) slot-descriptions)))
-
-      (unless (null kw-constructors)
-        ;; a "standard constructor" is one with no specified lambda list, taking &key instead.
-        ;; Standard constructors are used by #s and so must be stored specially.
-        ;; We take the first one defined, arbitrarily. (Usually there will be at most one.)
-        (setq standard-constructor (first kw-constructors)))
 
       `(%defstruct (,name ,conc-name) ,type ,include
          (,@overriding-slot-descriptions)

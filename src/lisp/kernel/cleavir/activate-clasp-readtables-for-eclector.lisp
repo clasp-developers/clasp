@@ -72,7 +72,7 @@
                                       (recursive-p nil))
   (let ((eclector.readtable:*readtable* cl:*readtable*)
         (eclector.reader:*client* *clasp-normal-eclector-client*)
-        (eclector.reader::*backquote-in-subforms-allowed-p* t))
+        #+(or)(eclector.reader::*backquote-in-subforms-allowed-p* t))
     (eclector.reader:read input-stream eof-error-p eof-value recursive-p)))
 
 ;;; to avoid cl:*readtable* and eclector.readtable:*readtable* get out of sync
@@ -83,7 +83,7 @@
                                                            (recursive-p nil))
   (let ((eclector.readtable:*readtable* cl:*readtable*)
         (eclector.reader:*client* *clasp-normal-eclector-client*)
-        (eclector.reader::*backquote-in-subforms-allowed-p* t))
+        #+(or)(eclector.reader::*backquote-in-subforms-allowed-p* t))
     (eclector.reader:read-preserving-whitespace input-stream eof-error-p eof-value recursive-p)))
 
 ;;; need also sync in clasp-cleavir::cclasp-loop-read-and-compile-file-forms

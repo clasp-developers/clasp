@@ -740,6 +740,166 @@ due to error:~%  ~:*~a~]"
 
 (define-condition core:simple-package-error (simple-condition package-error) ())
 
+(define-condition ext:name-conflict (package-error)
+  ((%operation :initarg :operation :reader name-conflict-operation)
+   (%troublemaker :initarg :troublemaker :reader name-conflict-troublemaker
+                  :type symbol)
+   (%candidates :initarg :candidates :reader ext:name-conflict-candidates
+                :type list))
+  (:report (lambda (condition stream)
+             (format stream "~s ~s causes name-conflicts in ~s between the following symbols:~%~s"
+                     (name-conflict-operation condition)
+                     (name-conflict-troublemaker condition)
+                     (package-error-package condition)
+                     (ext:name-conflict-candidates condition)))))
+
+(defun resolve-conflict-interactive (package candidates)
+  ;; Cribbed from SBCL's NAME-CONFLICT function.
+  (let* ((len (length candidates))
+         (nlen (length (write-to-string len :base 10)))
+         (*print-pretty* t))
+    (format *query-io*
+            "~&~@<Select a symbol to be made accessible in package ~a:~2i~@:_~{~{~v,' d. ~s~}~@:_~}~@:>"
+            (package-name package)
+            (loop for s in candidates for i upfrom 1 collect (list nlen i s)))
+    (loop
+      (format *query-io* "~&Enter an integer (between 1 and ~d): " len)
+      (finish-output *query-io*)
+      (let ((i (parse-integer (read-line *query-io*) :junk-allowed t)))
+        (when (and i (<= 1 i len))
+          (return (list (nth (1- i) candidates))))))))
+
+(defun check-chosen-symbol (chosen-symbol candidates)
+  (assert (member chosen-symbol candidates) (chosen-symbol)
+          "~s is not one of the symbols that can resolve the conflict.
+The conflict resolver must be one of ~s" chosen-symbol candidates))
+
+(defun core:import-name-conflict (package existing to-import)
+  (let ((candidates (list existing to-import)))
+    (restart-case
+        (error 'ext:name-conflict
+               :package package :operation 'import
+               :troublemaker to-import :candidates candidates)
+      (take-new ()
+        :report (lambda (s)
+                  (format s "Shadowing-import ~s, uninterning ~s."
+                          to-import existing))
+        (shadowing-import to-import package))
+      (keep-old ()
+        :report (lambda (s)
+                  (format s "Don't import ~s, keeping ~s."
+                          to-import existing)))
+      (ext:resolve-conflict (chosen-symbol)
+        :interactive (lambda () (resolve-conflict-interactive
+                                 package candidates))
+        :report "Resolve conflict."
+        (check-chosen-symbol chosen-symbol candidates)
+        (cond ((eq chosen-symbol existing)) ; don't import
+              ((eq chosen-symbol to-import)
+               (shadowing-import to-import package)))))))
+
+;;; Shared logic for USE-PACKAGE and EXPORT conflicts
+(defun accessibility-conflict (operation troublemaker new package)
+  (let ((name (symbol-name new)))
+    (multiple-value-bind (old status) (find-symbol name package)
+      (assert (and old (not (eq old new))))
+      (let ((candidates (list new old)))
+        (ecase status
+          ((:inherited)
+           (restart-case
+               (error 'ext:name-conflict
+                      :package package :operation operation
+                      :troublemaker troublemaker :candidates candidates)
+             (keep-old ()
+               :report (lambda (s)
+                         (format s "Keep ~s accessible in ~a by importing and shadowing it."
+                                 old package))
+               (shadowing-import (list old) package))
+             (take-new ()
+               :report (lambda (s)
+                         (format s "Make ~s accessible in ~a by importing and shadowing it."
+                                 new package))
+               (shadowing-import (list new) package))
+             (ext:resolve-conflict (chosen-symbol)
+               :interactive (lambda () (resolve-conflict-interactive
+                                        package candidates))
+               :report "Resolve conflict."
+               (check-chosen-symbol chosen-symbol candidates)
+               (shadowing-import (list chosen-symbol) package))))
+          ((:internal :external)
+           (restart-case
+               (error 'ext:name-conflict
+                      :package package :operation operation
+                      :troublemaker troublemaker :candidates candidates)
+             (keep-old ()
+               :report (lambda (s)
+                         (format s "Keep ~s accessible in ~a by shadowing it."
+                                 old package))
+               (shadow (list name) package))
+             (take-new ()
+               :report (lambda (s)
+                         (format s "Make ~s accessible in ~a by uninterning the old symbol."
+                                 new package))
+               (unintern old package))
+             (ext:resolve-conflict (chosen-symbol)
+               :interactive (lambda () (resolve-conflict-interactive
+                                        package candidates))
+               :report "Resolve conflict."
+               (check-chosen-symbol chosen-symbol candidates)
+                 (cond ((eq chosen-symbol old) (shadow (list name) package))
+                       ((eq chosen-symbol new) (unintern old package)))))))))))
+
+(defun core:export-name-conflict (to-export problematic)
+  ;; CLHS export says
+  ;; "aborting from a name-conflict error caused by export of one of symbols
+  ;;  does not leave that symbol accessible to some packages and inaccessible
+  ;;  to others; with respect to each of symbols processed, export behaves as
+  ;;  if it were as an atomic operation."
+  ;; However, a programmer can do arbitrary things while handling a condition,
+  ;; so we can't necessarily undo all conflict resolution.
+  ;; So what we interpret this to mean is that the symbol is certainly
+  ;; exported or certainly not exported, but it would be possible for it to
+  ;; have been made accessible in some packages by conflict resolution
+  ;; before a later abort.
+  (dolist (package problematic)
+    ;; The actual name conflict is in the using package,
+    ;; not the package doing the export.
+    (accessibility-conflict 'export to-export to-export package)))
+
+(defun core:use-package-name-conflict (package used conflicts)
+  (dolist (sym conflicts)
+    (let* ((name (symbol-name sym))
+           (new (find-symbol name used)))
+      (accessibility-conflict 'use-package used new package))))
+
+(defun core:unintern-name-conflict (package symbol candidates)
+  (restart-case
+      (error 'ext:name-conflict :package package :operation 'unintern
+                                :troublemaker symbol :candidates candidates)
+    (ext:resolve-conflict (chosen-symbol)
+      :report "Resolve conflict."
+      :interactive (lambda () (resolve-conflict-interactive package candidates))
+      ;; Actual restart body
+      (check-chosen-symbol chosen-symbol candidates)
+      (shadowing-import (list chosen-symbol) package))))
+
+(define-condition core:package-lock-violation (package-error)
+  ((%format-control :initarg :format-control
+                    :reader package-lock-violation-format-control)
+   (%format-arguments :initarg :format-arguments
+                      :reader package-lock-violation-format-arguments))
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<Lock on package ~a violated when ~?~:@>"
+             (package-error-package condition)
+             (package-lock-violation-format-control condition)
+             (package-lock-violation-format-arguments condition)))))
+
+(defun core:package-lock-violation (package
+                                    format-control &rest format-arguments)
+  (error 'core:package-lock-violation :package package
+         :format-control format-control :format-arguments format-arguments))
+
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))
 

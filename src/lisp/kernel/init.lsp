@@ -317,62 +317,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     (defconstant +ecl-safe-declarations+
       '(optimize (safety 2) (speed 1) (debug 1) (space 1))))
 
-
-
-
-(defvar +ecl-syntax-progv-list+
-  (list
-   '(
-     *print-pprint-dispatch*'
-     *print-array*
-     *print-base*
-     *print-case*
-     *print-circle*
-     *print-escape*
-     *print-gensym*
-     *print-length*
-     *print-level*
-     *print-lines*
-     *print-miser-width*
-     *print-pretty*
-     *print-radix*
-     *print-readably*
-     *print-right-margin*
-     *read-base*
-     *read-default-float-format*
-     *read-eval*
-     *read-suppress*
-     *readtable*
-     si::*print-package*
-     si:*print-structure*
-     si::*sharp-eq-context*
-     si:*circle-counter*)
-   nil                              ;;  *pprint-dispatch-table*
-   t                                ;;  *print-array*
-   10                               ;;  *print-base*
-   :downcase                        ;;  *print-case*
-   t                                ;;  *print-circle*
-   t                                ;;  *print-escape*
-   t                                ;;  *print-gensym*
-   nil                              ;;  *print-length*
-   nil                              ;;  *print-level*
-   nil                              ;;  *print-lines*
-   nil                              ;;  *print-miser-width*
-   nil                              ;;  *print-pretty*
-   nil                              ;;  *print-radix*
-   t                                ;;  *print-readably*
-   nil                              ;;  *print-right-margin*
-   10                               ;;  *read-base*
-   'single-float                    ;;  *read-default-float-format*
-   t                                ;;  *read-eval*
-   nil                              ;;  *read-suppress*
-   *readtable*                      ;;  *readtable*
-   (find-package :cl)               ;;  si::*print-package*
-   t                                ;  si::*print-structure*
-   nil                              ;  si::*sharp-eq-context*
-   nil                              ;  si::*circle-counter*
-   ))
-
 (defvar +io-syntax-progv-list+
   (list
    '(

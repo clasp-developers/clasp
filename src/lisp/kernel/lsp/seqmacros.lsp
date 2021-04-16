@@ -224,7 +224,8 @@
       (once-only (start)
         `(sequence:with-sequence-iterator (,%it ,%limit ,%from-end
                                                 ,%step ,%endp ,%elt ,%set)
-             (,sequence :start ,start :end ,end :from-end ,from-end)
+           (,sequence :start ,start :end ,end :from-end ,from-end)
+           (declare (ignorable ,%set ,%elt))
            (do (,@(when indexp `((,index ,start (1+ ,index))))
                 (,%it ,%it (reckless
                             (funcall ,%step ,sequence ,%it ,%from-end))))
