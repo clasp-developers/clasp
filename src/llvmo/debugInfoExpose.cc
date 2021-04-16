@@ -110,7 +110,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/wrappers.h>
-
+#include <clasp/core/debugger2.h>
 
 
 namespace llvmo {
@@ -395,6 +395,21 @@ CL_LAMBDA(dwarfcontext sectioned-address);
 CL_LISPIFY_NAME(getLineInfoForAddress);
 CL_DEFUN core::T_mv getLineInfoForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
   return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value);
+}
+
+CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LISPIFY_NAME(getLocalsForAddress);
+CL_DEFUN core::T_sp getLocalsForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
+  llvm::DIContext* dicontext = dc->wrappedPtr();
+  llvm::object::SectionedAddress saddr = addr->_value;
+  ql::list res;
+  for (llvm::DILocal loc : dicontext->getLocalsForAddress(saddr)) {
+    res << core::DebuggerLocal_O::make(core::SimpleBaseString_O::make(loc.FunctionName),
+                                       core::SimpleBaseString_O::make(loc.Name),
+                                       core::SimpleBaseString_O::make(loc.DeclFile),
+                                       core::Integer_O::create(loc.DeclLine));
+  }
+  return res.cons();
 }
 
 }; // llvmo, DIContext_O

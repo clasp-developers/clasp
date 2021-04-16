@@ -25,6 +25,7 @@ SRC_CORE_FILES = \
         'random',
         'record',
         'debugger',
+        'debugger2',
         'debug_unixes',
         'debug_macosx',
         'smallMap',
