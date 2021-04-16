@@ -11,7 +11,7 @@
 
 namespace core {
 
-CL_DEFUN T_mv core__operating_system_backtrace() {
+CL_DEFUN T_mv core__call_with_operating_system_backtrace(Function_sp function) {
   // Get an operating system backtrace, i.e. with the backtrace and
   // backtrace_symbols functions (which are not POSIX, but are present in both
   // GNU and Apple systems).
@@ -34,7 +34,7 @@ CL_DEFUN T_mv core__operating_system_backtrace() {
       }
       free(buffer);
       free(strings);
-      return Values(pointers.cons(), names.cons());
+      return eval::funcall(function, pointers.cons(), names.cons());
     }
     // realloc_array would be nice, but macs don't have it
     num *= 2;
