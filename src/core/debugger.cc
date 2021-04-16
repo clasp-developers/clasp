@@ -1415,31 +1415,34 @@ CL_DEFUN void core__low_level_backtrace_with_args() {
 }
 
 
-void operating_system_backtrace(std::vector<BacktraceEntry>& backtrace_)
+void operating_system_backtrace(std::vector<BacktraceEntry>& bt_entries)
 {
+  // Get an operating system backtrace, i.e. with the backtrace and
+  // backtrace_symbols functions (which are not POSIX, but are present in both
+  // GNU and Apple systems).
+  // backtrace requires a number of frames to get, and will fill only that many
+  // entries. To get the full backtrace, we repeatedly try larger frame numbers
+  // until backtrace finally doesn't fill everything in.
 #define START_BACKTRACE_SIZE 512
-  void** return_buffer;
+#define MAX_BACKTRACE_SIZE_LOG2 20
   size_t num = START_BACKTRACE_SIZE;
-  for ( int try_=0; try_<100; ++try_ ) {
-    // printf("%s:%s:%d malloc to %lu\n", __FILE__, __FUNCTION__, __LINE__, num);
-    void** buffer = (void**)malloc(sizeof(void*)*num);
+  for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
+    void** buffer = (void**)calloc(sizeof(void*), num);
     size_t returned = backtrace(buffer,num);
     if (returned < num) {
-      // printf("%s:%s:%d Resizing backtrace to %lu\n", __FILE__, __FUNCTION__, __LINE__, returned);
-      backtrace_.resize(returned);
-      // printf("%s:%s:%d Filling backtrace to %lu\n", __FILE__, __FUNCTION__, __LINE__, returned);
+      bt_entries.resize(returned);
       char **strings = backtrace_symbols(buffer, returned);
-      for ( size_t j=0; j<returned; ++j ) {
-        // printf("%s:%s:%d Filling backtrace at %lu\n", __FILE__, __FUNCTION__, __LINE__, j);
-        backtrace_[j]._ReturnAddress = (uintptr_t)buffer[j];
-        backtrace_[j]._SymbolName = strings[j];
+      for (size_t j = 0; j < returned; ++j) {
+        bt_entries[j]._ReturnAddress = (uintptr_t)buffer[j];
+        bt_entries[j]._SymbolName = strings[j];
       }
       free(buffer);
       free(strings);
       return;
     }
-    free(buffer);
-    num = num*2;
+    // realloc_array would be nice, but macs don't have it
+    num *= 2;
+    buffer = (void**)realloc(buffer, sizeof(void*)*num);
   }
   printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
   abort();
