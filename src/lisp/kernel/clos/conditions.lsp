@@ -44,7 +44,6 @@
 
 (defun compute-restarts (&optional condition)
 ;;; Following is debug message for a bug in clasp
-  #+(or)
   (do ((prevr nil r)
        (r *restart-clusters* (cdr r)))
       ((null r))
