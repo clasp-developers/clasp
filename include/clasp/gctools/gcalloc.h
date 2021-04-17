@@ -618,9 +618,12 @@ namespace gctools {
         base->_source = image_save_load_init->_headStart->_source;
 #endif
         pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
+#ifdef DEBUG_GUARD        
         uintptr_t guardBefore0 = *(uintptr_t*)((uintptr_t*)ptr-1);
         uintptr_t guardAfter0 = *(uintptr_t*)((uintptr_t*)((char*)ptr+sizeWithHeader-sizeof(Header_s))+1);
+#endif
         new (ptr) OT(image_save_load_init);
+#ifdef DEBUG_GUARD        
         uintptr_t guardBefore1 = *(uintptr_t*)((uintptr_t*)ptr-1);
         uintptr_t guardAfter1 = *(uintptr_t*)((uintptr_t*)((char*)ptr+sizeWithHeader-sizeof(Header_s))+1);
         if (guardBefore0!=guardBefore1) {
@@ -629,6 +632,7 @@ namespace gctools {
         if (guardAfter0!=guardAfter1) {
           printf("%s:%d:%s We stomped on the memory after the object\n", __FILE__, __LINE__, __FUNCTION__ );
         }
+#endif
         smart_pointer_type sp = smart_ptr<value_type>(ptr);
         return sp;
 #endif
