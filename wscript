@@ -91,6 +91,7 @@ out = 'build'
 APP_NAME = 'clasp'
 LLVM_VERSION = 13
 CLANG_SPECIFIC_VERSION = "13.0.0git"
+XCODE_SDK = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -866,9 +867,20 @@ class cmpsprep_mpi_d(mpsprep_mpi_d):
 def configure(cfg):
     def update_exe_search_path(cfg):
         log.info("DEST_OS = %s" % cfg.env['DEST_OS'])
+        log.info("cfg.env['CPPFLAGS'] = %s" % cfg.env['CPPFLAGS'])
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
-        if (len(llvm_config_binary) == 0):
-            if (cfg.env['DEST_OS'] == DARWIN_OS ):
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            if ("-isysroot" in cfg.env['CPPFLAGS'] ):
+                if (XCODE_SDK in cfg.env['CPPFLAGS']):
+                    pass
+                else:
+                    log.info("There is a mismatch in the -isysroot option in wscript.config - you provide %s and XCODE_SDK is %s" % (cfg.env['CPPFLAGS'], XCODE_SDK))
+                    exit(1)
+            else:
+                log.info("Updating CPPFLAGS to add -isysroot %s" % XCODE_SDK)
+                cfg.env.append_value('CPPFLAGS', ["-isysroot",XCODE_SDK])
+            log.info("after update cfg.env['CPPFLAGS'] = %s" % cfg.env['CPPFLAGS'])
+            if (len(llvm_config_binary) == 0):
                 llvm_paths = glob.glob("/usr/local/opt/llvm@%s/bin/llvm-config" % LLVM_VERSION)
                 if (len(llvm_paths) >= 1):
                     llvm_config_binary = llvm_paths[0]
@@ -876,7 +888,8 @@ def configure(cfg):
                     raise Exception("You need to install llvm@%s" % LLVM_VERSION)
                 log.info("On darwin looking for %s" % llvm_config_binary)
                 print("On darwin looking for %s" % llvm_config_binary)
-            else:
+        else:
+            if (len(llvm_config_binary) == 0):
                 llvm_config_binary = None
                 for candidate in [
                         'llvm-config-%s.0',
