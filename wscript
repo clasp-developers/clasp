@@ -2347,6 +2347,7 @@ class export_symbols_list(Task.Task):
         # Get everything already external
         print("Ignore symbols missing")
         cmd = [ self.inputs[0].abspath(), "-y", self.outputs[0].abspath(), "-N" ]
+        result = runCmdLargeOutput(cmd);
         # Get the vtables
         for obj in self.inputs[2:]:
             if (self.bld.env["DEST_OS"] == DARWIN_OS):
