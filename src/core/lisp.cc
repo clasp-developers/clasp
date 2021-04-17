@@ -2418,7 +2418,7 @@ int Lisp_O::run() {
   if (globals_->_ExportedSymbolsAccumulate) {
     T_sp stream = core::cl__open(core::SimpleBaseString_O::make(globals_->_ExportedSymbolsFilename),
                                  kw::_sym_output);
-    core::core__mangledSymbols(_lisp->_true());
+    core::core__mangledSymbols(stream);
     cl__close(stream);
   }
   return exit_code;
