@@ -15,7 +15,7 @@
 namespace imageSaveLoad {
 
 
-  enum PointerType { UninitializedPointer, EndPointer, FunctionPointer, VtablePointer };
+  enum PointerType { UninitializedPointer=0, EndPointer=1, FunctionPointer=2, VtablePointer=3 };
 
 struct PointerBase {
   PointerType _pointerType;

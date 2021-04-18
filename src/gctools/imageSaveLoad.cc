@@ -1315,12 +1315,14 @@ struct SaveSymbolCallback : public core::SymbolCallback {
       }
       if (info.dli_sname == NULL) {
         printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
+               "     The PointerType is %lu\n"
                "     The info.dli_fname -> %s\n"
                "     The info.dli_fbase -> %p\n"
                "     The info.dli_sname -> %p\n"
                "     The info.dli_saddr -> %p\n",
                __FILE__, __LINE__, __FUNCTION__,
                (void*)address,
+               (uintptr_t)this->_Library._GroupedPointers[ii]._pointerType,
                info.dli_fname,
                (void*)info.dli_fbase,
                (void*)info.dli_sname,
