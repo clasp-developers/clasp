@@ -4,7 +4,8 @@
 
 #+cclasp
 (cl:defun sys::cclasp-snapshot-load-top-level ()
-    (cl:in-package :cl-user)
+  (cl:in-package :cl-user)
+  (format t "In cclasp-snapshot-load-top-level~%")
   (let ((core:*use-interpreter-for-eval* nil))
     (if (core:is-interactive-lisp)
         (core:top-level :noprint (core:noprint-p))
