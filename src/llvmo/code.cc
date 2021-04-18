@@ -41,7 +41,6 @@ ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, s
 
 ObjectFile_O::~ObjectFile_O() {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this ));
-  printf("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this );
   this->_Code = _Unbound<Code_O>();
 }
 
@@ -60,7 +59,6 @@ std::string Code_O::filename() const {
 
 Code_O::~Code_O() {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this ));
-  printf("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this );
 }
 
 
