@@ -1307,13 +1307,15 @@ struct SaveSymbolCallback : public core::SymbolCallback {
       Dl_info info;
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       int ret = dladdr( (void*)address, &info );
+      bool goodSymbol = true;
+      std::string saveName("");
       if ( ret == 0 ) {
         printf("%s:%d:%s During snapshot save the address %p could not be resolved using dladdr\n",
                __FILE__, __LINE__, __FUNCTION__,
                (void*)address);
-        abort();
-      }
-      if (info.dli_sname == NULL) {
+        hitBadPointers++;
+        goodSymbol = false;
+      } else if (info.dli_sname == NULL) {
         printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
                "     The PointerType is %lu\n"
                "     The info.dli_fname -> %s\n"
@@ -1328,8 +1330,10 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                (void*)info.dli_sname,
                (void*)info.dli_saddr);
         hitBadPointers++;
+        goodSymbol = false;
+      } else {
+        saveName = std::string(info.dli_sname);
       }
-      std::string saveName(info.dli_sname);
       if (global_debugSnapshot) {
         uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,saveName.c_str() );
         if (!dlsymAddr) {
@@ -1340,6 +1344,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                  saveName.c_str()
                );
           hitBadPointers++;
+          goodSymbol = false;
         // abort();
         } else if ( (address-dlsymAddr) > 64 ) {
           printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
@@ -1351,6 +1356,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                  saveName.c_str()
                  );
           hitBadPointers++;
+          goodSymbol = false;
         } else {
 #if 0
           printf("%s:%d:%s PASS! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
@@ -1364,16 +1370,18 @@ struct SaveSymbolCallback : public core::SymbolCallback {
 #endif
         }
       }
-      if (hitBadPointers) {
-        printf("There were %lu bad pointers - we need to figure out how to get this to zero\n", hitBadPointers );
-        abort();
+      if (goodSymbol) {
+        uint addressOffset = (address - (uintptr_t)info.dli_saddr);
+        this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
+                                                    (uint)saveName.size(),
+                                                    this->_Library._SymbolBuffer.size() );
+        std::copy( saveName.begin(), saveName.end(), std::back_inserter(this->_Library._SymbolBuffer) );
+        this->_Library._SymbolBuffer.push_back('\0');
       }
-      uint addressOffset = (address - (uintptr_t)info.dli_saddr);
-      this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
-                                                  (uint)saveName.size(),
-                                                  this->_Library._SymbolBuffer.size() );
-      std::copy( saveName.begin(), saveName.end(), std::back_inserter(this->_Library._SymbolBuffer) );
-      this->_Library._SymbolBuffer.push_back('\0');
+    }
+    if (hitBadPointers) {
+      printf("There were %lu bad pointers - we need to figure out how to get this to zero\n", hitBadPointers );
+      abort();
     }
   }
 };
