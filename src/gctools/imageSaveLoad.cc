@@ -1299,6 +1299,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
   //
   void generateSymbolTable() {
     printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
+    size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
       if (ii%1000==0) {
         printf("%lu remaining pointers to dladdr\n", ii );
@@ -1313,10 +1314,18 @@ struct SaveSymbolCallback : public core::SymbolCallback {
         abort();
       }
       if (info.dli_sname == NULL) {
-        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr\n",
+        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
+               "     The info.dli_fname -> %s\n"
+               "     The info.dli_fbase -> %p\n"
+               "     The info.dli_sname -> %p\n"
+               "     The info.dli_saddr -> %p\n",
                __FILE__, __LINE__, __FUNCTION__,
-               (void*)address);
-        abort();
+               (void*)address,
+               info.dli_fname,
+               (void*)info.dli_fbase,
+               (void*)info.dli_sname,
+               (void*)info.dli_saddr);
+        hitBadPointers++;
       }
       std::string saveName(info.dli_sname);
       if (global_debugSnapshot) {
@@ -1328,6 +1337,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                  (void*)address,
                  saveName.c_str()
                );
+          hitBadPointers++;
         // abort();
         } else if ( (address-dlsymAddr) > 64 ) {
           printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
@@ -1338,6 +1348,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                  (address - dlsymAddr),
                  saveName.c_str()
                  );
+          hitBadPointers++;
         } else {
 #if 0
           printf("%s:%d:%s PASS! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
@@ -1350,6 +1361,10 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                  );
 #endif
         }
+      }
+      if (hitBadPointers) {
+        printf("There were %lu bad pointers - we need to figure out how to get this to zero\n", hitBadPointers );
+        abort();
       }
       uint addressOffset = (address - (uintptr_t)info.dli_saddr);
       this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
@@ -1492,7 +1507,7 @@ void prepareRelocationTableForSave(Fixup* fixup) {
     printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers.size() );
     for ( size_t ii=0; ii<curLib._Pointers.size(); ii++ ) {
       if (groupPointerIdx < 0 || curLib._Pointers[ii]._address != curLib._Pointers[ii-1]._address ) {
-        curLib._GroupedPointers.emplace_back( curLib._Pointers[ii]._address );
+        curLib._GroupedPointers.emplace_back( curLib._Pointers[ii]._pointerType, curLib._Pointers[ii]._address );
         groupPointerIdx++;
       }
     // Now encode the relocation
@@ -1501,11 +1516,7 @@ void prepareRelocationTableForSave(Fixup* fixup) {
     printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
-#if 0
-    core::walk_loaded_objects_symbol_table( &thing );
-#else
     thing.generateSymbolTable();
-#endif
     printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
     for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
       if (curLib._SymbolInfo[ii]._SymbolLength<0) {
@@ -1517,7 +1528,7 @@ void prepareRelocationTableForSave(Fixup* fixup) {
 
 void updateRelocationTableAfterLoad(ISLLibrary& curLib) {
   LoadSymbolCallback thing(curLib);
-  curLib._GroupedPointers.resize(curLib._SymbolInfo.size(),NULL);
+  curLib._GroupedPointers.resize(curLib._SymbolInfo.size(),GroupedPointer());
 #if 0
   core::walk_loaded_objects_symbol_table( &thing );
 #else

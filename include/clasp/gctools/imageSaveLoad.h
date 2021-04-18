@@ -15,7 +15,7 @@
 namespace imageSaveLoad {
 
 
-enum PointerType { EndPointer, FunctionPointer, VtablePointer };
+  enum PointerType { UninitializedPointer, EndPointer, FunctionPointer, VtablePointer };
 
 struct PointerBase {
   PointerType _pointerType;
@@ -25,8 +25,14 @@ struct PointerBase {
 };
 
 struct GroupedPointer {
+  PointerType _pointerType;
   uintptr_t   _address;
-  GroupedPointer( uintptr_t address ) :
+GroupedPointer() :
+  _pointerType(UninitializedPointer),
+    _address(0)
+  {};
+GroupedPointer( PointerType t, uintptr_t address ) :
+  _pointerType(t),
     _address(address)
   {};
 };
