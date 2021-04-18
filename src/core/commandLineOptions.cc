@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <boost/program_options.hpp>
 #include "clasp/core/compiler.h"
+#include "clasp/core/ql.h"
+#include "clasp/core/lisp.h"
 #include <clasp/core/commandLineOptions.h>
 
 namespace core {
@@ -160,11 +162,11 @@ void process_clasp_arguments(CommandLineOptions* options)
       std::cout << "-mps-";
 #endif
 #ifdef USE_BOEHM
-      #ifdef USE_PRECISE_GC 
+#ifdef USE_PRECISE_GC 
       std::cout << "-boehmprecise-";
-      #else
+#else
       std::cout << "-boehm-";
-      #endif
+#endif
 #endif
       std::cout << CLASP_VERSION << std::endl;
       exit(0);
@@ -303,5 +305,23 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     iarg++;
   }
 }
+
+
+
+
+CL_DEFUN List_sp core__command_line_load_eval_sequence() {
+  List_sp loadEvals = _Nil<T_O>();
+  for (auto it : global_options->_LoadEvalList) {
+    Cons_sp one;
+    if (it.first == cloEval) {
+      one = Cons_O::create(kw::_sym_eval, SimpleBaseString_O::make(it.second));
+    } else {
+      one = Cons_O::create(kw::_sym_load, SimpleBaseString_O::make(it.second));
+    }
+    loadEvals = Cons_O::create(one, loadEvals);
+  }
+  return cl__nreverse(loadEvals);
+}
+  
 
 };

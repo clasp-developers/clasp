@@ -751,7 +751,7 @@ the stage, the +application-name+ and the +bitcode-name+"
                   (load (cdr entry))
                   (let ((cmd (read-from-string (cdr entry))))
                     (eval cmd))))
-          core::*command-line-load-eval-sequence*))
+          (core:command-line-load-eval-sequence)))
 
 (export 'maybe-load-clasprc)
 (defun maybe-load-clasprc ()

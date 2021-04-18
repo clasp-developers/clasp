@@ -2408,7 +2408,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
       DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
       cur_header = next_header;
     }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
 
     //
     // Fixup all the code objects now
@@ -2479,8 +2478,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     }
     DBG_SL(BF("Done working with all objects cur_header@%p\n") % (void*)cur_header );
   }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
-
 
   //
   // Ensure all isl buffer objects are forwarding
@@ -2489,7 +2486,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     ensure_forward_t ensure_forward( &islInfo );
     walk_image_save_load_objects((ISLHeader_s*)islbuffer,ensure_forward);
   }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
   
   //
   // Walk all the objects and fixup all the pointers
@@ -2500,7 +2496,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     globalPointerFix = maybe_follow_forwarding_pointer;
     walk_temporary_root_objects(root_holder,fixup_objects);
   }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
 
   //
   // Fixup the roots
@@ -2516,12 +2511,10 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     followForwardingPointersForRoots( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo );
     copyRoots((uintptr_t*)&global_symbols[0], (uintptr_t*)symbolRoots, fileHeader->_SymbolRootsCount );
   }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
 
 //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
   fixup_internals_t  internals( &fixup, &islInfo );
   walk_temporary_root_objects( root_holder, internals );
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
 
   //
   // Release the temporary roots
@@ -2562,7 +2555,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(_Nil<core::T_O>());
   FILE *null_out = fopen("/dev/null", "w");
   _lisp->_Roots._NullStream = core::IOStreamStream_O::makeIO("/dev/null", null_out);
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
   
   {
     char* pause_startup = getenv("CLASP_PAUSE_INIT");
