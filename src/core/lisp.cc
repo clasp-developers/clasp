@@ -628,9 +628,13 @@ void Lisp_O::startupLispEnvironment() {
   {
     char* pause_startup = getenv("CLASP_PAUSE_INIT");
     if (pause_startup) {
+#ifdef USE_SIGUSR1
+      gctools::wait_for_SIGUSR1("Paused for CLASP_PAUSE_INIT");
+#else
       printf("%s:%d PID = %d Paused after initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
+#endif
     }
   }
   //
@@ -2369,9 +2373,13 @@ int Lisp_O::run() {
       printf("%s:%d Setting core:*exit-backtrace* to T\n", __FILE__, __LINE__);
       _sym_STARexit_backtraceSTAR->setf_symbolValue(_lisp->_true());
     } else if (oCar(cur) == kw::_sym_pause_pid) {
+#ifdef USE_SIGUSR1
+      gctools::wait_for_SIGUSR1("Paused at startup");
+#else
       printf("%s:%d PID = %d  Paused at startup - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
+#endif
     }
   }
   // The system is fully up now

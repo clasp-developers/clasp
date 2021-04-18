@@ -26,6 +26,7 @@ namespace gctools {
 
 /*! The value of the signal that clasp uses to interrupt threads */
 int global_signal = SIGUSR2;
+bool global_SIGUSR1 = false;
 
 /*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
 core::T_sp safe_signal_name(int sig) {
@@ -258,6 +259,35 @@ void handle_signal_now(int sig) {
   }
 }
 
+
+// This is both a signal handler and called by signal handlers.
+void handle_SIGUSR1(int sig) {
+  global_SIGUSR1 = true;
+}
+
+void wait_for_SIGUSR1(const char* message) {
+  printf("%s:%d:%s\n"
+         "Paused for SIGUSR1 pid is %d\n"
+         "%s\n", __FILE__, __LINE__, __FUNCTION__, getpid(), message );
+  double dsec = 0.1;
+  double seconds = floor(dsec);
+  double frac_seconds = dsec - seconds;
+  double nanoseconds = (frac_seconds * 1000000000.0);
+  timespec ts;
+  while (!global_SIGUSR1) {
+    ts.tv_sec = seconds;
+    ts.tv_nsec = nanoseconds;
+    int code  = nanosleep(&ts, &ts);
+    if (code<0) {
+      if (errno==EINTR) continue;
+      printf("%s:%d:%s nanosleep return error: %d\n", __FILE__, __LINE__, __FUNCTION__, errno);
+      abort();
+    }
+  }
+  printf("%s:%d:%s Received SIGUSR1\n", __FILE__, __LINE__, __FUNCTION__ );
+  global_SIGUSR1 = false;
+}
+
 void handle_or_queue_signal(int signo) {
   if (interrupts_disabled_by_lisp()) {
     queue_signal(signo);
@@ -412,6 +442,7 @@ void initialize_signals(int clasp_signal) {
   INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGUSR1, (SA_NODEFER | SA_RESTART), handle_SIGUSR1);
   INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), handle_signal_now);
 #ifdef SIGVTALRM
@@ -531,8 +562,10 @@ CL_DEFUN core::List_sp core__signal_code_alist() {
 #ifdef SIGPROF
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPROF",KeywordPkg), core::clasp_make_fixnum(SIGPROF)), alist);
 #endif
+#if 0
 #ifdef SIGUSR1
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGUSR1",KeywordPkg), core::clasp_make_fixnum(SIGUSR1)), alist);
+#endif
 #endif
 #ifdef SIGUSR2
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGUSR2",KeywordPkg), core::clasp_make_fixnum(SIGUSR2)), alist);
@@ -659,8 +692,10 @@ void initialize_unix_signal_handlers() {
 #ifdef SIGINFO
         ADD_SIGNAL( SIGINFO, "SIGINFO", ext::_sym_information_interrupt);
 #endif
+#if 0
 #ifdef SIGUSR1
         ADD_SIGNAL( SIGUSR1, "SIGUSR1", _Nil<core::T_O>());
+#endif
 #endif
 #ifdef SIGUSR2
 #ifdef _TARGET_OS_DARWIN
