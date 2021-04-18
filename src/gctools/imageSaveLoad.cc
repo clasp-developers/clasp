@@ -1329,6 +1329,16 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                (void*)info.dli_fbase,
                (void*)info.dli_sname,
                (void*)info.dli_saddr);
+#ifdef _TARGET_OS_LINUX
+        Dl_info info2;
+        void*   extra_info;
+        int res = dladdr1( (void*)address, &info2, &extra_info, RTLD_DL_DYMENT );
+        printf("%s:%d:%s dladdr1 res = %d\n", __FILE__, __LINE__, __FUNCTION__, res );
+        Elf64_Sym* sym = *(Elf64_Sym**)extra_info;
+        if (sym->st_name) {
+          printf("%s:%d:%s dladdr1 Elf64_Sym name: %s\n", __FILE__, __LINE__, __FUNCTION__, (char*)sym->st_name );
+        }
+#endif
         hitBadPointers++;
         goodSymbol = false;
       } else {
