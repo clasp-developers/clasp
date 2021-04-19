@@ -173,7 +173,8 @@ class Code_O : public CodeBase_O {
   uintptr_t     _TextSegmentSectionId;
   void*         _StackmapStart;
   uintptr_t     _StackmapSize;
-  uintptr_t     _LiteralVectorStart; // offset from start of Code_O object
+// Absolute address of literals in memory - this must be in the _DataCode vector.
+  uintptr_t     _LiteralVectorStart;
   size_t        _LiteralVectorSizeBytes; // size in bytes
   gctools::GCArray_moveable<uint8_t> _DataCode;
 public:
@@ -198,6 +199,7 @@ public:
 
   size_t frontSize() const { return sizeof(*this); };
   size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };
+  // The location of the literals vector in memory
   void* literalsStart() const;
   virtual std::string filename() const;
 };

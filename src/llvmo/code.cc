@@ -76,6 +76,9 @@ std::string Code_O::__repr__() const {
   return ss.str();
 };
 
+/*! Return a pointer to the literals vector.
+The number of bytes in the literals vector is returned by literalsSize().
+*/
 void* Code_O::literalsStart() const {
   if (this->_State == SaveState) {
     return (void*)&this->_DataCode[0];
