@@ -185,7 +185,8 @@ Only the outermost WITH-CAPPED-STACK matters for this purpose."
 (defun call-with-stack (function &key (delimited t))
   "Functional form of WITH-STACK."
   (core:call-with-operating-system-backtrace
-   (lambda (pointers symbols)
+   (lambda (pointers symbols bps)
+     (declare (ignore bps))
      (let* ((floor (frames-from-os-backtrace pointers symbols))
             (*stack-bot* (if delimited (find-bottom-frame floor) floor))
             (*stack-top* (if delimited (find-top-frame *stack-bot*) nil)))

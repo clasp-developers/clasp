@@ -28,13 +28,18 @@ CL_DEFUN T_mv core__call_with_operating_system_backtrace(Function_sp function) {
       char **strings = backtrace_symbols(buffer, returned);
       ql::list pointers;
       ql::list names;
+      ql::list basepointers;
+      void* bp = __builtin_frame_address(0);
       for (size_t j = 0; j < returned; ++j) {
         pointers << Pointer_O::create(buffer[j]);
         names << SimpleBaseString_O::make(strings[j]);
+        basepointers << Pointer_O::create(bp);
+        if (bp) bp = *(void**)bp;
       }
       free(buffer);
       free(strings);
-      return eval::funcall(function, pointers.cons(), names.cons());
+      return eval::funcall(function, pointers.cons(), names.cons(),
+                           basepointers.cons());
     }
     // realloc_array would be nice, but macs don't have it
     num *= 2;
