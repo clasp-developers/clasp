@@ -1320,18 +1320,24 @@ struct SaveSymbolCallback : public core::SymbolCallback {
         goodSymbol = false;
       } else if (info.dli_sname == NULL) {
         printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
+               "  When this happens run 'nm <executable> | grep %p\n"
+               "   Then write a wrapper for that function - it's probably an inlined function \n"
+               "       that dladdr doesn't like - I don't know any other way around this\n"
                "     The PointerType is %lu\n"
                "     The info.dli_fname -> %s\n"
                "     The info.dli_fbase -> %p\n"
                "     The info.dli_sname -> %p\n"
                "     The info.dli_saddr -> %p\n",
                __FILE__, __LINE__, __FUNCTION__,
-               (void*)address,
-               (uintptr_t)this->_Library._GroupedPointers[ii]._pointerType,
+               (void*)address, 
+               (void*)address, 
+              (uintptr_t)this->_Library._GroupedPointers[ii]._pointerType,
                info.dli_fname,
                (void*)info.dli_fbase,
                (void*)info.dli_sname,
                (void*)info.dli_saddr);
+#if 0
+        // This hangs - I'm not sure why not
 #ifdef _TARGET_OS_LINUX
         Dl_info info2;
         void*   extra_info;
@@ -1341,6 +1347,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
         if (sym->st_name) {
           printf("%s:%d:%s dladdr1 Elf64_Sym name: %s\n", __FILE__, __LINE__, __FUNCTION__, (char*)sym->st_name );
         }
+#endif
 #endif
         hitBadPointers++;
         goodSymbol = false;

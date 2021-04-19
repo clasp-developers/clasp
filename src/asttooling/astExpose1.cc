@@ -769,6 +769,11 @@ CL_DEFUN bool cast__isCanonical(clang::QualType qt)
   return qt.isCanonical();
 }
 
+CL_DEFUN bool cast__isStaticLocal(clang::VarDecl *vd)
+{
+  return vd->isStaticLocal();
+}
+
 CL_DEFUN clang::QualType cast__getCanonicalType(clang::QualType qt)
 {
   return qt.getCanonicalType();
@@ -955,9 +960,9 @@ void initialize_astExpose() {
   CLASS_DECL(m,NonTypeTemplateParm, DeclaratorDecl);
   CLASS_DECL(m,Var, DeclaratorDecl)
     .def("getSourceRange", &clang::VarDecl::getSourceRange)
-    .def("isStaticLocal", &clang::VarDecl::isStaticLocal)
     .def("isLocalVarDecl", &clang::VarDecl::isLocalVarDecl)
     .def("hasGlobalStorage", &clang::VarDecl::hasGlobalStorage);
+  m.def("isStaticLocal", &cast__isStaticLocal);
   CLASS_DECL(m,ImplicitParam, VarDecl);
   CLASS_DECL(m,ParmVar, VarDecl);
   CLASS_DECL(m,VarTemplateSpecialization, VarDecl);
