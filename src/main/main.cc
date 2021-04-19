@@ -569,7 +569,7 @@ int main( int argc, char *argv[] )
     char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
     if (pause_startup) {
 #ifdef USE_USER_SIGNAL
-      setup_user_signal();
+      gctools::setup_user_signal();
       gctools::wait_for_user_signal("Paused at startup before all initialization");
 #else
       printf("%s:%d PID = %d  Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
