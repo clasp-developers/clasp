@@ -259,11 +259,11 @@ void handle_signal_now(int sig) {
   }
 }
 
-
 // This is both a signal handler and called by signal handlers.
 void handle_SIGUSR1(int sig) {
   global_SIGUSR1 = true;
 }
+
 
 void wait_for_SIGUSR1(const char* message) {
   printf("%s:%d:%s\n"
@@ -287,6 +287,7 @@ void wait_for_SIGUSR1(const char* message) {
   printf("%s:%d:%s Received SIGUSR1\n", __FILE__, __LINE__, __FUNCTION__ );
   global_SIGUSR1 = false;
 }
+
 
 void handle_or_queue_signal(int signo) {
   if (interrupts_disabled_by_lisp()) {
@@ -532,12 +533,17 @@ CL_DEFUN core::List_sp core__signal_code_alist() {
 #ifdef SIGSTOP
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSTOP",KeywordPkg), core::clasp_make_fixnum(SIGSTOP)), alist);
 #endif
+
+
+#if 0
 #ifdef SIGTSTP
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTSTP",KeywordPkg), core::clasp_make_fixnum(SIGTSTP)), alist);
 #endif
 #ifdef SIGCONT
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGCONT",KeywordPkg), core::clasp_make_fixnum(SIGCONT)), alist);
 #endif
+#endif
+  
 #ifdef SIGCHLD
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGCHLD",KeywordPkg), core::clasp_make_fixnum(SIGCHLD)), alist);
 #endif
@@ -650,6 +656,8 @@ void initialize_unix_signal_handlers() {
 #ifdef SIGSTOP
         ADD_SIGNAL( SIGSTOP, "SIGSTOP", _Nil<core::T_O>());
 #endif
+
+
 #ifdef SIGTSTP
         ADD_SIGNAL( SIGTSTP, "SIGTSTP", _Nil<core::T_O>());
 #endif

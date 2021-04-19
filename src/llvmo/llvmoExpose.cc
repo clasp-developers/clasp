@@ -2974,7 +2974,10 @@ CL_DEFUN llvm::Value* llvm_sys__CreateShl_value_value(llvmo::IRBuilderBase_O::Ex
 CL_LISPIFY_NAME(CreateShl_value_apint);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
 CL_LISPIFY_NAME(CreateShl_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
+// CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
+CL_DEFUN llvm::Value* llvm_sys__CreateShl_value_uint64(llvmo::IRBuilderBase_O::ExternalType* object,llvm::Value *LHS, uint64_t RHS, const llvm::Twine & name, bool HasNUW, bool HasNSW) {
+  return object->CreateShl(LHS,RHS,name,HasNUW,HasNSW);
+}
 CL_LISPIFY_NAME(CreateLShr_value_value);
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateLShr);
 CL_DEFUN llvm::Value* llvm_sys__CreateLShr_value_value(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value *value1, llvm::Value *value2, const llvm::Twine & label, bool isExact) {
