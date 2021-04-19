@@ -129,7 +129,7 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
     dont_expose<Mutex> _SuspensionMutex;
     dont_expose<ConditionVariable> _SuspensionCV;
     size_t _StackSize;
-    dont_expose<pthread_t> _Thread;
+    dont_expose<pthread_t> _TheThread;
     // Need to match fields in the two GC's
 #ifdef USE_BOEHM
     dont_expose<void*> thr_o;
@@ -153,7 +153,7 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
       }
     };
     
-    int start() {
+    int startProcess() {
       pthread_attr_t attr;
       int result;
       result = pthread_attr_init(&attr);
@@ -161,7 +161,7 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
       if (result!=0) return result;
       this->_Phase = Active;
       ThreadStartInfo* info = new ThreadStartInfo(this->_UniqueID); // delete this in start_thread
-      result = pthread_create(&this->_Thread._value, &attr, start_thread, (void*)info);
+      result = pthread_create(&this->_TheThread._value, &attr, start_thread, (void*)info);
       pthread_attr_destroy(&attr);
       return result;
     }

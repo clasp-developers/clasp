@@ -391,7 +391,7 @@ CL_DEFUN void mp__process_start(Process_sp process)
 {
   if (process->_Phase == Nascent) {
     _lisp->add_process(process);
-    process->start();
+    process->startProcess();
   } else SIMPLE_ERROR(BF("The process %s has already started.") % process);
 };
 
@@ -407,7 +407,7 @@ CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp functio
     // The process needs to be added to the list of processes before process->start() is called.
     // The child process code needs this to find the process in the list
     _lisp->add_process(process);
-    process->start();
+    process->startProcess();
     return process;
   }
   SIMPLE_ERROR(BF("%s is not a function - you must provide a function to run in a separate process") % _rep_(function));
@@ -487,7 +487,7 @@ CL_DOCSTRING("Wait for the given process to finish executing. If the process's f
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
   if (process->_Phase != Exited ) {
-    pthread_join(process->_Thread._value,NULL);
+    pthread_join(process->_TheThread._value,NULL);
   }
   if (process->_Aborted)
     ERROR(_sym_process_join_error,

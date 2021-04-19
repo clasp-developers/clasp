@@ -26,7 +26,7 @@ namespace gctools {
 
 /*! The value of the signal that clasp uses to interrupt threads */
 int global_signal = SIGUSR2;
-bool global_SIGUSR1 = false;
+bool global_user_signal = false;
 
 /*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
 core::T_sp safe_signal_name(int sig) {
@@ -107,7 +107,7 @@ static bool do_interrupt_thread(mp::Process_sp process)
   return ok;
 # else
   int signal = global_signal;
-  if (pthread_kill(process->_Thread._value,signal)) {
+  if (pthread_kill(process->_TheThread._value,signal)) {
     FElibc_error("Unable to interrupt process ~A", 1,
                  process);
   }
@@ -259,13 +259,17 @@ void handle_signal_now(int sig) {
   }
 }
 
+
 // This is both a signal handler and called by signal handlers.
 void handle_SIGUSR1(int sig) {
-  global_SIGUSR1 = true;
+  global_user_signal = true;
 }
 
+void setup_user_signal() {
+  signal( SIGUSR1, handle_SIGUSR1 );
+}  
 
-void wait_for_SIGUSR1(const char* message) {
+void wait_for_user_signal(const char* message) {
   printf("%s:%d:%s\n"
          "Paused for SIGUSR1 pid is %d\n"
          "%s\n", __FILE__, __LINE__, __FUNCTION__, getpid(), message );
@@ -274,7 +278,7 @@ void wait_for_SIGUSR1(const char* message) {
   double frac_seconds = dsec - seconds;
   double nanoseconds = (frac_seconds * 1000000000.0);
   timespec ts;
-  while (!global_SIGUSR1) {
+  while (!global_user_signal) {
     ts.tv_sec = seconds;
     ts.tv_nsec = nanoseconds;
     int code  = nanosleep(&ts, &ts);
@@ -285,7 +289,7 @@ void wait_for_SIGUSR1(const char* message) {
     }
   }
   printf("%s:%d:%s Received SIGUSR1\n", __FILE__, __LINE__, __FUNCTION__ );
-  global_SIGUSR1 = false;
+  global_user_signal = false;
 }
 
 
@@ -400,7 +404,7 @@ void wake_up_thread(int sig)
 
 void initialize_signals(int clasp_signal) {
   // clasp_signal is the signal that we use as a thread interrupt.
-
+  printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
 #define INIT_SIGNAL(sig,flags,handler)         \
   new_action.sa_handler = handler;             \
   sigemptyset (&new_action.sa_mask);           \
@@ -443,6 +447,8 @@ void initialize_signals(int clasp_signal) {
   INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  printf("%s:%d:%s Installing SIGUSR1 handler \n",
+         __FILE__, __LINE__, __FUNCTION__ );
   INIT_SIGNAL(SIGUSR1, (SA_NODEFER | SA_RESTART), handle_SIGUSR1);
   INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), handle_signal_now);
