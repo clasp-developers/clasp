@@ -33,6 +33,9 @@
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/imageSaveLoad.h>
 
+#ifdef _TARGET_OS_LINUX
+#include <elf.h>
+#endif
 
 namespace imageSaveLoad {
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
