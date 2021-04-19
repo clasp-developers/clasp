@@ -1291,8 +1291,8 @@ Extra care is taken to ensure no errors are signaled. If the object cannot be pr
 (defun prin1-frame-call (frame &optional output-stream-designator)
   "PRIN1 a representation of the given frame's call to the stream (default *STANDARD-OUTPUT*).
 Extra care is taken to ensure no errors are signaled, using SAFE-PRIN1."
-  (let ((fname (clasp-debug:frame-function-name frame))
-        (args (clasp-debug:frame-arguments frame)))
+  (let ((fname (frame-function-name frame))
+        (args (frame-arguments frame)))
     (if (null args)
         (display-fname fname output-stream-designator)
         (progn (write-char #\( output-stream-designator)
@@ -1308,8 +1308,8 @@ Extra care is taken to ensure no errors are signaled, using SAFE-PRIN1."
   (let ((string
           (handler-case
               (format nil "~a:~d"
-                      (clasp-debug:code-source-line-pathname code-source-line)
-                      (clasp-debug:code-source-line-line-number code-source-line))
+                      (code-source-line-pathname code-source-line)
+                      (code-source-line-line-number code-source-line))
             (serious-condition () "error while printing code-source-line"))))
     (write-string string output-stream-designator)))
 
