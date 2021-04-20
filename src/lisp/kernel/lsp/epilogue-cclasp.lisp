@@ -4,7 +4,8 @@
 
 #+cclasp
 (cl:defun sys::cclasp-snapshot-load-top-level ()
-    (cl:in-package :cl-user)
+  (cl:in-package :cl-user)
+  (core:process-command-line-load-eval-sequence)
   (let ((core:*use-interpreter-for-eval* nil))
     (if (core:is-interactive-lisp)
         (core:top-level :noprint (core:noprint-p))
@@ -24,5 +25,5 @@
 #+cclasp
 (eval-when (:load-toplevel)
   (cl:in-package :cl-user)
-  (setf ext:*image-save-load-startup* (lambda () (sys::cclasp-snapshot-load-top-level)))
+  (setf ext:*image-save-load-startup* 'sys::cclasp-snapshot-load-top-level)
   (sys::cclasp-top-level))

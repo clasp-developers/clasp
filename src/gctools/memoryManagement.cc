@@ -320,6 +320,14 @@ void client_validate_General_O_ptr(const core::General_O* client_ptr) {
   header->validate();
 }
 
+void client_validate_Cons_O_ptr(const core::Cons_O* client_ptr) {
+  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ConsPtrToHeaderPtr(reinterpret_cast<const void*>(client_ptr)));
+  if (!header->_stamp_wtag_mtag.consObjectP()) {
+    printf("%s:%d The header %p is not a cons header and it must be\n", __FILE__, __LINE__, (void*)client_ptr);
+    abort();
+  }
+}
+
 void client_validate_tagged(gctools::Tagged taggedClient) {
   if ( gctools::tagged_generalp(taggedClient))
   {
@@ -420,14 +428,25 @@ bool Header_s::preciseIsPolymorphic() const {
 
 
 
-CL_DEFUN core::T_mv gctools__ensure_valid_object(core::T_mv obj) {
+CL_DEFUN core::T_mv gctools__multiple_values_ensure_valid(core::T_mv obj) {
   if (obj.generalp()) {
     client_validate_General_O_ptr(obj.unsafe_general());
+  } else if (obj.consp()) {
+    client_validate_Cons_O_ptr(obj.unsafe_cons());
   }
   for ( size_t ii = 1; ii<obj.number_of_values(); ++ii ) {
     if (obj.valueGet_(ii).generalp()) {
       client_validate_General_O_ptr(obj.valueGet_(ii).unsafe_general());
     }
+  }
+  return obj;
+}
+
+CL_DEFUN core::T_sp gctools__ensure_valid(core::T_sp obj) {
+  if (obj.generalp()) {
+    client_validate_General_O_ptr(obj.unsafe_general());
+  } else if (obj.consp()) {
+    client_validate_Cons_O_ptr(obj.unsafe_cons());
   }
   return obj;
 }

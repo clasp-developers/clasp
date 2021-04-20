@@ -2254,5 +2254,10 @@ CL_DEFUN std::string core__safe_repr(core::T_sp obj) {
 
   SYMBOL_EXPORT_SC_(CorePkg, printCurrentIhsFrameEnvironment);
 
+CL_DEFUN Pointer_sp core__objectAddress(core::T_sp obj) {
+  Pointer_sp result = Pointer_O::create(&*obj);
+  return result;
+}
+
 
 };

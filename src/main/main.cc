@@ -81,6 +81,7 @@ THE SOFTWARE.
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/asttooling/asttoolingPackage.h>
 #include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/gctools/interrupt.h>
 #include <clasp/core/pathname.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #ifdef USE_MPI
@@ -567,9 +568,14 @@ int main( int argc, char *argv[] )
     }
     char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
     if (pause_startup) {
+#ifdef USE_USER_SIGNAL
+      gctools::setup_user_signal();
+      gctools::wait_for_user_signal("Paused at startup before all initialization");
+#else
       printf("%s:%d PID = %d  Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
+#endif
     }
   }
 

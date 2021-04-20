@@ -2881,13 +2881,33 @@ CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value* (IRBuilderBase_O::ExternalTyp
   CL_LISPIFY_NAME(CreateFPToSI);
   CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPToSI);
   CL_LISPIFY_NAME(CreateUIToFP);
-  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateUIToFP);
+//  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateUIToFP);
+// llvm::IRBuilderBase::CreateUIToFP(llvm::Value*, llvm::Type*, llvm::Twine const& )
+CL_DEFUN llvm::Value* llvm_sys__CreateUIToFP(llvmo::IRBuilderBase_O::ExternalType* object,llvm::Value* V, llvm::Type* DestTy, const llvm::Twine& Name ){
+  return object->CreateUIToFP(V,DestTy,Name);
+}
+
   CL_LISPIFY_NAME(CreateSIToFP);
-  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSIToFP);
+//  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSIToFP);
+// llvm::IRBuilderBase::CreateSIToFP(llvm::Value*, llvm::Type*, llvm::Twine const& )
+CL_DEFUN llvm::Value* llvm_sys__CreateSIToFP( llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value* V, llvm::Type* DestTy, const llvm::Twine& Name ){
+  return object->CreateSIToFP(V,DestTy,Name );
+}
+
   CL_LISPIFY_NAME(CreateFPTrunc);
-  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPTrunc);
+//  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPTrunc);
+// llvm::IRBuilderBase::CreateFPTrunc(llvm::Value*, llvm::Type*, llvm::Twine const& )
+CL_DEFUN llvm::Value* llvm_sys__CreateFPTrunc( llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value* V, llvm::Type* DestTy, const llvm::Twine& Name ) {
+  return object->CreateFPTrunc(V,DestTy,Name );
+}
+
   CL_LISPIFY_NAME(CreateFPExt);
-  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPExt);
+//  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPExt);
+// llvm::IRBuilderBase::CreateFPExt(llvm::Value*, llvm::Type*, llvm::Twine const& )
+CL_DEFUN llvm::Value* llvm_sys__CreateFPExt(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value *V, llvm::Type* DestTy, const llvm::Twine& Name ) {
+  return object->CreateFPExt(V, DestTy, Name );
+}
+
   CL_LISPIFY_NAME(CreatePtrToInt);
   CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreatePtrToInt);
   CL_LISPIFY_NAME(CreateIntToPtr);
@@ -2963,7 +2983,12 @@ CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateLandi
   CL_LISPIFY_NAME(CreateIsNull);
   CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateIsNull);
   CL_LISPIFY_NAME(CreateIsNotNull);
-  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateIsNotNull);
+//  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateIsNotNull);
+// llvm::IRBuilderBase::CreateIsNotNull(llvm::Value*, llvm::Twine const& )
+CL_DEFUN llvm::Value* llvm_sys__CreateIsNotNull(llvmo::IRBuilderBase_O::ExternalType* object,llvm::Value *Arg, const llvm::Twine & Name ) {
+  return object->CreateIsNotNull(Arg, Name );
+}
+
 CL_LISPIFY_NAME(CreatePtrDiff);
   CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreatePtrDiff);
 CL_LISPIFY_NAME(CreateShl_value_value);
@@ -2974,7 +2999,10 @@ CL_DEFUN llvm::Value* llvm_sys__CreateShl_value_value(llvmo::IRBuilderBase_O::Ex
 CL_LISPIFY_NAME(CreateShl_value_apint);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
 CL_LISPIFY_NAME(CreateShl_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
+// CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
+CL_DEFUN llvm::Value* llvm_sys__CreateShl_value_uint64(llvmo::IRBuilderBase_O::ExternalType* object,llvm::Value *LHS, uint64_t RHS, const llvm::Twine & name, bool HasNUW, bool HasNSW) {
+  return object->CreateShl(LHS,RHS,name,HasNUW,HasNSW);
+}
 CL_LISPIFY_NAME(CreateLShr_value_value);
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateLShr);
 CL_DEFUN llvm::Value* llvm_sys__CreateLShr_value_value(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value *value1, llvm::Value *value2, const llvm::Twine & label, bool isExact) {
@@ -2984,7 +3012,12 @@ CL_DEFUN llvm::Value* llvm_sys__CreateLShr_value_value(llvmo::IRBuilderBase_O::E
 CL_LISPIFY_NAME(CreateLShr_value_apint);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateLShr);
 CL_LISPIFY_NAME(CreateLShr_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateLShr);
+// CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateLShr);
+// llvm::IRBuilderBase::CreateLShr(llvm::Value*, unsigned long, llvm::Twine const& , bool)
+CL_DEFUN llvm::Value* llvm_sys__CreateLShr_value_uint64(llvmo::IRBuilderBase_O::ExternalType* object,llvm::Value *LHS, unsigned long RHS, const llvm::Twine & Name ,bool isExact) {
+  return object->CreateLShr(LHS, RHS, Name ,isExact);
+}
+
 CL_LISPIFY_NAME(CreateAShr_value_value);
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateAShr);
 CL_DEFUN llvm::Value* llvm_sys__CreateAShr_value_value(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value *value1, llvm::Value *value2, const llvm::Twine & label, bool isExact )  {
@@ -2992,7 +3025,12 @@ CL_DEFUN llvm::Value* llvm_sys__CreateAShr_value_value(llvmo::IRBuilderBase_O::E
 }
 
 CL_LISPIFY_NAME(CreateAShr_value_apint);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateAShr);
+// CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateAShr);
+// llvm::IRBuilderBase::CreateAShr(llvm::Value*, llvm::APInt const& , llvm::Twine const& , bool)
+CL_DEFUN llvm::Value* llvm_sys__CreateAShr_value_apint(llvmo::IRBuilderBase_O::ExternalType* object,llvm::Value *LHS, const llvm::APInt & RHS, const llvm::Twine & Name ,bool isExact) {
+  return object->CreateAShr(LHS, RHS, Name ,isExact);
+}
+
 CL_LISPIFY_NAME(CreateAShr_value_uint64);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateAShr);
 CL_LISPIFY_NAME(CreateAnd_value_value);
@@ -3002,9 +3040,19 @@ CL_DEFUN llvm::Value* llvm_sys__CreateAnd_value_value(llvmo::IRBuilderBase_O::Ex
 }
 
 CL_LISPIFY_NAME(CreateAnd_value_apint);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateAnd);
+//CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateAnd);
+// llvm::IRBuilderBase::CreateAnd(llvm::Value*, llvm::APInt const& , llvm::Twine const& )
+CL_DEFUN llvm::Value* llvm_sys__CreateAnd_value_apint(llvmo::IRBuilderBase_O::ExternalType* object,llvm::Value *LHS, const llvm::APInt& RHS, const llvm::Twine& Name ) {
+  return object->CreateAnd(LHS, RHS, Name );
+}
+
 CL_LISPIFY_NAME(CreateAnd_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateAnd);
+//CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateAnd);
+// llvm::IRBuilderBase::CreateAnd(llvm::Value*, unsigned long, llvm::Twine const& )
+CL_DEFUN llvm::Value* llvm_sys__CreateAnd_value_uint64(llvmo::IRBuilderBase_O::ExternalType* object,llvm::Value* LHS, uint64_t RHS, const llvm::Twine& Name ) {
+  return object->CreateAnd(LHS, RHS, Name );
+}
+
 CL_LISPIFY_NAME(CreateOr_value_value);
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateOr);
 CL_DEFUN llvm::Value* llvm_sys__CreateOr_value_value(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value *value1, llvm::Value *value2, const llvm::Twine & label) {
@@ -3012,7 +3060,12 @@ CL_DEFUN llvm::Value* llvm_sys__CreateOr_value_value(llvmo::IRBuilderBase_O::Ext
 }
 
 CL_LISPIFY_NAME(CreateOr_value_apint);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateOr);
+//CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateOr);
+// llvm::IRBuilderBase::CreateOr(llvm::Value*, llvm::APInt const& , llvm::Twine const& )
+CL_DEFUN llvm::Value* llvm_sys__CreateOr_value_apint(llvmo::IRBuilderBase_O::ExternalType* object,llvm::Value* LHS, const llvm::APInt& RHS, const llvm::Twine& Name ) {
+  return object->CreateOr(LHS, RHS, Name );
+}
+
 CL_LISPIFY_NAME(CreateOr_value_uint64);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateOr);
 CL_LISPIFY_NAME(CreateXor_value_value);
@@ -3258,7 +3311,11 @@ CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::Instruction *(llvm::BasicBlock::*)())&ll
 
 CL_LAMBDA("context &optional (name \"\") parent basic-block");
 CL_LISPIFY_NAME(basic-block-create);
-CL_EXTERN_DEFUN((llvm::BasicBlock * (*)(llvm::LLVMContext &Context, const llvm::Twine &Name, llvm::Function *Parent, llvm::BasicBlock *InsertBefore)) &llvm::BasicBlock::Create );
+//CL_EXTERN_DEFUN((llvm::BasicBlock * (*)(llvm::LLVMContext &Context, const llvm::Twine &Name, llvm::Function *Parent, llvm::BasicBlock *InsertBefore)) &llvm::BasicBlock::Create );
+// llvm::BasicBlock::Create(llvm::LLVMContext& , llvm::Twine const& , llvm::Function*, llvm::BasicBlock*)
+CL_DEFUN llvm::BasicBlock* llvm_sys__BasicBlockCreate(llvm::LLVMContext& Context, const llvm::Twine& Name ,llvm::Function* Parent, llvm::BasicBlock* InsertBefore) {
+  return llvm::BasicBlock::Create(Context, Name ,Parent, InsertBefore);
+}
 
 ;
 

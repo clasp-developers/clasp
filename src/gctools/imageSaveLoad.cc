@@ -33,6 +33,9 @@
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/imageSaveLoad.h>
 
+#ifdef _TARGET_OS_LINUX
+#include <elf.h>
+#endif
 
 namespace imageSaveLoad {
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
@@ -1299,6 +1302,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
   //
   void generateSymbolTable() {
     printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
+    size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
       if (ii%1000==0) {
         printf("%lu remaining pointers to dladdr\n", ii );
@@ -1306,19 +1310,50 @@ struct SaveSymbolCallback : public core::SymbolCallback {
       Dl_info info;
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       int ret = dladdr( (void*)address, &info );
+      bool goodSymbol = true;
+      std::string saveName("");
       if ( ret == 0 ) {
         printf("%s:%d:%s During snapshot save the address %p could not be resolved using dladdr\n",
                __FILE__, __LINE__, __FUNCTION__,
                (void*)address);
-        abort();
-      }
-      if (info.dli_sname == NULL) {
-        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr\n",
+        hitBadPointers++;
+        goodSymbol = false;
+      } else if (info.dli_sname == NULL) {
+        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
+               "  When this happens run 'nm <executable> | grep %p\n"
+               "   Then write a wrapper for that function - it's probably an inlined function \n"
+               "       that dladdr doesn't like - I don't know any other way around this\n"
+               "     The PointerType is %lu\n"
+               "     The info.dli_fname -> %s\n"
+               "     The info.dli_fbase -> %p\n"
+               "     The info.dli_sname -> %p\n"
+               "     The info.dli_saddr -> %p\n",
                __FILE__, __LINE__, __FUNCTION__,
-               (void*)address);
-        abort();
+               (void*)address, 
+               (void*)address, 
+              (uintptr_t)this->_Library._GroupedPointers[ii]._pointerType,
+               info.dli_fname,
+               (void*)info.dli_fbase,
+               (void*)info.dli_sname,
+               (void*)info.dli_saddr);
+#if 0
+        // This hangs - I'm not sure why not
+#ifdef _TARGET_OS_LINUX
+        Dl_info info2;
+        void*   extra_info;
+        int res = dladdr1( (void*)address, &info2, &extra_info, RTLD_DL_SYMENT );
+        printf("%s:%d:%s dladdr1 res = %d\n", __FILE__, __LINE__, __FUNCTION__, res );
+        Elf64_Sym* sym = *(Elf64_Sym**)extra_info;
+        if (sym->st_name) {
+          printf("%s:%d:%s dladdr1 Elf64_Sym name: %s\n", __FILE__, __LINE__, __FUNCTION__, (char*)sym->st_name );
+        }
+#endif
+#endif
+        hitBadPointers++;
+        goodSymbol = false;
+      } else {
+        saveName = std::string(info.dli_sname);
       }
-      std::string saveName(info.dli_sname);
       if (global_debugSnapshot) {
         uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,saveName.c_str() );
         if (!dlsymAddr) {
@@ -1328,6 +1363,8 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                  (void*)address,
                  saveName.c_str()
                );
+          hitBadPointers++;
+          goodSymbol = false;
         // abort();
         } else if ( (address-dlsymAddr) > 64 ) {
           printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
@@ -1338,6 +1375,8 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                  (address - dlsymAddr),
                  saveName.c_str()
                  );
+          hitBadPointers++;
+          goodSymbol = false;
         } else {
 #if 0
           printf("%s:%d:%s PASS! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
@@ -1351,12 +1390,18 @@ struct SaveSymbolCallback : public core::SymbolCallback {
 #endif
         }
       }
-      uint addressOffset = (address - (uintptr_t)info.dli_saddr);
-      this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
-                                                  (uint)saveName.size(),
-                                                  this->_Library._SymbolBuffer.size() );
-      std::copy( saveName.begin(), saveName.end(), std::back_inserter(this->_Library._SymbolBuffer) );
-      this->_Library._SymbolBuffer.push_back('\0');
+      if (goodSymbol) {
+        uint addressOffset = (address - (uintptr_t)info.dli_saddr);
+        this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
+                                                    (uint)saveName.size(),
+                                                    this->_Library._SymbolBuffer.size() );
+        std::copy( saveName.begin(), saveName.end(), std::back_inserter(this->_Library._SymbolBuffer) );
+        this->_Library._SymbolBuffer.push_back('\0');
+      }
+    }
+    if (hitBadPointers) {
+      printf("There were %lu bad pointers - we need to figure out how to get this to zero\n", hitBadPointers );
+      abort();
     }
   }
 };
@@ -1492,7 +1537,7 @@ void prepareRelocationTableForSave(Fixup* fixup) {
     printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers.size() );
     for ( size_t ii=0; ii<curLib._Pointers.size(); ii++ ) {
       if (groupPointerIdx < 0 || curLib._Pointers[ii]._address != curLib._Pointers[ii-1]._address ) {
-        curLib._GroupedPointers.emplace_back( curLib._Pointers[ii]._address );
+        curLib._GroupedPointers.emplace_back( curLib._Pointers[ii]._pointerType, curLib._Pointers[ii]._address );
         groupPointerIdx++;
       }
     // Now encode the relocation
@@ -1501,11 +1546,7 @@ void prepareRelocationTableForSave(Fixup* fixup) {
     printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
-#if 0
-    core::walk_loaded_objects_symbol_table( &thing );
-#else
     thing.generateSymbolTable();
-#endif
     printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
     for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
       if (curLib._SymbolInfo[ii]._SymbolLength<0) {
@@ -1517,7 +1558,7 @@ void prepareRelocationTableForSave(Fixup* fixup) {
 
 void updateRelocationTableAfterLoad(ISLLibrary& curLib) {
   LoadSymbolCallback thing(curLib);
-  curLib._GroupedPointers.resize(curLib._SymbolInfo.size(),NULL);
+  curLib._GroupedPointers.resize(curLib._SymbolInfo.size(),GroupedPointer());
 #if 0
   core::walk_loaded_objects_symbol_table( &thing );
 #else
@@ -2408,7 +2449,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
       DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
       cur_header = next_header;
     }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
 
     //
     // Fixup all the code objects now
@@ -2479,8 +2519,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     }
     DBG_SL(BF("Done working with all objects cur_header@%p\n") % (void*)cur_header );
   }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
-
 
   //
   // Ensure all isl buffer objects are forwarding
@@ -2489,7 +2527,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     ensure_forward_t ensure_forward( &islInfo );
     walk_image_save_load_objects((ISLHeader_s*)islbuffer,ensure_forward);
   }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
   
   //
   // Walk all the objects and fixup all the pointers
@@ -2500,7 +2537,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     globalPointerFix = maybe_follow_forwarding_pointer;
     walk_temporary_root_objects(root_holder,fixup_objects);
   }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
 
   //
   // Fixup the roots
@@ -2516,12 +2552,10 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     followForwardingPointersForRoots( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo );
     copyRoots((uintptr_t*)&global_symbols[0], (uintptr_t*)symbolRoots, fileHeader->_SymbolRootsCount );
   }
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
 
 //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
   fixup_internals_t  internals( &fixup, &islInfo );
   walk_temporary_root_objects( root_holder, internals );
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
 
   //
   // Release the temporary roots
@@ -2562,7 +2596,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(_Nil<core::T_O>());
   FILE *null_out = fopen("/dev/null", "w");
   _lisp->_Roots._NullStream = core::IOStreamStream_O::makeIO("/dev/null", null_out);
-  printf("%s:%d got here\n", __FILE__, __LINE__ );
   
   {
     char* pause_startup = getenv("CLASP_PAUSE_INIT");

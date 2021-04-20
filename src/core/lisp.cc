@@ -628,9 +628,13 @@ void Lisp_O::startupLispEnvironment() {
   {
     char* pause_startup = getenv("CLASP_PAUSE_INIT");
     if (pause_startup) {
+#ifdef USE_USER_SIGNAL
+      gctools::wait_for_user_signal("Paused for CLASP_PAUSE_INIT");
+#else
       printf("%s:%d PID = %d Paused after initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
+#endif
     }
   }
   //
@@ -2369,9 +2373,13 @@ int Lisp_O::run() {
       printf("%s:%d Setting core:*exit-backtrace* to T\n", __FILE__, __LINE__);
       _sym_STARexit_backtraceSTAR->setf_symbolValue(_lisp->_true());
     } else if (oCar(cur) == kw::_sym_pause_pid) {
+#ifdef USE_USER_SIGNAL
+      gctools::wait_for_user_signal("Paused at startup");
+#else
       printf("%s:%d PID = %d  Paused at startup - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
+#endif
     }
   }
   // The system is fully up now
@@ -2418,7 +2426,7 @@ int Lisp_O::run() {
   if (globals_->_ExportedSymbolsAccumulate) {
     T_sp stream = core::cl__open(core::SimpleBaseString_O::make(globals_->_ExportedSymbolsFilename),
                                  kw::_sym_output);
-    core::core__mangledSymbols(_lisp->_true());
+    core::core__mangledSymbols(stream);
     cl__close(stream);
   }
   return exit_code;
