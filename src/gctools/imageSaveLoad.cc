@@ -613,6 +613,7 @@ struct ISLFileHeader {
 
   uintptr_t _ObjectFileStart;
   uintptr_t _ObjectFileSize;
+  uintptr_t _ObjectFileCount;
 
   size_t _global_JITDylibCounter;
   size_t _global_JITCompileCounter;
@@ -649,8 +650,10 @@ struct copy_buffer_t {
   char* _BufferStart;
   char* _buffer;
   size_t _Size;
+  size_t _WriteCount;
   copy_buffer_t(size_t size)
-    : _Size(size) {
+    : _Size(size),
+      _WriteCount(0) {
     this->_BufferStart = (char*)malloc(size);
     this->_buffer = this->_BufferStart;
     memset(this->_buffer,'\0',size);
@@ -660,6 +663,7 @@ struct copy_buffer_t {
   }
 
   char* write_buffer(char* source, size_t bytes ) {
+    this->_WriteCount++;
     char* addr = this->_buffer;
     this->_buffer += bytes;
     if ((this->_BufferStart<=addr) && (addr <= (this->_BufferStart+this->_Size))
@@ -1573,7 +1577,7 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib) {
 }
   
 void image_save(const std::string& filename) {
-  global_debugSnapshot = getenv("DEBUG_SNAPSHOT")!=NULL;
+  global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
   
   //
   // Release object files
@@ -1836,6 +1840,7 @@ void image_save(const std::string& filename) {
 
   fileHeader->_ObjectFileStart = offset;
   fileHeader->_ObjectFileSize = image._ObjectFiles->_Size;
+  fileHeader->_ObjectFileCount = image._ObjectFiles->_WriteCount;
   fileHeader->describe("Loaded");
 
   std::ofstream wf(filename, std::ios::out | std::ios::binary);
@@ -1973,7 +1978,7 @@ struct CodeFixup_t {
 
 int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
   printf("%s:%d Started image_load\n", __FILE__, __LINE__ );
-  global_debugSnapshot = getenv("DEBUG_SNAPSHOT")!=NULL;
+  global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
   if (global_debugSnapshot) {
     if (maybeStartOfSnapshot) {
       printf("%s:%d using maybeStartOfSnapshot %p\n", __FILE__, __LINE__, maybeStartOfSnapshot );
@@ -2253,6 +2258,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     std::vector<CodeFixup_t> codeFixups;
     
     size_t countNullObjects = 0;
+    size_t objectFileCount = 0;
     for ( cur_header = start_header; cur_header->_Kind != End; ) {
       DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );
       if (cur_header->_Kind == General) {
@@ -2332,6 +2338,10 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
           }
           root_holder.add((void*)code.raw_());
           codeFixups.emplace_back(CodeFixup_t((llvmo::Code_O*)oldCode.unsafe_general(),((llvmo::Code_O*)code.unsafe_general())));
+          if (global_debugSnapshot) {
+            printf("Passed object file %lu/%lu to LLJIT\n", objectFileCount, fileHeader->_ObjectFileCount );
+          }
+          objectFileCount++;
         } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O) ) {
           // Don't do anything with Code_O objects - they are create by the ObjectFile_O objects
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -2600,9 +2610,13 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   {
     char* pause_startup = getenv("CLASP_PAUSE_INIT");
     if (pause_startup) {
+#if 1
+      gctools::wait_for_user_signal("Paused at startup before all initialization");
+#else
       printf("%s:%d PID = %d Paused after image-load - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
+#endif
     }
   }
   int exitCode;
