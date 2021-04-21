@@ -253,7 +253,6 @@ def collect_aclasp_lisp_files(wrappers = True):
         "src/lisp/kernel/lsp/seqlib",
         "src/lisp/kernel/lsp/iolib",
  #        "src/lisp/kernel/lsp/sharpmacros",
-        "src/lisp/kernel/lsp/backtrace",
         "src/lisp/kernel/lsp/trace",
         "src/lisp/kernel/cmp/cmpexports",
         "src/lisp/kernel/cmp/cmpsetup",
