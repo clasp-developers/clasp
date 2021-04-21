@@ -1031,6 +1031,7 @@ cl_index fsmIntegerDigit(char c, cl_index radix) {
   return idigit;
 }
 
+__attribute__((optnone))
 cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, String_sp str, cl_index istart, cl_index iend, bool junkAllowed, cl_index radix) {
   IntegerFSMState state = iinit;
   cl_index sign = 1;
@@ -1137,7 +1138,10 @@ CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radi
   mpz_class result;
   bool sawJunk = false;
   cl_index numDigits = 0;
-  cl_index cur = fsmInteger(result, numDigits, sawJunk, str, istart, iend, junkAllowed.isTrue(), radix);
+  cl_index cur = 0;
+  if (istart<iend) {
+    cur = fsmInteger(result, numDigits, sawJunk, str, istart, iend, junkAllowed.isTrue(), radix);
+  }
   if (junkAllowed.notnilp() || (cur >= iend) || !sawJunk) {
     // normal exit
     if (numDigits > 0) {
