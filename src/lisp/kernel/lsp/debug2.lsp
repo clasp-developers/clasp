@@ -48,6 +48,7 @@
 (defstruct (code-source-line (:type vector) :named)
   pathname line-number column)
 
+#+(or)
 (defclass frame ()
   ((%up :initarg :up :accessor %frame-up :reader frame-up)
    (%down :initarg :down :accessor %frame-down :reader frame-down)
@@ -55,6 +56,14 @@
    (%source-position :initarg :sp :reader frame-source-position)
    (%function-description :initarg :fd :reader frame-function-description)
    (%language :initarg :lang :reader frame-language)))
+(defstruct (frame (:conc-name "%FRAME-") (:type vector) :named)
+  up down function-name source-position function-description language)
+(defun frame-up (frame) (%frame-up frame))
+(defun frame-down (frame) (%frame-down frame))
+(defun frame-function-name (frame) (%frame-function-name frame))
+(defun frame-source-position (frame) (%frame-source-position frame))
+(defun frame-function-description (frame) (%frame-function-description frame))
+(defun frame-language (frame) (%frame-language frame))
 
 (defun frame-function (frame) (declare (ignore frame)) nil)
 (defun frame-arguments (frame) (declare (ignore frame)) nil)
@@ -91,6 +100,10 @@
   ;; make a frame from backtrace_symbols information - which is quite bare.
   (destructuring-bind (idx exec addr name plus offset) (core:split symbol " ")
     (declare (ignore idx exec addr plus offset))
+    (make-frame :source-position nil
+                :function-name (or (core:maybe-demangle name) name)
+                :function-description nil :language :c++)
+    #+(or)
     (make-instance 'frame :sp nil :fname (or (core:maybe-demangle name) name)
                    :fd nil :lang :c++)))
 
@@ -139,6 +152,16 @@
     (multiple-value-bind (filename fname source line column startline disc)
         (llvm-sys:get-line-info-for-address dc sectioned-address)
       (declare (ignore source startline disc))
+      (make-frame :function-name (decode-lisp-fname fname)
+                  :language :lisp
+                  :function-description (get-frame-function-description
+                                         sectioned-address object-file dc)
+                  :source-position (if filename
+                                       (make-code-source-line
+                                        :pathname filename :line-number line
+                                        :column column)
+                                       nil))
+      #+(or)
       (make-instance 'frame
         :fname (decode-lisp-fname fname) :lang :lisp
         :fd (get-frame-function-description sectioned-address object-file dc)
@@ -416,86 +439,3 @@ For example, for a function-name that is a symbol, returns that symbol's package
          nil)
         ;; shrug.
         (t nil)))
-
-;;; FIXME use conditions.lsp defs
-
-(defun safe-prin1 (object &optional output-stream-designator)
-  "PRIN1 the OBJECT to the given stream (default *STANDARD-OUTPUT*).
-Extra care is taken to ensure no errors are signaled. If the object cannot be printed, an unreadable representation is returned instead."
-  (let ((string
-          (handler-case
-              ;; First just try it.
-              (prin1-to-string object)
-            (serious-condition ()
-              (handler-case
-                  ;; OK, print type.
-                  ;; FIXME: Should print a pointer too but I don't actually
-                  ;; know how to get that from Lisp.
-                  (let ((type (type-of object)))
-                    (concatenate 'string
-                                 "#<error printing "
-                                 (prin1-to-string type)
-                                 ">"))
-                (serious-condition ()
-                  ;; Couldn't print the type. Give up entirely.
-                  "#<error printing object>"))))))
-    (write-string string output-stream-designator)))
-
-(defun display-fname (fname &optional output-stream-designator)
-  (if (stringp fname) ; C/C++ frame
-      (write-string fname output-stream-designator)
-      (safe-prin1 fname output-stream-designator)))
-
-(defun prin1-frame-call (frame &optional output-stream-designator)
-  "PRIN1 a representation of the given frame's call to the stream (default *STANDARD-OUTPUT*).
-Extra care is taken to ensure no errors are signaled, using SAFE-PRIN1."
-  (let ((fname (frame-function-name frame))
-        (args (frame-arguments frame)))
-    (if (null args)
-        (display-fname fname output-stream-designator)
-        (progn (write-char #\( output-stream-designator)
-               (display-fname fname output-stream-designator)
-               (loop for arg in args
-                     do (write-char #\Space output-stream-designator)
-                        (safe-prin1 arg output-stream-designator))
-               (write-char #\) output-stream-designator))))
-  frame)
-
-(defun princ-code-source-line (code-source-line &optional output-stream-designator)
-  "Write a human-readable representation of the CODE-SOURCE-LINE to the stream."
-  (let ((string
-          (handler-case
-              (format nil "~a:~d"
-                      (code-source-line-pathname code-source-line)
-                      (code-source-line-line-number code-source-line))
-            (serious-condition () "error while printing code-source-line"))))
-    (write-string string output-stream-designator)))
-
-(defun print-stack (base &key (stream *standard-output*) count source-positions)
-  "Write a representation of the stack beginning at BASE to STREAM.
-If COUNT is provided and not NIL, at most COUNT frames are printed.
-If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed."
-  (map-indexed-stack
-   (lambda (frame i)
-     (format stream "~&~4d: " i)
-     (prin1-frame-call frame stream)
-     (when source-positions
-       (let ((fsp (frame-source-position frame)))
-         (when fsp
-           (fresh-line stream)
-           (write-string "    |---> " stream)
-           (princ-code-source-line fsp stream)))))
-   base
-   :count count)
-  (fresh-line stream)
-  (values))
-
-(defun print-backtrace (&key (stream *standard-output*) count source-positions
-                          (delimited t))
-  "Write a current backtrace to STREAM.
-If COUNT is provided and not NIL, at most COUNT frames are printed.
-If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed.
-Other keyword arguments are passed to WITH-STACK."
-  (with-stack (stack :delimited delimited)
-    (print-stack stack :stream stream :count count
-                 :source-positions source-positions)))
