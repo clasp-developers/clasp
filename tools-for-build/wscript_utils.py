@@ -2,6 +2,7 @@ from waflib.Tools import cxx
 import sys, logging, os, subprocess
 from waflib import Logs, Task, TaskGen
 import waflib.Options
+from waflib import Utils
 
 try:
     from StringIO import StringIO
@@ -367,3 +368,39 @@ class embed_command_line_cxxprogram(cxx.cxxprogram):
             cmd = cmd + [ "/tmp/link_command.o" ]
         log.info("Caught exec_command cmd = %s" % cmd)
         return super(embed_command_line_cxxprogram,self).exec_command(cmd,**kw)
+
+
+def embed_snapshot(bld,snapshot_file,input_executable,output_executable,install_name):
+    log.info("dtarget -> %s" % output_executable )
+    log.info("bld.env[DEST_OS] = %s" % bld.env["DEST_OS"] )
+    if (bld.env["DEST_OS"] == DARWIN_OS):
+        log.info("dtarget -> %s" % output_executable )
+        env2 = bld.env.derive()
+        env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
+        env2.append_value("LINKFLAGS",["-sectcreate", "__CLASP", "__clasp", snapshot_file.abspath()])
+        link2 = embed_command_line_cxxprogram(env=env2)
+        link2.name = "final_build"
+        link2.set_inputs( bld.iclasp_link_task.inputs) # snapshot_file
+        link2.set_outputs( [ output_executable ] )
+        bld.add_to_group(link2)
+    else:
+        snapshot_object_file = bld.path.find_or_declare("generated/%s_snapshot.o" % install_name)
+        log.info("snapshot_object_file = %s" % snapshot_object_file.abspath() )
+        task = linux_snapshot_to_object(env=bld.env)
+        task.set_inputs( [snapshot_file])
+        task.set_outputs( [snapshot_object_file] )
+        bld.add_to_group(task)
+        link2 = embed_command_line_cxxprogram(env=bld.env)
+        link2.name = "final_build"
+        link2.set_inputs( bld.iclasp_link_task.inputs + [snapshot_object_file] ) # snapshot_file
+        link2.set_outputs( [ output_executable ] )
+        bld.add_to_group(link2)
+    bld.install_as('${PREFIX}/bin/%s'%install_name,output_executable,chmod=Utils.O755)
+    
+
+class linux_snapshot_to_object(waflib.Task.Task):
+    def run(self):
+        cmd = [ 'objcopy', '--input', 'binary', '--output', 'elf64-x86-64', '--binary-architecture', 'i386', self.inputs[0].bldpath(), self.outputs[0].bldpath() ]
+        log.info("linux_snapshot_to_object cmd = %s" % cmd )
+        return self.exec_command(cmd)
+    

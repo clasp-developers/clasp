@@ -1715,12 +1715,6 @@ def build(bld):
             if (os.path.islink(clasp_symlink_node.abspath())):
                 os.unlink(clasp_symlink_node.abspath())
                 
-        #
-        # Now build stage 3 is done in the main wscript - recurse into the extensions
-        #
-        bld.recurse('extensions',name='build3')
-            
-    if (bld.stage_val >= 4):
         print("Building exported symbols")
         bld.exported_symbols_file = bld.path.find_or_declare("generated/exported_symbols_list")
         if (bld.env["DEST_OS"] == DARWIN_OS):
@@ -1746,9 +1740,23 @@ def build(bld):
         else:
             print("What do you do with other OSs?")
             exit(1)
+        #
+        # Now build stage 3 is done in the main wscript - recurse into the extensions
+        #
         bld.recurse('extensions',name='build3')
+            
 
     if ( bld.stage_val >= 4):
+        bld_extensions = build_clasp_extension(env=bld.env)
+        snapshot_file = bld.path.find_or_declare("generated/%s.snapshot" % "clasp")
+        log.info("snapshot_file -> %s" % snapshot_file.abspath())
+        bld_extensions.set_inputs([bld.cclasp_executable,
+                                   bld.cclasp_link_product])
+        bld_extensions.set_outputs([snapshot_file])
+        bld.add_to_group(bld_extensions)
+        bld.add_group()
+        bld.dclasp_executable = bld.path.find_or_declare("clasp")
+        embed_snapshot(bld,snapshot_file,bld.cclasp_executable,bld.dclasp_executable,"clasp")
         bld.recurse('extensions',name='build4')
 
 def init(ctx):
@@ -2384,4 +2392,20 @@ class export_symbols_list(Task.Task):
         text_file.close()
         cmd = [ "echo", "Ignore \"no symbols\" above" ]
         return self.exec_command(cmd)
+
+class build_clasp_extension(waflib.Task.Task):
+    def run(self):
+        print("In build_extension self.env.enable_jupyter -> %s" % self.env.enable_jupyter)
+        cmd = [ self.inputs[0].abspath(), "-N"]
+        saveFile = self.outputs[0].abspath()
+        cmd = cmd + [ "-e", "(gctools:save-lisp-and-die \"%s\")" % saveFile ]
+        cmd = cmd + [ "-e", "(core:quit)" ]
+        print("build_extension cmd -> %s" % cmd)
+        print("build_extension outputs -> %s" % self.outputs)
+        return self.exec_command(cmd)
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(build_clasp_extension, self).exec_command(cmd, **kw)
+    def keyword(self):
+        return 'build extensions using... '
 
