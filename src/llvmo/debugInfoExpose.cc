@@ -412,6 +412,23 @@ CL_DEFUN core::T_sp getLocalsForAddress(DWARFContext_sp dc, SectionedAddress_sp 
   return res.cons();
 }
 
+CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LISPIFY_NAME(getAddressRangesForAddress);
+CL_DOCSTRING("Return the DWARF address ranges for the function DIE containing this address.");
+CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddress_sp sa) {
+  uint64_t addr = sa->_value.Address;
+  llvm::DWARFDie fdie = dc->wrappedPtr()->getDIEsForAddress(addr).FunctionDIE;
+  auto eranges = fdie.getAddressRanges();
+  if (eranges) {
+    ql::list res;
+    for (auto range : eranges.get())
+      res << core::Cons_O::create(core::Integer_O::create(range.LowPC),
+                                  core::Integer_O::create(range.HighPC));
+    return res.cons();
+  } else // TODO: signal error?
+    return _Nil<core::T_O>();
+}
+
 }; // llvmo, DIContext_O
 
 
