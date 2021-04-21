@@ -126,6 +126,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
              "export CLASP_DEBUG_BYTE_CODE   Dump info during startup for every byte-code\n"
+             "export CLASP_DEBUG_SNAPSHOT  Dump info during snapshot loading\n"
              "export CLASP_DEBUG_OBJECT_FILES \"save\" saves all object files, anything else prints info about object file generation\n"
              "export CLASP_PAUSE_STARTUP (set to anything)  Pause right at startup before basic initialization\n"
              "export CLASP_PAUSE_INIT (set to anything)  Pause after startup and after basic initialization\n"
