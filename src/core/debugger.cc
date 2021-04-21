@@ -1578,6 +1578,9 @@ void fill_in_interpreted_frames(std::vector<BacktraceEntry>& backtrace) {
 void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace) {
 //  printf("walk symbol tables and stackmaps for DARWIN\n");
   size_t symbol_table_memory = 0;
+#if 1
+  printf("%s:%d:%s backtraces are screwed up - returning\n", __FILE__, __LINE__, __FUNCTION__ );
+#else
   walk_loaded_objects(backtrace,symbol_table_memory);
     // Now search the jitted objects
 //  printf("%s:%d:%s search_jitted_objects false\n", __FILE__, __LINE__, __FUNCTION__);
@@ -1589,6 +1592,7 @@ void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace) {
   if (backtrace.size()==0) {
     WRITE_DEBUG_IO(BF("symbol-table-memory %lu\n") % symbol_table_memory);
   }
+#endif
 }
 
 
