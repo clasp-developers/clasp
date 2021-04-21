@@ -53,6 +53,7 @@
    (%down :initarg :down :accessor %frame-down :reader frame-down)
    (%fname :initarg :fname :reader frame-function-name)
    (%source-position :initarg :sp :reader frame-source-position)
+   (%function-description :initarg :fd :reader frame-function-description)
    (%language :initarg :lang :reader frame-language)))
 
 (defun frame-function (frame) (declare (ignore frame)) nil)
@@ -60,16 +61,18 @@
 (defun frame-locals (frame) (declare (ignore frame)) nil)
 (defun frame-function-lambda-list (frame)
   "Return the lambda list of the function being called in this frame, and a second value indicating success. This function may fail, in which case the first value is undefined and the second is NIL. In success the first value is the lambda list and the second value is true."
-  ;; FIXME: Get from function description
-  (let ((f (frame-function frame)))
-    (if f
-        (ext:function-lambda-list f)
+  (let ((fd (frame-function-description frame)))
+    (if fd
+        (values (core:function-description-lambda-list fd) t)
         (values nil nil))))
 (defun frame-function-source-position (frame)
   "Return a CODE-SOURCE-LINE object representing the source file position for this frame's function."
-  ;; TODO: Get from function description
-  (declare (ignore frame))
-  nil)
+  (let ((fd (frame-function-description frame)))
+    (when fd
+      (make-code-source-line
+       :pathname (core:function-description-source-pathname fd)
+       :line-number (core:function-description-lineno fd)
+       :column (core:function-description-column fd)))))
 (defun frame-function-form (frame)
   "Return a lambda expression for this frame's function if it's available, or else NIL."
   ;; TODO
@@ -77,10 +80,9 @@
   nil)
 (defun frame-function-documentation (frame)
   "Return the docstring for this frame's function if it exists and is available, or else NIL."
-  (let ((f (frame-function frame)))
-    (if f
-        (documentation f 'function)
-        nil)))
+  (let ((fd (frame-function-description frame)))
+    (when fd
+      (core:function-description-docstring fd))))
 (defun disassemble-frame (frame)
   "Disassemble this frame's function to *standard-output*."
   (declare (ignore frame)))
@@ -90,7 +92,7 @@
   (destructuring-bind (idx exec addr name plus offset) (core:split symbol " ")
     (declare (ignore idx exec addr plus offset))
     (make-instance 'frame :sp nil :fname (or (core:maybe-demangle name) name)
-                   :lang :c++)))
+                   :fd nil :lang :c++)))
 
 (defun decode-lisp-fname (fname)
   (let* ((parts (cmp:unescape-and-split-jit-name fname))
@@ -107,6 +109,31 @@
           ((string= type-name "SETF") `(setf ,symbol))
           (t symbol))))
 
+(defun in-address-range-p (addr ranges)
+  ;; DWARF docs say a range is lower inclusive, upper exclusive.
+  (loop for (low . high) in ranges
+        when (and (<= low addr) (< addr high))
+          return t
+        finally (return nil)))
+
+(defun get-frame-function-description
+    (sectioned-address object-file dwarf-context)
+  (let ((address-ranges
+          (llvm-sys:get-address-ranges-for-address
+           dwarf-context sectioned-address))
+        (code (llvm-sys:object-file-code object-file)))
+    (loop for i below (llvm-sys:code-literals-length code)
+          for e = (llvm-sys:code-literals-ref code i)
+          do (typecase e
+               (core:local-entry-point
+                (let ((addr (core:local-entry-point-relptr e)))
+                  (when (in-address-range-p addr address-ranges)
+                    (return (core:function-description e)))))
+               (core:global-entry-point
+                (let ((addr (core:global-entry-point-relptr e)))
+                  (when (in-address-range-p addr address-ranges)
+                    (return (core:function-description e)))))))))
+
 (defun frame-from-dwarf (sectioned-address object-file)
   (let ((dc (llvm-sys:create-dwarf-context object-file)))
     (multiple-value-bind (filename fname source line column startline disc)
@@ -114,6 +141,7 @@
       (declare (ignore source startline disc))
       (make-instance 'frame
         :fname (decode-lisp-fname fname) :lang :lisp
+        :fd (get-frame-function-description sectioned-address object-file dc)
         :sp (if filename
                 (make-code-source-line
                  :pathname filename :line-number line :column column)
