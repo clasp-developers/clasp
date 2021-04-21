@@ -9,9 +9,6 @@
 ;;; CMU Common Lisp pretty printer.
 ;;; Written by William Lott.  Algorithm stolen from Richard Waters' XP.
 ;;;
-
-#+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
-	(setq core::*echo-repl-read* t))
   
 (in-package "SI")
 
@@ -716,9 +713,6 @@
 	 nil)
 	((or (null object)
 	     (zerop count)
-	     (fixnump object)
-	     (characterp object)
-	     (and (symbolp object) (symbol-package object))
 	     (null *circle-counter*))
 	 t)
 	((eql 'NULL (setf code (gethash object *circle-stack* 'NULL)))
@@ -750,18 +744,11 @@
 	 (setf *print-level* (1- *print-level*)))))
 
 (defun search-print-circle (object)
-  (let ((code (gethash object *circle-stack* -1)))
-    (if (fixnump *circle-counter*)
-	(cond ((or (eql code -1) (null code))
-	       ;; Is not referenced or was not found before
-	       0)
-	      ((eql code t)
-	       ;; Reference twice but had no code yet
-	       (setf (gethash object *circle-stack*)
-		     (setf *circle-counter* (1+ *circle-counter*)))
-	       (- *circle-counter*))
-	      (t code))
-	(cond ((eql code -1)
+  (multiple-value-bind
+        (code present-p)
+      (gethash object *circle-stack*)
+    (if (not (fixnump *circle-counter*))
+        (cond ((not present-p)
 	       ;; Was not found before
 	       (setf (gethash object *circle-stack*) nil)
 	       0)
@@ -771,62 +758,83 @@
 	       1)
 	      (t
 	       ;; Further references
-	       2)))))
+	       2))
+	(cond ((or (not present-p) (null code))
+	       ;; Is not referenced or was not found before
+	       0)
+	      ((eql code t)
+	       ;; Reference twice but had no code yet
+               (incf *circle-counter*)
+	       (setf (gethash object *circle-stack*)
+		     *circle-counter*)
+	       (- *circle-counter*))
+	      (t code)))))
+	       
+(defun write-object-with-circle (object stream function)
+  (if (and *print-circle*
+           (not (null object))
+           (not (fixnump object))
+           (not (characterp object))
+           (or (not (symbolp object)) (null (symbol-package object))))
+            ;;; *print-circle* and an object that might have a circle
+      (if (null *circle-counter*)
+          (let* ((hash (make-hash-table :test 'eq
+                                        :size 1024))
+                 (*circle-counter* t)
+                 (*circle-stack* hash))
+            (write-object-with-circle object (make-broadcast-stream) function)
+            (setf *circle-counter* 0)
+            (write-object-with-circle object stream function)
+            (clrhash hash)
+            object)
+          (let ((code (search-print-circle object)))
+            (cond ((not (fixnump *circle-counter*))
+                   ;; We are only inspecting the object to be printed.
+                   ;; Only print X if it was not referenced before
+                   (if (not (zerop code))
+                       object
+                       (funcall function object stream)))
+                  ((zerop code)
+                   ;; Object is not referenced twice
+                   (funcall function object stream))
+                  ((minusp code)
+                   ;; Object is referenced twice. We print its definition 
+                   (write-char #\# stream)
+                   (let ((*print-radix* nil)
+                         (*print-base* 10))
+                     (write-ugly-object (- code) stream))
+                   (write-char #\= stream)
+                   (funcall function object stream))
+                  (t
+                   ;; Second reference to the object
+                   (write-char #\# stream)
+                   (let ((*print-radix* nil)
+                         (*print-base* 10))
+                     (write-ugly-object code stream))
+                   (write-char #\# stream)
+                   object))
+            ))
+      ;;; live is good, print simple
+      (funcall function object stream)
+      ))
 
 (defun do-pprint-logical-block (function object stream prefix
 				per-line-prefix-p suffix)
-  (unless (listp object)
-    (write-object object stream)
-    (return-from do-pprint-logical-block nil))
-  (when (and (not *print-readably*) (eql *print-level* 0))
-    (write-char #\# stream)
-    (return-from do-pprint-logical-block nil))
-  (unless (or (not *print-circle*)
-	      (fixnump object)
-	      (characterp object)
-	      (and (symbolp object) (symbol-package object)
-                   ;; This is so that we do handle print-circle even when e.g. pretty printing a vector
-                   ;; (for which object = nil here).
-                   ;; It doesn't SEEM to result in (NIL . NIL) being printed as (#1=NIL . #1#), but
-                   ;; I don't understand this very well.
-                   (not (null object))))
-    (let (code)
-      (cond ((not *circle-counter*)
-	     (let* ((hash (make-hash-table :test 'eq :size 1024
-					   :rehash-size 1.5
-					   :rehash-threshold 0.75))
-		    (*circle-counter* t)
-		    (*circle-stack* hash))
-	       (do-pprint-logical-block function object
-					(make-pretty-stream (make-broadcast-stream))
-					prefix per-line-prefix-p suffix)
-	       (setf *circle-counter* 0)
-	       (do-pprint-logical-block function object stream
-					prefix per-line-prefix-p suffix))
-	     (return-from do-pprint-logical-block nil))
-	    ((zerop (setf code (search-print-circle object)))
-	     ;; Object was not referenced before: we must either traverse it
-	     ;; or print it.
-	     )
-	    ((minusp code)
-	     ;; First definition, we write the #n=... prefix
-	     (write-string "#" stream)
-	     (let ((*print-radix* nil) (*print-base* 10))
-	       (write-ugly-object (- code) stream))
-	     (write-string "=" stream))
-	    (t
-	     ;; Further references, we write the #n# tag and exit
-	     (write-string "#" stream)
-	     (let ((*print-radix* nil) (*print-base* 10))
-	       (write-ugly-object code stream))
-	     (write-string "#" stream)
-	     (return-from do-pprint-logical-block nil)))))
-  (let ((*print-level* (and (not *print-readably*)
-			    *print-level*
-			    (1- *print-level*))))
-    (start-logical-block stream prefix per-line-prefix-p suffix)
-    (funcall function object stream)
-    (end-logical-block stream))
+  (cond ((not (listp object))
+         (write-object object stream))
+        ((and (not *print-readably*) (eql *print-level* 0))
+         (write-char #\# stream))
+        (t (write-object-with-circle
+            object stream
+            #'(lambda (object stream1)
+                (unless (pretty-stream-p stream1)
+                  (setf stream1 (make-pretty-stream stream1)))
+                (let ((*print-level* (and (not *print-readably*)
+                                          *print-level*
+                                          (1- *print-level*))))
+                  (start-logical-block stream1 prefix per-line-prefix-p suffix)
+                  (funcall function object stream1)
+                  (end-logical-block stream1))))))
   nil)
 
 (defun pprint-logical-block-helper (function object stream prefix
@@ -1220,13 +1228,16 @@
 	 (pprint-multi-dim-array stream array))))
 
 (defun pprint-vector (stream vector)
-  (pprint-logical-block (stream nil :prefix "#(" :suffix ")")
-    (dotimes (i (length vector))
-      (unless (zerop i)
-	(write-char #\space stream)
-	(pprint-newline :fill stream))
-      (pprint-pop)
-      (write-object (aref vector i) stream))))
+  (write-object-with-circle
+   vector stream
+   #'(lambda (vector stream)
+       (pprint-logical-block (stream nil :prefix "#(" :suffix ")")
+         (dotimes (i (length vector))
+           (unless (zerop i)
+             (write-char #\space stream)
+             (pprint-newline :fill stream))
+           (pprint-pop)
+           (write-object (aref vector i) stream))))))
 
 (defun pprint-array-contents (stream array)
   (declare (array array))
@@ -1253,19 +1264,24 @@
     (output-guts stream 0 (array-dimensions array))))
 
 (defun pprint-multi-dim-array (stream array)
+  (write-object-with-circle
+   array stream
+   #'(lambda (array stream)
   (funcall (formatter "#~DA") stream (array-rank array))
-  (pprint-array-contents stream array))
+  (pprint-array-contents stream array))))
 
 (defun pprint-raw-array (stream array)
-  (write-string "#A" stream)
-  (pprint-logical-block (stream nil :prefix "(" :suffix ")")
+  (write-object-with-circle
+   array stream
+   #'(lambda (array stream)
+       (pprint-logical-block (stream nil :prefix "#A(" :suffix ")")
     (write-object (array-element-type array) stream)
     (write-char #\Space stream)
     (pprint-newline :fill stream)
     (write-object (array-dimensions array) stream)
     (write-char #\Space stream)
     (pprint-newline :fill stream)
-    (pprint-array-contents stream array)))
+         (pprint-array-contents stream array)))))
 
 (defun pprint-lambda-list (stream lambda-list &rest noise)
   (declare (ignore noise))
@@ -1587,8 +1603,6 @@
     (with-package-iterator pprint-block)
     (with-simple-restart pprint-block)
     (with-standard-io-syntax pprint-progn))))
-
-
 
 (progn
   (let ((*print-pprint-dispatch* (make-pprint-dispatch-table)))

@@ -464,12 +464,23 @@ wrong
 
 (test pprint-failure-2a
       ;; should only find  ".." once in the output, not twice
-      (= 2 (count #\.
-                  (let ((*package* (find-package :cl-user)))
-                    (with-output-to-string (stream)
-                      (with-standard-io-syntax
-                        (write `(this prints wrongly)
-                               :pretty t  :circle t :lines 1 :right-margin 15 :readably nil :stream stream)))))))
+      (let ((output 
+              (let ((*package* (find-package :cl-user)))
+                (with-output-to-string (stream)
+                  (with-standard-io-syntax
+                    (let ((the-list (let ((*package* (find-package :cl-user)))(read-from-string "(this prints wrongly)"))))
+                      (write the-list :pretty t  :circle t :lines 1 :right-margin 15 :readably nil :stream stream)))))))
+        (= 2 (count #\. output))))
+
+(test pprint-failure-2b
+      ;; should only find  ".." once in the output, not twice
+      (let ((output 
+              (let ((*package* (find-package :cl-user)))
+                (with-output-to-string (stream)
+                  (with-standard-io-syntax
+                    (let ((the-list (let ((*package* (find-package :core)))(read-from-string "(this prints wrongly)"))))
+                      (write the-list :pretty t  :circle t :lines 1 :right-margin 15 :readably nil :stream stream)))))))
+        (= 2 (count #\. output))))
 
 (test pprint-failure-2
       ;; should only find  ".." once in the output, not twice
@@ -479,49 +490,52 @@ wrong
                       (write `(1234 12345 1234567)
                              :pretty t  :circle t :lines 1 :right-margin 15 :readably nil :stream stream))))))
 (test pprint-failure-3a
-      (>
-       (length
-        (let ((*package* (find-package :cl-user)))
-          (with-output-to-string (stream)
-            (with-standard-io-syntax
-              (write #(PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV)
-                     :ESCAPE T :PRETTY T :CIRCLE T :LINES 0 :RIGHT-MARGIN 28 :readably nil :stream stream)))))
-       0))
+      (= 2 (count #\.
+                  (let ((*package* (find-package :cl-user)))
+                    (with-output-to-string (stream)
+                      (with-standard-io-syntax
+                        (write #(PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV)
+                               :ESCAPE T :PRETTY T :CIRCLE T :LINES 0 :RIGHT-MARGIN 28 :readably nil :stream stream)))))))
 
 (test pprint-failure-3b
-      (>
-       (length
-        (with-output-to-string (stream)
-          (with-standard-io-syntax
-            (write #(12345 12345 12345 12345 12345 12345 12345 12345 12345 12345 12345)
-                   :ESCAPE T :PRETTY T :CIRCLE T :LINES 1 :RIGHT-MARGIN 28 :readably nil :stream stream))))
-       0))
+      (= 2 (count #\.
+                  (with-output-to-string (stream)
+                    (with-standard-io-syntax
+                      (write #(12345 12345 12345 12345 12345 12345 12345 12345 12345 12345 12345)
+                             :ESCAPE T :PRETTY T :CIRCLE T :LINES 1 :RIGHT-MARGIN 28 :readably nil :stream stream))))))
+
+(test pprint-failure-3c
+      (= 2 (count #\.
+                  (with-output-to-string (stream)
+                    (with-standard-io-syntax
+                      (write #(1 1)
+                             :ESCAPE T :PRETTY T :CIRCLE T :LINES 1 :RIGHT-MARGIN 1 :readably nil :stream stream))))))
 
 (test write-string-happy-path
       (string-equal
        "ABABĀĀĀĀ » "
        (with-output-to-string (stream)
-               ;;; SimpleBaseString_O
+         ;;; SimpleBaseString_O
          (write-string
           (MAKE-ARRAY 2
                       :INITIAL-CONTENTS (list (code-char 65) (code-char 66))
                       :ELEMENT-TYPE 'base-char)
           stream)
-        ;;; Str8Ns_O
+         ;;; Str8Ns_O
          (write-string
           (MAKE-ARRAY 2
                       :INITIAL-CONTENTS (list (code-char 65) (code-char 66))
                       :adjustable t
                       :ELEMENT-TYPE 'base-char)
           stream)
-        ;;;  SimpleCharacterString_O
+         ;;;  SimpleCharacterString_O
          (write-string 
           (MAKE-ARRAY 2
                       :INITIAL-CONTENTS
                       (list (code-char 256) (code-char 256))
                       :ELEMENT-TYPE 'character)
           stream)
-        ;;;  StrWNs_O
+         ;;;  StrWNs_O
          (write-string
           (MAKE-ARRAY 2
                       :INITIAL-CONTENTS
