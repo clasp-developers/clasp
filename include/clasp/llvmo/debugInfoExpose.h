@@ -961,6 +961,9 @@ public:
     _ptr = NULL;
   }
 }; // DWARFContext_O class def
+// FIXME: move?
+core::T_mv getLineInfoForAddress(DWARFContext_sp, SectionedAddress_sp);
+llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressInner(DWARFContext_sp, SectionedAddress_sp);
 }; // llvmo
 /* from_object translators */
 

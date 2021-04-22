@@ -412,13 +412,18 @@ CL_DEFUN core::T_sp getLocalsForAddress(DWARFContext_sp dc, SectionedAddress_sp 
   return res.cons();
 }
 
+// FIXME: name
+llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressInner(DWARFContext_sp dc, SectionedAddress_sp sa) {
+  uint64_t addr = sa->_value.Address;
+  llvm::DWARFDie fdie = dc->wrappedPtr()->getDIEsForAddress(addr).FunctionDIE;
+  return fdie.getAddressRanges();
+}
+
 CL_LAMBDA(dwarfcontext sectioned-address);
 CL_LISPIFY_NAME(getAddressRangesForAddress);
 CL_DOCSTRING("Return the DWARF address ranges for the function DIE containing this address.");
 CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddress_sp sa) {
-  uint64_t addr = sa->_value.Address;
-  llvm::DWARFDie fdie = dc->wrappedPtr()->getDIEsForAddress(addr).FunctionDIE;
-  auto eranges = fdie.getAddressRanges();
+  auto eranges = getAddressRangesForAddressInner(dc, sa);
   if (eranges) {
     ql::list res;
     for (auto range : eranges.get())

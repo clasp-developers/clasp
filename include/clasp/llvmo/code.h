@@ -201,9 +201,11 @@ public:
   size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };
   // The location of the literals vector in memory
   void* literalsStart() const;
+  core::T_O** TOLiteralsStart() const { return (core::T_O**)literalsStart(); }
+  size_t TOLiteralsSize() const { return literalsSize()/sizeof(core::T_O*); }
   virtual std::string filename() const;
 };
-  
+
 };
 
 
@@ -394,6 +396,8 @@ void dumpObjectFile(const char* start, size_t size, void* codeStart = NULL );
 
 namespace llvmo {
 core::T_mv object_file_for_instruction_pointer(void* instruction_pointer, bool verbose);
+core::T_sp only_object_file_for_instruction_pointer(void*);
+SectionedAddress_sp object_file_sectioned_address(void*, ObjectFile_sp, bool);
 
 size_t number_of_object_files();
 
