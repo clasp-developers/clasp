@@ -914,15 +914,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-function-create (function-type linkage function-name module
                             &key
                               (function-attributes *default-function-attributes* function-attributes-p ))
-  #+(or)(progn
-    (core:bformat t "irc-function-create name: %s  linkage: %s%N"
-                  function-name linkage)
-    (if (and (string= "LAMBDA" function-name :start2 0 :end2 6)
-             (eq linkage 'llvm-sys:external-linkage))
-        (progn
-          (core::bformat t "Dumping backtrace%N")
-          (core:btcl)
-          (core:gdb "Exiting"))))
   (let* ((fn (llvm-sys:function-create function-type
                                        linkage
                                        function-name

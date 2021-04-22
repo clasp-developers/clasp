@@ -729,10 +729,6 @@ Use special code 0 to cancel this operation.")
   (terpri)
   (values))
 
-(defun clasp-backtrace (&optional (n 99999999))
-  (declare (ignore n))
-  (core:btcl))
-
 (defun tpl-backtrace (&optional count)
   (clasp-debug:print-stack *break-base* :count count))
 
