@@ -162,21 +162,23 @@
 
 (export '(write-bitcode load-bitcode parse-bitcode load-ir-run-c-function))
 
-(defun get-builtins-module ()
-  (if *thread-local-builtins-module*
-      *thread-local-builtins-module*
-    (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
-           (thread-local-builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name (thread-local-llvm-context))))
-      (llvm-sys:remove-useless-global-ctors thread-local-builtins-module)
-      (setq *thread-local-builtins-module* thread-local-builtins-module)
-      thread-local-builtins-module)))
-
-
 (defun get-builtin-target-triple-and-data-layout ()
   "Uses *features* to generate the target triple for the current machine
 using features defined in corePackage.cc"
-  (let ((builtins-module (get-builtins-module)))
-    (values (llvm-sys:get-target-triple builtins-module) (llvm-sys:get-data-layout-str builtins-module))))
+  (let* ((triple-str (llvm-sys:get-default-target-triple))
+         (target (llvm-sys:target-registry-lookup-target "" (llvm-sys:make-triple triple-str)))
+         (target-machine (llvm-sys:create-target-machine target
+                                                         triple-str
+                                                         ""
+                                                         ""
+                                                         (llvm-sys:make-target-options)
+                                                         'llvm-sys:reloc-model-pic-
+                                                         (code-model)
+                                                         'llvm-sys:code-gen-opt-default
+                                                         nil))
+         (data-layout (llvm-sys:create-data-layout target-machine))
+         (data-layout-str (llvm-sys:get-string-representation data-layout)))
+    (values triple-str data-layout-str)))
 
 (defun llvm-create-module (name)
   (let ((m (llvm-sys:make-module (string name) (thread-local-llvm-context))))
@@ -613,18 +615,6 @@ No DIBuilder is defined for the default module")
 ;;;
 
 
-(defun link-builtins-module (module)
-  "Merge the builtins module with the passed module.
-The passed module is modified as a side-effect."
-  ;; Clone the intrinsics module and link it in
-  (quick-module-dump module "module before linking builtins-clone")
-  (let ((linker (llvm-sys:make-linker module))
-        (builtins-clone (llvm-sys:clone-module (get-builtins-module))))
-    ;;(switch-always-inline-to-inline builtins-clone)
-    (quick-module-dump builtins-clone "builtins-clone")
-    (llvm-sys:link-in-module linker builtins-clone))
-  module)
-
 (defun code-model (&key jit (target-faso-file *default-object-type*))
   "Return the code-model for the compilation mode"
   #+target-os-darwin 'llvm-sys:code-model-small
@@ -712,15 +702,6 @@ The passed module is modified as a side-effect."
                         ,@code)))))
 	  t)
 
-
-#+(or)(defun link-inline-remove-builtins (module)
-  (when (>= *optimization-level* 2)
-    (with-track-llvm-time
-        (link-builtins-module module)
-      (optimize-module-for-compile-file module)
-      #+(or)(remove-llvm.used-if-exists module)
-      (llvm-sys:remove-always-inline-functions module))))
-
 (defun switch-always-inline-to-inline (module)
   (let ((functions (llvm-sys:module-get-function-list module))
         inline-functions)
@@ -731,7 +712,6 @@ The passed module is modified as a side-effect."
             (llvm-sys:add-fn-attr f 'llvm-sys:attribute-inline-hint)
             (setq inline-functions (cons f inline-functions)))))
     inline-functions))
-
 
 (defun call-sites-to-always-inline (module)
   (let (call-sites

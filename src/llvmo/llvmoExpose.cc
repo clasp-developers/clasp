@@ -5081,3 +5081,14 @@ void dump_objects_for_lldb(FILE* fout,std::string indent)
 };
   
 }; // namespace llvmo, SectionedAddress_O
+
+
+namespace llvmo {
+
+CL_DEFUN std::string llvm_sys__getDefaultTargetTriple()
+{
+  std::string triple(llvm::sys::getDefaultTargetTriple());
+  return triple;
+}
+
+};

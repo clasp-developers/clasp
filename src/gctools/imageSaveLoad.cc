@@ -25,6 +25,7 @@
 #include <clasp/core/debugger.h>
 #include <clasp/core/functor.h>
 #include <clasp/core/null.h>
+#include <clasp/core/bundle.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/compiler.h>
@@ -2606,6 +2607,12 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(_Nil<core::T_O>());
   FILE *null_out = fopen("/dev/null", "w");
   _lisp->_Roots._NullStream = core::IOStreamStream_O::makeIO("/dev/null", null_out);
+
+  //
+  // Setup the pathname info for wherever the executable was loaded
+  //
+  printf("%s:%d:%s Calling setup_pathname_translations\n", __FILE__, __LINE__, __FUNCTION__);
+  globals_->_Bundle->setup_pathname_translations();
   
   {
     char* pause_startup = getenv("CLASP_PAUSE_INIT");

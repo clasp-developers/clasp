@@ -137,7 +137,6 @@
             irc-calculate-entry
             irc-calculate-real-args
             compile-file-to-module
-            link-builtins-module
             optimize-module-for-compile
             optimize-module-for-compile-file
             codegen
@@ -275,7 +274,6 @@
             module-make-global-string
             make-boot-function-global-variable
             llvm-link
-            link-builtins-module
             load-bitcode
             setup-calling-convention
             initialize-calling-convention

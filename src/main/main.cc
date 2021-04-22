@@ -410,6 +410,11 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     for (int i = 0; i < argc; ++i) {
       globals_->_Argv.push_back(string(argv[i]));
     }
+    //
+    // Look around the local directories for source and fasl files.
+    //
+    core::Bundle *bundle = new core::Bundle(argv0,core::global_options->_ResourceDir);
+    globals_->_Bundle = bundle;
     exit_code = imageSaveLoad::image_load( (void*)start_of_snapshot, (void*)end_of_snapshot, core::global_options->_ImageFile );
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");
