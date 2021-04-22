@@ -76,13 +76,14 @@ static T_sp dwarf_fd(llvmo::ObjectFile_sp ofi,
   if (eranges) {
     auto ranges = eranges.get();
     llvmo::Code_sp code = ofi->_Code;
+    uintptr_t code_start = code->codeStart();
     T_O** rliterals = code->TOLiteralsStart();
     size_t nliterals = code->TOLiteralsSize();
     for (size_t i = 0; i < nliterals; ++i) {
       T_sp literal((gc::Tagged)(rliterals[i]));
       if (gc::IsA<LocalEntryPoint_sp>(literal)) {
         LocalEntryPoint_sp ep = gc::As_unsafe<LocalEntryPoint_sp>(literal);
-        uintptr_t ip = (uintptr_t)(ep->_EntryPoint);
+        uintptr_t ip = (uintptr_t)(ep->_EntryPoint) - code_start;
         for (auto range : ranges) {
           if ((range.LowPC <= ip) && (ip < range.HighPC))
             return ep->_FunctionDescription;
@@ -90,7 +91,7 @@ static T_sp dwarf_fd(llvmo::ObjectFile_sp ofi,
       } else if (gc::IsA<GlobalEntryPoint_sp>(literal)) {
         GlobalEntryPoint_sp ep = gc::As_unsafe<GlobalEntryPoint_sp>(literal);
         for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
-          uintptr_t ip = (uintptr_t)(ep->_EntryPoints[j]);
+          uintptr_t ip = (uintptr_t)(ep->_EntryPoints[j]) - code_start;
           for (auto range : ranges) {
             if ((range.LowPC <= ip) && (ip < range.HighPC))
               return ep->_FunctionDescription;
