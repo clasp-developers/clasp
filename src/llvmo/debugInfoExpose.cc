@@ -110,7 +110,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/wrappers.h>
-#include <clasp/core/debugger2.h>
+#include <clasp/core/backtrace.h> // DebuggerLocal_O
 
 
 namespace llvmo {

@@ -109,7 +109,7 @@ typedef bool _Bool;
 #include <clasp/core/posixTime.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/debugger.h> // Frame_O
-#include <clasp/core/debugger2.h>
+#include <clasp/core/backtrace.h>
 #include <clasp/core/smallMap.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/sharpEqualWrapper.h>

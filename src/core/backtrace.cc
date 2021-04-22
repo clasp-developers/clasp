@@ -9,9 +9,26 @@
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/code.h>
-#include <clasp/core/debugger2.h>
+#include <clasp/core/backtrace.h>
 #include <stdlib.h> // calloc, realloc, free
 #include <execinfo.h> // backtrace
+
+/*
+ * This file contains the low-ish level code to get backtrace information.
+ * The main entry point is core:call-with-frame, which collects this information
+ * and passes it to a provided thunk. This makes more sense than a function
+ * that simply _returns_ this information, since after all the control stack
+ * inherently has only dynamic extent.
+ * This information takes the form of objects called "frames"; see backtrace.h
+ * for definitions. Hopefully should be simple to understand.
+ * This mechanism uses backtrace, backtrace_symbols, and DWARF metadata.
+ *
+ * The function core:call-with-operating-system-backtrace is similar but lower
+ * level, collecting only information from the system backtrace and
+ * backtrace_symbols function, and stack frame pointers. This is not used by
+ * call-with-frame but may very occasionally be useful on its own, mostly for
+ * debugging the debugger (gods help you).
+ */
 
 namespace core {
 

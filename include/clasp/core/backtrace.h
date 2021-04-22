@@ -1,6 +1,6 @@
 /* -^- */
-#ifndef debugger2_H
-#define debugger2_H
+#ifndef backtrace_H
+#define backtrace_H
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
