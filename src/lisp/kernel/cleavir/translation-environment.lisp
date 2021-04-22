@@ -44,6 +44,12 @@
                          :readably nil
                          :pretty nil))))
 
+;;; This function is used for names for debug information, so we want them to be
+;;; a little bit more complete.
+(defun full-datum-name-as-string (datum)
+  (let ((*package* (find-package "KEYWORD")))
+    (write-to-string datum :escape t :readably nil :pretty nil)))
+
 (defun bind-variable (var)
   (if (bir:immutablep var)
       ;; Since immutable vars are just LLVM Values, they will be initialized
@@ -54,10 +60,11 @@
               ((:local :dynamic)
                ;; just an alloca
                (let* ((name (datum-name-as-string var))
+                      (fname (full-datum-name-as-string var))
                       (alloca (cmp:alloca-t* name))
                       (spi (origin-spi (bir:origin var))))
                  ;; set up debug info
-                 (cmp:dbg-variable-alloca alloca name spi)
+                 (cmp:dbg-variable-alloca alloca fname spi)
                  ;; return
                  alloca))
               ((:indefinite)
@@ -124,7 +131,7 @@
   (if (bir:immutablep variable)
       (prog1 (setf (gethash variable *datum-values*) value)
         (cmp:dbg-variable-value
-         value (datum-name-as-string variable)
+         value (full-datum-name-as-string variable)
          (origin-spi (bir:origin variable))))
       (ecase (bir:extent variable)
         (:local
