@@ -26,6 +26,7 @@
 #include <clasp/core/functor.h>
 #include <clasp/core/null.h>
 #include <clasp/core/bundle.h>
+#include <clasp/core/fileSystem.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/compiler.h>
