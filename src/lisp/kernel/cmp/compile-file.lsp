@@ -148,17 +148,12 @@ and the pathname of the source file - this will also be used as the module initi
 ;;;
 ;;; Compile-file proper
 
-(defvar *triple* nil)
-
 (defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (target-faso-file *default-object-type*))
   (with-track-llvm-time
       (progn
-        (unless *triple*
-          (let* ((triple-string (llvm-sys:get-target-triple module))
-                 (normalized-triple-string (llvm-sys:triple-normalize triple-string))
-                 (triple (llvm-sys:make-triple normalized-triple-string)))
-            (setf *triple* triple)))
-        (let* ((triple *triple*)
+        (let* ((triple-string (llvm-sys:get-target-triple module))
+               (normalized-triple-string (llvm-sys:triple-normalize triple-string))
+               (triple (llvm-sys:make-triple normalized-triple-string))
                (target-options (llvm-sys:make-target-options)))
           (multiple-value-bind (target msg)
               (llvm-sys:target-registry-lookup-target "" triple)
