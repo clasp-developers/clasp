@@ -141,13 +141,6 @@ private:
   T_sp _Condition;
 
 public:
-  /* Immediatly returns if we are not single stepping or if the step stack level
-	   is less than the current stack level.
-	   Otherwise print the next instruction to be evaluated and wait for
-	   the user to indicate what they want to do. */
-  static void step();
-
-public:
   /*! Print the current expression */
   void printExpression(T_sp stream);
 
@@ -167,75 +160,16 @@ public:
   };
 };
 
-
-struct SymbolEntry {
-  uintptr_t    _Address;
-  char         _Type;
-  uint         _SymbolOffset;
-  SymbolEntry() {};
-  SymbolEntry(uintptr_t start, char type, int symbolOffset) : _Address(start), _Type(type), _SymbolOffset(symbolOffset) {};
-  bool operator<(const SymbolEntry& other) {
-    return this->_Address < other._Address;
-  }
-  const char* symbol(const char* symbol_names) {
-    return symbol_names+this->_SymbolOffset;
-  }
-};
-
-
 struct SymbolTable {
-#if 0
-  char* _SymbolNames;
-  uint   _End;
-  uint   _Capacity;
-  uintptr_t _SymbolsLowAddress;
-  uintptr_t _SymbolsHighAddress;
-#endif
   uintptr_t _StackmapStart;
   uintptr_t _StackmapEnd;
-//  std::vector<SymbolEntry> _Symbols;
   SymbolTable() :
-#if 0
-  _End(0),
-    _Capacity(1024),
-    _SymbolsLowAddress(~0),
-    _SymbolsHighAddress(0),
-#endif
     _StackmapStart(0),
-    _StackmapEnd(0) {
-//    this->_SymbolNames = (char*)malloc(this->_Capacity);
-  }
+    _StackmapEnd(0)
+  {}
   ~SymbolTable() {
   };
-//  void addSymbol(std::string symbol, uintptr_t start, char type);
-
-#if 0
-  // Shrink the symbol table to the minimimum size
-  void optimize() {
-    if (this->_End>0) {
-      size_t newCapacity = this->_End+16&(~0x7);
-      this->_SymbolNames = (char*)realloc(this->_SymbolNames,newCapacity);
-      this->_Capacity = newCapacity;
-    } else {
-      if (this->_SymbolNames) free(this->_SymbolNames);
-      this->_SymbolNames = 0;
-      this->_Capacity = 0;
-    }
-  }
-#endif
-  // Return true if a symbol is found that matches the address
-//  bool findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index);
-//  void sort(); 
-//  bool is_sorted() const;
-  
-//  std::vector<SymbolEntry>::iterator begin() { return this->_Symbols.begin(); };
-//  std::vector<SymbolEntry>::iterator end() { return this->_Symbols.end(); };
-//  std::vector<SymbolEntry>::const_iterator begin() const { return this->_Symbols.begin(); };
-//  std::vector<SymbolEntry>::const_iterator end() const { return this->_Symbols.end(); };
 };
-
-
- 
 
 struct OpenDynamicLibraryInfo {
   bool           _IsExecutable;
@@ -313,8 +247,6 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
 bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type );
 bool library_with_name(const std::string& name, bool isExecutable, std::string& libraryPath, uintptr_t& start, uintptr_t& end, uintptr_t& vtableStart, uintptr_t& vtableEnd );
 
- llvmo::Code_sp lookup_code(uintptr_t address);
-
  typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
 struct BacktraceEntry {
   BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0), _FunctionDescription(0),
@@ -365,8 +297,6 @@ void dbg_safe_backtrace_stderr();
 #define BT_LOG(msg)
 #endif
 
-
-
 namespace core {
 //////////////////////////////////////////////////////////////////////
 //
@@ -405,29 +335,6 @@ struct ScanInfo {
   ScanInfo(add_dynamic_library* ad) : _AdderOrNull(ad), _Index(0), _Backtrace(NULL), _symbol_table_memory(0) {};
 };
 
-struct JittedObject {
-  std::string _Name;
-  uintptr_t _ObjectPointer;
-  int       _Size;
-  JittedObject() {};
-  JittedObject(const std::string& name, uintptr_t fp, int fs) : _Name(name), _ObjectPointer(fp), _Size(fs) {};
-};
-
-
-struct FrameMap {
-  uintptr_t _FunctionPointer;
-  int   _FrameOffset;
-  int   _FrameSize;
-  FrameMap() {};
-  FrameMap(uintptr_t fp, int fo, int fs) : _FunctionPointer(fp), _FrameOffset(fo), _FrameSize(fs) {};
-  FrameMap(const FrameMap& o) {
-    this->_FunctionPointer = o._FunctionPointer;
-    this->_FrameOffset = o._FrameOffset;
-    this->_FrameSize = o._FrameSize;
-  }
-};
-
-
 struct StackMapRange {
   uintptr_t _StartAddress;
   uintptr_t _EndAddress;
@@ -436,8 +343,6 @@ struct StackMapRange {
   StackMapRange() : _StartAddress(0), _EndAddress(0), _Number(0) {};
 };
 
-
-
 struct DebugInfo {
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex _OpenDynamicLibraryMutex;
@@ -445,11 +350,8 @@ struct DebugInfo {
   map<std::string, OpenDynamicLibraryInfo> _OpenDynamicLibraryHandles;
   mp::SharedMutex                   _StackMapsLock;
   std::map<uintptr_t,StackMapRange> _StackMaps;
-  mp::SharedMutex                   _JittedObjectsLock;
-  std::vector<JittedObject>         _JittedObjects;
   DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD),
-                _StackMapsLock(STCKMAPS_NAMEWORD),
-                _JittedObjectsLock(JITDOBJS_NAMEWORD)
+                _StackMapsLock(STCKMAPS_NAMEWORD)
   {};
 };
 
