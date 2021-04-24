@@ -366,6 +366,22 @@
   "Close a foreign library."
   (%dlclose ptr))
 
+(defun close-foreign-libraries-on-save ()
+  (format t "Trying to close foreign libraries~%")
+  (let ((cffi-package (find-package "CFFI")))
+    (when cffi-package
+      (let ((list-foreign-libraries-symbol (find-symbol "LIST-FOREIGN-LIBRARIES" cffi-package))
+            (close-foreign-library-symbol (find-symbol "CLOSE-FOREIGN-LIBRARY" cffi-package)))
+        (when (and list-foreign-libraries-symbol
+                   close-foreign-library-symbol)
+          (format t "Closing foreign libraries~%")
+          (loop for lib in (funcall list-foreign-libraries-symbol)
+                do (format t "Closing foreign library: ~s~%" lib)
+                do (funcall close-foreign-library-symbol lib)))))))
+
+(eval-when (:load-toplevel :execute)
+  (cmp:register-save-hook 'close-foreign-libraries-on-save))
+
 ;;; === F O R E I G N   G L O B A L S ===
 
 (declaim (inline %foreign-symbol-pointer))

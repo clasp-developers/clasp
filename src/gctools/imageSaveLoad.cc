@@ -1268,7 +1268,7 @@ struct fixup_vtables_t : public walker_callback_t {
 };
 
 
-SYMBOL_EXPORT_SC_( CompPkg, invoke_image_save_hooks );
+SYMBOL_EXPORT_SC_( CompPkg, invoke_save_hooks );
 
 
 struct SaveSymbolCallback : public core::SymbolCallback {
@@ -1593,9 +1593,9 @@ void image_save(const std::string& filename) {
   //
   // Call Common Lisp code to release things at image-save time
   //
-  printf("%s:%d:%s About to invoke-image-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__, comp::_sym_invoke_image_save_hooks->boundP());
-  if (comp::_sym_invoke_image_save_hooks->fboundp()) {
-    core::eval::funcall( comp::_sym_invoke_image_save_hooks );
+  printf("%s:%d:%s About to invoke-image-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__, comp::_sym_invoke_save_hooks->boundP());
+  if (comp::_sym_invoke_save_hooks->fboundp()) {
+    core::eval::funcall( comp::_sym_invoke_save_hooks );
   }
 
   //

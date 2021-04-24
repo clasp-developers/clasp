@@ -74,23 +74,19 @@
 ;;; And another to bring the system back up.
 ;;;
 
-(defvar *image-save-hooks* nil)
 
-(defun register-image-save-hook (hook)
-  (setq *image-save-hooks* (cons hook *image-save-hooks*)))
+(defun register-save-hook (hook)
+  (setq sys:*save-hook* (cons hook sys:*save-hook*)))
 
-(defun invoke-image-save-hooks ()
-  (format t "Running ~d *image-save-hooks*~%" (length *image-save-hooks*))
-  (dolist (entry *image-save-hooks*)
+(defun invoke-save-hooks ()
+  (format t "Running ~d sys:*save-hooks*~%" (length sys:*save-hook*))
+  (dolist (entry sys:*save-hook*)
     (funcall entry)))
 
-(defun image-load-restore ()
+(defun snapshot-load-restore ()
   )
 
-
-(export '(image-save-prepare image-load-restore register-image-save-hook))
-
-
+(export '(snapshot-load-restore register-save-hook))
 
 (defun dump-function (func)
   (declare (ignore func))
@@ -163,8 +159,7 @@
 (export '(write-bitcode load-bitcode parse-bitcode load-ir-run-c-function))
 
 (defun get-builtin-target-triple-and-data-layout ()
-  "Uses *features* to generate the target triple for the current machine
-using features defined in corePackage.cc"
+  "Query llvm for the target triple and the data-layout"
   (let* ((triple-str (llvm-sys:get-default-target-triple))
          (target (llvm-sys:target-registry-lookup-target "" (llvm-sys:make-triple triple-str)))
          (target-machine (llvm-sys:create-target-machine target
@@ -178,13 +173,14 @@ using features defined in corePackage.cc"
                                                          nil))
          (data-layout (llvm-sys:create-data-layout target-machine))
          (data-layout-str (llvm-sys:get-string-representation data-layout)))
-    (values triple-str data-layout-str)))
+    (values triple-str data-layout-str data-layout)))
 
 (defun llvm-create-module (name)
   (let ((m (llvm-sys:make-module (string name) (thread-local-llvm-context))))
-    (multiple-value-call (function (lambda (target-triple data-layout)
+    (multiple-value-call (function (lambda (target-triple data-layout-str &rest dummy)
+                           (declare (ignore dummy))
                            (llvm-sys:set-target-triple m target-triple)
-                           (llvm-sys:set-data-layout.string m data-layout)
+                           (llvm-sys:set-data-layout.string m data-layout-str)
                            (llvm-sys:emit-version-ident-metadata m)
                            m))
       (get-builtin-target-triple-and-data-layout))))
@@ -247,18 +243,17 @@ using features defined in corePackage.cc"
       (bformat nil "module%s" *run-time-module-counter*)
     (setq *run-time-module-counter* (+ 1 *run-time-module-counter*))))
 
-(defvar *the-system-data-layout*)
+#+(or)(defvar *the-system-data-layout*)
 (defun system-data-layout ()
-  (if (not (boundp '*the-system-data-layout*))
-      (let* ((module (llvm-create-module (next-run-time-module-name)))
-             (data-layout (llvm-sys:get-data-layout module)))
-        (setq *the-system-data-layout* data-layout)))
-  *the-system-data-layout*)
+  (multiple-value-bind (triple data-layout-str data-layout)
+      (get-builtin-target-triple-and-data-layout)
+    data-layout))
 
 (export 'system-data-layout)
 
+#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (register-image-save-hook (function (lambda () (makunbound '*the-system-data-layout*)))))
+  (register-save-hook (function (lambda () (makunbound '*the-system-data-layout*)))))
 
 (defun load-object-files (&optional (object-files core:*command-line-arguments*))
   (format t "load-object-files trying to load ~a~%" object-files)
@@ -741,7 +736,7 @@ No DIBuilder is defined for the default module")
 (defvar *jit-pid*)
 
 (eval-when (:load-toplevel :execute)
-  (register-image-save-hook
+  (register-save-hook
    (function (lambda ()
      (format t "makunbound for *jit-pid* and *jit-log-stream*~%")
      (makunbound '*jit-pid*)
