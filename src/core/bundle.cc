@@ -274,14 +274,13 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   printf("%s:%d Aborting for now\n", __FILE__, __LINE__ );
 #endif
   // Setup the quicklisp dir - if none is available then leave _QuicklispDir empty and don't create a hostname
-  if (verbose) {
-    printf("%s:%d   Starting to look for quicklisp\n", __FILE__, __LINE__);
-  }
+  if (verbose) printf("%s:%d   Starting to look for quicklisp\n", __FILE__, __LINE__);
   const char* quicklisp_env = getenv("CLASP_QUICKLISP_DIRECTORY");
   if (quicklisp_env) {
     bf::path env_path(quicklisp_env);
     if (bf::exists(env_path)) {
       if (safe_is_directory(bf::path(quicklisp_env))) {
+        if (verbose) printf("%s:%d   Found path %s\n", __FILE__, __LINE__, quicklisp_env);
         this->_Directories->_QuicklispDir = bf::path(quicklisp_env);
       }
     }
@@ -289,6 +288,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     bool gotQuicklispPath = false;
     // Try "sys:modules;quicklisp;"
     bf::path modules_quicklisp = this->_Directories->_LispSourceDir / "modules" / "quicklisp";
+    if (verbose) printf("%s:%d   Looking in modulesat %s\n", __FILE__, __LINE__, modules_quicklisp.string().c_str());
     if (bf::exists(modules_quicklisp)) {
       if (safe_is_directory(modules_quicklisp)) {
         if (!getenv("ASDF_OUTPUT_TRANSLATIONS")) {
@@ -298,6 +298,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 //          setenv("ASDF_OUTPUT_TRANSLATIONS","/:",1);
         }
         gotQuicklispPath = true;
+        if (verbose) printf("%s:%d   Found %s\n", __FILE__, __LINE__, modules_quicklisp.string().c_str());
         this->_Directories->_QuicklispDir = modules_quicklisp;
       }
     }
@@ -308,9 +309,11 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
       if (home_dir) {
         bf::path quicklispPath(home_dir);
         quicklispPath = quicklispPath / "quicklisp";
+        if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, quicklispPath.string().c_str() );
         if (bf::exists(quicklispPath)) {
           if (safe_is_directory(quicklispPath)) {
         // printf("%s:%d  ~/quicklisp/ exists\n", __FILE__, __LINE__);
+            if (verbose) printf("%s:%d  Found %s\n", __FILE__, __LINE__, quicklispPath.string().c_str() );
             this->_Directories->_QuicklispDir = quicklispPath;
             gotQuicklispPath = true;
           }
