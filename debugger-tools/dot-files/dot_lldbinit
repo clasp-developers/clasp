@@ -43,6 +43,6 @@ command alias lprint-frame expr af_printCurrentIhsFrame()
 command alias lprint-frame-env expr af_printCurrentIhsFrameEnvironment()
 command regex lgoto-frame 's/lgoto-frame ([0-9]+)/expr af_gotoIhsFrame(%1)/'
 
-
+process handle SIGUSR1 -p true -n false -s false
 
 command script import lldb_loader.py
