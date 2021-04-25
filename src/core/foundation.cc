@@ -1743,6 +1743,8 @@ CL_DEFUN void core__mangledSymbols(T_sp stream_designator) {
   clasp_write_string("__mh_execute_header",stream); clasp_terpri(stream);
   clasp_write_string("_cc_throw",stream); clasp_terpri(stream);
   clasp_write_string("_llvm_orc_registerJITLoaderGDBWrapper",stream); clasp_terpri(stream);
+  clasp_write_string("___jit_debug_descriptor");clasp_terpri(stream);
+  clasp_write_string("___jit_debug_register_code");clasp_terpri(stream);
 //  clasp_write_string("_start_of_snapshot",stream); clasp_terpri(stream);
 //  clasp_write_string("_end_of_snapshot",stream); clasp_terpri(stream);
   clasp_write_string("__ZTIN4core6UnwindE",stream);
