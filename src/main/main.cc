@@ -369,7 +369,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
                                              "__CLASP",
                                              "__clasp",
                                              &size);
-    printf("%s:%d:%s getsectiondata returned %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot);
     void* end_of_snapshot = NULL;
     if (start_of_snapshot) {
       end_of_snapshot = (void*)((char*)start_of_snapshot + size);

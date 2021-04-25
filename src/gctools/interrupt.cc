@@ -404,7 +404,6 @@ void wake_up_thread(int sig)
 
 void initialize_signals(int clasp_signal) {
   // clasp_signal is the signal that we use as a thread interrupt.
-  printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
 #define INIT_SIGNAL(sig,flags,handler)         \
   new_action.sa_handler = handler;             \
   sigemptyset (&new_action.sa_mask);           \
@@ -447,8 +446,6 @@ void initialize_signals(int clasp_signal) {
   INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  printf("%s:%d:%s Installing SIGUSR1 handler \n",
-         __FILE__, __LINE__, __FUNCTION__ );
   INIT_SIGNAL(SIGUSR1, (SA_NODEFER | SA_RESTART), handle_SIGUSR1);
   INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), handle_signal_now);

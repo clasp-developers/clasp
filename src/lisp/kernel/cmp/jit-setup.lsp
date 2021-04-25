@@ -754,7 +754,7 @@ No DIBuilder is defined for the default module")
                ((not (boundp '*jit-pid*))
                 (setq *jit-pid* (core:getpid))
                 (let ((filename (core:bformat nil "/tmp/perf-%s.map" (core:getpid))))
-                  (core:bformat *error-output* "Writing jitted symbols to %s%N" filename)
+                  (core:bformat t "Writing jitted symbols to %s%N" filename)
                   (setq *jit-log-stream* (open filename :direction :output))))
                ;; If we are in a forked child then we need to create a new clasp-symbols-<pid> file and
                ;; refer to the parent clasp-symbols-<ppid> file.
