@@ -5,7 +5,9 @@ PID=$1
 TIME=${2:-30s}
 RATE=${3:-97}
 FRAMES=${4:-4000}
+kill -SIGUSR1 $PID
 sudo rm -f /tmp/out-$PID.* && sudo dtrace -p $PID -x aggsize=512m -x ustackframes=${FRAMES} -n  "profile-$RATE /pid == $PID && arg1 / { @[ustack()] = count(); } tick-$TIME { exit(0); }" -o /tmp/out-$PID.raw.stacks
+kill -SIGUSR1 $PID
 if [ -f /tmp/perf-$PID.map ]; then
    ./symbolicate.lisp -i /tmp/out-$PID.raw.stacks -o /tmp/out-$PID.sym.stacks -s /tmp/perf-$PID.map
 else
