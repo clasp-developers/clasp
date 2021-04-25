@@ -2350,20 +2350,6 @@ def runCmdLargeOutput(cmd):
         print("%s" % strerr )
     return outf.getvalue()
 
-extra_symbols = [
-    "___cxa_begin_catch",
-    "___cxa_end_catch",
-    "___gxx_personality_v0",
-    "__longjmp",
-    "__mh_execute_header",
-    "__setjmp",
-    "_cc_invoke_sub_run_all_function",
-    "_cc_throw",
-    "_debugBreak",
-    "_invisible_makeValueFrameSetParent",
-    "_ltvc_mlf_create_basic_call",
-    "_ltvc_mlf_init_basic_call"
-]
 class export_symbols_list(Task.Task):
     def run(self):
         # Get everything already external
