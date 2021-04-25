@@ -2357,7 +2357,7 @@ class export_symbols_list(Task.Task):
         cmd = [ self.inputs[0].abspath(), "-y", cando_sym_name, "-N" ]
         result = runCmdLargeOutput(cmd);
         cando_sym_file = open(cando_sym_name,"r")
-        externals = cando_sym_file.readlines()
+        externals = cando_sym_file.read().splitlines()
         cando_sym_file.close();
         # Get the vtables
         for obj in self.inputs[2:]:
