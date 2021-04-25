@@ -977,7 +977,8 @@ def configure(cfg):
     update_exe_search_path(cfg)
     run_llvm_config(cfg, "--version") # make sure we fail early
     check_externals_clasp_version(cfg)
-
+    if (cfg.env['DEST_OS'] == DARWIN_OS):
+        cfg.find_program("llvm-nm",var='LLVM_NM')
     if (cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS):
         log.warn("Using a separate llvm-config binary for linking with the LLVM libs: %s", cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
     else:
@@ -2365,15 +2366,17 @@ extra_symbols = [
 ]
 class export_symbols_list(Task.Task):
     def run(self):
-        externals = []
         # Get everything already external
-        print("Ignore symbols missing")
-        cmd = [ self.inputs[0].abspath(), "-y", self.outputs[0].abspath(), "-N" ]
+        cando_sym_name = "%s_cando" % self.outputs[0].abspath()
+        cmd = [ self.inputs[0].abspath(), "-y", cando_sym_name, "-N" ]
         result = runCmdLargeOutput(cmd);
+        cando_sym_file = open(cando_sym_name,"r")
+        externals = cando_sym_file.readlines()
+        cando_sym_file.close();
         # Get the vtables
         for obj in self.inputs[2:]:
             if (self.bld.env["DEST_OS"] == DARWIN_OS):
-                cmd = [ '/usr/bin/nm', "-Ugj", obj.abspath() ]
+                cmd = self.bld.env.LLVM_NM + [ "-Ugj", "--quiet", obj.abspath() ]
             else:
                 cmd = [ 'nm', '--defined-only', obj.abspath() ]
             result = runCmdLargeOutput(cmd);
@@ -2385,7 +2388,7 @@ class export_symbols_list(Task.Task):
                 elif (symbol.find("_wrapped_") >= 0):
                     externals.append(symbol)
         externals_set = set(externals)
-        text_file = open(self.outputs[0].abspath(),"a+")
+        text_file = open(self.outputs[0].abspath(),"w+")
         for entry in sorted(externals_set):
             text_file.write(entry)
             text_file.write('\n')
