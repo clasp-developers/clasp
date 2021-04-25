@@ -367,7 +367,7 @@ struct ISLInfo {
 //
 // If you don't want forwarding to stomp on the headers use the following
 //
-#define NO_STOMP_FORWARDING 1
+//#define NO_STOMP_FORWARDING 1
 
 //
 // If you want to test the stomp forwarding by comparing it to NO_STOMP_FORWARDING use this
@@ -429,6 +429,7 @@ uintptr_t forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
 }
 
 gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag, void* user_data) {
+  DBG_SL_FFWD(BF("maybe_follow_forwarding_pointer clientAddress: %p client: %p\n") % (void*)clientAddress % (void*)client );
   ISLInfo* islInfo = (ISLInfo*)user_data;
   uintptr_t fwd_client;
   gctools::Header_s* header;
@@ -439,6 +440,8 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
   } else {
     header = WEAK_PTR_TO_HEADER_PTR(client);
   }
+  DBG_SL_FFWD(BF("    maybe_follow_forwarding_pointer client %p header: %p\n") % (void*)client % (void*)header );
+
   if (islInfo->_operation== SaveOp && ! is_forwarding_pointer(header,islInfo)) {
     printf("%s:%d:%s general header %p MUST BE A FORWARDING POINTER - got %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, *(void**)header);
     abort();
