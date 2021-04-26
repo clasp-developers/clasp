@@ -297,10 +297,10 @@
             ;; before method
             ;; not sure whether removing these is a good idea. Couldn't a user have defined them?
             ;; And e.g. have a subclass that retains the accessor.
-            (when (setq found (find-method gf-object ':before (list class-name) nil))
+            (when (setq found (find-method gf-object (list :before) (list class-name) nil))
               (remove-method gf-object found))
             ;; after method
-            (when (setq found (find-method gf-object ':after (list class-name) nil))
+            (when (setq found (find-method gf-object (list :after) (list class-name) nil))
               (remove-method gf-object found))
             ;; This is unnecessary but kind of nice?
             ;; Other implementations have different behavior.
@@ -317,10 +317,10 @@
             (when (setq found (find-method gf-object nil (list 'T class-name) nil))
               (remove-method gf-object found))
             ;; before method
-            (when (setq found (find-method gf-object ':before (list 'T class-name) nil))
+            (when (setq found (find-method gf-object (list :before) (list 'T class-name) nil))
               (remove-method gf-object found))
             ;; after method
-            (when (setq found (find-method gf-object ':after (list 'T class-name) nil))
+            (when (setq found (find-method gf-object (list :after) (list 'T class-name) nil))
               (remove-method gf-object found))
             (when (null (generic-function-methods gf-object))
               (fmakunbound writer))))))))
