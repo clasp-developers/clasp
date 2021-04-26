@@ -60,23 +60,29 @@ public:
     GCVector_moveable_iterator() : _Index(0) {};
     GCVector_moveable_iterator(tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _Vec(vec), _Index(index) {
       //      printf("%s:%d initializing %p\n", __FILE__, __LINE__, _Vec.raw_() );
+#if 0
       if (!this->_Vec) {
         printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
       }
+#endif
     };
     GCVector_moveable_iterator(GCVector_moveable<T> *vec, size_t index) : _Vec(gctools::tag_general<GCVector_moveable<T>*>(vec)), _Index(index) {
+#if 0
       if (!this->_Vec) {
         printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
       }
+#endif
     };
 #if 1
     const Iterator& operator=(const Iterator &other) const {
       if (&other == this)
         return *this;
       this->_Vec = other._Vec;
+#if 0
       if (!this->_Vec) {
         printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
       }
+#endif
       this->_Index = other._Index;
       return *this;
     }
