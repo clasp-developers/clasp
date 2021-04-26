@@ -39,7 +39,7 @@ public:
   T_sp down;
 };
 
-T_mv call_with_frame(T_mv f (DebuggerFrame_sp));
+T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)>);
 
 FORWARD(DebuggerLocal);
 class DebuggerLocal_O : public General_O {

@@ -100,7 +100,7 @@ static bool debugger_parse_integer(string s, int& new_frame_index) {
   }
 }
 
-T_mv early_debug_inner(DebuggerFrame_sp bot) {
+T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
   int frame_index = 0;
   DebuggerFrame_sp cur = bot;
   debugger_display_frame(cur, frame_index);
@@ -148,7 +148,10 @@ T_mv early_debug_inner(DebuggerFrame_sp bot) {
     case 'a': // abort
         throw(DebuggerSaysAbortToRepl());
     case 'c': // continue with given result
-        return _lisp->readEvalPrintString(line, _Nil<T_O>(), true);
+        if (can_continue)
+          return _lisp->readEvalPrintString(line, _Nil<T_O>(), true);
+        else write_bf_stream(BF("Cannot continue from this error\n"));
+        break;
     case 'e': // evaluate
         try { _lisp->readEvalPrintString(line, _Nil<T_O>(), true); }
         // If the debugger is entered recursively and aborted out of,
@@ -160,7 +163,7 @@ T_mv early_debug_inner(DebuggerFrame_sp bot) {
   } // read eval print loop
 }
 
-T_mv early_debug(T_sp condition) {
+T_mv early_debug(T_sp condition, bool can_continue) {
   if (!isatty(0)) {
     printf("The low-level debugger was entered but there is no terminal on fd0 - aboring\n");
     abort();
@@ -180,11 +183,11 @@ T_mv early_debug(T_sp condition) {
     write_bf_stream(BF("Debugger entered with condition: %s\n")
                     % _rep_(condition));
   }
-  return call_with_frame(early_debug_inner);
+  return call_with_frame([=](auto frame){return early_debug_inner(frame, can_continue);});
 }
 
 CL_DEFUN T_mv core__early_debug(T_sp condition) {
-  return early_debug(condition);
+  return early_debug(condition, true);
 }
 
 }; // namespace core

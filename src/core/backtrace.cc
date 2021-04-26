@@ -218,7 +218,7 @@ CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
 // Like the above, but for C++.
 // TODO? Could probably be merged. Might involve template goofiness to be fully
 // general.
-T_mv call_with_frame(T_mv f (DebuggerFrame_sp)) {
+T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   size_t num = START_BACKTRACE_SIZE;
   void** buffer = (void**)calloc(sizeof(void*), num);
   for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
