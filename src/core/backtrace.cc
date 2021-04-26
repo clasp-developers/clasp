@@ -187,7 +187,7 @@ static DebuggerFrame_sp make_frame(void* ip, char* string) {
 }
 
 CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
-    size_t num = START_BACKTRACE_SIZE;
+  size_t num = START_BACKTRACE_SIZE;
   void** buffer = (void**)calloc(sizeof(void*), num);
   for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
     size_t returned = backtrace(buffer,num);
@@ -214,6 +214,39 @@ CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
   printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
   abort();
 }
+
+// Like the above, but for C++.
+// TODO? Could probably be merged. Might involve template goofiness to be fully
+// general.
+T_mv call_with_frame(T_mv f (DebuggerFrame_sp)) {
+  size_t num = START_BACKTRACE_SIZE;
+  void** buffer = (void**)calloc(sizeof(void*), num);
+  for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
+    size_t returned = backtrace(buffer,num);
+    if (returned < num) {
+      char **strings = backtrace_symbols(buffer, returned);
+      // void* bp = __builtin_frame_address(0); // TODO later
+      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0]);
+      DebuggerFrame_sp prev = bot;
+      for (size_t j = 1; j < returned; ++j) {
+        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j]);
+        frame->down = prev;
+        prev->up = frame;
+        prev = frame;
+        // if (bp) bp = *(void**)bp;
+      }
+      free(buffer);
+      free(strings);
+      return f(bot);
+    }
+    // realloc_array would be nice, but macs don't have it
+    num *= 2;
+    buffer = (void**)realloc(buffer, sizeof(void*)*num);
+  }
+  printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
+  abort();
+}
+
 
 CL_DEFUN T_sp core__debugger_frame_fname(DebuggerFrame_sp df) {
   return df->fname;

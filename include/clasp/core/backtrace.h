@@ -39,6 +39,8 @@ public:
   T_sp down;
 };
 
+T_mv call_with_frame(T_mv f (DebuggerFrame_sp));
+
 FORWARD(DebuggerLocal);
 class DebuggerLocal_O : public General_O {
   LISP_CLASS(core, CorePkg, DebuggerLocal_O, "DebuggerLocal", General_O);
