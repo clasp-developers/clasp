@@ -163,6 +163,11 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
   } // read eval print loop
 }
 
+struct DebuggerLevelRAII {
+  DebuggerLevelRAII() { ++(globals_->_DebuggerLevel); }
+  ~DebuggerLevelRAII() { --(globals_->_DebuggerLevel); }
+};
+
 T_mv early_debug(T_sp condition, bool can_continue) {
   if (!isatty(0)) {
     printf("The low-level debugger was entered but there is no terminal on fd0 - aboring\n");
@@ -172,13 +177,10 @@ T_mv early_debug(T_sp condition, bool can_continue) {
     printf("This is not an interactive session and the low-level debugger was entered - aborting\n");
     abort();
   }
-  /*
-  ++global_low_level_debugger_depth;
-  if (global_low_level_debugger_depth > 10) {
+  struct DebuggerLevelRAII dumb;
+  if (globals_->_DebuggerLevel > 10) {
     printf("The low-level debugger was recursively entered too many times - exiting\n");
-    exit(1);
   }
-  */
   if (condition.notnilp()) {
     write_bf_stream(BF("Debugger entered with condition: %s\n")
                     % _rep_(condition));
