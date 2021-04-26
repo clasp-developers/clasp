@@ -1008,7 +1008,7 @@ struct copy_objects_t : public walker_callback_t {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_stamp_wtag_mtag.stampP()) {
       if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp_O)) {
-        printf("%s:%d:%s About to save Lisp_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+//        printf("%s:%d:%s About to save Lisp_O object\n", __FILE__, __LINE__, __FUNCTION__ );
       }
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O)) {
@@ -1095,7 +1095,7 @@ struct copy_objects_t : public walker_callback_t {
       set_forwarding_pointer(header, new_addr, this->_info );
       DBG_SL_FWD(BF("setFwdPointer cons header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
-      printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
+//      printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       size_t weakSize;
       gctools::clasp_ptr_t dummyNextClient = isl_weak_skip(clientStart,false,weakSize);
@@ -1310,7 +1310,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
   // This generates a symbol table for the _Library
   //
   void generateSymbolTable() {
-    printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
+//    printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
       if (ii%1000==0) {
@@ -1542,8 +1542,8 @@ void prepareRelocationTableForSave(Fixup* fixup) {
   for ( size_t idx=0; idx<fixup->_libraries.size(); idx++ ) {
     int groupPointerIdx = -1;
     ISLLibrary& curLib = fixup->_libraries[idx];
-    printf("%s:%d:%s  Dealing with library: %s\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str() );
-    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers.size() );
+//    printf("%s:%d:%s  Dealing with library: %s\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str() );
+//    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers.size() );
     for ( size_t ii=0; ii<curLib._Pointers.size(); ii++ ) {
       if (groupPointerIdx < 0 || curLib._Pointers[ii]._address != curLib._Pointers[ii-1]._address ) {
         curLib._GroupedPointers.emplace_back( curLib._Pointers[ii]._pointerType, curLib._Pointers[ii]._address );
@@ -1552,11 +1552,11 @@ void prepareRelocationTableForSave(Fixup* fixup) {
     // Now encode the relocation
       *curLib._Pointers[ii]._ptrptr = encodeRelocation(*(void**)curLib._Pointers[ii]._ptrptr, idx, groupPointerIdx );
     }
-    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
+//    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
     thing.generateSymbolTable();
-    printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
+//    printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
     for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
       if (curLib._SymbolInfo[ii]._SymbolLength<0) {
         printf("%s:%d:%s The _SymbolInfo[%lu] does not have an length\n", __FILE__, __LINE__, __FUNCTION__, ii );
@@ -1573,7 +1573,7 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib) {
 #else
   thing.loadSymbols();
 #endif
-  printf("%s:%d:%s  Library %s contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str(),curLib._GroupedPointers.size() );
+//  printf("%s:%d:%s  Library %s contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str(),curLib._GroupedPointers.size() );
   for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
     if (curLib._GroupedPointers[ii]._address == 0) {
       printf("%s:%d:%s The _GroupedPointers[%lu] does not have an address\n", __FILE__, __LINE__, __FUNCTION__, ii );
@@ -1590,13 +1590,13 @@ void image_save(const std::string& filename) {
 #if 0
   _lisp->_Roots._AllObjectFiles.store(_Nil<core::T_O>());
 #else
-  printf("%s:%d:%s NOT releasing code objects\n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s NOT releasing code objects\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
 
   //
   // Call Common Lisp code to release things at image-save time
   //
-  printf("%s:%d:%s About to invoke-image-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__, comp::_sym_invoke_save_hooks->boundP());
+//  printf("%s:%d:%s About to invoke-image-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__, comp::_sym_invoke_save_hooks->boundP());
   if (comp::_sym_invoke_save_hooks->fboundp()) {
     core::eval::funcall( comp::_sym_invoke_save_hooks );
   }
@@ -1626,7 +1626,6 @@ void image_save(const std::string& filename) {
     abort();
   }
   DBG_SL(BF(" Entered\n" ));
-  printf("%s:%d:%s WHAT AM I GOING TO DO WITH WEAK OBJECTS\n", __FILE__, __LINE__, __FUNCTION__ );
   //
   // For real save-lisp-and-die do the following (a simple 19 step plan)
   //
@@ -1711,7 +1710,7 @@ void image_save(const std::string& filename) {
   image._ObjectFiles = new copy_buffer_t( calc_size._ObjectFileTotalSize );
   islInfo._islStart = (uintptr_t)image._Memory->_BufferStart;
   islInfo._islEnd = (uintptr_t)image._Memory->_BufferStart+image._Memory->_Size;
-  printf("%s:%d:%s Setting globalISLBufferRange\n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s Setting globalISLBufferRange\n", __FILE__, __LINE__, __FUNCTION__ );
   globalISLBufferRange._Start = (gctools::clasp_ptr_t)image._Memory->_BufferStart;
   globalISLBufferRange._End = (gctools::clasp_ptr_t)(image._Memory->_BufferStart+image._Memory->_Size);
 
@@ -1765,7 +1764,7 @@ void image_save(const std::string& filename) {
 
   {
     globalPointerFix = maybe_follow_forwarding_pointer;
-    printf("%s:%d:%s  Fixing roots image._Memory->_BufferStart = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)image._Memory->_BufferStart, (void*)((char*)image._Memory->_BufferStart+image._Memory->_Size ));
+//    printf("%s:%d:%s  Fixing roots image._Memory->_BufferStart = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)image._Memory->_BufferStart, (void*)((char*)image._Memory->_BufferStart+image._Memory->_Size ));
     gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)image._Memory->_BufferStart + image._FileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
     followForwardingPointersForRoots( lispRoot, image._FileHeader->_LispRootCount, (void*)&islInfo );
     gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)image._Memory->_BufferStart + image._FileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
@@ -1800,7 +1799,6 @@ void image_save(const std::string& filename) {
   // Calculate the size of the libraries section
   prepareRelocationTableForSave(&fixup);
   
-  printf( "%s:%d:%s Writing out %lu fixup._libraries\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
   size_t librarySize = 0;
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     librarySize += fixup._libraries[idx].writeSize();
@@ -1817,6 +1815,7 @@ void image_save(const std::string& filename) {
     image._Libraries->write_buffer(buffer,alignedLen);
     image._Libraries->write_buffer(lib._SymbolBuffer.data(),lib.symbolBufferSize());
     image._Libraries->write_buffer((char*)lib._SymbolInfo.data(), lib.symbolInfoSize() );
+#if 0
     printf("%s:%d:%s libhead._Size = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._Size );
     printf("%s:%d:%s libhead._SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolBufferOffset );
     printf("%s:%d:%s libhead._SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolInfoOffset );
@@ -1829,6 +1828,7 @@ void image_save(const std::string& filename) {
     printf("%s:%d:%s num _SymbolInfo %lu\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo.size());
     printf("%s:%d:%s first _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[0]._SymbolLength, lib._SymbolInfo[0]._SymbolOffset );
     printf("%s:%d:%s last _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolLength, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolOffset );
+#endif    
     free(buffer);
   }
 
@@ -2590,7 +2590,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   // Fill it with 0xc0
 //  memset(memory,0xc0,fsize);
 #else  
-  printf("%s:%d:%s munmap'ing loaded image - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s munmap'ing loaded image - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
   if (maybeStartOfSnapshot==NULL) {
     int res = munmap( memory, fsize );
     if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
@@ -2615,7 +2615,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   //
   // Setup the pathname info for wherever the executable was loaded
   //
-  printf("%s:%d:%s Calling setup_pathname_translations\n", __FILE__, __LINE__, __FUNCTION__);
+//  printf("%s:%d:%s Calling setup_pathname_translations\n", __FILE__, __LINE__, __FUNCTION__);
   globals_->_Bundle->setup_pathname_translations();
   core::getcwd(true);                                        // set *default-pathname-defaults*
   {
