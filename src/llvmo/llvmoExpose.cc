@@ -1195,6 +1195,7 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeReadOnly);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoInline);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeAlwaysInline);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeOptimizeForSize);
+SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeOptimizeNone);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeStackProtect);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeStackProtectReq);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeAlignment);
@@ -1226,6 +1227,7 @@ CL_VALUE_ENUM(_sym_AttributeReadOnly, llvm::Attribute::ReadOnly);
 CL_VALUE_ENUM(_sym_AttributeNoInline, llvm::Attribute::NoInline);
 CL_VALUE_ENUM(_sym_AttributeAlwaysInline, llvm::Attribute::AlwaysInline);
 CL_VALUE_ENUM(_sym_AttributeOptimizeForSize, llvm::Attribute::OptimizeForSize);
+CL_VALUE_ENUM(_sym_AttributeOptimizeNone, llvm::Attribute::OptimizeNone);
 CL_VALUE_ENUM(_sym_AttributeStackProtect, llvm::Attribute::StackProtect);
 CL_VALUE_ENUM(_sym_AttributeStackProtectReq, llvm::Attribute::StackProtectReq);
 CL_VALUE_ENUM(_sym_AttributeAlignment, llvm::Attribute::Alignment);
@@ -4802,6 +4804,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
         this->_TPC = ExitOnErr(orc::SelfTargetProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
         auto J = ExitOnErr(
                            LLJITBuilder()
+                           .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
                            .setExecutionSession(std::make_unique<ExecutionSession>(this->_TPC->getSymbolStringPool()))
                            .setJITTargetMachineBuilder(std::move(JTMB))
                            .setPlatformSetUp(orc::setUpMachOPlatform)

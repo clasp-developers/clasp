@@ -93,14 +93,6 @@
 ;;; Ditto
 (defgeneric translate-primop (opname instruction))
 
-;;; In CSTs and stuff the origin is (spi . spi). Use the head.
-(defun origin-spi (origin)
-  (if (consp origin) (car origin) origin))
-
-(defun ensure-origin (origin &optional (num 999905))
-  (or origin
-      (core:make-source-pos-info "no-source-info-available" num num num)))
-
 ;;; Put in source info.
 (defmethod translate-simple-instruction :around
     ((instruction bir:instruction) abi)
@@ -1278,6 +1270,10 @@
       (llvm-sys:set-personality-fn xep-function
                                    (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr xep-function 'llvm-sys:attribute-uwtable)
+      (unless (cleavir-policy:policy-value (bir:policy function)
+                                           'perform-optimization)
+        (llvm-sys:add-fn-attr xep-function 'llvm-sys:attribute-no-inline)
+        (llvm-sys:add-fn-attr xep-function 'llvm-sys:attribute-optimize-none))
       (cmp:irc-set-insert-point-basic-block entry-block
                                             cmp:*irbuilder-function-alloca*)
       (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
@@ -1325,6 +1321,10 @@
       (llvm-sys:set-personality-fn the-function
                                    (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
+      (unless (cleavir-policy:policy-value (bir:policy function)
+                                           'perform-optimization)
+        (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
+        (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
       (cmp:with-irbuilder (body-irbuilder)
         (bir:map-iblocks
          (lambda (ib)

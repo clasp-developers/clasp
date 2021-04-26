@@ -302,7 +302,7 @@ void Symbol_O::fmakunbound_setf()
 }
 
 
-__attribute__((optnone)) void Symbol_O::symbolUnboundError() const {
+NEVER_OPTIMIZE void Symbol_O::symbolUnboundError() const {
   UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
 }
 

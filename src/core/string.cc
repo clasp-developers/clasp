@@ -1031,7 +1031,6 @@ cl_index fsmIntegerDigit(char c, cl_index radix) {
   return idigit;
 }
 
-__attribute__((optnone))
 cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, String_sp str, cl_index istart, cl_index iend, bool junkAllowed, cl_index radix) {
   IntegerFSMState state = iinit;
   cl_index sign = 1;

@@ -460,7 +460,8 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
   virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
 public:
-  static StringOutputStream_sp make() { GC_ALLOCATE(StringOutputStream_O,ss); return ss; }
+  // Use the cl__make_string_output_stream
+//  static StringOutputStream_sp make() { GC_ALLOCATE(StringOutputStream_O,ss); return ss; }
 public: // instance variables here
   String_sp _Contents;
 

@@ -110,7 +110,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/wrappers.h>
-
+#include <clasp/core/backtrace.h> // DebuggerLocal_O
 
 
 namespace llvmo {
@@ -395,6 +395,43 @@ CL_LAMBDA(dwarfcontext sectioned-address);
 CL_LISPIFY_NAME(getLineInfoForAddress);
 CL_DEFUN core::T_mv getLineInfoForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
   return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value);
+}
+
+CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LISPIFY_NAME(getLocalsForAddress);
+CL_DEFUN core::T_sp getLocalsForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
+  llvm::DIContext* dicontext = dc->wrappedPtr();
+  llvm::object::SectionedAddress saddr = addr->_value;
+  ql::list res;
+  for (llvm::DILocal loc : dicontext->getLocalsForAddress(saddr)) {
+    res << core::DebuggerLocal_O::make(core::SimpleBaseString_O::make(loc.FunctionName),
+                                       core::SimpleBaseString_O::make(loc.Name),
+                                       core::SimpleBaseString_O::make(loc.DeclFile),
+                                       core::Integer_O::create(loc.DeclLine));
+  }
+  return res.cons();
+}
+
+// FIXME: name
+llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressInner(DWARFContext_sp dc, SectionedAddress_sp sa) {
+  uint64_t addr = sa->_value.Address;
+  llvm::DWARFDie fdie = dc->wrappedPtr()->getDIEsForAddress(addr).FunctionDIE;
+  return fdie.getAddressRanges();
+}
+
+CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LISPIFY_NAME(getAddressRangesForAddress);
+CL_DOCSTRING("Return the DWARF address ranges for the function DIE containing this address.");
+CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddress_sp sa) {
+  auto eranges = getAddressRangesForAddressInner(dc, sa);
+  if (eranges) {
+    ql::list res;
+    for (auto range : eranges.get())
+      res << core::Cons_O::create(core::Integer_O::create(range.LowPC),
+                                  core::Integer_O::create(range.HighPC));
+    return res.cons();
+  } else // TODO: signal error?
+    return _Nil<core::T_O>();
 }
 
 }; // llvmo, DIContext_O

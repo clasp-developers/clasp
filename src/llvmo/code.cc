@@ -98,6 +98,11 @@ std::string Library_O::__repr__() const {
   return ss.str();
 };
 
+CL_DOCSTRING("Return the Code object corresponding to the given ObjectFile");
+CL_LISPIFY_NAME(object_file_code);
+CL_DEFUN Code_sp object_file_code(ObjectFile_sp object_file) {
+  return object_file->_Code;
+}
 
 }; // namespace llvmo, ObjectFile_O
 
@@ -158,7 +163,20 @@ void Code_O::describe() const
 {
   core::write_bf_stream(BF("Code start: %p  stop: %p  size: %lu\n") % (void*)this % (void*)&this->_DataCode[this->_DataCode.size()] % (uintptr_t)((char*)&this->_DataCode[this->_DataCode.size()]-(char*)this));
 };
-  
+
+CL_DOCSTRING("Return the count of literals in the given Code object");
+CL_LISPIFY_NAME(code_literals_length);
+CL_DEFUN core::Integer_sp code_literals_length(Code_sp code) {
+  return core::Integer_O::create(code->literalsSize()/sizeof(core::T_O*));
+}
+
+CL_DOCSTRING("Return an element from the Code object's literals vector. WARNING: Does not check bound.");
+CL_LISPIFY_NAME(code_literals_ref);
+CL_DEFUN core::T_sp code_literals_ref(Code_sp code, size_t idx) {
+  core::T_O** literals = (core::T_O**)(code->literalsStart());
+  core::T_sp ret((gc::Tagged)(literals[idx]));
+  return ret;
+}
 
 };
 
@@ -289,7 +307,6 @@ void save_object_file_and_code_info(ObjectFile_sp ofi)
   }
 }
 
-
 CL_DOCSTRING("For an instruction pointer inside of code generated from an object file - return the relative address (the sectioned address)");
 CL_LISPIFY_NAME(object_file_sectioned_address);
 CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_pointer, ObjectFile_sp ofi, bool verbose) {
@@ -328,6 +345,19 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
     count++;
   }
   return Values(_Nil<core::T_O>());
+}
+
+// FIXME: name sucks
+core::T_sp only_object_file_for_instruction_pointer(void* ip) {
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+  while (cur.consp()) {
+    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur)));
+    if (((char*)ip >= (char*)ofi->_Code->_TextSegmentStart) &&
+        ((char*)ip <  (char*)ofi->_Code->_TextSegmentEnd))
+      return ofi;
+    cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
+  }
+  return _Nil<core::T_O>();
 }
 
 CL_LISPIFY_NAME(release_object_files);

@@ -12,6 +12,14 @@
 (defvar *function-info*)
 (defvar *enclose-initializers*)
 
+;;; In CSTs and stuff the origin is (spi . spi). Use the head.
+(defun origin-spi (origin)
+  (if (consp origin) (car origin) origin))
+
+(defun ensure-origin (origin &optional (num 999905))
+  (or origin
+      (core:make-source-pos-info "no-source-info-available" num num num)))
+
 (defun delay-initializer (initializer-thunk)
   (push initializer-thunk *enclose-initializers*))
 
@@ -36,15 +44,29 @@
                          :readably nil
                          :pretty nil))))
 
+;;; This function is used for names for debug information, so we want them to be
+;;; a little bit more complete.
+(defun full-datum-name-as-string (datum)
+  (let ((*package* (find-package "KEYWORD")))
+    (write-to-string datum :escape t :readably nil :pretty nil)))
+
 (defun bind-variable (var)
   (if (bir:immutablep var)
-      ;; This should get initialized eventually.
+      ;; Since immutable vars are just LLVM Values, they will be initialized
+      ;; by their single VARIABLE-OUT call.
       nil
       (setf (gethash var *datum-values*)
             (ecase (bir:extent var)
               ((:local :dynamic)
                ;; just an alloca
-               (cmp:alloca-t* (datum-name-as-string var)))
+               (let* ((name (datum-name-as-string var))
+                      (fname (full-datum-name-as-string var))
+                      (alloca (cmp:alloca-t* name))
+                      (spi (origin-spi (bir:origin var))))
+                 ;; set up debug info
+                 (cmp:dbg-variable-alloca alloca fname spi)
+                 ;; return
+                 alloca))
               ((:indefinite)
                ;; make a cell
                (%intrinsic-invoke-if-landing-pad-or-call
@@ -107,7 +129,10 @@
 (defun variable-out (value variable)
   (check-type variable bir:variable)
   (if (bir:immutablep variable)
-      (setf (gethash variable *datum-values*) value)
+      (prog1 (setf (gethash variable *datum-values*) value)
+        (cmp:dbg-variable-value
+         value (full-datum-name-as-string variable)
+         (origin-spi (bir:origin variable))))
       (ecase (bir:extent variable)
         (:local
          (let ((alloca (or (gethash variable *datum-values*)

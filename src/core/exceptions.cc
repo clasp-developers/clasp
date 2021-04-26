@@ -61,13 +61,13 @@ namespace core {
 
 bool stackmap_log = true;
 
-__attribute__((optnone)) void assert_failure(const char* file, size_t line, const char* func, const char* msg)
+NEVER_OPTIMIZE void assert_failure(const char* file, size_t line, const char* func, const char* msg)
 {
   printf("%s:%lu:%s Assertion failure msg: %s\n", file, line, func, msg );
   SIMPLE_ERROR(BF("%s:%lu:%s  Assertion failure: %s") % file % line % func % msg);
 }
 
-__attribute__((optnone)) void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y)
+NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y)
 {
   SIMPLE_ERROR(BF("%s:%d:%s  Assertion failure: bounds error - %s must be less than %s") % file % line % func % x % y);
 }
@@ -746,7 +746,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
 };
 
 //no need to call this from lisp
-__attribute__((optnone))
+NEVER_OPTIMIZE
 void core__reader_error_internal(const string &sourceFile, uint lineno,
                     String_sp fmt, List_sp fmtargs, T_sp stream) {
   printf("%s:%d:%s  sourceFile: %s lineno: %u fmt: %s  fmtargs: %s\n",

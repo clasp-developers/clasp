@@ -332,6 +332,18 @@ CL_DEFUN T_sp core__set_LocalEntryPoint_entry_point_indices(LocalEntryPointGener
   return fdesc->_entry_point_indices = entry_point_indices;
 }
 
+CL_DEFUN T_sp core__LocalEntryPoint_relptr(LocalEntryPoint_sp lep) {
+  uintptr_t start = lep->_Code->codeStart();
+  uintptr_t abs = (uintptr_t)(lep->_EntryPoint);
+  return Integer_O::create(abs - start);
+}
+
+CL_DEFUN T_sp core__GlobalEntryPoint_relptr(GlobalEntryPoint_sp gep) {
+  uintptr_t start = gep->_Code->codeStart();
+  uintptr_t abs = (uintptr_t)(gep->_EntryPoints[0]);
+  return Integer_O::create(abs - start);
+}
+
 CL_LISPIFY_NAME(function-description-equal);
 CL_DEFMETHOD bool FunctionDescription_O::function_description_equal(T_sp other) const {
   if (gc::IsA<FunctionDescription_sp>(other)) {
@@ -747,7 +759,7 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   }
 }
 
-__attribute__((optnone)) LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
+NEVER_OPTIMIZE LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
   Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
   ERROR_UNDEFINED_FUNCTION(symbol);

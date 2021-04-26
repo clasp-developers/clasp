@@ -1858,8 +1858,10 @@ CL_DECLARE();
 CL_DOCSTRING("get_output_stream_string");
 CL_DEFUN T_sp cl__get_output_stream_string(T_sp strm) {
   T_sp strng;
-  unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_string_output))
-    af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, strm, cl::_sym_StringStream_O);
+  unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_string_output)) {
+    printf("%s:%d:%s AnsiStreamTypeP failed expected %d got %d\n", __FILE__, __LINE__, __FUNCTION__, clasp_smm_string_output, StreamMode(strm));
+    af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, strm, _sym_StringOutputStream_O);
+  }
   String_sp buffer = StringOutputStreamOutputString(strm);
   //        printf("%s:%d StringOutputStreamOutputString = %s\n", __FILE__, __LINE__, buffer->get().c_str());
   strng = cl__copy_seq(buffer);

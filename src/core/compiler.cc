@@ -115,7 +115,7 @@ MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_
   }
 };
 
-__attribute__((optnone)) MaybeDebugStartup::~MaybeDebugStartup() {
+NEVER_OPTIMIZE MaybeDebugStartup::~MaybeDebugStartup() {
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()
       && this->start) {
     PosixTime_sp end = PosixTime_O::createNow();

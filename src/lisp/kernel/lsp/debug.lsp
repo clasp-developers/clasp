@@ -5,7 +5,6 @@
            #:code-source-line-pathname
            #:code-source-line-line-number
            #:code-source-line-column)
-  (:import-from #:core #:frame)
   (:export #:frame)
   (:export #:frame-up #:frame-down)
   (:export #:frame-function #:frame-arguments
@@ -49,115 +48,152 @@
 (defstruct (code-source-line (:type vector) :named)
   pathname line-number column)
 
-(defun frame-up (frame)
-  "Return the frame directly above the current frame, or NIL if there are no more frames.
+#+(or)
+(defclass frame ()
+  ((%up :initarg :up :accessor %frame-up :reader frame-up)
+   (%down :initarg :down :accessor %frame-down :reader frame-down)
+   (%fname :initarg :fname :reader frame-function-name)
+   (%source-position :initarg :sp :reader frame-source-position)
+   (%function-description :initarg :fd :reader frame-function-description)
+   (%language :initarg :lang :reader frame-language)))
+(defstruct (frame (:conc-name "%FRAME-") (:type vector) :named)
+  up down function-name source-position function-description language)
+(defun frame-up (frame) (%frame-up frame))
+(defun frame-down (frame) (%frame-down frame))
+(defun frame-function-name (frame) (%frame-function-name frame))
+(defun frame-source-position (frame) (%frame-source-position frame))
+(defun frame-function-description (frame) (%frame-function-description frame))
+(defun frame-language (frame) (%frame-language frame))
 
-This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the caller is 'above' the frame for what it calls.
-
-This function ignores visibility and may not halt at delimiters. UP is the higher level interface."
-  (core:backtrace-frame-up frame))
-
-(defun frame-down (frame)
-  "Return the frame directly below the current frame, or NIL if there are no more frames.
-
-This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the callee is 'below' the frame for what called it.
-
-This function ignores visibility and may not halt at delimiters. DOWN is the lower level interface."
-  (core:backtrace-frame-down frame))
-
-(defun frame-function (frame)
-  "Return the function being called in this frame, or NIL if it is not available.
-The FRAME-FUNCTION-xxx functions may return meaningful information even when this function fails."
-  (core:backtrace-frame-closure frame))
-
-(defun frame-arguments (frame)
-  "Return the list of arguments to the call for this frame."
-  (coerce (core:backtrace-frame-arguments frame) 'list))
-
-(defun frame-locals (frame)
-  "Return an alist of local lexical variables and their values at the continuation the frame represents. The CARs are variable names and CDRs their values.
-Multiple bindings with the same name may be returned, as there is no notion of lexical scope in this interface."
-  ;; TODO: This is not a real solution, at all.
-  (let* ((fname (clasp-debug:frame-function-name frame))
-         (args (clasp-debug:frame-arguments frame)))
-    ;; KLUDGE (on top of a kludge) to do better with method arguments
-    ;; We have two kinds of method functions - fast and not - but we
-    ;; name them the same. The former we can treat normally, but the
-    ;; latter have a vaslist of the real arguments as their first, and
-    ;; the next method list as the second.
-    (if (and (consp fname)
-             (eq (first fname) 'cl:method)
-             (= (length args) 2)
-             (core:vaslistp (first args)))
-        (let ((method-args (core:list-from-va-list (first args)))
-              (next-methods (second args)))
-          (append
-           (loop for arg in method-args for i from 0
-                 collect (cons (intern (format nil "ARG~d" i) :cl-user)
-                               arg))
-           (list (cons 'cl-user::next-methods next-methods))))
-        (loop for arg in args for i from 0
-              collect (cons (intern (format nil "ARG~d" i) :cl-user)
-                            arg)))))
-
-(defun frame-source-position (frame)
-  "Return a CODE-SOURCE-LINE object representing the source file position for this frame's call, or NIL if no information is available."
-  (multiple-value-bind (pathname line-number column)
-      (core::code-source-position
-       (core:backtrace-frame-return-address frame))
-    (if (null pathname)
-        nil
-        (make-code-source-line
-         :pathname pathname
-         :line-number line-number
-         :column column))))
-
-(defun frame-language (frame)
-  "Return a marker of the programming language of the code for this frame. May be :LISP or :C++."
-  (core:backtrace-frame-type frame))
-
-(defun frame-function-name (frame)
-  "Return the name of the function being called in this frame. This will be one of:
-* A symbol.
-* A list (SETF symbol).
-* A list that is one of Clasp's function names, such as (FLET ...), (LABELS ...), or (METHOD ...).
-* A string, representing a C or C++ function."
-  (or (core:backtrace-frame-function-name frame)
-      ;; _RUN-ALL names don't have proper function names for some reason, so fall back.
-      (core:backtrace-frame-raw-name frame)))
-
+(defun frame-function (frame) (declare (ignore frame)) nil)
+(defun frame-arguments (frame) (declare (ignore frame)) nil)
+(defun frame-locals (frame) (declare (ignore frame)) nil)
 (defun frame-function-lambda-list (frame)
   "Return the lambda list of the function being called in this frame, and a second value indicating success. This function may fail, in which case the first value is undefined and the second is NIL. In success the first value is the lambda list and the second value is true."
-  ;; FIXME: Get from function description
-  (let ((f (frame-function frame)))
-    (if f
-        (ext:function-lambda-list f)
+  (let ((fd (frame-function-description frame)))
+    (if fd
+        (values (core:function-description-lambda-list fd) t)
         (values nil nil))))
-
 (defun frame-function-source-position (frame)
   "Return a CODE-SOURCE-LINE object representing the source file position for this frame's function."
-  ;; TODO: Get from function description
-  (declare (ignore frame))
-  nil)
-
+  (let ((fd (frame-function-description frame)))
+    (when fd
+      (make-code-source-line
+       :pathname (core:function-description-source-pathname fd)
+       :line-number (core:function-description-lineno fd)
+       :column (core:function-description-column fd)))))
 (defun frame-function-form (frame)
   "Return a lambda expression for this frame's function if it's available, or else NIL."
   ;; TODO
   (declare (ignore frame))
   nil)
-
 (defun frame-function-documentation (frame)
   "Return the docstring for this frame's function if it exists and is available, or else NIL."
-  (let ((f (frame-function frame)))
-    (if f
-        (documentation f 'function)
-        nil)))
-
+  (let ((fd (frame-function-description frame)))
+    (when fd
+      (core:function-description-docstring fd))))
 (defun disassemble-frame (frame)
   "Disassemble this frame's function to *standard-output*."
-  (cmp::disassemble-assembly
-   (core:backtrace-frame-function-start-address frame)
-   (core:backtrace-frame-function-end-address frame)))
+  (declare (ignore frame)))
+
+(defun frame-from-symbol (symbol)
+  ;; make a frame from backtrace_symbols information - which is quite bare.
+  (let ((parts (core:split symbol " ")))
+    (if (= (length parts) 6)
+        (destructuring-bind (idx exec addr name plus offset) (core:split symbol " ")
+          (declare (ignore idx exec addr plus offset))
+          (make-frame :source-position nil
+                      :function-name (or (core:maybe-demangle name) name)
+                      :function-description nil :language :c++)
+          #+(or)
+          (make-instance 'frame :sp nil :fname (or (core:maybe-demangle name) name)
+                                :fd nil :lang :c++))
+        (make-frame :source-position nil
+                    :function-name symbol
+                    :function-description nil :language :c++))))
+
+(defun decode-lisp-fname (fname)
+  (let* ((parts (cmp:unescape-and-split-jit-name fname))
+         (end-part-pos (position "" parts :test #'equal))
+         (package-name (second parts))
+         (package (find-package package-name))
+         (symbol-name (first parts))
+         (symbol (if package (find-symbol symbol-name package) nil))
+         (type-name (if (integerp end-part-pos)
+                        (elt parts (1- end-part-pos))
+                        (car (last parts)))))
+    ;; todo: method
+    (cond ((not symbol) fname)
+          ((string= type-name "SETF") `(setf ,symbol))
+          (t symbol))))
+
+(defun in-address-range-p (addr ranges)
+  ;; DWARF docs say a range is lower inclusive, upper exclusive.
+  (loop for (low . high) in ranges
+        when (and (<= low addr) (< addr high))
+          return t
+        finally (return nil)))
+
+(defun get-frame-function-description
+    (sectioned-address object-file dwarf-context)
+  (let ((address-ranges
+          (llvm-sys:get-address-ranges-for-address
+           dwarf-context sectioned-address))
+        (code (llvm-sys:object-file-code object-file)))
+    (loop for i below (llvm-sys:code-literals-length code)
+          for e = (llvm-sys:code-literals-ref code i)
+          do (typecase e
+               (core:local-entry-point
+                (let ((addr (core:local-entry-point-relptr e)))
+                  (when (in-address-range-p addr address-ranges)
+                    (return (core:function-description e)))))
+               (core:global-entry-point
+                (let ((addr (core:global-entry-point-relptr e)))
+                  (when (in-address-range-p addr address-ranges)
+                    (return (core:function-description e)))))))))
+
+(defun frame-from-dwarf (sectioned-address object-file)
+  (let ((dc (llvm-sys:create-dwarf-context object-file)))
+    (multiple-value-bind (filename fname source line column startline disc)
+        (llvm-sys:get-line-info-for-address dc sectioned-address)
+      (declare (ignore source startline disc))
+      (make-frame :function-name (decode-lisp-fname fname)
+                  :language :lisp
+                  :function-description (get-frame-function-description
+                                         sectioned-address object-file dc)
+                  :source-position (if filename
+                                       (make-code-source-line
+                                        :pathname filename :line-number line
+                                        :column column)
+                                       nil))
+      #+(or)
+      (make-instance 'frame
+        :fname (decode-lisp-fname fname) :lang :lisp
+        :fd (get-frame-function-description sectioned-address object-file dc)
+        :sp (if filename
+                (make-code-source-line
+                 :pathname filename :line-number line :column column)
+                nil)))))
+
+(defun frame-from-os-info (pointer symbol)
+  (multiple-value-bind (sectioned-address object-file)
+      (llvm-sys:object-file-for-instruction-pointer pointer nil)
+    (if sectioned-address
+        (frame-from-dwarf sectioned-address object-file)
+        (frame-from-symbol symbol))))
+
+(defun frames-from-os-backtrace (pointers symbols)
+  (loop with bot
+        for pointer in pointers for symbol in symbols
+        for prev-frame = nil then frame
+        for frame = (frame-from-os-info pointer symbol)
+        do (setf (%frame-down frame) prev-frame)
+        if bot
+          do (setf (%frame-up prev-frame) frame)
+        else
+          do (setf bot frame)
+        finally (setf (%frame-up frame) nil)
+                (return bot)))
 
 ;;; Frame selection
 
@@ -190,38 +226,25 @@ Only the outermost WITH-CAPPED-STACK matters for this purpose."
   "Return true iff this frame represents a use of WITH-CAPPED-STACK."
   (eq (frame-function-name frame) 'call-with-capped-stack))
 
-;;; Mid level interface: Navigate frames nicely
 
-;; The frame one beyond the selected stack (i.e. exclusive limit)
+;;; Mid level interface: Nativate frames nicely
+
 (defvar *stack-top*)
-;; The frame beginning the selected stack (i.e. inclusive limit)
 (defvar *stack-bot*)
 
-(defun find-bottom-frame (start)
-  ;; Look for a frame truncation marker.
-  ;; If none is found, use the start.
-  ;; If a cap is found, don't look for a bottom beyond that.
-  (do ((f start (frame-up f)))
-      ((or (null f) (cap-frame-p f)) start)
-    (when (truncation-frame-p f)
-      ;; A truncation frame is a call to call-with-truncated-stack,
-      ;; and we don't really want to keep that around, so.
-      ;; If truncated-frame-p does something else later we should
-      ;; maybe do something else here too.
-      (return (frame-up f)))))
-
+(defun find-bottom-frame (start) start)
 (defun find-top-frame (start)
-  ;; Look for a frame cap.
-  (do ((f start (frame-up f)))
-      ((or (null f) (cap-frame-p f)) f)))
+  (loop for f = start then (%frame-up f)
+        until (null (%frame-up f))
+        finally (return f)))
 
 (defun call-with-stack (function &key (delimited t))
   "Functional form of WITH-STACK."
-  ;; FIXME: Consing up the list and then discarding it is silly.
-  (core:call-with-frame
-   (lambda (frame)
-     (declare (core:lambda-name call-with-stack-lambda))
-     (let* ((*stack-bot* (if delimited (find-bottom-frame frame) frame))
+  (core:call-with-operating-system-backtrace
+   (lambda (pointers symbols bps)
+     (declare (ignore bps))
+     (let* ((floor (frames-from-os-backtrace pointers symbols))
+            (*stack-bot* (if delimited (find-bottom-frame floor) floor))
             (*stack-top* (if delimited (find-top-frame *stack-bot*) nil)))
        (funcall function *stack-bot*)))))
 
@@ -239,6 +262,7 @@ The delimiters and visibility may be ignored by using the lower level FRAME-UP, 
                                     'package-hider
                                     'fname-hider)
   "A list of function designators. Any CLASP-DEBUG:FRAME for which any of the functions returns true will be considered invisible by the mid level CLASP-DEBUG interface (e.g. UP, DOWN)")
+
 
 (defun frame-visible-p (frame)
   (notany (lambda (f) (funcall f frame)) *frame-filters*))
@@ -420,8 +444,3 @@ For example, for a function-name that is a symbol, returns that symbol's package
          nil)
         ;; shrug.
         (t nil)))
-
-;;; Called by SIGINFO handler, see gctools/interrupt.cc
-(defun information-interrupt (&rest args)
-  (declare (ignore args))
-  (core:safe-backtrace))

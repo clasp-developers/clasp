@@ -705,6 +705,62 @@ eg:  (f closure-ptr nargs a b c d ...)
 #-(and x86-64)
 (error "Define calling convention for system")
 
+;;; Put in debug information for a variable corresponding to an alloca.
+(defun dbg-variable-alloca (alloca name spi
+                                   &optional (type-name "T_O*")
+                                     (type llvm-sys:+dw-ate-address+))
+  (when spi ; don't bother if there's no info.
+    (let* ((type (llvm-sys:create-basic-type
+                  *the-module-dibuilder* type-name 64 type 0))
+           (allocamd (llvm-sys:metadata-as-value-get
+                      (thread-local-llvm-context)
+                      (llvm-sys:value-as-metadata-get alloca)))
+           (inlined-at (core:source-pos-info-inlined-at spi))
+           (scope (if inlined-at
+                      (cached-function-scope
+                       (core:source-pos-info-function-scope spi))
+                      *dbg-current-scope*))
+           (auto-variable (dbg-create-auto-variable
+                           :name name
+                           :lineno (core:source-pos-info-lineno spi)
+                           :scope scope
+                           :type type))
+           (auto-variable-md (llvm-sys:metadata-as-value-get
+                              (thread-local-llvm-context)
+                              auto-variable))
+           (diexpr (llvm-sys:metadata-as-value-get
+                    (thread-local-llvm-context)
+                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
+      (irc-intrinsic "llvm.dbg.addr" allocamd auto-variable-md diexpr))))
+
+;;; Put in debug information for a variable corresponding to an llvm Value.
+(defun dbg-variable-value (value name spi
+                                 &optional (type-name "T_O*")
+                                   (type llvm-sys:+dw-ate-address+))
+  (when spi
+    (let* ((type (llvm-sys:create-basic-type
+                  *the-module-dibuilder* type-name 64 type 0))
+           (valuemd (llvm-sys:metadata-as-value-get
+                     (thread-local-llvm-context)
+                     (llvm-sys:value-as-metadata-get value)))
+           (inlined-at (core:source-pos-info-inlined-at spi))
+           (scope (if inlined-at
+                      (cached-function-scope
+                       (core:source-pos-info-function-scope spi))
+                      *dbg-current-scope*))
+           (auto-variable (dbg-create-auto-variable
+                           :name name
+                           :lineno (core:source-pos-info-lineno spi)
+                           :scope scope
+                           :type type))
+           (auto-variable-md (llvm-sys:metadata-as-value-get
+                              (thread-local-llvm-context)
+                              auto-variable))
+           (diexpr (llvm-sys:metadata-as-value-get
+                    (thread-local-llvm-context)
+                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
+      (irc-intrinsic "llvm.dbg.value" valuemd auto-variable-md diexpr))))
+
 ;;; This is the normal C-style prototype for a function
 (define-symbol-macro %opaque-fn-prototype*% %i8*%)
 (define-symbol-macro %fn-prototype% %fn-registers-prototype%)

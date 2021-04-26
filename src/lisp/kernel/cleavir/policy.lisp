@@ -25,6 +25,7 @@
 
 (defmethod cleavir-policy:policy-qualities append ((env clasp-global-environment))
   '((save-register-args boolean t)
+    (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
@@ -35,6 +36,7 @@
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
+    (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
@@ -59,6 +61,20 @@
      (environment clasp-global-environment))
   #-debug-cclasp-lisp(= (cleavir-policy:optimize-value optimize 'debug) 3)
   #+debug-cclasp-lisp (> (cleavir-policy:optimize-value optimize 'debug) 0))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Policy PERFORM-OPTIMIZATION.
+;;;
+;;; If this policy is not on, Clasp will perform only minimal
+;;; optimization. At present this just puts the "optnone" attribute
+;;; on functions for LLVM.
+
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'perform-optimization))
+     optimize
+     (environment clasp-global-environment))
+  (< (cleavir-policy:optimize-value optimize 'debug) 3))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
