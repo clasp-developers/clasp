@@ -384,7 +384,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     if (start_of_snapshot) {
       printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
     } else {
-      printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
+//      printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
     }
 #  endif
 #else
