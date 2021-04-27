@@ -413,15 +413,21 @@ CL_DEFUN core::T_sp getLocalsForAddress(DWARFContext_sp dc, SectionedAddress_sp 
 }
 
 // FIXME: name
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressInner(DWARFContext_sp dc, SectionedAddress_sp sa) {
   uint64_t addr = sa->_value.Address;
-  llvm::DWARFDie fdie = dc->wrappedPtr()->getDIEsForAddress(addr).FunctionDIE;
-  return fdie.getAddressRanges();
+  llvm::DWARFContext* ldc = dc->wrappedPtr();
+  llvm::DWARFContext::DIEsForAddress dies = ldc->getDIEsForAddress(addr);
+  llvm::DWARFDie fdie = dies.FunctionDIE;
+  if (fdie.isValid()) return fdie.getAddressRanges();
+  // Now what?
+  return std::vector<llvm::DWARFAddressRange>();
 }
 
 CL_LAMBDA(dwarfcontext sectioned-address);
 CL_LISPIFY_NAME(getAddressRangesForAddress);
 CL_DOCSTRING("Return the DWARF address ranges for the function DIE containing this address.");
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddress_sp sa) {
   auto eranges = getAddressRangesForAddressInner(dc, sa);
   if (eranges) {
@@ -505,21 +511,25 @@ void search_jitted_objects(std::vector<core::BacktraceEntry>& backtrace, bool se
           uint64_t LowPC;
           uint64_t HighPC;
           uint64_t SectionIndex;
-          functionDIE.getLowAndHighPC(LowPC,HighPC,SectionIndex);
-          char* absoluteLowPC = (char*)of->_Code->_TextSegmentStart + LowPC;
-          char* absoluteHighPC = (char*)of->_Code->_TextSegmentStart + HighPC;
+          if (functionDIE.isValid()) {
+            functionDIE.getLowAndHighPC(LowPC,HighPC,SectionIndex);
+            char* absoluteLowPC = (char*)of->_Code->_TextSegmentStart + LowPC;
+            char* absoluteHighPC = (char*)of->_Code->_TextSegmentStart + HighPC;
           // printf("%s:%d:%s Looking for die function start: %p  stop: %p\n", __FILE__, __LINE__, __FUNCTION__, absoluteStart, absoluteStop );
-          backtrace[j]._Stage = core::lispFrame; // jitted functions are lisp functions
-          backtrace[j]._FunctionStart = (uintptr_t)absoluteLowPC;
-          backtrace[j]._FunctionEnd = (uintptr_t)absoluteHighPC;
-          backtrace[j]._SymbolName = info.FunctionName;
-          backtrace[j]._FileName = info.FileName;
-          backtrace[j]._StartFileName = info.StartFileName;
-          backtrace[j]._LineNo = info.Line;
-          backtrace[j]._Column = info.Column;
-          backtrace[j]._StartLine = info.StartLine;
-          backtrace[j]._Discriminator = info.Discriminator;
-          BT_LOG(("MATCHED!!!\n"));
+            backtrace[j]._Stage = core::lispFrame; // jitted functions are lisp functions
+            backtrace[j]._FunctionStart = (uintptr_t)absoluteLowPC;
+            backtrace[j]._FunctionEnd = (uintptr_t)absoluteHighPC;
+            backtrace[j]._SymbolName = info.FunctionName;
+            backtrace[j]._FileName = info.FileName;
+            backtrace[j]._StartFileName = info.StartFileName;
+            backtrace[j]._LineNo = info.Line;
+            backtrace[j]._Column = info.Column;
+            backtrace[j]._StartLine = info.StartLine;
+            backtrace[j]._Discriminator = info.Discriminator;
+            BT_LOG(("MATCHED!!!\n"));
+          } else {
+            printf("%s:%d:%s Could not get DIE for %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr.Address);
+          }
         }
       }
 #if 0
