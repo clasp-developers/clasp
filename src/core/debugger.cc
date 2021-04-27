@@ -567,7 +567,7 @@ void parse_constant(uintptr_t& address, uint64_t& constant) {
   constant = read_then_advance<uint64_t>(address);
 }
 
-void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record, bool library) {
+void parse_record(std::function<void(size_t, const StkSizeRecord&, int32_t)> thunk, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record) {
   uintptr_t recordAddress = address;
   BT_LOG(("Parse record at %p\n", (void*)address));
   uint64_t patchPointID = read_then_advance<uint64_t>(address);
@@ -586,24 +586,9 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
       abort();
     }
     int32_t offsetOrSmallConstant = read_then_advance<int32_t>(address);
-    if (backtrace.size() == 0 ) {
-      if (library) {
-        WRITE_DEBUG_IO(BF("Stackmap-library function %p stack-size %ld patchPointId %u frame-offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
-      } else {
-        WRITE_DEBUG_IO(BF("Stackmap-jit function %p stack-size %ld patchPointId %u frame-offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
-      }
-    }
     if (patchPointID == 1234567 ) {
       BT_LOG(("patchPointID matched at %p\n", (void*)recordAddress));
-      for (size_t j=0; j<backtrace.size(); ++j ) {
-        BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
-        if (function.FunctionAddress == backtrace[j]._FunctionStart) {
-          backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
-          backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
-          backtrace[j]._FrameOffset = offsetOrSmallConstant;
-          BT_LOG(("Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
-        }
-      }
+      thunk(functionIndex, function, offsetOrSmallConstant);
     }
   }
   BT_LOG(("Done with records at %p\n", (void*)address));
@@ -630,13 +615,13 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
     printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
     abort();
   }
-}  
+}
 
 /* ! Parse an llvm Stackmap
      The format is described here: https://llvm.org/docs/StackMaps.html#stack-map-format
 */
 
-void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end, bool library) {
+void walk_one_llvm_stackmap(std::function<void(size_t, const StkSizeRecord&, int32_t)> thunk, uintptr_t& address, uintptr_t end) {
   uintptr_t stackMapAddress = address;
   Header header;
   size_t NumFunctions;
@@ -671,7 +656,7 @@ void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& ad
     BT_LOG(("PASS2 Examining function #%lu at %p - %" PRu " records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
     for ( size_t index=0; index<function.RecordCount; index++) {
       StkMapRecord record;
-      parse_record(backtrace,address,functionIndex,function,record,library);
+      parse_record(thunk,address,functionIndex,function,record);
     }
   }
 }
@@ -699,11 +684,24 @@ void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
   WRITE_DEBUG_IO(BF("search_jitted_stackmaps\n"));
   WITH_READ_LOCK(debugInfo()._StackMapsLock);
   DebugInfo& di = debugInfo();
+  auto thunk = [&](size_t functionIndex,
+                   const StkSizeRecord& function,
+                   int32_t offsetOrSmallConstant) {
+    for (size_t j=0; j<backtrace.size(); ++j ) {
+      BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
+      if (function.FunctionAddress == backtrace[j]._FunctionStart) {
+        backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
+        backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
+        backtrace[j]._FrameOffset = offsetOrSmallConstant;
+        BT_LOG(("Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
+      }
+    }
+  };
   for ( auto entry : di._StackMaps ) {
     uintptr_t address = entry.second._StartAddress;
     BT_LOG((" Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._EndAddress));
     for ( size_t num = 0; num<entry.second._Number; ++num ) {
-      walk_one_llvm_stackmap(backtrace,address,entry.second._EndAddress,false);
+      walk_one_llvm_stackmap(thunk,address,entry.second._EndAddress);
       if (address>=entry.second._EndAddress) break;
     }
   }
@@ -849,8 +847,21 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
     uintptr_t address = symbol_table._StackmapStart;
     uintptr_t endAddress = symbol_table._StackmapEnd;
     if (address) {
+      auto thunk = [&](size_t functionIndex,
+                       const StkSizeRecord& function,
+                       int32_t offsetOrSmallConstant) {
+        for (size_t j=0; j<backtrace.size(); ++j ) {
+          BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
+          if (function.FunctionAddress == backtrace[j]._FunctionStart) {
+            backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
+            backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
+            backtrace[j]._FrameOffset = offsetOrSmallConstant;
+            BT_LOG(("Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
+          }
+        }
+      };
       while (address<endAddress) {
-        walk_one_llvm_stackmap(backtrace,address,endAddress,true);
+        walk_one_llvm_stackmap(thunk,address,endAddress);
       }
     }
   }
