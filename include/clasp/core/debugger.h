@@ -126,8 +126,6 @@ namespace core {
 void core__low_level_backtrace();
 void core__clib_backtrace(int depth = 999999999);
 
-FORWARD(InvocationHistoryFrameIterator);
-
 struct SymbolTable {
   uintptr_t _StackmapStart;
   uintptr_t _StackmapEnd;
@@ -187,12 +185,6 @@ void dbg_describe_tagged_T_Optr(T_O *p);
 
  bool check_for_frame(uintptr_t);
  void frame_check(uintptr_t);
-
-
-void core__gotoIhsTop();
-void core__gotoIhsNext();
-void core__gotoIhsPrev();
-void core__printCurrentIhsFrame();
 
 int safe_backtrace(void**& return_buffer);
 

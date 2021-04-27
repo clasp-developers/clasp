@@ -910,75 +910,6 @@ CL_DEFUN SimpleBaseString_sp core__ever_so_slightly_mangle_cxx_names(const std::
   while (mangle_next_smartPtr(raw_name,pos,sout));
   return SimpleBaseString_O::make(sout.str());
 }
-  
-  
-
-void low_level_backtrace(bool with_args) {
-  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
-  if (top == NULL) {
-    printf("Empty InvocationHistoryStack\n");
-    return;
-  }
-  int index = 0;
-  for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
-    string name = "-no-name-";
-    T_sp tclosure = cur->function();
-    if (!tclosure) {
-      name = "-NO-CLOSURE-";
-    } else if (tclosure.generalp()){
-      General_sp closure = gc::As_unsafe<General_sp>(tclosure);
-      if (closure.nilp()) {
-        name = "NIL";
-      } else if (gc::IsA<Function_sp>(closure)) {
-        Function_sp func = gc::As_unsafe<Function_sp>(closure);
-        if (func->functionName().notnilp()) {
-          try {
-            name = _rep_(func->functionName());
-          } catch (...) {
-            name = "-BAD-NAME-";
-          }
-        }
-        /*Nilable?*/ T_sp sfi = core__file_scope(func->sourcePathname());
-        string sourceName = "cannot-determine";
-        if (sfi.notnilp()) {
-          sourceName = gc::As<FileScope_sp>(sfi)->fileName();
-        }
-        printf("#%4d frame@%p closure@%p %s/%3d\n    %40s ", index, cur, closure.raw_(), sourceName.c_str(), func->lineNumber(), name.c_str() );
-        if (with_args) {
-          SimpleVector_sp args = cur->arguments();
-          for ( size_t i(0), iEnd(args->length()); i<iEnd; ++i ) { printf( " %s@%p", _rep_((*args)[i]).c_str(), (*args)[i].raw_()); }
-        }
-        printf("\n");
-        goto SKIP_PRINT;
-      } else {
-        name = _rep_(closure);
-      }
-    } else {
-      name = "-BAD-CLOSURE-";
-    }
-    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]\n",
-           index, cur, cur->_Previous, tclosure.raw_(), name.c_str() );
-  SKIP_PRINT:
-    ++index;
-  }
-  printf("----Done\n");
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("lowLevelBacktrace");
-CL_DEFUN void core__low_level_backtrace() {
-  low_level_backtrace(false);
-}
-
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("lowLevelBacktrace");
-CL_DEFUN void core__low_level_backtrace_with_args() {
-  low_level_backtrace(true);
-}
-
 
 void operating_system_backtrace(std::vector<BacktraceEntry>& bt_entries)
 {
@@ -1345,55 +1276,6 @@ CL_DEFUN void core__btcl(T_sp stream, bool all, bool args, bool source_info)
 };
 
 namespace core {
-
-CL_DEFUN void core__gotoIhsTop() {
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(core__ihs_top()));
-};
-
-CL_DEFUN void core__gotoIhsPrev() {
-  int ihsCur = core__ihs_current_frame();
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(core__ihs_prev(ihsCur)));
-};
-
-CL_DEFUN void core__gotoIhsNext() {
-  int ihsCur = core__ihs_current_frame();
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(core__ihs_next(ihsCur)));
-};
-
-CL_DEFUN void core__gotoIhsFrame(int frame_index) {
-  if (frame_index < 0)
-    frame_index = 0;
-  if (frame_index >= core__ihs_top())
-    frame_index = core__ihs_top() - 1;
-  int ihsCur = frame_index;
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(ihsCur));
-};
-
-CL_DEFUN void core__printCurrentIhsFrame() {
-  int ihsCur = core__ihs_current_frame();
-  T_sp fun = core__ihs_fun(ihsCur);
-  printf("Frame[%d] %s\n", ihsCur, _rep_(fun).c_str());
-};
-
-
-CL_DOCSTRING("printCurrentIhsFrameEnvironment");
-CL_DEFUN void core__print_current_ihs_frame_environment() {
-  T_sp args = core__ihs_arguments(core__ihs_current_frame());
-  if (args.notnilp()) {
-    ComplexVector_T_sp vargs = gc::As<ComplexVector_T_sp>(args);
-    for (int i = 0; i < cl__length(vargs); ++i) {
-      write_bf_stream(BF("arg%s --> %s") % i % _rep_(vargs->rowMajorAref(i)));
-    }
-  } else {
-    write_bf_stream(BF("Args not available"));
-  }
-  T_sp env = core__ihs_env(core__ihs_current_frame());
-  if (env.notnilp()) {
-    printf("%s\n", gc::As<Environment_sp>(env)->environmentStackAsString().c_str());
-  } else {
-    printf("-- Only global environment available --\n");
-  }
-}
 
 CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
   dbg_lowLevelDescribe(obj);

@@ -1174,7 +1174,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARcurrent_dlopen_handleSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
-  _sym_STARbacktraceFrameSelectorHookSTAR->defparameter(_Nil<T_O>());
   _sym_STARbacktraceSTAR->defparameter(_Nil<T_O>());
   _sym_STARfunctions_to_inlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
