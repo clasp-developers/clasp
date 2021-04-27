@@ -115,11 +115,15 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
       throw ExitProgramException(0);
     }
     char cmd;
+    string eline;
     if (line.empty()) continue;
     if ((line[0] == ':') && (line.size() > 1)) {
       cmd = line[1];
-      line = line.substr(2);
-    } else cmd = 'e';
+      eline = line.substr(2);
+    } else {
+      cmd = 'e';
+      eline = line;
+    }
     switch (cmd) {
     case '?':
     case 'h': // help
@@ -127,7 +131,7 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
         break;
     case 'g': { // go to frame
       int new_frame_index;
-      if (debugger_parse_integer(line, new_frame_index)) {
+      if (debugger_parse_integer(eline, new_frame_index)) {
         write_bf_stream(BF("Switching to frame: %d") % new_frame_index);
         cur = debugger_frame_rel(cur, new_frame_index - frame_index, frame_index);
       } else write_bf_stream(BF("You must provide a frame index\n"));
@@ -149,11 +153,11 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
         throw(DebuggerSaysAbortToRepl());
     case 'c': // continue with given result
         if (can_continue)
-          return _lisp->readEvalPrintString(line, _Nil<T_O>(), true);
+          return _lisp->readEvalPrintString(eline, _Nil<T_O>(), true);
         else write_bf_stream(BF("Cannot continue from this error\n"));
         break;
     case 'e': // evaluate
-        try { _lisp->readEvalPrintString(line, _Nil<T_O>(), true); }
+        try { _lisp->readEvalPrintString(eline, _Nil<T_O>(), true); }
         // If the debugger is entered recursively and aborted out of,
         // return here.
         catch (DebuggerSaysAbortToRepl &err) {}
