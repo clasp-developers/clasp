@@ -550,7 +550,7 @@ Use special code 0 to cancel this operation.")
   (loop
     (case (peek-char nil *standard-input* nil :EOF)
       ((#\))
-       (warn "Ignoring an unmatched right parenthesis.")
+       #+(or)(warn "Ignoring an unmatched right parenthesis.")
        (read-char))
       ((#\space #\tab)
        (read-char))
