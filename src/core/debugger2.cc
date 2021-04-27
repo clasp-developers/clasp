@@ -132,7 +132,7 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
     case 'g': { // go to frame
       int new_frame_index;
       if (debugger_parse_integer(eline, new_frame_index)) {
-        write_bf_stream(BF("Switching to frame: %d") % new_frame_index);
+        write_bf_stream(BF("Switching to frame: %d\n") % new_frame_index);
         cur = debugger_frame_rel(cur, new_frame_index - frame_index, frame_index);
       } else write_bf_stream(BF("You must provide a frame index\n"));
       break;
@@ -162,7 +162,7 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
         // return here.
         catch (DebuggerSaysAbortToRepl &err) {}
         break;
-    default: write_bf_stream(BF("Unknown command[%c] - try ':?'") % cmd);
+    default: write_bf_stream(BF("Unknown command[%c] - try ':?'\n") % cmd);
     } // cmd switch
   } // read eval print loop
 }
