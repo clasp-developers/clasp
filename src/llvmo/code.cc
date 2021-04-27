@@ -294,7 +294,7 @@ namespace llvmo {
 void save_object_file_and_code_info(ObjectFile_sp ofi)
 {
 //  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s register object file \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(ofi->_FasoName).c_str()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Adding to _lisp->_Roots._AllObjectFiles  %p \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (void*)ofi.raw_(), core::_rep_(ofi->_FasoName).c_str()));
   core::T_sp expected;
   core::Cons_sp entry = core::Cons_O::create(ofi,_Nil<core::T_O>());
   do {
@@ -335,7 +335,8 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
     core::write_bf_stream(BF("No object files registered - cannot find object file for address %p\n") % (void*)instruction_pointer);
   }
   while (cur.consp()) {
-    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur)));
+    core::T_sp car = CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur));
+    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(car);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Looking at object file _text %p to %p\n", __FILE__, __LINE__, __FUNCTION__, ofi->_Code->_TextSegmentStart, ofi->_Code->_TextSegmentEnd));
     if ((char*)instruction_pointer>=(char*)ofi->_Code->_TextSegmentStart&&(char*)instruction_pointer<((char*)ofi->_Code->_TextSegmentEnd)) {
       core::T_sp sectionedAddress = object_file_sectioned_address(instruction_pointer,ofi,verbose);

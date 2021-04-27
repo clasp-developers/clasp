@@ -2234,6 +2234,8 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
       nil_source_header = source_header;
       root_holder.add((void*)nil.raw_());
       my_thread->finish_initialization_main_thread(nil);
+      // Now we have NIL in 'nil' - use it to initialize a few things.
+      _lisp->_Roots._AllObjectFiles.store(nil);
     }
     
     //
@@ -2284,58 +2286,71 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
           countNullObjects++; // It's a Null_O object but its header has been obliterated by a fwd
         } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
           // Handle the ObjectFile_O objects - pass them to the LLJIT
-          llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)clientStart;
-          char* of_start = objectFilesStartAddress + objectFile->_ObjectFileOffset;
-          size_t of_length = objectFile->_ObjectFileSize;
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Handle ObjectFile_O @ %p  startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
+          llvmo::ObjectFile_O* loadedObjectFile = (llvmo::ObjectFile_O*)clientStart;
+          //
+          // Now copy the object file into C++ memory
+          //
+          char* loadedObjectFileStart = objectFilesStartAddress + loadedObjectFile->_ObjectFileOffset;
+          size_t of_length = loadedObjectFile->_ObjectFileSize;
+          char* of_start = (char*)malloc(loadedObjectFile->_ObjectFileSize);
+          memcpy((void*)of_start, loadedObjectFileStart, of_length );
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to pass LLJIT ObjectFile_O @ %p  startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
                                     __FILE__, __LINE__, __FUNCTION__,
-                                    objectFile,
-                                    objectFile->_StartupID,
-                                    objectFile->_ObjectFileOffset,
-                                    objectFile->_ObjectFileSize,
+                                    loadedObjectFile,
+                                    loadedObjectFile->_StartupID,
+                                    loadedObjectFile->_ObjectFileOffset,
+                                    loadedObjectFile->_ObjectFileSize,
                                     of_start ));
           llvm::StringRef sbuffer((const char*)of_start, of_length);
-          std::string uniqueName = llvmo::uniqueMemoryBufferName("of",objectFile->_StartupID, objectFile->_ObjectFileSize );
+          std::string uniqueName = llvmo::uniqueMemoryBufferName("of",loadedObjectFile->_StartupID, loadedObjectFile->_ObjectFileSize );
           llvm::StringRef name(uniqueName);
           std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
-          objectFile->_MemoryBuffer.reset();
-          objectFile->_MemoryBuffer = std::move(memoryBuffer);
-          llvmo::Code_sp oldCode = objectFile->_Code;
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s !!!!!!!!!!!!! About to invoke jit->addObjectFile\n", __FILE__, __LINE__, __FUNCTION__ ));
-          jit->addObjectFile(objectFile->asSmartPtr(),false);
-          core::T_mv startupName = core::core__startup_linkage_shutdown_names(objectFile->_StartupID,_Nil<core::T_O>());
+          loadedObjectFile->_MemoryBuffer.reset();
+          loadedObjectFile->_MemoryBuffer = std::move(memoryBuffer);
+          llvmo::Code_sp oldCode = loadedObjectFile->_Code;
+          // Allocate a new ObjectFile_O
+          core::T_sp tallocatedObjectFile = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
+          llvmo::ObjectFile_sp allocatedObjectFile = gc::As<llvmo::ObjectFile_sp>(tallocatedObjectFile);
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to pass a freshly allocated ObjectFile_sp %p to the LLJIT\n"
+                                    "!!!!    The unix object file is at %p size: %lu\n"
+                                    "!!!!   - when we get it back in ClaspReturnObjectBuffer will it be at the same place?\n"
+                                    "!!!!     Turn on DEBUG_OBJECT_FILES to find out where ClaspReturnObjectBuffer sees the object file\n"
+                                    ,
+                                    __FILE__, __LINE__, __FUNCTION__,
+                                    (void*)allocatedObjectFile.raw_(),
+                                    of_start, of_length ));
+          jit->addObjectFile(allocatedObjectFile->asSmartPtr(),false);
+          core::T_mv startupName = core::core__startup_linkage_shutdown_names(allocatedObjectFile->_StartupID,_Nil<core::T_O>());
           core::String_sp str = gc::As<core::String_sp>(startupName);
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s I added the ObjectFile to the LLJIT - startupName: %s  --- what do I do to get the code\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(str).c_str() ));
           void* ptr;
-          bool found = jit->do_lookup( *objectFile->_JITDylib->wrappedPtr(), str->get_std_string(), ptr );
+          //
+          // Everything after this will have to change when we do multicore startup.
+          // lookup will cause multicore linking and with multicore linking we have to do things after this in a thread safe way
+          bool found = jit->do_lookup( *allocatedObjectFile->_JITDylib->wrappedPtr(), str->get_std_string(), ptr );
           if (!found) {
             printf("%s:%d:%s Could not find startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str() );
             abort();
           }
-          // Allocate a new ObjectFile_O
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Allocating a new ObjectFile_O object - the unix object file is at %p - after giving it to the LLJIT will it be at the same place?\n"
-                                    "!!!!        Turn on DEBUG_OBJECT_FILES to find out where ClaspReturnObjectBuffer sees the object file\n"
-                                    "!!!!        ClaspReturnObjectBuffer will modify our current ObjectFile_O object\n"
-                                    "!!!!    ALSO - will runStartupCode be evaluated?  It shouldn't!!!!!!!\n"
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ClaspReturnObjectBuffer modified our current ObjectFile_O object\n"
                                     "!!!!     We want to get the ObjectFile_O->_Code object and use that as the forward pointer for the\n"
-                                    "!!!!      Code_O object @ %p that was in the ObjectFile_O object BEFORE we called jit->addObjectFile\n"
-                                    "!!!!      After jit->addObjectFile the ObjectFile_O->_Code is %p\n"
+                                    "!!!!     Code_O object @ %p that was in the ObjectFile_O object BEFORE we called jit->addObjectFile\n"
+                                    "!!!!     After jit->addObjectFile the ObjectFile_O->_Code is %p\n"
                                     ,
                                     __FILE__, __LINE__, __FUNCTION__,
-                                    of_start,
                                     oldCode.raw_(),
-                                    objectFile->_Code.raw_()));
-          core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
-          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+                                    allocatedObjectFile->_Code.raw_()));
+//          core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
+          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
           DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
                           % (void*) obj.raw_()
                           % (void*)fwd);
           set_forwarding_pointer(source_header,((char*)fwd), &islInfo );
-          root_holder.add((void*)obj.raw_());
+          root_holder.add((void*)allocatedObjectFile.raw_());
           //
           // Now set the new code pointer as the forward for the oldCode object
           //
-          core::T_sp code = objectFile->_Code;
+          core::T_sp code = allocatedObjectFile->_Code;
           if (code == oldCode) {
             printf("%s:%d:%s Something is wrong - the new code %p is the same as the old code %p\n",
                    __FILE__, __LINE__, __FUNCTION__,
