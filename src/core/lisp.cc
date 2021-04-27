@@ -90,6 +90,7 @@ THE SOFTWARE.
 #include <clasp/core/sysprop.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/debugger2.h>
 #include <clasp/core/numberToString.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/lispStream.h>
@@ -2105,7 +2106,7 @@ CL_DECLARE();
 CL_DOCSTRING("invokeInternalDebugger");
 [[noreturn]] CL_DEFUN void core__invoke_internal_debugger(T_sp condition) {
   write_bf_stream(BF("%s:%d core__invoke_internal_debugger --> %s\n") % __FILE__ % __LINE__ % _rep_(condition).c_str());
-  core__call_with_backtrace(_sym_start_debugger_with_backtrace->symbolFunction(),false);
+  early_debug(condition, false);
   printf("%s:%d Cannot continue\n", __FILE__, __LINE__);
   abort();
 };

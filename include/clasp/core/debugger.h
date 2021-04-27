@@ -122,43 +122,11 @@ void core__btcl(T_sp stream, bool all, bool args, bool source_info);
 }; // namespace core
 
 namespace core {
-/*! This class controls the single-step state of the Lisp interpreter
-  in an exception safe way.
-  When you want to force a form to execute in single step mode
-  you declare a LispDebugger(lisp,true) in the scope where you will
-  evaluate the form and then when the form finishes it will restore
-  the single step state to what it was.
-*/
 
 void core__low_level_backtrace();
 void core__clib_backtrace(int depth = 999999999);
 
 FORWARD(InvocationHistoryFrameIterator);
-
-class LispDebugger {
-private:
-  bool _CanContinue;
-  T_sp _Condition;
-
-public:
-  /*! Print the current expression */
-  void printExpression(T_sp stream);
-
-  /*! Invoke the debugger,
-	  If the user is allowed to resume and opts to resume then return the resume object 
-	*/
-  T_sp invoke();
-
-  InvocationHistoryFrameIterator_sp currentFrame() const;
-
-  LispDebugger(T_sp condition);
-  LispDebugger();
-
-  virtual ~LispDebugger() {
-    _G();
-    --globals_->_DebuggerLevel;
-  };
-};
 
 struct SymbolTable {
   uintptr_t _StackmapStart;

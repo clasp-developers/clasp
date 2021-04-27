@@ -64,6 +64,7 @@ THE SOFTWARE.
 #include <clasp/core/lispReader.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/debugger2.h>
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
 #include <clasp/core/primitives.h>
@@ -1388,8 +1389,7 @@ struct ErrorSimpleDepthCounter {
     if (my_thread->_InvocationHistoryStackTop == NULL) {
       throw(HardError("System starting up - debugger not available yet: "+ ss.str()));
     }
-    LispDebugger dbg;
-    dbg.invoke();
+    early_debug(_Nil<T_O>(), false);
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
   eval::funcall(_sym_signalSimpleError,
@@ -1417,8 +1417,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
     if (my_thread->_InvocationHistoryStackTop == NULL) {
       throw(HardError("System starting up - debugger not available yet: "+ ss.str()));
     }
-    LispDebugger dbg;
-    dbg.invoke();
+    early_debug(_Nil<T_O>(), false);
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
   eval::funcall(_sym_signalSimpleError,
@@ -1434,8 +1433,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
     stringstream ss;
     ss << "Error " << _rep_(datum) << " initializers: " << _rep_(arguments) << std::endl;
     printf("%s:%d lisp_error ->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
-    LispDebugger dbg;
-    dbg.invoke();
+    early_debug(_Nil<T_O>(), false);
   }
   eval::applyLastArgsPLUSFirst(cl::_sym_error, arguments, datum);
   UNREACHABLE();
