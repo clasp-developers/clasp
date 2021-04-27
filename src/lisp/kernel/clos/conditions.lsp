@@ -967,13 +967,13 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
              (let ((name (macro-name condition)))
                (if name
                    (format stream "Error while parsing arguments to ~a:
-~2t~a in~%~4t~a~%~2ttosatisfy lambda list~%~4t~a"
+~2t~a in~%~4t~a~%~2tto satisfy lambda list~%~4t~a"
                            name
                            (ecase (problem condition)
                              ((:too-many) "Too many arguments")
                              ((:too-few) "Too few arguments"))
                            (arguments condition) (lambda-list condition))
-                   (format stream "~a in~%~2t~a~%tosatisfy lambda list~%~2t~a"
+                   (format stream "~a in~%~2t~a~%to satisfy lambda list~%~2t~a"
                            (ecase (problem condition)
                              ((:too-many) "Too many arguments")
                              ((:too-few) "Too few arguments"))
