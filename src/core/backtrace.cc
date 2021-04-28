@@ -9,6 +9,7 @@
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/code.h>
+#include <clasp/core/debugger.h> // temp - move to stackmaps file TODO
 #include <clasp/core/backtrace.h>
 #include <stdlib.h> // calloc, realloc, free
 #include <execinfo.h> // backtrace
@@ -86,7 +87,7 @@ static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
   } else return _Nil<T_O>();
 }
 
-static T_sp dwarf_fd(llvmo::ObjectFile_sp ofi,
+static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
                      llvmo::DWARFContext_sp dcontext,
                      llvmo::SectionedAddress_sp sa) {
   auto eranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
@@ -103,7 +104,7 @@ static T_sp dwarf_fd(llvmo::ObjectFile_sp ofi,
         uintptr_t ip = (uintptr_t)(ep->_EntryPoint) - code_start;
         for (auto range : ranges) {
           if ((range.LowPC <= ip) && (ip < range.HighPC))
-            return ep->_FunctionDescription;
+            return ep;
         }
       } else if (gc::IsA<GlobalEntryPoint_sp>(literal)) {
         GlobalEntryPoint_sp ep = gc::As_unsafe<GlobalEntryPoint_sp>(literal);
@@ -111,7 +112,7 @@ static T_sp dwarf_fd(llvmo::ObjectFile_sp ofi,
           uintptr_t ip = (uintptr_t)(ep->_EntryPoints[j]) - code_start;
           for (auto range : ranges) {
             if ((range.LowPC <= ip) && (ip < range.HighPC))
-              return ep->_FunctionDescription;
+              return ep;
           }
         }
       }
@@ -124,15 +125,71 @@ static T_sp dwarf_fd(llvmo::ObjectFile_sp ofi,
   }
 }
 
-static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi) {
+static void args_from_offset(void* frameptr, int32_t offset,
+                             T_sp& closure, T_sp& args) {
+  if (frameptr) {
+    T_O** register_save_area = (T_O**)((uintptr_t)frameptr + offset);
+    T_sp tclosure((gc::Tagged)register_save_area[0]);
+    closure = tclosure;
+    size_t nargs = (size_t)(register_save_area[1]);
+    args = SimpleVector_O::make(nargs);
+    SimpleVector_sp avec = gc::As_unsafe<SimpleVector_sp>(args);
+    for (size_t i = 0; i < nargs; ++i) {
+      T_sp temp((gctools::Tagged)(register_save_area[i+2]));
+      (*avec)[i] = temp;
+    }
+  }
+}
+
+static void args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
+                                 void* frameptr,
+                                 T_sp& closure, T_sp& args) {
+  if (ep.nilp()) return;
+  auto ofp = ofi->getObjectFile();
+  if (!ofp) return;
+  // FIXME: we could check the entry point type ahead of time
+  auto thunk = [&](size_t _, const smStkSizeRecord& function,
+                   int32_t offsetOrSmallConstant) {
+    if (gc::IsA<LocalEntryPoint_sp>(ep)) {
+      LocalEntryPoint_sp lep = gc::As_unsafe<LocalEntryPoint_sp>(ep);
+      if (function.FunctionAddress == (uintptr_t)(lep->_EntryPoint)) {
+        args_from_offset(frameptr, offsetOrSmallConstant, closure, args);
+        return;
+      }
+    } else if (gc::IsA<GlobalEntryPoint_sp>(ep)) {
+      GlobalEntryPoint_sp gep = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
+      for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
+        if (function.FunctionAddress == (uintptr_t)(gep->_EntryPoints[j])) {
+          args_from_offset(frameptr, offsetOrSmallConstant, closure, args);
+          return;
+        }
+      }
+    }
+  };
+  for (auto sect : (*ofp)->sections()) {
+    auto mname = sect.getName();
+    if (mname && ((*mname) == "__llvm_stackmaps")) {
+      uintptr_t start_addr = sect.getAddress();
+      uintptr_t end_addr = start_addr + sect.getSize();
+      walk_one_llvm_stackmap(thunk, start_addr, end_addr);
+      return;
+    }
+  }
+}
+
+static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
+                                        void* fbp) {
   llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
   llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDwarfContext(ofi);
   T_sp spi = dwarf_spi(dcontext, sa);
-  T_sp fd = dwarf_fd(ofi, dcontext, sa);
+  T_sp ep = dwarf_ep(ofi, dcontext, sa);
+  T_sp fd = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : _Nil<FunctionDescription_O>();
+  T_sp closure = _Nil<T_O>(), args = _Nil<T_O>();
+  //args_for_entry_point(ofi, ep, fbp, closure, args);
   T_sp fname = _Nil<T_O>();
   if (fd.notnilp())
     fname = gc::As_unsafe<FunctionDescription_sp>(fd)->functionName();
-  return DebuggerFrame_O::make(fname, spi, fd, INTERN_(kw, lisp));
+  return DebuggerFrame_O::make(fname, spi, fd, closure, args, INTERN_(kw, lisp));
 }
 
 // FIXME: remove 2. This is a stupid disambiguation.
@@ -176,14 +233,14 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, char* cstring) {
     // couldn't demangle, so just use the unadulterated string
     name = linkname;
   T_sp lname = SimpleBaseString_O::make(name);
-  return DebuggerFrame_O::make(lname, _Nil<T_O>(), _Nil<T_O>(),
-                               INTERN_(kw, c_PLUS__PLUS_));
+  return DebuggerFrame_O::make(lname, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
+                               _Nil<T_O>(), INTERN_(kw, c_PLUS__PLUS_));
 }
 
-static DebuggerFrame_sp make_frame(void* ip, char* string) {
+static DebuggerFrame_sp make_frame(void* ip, char* string, void* fbp) {
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp()) return make_cxx_frame(ip, string);
-  else return make_lisp_frame(ip, gc::As_unsafe<llvmo::ObjectFile_sp>(of));
+  else return make_lisp_frame(ip, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
 }
 
 CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
@@ -193,15 +250,15 @@ CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
     size_t returned = backtrace(buffer,num);
     if (returned < num) {
       char **strings = backtrace_symbols(buffer, returned);
-      // void* bp = __builtin_frame_address(0); // TODO later
-      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0]);
+      void* fbp = __builtin_frame_address(0);
+      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp);
       DebuggerFrame_sp prev = bot;
       for (size_t j = 1; j < returned; ++j) {
-        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j]);
+        if (fbp) fbp = *(void**)fbp;
+        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j], fbp);
         frame->down = prev;
         prev->up = frame;
         prev = frame;
-        // if (bp) bp = *(void**)bp;
       }
       free(buffer);
       free(strings);
@@ -225,15 +282,15 @@ T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
     size_t returned = backtrace(buffer,num);
     if (returned < num) {
       char **strings = backtrace_symbols(buffer, returned);
-      // void* bp = __builtin_frame_address(0); // TODO later
-      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0]);
+      void* fbp = __builtin_frame_address(0); // TODO later
+      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp);
       DebuggerFrame_sp prev = bot;
       for (size_t j = 1; j < returned; ++j) {
-        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j]);
+        if (fbp) fbp = *(void**)fbp;
+        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j], fbp);
         frame->down = prev;
         prev->up = frame;
         prev = frame;
-        // if (bp) bp = *(void**)bp;
       }
       free(buffer);
       free(strings);
@@ -259,6 +316,12 @@ CL_DEFUN T_sp core__debugger_frame_function_description(DebuggerFrame_sp df) {
 }
 CL_DEFUN T_sp core__debugger_frame_lang(DebuggerFrame_sp df) {
   return df->lang;
+}
+CL_DEFUN T_sp core__debugger_frame_closure(DebuggerFrame_sp df) {
+  return df->closure;
+}
+CL_DEFUN T_sp core__debugger_frame_args(DebuggerFrame_sp df) {
+  return df->args;
 }
 CL_DEFUN T_sp core__debugger_frame_up(DebuggerFrame_sp df) {
   return df->up;

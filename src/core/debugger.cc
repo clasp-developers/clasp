@@ -494,43 +494,6 @@ std::string backtrace_frame(size_t index, BacktraceEntry* frame)
   return ss.str();
 }
 
-
-struct Header {
-  uint8_t  version;
-  uint8_t  reserved0;
-  uint16_t reserved1;
-};
-
-struct StkSizeRecord {
-  uint64_t  FunctionAddress;
-  int64_t  StackSize;
-  uint64_t  RecordCount;
-};
-
-struct Location{
-  uint8_t  Type;
-  uint8_t   Reserved0;
-  uint16_t  LocationSize;
-  uint16_t  DwarfRegNum;
-  uint16_t  Reserved1;
-  int32_t   OffsetOrSmallConstant;
-};
-
-struct LiveOut {
-  uint16_t DwarfRegNum;
-  uint8_t  Reserved;
-  uint8_t SizeInBytes;
-};
-
-struct StkMapRecord {
-  uint64_t PatchPointID;
-  uint32_t InstructionOffset;
-  uint16_t Reserved;
-  std::vector<Location> Locations;
-  std::vector<LiveOut> LiveOuts;
-};
-
-
 template <typename T>
 T read_then_advance(uintptr_t& address) {
   uintptr_t original = address;
@@ -539,7 +502,7 @@ T read_then_advance(uintptr_t& address) {
 }
 
 // Return true if the header was read
-bool parse_header(uintptr_t& address, uintptr_t end, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
+bool parse_header(uintptr_t& address, uintptr_t end, smHeader& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
 {
   uintptr_t headerAddress = address;
   header.version = read_then_advance<uint8_t>(address);
@@ -555,7 +518,7 @@ bool parse_header(uintptr_t& address, uintptr_t end, Header& header, size_t& Num
   return true;
 }
 
-void parse_function(uintptr_t& address, StkSizeRecord& function) {
+void parse_function(uintptr_t& address, smStkSizeRecord& function) {
   uintptr_t functionAddress = address;
   function.FunctionAddress = read_then_advance<uint64_t>(address);
   function.StackSize = read_then_advance<uint64_t>(address);
@@ -567,7 +530,7 @@ void parse_constant(uintptr_t& address, uint64_t& constant) {
   constant = read_then_advance<uint64_t>(address);
 }
 
-void parse_record(std::function<void(size_t, const StkSizeRecord&, int32_t)> thunk, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record) {
+void parse_record(std::function<void(size_t, const smStkSizeRecord&, int32_t)> thunk, uintptr_t& address, size_t functionIndex, const smStkSizeRecord& function, smStkMapRecord& record) {
   uintptr_t recordAddress = address;
   BT_LOG(("Parse record at %p\n", (void*)address));
   uint64_t patchPointID = read_then_advance<uint64_t>(address);
@@ -621,9 +584,9 @@ void parse_record(std::function<void(size_t, const StkSizeRecord&, int32_t)> thu
      The format is described here: https://llvm.org/docs/StackMaps.html#stack-map-format
 */
 
-void walk_one_llvm_stackmap(std::function<void(size_t, const StkSizeRecord&, int32_t)> thunk, uintptr_t& address, uintptr_t end) {
+void walk_one_llvm_stackmap(std::function<void(size_t, const smStkSizeRecord&, int32_t)> thunk, uintptr_t& address, uintptr_t end) {
   uintptr_t stackMapAddress = address;
-  Header header;
+  smHeader header;
   size_t NumFunctions;
   size_t NumConstants;
   size_t NumRecords;
@@ -640,7 +603,7 @@ void walk_one_llvm_stackmap(std::function<void(size_t, const StkSizeRecord&, int
   uintptr_t functionAddress = address;
   BT_LOG(("PASS1 Parse function block first pass %p\n", (void*)functionAddress ));
   for ( size_t index=0; index<NumFunctions; ++index ) {
-    StkSizeRecord function;
+    smStkSizeRecord function;
     parse_function(address,function); // dummy - used to skip functions
     BT_LOG(("PASS1 Found function #%lu at %p\n", index, (void*)function.FunctionAddress));
   }
@@ -651,11 +614,11 @@ void walk_one_llvm_stackmap(std::function<void(size_t, const StkSizeRecord&, int
   size_t functionIndex = 0;
   BT_LOG(("Parse record block %p\n", (void*)address ));
   for ( size_t functionIndex = 0; functionIndex < NumFunctions; ++functionIndex ) {
-    StkSizeRecord function;
+    smStkSizeRecord function;
     parse_function(functionAddress,function);
     BT_LOG(("PASS2 Examining function #%lu at %p - %" PRu " records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
     for ( size_t index=0; index<function.RecordCount; index++) {
-      StkMapRecord record;
+      smStkMapRecord record;
       parse_record(thunk,address,functionIndex,function,record);
     }
   }
@@ -685,7 +648,7 @@ void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
   WITH_READ_LOCK(debugInfo()._StackMapsLock);
   DebugInfo& di = debugInfo();
   auto thunk = [&](size_t functionIndex,
-                   const StkSizeRecord& function,
+                   const smStkSizeRecord& function,
                    int32_t offsetOrSmallConstant) {
     for (size_t j=0; j<backtrace.size(); ++j ) {
       BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
@@ -848,7 +811,7 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
     uintptr_t endAddress = symbol_table._StackmapEnd;
     if (address) {
       auto thunk = [&](size_t functionIndex,
-                       const StkSizeRecord& function,
+                       const smStkSizeRecord& function,
                        int32_t offsetOrSmallConstant) {
         for (size_t j=0; j<backtrace.size(); ++j ) {
           BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));

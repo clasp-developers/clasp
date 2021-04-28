@@ -191,7 +191,48 @@ int safe_backtrace(void**& return_buffer);
 bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize);
 void register_jitted_object(const std::string& name, uintptr_t address, int size);
 
+struct smHeader {
+  uint8_t  version;
+  uint8_t  reserved0;
+  uint16_t reserved1;
+};
+
+struct smStkSizeRecord {
+  uint64_t  FunctionAddress;
+  int64_t  StackSize;
+  uint64_t  RecordCount;
+};
+
+struct smLocation{
+  uint8_t  Type;
+  uint8_t   Reserved0;
+  uint16_t  LocationSize;
+  uint16_t  DwarfRegNum;
+  uint16_t  Reserved1;
+  int32_t   OffsetOrSmallConstant;
+};
+
+struct smLiveOut {
+  uint16_t DwarfRegNum;
+  uint8_t  Reserved;
+  uint8_t SizeInBytes;
+};
+
+struct smStkMapRecord {
+  uint64_t PatchPointID;
+  uint32_t InstructionOffset;
+  uint16_t Reserved;
+  std::vector<smLocation> Locations;
+  std::vector<smLiveOut> LiveOuts;
+};
+
+void walk_one_llvm_stackmap(std::function<void(size_t,
+                                               const smStkSizeRecord&,
+                                               int32_t)>,
+                            uintptr_t&, uintptr_t);
+
 void push_one_llvm_stackmap(bool jit, uintptr_t& startAddress );
+
 
 void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_t numberStackmaps);
 
@@ -237,7 +278,7 @@ struct BacktraceEntry {
   uintptr_t            _FunctionDescription;
 };
 
-};
+}; // namespace core
 
 std::string _safe_rep_(core::T_sp obj);
 std::string dbg_safe_repr(uintptr_t raw);
