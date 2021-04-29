@@ -10,6 +10,7 @@
 //#include <llvm/Support/system_error.h>
 #include <dlfcn.h>
 #include <iomanip>
+#include <cstdint>
 #include <clasp/core/foundation.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/debugger.h>
@@ -398,15 +399,40 @@ CL_DEFUN size_t total_memory_allocated_for_object_files() {
   return sz;
 }
 
+struct StackmapHeader {
+  uint8_t _version;
+  uint8_t _reserved0;
+  uint16_t _reserved1;
+};
+
 CL_LISPIFY_NAME(describe_code);
 CL_DEFUN void describe_code() {
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count = 0;
   size_t sz = 0;
+  size_t goodStackmaps = 0;
   while (cur.consp()) {
     ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(cur));
     Code_sp code = ofi->_Code;
     core::write_bf_stream(BF("ObjectFile start: %p  size: %lu\n") % (void*)ofi->_MemoryBuffer->getBufferStart() % ofi->_MemoryBuffer->getBufferSize());
+    uintptr_t codeStart = (uintptr_t)&code->_DataCode[0];
+    uintptr_t codeEnd = (uintptr_t)&code->_DataCode[code->_DataCode.size()];
+    core::write_bf_stream(BF("   corresponding Code_O object: %p  code range: %p - %p\n") % (void*)code.raw_() % (void*)codeStart % (void*)codeEnd );
+    uintptr_t stackmapStart = (uintptr_t)code->_StackmapStart;
+    uintptr_t stackmapEnd = (uintptr_t)code->_StackmapStart+code->_StackmapSize;
+    if (stackmapStart<=stackmapEnd) {
+      if (codeStart <= stackmapStart && stackmapEnd <= codeEnd) {
+        StackmapHeader* header = (StackmapHeader*)stackmapStart;
+        if (header->_version == 3 && header->_reserved0 == 0 && header->_reserved1 == 0 ) {
+          goodStackmaps++;
+        }
+        core::write_bf_stream(BF("      The stackmap %p %p is within the code region\n") % (void*)stackmapStart % (void*)stackmapEnd );
+      } else {
+        core::write_bf_stream(BF(" ERROR     The stackmap %p %p is NOT within the code region\n") % (void*)stackmapStart % (void*)stackmapEnd );
+      }
+    } else {
+      core::write_bf_stream(BF(" ERROR     The stackmap %p %p is not a real memory region\n") % (void*)stackmapStart % (void*)stackmapEnd );
+    }      
     code->describe();
     sz += ofi->_MemoryBuffer->getBufferSize();
     count++;
@@ -414,6 +440,7 @@ CL_DEFUN void describe_code() {
   }
   core::write_bf_stream(BF("Total number of object files: %lu\n") % count);
   core::write_bf_stream(BF("  Total size of object files: %lu\n") % sz);
+  core::write_bf_stream(BF("             Valid stackmaps: %lu\n") % goodStackmaps );
 }
 
 };
