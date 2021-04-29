@@ -171,11 +171,20 @@ Only the outermost WITH-CAPPED-STACK matters for this purpose."
 (defvar *stack-top*)
 (defvar *stack-bot*)
 
-(defun find-bottom-frame (start) start)
+(defun find-bottom-frame (start)
+  ;; Look for a frame truncation marker.
+  ;; If none is found, use the start.
+  ;; If a cap is found, don't look for a bottom beyond that.
+  (do ((f start (frame-up f)))
+      ((or (null f) (cap-frame-p f)) start)
+    (when (truncation-frame-p f)
+      ;; A truncation frame is a call to call-with-truncated-stack, which we
+      ;; don't want to keep in the backtrace, so we go up one more.
+      (return (frame-up f)))))
 (defun find-top-frame (start)
-  (loop for f = start then (frame-up f)
-        until (null (frame-up f))
-        finally (return f)))
+  ;; Look for a call to call-with-capped-stack.
+  (do ((f start (frame-up f)))
+      ((or (null f) (cap-frame-p f)) f)))
 
 (defun call-with-stack (function &key (delimited t))
   "Functional form of WITH-STACK."
