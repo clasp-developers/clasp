@@ -137,12 +137,12 @@ static void args_from_offset(void* frameptr, int32_t offset,
     T_sp tclosure((gc::Tagged)register_save_area[0]);
     closure = tclosure;
     size_t nargs = (size_t)(register_save_area[1]);
-    args = SimpleVector_O::make(nargs);
-    SimpleVector_sp avec = gc::As_unsafe<SimpleVector_sp>(args);
+    ql::list largs;
     for (size_t i = 0; i < nargs; ++i) {
       T_sp temp((gctools::Tagged)(register_save_area[i+2]));
-      (*avec)[i] = temp;
+      largs << temp;
     }
+    args = largs.cons();
   }
 }
 
@@ -150,8 +150,9 @@ static void args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
                                  void* frameptr,
                                  T_sp& closure, T_sp& args) {
   if (ep.nilp()) return;
-  auto ofp = ofi->getObjectFile();
-  if (!ofp) return;
+  uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);
+  if (!stackmap_start) return; // ends up as null sometimes apparently
+  uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
   // FIXME: we could check the entry point type ahead of time
   auto thunk = [&](size_t _, const smStkSizeRecord& function,
                    int32_t offsetOrSmallConstant) {
@@ -171,15 +172,7 @@ static void args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
       }
     }
   };
-  for (auto sect : (*ofp)->sections()) {
-    auto mname = sect.getName();
-    if (mname && ((*mname) == "__llvm_stackmaps")) {
-      uintptr_t start_addr = sect.getAddress();
-      uintptr_t end_addr = start_addr + sect.getSize();
-      walk_one_llvm_stackmap(thunk, start_addr, end_addr);
-      return;
-    }
-  }
+  walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
 }
 
 static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
@@ -190,7 +183,7 @@ static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
   T_sp ep = dwarf_ep(ofi, dcontext, sa);
   T_sp fd = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : _Nil<FunctionDescription_O>();
   T_sp closure = _Nil<T_O>(), args = _Nil<T_O>();
-  //args_for_entry_point(ofi, ep, fbp, closure, args);
+  args_for_entry_point(ofi, ep, fbp, closure, args);
   T_sp fname = _Nil<T_O>();
   if (fd.notnilp())
     fname = gc::As_unsafe<FunctionDescription_sp>(fd)->functionName();
