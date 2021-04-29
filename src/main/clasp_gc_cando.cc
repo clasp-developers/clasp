@@ -9961,7 +9961,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(chem::Minimizer_O,TYPEQ_ADJUST_STAMP(1075));
       ADD_SINGLE_TYPEQ_TEST(chem::SpecificContext_O,TYPEQ_ADJUST_STAMP(1071));
       ADD_SINGLE_TYPEQ_TEST(chem::Molecule_O,TYPEQ_ADJUST_STAMP(155));
-      ADD_SINGLE_TYPEQ_TEST(core::InvocationHistoryFrameIterator_O,TYPEQ_ADJUST_STAMP(2743));
+//      ADD_SINGLE_TYPEQ_TEST(core::InvocationHistoryFrameIterator_O,TYPEQ_ADJUST_STAMP(2743));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_size_t_O,TYPEQ_ADJUST_STAMP(2055));
       ADD_SINGLE_TYPEQ_TEST(kinematics::CheckpointOutPlugJoint_O,TYPEQ_ADJUST_STAMP(867));
       ADD_SINGLE_TYPEQ_TEST(chem::Dimacs_O,TYPEQ_ADJUST_STAMP(1067));
@@ -23998,11 +23998,11 @@ public:
 // StampWtag = core::FileStatus_O/2739
 { class_kind, STAMPWTAG_core__FileStatus_O, sizeof(core::FileStatus_O), 0, IS_POLYMORPHIC, "core::FileStatus_O" },
 // StampWtag = core::InvocationHistoryFrameIterator_O/2743
-{ class_kind, STAMPWTAG_core__InvocationHistoryFrameIterator_O, sizeof(core::InvocationHistoryFrameIterator_O), 0, IS_POLYMORPHIC, "core::InvocationHistoryFrameIterator_O" },
+//{ class_kind, STAMPWTAG_core__InvocationHistoryFrameIterator_O, sizeof(core::InvocationHistoryFrameIterator_O), 0, IS_POLYMORPHIC, "core::InvocationHistoryFrameIterator_O" },
 //      field: "_Frame" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::InvocationHistoryFrame" :NAME "InvocationHistoryFrame"))
- {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),_Frame), 0, "_Frame" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
+// {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),_Frame), 0, "_Frame" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_Index" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
- {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),_Index), 0, "_Index" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
+// {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),_Index), 0, "_Index" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 // StampWtag = core::DirectoryEntry_O/2747
 { class_kind, STAMPWTAG_core__DirectoryEntry_O, sizeof(core::DirectoryEntry_O), 0, IS_POLYMORPHIC, "core::DirectoryEntry_O" },
 //      field: "_Entry" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::filesystem::directory_entry" :NAME "directory_entry"))
