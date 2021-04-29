@@ -4485,49 +4485,6 @@ void register_symbol_with_libunwind(const std::string& name, uint64_t start, siz
 #endif
 }
 
-#if 0
-void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
-{
-  std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
-#if defined(_TARGET_OS_DARWIN)
-  std::string startup_name = "__claspObjectFileStartup";
-#endif
-#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-  std::string startup_name = "_claspObjectFileStartup";
-#endif
-#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
-#error You need to decide here
-#endif
-  for ( auto p : symbol_sizes ) {
-    llvm::object::SymbolRef symbol = p.first;
-    llvm::Expected<llvm::StringRef> expected_symbol_name = symbol.getName();
-    if (expected_symbol_name) {
-      auto &symbol_name = *expected_symbol_name;
-      uint64_t size = p.second;
-      std::string name(symbol_name.data());
-      uint64_t address = *symbol.getValue();
-      Expected<llvm::object::section_iterator> expected_section_iterator = symbol.getSection();
-      if (expected_section_iterator) {
-        const llvm::object::SectionRef& section_ref = **expected_section_iterator;
-        uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
-        if (((char*)section_address+address) != NULL ) {
-          core::register_jitted_object(name,section_address+address,size);
-          core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)((char*)section_address+address)));
-          register_symbol_with_libunwind(name,section_address+address,size);
-          if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
-            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Registering jit symbol %s address: %p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)address, size ));
-            core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
-//          printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
-//          gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
-          }
-        }
-      }
-    }
-  }
-}
-#endif
-
-
 CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
   printf("%s:%d:%s ptr = %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
   core::HashTableEqual_sp ht = gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue());

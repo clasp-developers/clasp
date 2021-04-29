@@ -5,7 +5,7 @@
            #:code-source-line-pathname
            #:code-source-line-line-number
            #:code-source-line-column)
-  (:export #:frame)
+  (:export #:frame) ; TODO: Rename core:debugger-frame to frame, reexport that
   (:export #:frame-up #:frame-down)
   (:export #:frame-function #:frame-arguments
            #:frame-locals #:frame-source-position
@@ -48,23 +48,14 @@
 (defstruct (code-source-line (:type vector) :named)
   pathname line-number column)
 
-#+(or)
-(defclass frame ()
-  ((%up :initarg :up :accessor %frame-up :reader frame-up)
-   (%down :initarg :down :accessor %frame-down :reader frame-down)
-   (%fname :initarg :fname :reader frame-function-name)
-   (%source-position :initarg :sp :reader frame-source-position)
-   (%function-description :initarg :fd :reader frame-function-description)
-   (%language :initarg :lang :reader frame-language)))
-(defstruct (frame (:conc-name "%FRAME-") (:type vector) :named)
-  up down function-name source-position function-description language)
-(defun frame-up (frame) (%frame-up frame))
-(defun frame-down (frame) (%frame-down frame))
-(defun frame-function-name (frame) (%frame-function-name frame))
-(defun frame-source-position (frame) (%frame-source-position frame))
-(defun frame-function-description (frame) (%frame-function-description frame))
-(defun frame-language (frame) (%frame-language frame))
-
+(defun frame-up (frame) (core:debugger-frame-up frame))
+(defun frame-down (frame) (core:debugger-frame-down frame))
+(defun frame-function-name (frame) (core:debugger-frame-fname frame))
+(defun frame-source-position (frame)
+  (core:debugger-frame-source-position frame))
+(defun frame-function-description (frame)
+  (core:debugger-frame-function-description frame))
+(defun frame-language (frame) (core:debugger-frame-lang frame))
 (defun frame-function (frame) (declare (ignore frame)) nil)
 (defun frame-arguments (frame) (declare (ignore frame)) nil)
 (defun frame-locals (frame) (declare (ignore frame)) nil)
@@ -95,105 +86,6 @@
 (defun disassemble-frame (frame)
   "Disassemble this frame's function to *standard-output*."
   (declare (ignore frame)))
-
-(defun frame-from-symbol (symbol)
-  ;; make a frame from backtrace_symbols information - which is quite bare.
-  (let ((parts (core:split symbol " ")))
-    (if (= (length parts) 6)
-        (destructuring-bind (idx exec addr name plus offset) (core:split symbol " ")
-          (declare (ignore idx exec addr plus offset))
-          (make-frame :source-position nil
-                      :function-name (or (core:maybe-demangle name) name)
-                      :function-description nil :language :c++)
-          #+(or)
-          (make-instance 'frame :sp nil :fname (or (core:maybe-demangle name) name)
-                                :fd nil :lang :c++))
-        (make-frame :source-position nil
-                    :function-name symbol
-                    :function-description nil :language :c++))))
-
-(defun decode-lisp-fname (fname)
-  (let* ((parts (cmp:unescape-and-split-jit-name fname))
-         (end-part-pos (position "" parts :test #'equal))
-         (package-name (second parts))
-         (package (find-package package-name))
-         (symbol-name (first parts))
-         (symbol (if package (find-symbol symbol-name package) nil))
-         (type-name (if (integerp end-part-pos)
-                        (elt parts (1- end-part-pos))
-                        (car (last parts)))))
-    ;; todo: method
-    (cond ((not symbol) fname)
-          ((string= type-name "SETF") `(setf ,symbol))
-          (t symbol))))
-
-(defun in-address-range-p (addr ranges)
-  ;; DWARF docs say a range is lower inclusive, upper exclusive.
-  (loop for (low . high) in ranges
-        when (and (<= low addr) (< addr high))
-          return t
-        finally (return nil)))
-
-(defun get-frame-function-description
-    (sectioned-address object-file dwarf-context)
-  (let ((address-ranges
-          (llvm-sys:get-address-ranges-for-address
-           dwarf-context sectioned-address))
-        (code (llvm-sys:object-file-code object-file)))
-    (loop for i below (llvm-sys:code-literals-length code)
-          for e = (llvm-sys:code-literals-ref code i)
-          do (typecase e
-               (core:local-entry-point
-                (let ((addr (core:local-entry-point-relptr e)))
-                  (when (in-address-range-p addr address-ranges)
-                    (return (core:function-description e)))))
-               (core:global-entry-point
-                (let ((addr (core:global-entry-point-relptr e)))
-                  (when (in-address-range-p addr address-ranges)
-                    (return (core:function-description e)))))))))
-
-(defun frame-from-dwarf (sectioned-address object-file)
-  (let ((dc (llvm-sys:create-dwarf-context object-file)))
-    (multiple-value-bind (filename fname source line column startline disc)
-        (llvm-sys:get-line-info-for-address dc sectioned-address)
-      (declare (ignore source startline disc))
-      (make-frame :function-name (decode-lisp-fname fname)
-                  :language :lisp
-                  :function-description (get-frame-function-description
-                                         sectioned-address object-file dc)
-                  :source-position (if filename
-                                       (make-code-source-line
-                                        :pathname filename :line-number line
-                                        :column column)
-                                       nil))
-      #+(or)
-      (make-instance 'frame
-        :fname (decode-lisp-fname fname) :lang :lisp
-        :fd (get-frame-function-description sectioned-address object-file dc)
-        :sp (if filename
-                (make-code-source-line
-                 :pathname filename :line-number line :column column)
-                nil)))))
-
-(defun frame-from-os-info (pointer symbol)
-  (multiple-value-bind (sectioned-address object-file)
-      (llvm-sys:object-file-for-instruction-pointer pointer nil)
-    (if sectioned-address
-        (frame-from-dwarf sectioned-address object-file)
-        (frame-from-symbol symbol))))
-
-(defun frames-from-os-backtrace (pointers symbols)
-  (loop with bot
-        for pointer in pointers for symbol in symbols
-        for prev-frame = nil then frame
-        for frame = (frame-from-os-info pointer symbol)
-        do (setf (%frame-down frame) prev-frame)
-        if bot
-          do (setf (%frame-up prev-frame) frame)
-        else
-          do (setf bot frame)
-        finally (setf (%frame-up frame) nil)
-                (return bot)))
 
 ;;; Frame selection
 
@@ -234,17 +126,15 @@ Only the outermost WITH-CAPPED-STACK matters for this purpose."
 
 (defun find-bottom-frame (start) start)
 (defun find-top-frame (start)
-  (loop for f = start then (%frame-up f)
-        until (null (%frame-up f))
+  (loop for f = start then (frame-up f)
+        until (null (frame-up f))
         finally (return f)))
 
 (defun call-with-stack (function &key (delimited t))
   "Functional form of WITH-STACK."
-  (core:call-with-operating-system-backtrace
-   (lambda (pointers symbols bps)
-     (declare (ignore bps))
-     (let* ((floor (frames-from-os-backtrace pointers symbols))
-            (*stack-bot* (if delimited (find-bottom-frame floor) floor))
+  (core:call-with-frame
+   (lambda (floor)
+     (let* ((*stack-bot* (if delimited (find-bottom-frame floor) floor))
             (*stack-top* (if delimited (find-top-frame *stack-bot*) nil)))
        (funcall function *stack-bot*)))))
 

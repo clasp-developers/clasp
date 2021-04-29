@@ -1120,7 +1120,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::StringInputStream_O);
      Init_class_kind(core::EchoStream_O);
      Init_class_kind(core::FileStatus_O);
-     Init_class_kind(core::InvocationHistoryFrameIterator_O);
      Init_class_kind(core::SourcePosInfo_O);
      Init_class_kind(core::DirectoryEntry_O);
      Init_class_kind(core::LightUserData_O);

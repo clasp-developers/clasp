@@ -90,49 +90,6 @@ void initializePythonPrimitives(Lisp_sp lisp);
 };
 
 namespace core {
-FORWARD(InvocationHistoryFrameIterator);
-class InvocationHistoryFrameIterator_O : public General_O {
-  LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator",General_O);
-private: // instance variables here
-  mutable const InvocationHistoryFrame *_Frame;
-  mutable int _Index;
-public:
-  static InvocationHistoryFrameIterator_sp create(const InvocationHistoryFrame* frame, int index) {
-    GC_ALLOCATE_VARIADIC(InvocationHistoryFrameIterator_O,it,frame,index);
-    return it;
-  }
-  static InvocationHistoryFrameIterator_sp make(Fixnum first, T_sp test = _Nil<T_O>());
-public:
- InvocationHistoryFrameIterator_O(const InvocationHistoryFrame* frame, int index) : _Frame(frame), _Index(index){};
-  virtual ~InvocationHistoryFrameIterator_O(){};
-public:
-  InvocationHistoryFrameIterator_sp prev(T_sp test);
-//  void setFrame_(InvocationHistoryFrame *cur) { this->_Frame = cur; };
-  void move_to_previous_frame() const { this->_Frame = this->_Frame->previous(); this->_Index--;};
-  const InvocationHistoryFrame *frame() const { return this->_Frame; };
-  int index();
-  Pointer_sp frame_address();
-  T_sp functionName();
-  T_sp function();
-  T_sp arguments();
-  T_sp environment();
-  InvocationHistoryFrameIterator_sp copy() {
-    return InvocationHistoryFrameIterator_O::create(this->_Frame,this->_Index);
-  };
-  /*! Return true if this points to a real InvocationHistoryFrame */
-CL_LISPIFY_NAME("frameIteratorIsValid");
-CL_DEFMETHOD   bool isValid() { return this->_Frame != NULL; };
-}; /* core */
-};
-
-namespace core {
-InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_top();
-InvocationHistoryFrameIterator_sp core__get_invocation_history_frame(int idx);
-InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_next(int idx);
-InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_prev(int idx);
-};
-
-namespace core {
   int clasp_musleep(double dsec, bool alertable);
   void core__dynamic_binding_stack_dump(std::ostream &out);
 
