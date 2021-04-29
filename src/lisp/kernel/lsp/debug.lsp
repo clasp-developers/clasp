@@ -56,9 +56,34 @@
 (defun frame-function-description (frame)
   (core:debugger-frame-function-description frame))
 (defun frame-language (frame) (core:debugger-frame-lang frame))
-(defun frame-function (frame) (declare (ignore frame)) nil)
-(defun frame-arguments (frame) (declare (ignore frame)) nil)
-(defun frame-locals (frame) (declare (ignore frame)) nil)
+(defun frame-function (frame) (core:debugger-frame-closure frame))
+(defun frame-arguments (frame) (core:debugger-frame-args frame))
+(defun frame-locals (frame)
+    "Return an alist of local lexical variables and their values at the continuation the frame represents. The CARs are variable names and CDRs their values.
+Multiple bindings with the same name may be returned, as there is no notion of lexical scope in this interface."
+  ;; TODO: This is not a real solution, at all.
+  ;; At minimum, we should use the lambda list's parameter names when available
+  (let* ((fname (frame-function-name frame))
+         (args (frame-arguments frame)))
+    ;; KLUDGE (on top of a kludge) to do better with method arguments
+    ;; We have two kinds of method functions - fast and not - but we
+    ;; name them the same. The former we can treat normally, but the
+    ;; latter have a vaslist of the real arguments as their first, and
+    ;; the next method list as the second.
+    (if (and (consp fname)
+             (eq (first fname) 'cl:method)
+             (= (length args) 2)
+             (core:vaslistp (first args)))
+        (let ((method-args (core:list-from-va-list (first args)))
+              (next-methods (second args)))
+          (append
+           (loop for arg in method-args for i from 0
+                 collect (cons (intern (format nil "ARG~d" i) :cl-user)
+                               arg))
+           (list (cons 'cl-user::next-methods next-methods))))
+        (loop for arg in args for i from 0
+              collect (cons (intern (format nil "ARG~d" i) :cl-user)
+                            arg)))))
 (defun frame-function-lambda-list (frame)
   "Return the lambda list of the function being called in this frame, and a second value indicating success. This function may fail, in which case the first value is undefined and the second is NIL. In success the first value is the lambda list and the second value is true."
   (let ((fd (frame-function-description frame)))
