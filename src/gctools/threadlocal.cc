@@ -138,8 +138,6 @@ namespace core {
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy) :
   _unwinds(0)
-  , _stackmap(0)
-  , _stackmap_size(0)
   , _CleanupFunctions(NULL)
   ,_PendingInterrupts()
   ,_CatchTags()
@@ -189,8 +187,6 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
 // This is for constructing ThreadLocalState for threads
 ThreadLocalState::ThreadLocalState() :
   _unwinds(0)
-  , _stackmap(0)
-  , _stackmap_size(0)
   , _PendingInterrupts(_Nil<core::T_O>())
   , _CatchTags(_Nil<core::T_O>())
   , _ObjectFiles(_Nil<core::T_O>())

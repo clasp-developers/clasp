@@ -123,7 +123,7 @@ Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize, ObjectFile_sp obje
   Code_sp code = gctools::GC<Code_O>::allocate_container(false,totalSize);
   code->_ObjectFile = objectFile;
   objectFile->_Code = code;
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Allocated Code_O object and installed in objectFile->_Code\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Allocated Code_O object and installed in objectFile->_Code %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() ));
   // Don't put DEBUG_OBJECT_FILES_PRINT in here - this is called too early
 #if 0
   printf("%s:%d:%s Allocated code object from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,
