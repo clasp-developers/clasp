@@ -44,6 +44,11 @@ ObjectFile_O::~ObjectFile_O() {
   this->_Code = _Unbound<Code_O>();
 }
 
+llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> ObjectFile_O::getObjectFile() {
+  llvm::MemoryBufferRef mem = *(this->_MemoryBuffer);
+  return llvm::object::ObjectFile::createObjectFile(mem);
+}
+
 size_t Code_O::sizeofInState(Code_O* code, CodeState_t state ) {
   if (state == SaveState) {
     return sizeof(Code_O)+code->_LiteralVectorSizeBytes;

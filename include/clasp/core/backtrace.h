@@ -22,22 +22,30 @@ class DebuggerFrame_O : public General_O {
   LISP_CLASS(core, CorePkg, DebuggerFrame_O, "DebuggerFrame", General_O);
   virtual ~DebuggerFrame_O() {};
 public:
-  DebuggerFrame_O(T_sp a_fname, T_sp a_sp, T_sp a_fd, T_sp a_lang)
+  DebuggerFrame_O(T_sp a_fname, T_sp a_sp, T_sp a_fd,
+                  T_sp a_closure, T_sp a_args, T_sp a_lang)
     : fname(a_fname), source_position(a_sp), function_description(a_fd),
+      closure(a_closure), args(a_args),
       lang(a_lang), up(_Nil<T_O>()), down(_Nil<T_O>())
   {}
-  static DebuggerFrame_sp make(T_sp fname, T_sp sp, T_sp fd, T_sp lang) {
-    GC_ALLOCATE_VARIADIC(DebuggerFrame_O, ret, fname, sp, fd, lang);
+  static DebuggerFrame_sp make(T_sp fname, T_sp sp, T_sp fd,
+                               T_sp closure, T_sp args, T_sp lang) {
+    GC_ALLOCATE_VARIADIC(DebuggerFrame_O, ret, fname, sp, fd,
+                         closure, args, lang);
     return ret;
   }
 public:
   T_sp fname;
   T_sp source_position;
   T_sp function_description;
+  T_sp closure;
+  T_sp args;
   T_sp lang;
   T_sp up;
   T_sp down;
 };
+
+T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)>);
 
 FORWARD(DebuggerLocal);
 class DebuggerLocal_O : public General_O {

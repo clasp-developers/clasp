@@ -494,43 +494,6 @@ std::string backtrace_frame(size_t index, BacktraceEntry* frame)
   return ss.str();
 }
 
-
-struct Header {
-  uint8_t  version;
-  uint8_t  reserved0;
-  uint16_t reserved1;
-};
-
-struct StkSizeRecord {
-  uint64_t  FunctionAddress;
-  int64_t  StackSize;
-  uint64_t  RecordCount;
-};
-
-struct Location{
-  uint8_t  Type;
-  uint8_t   Reserved0;
-  uint16_t  LocationSize;
-  uint16_t  DwarfRegNum;
-  uint16_t  Reserved1;
-  int32_t   OffsetOrSmallConstant;
-};
-
-struct LiveOut {
-  uint16_t DwarfRegNum;
-  uint8_t  Reserved;
-  uint8_t SizeInBytes;
-};
-
-struct StkMapRecord {
-  uint64_t PatchPointID;
-  uint32_t InstructionOffset;
-  uint16_t Reserved;
-  std::vector<Location> Locations;
-  std::vector<LiveOut> LiveOuts;
-};
-
-
 template <typename T>
 T read_then_advance(uintptr_t& address) {
   uintptr_t original = address;
@@ -539,7 +502,7 @@ T read_then_advance(uintptr_t& address) {
 }
 
 // Return true if the header was read
-bool parse_header(uintptr_t& address, uintptr_t end, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
+bool parse_header(uintptr_t& address, uintptr_t end, smHeader& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
 {
   uintptr_t headerAddress = address;
   header.version = read_then_advance<uint8_t>(address);
@@ -555,7 +518,7 @@ bool parse_header(uintptr_t& address, uintptr_t end, Header& header, size_t& Num
   return true;
 }
 
-void parse_function(uintptr_t& address, StkSizeRecord& function) {
+void parse_function(uintptr_t& address, smStkSizeRecord& function) {
   uintptr_t functionAddress = address;
   function.FunctionAddress = read_then_advance<uint64_t>(address);
   function.StackSize = read_then_advance<uint64_t>(address);
@@ -567,7 +530,7 @@ void parse_constant(uintptr_t& address, uint64_t& constant) {
   constant = read_then_advance<uint64_t>(address);
 }
 
-void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record, bool library) {
+void parse_record(std::function<void(size_t, const smStkSizeRecord&, int32_t)> thunk, uintptr_t& address, size_t functionIndex, const smStkSizeRecord& function, smStkMapRecord& record) {
   uintptr_t recordAddress = address;
   BT_LOG(("Parse record at %p\n", (void*)address));
   uint64_t patchPointID = read_then_advance<uint64_t>(address);
@@ -586,24 +549,9 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
       abort();
     }
     int32_t offsetOrSmallConstant = read_then_advance<int32_t>(address);
-    if (backtrace.size() == 0 ) {
-      if (library) {
-        WRITE_DEBUG_IO(BF("Stackmap-library function %p stack-size %ld patchPointId %u frame-offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
-      } else {
-        WRITE_DEBUG_IO(BF("Stackmap-jit function %p stack-size %ld patchPointId %u frame-offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
-      }
-    }
     if (patchPointID == 1234567 ) {
       BT_LOG(("patchPointID matched at %p\n", (void*)recordAddress));
-      for (size_t j=0; j<backtrace.size(); ++j ) {
-        BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
-        if (function.FunctionAddress == backtrace[j]._FunctionStart) {
-          backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
-          backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
-          backtrace[j]._FrameOffset = offsetOrSmallConstant;
-          BT_LOG(("Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
-        }
-      }
+      thunk(functionIndex, function, offsetOrSmallConstant);
     }
   }
   BT_LOG(("Done with records at %p\n", (void*)address));
@@ -630,15 +578,15 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
     printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
     abort();
   }
-}  
+}
 
 /* ! Parse an llvm Stackmap
      The format is described here: https://llvm.org/docs/StackMaps.html#stack-map-format
 */
 
-void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end, bool library) {
+void walk_one_llvm_stackmap(std::function<void(size_t, const smStkSizeRecord&, int32_t)> thunk, uintptr_t& address, uintptr_t end) {
   uintptr_t stackMapAddress = address;
-  Header header;
+  smHeader header;
   size_t NumFunctions;
   size_t NumConstants;
   size_t NumRecords;
@@ -655,7 +603,7 @@ void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& ad
   uintptr_t functionAddress = address;
   BT_LOG(("PASS1 Parse function block first pass %p\n", (void*)functionAddress ));
   for ( size_t index=0; index<NumFunctions; ++index ) {
-    StkSizeRecord function;
+    smStkSizeRecord function;
     parse_function(address,function); // dummy - used to skip functions
     BT_LOG(("PASS1 Found function #%lu at %p\n", index, (void*)function.FunctionAddress));
   }
@@ -666,12 +614,12 @@ void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& ad
   size_t functionIndex = 0;
   BT_LOG(("Parse record block %p\n", (void*)address ));
   for ( size_t functionIndex = 0; functionIndex < NumFunctions; ++functionIndex ) {
-    StkSizeRecord function;
+    smStkSizeRecord function;
     parse_function(functionAddress,function);
     BT_LOG(("PASS2 Examining function #%lu at %p - %" PRu " records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
     for ( size_t index=0; index<function.RecordCount; index++) {
-      StkMapRecord record;
-      parse_record(backtrace,address,functionIndex,function,record,library);
+      smStkMapRecord record;
+      parse_record(thunk,address,functionIndex,function,record);
     }
   }
 }
@@ -699,11 +647,24 @@ void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
   WRITE_DEBUG_IO(BF("search_jitted_stackmaps\n"));
   WITH_READ_LOCK(debugInfo()._StackMapsLock);
   DebugInfo& di = debugInfo();
+  auto thunk = [&](size_t functionIndex,
+                   const smStkSizeRecord& function,
+                   int32_t offsetOrSmallConstant) {
+    for (size_t j=0; j<backtrace.size(); ++j ) {
+      BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
+      if (function.FunctionAddress == backtrace[j]._FunctionStart) {
+        backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
+        backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
+        backtrace[j]._FrameOffset = offsetOrSmallConstant;
+        BT_LOG(("Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
+      }
+    }
+  };
   for ( auto entry : di._StackMaps ) {
     uintptr_t address = entry.second._StartAddress;
     BT_LOG((" Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._EndAddress));
     for ( size_t num = 0; num<entry.second._Number; ++num ) {
-      walk_one_llvm_stackmap(backtrace,address,entry.second._EndAddress,false);
+      walk_one_llvm_stackmap(thunk,address,entry.second._EndAddress);
       if (address>=entry.second._EndAddress) break;
     }
   }
@@ -849,229 +810,22 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
     uintptr_t address = symbol_table._StackmapStart;
     uintptr_t endAddress = symbol_table._StackmapEnd;
     if (address) {
+      auto thunk = [&](size_t functionIndex,
+                       const smStkSizeRecord& function,
+                       int32_t offsetOrSmallConstant) {
+        for (size_t j=0; j<backtrace.size(); ++j ) {
+          BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
+          if (function.FunctionAddress == backtrace[j]._FunctionStart) {
+            backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
+            backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
+            backtrace[j]._FrameOffset = offsetOrSmallConstant;
+            BT_LOG(("Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
+          }
+        }
+      };
       while (address<endAddress) {
-        walk_one_llvm_stackmap(backtrace,address,endAddress,true);
+        walk_one_llvm_stackmap(thunk,address,endAddress);
       }
-    }
-  }
-}
-
-SYMBOL_EXPORT_SC_(CorePkg,start_debugger_with_backtrace);
-CL_DEFUN void core__start_debugger_with_backtrace(T_sp backtrace) {
-  DynamicScopeManager scope(_sym_STARbacktraceSTAR,backtrace);
-  LispDebugger dbg(_Nil<T_O>());
-  if (globals_->_DebuggerDisabled) {
-    T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue();
-    if (std::getenv("CLASP_BACKTRACE_FILE")) {
-      std::string filename = std::getenv("CLASP_BACKTRACE_FILE");
-      T_sp sfilename = SimpleBaseString_O::make(filename);
-      strm = cl__open(sfilename,
-                      kw::_sym_output,
-                      cl::_sym_character,
-                      _Nil<T_O>(), false,
-                      _Nil<T_O>(), false,
-                      kw::_sym_default,
-                      _Nil<T_O>());
-    }
-    write_bf_stream(BF("%s:%d Debugger is disabled - dumping backtrace\n") % __FILE__ % __LINE__ );
-    core__btcl(strm,true,true,true);
-    abort();
-  }
-  dbg.invoke();
-}
-
-LispDebugger::LispDebugger(T_sp condition) : _CanContinue(false), _Condition(condition) {
-  globals_->_DebuggerLevel++;
-  core__gotoIhsTop();
-}
-
-LispDebugger::LispDebugger() : _CanContinue(true) {
-  this->_Condition = _Nil<T_O>();
-  globals_->_DebuggerLevel++;
-  core__gotoIhsTop();
-}
-
-void LispDebugger::printExpression(T_sp stream) {
-  int index = core__ihs_current_frame();
-  Frame_sp frame = core__ihs_backtrace_frame(index);
-  core__backtrace_frame_to_stream(index,frame,stream,true,true);
-}
-
-InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
-  int index = core__ihs_current_frame();
-  InvocationHistoryFrameIterator_sp frame = core__get_invocation_history_frame(index);
-  return frame;
-}
-
-size_t global_low_level_debugger_depth = 0;
-
-T_sp LispDebugger::invoke() {
-  if (!isatty(0)) {
-    printf("The low-level debugger was entered but there is no terminal on fd0 - aborting\n");
-    abort();
-  }
-  if (globals_->_DebuggerDisabled) {
-    printf("This is not an interactive session and the low-level debugger was entered - aborting\n");
-    abort();
-  }
-  ++global_low_level_debugger_depth;
-  if ( global_low_level_debugger_depth > 10 ) {
-    printf("This is not an interactive session and the low-level debugger was entered too many times - exiting\n");
-    exit(1);
-  }
-  //	DebuggerIHF debuggerStack(my_thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
-  if (this->_Condition.notnilp()) {
-    write_bf_stream(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
-  }
-  this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
-  write_bf_stream(BF("The following restarts are available:\n"));
-  write_bf_stream(BF("ABORT      a    Abort to REPL\n"));
-  while (1) {
-    string line;
-    stringstream sprompt;
-    sprompt << "Frame-" << this->currentFrame()->index() << "-";
-    sprompt << "Dbg";
-    if (core__ihs_env(core__ihs_current_frame()).notnilp()) {
-      sprompt << "(+ENV)";
-    }
-    sprompt << "[" << globals_->_DebuggerLevel.load() << "]>";
-    bool end_of_transmission(false);
-    line = myReadLine(sprompt.str(), end_of_transmission);
-    if (end_of_transmission) {
-      printf("%s:%d Exiting debugger\n", __FILE__, __LINE__ );
-      throw core::ExitProgramException(0);
-    }
-    char cmd;
-    if (line[0] == ':') {
-      cmd = line[1];
-    } else
-      cmd = 'e';
-    
-    switch (cmd) {
-    case '?':
-    case 'h': {
-      write_bf_stream(BF(":?      - help\n"));
-      write_bf_stream(BF(":h      - help\n"));
-      write_bf_stream(BF("sexp - evaluate sexp\n"));
-      write_bf_stream(BF(":c sexp - continue - return values of evaluating sexp\n"));
-      write_bf_stream(BF(":v      - list local environment\n"));
-      write_bf_stream(BF(":x      - print current expression\n"));
-      write_bf_stream(BF(":e      - evaluate an expression with interpreter\n"));
-      write_bf_stream(BF(":b      - print backtrace\n"));
-      write_bf_stream(BF(":u      - goto previous frame\n"));
-      write_bf_stream(BF(":d      - goto next frame\n"));
-      write_bf_stream(BF(":D      - dissasemble current function\n"));
-      write_bf_stream(BF(":a      - abort and return to top repl\n"));
-      write_bf_stream(BF(":l      - invoke debugger by calling core::dbg_hook (set break point in gdb\n"));
-      write_bf_stream(BF(":g ##   - jump to frame ##\n"));
-      break;
-    }
-    case 'l':
-	dbg_hook("invoked from debugger");
-	break;
-    case 'g': {
-      int is;
-      for (is = 1; is < line.size(); is++) {
-        if (line[is] >= '0' && line[is] <= '9')
-          break;
-      }
-      if (is < line.size()) {
-        string sexp = line.substr(is, 99999);
-        int frameIdx = atoi(sexp.c_str());
-        if (frameIdx < 0)
-          frameIdx = 0;
-        if (frameIdx > core__ihs_top()) {
-          frameIdx = core__ihs_top();
-        }
-        write_bf_stream(BF("Switching to frame: %d") % frameIdx);
-        core__set_ihs_current_frame(frameIdx);
-        this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
-      } else {
-        write_bf_stream(BF("You must provide a frame number\n"));
-      }
-      break;
-    }
-    case 'u':
-	core__gotoIhsPrev();
-        this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
-	break;
-    case 'd':
-	core__gotoIhsNext();
-        this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
-	break;
-    case 'D': {
-      T_sp func = core__ihs_fun(core__ihs_current_frame());
-      write_bf_stream(BF("Current function: %s\n") % _rep_(func));
-      eval::funcall(cl::_sym_disassemble, func);
-      break;
-    }
-    case 'b': {
-      core__ihs_backtrace(_lisp->_true(), _Nil<T_O>());
-      break;
-    }
-    case 'x': {
-      this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
-      break;
-    }
-    case 'v': {
-      this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
-      T_sp env = core__ihs_env(core__ihs_current_frame());
-      write_bf_stream(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp());
-      if (env.notnilp()) {
-        write_bf_stream(BF("%s") % gc::As<Environment_sp>(env)->environmentStackAsString());
-      } else {
-        write_bf_stream(BF("-- Only global environment available --"));
-      }
-      break;
-    }
-    case 'a': {
-      throw(DebuggerSaysAbortToRepl());
-    }
-    case 'c': {
-      if (this->_CanContinue) {
-        if (line.size() < 3) {
-          return _Nil<T_O>();
-        }
-        string sexp = line.substr(3, 99999);
-        T_mv result;
-        T_sp env = core__ihs_env(core__ihs_current_frame());
-        result = _lisp->readEvalPrintString(sexp, env, true);
-        if (!result) {
-          result = Values(_Nil<T_O>());
-        }
-        write_bf_stream(BF("Continuing with result: %s") % _rep_(result));
-        return result;
-	  //		    throw(DebuggerSaysContinue(result));
-      }
-      write_bf_stream(BF("You cannot resume after condition thrown"));
-      break;
-    };
-    case 'e': {
-      string sexp = line.substr(0, 99999);
-      T_sp env = core__ihs_env(core__ihs_current_frame());
-      try {
-        _lisp->readEvalPrintString(sexp, env, true);
-      } catch (DebuggerSaysAbortToRepl &err) {
-	  // nothing
-      }
-      break;
-    }
-    case 'i': {
-      string sexp = line.substr(2, 99999);
-	//		ControlSingleStep singleStep(false);
-      T_sp env = core__ihs_env(core__ihs_current_frame());
-	//		DebuggerIHF dbgFrame(my_thread->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
-      try {
-        DynamicScopeManager scope(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_implicit_compile_hook_default->symbolFunction());
-        _lisp->readEvalPrintString(sexp, env, true);
-      } catch (DebuggerSaysAbortToRepl &err) {
-	  // nothing
-      }
-      break;
-    }
-    default: {
-      write_bf_stream(BF("Unknown command[%c] - try '?'") % cmd);
-    }
     }
   }
 }
@@ -1130,75 +884,6 @@ CL_DEFUN SimpleBaseString_sp core__ever_so_slightly_mangle_cxx_names(const std::
   while (mangle_next_smartPtr(raw_name,pos,sout));
   return SimpleBaseString_O::make(sout.str());
 }
-  
-  
-
-void low_level_backtrace(bool with_args) {
-  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
-  if (top == NULL) {
-    printf("Empty InvocationHistoryStack\n");
-    return;
-  }
-  int index = 0;
-  for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
-    string name = "-no-name-";
-    T_sp tclosure = cur->function();
-    if (!tclosure) {
-      name = "-NO-CLOSURE-";
-    } else if (tclosure.generalp()){
-      General_sp closure = gc::As_unsafe<General_sp>(tclosure);
-      if (closure.nilp()) {
-        name = "NIL";
-      } else if (gc::IsA<Function_sp>(closure)) {
-        Function_sp func = gc::As_unsafe<Function_sp>(closure);
-        if (func->functionName().notnilp()) {
-          try {
-            name = _rep_(func->functionName());
-          } catch (...) {
-            name = "-BAD-NAME-";
-          }
-        }
-        /*Nilable?*/ T_sp sfi = core__file_scope(func->sourcePathname());
-        string sourceName = "cannot-determine";
-        if (sfi.notnilp()) {
-          sourceName = gc::As<FileScope_sp>(sfi)->fileName();
-        }
-        printf("#%4d frame@%p closure@%p %s/%3d\n    %40s ", index, cur, closure.raw_(), sourceName.c_str(), func->lineNumber(), name.c_str() );
-        if (with_args) {
-          SimpleVector_sp args = cur->arguments();
-          for ( size_t i(0), iEnd(args->length()); i<iEnd; ++i ) { printf( " %s@%p", _rep_((*args)[i]).c_str(), (*args)[i].raw_()); }
-        }
-        printf("\n");
-        goto SKIP_PRINT;
-      } else {
-        name = _rep_(closure);
-      }
-    } else {
-      name = "-BAD-CLOSURE-";
-    }
-    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]\n",
-           index, cur, cur->_Previous, tclosure.raw_(), name.c_str() );
-  SKIP_PRINT:
-    ++index;
-  }
-  printf("----Done\n");
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("lowLevelBacktrace");
-CL_DEFUN void core__low_level_backtrace() {
-  low_level_backtrace(false);
-}
-
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("lowLevelBacktrace");
-CL_DEFUN void core__low_level_backtrace_with_args() {
-  low_level_backtrace(true);
-}
-
 
 void operating_system_backtrace(std::vector<BacktraceEntry>& bt_entries)
 {
@@ -1569,55 +1254,6 @@ CL_DEFUN void core__btcl(T_sp stream, bool all, bool args, bool source_info)
 };
 
 namespace core {
-
-CL_DEFUN void core__gotoIhsTop() {
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(core__ihs_top()));
-};
-
-CL_DEFUN void core__gotoIhsPrev() {
-  int ihsCur = core__ihs_current_frame();
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(core__ihs_prev(ihsCur)));
-};
-
-CL_DEFUN void core__gotoIhsNext() {
-  int ihsCur = core__ihs_current_frame();
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(core__ihs_next(ihsCur)));
-};
-
-CL_DEFUN void core__gotoIhsFrame(int frame_index) {
-  if (frame_index < 0)
-    frame_index = 0;
-  if (frame_index >= core__ihs_top())
-    frame_index = core__ihs_top() - 1;
-  int ihsCur = frame_index;
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(ihsCur));
-};
-
-CL_DEFUN void core__printCurrentIhsFrame() {
-  int ihsCur = core__ihs_current_frame();
-  T_sp fun = core__ihs_fun(ihsCur);
-  printf("Frame[%d] %s\n", ihsCur, _rep_(fun).c_str());
-};
-
-
-CL_DOCSTRING("printCurrentIhsFrameEnvironment");
-CL_DEFUN void core__print_current_ihs_frame_environment() {
-  T_sp args = core__ihs_arguments(core__ihs_current_frame());
-  if (args.notnilp()) {
-    ComplexVector_T_sp vargs = gc::As<ComplexVector_T_sp>(args);
-    for (int i = 0; i < cl__length(vargs); ++i) {
-      write_bf_stream(BF("arg%s --> %s") % i % _rep_(vargs->rowMajorAref(i)));
-    }
-  } else {
-    write_bf_stream(BF("Args not available"));
-  }
-  T_sp env = core__ihs_env(core__ihs_current_frame());
-  if (env.notnilp()) {
-    printf("%s\n", gc::As<Environment_sp>(env)->environmentStackAsString().c_str());
-  } else {
-    printf("-- Only global environment available --\n");
-  }
-}
 
 CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
   dbg_lowLevelDescribe(obj);
