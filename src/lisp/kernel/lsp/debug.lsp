@@ -48,16 +48,38 @@
 (defstruct (code-source-line (:type vector) :named)
   pathname line-number column)
 
-(defun frame-up (frame) (core:debugger-frame-up frame))
-(defun frame-down (frame) (core:debugger-frame-down frame))
-(defun frame-function-name (frame) (core:debugger-frame-fname frame))
+(defun frame-up (frame)
+   "Return the frame directly above the current frame, or NIL if there are no more frames.
+This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the caller is 'above' the frame for what it calls.
+This function ignores visibility and may not halt at delimiters. UP is the higher level interface."
+  (core:debugger-frame-up frame))
+(defun frame-down (frame)
+  "Return the frame directly below the current frame, or NIL if there are no more frames.
+This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the callee is 'below' the frame for what called it.
+This function ignores visibility and may not halt at delimiters. DOWN is the lower level interface."
+  (core:debugger-frame-down frame))
+(defun frame-function-name (frame)
+    "Return the name of the function being called in this frame. This will be one of:
+* A symbol.
+* A list (SETF symbol).
+* A list that is one of Clasp's function names, such as (FLET ...), (LABELS ...), or (METHOD ...).
+* A string, representing a C or C++ function."
+  (core:debugger-frame-fname frame))
 (defun frame-source-position (frame)
+  "Return a CODE-SOURCE-LINE object representing the source file position for this frame's call, or NIL if no information is available."
   (core:debugger-frame-source-position frame))
 (defun frame-function-description (frame)
   (core:debugger-frame-function-description frame))
-(defun frame-language (frame) (core:debugger-frame-lang frame))
-(defun frame-function (frame) (core:debugger-frame-closure frame))
-(defun frame-arguments (frame) (core:debugger-frame-args frame))
+(defun frame-language (frame)
+  "Return a marker of the programming language of the code for this frame. May be :LISP or :C++."
+  (core:debugger-frame-lang frame))
+(defun frame-function (frame)
+  "Return the function being called in this frame, or NIL if it is not available.
+Note that this function may be less reliable than the FRAME-FUNCTION-etc functions."
+  (core:debugger-frame-closure frame))
+(defun frame-arguments (frame)
+  "Return the list of arguments to the call for this frame."
+  (core:debugger-frame-args frame))
 (defun frame-locals (frame)
     "Return an alist of local lexical variables and their values at the continuation the frame represents. The CARs are variable names and CDRs their values.
 Multiple bindings with the same name may be returned, as there is no notion of lexical scope in this interface."
