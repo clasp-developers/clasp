@@ -4325,6 +4325,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         uintptr_t size = range.getSize();
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
       } else if (S.getName().str() == STACKMAPS_NAME) {
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range in thread local storage\n", __FILE__, __LINE__, __FUNCTION__ ));
         llvm::jitlink::SectionRange range(S);
         my_thread->_stackmap = (uintptr_t)range.getStart();
         my_thread->_stackmap_size = (size_t)range.getSize();
