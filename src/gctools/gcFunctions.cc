@@ -1098,19 +1098,6 @@ namespace gctools {
 
 namespace gctools {
 
-#ifdef DEBUG_COUNT_ALLOCATIONS
-CL_DOCSTRING("Start collecting backtraces for allocations of a particular stamp. Write the bactraces into the file specified by filename.");
-CL_DEFUN void gctools__start_collecting_backtraces_for_allocations_by_stamp(const std::string& filename, Fixnum stamp) {
-  gctools::start_backtrace_allocations(filename,stamp);
-}
-
-CL_DOCSTRING("Stop collecting backtraces for allocations of a particular stamp.");
-CL_DEFUN void gctools__stop_collecting_backtraces_for_allocations_by_stamp() {
-  gctools::stop_backtrace_allocations();
-}
-#endif
-
-
 CL_DEFUN void gctools__telemetryFlush() {
 #ifdef USE_BOEHM
   IMPLEMENT_ME();
@@ -1557,14 +1544,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LLVM-OPTIMIZATION-LEVEL-0"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_LLVM_OPTIMIZATION_LEVEL_0 = %s\n") % (debug_llvm_optimization_level_0 ? "**DEFINED**" : "undefined") ).str();
-
-  bool debug_count_allocations = false;
-#ifdef DEBUG_COUNT_ALLOCATIONS
-  debug_count_allocations = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COUNT-ALLOCATIONS"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_COUNT_ALLOCATIONS = %s\n") % (debug_count_allocations ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_dont_optimize_bclasp = false;
 #ifdef DEBUG_DONT_OPTIMIZE_BCLASP

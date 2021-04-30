@@ -287,9 +287,6 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
 #include PREGCSTARTUP_INC_H
 #undef ALL_PREGCSTARTUPS_CALLS
 #endif
-#ifdef DEBUG_COUNT_ALLOCATIONS
-  maybe_initialize_mythread_backtrace_allocations();
-#endif
 
 
   //

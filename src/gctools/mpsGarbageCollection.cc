@@ -1114,9 +1114,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();
     run_quick_tests();
-#ifdef DEBUG_COUNT_ALLOCATIONS
-    maybe_initialize_mythread_backtrace_allocations();
-#endif
 #if 1
     try {
       exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);

@@ -91,12 +91,6 @@ namespace core {
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
 #endif
-#ifdef DEBUG_COUNT_ALLOCATIONS
-    std::vector<size_t>    _CountAllocations;
-    bool                   _BacktraceAllocationsP;
-    Fixnum                 _BacktraceStamp;
-    int                    _BacktraceFd;
-#endif
     size_t                 _xorshf_x; // Marsaglia's xorshf generator
     size_t                 _xorshf_y;
     size_t                 _xorshf_z;
@@ -156,12 +150,6 @@ namespace core {
 
 
 namespace gctools {
-
-#ifdef DEBUG_COUNT_ALLOCATIONS
-  void maybe_initialize_mythread_backtrace_allocations();
-  void start_backtrace_allocations(const std::string& filename, Fixnum stamp);
-  void stop_backtrace_allocations();
-#endif
 
   void registerBytesAllocated(size_t bytes);
 };

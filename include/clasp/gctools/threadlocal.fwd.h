@@ -54,9 +54,6 @@ namespace gctools {
      this->_BytesAllocated += size;
      this->_AllocationSizeCounter += size;
      this->_AllocationNumberCounter++;
-#if defined(DEBUG_COUNT_ALLOCATIONS) && defined(DEBUG_SLOW)
-    gctools::count_allocation(stamp);
-#endif
 #ifdef DEBUG_MEMORY_PROFILE
      if (this->_AllocationSizeCounter >= this->_AllocationSizeThreshold) {
        HitAllocationSizeThreshold();
@@ -77,9 +74,6 @@ namespace gctools {
      this->_BytesAllocated += size;
      this->_AllocationSizeCounter += size;
      this->_AllocationNumberCounter++;
-#if defined(DEBUG_COUNT_ALLOCATIONS) && defined(DEBUG_SLOW)
-    gctools::count_weak_allocation(stamp);
-#endif
 #ifdef DEBUG_MEMORY_PROFILE
      if (this->_AllocationSizeCounter >= this->_AllocationSizeThreshold) {
        HitAllocationSizeThreshold();
@@ -108,12 +102,6 @@ namespace gctools {
     // Time unwinds
     std::chrono::time_point<std::chrono::high_resolution_clock> _start_unwind;
     std::chrono::duration<size_t,std::nano>   _unwind_time;
-#ifdef DEBUG_COUNT_ALLOCATIONS
-    std::vector<size_t>    _CountAllocations;
-    bool                   _BacktraceAllocationsP;
-    Fixnum                 _BacktraceStamp;
-    int                    _BacktraceFd;
-#endif
 #if defined(DEBUG_RECURSIVE_ALLOCATIONS)
     int                    _RecursiveAllocationCounter;
     size_t                 _RecursiveAllocationHeaderValue;
