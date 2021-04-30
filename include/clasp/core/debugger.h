@@ -219,7 +219,6 @@ DebugInfo& debugInfo();
 
 
 
-void executableTextRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 
 

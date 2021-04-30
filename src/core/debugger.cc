@@ -124,10 +124,6 @@ std::string thing_as_string(T_sp obj)
     return _rep_(obj);
 }
 
-CL_DEFUN void core__ihs_backtrace_no_args() {
-  c_btcl();
-};
-
 CL_DEFUN int core__ihs_top() {
   return _sym_STARihs_topSTAR->symbolValue().unsafe_fixnum();
 };
@@ -201,23 +197,6 @@ CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
   T_sp result = l.cons();
   return result;
 }
-
-CL_LAMBDA(&optional (out t) msg);
-CL_DECLARE();
-CL_DOCSTRING("ihsBacktrace");
-CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
-  T_sp ss;
-  if (outputDesignator.nilp()) {
-    ss = clasp_make_string_output_stream();
-  } else {
-    ss = coerce::outputStreamDesignator(outputDesignator);
-  }
-  if (!msg.nilp()) {
-    clasp_writeln_string(((BF("\n%s") % _rep_(msg)).str()), ss);
-  }
-  c_btcl();
-  return _Nil<T_O>();
-};
 };
 
 
@@ -262,23 +241,6 @@ bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
     }
   }
   return exists;
-}
-
-//
-// Return the range of the .text section of the executable
-//
-void executableTextRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
-  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  size_t index;
-  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
-//    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
-    if (entry.second._IsExecutable) {
-      start = entry.second._TextStart;
-      end = entry.second._TextEnd;
-      return;
-    }
-  }
-  SIMPLE_ERROR(BF("Could not find the executableTextRange"));
 }
 
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
@@ -465,67 +427,6 @@ void frame_check(uintptr_t frame) {
 SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
 SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
 SYMBOL_EXPORT_SC_(KeywordPkg,closure);
-
-
-/*! Get the raw argument from the stack, 
-argIndex==0 is closure
-argIndex==1 is the number of arguments
-argIndex==2... are the passed arguments
-*/
-
-uintptr_t get_raw_argument_from_stack(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset, size_t argIndex, uintptr_t invocationHistoryFrameAddress)
-{
-  T_O** register_save_area;
-  if (invocationHistoryFrameAddress) {
-    // this is an interpreted function - use the invocationHistoryFrameAddress to get the register save area
-    // printf("%s:%d Using the invocationHistoryFrameAddress@%p to get the register save area of interpreted function\n", __FILE__, __LINE__, (void*)invocationHistoryFrameAddress);
-    InvocationHistoryFrame* ihf = (InvocationHistoryFrame*)invocationHistoryFrameAddress;
-    register_save_area = (core::T_O**)ihf->_args->reg_save_area;
-  } else {
-    // This is a compiled function - use the frameOffset to get the register-save-area
-  // printf("%s:%s:%d start basePointer: %lu frameOffset: %d\n", __FILE__, __FUNCTION__, __LINE__, basePointer, frameOffset );
-    register_save_area = (T_O**)(basePointer+frameOffset);
-  }
-//  printf("%s:%d:%s basePointer@%p frameOffset %d reg_save_area %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)basePointer, frameOffset, register_save_area);
-  // printf("%s:%s:%d get nargs basePointer: %lu frameOffset: %d\n", __FILE__, __FUNCTION__, __LINE__, basePointer, frameOffset );
-  size_t nargs = (uintptr_t)register_save_area[1];
-  // printf("%s:%s:%d nargs: %lu\n", __FILE__, __FUNCTION__, __LINE__, nargs );
-  if (nargs>256) {
-    printf("%s:%d:%s There are too many arguments %lu for function at %p in frame at %p offset: %d\n", __FILE__, __LINE__, __FUNCTION__, nargs, (void*)functionAddress, (void*)basePointer, frameOffset);
-    return 0;
-  }
-  // printf("%s:%s:%d argIndex: %lu\n", __FILE__, __FUNCTION__, __LINE__, argIndex );
-  if (argIndex < (LCC_ARGS_IN_REGISTERS+2)) {
-    // printf("%s:%s:%d register_save_area: %lu\n", __FILE__, __FUNCTION__, __LINE__, argIndex );
-    return (uintptr_t)register_save_area[argIndex];
-  } else {
-    // printf("%s:%s:%d register_save_area: %lu\n", __FILE__, __FUNCTION__, __LINE__, argIndex );
-    return (uintptr_t)((T_O**)basePointer)[2+argIndex-(LCC_ARGS_IN_REGISTERS+2)];
-  }
-}
-
-
-
-core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset, bool asPointers, uintptr_t invocationHistoryFrameAddress)
-{
-  T_sp closure((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,0,invocationHistoryFrameAddress));
-  size_t nargs = core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,1,invocationHistoryFrameAddress);
-  SimpleVector_sp args = SimpleVector_O::make(nargs);
-  for ( size_t i=0; i<nargs; ++i ) {
-    T_sp tobj;
-    if (asPointers) {
-      tobj = Pointer_O::create((void*)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i,invocationHistoryFrameAddress));
-    } else {
-      T_sp temp((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i,invocationHistoryFrameAddress));
-      tobj = temp;
-    }
-    (*args)[i] = tobj;
-  }
-  if (asPointers) {
-    return Values(args,Pointer_O::create((void*)closure.raw_()));
-  }
-  return Values(args,closure);
-}
 
 }; // namespace core
 
