@@ -122,9 +122,6 @@ void dbg_describe_tagged_T_Optr(T_O *p);
 
 int safe_backtrace(void**& return_buffer);
 
-bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize);
-void register_jitted_object(const std::string& name, uintptr_t address, int size);
-
 struct smHeader {
   uint8_t  version;
   uint8_t  reserved0;
@@ -164,9 +161,6 @@ void walk_one_llvm_stackmap(std::function<void(size_t,
                                                const smStkSizeRecord&,
                                                int32_t)>,
                             uintptr_t&, uintptr_t);
-
-void push_one_llvm_stackmap(bool jit, uintptr_t& startAddress );
-
 
 void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_t numberStackmaps);
 
