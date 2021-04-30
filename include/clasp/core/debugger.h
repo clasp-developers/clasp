@@ -122,48 +122,6 @@ void dbg_describe_tagged_T_Optr(T_O *p);
 
 int safe_backtrace(void**& return_buffer);
 
-struct smHeader {
-  uint8_t  version;
-  uint8_t  reserved0;
-  uint16_t reserved1;
-};
-
-struct smStkSizeRecord {
-  uint64_t  FunctionAddress;
-  int64_t  StackSize;
-  uint64_t  RecordCount;
-};
-
-struct smLocation{
-  uint8_t  Type;
-  uint8_t   Reserved0;
-  uint16_t  LocationSize;
-  uint16_t  DwarfRegNum;
-  uint16_t  Reserved1;
-  int32_t   OffsetOrSmallConstant;
-};
-
-struct smLiveOut {
-  uint16_t DwarfRegNum;
-  uint8_t  Reserved;
-  uint8_t SizeInBytes;
-};
-
-struct smStkMapRecord {
-  uint64_t PatchPointID;
-  uint32_t InstructionOffset;
-  uint16_t Reserved;
-  std::vector<smLocation> Locations;
-  std::vector<smLiveOut> LiveOuts;
-};
-
-void walk_one_llvm_stackmap(std::function<void(size_t,
-                                               const smStkSizeRecord&,
-                                               int32_t)>,
-                            uintptr_t&, uintptr_t);
-
-void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_t numberStackmaps);
-
  bool if_dynamic_library_loaded_remove(const std::string& libraryName);
 
  void add_dynamic_library_using_handle(add_dynamic_library* callback, const std::string& libraryName, void* handle);

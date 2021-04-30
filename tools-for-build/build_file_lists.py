@@ -24,6 +24,7 @@ SRC_CORE_FILES = \
         'primitives',
         'random',
         'record',
+        'stackmap',
         'debugger',
         'debugger2',
         'backtrace',
