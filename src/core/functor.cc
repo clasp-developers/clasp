@@ -126,20 +126,6 @@ CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
                                  filePos);
 }
 
-
-
-llvmo::Code_sp identifyCode(claspFunction entry_point)
-{
-  void* address = (void*)entry_point;
-  std::vector<BacktraceEntry> fill;
-  BacktraceEntry entry;
-  entry._ReturnAddress = (uintptr_t) address;
-  fill.push_back(entry);
-  fill_backtrace_or_dump_info(fill);
-  printf("%s:%d:%s Finish implementing for address %p found name: %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, fill[0]._SymbolName.c_str() );
-  SIMPLE_ERROR(BF("Finish implementing me"));
-}
-
 GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName,
                                                                claspFunction entryPoint,
                                                                T_sp lambda_list,

@@ -438,19 +438,6 @@ uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& sec
   return (uintptr_t)p_section;
 }
 
-void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory) {
-//    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
-  uint32_t num_loaded = _dyld_image_count();
-  for ( size_t idx = 0; idx<num_loaded; ++idx ) {
-    const char* filename = _dyld_get_image_name(idx);
-    if (backtrace.size()==0) {
-      WRITE_DEBUG_IO(BF("Library %s\n") % filename );
-    }
-    search_symbol_table(backtrace,filename,symbol_table_memory);
-  }
-}
-
-
 void startup_register_loaded_objects(add_dynamic_library* callback) {
 // printf("%s:%d:%s Registering loaded objects\n", __FILE__, __LINE__, __FUNCTION__);
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");

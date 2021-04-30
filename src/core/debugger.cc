@@ -235,50 +235,6 @@ DebugInfo& debugInfo() {
   return *global_DebugInfo;
 }
 
-std::string backtrace_frame(size_t index, BacktraceEntry* frame)
-{
-  stringstream ss;
-  ss << "Frame#" << index << " ";
-  if (frame->_Stage!=undefined) {
-    ss << frame->_SymbolName << " ";
-    ss << "@" << (void*)frame->_FunctionStart << " ";
-    ss << "end: " << (void*)(frame->_FunctionEnd);
-  }
-  return ss.str();
-}
-
-void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
-{
-//  printf("%s:%d:%s  fixme \n", __FILE__, __LINE__, __FUNCTION__ );
-  BT_LOG(("Starting search_jitted_stackmaps\n" ));
-  size_t num = 0;
-  WRITE_DEBUG_IO(BF("search_jitted_stackmaps\n"));
-  WITH_READ_LOCK(debugInfo()._StackMapsLock);
-  DebugInfo& di = debugInfo();
-  auto thunk = [&](size_t functionIndex,
-                   const smStkSizeRecord& function,
-                   int32_t offsetOrSmallConstant) {
-    for (size_t j=0; j<backtrace.size(); ++j ) {
-      BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
-      if (function.FunctionAddress == backtrace[j]._FunctionStart) {
-        backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
-        backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
-        backtrace[j]._FrameOffset = offsetOrSmallConstant;
-        BT_LOG(("Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
-      }
-    }
-  };
-  for ( auto entry : di._StackMaps ) {
-    uintptr_t address = entry.second._StartAddress;
-    BT_LOG((" Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._EndAddress));
-    for ( size_t num = 0; num<entry.second._Number; ++num ) {
-      walk_one_llvm_stackmap(thunk,address,entry.second._EndAddress);
-      if (address>=entry.second._EndAddress) break;
-    }
-  }
-  BT_LOG(("Finished search_jitted_stackmaps searched %lu\n", num));
-}
-
 void add_dynamic_library_using_handle(add_dynamic_library* adder, const std::string& libraryName, void* handle) {
   printf("%s:%d:%s libraryName: %s need text_start, text_end\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str() );
   add_dynamic_library_impl(adder, false,libraryName, false, 0, handle, NULL, NULL, false, NULL, NULL );
@@ -391,53 +347,6 @@ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, ui
   return lookup_address_main(address,symbol,start,end,type,libraryFound,libraryName,libraryStart);
 }
 
-
-
-void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size)
-{
-  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  BT_LOG(("search_symbol_table library: %s\n", filename));
-  std::string fname(filename);
-  map<std::string,OpenDynamicLibraryInfo>::iterator it = debugInfo()._OpenDynamicLibraryHandles.find(fname);
-  if (it == debugInfo()._OpenDynamicLibraryHandles.end()) {
-//    printf("%s:%d:%s Could not find handle for library %s\n", __FILE__, __LINE__, __FUNCTION__, fname.c_str());
-  } else {
-    SymbolTable& symbol_table = it->second._SymbolTable;
-    if (backtrace.size()==0) {
-      WRITE_DEBUG_IO(BF("Library filename: %s\n") % filename);
-      WRITE_DEBUG_IO(BF("Library symbol_table _SymbolNames %p _End %u  _Capacity %u  _StackmapStart %p    _StackmapEnd %p\n")
-                     % (void*)symbol_table._SymbolNames % symbol_table._End % symbol_table._Capacity
-                     % (void*)symbol_table._StackmapStart % (void*)symbol_table._StackmapEnd );
-    }
-    if (backtrace.size() == 0) {
-      uintptr_t prev_address = 0;
-      printf("%s:%d:%s I disabled the symbol tables for now - use DWARF\n", __FILE__, __LINE__, __FUNCTION__ );
-    } else {
-//      printf("%s:%d:%s I disabled symbol list searching for now - use DWARF instead I think\n", __FILE__, __LINE__, __FUNCTION__ );
-    }
-    uintptr_t address = symbol_table._StackmapStart;
-    uintptr_t endAddress = symbol_table._StackmapEnd;
-    if (address) {
-      auto thunk = [&](size_t functionIndex,
-                       const smStkSizeRecord& function,
-                       int32_t offsetOrSmallConstant) {
-        for (size_t j=0; j<backtrace.size(); ++j ) {
-          BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
-          if (function.FunctionAddress == backtrace[j]._FunctionStart) {
-            backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
-            backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
-            backtrace[j]._FrameOffset = offsetOrSmallConstant;
-            BT_LOG(("Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
-          }
-        }
-      };
-      while (address<endAddress) {
-        walk_one_llvm_stackmap(thunk,address,endAddress);
-      }
-    }
-  }
-}
-
 bool search_for_matching_close_bracket(const std::string& sin, size_t& pos, stringstream& sacc) {
   for ( size_t i=pos; i<sin.size(); ++i ) {
     if (sin[i] == '>') {
@@ -491,39 +400,6 @@ CL_DEFUN SimpleBaseString_sp core__ever_so_slightly_mangle_cxx_names(const std::
   size_t pos = 0;
   while (mangle_next_smartPtr(raw_name,pos,sout));
   return SimpleBaseString_O::make(sout.str());
-}
-
-void operating_system_backtrace(std::vector<BacktraceEntry>& bt_entries)
-{
-  // Get an operating system backtrace, i.e. with the backtrace and
-  // backtrace_symbols functions (which are not POSIX, but are present in both
-  // GNU and Apple systems).
-  // backtrace requires a number of frames to get, and will fill only that many
-  // entries. To get the full backtrace, we repeatedly try larger frame numbers
-  // until backtrace finally doesn't fill everything in.
-#define START_BACKTRACE_SIZE 512
-#define MAX_BACKTRACE_SIZE_LOG2 20
-  size_t num = START_BACKTRACE_SIZE;
-  void** buffer = (void**)calloc(sizeof(void*), num);
-  for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
-    size_t returned = backtrace(buffer,num);
-    if (returned < num) {
-      bt_entries.resize(returned);
-      char **strings = backtrace_symbols(buffer, returned);
-      for (size_t j = 0; j < returned; ++j) {
-        bt_entries[j]._ReturnAddress = (uintptr_t)buffer[j];
-        bt_entries[j]._SymbolName = strings[j];
-      }
-      free(buffer);
-      free(strings);
-      return;
-    }
-    // realloc_array would be nice, but macs don't have it
-    num *= 2;
-    buffer = (void**)realloc(buffer, sizeof(void*)*num);
-  }
-  printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
-  abort();
 }
   
 bool maybe_demangle(const std::string& fnName, std::string& output)
@@ -585,53 +461,6 @@ void frame_check(uintptr_t frame) {
   if (!check_for_frame(frame))
     NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
 }
-
-void fill_in_interpreted_frames(std::vector<BacktraceEntry>& backtrace) {
-  const InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStackTop;
-  while (frame) {
-    uintptr_t reg = (uintptr_t)frame->register_save_area();
-//    printf("%s:%d:%s reg: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)reg);
-    for ( size_t idx = 1; idx<backtrace.size()-1; ++idx ) {
-      uintptr_t bp = backtrace[idx-1]._BasePointer;
-      uintptr_t bpNext = backtrace[idx]._BasePointer;
-//      printf("%s:%d:%s frame: %lu %s  bp: %p bpNext: %p reg: %p\n", __FILE__, __LINE__, __FUNCTION__, idx, backtrace[idx]._SymbolName.c_str(), (void*)bp, (void*)bpNext, (void*)reg);
-      if (bp<=reg && reg <bpNext) {
-        backtrace[idx]._Stage = lispFrame; // Interpreted frames are lisp frames
-        backtrace[idx]._SymbolName = gc::As<Symbol_sp>(gc::As<Closure_sp>(frame->function())->functionName())->formattedName(true);
-        backtrace[idx]._InvocationHistoryFrameAddress = (uintptr_t)frame;
-        //printf("%s:%d:%s %s %s  MATCH!!!!\n", __FILE__, __LINE__, __FUNCTION__, backtrace[idx]._SymbolName.c_str(), _rep_(backtrace[idx]._Arguments).c_str());
-      }
-    }
-    frame = frame->_Previous;
-  }
-}
-
-
-
-/*! If you pass a backtrace then it will be filled with symbol information.
-    If you pass an empty backtrace then symbol information will be printed.
-    eg: std::vector<BacktraceEntry> emptyBacktrace;  fill_backtrace_or_dump_info(emptyBacktrace) 
-*/
-void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace) {
-//  printf("walk symbol tables and stackmaps for DARWIN\n");
-  size_t symbol_table_memory = 0;
-#if 1
-  printf("%s:%d:%s backtraces are screwed up - returning\n", __FILE__, __LINE__, __FUNCTION__ );
-#else
-  walk_loaded_objects(backtrace,symbol_table_memory);
-    // Now search the jitted objects
-//  printf("%s:%d:%s search_jitted_objects false\n", __FILE__, __LINE__, __FUNCTION__);
-  llvmo::search_jitted_objects(backtrace,false);
-//  printf("%s:%d:%s search_jitted_objects true\n", __FILE__, __LINE__, __FUNCTION__);
-  llvmo::search_jitted_objects(backtrace,true); // Search them twice to find all FunctionDescription objects
-//  printf("%s:%d:%s search_jitted_stackmaps\n", __FILE__, __LINE__, __FUNCTION__);
-  search_jitted_stackmaps(backtrace);
-  if (backtrace.size()==0) {
-    WRITE_DEBUG_IO(BF("symbol-table-memory %lu\n") % symbol_table_memory);
-  }
-#endif
-}
-
 
 SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
 SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
@@ -697,40 +526,6 @@ core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, i
   }
   return Values(args,closure);
 }
-
-
-void fill_backtrace(std::vector<BacktraceEntry>& backtrace) {
-  char *funcname = (char *)malloc(1024);
-  size_t funcnamesize = 1024;
-  uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
-  BT_LOG(("About to operatin_system_backtrace\n" ));
-  //printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-  operating_system_backtrace(backtrace);
-  size_t nptrs = backtrace.size()-2;
-  nptrs -= 2; // drop the last two frames
-    // Fill in the base pointers
-  BT_LOG(("About to get bp's\n" ));
-  //printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-  void* bp = __builtin_frame_address(0);
-  for (size_t i = 1; i < nptrs; ++i) {
-    if (bp) {
-      backtrace[i]._BasePointer = (uintptr_t)bp;
-      bp = *(void**)bp;
-    }
-  }
-  BT_LOG(("About to walk library info\n" ));
-  //
-  // Walk libraries and jitted objects to fill backtrace.
-  //
-  // printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-  fill_backtrace_or_dump_info(backtrace);
-    // Now get the arguments
-  BT_LOG(("Getting arguments\n"));
-  // printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-    // fill in the interpreted frames here
-  BT_LOG(("fill in interpreted frames here\n"));;
-  fill_in_interpreted_frames(backtrace);
-};
 
 }; // namespace core
 
@@ -972,95 +767,6 @@ void dbg_safe_println(uintptr_t raw) {
   printf(" %s\n", dbg_safe_repr(raw).c_str());
 }
 
-void dbg_print_frame(FILE* fout, const std::vector<core::BacktraceEntry>& backtrace, size_t idx, bool printArgs)
-{
-  stringstream ss;
-  fprintf(fout,"%lu: ", idx);
-  fflush(fout);
-  std::string fname = backtrace[idx]._SymbolName;
-  std::string dname;
-  bool demangled = core::maybe_demangle(fname,dname);
-  if (demangled) {
-    fprintf(fout,"(%s ", dname.c_str());
-  } else {
-    fprintf(fout,"(%s ", backtrace[idx]._SymbolName.c_str());
-  }
-  fflush(fout);
-  if (printArgs&&((backtrace[idx]._BasePointer!=0&&backtrace[idx]._FrameOffset!=0)||backtrace[idx]._InvocationHistoryFrameAddress!=0)) {
-    uintptr_t invocationHistoryFrameAddress = backtrace[idx]._InvocationHistoryFrameAddress;
-    // printf("%s:%s:%d Printing \n", __FILE__, __FUNCTION__, __LINE__);
-    core::T_sp closure((gctools::Tagged)core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,0,invocationHistoryFrameAddress));
-    // printf("%s:%s:%d Printing \n", __FILE__, __FUNCTION__, __LINE__);
-    size_t nargs = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,1,invocationHistoryFrameAddress);
-    for ( size_t i=0; i<nargs; ++i ) {
-      // printf("%s:%s:%d Printing arg %lu of %lu\n", __FILE__, __FUNCTION__, __LINE__, i, nargs);
-      uintptr_t raw_arg = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,2+i,invocationHistoryFrameAddress);
-      fprintf(fout,"%s ", dbg_safe_repr(raw_arg).c_str());
-    }
-  } else {
-    fprintf(fout,"ARGS-NOT-SHOWN");
-  }
-  // printf("%s:%s:%d Printing\n", __FILE__, __FUNCTION__, __LINE__);
-  fprintf(fout,")\n");
-}
-
-void dbg_safe_backtrace() {
-//  gc::SafeGCPark park;
-  std::vector<core::BacktraceEntry> backtrace;
-  printf("Safe-backtrace\n");
-  core::fill_backtrace(backtrace);
-  printf("Got %lu backtrace frames - dumping\n", backtrace.size());
-  for ( size_t idx=2; idx<backtrace.size()-2; ++idx ) {
-    dbg_print_frame(stdout,backtrace,idx,true);
-  }
-}
-
-void dbg_safe_backtrace_stderr() {
-//  gc::SafeGCPark park;
-  std::vector<core::BacktraceEntry> backtrace;
-  fprintf(stderr,"Safe-backtrace\n");
-  core::fill_backtrace(backtrace);
-  fprintf(stderr,"Got %lu backtrace frames - dumping\n", backtrace.size());
-  for ( size_t idx=2; idx<backtrace.size()-2; ++idx ) {
-    dbg_print_frame(stderr,backtrace,idx,true);
-  }
-}
-
-void dbg_safe_backtrace_no_args() {
-//  gc::SafeGCPark park;
-  std::vector<core::BacktraceEntry> backtrace;
-  printf("Safe-backtrace\n");
-  core::fill_backtrace(backtrace);
-  printf("Got backtrace frames - dumping\n");
-  for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
-    dbg_print_frame(stdout,backtrace,idx,false);
-  }
-}
-void dbg_safe_lisp_backtrace() {
-//  gc::SafeGCPark park;
-  std::vector<core::BacktraceEntry> backtrace;
-  printf("Safe-backtrace\n");
-  core::fill_backtrace(backtrace);
-  for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
-    if (backtrace[idx]._Stage == core::lispFrame) {
-      dbg_print_frame(stdout,backtrace,idx,true);
-    }
-  }
-}
-
-void dbg_find_symbol(uintptr_t addr) {
-}
-
-};
-
-
-namespace core {
-CL_DEFUN void core__safe_backtrace() {
-  dbg_safe_backtrace();
-}
-CL_DEFUN void core__safe_lisp_backtrace() {
-  dbg_safe_lisp_backtrace();
-}
 };
 
 extern "C" {

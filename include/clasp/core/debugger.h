@@ -134,36 +134,6 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
 bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type );
 bool library_with_name(const std::string& name, bool isExecutable, std::string& libraryPath, uintptr_t& start, uintptr_t& end, uintptr_t& vtableStart, uintptr_t& vtableEnd );
 
- typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
-struct BacktraceEntry {
-  BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0), _FunctionDescription(0),
-                     _InvocationHistoryFrameAddress(0),
-                     _FileName(""),
-                     _StartFileName(""),
-                     _LineNo(0),
-                     _Column(0),
-                     _StartLine(0),
-                     _Discriminator(0)  {};
-  BacktraceFrameEnum   _Stage;
-  uintptr_t            _ReturnAddress;
-  uintptr_t            _FunctionStart;
-  uintptr_t            _FunctionEnd;
-  uintptr_t            _BasePointer;
-  int                  _InstructionOffset;
-  int                  _FrameSize;
-  int                  _FrameOffset;
-  std::string          _SymbolName;
-  uintptr_t            _InvocationHistoryFrameAddress;
-  std::string          _FileName;
-  std::string          _StartFileName;
-  uint32_t             _LineNo;
-  uint32_t             _Column;
-  uint32_t             _StartLine;
-  uint32_t             _Discriminator;
-  // Maybe useless
-  uintptr_t            _FunctionDescription;
-};
-
 }; // namespace core
 
 std::string _safe_rep_(core::T_sp obj);
@@ -200,8 +170,6 @@ namespace core {
 #define WRITE_DEBUG_IO(fmt)
 #endif
 
-typedef void(*scan_callback)(std::vector<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start);
-
 struct SymbolCallback {
   bool _debug;
   virtual bool debug() { return this->_debug; };
@@ -212,15 +180,6 @@ struct SymbolCallback {
 };
 
 void walk_loaded_objects_symbol_table( SymbolCallback* symbolCallback );
-
-struct ScanInfo {
-  add_dynamic_library* _AdderOrNull;
-  size_t  _Index;
-  std::vector<BacktraceEntry>* _Backtrace;
-  scan_callback _Callback;
-  size_t _symbol_table_memory;
-  ScanInfo(add_dynamic_library* ad) : _AdderOrNull(ad), _Index(0), _Backtrace(NULL), _symbol_table_memory(0) {};
-};
 
 struct StackMapRange {
   uintptr_t _StartAddress;
@@ -251,8 +210,6 @@ T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointers);
 void startup_register_loaded_objects(add_dynamic_library* addlib);
 
 uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size);
-void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size);
-void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory);
  void add_dynamic_library_impl(add_dynamic_library* adder, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle,
                                gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end,
                                bool hasVtableSection,
@@ -261,7 +218,6 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 DebugInfo& debugInfo();
 
 
-void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace);
 
 void executableTextRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );

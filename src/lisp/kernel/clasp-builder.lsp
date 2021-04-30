@@ -653,7 +653,6 @@ Return files."
   (bformat *error-output* "Received condition of type: %s\n%s\n"
            (type-of condition)
            condition)
-  (core:safe-backtrace)
   (if (parallel-build-p)
       (progn
         (bformat *error-output* "About to exit clasp")

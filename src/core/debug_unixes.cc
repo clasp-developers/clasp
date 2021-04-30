@@ -529,15 +529,6 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
   return 0;
 }
 
-void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory)
-{
-  ScanInfo scan(NULL);
-  scan._Backtrace = &backtrace;
-    // Search the symbol tables and stackmaps
-  dl_iterate_phdr(elf_loaded_object_callback,&scan);
-  symbol_table_memory += scan._symbol_table_memory;
-}
-
 void startup_register_loaded_objects(add_dynamic_library* callback)
 {
   ScanInfo scan(callback);

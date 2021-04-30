@@ -122,7 +122,6 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<core::OptionalArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::RequiredArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolClassHolderPair>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolStorage>);
-GC_MANAGED_TYPE(gctools::GCVector_moveable<core::BacktraceEntry>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::T_O *>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<double>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<float>);

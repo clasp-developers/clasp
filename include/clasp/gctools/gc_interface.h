@@ -69,7 +69,6 @@ class AuxArgument;
 class OptionalArgument;
 class CacheRecord;
 class ExceptionEntry;
-class BacktraceEntry;
 };
 namespace asttooling {
   class DerivableSyntaxOnlyAction;
