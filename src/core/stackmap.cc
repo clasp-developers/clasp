@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <functional>
 #include <vector>
+#include <stdio.h>
 #include <clasp/core/stackmap.h>
 
 template <typename T>
