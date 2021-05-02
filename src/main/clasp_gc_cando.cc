@@ -225,7 +225,6 @@
     class MDArrayT_O;
     class Record_O;
     class LightUserData_O;
-    class Frame_O;
     class Integer_O;
     class SimpleMDArray_int32_t_O;
     class ComplexVector_O;
@@ -1034,7 +1033,7 @@ STAMPWTAG_core__Complex_O = ADJUST_STAMP(1403), // Stamp(350)  wtag(3)
 STAMPWTAG_core__SourcePosInfo_O = ADJUST_STAMP(1407), // Stamp(351)  wtag(3)
 STAMPWTAG_core__Record_O = ADJUST_STAMP(1411), // Stamp(352)  wtag(3)
 STAMPWTAG_clbind__ClassRegistry_O = ADJUST_STAMP(1415), // Stamp(353)  wtag(3)
-STAMPWTAG_core__Frame_O = ADJUST_STAMP(1419), // Stamp(354)  wtag(3)
+//STAMPWTAG_core__Frame_O = ADJUST_STAMP(1419), // Stamp(354)  wtag(3)
 STAMPWTAG_core__ClassHolder_O = ADJUST_STAMP(1423), // Stamp(355)  wtag(3)
 STAMPWTAG_core__WrappedPointer_O = ADJUST_STAMP(1426), // Stamp(356)  wtag(2)
 STAMPWTAG_core__SymbolToEnumConverter_O = ADJUST_STAMP(1431), // Stamp(357)  wtag(3)
@@ -2713,7 +2712,7 @@ register_stamp_name("STAMPWTAG_core__Complex_O", ADJUST_STAMP(1403));
 register_stamp_name("STAMPWTAG_core__SourcePosInfo_O", ADJUST_STAMP(1407));
 register_stamp_name("STAMPWTAG_core__Record_O", ADJUST_STAMP(1411));
 register_stamp_name("STAMPWTAG_clbind__ClassRegistry_O", ADJUST_STAMP(1415));
-register_stamp_name("STAMPWTAG_core__Frame_O", ADJUST_STAMP(1419));
+//register_stamp_name("STAMPWTAG_core__Frame_O", ADJUST_STAMP(1419));
 register_stamp_name("STAMPWTAG_core__ClassHolder_O", ADJUST_STAMP(1423));
 register_stamp_name("STAMPWTAG_core__WrappedPointer_O", ADJUST_STAMP(1426));
 register_stamp_name("STAMPWTAG_core__SymbolToEnumConverter_O", ADJUST_STAMP(1431));
@@ -6668,15 +6667,6 @@ template <typename FP> struct Cast<chem::SparseLargeSquareMatrix_O*,FP> {
       return (kindVal == ISA_ADJUST_STAMP(351));
   };
 };
-// STAMPWTAG_core__Frame_O
-template <typename FP> struct Cast<core::Frame_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Frame_O val -> 1419
-      return (kindVal == ISA_ADJUST_STAMP(1419));
-  };
-};
 // STAMPWTAG_clbind__ClassRegistry_O
 template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
   inline static bool isA(FP client) {
@@ -10252,7 +10242,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(chem::EnergyRigidBodyNonbond_O,TYPEQ_ADJUST_STAMP(83));
       ADD_RANGE_TYPEQ_TEST(core::ComplexVector_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(1799),TYPEQ_ADJUST_STAMP(1971));
       ADD_SINGLE_TYPEQ_TEST(chem::SparseLargeSquareMatrix_O,TYPEQ_ADJUST_STAMP(351));
-      ADD_SINGLE_TYPEQ_TEST(core::Frame_O,TYPEQ_ADJUST_STAMP(1419));
+//      ADD_SINGLE_TYPEQ_TEST(core::Frame_O,TYPEQ_ADJUST_STAMP(1419));
       ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1415));
       ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,TYPEQ_ADJUST_STAMP(2775));
       ADD_SINGLE_TYPEQ_TEST(chem::Isoname_O,TYPEQ_ADJUST_STAMP(599));
@@ -12695,10 +12685,6 @@ public:
 template <> class gctools::GCStamp<chem::SparseLargeSquareMatrix_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__SparseLargeSquareMatrix_O ;
-};
-template <> class gctools::GCStamp<core::Frame_O> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Frame_O ;
 };
 template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
 public:
@@ -19505,35 +19491,35 @@ public:
 //      field: "m_classes" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEql_O>" :SPECIALIZER "class core::HashTableEql_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),m_classes), 0, "m_classes" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // StampWtag = core::Frame_O/1419
-{ class_kind, STAMPWTAG_core__Frame_O, sizeof(core::Frame_O), 0, IS_POLYMORPHIC, "core::Frame_O" },
+//{ class_kind, STAMPWTAG_core__Frame_O, sizeof(core::Frame_O), 0, IS_POLYMORPHIC, "core::Frame_O" },
 //      field: "stype" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),stype), 0, "stype" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),stype), 0, "stype" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "return_address" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),return_address), 0, "return_address" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),return_address), 0, "return_address" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "raw_name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),raw_name), 0, "raw_name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),raw_name), 0, "raw_name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "function_name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),function_name), 0, "function_name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),function_name), 0, "function_name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "base_pointer" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),base_pointer), 0, "base_pointer" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),base_pointer), 0, "base_pointer" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "frame_offset" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),frame_offset), 0, "frame_offset" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),frame_offset), 0, "frame_offset" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "frame_size" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),frame_size), 0, "frame_size" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),frame_size), 0, "frame_size" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "function_start_address" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),function_start_address), 0, "function_start_address" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),function_start_address), 0, "function_start_address" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "function_end_address" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),function_end_address), 0, "function_end_address" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),function_end_address), 0, "function_end_address" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "function_description" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),function_description), 0, "function_description" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),function_description), 0, "function_description" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "arguments" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),arguments), 0, "arguments" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),arguments), 0, "arguments" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "closure" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),closure), 0, "closure" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),closure), 0, "closure" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "up" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),up), 0, "up" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),up), 0, "up" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "down" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),down), 0, "down" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),down), 0, "down" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // StampWtag = core::ClassHolder_O/1423
 { class_kind, STAMPWTAG_core__ClassHolder_O, sizeof(core::ClassHolder_O), 0, IS_POLYMORPHIC, "core::ClassHolder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::Instance_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O"))
@@ -30665,16 +30651,6 @@ obj_finalize_STAMPWTAG_clbind__ClassRegistry_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMPWTAG_core__Frame_O:
-{
-     // stamp value 1419
-    core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~Frame_O();
-#pragma clang diagnostic pop
-    goto finalize_done;
-}
 obj_finalize_STAMPWTAG_core__ClassHolder_O:
 {
      // stamp value 1423
@@ -34580,7 +34556,7 @@ static void* OBJ_FINALIZE_table[] = {
   /* 1407 */ &&obj_finalize_STAMPWTAG_core__SourcePosInfo_O,
   /* 1411 */ &&obj_finalize_STAMPWTAG_core__Record_O,
   /* 1415 */ &&obj_finalize_STAMPWTAG_clbind__ClassRegistry_O,
-  /* 1419 */ &&obj_finalize_STAMPWTAG_core__Frame_O,
+//  /* 1419 */ &&obj_finalize_STAMPWTAG_core__Frame_O,
   /* 1423 */ &&obj_finalize_STAMPWTAG_core__ClassHolder_O,
   /* 1426 */ &&obj_finalize_STAMPWTAG_core__WrappedPointer_O,
   /* 1431 */ &&obj_finalize_STAMPWTAG_core__SymbolToEnumConverter_O,
@@ -37539,13 +37515,6 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_clbind__ClassRegistry_O:
      // stamp value 1415
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
     GC<clbind::ClassRegistry_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_STAMPWTAG_core__Frame_O:
-{
-     // stamp value 1419
-    core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
-    GC<core::Frame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ClassHolder_O:
@@ -40701,7 +40670,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 1407 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SourcePosInfo_O,
   /* 1411 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Record_O,
   /* 1415 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clbind__ClassRegistry_O,
-  /* 1419 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Frame_O,
+//  /* 1419 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Frame_O,
   /* 1423 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ClassHolder_O,
   /* 1426 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__WrappedPointer_O,
   /* 1431 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SymbolToEnumConverter_O,
