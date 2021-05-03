@@ -9,7 +9,6 @@
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/code.h>
-#include <clasp/core/debugger.h> // temp - move to stackmaps file TODO
 #include <clasp/core/stackmap.h>
 #include <clasp/core/backtrace.h>
 #include <stdlib.h> // calloc, realloc, free
