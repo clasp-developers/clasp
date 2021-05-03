@@ -190,8 +190,7 @@ static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
   return DebuggerFrame_O::make(fname, spi, fd, closure, args, INTERN_(kw, lisp));
 }
 
-// FIXME: remove 2. This is a stupid disambiguation.
-static bool maybe_demangle2(const std::string& fnName, std::string& output)
+static bool maybe_demangle(const std::string& fnName, std::string& output)
 {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
@@ -227,7 +226,7 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, char* cstring) {
   // FIXME: Format probably varies by OS.
   std::string linkname = parts[3];
   std::string name;
-  if (!(maybe_demangle2(linkname, name)))
+  if (!(maybe_demangle(linkname, name)))
     // couldn't demangle, so just use the unadulterated string
     name = linkname;
   T_sp lname = SimpleBaseString_O::make(name);
