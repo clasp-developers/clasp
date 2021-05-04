@@ -174,9 +174,7 @@
 
 ;; Is this iblock a place unknown values are nonlocally returned to?
 (defun nonlocal-valued-p (iblock)
-  (let ((inputs (cleavir-bir:inputs iblock)))
-    (and (= (length inputs) 1)
-         (eq (cc-bmir:rtype (first inputs)) :multiple-values))))
+  (= (length (cleavir-bir:inputs iblock)) 1))
 
 (defmethod compute-maybe-entry-processor ((dynenv cleavir-bir:catch) tags)
   (if (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
@@ -197,6 +195,12 @@
                ;; so that we get the correct values.
                (tmv (when (some #'nonlocal-valued-p destinations)
                       (restore-multiple-value-0)))
+               (tv (when tmv
+                     (if (eq (cc-bmir:rtype
+                              (first (bir:inputs (first destinations))))
+                             :object)
+                         (cmp:irc-tmv-primary tmv)
+                         tmv)))
                (go-index (cmp:irc-load *go-index.slot*))
                (sw (cmp:irc-switch go-index next ndestinations)))
           (declare (ignore _))
@@ -222,9 +226,9 @@
                                               tag-block)
                            (unless (eq tag-block (cdr existing))
                              (error "BUG: Duplicated ID in landing-pad.lisp"))))
-                  and do (when tmv
+                  and do (when tv
                            (phi-out
-                            tmv (first (cleavir-bir:inputs dest)) bb))
+                            tv (first (cleavir-bir:inputs dest)) bb))
                   and collect (cons jump-id tag-block) into used-ids)
           bb))))
 

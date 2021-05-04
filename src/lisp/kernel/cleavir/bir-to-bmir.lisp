@@ -111,82 +111,218 @@
 (defmethod definition-rtype ((inst bir:values-save)) :multiple-values)
 (defmethod definition-rtype ((inst bir:values-collect)) :multiple-values)
 (defmethod definition-rtype ((inst cc-bir:mv-foreign-call)) :multiple-values)
+(defmethod definition-rtype ((inst bir:thei))
+  ;; THEI really throws a wrench in some stuff.
+  (let ((input (first (bir:inputs inst))))
+    (maybe-assign-rtype input)
+    (cc-bmir:rtype input)))
 ;; FIXME: will be removed (?)
 (defmethod definition-rtype ((inst bir:fixed-to-multiple)) :multiple-values)
 
-(defun insert-value-coercion (instruction)
-  ;; TODO:
-  ;; Insert FTMs before inputs that need multiple values,
-  ;; and MTFs after outputs that need fixed values.
-  ;; This is a very simple way to try to minimize the multiple values we have
-  ;; alive at any given time.
-  (cond
-    ((and (bir:outputs instruction)
-          (not (typep instruction '(or bir:jump bir:thei bir:unwind))))
-     (let* ((out (first (bir:outputs instruction)))
-            (source (definition-rtype instruction))
-            (dest (cc-bmir:rtype out)))
-       (assert (null (rest (bir:outputs instruction))))
-       (cond ((not dest)) ; datum is unused, so no coercion is necessary
-             ((eq source dest)) ; they already agree, no coercion
-             ((eq dest :multiple-values)
-              (assert (eq source :object))
-              (let* ((mv (make-instance 'bir:output))
-                     (ftm (make-instance 'bir:fixed-to-multiple
-                            :outputs (list mv))))
-                (bir:insert-instruction-after ftm instruction)
-                (bir:replace-uses mv out)
-                (setf (bir:inputs ftm) (list out))
-                t))
-             ((eq dest :object)
-              (assert (eq source :multiple-values))
-              (let* ((fx (make-instance 'bir:output))
-                     (mtf (make-instance 'bir:multiple-to-fixed
-                            :outputs (list fx))))
-                (bir:insert-instruction-after mtf instruction)
-                (bir:replace-uses fx out)
-                (setf (bir:inputs mtf) (list out))
-                t))
-             (t (error "BUG: impossible dest ~a for ~a" dest out)))))
-    ((typep instruction 'bir:catch)
-     (loop for eblock in (rest (bir:next instruction))
-           for starti = (bir:start eblock)
-           do (loop for phi in (bir:inputs eblock)
-                    when (eq (cc-bmir:rtype phi) :object)
-                      do (let* ((fx (make-instance 'bir:output))
-                                (mtf (make-instance 'bir:multiple-to-fixed
-                                       :outputs (list fx))))
-                           (bir:insert-instruction-before mtf starti)
-                           (bir:replace-uses fx phi)
-                           (setf (bir:inputs mtf) (list phi))))))))
+;;; Given a datum, determine what rtype its use requires.
+(defgeneric use-rtype (datum))
+;; Given a user (instruction) and a datum, determine the rtype required.
+(defgeneric %use-rtype (instruction datum))
+(defmethod %use-rtype ((inst bir:instruction) (datum bir:datum))
+  ;; Having this as a default is mildly dicey but should work: instructions
+  ;; that need multiple value inputs are a definite minority.
+  :object)
+(defmethod %use-rtype ((inst bir:mv-call) (datum bir:datum))
+  (if (member datum (rest (bir:inputs inst)))
+      :multiple-values :object))
+(defmethod %use-rtype ((inst bir:mv-local-call) (datum bir:datum))
+  (if (member datum (rest (bir:inputs inst)))
+      :multiple-values :object))
+(defmethod %use-rtype ((inst bir:returni) (datum bir:datum)) :multiple-values)
+(defmethod %use-rtype ((inst bir:values-save) (datum bir:datum))
+  :multiple-values)
+(defmethod %use-rtype ((inst bir:values-collect) (datum bir:datum))
+  :multiple-values)
+(defmethod %use-rtype ((inst bir:unwind) (datum bir:datum))
+  (error "BUG: transitive-rtype should make this impossible!"))
+(defmethod %use-rtype ((inst bir:jump) (datum bir:datum))
+  (error "BUG: transitive-rtype should make this impossible!"))
+;; FIXME: multiple-to-fixed will be removed
+(defmethod %use-rtype ((inst bir:multiple-to-fixed) (datum bir:datum))
+  :multiple-values)
+(defmethod %use-rtype ((inst bir:thei) (datum bir:datum))
+  ;; actual type tests, which need multiple values, should have been turned
+  ;; into mv calls by this point. but out of an abundance of caution,
+  (if (symbolp (bir:type-check-function inst))
+      (use-rtype (first (bir:outputs inst)))
+      :multiple-values))
+             
+;; Determine the rtype a datum needs to end up as by chasing transitive use.
+(defun transitive-rtype (datum)
+  (loop (let ((use (bir:use datum)))
+          (etypecase use
+            (null (return :object)) ; unused, doesn't matter
+            ((or bir:jump bir:unwind)
+             (setf datum (nth (position datum (bir:inputs use))
+                              (bir:outputs use))))
+            (bir:instruction (return (%use-rtype use datum)))))))
+(defmethod use-rtype ((datum bir:phi)) (transitive-rtype datum))
+(defmethod use-rtype ((datum bir:output)) (transitive-rtype datum))
+(defmethod use-rtype ((datum bir:argument)) (transitive-rtype datum))
 
-(defun insert-argument-ftm (argument starti)
-  (when (eq (cc-bmir:rtype argument) :multiple-values)
-    (let* ((mv (make-instance 'bir:output))
-           (ftm (make-instance 'bir:fixed-to-multiple
-                  :outputs (list mv))))
-      (bir:insert-instruction-before ftm starti)
-      (bir:replace-uses mv argument)
-      (setf (bir:inputs ftm) (list argument)))))
+;;; Given two rtypes, return the most preferable rtype.
+(defun min-rtype (rt1 rt2)
+  (ecase rt1
+    ((:object) :object)
+    ((:multiple-values) rt2)))
 
-(defun insert-value-coercion-into-function (function)
-  ;; Insert after instructions
-  (cleavir-bir:map-local-instructions #'insert-value-coercion function)
-  ;; Insert FTM after any arguments that need it
-  ;; (do this second so that we don't useless consider the mtf outputs)
-  (let ((starti (bir:start (bir:start function))))
-    (bir:map-lambda-list
-     (lambda (state item index)
-       (declare (ignore state index))
-       (cond ((not (listp item))
-              (insert-argument-ftm item starti))
-             ((= (length item) 2)
-              (insert-argument-ftm (first item) starti)
-              (insert-argument-ftm (second item) starti))
-             ((= (length item) 3)
-              (insert-argument-ftm (second item) starti)
-              (insert-argument-ftm (third item) starti))))
-     (bir:lambda-list function))))
+(defun assign-output-rtype (datum)
+  (let ((source (definition-rtype (bir:definition datum)))
+        (dest (use-rtype datum)))
+    (cond ((not dest) ; datum is unused
+           (change-class datum 'cc-bmir:output :rtype source)
+           source)
+          (t
+           (let ((m (min-rtype source dest)))
+             (change-class datum 'cc-bmir:output :rtype m)
+             m)))))
 
-(defun insert-value-coercion-into-module (module)
-  (bir:map-functions #'insert-value-coercion-into-function module))
+(defun phi-rtype (datum)
+  ;; PHIs are trickier. If the destination is single-value, the phi can be too.
+  ;; If not, then the phi could still be single-value, but only if EVERY
+  ;; definition is, and otherwise we need to use multiple values.
+  (let ((rt :object)
+        (dest (use-rtype datum)))
+    (ecase dest
+      ((:object) :object)
+      ((:multiple-values)
+       (cleavir-set:doset (def (bir:definitions datum) rt)
+         (etypecase def
+           ((or bir:jump bir:unwind)
+            (let ((in (nth (position datum (bir:outputs def)) (bir:inputs def))))
+              (maybe-assign-rtype in)
+              (ecase (cc-bmir:rtype in)
+                (:object)
+                (:multiple-values (setf rt :multiple-values)))))))))))
+
+(defun assign-phi-rtype (datum)
+  (change-class datum 'cc-bmir:phi :rtype (phi-rtype datum)))
+
+(defgeneric maybe-assign-rtype (datum))
+(defmethod maybe-assign-rtype ((datum cc-bmir:output)))
+(defmethod maybe-assign-rtype ((datum cc-bmir:phi)))
+(defmethod maybe-assign-rtype ((datum bir:variable)))
+(defmethod maybe-assign-rtype ((datum bir:argument)))
+(defmethod maybe-assign-rtype ((datum bir:load-time-value)))
+(defmethod maybe-assign-rtype ((datum bir:constant)))
+(defmethod maybe-assign-rtype ((datum bir:output))
+  (assign-output-rtype datum))
+(defmethod maybe-assign-rtype ((datum bir:phi))
+  (assign-phi-rtype datum))
+
+(defun assign-instruction-rtypes (inst)
+  (mapc #'maybe-assign-rtype (bir:outputs inst)))
+
+(defun assign-function-rtypes (function)
+  (bir:map-local-instructions #'assign-instruction-rtypes function))
+
+(defun assign-module-rtypes (module)
+  (bir:map-functions #'assign-function-rtypes module))
+
+(defun insert-mtf (after datum)
+  (let* ((fx (make-instance 'cc-bmir:output :rtype :object))
+         (mtf (make-instance 'bir:multiple-to-fixed :outputs (list fx))))
+    (bir:insert-instruction-after mtf after)
+    (bir:replace-uses fx datum)
+    (setf (bir:inputs mtf) (list datum)))
+  (values))
+
+(defun maybe-insert-mtf (after datum)
+  (ecase (cc-bmir:rtype datum)
+    ((:object) (insert-mtf after datum))
+    ((:multiple-values))))
+
+(defun insert-ftm (before datum)
+  (let* ((mv (make-instance 'cc-bmir:output :rtype :multiple-values))
+         (ftm (make-instance 'bir:fixed-to-multiple :outputs (list mv))))
+    (bir:insert-instruction-before ftm before)
+    (bir:replace-uses mv datum)
+    (setf (bir:inputs ftm) (list datum))
+    ftm))
+
+(defun maybe-insert-ftm (before datum)
+  (ecase (cc-bmir:rtype datum)
+    ((:object) (insert-ftm before datum))
+    ((:multiple-values))))
+
+(defun maybe-insert-ftms (before data)
+  (loop for dat in data do (maybe-insert-ftm before dat)))
+
+(defgeneric insert-values-coercion (instruction))
+
+(defun check-object-input (instruction input)
+  (ecase (cc-bmir:rtype input)
+    ((:object))
+    ((:multiple-values)
+     (error "BUG: MV input into non-MV instruction ~a" instruction))))
+
+(defun check-object-inputs (instruction
+                            &optional (inputs (bir:inputs instruction)))
+  (loop for inp in inputs do (check-object-input instruction inp)))
+
+(defmethod insert-values-coercion ((instruction bir:instruction))
+  ;; Default method: Assume we need all :objects and output an :object.)
+  (check-object-inputs instruction))
+
+;;; Make sure we don't insert things infinitely
+(defmethod insert-values-coercion ((instruction bir:multiple-to-fixed)))
+(defmethod insert-values-coercion ((instruction bir:fixed-to-multiple)))
+;;; Doesn't need to do anything, and might not have all :object inputs
+(defmethod insert-values-coercion ((instruction bir:thei)))
+
+(defun insert-jump-coercion (instruction)
+  (loop for inp in (bir:inputs instruction)
+        for outp in (bir:outputs instruction)
+        do (ecase (cc-bmir:rtype inp)
+             ((:object)
+              (ecase (cc-bmir:rtype outp)
+                ((:object))
+                ((:multiple-values) (insert-ftm instruction inp))))
+             ((:multiple-values)
+              (ecase (cc-bmir:rtype outp)
+                ((:object)
+                 (error "BUG: MV input into non-MV jump output in ~a"
+                        instruction))
+                ((:multiple-values)))))))
+
+(defmethod insert-values-coercion ((instruction bir:jump))
+  (insert-jump-coercion instruction))
+(defmethod insert-values-coercion ((instruction bir:unwind))
+  (insert-jump-coercion instruction))
+
+(defmethod insert-values-coercion ((instruction bir:call))
+  (check-object-inputs instruction)
+  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
+(defmethod insert-values-coercion ((instruction bir:mv-call))
+  (check-object-input instruction (first (bir:inputs instruction)))
+  (maybe-insert-ftms instruction (rest (bir:inputs instruction)))
+  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
+(defmethod insert-values-coercion ((instruction bir:local-call))
+  (check-object-inputs instruction (rest (bir:inputs instruction)))
+  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
+(defmethod insert-values-coercion ((instruction bir:mv-local-call))
+  (maybe-insert-ftms instruction (rest (bir:inputs instruction)))
+  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
+(defmethod insert-values-coercion ((instruction cc-bir:mv-foreign-call))
+  (check-object-inputs instruction)
+  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
+;;; FIXME: Make these tolerate single value inputs - improve efficiency
+(defmethod insert-values-coercion ((instruction bir:values-save))
+  (maybe-insert-ftms instruction (bir:inputs instruction))
+  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
+(defmethod insert-values-coercion ((instruction bir:values-collect))
+  (maybe-insert-ftms instruction (bir:inputs instruction))
+  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
+(defmethod insert-values-coercion ((instruction bir:returni))
+  (maybe-insert-ftms instruction (bir:inputs instruction)))
+
+(defun insert-values-coercion-into-function (function)
+  (cleavir-bir:map-local-instructions #'insert-values-coercion function))
+
+(defun insert-values-coercion-into-module (module)
+  (bir:map-functions #'insert-values-coercion-into-function module))

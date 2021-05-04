@@ -294,15 +294,16 @@
               for block in blocks
               for iblock in iblocks
               for destination-id = (get-destination-id iblock)
-              for phi = (when (and (= (length (bir:inputs iblock)) 1)
-                                   (eq (cc-bmir:rtype
-                                        (first (bir:inputs iblock)))
-                                       :multiple-values))
-                          (first (bir:inputs iblock)))
+              for phi = (and (= (length (bir:inputs iblock)) 1)
+                             (first (bir:inputs iblock)))
               ;; 1+ because we can't pass 0 to longjmp, as in unwind below.
               do (cmp:irc-add-case sw (%i32 (1+ destination-id)) block)
                  (cmp:irc-begin-block block)
-                 (when phi (phi-out (restore-multiple-value-0) phi block))
+                 (when phi
+                   (let ((mv (restore-multiple-value-0)))
+                     (ecase (cc-bmir:rtype phi)
+                       ((:object) (phi-out (cmp:irc-tmv-primary mv) phi block))
+                       ((:multiple-values) (phi-out mv phi block)))))
                  (cmp:irc-br succ))))))
 
 (defmethod translate-terminator ((instruction bir:catch) abi next)
@@ -325,11 +326,15 @@
   (let* ((cont (in (bir:catch instruction)))
          (inputs (bir:inputs instruction))
          (rv (first inputs))
+         ;; Force the return values into a tmv for transmission.
+         (rrv (when rv
+                (ecase (cc-bmir:rtype rv)
+                  ((:object) (cmp:irc-make-tmv (%size_t 1) (in rv)))
+                  ((:multiple-values) (in rv)))))
          (destination (bir:destination instruction))
          (destination-id (get-destination-id destination)))
     ;; Transmit values
-    (when rv
-      (save-multiple-value-0 (in rv)))
+    (when rv (save-multiple-value-0 rrv))
     ;; unwind
     (if (bir-transformations:simple-unwinding-p
          (bir:catch instruction))
@@ -567,10 +572,11 @@
 
 (defmethod translate-simple-instruction ((instruction bir:call) abi)
   (declare (ignore abi))
-  (let ((inputs (bir:inputs instruction))
-        (output (first (bir:outputs instruction))))
+  (let* ((inputs (bir:inputs instruction))
+         (iinputs (mapcar #'in inputs))
+         (output (first (bir:outputs instruction))))
     (out (closure-call-or-invoke
-          (in (first inputs)) (mapcar #'in (rest inputs)))
+          (first iinputs) (rest iinputs))
          output)))
 
 (defun general-mv-local-call (callee-info tmv)
@@ -733,14 +739,21 @@
   (let* ((inputs (bir:inputs instruction))
          (output (first (bir:outputs instruction)))
          (ninputs (length inputs)))
-    (loop for i from 1 below ninputs
-          do (cmp:irc-store (in (elt inputs i))
-                            (return-value-elt i)))
-    (out (cmp:irc-make-tmv (%size_t ninputs)
-                           (if (zerop ninputs)
-                               (%nil)
-                               (in (first inputs))))
-         output)))
+    (cond
+      ((eq (cc-bmir:rtype output) :object)
+       ;; Sort of a special case here to avoid inserting ftm/mtf indefinitely
+       ;; in bir-to-bmir: if the output has object rtype, just output the first
+       ;; input untouched.
+       (out (if (zerop ninputs) (%nil) (in (first inputs))) output))
+      (t
+       (loop for i from 1 below ninputs
+             do (cmp:irc-store (in (elt inputs i))
+                               (return-value-elt i)))
+       (out (cmp:irc-make-tmv (%size_t ninputs)
+                              (if (zerop ninputs)
+                                  (%nil)
+                                  (in (first inputs))))
+            output)))))
 
 (defmethod translate-simple-instruction
     ((instr bir:multiple-to-fixed) (abi abi-x86-64))
@@ -1366,6 +1379,7 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir-transformations (module system)
   (ver module "start")
+  (when *dis* (cleavir-bir-disassembler:display module))
   (bir-transformations:module-eliminate-catches module)
   (ver module "elim catches")
   (bir-transformations:find-module-local-calls module)
@@ -1377,7 +1391,8 @@ COMPILE-FILE will use the default *clasp-env*."
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   (bir-transformations:module-generate-type-checks module)
-  (cc-bir-to-bmir:insert-value-coercion-into-module module)
+  (cc-bir-to-bmir:assign-module-rtypes module)
+  (cc-bir-to-bmir:insert-values-coercion-into-module module)
   ;; These should happen last since they are like "post passes" which
   ;; do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.

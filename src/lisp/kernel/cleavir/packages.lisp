@@ -102,7 +102,7 @@
   (:local-nicknames (#:bir #:cleavir-bir))
   (:export #:reduce-module-typeqs)
   (:export #:reduce-module-primops)
-  (:export #:insert-value-coercion-into-module))
+  (:export #:assign-module-rtypes #:insert-values-coercion-into-module))
 
 (defpackage #:clasp-cleavir-bmir
   (:nicknames #:cc-bmir)
@@ -111,4 +111,4 @@
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store #:cas)
-  (:export #:rtype))
+  (:export #:datum #:output #:phi #:rtype))
