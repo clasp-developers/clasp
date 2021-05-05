@@ -944,6 +944,7 @@
          (first (bir:outputs inst)))))
 
 (defun values-collect-multi (inst)
+  ;; First, assert that there's only one input that isn't a values-save.
   (loop with seen-non-save = nil
         for input in (bir:inputs inst)
         for outp = (typep input 'bir:output)
@@ -952,58 +953,44 @@
           do (if seen-non-save
                  (error "BUG: Can only have one non-save-values input!")
                  (setf seen-non-save t)))
-  (let* (;; FIXME: Ugly code. Not sure how to improve
-         var-in
-         (sub-n-values
-           (loop for input in (bir:inputs inst)
-                 for outp = (typep input 'bir:output)
-                 for inst = (and outp (bir:definition input))
-                 for n = (%size_t 0)
-                 ;; thisn from previous iteration
-                   then (cmp:irc-add n thisn "n-partial-values")
-                 for thisn = (if (typep inst 'bir:values-save)
-                                 (second (dynenv-storage inst))
-                                 (progn
-                                   (setf var-in (in input))
-                                   (cmp:irc-tmv-nret var-in)))
+  (let* (;; Collect the form of each input.
+         ;; Each datum is (symbol nvalues extra).
+         ;; For saved values, the extra is the storage for it. For the current
+         ;; values the extra is the primary value (since it's stored separately)
+         (data (loop for input in (bir:inputs inst)
+                     for outputp = (typep input 'bir:output)
+                     for inst = (and outputp (bir:definition input))
+                     collect (if (typep inst 'bir:values-save)
+                                 (list* :saved (rest (dynenv-storage inst)))
+                                 (let ((i (in input)))
+                                   (list :variable
+                                         (cmp:irc-tmv-nret i)
+                                         (cmp:irc-tmv-primary i))))))
+         ;; Collect partial sums of the number of values.
+         (partial-sums
+           (loop for (_1 size _2) in data
+                 for n = size then (cmp:irc-add n size)
                  collect n))
-         (n-total-values
-           (cmp:irc-add
-            (first (last sub-n-values))
-            (let* ((input (first (last (bir:inputs inst))))
-                   (outp (typep input 'bir:output))
-                   (inst (and outp (bir:definition input))))
-              (if (typep inst 'bir:values-save)
-                  (second (dynenv-storage inst))
-                  (progn
-                    (setf var-in (in input))
-                    (cmp:irc-tmv-nret var-in))))
-            "n-total-values")))
-    (let ((store (cmp:alloca-temp-values n-total-values)))
-      (loop for input in (bir:inputs inst)
-            for outp = (typep input 'bir:output)
-            for inst = (and outp (bir:definition input))
-            for sub-n-value in sub-n-values
-            for dest = (cmp:irc-gep-variable store (list sub-n-value))
-            if (typep inst 'bir:values-save)
-              do (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
-                                  (list
-                                   (cmp:irc-bit-cast dest cmp:%i8*%)
-                                   (cmp:irc-bit-cast
-                                    (third (dynenv-storage inst))
-                                    cmp:%i8*%)
-                                   ;; Multiply by sizeof(T_O*)
-                                   (cmp::irc-shl
-                                    (second (dynenv-storage inst))
-                                    3 :nuw t)
-                                   (%i1 0)))
-            else
-              do (%intrinsic-call "cc_save_values"
-                                  (list
-                                   (cmp:irc-tmv-nret var-in)
-                                   (cmp:irc-tmv-primary var-in)
-                                   dest)))
-      (%intrinsic-call "cc_load_values" (list n-total-values store)))))
+         (n-total-values (first (last partial-sums)))
+         ;; Allocate storage for the combined values vector.
+         (store (cmp:alloca-temp-values n-total-values)))
+    ;; Generate code to copy all the values into the temp storage.
+    (loop for (key size extra) in data
+          for startn = (%size_t 0) then finishn
+          for finishn in partial-sums
+          for dest = (cmp:irc-gep-variable store (list startn))
+          do (ecase key
+               ((:saved)
+                (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
+                                 (list (cmp:irc-bit-cast dest cmp:%i8*%)
+                                       (cmp:irc-bit-cast extra cmp:%i8*%)
+                                       ;; Multiply by sizeof(T_O*)
+                                       (cmp::irc-shl size 3 :nuw t)
+                                       (%i1 0))))
+               ((:variable)
+                 (%intrinsic-call "cc_save_values" (list size extra dest)))))
+    ;; Finally, load the temp storage into the regular values vector.
+    (%intrinsic-call "cc_load_values" (list n-total-values store))))
 
 (defmethod translate-simple-instruction ((inst bir:values-collect) abi)
   (declare (ignore abi))
