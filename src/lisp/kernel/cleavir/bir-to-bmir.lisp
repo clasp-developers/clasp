@@ -100,8 +100,18 @@
 (defun reduce-module-primops (module)
   (cleavir-set:mapset nil #'reduce-primops (bir:functions module)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-
+;;; Representation types ("rtypes")
+;;;
+;;; An rtype describes how a value or values is represented in the runtime.
+;;; So far the possible rtypes are :object, meaning one T_O*, and
+;;; :multiple-values, meaning several T_O*s stored in the thread local multiple
+;;; values vector. In the future there will probably be rtypes for unboxed
+;;; values as well as fixed numbers of values.
+;;; NIL is a pseudo-rtype indicating a datum's use has no preference for how it
+;;; is represented, or if the datum is simply unused. A datum's definitions
+;;; must necessarily have a preferred rtype, i.e. NIL is not permitted there.
 
 ;; Given an instruction, determine what rtype it outputs.
 (defgeneric definition-rtype (instruction))
@@ -168,33 +178,37 @@
 ;;; Given two rtypes, return the most preferable rtype.
 (defun min-rtype (rt1 rt2)
   (ecase rt1
-    ((:object) :object)
-    ((:multiple-values) rt2)))
+    ((:object)
+     (assert (member rt2 '(nil :object :multiple-values)))
+     :object)
+    ((:multiple-values)
+     (ecase rt2
+       ((nil) :object)
+       ((:object :multiple-values) rt2)))
+    ((nil)
+     (assert (member rt2 '(:object :multiple-values)))
+     :object)))
 
 (defun assign-output-rtype (datum)
-  (let ((source (definition-rtype (bir:definition datum)))
-        (dest (use-rtype datum)))
-    (cond ((not dest) ; datum is unused
-           (change-class datum 'cc-bmir:output :rtype source)
-           source)
-          (t
-           (let ((m (min-rtype source dest)))
-             (change-class datum 'cc-bmir:output :rtype m)
-             m)))))
+  (let* ((source (definition-rtype (bir:definition datum)))
+         (dest (use-rtype datum))
+         (rtype (min-rtype source dest)))
+    (change-class datum 'cc-bmir:output :rtype rtype)
+    rtype))
 
 (defun phi-rtype (datum)
   ;; PHIs are trickier. If the destination is single-value, the phi can be too.
   ;; If not, then the phi could still be single-value, but only if EVERY
   ;; definition is, and otherwise we need to use multiple values.
-  (let ((rt :object)
-        (dest (use-rtype datum)))
+  (let ((rt :object) (dest (use-rtype datum)))
     (ecase dest
-      ((:object) :object)
+      ((:object nil) :object)
       ((:multiple-values)
        (cleavir-set:doset (def (bir:definitions datum) rt)
          (etypecase def
            ((or bir:jump bir:unwind)
-            (let ((in (nth (position datum (bir:outputs def)) (bir:inputs def))))
+            (let ((in (nth (position datum (bir:outputs def))
+                           (bir:inputs def))))
               (maybe-assign-rtype in)
               (ecase (cc-bmir:rtype in)
                 (:object)
