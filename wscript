@@ -360,9 +360,9 @@ def analyze_test(cfg):
     output_file = "source-dir:build;clasp_gc_test.cc"
     run_search = '(run-search "%s")' % output_file
     run_program_echo("build/boehm/iclasp-boehm",
-                     "-N", "-D",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer-test.lisp",
+                     "--eval", "(defparameter *pattern* \"unixfsys.cc\")",
                      "--eval", run_search,
                      "--eval",    "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")

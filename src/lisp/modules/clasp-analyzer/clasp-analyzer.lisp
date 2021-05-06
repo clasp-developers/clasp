@@ -147,6 +147,7 @@
 (defstruct stamp
   key
   value%
+  wtag
   root-cclass
   cclass
   species ;; can be nil
@@ -251,16 +252,16 @@ This could change the value of stamps for specific classes - but that would brea
 ;;;  (format t "Assigning stamp-value for class ~s~%" (class-key% class))
   (cond ((member (cclass-key cclass) '("core::Instance_O" "core::FuncallableInstance_O" "clbind::ClassRep_O") :test #'string=)
 ;;;         (format t "---> stamp in rack~%")
-         (logior (ash stamp-value *wtag-shift*) *rack-wtag*))
+         (values (logior (ash stamp-value *wtag-shift*) *rack-wtag*) *rack-wtag*))
         ((member (cclass-key cclass) '("core::WrappedPointer_O") :test #'string=)
 ;;;         (format t "---> stamp in wrapped~%")
-         (logior (ash stamp-value *wtag-shift*) *wrapped-wtag*))
+         (values (logior (ash stamp-value *wtag-shift*) *wrapped-wtag*) *wrapped-wtag*))
         ((member (cclass-key cclass) '("core::DerivableCxxObject_O") :test #'string=)
 ;;;         (format t "---> stamp in derivable~%")
-         (logior (ash stamp-value *wtag-shift*) *derivable-wtag*))
+         (values (logior (ash stamp-value *wtag-shift*) *derivable-wtag*) *derivable-wtag*))
         (t
 ;;;         (format t "---> stamp in header~%")
-         (logior (ash stamp-value *wtag-shift*) *header-wtag*))))
+         (values (logior (ash stamp-value *wtag-shift*) *header-wtag*) *header-wtag*))))
 
 (defun assign-stamp-value (analysis stamp operation)
   (let ((stamp-value (stamp-value% stamp))
@@ -354,17 +355,19 @@ This could change the value of stamps for specific classes - but that would brea
 
 (defun traverse-inheritance-tree (name analysis operation root-cclass assign-stamp-value-function)
   (unless  (member assign-stamp-value-function '(assign-stamp-value no-stamp-value))
-          (error "bad assign-stamp-function"))
+    (error "bad assign-stamp-function"))
   (let* ((stamp (let ((stamp (gethash name (analysis-stamps analysis))))
                   (unless stamp
                     (error "Could not find stamp for ~a" name))
-                  stamp))
-         (stamp-value (funcall assign-stamp-value-function analysis stamp operation)))
-    (setf (stamp-value% stamp) stamp-value)
-    (setf (stamp-root-cclass stamp) root-cclass)
-    (setf (stamp-in-hierarchy stamp) t)
-    (dolist (child (gethash stamp (analysis-stamp-children analysis)))
-      (traverse-inheritance-tree child analysis operation root-cclass assign-stamp-value-function))))
+                  stamp)))
+    (multiple-value-bind (stamp-value stamp-wtag)
+        (funcall assign-stamp-value-function analysis stamp operation)
+      (setf (stamp-value% stamp) stamp-value)
+      (setf (stamp-wtag stamp) stamp-wtag)
+      (setf (stamp-root-cclass stamp) root-cclass)
+      (setf (stamp-in-hierarchy stamp) t)
+      (dolist (child (gethash stamp (analysis-stamp-children analysis)))
+        (traverse-inheritance-tree child analysis operation root-cclass assign-stamp-value-function)))))
 
 (defun children-of-class-named (name analysis)
   (let ((stamp (gethash name (analysis-stamps analysis))))
@@ -770,86 +773,120 @@ to expose."
         when (typep field-ctype 'gcbitunitarray-moveable-ctype)
           return field-ctype))
 
-(defun codegen-variable-part (stream variable-fields analysis)
-  (let* ((array (offset-field-with-name variable-fields "_Data"))
-         (length (or (offset-field-with-name variable-fields "_Length")
-                     (offset-field-with-name variable-fields "_MaybeSignedLength")
-                     (offset-field-with-name variable-fields "_Capacity")))
-         (end (or (offset-field-with-name variable-fields "_End") length))
-         (gcbitunit-ctype (find-gcbitunit-array-moveable-ctype array)))
-    (unless length
-      (error "Could not find _Length or _MaybeSignedLength in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
-    (let ((*print-pretty* nil))
-      (if gcbitunit-ctype
-          (format stream " {  variable_bit_array0, ~a, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
-                  (gc-template-argument-integral-value (find 0 (class-template-specialization-ctype-arguments gcbitunit-ctype) :test #'eql :key #'gc-template-argument-index))
-                  (offset-base-ctype array)
-                  (layout-offset-field-names array)
-                  (layout-offset-field-names array))          
-          (format stream " {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
-                  (offset-base-ctype array)
-                  (layout-offset-field-names array)
-                  (layout-offset-field-names array)))
-      (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, NULL },~%"
-              (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
-              (offset-base-ctype array)
-              (layout-offset-field-names end)
-              (offset-base-ctype array)
-              (layout-offset-field-names length))
-      (dolist (one (elements array))
-        (let* ((field-names (layout-offset-field-names one))
-               (ctype-key (ctype-key (base one)))
-               (atomic-smart-ptr-p (let* ((atomic-smart-ptr-string "std::atomic<gctools::smart_ptr<")
-                                          (atomic-smart-ptr-string-length #.(length "std::atomic<gctools::smart_ptr<")))
-                                     (string= atomic-smart-ptr-string ctype-key :start2 0 :end2 atomic-smart-ptr-string-length)))) 
-          (format stream "/* (base one) -> ~s~%*/~%" (base one))
-          (format stream "/* (ctype-key (base one)) -> ~s~%*/~%" (ctype-key (base one)))
-          (format stream "// atomic-smart-ptr-p -> ~s~%" atomic-smart-ptr-p)
-          (cond
-            (atomic-smart-ptr-p
-             (let ((*print-pretty* nil))
-               (format stream "// one -> ~s~%" one))
-             (format stream "{    variable_field, ~a, sizeof(~a), 0, 0, \"only\" },~%"
-                     (offset-type-c++-identifier one)
-                     (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
-                     ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                     #+(or)(ctype-key (base one))))
-            (field-names
-             (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-                    (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
-                    (is-std-atomic (is-atomic one stream))
-                    (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
-                    (expose-it (and #+(or)fixable good-name))
-                    (*print-pretty* nil))
-               (let ((idx 0))
-                 (dolist (iv (fields one))
-                   (format stream "//     field: ~s (instance-field-access iv) -> ~s  (instance-field-ctype iv) -> ~s~%" (instance-field-as-string iv (= 0 idx)) (instance-field-access iv) (instance-field-ctype iv))
-                   (incf idx)))
-               (format stream "~a    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
-                       (if expose-it "" "// not-exposed-yet ")
+(defun codegen-variable-part (dest variable-fields analysis)
+  (let ((stream (destination-helper-stream dest)))
+    (let* ((array (offset-field-with-name variable-fields "_Data"))
+           (length (or (offset-field-with-name variable-fields "_Length")
+                       (offset-field-with-name variable-fields "_MaybeSignedLength")
+                       (offset-field-with-name variable-fields "_Capacity")))
+           (end (or (offset-field-with-name variable-fields "_End") length))
+           (gcbitunit-ctype (find-gcbitunit-array-moveable-ctype array)))
+      (unless length
+        (error "Could not find _Length or _MaybeSignedLength in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
+      (let ((*print-pretty* nil))
+        (if gcbitunit-ctype
+            (progn
+              (format stream " {  variable_bit_array0, ~a, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
+                      (gc-template-argument-integral-value (find 0 (class-template-specialization-ctype-arguments gcbitunit-ctype) :test #'eql :key #'gc-template-argument-index))
+                      (offset-base-ctype array)
+                      (layout-offset-field-names array)
+                      (layout-offset-field-names array))
+              (format (destination-description-stream dest)
+                      " (variable-bit-array0 \"~a\" \"~a\" \"~{~a~}\" )~%"
+                      (gc-template-argument-integral-value (find 0 (class-template-specialization-ctype-arguments gcbitunit-ctype) :test #'eql :key #'gc-template-argument-index))
+                      (offset-base-ctype array)
+                      (layout-offset-field-names array))
+              )
+            (progn
+              (format stream " {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
+                      (offset-base-ctype array)
+                      (layout-offset-field-names array)
+                      (layout-offset-field-names array))
+              (format (destination-description-stream dest)
+                      " (variable-array0 \"~a\" \"~{~a~}\" )~%"
+                      (offset-base-ctype array)
+                      (layout-offset-field-names array))
+              ))
+        (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, NULL },~%"
+                (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                (offset-base-ctype array)
+                (layout-offset-field-names end)
+                (offset-base-ctype array)
+                (layout-offset-field-names length))
+        (format (destination-description-stream dest)
+                " (variable-capacity \"~a\" \"~a\" \"~{~a~}\")~%"
+                (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                (offset-base-ctype array)
+                (layout-offset-field-names end))
+        (dolist (one (elements array))
+          (let* ((field-names (layout-offset-field-names one))
+                 (ctype-key (ctype-key (base one)))
+                 (atomic-smart-ptr-p (let* ((atomic-smart-ptr-string "std::atomic<gctools::smart_ptr<")
+                                            (atomic-smart-ptr-string-length #.(length "std::atomic<gctools::smart_ptr<")))
+                                       (string= atomic-smart-ptr-string ctype-key :start2 0 :end2 atomic-smart-ptr-string-length)))) 
+            (format stream "/* (base one) -> ~s~%*/~%" (base one))
+            (format stream "/* (ctype-key (base one)) -> ~s~%*/~%" (ctype-key (base one)))
+            (format stream "// atomic-smart-ptr-p -> ~s~%" atomic-smart-ptr-p)
+            (cond
+              (atomic-smart-ptr-p
+               (let ((*print-pretty* nil))
+                 (format stream "// one -> ~s~%" one))
+               (format stream "{    variable_field, ~a, sizeof(~a), 0, 0, \"only\" },~%"
                        (offset-type-c++-identifier one)
-                       (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                       (ctype-key (base one))
-                       (layout-offset-field-names one :drop-last is-std-atomic)
-                       (layout-offset-field-names one :drop-last is-std-atomic)
-                       is-std-atomic
-                       public
-                       fixable
-                       good-name)))
-            (t (progn
-                 (let ((*print-pretty* nil))
-                   (format stream "// one -> ~s~%" one))
-                 (format stream "{    variable_field, ~a, sizeof(~a), 0, 0, \"only\" },~%"
+                       (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                       )
+               (format (destination-description-stream dest)
+                       "  (variable-field, \"~a\" \"~a\" \"0\" \"0\" \"only\" )~%"
+                       (offset-type-c++-identifier one)
+                       (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                       )
+               )
+              (field-names
+               (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
+                      (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
+                      (is-std-atomic (is-atomic one stream))
+                      (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
+                      (expose-it (and #+(or)fixable good-name))
+                      (*print-pretty* nil))
+                 (let ((idx 0))
+                   (dolist (iv (fields one))
+                     (format stream "//     field: ~s (instance-field-access iv) -> ~s  (instance-field-ctype iv) -> ~s~%" (instance-field-as-string iv (= 0 idx)) (instance-field-access iv) (instance-field-ctype iv))
+                     (incf idx)))
+                 (format stream "~a    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
+                         (if expose-it "" "// not-exposed-yet ")
                          (offset-type-c++-identifier one)
-                         (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
-                         ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                         #+(or)(ctype-key (base one)))))))))))
+                         (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                         (ctype-key (base one))
+                         (layout-offset-field-names one :drop-last is-std-atomic)
+                         (layout-offset-field-names one :drop-last is-std-atomic)
+                         is-std-atomic
+                         public
+                         fixable
+                         good-name)
+                 (format (destination-description-stream dest)
+                         "~a    (variable-field \"~a\" \"~a\" \"~a\" \"~{~a~}\", 0, \"~{~a~}\" }~%"
+                         (if expose-it "" ";;; not-exposed-yet ")
+                         (offset-type-c++-identifier one)
+                         (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                         (ctype-key (base one))
+                         (layout-offset-field-names one :drop-last is-std-atomic)
+                         (layout-offset-field-names one :drop-last is-std-atomic))
+                 ))
+              (t (progn
+                   (let ((*print-pretty* nil))
+                     (format stream "// one -> ~s~%" one))
+                   (format stream "{    variable_field, ~a, sizeof(~a), 0, 0, \"only\" },~%"
+                           (offset-type-c++-identifier one)
+                           (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                           ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                           #+(or)(ctype-key (base one)))
+                   (format (destination-description-stream dest)
+                           "  (variable-field \"~a\" \"~a\" \"0\" \"0\" \"only\" )~%"
+                           (offset-type-c++-identifier one)
+                           (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                           )
+                   )))))))))
 
-
-(defun expose-fixed-field-type (type-name)
-  (if (member type-name '("ctype_int" "ctype_unsigned_int" "ctype_unsigned_long" "ctype__Bool" "ctype_long") :test #'string=)
-      nil
-      t))
 
 (defun is-atomic (one &optional (stream *standard-output*))
   "Return T if the field in ONE is a std::atomic<Foo> type."
@@ -862,38 +899,45 @@ to expose."
     is-std-atomic)
   )
 
-(defun codegen-full (stream layout analysis)
-  (dolist (one (fixed-part layout))
-    (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-           (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
-           (is-std-atomic (is-atomic one stream))
-           (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
-           (expose-it (and #+(or)fixable
-                           good-name
-                           #+(or)(expose-fixed-field-type (offset-type-c++-identifier one))))
-           (base (base one)) ;; The outermost class that contains this offset
-           (*print-pretty* nil))
-      (let ((idx 0))
-        (dolist (iv (fields one))
-          (format stream "//      field: ~s (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%"
-                  (instance-field-as-string iv (= 0 idx))
-                  (instance-field-access iv)
-                  (instance-field-ctype iv))
-          (incf idx)))
-      (format stream "~a {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
-              (if expose-it   "" "// not-exposing")
-              (offset-type-c++-identifier one)
-              (or (offset-ctype one) "UnknownType")
-              (offset-base-ctype one)
-              (layout-offset-field-names one :drop-last is-std-atomic)
-              (layout-offset-field-names one :drop-last is-std-atomic)
-              is-std-atomic
-              public
-              fixable
-              good-name)))
-  (let* ((variable-part (variable-part layout)))
-    (when variable-part
-      (codegen-variable-part stream (fixed-fields variable-part) analysis))))
+(defun codegen-full (dest layout analysis)
+  (let ((stream (destination-helper-stream dest)))
+    (dolist (one (fixed-part layout))
+      (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
+             (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
+             (is-std-atomic (is-atomic one stream))
+             (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
+             (expose-it (and #+(or)fixable
+                             good-name))
+             (base (base one)) ;; The outermost class that contains this offset
+             (*print-pretty* nil))
+        (let ((idx 0))
+          (dolist (iv (fields one))
+            (format stream "//      field: ~s (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%"
+                    (instance-field-as-string iv (= 0 idx))
+                    (instance-field-access iv)
+                    (instance-field-ctype iv))
+            (incf idx)))
+        (format stream "~a {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
+                (if expose-it   "" "// not-exposing")
+                (offset-type-c++-identifier one)
+                (or (offset-ctype one) "UnknownType")
+                (offset-base-ctype one)
+                (layout-offset-field-names one :drop-last is-std-atomic)
+                (layout-offset-field-names one :drop-last is-std-atomic)
+                is-std-atomic
+                public
+                fixable
+                good-name)
+        (format (destination-description-stream dest) "~a (fixed-field \"~a\" \"~a\" \"~a\" \"~{~a~}\" )~%"
+                (if expose-it   "" ";;; not-exposing")
+                (offset-type-c++-identifier one)
+                (or (offset-ctype one) "UnknownType")
+                (offset-base-ctype one)
+                (layout-offset-field-names one :drop-last is-std-atomic))
+        ))
+    (let* ((variable-part (variable-part layout)))
+      (when variable-part
+        (codegen-variable-part dest (fixed-fields variable-part) analysis)))))
 
 (defun definition-data-as-string (definition-data)
   "Convert (:foo :bar) -> FOO | BAR"
@@ -901,22 +945,53 @@ to expose."
       (format nil "~{~a~^ | ~}" (mapcar (lambda (x) (string-upcase (substitute #\_ #\- (string x)))) definition-data))
       "0"))
 
-(defun codegen-lisp-layout (stream stamp key layout definition-data analysis)
-  (format stream "{ class_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%" stamp key (definition-data-as-string definition-data) key )
-  (codegen-full stream layout analysis))
+(defun codegen-lisp-layout (dest stamp key layout definition-data analysis)
+  (let ((stream (destination-helper-stream dest)))
+    (format stream "{ class_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%" (get-stamp-name stamp) key (definition-data-as-string definition-data) key )
+    (format (destination-description-stream dest) "(class-kind ~{ \"~a\"~} )~%"
+            (list (get-stamp-name stamp)
+                  key
+                  (first (cclass-bases (stamp-cclass stamp)))
+                  (stamp-root-cclass stamp)
+                  (definition-data-as-string definition-data)))
+    (codegen-full dest layout analysis)))
 
-(defun codegen-container-layout (stream stamp key layout definition-data analysis)
-  (format stream "{ container_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%" stamp key (definition-data-as-string definition-data) key )
-  (codegen-variable-part stream (fixed-part layout) analysis))
+(defun codegen-container-layout (dest stamp key layout definition-data analysis)
+  (let ((stream (destination-helper-stream dest)))
+    (format stream "{ container_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%" (get-stamp-name stamp) key (definition-data-as-string definition-data) key )
+    (format (destination-description-stream dest) "(container-kind ~{ \"~a\"~} )~%"
+            (list (get-stamp-name stamp)
+                  key
+                  (first (cclass-bases (stamp-cclass stamp)))
+                  (stamp-root-cclass stamp)
+                  (definition-data-as-string definition-data)))
+    (codegen-variable-part dest (fixed-part layout) analysis)))
 
-(defun codegen-bitunit-container-layout (stream stamp key layout definition-data analysis)
-  (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, ~a, \"~a\" },~%" (get-stamp-name stamp) key (species-bitwidth (stamp-species stamp)) (definition-data-as-string definition-data) key )
-  ;; There is no fixed part for bitunits
-  (codegen-variable-part stream (fixed-part layout) analysis))
+(defun codegen-bitunit-container-layout (dest stamp key layout definition-data analysis)
+  (let ((stream (destination-helper-stream dest)))
+    (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, ~a, \"~a\" },~%" (get-stamp-name stamp) key (species-bitwidth (stamp-species stamp)) (definition-data-as-string definition-data) key )
+    (format (destination-description-stream dest) "(bitunit-container-kind ~{ \"~a\"~} )~%"
+            (list
+             (get-stamp-name stamp)
+             key
+             (first (cclass-bases (stamp-cclass stamp)))
+             (stamp-root-cclass stamp)
+             (species-bitwidth (stamp-species stamp))
+             (definition-data-as-string definition-data)))
+    ;; There is no fixed part for bitunits
+    (codegen-variable-part dest (fixed-part layout) analysis)))
 
-(defun codegen-templated-layout (stream stamp key layout definition-data analysis)
-  (format stream "{ templated_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%" stamp key (definition-data-as-string definition-data) key )
-  (codegen-full stream layout analysis))
+(defun codegen-templated-layout (dest stamp key layout definition-data analysis)
+  (let ((stream (destination-helper-stream dest)))
+    (format stream "{ templated_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%"
+            (get-stamp-name stamp) key (definition-data-as-string definition-data) key )
+    (format (destination-description-stream dest) "(templated-kind ~{ \"~a\"~} )~%"
+            (list (get-stamp-name stamp)
+                  key
+                  (first (cclass-bases (stamp-cclass stamp)))
+                  (stamp-root-cclass stamp)
+                  (definition-data-as-string definition-data) ))
+    (codegen-full dest layout analysis)))
 
 
 (defgeneric linearize-class-layout-impl (x base analysis)
@@ -1057,7 +1132,7 @@ to expose to C++.
                            :offset-type x))))
 
 (defmethod linearize-class-layout-impl ((x dont-expose-ctype) base analysis)
-  (list (make-instance 'dont-expose-offset :base base :offset-type (gc-template-argument-ctype (first (dont-expose-ctype-argument x))))))
+  nil) ;;; (list (make-instance 'dont-expose-offset :base base :offset-type (gc-template-argument-ctype (first (dont-expose-ctype-argument x))))))
 
 (defmethod linearize-class-layout-impl ((x dont-analyze-ctype) base analysis)
   (list (make-instance 'dont-analyze-offset :base base :offset-type (gc-template-argument-ctype (first (dont-analyze-ctype-argument x))))))
@@ -1295,6 +1370,7 @@ can be saved and reloaded within the project for later analysis"
     (case (type-of decl)
       (cast:class-template-specialization-decl
        (let ((args (cast:get-template-args decl)))
+         (format t "Looking at decl: ~s~%" decl)
          (cond
            ((and (string= name "atomic")
                  (let* ((arg (cast:template-argument-list-get args 0))
@@ -1365,9 +1441,10 @@ can be saved and reloaded within the project for later analysis"
             (make-basic-string-ctype :key decl-key :name name))
            ((string= name "unique_ptr")
             (make-unique-ptr-ctype :key decl-key :name name :arguments (classify-template-args decl)))
-           ((string= name "dont_expose")
-            (format t "dont_expose type: ~a~%" decl-key)
-            (make-dont-expose-ctype :key decl-key :name name :argument (classify-template-args decl)))
+           ((search name "dont_expose")
+            (let ((template-args (classify-template-args decl)))
+              (format t "dont_expose type: ~a ~a ~a~%" decl-key name template-args)
+              (make-dont-expose-ctype :key decl-key :name name :argument (classify-template-args decl))))
            ((string= name "dont_analyze")
             (format t "dont_analyze type: ~a~%" decl-key)
             (make-dont-analyze-ctype :key decl-key :name name :argument (classify-template-args decl)))
@@ -2511,6 +2588,7 @@ so that they don't have to be constantly recalculated"
 (defstruct destination
   stream
   (helper-stream (make-string-output-stream))
+  description-stream
   table-name
   label-list
   label-prefix )
@@ -2572,7 +2650,7 @@ so that they don't have to be constantly recalculated"
       (let* ((class-node (gethash key (project-classes (analysis-project anal))))
              (layout (class-layout class-node anal))
              (definition-data (cclass-definition-data class-node)))
-        (codegen-lisp-layout fh stamp-name key layout definition-data anal)))))
+        (codegen-lisp-layout dest stamp key layout definition-data anal)))))
 
 (defun dumper-for-lispallocs (dest stamp anal)
   (assert (simple-stamp-p stamp))
@@ -2630,7 +2708,7 @@ so that they don't have to be constantly recalculated"
         (let* ((class-node (gethash key (project-classes (analysis-project anal))))
                (layout (class-layout class-node anal))
                (definition-data (cclass-definition-data class-node))                       )
-          (codegen-templated-layout fh stamp-name key layout definition-data anal))
+          (codegen-templated-layout dest stamp key layout definition-data anal))
         (progn
           #+(or)(format fh "{ templated_class_kind, ~d, ~s },~%" stamp-name key)
           #+(or)(format fh "{ templated_class_jump_table_index, ~d, 0, 0, \"\" },~%" jti))
@@ -2691,7 +2769,7 @@ so that they don't have to be constantly recalculated"
             (let* ((class-node (gethash key (project-classes (analysis-project anal))))
                    (layout (class-layout class-node anal))
                    (definition-data (cclass-definition-data class-node)))
-              (codegen-container-layout fh stamp-name key layout definition-data anal)))))))
+              (codegen-container-layout dest stamp key layout definition-data anal)))))))
 
 
 (defun dumper-for-gccontainer (dest stamp anal)
@@ -2770,7 +2848,7 @@ so that they don't have to be constantly recalculated"
       (let* ((class-node (gethash key (project-classes (analysis-project anal))))
              (layout (class-layout class-node anal))
              (definition-data (cclass-definition-data class-node)))
-        (codegen-container-layout fh stamp-name key layout definition-data anal)))))
+        (codegen-container-layout dest stamp-name key layout definition-data anal)))))
 
 (defun dumper-for-gcstring (dest stamp anal)
   (check-type stamp simple-stamp)
@@ -2842,7 +2920,7 @@ so that they don't have to be constantly recalculated"
       (let* ((class-node (gethash key (project-classes (analysis-project anal))))
              (layout (class-layout class-node anal))
              (definition-data (cclass-definition-data class-node)))
-        (codegen-bitunit-container-layout fh stamp key layout definition-data anal)))))
+        (codegen-bitunit-container-layout dest stamp key layout definition-data anal)))))
 
 (defun dumper-for-gcbitunit (dest stamp anal)
   (check-type stamp simple-stamp)
@@ -3142,22 +3220,6 @@ Otherwise return nil."
         (return-from field-with-name field))))
   nil)
 
-(defun code-for-class-layout (key cclass-layout project &optional (stream t))
-  (dolist (instance-var (fixed-part cclass-layout))
-    (format stream "~a,~%" (field-data key instance-var "fixed_field_fix")))
-  (let ((var-part (variable-part cclass-layout)))
-    (when var-part
-      (format stream "~a,~%" (field-data key var-part "variable_array0"))
-      (let* ((ctype (instance-field-ctype (car var-part)))
-             (ctype-key (container-key ctype))
-             (container-cclass (gethash ctype-key (project-classes project)))
-             (capacity-field (or (field-with-name container-cclass "_Capacity")
-                                 (field-with-name container-cclass "_Length")
-                                 (field-with-name container-cclass "_MaybeSignedLength"))))
-        (format t "      var-part ctype: ~a~%" ctype)
-        (format t "           ctype-key: ~a~%" ctype-key)
-        (format t "    container-cclass: ~a~%" container-cclass)
-        (format t "      capacity-field: ~a~%" capacity-field)))))
 
 (defun fixable-instance-variables (x analysis)
   (let ((fix-vars (fixable-instance-variables-impl x analysis)))
@@ -3516,7 +3578,7 @@ Recursively analyze x and return T if x contains fixable pointers."
       "template <>"
       ""))
 
-(defun generate-alloc-stamp (&optional (fout t) (analysis *analysis*))
+(defun generate-alloc-stamp (&key (fout t) (fdesc t) (analysis *analysis*))
   (let ((maxstamp 0))
     (format fout "STAMPWTAG_null = ADJUST_STAMP(0), ~%")
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
@@ -3527,14 +3589,13 @@ Recursively analyze x and return T if x contains fixable pointers."
                     (stamp-value% stamp)
                     (ash (stamp-value% stamp) (- *wtag-shift*))
                     (logand (stamp-value% stamp) *max-wtag*))
-            #+(or)(when (and (eq (stamp-value-source stamp) :from-static-analyzer)
-                       (null (cclass-template-specializer (stamp-cclass stamp)))
-                       (not (inherits-from-multiple-classes (stamp-cclass stamp)))
-                       (derived-from-cclass (cclass-key (stamp-cclass stamp)) "core::General_O" (analysis-project analysis)))
-              (format fout "#error \"The normal lisp exposed class (non-templated) that inherits from core::General_O ~a was identified by the static analyzer but wasn't identified by the scraper!!!!  You probably forgot to add a LISP_CLASS definition to the class definition at ~s~%" (cclass-key (stamp-cclass stamp)) (cclass-location (stamp-cclass stamp)))
-              (let ((*print-pretty* nil))
-                (format fout "// Class record: ~a~%" (stamp-cclass stamp)))
-              )
+            (format fdesc "(define-stampwtag \"~a\" \"~a\" \"~a\" \"~a\" ~a ~a)~%"
+                    (get-stamp-name stamp)
+                    (cclass-key (stamp-cclass stamp))
+                    (first (cclass-bases (stamp-cclass stamp)))
+                    (stamp-root-cclass stamp)
+                    (stamp-wtag stamp)
+                    (stamp-value% stamp))
             (when (> (stamp-value% stamp) maxstamp)
               (setq maxstamp (stamp-value% stamp))))
           (analysis-sorted-stamps analysis))
@@ -3657,10 +3718,11 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (format (destination-stream dest) "   NULL~%" )
   (format (destination-stream dest) "};~%"))
 
-(defmacro do-generator (stream analysis &key table-name function-declaration function-prefix function-table-type generator jump-table-index-function)
+(defmacro do-generator (stream description-stream analysis &key table-name function-declaration function-prefix function-table-type generator jump-table-index-function)
   (let ((dest-gs (gensym)))
     `(let ((,dest-gs (make-destination :stream ,stream
 				       :table-name ,table-name
+                                       :description-stream ,description-stream
 				       :label-prefix ,function-prefix)))
        (format ,stream "#if defined(GC_~a)~%" ,table-name)
        (funcall ,generator ,dest-gs ,analysis)
@@ -3675,65 +3737,67 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defun generate-code (analysis &key output-file)
   (format t "About to generate code~%")
   (or output-file (error "You must provide an output-file"))
-  (with-open-file (stream output-file :direction :output :if-exists :supersede)
-    (format stream "#ifdef GC_DECLARE_FORWARDS~%")
-    (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
-    (format stream "#endif // GC_DECLARE_FORWARDS~%")
-    (format stream "#if defined(GC_STAMP)~%")
-    (loop for problem in (analysis-stamp-value-problems analysis)
-          do (format stream "// ~a~%" problem))
-    (generate-alloc-stamp stream analysis)
-    (format stream "#endif // defined(GC_STAMP)~%")
-    (format stream "#if defined(GC_ENUM_NAMES)~%")
-    (generate-register-stamp-names stream analysis)
-    (format stream "#endif // defined(GC_ENUM_NAMES)~%")
-    (format stream "#if defined(GC_DYNAMIC_CAST)~%")
-    (generate-dynamic-cast-code stream analysis )
-    (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
-    (format stream "#if defined(GC_TYPEQ)~%")
-    (generate-typeq-code stream analysis )
-    (format stream "#endif // defined(GC_TYPEQ)~%")
-    (format stream "#if defined(DO_CLASS)~%")
-    (generate-do-class-code stream analysis )
-    (format stream "#endif // defined(DO_CLASS)~%")
-    (format stream "#if defined(GC_STAMP_SELECTORS)~%")
-    (generate-gckind-for-stamps stream analysis)
-    (format stream "#endif // defined(GC_STAMP_SELECTORS)~%")
-    (do-generator stream analysis
-      :table-name "OBJ_SCAN"
-      :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
-      :function-prefix "obj_scan"
-      :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
-      :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
-      :generator (lambda (dest anal)
-                   (dolist (stamp (analysis-sorted-stamps anal))
-                     (format (destination-helper-stream dest) "// StampWtag = ~a/~a~%" (stamp-key stamp) (stamp-value% stamp))
-                     (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
-    (do-generator stream analysis
-                  :table-name "OBJ_FINALIZE"
-                  :function-declaration "void ~a(mps_addr_t client)"
-                  :function-prefix "obj_finalize"
-                  :function-table-type "void (*OBJ_FINALIZE_table[])(mps_addr_t client)"
-                  :generator (lambda (dest anal)
-                               (dolist (stamp (analysis-sorted-stamps anal))
-                                 (funcall (species-finalize (stamp-species stamp)) dest stamp anal))))
-    (do-generator stream analysis
-                  :table-name "OBJ_DEALLOCATOR"
-                  :function-declaration "void ~a(mps_addr_t client)"
-                  :function-prefix "obj_deallocate_unmanaged_instance"
-                  :function-table-type "void (*OBJ_DEALLOCATOR_table[])(mps_addr_t client)"
-                  :generator (lambda (dest anal)
-                               (dolist (stamp (analysis-sorted-stamps anal))
-                                 (funcall (species-deallocator (stamp-species stamp)) dest stamp anal))))
-    (progn
-            (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
-            (generate-code-for-global-symbols stream analysis)
-            (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%"))
-    (progn
-            (format stream "#if defined(GC_GLOBALS)~%")
-            (generate-code-for-global-non-symbol-variables stream analysis)
-            (format stream "#endif // defined(GC_GLOBALS)~%"))
-    )
+  (let ((description-file (make-pathname :type "desc" :defaults output-file)))
+    (with-open-file (fdesc description-file :direction :output :if-exists :supersede)
+      (with-open-file (stream output-file :direction :output :if-exists :supersede)
+        (format stream "#ifdef GC_DECLARE_FORWARDS~%")
+        (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
+        (format stream "#endif // GC_DECLARE_FORWARDS~%")
+        (format stream "#if defined(GC_STAMP)~%")
+        (loop for problem in (analysis-stamp-value-problems analysis)
+              do (format stream "// ~a~%" problem))
+        (generate-alloc-stamp :fout stream :fdesc fdesc :analysis analysis)
+        (format stream "#endif // defined(GC_STAMP)~%")
+        (format stream "#if defined(GC_ENUM_NAMES)~%")
+        (generate-register-stamp-names stream analysis)
+        (format stream "#endif // defined(GC_ENUM_NAMES)~%")
+        (format stream "#if defined(GC_DYNAMIC_CAST)~%")
+        (generate-dynamic-cast-code stream analysis )
+        (format stream "#endif // defined(GC_DYNAMIC_CAST)~%")
+        (format stream "#if defined(GC_TYPEQ)~%")
+        (generate-typeq-code stream analysis )
+        (format stream "#endif // defined(GC_TYPEQ)~%")
+        (format stream "#if defined(DO_CLASS)~%")
+        (generate-do-class-code stream analysis )
+        (format stream "#endif // defined(DO_CLASS)~%")
+        (format stream "#if defined(GC_STAMP_SELECTORS)~%")
+        (generate-gckind-for-stamps stream analysis)
+        (format stream "#endif // defined(GC_STAMP_SELECTORS)~%")
+        (do-generator stream fdesc analysis
+          :table-name "OBJ_SCAN"
+          :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+          :function-prefix "obj_scan"
+          :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+          :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
+          :generator (lambda (dest anal)
+                       (dolist (stamp (analysis-sorted-stamps anal))
+                         (format (destination-helper-stream dest) "// StampWtag = ~a/~a~%" (stamp-key stamp) (stamp-value% stamp))
+                         (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
+        (do-generator stream fdesc analysis
+          :table-name "OBJ_FINALIZE"
+          :function-declaration "void ~a(mps_addr_t client)"
+          :function-prefix "obj_finalize"
+          :function-table-type "void (*OBJ_FINALIZE_table[])(mps_addr_t client)"
+          :generator (lambda (dest anal)
+                       (dolist (stamp (analysis-sorted-stamps anal))
+                         (funcall (species-finalize (stamp-species stamp)) dest stamp anal))))
+        (do-generator stream fdesc analysis
+          :table-name "OBJ_DEALLOCATOR"
+          :function-declaration "void ~a(mps_addr_t client)"
+          :function-prefix "obj_deallocate_unmanaged_instance"
+          :function-table-type "void (*OBJ_DEALLOCATOR_table[])(mps_addr_t client)"
+          :generator (lambda (dest anal)
+                       (dolist (stamp (analysis-sorted-stamps anal))
+                         (funcall (species-deallocator (stamp-species stamp)) dest stamp anal))))
+        (progn
+          (format stream "#if defined(GC_GLOBAL_SYMBOLS)~%")
+          (generate-code-for-global-symbols stream analysis)
+          (format stream "#endif // defined(GC_GLOBAL_SYMBOLS)~%"))
+        (progn
+          (format stream "#if defined(GC_GLOBALS)~%")
+          (generate-code-for-global-non-symbol-variables stream analysis)
+          (format stream "#endif // defined(GC_GLOBALS)~%"))
+        )))
   (format t "Done generate-code~%"))
 
 (defun build-arguments-adjuster ()
