@@ -953,6 +953,7 @@ to expose."
                   key
                   (first (cclass-bases (stamp-cclass stamp)))
                   (stamp-root-cclass stamp)
+                  (stamp-wtag stamp)
                   (definition-data-as-string definition-data)))
     (codegen-full dest layout analysis)))
 
@@ -964,6 +965,7 @@ to expose."
                   key
                   (first (cclass-bases (stamp-cclass stamp)))
                   (stamp-root-cclass stamp)
+                  (stamp-wtag stamp)
                   (definition-data-as-string definition-data)))
     (codegen-variable-part dest (fixed-part layout) analysis)))
 
@@ -976,6 +978,7 @@ to expose."
              key
              (first (cclass-bases (stamp-cclass stamp)))
              (stamp-root-cclass stamp)
+             (stamp-wtag stamp)
              (species-bitwidth (stamp-species stamp))
              (definition-data-as-string definition-data)))
     ;; There is no fixed part for bitunits
@@ -990,6 +993,7 @@ to expose."
                   key
                   (first (cclass-bases (stamp-cclass stamp)))
                   (stamp-root-cclass stamp)
+                  (stamp-wtag stamp)
                   (definition-data-as-string definition-data) ))
     (codegen-full dest layout analysis)))
 
