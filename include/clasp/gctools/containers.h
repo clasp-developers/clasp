@@ -95,6 +95,8 @@ public:
   void clear() { this->_Vector.clear(); };
   void push_back(const_reference val) { this->_Vector.push_back(val); };
   void pop_back() { this->_Vector.pop_back(); };
+  reference front() { return this->_Vector[0]; }
+  const_reference front() const { return this->_Vector[0]; }
   reference back() { return this->_Vector[this->_Vector.size() - 1]; }
   const_reference back() const { return this->_Vector[this->_Vector.size() - 1]; }
   iterator insert(const_iterator position, const value_type &val) { return this->_Vector.emplace(position, val); };
