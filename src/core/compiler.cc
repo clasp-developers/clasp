@@ -896,6 +896,8 @@ CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("load-binary");
 CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
+  DEPRECATED();
+#if 0
   DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
   DynamicScopeManager scope2(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   DynamicScopeManager scope3(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
@@ -954,6 +956,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   }
   T_mv result;
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
+#endif
 };
 
 
