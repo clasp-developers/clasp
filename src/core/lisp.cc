@@ -450,19 +450,6 @@ void Lisp_O::startupLispEnvironment() {
     global_debug_byte_code = true;
   }
 
-  // Setup the ExecutableObjectFile and ExecutableCode
-    
-//  my_thread->create_sigaltstack();
-
-
-  //
-  // Walk all of the loaded dynamic libraries
-  //
-  // Now this is in main.cc
-#if 0
-  add_library addlib;
-  startup_register_loaded_objects(&addlib);
-#endif
   //
   // Initialize the symbols
   //
