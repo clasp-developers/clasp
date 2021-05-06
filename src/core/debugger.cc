@@ -214,10 +214,13 @@ DebugInfo& debugInfo() {
   return *global_DebugInfo;
 }
 
+#if 0
 void add_dynamic_library_using_handle(add_dynamic_library* adder, const std::string& libraryName, void* handle) {
   printf("%s:%d:%s libraryName: %s need text_start, text_end\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str() );
   add_dynamic_library_impl(adder, false,libraryName, false, 0, handle, NULL, NULL, false, NULL, NULL );
 }
+#endif
+
 
 void add_dynamic_library_using_origin(add_dynamic_library* adder, bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end, bool hasDataConst, gctools::clasp_ptr_t dataConstStart, gctools::clasp_ptr_t dataConstEnd  ) {
   add_dynamic_library_impl(adder,is_executable,libraryName, true, origin, NULL, text_start, text_end,
@@ -678,8 +681,8 @@ void tprint(void* ptr)
 }
 
 void c_bt() {
-    core::eval::funcall(core::_sym_btcl->symbolFunction(),
-                        INTERN_(kw,all),_lisp->_true());
+  core::eval::funcall(core::_sym_btcl->symbolFunction(),
+                      INTERN_(kw,all),_lisp->_true());
 };
 
 void c_btcl() {
@@ -692,6 +695,21 @@ void tsymbol(void* ptr)
   core::T_sp result = llvmo::llvm_sys__lookup_jit_symbol_info(ptr);
   printf("      Result -> %s\n", _rep_(result).c_str());
 }
+
+void dbg_safe_backtrace() {
+  printf("%s:%d:%s This is where we would have clasp dump a backtrace that doesn't use the printer or allocate memory\n",
+         __FILE__, __LINE__, __FUNCTION__ );
+  printf("          We don't currently have that functionality - but if we did it would use backtrace(), backtrace_symbols()\n"
+         "          and scrape the DWARF accessible through _lisp->_Roots._AllObjectFiles to build a backtrace with JIT function names\n"
+         "          we can use the ObjectFile_O and Code_O objects to figure out what return addresses are JITted code and what DWARF\n"
+         "          belongs to each return address.\n"
+         "          It might be better to use the gdb JIT API (https://sourceware.org/gdb/current/onlinedocs/gdb/JIT-Interface.html)\n"
+         "          What I'm missing to make the gdb JIT API work is how do we know where the code lives for the object file/symfile?\n"
+         "          It would be useful to examine __jit_debug_descriptor and look at the symfile_addr/symfile_size entries to figure out\n"
+         "          where they point relative to what we have in _lisp->_Roots._AllObjectFiles.\n"
+         "          As of May 2, 2021 only ELF files work with the gdb JIT API - so this wouldn't work on macOS\n");
+  abort();
+};
 
 };
 namespace core {

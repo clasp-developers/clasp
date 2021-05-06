@@ -143,7 +143,6 @@ extern "C" {
 void dbg_safe_print(uintptr_t raw);
 void dbg_safe_println(uintptr_t raw);
 void dbg_safe_backtrace();
-void dbg_safe_backtrace_stderr();
 };
 
 #if 0
