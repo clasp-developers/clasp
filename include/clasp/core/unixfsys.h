@@ -77,7 +77,7 @@ namespace core {
   public: // Simple default ctor/dtor
     Sigset_O();
   public: // instance variables here
-    sigset_t _sigset;
+    dont_expose<sigset_t> _sigset;
   public: // Functions here
     int sigset_sigaddset(SignalEnum sym);
   }; // Sigset class

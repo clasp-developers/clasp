@@ -376,7 +376,7 @@ CL_END_ENUM(_sym__PLUS_SignalEnumConverter_PLUS_);
 
 Sigset_O::Sigset_O()
 {
-  sigemptyset(&this->_sigset);
+  sigemptyset(&this->_sigset._value);
 };
 
 SYMBOL_EXPORT_SC_(KeywordPkg,sigchld);
@@ -386,7 +386,7 @@ CL_DOCSTRING(R"(Like the unix function //sigaddset//. The second argument is a s
 The int result of sigaddset is returned.)");
 CL_DEFMETHOD int Sigset_O::sigset_sigaddset(SignalEnum signo)
 {
-  return sigaddset(&(this->_sigset),(int)signo);
+  return sigaddset(&(this->_sigset._value),(int)signo);
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg,sig_block);
@@ -403,7 +403,7 @@ CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set)
   if (old_set.nilp()) {
     old_setp = NULL;
   } else {
-    old_setp = &(gc::As<Sigset_sp>(old_set)->_sigset);
+    old_setp = &(gc::As<Sigset_sp>(old_set)->_sigset._value);
   }
   int ihow;
   if (how == kw::_sym_sig_block) {
@@ -415,7 +415,7 @@ CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set)
   } else {
     SIMPLE_ERROR(BF("Illegal how argument %s - must be one of :sig-block, :sig-unblock, or :sig-setmask") % _rep_(how));
   }
-  int result = sigthreadmask(ihow,&set->_sigset,old_setp);
+  int result = sigthreadmask(ihow,&set->_sigset._value,old_setp);
   if (result == 0) {
     return Values(_Nil<T_O>(),_Nil<T_O>());
   } else {
