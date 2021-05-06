@@ -1982,7 +1982,6 @@ struct CodeFixup_t {
 
 
 int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
-  printf("%s:%d Started image_load\n", __FILE__, __LINE__ );
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
   if (global_debugSnapshot) {
     if (maybeStartOfSnapshot) {
@@ -2593,7 +2592,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
 #if 0
   printf("%s:%d:%s Not releasing temporary roots\n", __FILE__, __LINE__, __FUNCTION__ );
 #else
-  printf("%s:%d:%s Releasing temporary roots\n", __FILE__, __LINE__, __FUNCTION__ );
   root_holder.release();
 #endif
 

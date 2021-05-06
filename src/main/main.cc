@@ -396,8 +396,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
         || start_of_snapshot != NULL) // We found an embedded snapshot
         ) {
 #ifdef USE_PRECISE_GC
-    printf("%s:%d:%s Loading the snapshot %s\n",
-           __FILE__, __LINE__, __FUNCTION__, core::global_options->_ImageFile.c_str());
     llvmo::initialize_llvm();
 
     //
