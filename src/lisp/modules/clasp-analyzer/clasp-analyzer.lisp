@@ -791,21 +791,21 @@ to expose."
                       (offset-base-ctype array)
                       (layout-offset-field-names array)
                       (layout-offset-field-names array))
-              (format (destination-description-stream dest)
-                      " (variable-bit-array0 \"~a\" \"~a\" \"~{~a~}\" )~%"
-                      (gc-template-argument-integral-value (find 0 (class-template-specialization-ctype-arguments gcbitunit-ctype) :test #'eql :key #'gc-template-argument-index))
-                      (offset-base-ctype array)
-                      (layout-offset-field-names array))
+              (format (destination-description-stream dest) "{ TAGS:VARIABLE-BIT-ARRAY0 ~{ ~a~} }~%"
+                      (list
+                       (format nil "( TAGS:INTEGRAL-VALUE . ~a )" (gc-template-argument-integral-value (find 0 (class-template-specialization-ctype-arguments gcbitunit-ctype) :test #'eql :key #'gc-template-argument-index)))
+                       (format nil "( TAGS:OFFSET-BASE-CTYPE . ~a)" (offset-base-ctype array))
+                       (format nil "( TAGS:FIELD-NAMES . ~a)" (layout-offset-field-names array))))
               )
             (progn
               (format stream " {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
                       (offset-base-ctype array)
                       (layout-offset-field-names array)
                       (layout-offset-field-names array))
-              (format (destination-description-stream dest)
-                      " (variable-array0 \"~a\" \"~{~a~}\" )~%"
-                      (offset-base-ctype array)
-                      (layout-offset-field-names array))
+              (format (destination-description-stream dest) "{ TAGS:VARIABLE-ARRAY0 ~{ ~a~} }~%"
+                      (list
+                       (format nil "( TAGS:OFFSET-BASE-CTYPE . ~a)" (offset-base-ctype array))
+                       (format nil "( TAGS:FIELD-NAMES . ~a)" (layout-offset-field-names array))))
               ))
         (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, NULL },~%"
                 (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
@@ -813,11 +813,11 @@ to expose."
                 (layout-offset-field-names end)
                 (offset-base-ctype array)
                 (layout-offset-field-names length))
-        (format (destination-description-stream dest)
-                " (variable-capacity \"~a\" \"~a\" \"~{~a~}\")~%"
-                (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
-                (offset-base-ctype array)
-                (layout-offset-field-names end))
+        (format (destination-description-stream dest) "{ TAGS:VARIABLE-CAPACITY ~{ ~a~} }~%"
+                (list 
+                 (format nil "( TAGS:CTYPE . ~a)" (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array)))
+                 (format nil "( TAGS:OFFSET-BASE-CTYPE . ~a)" (offset-base-ctype array))
+                 (format nil "( TAGS:FIELD-NAMES . ~a)" (layout-offset-field-names array))))
         (dolist (one (elements array))
           (let* ((field-names (layout-offset-field-names one))
                  (ctype-key (ctype-key (base one)))
@@ -835,10 +835,10 @@ to expose."
                        (offset-type-c++-identifier one)
                        (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
                        )
-               (format (destination-description-stream dest)
-                       "  (variable-field, \"~a\" \"~a\" \"0\" \"0\" \"only\" )~%"
-                       (offset-type-c++-identifier one)
-                       (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+               (format (destination-description-stream dest) "{ TAGS:VARIABLE-FIELD ~{ ~a~} }~%"
+                       (list 
+                        (format nil "( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . ~s)" (offset-type-c++-identifier one))
+                        (format nil "( TAGS:CTYPE-KEY . ~s)" (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))))
                        )
                )
               (field-names
@@ -863,14 +863,14 @@ to expose."
                          public
                          fixable
                          good-name)
-                 (format (destination-description-stream dest)
-                         "~a    (variable-field \"~a\" \"~a\" \"~a\" \"~{~a~}\", 0, \"~{~a~}\" }~%"
-                         (if expose-it "" ";;; not-exposed-yet ")
-                         (offset-type-c++-identifier one)
-                         (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                         (ctype-key (base one))
-                         (layout-offset-field-names one :drop-last is-std-atomic)
-                         (layout-offset-field-names one :drop-last is-std-atomic))
+                 (when expose-it
+                   (format (destination-description-stream dest)
+                           "  { TAGS:VARIABLE-FIELD ~{ ~a~}~%"
+                           (list
+                            (format nil "( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . ~s)" (offset-type-c++-identifier one))
+                            (format nil "( TAGS:FIXUP-CTYPE-KEY . ~s)" (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one))))
+                            (format nil "( TAGS:FIXUP-CTYPE-KEY . ~s)" (ctype-key (base one)))
+                            (format nil "( TAGS:LAYOUT-OFFSET-FIELD-NAMES . \"~{~a~}\")" (layout-offset-field-names one :drop-last is-std-atomic)))))
                  ))
               (t (progn
                    (let ((*print-pretty* nil))
@@ -881,10 +881,10 @@ to expose."
                            ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
                            #+(or)(ctype-key (base one)))
                    (format (destination-description-stream dest)
-                           "  (variable-field \"~a\" \"~a\" \"0\" \"0\" \"only\" )~%"
-                           (offset-type-c++-identifier one)
-                           (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
-                           )
+                           "  { TAGS:VARIABLE-FIELD-ONLY ~{ ~a~} ~%"
+                           (list
+                            (format nil "( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . ~s)" (offset-type-c++-identifier one))
+                            (format nil "( TAGS:FIXUP-TYPE . ~s)" (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array)))))
                    )))))))))
 
 
@@ -928,12 +928,13 @@ to expose."
                 public
                 fixable
                 good-name)
-        (format (destination-description-stream dest) "~a (fixed-field \"~a\" \"~a\" \"~a\" \"~{~a~}\" )~%"
-                (if expose-it   "" ";;; not-exposing")
-                (offset-type-c++-identifier one)
-                (or (offset-ctype one) "UnknownType")
-                (offset-base-ctype one)
-                (layout-offset-field-names one :drop-last is-std-atomic))
+        (when expose-it
+          (format (destination-description-stream dest) "{ TAGS:FIXED-FIELD ~{ ~a~}~%"
+                  (list
+                   (format nil "( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . ~s)" (offset-type-c++-identifier one))
+                   (format nil "( TAGS:OFFSET-CTYPE . ~s)" (or (offset-ctype one) "UnknownType"))
+                   (format nil "( TAGS:OFFSET-BASE-CTYPE . ~s)" (offset-base-ctype one))
+                   (format nil "( TAGS:LAYOUT-OFFSET-FIELD-NAMES . \"~{~a~}\")" (layout-offset-field-names one :drop-last is-std-atomic)))))
         ))
     (let* ((variable-part (variable-part layout)))
       (when variable-part
@@ -948,39 +949,38 @@ to expose."
 (defun codegen-lisp-layout (dest stamp key layout definition-data analysis)
   (let ((stream (destination-helper-stream dest)))
     (format stream "{ class_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%" (get-stamp-name stamp) key (definition-data-as-string definition-data) key )
-    (format (destination-description-stream dest) "(class-kind ~{ \"~a\"~} )~%"
-            (list (get-stamp-name stamp)
-                  key
-                  (first (cclass-bases (stamp-cclass stamp)))
-                  (stamp-root-cclass stamp)
-                  (stamp-wtag stamp)
-                  (definition-data-as-string definition-data)))
+    (format (destination-description-stream dest) "{ TAGS:CLASS-KIND ~{ ~a~} }~%"
+            (list (format nil "(TAGS:STAMP-NAME . ~s)" (get-stamp-name stamp))
+                  (format nil "(TAGS:STAMP-KEY . ~s)" key)
+                  (format nil "(TAGS:PARENT-CLASS . ~s)" (first (cclass-bases (stamp-cclass stamp))))
+                  (format nil "(TAGS:ROOT-CLASS . ~s)" (stamp-root-cclass stamp))
+                  (format nil "(TAGS:STAMP-WTAG . ~a)" (stamp-wtag stamp))
+                  (format nil "(TAGS:DEFINITION-DATA . ~s)" (definition-data-as-string definition-data))))
     (codegen-full dest layout analysis)))
 
 (defun codegen-container-layout (dest stamp key layout definition-data analysis)
   (let ((stream (destination-helper-stream dest)))
     (format stream "{ container_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%" (get-stamp-name stamp) key (definition-data-as-string definition-data) key )
-    (format (destination-description-stream dest) "(container-kind ~{ \"~a\"~} )~%"
-            (list (get-stamp-name stamp)
-                  key
-                  (first (cclass-bases (stamp-cclass stamp)))
-                  (stamp-root-cclass stamp)
-                  (stamp-wtag stamp)
-                  (definition-data-as-string definition-data)))
+    (format (destination-description-stream dest) "{ TAGS:CONTAINER-KIND ~{ ~a~} }~%"
+            (list (format nil "(TAGS:STAMP-NAME . ~s)" (get-stamp-name stamp))
+                  (format nil "(TAGS:STAMP-KEY . ~s)" key)
+                  (format nil "(TAGS:PARENT-CLASS . ~s)" (first (cclass-bases (stamp-cclass stamp))))
+                  (format nil "(TAGS:ROOT-CLASS . ~s)" (stamp-root-cclass stamp))
+                  (format nil "(TAGS:STAMP-WTAG . ~a)" (stamp-wtag stamp))
+                  (format nil "(TAGS:DEFINITION-DATA . ~s)" (definition-data-as-string definition-data))))
     (codegen-variable-part dest (fixed-part layout) analysis)))
 
 (defun codegen-bitunit-container-layout (dest stamp key layout definition-data analysis)
   (let ((stream (destination-helper-stream dest)))
     (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, ~a, \"~a\" },~%" (get-stamp-name stamp) key (species-bitwidth (stamp-species stamp)) (definition-data-as-string definition-data) key )
-    (format (destination-description-stream dest) "(bitunit-container-kind ~{ \"~a\"~} )~%"
-            (list
-             (get-stamp-name stamp)
-             key
-             (first (cclass-bases (stamp-cclass stamp)))
-             (stamp-root-cclass stamp)
-             (stamp-wtag stamp)
-             (species-bitwidth (stamp-species stamp))
-             (definition-data-as-string definition-data)))
+    (format (destination-description-stream dest) "{ TAGS:BITUNIT-CONTAINER-KIND ~{ ~a~} }~%"
+            (list (format nil "(TAGS:STAMP-NAME . ~s)" (get-stamp-name stamp))
+                  (format nil "(TAGS:STAMP-KEY . ~s)" key)
+                  (format nil "(TAGS:PARENT-CLASS . ~s)" (first (cclass-bases (stamp-cclass stamp))))
+                  (format nil "(TAGS:ROOT-CLASS . ~s)" (stamp-root-cclass stamp))
+                  (format nil "(TAGS:STAMP-WTAG . ~a)" (stamp-wtag stamp))
+                  (format nil "(TAGS:BITWIDTH . ~a)" (species-bitwidth (stamp-species stamp)))
+                  (format nil "(TAGS:DEFINITION-DATA . ~s)" (definition-data-as-string definition-data))))
     ;; There is no fixed part for bitunits
     (codegen-variable-part dest (fixed-part layout) analysis)))
 
@@ -988,13 +988,13 @@ to expose."
   (let ((stream (destination-helper-stream dest)))
     (format stream "{ templated_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%"
             (get-stamp-name stamp) key (definition-data-as-string definition-data) key )
-    (format (destination-description-stream dest) "(templated-kind ~{ \"~a\"~} )~%"
-            (list (get-stamp-name stamp)
-                  key
-                  (first (cclass-bases (stamp-cclass stamp)))
-                  (stamp-root-cclass stamp)
-                  (stamp-wtag stamp)
-                  (definition-data-as-string definition-data) ))
+    (format (destination-description-stream dest) "{ TAGS:TEMPLATED-KIND ~{ ~a~} }~%"
+            (list (format nil "(TAGS:STAMP-NAME . ~s)" (get-stamp-name stamp))
+                  (format nil "(TAGS:STAMP-KEY . ~s)" key)
+                  (format nil "(TAGS:PARENT-CLASS . ~s)" (first (cclass-bases (stamp-cclass stamp))))
+                  (format nil "(TAGS:ROOT-CLASS . ~s)" (stamp-root-cclass stamp))
+                  (format nil "(TAGS:STAMP-WTAG . ~a)" (stamp-wtag stamp))
+                  (format nil "(TAGS:DEFINITION-DATA . ~s)" (definition-data-as-string definition-data))))
     (codegen-full dest layout analysis)))
 
 
@@ -3593,7 +3593,7 @@ Recursively analyze x and return T if x contains fixable pointers."
                     (stamp-value% stamp)
                     (ash (stamp-value% stamp) (- *wtag-shift*))
                     (logand (stamp-value% stamp) *max-wtag*))
-            (format fdesc "(define-stampwtag \"~a\" \"~a\" \"~a\" \"~a\" ~a ~a)~%"
+            #+(or)(format fdesc "(define-stampwtag \"~a\" \"~a\" \"~a\" \"~a\" ~a ~a)~%"
                     (get-stamp-name stamp)
                     (cclass-key (stamp-cclass stamp))
                     (first (cclass-bases (stamp-cclass stamp)))
@@ -3741,7 +3741,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defun generate-code (analysis &key output-file)
   (format t "About to generate code~%")
   (or output-file (error "You must provide an output-file"))
-  (let ((description-file (make-pathname :type "desc" :defaults output-file)))
+  (let ((description-file (make-pathname :type "sif" :defaults output-file)))
     (with-open-file (fdesc description-file :direction :output :if-exists :supersede)
       (with-open-file (stream output-file :direction :output :if-exists :supersede)
         (format stream "#ifdef GC_DECLARE_FORWARDS~%")
