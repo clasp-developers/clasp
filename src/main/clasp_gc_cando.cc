@@ -637,7 +637,7 @@
     class RootBondedJointTemplate_O;
     class Joint_O;
     class OriginJumpJoint_O;
-    class AtomTree_O;
+    class JointTree_O;
     class JumpJoint_O;
     class RotamerSet_O;
     class BondId_O;
@@ -879,10 +879,10 @@ STAMPWTAG_llvmo__Library_O = ADJUST_STAMP(791), // Stamp(197)  wtag(3)
 STAMPWTAG_chem__InfoDb_O = ADJUST_STAMP(795), // Stamp(198)  wtag(3)
 STAMPWTAG_chem__MinimizerLog_O = ADJUST_STAMP(799), // Stamp(199)  wtag(3)
 STAMPWTAG_chem__GenericOctree_O = ADJUST_STAMP(803), // Stamp(200)  wtag(3)
-STAMPWTAG_kinematics__AtomTree_O = ADJUST_STAMP(807), // Stamp(201)  wtag(3)
-STAMPWTAG_units__Quantity_O = ADJUST_STAMP(811), // Stamp(202)  wtag(3)
-STAMPWTAG_chem__ChemInfoMatch_O = ADJUST_STAMP(815), // Stamp(203)  wtag(3)
-STAMPWTAG_chem__ZMatrixEntry_O = ADJUST_STAMP(819), // Stamp(204)  wtag(3)
+STAMPWTAG_units__Quantity_O = ADJUST_STAMP(807), // Stamp(201)  wtag(3)
+STAMPWTAG_chem__ChemInfoMatch_O = ADJUST_STAMP(811), // Stamp(202)  wtag(3)
+STAMPWTAG_chem__ZMatrixEntry_O = ADJUST_STAMP(815), // Stamp(203)  wtag(3)
+STAMPWTAG_kinematics__JointTree_O = ADJUST_STAMP(819), // Stamp(204)  wtag(3)
 STAMPWTAG_chem__SpecificContextSet_O = ADJUST_STAMP(823), // Stamp(205)  wtag(3)
 STAMPWTAG_chem__Angle_O = ADJUST_STAMP(827), // Stamp(206)  wtag(3)
 STAMPWTAG_chem__MacroModelFile_O = ADJUST_STAMP(831), // Stamp(207)  wtag(3)
@@ -1983,8 +1983,8 @@ STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback = ADJUST_STAMP(3383), 
 // Unused CLEAVIR-ENVIRONMENT::INLINE-EXPANSION = 1644, 
 // Unused CLEAVIR-BIR::NOP = 1491, 
 // Unused CLEAVIR-AST::AREF-AST = 1609, 
-// Unused CLASP-ANALYZER::MANAGER = 1878, 
 // Unused CLEAVIR-BIR::CAST = 1525, 
+// Unused CLASP-ANALYZER::MANAGER = 1878, 
 // Unused CLASP-CLEAVIR-BMIR::FIXNUMP = 1767, 
 // Unused COMMON-LISP::VARIABLE = 1809, 
 // Unused ECLECTOR.READER::SINGLE-FEATURE-EXPECTED/READER = 1446, 
@@ -2563,10 +2563,10 @@ register_stamp_name("STAMPWTAG_llvmo__Library_O", ADJUST_STAMP(791));
 register_stamp_name("STAMPWTAG_chem__InfoDb_O", ADJUST_STAMP(795));
 register_stamp_name("STAMPWTAG_chem__MinimizerLog_O", ADJUST_STAMP(799));
 register_stamp_name("STAMPWTAG_chem__GenericOctree_O", ADJUST_STAMP(803));
-register_stamp_name("STAMPWTAG_kinematics__AtomTree_O", ADJUST_STAMP(807));
-register_stamp_name("STAMPWTAG_units__Quantity_O", ADJUST_STAMP(811));
-register_stamp_name("STAMPWTAG_chem__ChemInfoMatch_O", ADJUST_STAMP(815));
-register_stamp_name("STAMPWTAG_chem__ZMatrixEntry_O", ADJUST_STAMP(819));
+register_stamp_name("STAMPWTAG_units__Quantity_O", ADJUST_STAMP(807));
+register_stamp_name("STAMPWTAG_chem__ChemInfoMatch_O", ADJUST_STAMP(811));
+register_stamp_name("STAMPWTAG_chem__ZMatrixEntry_O", ADJUST_STAMP(815));
+register_stamp_name("STAMPWTAG_kinematics__JointTree_O", ADJUST_STAMP(819));
 register_stamp_name("STAMPWTAG_chem__SpecificContextSet_O", ADJUST_STAMP(823));
 register_stamp_name("STAMPWTAG_chem__Angle_O", ADJUST_STAMP(827));
 register_stamp_name("STAMPWTAG_chem__MacroModelFile_O", ADJUST_STAMP(831));
@@ -5272,6 +5272,15 @@ template <typename FP> struct Cast<chem::SpecificContextSet_O*,FP> {
       return (kindVal == ISA_ADJUST_STAMP(823));
   };
 };
+// STAMPWTAG_kinematics__JointTree_O
+template <typename FP> struct Cast<kinematics::JointTree_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range kinematics::JointTree_O val -> 819
+      return (kindVal == ISA_ADJUST_STAMP(819));
+  };
+};
 // STAMPWTAG_llvmo__DIType_O
 template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
   inline static bool isA(FP client) {
@@ -5295,8 +5304,8 @@ template <typename FP> struct Cast<chem::ZMatrixEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range chem::ZMatrixEntry_O val -> 819
-      return (kindVal == ISA_ADJUST_STAMP(819));
+    // IsA-stamp-range chem::ZMatrixEntry_O val -> 815
+      return (kindVal == ISA_ADJUST_STAMP(815));
   };
 };
 // STAMPWTAG_core__Readtable_O
@@ -5331,8 +5340,8 @@ template <typename FP> struct Cast<chem::ChemInfoMatch_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range chem::ChemInfoMatch_O val -> 815
-      return (kindVal == ISA_ADJUST_STAMP(815));
+    // IsA-stamp-range chem::ChemInfoMatch_O val -> 811
+      return (kindVal == ISA_ADJUST_STAMP(811));
   };
 };
 // STAMPWTAG_units__Quantity_O
@@ -5340,16 +5349,7 @@ template <typename FP> struct Cast<units::Quantity_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range units::Quantity_O val -> 811
-      return (kindVal == ISA_ADJUST_STAMP(811));
-  };
-};
-// STAMPWTAG_kinematics__AtomTree_O
-template <typename FP> struct Cast<kinematics::AtomTree_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range kinematics::AtomTree_O val -> 807
+    // IsA-stamp-range units::Quantity_O val -> 807
       return (kindVal == ISA_ADJUST_STAMP(807));
   };
 };
@@ -10173,13 +10173,13 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(kinematics::RotamerSet_O,TYPEQ_ADJUST_STAMP(63));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int8_t_O,TYPEQ_ADJUST_STAMP(2083));
       ADD_SINGLE_TYPEQ_TEST(chem::SpecificContextSet_O,TYPEQ_ADJUST_STAMP(823));
+      ADD_SINGLE_TYPEQ_TEST(kinematics::JointTree_O,TYPEQ_ADJUST_STAMP(819));
       ADD_RANGE_TYPEQ_TEST(llvmo::DIType_O,llvmo::DIBasicType_O,TYPEQ_ADJUST_STAMP(2583),TYPEQ_ADJUST_STAMP(2599));
-      ADD_SINGLE_TYPEQ_TEST(chem::ZMatrixEntry_O,TYPEQ_ADJUST_STAMP(819));
+      ADD_SINGLE_TYPEQ_TEST(chem::ZMatrixEntry_O,TYPEQ_ADJUST_STAMP(815));
       ADD_SINGLE_TYPEQ_TEST(core::Readtable_O,TYPEQ_ADJUST_STAMP(2223));
       ADD_SINGLE_TYPEQ_TEST(chem::CalculatePositionRelativeToOrigin_O,TYPEQ_ADJUST_STAMP(907));
-      ADD_SINGLE_TYPEQ_TEST(chem::ChemInfoMatch_O,TYPEQ_ADJUST_STAMP(815));
-      ADD_SINGLE_TYPEQ_TEST(units::Quantity_O,TYPEQ_ADJUST_STAMP(811));
-      ADD_SINGLE_TYPEQ_TEST(kinematics::AtomTree_O,TYPEQ_ADJUST_STAMP(807));
+      ADD_SINGLE_TYPEQ_TEST(chem::ChemInfoMatch_O,TYPEQ_ADJUST_STAMP(811));
+      ADD_SINGLE_TYPEQ_TEST(units::Quantity_O,TYPEQ_ADJUST_STAMP(807));
       ADD_RANGE_TYPEQ_TEST(llvmo::MDNode_O,llvmo::DIExpression_O,TYPEQ_ADJUST_STAMP(2535),TYPEQ_ADJUST_STAMP(2603));
       ADD_SINGLE_TYPEQ_TEST(chem::GenericOctree_O,TYPEQ_ADJUST_STAMP(803));
       ADD_SINGLE_TYPEQ_TEST(mp::RecursiveMutex_O,TYPEQ_ADJUST_STAMP(943));
@@ -10780,13 +10780,13 @@ DO_CLASS(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),STAMPWTAG_llvmo__MetadataAsVa
 DO_CLASS(SAFE_TYPE_MACRO(kinematics::RotamerSet_O),STAMPWTAG_kinematics__RotamerSet_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),STAMPWTAG_core__SimpleVector_int8_t_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::SpecificContextSet_O),STAMPWTAG_chem__SpecificContextSet_O);
+DO_CLASS(SAFE_TYPE_MACRO(kinematics::JointTree_O),STAMPWTAG_kinematics__JointTree_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIType_O),STAMPWTAG_llvmo__DIType_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::ZMatrixEntry_O),STAMPWTAG_chem__ZMatrixEntry_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::Readtable_O),STAMPWTAG_core__Readtable_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::CalculatePositionRelativeToOrigin_O),STAMPWTAG_chem__CalculatePositionRelativeToOrigin_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::ChemInfoMatch_O),STAMPWTAG_chem__ChemInfoMatch_O);
 DO_CLASS(SAFE_TYPE_MACRO(units::Quantity_O),STAMPWTAG_units__Quantity_O);
-DO_CLASS(SAFE_TYPE_MACRO(kinematics::AtomTree_O),STAMPWTAG_kinematics__AtomTree_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::MDNode_O),STAMPWTAG_llvmo__MDNode_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::GenericOctree_O),STAMPWTAG_chem__GenericOctree_O);
 DO_CLASS(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),STAMPWTAG_mp__RecursiveMutex_O);
@@ -12121,6 +12121,10 @@ template <> class gctools::GCStamp<chem::SpecificContextSet_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__SpecificContextSet_O ;
 };
+template <> class gctools::GCStamp<kinematics::JointTree_O> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_kinematics__JointTree_O ;
+};
 template <> class gctools::GCStamp<llvmo::DIType_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIType_O ;
@@ -12152,10 +12156,6 @@ public:
 template <> class gctools::GCStamp<units::Quantity_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_units__Quantity_O ;
-};
-template <> class gctools::GCStamp<kinematics::AtomTree_O> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_kinematics__AtomTree_O ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>> {
 public:
@@ -15396,13 +15396,13 @@ public:
  {  fixed_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::RootBondedJoint_O),_Distance), 0, "_Distance" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_DofChangePropagatesToYoungerSiblings" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::RootBondedJoint_O),_DofChangePropagatesToYoungerSiblings), 0, "_DofChangePropagatesToYoungerSiblings" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-//      field: "_RootInfo" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "kinematics::RootAtomInfo" :NAME "RootAtomInfo")
+//      field: "_RootInfo" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "kinematics::RootJointInfo" :NAME "RootJointInfo")
 //      field: "._ConstitutionName" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::RootBondedJoint_O),_RootInfo._ConstitutionName), 0, "_RootInfo._ConstitutionName" }, // atomic: NIL public: (NIL T) fixable: SMART-PTR-FIX good-name: T
-//      field: "_RootInfo" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "kinematics::RootAtomInfo" :NAME "RootAtomInfo")
+//      field: "_RootInfo" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "kinematics::RootJointInfo" :NAME "RootJointInfo")
 //      field: "._TopologyName" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::RootBondedJoint_O),_RootInfo._TopologyName), 0, "_RootInfo._TopologyName" }, // atomic: NIL public: (NIL T) fixable: SMART-PTR-FIX good-name: T
-//      field: "_RootInfo" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "kinematics::RootAtomInfo" :NAME "RootAtomInfo")
+//      field: "_RootInfo" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "kinematics::RootJointInfo" :NAME "RootJointInfo")
 //      field: "._Bond1Id" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::RootBondedJoint_O),_RootInfo._Bond1Id), 0, "_RootInfo._Bond1Id" }, // atomic: NIL public: (NIL T) fixable: NIL good-name: T
 // StampWtag = kinematics::DelayedBondedJoint_O/223
@@ -17031,8 +17031,8 @@ public:
 { class_kind, STAMPWTAG_chem__JumpPlug_O, sizeof(chem::JumpPlug_O), 0, IS_POLYMORPHIC, "chem::JumpPlug_O" },
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::JumpPlug_O),_Name), 0, "_Name" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-//      field: "_JumpAtomName" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::JumpPlug_O),_JumpAtomName), 0, "_JumpAtomName" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
+//      field: "_JumpPointName" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::JumpPlug_O),_JumpPointName), 0, "_JumpPointName" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // StampWtag = chem::PlugWithMates_O/743
 { class_kind, STAMPWTAG_chem__PlugWithMates_O, sizeof(chem::PlugWithMates_O), 0, IS_POLYMORPHIC, "chem::PlugWithMates_O" },
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
@@ -17239,25 +17239,13 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::GenericOctree_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::GenericOctree_O),_children[7]), 0, "_children[7]" }, // atomic: NIL public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_data" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::GenericOctree_O),_data), 0, "_data" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = kinematics::AtomTree_O/807
-{ class_kind, STAMPWTAG_kinematics__AtomTree_O, sizeof(kinematics::AtomTree_O), 0, IS_POLYMORPHIC, "kinematics::AtomTree_O" },
-//      field: "_Root" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::Joint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::AtomTree_O),_Root), 0, "_Root" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-//      field: "_AtomMap" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "chem::AtomIdMap<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "AtomIdMap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL)))
-//      field: "._DefaultValue" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::Joint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::AtomTree_O),_AtomMap._DefaultValue), 0, "_AtomMap._DefaultValue" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
-//      field: "_AtomMap" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "chem::AtomIdMap<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "AtomIdMap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL)))
-//      field: "._MoleculeMap" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
-//      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>,gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
-//      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>>" :SPECIALIZER "class gctools::GCVector_moveable<class gctools::Vec0<class gctools::Vec0<class gctools::smart_ptr<class kinematics::Joint_O> > > >")
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::AtomTree_O),_AtomMap._MoleculeMap._Vector._Contents), 0, "_AtomMap._MoleculeMap._Vector._Contents" }, // atomic: NIL public: (T T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// StampWtag = units::Quantity_O/811
+// StampWtag = units::Quantity_O/807
 { class_kind, STAMPWTAG_units__Quantity_O, sizeof(units::Quantity_O), 0, IS_POLYMORPHIC, "units::Quantity_O" },
 //      field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(units::Quantity_O),_Value), 0, "_Value" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Unit" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<units::Unit_O>" :SPECIALIZER "class units::Unit_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<units::Unit_O>), __builtin_offsetof(SAFE_TYPE_MACRO(units::Quantity_O),_Unit), 0, "_Unit" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = chem::ChemInfoMatch_O/815
+// StampWtag = chem::ChemInfoMatch_O/811
 { class_kind, STAMPWTAG_chem__ChemInfoMatch_O, sizeof(chem::ChemInfoMatch_O), 0, IS_POLYMORPHIC, "chem::ChemInfoMatch_O" },
 //      field: "_Matches" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(chem::ChemInfoMatch_O),_Matches), 0, "_Matches" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -17271,7 +17259,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleVector_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::ChemInfoMatch_O),_TagLookup), 0, "_TagLookup" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_TagHistory" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::ChemInfoMatch_O),_TagHistory), 0, "_TagHistory" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = chem::ZMatrixEntry_O/819
+// StampWtag = chem::ZMatrixEntry_O/815
 { class_kind, STAMPWTAG_chem__ZMatrixEntry_O, sizeof(chem::ZMatrixEntry_O), 0, IS_POLYMORPHIC, "chem::ZMatrixEntry_O" },
 //      field: "_ZMatrixAtomName" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::ZMatrixEntry_O),_ZMatrixAtomName), 0, "_ZMatrixAtomName" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -17283,6 +17271,18 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ZMatrixAngleInternal_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::ZMatrixEntry_O),_Angle), 0, "_Angle" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Dihedral" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ZMatrixDihedralInternal_O>" :SPECIALIZER "class chem::ZMatrixDihedralInternal_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ZMatrixDihedralInternal_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::ZMatrixEntry_O),_Dihedral), 0, "_Dihedral" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// StampWtag = kinematics::JointTree_O/819
+{ class_kind, STAMPWTAG_kinematics__JointTree_O, sizeof(kinematics::JointTree_O), 0, IS_POLYMORPHIC, "kinematics::JointTree_O" },
+//      field: "_Root" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::Joint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::JointTree_O),_Root), 0, "_Root" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+//      field: "_AtomMap" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "chem::AtomIdMap<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "AtomIdMap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL)))
+//      field: "._DefaultValue" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::Joint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::JointTree_O),_AtomMap._DefaultValue), 0, "_AtomMap._DefaultValue" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
+//      field: "_AtomMap" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "chem::AtomIdMap<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "AtomIdMap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL)))
+//      field: "._MoleculeMap" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
+//      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>,gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
+//      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>>" :SPECIALIZER "class gctools::GCVector_moveable<class gctools::Vec0<class gctools::Vec0<class gctools::smart_ptr<class kinematics::Joint_O> > > >")
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::JointTree_O),_AtomMap._MoleculeMap._Vector._Contents), 0, "_AtomMap._MoleculeMap._Vector._Contents" }, // atomic: NIL public: (T T T T) fixable: TAGGED-POINTER-FIX good-name: T
 // StampWtag = chem::SpecificContextSet_O/823
 { class_kind, STAMPWTAG_chem__SpecificContextSet_O, sizeof(chem::SpecificContextSet_O), 0, IS_POLYMORPHIC, "chem::SpecificContextSet_O" },
 //      field: "_KeySets" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::SmallMap<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>" :NAME "SmallMap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::SpecificContext_O>" :SPECIALIZER "class chem::SpecificContext_O") :INTEGRAL-VALUE NIL)))
@@ -17571,8 +17571,8 @@ public:
 { class_kind, STAMPWTAG_kinematics__Conformation_O, sizeof(kinematics::Conformation_O), 0, IS_POLYMORPHIC, "kinematics::Conformation_O" },
 //      field: "_FoldTree" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::FoldTree_O>" :SPECIALIZER "class kinematics::FoldTree_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::FoldTree_O>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::Conformation_O),_FoldTree), 0, "_FoldTree" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-//      field: "_AtomTree" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::AtomTree_O>" :SPECIALIZER "class kinematics::AtomTree_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::AtomTree_O>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::Conformation_O),_AtomTree), 0, "_AtomTree" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
+//      field: "_JointTree" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::JointTree_O>" :SPECIALIZER "class kinematics::JointTree_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::JointTree_O>), __builtin_offsetof(SAFE_TYPE_MACRO(kinematics::Conformation_O),_JointTree), 0, "_JointTree" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // StampWtag = chem::MoleculeGraph_O/971
 { class_kind, STAMPWTAG_chem__MoleculeGraph_O, sizeof(chem::MoleculeGraph_O), 0, IS_POLYMORPHIC, "chem::MoleculeGraph_O" },
 //      field: "_nodes_to_index" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
@@ -29156,19 +29156,9 @@ obj_finalize_STAMPWTAG_chem__GenericOctree_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMPWTAG_kinematics__AtomTree_O:
-{
-     // stamp value 807
-    kinematics::AtomTree_O* obj_gc_safe = reinterpret_cast<kinematics::AtomTree_O*>(client);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~AtomTree_O();
-#pragma clang diagnostic pop
-    goto finalize_done;
-}
 obj_finalize_STAMPWTAG_units__Quantity_O:
 {
-     // stamp value 811
+     // stamp value 807
     units::Quantity_O* obj_gc_safe = reinterpret_cast<units::Quantity_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -29178,7 +29168,7 @@ obj_finalize_STAMPWTAG_units__Quantity_O:
 }
 obj_finalize_STAMPWTAG_chem__ChemInfoMatch_O:
 {
-     // stamp value 815
+     // stamp value 811
     chem::ChemInfoMatch_O* obj_gc_safe = reinterpret_cast<chem::ChemInfoMatch_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -29188,11 +29178,21 @@ obj_finalize_STAMPWTAG_chem__ChemInfoMatch_O:
 }
 obj_finalize_STAMPWTAG_chem__ZMatrixEntry_O:
 {
-     // stamp value 819
+     // stamp value 815
     chem::ZMatrixEntry_O* obj_gc_safe = reinterpret_cast<chem::ZMatrixEntry_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
     obj_gc_safe->~ZMatrixEntry_O();
+#pragma clang diagnostic pop
+    goto finalize_done;
+}
+obj_finalize_STAMPWTAG_kinematics__JointTree_O:
+{
+     // stamp value 819
+    kinematics::JointTree_O* obj_gc_safe = reinterpret_cast<kinematics::JointTree_O*>(client);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
+    obj_gc_safe->~JointTree_O();
 #pragma clang diagnostic pop
     goto finalize_done;
 }
@@ -34452,10 +34452,10 @@ static void* OBJ_FINALIZE_table[] = {
   /* 795 */ &&obj_finalize_STAMPWTAG_chem__InfoDb_O,
   /* 799 */ &&obj_finalize_STAMPWTAG_chem__MinimizerLog_O,
   /* 803 */ &&obj_finalize_STAMPWTAG_chem__GenericOctree_O,
-  /* 807 */ &&obj_finalize_STAMPWTAG_kinematics__AtomTree_O,
-  /* 811 */ &&obj_finalize_STAMPWTAG_units__Quantity_O,
-  /* 815 */ &&obj_finalize_STAMPWTAG_chem__ChemInfoMatch_O,
-  /* 819 */ &&obj_finalize_STAMPWTAG_chem__ZMatrixEntry_O,
+  /* 807 */ &&obj_finalize_STAMPWTAG_units__Quantity_O,
+  /* 811 */ &&obj_finalize_STAMPWTAG_chem__ChemInfoMatch_O,
+  /* 815 */ &&obj_finalize_STAMPWTAG_chem__ZMatrixEntry_O,
+  /* 819 */ &&obj_finalize_STAMPWTAG_kinematics__JointTree_O,
   /* 823 */ &&obj_finalize_STAMPWTAG_chem__SpecificContextSet_O,
   /* 827 */ &&obj_finalize_STAMPWTAG_chem__Angle_O,
   /* 831 */ &&obj_finalize_STAMPWTAG_chem__MacroModelFile_O,
@@ -36501,32 +36501,32 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_chem__GenericOctree_O:
     GC<chem::GenericOctree_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMPWTAG_kinematics__AtomTree_O:
-{
-     // stamp value 807
-    kinematics::AtomTree_O* obj_gc_safe = reinterpret_cast<kinematics::AtomTree_O*>(client);
-    GC<kinematics::AtomTree_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
 obj_deallocate_unmanaged_instance_STAMPWTAG_units__Quantity_O:
 {
-     // stamp value 811
+     // stamp value 807
     units::Quantity_O* obj_gc_safe = reinterpret_cast<units::Quantity_O*>(client);
     GC<units::Quantity_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_chem__ChemInfoMatch_O:
 {
-     // stamp value 815
+     // stamp value 811
     chem::ChemInfoMatch_O* obj_gc_safe = reinterpret_cast<chem::ChemInfoMatch_O*>(client);
     GC<chem::ChemInfoMatch_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_chem__ZMatrixEntry_O:
 {
-     // stamp value 819
+     // stamp value 815
     chem::ZMatrixEntry_O* obj_gc_safe = reinterpret_cast<chem::ZMatrixEntry_O*>(client);
     GC<chem::ZMatrixEntry_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_STAMPWTAG_kinematics__JointTree_O:
+{
+     // stamp value 819
+    kinematics::JointTree_O* obj_gc_safe = reinterpret_cast<kinematics::JointTree_O*>(client);
+    GC<kinematics::JointTree_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_chem__SpecificContextSet_O:
@@ -40592,10 +40592,10 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 795 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__InfoDb_O,
   /* 799 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__MinimizerLog_O,
   /* 803 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__GenericOctree_O,
-  /* 807 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_kinematics__AtomTree_O,
-  /* 811 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_units__Quantity_O,
-  /* 815 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__ChemInfoMatch_O,
-  /* 819 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__ZMatrixEntry_O,
+  /* 807 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_units__Quantity_O,
+  /* 811 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__ChemInfoMatch_O,
+  /* 815 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__ZMatrixEntry_O,
+  /* 819 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_kinematics__JointTree_O,
   /* 823 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__SpecificContextSet_O,
   /* 827 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__Angle_O,
   /* 831 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__MacroModelFile_O,
