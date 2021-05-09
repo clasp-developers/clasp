@@ -1374,7 +1374,6 @@ can be saved and reloaded within the project for later analysis"
     (case (type-of decl)
       (cast:class-template-specialization-decl
        (let ((args (cast:get-template-args decl)))
-         (format t "Looking at decl: ~s~%" decl)
          (cond
            ((and (string= name "atomic")
                  (let* ((arg (cast:template-argument-list-get args 0))
