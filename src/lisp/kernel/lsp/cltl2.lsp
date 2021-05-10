@@ -1,5 +1,6 @@
 (defpackage #:clasp-cltl2
   (:use #:cl)
+  (:documentation "Implementation of CLTL2's environment access functions in section 8.5.")
   (:export #:variable-information #:function-information
            #:declaration-information)
   (:export #:augment-environment)
@@ -11,6 +12,8 @@
 (in-package #:clasp-cltl2)
 
 (defun variable-information (variable &optional env)
+  "Retrieve information about the interpretation of a symbolic variable in an environment. See CLTL2 8.5 for more detailed information.
+Known bug: Clasp's implementation may not determine whether symbol macros are local correctly."
   (let ((info (cleavir-env:variable-info env variable)))
     (etypecase info
       (null (values nil nil nil))
@@ -37,6 +40,8 @@
                  (dynamic-extent . ,(cleavir-env:dynamic-extent info))))))))
 
 (defun function-information (function-name &optional env)
+  "Retrieve information about the function name in an environment. See CLTL2 8.5 for more information.
+Clasp reports IGNORE declarations on local functions analogously to variables."
   (let ((info (cleavir-env:function-info env function-name)))
     (etypecase info
       (null (values nil nil nil))
@@ -60,6 +65,7 @@
                  (ignore . ,(eq (cleavir-env:ignore info) 'ignore))))))))
 
 (defun declaration-information (decl-name &optional env)
+  "Retrieve information about a declaration in an environment. See CLTL2 8.5 for more information. Only the OPTIMIZE and DECLARATION declarations are supported."
   (ecase decl-name
     ((optimize) (cleavir-env:optimize (cleavir-env:optimize-info env)))
     ((declaration) (cleavir-env:declarations env))))
@@ -67,6 +73,8 @@
 ;;; TAG and BLOCK are provided as extensions to CLTL2.
 (defun augment-environment (env &key variable symbol-macro function macro
                                   declare tag block)
+  "Given an environment, return environment augmented with the given information. The result is a syntactic environment only, e.g. does not include variable bindings etc. See CLTL2 8.5 for more information.
+As an extension, the TAG and BLOCK keyword may be used to provide lists of tag or block names, respectively, to include in the new environment."
   (augment-environment-with-variables-and-decls
    (augment-environment-with-symbol-macros
     (augment-environment-with-functions
@@ -259,8 +267,12 @@
   env)
 
 (defmacro define-declaration (decl-name lambda-list &body body)
+  "Define a new type of declaration. See CLTL2 8.5 for more information.
+Clasp does not implement this functionality yet."
   (declare (ignore decl-name lambda-list body))
   (error "BUG: ~a not implemented yet, sorry!" 'define-declaration))
 
 (defun enclose (lambda-expression &optional env)
+  "Given a lambda expression and a syntactic environment, return a function object. See CLTL2 8.5 for more information.
+Clasp will discard any non-syntactic information in the environment."
   (cmp:compile-in-env lambda-expression (cleavir-env:compile-time env)))
