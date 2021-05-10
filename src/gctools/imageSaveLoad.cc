@@ -2361,12 +2361,18 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
           root_holder.add((void*)code.raw_());
           codeFixups.emplace_back(CodeFixup_t((llvmo::Code_O*)oldCode.unsafe_general(),((llvmo::Code_O*)code.unsafe_general())));
           if (global_debugSnapshot) {
-            printf("%s:%d:%s Passed ObjectFile_sp %p  Code_sp %p  %lu/%lu to LLJIT\n",
+            printf("%s:%d:%s Passed     ObjectFile_sp %p Code_sp %p  %lu/%lu to LLJIT\n",
                    __FILE__, __LINE__, __FUNCTION__,
                    allocatedObjectFile.raw_(),
                    code.raw_(),
                    objectFileCount,
                    fileHeader->_ObjectFileCount );
+          }
+          llvmo::Code_sp ccode = gc::As<llvmo::Code_sp>(code);
+          if (ccode->_TextSegmentStart == NULL) {
+            printf("%s:%d:%s The Code_sp %p object has NULL for the _TextSegmentStart\n",
+                   __FILE__, __LINE__, __FUNCTION__,
+                   ccode.raw_());
           }
           objectFileCount++;
         } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O) ) {
