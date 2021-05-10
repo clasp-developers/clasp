@@ -11,6 +11,7 @@
 #include <string>
 #include <clasp/core/foundation.h>
 #include <clasp/llvmo/code.h>
+#include <clasp/gctools/imageSaveLoad.h>
 //
 // The include for Debug.h must be first so we can force NDEBUG undefined
 // otherwise setCurrentDebugTypes will be an empty macro
@@ -4300,6 +4301,15 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         my_thread->_text_segment_size = range.getSize();
         currentCode->_TextSegmentStart = (void*)range.getStart();
         currentCode->_TextSegmentEnd = (void*)((char*)range.getStart()+range.getSize());
+        if (imageSaveLoad::global_debugSnapshot) {
+          printf("%s:%d:%s  ObjectFile_sp %p Code_sp %p start %p  end %p\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 my_thread->topObjectFile().raw_(),
+                 currentCode.raw_(),
+                 currentCode->_TextSegmentStart,
+                 currentCode->_TextSegmentEnd );
+        }
+        
         currentCode->_TextSegmentSectionId = 0;
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Setting text_segment start %p  size %lu\n", __FILE__, __LINE__, __FUNCTION__, my_thread->_text_segment_start, my_thread->_text_segment_size ));
         my_thread->_text_segment_SectionID = 0;
@@ -4463,6 +4473,13 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 #endif
   // Grab the buffer and put it in the current ObjectFile
   my_thread->topObjectFile()->_MemoryBuffer = std::move(buffer);
+  if (imageSaveLoad::global_debugSnapshot) {
+    printf("%s:%d:%s   ObjectFile_sp %p start %p size %lu\n",
+           __FILE__, __LINE__, __FUNCTION__,
+           my_thread->topObjectFile().raw_(),
+           my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferStart(),
+           my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferSize() );
+  }
   save_object_file_and_code_info(my_thread->topObjectFile());
   buffer.reset();
 }
