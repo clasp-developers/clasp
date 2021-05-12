@@ -41,6 +41,9 @@
 
 namespace imageSaveLoad {
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
+
+bool global_debugSnapshot = false;
+
 };
 
 
@@ -131,9 +134,6 @@ FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
 
 
 namespace imageSaveLoad {
-
-bool global_debugSnapshot = false;
-
 bool globalFwdMustBeInGCMemory = false;
 #define DEBUG_SL_FFWD 1
 
