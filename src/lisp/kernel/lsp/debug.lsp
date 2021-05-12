@@ -67,7 +67,13 @@ This function ignores visibility and may not halt at delimiters. DOWN is the low
   (core:debugger-frame-fname frame))
 (defun frame-source-position (frame)
   "Return a CODE-SOURCE-LINE object representing the source file position for this frame's call, or NIL if no information is available."
-  (core:debugger-frame-source-position frame))
+  (let ((spi (core:debugger-frame-source-position frame)))
+    (when spi
+      (make-code-source-line
+       :pathname (core:file-scope-pathname
+                  (core:file-scope (core:source-pos-info-file-handle spi)))
+       :line-number (core:source-pos-info-lineno spi)
+       :column (core:source-pos-info-column spi)))))
 (defun frame-function-description (frame)
   (core:debugger-frame-function-description frame))
 (defun frame-language (frame)
