@@ -192,6 +192,9 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
         if (verbose) printf("%s:%d  Using the CLASP_HOME directory %s\n", __FILE__, __LINE__, homedir);
         this->_Directories->_InstallDir = bf::path(homedir);
         this->_Directories->_ContentsDir = this->_Directories->_InstallDir / "lib" / "clasp";
+        if (!bf::exists(this->_Directories->_ContentsDir)) {
+          this->_Directories->_ContentsDir = this->_Directories->_InstallDir;
+        }
         foundContents = true;
       } else {
         this->_Directories->_InstallDir = bf::path(std::string(PREFIX));
@@ -358,13 +361,13 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
   if (verbose) {
     printf("%s:%d In findAppDir argv0: %s\n", __FILE__, __LINE__, argv0.c_str() );
     printf("%s:%d In findAppDir cwd: %s\n", __FILE__, __LINE__, cwd.c_str() );
+    printf("%s:%d In findAppDir getenv(\"CLASP_HOME\"): %s\n", __FILE__, __LINE__, getenv("CLASP_HOME"));
   }
-
-#if 0 // defined(darwin)
-  boost_filesystem::path cwdPath(cwd);
-  LOG(BF("Using current working directory: path=%s") % cwdPath.string() );
-  return cwdPath;
-#endif
+  char* claspHome = getenv("CLASP_HOME");
+  if (claspHome) {
+    boost_filesystem::path claspHomePath(claspHome);
+    return claspHomePath.branch_path();
+  }
   boost_filesystem::path argv0Path(argv0);
   if (argv0Path.has_root_path()) {
     if (verbose) printf("%s:%d has_root_path: %s\n", __FILE__, __LINE__, argv0Path.branch_path().string().c_str() );
@@ -372,7 +375,7 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
   } else {
     boost_filesystem::path cwdPath(cwd);
     boost_filesystem::path absPath;
-
+    
     absPath = cwdPath / argv0Path;
     if (bf::exists(absPath)) {
       if (verbose) printf("%s:%d absPath.branch_path(): %s\n", __FILE__, __LINE__, absPath.branch_path().string().c_str() );
