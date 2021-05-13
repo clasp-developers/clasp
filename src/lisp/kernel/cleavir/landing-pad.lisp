@@ -174,7 +174,8 @@
 
 ;; Is this iblock a place unknown values are nonlocally returned to?
 (defun nonlocal-valued-p (iblock)
-  (= (length (cleavir-bir:inputs iblock)) 1))
+  (and (= (length (cleavir-bir:inputs iblock)) 1)
+       (not (null (cc-bmir:rtype (first (cleavir-bir:inputs iblock)))))))
 
 (defmethod compute-maybe-entry-processor ((dynenv cleavir-bir:catch) tags)
   (if (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
@@ -196,11 +197,18 @@
                (tmv (when (some #'nonlocal-valued-p destinations)
                       (restore-multiple-value-0)))
                (tv (when tmv
-                     (if (eq (cc-bmir:rtype
-                              (first (bir:inputs (first destinations))))
-                             :object)
-                         (cmp:irc-tmv-primary tmv)
-                         tmv)))
+                     (let ((rt (cc-bmir:rtype
+                                (first (bir:inputs (first destinations))))))
+                       (cond ((eq rt :multiple-values) tmv)
+                             ((equal rt '(:object))
+                              (cmp:irc-tmv-primary tmv))
+                             ((null rt) nil) ; redundant with nonlocal-valued-p
+                             ((every (lambda (x) (eq x :object)) rt)
+                              (list* (cmp:irc-tmv-primary tmv)
+                                     (loop for i from 1 below (length rt)
+                                           collect (cmp:irc-load
+                                                    (return-value-elt i)))))
+                             (t (error "BUG: Bad rtype ~a" rt))))))
                (go-index (cmp:irc-load *go-index.slot*))
                (sw (cmp:irc-switch go-index next ndestinations)))
           (declare (ignore _))

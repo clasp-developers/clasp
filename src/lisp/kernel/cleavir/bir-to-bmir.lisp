@@ -105,18 +105,16 @@
 ;;; Representation types ("rtypes")
 ;;;
 ;;; An rtype describes how a value or values is represented in the runtime.
-;;; So far the possible rtypes are :object, meaning one T_O*, and
-;;; :multiple-values, meaning several T_O*s stored in the thread local multiple
-;;; values vector. In the future there will probably be rtypes for unboxed
+;;; An rtype is either :multiple-values, meaning several T_O*s stored in the
+;;; thread local multiple values vector, or a list of value rtypes; and a value
+;;; rtype can only be :object meaning T_O*. So e.g. (:object :object) means a
+;;; pair of T_O*. In the future there will probably be rtypes for unboxed
 ;;; values as well as fixed numbers of values.
-;;; NIL is a pseudo-rtype indicating a datum's use has no preference for how it
-;;; is represented, or if the datum is simply unused. A datum's definitions
-;;; must necessarily have a preferred rtype, i.e. NIL is not permitted there.
 
 ;; Given an instruction, determine what rtype it outputs.
 (defgeneric definition-rtype (instruction))
 ;; usually correct default
-(defmethod definition-rtype ((inst bir:instruction)) :object)
+(defmethod definition-rtype ((inst bir:instruction)) '(:object))
 (defmethod definition-rtype ((inst bir:abstract-call)) :multiple-values)
 (defmethod definition-rtype ((inst bir:values-save)) :multiple-values)
 (defmethod definition-rtype ((inst bir:values-collect)) :multiple-values)
@@ -136,13 +134,13 @@
 (defmethod %use-rtype ((inst bir:instruction) (datum bir:datum))
   ;; Having this as a default is mildly dicey but should work: instructions
   ;; that need multiple value inputs are a definite minority.
-  :object)
+  '(:object))
 (defmethod %use-rtype ((inst bir:mv-call) (datum bir:datum))
   (if (member datum (rest (bir:inputs inst)))
-      :multiple-values :object))
+      :multiple-values '(:object)))
 (defmethod %use-rtype ((inst bir:mv-local-call) (datum bir:datum))
   (if (member datum (rest (bir:inputs inst)))
-      :multiple-values :object))
+      :multiple-values '(:object)))
 (defmethod %use-rtype ((inst bir:returni) (datum bir:datum)) :multiple-values)
 (defmethod %use-rtype ((inst bir:values-save) (datum bir:datum))
   :multiple-values)
@@ -166,7 +164,7 @@
 (defun transitive-rtype (datum)
   (loop (let ((use (bir:use datum)))
           (etypecase use
-            (null (return :object)) ; unused, doesn't matter
+            (null (return '())) ; don't need any value at all
             ((or bir:jump bir:unwind)
              (setf datum (nth (position datum (bir:inputs use))
                               (bir:outputs use))))
@@ -175,19 +173,27 @@
 (defmethod use-rtype ((datum bir:output)) (transitive-rtype datum))
 (defmethod use-rtype ((datum bir:argument)) (transitive-rtype datum))
 
+;;; Given two value rtypes, return the most preferable.
+;;; Only :object is valid right now, so this does nothing.
+(defun min-vrtype (vrt1 vrt2)
+  (declare (ignore vrt1 vrt2))
+  :object)
+
+(defun max-vrtype (vrt1 vrt2)
+  (declare (ignore vrt1 vrt2))
+  :object)
+
 ;;; Given two rtypes, return the most preferable rtype.
 (defun min-rtype (rt1 rt2)
-  (ecase rt1
-    ((:object)
-     (assert (member rt2 '(nil :object :multiple-values)))
-     :object)
-    ((:multiple-values)
-     (ecase rt2
-       ((nil) :object)
-       ((:object :multiple-values) rt2)))
-    ((nil)
-     (assert (member rt2 '(:object :multiple-values)))
-     :object)))
+  (cond ((listp rt1)
+         (cond ((listp rt2)
+                ;; Shorten
+                (mapcar #'min-vrtype rt1 rt2))
+               (t
+                (assert (member rt2 '(:multiple-values)))
+                rt1)))
+        ((eq rt1 :multiple-values) rt2)
+        (t (error "Bad rtype: ~a" rt1))))
 
 (defun assign-output-rtype (datum)
   (let* ((source (definition-rtype (bir:definition datum)))
@@ -200,19 +206,25 @@
   ;; PHIs are trickier. If the destination is single-value, the phi can be too.
   ;; If not, then the phi could still be single-value, but only if EVERY
   ;; definition is, and otherwise we need to use multiple values.
-  (let ((rt :object) (dest (use-rtype datum)))
-    (ecase dest
-      ((:object nil) :object)
-      ((:multiple-values)
-       (cleavir-set:doset (def (bir:definitions datum) rt)
-         (etypecase def
-           ((or bir:jump bir:unwind)
-            (let ((in (nth (position datum (bir:outputs def))
-                           (bir:inputs def))))
-              (maybe-assign-rtype in)
-              (ecase (cc-bmir:rtype in)
-                (:object)
-                (:multiple-values (setf rt :multiple-values)))))))))))
+  (let ((rt :any) (dest (use-rtype datum)))
+    (if (eq dest :multiple-values)
+        ;; If the phi definitions are all non-mv and agree on a number of
+        ;; values, that works.
+        (cleavir-set:doset (def (bir:definitions datum) rt)
+          (etypecase def
+            ((or bir:jump bir:unwind)
+             (let ((in (nth (position datum (bir:outputs def))
+                            (bir:inputs def))))
+               (maybe-assign-rtype in)
+               (let ((irt (cc-bmir:rtype in)))
+                 (cond ((eq irt :multiple-values) (return irt)) ; nothing for it
+                       ((eq rt :any) (setf rt irt))
+                       ((= (length rt) (length irt))
+                        (setf rt (mapcar #'max-vrtype rt irt)))
+                       ;; different value counts
+                       (t (return :multiple-values))))))))
+        ;; Destination only needs some fixed thing - do that
+        dest)))
 
 (defun assign-phi-rtype (datum)
   (change-class datum 'cc-bmir:phi :rtype (phi-rtype datum)))
@@ -239,7 +251,7 @@
   (bir:map-functions #'assign-function-rtypes module))
 
 (defun insert-mtf (after datum)
-  (let* ((fx (make-instance 'cc-bmir:output :rtype :object))
+  (let* ((fx (make-instance 'cc-bmir:output :rtype '(:object)))
          (mtf (make-instance 'bir:multiple-to-fixed :outputs (list fx))))
     (bir:insert-instruction-after mtf after)
     (bir:replace-uses fx datum)
@@ -247,9 +259,11 @@
   (values))
 
 (defun maybe-insert-mtf (after datum)
-  (ecase (cc-bmir:rtype datum)
-    ((:object) (insert-mtf after datum))
-    ((:multiple-values))))
+  (let ((rt (cc-bmir:rtype datum)))
+    (cond ((eq rt :multiple-values))
+          ((null rt))
+          ((equal rt '(:object)) (insert-mtf after datum))
+          (t (error "BUG: Bad rtype ~a" rt)))))
 
 (defun insert-ftm (before datum)
   (let* ((mv (make-instance 'cc-bmir:output :rtype :multiple-values))
@@ -260,9 +274,11 @@
     ftm))
 
 (defun maybe-insert-ftm (before datum)
-  (ecase (cc-bmir:rtype datum)
-    ((:object) (insert-ftm before datum))
-    ((:multiple-values))))
+  (let ((rt (cc-bmir:rtype datum)))
+    (cond ((eq rt :multiple-values))
+          ((null rt))
+          ((equal rt '(:object)) (insert-ftm before datum))
+          (t (error "BUG: Bad rtype ~a" rt)))))
 
 (defun maybe-insert-ftms (before data)
   (loop for dat in data do (maybe-insert-ftm before dat)))
@@ -270,10 +286,9 @@
 (defgeneric insert-values-coercion (instruction))
 
 (defun check-object-input (instruction input)
-  (ecase (cc-bmir:rtype input)
-    ((:object))
-    ((:multiple-values)
-     (error "BUG: MV input into non-MV instruction ~a" instruction))))
+  (let ((rt (cc-bmir:rtype input)))
+    (unless (equal rt '(:object))
+      (error "BUG: Bad rtype ~a where ~a expected" rt '(:object)))))
 
 (defun check-object-inputs (instruction
                             &optional (inputs (bir:inputs instruction)))
@@ -292,17 +307,15 @@
 (defun insert-jump-coercion (instruction)
   (loop for inp in (bir:inputs instruction)
         for outp in (bir:outputs instruction)
-        do (ecase (cc-bmir:rtype inp)
-             ((:object)
-              (ecase (cc-bmir:rtype outp)
-                ((:object))
-                ((:multiple-values) (insert-ftm instruction inp))))
-             ((:multiple-values)
-              (ecase (cc-bmir:rtype outp)
-                ((:object)
-                 (error "BUG: MV input into non-MV jump output in ~a"
-                        instruction))
-                ((:multiple-values)))))))
+        for inprt = (cc-bmir:rtype inp)
+        for outprt = (cc-bmir:rtype outp)
+        do (if (eq inprt :multiple-values)
+               (unless (eq outprt :multiple-values)
+                 (error "BUG: MV input into ~a jump output in ~a"
+                        outprt instruction))
+               (if (eq outprt :multiple-values)
+                   (insert-ftm instruction inp)
+                   (assert (equal inprt outprt))))))
 
 (defmethod insert-values-coercion ((instruction bir:jump))
   (insert-jump-coercion instruction))

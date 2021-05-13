@@ -300,10 +300,20 @@
               do (cmp:irc-add-case sw (%i32 (1+ destination-id)) block)
                  (cmp:irc-begin-block block)
                  (when phi
-                   (let ((mv (restore-multiple-value-0)))
-                     (ecase (cc-bmir:rtype phi)
-                       ((:object) (phi-out (cmp:irc-tmv-primary mv) phi block))
-                       ((:multiple-values) (phi-out mv phi block)))))
+                   (let ((mv (restore-multiple-value-0))
+                         (rt (cc-bmir:rtype phi)))
+                     (cond ((null rt))
+                           ((equal rt '(:object))
+                            (phi-out (cmp:irc-tmv-primary mv) phi block))
+                           ((eq rt :multiple-values) (phi-out mv phi block))
+                           ((every (lambda (x) (eq x :object)) rt)
+                            (phi-out
+                             (list* (cmp:irc-tmv-primary mv)
+                                    (loop for i from 1 below (length rt)
+                                          collect (cmp:irc-load
+                                                   (return-value-elt i))))
+                             phi block))
+                           (t (error "BUG: Bad rtype ~a" rt)))))
                  (cmp:irc-br succ))))))
 
 (defmethod translate-terminator ((instruction bir:catch) abi next)
@@ -328,9 +338,19 @@
          (rv (first inputs))
          ;; Force the return values into a tmv for transmission.
          (rrv (when rv
-                (ecase (cc-bmir:rtype rv)
-                  ((:object) (cmp:irc-make-tmv (%size_t 1) (in rv)))
-                  ((:multiple-values) (in rv)))))
+                (let ((rt (cc-bmir:rtype rv)))
+                  (cond ((equal rt '(:object))
+                         (cmp:irc-make-tmv (%size_t 1) (in rv)))
+                        ((eq rt :multiple-values) (in rv))
+                        ((null rt) (error "BUG: Bad rtype ~a" rt))
+                        ((every (lambda (x) (eq x :object)) rt)
+                         (let ((vals (in rv))
+                               (nvals (length rt)))
+                           (loop for i from 1 below nvals
+                                 for v in (rest vals)
+                                 do (cmp:irc-store v (return-value-elt i)))
+                           (cmp:irc-make-tmv (%size_t nvals) (first vals))))
+                        (t (error "BUG: Bad rtype ~a" rt))))))
          (destination (bir:destination instruction))
          (destination-id (get-destination-id destination)))
     ;; Transmit values
@@ -539,13 +559,8 @@
         ;; referenced as literal.
         (%closurette-value enclosed-function function-description))))
 
-(defmethod translate-simple-instruction ((instruction bir:local-call)
-                                         abi)
-  (declare (ignore abi))
-  (let* ((output (first (bir:outputs instruction)))
-         (callee (bir:callee instruction))
-         (callee-info (find-llvm-function-info callee))
-         (lisp-arguments (rest (bir:inputs instruction))))
+(defun gen-local-call (callee lisp-arguments)
+  (let ((callee-info (find-llvm-function-info callee)))
     (cond ((lambda-list-too-hairy-p (bir:lambda-list callee))
            ;; Has &key or something, so use the normal call protocol.
            ;; We allocate a fresh closure for every call. Hopefully this
@@ -554,10 +569,9 @@
            ;; (If we local-call a self-referencing closure, the closure cell
            ;;  will get its value from some enclose.
            ;;  FIXME we could use that instead?)
-           (out (closure-call-or-invoke
-                 (enclose callee-info :dynamic nil)
-                 (mapcar #'in lisp-arguments))
-                output))
+           (closure-call-or-invoke
+            (enclose callee-info :dynamic nil)
+            (mapcar #'in lisp-arguments)))
           (t
            ;; Call directly.
            ;; Note that Cleavir doesn't make local-calls if there's an
@@ -568,7 +582,14 @@
                   (result-in-registers
                     (cmp::irc-call-or-invoke function arguments)))
              (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
-             (out result-in-registers output))))))
+             result-in-registers)))))
+
+(defmethod translate-simple-instruction ((instruction bir:local-call)
+                                         abi)
+  (declare (ignore abi))
+  (out (gen-local-call (bir:callee instruction)
+                       (rest (bir:inputs instruction)))
+       (first (bir:outputs instruction))))
 
 (defmethod translate-simple-instruction ((instruction bir:call) abi)
   (declare (ignore abi))
@@ -738,14 +759,15 @@
     ((instruction bir:fixed-to-multiple) (abi abi-x86-64))
   (let* ((inputs (bir:inputs instruction))
          (output (first (bir:outputs instruction)))
+         (outputrt (cc-bmir:rtype output))
          (ninputs (length inputs)))
     (cond
-      ((eq (cc-bmir:rtype output) :object)
+      ((equal outputrt '(:object))
        ;; Sort of a special case here to avoid inserting ftm/mtf indefinitely
        ;; in bir-to-bmir: if the output has object rtype, just output the first
        ;; input untouched.
        (out (if (zerop ninputs) (%nil) (in (first inputs))) output))
-      (t
+      ((eq outputrt :multiple-values)
        (loop for i from 1 below ninputs
              do (cmp:irc-store (in (elt inputs i))
                                (return-value-elt i)))
@@ -753,7 +775,13 @@
                               (if (zerop ninputs)
                                   (%nil)
                                   (in (first inputs))))
-            output)))))
+            output))
+      ((every (lambda (x) (eq x :object)) outputrt)
+       (out (loop with minputs = inputs
+                  for i from 0 below (length outputrt)
+                  collect (or (pop minputs) (%nil)))
+            output))
+      (t (error "BUG: Bad rtype ~a" outputrt)))))
 
 (defmethod translate-simple-instruction
     ((instr bir:multiple-to-fixed) (abi abi-x86-64))
@@ -1041,11 +1069,18 @@
       (let ((ndefinitions (+ (cleavir-set:size (bir:predecessors iblock))
                              (cleavir-set:size (bir:entrances iblock)))))
         (loop for phi in phis
-              for llvm-type = (if (eq (cc-bmir:rtype phi) :multiple-values)
-                                  cmp::%tmv%
-                                  cmp:%t*%)
-              do (setf (gethash phi *datum-values*)
-                       (cmp:irc-phi llvm-type ndefinitions)))))))
+              for rt = (cc-bmir:rtype phi)
+              for dat
+                = (cond ((eq rt :multiple-values)
+                         (cmp:irc-phi cmp::%tmv% ndefinitions))
+                        ((equal rt '(:object))
+                         (cmp:irc-phi cmp:%t*% ndefinitions))
+                        ((and (listp rt)
+                              (every (lambda (x) (eq x :object)) rt))
+                         (loop repeat (length rt)
+                               collect (cmp:irc-phi cmp:%t*% ndefinitions)))
+                        (t (error "BUG: Bad rtype ~a" rt)))
+              do (setf (gethash phi *datum-values*) dat))))))
 
 (defun layout-iblock (iblock abi)
   (cmp:irc-begin-block (iblock-tag iblock))
