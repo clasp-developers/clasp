@@ -255,6 +255,7 @@
          (mtf (make-instance 'bir:multiple-to-fixed :outputs (list fx))))
     (bir:insert-instruction-after mtf after)
     (bir:replace-uses fx datum)
+    (setf (cc-bmir:rtype datum) :multiple-values)
     (setf (bir:inputs mtf) (list datum)))
   (values))
 
