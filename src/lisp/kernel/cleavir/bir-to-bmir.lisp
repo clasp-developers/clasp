@@ -150,9 +150,6 @@
   (error "BUG: transitive-rtype should make this impossible!"))
 (defmethod %use-rtype ((inst bir:jump) (datum bir:datum))
   (error "BUG: transitive-rtype should make this impossible!"))
-;; FIXME: multiple-to-fixed will be removed
-(defmethod %use-rtype ((inst bir:multiple-to-fixed) (datum bir:datum))
-  :multiple-values)
 (defmethod %use-rtype ((inst bir:thei) (datum bir:datum))
   ;; actual type tests, which need multiple values, should have been turned
   ;; into mv calls by this point. but out of an abundance of caution,
