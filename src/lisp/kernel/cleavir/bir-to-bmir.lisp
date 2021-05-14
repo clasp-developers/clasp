@@ -252,7 +252,7 @@
 
 (defun insert-mtf (after datum)
   (let* ((fx (make-instance 'cc-bmir:output :rtype '(:object)))
-         (mtf (make-instance 'bir:multiple-to-fixed :outputs (list fx))))
+         (mtf (make-instance 'cc-bmir:mtf :outputs (list fx))))
     (bir:insert-instruction-after mtf after)
     (bir:replace-uses fx datum)
     (setf (cc-bmir:rtype datum) :multiple-values)
@@ -268,7 +268,7 @@
 
 (defun insert-ftm (before datum)
   (let* ((mv (make-instance 'cc-bmir:output :rtype :multiple-values))
-         (ftm (make-instance 'bir:fixed-to-multiple :outputs (list mv))))
+         (ftm (make-instance 'cc-bmir:ftm :outputs (list mv))))
     (bir:insert-instruction-before ftm before)
     (bir:replace-uses mv datum)
     (setf (bir:inputs ftm) (list datum))
@@ -299,9 +299,12 @@
   ;; Default method: Assume we need all :objects and output an :object.)
   (check-object-inputs instruction))
 
+(defmethod insert-values-coercion ((instruction bir:fixed-to-multiple))
+  (check-object-inputs instruction)
+  (maybe-insert-mtf instruction (bir:output instruction)))
 ;;; Make sure we don't insert things infinitely
-(defmethod insert-values-coercion ((instruction bir:multiple-to-fixed)))
-(defmethod insert-values-coercion ((instruction bir:fixed-to-multiple)))
+(defmethod insert-values-coercion ((instruction cc-bmir:mtf)))
+(defmethod insert-values-coercion ((instruction cc-bmir:ftm)))
 ;;; Doesn't need to do anything, and might not have all :object inputs
 (defmethod insert-values-coercion ((instruction bir:thei)))
 

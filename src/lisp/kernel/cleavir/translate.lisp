@@ -757,37 +757,37 @@
 
 (defmethod translate-simple-instruction
     ((instruction bir:fixed-to-multiple) (abi abi-x86-64))
+  ;; TODO: Have this output (:object ..) rtype instead of being a dupe
   (let* ((inputs (bir:inputs instruction))
          (output (first (bir:outputs instruction)))
          (outputrt (cc-bmir:rtype output))
          (ninputs (length inputs)))
-    (cond
-      ((equal outputrt '(:object))
-       ;; Sort of a special case here to avoid inserting ftm/mtf indefinitely
-       ;; in bir-to-bmir: if the output has object rtype, just output the first
-       ;; input untouched.
-       (out (if (zerop ninputs) (%nil) (in (first inputs))) output))
-      ((eq outputrt :multiple-values)
-       (loop for i from 1 below ninputs
-             do (cmp:irc-store (in (elt inputs i))
-                               (return-value-elt i)))
-       (out (cmp:irc-make-tmv (%size_t ninputs)
-                              (if (zerop ninputs)
-                                  (%nil)
-                                  (in (first inputs))))
-            output))
-      ((every (lambda (x) (eq x :object)) outputrt)
-       (out (loop with minputs = inputs
-                  for i from 0 below (length outputrt)
-                  collect (or (pop minputs) (%nil)))
-            output))
-      (t (error "BUG: Bad rtype ~a" outputrt)))))
+    (when (null outputrt)
+      (out nil output)
+      (return-from translate-simple-instruction))
+    (assert (eq outputrt :multiple-values))
+    (loop for i from 1 below ninputs
+          do (cmp:irc-store (in (elt inputs i))
+                            (return-value-elt i)))
+    (out (cmp:irc-make-tmv (%size_t ninputs)
+                           (if (zerop ninputs)
+                               (%nil)
+                               (in (first inputs))))
+         output)))
 
-(defmethod translate-simple-instruction
-    ((instr bir:multiple-to-fixed) (abi abi-x86-64))
+(defmethod translate-simple-instruction ((instr cc-bmir:ftm) (abi abi-x86-64))
+  (let* ((input (bir:input instr))
+         (inputrt (cc-bmir:rtype input))
+         (output (bir:output instr))
+         (outputrt (cc-bmir:rtype output)))
+    (assert (equal inputrt '(:object)))
+    (assert (eq outputrt :multiple-values))
+    (out (cmp:irc-make-tmv (%size_t 1) (in input)) output)))
+
+(defmethod translate-simple-instruction ((instr cc-bmir:mtf) (abi abi-x86-64))
   (assert (= (length (bir:outputs instr)) 1))
-  (out (cmp:irc-tmv-primary (in (first (bir:inputs instr))))
-       (first (bir:outputs instr))))
+  (assert (equal (cc-bmir:rtype (bir:output instr)) '(:object)))
+  (out (cmp:irc-tmv-primary (in (bir:input instr))) (bir:output instr)))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:memref2) abi)
   (declare (ignore abi))
