@@ -248,7 +248,8 @@
   (bir:map-functions #'assign-function-rtypes module))
 
 (defun insert-mtf (after datum)
-  (let* ((fx (make-instance 'cc-bmir:output :rtype '(:object)))
+  (let* ((fx (make-instance 'cc-bmir:output :rtype '(:object)
+                            :derived-type (bir:ctype datum)))
          (mtf (make-instance 'cc-bmir:mtf :outputs (list fx))))
     (bir:insert-instruction-after mtf after)
     (bir:replace-uses fx datum)
@@ -264,7 +265,8 @@
           (t (error "BUG: Bad rtype ~a" rt)))))
 
 (defun insert-ftm (before datum)
-  (let* ((mv (make-instance 'cc-bmir:output :rtype :multiple-values))
+  (let* ((mv (make-instance 'cc-bmir:output :rtype :multiple-values
+                            :derived-type (bir:ctype datum)))
          (ftm (make-instance 'cc-bmir:ftm :outputs (list mv))))
     (bir:insert-instruction-before ftm before)
     (bir:replace-uses mv datum)
@@ -283,7 +285,8 @@
 
 (defun insert-pad-after (after ninputs datum)
   (let* ((new (make-instance 'cc-bmir:output
-                :rtype (make-list ninputs :initial-element :object)))
+                :rtype (make-list ninputs :initial-element :object)
+                :derived-type (bir:ctype datum)))
          (pad (make-instance 'cc-bmir:fixed-values-pad :inputs (list new))))
     (bir:insert-instruction-after pad after)
     (setf (bir:outputs after) (list new)
@@ -298,7 +301,8 @@
 ;;; to something expecting values.
 (defun insert-pad-before (before noutputs datum)
   (let* ((new (make-instance 'cc-bmir:output
-                :rtype (make-list noutputs :initial-element :object)))
+                :rtype (make-list noutputs :initial-element :object)
+                :derived-type (bir:ctype datum)))
          (pad (make-instance 'cc-bmir:fixed-values-pad :outputs (list new))))
     (bir:insert-instruction-before pad before)
     (bir:replace-uses new datum)
