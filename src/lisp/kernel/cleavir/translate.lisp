@@ -757,37 +757,60 @@
 
 (defmethod translate-simple-instruction
     ((instruction bir:fixed-to-multiple) (abi abi-x86-64))
-  ;; TODO: Have this output (:object ..) rtype instead of being a dupe
   (let* ((inputs (bir:inputs instruction))
          (output (first (bir:outputs instruction)))
          (outputrt (cc-bmir:rtype output))
          (ninputs (length inputs)))
-    (when (null outputrt)
-      (out nil output)
-      (return-from translate-simple-instruction))
-    (assert (eq outputrt :multiple-values))
-    (loop for i from 1 below ninputs
-          do (cmp:irc-store (in (elt inputs i))
-                            (return-value-elt i)))
-    (out (cmp:irc-make-tmv (%size_t ninputs)
-                           (if (zerop ninputs)
-                               (%nil)
-                               (in (first inputs))))
-         output)))
+    (assert (equal (length outputrt) ninputs))
+    (out (if (= ninputs 1) (in (first inputs)) (mapcar #'in inputs)) output)))
 
 (defmethod translate-simple-instruction ((instr cc-bmir:ftm) (abi abi-x86-64))
   (let* ((input (bir:input instr))
          (inputrt (cc-bmir:rtype input))
          (output (bir:output instr))
          (outputrt (cc-bmir:rtype output)))
-    (assert (equal inputrt '(:object)))
+    (assert (and (listp inputrt) (every (lambda (x) (eq x :object)) inputrt)))
     (assert (eq outputrt :multiple-values))
-    (out (cmp:irc-make-tmv (%size_t 1) (in input)) output)))
+    (cond ((equal inputrt '(:object))
+           (out (cmp:irc-make-tmv (%size_t 1) (in input)) output))
+          ((null inputrt)
+           (out (cmp:irc-make-tmv (%size_t 0) (%nil)) output))
+          (t
+           (let ((ninputs (length inputrt))
+                 (ins (in input)))
+             (loop for i from 1 below ninputs
+                   do (cmp:irc-store (elt ins i) (return-value-elt i)))
+             (out (cmp:irc-make-tmv (%size_t ninputs) (first ins)) output))))))
 
 (defmethod translate-simple-instruction ((instr cc-bmir:mtf) (abi abi-x86-64))
   (assert (= (length (bir:outputs instr)) 1))
   (assert (equal (cc-bmir:rtype (bir:output instr)) '(:object)))
   (out (cmp:irc-tmv-primary (in (bir:input instr))) (bir:output instr)))
+
+(defmethod translate-simple-instruction ((inst cc-bmir:fixed-values-pad) abi)
+  (declare (ignore abi))
+  (let* ((input (bir:input inst)) (ins (in input))
+         (inputrt (cc-bmir:rtype input)) (ninputs (length inputrt))
+         (output (bir:output inst))
+         (outputrt (cc-bmir:rtype output)) (noutputs (length outputrt)))
+    (out (cond ((equal outputrt '(:object))
+                ;; Single value object rtypes are not represented as lists, so
+                ;; they have to be handled a little specially
+                (cond ((equal inputrt '(:object)) ins)
+                      ((null inputrt) (%nil))
+                      (t (first ins))))
+               ((equal inputrt '(:object))
+                (cond ((null outputrt) nil)
+                      ;; outputrt = (:object) handled above
+                      (t (list* ins (make-list (1- noutput)
+                                               :initial-element (%nil))))))
+               ((< (length outputrt) (length inputrt))
+                ;; Shrink
+                (subseq ins 0 ninputs))
+               (t ;; Expand
+                (append ins (make-list (- noutputs ninputs)
+                                       :initial-element (%nil)))))
+         output)))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:memref2) abi)
   (declare (ignore abi))

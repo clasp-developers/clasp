@@ -31,6 +31,12 @@
 (defclass ftm (bir:one-input bir:one-output bir:instruction) ())
 (defclass mtf (bir:one-input bir:one-output bir:instruction) ())
 
+;;; Convert between fixed number of values rtypes.
+;;; E.g. it can receive (:object :object) and output (:object), or vice versa.
+;;; When shrinking this performs no actual operation. When adding all it does is
+;;; load the NIL constant.
+(defclass fixed-values-pad (bir:one-input bir:one-output bir:instruction) ())
+
 ;;;
 
 (defclass datum (bir:datum)

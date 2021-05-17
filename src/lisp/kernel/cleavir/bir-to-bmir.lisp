@@ -124,8 +124,8 @@
   (let ((input (first (bir:inputs inst))))
     (maybe-assign-rtype input)
     (cc-bmir:rtype input)))
-;; FIXME: will be removed (?)
-(defmethod definition-rtype ((inst bir:fixed-to-multiple)) :multiple-values)
+(defmethod definition-rtype ((inst bir:fixed-to-multiple))
+  (make-list (length (bir:inputs inst)) :initial-element :object))
 
 ;;; Given a datum, determine what rtype its use requires.
 (defgeneric use-rtype (datum))
@@ -274,34 +274,61 @@
 (defun maybe-insert-ftm (before datum)
   (let ((rt (cc-bmir:rtype datum)))
     (cond ((eq rt :multiple-values))
-          ((null rt))
-          ((equal rt '(:object)) (insert-ftm before datum))
+          ((and (listp rt) (every (lambda (x) (eq x :object)) rt))
+           (insert-ftm before datum))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
 (defun maybe-insert-ftms (before data)
   (loop for dat in data do (maybe-insert-ftm before dat)))
 
+(defun insert-pad-after (after ninputs datum)
+  (let* ((new (make-instance 'cc-bmir:output
+                :rtype (make-list ninputs :initial-element :object)))
+         (pad (make-instance 'cc-bmir:fixed-values-pad :inputs (list new))))
+    (bir:insert-instruction-after pad after)
+    (setf (bir:outputs after) (list new)
+          (bir:outputs pad) (list datum))
+    pad))
+
+(defun maybe-insert-pad-after (after ninputs datum)
+  (when (/= ninputs (length (cc-bmir:rtype datum)))
+    (insert-pad-after after ninputs datum)))
+
+;;; This is necessary for the situation where zero values are used as an input
+;;; to something expecting values.
+(defun insert-pad-before (before noutputs datum)
+  (let* ((new (make-instance 'cc-bmir:output
+                :rtype (make-list noutputs :initial-element :object)))
+         (pad (make-instance 'cc-bmir:fixed-values-pad :outputs (list new))))
+    (bir:insert-instruction-before pad before)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs pad) (list datum))
+    pad))
+
 (defgeneric insert-values-coercion (instruction))
 
-(defun check-object-input (instruction input)
+(defun object-input (instruction input)
   (let ((rt (cc-bmir:rtype input)))
-    (unless (equal rt '(:object))
-      (error "BUG: Bad rtype ~a where ~a expected" rt '(:object)))))
+    (cond ((equal rt '(:object)))
+          ((null rt) (insert-pad-before instruction 1 input))
+          (t (error "BUG: Bad rtype ~a where ~a expected" rt '(:object))))))
 
-(defun check-object-inputs (instruction
+(defun object-inputs (instruction
                             &optional (inputs (bir:inputs instruction)))
-  (loop for inp in inputs do (check-object-input instruction inp)))
+  (loop for inp in inputs do (object-input instruction inp)))
 
 (defmethod insert-values-coercion ((instruction bir:instruction))
-  ;; Default method: Assume we need all :objects and output an :object.)
-  (check-object-inputs instruction))
+  ;; Default method: Assume we need all :objects and output (:object).
+  (object-inputs instruction))
 
 (defmethod insert-values-coercion ((instruction bir:fixed-to-multiple))
-  (check-object-inputs instruction)
-  (maybe-insert-mtf instruction (bir:output instruction)))
+  (object-inputs instruction)
+  (maybe-insert-pad-after instruction (length (bir:inputs instruction))
+                          (bir:output instruction)))
 ;;; Make sure we don't insert things infinitely
 (defmethod insert-values-coercion ((instruction cc-bmir:mtf)))
 (defmethod insert-values-coercion ((instruction cc-bmir:ftm)))
+(defmethod insert-values-coercion ((instruction cc-bmir:fixed-values-pad)))
 ;;; Doesn't need to do anything, and might not have all :object inputs
 (defmethod insert-values-coercion ((instruction bir:thei)))
 
@@ -324,20 +351,20 @@
   (insert-jump-coercion instruction))
 
 (defmethod insert-values-coercion ((instruction bir:call))
-  (check-object-inputs instruction)
+  (object-inputs instruction)
   (maybe-insert-mtf instruction (first (bir:outputs instruction))))
 (defmethod insert-values-coercion ((instruction bir:mv-call))
-  (check-object-input instruction (first (bir:inputs instruction)))
+  (object-input instruction (first (bir:inputs instruction)))
   (maybe-insert-ftms instruction (rest (bir:inputs instruction)))
   (maybe-insert-mtf instruction (first (bir:outputs instruction))))
 (defmethod insert-values-coercion ((instruction bir:local-call))
-  (check-object-inputs instruction (rest (bir:inputs instruction)))
+  (object-inputs instruction (rest (bir:inputs instruction)))
   (maybe-insert-mtf instruction (first (bir:outputs instruction))))
 (defmethod insert-values-coercion ((instruction bir:mv-local-call))
   (maybe-insert-ftms instruction (rest (bir:inputs instruction)))
   (maybe-insert-mtf instruction (first (bir:outputs instruction))))
 (defmethod insert-values-coercion ((instruction cc-bir:mv-foreign-call))
-  (check-object-inputs instruction)
+  (object-inputs instruction)
   (maybe-insert-mtf instruction (first (bir:outputs instruction))))
 ;;; FIXME: Make these tolerate single value inputs - improve efficiency
 (defmethod insert-values-coercion ((instruction bir:values-save))

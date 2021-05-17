@@ -113,8 +113,8 @@
                 (every (lambda (x) (eq x :object)) rt))
            ;; Datum is a list of llvm data, and (in datum) is a list of phis.
            (loop for phi in (in datum)
-                 for dat in datum
-                 do (llvm-sys:add-incoming phi dat llvm-block)))
+                 for val in value
+                 do (llvm-sys:add-incoming phi val llvm-block)))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
 (defun variable-out (value variable)
