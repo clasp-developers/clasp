@@ -288,7 +288,7 @@ def update_dependencies(cfg):
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
-                       "17e856c8d8fd36564c2bfa4e199485a3731656dc")
+                       "50d0d93e34512e4215d70ee39a0e5505dba20a79")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "a56a5246fbaa90b98a29368c011a6616f2bcb482")
