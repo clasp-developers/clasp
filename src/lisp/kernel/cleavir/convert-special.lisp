@@ -107,6 +107,13 @@
       ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
            (null required))
        ast)
+      ((some (lambda (ty) (cleavir-ctype:bottom-p ty system)) required)
+       ;; KLUDGE: This isn't actually a check; if the restriction is violated
+       ;; bad things will happen. The right thing to do would be to call ERROR,
+       ;; but I don't want to worry about the recursion (as ERROR is declared
+       ;; as returning NIL type) right this second.
+       (cleavir-ast:make-progn-ast
+        (list ast (cleavir-ast:make-unreachable-ast :origin origin))))
       (insert-type-checks
        (let ((check
                (cst-to-ast:convert
@@ -131,6 +138,13 @@
     (cond ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
                (null required))
            ast)
+          ((some (lambda (ty) (cleavir-ctype:bottom-p ty system)) required)
+           ;; KLUDGE: This isn't actually a check; if the restriction is
+           ;; violated bad things will happen. The right thing to do would be
+           ;; to call ERROR, but I don't want to worry about the recursion
+           ;; (as ERROR is declared as returning NIL type) right this second.
+           (cleavir-ast:make-progn-ast
+            (list ast (cleavir-ast:make-unreachable-ast :origin origin))))
           #+(or) ;; FIXME: doesn't work yet for some reason.
           (insert-type-checks
            (let ((check

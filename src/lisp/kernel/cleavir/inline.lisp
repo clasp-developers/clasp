@@ -1009,18 +1009,7 @@
 (define-cleavir-compiler-macro values (&whole form &rest values)
   `(cleavir-primop:values ,@values))
 
-;;; Written as a compiler macro to avoid confusing bclasp.
-(define-cleavir-compiler-macro multiple-value-bind (&whole form vars values-form &body body)
-  (let ((syms (loop for var in vars collecting (gensym (symbol-name var)))))
-    ;; NOTE: We ought to be able to use LET-UNINITIALIZED here. However,
-    ;; Cleavir works badly with this in some situations. See bug #866.
-    `(let (,@syms)
-       (cleavir-primop:multiple-value-setq (,@syms) ,values-form)
-       (let (,@(loop for var in vars for sym in syms
-                     collecting `(,var ,sym)))
-         ,@body))))
-
-;;; Ditto, a compiler macro to avoid confusing bclasp.
+;;; A compiler macro to avoid confusing bclasp.
 (define-cleavir-compiler-macro ext:with-current-source-form
     (&whole f (&rest forms) &body body)
   `(cleavir-cst-to-ast:with-current-source-form (,@forms) ,@body))

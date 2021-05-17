@@ -30,6 +30,7 @@
       (compile-file "sys:kernel;lsp;setf.lsp" :output-file "/tmp/setf.fasl")))
   )
 
+#+(or)
 (start-cleavir)
 ;;; Start cleavir with no inline
 ;;(load-cleavir-no-inline)
