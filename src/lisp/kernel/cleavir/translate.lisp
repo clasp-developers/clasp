@@ -997,12 +997,14 @@
           do (if seen-non-save
                  (error "BUG: Can only have one variable non-save-values input, but saw ~a and ~a!" inst seen-non-save)
                  (setf seen-non-save inst)))
-  (let* (;; Collect the form of each input.
+  (let* ((liven nil) ; index for the :variable storage.
+         ;; Collect the form of each input.
          ;; Each datum is (symbol nvalues extra).
          ;; For saved values, the extra is the storage for it. For the current
          ;; values the extra is the primary value (since it's stored
          ;; separately)
-         (data (loop for input in (bir:inputs inst)
+         (data (loop for idx from 0
+                     for input in (bir:inputs inst)
                      for outputp = (typep input 'bir:output)
                      for inst = (and outputp (bir:definition input))
                      collect (cond ((typep inst 'bir:values-save)
@@ -1016,23 +1018,48 @@
                                             (list* len (if (= len 1)
                                                            (list in)
                                                            in)))))
-                                   (t (let ((i (in input)))
-                                        (list :variable
-                                              (cmp:irc-tmv-nret i)
-                                              (cmp:irc-tmv-primary i)))))))
+                                   (t
+                                    (setf liven idx)
+                                    (let ((i (in input)))
+                                      (list :variable
+                                            (cmp:irc-tmv-nret i)
+                                            (cmp:irc-tmv-primary i)))))))
          ;; Collect partial sums of the number of values.
          (partial-sums
            (loop for (_1 size _2) in data
                  for n = size then (cmp:irc-add n size)
                  collect n))
          (n-total-values (first (last partial-sums)))
-         ;; Allocate storage for the combined values vector.
-         (store (cmp:alloca-temp-values n-total-values)))
+         ;; LLVM type is t**, i.e. this is a pointer to the 0th value.
+         (valvec (%gep cmp:%t*[0]*% (multiple-value-array-address) '(0 0))))
     ;; Generate code to copy all the values into the temp storage.
+    ;; First we need to move any live values, since otherwise they could be
+    ;; overridden, unless they're at zero position since then they're already
+    ;; in place. (in practice, this never happens right now, but maybe later?)
+    (when (and liven (not (zerop liven)))
+      (destructuring-bind (size primary) (rest (nth liven data))
+        (let* ((spos (nth (1- liven) partial-sums))
+               (sdest (cmp:irc-gep-variable valvec (list spos)))
+               ;; Add one, since we store the primary separately
+               (dest (%gep cmp:%t**% valvec '(1))))
+          ;; Store the primary
+          (cmp:irc-store primary (cmp:irc-gep-variable valvec (list spos)))
+          ;; Copy the rest
+          (%intrinsic-call "llvm.memmove.p0i8.p0i8.i64"
+                           (list (cmp:irc-bit-cast dest cmp:%i8*%)
+                                 ;; read from the start of the mv vector
+                                 (cmp:irc-bit-cast valvec cmp:%i8*%)
+                                 ;; Multiply size by sizeof(T_O*)
+                                 ;; (subtract one for the primary, again)
+                                 (cmp::irc-shl
+                                  (cmp::irc-sub size (%size_t 1)) 3 :nuw t)
+                                 ;; non volatile
+                                 (%i1 0))))))
+    ;; Now copy the rest
     (loop for (key size extra) in data
           for startn = (%size_t 0) then finishn
           for finishn in partial-sums
-          for dest = (cmp:irc-gep-variable store (list startn))
+          for dest = (cmp:irc-gep-variable valvec (list startn))
           do (ecase key
                ((:saved)
                 (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
@@ -1045,10 +1072,10 @@
                 (loop for i below (first extra) ; size
                       for v in (rest extra)
                       do (cmp:irc-store v (%gep cmp:%t**% dest (list i)))))
-               ((:variable)
-                 (%intrinsic-call "cc_save_values" (list size extra dest)))))
-    ;; Finally, load the temp storage into the regular values vector.
-    (%intrinsic-call "cc_load_values" (list n-total-values store))))
+               ((:variable)))) ; done already
+    ;; Now just return a T_mv. We load the primary from the vector again, which
+    ;; is technically slightly inefficient.
+    (cmp:irc-make-tmv n-total-values (cmp:irc-load valvec))))
 
 (defmethod translate-simple-instruction ((inst bir:values-collect) abi)
   (declare (ignore abi))
