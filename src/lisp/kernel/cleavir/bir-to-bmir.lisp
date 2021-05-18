@@ -380,7 +380,6 @@
 (defmethod insert-values-coercion ((instruction cc-bir:mv-foreign-call))
   (object-inputs instruction)
   (maybe-insert-mtf instruction (first (bir:outputs instruction))))
-;;; FIXME: Make these tolerate single value inputs - improve efficiency
 (defmethod insert-values-coercion ((instruction bir:values-save))
   (let* ((input (bir:input instruction)) (output (bir:output instruction))
          (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output))
@@ -409,7 +408,6 @@
            (bir:replace-uses (first inputs) output)
            (bir:delete-instruction instruction))
           (t
-           (maybe-insert-ftms instruction inputs)
            (maybe-insert-mtf instruction output)))))
 (defmethod insert-values-coercion ((instruction bir:returni))
   (maybe-insert-ftms instruction (bir:inputs instruction)))

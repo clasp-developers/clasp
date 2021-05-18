@@ -992,23 +992,34 @@
         for input in (bir:inputs inst)
         for outp = (typep input 'bir:output)
         for inst = (and outp (bir:definition input))
-        if (not (typep inst 'bir:values-save))
+        if (not (or (typep inst 'bir:values-save)
+                    (listp (cc-bmir:rtype input))))
           do (if seen-non-save
-                 (error "BUG: Can only have one non-save-values input!")
-                 (setf seen-non-save t)))
+                 (error "BUG: Can only have one variable non-save-values input, but saw ~a and ~a!" inst seen-non-save)
+                 (setf seen-non-save inst)))
   (let* (;; Collect the form of each input.
          ;; Each datum is (symbol nvalues extra).
          ;; For saved values, the extra is the storage for it. For the current
-         ;; values the extra is the primary value (since it's stored separately)
+         ;; values the extra is the primary value (since it's stored
+         ;; separately)
          (data (loop for input in (bir:inputs inst)
                      for outputp = (typep input 'bir:output)
                      for inst = (and outputp (bir:definition input))
-                     collect (if (typep inst 'bir:values-save)
-                                 (list* :saved (rest (dynenv-storage inst)))
-                                 (let ((i (in input)))
-                                   (list :variable
-                                         (cmp:irc-tmv-nret i)
-                                         (cmp:irc-tmv-primary i))))))
+                     collect (cond ((typep inst 'bir:values-save)
+                                    (list* :saved
+                                           (rest (dynenv-storage inst))))
+                                   ((listp (cc-bmir:rtype input))
+                                    (let ((len (length (cc-bmir:rtype input)))
+                                          (in (in input)))
+                                      (list :fixed
+                                            (%size_t len)
+                                            (list* len (if (= len 1)
+                                                           (list in)
+                                                           in)))))
+                                   (t (let ((i (in input)))
+                                        (list :variable
+                                              (cmp:irc-tmv-nret i)
+                                              (cmp:irc-tmv-primary i)))))))
          ;; Collect partial sums of the number of values.
          (partial-sums
            (loop for (_1 size _2) in data
@@ -1030,6 +1041,10 @@
                                        ;; Multiply by sizeof(T_O*)
                                        (cmp::irc-shl size 3 :nuw t)
                                        (%i1 0))))
+               ((:fixed)
+                (loop for i below (first extra) ; size
+                      for v in (rest extra)
+                      do (cmp:irc-store v (%gep cmp:%t**% dest (list i)))))
                ((:variable)
                  (%intrinsic-call "cc_save_values" (list size extra dest)))))
     ;; Finally, load the temp storage into the regular values vector.
