@@ -116,8 +116,16 @@
 ;; usually correct default
 (defmethod definition-rtype ((inst bir:instruction)) '(:object))
 (defmethod definition-rtype ((inst bir:abstract-call)) :multiple-values)
-(defmethod definition-rtype ((inst bir:values-save)) :multiple-values)
-(defmethod definition-rtype ((inst bir:values-collect)) :multiple-values)
+(defmethod definition-rtype ((inst bir:values-save))
+  (let ((input (bir:input inst)))
+    (maybe-assign-rtype input)
+    (cc-bmir:rtype input)))
+(defmethod definition-rtype ((inst bir:values-collect))
+  (if (= (length (bir:inputs inst)) 1)
+      (let ((input (first (bir:inputs inst))))
+        (maybe-assign-rtype input)
+        (cc-bmir:rtype input))
+      :multiple-values))
 (defmethod definition-rtype ((inst cc-bir:mv-foreign-call)) :multiple-values)
 (defmethod definition-rtype ((inst bir:thei))
   ;; THEI really throws a wrench in some stuff.
@@ -143,9 +151,11 @@
       :multiple-values '(:object)))
 (defmethod %use-rtype ((inst bir:returni) (datum bir:datum)) :multiple-values)
 (defmethod %use-rtype ((inst bir:values-save) (datum bir:datum))
-  :multiple-values)
+  (use-rtype (bir:output inst)))
 (defmethod %use-rtype ((inst bir:values-collect) (datum bir:datum))
-  :multiple-values)
+  (if (= (length (bir:inputs inst)) 1)
+      (use-rtype (bir:output inst))
+      :multiple-values))
 (defmethod %use-rtype ((inst bir:unwind) (datum bir:datum))
   (error "BUG: transitive-rtype should make this impossible!"))
 (defmethod %use-rtype ((inst bir:jump) (datum bir:datum))
@@ -372,11 +382,35 @@
   (maybe-insert-mtf instruction (first (bir:outputs instruction))))
 ;;; FIXME: Make these tolerate single value inputs - improve efficiency
 (defmethod insert-values-coercion ((instruction bir:values-save))
-  (maybe-insert-ftms instruction (bir:inputs instruction))
-  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
+  (let* ((input (bir:input instruction)) (output (bir:output instruction))
+         (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output))
+         (nde (bir:dynamic-environment instruction)))
+    (cond ((eq outputrt :multiple-values)
+           (maybe-insert-ftms instruction (bir:inputs instruction)))
+          (t
+           ;; The number of values is fixed, so this is a nop to delete.
+           (assert (equal inputrt outputrt))
+           (cleavir-set:doset (s (cleavir-bir:scope instruction))
+             (setf (cleavir-bir:dynamic-environment s) nde))
+           (cleavir-bir:replace-terminator
+            (make-instance 'cleavir-bir:jump
+              :inputs () :outputs () :next (bir:next instruction))
+            instruction)
+           ;; Don't need to recompute flow order since we haven't changed it.
+           ;; We also don't merge iblocks because we're mostly done optimizing
+           ;; at this point anyway.
+           (bir:replace-uses input output)))))
 (defmethod insert-values-coercion ((instruction bir:values-collect))
-  (maybe-insert-ftms instruction (bir:inputs instruction))
-  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
+  (let* ((inputs (bir:inputs instruction)) (output (bir:output instruction))
+         (outputrt (cc-bmir:rtype output)))
+    (cond ((and (= (length inputs) 1) (not (eq outputrt :multiple-values)))
+           ;; fixed values, so this is a nop to delete.
+           (setf (bir:inputs instruction) nil)
+           (bir:replace-uses (first inputs) output)
+           (bir:delete-instruction instruction))
+          (t
+           (maybe-insert-ftms instruction inputs)
+           (maybe-insert-mtf instruction output)))))
 (defmethod insert-values-coercion ((instruction bir:returni))
   (maybe-insert-ftms instruction (bir:inputs instruction)))
 
