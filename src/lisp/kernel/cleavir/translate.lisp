@@ -473,46 +473,36 @@
        (first (bir:outputs instruction))))
 
 (defun gen-rest-list (present-arguments)
-  ;; Generate a call to cc_list.
-  ;; TODO: DX &rest lists.
-  (%intrinsic-invoke-if-landing-pad-or-call
-   "cc_list" (list* (%size_t (length present-arguments))
-                    (mapcar #'in present-arguments))))
+  (if (null present-arguments)
+      (%nil)
+      ;; Generate a call to cc_list.
+      ;; TODO: DX &rest lists.
+      (%intrinsic-invoke-if-landing-pad-or-call
+       "cc_list" (list* (%size_t (length present-arguments))
+                        present-arguments))))
 
-;; Create the argument list for a local call by parsing the callee's
+(defun parse-local-call-optional-arguments (nopt arguments)
+  (loop repeat nopt
+        if arguments
+          collect (pop arguments)
+          and collect (cmp::irc-t)
+        else
+          collect (cmp:irc-undef-value-get cmp:%t*%)
+          and collect (%nil)))
+
+;; Create than argument list for a local call by parsing the callee's
 ;; lambda list and filling in the correct values at compile time. We
 ;; assume that we have already checked the validity of this call.
-(defun parse-local-call-arguments (callee present-arguments)
-  (let* ((lambda-list (bir:lambda-list callee))
-         (callee-info (find-llvm-function-info callee))
-         (environment (environment callee-info))
-         (state :required)
-         (arguments '()))
-    (dolist (item lambda-list)
-      (if (symbolp item)
-          (setq state item)
-          (ecase state
-            (:required
-             (assert present-arguments)
-             (push (in (pop present-arguments)) arguments))
-            (&optional
-             (cond (present-arguments
-                    (push (in (pop present-arguments)) arguments)
-                    (push (cmp::irc-t) arguments))
-                   (t
-                    (push (cmp:irc-undef-value-get cmp:%t*%) arguments)
-                    (push (%nil) arguments))))
-            (&key
-             (error "I don't know how to do this."))
-            (&rest
-             (push (if (bir:unused-p item) ; unused &rest
-                       (cmp:irc-undef-value-get cmp:%t*%)
-                       (gen-rest-list present-arguments))
-                   arguments)))))
-    ;; Augment the environment values to the arguments of the
-    ;; call. Make sure to get the variable location and not
-    ;; necessarily the value.
-    (nconc (mapcar #'variable-as-argument environment) (nreverse arguments))))
+(defun parse-local-call-arguments (nreq nopt rest arguments)
+  (let* ((reqargs (subseq arguments 0 nreq))
+         (more (nthcdr nreq arguments))
+         (optargs (parse-local-call-optional-arguments nopt more))
+         (rest
+           (cond ((not rest) nil)
+                 ((eq rest :unused)
+                  (list (cmp:irc-undef-value-get cmp:%t*%)))
+                 (t (list (gen-rest-list (nthcdr nopt more)))))))
+    (append reqargs optargs rest)))
 
 (defun enclose (code-info extent &optional (delay t))
   (let* ((environment (environment code-info))
@@ -576,13 +566,26 @@
            ;; Call directly.
            ;; Note that Cleavir doesn't make local-calls if there's an
            ;; argcount mismatch, so we don't need to sweat that.
-           (let* ((arguments
-                    (parse-local-call-arguments callee lisp-arguments))
-                  (function (main-function callee-info))
-                  (result-in-registers
-                    (cmp::irc-call-or-invoke function arguments)))
-             (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
-             result-in-registers)))))
+           (multiple-value-bind (req opt rest-var key-flag keyargs aok aux
+                                 varest-p)
+               (cmp::process-cleavir-lambda-list (bir:lambda-list callee))
+             (declare (ignore keyargs aok aux))
+             (assert (and (not key-flag) (not varest-p)))
+             (let* ((rest-id (cond ((null rest-var) nil)
+                                   ((bir:unused-p rest-var) :unused)
+                                   (t t)))
+                    (subargs
+                      (parse-local-call-arguments
+                       (car req) (car opt) rest-id
+                       (mapcar #'in lisp-arguments)))
+                    (args (append (mapcar #'variable-as-argument
+                                          (environment callee-info))
+                                  subargs))
+                    (function (main-function callee-info))
+                    (result-in-registers
+                      (cmp::irc-call-or-invoke function args)))
+               (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
+               result-in-registers))))))
 
 (defmethod translate-simple-instruction ((instruction bir:local-call)
                                          abi)
@@ -618,10 +621,16 @@
          (merge (cmp:irc-basic-block-create "lmvc-after"))
          (sw (cmp:irc-switch rnret mte (+ 1 nreq nopt)))
          (environment (environment callee-info)))
-    (flet ((load-return-value (n)
-             (if (zerop n)
-                 rprimary
-                 (cmp:irc-load (return-value-elt n)))))
+    (labels ((load-return-value (n)
+               (if (zerop n)
+                   rprimary
+                   (cmp:irc-load (return-value-elt n))))
+             (load-return-values (low high)
+               (loop for i from low below high
+                     collect (load-return-value i)))
+             (optionals (n)
+               (parse-local-call-optional-arguments
+                nopt (load-return-values nreq (+ nreq n)))))
       ;; Generate phis for the merge block's call.
       (cmp:irc-begin-block merge)
       (let ((opt-phis
@@ -648,25 +657,11 @@
         (loop for i upto nopt
               for b = (cmp:irc-basic-block-create
                        (format nil "lmvc-optional-~d" i))
-              for these-opt-phis = opt-phis
               do (cmp:irc-add-case sw (%size_t (+ nreq i)) b)
                  (cmp:irc-begin-block b)
-                 (loop for j below i
-                       do (cmp:irc-phi-add-incoming
-                           (pop these-opt-phis)
-                           (if (zerop (+ nreq j))
-                               rprimary
-                               (load-return-value (+ nreq j)))
-                           b)
-                          (cmp:irc-phi-add-incoming (pop these-opt-phis)
-                                                    (cmp::irc-t) b))
-                 (loop repeat (- nopt i)
-                       do (cmp:irc-phi-add-incoming
-                           (pop these-opt-phis)
-                           (cmp:irc-undef-value-get cmp:%t*%)
-                           b)
-                          (cmp:irc-phi-add-incoming (pop these-opt-phis)
-                                                    (%nil) b))
+                 (loop for phi in opt-phis
+                       for val in (optionals i)
+                       do (cmp:irc-phi-add-incoming phi val b))
                  (when (and rest-var
                             (not (bir:unused-p rest-var)))
                    (cmp:irc-phi-add-incoming rest-phi (%nil) b))
@@ -674,14 +669,9 @@
         ;; If there's a &rest, generate the more-than-enough arguments case.
         (when rest-var
           (cmp:irc-begin-block mte)
-          (loop with these-opt-phis = opt-phis
-                for j below nopt
-                do (cmp:irc-phi-add-incoming
-                    (pop these-opt-phis)
-                    (load-return-value (+ nreq j))
-                    mte)
-                   (cmp:irc-phi-add-incoming
-                    (pop these-opt-phis) (cmp::irc-t) mte))
+          (loop for phi in opt-phis
+                for val in (optionals nopt)
+                do (cmp:irc-phi-add-incoming phi val mte))
           (unless (bir:unused-p rest-var)
             (cmp:irc-phi-add-incoming
              rest-phi
@@ -694,8 +684,7 @@
       (let* ((arguments
                (nconc
                 (mapcar #'variable-as-argument environment)
-                (loop for j below nreq
-                      collect (load-return-value j))
+                (loop for j below nreq collect (load-return-value j))
                 opt-phis
                 (when rest-var (list rest-phi))))
              (function (main-function callee-info))
@@ -802,7 +791,7 @@
                ((equal inputrt '(:object))
                 (cond ((null outputrt) nil)
                       ;; outputrt = (:object) handled above
-                      (t (list* ins (make-list (1- noutput)
+                      (t (list* ins (make-list (1- noutputs)
                                                :initial-element (%nil))))))
                ((< (length outputrt) (length inputrt))
                 ;; Shrink
