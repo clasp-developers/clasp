@@ -78,7 +78,6 @@
   (destructuring-bind
         (build-path clasp-home-path &rest sif-files)
       (uiop:command-line-arguments)
-    (declare (ignore lisp-binary))
     (let ((*default-pathname-defaults* (pathname build-path)))
       (format t "clasp-home-path             -> ~a~%" clasp-home-path)
       (format t "build-path                  -> ~a~%" build-path)

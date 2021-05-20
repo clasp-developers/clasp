@@ -235,6 +235,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                (dolist (subclass (direct-subclasses% class))
                  (traverse-assign-stamps subclass flags))))
       (maphash (lambda (key class)
+                 (declare (ignore key))
                  (let ((super-class-key (base% class)))
                    (if super-class-key
                        (let ((super-class (gethash (base% class) classes)))
@@ -247,6 +248,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
       (dolist (top-class top-classes)
         (traverse-assign-stamps top-class :FLAGS_STAMP_IN_HEADER)))
     (maphash (lambda (key type)
+               (declare (ignore key))
                (setf (stamp% type) (shift-stamp (incf cur-unshifted-stamp))))
              gc-managed-types)))
 
@@ -424,7 +426,6 @@ This interprets the tags and generates objects that are used to generate code."
                        cur-name
                        (packaged-name cur-namespace-tag tag packages)
                        packages))
-                    (namespace (tags:namespace% cur-namespace-tag))
                     (pointer (string-trim " " (tags:pointer% tag)))
                     (function-name (extract-function-name-from-pointer pointer tag))
                     (function-ptr (esrap:parse 'function-ptr pointer))
@@ -679,7 +680,7 @@ This interprets the tags and generates objects that are used to generate code."
             (tags:cl-initializer-tag
              (let* ((namespace (tags:namespace% cur-namespace-tag))
                     (signature-text (tags:signature-text% tag)))
-               (multiple-value-bind (function-name full-function-name simple-function)
+               (multiple-value-bind (function-name full-function-name)
                    (extract-function-name-from-signature signature-text tag)
                  (declare (ignore function-name))
                  (pushnew (make-instance 'expose-initializer
@@ -694,7 +695,7 @@ This interprets the tags and generates objects that are used to generate code."
             (tags:cl-expose-tag
              (let* ((namespace (tags:namespace% cur-namespace-tag))
                     (signature-text (tags:signature-text% tag)))
-               (multiple-value-bind (function-name full-function-name simple-function)
+               (multiple-value-bind (function-name full-function-name)
                    (extract-function-name-from-signature signature-text tag)
                  (declare (ignore function-name))
                  (pushnew (make-instance 'expose-expose
@@ -709,7 +710,7 @@ This interprets the tags and generates objects that are used to generate code."
             (tags:cl-terminator-tag
              (let* ((namespace (tags:namespace% cur-namespace-tag))
                     (signature-text (tags:signature-text% tag)))
-               (multiple-value-bind (function-name full-function-name simple-function)
+               (multiple-value-bind (function-name full-function-name)
                    (extract-function-name-from-signature signature-text tag)
                  (declare (ignore function-name))
                  (pushnew (make-instance 'expose-terminator
@@ -724,7 +725,7 @@ This interprets the tags and generates objects that are used to generate code."
             (tags:cl-pregcstartup-tag
              (let* ((namespace (tags:namespace% cur-namespace-tag))
                     (signature-text (tags:signature-text% tag)))
-               (multiple-value-bind (function-name full-function-name simple-function)
+               (multiple-value-bind (function-name full-function-name)
                    (extract-function-name-from-signature signature-text tag)
                  (declare (ignore function-name))
                  (pushnew (make-instance 'expose-pregcstartup

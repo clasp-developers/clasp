@@ -205,7 +205,7 @@
           (handler-bind
               ((SB-INT:SIMPLE-READER-PACKAGE-ERROR
                  (lambda (err) 
-                   (invoke-restart 'use-value (find-package :keyword)))))
+                   (use-value (find-package :keyword) err))))
             (read-delimited-list #\) sis))
         (end-of-file (err)
           (declare (ignore err))
