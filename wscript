@@ -343,13 +343,12 @@ def analyze_clasp(cfg):
     print("In analyze_clasp cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
     log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
     output_file = generate_output_filename(cfg.extensions_clasp_gc_names)
-    run_search = '(run-search "%s")' % output_file
     run_program_echo("build/boehm/iclasp-boehm",
                      "-N", "-D",
                      "--feature", "ignore-extensions",
-                     "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
-                     "--eval", run_search,
-                     "--eval",    "(core:quit)")
+                     "--load",   "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
+                     "--eval",   '(run-search "%s")' % (output_file),
+                     "--eval",   "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 def analyze_test(cfg):
@@ -358,13 +357,12 @@ def analyze_test(cfg):
     print("In analyze_test cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
     log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
     output_file = "source-dir:build;clasp_gc_test.cc"
-    run_search = '(run-search "%s")' % output_file
+    selection_pattern = "unixfsys.cc"
     run_program_echo("build/boehm/iclasp-boehm",
                      "--feature", "ignore-extensions",
-                     "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer-test.lisp",
-                     "--eval", "(defparameter *pattern* \"unixfsys.cc\")",
-                     "--eval", run_search,
-                     "--eval",    "(core:quit)")
+                     "--load",   "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
+                     "--eval",   '(run-search "%s" :selection-pattern "%s")' % (output_file, selection_pattern),
+                     "--eval",   "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 def test(cfg):
