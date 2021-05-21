@@ -41,6 +41,9 @@
 
 namespace imageSaveLoad {
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
+
+bool global_debugSnapshot = false;
+
 };
 
 
@@ -131,9 +134,6 @@ FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
 
 
 namespace imageSaveLoad {
-
-bool global_debugSnapshot = false;
-
 bool globalFwdMustBeInGCMemory = false;
 #define DEBUG_SL_FFWD 1
 
@@ -260,6 +260,9 @@ void decodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Cod
   uintptr_t address = (uintptr_t)(vaddress & (((uintptr_t)1<<56) - 1));
   uint8_t firstByte = (uint8_t)(((uintptr_t)vaddress >> 56) & (uintptr_t)0xff);
   uintptr_t codeStart = code->codeStart();
+  if (!codeStart) {
+    printf("%s:%d:%s The start address for code: %p can not be zero!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() );
+  }
   uintptr_t result = (address + codeStart);
   DBG_SL_ENTRY_POINT(BF("base: %p decoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
   if (*(uint8_t*)result != firstByte) {
@@ -2358,7 +2361,12 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
           root_holder.add((void*)code.raw_());
           codeFixups.emplace_back(CodeFixup_t((llvmo::Code_O*)oldCode.unsafe_general(),((llvmo::Code_O*)code.unsafe_general())));
           if (global_debugSnapshot) {
-            printf("Passed object file %lu/%lu to LLJIT\n", objectFileCount, fileHeader->_ObjectFileCount );
+            printf("%s:%d:%s Passed ObjectFile_sp %p  Code_sp %p  %lu/%lu to LLJIT\n",
+                   __FILE__, __LINE__, __FUNCTION__,
+                   allocatedObjectFile.raw_(),
+                   code.raw_(),
+                   objectFileCount,
+                   fileHeader->_ObjectFileCount );
           }
           objectFileCount++;
         } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O) ) {

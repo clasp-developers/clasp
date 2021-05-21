@@ -14,6 +14,8 @@
 
 namespace imageSaveLoad {
 
+extern bool global_debugSnapshot;
+
 
   enum PointerType { UninitializedPointer=0, EndPointer=1, FunctionPointer=2, VtablePointer=3 };
 
