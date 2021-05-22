@@ -94,7 +94,7 @@ public:
 
 namespace clbind {
 
-template <typename Pols , typename RT  ,typename...ARGS>
+template <typename Pols, typename RT  ,typename...ARGS>
 class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols> : public core::BuiltinClosure_O {
 public:
   typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Pols> MyType;
@@ -116,7 +116,7 @@ public:
   virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup) {
     this->fixupOneCodePointer(fixup,(void**)&this->fptr,sizeof(this->fptr));
   }
-  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+  static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);

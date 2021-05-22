@@ -1,5 +1,6 @@
 #include <tuple>
 #include <utility>
+#include <type_traits>
 #include <iostream>
 #include <functional>
 
@@ -85,19 +86,6 @@ struct to_object<int&,std::false_type> {
   }
 };
 };
-
-// ------------------------------------------------------------
-//
-// Policies
-//
-template <size_t X>
-struct pureOutValue {};
-
-template <size_t X>
-struct outValue {};
-
-template <typename...Policies>
-struct policies {};
 
 #endif
 
@@ -265,30 +253,30 @@ void print_muple(const std::string& name, const muple<Ts...>& muple)
 
 namespace clbind {
 namespace detail {
-template <size_t N, typename POL>
+template <int N, typename POL>
 struct MapOutValuesImpl;
 
-template <size_t N>
+template <int N>
 struct MapOutValuesImpl<N,policies<>> {
   using type = Val<0>;
 };
 
-template <size_t N, typename... Tail>
+template <int N, typename... Tail>
 struct MapOutValuesImpl<N,policies<pureOutValue<N>, Tail...>> {
   using type = Val<1>;
 };
 
-template <size_t N, typename... Tail>
+template <int N, typename... Tail>
 struct MapOutValuesImpl<N,policies<outValue<N>, Tail...>> {
   using type = Val<1>;
 };
 
-template <size_t N, typename Head, typename... Tail>
+template <int N, typename Head, typename... Tail>
 struct MapOutValuesImpl<N,policies<Head, Tail...>> {
   using type = typename MapOutValuesImpl<N,policies<Tail...>>::type;
 };
 };
-template <size_t N, typename Policies>
+template <int N, typename Policies>
 struct MapOutValues {
   using type = typename detail::MapOutValuesImpl<N,Policies>::type;
 };
@@ -302,27 +290,49 @@ struct MapOutValues {
 
 namespace clbind {
 namespace detail {
-template <size_t N, typename Policies>
+#if 0
+template <int N, typename... Policies>
 struct MapNotPureOutValuesImpl;
 
-template <size_t N>
-struct MapNotPureOutValuesImpl<N,policies<>> {
+template <int N>
+struct MapNotPureOutValuesImpl<N> {
   using type = Val<1>;
 };
 
-template <size_t N, typename... Tail>
-struct MapNotPureOutValuesImpl<N,policies<pureOutValue<N>, Tail...>> {
-  using type = Val<0>;
+template <int N, typename Head, typename... Tail>
+struct MapNotPureOutValuesImpl<N,Head, Tail...> {
+  using type = typename MapNotPureOutValuesImpl<N,Tail...>::type;
 };
 
-template <size_t N, typename Head, typename... Tail>
-struct MapNotPureOutValuesImpl<N,policies<Head, Tail...>> {
-  using type = typename MapNotPureOutValuesImpl<N,policies<Tail...>>::type;
+template <int N,typename... Tails>
+struct MapNotPureOutValuesImpl<N,pureOutValue<N>, Tails...> {
+  using type = Val<0>;
 };
+#else
+template <int N, typename... Policies>
+struct MapNotPureOutValuesImpl;
+
+template <int N>
+struct MapNotPureOutValuesImpl<N> {
+  using type = Val<1>;
 };
-template <size_t N, typename Policies>
-struct MapNotPureOutValues {
-  using type = typename detail::MapNotPureOutValuesImpl<N,Policies>::type;
+template <int N, typename Head, typename... Tails>
+struct MapNotPureOutValuesImpl<N,Head,Tails...> {
+  using type = typename MapNotPureOutValuesImpl<N,Tails...>::type;
+};
+
+template <int N,typename...Tails>
+struct MapNotPureOutValuesImpl<N,pureOutValue<N>,Tails...> {
+  using type = Val<0>;
+};
+#endif
+};
+template <int N, typename Policies>
+struct MapNotPureOutValues;
+
+template <int N, typename ...Types>
+struct MapNotPureOutValues<N,policies<Types...>>{
+  using type = typename detail::MapNotPureOutValuesImpl<N,Types...>::type;
 };
 };
 
@@ -376,7 +386,7 @@ struct inValueMaskMuple_impl<Policies,std::integer_sequence<size_t,Is...>> {
 };
 
 };
-template <size_t Num,typename Policies>
+template <int Num,typename Policies>
 struct inValueMaskMuple {
   using type = typename detail::inValueMaskMuple_impl<Policies,std::make_index_sequence<Num>>::type;
 };
@@ -407,7 +417,7 @@ struct outValueMaskMuple_impl<Policies,std::integer_sequence<size_t,Is...>> {
 };
 };
 
-template <size_t Num, typename Policies>
+template <int Num, typename Policies>
 struct outValueMaskMuple {
   using type = typename detail::outValueMaskMuple_impl<Policies,std::make_index_sequence<Num>>::type;
 };
@@ -442,10 +452,11 @@ struct prepare_argument<Val<Index>,Type> {
 
 template <typename Type>
 struct prepare_argument<Val<32767>,Type> {
-  using type = translate::from_object<Type,std::false_type>;
-  static translate::from_object<Type,std::false_type> go(gctools::Frame::ElementType* frame) {
+  using type = translate::from_object<std::remove_reference<Type>,std::true_type>;
+  static translate::from_object<std::remove_reference<Type>,std::true_type> go(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
-    return translate::from_object<Type,std::false_type>(_Nil<core::T_O>());
+//    return translate::from_object<Type,std::false_type>(_Nil<core::T_O>());
+    return translate::from_object<std::remove_reference<Type>>();
   }
 };
 

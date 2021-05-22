@@ -54,6 +54,9 @@ template <int N>
 struct pureOutValue {};
 
 template <int N>
+struct testType {};
+
+template <int N>
 struct adopt {};
 
 template <typename Policies>
@@ -108,6 +111,7 @@ struct LambdaList {
     LambdaList(const std::string& val) : m_lambda_list(val) {};
 };
 
+ 
 template <class...PTypes>
 struct policies {
     std::vector<Keyword> m_keywords;

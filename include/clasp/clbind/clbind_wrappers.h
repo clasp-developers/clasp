@@ -625,6 +625,13 @@ struct from_object<T &> {
 };
 
 template <typename T>
+struct from_object<T &, std::false_type> {
+  typedef T &DeclareType;
+  T _v;
+  from_object(core::T_sp o) {};
+};
+
+template <typename T>
 struct from_object<T> {
   typedef T DeclareType;
   DeclareType _v;
