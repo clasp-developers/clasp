@@ -134,12 +134,20 @@ static void args_from_offset(void* frameptr, int32_t offset,
                              T_sp& closure, T_sp& args) {
   if (frameptr) {
     T_O** register_save_area = (T_O**)((uintptr_t)frameptr + offset);
-    T_sp tclosure((gc::Tagged)register_save_area[0]);
+    T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
     closure = tclosure;
-    size_t nargs = (size_t)(register_save_area[1]);
+    size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
     ql::list largs;
-    for (size_t i = 0; i < nargs; ++i) {
+    // Get the first args from the register save area
+    for (size_t i = 0; i < std::min(nargs, (size_t)LCC_ARGS_IN_REGISTERS);
+         ++i) {
       T_sp temp((gctools::Tagged)(register_save_area[i+2]));
+      largs << temp;
+    }
+    // and the rest from the stack frame
+    for (size_t i = LCC_ARGS_IN_REGISTERS; i < nargs; ++i) {
+      T_O* rarg = ((T_O**)frameptr)[i + 2 - LCC_ARGS_IN_REGISTERS];
+      T_sp temp((gctools::Tagged)rarg);
       largs << temp;
     }
     args = largs.cons();
