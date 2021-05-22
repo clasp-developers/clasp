@@ -104,6 +104,7 @@ class type_info;
 #include <pthread.h>
 #endif
 
+#include <memory>
 #include <map>
 
 #define VARARGS
