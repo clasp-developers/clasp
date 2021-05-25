@@ -135,6 +135,29 @@ struct apply_and_return<std::unique_ptr<RT>,Policies,Func,Tuple> {
 
 };
 
+namespace clbind {
+
+template <typename RT, typename Policies, typename Func, typename Tuple>
+struct test_apply_and_return {};
+
+template <typename RT, typename Policies, typename Func, typename...Args>
+struct test_apply_and_return<RT,Policies,Func,std::tuple<Args...>> {
+  using tuple_type = std::tuple<Args...>;
+  static gctools::return_type go(core::MultipleValues& returnValues, Func&& fn, tuple_type&& tuple) {
+    RT ret0 = clbind::apply(std::forward<Func>(fn),std::forward<tuple_type>(tuple));
+#if 0
+    core::T_sp tret0 = translate::to_object<RT,typename AdoptPointer<Policies,result>::type >::convert(ret0);
+    size_t num_returns = 1 + clbind::return_multiple_values<1,Policies,decltype(tuple),std::index_sequence_for<Args...>,Args...>::go(std::forward<tuple_type>(tuple),returnValues.returnValues(0));
+//    printf("%s:%d  RT apply_and_return  returning %lu multiple values\n", __FILE__, __LINE__, num_returns );
+    gc::return_type result (tret0.raw_(),num_returns);
+    return result;
+#endif
+    abort();
+  }
+};
+
+};
+
 
 namespace clbind {
 template <typename RT, typename Policies, typename MethodType, typename OT, typename Tuple>
