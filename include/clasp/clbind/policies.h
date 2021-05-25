@@ -50,6 +50,11 @@ struct outValue {};
 // should not be passed in from Lisp
 // For functions the first argument is <1>
 
+
+template <typename...>
+struct pureOutsPack {};
+
+
 template <int N>
 struct pureOutValue {};
 
@@ -209,10 +214,6 @@ template <typename... Pols>
 struct is_policy_list<policies<Pols...>> {
   typedef boost::mpl::true_ type;
 };
-
-
-
-
 };
 
 

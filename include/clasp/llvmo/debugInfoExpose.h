@@ -743,6 +743,7 @@ struct from_object<llvm::DIBuilder &, std::true_type> {
   typedef llvm::DIBuilder &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::DIBuilder_sp>(object)->wrappedPtr()){};
+  ~from_object() {/*non trivial*/};
 };
 };
 
