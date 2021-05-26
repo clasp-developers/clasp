@@ -252,6 +252,553 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                (setf (stamp% type) (shift-stamp (incf cur-unshifted-stamp))))
              gc-managed-types)))
 
+(defstruct (tag-interpreter-state (:conc-name "STATE-"))
+  (cur-lambda nil) (cur-priority nil) (cur-name nil) (cur-docstring nil)
+  (cur-declare nil) (cur-package-nickname-tags nil) (cur-package-use-tags nil)
+  (cur-package-shadow-tags nil) (cur-namespace-tag nil) (cur-class nil)
+  (cur-meta-class nil) (cur-begin-enum nil) (cur-values nil)
+  (enums nil) (initializers nil) (exposes nil)
+  (terminators nil) (pregcstartups nil)
+  (namespace-to-assoc (make-hash-table :test #'equal))
+  (package-to-assoc (make-hash-table :test #'equal))
+  (packages (make-hash-table :test #'equal)) ; map ns/package to package string
+  (packages-to-create nil)
+  (classes (make-hash-table :test #'equal))
+  (gc-managed-types (make-hash-table :test #'equal))
+  (functions nil) (symbols nil)
+  (previous-symbols (make-hash-table :test #'equal)))
+
+(defgeneric interpret-tag (tag state))
+
+(defmethod interpret-tag ((tag tags:namespace-package-association-tag) state)
+  (setf (gethash (tags:namespace% tag) (state-namespace-to-assoc state)) tag)
+  (setf (gethash (tags:package% tag) (state-package-to-assoc state)) tag)
+  (setf (gethash (tags:namespace% tag) (state-packages state))
+        (tags:package-str% tag))
+  (setf (gethash (tags:package% tag) (state-packages state))
+        (tags:package-str% tag))
+  (pushnew (make-instance 'package-to-create
+             :file% (tags:file% tag)
+             :line% (tags:line% tag)
+             :character-offset% (tags:character-offset% tag)
+             :name% (tags:package-str% tag)
+             :packages-to-use% (mapcar (lambda (x) (tags:name% x))
+                                       (state-cur-package-use-tags state))
+             :shadow% (mapcar (lambda (x) (tags:name% x))
+                              (state-cur-package-shadow-tags state))
+             :nicknames% (mapcar (lambda (x) (tags:name% x))
+                                 (state-cur-package-nickname-tags state)))
+           (state-packages-to-create state)
+           :test #'string=
+           :key (lambda (x) (name% x)))
+  (setf (state-cur-package-use-tags state) nil
+        (state-cur-package-shadow-tags state) nil
+        (state-cur-package-nickname-tags state) nil))
+
+(defmethod interpret-tag ((tag tags:namespace-tag) state)
+  (setf (state-cur-namespace-tag state) tag))
+(defmethod interpret-tag ((tag tags:cl-name-tag) state)
+  (setf (state-cur-name state) tag))
+(defmethod interpret-tag ((tag tags:meta-class-tag) state)
+  (setf (state-cur-meta-class state) tag))
+(defmethod interpret-tag ((tag tags:cl-lispify-name-tag) state)
+  (setf (state-cur-name state) tag))
+(defmethod interpret-tag ((tag tags:cl-pkg-name-tag) state)
+  (setf (state-cur-name state) tag))
+(defmethod interpret-tag ((tag tags:cl-lambda-tag) state)
+  (setf (state-cur-lambda state) tag))
+(defmethod interpret-tag ((tag tags:cl-declare-tag) state)
+  (setf (state-cur-declare state) tag))
+(defmethod interpret-tag ((tag tags:cl-docstring-tag) state)
+  (setf (state-cur-docstring state) tag))
+(defmethod interpret-tag ((tag tags:cl-priority-tag) state)
+  (setf (state-cur-priority state) tag))
+(defmethod interpret-tag ((tag tags:package-nickname-tag) state)
+  (push tag (state-cur-package-nickname-tags state)))
+(defmethod interpret-tag ((tag tags:package-use-tag) state)
+  (push tag (state-cur-package-use-tags state)))
+(defmethod interpret-tag ((tag tags:package-shadow-tag) state)
+  (push tag (state-cur-package-shadow-tags state)))
+
+(defmethod interpret-tag ((tag tags:cl-defun-tag) state)
+  (error-if-bad-expose-info-setup tag
+                                  (state-cur-name state)
+                                  (state-cur-lambda state)
+                                  (state-cur-declare state)
+                                  (state-cur-docstring state)
+                                  (state-cur-priority state))
+  (let* ((packaged-function-name
+           (maybe-override-name (state-cur-namespace-tag state)
+                                (state-cur-name state)
+                                (packaged-name (state-cur-namespace-tag state)
+                                               tag (state-packages state))
+                                (state-packages state))))
+    (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
+           (signature (tags:signature-text% tag))
+           (signature-text (tags:signature-text% tag))
+           (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state))
+                            (parse-lambda-list-from-signature signature-text)))
+           (declare-form (tags:maybe-declare (state-cur-declare state)))
+           (docstring (tags:maybe-docstring (state-cur-docstring state)))
+           (priority (tags:maybe-priority (state-cur-priority state))))
+      (multiple-value-bind (function-name full-function-name simple-function)
+          (extract-function-name-from-signature signature-text tag)
+        (declare (ignore function-name))
+        (pushnew (make-instance 'expose-defun
+                   :namespace% namespace
+                   :lisp-name% packaged-function-name
+                   :function-name% full-function-name
+                   :file% (tags:file% tag)
+                   :line% (tags:line% tag)
+                   :character-offset% (tags:character-offset% tag)
+                   :lambda-list% lambda-list
+                   :declare% declare-form
+                   :docstring% docstring
+                   :priority% priority
+                   :provide-declaration% simple-function
+                   :signature% signature)
+                 (state-functions state)
+                 :test #'string=
+                 :key #'lisp-name%))
+      (setf (state-cur-lambda state) nil
+            (state-cur-declare state) nil
+            (state-cur-docstring state) nil
+            (state-cur-priority state) nil
+            (state-cur-name state) nil))))
+
+(defmethod interpret-tag ((tag tags:cl-defun-setf-tag) state)
+  ;; identical to previous case, except for...
+  (error-if-bad-expose-info-setup tag
+                                  (state-cur-name state)
+                                  (state-cur-lambda state)
+                                  (state-cur-declare state)
+                                  (state-cur-docstring state)
+                                  (state-cur-priority state))
+  (let* ((packaged-function-name
+           (maybe-override-name (state-cur-namespace-tag state)
+                                (state-cur-name state)
+                                (packaged-name (state-cur-namespace-tag state)
+                                               tag (state-packages state))
+                                (state-packages state))))
+    (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
+           (signature (tags:signature-text% tag))
+           (signature-text (tags:signature-text% tag))
+           (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state))
+                            (parse-lambda-list-from-signature signature-text)))
+           (declare-form (tags:maybe-declare (state-cur-declare state)))
+           (docstring (tags:maybe-docstring (state-cur-docstring state)))
+           (priority (tags:maybe-priority (state-cur-priority state))))
+      (multiple-value-bind (function-name full-function-name simple-function)
+          (extract-function-name-from-signature signature-text tag)
+        (declare (ignore function-name))
+        (pushnew (make-instance 'expose-defun-setf ; here.
+                   :namespace% namespace
+                   :lisp-name% packaged-function-name
+                   :function-name% full-function-name
+                   :file% (tags:file% tag)
+                   :line% (tags:line% tag)
+                   :character-offset% (tags:character-offset% tag)
+                   :lambda-list% lambda-list
+                   :declare% declare-form
+                   :docstring% docstring
+                   :priority% priority
+                   :provide-declaration% simple-function
+                   :signature% signature)
+                 (state-functions state)
+                 :test #'string=
+                 :key #'lisp-name%))
+      (setf (state-cur-lambda state) nil
+            (state-cur-declare state) nil
+            (state-cur-docstring state) nil
+            (state-cur-priority state) nil
+            (state-cur-name state) nil))))
+
+(defmethod interpret-tag ((tag tags:cl-extern-defun-tag) state)
+  (error-if-bad-expose-info-setup
+   tag (state-cur-name state) (state-cur-lambda state)
+   (state-cur-declare state) (state-cur-docstring state))
+  (let* ((packaged-function-name
+           (maybe-override-name
+            (state-cur-namespace-tag state)
+            (state-cur-name state)
+            (packaged-name
+             (state-cur-namespace-tag state) tag (state-packages state))
+            (state-packages state)))
+         (pointer (string-trim " " (tags:pointer% tag)))
+         (function-name (extract-function-name-from-pointer pointer tag))
+         (function-ptr (esrap:parse 'function-ptr pointer))
+         (namespace (function-ptr-namespace function-ptr))
+         (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state))
+                          (and (function-ptr-type function-ptr)
+                               (convert-function-ptr-to-lambda-list
+                                function-ptr))))
+         (declare-form (tags:maybe-declare (state-cur-declare state)))
+         (docstring (tags:maybe-docstring (state-cur-docstring state))))
+    (pushnew (make-instance 'expose-extern-defun
+               :namespace% namespace
+               :lisp-name% packaged-function-name
+               :function-name% function-name
+               :file% (tags:file% tag)
+               :line% (tags:line% tag)
+               :character-offset% (tags:character-offset% tag)
+               :lambda-list% lambda-list
+               :declare% declare-form
+               :docstring% docstring
+               :pointer% pointer
+               :function-ptr% function-ptr)
+             (state-functions state)
+             :test #'string=
+             :key #'lisp-name%)
+    (setf (state-cur-lambda state) nil
+          (state-cur-declare state) nil
+          (state-cur-docstring state) nil
+          (state-cur-priority state) nil
+          (state-cur-name state) nil)))
+
+(defmethod interpret-tag ((tag tags:cl-defmethod-tag) state)
+  (error-if-bad-expose-info-setup
+   tag (state-cur-name state) (state-cur-lambda state)
+   (state-cur-declare state) (state-cur-docstring state))
+  (multiple-value-bind (tag-class-name method-name)
+      (cscrape:extract-method-name-from-signature (tags:signature-text% tag))
+    (let* ((class-name (or tag-class-name (tags:name% (state-cur-class state))))
+           (class-key
+             (make-class-key (state-cur-namespace-tag state) class-name))
+           (class (gethash class-key (state-classes state)))
+           (packaged-method-name (maybe-override-name
+                                  (state-cur-namespace-tag state)
+                                  (state-cur-name state)
+                                  (packaged-name (state-cur-namespace-tag state)
+                                                 method-name
+                                                 (state-packages state))
+                                  (state-packages state)))
+           (signature-text (tags:signature-text% tag))
+           (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state))
+                            (parse-lambda-list-from-signature signature-text
+                                                              :class class)))
+           (declare-form (tags:maybe-declare (state-cur-declare state)))
+           (docstring (tags:maybe-docstring (state-cur-docstring state))))
+      (unless class (error "For cl-defmethod-tag couldn't find class ~a"
+                           class-key))
+      (pushnew (make-instance 'expose-defmethod
+                 :class% class
+                 :lisp-name% packaged-method-name
+                 :method-name% method-name
+                 :file% (tags:file% tag)
+                 :line% (tags:line% tag)
+                 :character-offset% (tags:character-offset% tag)
+                 :lambda-list% lambda-list
+                 :declare% declare-form
+                 :docstring% docstring)
+               (methods% class)
+               :test #'string=
+               :key #'lisp-name%)))
+  (setf (state-cur-lambda state) nil
+        (state-cur-declare state) nil
+        (state-cur-docstring state) nil
+        (state-cur-priority state) nil
+        (state-cur-name state) nil))
+
+(defmethod interpret-tag ((tag tags:cl-def-class-method-tag) state)
+  (error-if-bad-expose-info-setup
+   tag (state-cur-name state) (state-cur-lambda state)
+   (state-cur-declare state) (state-cur-docstring state))
+ (multiple-value-bind (tag-class-name method-name)
+     (cscrape:extract-class-method-name-from-signature
+      (tags:signature-text% tag))
+   (let* ((class-name (or tag-class-name (tags:name% (state-cur-class state))))
+          (class-key
+            (make-class-key (state-cur-namespace-tag state) class-name))
+          (class (gethash class-key (state-classes state)))
+          (packaged-method-name (maybe-override-name
+                                 (state-cur-namespace-tag state)
+                                 (state-cur-name state)
+                                 (packaged-name (state-cur-namespace-tag state)
+                                                method-name
+                                                (state-packages state))
+                                 (state-packages state)))
+          (signature-text (tags:signature-text% tag))
+          (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state))
+                           (parse-lambda-list-from-signature signature-text)))
+          (declare-form (tags:maybe-declare (state-cur-declare state)))
+          (docstring (tags:maybe-docstring (state-cur-docstring state))))
+     (unless class (error "For cl-def-class-method-tag couldn't find class ~a"
+                          class-key))
+     (pushnew (make-instance 'expose-def-class-method
+                :class% class
+                :lisp-name% packaged-method-name
+                :method-name% method-name
+                :file% (tags:file% tag)
+                :line% (tags:line% tag)
+                :character-offset% (tags:character-offset% tag)
+                :lambda-list% lambda-list
+                :declare% declare-form
+                :docstring% docstring)
+              (class-methods% class)
+              :test #'string=
+              :key #'lisp-name%)))
+ (setf (state-cur-lambda state) nil
+       (state-cur-declare state) nil
+       (state-cur-docstring state) nil
+       (state-cur-priority state) nil
+       (state-cur-name state) nil))
+
+(defmethod interpret-tag ((tag tags:cl-extern-defmethod-tag) state)
+  (error-if-bad-expose-info-setup
+   tag (state-cur-name state) (state-cur-lambda state)
+   (state-cur-declare state) (state-cur-docstring state))
+  (let* ((method-name
+           (extract-method-name-from-pointer (tags:pointer% tag) tag))
+         (class-name (tags:class-name% tag))
+         (class-key (make-class-key (state-cur-namespace-tag state) class-name))
+         (class (gethash class-key (state-classes state)))
+         (packaged-method-name
+           (maybe-override-name
+            (state-cur-namespace-tag state)
+            (state-cur-name state)
+            (packaged-name (state-cur-namespace-tag state) method-name
+                           (state-packages state))
+            (state-packages state)))
+         (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state)) ""))
+        (declare-form (tags:maybe-declare (state-cur-declare state)))
+         (docstring (tags:maybe-docstring (state-cur-docstring state)))
+         (pointer (tags:pointer% tag)))
+    (unless class (error "Couldn't find class ~a" class-key))
+    (pushnew (make-instance 'expose-extern-defmethod
+               :class% class
+               :lisp-name% packaged-method-name
+               :method-name% method-name
+               :file% (tags:file% tag)
+               :line% (tags:line% tag)
+               :character-offset% (tags:character-offset% tag)
+               :lambda-list% lambda-list
+               :declare% declare-form
+               :docstring% docstring
+               :pointer% pointer)
+             (methods% class)
+             :test #'string=
+             :key #'lisp-name%)
+   (setf (state-cur-lambda state) nil
+         (state-cur-declare state) nil
+         (state-cur-docstring state) nil
+         (state-cur-priority state) nil
+         (state-cur-name state) nil)))
+
+(defmethod interpret-tag ((tag tags:gc-managed-type-tag) state)
+  (let ((type-key (tags:c++type% tag)))
+    (unless (gethash type-key (state-gc-managed-types state))
+      (setf (gethash type-key (state-gc-managed-types state))
+            (make-instance 'gc-managed-type
+              :file% (tags:file% tag)
+              :line% (tags:line% tag)
+              :c++type% type-key)))))
+
+
+(defmethod interpret-tag ((tag tags:lisp-internal-class-tag) state)
+  (when (state-cur-docstring state)
+    (error-if-bad-expose-info-setup* tag (state-cur-docstring state)))
+  (unless (state-cur-namespace-tag state) (error 'missing-namespace :tag tag))
+  (unless (string= (tags:namespace% (state-cur-namespace-tag state))
+                   (tags:namespace% tag))
+    (error 'namespace-mismatch :tag tag))
+  (setf (state-cur-class state) tag)
+  (let ((class-key
+          (make-class-key (state-cur-namespace-tag state) (tags:name% tag))))
+    (unless (gethash class-key (state-classes state))
+      (setf (gethash class-key (state-classes state))
+            (make-instance 'exposed-internal-class
+              :file% (tags:file% tag)
+              :line% (tags:line% tag)
+              :package% (tags:package% tag)
+              :character-offset% (tags:character-offset% tag)
+              :meta-class% (tags:maybe-meta-class
+                            (state-cur-namespace-tag state)
+                            (state-cur-meta-class state))
+              :docstring% (tags:maybe-docstring (state-cur-docstring state))
+              :base% (make-class-key (state-cur-namespace-tag state)
+                                     (tags:base% tag))
+              :class-key% class-key
+              :lisp-name% (lispify-class-name tag (state-packages state))
+              :class-tag% tag))))
+  (setf (state-cur-docstring state) nil
+        (state-cur-priority state) nil
+        (state-cur-meta-class state) nil))
+
+(defmethod interpret-tag ((tag tags:lisp-external-class-tag) state)
+  (when (state-cur-docstring state)
+    (error-if-bad-expose-info-setup* tag (state-cur-docstring state)))
+  (unless (state-cur-namespace-tag state) (error 'missing-namespace :tag tag))
+  (unless (string= (tags:namespace% (state-cur-namespace-tag state))
+                   (tags:namespace% tag))
+    (error 'namespace-mismatch :tag tag))
+  (setf (state-cur-class state) tag)
+  (let ((class-key
+          (make-class-key (state-cur-namespace-tag state) (tags:name% tag))))
+    (unless (gethash class-key (state-classes state))
+      (setf (gethash class-key (state-classes state))
+            (make-instance 'exposed-external-class
+              :file% (tags:file% tag)
+              :line% (tags:line% tag)
+              :package% (tags:package% tag)
+              :character-offset% (tags:character-offset% tag)
+              :meta-class% (tags:maybe-meta-class
+                            (state-cur-namespace-tag state)
+                            (state-cur-meta-class state))
+              :docstring% (tags:maybe-docstring (state-cur-docstring state))
+              :class-key% class-key
+              :base% (make-class-key (state-cur-namespace-tag state)
+                                     (tags:base% tag))
+              :lisp-name% (lispify-class-name tag (state-packages state))
+              :class-tag% tag))))
+  (setf (state-cur-docstring state) nil
+        (state-cur-priority state) nil
+        (state-cur-meta-class state) nil))
+
+(defmethod interpret-tag ((tag tags:cl-begin-enum-tag) state)
+  (when (state-cur-begin-enum state)
+    (error 'tag-error
+           :message "Unexpected CL_BEGIN_ENUM - previous CL_BEGIN_ENUM at ~a:~d"
+           :message-args (list (file% (state-cur-begin-enum state))
+                               (line% (state-cur-begin-enum state)))
+           :tag tag ))
+  (setf (state-cur-begin-enum state)
+        (make-instance 'begin-enum
+          :file% (tags:file% tag)
+          :line% (tags:line% tag)
+          :character-offset% (tags:character-offset% tag)
+          :type% (maybe-namespace-type (state-cur-namespace-tag state)
+                                       (tags:type% tag))
+          :symbol% (maybe-namespace-symbol (state-cur-namespace-tag state)
+                                           (tags:symbol% tag))
+          :description% (tags:description% tag))
+        (state-cur-values state) nil))
+
+(defmethod interpret-tag ((tag tags:cl-value-enum-tag) state)
+  (push (make-instance 'value-enum
+          :file% (tags:file% tag)
+          :line% (tags:line% tag)
+          :character-offset% (tags:character-offset% tag)
+          :symbol% (maybe-namespace-symbol (state-cur-namespace-tag state)
+                                           (tags:symbol% tag))
+          :value% (maybe-namespace-enum (state-cur-namespace-tag state)
+                                        (tags:value% tag)))
+        (state-cur-values state)))
+
+(defmethod interpret-tag ((tag tags:cl-end-enum-tag) state)
+  (let ((end-symbol (maybe-namespace-symbol (state-cur-namespace-tag state)
+                                            (tags:symbol% tag))))
+    (unless (state-cur-begin-enum state)
+      (error 'tag-error :message "Missing BEGIN_ENUM" :tag tag))
+    (unless (state-cur-values state)
+      (error 'tag-error :message "Missing VALUES" :tag tag))
+    (unless (string= (symbol% (state-cur-begin-enum state)) end-symbol)
+      (let ((begin-symbol
+              (maybe-namespace-symbol (state-cur-namespace-tag state)
+                                      (symbol% (state-cur-begin-enum state))))
+            (end-symbol
+              (maybe-namespace-symbol (state-cur-namespace-tag state)
+                                      end-symbol)))
+        (error 'tag-error
+               :message "Mismatch between symbols of CL_BEGIN_ENUM ~a and CL_END_ENUM ~a"
+               :message-args (list begin-symbol end-symbol)
+               :tag tag)))
+    (pushnew (make-instance 'completed-enum
+               :begin-enum% (state-cur-begin-enum state)
+               :values% (state-cur-values state))
+             (state-enums state)
+             :test #'string=
+             :key (lambda (x) (symbol% (begin-enum% x))))
+    (setf (state-cur-begin-enum state) nil
+          (state-cur-values state) nil)))
+
+(defmethod interpret-tag ((tag tags:symbol-tag) state)
+  (let* ((c++-name (or (tags:c++-name% tag) (tags:lisp-name% tag)))
+         (namespace (or (tags:namespace% tag)
+                        (tags:namespace%
+                         (gethash (tags:package% tag)
+                                  (state-package-to-assoc state)))))
+         (package (or (tags:package% tag)
+                      (tags:package%
+                       (gethash (tags:namespace% tag)
+                                (state-namespace-to-assoc state)))))
+         (lisp-name (tags:lisp-name% tag))
+         (exported (typep tag 'tags:symbol-external-tag))
+         (shadow (typep tag 'tags:symbol-shadow-external-tag))
+         (symbol (make-instance 'expose-symbol
+                   :lisp-name% lisp-name
+                   :c++-name% c++-name
+                   :namespace% namespace
+                   :package% package
+                   :package-str% (gethash package (state-packages state))
+                   :exported% exported
+                   :shadow% shadow)))
+    (check-symbol-against-previous symbol (state-previous-symbols state))
+    (push symbol (state-symbols state))))
+
+(defmethod interpret-tag ((tag tags:cl-initializer-tag) state)
+  (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
+         (signature-text (tags:signature-text% tag)))
+    (multiple-value-bind (function-name full-function-name)
+        (extract-function-name-from-signature signature-text tag)
+      (declare (ignore function-name))
+      (pushnew (make-instance 'expose-initializer
+                 :namespace% namespace
+                 :function-name% full-function-name
+                 :file% (tags:file% tag)
+                 :line% (tags:line% tag)
+                 :character-offset% (tags:character-offset% tag))
+               (state-initializers state)
+               :test #'string=
+               :key #'function-name% ))))
+
+(defmethod interpret-tag ((tag tags:cl-expose-tag) state)
+  (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
+         (signature-text (tags:signature-text% tag)))
+    (multiple-value-bind (function-name full-function-name)
+        (extract-function-name-from-signature signature-text tag)
+      (declare (ignore function-name))
+      (pushnew (make-instance 'expose-expose
+                 :namespace% namespace
+                 :function-name% full-function-name
+                 :file% (tags:file% tag)
+                 :line% (tags:line% tag)
+                 :character-offset% (tags:character-offset% tag))
+               (state-exposes state)
+               :test #'string=
+               :key #'function-name% ))))
+
+(defmethod interpret-tag ((tag tags:cl-terminator-tag) state)
+  (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
+         (signature-text (tags:signature-text% tag)))
+    (multiple-value-bind (function-name full-function-name)
+        (extract-function-name-from-signature signature-text tag)
+      (declare (ignore function-name))
+      (pushnew (make-instance 'expose-terminator
+                 :namespace% namespace
+                 :function-name% full-function-name
+                 :file% (tags:file% tag)
+                 :line% (tags:line% tag)
+                 :character-offset% (tags:character-offset% tag))
+               (state-terminators state)
+               :test #'string=
+               :key #'function-name% ))))
+
+(defmethod interpret-tag ((tag tags:cl-pregcstartup-tag) state)
+  (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
+         (signature-text (tags:signature-text% tag)))
+    (multiple-value-bind (function-name full-function-name)
+        (extract-function-name-from-signature signature-text tag)
+      (declare (ignore function-name))
+      (pushnew (make-instance 'expose-pregcstartup
+                 :namespace% namespace
+                 :function-name% full-function-name
+                 :file% (tags:file% tag)
+                 :line% (tags:line% tag)
+                 :character-offset% (tags:character-offset% tag))
+               (state-pregcstartups state)
+               :test #'string=
+               :key #'function-name% ))))
+
 (defun interpret-tags (tags)
   "* Arguments
 - tags :: A list of tags.
@@ -260,487 +807,24 @@ This interprets the tags and generates objects that are used to generate code."
   (declare (optimize (debug 3)))
   (let ((source-info (gather-source-files tags)))
     (calculate-character-offsets source-info))
-  (let (cur-lambda
-        cur-priority
-        cur-name
-        cur-docstring
-        cur-declare
-        cur-package-nickname-tags
-        cur-package-use-tags
-        cur-package-shadow-tags
-        cur-namespace-tag
-        cur-class
-        cur-meta-class
-        cur-begin-enum
-        cur-values
-        enums
-        initializers
-        exposes
-        terminators
-        pregcstartups
-        (namespace-to-assoc (make-hash-table :test #'equal))
-        (package-to-assoc (make-hash-table :test #'equal))
-        (packages (make-hash-table :test #'equal)) ; map ns/package to package string
-        (packages-to-create nil)
-        (classes (make-hash-table :test #'equal))
-        (gc-managed-types (make-hash-table :test #'equal))
-        functions symbols
-        (previous-symbols (make-hash-table :test #'equal)))
+  (let ((state (make-tag-interpreter-state)))
     (dolist (tag tags)
-      (handler-case 
-          (etypecase tag
-            (tags:namespace-package-association-tag
-             (setf (gethash (tags:namespace% tag) namespace-to-assoc) tag)
-             (setf (gethash (tags:package% tag) package-to-assoc) tag)
-             (setf (gethash (tags:namespace% tag) packages) (tags:package-str% tag))
-             (setf (gethash (tags:package% tag) packages) (tags:package-str% tag))
-             (pushnew (make-instance 'package-to-create
-                                     :file% (tags:file% tag)
-                                     :line% (tags:line% tag)
-                                     :character-offset% (tags:character-offset% tag)
-                                     :name% (tags:package-str% tag)
-                                     :packages-to-use% (mapcar (lambda (x) (tags:name% x)) cur-package-use-tags)
-                                     :shadow% (mapcar (lambda (x) (tags:name% x)) cur-package-shadow-tags)
-                                     :nicknames% (mapcar (lambda (x) (tags:name% x)) cur-package-nickname-tags))
-                      packages-to-create
-                      :test #'string=
-                      :key (lambda (x) (name% x)))
-             (setf cur-package-use-tags nil
-                   cur-package-shadow-tags nil
-                   cur-package-nickname-tags nil))
-            (tags:namespace-tag
-             (setf cur-namespace-tag tag))
-            (tags:cl-name-tag
-             (setf cur-name tag))
-            (tags:meta-class-tag
-             (setf cur-meta-class tag))
-            (tags:cl-lispify-name-tag
-             (setf cur-name tag))
-            (tags:cl-pkg-name-tag
-             (setf cur-name tag))
-            (tags:cl-lambda-tag
-             (setf cur-lambda tag))
-            (tags:cl-declare-tag
-             (setf cur-declare tag))
-            (tags:cl-docstring-tag
-             (setf cur-docstring tag))
-            (tags:cl-priority-tag
-             (setf cur-priority tag))
-            (tags:package-nickname-tag
-             (push tag cur-package-nickname-tags))
-            (tags:package-use-tag
-             (push tag cur-package-use-tags))
-            (tags:package-shadow-tag
-             (push tag cur-package-shadow-tags))
-            (tags:cl-defun-tag
-             (error-if-bad-expose-info-setup tag
-                                             cur-name
-                                             cur-lambda
-                                             cur-declare
-                                             cur-docstring
-                                             cur-priority)
-             (let* ((packaged-function-name
-                      (maybe-override-name cur-namespace-tag
-                                           cur-name
-                                           (packaged-name cur-namespace-tag tag packages)
-                                           packages)))
-               (let* ((namespace (tags:namespace% cur-namespace-tag))
-                      (signature (tags:signature-text% tag))
-                      (signature-text (tags:signature-text% tag))
-                      (lambda-list (or (tags:maybe-lambda-list cur-lambda)
-                                       (parse-lambda-list-from-signature signature-text)))
-                      (declare-form (tags:maybe-declare cur-declare))
-                      (docstring (tags:maybe-docstring cur-docstring))
-                      (priority (tags:maybe-priority cur-priority)))
-                 (multiple-value-bind (function-name full-function-name simple-function)
-                     (extract-function-name-from-signature signature-text tag)
-                   (declare (ignore function-name))
-                   (pushnew (make-instance 'expose-defun
-                                           :namespace% namespace
-                                           :lisp-name% packaged-function-name
-                                           :function-name% full-function-name
-                                           :file% (tags:file% tag)
-                                           :line% (tags:line% tag)
-                                           :character-offset% (tags:character-offset% tag)
-                                           :lambda-list% lambda-list
-                                           :declare% declare-form
-                                           :docstring% docstring
-                                           :priority% priority
-                                           :provide-declaration% simple-function
-                                           :signature% signature)
-                            functions
-                            :test #'string=
-                            :key #'lisp-name%))
-                 (setf cur-lambda nil
-                       cur-declare nil
-                       cur-docstring nil
-                       cur-priority nil
-                       cur-name nil))))
-            (tags:cl-defun-setf-tag ; identical to previous case, except for...
-             (error-if-bad-expose-info-setup tag
-                                             cur-name
-                                             cur-lambda
-                                             cur-declare
-                                             cur-docstring)
-             (let* ((packaged-function-name
-                      (maybe-override-name cur-namespace-tag
-                                           cur-name
-                                           (packaged-name cur-namespace-tag tag packages)
-                                           packages)))
-               (let* ((namespace (tags:namespace% cur-namespace-tag))
-                      (signature (tags:signature-text% tag))
-                      (signature-text (tags:signature-text% tag))
-                      (lambda-list (or (tags:maybe-lambda-list cur-lambda)
-                                       (parse-lambda-list-from-signature signature-text)))
-                      (declare-form (tags:maybe-declare cur-declare))
-                      (docstring (tags:maybe-docstring cur-docstring)))
-                 (multiple-value-bind (function-name full-function-name simple-function)
-                     (extract-function-name-from-signature signature-text tag)
-                   (declare (ignore function-name))
-                   (pushnew (make-instance 'expose-defun-setf ; here.
-                                           :namespace% namespace
-                                           :lisp-name% packaged-function-name
-                                           :function-name% full-function-name
-                                           :file% (tags:file% tag)
-                                           :line% (tags:line% tag)
-                                           :character-offset% (tags:character-offset% tag)
-                                           :lambda-list% lambda-list
-                                           :declare% declare-form
-                                           :docstring% docstring
-                                           :provide-declaration% simple-function
-                                           :signature% signature)
-                            functions
-                            :test #'string=
-                            :key #'lisp-name%))
-                 (setf cur-lambda nil
-                       cur-declare nil
-                       cur-docstring nil
-                       cur-priority nil
-                       cur-name nil))))
-            (tags:cl-extern-defun-tag
-             (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
-             (let* ((packaged-function-name
-                      (maybe-override-name
-                       cur-namespace-tag
-                       cur-name
-                       (packaged-name cur-namespace-tag tag packages)
-                       packages))
-                    (pointer (string-trim " " (tags:pointer% tag)))
-                    (function-name (extract-function-name-from-pointer pointer tag))
-                    (function-ptr (esrap:parse 'function-ptr pointer))
-                    (namespace (function-ptr-namespace function-ptr))
-                    (lambda-list (or (tags:maybe-lambda-list cur-lambda)
-                                     (and (function-ptr-type function-ptr)
-                                          (convert-function-ptr-to-lambda-list function-ptr))))
-                    (declare-form (tags:maybe-declare cur-declare))
-                    (docstring (tags:maybe-docstring cur-docstring)))
-               (pushnew (make-instance 'expose-extern-defun
-                                       :namespace% namespace
-                                       :lisp-name% packaged-function-name
-                                       :function-name% function-name
-                                       :file% (tags:file% tag)
-                                       :line% (tags:line% tag)
-                                       :character-offset% (tags:character-offset% tag)
-                                       :lambda-list% lambda-list
-                                       :declare% declare-form
-                                       :docstring% docstring
-                                       :pointer% pointer
-                                       :function-ptr% function-ptr)
-                        functions
-                        :test #'string=
-                        :key #'lisp-name%)
-               (setf cur-lambda nil
-                     cur-declare nil
-                     cur-docstring nil
-                     cur-priority nil
-                     cur-name nil)))
-            (tags:cl-defmethod-tag
-             (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
-             (multiple-value-bind (tag-class-name method-name)
-                 (cscrape:extract-method-name-from-signature (tags:signature-text% tag))
-               (let* ((class-name (or tag-class-name (tags:name% cur-class)))
-                      (class-key (make-class-key cur-namespace-tag class-name))
-                      (class (gethash class-key classes))
-                      (packaged-method-name (maybe-override-name
-                                             cur-namespace-tag
-                                             cur-name
-                                             (packaged-name cur-namespace-tag method-name packages)
-                                             packages))
-                      (signature-text (tags:signature-text% tag))
-                      (lambda-list (or (tags:maybe-lambda-list cur-lambda)
-                                       (parse-lambda-list-from-signature signature-text :class class)))
-                      (declare-form (tags:maybe-declare cur-declare))
-                      (docstring (tags:maybe-docstring cur-docstring)))
-                 (unless class (error "For cl-defmethod-tag couldn't find class ~a" class-key))
-                 (pushnew (make-instance 'expose-defmethod
-                                         :class% class
-                                         :lisp-name% packaged-method-name
-                                         :method-name% method-name
-                                         :file% (tags:file% tag)
-                                         :line% (tags:line% tag)
-                                         :character-offset% (tags:character-offset% tag)
-                                         :lambda-list% lambda-list
-                                         :declare% declare-form
-                                         :docstring% docstring)
-                          (methods% class)
-                          :test #'string=
-                          :key #'lisp-name%)))
-             (setf cur-lambda nil
-                   cur-declare nil
-                   cur-docstring nil
-                   cur-priority nil
-                   cur-name nil))
-            (tags:cl-def-class-method-tag
-             (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
-             (multiple-value-bind (tag-class-name method-name)
-                 (cscrape:extract-class-method-name-from-signature (tags:signature-text% tag))
-               (let* ((class-name (or tag-class-name (tags:name% cur-class)))
-                      (class-key (make-class-key cur-namespace-tag class-name))
-                      (class (gethash class-key classes))
-                      (packaged-method-name (maybe-override-name
-                                             cur-namespace-tag
-                                             cur-name
-                                             (packaged-name cur-namespace-tag method-name packages)
-                                             packages))
-                      (signature-text (tags:signature-text% tag))
-                      (lambda-list (or (tags:maybe-lambda-list cur-lambda)
-                                       (parse-lambda-list-from-signature signature-text)))
-                      (declare-form (tags:maybe-declare cur-declare))
-                      (docstring (tags:maybe-docstring cur-docstring)))
-                 (unless class (error "For cl-def-class-method-tag couldn't find class ~a" class-key))
-                 (pushnew (make-instance 'expose-def-class-method
-                                         :class% class
-                                         :lisp-name% packaged-method-name
-                                         :method-name% method-name
-                                         :file% (tags:file% tag)
-                                         :line% (tags:line% tag)
-                                         :character-offset% (tags:character-offset% tag)
-                                         :lambda-list% lambda-list
-                                         :declare% declare-form
-                                         :docstring% docstring)
-                          (class-methods% class)
-                          :test #'string=
-                          :key #'lisp-name%)))
-             (setf cur-lambda nil
-                   cur-declare nil
-                   cur-docstring nil
-                   cur-priority nil
-                   cur-name nil))
-            (tags:cl-extern-defmethod-tag
-             (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
-             (let* ((method-name (extract-method-name-from-pointer (tags:pointer% tag) tag))
-                    (class-name (tags:class-name% tag))
-                    (class-key (make-class-key cur-namespace-tag class-name))
-                    (class (gethash class-key classes))
-                    (packaged-method-name
-                      (maybe-override-name
-                       cur-namespace-tag
-                       cur-name
-                       (packaged-name cur-namespace-tag method-name packages)
-                       packages))
-                    (lambda-list (or (tags:maybe-lambda-list cur-lambda) ""))
-                    (declare-form (tags:maybe-declare cur-declare))
-                    (docstring (tags:maybe-docstring cur-docstring))
-                    (pointer (tags:pointer% tag)))
-               (unless class (error "Couldn't find class ~a" class-key))
-               (pushnew (make-instance 'expose-extern-defmethod
-                                       :class% class
-                                       :lisp-name% packaged-method-name
-                                       :method-name% method-name
-                                       :file% (tags:file% tag)
-                                       :line% (tags:line% tag)
-                                       :character-offset% (tags:character-offset% tag)
-                                       :lambda-list% lambda-list
-                                       :declare% declare-form
-                                       :docstring% docstring
-                                       :pointer% pointer)
-                        (methods% class)
-                        :test #'string=
-                        :key #'lisp-name%)
-               (setf cur-lambda nil
-                     cur-declare nil
-                     cur-docstring nil
-                     cur-priority nil
-                     cur-name nil)))
-            (tags:gc-managed-type-tag
-             (let ((type-key (tags:c++type% tag)))
-               (unless (gethash type-key gc-managed-types)
-                 (setf (gethash type-key gc-managed-types)
-                       (make-instance 'gc-managed-type
-                                      :file% (tags:file% tag)
-                                      :line% (tags:line% tag)
-                                      :c++type% type-key)))))
-            (tags:lisp-internal-class-tag
-             (when cur-docstring (error-if-bad-expose-info-setup* tag cur-docstring))
-             (unless cur-namespace-tag (error 'missing-namespace :tag tag))
-             (unless (string= (tags:namespace% cur-namespace-tag) (tags:namespace% tag))
-               (error 'namespace-mismatch :tag tag))
-             (setf cur-class tag)
-             (let ((class-key (make-class-key cur-namespace-tag (tags:name% tag))))
-               (unless (gethash class-key classes)
-                 (setf (gethash class-key classes)
-                       (make-instance 'exposed-internal-class
-                                      :file% (tags:file% tag)
-                                      :line% (tags:line% tag)
-                                      :package% (tags:package% tag)
-                                      :character-offset% (tags:character-offset% tag)
-                                      :meta-class% (tags:maybe-meta-class cur-namespace-tag cur-meta-class)
-                                      :docstring% (tags:maybe-docstring cur-docstring)
-                                      :base% (make-class-key cur-namespace-tag (tags:base% tag))
-                                      :class-key% class-key
-                                      :lisp-name% (lispify-class-name tag packages)
-                                      :class-tag% tag))))
-             (setf cur-docstring nil
-                   cur-priority nil
-                   cur-meta-class nil))
-            (tags:lisp-external-class-tag
-             (when cur-docstring (error-if-bad-expose-info-setup* tag cur-docstring))
-             (unless cur-namespace-tag (error 'missing-namespace :tag tag))
-             (unless (string= (tags:namespace% cur-namespace-tag) (tags:namespace% tag))
-               (error 'namespace-mismatch :tag tag))
-             (setf cur-class tag)
-             (let ((class-key (make-class-key cur-namespace-tag (tags:name% tag))))
-               (unless (gethash class-key classes)
-                 (setf (gethash class-key classes)
-                       (make-instance 'exposed-external-class
-                                      :file% (tags:file% tag)
-                                      :line% (tags:line% tag)
-                                      :package% (tags:package% tag)
-                                      :character-offset% (tags:character-offset% tag)
-                                      :meta-class% (tags:maybe-meta-class cur-namespace-tag cur-meta-class)
-                                      :docstring% (tags:maybe-docstring cur-docstring)
-                                      :class-key% class-key
-                                      :base% (make-class-key cur-namespace-tag (tags:base% tag))
-                                      :lisp-name% (lispify-class-name tag packages)
-                                      :class-tag% tag))))
-             (setf cur-docstring nil
-                   cur-priority nil
-                   cur-meta-class nil))
-            (tags:cl-begin-enum-tag
-             (when cur-begin-enum
-               (error 'tag-error
-                      :message "Unexpected CL_BEGIN_ENUM - previous CL_BEGIN_ENUM at ~a:~d"
-                      :message-args (list (file% cur-begin-enum) (line% cur-begin-enum))
-                      :tag tag ))
-             (setf cur-begin-enum (make-instance 'begin-enum
-                                                 :file% (tags:file% tag)
-                                                 :line% (tags:line% tag)
-                                                 :character-offset% (tags:character-offset% tag)
-                                                 :type% (maybe-namespace-type cur-namespace-tag (tags:type% tag))
-                                                 :symbol% (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))
-                                                 :description% (tags:description% tag))
-                   cur-values nil))
-            (tags:cl-value-enum-tag
-             (push (make-instance 'value-enum
-                                  :file% (tags:file% tag)
-                                  :line% (tags:line% tag)
-                                  :character-offset% (tags:character-offset% tag)
-                                  :symbol% (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))
-                                  :value% (maybe-namespace-enum cur-namespace-tag (tags:value% tag)))
-                   cur-values))
-            (tags:cl-end-enum-tag
-             (let ((end-symbol (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))))
-               (unless cur-begin-enum
-                 (error 'tag-error :message "Missing BEGIN_ENUM" :tag tag))
-               (unless cur-values
-                 (error 'tag-error :message "Missing VALUES" :tag tag))
-               (unless (string= (symbol% cur-begin-enum) end-symbol)
-                 (let ((begin-symbol (maybe-namespace-symbol cur-namespace-tag (symbol% cur-begin-enum)))
-                       (end-symbol (maybe-namespace-symbol cur-namespace-tag end-symbol)))
-                   (error 'tag-error
-                          :message "Mismatch between symbols of CL_BEGIN_ENUM ~a and CL_END_ENUM ~a"
-                          :message-args (list begin-symbol end-symbol)
-                          :tag tag)))
-               (pushnew (make-instance 'completed-enum
-                                       :begin-enum% cur-begin-enum
-                                       :values% cur-values)
-                        enums
-                        :test #'string=
-                        :key (lambda (x) (symbol% (begin-enum% x))))
-               (setf cur-begin-enum nil
-                     cur-values nil)))
-            (tags:symbol-tag
-             (let* ((c++-name (or (tags:c++-name% tag) (tags:lisp-name% tag)))
-                    (namespace (or (tags:namespace% tag) (tags:namespace% (gethash (tags:package% tag) package-to-assoc))))
-                    (package (or (tags:package% tag) (tags:package% (gethash (tags:namespace% tag) namespace-to-assoc))))
-                    (lisp-name (tags:lisp-name% tag))
-                    (exported (typep tag 'tags:symbol-external-tag))
-                    (shadow (typep tag 'tags:symbol-shadow-external-tag))
-                    (symbol (make-instance 'expose-symbol
-                                           :lisp-name% lisp-name
-                                           :c++-name% c++-name
-                                           :namespace% namespace
-                                           :package% package
-                                           :package-str% (gethash package packages)
-                                           :exported% exported
-                                           :shadow% shadow)))
-               (check-symbol-against-previous symbol previous-symbols)
-               (push symbol symbols)))
-            (tags:cl-initializer-tag
-             (let* ((namespace (tags:namespace% cur-namespace-tag))
-                    (signature-text (tags:signature-text% tag)))
-               (multiple-value-bind (function-name full-function-name)
-                   (extract-function-name-from-signature signature-text tag)
-                 (declare (ignore function-name))
-                 (pushnew (make-instance 'expose-initializer
-                                         :namespace% namespace
-                                         :function-name% full-function-name
-                                         :file% (tags:file% tag)
-                                         :line% (tags:line% tag)
-                                         :character-offset% (tags:character-offset% tag))
-                          initializers
-                          :test #'string=
-                          :key #'function-name% ))))
-            (tags:cl-expose-tag
-             (let* ((namespace (tags:namespace% cur-namespace-tag))
-                    (signature-text (tags:signature-text% tag)))
-               (multiple-value-bind (function-name full-function-name)
-                   (extract-function-name-from-signature signature-text tag)
-                 (declare (ignore function-name))
-                 (pushnew (make-instance 'expose-expose
-                                         :namespace% namespace
-                                         :function-name% full-function-name
-                                         :file% (tags:file% tag)
-                                         :line% (tags:line% tag)
-                                         :character-offset% (tags:character-offset% tag))
-                          exposes
-                          :test #'string=
-                          :key #'function-name% ))))
-            (tags:cl-terminator-tag
-             (let* ((namespace (tags:namespace% cur-namespace-tag))
-                    (signature-text (tags:signature-text% tag)))
-               (multiple-value-bind (function-name full-function-name)
-                   (extract-function-name-from-signature signature-text tag)
-                 (declare (ignore function-name))
-                 (pushnew (make-instance 'expose-terminator
-                                         :namespace% namespace
-                                         :function-name% full-function-name
-                                         :file% (tags:file% tag)
-                                         :line% (tags:line% tag)
-                                         :character-offset% (tags:character-offset% tag))
-                          terminators
-                          :test #'string=
-                          :key #'function-name% ))))
-            (tags:cl-pregcstartup-tag
-             (let* ((namespace (tags:namespace% cur-namespace-tag))
-                    (signature-text (tags:signature-text% tag)))
-               (multiple-value-bind (function-name full-function-name)
-                   (extract-function-name-from-signature signature-text tag)
-                 (declare (ignore function-name))
-                 (pushnew (make-instance 'expose-pregcstartup
-                                         :namespace% namespace
-                                         :function-name% full-function-name
-                                         :file% (tags:file% tag)
-                                         :line% (tags:line% tag)
-                                         :character-offset% (tags:character-offset% tag))
-                          pregcstartups
-                          :test #'string=
-                          :key #'function-name% )))))
+      (handler-case (interpret-tag tag state)
         (error (e)
           (error "While parsing tag from ~a:~d~%ERROR ~a~%TAG: ~s~%"
                  (tags:file% tag)
                  (tags:line% tag)
                  e
                  tag))))
-    (calculate-class-stamps-and-flags classes gc-managed-types)
-    (values (order-packages-by-use packages-to-create) functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators)))
+    (calculate-class-stamps-and-flags
+     (state-classes state) (state-gc-managed-types state))
+    (values (order-packages-by-use (state-packages-to-create state))
+            (state-functions state)
+            (state-symbols state)
+            (state-classes state)
+            (state-gc-managed-types state)
+            (state-enums state)
+            (state-pregcstartups state)
+            (state-initializers state)
+            (state-exposes state)
+            (state-terminators state))))
