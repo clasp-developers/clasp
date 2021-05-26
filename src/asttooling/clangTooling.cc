@@ -916,7 +916,7 @@ void initialize_clangTooling() {
         .def("match-result-context", &clang::ast_matchers::MatchFinderMatchResult::getContext)
         .def("SourceManager", &clang::ast_matchers::MatchFinderMatchResult::getSourceManager);
     class_<clang::ast_matchers::BoundNodes> cl_be(m,"BoundNodes");
-    m.def("IDToNodeMap", &ast_tooling__IDToNodeMap, "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes", "(bound-nodes)"_ll);
+    m.def("IDToNodeMap", &ast_tooling__IDToNodeMap, DocString("IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes"), "(bound-nodes)"_ll);
     m.def("Lexer-getLocForEndOfToken", &clang::Lexer::getLocForEndOfToken);
     m.def("Lexer-getSourceText", &clang::Lexer::getSourceText, pureOutValue<4>());
     class_<clang::tooling::CompileCommand> cl_bf(m,"CompileCommand");
