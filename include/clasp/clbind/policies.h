@@ -112,8 +112,13 @@ struct Keyword {
 };
 
 struct LambdaList {
-    std::string m_lambda_list;
-    LambdaList(const std::string& val) : m_lambda_list(val) {};
+  std::string m_lambda_list;
+  LambdaList(const std::string& val) : m_lambda_list(val) {};
+};
+
+struct DocString {
+  std::string m_doc_string;
+  DocString(const std::string& val) : m_doc_string(val) {};
 };
 
  
@@ -121,7 +126,7 @@ template <class...PTypes>
 struct policies {
     std::vector<Keyword> m_keywords;
     std::string m_lambda_list;
-    std::string m_docstring;
+    std::string m_doc_string;
     void describe() {
         printf("%s:%d Descibing Policy\n", __FILE__, __LINE__ );
         if (this->m_lambda_list!="") {
@@ -189,6 +194,12 @@ template <class Policy>
 void update_policy(Policy& policy, const LambdaList& lambda_list)
 {
     policy.m_lambda_list = lambda_list.m_lambda_list;
+}
+
+template <class Policy>
+void update_policy(Policy& policy, const DocString& doc_string)
+{
+    policy.m_doc_string = doc_string.m_doc_string;
 }
 
 template <class Policy>
