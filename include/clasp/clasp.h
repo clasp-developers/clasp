@@ -3,6 +3,7 @@
 
 
 #include <clasp/core/core.h>
+#include <clasp/core/scrape.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/evaluator.h>
