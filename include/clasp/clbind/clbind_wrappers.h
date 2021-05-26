@@ -676,12 +676,10 @@ struct from_object<int&,std::false_type> {
   typedef int DeclareType;
   int _v;
   from_object(gctools::smart_ptr<core::T_O> vv) {
-    //printf("%s:%d:%s ctor  backing @%p\n", __FILE__, __LINE__, __FUNCTION__, &this->_backing );
     (void)vv;
   };
   ~from_object() {
-    // non-trivial dtor to keep _backing around
-    //printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+    // non-trivial dtor to keep _v around
   };
 };
 
