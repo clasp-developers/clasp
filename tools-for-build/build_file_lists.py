@@ -382,6 +382,7 @@ def collect_cclasp_lisp_files(**kwargs):
         "src/lisp/kernel/cmp/compile-file-parallel",
         "src/lisp/kernel/lsp/generated-encodings",
         "src/lisp/kernel/lsp/encodings",
+        "src/lisp/kernel/lsp/cltl2",
         "src/lisp/kernel/tag/pre-epilogue-cclasp",
         "src/lisp/kernel/lsp/epilogue-cclasp",
         "src/lisp/kernel/tag/cclasp" ]

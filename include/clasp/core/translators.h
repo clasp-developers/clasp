@@ -104,7 +104,7 @@ namespace translate {
 #if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
   // linux doesn't like these because they clash with int64_t and uint64_t
   template <>
-    struct from_object< long, std::true_type >
+    struct from_object<long, std::true_type >
   {
     typedef int DeclareType;
     DeclareType _v;
@@ -112,7 +112,7 @@ namespace translate {
   };
 
   template <>
-    struct from_object< unsigned long, std::true_type >
+    struct from_object<unsigned long, std::true_type >
   {
     typedef unsigned long DeclareType;
     DeclareType _v;
@@ -121,7 +121,7 @@ namespace translate {
 #endif
   
 template <>
-  struct from_object< long long, std::true_type >
+  struct from_object<long long, std::true_type >
 {
    typedef long long DeclareType;
 
@@ -130,7 +130,7 @@ template <>
  };
 
  template <>
-   struct from_object< unsigned long long, std::true_type >
+   struct from_object<unsigned long long, std::true_type >
  {
    typedef unsigned long long DeclareType;
 
@@ -139,7 +139,7 @@ template <>
  };
 
   template <>
-    struct from_object< int8_t, std::true_type >
+    struct from_object<int8_t, std::true_type >
   {
     typedef int8_t DeclareType;
 
@@ -148,7 +148,7 @@ template <>
   };
 
   template <>
-    struct from_object< uint8_t, std::true_type >
+    struct from_object<uint8_t, std::true_type >
   {
     typedef uint8_t DeclareType;
 
@@ -157,7 +157,7 @@ template <>
   };
 
   template <>
-    struct from_object< int16_t, std::true_type >
+    struct from_object<int16_t, std::true_type >
   {
     typedef int16_t DeclareType;
 
@@ -166,7 +166,7 @@ template <>
   };
 
   template <>
-    struct from_object< uint16_t, std::true_type >
+    struct from_object<uint16_t, std::true_type >
   {
     typedef uint16_t DeclareType;
 
@@ -175,7 +175,7 @@ template <>
   };
 
   template <>
-    struct from_object< int32_t, std::true_type >
+    struct from_object<int32_t, std::true_type >
   {
     typedef int32_t DeclareType;
 
@@ -184,7 +184,7 @@ template <>
   };
 
   template <>
-    struct from_object< uint32_t, std::true_type >
+    struct from_object<uint32_t, std::true_type >
   {
     typedef uint32_t DeclareType;
 
@@ -194,7 +194,7 @@ template <>
 
 #if defined (_TARGET_OS_LINUX) 
   template <>
-    struct from_object< int64_t, std::true_type >
+    struct from_object<int64_t, std::true_type >
   {
     typedef int64_t DeclareType;
 
@@ -205,7 +205,7 @@ template <>
   
 #if defined (_TARGET_OS_LINUX) 
   template <>
-    struct from_object< uint64_t, std::true_type >
+    struct from_object<uint64_t, std::true_type >
   {
     typedef uint64_t DeclareType;
 
@@ -216,7 +216,7 @@ template <>
 
   
   template <>
-    struct from_object< float, std::true_type >
+    struct from_object<float, std::true_type >
   {
     typedef float DeclareType;
 
@@ -225,7 +225,7 @@ template <>
   };
 
   template <>
-    struct from_object< double, std::true_type >
+    struct from_object<double, std::true_type >
   {
     typedef double DeclareType;
 
@@ -234,7 +234,7 @@ template <>
   };
 
   template <>
-    struct from_object< long double, std::true_type >
+    struct from_object<long double, std::true_type >
   {
     typedef long double DeclareType;
 
@@ -243,7 +243,7 @@ template <>
   };
 
   template <>
-    struct from_object< bool, std::true_type >
+    struct from_object<bool, std::true_type >
   {
     typedef bool DeclareType;
     DeclareType _v;
@@ -252,16 +252,17 @@ template <>
 
 
   template <>
-    struct from_object< bool&, std::true_type >
+    struct from_object<bool&, std::true_type >
   {
     typedef bool DeclareType;
     DeclareType _v;
     from_object( core::T_sp o ) : _v( !o.nilp() ){};
+    ~from_object() {/*non trivial*/};
   };
 
 
   template <>
-    struct from_object< core::T_O *, std::true_type >
+    struct from_object<core::T_O *, std::true_type >
   {
     typedef core::T_O * DeclareType;
 
@@ -270,7 +271,7 @@ template <>
   };
 
   template <>
-    struct from_object< void *, std::true_type >
+    struct from_object<void *, std::true_type >
   {
     typedef void * DeclareType;
     DeclareType _v;
@@ -278,7 +279,7 @@ template <>
   };
 
   template <>
-    struct from_object< bool *, std::false_type >
+    struct from_object<bool *, std::false_type >
   {
     typedef bool *DeclareType;
 
@@ -288,17 +289,18 @@ template <>
   };
 
   template <>
-    struct from_object< bool *&, std::false_type >
+    struct from_object<bool *&, std::false_type >
   {
     typedef bool *DeclareType;
 
     DeclareType _v;
     bool _val;
-  from_object( T_P o ) : _val( false ), _v( &_val ){};
+    from_object( T_P o ) : _val( false ), _v( &_val ){};
+    ~from_object() {/*non trivial*/};
   };
 
   template <>
-    struct from_object< bool *, std::true_type >
+    struct from_object<bool *, std::true_type >
   {
     typedef bool *DeclareType;
 
@@ -542,7 +544,7 @@ template <>
   //  String translators
 
   template <>
-    struct from_object< const std::string &, std::true_type >
+    struct from_object<const std::string &, std::true_type >
   {
     typedef std::string DeclareType;
     DeclareType _v;
@@ -550,7 +552,7 @@ template <>
   };
 
   template <>
-    struct from_object< std::string, std::true_type >
+    struct from_object<std::string, std::true_type >
   {
     typedef std::string DeclareType;
     DeclareType _v;
@@ -558,19 +560,21 @@ template <>
   };
 
   template <>
-    struct from_object< std::string &, std::true_type >
+    struct from_object<std::string &, std::true_type >
   {
     typedef std::string DeclareType;
     DeclareType _v;
-  from_object( T_P o ) : _v( string_get_std_string( o ) ){};
+    from_object( T_P o ) : _v( string_get_std_string( o ) ){};
+    ~from_object() {/*non trivial*/};
   };
 
   template <>
-    struct from_object< std::string &, std::false_type >
+    struct from_object<std::string &, std::false_type >
   {
     typedef std::string DeclareType;
     DeclareType _v;
     from_object( T_P o ) : _v(gc::As<core::String_sp>(o)->get_std_string()) {};
+    ~from_object() {/*non trivial*/};
   };
 
   template <>
@@ -649,7 +653,7 @@ namespace translate {
 
 
   template <typename TX, typename TY>
-    struct from_object< std::pair<const TX&, gctools::smart_ptr<TY> > >
+    struct from_object<std::pair<const TX&, gctools::smart_ptr<TY> > >
   {
     typedef std::pair<const TX&, gctools::smart_ptr<TY>> DeclareType;
     DeclareType _v;

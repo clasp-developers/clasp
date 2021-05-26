@@ -81,11 +81,6 @@ THE SOFTWARE.
 
 namespace translate {
 
-template <>
-struct from_object<int&,std::false_type> {
-  int _v;
-  from_object(core::T_sp o) : _v(0) {};
-};
 
 template <>
 struct from_object<clang::tooling::CommandLineArguments> {

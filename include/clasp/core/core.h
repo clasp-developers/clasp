@@ -539,7 +539,6 @@ extern void clasp_mps_debug_fix1_before(void *base, void *smartAddr);
 extern void clasp_mps_debug_fix_before(void *pbase, void *px, int offset);
 extern void clasp_mps_debug_fix_after(void *pbase, void *px);
 extern void clasp_mps_debug_container(const char *ctype, const char *name, int size);
-//extern void clasp_mps_debug_scan_object(gctools::GCObject*  obj);
 
 #define LCC_MACROS
 #include <clasp/core/lispCallingConvention.h>
@@ -771,6 +770,10 @@ extern core::Symbol_sp& _sym_format_arguments;
 //
 
 namespace core {
+/*! Fix lambda lists for methods.
+    It converts ! in the string to the class symbol.
+ */
+extern std::string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda );
 
 /*! Create the class hierarchy
  */
