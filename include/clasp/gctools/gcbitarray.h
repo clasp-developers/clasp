@@ -38,7 +38,7 @@ namespace gctools {
  * Operations deal with signed or unsigned chars.
  * Various things assume two's complement.
  */
-template <size_t BitUnitBitWidth, int Signedp>
+template <int BitUnitBitWidth, int Signedp>
 class GCBitUnitArray_moveable : public GCContainer {
 public:
   GCBitUnitArray_moveable() {};

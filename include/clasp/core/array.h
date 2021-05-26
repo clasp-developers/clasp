@@ -558,7 +558,7 @@ namespace core {
 
 // FIXME: Iterators are probably very broken for complex bit unit arrays.
 namespace core {
-  template <typename MyLeafType, size_t BitUnitBitWidth, int Signedp>
+  template <typename MyLeafType, int BitUnitBitWidth, int Signedp>
     class template_SimpleBitUnitVector : public AbstractSimpleVector_O {
   public:
     CLASP_DEFAULT_CTOR template_SimpleBitUnitVector() {};

@@ -296,7 +296,7 @@ struct debug_deleter {
 
 /*! Translate pointers that I adopt */
 template <typename T>
-class to_object<const std::unique_ptr<T> &, translate::adopt_pointer> {
+struct to_object<const std::unique_ptr<T> &, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<const T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
@@ -311,7 +311,7 @@ public:
 
 /*! Translate pointers that I adopt */
 template <typename T>
-class to_object<std::unique_ptr<T>, translate::adopt_pointer> {
+struct to_object<std::unique_ptr<T>, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
@@ -328,7 +328,7 @@ public:
     This should never be invoked because I specialize clbind_functoids and clbind_methoids 
     on std::unique_ptr */
 template <typename T>
-class to_object<std::unique_ptr<T>, translate::dont_adopt_pointer> {
+struct to_object<std::unique_ptr<T>, translate::dont_adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
@@ -342,7 +342,7 @@ public:
 
 /*! Translate pointers that I adopt */
 template <typename T>
-class to_object<const T *&, translate::adopt_pointer> {
+struct to_object<const T *&, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<const T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
@@ -357,7 +357,7 @@ public:
 
 /*! Translate pointers that I dont adopt */
 template <typename T>
-class to_object<const T *&, translate::dont_adopt_pointer> {
+struct to_object<const T *&, translate::dont_adopt_pointer> {
 public:
   typedef clbind::Wrapper<const T> WrapperType;
   static core::T_sp convert(const T *ptr) {
@@ -371,7 +371,7 @@ public:
 
 /*! Translate pointers that I adopt */
 template <typename T>
-class to_object<T *, translate::adopt_pointer> {
+struct to_object<T *, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
@@ -385,7 +385,7 @@ public:
 };
 
 template <typename T>
-class to_object<T *, translate::dont_adopt_pointer> {
+struct to_object<T *, translate::dont_adopt_pointer> {
 public:
   typedef clbind::Wrapper<T, T *> WrapperType;
   static core::T_sp convert(T *ptr) {
@@ -399,7 +399,7 @@ public:
 
 /*! Translate pointers that I adopt */
 template <typename T>
-class to_object<T *const, translate::adopt_pointer> {
+struct to_object<T *const, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
@@ -413,7 +413,7 @@ public:
 };
 
 template <typename T>
-class to_object<T *const, translate::dont_adopt_pointer> {
+struct to_object<T *const, translate::dont_adopt_pointer> {
 public:
   typedef clbind::Wrapper<T, T *const> WrapperType;
   static core::T_sp convert(T *const ptr) {
@@ -426,7 +426,7 @@ public:
 };
 
 template <typename T>
-class to_object<T &, translate::dont_adopt_pointer> {
+struct to_object<T &, translate::dont_adopt_pointer> {
 public:
   typedef clbind::Wrapper<T, T *> WrapperType;
   static core::T_sp convert(T &val) {
@@ -437,7 +437,7 @@ public:
 
 /*! Translate return by value into wrapped pointers that I adopt */
 template <typename T>
-class to_object<T, translate::adopt_pointer> {
+struct to_object<T, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
@@ -451,7 +451,7 @@ public:
 /*! Translate return by value into wrapped pointers that I adopt
       Ignore the translate::dont_adopt_pointer policy - we always adopt return by value values*/
 template <typename T>
-class to_object<T, translate::dont_adopt_pointer> {
+struct to_object<T, translate::dont_adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
@@ -464,7 +464,7 @@ public:
 
 /*! Translate return by value into wrapped pointers that I adopt */
 template <typename T>
-class to_object<const T, translate::adopt_pointer> {
+struct to_object<const T, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
@@ -478,7 +478,7 @@ public:
 /*! Translate return by value into wrapped pointers that I adopt
       Ignore the translate::dont_adopt_pointer policy - we always adopt return by value values*/
 template <typename T>
-class to_object<const T, translate::dont_adopt_pointer> {
+struct to_object<const T, translate::dont_adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
@@ -622,6 +622,15 @@ struct from_object<T &> {
   typedef T &DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) : _v(*(from_object<T *>(o)._v)){};
+  ~from_object() {/*non trivial*/};
+};
+
+template <typename T>
+struct from_object<T &, std::false_type> {
+  typedef T &DeclareType;
+  T _v;
+  from_object(core::T_sp o) {};
+  ~from_object() {/*non trivial*/};
 };
 
 template <typename T>
@@ -640,5 +649,58 @@ struct from_object<T> {
   };
 };
 };
+
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+//
+//
+// Type specific reference translators
+//
+//
+
+
+namespace translate {
+
+template <>
+struct from_object<int&,std::true_type> {
+  typedef int DeclareType;
+  int _v;
+  from_object(gctools::smart_ptr<core::T_O> vv) : _v(core::clasp_to_int(vv)) {};
+  ~from_object() { /* Non-trivial */ };
+};
+
+template <>
+struct from_object<int&,std::false_type> {
+  typedef int DeclareType;
+  int _v;
+  from_object(gctools::smart_ptr<core::T_O> vv) {
+    //printf("%s:%d:%s ctor  backing @%p\n", __FILE__, __LINE__, __FUNCTION__, &this->_backing );
+    (void)vv;
+  };
+  ~from_object() {
+    // non-trivial dtor to keep _backing around
+    //printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+  };
+};
+
+#if 0
+template <>
+struct to_object<int&,dont_adopt_pointer> {
+  typedef int& type;
+  static gctools::smart_ptr<core::T_O> convert(int x) {
+    return core::Integer_O::create(x);
+  }
+};
+template <>
+struct to_object<int&,adopt_pointer> {
+  static gctools::smart_ptr<core::T_O> convert(int x) {
+    return core::Integer_O::create(x);
+  }
+};
+#endif
+};
+
 
 #endif

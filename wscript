@@ -90,6 +90,8 @@ top = '.'
 out = 'build'
 APP_NAME = 'clasp'
 LLVM_VERSION = 13
+SBCL_VERSION = (2, 1)
+SBCL_VERSION_STRING = "2.1"
 CLANG_SPECIFIC_VERSION = "13.0.0git"
 LLVM_HASH = "972b6a3a3471c2a742c5c5d8ec004ff640d544c4"
 XCODE_SDK = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk"
@@ -1078,6 +1080,14 @@ def configure(cfg):
         cfg.env["SCRAPER_LISP"] = [cfg.env.SBCL,
                                    '--noinform', '--dynamic-space-size', '2048', '--lose-on-corruption', '--disable-ldb', '--end-runtime-options',
                                    '--disable-debugger', '--no-userinit', '--no-sysinit']
+        result = runCmdLargeOutput([cfg.env.SBCL,"--version"])
+        version = result.split()[1]
+        version_parts = version.split(".")
+        if (int(version_parts[0]) < SBCL_VERSION[0]):
+            raise Exception("The sbcl version is %s but it must be %s or higher" % (version, SBCL_VERSION_STRING))
+        if (int(version_parts[0]) == 2):
+            if (int(version_parts[1]) < SBCL_VERSION[1]):
+                raise Exception("The sbcl version is %s but it must be %s or higher" % (version, SBCL_VERSION_STRING))
     global cxx_compiler, c_compiler
     cxx_compiler['linux'] = ["clang++"]
     c_compiler['linux'] = ["clang"]

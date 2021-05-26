@@ -1,4 +1,5 @@
 from waflib.Tools import cxx
+import tempfile
 import sys, logging, os, subprocess
 from waflib import Logs, Task, TaskGen
 import waflib.Options
@@ -357,15 +358,17 @@ class symlink_executable(clasp_task):
 
 class embed_command_line_cxxprogram(cxx.cxxprogram):
     def exec_command(self,cmd,**kw):
-        text_file = open("/tmp/link_command", "w")
+        link_filename = "%s/link_command_%s" % (tempfile.gettempdir(), os.getpid())
+        object_filename = "%s.o" % link_filename
+        text_file = open(link_filename, "w")
         for line in cmd:
             text_file.write(line)
             text_file.write('\n')
         text_file.close()
         if (self.bld.env["DEST_OS"] == LINUX_OS ):
-            cmd2 = [ 'objcopy', '--input', 'binary', '--output', 'elf64-x86-64', '--binary-architecture', 'i386', "/tmp/link_command", "/tmp/link_command.o"]
+            cmd2 = [ 'objcopy', '--input', 'binary', '--output', 'elf64-x86-64', '--binary-architecture', 'i386', link_filename, object_filename ]
             super(embed_command_line_cxxprogram,self).exec_command(cmd2)
-            cmd = cmd + [ "/tmp/link_command.o" ]
+            cmd = cmd + [ object_filename ]
         log.info("Caught exec_command cmd = %s" % cmd)
         return super(embed_command_line_cxxprogram,self).exec_command(cmd,**kw)
 

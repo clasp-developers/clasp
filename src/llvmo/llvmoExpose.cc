@@ -4302,7 +4302,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         currentCode->_TextSegmentStart = (void*)range.getStart();
         currentCode->_TextSegmentEnd = (void*)((char*)range.getStart()+range.getSize());
         if (imageSaveLoad::global_debugSnapshot) {
-          printf("%s:%d:%s  ObjectFile_sp %p Code_sp %p start %p  end %p\n",
+          printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
                  __FILE__, __LINE__, __FUNCTION__,
                  my_thread->topObjectFile().raw_(),
                  currentCode.raw_(),

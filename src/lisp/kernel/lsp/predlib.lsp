@@ -1151,6 +1151,7 @@ if not possible."
       (core:complex-vector-fixnum (complex-array fixnum (*)))
       (core:complex-vector-double (complex-array double-float (*)))
       (core:complex-vector-float (complex-array single-float (*)))
+      (core:complex-vector-t (complex-array t (*)))
       (core:MDARRAY-BASE-CHAR (array base-char *))
       (core:MDARRAY-BIT (array bit *))
       (core:mdarray-byte2-t (array ext:byte2 *))

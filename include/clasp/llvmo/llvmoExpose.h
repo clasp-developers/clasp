@@ -136,7 +136,8 @@ namespace translate {
     struct from_object<llvm::LLVMContext &, std::true_type> {
     typedef llvm::LLVMContext &DeclareType;
     DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::LLVMContext_sp>(object)->wrappedPtr())){};
+    from_object(T_P object) : _v(*(gc::As<llvmo::LLVMContext_sp>(object)->wrappedPtr())){};
+    ~from_object() {/*non trivial*/};
   };
 
   template <>
@@ -210,6 +211,7 @@ struct from_object<const llvm::FunctionCallee&, std::true_type> {
   typedef llvm::FunctionCallee DeclareType;
   DeclareType _v;
   from_object(llvmo::FunctionCallee_sp object) : _v(object->getFunctionType(),object->getCallee()) {};
+  ~from_object() {/*non trivial*/};
 };
 };
 
@@ -270,6 +272,7 @@ struct from_object<llvm::Linker &, std::true_type> {
   typedef llvm::Linker &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*(gc::As<llvmo::Linker_sp>(object)->wrappedPtr())){};
+  ~from_object() {/*non trivial*/};
 };
 };
     ;
@@ -515,6 +518,7 @@ struct from_object<llvm::Triple &, std::true_type> {
   typedef llvm::Triple &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::Triple_sp>(object)->wrappedPtr()){};
+  ~from_object() {/*non trivial*/};
 };
 };
 
@@ -1270,6 +1274,7 @@ template <>
   typedef llvm::legacy::PassManagerBase &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::PassManagerBase_sp>(object)->wrappedPtr()){};
+  ~from_object() {/*non trivial*/};
 };
 };
     ;
@@ -2141,6 +2146,7 @@ struct from_object<llvm::Module &, std::true_type> {
   typedef llvm::Module &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::Module_sp>(object)->wrappedPtr()){};
+  ~from_object() {/*non trivial*/};
 };
 };
     ;
@@ -2288,6 +2294,7 @@ template <>
   typedef llvm::legacy::FunctionPassManager &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr()){};
+  ~from_object() {/*non trivial*/};
 };
 };
     ;
@@ -4015,6 +4022,7 @@ struct from_object<llvm::Function &, std::true_type> {
   typedef llvm::Function &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*(static_cast<llvm::Function *>(gc::As<llvmo::Function_sp>(object)->wrappedPtr()))){};
+  ~from_object() {/*non trivial*/};
 };
 };
 

@@ -50,8 +50,16 @@ struct outValue {};
 // should not be passed in from Lisp
 // For functions the first argument is <1>
 
+
+template <typename...>
+struct pureOutsPack {};
+
+
 template <int N>
 struct pureOutValue {};
+
+template <int N>
+struct testType {};
 
 template <int N>
 struct adopt {};
@@ -108,6 +116,7 @@ struct LambdaList {
     LambdaList(const std::string& val) : m_lambda_list(val) {};
 };
 
+ 
 template <class...PTypes>
 struct policies {
     std::vector<Keyword> m_keywords;
@@ -205,10 +214,6 @@ template <typename... Pols>
 struct is_policy_list<policies<Pols...>> {
   typedef boost::mpl::true_ type;
 };
-
-
-
-
 };
 
 

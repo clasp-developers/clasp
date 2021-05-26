@@ -31,7 +31,7 @@ namespace gctools {
     class GCVector_moveable;
   template <class T>
     class Vec0;
-  template <size_t N, int SignedP>
+  template <int N, int SignedP>
     class GCBitUnitArray_moveable;
   template <class K>
     class SmallOrderedSet;

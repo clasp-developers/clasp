@@ -40,26 +40,6 @@ THE SOFTWARE.
 
 namespace translate {
 
-template <>
-struct from_object<int &, std::true_type> {
-  typedef int DeclareType;
-  DeclareType _v;
-  from_object(core::T_sp o) : _v(0) {
-    _G();
-    if (o.fixnump()) {
-      this->_v = (int)(o.unsafe_fixnum());
-      return;
-    }
-    SIMPLE_ERROR_SPRINTF("Add support to convert other types to int");
-  }
-};
-
-template <>
-struct to_object<int &> {
-  static core::T_sp convert(const int &val) {
-    return (core::Integer_O::create((gc::Fixnum)val));
-  }
-};
 
 template <>
 struct to_object<std::vector<std::string>, translate::adopt_pointer> {
