@@ -286,7 +286,6 @@ This interprets the tags and generates objects that are used to generate code."
         (gc-managed-types (make-hash-table :test #'equal))
         functions symbols
         (previous-symbols (make-hash-table :test #'equal)))
-    (declare (special namespace-to-assoc package-to-assoc packages))
     (dolist (tag tags)
       (handler-case 
           (etypecase tag
