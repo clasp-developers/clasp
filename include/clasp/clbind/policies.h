@@ -134,7 +134,7 @@ struct policies {
         } else {
             printf("keyword_list = %s\n", this->keyword_list().c_str());
         }
-        printf("Docstring = %s\n", this->m_docstring.c_str());
+        printf("Docstring = %s\n", this->m_doc_string.c_str());
     }
     std::string keywordList() const {
       if (this->m_keywords.size()==0) {
@@ -156,7 +156,7 @@ struct policies {
       return this->keywordList();
     }
   }
-  std::string docstring() const { return this->m_docstring; };
+  std::string docstring() const { return this->m_doc_string; };
   std::string declares() const { return ""; };
 };
 
@@ -200,12 +200,6 @@ template <class Policy>
 void update_policy(Policy& policy, const DocString& doc_string)
 {
     policy.m_doc_string = doc_string.m_doc_string;
-}
-
-template <class Policy>
-void update_policy(Policy& policy, const char* docstring)
-{
-    policy.m_docstring = std::string(docstring);
 }
 
 template <class Policy>

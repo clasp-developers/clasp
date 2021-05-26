@@ -868,7 +868,7 @@ to expose."
                            "  { TAGS:VARIABLE-FIELD ~{ ~a~}~%"
                            (list
                             (format nil "( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . ~s)" (offset-type-c++-identifier one))
-                            (format nil "( TAGS:FIXUP-CTYPE-KEY . ~s)" (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one))))
+                            (format nil "( TAGS:FIXUP-CTYPE-OFFSET-TYPE-KEY . ~s)" (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one))))
                             (format nil "( TAGS:FIXUP-CTYPE-KEY . ~s)" (ctype-key (base one)))
                             (format nil "( TAGS:LAYOUT-OFFSET-FIELD-NAMES . \"~{~a~}\")" (layout-offset-field-names one :drop-last is-std-atomic)))))
                  ))

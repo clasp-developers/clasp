@@ -802,7 +802,7 @@ void initialize_clangTooling() {
         .def("getASTRecordLayout",&clang::ASTContext::getASTRecordLayout);
   
     class_<clang::SourceManager> cl_af(m,"SourceManager");
-    cl_af.def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "docstring","((self ast-tooling:source-manager) source-location &optional (use-line-directives t))"_ll)
+    cl_af.def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "((self ast-tooling:source-manager) source-location &optional (use-line-directives t))"_ll)
         .def("getFilename", &clang::SourceManager::getFilename)
         .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
         .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, pureOutValue<2>())
