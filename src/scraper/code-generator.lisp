@@ -1029,7 +1029,7 @@ Convert colons to underscores"
         (startups-info (generate-code-for-startups startups))
         (initializers-info (generate-code-for-initializers initializers))
         (exposes-info (generate-code-for-exposes exposes))
-        (terminators-info (generate-code-for-terminators terminators))        )
+        (terminators-info (generate-code-for-terminators terminators)))
     (write-if-changed init-functions build-path (safe-app-config :init_functions_inc_h app-config))
     (write-if-changed init-classes-and-methods build-path (safe-app-config :init_classes_inc_h app-config))
     (write-if-changed source-info build-path (safe-app-config :source_info_inc_h app-config))

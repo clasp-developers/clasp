@@ -103,7 +103,7 @@
    (class-methods% :initform nil :initarg :class-methods% :accessor class-methods%)
    (direct-subclasses% :initform nil :accessor direct-subclasses%)
    (stamp% :initform nil :accessor stamp%)
-   (flags% :initform nil :accessor flags%)   ))
+   (flags% :initform nil :accessor flags%)))
 
 (defclass exposed-internal-class (exposed-class) ())
 (defclass exposed-external-class (exposed-class) ())
@@ -192,7 +192,7 @@ Sort the packages in order of how they use each other."
                     (let (problem-packages)
                       (maphash (lambda (k v)
                                  (declare (ignore v))
-                                 (push (list (name% k) (list :use (packages-to-use% k) )) problem-packages))
+                                 (push (list (name% k) (list :use (packages-to-use% k))) problem-packages))
                                unsorted)
                       problem-packages)
                     (reverse sorted)))))))
@@ -660,7 +660,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
            :message "Unexpected CL_BEGIN_ENUM - previous CL_BEGIN_ENUM at ~a:~d"
            :message-args (list (file% (state-cur-begin-enum state))
                                (line% (state-cur-begin-enum state)))
-           :tag tag ))
+           :tag tag))
   (setf (state-cur-begin-enum state)
         (make-instance 'begin-enum
           :file% (tags:file% tag)
@@ -749,7 +749,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                  :character-offset% (tags:character-offset% tag))
                (state-initializers state)
                :test #'string=
-               :key #'function-name% ))))
+               :key #'function-name%))))
 
 (defmethod interpret-tag ((tag tags:cl-expose-tag) state)
   (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
@@ -765,7 +765,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                  :character-offset% (tags:character-offset% tag))
                (state-exposes state)
                :test #'string=
-               :key #'function-name% ))))
+               :key #'function-name%))))
 
 (defmethod interpret-tag ((tag tags:cl-terminator-tag) state)
   (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
@@ -781,7 +781,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                  :character-offset% (tags:character-offset% tag))
                (state-terminators state)
                :test #'string=
-               :key #'function-name% ))))
+               :key #'function-name%))))
 
 (defmethod interpret-tag ((tag tags:cl-pregcstartup-tag) state)
   (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
@@ -797,7 +797,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                  :character-offset% (tags:character-offset% tag))
                (state-pregcstartups state)
                :test #'string=
-               :key #'function-name% ))))
+               :key #'function-name%))))
 
 (defun interpret-tags (tags)
   "* Arguments
