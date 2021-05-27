@@ -1,109 +1,30 @@
 #include <tuple>
 #include <utility>
+#include <type_traits>
 #include <iostream>
 #include <functional>
 
-#ifdef TEST_APPLY
-
-namespace core {
-struct T_O {};
-
-namespace policy {
-struct clasp {};
-};
-};
-
-namespace translate {
-template <typename Type, typename Init=std::true_type>
-struct from_object {};
-
-template <typename Type, typename AdoptPointer=std::false_type>
-struct to_object {};
-};
-
-namespace gctools {
-typedef  size_t Tagged;
-
-struct Frame {
-  using ElementType = int;
-  Frame(int* start) : frame(start) {};
-  int& operator[](const int& index) { return this->frame[index]; };
-  int* frame;
-};
-
-template <typename Type>
-struct smart_ptr {
-  smart_ptr(gctools::Tagged v) : _val(v) {};
-  int _val;
-};
-
-};
-
-template <typename T>
-gctools::smart_ptr<T> _Nil() {
-  return gctools::smart_ptr<T>((gctools::Tagged)0);
-}
-
-
-namespace translate {
-template <>
-struct from_object<int,std::true_type> {
-  int _v;
-  from_object(gctools::smart_ptr<core::T_O> vv) : _v(vv._val) {};
-};
-
-template <>
-struct from_object<int,std::false_type> {
-  int _v;
-  from_object(gctools::smart_ptr<core::T_O> vv) {};
-};
-
-
-template <>
-struct from_object<int&,std::true_type> {
-  int _v;
-  from_object(gctools::smart_ptr<core::T_O> vv) : _v(vv._val) {};
-};
-
-template <>
-struct from_object<int&,std::false_type> {
-  int _v;
-  from_object(gctools::smart_ptr<core::T_O> vv) {(void)vv;};
-};
-
-template <>
-struct to_object<int,std::false_type> {
-  static gctools::smart_ptr<core::T_O> convert(int x) {
-    return gctools::smart_ptr<core::T_O>((gctools::Tagged) x);
-  }
-};
-
-template <>
-struct to_object<int&,std::false_type> {
-  static gctools::smart_ptr<core::T_O> convert(int x) {
-    return gctools::smart_ptr<core::T_O>((gctools::Tagged) x);
-  }
-};
-};
-
-// ------------------------------------------------------------
-//
-// Policies
-//
-template <size_t X>
-struct pureOutValue {};
-
-template <size_t X>
-struct outValue {};
-
-template <typename...Policies>
-struct policies {};
-
-#endif
-
 
 // ============================================================
 // ============================================================
+
+
+template <typename FunctionPtrType>
+struct FunctionArgCount {
+};
+
+template <typename RT, typename...ARGS>
+struct FunctionArgCount< RT(*)(ARGS...)> {
+  enum { value = sizeof...(ARGS) };
+};
+
+
+
+// -------
+// Calculate number of arguments to function
+//
+
+
 
 // ------------------------------------------------------------
 //
@@ -265,30 +186,30 @@ void print_muple(const std::string& name, const muple<Ts...>& muple)
 
 namespace clbind {
 namespace detail {
-template <size_t N, typename POL>
+template <int N, typename POL>
 struct MapOutValuesImpl;
 
-template <size_t N>
+template <int N>
 struct MapOutValuesImpl<N,policies<>> {
   using type = Val<0>;
 };
 
-template <size_t N, typename... Tail>
+template <int N, typename... Tail>
 struct MapOutValuesImpl<N,policies<pureOutValue<N>, Tail...>> {
   using type = Val<1>;
 };
 
-template <size_t N, typename... Tail>
+template <int N, typename... Tail>
 struct MapOutValuesImpl<N,policies<outValue<N>, Tail...>> {
   using type = Val<1>;
 };
 
-template <size_t N, typename Head, typename... Tail>
+template <int N, typename Head, typename... Tail>
 struct MapOutValuesImpl<N,policies<Head, Tail...>> {
   using type = typename MapOutValuesImpl<N,policies<Tail...>>::type;
 };
 };
-template <size_t N, typename Policies>
+template <int N, typename Policies>
 struct MapOutValues {
   using type = typename detail::MapOutValuesImpl<N,Policies>::type;
 };
@@ -302,27 +223,70 @@ struct MapOutValues {
 
 namespace clbind {
 namespace detail {
-template <size_t N, typename Policies>
+template <int N, typename... Policies>
 struct MapNotPureOutValuesImpl;
 
-template <size_t N>
-struct MapNotPureOutValuesImpl<N,policies<>> {
+template <int N>
+struct MapNotPureOutValuesImpl<N> {
   using type = Val<1>;
 };
 
-template <size_t N, typename... Tail>
-struct MapNotPureOutValuesImpl<N,policies<pureOutValue<N>, Tail...>> {
-  using type = Val<0>;
+template <int N, typename Head, typename... Tail>
+struct MapNotPureOutValuesImpl<N,Head, Tail...> {
+  using type = typename MapNotPureOutValuesImpl<N,Tail...>::type;
 };
 
-template <size_t N, typename Head, typename... Tail>
-struct MapNotPureOutValuesImpl<N,policies<Head, Tail...>> {
-  using type = typename MapNotPureOutValuesImpl<N,policies<Tail...>>::type;
+template <int N,typename... Tails>
+struct MapNotPureOutValuesImpl<N,pureOutValue<N>, Tails...> {
+  using type = Val<0>;
 };
 };
-template <size_t N, typename Policies>
-struct MapNotPureOutValues {
-  using type = typename detail::MapNotPureOutValuesImpl<N,Policies>::type;
+template <int N, typename Policies>
+struct MapNotPureOutValues;
+
+template <int N, typename ...Types>
+struct MapNotPureOutValues<N,policies<Types...>>{
+  using type = typename detail::MapNotPureOutValuesImpl<N,Types...>::type;
+};
+};
+
+
+// ------------------------------------------------------------
+//
+// MapPureOutValuesFalseOrTrue
+// Calculate the value std::false_value or std::true_value from
+//   whether or not the first index N appears in the policies<...> parameter pack
+//   as pureOutValue<
+// Map <0,policies<pureOutValue<0>> to std::false_value
+// and <0,policies<pureOutValue<1>> to std::true_value
+//
+
+namespace clbind {
+namespace detail {
+template <int N, typename... Policies>
+struct MapPureOutValuesFalseOrTrueImpl;
+
+template <int N>
+struct MapPureOutValuesFalseOrTrueImpl<N> {
+  using type = std::true_type;
+};
+
+template <int N,typename... Tails>
+struct MapPureOutValuesFalseOrTrueImpl<N,pureOutValue<N>, Tails...> {
+  using type = std::false_type;
+};
+
+template <int N, typename Head, typename... Tail>
+struct MapPureOutValuesFalseOrTrueImpl<N,Head, Tail...> {
+  using type = typename MapPureOutValuesFalseOrTrueImpl<N,Tail...>::type;
+};
+};
+template <int N, typename Policies>
+struct MapPureOutValuesFalseOrTrue;
+
+template <int N, typename ...Types>
+struct MapPureOutValuesFalseOrTrue<N,policies<Types...>>{
+  using type = typename detail::MapPureOutValuesFalseOrTrueImpl<N,Types...>::type;
 };
 };
 
@@ -376,7 +340,7 @@ struct inValueMaskMuple_impl<Policies,std::integer_sequence<size_t,Is...>> {
 };
 
 };
-template <size_t Num,typename Policies>
+template <int Num,typename Policies>
 struct inValueMaskMuple {
   using type = typename detail::inValueMaskMuple_impl<Policies,std::make_index_sequence<Num>>::type;
 };
@@ -384,6 +348,35 @@ struct inValueMaskMuple {
 template <int Start, typename MaskMuple>
 struct inValueIndexMuple {
   using type = typename muple_runsum<Start,MaskMuple>::type;
+};
+
+};
+
+// ------------------------------------------------------------
+//
+// inValueTrueFalseMaskMuple
+//
+// Construct a tuple of size_t using policies_<...>
+// If there is a pureOutValue<x> where x is an index of an inValueMask argument then put 1
+//   if not then put 0 in that index of the tuple.
+//
+
+//static constexpr int*** iii = MapNotPureOutValues<0,policies<pureOutValue<1>>>::type();
+
+namespace clbind {
+namespace detail {
+template <typename Policies, typename Sequence>
+struct inValueTrueFalseMaskMuple_impl {};
+
+template <typename Policies, size_t... Is>
+struct inValueTrueFalseMaskMuple_impl<Policies,std::integer_sequence<size_t,Is...>> {
+  using type = pureOutsPack<typename MapPureOutValuesFalseOrTrue<Is,Policies>::type...>;
+};
+
+};
+template <int Num,typename Policies>
+struct inValueTrueFalseMaskPack {
+  using type = typename detail::inValueTrueFalseMaskMuple_impl<Policies,std::make_index_sequence<Num>>::type;
 };
 
 };
@@ -407,7 +400,7 @@ struct outValueMaskMuple_impl<Policies,std::integer_sequence<size_t,Is...>> {
 };
 };
 
-template <size_t Num, typename Policies>
+template <int Num, typename Policies>
 struct outValueMaskMuple {
   using type = typename detail::outValueMaskMuple_impl<Policies,std::make_index_sequence<Num>>::type;
 };
@@ -491,8 +484,8 @@ template <int Index, typename Policies, size_t Is, typename ArgTuple, typename T
 struct do_return<Val<Index>,Policies,Is,ArgTuple,Type> {
   constexpr static void go(core::T_O** return_values, ArgTuple&& args) {
     // Return an initialized from_object for the argument
-    auto val = translate::to_object<Type,typename AdoptPointer<Policies,Is>::type>::convert(std::get<Is>(args)._v)._val;
-    std::cout << "from_object.v " << std::get<Index>(args)._v << "  do_return frame[" << Index << "] -> " << val << std::endl;
+    auto preval = std::get<Is>(args)._v;
+    auto val = translate::to_object<typename Type::DeclareType,typename AdoptPointer<Policies,Is>::type>::convert(preval); // ._val;
     return_values[Index] = val.raw_();
   }
 };
@@ -516,25 +509,43 @@ struct return_multiple_values<Start,Policies,ArgTuple,std::integer_sequence<size
     return SumMuple<OutValueMaskMuple>::value;
   }
 };
+
+
+
+template <int Start, typename Policies, typename ArgTuple, typename ArgTupleForTypes, typename Seq>
+struct tuple_return_multiple_values {};
+
+template <int Start, typename Policies, typename ArgTuple,typename...Types, size_t...Is>
+struct tuple_return_multiple_values<Start,Policies,ArgTuple,std::tuple<Types...>,std::integer_sequence<size_t,Is...>> {
+  using OutValueMaskMuple = typename outValueMaskMuple<sizeof...(Types),Policies>::type;
+  using OutValueIndexMuple = typename outValueIndexMuple<Start-1,OutValueMaskMuple>::type;
+  static size_t go(ArgTuple&& args, core::T_O** outputs) {
+    (do_return<typename muple_element<Is,OutValueIndexMuple>::type,Policies,Is,ArgTuple,Types>::go(outputs,std::forward<ArgTuple>(args)) , ...);
+    return SumMuple<OutValueMaskMuple>::value;
+  }
+};
+
+
 };
 // ============================================================
 //
 // apply 
 namespace clbind {
 namespace detail {
-template <class F, class Args, std::size_t... I>
-constexpr decltype(auto) apply_impl( F&& f, /*std::tuple<Args...>*/Args&& t, std::index_sequence<I...> )
+template <class F, class ArgTuple, std::size_t... I>
+decltype(auto) apply_impl( F&& f, ArgTuple&& t, std::index_sequence<I...> )
 {
   // This is where the MAGIC happens!
   // Apply the function to the arguments in the tuple of from_object objects
-  return std::invoke(std::forward<F>(f), (std::get<I>(std::forward<Args/*std::tuple<Args...>*/>(t))._v)...);
+//  return std::invoke(std::forward<F>(f), (std::get<I>(std::forward<Args>(t))._v)...);
+  return std::invoke(std::forward<F>(f), (std::get<I>(t)._v)...);
 }
 } // namespace detail 
 
 template <class F, class ArgTuple>
-constexpr decltype(auto) apply(F&& f, ArgTuple&& t)
+decltype(auto) apply(F&& f, ArgTuple&& t)
 {
-  //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};                                                                                           
+  //  int*** iii = std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{};
   return detail::apply_impl(std::forward<F>(f), std::forward<ArgTuple>(t),
                             std::make_index_sequence<std::tuple_size_v<std::decay_t<ArgTuple>>>{});
 }

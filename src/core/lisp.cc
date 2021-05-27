@@ -40,7 +40,7 @@ THE SOFTWARE.
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
 //#pragma GCC diagnostic ignored "-Wunused-local-typedef"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #pragma GCC diagnostic pop
@@ -1160,19 +1160,19 @@ Path_sp Lisp_O::translateLogicalPathnameUsingPaths(T_sp obj) {
     string fileName = logicalPathName->get_std_string();
     LOG(BF("Looking for file: %s") % fileName.c_str());
     LOG(BF("Looking in current directory"));
-    boost_filesystem::path onePath("./");
+    std::filesystem::path onePath("./");
     onePath /= fileName;
-    if (boost_filesystem::exists(onePath)) {
+    if (std::filesystem::exists(onePath)) {
       return Path_O::create(onePath.string());
     }
     Symbol_sp pathSym = _sym_STARPATHSTAR;
     List_sp pathList = pathSym->symbolValue();
     LOG(BF("PATH variable = %s") % _rep_(pathList).c_str());
     while (pathList.notnilp()) {
-      boost_filesystem::path onePath(gc::As<String_sp>(oCar(pathList))->get_std_string());
+      std::filesystem::path onePath(gc::As<String_sp>(oCar(pathList))->get_std_string());
       onePath /= fileName;
       LOG(BF("Checking path[%s]") % onePath.string());
-      if (boost_filesystem::exists(onePath)) {
+      if (std::filesystem::exists(onePath)) {
         return Path_O::create(onePath.string());
       }
       pathList = oCdr(pathList);

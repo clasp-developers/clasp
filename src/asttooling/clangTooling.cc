@@ -81,11 +81,6 @@ THE SOFTWARE.
 
 namespace translate {
 
-template <>
-struct from_object<int&,std::false_type> {
-  int _v;
-  from_object(core::T_sp o) : _v(0) {};
-};
 
 template <>
 struct from_object<clang::tooling::CommandLineArguments> {
@@ -807,7 +802,7 @@ void initialize_clangTooling() {
         .def("getASTRecordLayout",&clang::ASTContext::getASTRecordLayout);
   
     class_<clang::SourceManager> cl_af(m,"SourceManager");
-    cl_af.def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "docstring","((self ast-tooling:source-manager) source-location &optional (use-line-directives t))"_ll)
+    cl_af.def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "((self ast-tooling:source-manager) source-location &optional (use-line-directives t))"_ll)
         .def("getFilename", &clang::SourceManager::getFilename)
         .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
         .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, pureOutValue<2>())
@@ -921,7 +916,7 @@ void initialize_clangTooling() {
         .def("match-result-context", &clang::ast_matchers::MatchFinderMatchResult::getContext)
         .def("SourceManager", &clang::ast_matchers::MatchFinderMatchResult::getSourceManager);
     class_<clang::ast_matchers::BoundNodes> cl_be(m,"BoundNodes");
-    m.def("IDToNodeMap", &ast_tooling__IDToNodeMap, "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes", "(bound-nodes)"_ll);
+    m.def("IDToNodeMap", &ast_tooling__IDToNodeMap, DocString("IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes"), "(bound-nodes)"_ll);
     m.def("Lexer-getLocForEndOfToken", &clang::Lexer::getLocForEndOfToken);
     m.def("Lexer-getSourceText", &clang::Lexer::getSourceText, pureOutValue<4>());
     class_<clang::tooling::CompileCommand> cl_bf(m,"CompileCommand");

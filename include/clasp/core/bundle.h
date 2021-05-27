@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/pathname.fwd.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace core {
 
@@ -55,8 +55,8 @@ public:
   /*! Initialize the bundle and set up all the paths
      */
 private:
-  boost_filesystem::path findAppDir(const string &argv0, const string &cwd, bool verbose=false);
-  void findContentSubDirectories(boost_filesystem::path p, bool verbose=false);
+  std::filesystem::path findAppDir(const string &argv0, const string &cwd, bool verbose=false);
+  void findContentSubDirectories(std::filesystem::path p, bool verbose=false);
   void fillInMissingPaths(bool verbose=false);
 
 public:

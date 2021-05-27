@@ -389,7 +389,7 @@ struct memfun_registration : registration {
   memfun_registration(const std::string &name, MethodPointerType f, Policies const &policies)
     : m_name(name), methodPtr(f), policies(policies) {
     this->m_arguments = policies.lambdaList();
-    this->m_docstring = policies.docstring();
+    this->m_doc_string = policies.docstring();
     this->m_declares = policies.declares();
   }
 
@@ -402,7 +402,7 @@ struct memfun_registration : registration {
     maybe_register_symbol_using_dladdr((void*)VariadicType::method_entry_point);
     core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,methodPtr));
     lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
-                                    m_arguments, m_declares, m_docstring,
+                                    m_arguments, m_declares, m_doc_string,
                                     true,
                                     CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
                                     GatherPureOutValues<Policies, 0>::gather());
@@ -417,13 +417,13 @@ struct memfun_registration : registration {
   Policies policies;
   string m_arguments;
   string m_declares;
-  string m_docstring;
+  string m_doc_string;
 };
 
 template <class Class, class Begin, class End, class Policies>
 struct iterator_registration : registration {
   iterator_registration(char const *name, Begin begin, End end, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
-      : m_name(name), beginPtr(begin), endPtr(end), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+      : m_name(name), beginPtr(begin), endPtr(end), policies(policies), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
 
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
@@ -435,7 +435,7 @@ struct iterator_registration : registration {
     core::BuiltinClosure_sp methoid = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, beginPtr, endPtr));
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
-    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_docstring, true, 1); // one argument required for iterator - the object that has the sequence
+    lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_doc_string, true, 1); // one argument required for iterator - the object that has the sequence
     core::validateFunctionDescription(__FILE__, __LINE__, methoid);
   }
   
@@ -448,7 +448,7 @@ struct iterator_registration : registration {
   Policies policies;
   string m_arguments;
   string m_declares;
-  string m_docstring;
+  string m_doc_string;
 };
 
 #ifdef BOOST_MSVC
@@ -479,7 +479,7 @@ struct CountConstructorArguments<constructor<ARGS...>> {
 template <class Class, class Pointer, class Signature, class Policies>
 struct constructor_registration_base : public registration {
   constructor_registration_base(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring)
-      : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+      : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
 
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
@@ -493,7 +493,7 @@ struct constructor_registration_base : public registration {
     core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
     maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
     core::BuiltinClosure_sp func = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(ep));
-    lisp_defun(sym, core::lisp_currentPackageName(),func, m_arguments, m_declares, m_docstring, "=external=", 0, CountConstructorArguments<Signature>::value);
+    lisp_defun(sym, core::lisp_currentPackageName(),func, m_arguments, m_declares, m_doc_string, "=external=", 0, CountConstructorArguments<Signature>::value);
     core::validateFunctionDescription( __FILE__, __LINE__, func );
   }
   virtual std::string name() const { return this->m_name;}
@@ -504,7 +504,7 @@ struct constructor_registration_base : public registration {
   string m_name;
   string m_arguments;
   string m_declares;
-  string m_docstring;
+  string m_doc_string;
 };
 
  /*! constructor_registration can construct either a derivable class or a non-derivable class */
@@ -538,7 +538,7 @@ template <class Class, class Pointer, class Policies>
 template <class Class, class Policies>
   struct constructor_registration_base<Class, reg::null_type, default_constructor, Policies> : public registration {
   constructor_registration_base(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring)
-      : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+      : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
 
   void register_() const {
     HARD_IMPLEMENT_MEF("Do I use this code?");
@@ -548,7 +548,7 @@ template <class Class, class Policies>
   string m_name;
   string m_arguments;
   string m_declares;
-  string m_docstring;
+  string m_doc_string;
 };
 
 /*! This is the constructor registration for default constructors of non derivable classes,
@@ -576,7 +576,7 @@ struct property_registration : registration {
                        string const &arguments = "",
                        string const &declares = "",
                        string const &docstring = "")
- : m_name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+ : m_name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
 
  void register_() const {
      LOG_SCOPE(("%s:%d class_ register_ %s\n", __FILE__, __LINE__, this->m_name.c_str() ));
@@ -589,13 +589,13 @@ struct property_registration : registration {
      core::FunctionDescription_sp fdesc = core::makeFunctionDescription(sym,VariadicGetterType::entry_point);
      auto raw_getter = gc::GC<VariadicGetterType>::allocate(fdesc, get);
      core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(raw_getter);
-     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
+     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1);
      core::validateFunctionDescription(__FILE__,__LINE__,getter);
      core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf,sym);
      using VariadicSetterType = SetterMethoid<reg::null_type, Class, Set>;
      core::FunctionDescription_sp fdesc_setf = core::makeFunctionDescription(setf_name,VariadicSetterType::entry_point);
      core::BuiltinClosure_sp setter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicSetterType>::allocate(fdesc_setf, set));
-     lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_docstring, true, 2);
+     lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_doc_string, true, 2);
      core::validateFunctionDescription(__FILE__,__LINE__,setter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
@@ -609,7 +609,7 @@ struct property_registration : registration {
  SetPolicies set_policies;
  string m_arguments;
  string m_declares;
- string m_docstring;
+ string m_doc_string;
 };
 
 
@@ -625,7 +625,7 @@ struct property_registration : registration {
       string const &arguments = "",
       string const &declares = "",
       string const &docstring = "")
-      : m_name(name), get(get), get_policies(get_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+      : m_name(name), get(get), get_policies(get_policies), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
 
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
@@ -638,7 +638,7 @@ struct property_registration : registration {
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
     maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
     core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, get));
-    lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
+    lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1);
     core::validateFunctionDescription(__FILE__, __LINE__, getter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, m_name);
     // register the getter here
@@ -650,7 +650,7 @@ struct property_registration : registration {
   GetPolicies get_policies;
   string m_arguments;
   string m_declares;
-  string m_docstring;
+  string m_doc_string;
 };
 
 

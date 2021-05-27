@@ -50,8 +50,16 @@ struct outValue {};
 // should not be passed in from Lisp
 // For functions the first argument is <1>
 
+
+template <typename...>
+struct pureOutsPack {};
+
+
 template <int N>
 struct pureOutValue {};
+
+template <int N>
+struct testType {};
 
 template <int N>
 struct adopt {};
@@ -104,15 +112,21 @@ struct Keyword {
 };
 
 struct LambdaList {
-    std::string m_lambda_list;
-    LambdaList(const std::string& val) : m_lambda_list(val) {};
+  std::string m_lambda_list;
+  LambdaList(const std::string& val) : m_lambda_list(val) {};
 };
 
+struct DocString {
+  std::string m_doc_string;
+  DocString(const std::string& val) : m_doc_string(val) {};
+};
+
+ 
 template <class...PTypes>
 struct policies {
     std::vector<Keyword> m_keywords;
     std::string m_lambda_list;
-    std::string m_docstring;
+    std::string m_doc_string;
     void describe() {
         printf("%s:%d Descibing Policy\n", __FILE__, __LINE__ );
         if (this->m_lambda_list!="") {
@@ -120,7 +134,7 @@ struct policies {
         } else {
             printf("keyword_list = %s\n", this->keyword_list().c_str());
         }
-        printf("Docstring = %s\n", this->m_docstring.c_str());
+        printf("Docstring = %s\n", this->m_doc_string.c_str());
     }
     std::string keywordList() const {
       if (this->m_keywords.size()==0) {
@@ -142,7 +156,7 @@ struct policies {
       return this->keywordList();
     }
   }
-  std::string docstring() const { return this->m_docstring; };
+  std::string docstring() const { return this->m_doc_string; };
   std::string declares() const { return ""; };
 };
 
@@ -183,9 +197,9 @@ void update_policy(Policy& policy, const LambdaList& lambda_list)
 }
 
 template <class Policy>
-void update_policy(Policy& policy, const char* docstring)
+void update_policy(Policy& policy, const DocString& doc_string)
 {
-    policy.m_docstring = std::string(docstring);
+    policy.m_doc_string = doc_string.m_doc_string;
 }
 
 template <class Policy>
@@ -205,15 +219,15 @@ template <typename... Pols>
 struct is_policy_list<policies<Pols...>> {
   typedef boost::mpl::true_ type;
 };
-
-
-
-
 };
 
 
 inline clbind::LambdaList operator "" _ll(const char* arg, size_t len) {
   return clbind::LambdaList(std::string(arg,len));
+}
+
+inline clbind::DocString operator "" _docstring(const char* arg, size_t len) {
+  return clbind::DocString(std::string(arg,len));
 }
 
 inline clbind::Keyword operator "" _a(const char* arg, size_t len) {

@@ -28,7 +28,7 @@ THE SOFTWARE.
 #define FileSystem_H
 //stuff
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -48,15 +48,15 @@ public:
   void initialize();
 
 private:
-  dont_expose<boost_filesystem::path> _Path;
+  dont_expose<std::filesystem::path> _Path;
 
 public:
   static Path_sp create(const string &path);
-  static Path_sp create(boost_filesystem::path p);
+  static Path_sp create(std::filesystem::path p);
   static Path_sp pathnameDesignator(T_sp obj);
 
 public:
-  boost_filesystem::path &getPath() { return this->_Path._value; };
+  std::filesystem::path &getPath() { return this->_Path._value; };
 
 public:
 
@@ -65,13 +65,13 @@ CL_DEFMETHOD   bool isAbsolute() const { return this->_Path._value.is_absolute()
 
   Path_sp copyPath() const;
 
-  /*! Generate the boost_filesystem complete path */
+  /*! Generate the std::filesystem complete path */
   Path_sp absolute() const;
 
   /*! Return the POSIX time_t value for the last_write_time */
   Integer_sp last_write_time() const;
 
-  void setPath(const boost_filesystem::path &p);
+  void setPath(const std::filesystem::path &p);
   void setPathFromString(const string &path);
 
   void sxhash_(HashGenerator &hg) const;
@@ -138,8 +138,8 @@ GCPRIVATE:
   /* A new CurrentIterator is created (new) whenever first() is called
 	   So we have to manage the memory for _CurrentIterator
 	 */
-  dont_expose<boost_filesystem::directory_iterator *> _CurrentIterator;
-  dont_expose<boost_filesystem::directory_iterator> _EndIterator;
+  dont_expose<std::filesystem::directory_iterator *> _CurrentIterator;
+  dont_expose<std::filesystem::directory_iterator> _EndIterator;
 
 public:
   DirectoryIterator_sp create(Path_sp path);
@@ -153,7 +153,7 @@ public:
   virtual void next();
   virtual bool isDone();
   virtual T_sp currentObject();
-  explicit DirectoryIterator_O() : Base(), _CurrentIterator((boost_filesystem::directory_iterator*)NULL){};
+  explicit DirectoryIterator_O() : Base(), _CurrentIterator((std::filesystem::directory_iterator*)NULL){};
   virtual ~DirectoryIterator_O(); // non-trivial destructor
 };
 };
@@ -179,8 +179,8 @@ GCPRIVATE:
   /* A new CurrentIterator is created (new) whenever first() is called
 	   So we have to manage the memory for _CurrentIterator
 	 */
-  dont_expose<boost_filesystem::recursive_directory_iterator *> _CurrentIterator;
-  dont_expose<boost_filesystem::recursive_directory_iterator> _EndIterator;
+  dont_expose<std::filesystem::recursive_directory_iterator *> _CurrentIterator;
+  dont_expose<std::filesystem::recursive_directory_iterator> _EndIterator;
 
 public:
   RecursiveDirectoryIterator_sp create(Path_sp path);
@@ -195,7 +195,7 @@ public:
   virtual void next();
   virtual bool isDone();
   virtual T_sp currentObject();
-  explicit RecursiveDirectoryIterator_O() : Base(), _CurrentIterator((boost_filesystem::recursive_directory_iterator*)NULL){};
+  explicit RecursiveDirectoryIterator_O() : Base(), _CurrentIterator((std::filesystem::recursive_directory_iterator*)NULL){};
   virtual ~RecursiveDirectoryIterator_O(); // nontrivial
 };
 };
@@ -211,10 +211,10 @@ public:
   void initialize();
 
 private:
-  boost_filesystem::directory_entry *_Entry;
+  std::filesystem::directory_entry *_Entry;
 
 public:
-  void setEntry(const boost_filesystem::directory_entry &entry);
+  void setEntry(const std::filesystem::directory_entry &entry);
 
 public:
   FileStatus_sp fileStatus();
@@ -240,10 +240,10 @@ public:
   void initialize();
 
 private:
-  boost_filesystem::file_status _FileStatus;
+  std::filesystem::file_status _FileStatus;
 
 public:
-  void setFileStatus(const boost_filesystem::file_status &fs);
+  void setFileStatus(const std::filesystem::file_status &fs);
 
 public:
   bool exists();

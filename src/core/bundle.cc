@@ -47,36 +47,34 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/lisp.h>
-#include <boost/filesystem.hpp>
-
-namespace bf = boost_filesystem;
+#include <filesystem>
 
 namespace core {
 
 
 struct BundleDirectories {
-  boost_filesystem::path _StartupWorkingDir;
-  boost_filesystem::path _InstallDir;
-  boost_filesystem::path _ExecutableDir;
-  boost_filesystem::path _ContentsDir;
-  boost_filesystem::path _ResourcesDir;
-  boost_filesystem::path _LispSourceDir;
-  boost_filesystem::path _GeneratedDir;
-  boost_filesystem::path _SourceDir;
-  boost_filesystem::path _IncludeDir;
-  boost_filesystem::path _LibDir;
-  boost_filesystem::path _DatabasesDir;
-  boost_filesystem::path _FaslDir;
-  boost_filesystem::path _BitcodeDir;
-  boost_filesystem::path _QuicklispDir;
+  std::filesystem::path _StartupWorkingDir;
+  std::filesystem::path _InstallDir;
+  std::filesystem::path _ExecutableDir;
+  std::filesystem::path _ContentsDir;
+  std::filesystem::path _ResourcesDir;
+  std::filesystem::path _LispSourceDir;
+  std::filesystem::path _GeneratedDir;
+  std::filesystem::path _SourceDir;
+  std::filesystem::path _IncludeDir;
+  std::filesystem::path _LibDir;
+  std::filesystem::path _DatabasesDir;
+  std::filesystem::path _FaslDir;
+  std::filesystem::path _BitcodeDir;
+  std::filesystem::path _QuicklispDir;
 };
 
 
-bool safe_is_directory(const bf::path& path) {
+bool safe_is_directory(const std::filesystem::path& path) {
   try {
-    return bf::is_directory(path);
+    return std::filesystem::is_directory(path);
   } catch (...) {
-    SIMPLE_ERROR(BF("The bf::is_directory(%s) call threw a C++ exception") % path.string().c_str() );
+    SIMPLE_ERROR(BF("The std::filesystem::is_directory(%s) call threw a C++ exception") % path.string().c_str() );
   }
 }
 
@@ -90,7 +88,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   }
   this->_Directories = new BundleDirectories();
   this->initializeStartupWorkingDirectory(verbose);
-  bf::path appDir;
+  std::filesystem::path appDir;
   if (verbose) {
     printf("%s:%d Bundle appDirName = %s\n", __FILE__, __LINE__, appDirName.c_str() );
   }
@@ -132,7 +130,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     appDir = this->findAppDir(argv0, cwd,verbose);
     if ( verbose ) printf("%s:%d Using this->findAppDir(...) appDir = %s\n", __FILE__, __LINE__, appDir.string().c_str() );
   } else {
-    appDir = bf::path(appDirName);
+    appDir = std::filesystem::path(appDirName);
     if ( verbose ) printf("%s:%d Using appDirName appDir = %s\n", __FILE__, __LINE__, appDir.string().c_str() );
   }
   // First crawl up the directory tree and look for the cando root
@@ -147,7 +145,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   printf("%s:%d    _ExecutableDir = %s\n", __FILE__, __LINE__, this->_Directories->_ExecutableDir.string().c_str());
   printf("%s:%d    _StartupWorkingDir = %s\n", __FILE__, __LINE__, this->_Directories->_StartupWorkingDir.string().c_str());
 #endif
-  appDir = appDir.branch_path();
+  appDir = appDir.parent_path();
   if (verbose) {
     printf("%s:%d   Climb one level up from _ExecutablePath = %s\n", __FILE__, __LINE__, appDir.string().c_str());
   }
@@ -155,9 +153,9 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
       
    
   // Check if there is a 'src' directory in _ExecutableDir - if so we are building
-  bf::path srcPath = this->_Directories->_ExecutableDir / "src";
+  std::filesystem::path srcPath = this->_Directories->_ExecutableDir / "src";
   bool foundContents = false;
-  if (bf::exists(srcPath)) {
+  if (std::filesystem::exists(srcPath)) {
     if (verbose) {
       printf("%s:%d   In development environment - found src path = %s\n", __FILE__, __LINE__, srcPath.string().c_str());
     }
@@ -172,10 +170,10 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     printf("%s:%d Find Contents elsewhere\n", __FILE__, __LINE__ );
 #endif
 //  this->_Directories->_RootDir = appDir;
-    bf::path original_one_up_contents = this->_Directories->_ExecutableDir.parent_path();
+    std::filesystem::path original_one_up_contents = this->_Directories->_ExecutableDir.parent_path();
     this->_Directories->_InstallDir = original_one_up_contents;
-    bf::path one_up_contents = original_one_up_contents / "lib" / "clasp";
-    if (bf::exists(one_up_contents)) {
+    std::filesystem::path one_up_contents = original_one_up_contents / "lib" / "clasp";
+    if (std::filesystem::exists(one_up_contents)) {
       if (safe_is_directory(one_up_contents)) {
         this->_Directories->_ContentsDir = one_up_contents;
         if (verbose) {
@@ -190,17 +188,17 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
       char *homedir = getenv("CLASP_HOME");
       if (homedir) {
         if (verbose) printf("%s:%d  Using the CLASP_HOME directory %s\n", __FILE__, __LINE__, homedir);
-        this->_Directories->_InstallDir = bf::path(homedir);
+        this->_Directories->_InstallDir = std::filesystem::path(homedir);
         this->_Directories->_ContentsDir = this->_Directories->_InstallDir / "lib" / "clasp";
-        if (!bf::exists(this->_Directories->_ContentsDir)) {
+        if (!std::filesystem::exists(this->_Directories->_ContentsDir)) {
           this->_Directories->_ContentsDir = this->_Directories->_InstallDir;
         }
         foundContents = true;
       } else {
-        this->_Directories->_InstallDir = bf::path(std::string(PREFIX));
+        this->_Directories->_InstallDir = std::filesystem::path(std::string(PREFIX));
         std::string install_path = std::string(PREFIX)+"/lib/clasp";
-        bf::path test_path(install_path);
-        if (bf::exists(test_path)) {
+        std::filesystem::path test_path(install_path);
+        if (std::filesystem::exists(test_path)) {
           if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, install_path.c_str());
           this->_Directories->_ContentsDir = test_path;
           foundContents = true;
@@ -209,8 +207,8 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
                                 "/usr/lib/clasp/Contents" };
         if (!foundContents) {
           for ( size_t i=0; i<sizeof(paths)/sizeof(paths[0]); ++i ) {
-            bf::path test_path(paths[i]);
-            if (bf::exists(test_path)) {
+            std::filesystem::path test_path(paths[i]);
+            if (std::filesystem::exists(test_path)) {
               if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, paths[i]);
               this->_Directories->_ContentsDir = test_path;
               foundContents = true;
@@ -280,19 +278,19 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   if (verbose) printf("%s:%d   Starting to look for quicklisp\n", __FILE__, __LINE__);
   const char* quicklisp_env = getenv("CLASP_QUICKLISP_DIRECTORY");
   if (quicklisp_env) {
-    bf::path env_path(quicklisp_env);
-    if (bf::exists(env_path)) {
-      if (safe_is_directory(bf::path(quicklisp_env))) {
+    std::filesystem::path env_path(quicklisp_env);
+    if (std::filesystem::exists(env_path)) {
+      if (safe_is_directory(std::filesystem::path(quicklisp_env))) {
         if (verbose) printf("%s:%d   Found path %s\n", __FILE__, __LINE__, quicklisp_env);
-        this->_Directories->_QuicklispDir = bf::path(quicklisp_env);
+        this->_Directories->_QuicklispDir = std::filesystem::path(quicklisp_env);
       }
     }
   } else {
     bool gotQuicklispPath = false;
     // Try "sys:modules;quicklisp;"
-    bf::path modules_quicklisp = this->_Directories->_LispSourceDir / "modules" / "quicklisp";
+    std::filesystem::path modules_quicklisp = this->_Directories->_LispSourceDir / "modules" / "quicklisp";
     if (verbose) printf("%s:%d   Looking in modulesat %s\n", __FILE__, __LINE__, modules_quicklisp.string().c_str());
-    if (bf::exists(modules_quicklisp)) {
+    if (std::filesystem::exists(modules_quicklisp)) {
       if (safe_is_directory(modules_quicklisp)) {
         if (!getenv("ASDF_OUTPUT_TRANSLATIONS")) {
           if (!global_options->_SilentStartup) {
@@ -310,10 +308,10 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
       const char* home_dir = getenv("HOME");
       std::stringstream sdir;
       if (home_dir) {
-        bf::path quicklispPath(home_dir);
+        std::filesystem::path quicklispPath(home_dir);
         quicklispPath = quicklispPath / "quicklisp";
         if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, quicklispPath.string().c_str() );
-        if (bf::exists(quicklispPath)) {
+        if (std::filesystem::exists(quicklispPath)) {
           if (safe_is_directory(quicklispPath)) {
         // printf("%s:%d  ~/quicklisp/ exists\n", __FILE__, __LINE__);
             if (verbose) printf("%s:%d  Found %s\n", __FILE__, __LINE__, quicklispPath.string().c_str() );
@@ -332,18 +330,18 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 
 void Bundle::initializeStartupWorkingDirectory(bool verbose) {
   string cwd = "";
-  boost_filesystem::path curPath;
+  std::filesystem::path curPath;
   try {
-    curPath = boost_filesystem::current_path();
+    curPath = std::filesystem::current_path();
   } catch (std::runtime_error &e) {
     printf("%s:%d - There was a problem getting the current_path - error[%s]\n",
            __FILE__, __LINE__, e.what());
-    printf("     This appears to be a problem with boost_filesystem\n");
+    printf("     This appears to be a problem with std::filesystem\n");
     printf("     - see https://svn.boost.org/trac/boost/ticket/4688\n");
-    SIMPLE_ERROR(BF("There is a problem with boost_filesystem"));
+    SIMPLE_ERROR(BF("There is a problem with std::filesystem"));
   }
   cwd = curPath.string();
-  this->_Directories->_StartupWorkingDir = boost_filesystem::path(cwd);
+  this->_Directories->_StartupWorkingDir = std::filesystem::path(cwd);
   if ( verbose ) {
     printf("%s:%d  _StartupWorkingDir = %s\n", __FILE__, __LINE__, this->_Directories->_StartupWorkingDir.string().c_str() );
   }
@@ -357,7 +355,7 @@ void Bundle::initializeStartupWorkingDirectory(bool verbose) {
 // appVariableName is the name of a variable containing the directory for this app, e.g.
 // MYAPPDIR. This is checked first.
 
-boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cwd, bool verbose) {
+std::filesystem::path Bundle::findAppDir( const string &argv0, const string &cwd, bool verbose) {
   if (verbose) {
     printf("%s:%d In findAppDir argv0: %s\n", __FILE__, __LINE__, argv0.c_str() );
     printf("%s:%d In findAppDir cwd: %s\n", __FILE__, __LINE__, cwd.c_str() );
@@ -365,21 +363,21 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
   }
   char* claspHome = getenv("CLASP_HOME");
   if (claspHome) {
-    boost_filesystem::path claspHomePath(claspHome);
-    return claspHomePath.branch_path();
+    std::filesystem::path claspHomePath(claspHome);
+    return claspHomePath.parent_path();
   }
-  boost_filesystem::path argv0Path(argv0);
+  std::filesystem::path argv0Path(argv0);
   if (argv0Path.has_root_path()) {
-    if (verbose) printf("%s:%d has_root_path: %s\n", __FILE__, __LINE__, argv0Path.branch_path().string().c_str() );
-    return argv0Path.branch_path();
+    if (verbose) printf("%s:%d has_root_path: %s\n", __FILE__, __LINE__, argv0Path.parent_path().string().c_str() );
+    return argv0Path.parent_path();
   } else {
-    boost_filesystem::path cwdPath(cwd);
-    boost_filesystem::path absPath;
+    std::filesystem::path cwdPath(cwd);
+    std::filesystem::path absPath;
     
     absPath = cwdPath / argv0Path;
-    if (bf::exists(absPath)) {
-      if (verbose) printf("%s:%d absPath.branch_path(): %s\n", __FILE__, __LINE__, absPath.branch_path().string().c_str() );
-      return absPath.branch_path();
+    if (std::filesystem::exists(absPath)) {
+      if (verbose) printf("%s:%d absPath.parent_path(): %s\n", __FILE__, __LINE__, absPath.parent_path().string().c_str() );
+      return absPath.parent_path();
     }
   }
   // OK, it's neither an absolute path nor a relative path.
@@ -403,11 +401,11 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
   argv0Extension = argv0;
 #endif
   for (VectorStrings::iterator it = pathParts.begin(); it != pathParts.end(); it++) {
-    bf::path onePath(*it);
+    std::filesystem::path onePath(*it);
     onePath = onePath / argv0Extension;
-    if (bf::exists(onePath)) {
-      if (verbose) printf("%s:%d onePath.branch_path(): %s\n", __FILE__, __LINE__, onePath.branch_path().string().c_str() );
-      return onePath.branch_path();
+    if (std::filesystem::exists(onePath)) {
+      if (verbose) printf("%s:%d onePath.parent_path(): %s\n", __FILE__, __LINE__, onePath.parent_path().string().c_str() );
+      return onePath.parent_path();
     }
   }
   THROW_HARD_ERROR(BF("Could not determine absolute path to executable: %s") % argv0 );
@@ -434,7 +432,7 @@ string Bundle::describe() {
 }
 
 
-Pathname_sp generate_pathname(const boost_filesystem::path& path)
+Pathname_sp generate_pathname(const std::filesystem::path& path)
 {
   stringstream ss;
   ss << path.string();

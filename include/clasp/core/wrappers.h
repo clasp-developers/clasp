@@ -183,7 +183,7 @@ namespace core {
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
    maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
    Symbol_sp symbol = _lisp->intern(name, packageName);
-   using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
+   using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp,clbind::pureOutsPack<>>;
    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( symbol, VariadicType::entry_point);
    maybe_register_symbol_using_dladdr( (void*)VariadicType::entry_point);
    BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
@@ -196,7 +196,7 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
 void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
     maybe_register_symbol_using_dladdr(*(void**)&fp,sizeof(fp),name);
   Symbol_sp symbol = _lisp->intern(name, packageName);
-  using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
+  using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp,clbind::pureOutsPack<>>;
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( symbol, VariadicType::entry_point);
   maybe_register_symbol_using_dladdr( (void*)VariadicType::entry_point);
   BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
@@ -229,7 +229,7 @@ class Function_O;
 inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourcePathname, int lineno) {
   maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
   Symbol_sp symbol = lispify_intern(name, packageName);
-  using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<T_mv(*)(List_sp,T_sp),core::policy::clasp>;
+  using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<T_mv(*)(List_sp,T_sp),core::policy::clasp,clbind::pureOutsPack<>>;
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( symbol, VariadicType::entry_point );
   maybe_register_symbol_using_dladdr( (void*) VariadicType::entry_point );
   BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,mp));
