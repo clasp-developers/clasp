@@ -191,6 +191,8 @@
   ((offset-type-cxx-identifier :initarg :offset-type-cxx-identifier
                                :reader offset-type-cxx-identifier)
    (ctype-key :initarg :ctype-key :reader ctype-key)
+   (fixup-ctype-offset-type-key :initarg :fixup-ctype-offset-type-key
+                                :reader fixup-ctype-offset-type-key)
    (fixup-ctype-key :initarg :fixup-ctype-key :reader fixup-ctype-key)
    (layout-offset-field-names :initarg :layout-offset-field-names
                               :reader layout-offset-field-names)))
