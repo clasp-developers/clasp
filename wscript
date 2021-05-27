@@ -139,10 +139,7 @@ CLANG_LIBRARIES = [
 #CLANG_LIBRARIES = [ 'clang-cpp' ]
 # LLVM_LIBRARIES = [ 'LLVM' ]
 
-BOOST_LIBRARIES = [
-            'boost_filesystem',
-            'boost_date_time',
-            'boost_system']
+BOOST_LIBRARIES = []
 
 VALID_OPTIONS = [
     # point to the llvm-config executable - this tells the build system which clang to use

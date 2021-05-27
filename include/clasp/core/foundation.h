@@ -50,11 +50,9 @@ THE SOFTWARE.
 
 #include <string>
 #include <boost/format.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 
-
-namespace boost_filesystem = boost::filesystem;
 
 #define BF boost::format
 

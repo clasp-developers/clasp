@@ -50,8 +50,6 @@ THE SOFTWARE.
 #include <clasp/core/unixfsys.h>
 #include <string>
 
-namespace bf = boost_filesystem;
-
 namespace boost {
 void assertion_failed_msg(char const *expr, char const *msg,
                           char const *function, char const *file, long line) {
@@ -62,15 +60,15 @@ void assertion_failed_msg(char const *expr, char const *msg,
 namespace core {
 
 void rename_file(Path_sp rpath1, Path_sp rpath2) {
-  return bf::rename(rpath1->getPath(), rpath2->getPath());
+  return std::filesystem::rename(rpath1->getPath(), rpath2->getPath());
 }
 
 bool delete_file(Path_sp rpath) {
-  return bf::remove(rpath->getPath());
+  return std::filesystem::remove(rpath->getPath());
 }
 
 int delete_all_files(Path_sp rpath) {
-  return bf::remove_all(rpath->getPath());
+  return std::filesystem::remove_all(rpath->getPath());
 }
 
 /*! Rename src to dest but first check if dest already exists and create a backup
@@ -105,9 +103,9 @@ CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   } else {
     TYPE_ERROR(pathspec, core::Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_pathname));
   }
-  bf::path parent = path_to_create->getPath().parent_path();
+  std::filesystem::path parent = path_to_create->getPath().parent_path();
   try {
-    bf::create_directories(parent);
+    std::filesystem::create_directories(parent);
   } catch (...) {
     SIMPLE_ERROR(BF("Could not create_directories for path[%s]") % parent.string());
   }
@@ -128,7 +126,7 @@ Path_sp Path_O::create(const string &path) {
   return op;
 }
 
-Path_sp Path_O::create(boost_filesystem::path p) {
+Path_sp Path_O::create(std::filesystem::path p) {
   GC_ALLOCATE(Path_O, op);
   op->setPath(p);
   return op;
@@ -161,12 +159,17 @@ void Path_O::sxhash_(HashGenerator &hg) const {
     if (!(hg.addValue(c))) return;
 }
 
+
+#if 0
 CL_LISPIFY_NAME("last_write_time");
 CL_DEFMETHOD Integer_sp Path_O::last_write_time() const {
-  std::time_t ttime = boost_filesystem::last_write_time(this->_Path._value);
-  gc::Fixnum ui64 = ttime;
+  auto ftime = std::filesystem::last_write_time(this->_Path._value);
+  std::time_t cftime = std::chrono::system_clock::to_time_t(
+                 std::chrono::file_clock::to_sys(ftime));    
+  gc::Fixnum ui64 = cftime;
   return Integer_O::create(ui64);
 }
+#endif
 
 CL_LISPIFY_NAME("path-append");
 CL_DEFMETHOD Path_sp Path_O::path_append(string const &pp) {
@@ -187,7 +190,7 @@ void Path_O::archiveBase(ArchiveP node) {
     }
   } else {
     VectorStrings vec;
-    for (boost_filesystem::path::iterator pi = this->_Path.begin();
+    for (std::filesystem::path::iterator pi = this->_Path.begin();
          pi != this->_Path.end(); pi++) {
       vec.push_back((*pi).string());
     }
@@ -196,7 +199,7 @@ void Path_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-void Path_O::setPath(const boost_filesystem::path &path) {
+void Path_O::setPath(const std::filesystem::path &path) {
   _OF();
   this->_Path = path;
 }
@@ -206,7 +209,7 @@ CL_DEFMETHOD Path_sp Path_O::absolute() const {
   if (this->_Path._value.is_absolute())
     return this->copyPath();
   GC_ALLOCATE(Path_O, abs);
-  abs->_Path = boost_filesystem::absolute(this->_Path._value);
+  abs->_Path = std::filesystem::absolute(this->_Path._value);
   return abs;
 }
 
@@ -219,7 +222,7 @@ CL_DEFMETHOD Path_sp Path_O::copyPath() const {
 
 CL_LISPIFY_NAME("setPathFromString");
 CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
-  bf::path p(pth);
+  std::filesystem::path p(pth);
   this->_Path._value = p;
 }
 
@@ -227,7 +230,7 @@ CL_LAMBDA(self);
 CL_DOCSTRING("Returns a list of path parts as strings");
 CL_LISPIFY_NAME("path-parts");
 CL_DEFMETHOD List_sp Path_O::parts() const {
-  bf::path::iterator it;
+  std::filesystem::path::iterator it;
   ql::list l;
   for (it = this->_Path._value.begin(); it != this->_Path._value.end(); ++it) {
     l << SimpleBaseString_O::make(it->native());
@@ -269,7 +272,7 @@ void Path_O::appendToExtension(string const &str) {
 CL_LISPIFY_NAME("replaceExtension");
 CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const &str) {
   _OF();
-  //	bf::path newExt(str);
+  //	std::filesystem::path newExt(str);
   this->_Path._value.replace_extension(str);
   return this->sharedThis<Path_O>();
 }
@@ -287,7 +290,7 @@ CL_DEFMETHOD string Path_O::fileName() const {
 
 CL_LISPIFY_NAME("exists");
 CL_DEFMETHOD bool Path_O::exists() {
-  return boost_filesystem::exists(this->_Path._value);
+  return std::filesystem::exists(this->_Path._value);
 }
 
 
@@ -350,9 +353,9 @@ void DirectoryIterator_O::setupCurrentIterator() {
   ASSERT(this->_Path.notnilp());
   delete (this->_CurrentIterator._value);
   try {
-    this->_CurrentIterator._value = new boost_filesystem::directory_iterator(this->_Path->getPath());
+    this->_CurrentIterator._value = new std::filesystem::directory_iterator(this->_Path->getPath());
   }
-  catch (boost_filesystem::filesystem_error &err) {
+  catch (std::filesystem::filesystem_error &err) {
     SIMPLE_ERROR(BF("%s") % err.what());
   }
 }
@@ -419,9 +422,9 @@ void RecursiveDirectoryIterator_O::setupCurrentIterator() {
   ASSERT(this->_Path.notnilp());
   delete (this->_CurrentIterator._value);
   try {
-    this->_CurrentIterator._value = new boost_filesystem::recursive_directory_iterator(this->_Path->getPath());
+    this->_CurrentIterator._value = new std::filesystem::recursive_directory_iterator(this->_Path->getPath());
   }
-  catch (boost_filesystem::filesystem_error &err) {
+  catch (std::filesystem::filesystem_error &err) {
     SIMPLE_ERROR(BF("%s") % err.what());
   }
 }
@@ -468,18 +471,13 @@ void DirectoryEntry_O::initialize() {
   this->Base::initialize();
 }
 
-void DirectoryEntry_O::setEntry(const boost_filesystem::directory_entry &entry) {
-  _OF();
+void DirectoryEntry_O::setEntry(const std::filesystem::directory_entry &entry) {
   delete this->_Entry;
-  boost_filesystem::path p = entry.path();
-  boost_filesystem::file_status s = entry.status();
-  boost_filesystem::file_status ss = entry.symlink_status();
-  this->_Entry = new boost_filesystem::directory_entry(p, s, ss);
+  this->_Entry = new std::filesystem::directory_entry(entry);
 }
 
 CL_LISPIFY_NAME("fileStatus");
 CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::fileStatus() {
-  _OF();
   FileStatus_sp fs = _lisp->create<FileStatus_O>();
   fs->setFileStatus(this->_Entry->status());
   return fs;
@@ -513,7 +511,7 @@ void FileStatus_O::initialize() {
   this->Base::initialize();
 }
 
-void FileStatus_O::setFileStatus(const boost_filesystem::file_status &fs) {
+void FileStatus_O::setFileStatus(const std::filesystem::file_status &fs) {
   _OF();
   this->_FileStatus = fs;
 }
@@ -521,15 +519,15 @@ void FileStatus_O::setFileStatus(const boost_filesystem::file_status &fs) {
 CL_LISPIFY_NAME("exists");
 CL_DEFMETHOD bool FileStatus_O::exists() {
   _OF();
-  return boost_filesystem::exists(this->_FileStatus);
+  return std::filesystem::exists(this->_FileStatus);
 }
 CL_LISPIFY_NAME("isRegularFile");
 CL_DEFMETHOD bool FileStatus_O::isRegularFile() {
   _OF();
   try {
-    return boost_filesystem::is_regular_file(this->_FileStatus);
+    return std::filesystem::is_regular_file(this->_FileStatus);
   } catch (...) {
-    SIMPLE_ERROR(BF("In %s boost_filesystem signaled a c++ exception") % __FUNCTION__ );
+    SIMPLE_ERROR(BF("In %s std::filesystem signaled a c++ exception") % __FUNCTION__ );
   }
 }
 
@@ -537,27 +535,27 @@ CL_LISPIFY_NAME("isDirectory");
 CL_DEFMETHOD bool FileStatus_O::isDirectory() {
   _OF();
   try {
-    return boost_filesystem::is_directory(this->_FileStatus);
+    return std::filesystem::is_directory(this->_FileStatus);
   } catch (...) {
-    SIMPLE_ERROR(BF("In %s boost_filesystem signaled a c++ exception") % __FUNCTION__ );
+    SIMPLE_ERROR(BF("In %s std::filesystem signaled a c++ exception") % __FUNCTION__ );
   }
 }
 CL_LISPIFY_NAME("isSymlink");
 CL_DEFMETHOD bool FileStatus_O::isSymlink() {
   _OF();
   try {
-    return boost_filesystem::is_symlink(this->_FileStatus);
+    return std::filesystem::is_symlink(this->_FileStatus);
   } catch (...) {
-    SIMPLE_ERROR(BF("In %s boost_filesystem signaled a c++ exception") % __FUNCTION__ );
+    SIMPLE_ERROR(BF("In %s std::filesystem signaled a c++ exception") % __FUNCTION__ );
   }    
 }
 CL_LISPIFY_NAME("isOther");
 CL_DEFMETHOD bool FileStatus_O::isOther() {
   _OF();
   try {
-  return boost_filesystem::is_other(this->_FileStatus);
+  return std::filesystem::is_other(this->_FileStatus);
   } catch (...) {
-    SIMPLE_ERROR(BF("In %s boost_filesystem signaled a c++ exception") % __FUNCTION__ );
+    SIMPLE_ERROR(BF("In %s std::filesystem signaled a c++ exception") % __FUNCTION__ );
   }
 }
 
