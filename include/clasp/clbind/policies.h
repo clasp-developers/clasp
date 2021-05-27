@@ -134,7 +134,7 @@ struct policies {
         } else {
             printf("keyword_list = %s\n", this->keyword_list().c_str());
         }
-        printf("Docstring = %s\n", this->m_docstring.c_str());
+        printf("Docstring = %s\n", this->m_doc_string.c_str());
     }
     std::string keywordList() const {
       if (this->m_keywords.size()==0) {
@@ -156,7 +156,7 @@ struct policies {
       return this->keywordList();
     }
   }
-  std::string docstring() const { return this->m_docstring; };
+  std::string docstring() const { return this->m_doc_string; };
   std::string declares() const { return ""; };
 };
 
@@ -203,12 +203,6 @@ void update_policy(Policy& policy, const DocString& doc_string)
 }
 
 template <class Policy>
-void update_policy(Policy& policy, const char* docstring)
-{
-    policy.m_docstring = std::string(docstring);
-}
-
-template <class Policy>
 void walk_policy(Policy& policy) 
 {
     // Do nothing
@@ -230,6 +224,10 @@ struct is_policy_list<policies<Pols...>> {
 
 inline clbind::LambdaList operator "" _ll(const char* arg, size_t len) {
   return clbind::LambdaList(std::string(arg,len));
+}
+
+inline clbind::DocString operator "" _docstring(const char* arg, size_t len) {
+  return clbind::DocString(std::string(arg,len));
 }
 
 inline clbind::Keyword operator "" _a(const char* arg, size_t len) {

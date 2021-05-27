@@ -139,10 +139,7 @@ CLANG_LIBRARIES = [
 #CLANG_LIBRARIES = [ 'clang-cpp' ]
 # LLVM_LIBRARIES = [ 'LLVM' ]
 
-BOOST_LIBRARIES = [
-            'boost_filesystem',
-            'boost_date_time',
-            'boost_system']
+BOOST_LIBRARIES = []
 
 VALID_OPTIONS = [
     # point to the llvm-config executable - this tells the build system which clang to use
@@ -2332,7 +2329,7 @@ class dummy_task(Task.Task):
 def runCmdLargeOutput(cmd):
     outf = StringIO()
     serr = StringIO()
-    proc = subprocess.Popen(cmd, bufsize=8192, shell=False, \
+    proc = subprocess.Popen(cmd, bufsize=8192, shell=False, text=True, \
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     dataend = False
     while (proc.returncode is None) or (not dataend):
