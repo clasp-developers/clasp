@@ -11,6 +11,7 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/core/stackmap.h>
 #include <clasp/core/backtrace.h>
+#include <libunwind.h>
 #include <stdlib.h> // calloc, realloc, free
 #include <execinfo.h> // backtrace
 
@@ -24,15 +25,15 @@
  * for definitions. Hopefully should be simple to understand.
  * This mechanism uses backtrace, backtrace_symbols, and DWARF metadata.
  *
- * The function core:call-with-operating-system-backtrace is similar but lower
- * level, collecting only information from the system backtrace and
- * backtrace_symbols function, and stack frame pointers. This is not used by
- * call-with-frame but may very occasionally be useful on its own, mostly for
- * debugging the debugger (gods help you).
  */
 
 namespace core {
-NEVER_OPTIMIZE
+
+/* call-with-operating-system-backtrace and call-with-libunwind-backtrace are
+ * NOT used by call-with-backtrace. They are here for when you are in the
+ * unenviable situation of needing to debug the debugger.
+ */
+
 CL_DEFUN T_mv core__call_with_operating_system_backtrace(Function_sp function) {
   // Get an operating system backtrace, i.e. with the backtrace and
   // backtrace_symbols functions (which are not POSIX, but are present in both
@@ -82,6 +83,45 @@ CL_DEFUN T_mv core__call_with_operating_system_backtrace(Function_sp function) {
   }
   printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
   abort();
+}
+
+SimpleBaseString_sp libunwind_procname(unw_cursor_t* cursorp) {
+  size_t nbytes = 64; // numbers chosen arbitrarily
+  do {
+    char fname[nbytes];
+    unw_word_t ignore; // not sure if NULL can be passed
+    switch (unw_get_proc_name(cursorp, fname, nbytes, &ignore)) {
+    case 0: return SimpleBaseString_O::make(fname);
+    case UNW_ENOMEM: break;
+    case UNW_ENOINFO: return SimpleBaseString_O::make("<name not available>");
+    default: return SimpleBaseString_O::make("<unknown libunwind error>");
+    }
+  } while ((nbytes <<= 1) < 4096);
+}
+
+// To reiterate the comment above:
+// This function is not used by the debugging machinery. It is here for testing.
+CL_DEFUN T_mv core__call_with_libunwind_backtrace(Function_sp function) {
+  unw_cursor_t cursor;
+  unw_word_t ip, fbp;
+  unw_context_t uc;
+
+  unw_getcontext(&uc);
+  unw_init_local(&cursor, &uc);
+
+  ql::list pointers;
+  ql::list names;
+  ql::list basepointers;
+  
+  do {
+    unw_get_reg(&cursor, UNW_REG_IP, &ip);
+    unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+    pointers << Pointer_O::create((void*)ip);
+    basepointers << Pointer_O::create((void*)fbp);
+    names << libunwind_procname(&cursor);
+  } while (unw_step(&cursor) > 0);
+  return eval::funcall(function, pointers.cons(), names.cons(),
+                       basepointers.cons());
 }
 
 static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
@@ -233,40 +273,8 @@ static bool maybe_demangle(const std::string& fnName, std::string& output)
   return false;
 }
 
-static DebuggerFrame_sp make_cxx_frame(void* ip, char* cstring) {
-  std::string str(cstring);
-  std::string linkname;
-#if defined(_TARGET_OS_DARWIN)
-  // The string is divided into:
-  // index executable address name plus offset
-  // but we only care about the name.
-  std::vector<std::string> parts = split(str, " ");
-  if (parts.size()>3) {
-    linkname = parts[3];
-  } else {
-    linkname = str;
-  }
-#elif defined(_TARGET_OS_LINUX)
-    /* Some examples of what backtrace_symbols(...) returns on Linux...
-"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d(_ZN4core6Lisp_O24readEvalPrintInteractiveEv+0x5b) [0x4989f2b]"
-"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d(_ZN4core6Lisp_O3runEv+0xb85) [0x498e5c5]"
-"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d() [0x47235db]"
-*/
-  size_t nameStart = str.find('(');
-  size_t nameEnd = str.rfind(')');
-  if ((nameEnd-nameStart)>1) {
-    linkname = str.substr(nameStart+1,nameEnd);
-    size_t pluspos = linkname.rfind('+');
-    if (pluspos!=std::string::npos) {
-      linkname = linkname.substr(0,pluspos); // remove +0x###
-    }
-  } else {
-    linkname = str;
-  }
-#else
-    // I don't know what other OS's backtrace_symbols return - punt
-  linkname = str;
-#endif
+static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
+  std::string linkname(cstring);
   std::string name;
   if (!(maybe_demangle(linkname, name)))
     // couldn't demangle, so just use the unadulterated string
@@ -276,54 +284,39 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, char* cstring) {
                                _Nil<T_O>(), INTERN_(kw, c_PLUS__PLUS_));
 }
 
-static DebuggerFrame_sp make_frame(void* ip, char* string, void* fbp) {
+static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp) {
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp()) return make_cxx_frame(ip, string);
   else return make_lisp_frame(ip, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
 }
 
 T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
-  size_t num = START_BACKTRACE_SIZE;
-  void** buffer = (void**)calloc(sizeof(void*), num);
-  for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
-    size_t returned = backtrace(buffer,num);
-    if (returned < num) {
-      char **strings = backtrace_symbols(buffer, returned);
-      void* fbp = __builtin_frame_address(0); // TODO later
-      uintptr_t bplow = (uintptr_t)&fbp;
-      uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
-      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp);
-      DebuggerFrame_sp prev = bot;
-      void* newfbp;
-      for (size_t j = 1; j < returned; ++j) {
-        if (fbp) newfbp = *(void**)fbp;
-        if (newfbp && !(bplow<(uintptr_t)newfbp && (uintptr_t)newfbp<bphigh)) {  // newfbp is out of the stack.
-//          printf("%s:%d:%s The frame pointer walk went out of bounds bplow is %p bphigh is %p and newfbp is %p\n",
-//                 __FILE__, __LINE__, __FUNCTION__, (void*)bplow, (void*)bphigh, newfbp );
-          newfbp = NULL;
-        } else if (newfbp && !((uintptr_t)fbp < (uintptr_t)newfbp) ) {             // fbp < newfbp
-          printf("%s:%d:%s The frame pointer is not monotonically increasing fbp is %p and newfbp is %p\n",
-                 __FILE__, __LINE__, __FUNCTION__, fbp, newfbp );
-          newfbp = NULL;
-        }
-        fbp = newfbp;
-        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j], fbp);
-        frame->down = prev;
-        prev->up = frame;
-        prev = frame;
-      }
-      free(buffer);
-      free(strings);
-      return f(bot);
-    }
-    // realloc_array would be nice, but macs don't have it
-    num *= 2;
-    buffer = (void**)realloc(buffer, sizeof(void*)*num);
-  }
-  printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
-  abort();
-}
+  unw_cursor_t cursor;
+  unw_word_t ip, fbp;
+  unw_context_t uc;
 
+  unw_getcontext(&uc);
+  unw_init_local(&cursor, &uc);
+
+  unw_get_reg(&cursor, UNW_REG_IP, &ip);
+  unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+  // This is slightly inefficient in that we allocate a simple base string
+  // only to get a c string from it, but writing it to use stack allocation
+  // is a pain in the ass for very little gain.
+  std::string sstring = libunwind_procname(&cursor)->get_std_string();
+  DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
+  DebuggerFrame_sp prev = bot;
+  while (unw_step(&cursor) > 0) {
+    unw_get_reg(&cursor, UNW_REG_IP, &ip);
+    unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+    std::string sstring = libunwind_procname(&cursor)->get_std_string();
+    DebuggerFrame_sp frame = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
+    frame->down = prev;
+    prev->up = frame;
+    prev = frame;
+  }
+  return f(bot);
+}
 CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
   auto th = [&](DebuggerFrame_sp bot){ return eval::funcall(function, bot); };
   return call_with_frame(th);
