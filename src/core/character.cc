@@ -693,7 +693,11 @@ CL_LAMBDA(ch);
 CL_DECLARE();
 CL_DOCSTRING("alpha_char_p");
 CL_DEFUN bool cl__alpha_char_p(Character_sp ch) {
-  return isalpha(clasp_as_claspCharacter(ch));
+  claspCharacter x = clasp_as_claspCharacter(ch);
+  if (x < 128) {
+    return isalpha(x);
+  }
+  return false;
 };
 
 Fixnum clasp_digitp(claspCharacter ch, int basis) {
