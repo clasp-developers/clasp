@@ -86,6 +86,8 @@ CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromCha
                            toTable->setf_gethash(key,val);
                          });
       toReadTable->DispatchMacroCharacters_->setf_gethash(toChar, toTable);
+    } else {
+      toReadTable->DispatchMacroCharacters_->remhash(toChar);
     }
     return _lisp->_true();
   }
