@@ -51,17 +51,25 @@ CL_DEFUN T_mv core__call_with_operating_system_backtrace(Function_sp function) {
       ql::list pointers;
       ql::list names;
       ql::list basepointers;
-      void* bp = __builtin_frame_address(0);
-      uintptr_t bplow = (uintptr_t)&bp;
+      void* fbp = __builtin_frame_address(0);
+      uintptr_t bplow = (uintptr_t)&fbp;
       uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
+      void* newfbp;
       for (size_t j = 0; j < returned; ++j) {
         pointers << Pointer_O::create(buffer[j]);
         names << SimpleBaseString_O::make(strings[j]);
-        basepointers << Pointer_O::create(bp);
-        if (bp) bp = *(void**)bp;
-        if (!(bplow<(uintptr_t)bp && (uintptr_t)bp<bphigh)) {
-          bp = NULL;
+        basepointers << Pointer_O::create(fbp);
+        if (fbp) newfbp = *(void**)fbp;
+        if (newfbp && !(bplow<(uintptr_t)newfbp && (uintptr_t)newfbp<bphigh)) {  // newfbp is out of the stack.
+//          printf("%s:%d:%s The frame pointer walk went out of bounds bplow is %p bphigh is %p and newfbp is %p\n",
+//                 __FILE__, __LINE__, __FUNCTION__, (void*)bplow, (void*)bphigh, newfbp );
+          newfbp = NULL;
+        } else if (newfbp && !((uintptr_t)fbp < (uintptr_t)newfbp) ) {             // fbp < newfbp
+          printf("%s:%d:%s The frame pointer is not monotonically increasing fbp is %p and newfbp is %p\n",
+                 __FILE__, __LINE__, __FUNCTION__, fbp, newfbp );
+          newfbp = NULL;
         }
+        fbp = newfbp;
       }
       free(buffer);
       free(strings);
@@ -256,10 +264,23 @@ CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
     if (returned < num) {
       char **strings = backtrace_symbols(buffer, returned);
       void* fbp = __builtin_frame_address(0);
+      uintptr_t bplow = (uintptr_t)&fbp;
+      uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
       DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp);
       DebuggerFrame_sp prev = bot;
+      void* newfbp;
       for (size_t j = 1; j < returned; ++j) {
-        if (fbp) fbp = *(void**)fbp;
+        if (fbp) newfbp = *(void**)fbp;
+        if (newfbp && !(bplow<(uintptr_t)newfbp && (uintptr_t)newfbp<bphigh)) {  // newfbp is out of the stack.
+//          printf("%s:%d:%s The frame pointer walk went out of bounds bplow is %p bphigh is %p and newfbp is %p\n",
+//                 __FILE__, __LINE__, __FUNCTION__, (void*)bplow, (void*)bphigh, newfbp );
+          newfbp = NULL;
+        } else if (newfbp && !((uintptr_t)fbp < (uintptr_t)newfbp) ) {             // fbp < newfbp
+          printf("%s:%d:%s The frame pointer is not monotonically increasing fbp is %p and newfbp is %p\n",
+                 __FILE__, __LINE__, __FUNCTION__, fbp, newfbp );
+          newfbp = NULL;
+        }
+        fbp = newfbp;
         DebuggerFrame_sp frame = make_frame(buffer[j], strings[j], fbp);
         frame->down = prev;
         prev->up = frame;
@@ -288,10 +309,23 @@ T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
     if (returned < num) {
       char **strings = backtrace_symbols(buffer, returned);
       void* fbp = __builtin_frame_address(0); // TODO later
+      uintptr_t bplow = (uintptr_t)&fbp;
+      uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
       DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp);
       DebuggerFrame_sp prev = bot;
+      void* newfbp;
       for (size_t j = 1; j < returned; ++j) {
-        if (fbp) fbp = *(void**)fbp;
+        if (fbp) newfbp = *(void**)fbp;
+        if (newfbp && !(bplow<(uintptr_t)newfbp && (uintptr_t)newfbp<bphigh)) {  // newfbp is out of the stack.
+//          printf("%s:%d:%s The frame pointer walk went out of bounds bplow is %p bphigh is %p and newfbp is %p\n",
+//                 __FILE__, __LINE__, __FUNCTION__, (void*)bplow, (void*)bphigh, newfbp );
+          newfbp = NULL;
+        } else if (newfbp && !((uintptr_t)fbp < (uintptr_t)newfbp) ) {             // fbp < newfbp
+          printf("%s:%d:%s The frame pointer is not monotonically increasing fbp is %p and newfbp is %p\n",
+                 __FILE__, __LINE__, __FUNCTION__, fbp, newfbp );
+          newfbp = NULL;
+        }
+        fbp = newfbp;
         DebuggerFrame_sp frame = make_frame(buffer[j], strings[j], fbp);
         frame->down = prev;
         prev->up = frame;
