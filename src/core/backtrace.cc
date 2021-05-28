@@ -235,12 +235,38 @@ static bool maybe_demangle(const std::string& fnName, std::string& output)
 
 static DebuggerFrame_sp make_cxx_frame(void* ip, char* cstring) {
   std::string str(cstring);
-  std::vector<std::string> parts = split(str, " ");
+  std::string linkname;
+#if defined(_TARGET_OS_DARWIN)
   // The string is divided into:
   // index executable address name plus offset
   // but we only care about the name.
-  // FIXME: Format probably varies by OS.
-  std::string linkname = parts[3];
+  std::vector<std::string> parts = split(str, " ");
+  if (parts.size()>3) {
+    linkname = parts[3];
+  } else {
+    linkname = str;
+  }
+#elif defined(_TARGET_OS_LINUX)
+    /* Some examples of what backtrace_symbols(...) returns on Linux...
+"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d(_ZN4core6Lisp_O24readEvalPrintInteractiveEv+0x5b) [0x4989f2b]"
+"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d(_ZN4core6Lisp_O3runEv+0xb85) [0x498e5c5]"
+"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d() [0x47235db]"
+*/
+  size_t nameStart = str.find('(');
+  size_t nameEnd = str.rfind(')');
+  if ((nameEnd-nameStart)>1) {
+    linkname = str.substr(nameStart+1,nameEnd);
+    size_t pluspos = linkname.rfind('+');
+    if (pluspos!=std::string::npos) {
+      linkname = linkname.substr(0,pluspos); // remove +0x###
+    }
+  } else {
+    linkname = str;
+  }
+#else
+    // I don't know what other OS's backtrace_symbols return - punt
+  linkname = str;
+#endif
   std::string name;
   if (!(maybe_demangle(linkname, name)))
     // couldn't demangle, so just use the unadulterated string
