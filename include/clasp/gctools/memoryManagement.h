@@ -345,6 +345,7 @@ namespace gctools {
     // stamp_tag MUST be 00 so that stamps look like FIXNUMs
 //    static const int stamp_shift = general_mtag_shift;
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>mtag_shift;
+    static const size_t max_clbind_stamp = 65536 + (STAMPWTAG_max>>general_mtag_shift);
   public:
     //
     // Type of badge
@@ -731,6 +732,7 @@ namespace gctools {
       See definition in memoryManagement.cc
       This is so that it doesn't use any stamps that were set by the static analyzer. */
   extern std::atomic<UnshiftedStamp> global_NextUnshiftedStamp;
+  extern std::atomic<UnshiftedStamp> global_NextUnshiftedClbindStamp;
   /*! Return a new stamp for BuiltIn classes.
       If given != STAMPWTAG_null then simply return give as the stamp.
       Otherwise return the global_NextBuiltInStamp and advance it
@@ -752,8 +754,31 @@ inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STA
     OutOfStamps();
     abort();
   }
-};
+void OutOfClbindStamps();
+inline ShiftedStamp NextClbindStampWtag(ShiftedStamp where, UnshiftedStamp given = STAMPWTAG_null) {
+    if ( given != STAMPWTAG_null ) {
+      return Header_s::StampWtagMtag::shift_unshifted_stamp(given)|where;
+    }
+    UnshiftedStamp stamp = global_NextUnshiftedClbindStamp.fetch_add(1<<Header_s::wtag_width);
+    if (stamp < Header_s::max_clbind_stamp) {
+#ifdef DEBUG_ASSERT
+      if (!(Header_s::StampWtagMtag::is_unshifted_stamp(stamp)) && (stamp&Header_s::where_mask)!=0) {
+        printf("%s:%d NextStampWtag is about to return a stamp that is illegal: stamp: %lu\n", __FILE__, __LINE__, stamp);
+      }
+#endif
+//      printf("%s:%d:%s assigned clbind stamp: %lu\n", __FILE__, __LINE__, __FUNCTION__ , stamp);
+      return Header_s::StampWtagMtag::shift_unshifted_stamp(stamp)|where;
+    }
+    OutOfClbindStamps();
+    abort();
+  }
+/*! 
+ * All builtin stamps have been assigned 
+ * prepare the system to assign Clbind stamps and lisp stamps.
+ */
+void FinishAssigningBuiltinStamps();
 
+};
 
 
 
