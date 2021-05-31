@@ -49,6 +49,8 @@ THE SOFTWARE.
 #ifndef NEW_SCOPE_040211_HPP
 #define NEW_SCOPE_040211_HPP
 
+#include <clasp/clbind/names.h>
+
 namespace clbind {
 
 struct CLBIND_API scope_ {
@@ -63,14 +65,14 @@ struct CLBIND_API scope_ {
  private:
     detail::registration *m_chain;
  public:
-    template <typename F, class... PTypes>
-    void def(char const *name, F f, PTypes... pols) { // const char* clambdalist=NULL, const char* cdeclares=NULL) {
+ template <typename NameType, typename F, class... PTypes>
+    void def(const NameType& name, F f, PTypes... pols) {
       typedef policies<PTypes...> Policies;
       Policies curPolicies;
-      maybe_register_symbol_using_dladdr((void*)f,sizeof(f),name);
+      maybe_register_symbol_using_dladdr((void*)f,sizeof(f),PrepareName(name));
       walk_policy(curPolicies,pols...);
       LOG_SCOPE(("%s:%d function %s to chain of %p\n", __FILE__, __LINE__, name, this ));
-      scope_ fnscope(std::unique_ptr<detail::registration>(new detail::function_registration<F, Policies>(name, f, curPolicies)));
+      scope_ fnscope(std::unique_ptr<detail::registration>(new detail::function_registration<F, Policies>(PrepareName(name), f, curPolicies)));
       this->operator,(fnscope);
     }
 

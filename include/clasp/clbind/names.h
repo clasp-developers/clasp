@@ -2,6 +2,42 @@
     File: clbind.h
 */
 
+/* -^- */
+#ifndef clbind_names_H
+#define clbind_names_H
+
+
+//
+// Work with names of bindings
+//
+// RawName is for wrapping
+namespace clbind {
+struct RawName {
+  std::string _raw_name;
+  RawName(const std::string name) : _raw_name(name) {};
+};
+
+inline std::string PrepareName(const std::string& name) {
+  return core::lispify_symbol_name(name);
+}
+
+inline std::string PrepareName(const RawName& name) {
+  return name._raw_name;
+}
+};
+
+//
+// Create a _raw operator at file scope level for passing raw names
+//
+// eg:  scope.def("foo<ThisIsATest>"_raw, ...)
+//          ;; This will bind the symbol |foo<ThisIsATest>|
+//
+inline clbind::RawName operator "" _raw(const char* arg, size_t len) {
+  return clbind::RawName(std::string(arg,len));
+}
+
+
+#endif // clbind_names_H
 /*
 Copyright (c) 2014, Christian E. Schafmeister
  
@@ -23,23 +59,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* -^- */
-#ifndef clbind_H
-#define clbind_H
-
-#include <clasp/core/arguments.h>
-#include <clasp/core/lambdaListHandler.fwd.h>
-
-#include <clasp/clbind/function.h>
-#include <clasp/clbind/scope.h>
-#include <clasp/clbind/enum_maker.h>
-#include <clasp/clbind/class.h>
-#include <clasp/clbind/adapter.h>
-#include <clasp/clbind/derivable.h>
-#include <clasp/clbind/derivable_class.h>
-#include <clasp/clbind/clbind_wrappers.h>
-#include <clasp/clbind/clbind_taggedCast.h>
-
-
-
-#endif // clbind_h

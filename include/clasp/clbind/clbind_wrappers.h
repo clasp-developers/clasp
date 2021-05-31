@@ -509,6 +509,7 @@ struct from_object<std::unique_ptr<T>> {
   typedef std::unique_ptr<T> DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
+    static_assert(!std::is_pod<T>::value, "T must NOT be POD");
     if (o.nilp()) {
       this->_v = std::unique_ptr<T>(static_cast<T *>(NULL));
       return;
@@ -553,6 +554,7 @@ struct from_object<T *> {
   typedef T *DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
+    // static_assert(!std::is_pod<T>::value, "T must NOT be POD");
 //    int*** i = T(); 
     if (o.nilp()) {
       this->_v = static_cast<T *>(NULL);
@@ -683,22 +685,29 @@ struct from_object<int&,std::false_type> {
   };
 };
 
-#if 0
+
 template <>
-struct to_object<int&,dont_adopt_pointer> {
-  typedef int& type;
-  static gctools::smart_ptr<core::T_O> convert(int x) {
-    return core::Integer_O::create(x);
+struct from_object<const char*, std::true_type> {
+  typedef const char* DeclareType;
+  mutable char* _v;
+  from_object(gctools::smart_ptr<core::T_O> vv) {
+    core::String_sp strng = gc::As<core::String_sp>(vv);
+    size_t len = core::cl__length(strng);
+    this->_v = (char*)malloc(len+1);
+    strncpy(this->_v,strng->get_std_string().data(),len);
+    this->_v[len] = '\0';
   }
-};
-template <>
-struct to_object<int&,adopt_pointer> {
-  static gctools::smart_ptr<core::T_O> convert(int x) {
-    return core::Integer_O::create(x);
+  from_object(const from_object<const char*,std::true_type>& other) {
+    this->_v = other._v;
+    other._v = NULL;
   }
-};
-#endif
+  ~from_object() {
+    if (this->_v) {
+      free(this->_v);
+      this->_v = NULL;
+    }
+  };
 };
 
-
+};
 #endif

@@ -55,6 +55,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
 #include <clasp/clbind/config.h>
+#include <clasp/clbind/names.h>
 #include <clasp/clbind/function.h>
 #include <clasp/clbind/scope.h>
 #include <clasp/clbind/clbind_wrappers.h>
@@ -90,7 +91,7 @@ void class_registration::register_() const {
   }
 #endif
   std::string classNameString(this->m_name);
-  core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
+  core::Symbol_sp className = core::lisp_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   if (!this->m_derivable) {
     crep = clbind::ClassRep_O::create(core::lisp_clbind_cxx_class(), this->m_type, className, this->m_derivable);
     where = gctools::Header_s::wrapped_wtag;
@@ -166,9 +167,13 @@ void class_registration::register_() const {
 // -- interface ---------------------------------------------------------
 
 class_base::class_base(const string &name)
-    : scope_(std::unique_ptr<registration>(
-          m_registration = new class_registration(name)))
-    , m_init_counter(0) {
+  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(core::lispify_symbol_name(name))))
+  , m_init_counter(0) {
+}
+
+class_base::class_base(const RawName &name)
+  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name._raw_name)))
+  , m_init_counter(0) {
 }
 
 void class_base::init(

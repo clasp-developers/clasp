@@ -119,6 +119,7 @@ THE SOFTWARE.
 
 
 #include <clasp/clbind/config.h>
+#include <clasp/clbind/names.h>
 #include <clasp/clbind/scope.h>
 // #include <clasp/clbind/back_reference.hpp>
 // #include <clasp/clbind/function.hpp>
@@ -196,7 +197,7 @@ struct class_;
 // TODO: this function will only be invoked if the user hasn't defined a correct overload
 // maybe we should have a static assert in here?
 inline detail::you_need_to_define_a_get_const_holder_function_for_your_smart_ptr *
-    get_const_holder(...) {
+get_const_holder(...) {
   return 0;
 }
 
@@ -216,25 +217,25 @@ namespace mpl = boost::mpl;
 
 template <class T>
 struct is_bases
-    : mpl::false_ {};
+  : mpl::false_ {};
 
 template <typename Base0, typename... Bases>
 struct is_bases<bases<Base0, Bases...>>
-    : mpl::true_ {};
+  : mpl::true_ {};
 
 template <class T, class P>
 struct is_unspecified
-    : mpl::apply1<P, T> {};
+  : mpl::apply1<P, T> {};
 
 template <class P>
 struct is_unspecified<unspecified, P>
-    : mpl::true_ {};
+  : mpl::true_ {};
 
 template <class P>
 struct is_unspecified_mfn {
   template <class T>
   struct apply
-      : is_unspecified<T, P> {};
+    : is_unspecified<T, P> {};
 };
 
 template <class Predicate>
@@ -257,16 +258,19 @@ struct extract_parameter {
   typedef typename get_predicate<Predicate>::type pred;
   typedef typename boost::mpl::find_if<Parameters, pred>::type iterator;
   typedef typename result_or_default<
-      typename iterator::type, DefaultValue>::type type;
+    typename iterator::type, DefaultValue>::type type;
 };
 
 struct CLBIND_API create_class {
-  static int stage1();
-  static int stage2();
+    static int stage1();
+    static int stage2();
 };
 
 } // detail
 
+};
+
+namespace clbind {
 namespace detail {
 
 template <class T>
@@ -328,10 +332,13 @@ struct class_registration : registration {
   bool m_derivable;
 };
 
+
+
 struct CLBIND_API class_base : scope_ {
 public:
   class_base(const string &name);
-
+  class_base(const RawName& name);
+  
   struct base_desc {
     type_id type;
     int ptr_offset;
@@ -396,7 +403,7 @@ struct memfun_registration : registration {
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-    core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
+    core::Symbol_sp sym = core::lisp_intern(m_name, symbol_packageName(classSymbol));
     using VariadicType = TEMPLATED_FUNCTION_IndirectVariadicMethoid<Policies, Class, MethodPointerType>;
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::method_entry_point);
     maybe_register_symbol_using_dladdr((void*)VariadicType::method_entry_point);
@@ -485,10 +492,10 @@ struct constructor_registration_base : public registration {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     string tname = m_name;
     if (m_name == "") {
-      tname = "default-ctor";
+      tname = "DEFAULT-CTOR";
     };
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
-    core::Symbol_sp sym = core::lispify_intern(tname, core::lisp_currentPackageName());
+    core::Symbol_sp sym = core::lisp_intern(tname, core::lisp_currentPackageName());
     using VariadicType = VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>;
     core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
     maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
@@ -726,38 +733,43 @@ public:
 #ifndef NDEBUG
     detail::check_link_compatibility();
 #endif
-    LOG_SCOPE(("%s:%d Registing class_ %s\n", __FILE__, __LINE__, name));
-    
     init();
     this->_outer_scope->operator,(*this);
   }
 
+  class_(scope_& outer_scope, const RawName& rawName, const std::string& docstring="") : class_base(rawName), _outer_scope(&outer_scope), scope(*this) {
+#ifndef NDEBUG
+    detail::check_link_compatibility();
+#endif
+    init();
+    this->_outer_scope->operator,(*this);
+  }
+  
   template <typename... Types>
   class_ &def_constructor(const string &name,
                           constructor<Types...> sig,
                           string const &arguments = "",
                           string const &declares = "",
                           string const &docstring = "") {
-    return this->def_constructor_(name, &sig, policies<>(), arguments, declares, docstring);
+    return this->def_constructor_(core::lispify_symbol_name(name), &sig, policies<>(), arguments, declares, docstring);
   }
 
-  template <typename... Types, class Policies>
-  class_ &def_constructor(const string &name,
+  template <typename... Types>
+  class_ &def_constructor(const RawName &name,
                           constructor<Types...> sig,
-                          const Policies &policies,
                           string const &arguments = "",
                           string const &declares = "",
                           string const &docstring = "") {
-    return this->def_constructor_(name, &sig, policies, arguments, declares, docstring);
+    return this->def_constructor_(name._raw_name, &sig, policies<>(), arguments, declares, docstring);
   }
 
-  template <class F, class... PTypes>
-  class_ &def(const std::string &name, F f, PTypes... pols)
+  template <typename NameType, class F, class... PTypes>
+  class_ &def(const NameType& name, F f, PTypes... pols)
   {
     typedef policies<PTypes...> Policies;
     Policies curPolicies;
     walk_policy(curPolicies,pols...);
-    return this->virtual_def(name, f,
+    return this->virtual_def(PrepareName(name), f,
                              curPolicies,
                              reg::null_type());
   }
@@ -1017,8 +1029,7 @@ private:
 
     this->add_member(
                      new detail::constructor_registration<
-                     construct_type, HeldType, signature, Policies,detail::construct_non_derivable_class>(
-                                                                                                          Policies(), name, arguments, declares, docstring));
+                     construct_type, HeldType, signature, Policies,detail::construct_non_derivable_class>(Policies(), name, arguments, declares, docstring));
 
     return *this;
   }
@@ -1037,5 +1048,8 @@ public:
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+
+
+
 
 #endif // CLBIND_CLASS_HPP_INCLUDED

@@ -92,8 +92,8 @@ fields at the same offset as Instance_O.
    LISP_CLASS(core,CorePkg,FunctionDescription_O,"FunctionDescription",General_O);
  public:
   /* vtable */                                 //  1 vtable from General_O
-   T_sp _sourcePathname;                       //  2 source-info
-   T_sp _functionName;                         //  3 function-name
+   T_sp _functionName;                         //  2 function-name
+   T_sp _sourcePathname;                       //  3 source-info
    T_sp _lambdaList;                           //  4 lambda-list 
    T_sp _docstring;                            //  5 docstring
    T_sp _declares;                             //  6 declares

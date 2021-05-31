@@ -806,8 +806,8 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get (thread-local-llvm-context)
                               (list %i8*%                  ;  1 vtable
-                                    %t*%                   ;  2 source-info
-                                    %t*%                   ;  3 function-name
+                                    %t*%                   ;  2 function-name
+                                    %t*%                   ;  3 source-info
                                     %t*%                   ;  4 lambda-list
                                     %t*%                   ;  5 docstring
                                     %t*%                   ;  6 declares
@@ -816,7 +816,6 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %i32%                  ;  9 filepos
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
-
 
 (define-c++-struct %global-entry-point% +general-tag+
     ((%i8*% vtable)
