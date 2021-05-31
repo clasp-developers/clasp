@@ -188,6 +188,7 @@
 (import 'core:argv :ext)
 (import 'core:rmdir :ext)
 (import 'core:mkstemp :ext)
+(import 'sys::*ed-functions* :ext)
 
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -233,6 +234,7 @@
           with-float-traps-masked
           enable-interrupt default-interrupt ignore-interrupt
           get-signal-handler set-signal-handler
+          *ed-functions*
           ;;; for asdf and slime and trivial-garbage to use ext:
           getpid argc argv rmdir mkstemp weak-pointer-value make-weak-pointer weak-pointer-valid hash-table-weakness))
 (core:*make-special '*module-provider-functions*)
