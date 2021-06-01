@@ -83,67 +83,9 @@ class InvocationHistoryFrame //: public gctools::StackRoot
 
 };
 
-
-namespace core {
-  size_t backtrace_size();
-  string backtrace_as_string();
-};
-
 #ifdef DEBUG_IHS
   extern int global_debug_ihs;
 #endif
-
-namespace core {
-
-  void invocation_history_stack_dump(const InvocationHistoryFrame* frame, const char* msg, size_t num_frames);
-  size_t invocation_history_stack_depth(const InvocationHistoryFrame* frame);
-  
-  void validate_InvocationHistoryStack(int pushPop, const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop);
-  void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const InvocationHistoryFrame* stackTop);
-
-#if 0
-  inline void push_InvocationHistoryStack(const InvocationHistoryFrame* frame);
-  inline void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame);
-#else
-  inline void push_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
-#ifdef DEBUG_IHS
-  if (global_debug_ihs) validate_InvocationHistoryStack(1,frame,my_thread->_InvocationHistoryStackTop);
-  void* frame_function_ptr = reinterpret_cast<void*>(gc::As_unsafe<Function_sp>(frame->function())->entry);
-  global_debug_ihs_shadow_stack.push_back(frame_function_ptr);
-  // Keep track of the last closure before things go haywire
-  backtrace(my_thread->_IHSBacktrace,IHS_BACKTRACE_SIZE);
-#endif
-  frame->_Previous = my_thread->_InvocationHistoryStackTop;
-  my_thread->_InvocationHistoryStackTop = frame;
-}
-
-inline void pop_InvocationHistoryStack(const InvocationHistoryFrame* frame) {
-#ifdef DEBUG_IHS
-  if (global_debug_ihs) validate_InvocationHistoryStack(0,frame,my_thread->_InvocationHistoryStackTop);
-  global_debug_ihs_shadow_stack.pop_back();
-#endif
-  unlikely_if (frame != my_thread->_InvocationHistoryStackTop) error_InvocationHistoryStack(frame,my_thread->_InvocationHistoryStackTop);
-  my_thread->_InvocationHistoryStackTop = my_thread->_InvocationHistoryStackTop->_Previous;
-#ifdef DEBUG_IHS
-  backtrace(my_thread->_IHSBacktrace,IHS_BACKTRACE_SIZE);
-#endif
-};
-#endif
-  
-  struct SafeUpdateInvocationHistoryStack {
-    const InvocationHistoryFrame* frame;
-  SafeUpdateInvocationHistoryStack(const InvocationHistoryFrame* ihf) : frame(ihf) {
-      push_InvocationHistoryStack(ihf);
-    }
-    ~SafeUpdateInvocationHistoryStack() {
-      pop_InvocationHistoryStack(this->frame);
-    }
-  };
-};
-
-#define ALWAYS_INVOCATION_HISTORY_FRAME() \
-  core::InvocationHistoryFrame zzzFrame(lcc_arglist_s._Args,lcc_arglist_s.remaining_nargs()); \
-  core::SafeUpdateInvocationHistoryStack zzzStackUpdate(&zzzFrame);
 
 #define INVOCATION_HISTORY_FRAME()
 

@@ -1386,9 +1386,6 @@ struct ErrorSimpleDepthCounter {
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
-    if (my_thread->_InvocationHistoryStackTop == NULL) {
-      throw(HardError("System starting up - debugger not available yet: "+ ss.str()));
-    }
     early_debug(_Nil<T_O>(), false);
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
@@ -1414,9 +1411,6 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
-    if (my_thread->_InvocationHistoryStackTop == NULL) {
-      throw(HardError("System starting up - debugger not available yet: "+ ss.str()));
-    }
     early_debug(_Nil<T_O>(), false);
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
@@ -1607,30 +1601,6 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 namespace core {
 size_t  debug_InvocationHistoryFrame = 0;
 const char* debug_InvocationHistoryFrame_name = "";
-
-CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
-  debug_InvocationHistoryFrame = v;
-  const char* ihf = getenv("IHS");
-  if (ihf==NULL) {
-    ihf = "ESTIMATE-CODE-SIZE-1";
-  }
-  debug_InvocationHistoryFrame_name = ihf;
-  printf("%s:%d     Will trap InvocationHistoryFrame at |%s|\n",__FILE__,__LINE__,debug_InvocationHistoryFrame_name); 
-  printf("   ---------------   InvocationHistoryStack:\n");
-  const InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStackTop;
-  size_t count= 0;
-  while (cur!=NULL) {
-    T_sp tfun = cur->function();
-    if (gc::IsA<Function_sp>(tfun)) {
-      Function_sp fun = gc::As_unsafe<Function_sp>(tfun);
-      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(fun->functionName()).c_str());
-    } else {
-      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(tfun).c_str());
-    }
-    cur = cur->previous();
-    ++count;
-  }
-}
 
 size_t lisp_general_badge(General_sp object) {
   const gctools::Header_s* header = gctools::header_pointer(object.unsafe_general());

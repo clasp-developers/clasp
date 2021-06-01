@@ -255,7 +255,6 @@ DebugStream::DebugStream(int rank) : DebugLogAsXml(false) {
   this->DebugLogAddBrackets = true;
   this->DebugLogProcessRank = rank;
   this->_SuppressMessages = false;
-  //    this->_InvocationHistoryStack.setTraceFileLine("--Debugging off--",0);
   //    this->_DebugPrefix = "--Debugging off--";
   this->_DebugFileNames.clear();
   stringstream ss;
