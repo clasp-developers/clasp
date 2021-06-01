@@ -1131,7 +1131,6 @@ List_sp clasp_grab_rest_args(va_list args, int nargs);
 
 
 namespace core {
-  extern size_t debug_InvocationHistoryFrame;
   void core__mangledSymbols(T_sp stream_designator);
 };
 

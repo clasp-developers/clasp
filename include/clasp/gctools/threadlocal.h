@@ -57,7 +57,6 @@ typedef gctools::smart_ptr<Code_O> Code_sp;
 };
 namespace core {
 #define IHS_BACKTRACE_SIZE 16
-  struct InvocationHistoryFrame;
   struct ThreadLocalState {
 
     core::T_sp            _ObjectFiles;
@@ -75,7 +74,6 @@ namespace core {
     StringOutputStream_sp _WriteToStringOutputStream;
 
     MultipleValues _MultipleValues;
-    const InvocationHistoryFrame* _InvocationHistoryStackTop;
     void* _sigaltstack_buffer;
     size_t  _unwinds;
     stack_t _original_stack;

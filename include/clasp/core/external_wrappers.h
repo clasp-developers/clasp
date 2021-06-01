@@ -76,7 +76,6 @@ public:
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     COPY_VA_LIST();
-    INVOCATION_HISTORY_FRAME();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
@@ -113,7 +112,6 @@ public:
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     COPY_VA_LIST();
-    INVOCATION_HISTORY_FRAME();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));

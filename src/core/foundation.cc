@@ -1599,8 +1599,6 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 };
 
 namespace core {
-size_t  debug_InvocationHistoryFrame = 0;
-const char* debug_InvocationHistoryFrame_name = "";
 
 size_t lisp_general_badge(General_sp object) {
   const gctools::Header_s* header = gctools::header_pointer(object.unsafe_general());

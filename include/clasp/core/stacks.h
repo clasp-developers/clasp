@@ -87,6 +87,4 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   extern int global_debug_ihs;
 #endif
 
-#define INVOCATION_HISTORY_FRAME()
-
 #endif /* _core_stacks_H_ */
