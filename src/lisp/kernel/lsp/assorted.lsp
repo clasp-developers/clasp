@@ -38,13 +38,21 @@
 ;; if not already defined
 (deftype function-name () '(or symbol (cons (eql setf) (cons symbol null))))
 
+;;; Copied mostly from SBCL
+(declaim (type list ext:*ed-functions*))
+(defvar ext:*ed-functions* '()
+  "See function documentation for ED.")
+
 (declaim (ftype (function ((or null pathname string function-name)) null) ed))
 (defun ed (&optional x)
-  "CLASP has no standard editor; this function is no-op."
-  ;; "The consequences are undefined if the implementation
-  ;;  does not provide a resident editor."
-  (declare (ignore x))
-  nil)
+  "Starts the editor (on a file or a function if named).  Functions
+from the list EXT:*ED-FUNCTIONS* are called in order with X as an argument
+until one of them returns non-NIL; these functions are responsible for
+signalling a FILE-ERROR to indicate failure to perform an operation on
+the file system."
+  (dolist (fun ext:*ed-functions* nil)
+    (when (funcall fun x)
+      (return t))))
 
 ;;; Copied from SBCL
 (declaim (ftype (function (list) list) copy-alist))
