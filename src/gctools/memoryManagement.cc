@@ -460,7 +460,7 @@ namespace gctools {
   so that it doesn't use any stamps that correspond to KIND values
    assigned by the static analyzer. */
 std::atomic<UnshiftedStamp>   global_NextUnshiftedStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(Header_s::max_clbind_stamp+1));
-std::atomic<UnshiftedStamp>   global_NextUnshiftedClbindStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(STAMPWTAG_max+1));
+std::atomic<UnshiftedStamp>   global_NextUnshiftedClbindStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(Header_s::max_builtin_stamp+1));
 
 void OutOfStamps() {
   printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %lu are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, (uintptr_t)Header_s::largest_possible_stamp );

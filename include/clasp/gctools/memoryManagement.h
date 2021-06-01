@@ -345,7 +345,14 @@ namespace gctools {
     // stamp_tag MUST be 00 so that stamps look like FIXNUMs
 //    static const int stamp_shift = general_mtag_shift;
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>mtag_shift;
-    static const size_t max_clbind_stamp = 65536 + (STAMPWTAG_max>>general_mtag_shift);
+
+    //
+    // Restrict stamps to specific ranges
+    // Builtin classes are between 0...65536
+    // clbind classes are between 65537...131072
+    // Lisp classes are 131073 and higher
+    static const size_t max_builtin_stamp = 65536;
+    static const size_t max_clbind_stamp = 65536 + max_builtin_stamp;
   public:
     //
     // Type of badge
