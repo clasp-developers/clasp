@@ -96,7 +96,17 @@ SimpleBaseString_sp libunwind_procname(unw_cursor_t* cursorp) {
     case UNW_ENOINFO: return SimpleBaseString_O::make("<name not available>");
     default: return SimpleBaseString_O::make("<unknown libunwind error>");
     }
-  } while ((nbytes <<= 1) < 4096);
+    if (nbytes == 4096) {
+      // Too long. Give up, putting an ellipsis on the end
+      char fnamedot[nbytes+3];
+      fnamedot[0] = '\0';
+      strcat(fnamedot, fname);
+      strcat(fnamedot, "...");
+      return SimpleBaseString_O::make(fnamedot);
+    } else nbytes <<= 1;
+  } while (1);
+  // FIXME: Just truncate the name
+  return SimpleBaseString_O::make("<name too long>");
 }
 
 // To reiterate the comment above:
