@@ -2328,13 +2328,6 @@ void Lisp_O::dump_apropos(const char *part) const {
   searchForApropos(packages, substring, true);
 }
 
-void Lisp_O::dump_backtrace(int numcol) {
-  _OF();
-  string bt = backtrace_as_string();
-  write_bf_stream(BF("%s") % bt);
-}
-
-
 int Lisp_O::run() {
   int exit_code = 0;
   if ( initializer_functions_are_waiting() ) {

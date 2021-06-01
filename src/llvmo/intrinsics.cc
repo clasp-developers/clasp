@@ -91,10 +91,6 @@ void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis
 
 extern "C" {
 
-extern void dump_backtrace(core::InvocationHistoryFrame* frame);
-
-
-
 ALWAYS_INLINE core::T_O* makeFunctionFrame( int numargs, core::T_O *parentP)
 // was ActivationFrame_sp
 {
