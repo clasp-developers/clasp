@@ -603,8 +603,6 @@ public:
 
   void dump_apropos(const char *part) const;
 
-  void dump_backtrace(int numcol = 50);
-
 public:
   DoubleFloat_sp rehashSize() const { return this->_Roots._RehashSize; };
   DoubleFloat_sp rehashThreshold() const { return this->_Roots._RehashThreshold; };
