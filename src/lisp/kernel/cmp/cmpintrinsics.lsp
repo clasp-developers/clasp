@@ -593,7 +593,6 @@ Boehm and MPS use a single pointer"
                                       :rest-alloc rest-alloc)
         ;; The register arguments need to be spilled to the register-save-area
         ;;    and the va_list needs to be initialized.
-        ;;    If a InvocationHistoryFrame is available, then initialize it.
         (let* ((use-only-registers (calling-convention-configuration-use-only-registers setup))
                (create-a-va-list (null use-only-registers)))
           (maybe-spill-to-register-save-area arguments register-save-area*)
@@ -843,19 +842,6 @@ eg:  (f closure-ptr nargs a b c d ...)
          (sizeof-element (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) %tsp%)))
     (+ (* sizeof-element index) offset-of-data)))
 
-;;
-;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
-;;
-;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
-;;"Make this a generic pointer"
-(define-symbol-macro %InvocationHistoryStack*% %i8*%)
-(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %va_list% %size_t% #| %size_t% #|Removed BDS|# |#) "InvocationHistoryFrame"))
-(define-symbol-macro %InvocationHistoryFrame*% (llvm-sys:type-get-pointer-to %InvocationHistoryFrame%))
-;;  (llvm-sys:set-body %InvocationHistoryFrame% (list %i32**% %i32% #|%InvocationHistoryStack*% %InvocationHistoryFrame*%|# %i8*% %i8*% %i8% %i32%) nil)
-;(define-symbol-macro %LispFunctionIHF% (llvm-sys:struct-type-create (thread-local-llvm-context) :elements (list %InvocationHistoryFrame% %tsp% %tsp% %tsp% %i32% %i32%) :name "LispFunctionIHF"))
-;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
-;(define-symbol-macro %LispCompiledFunctionIHF% (llvm-sys:struct-type-create (thread-local-llvm-context) :elements (list %LispFunctionIHF%) :name "LispCompiledFunctionIHF"))
-
 #|
   (defun make-gv-file-scope-handle (module &optional handle)
     (if (null handle) (setq handle -1))
@@ -1039,7 +1025,6 @@ and initialize it with an array consisting of one function pointer."
          (function-description-offset (llvm-sys:struct-layout-get-element-offset function-layout +function.function-description-index+))
          (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
          (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
-         (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
          (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%))
          (function-description-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
@@ -1051,7 +1036,6 @@ and initialize it with an array consisting of one function pointer."
                                                   :function-description-offset function-description-offset
                                                   :gcroots-in-module gcroots-in-module-size
                                                   :valist vaslist-size
-                                                  :ihf invocation-history-frame-size
                                                   :register-save-area register-save-area-size
                                                   :function-description function-description-size)
 
