@@ -39,8 +39,8 @@
 (deftype function-name () '(or symbol (cons (eql setf) (cons symbol null))))
 
 ;;; Copied mostly from SBCL
-(declaim (type list *ed-functions*))
-(defvar *ed-functions* '()
+(declaim (type list ext:*ed-functions*))
+(defvar ext:*ed-functions* '()
   "See function documentation for ED.")
 
 (declaim (ftype (function ((or null pathname string function-name)) null) ed))
@@ -50,7 +50,7 @@ from the list EXT:*ED-FUNCTIONS* are called in order with X as an argument
 until one of them returns non-NIL; these functions are responsible for
 signalling a FILE-ERROR to indicate failure to perform an operation on
 the file system."
-  (dolist (fun *ed-functions* nil)
+  (dolist (fun ext:*ed-functions* nil)
     (when (funcall fun x)
       (return t))))
 

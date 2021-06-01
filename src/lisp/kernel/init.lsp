@@ -188,7 +188,6 @@
 (import 'core:argv :ext)
 (import 'core:rmdir :ext)
 (import 'core:mkstemp :ext)
-(import 'sys::*ed-functions* :ext)
 
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
