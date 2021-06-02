@@ -1030,7 +1030,6 @@ size_t lisp_badge(T_sp obj);
 
 namespace core {
   class InvocationHistoryStack;
-  class InvocationHistoryFrame;
 };
 
 
