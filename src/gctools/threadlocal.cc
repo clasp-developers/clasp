@@ -151,7 +151,6 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
 #else
   this->_Tid = 0;
 #endif
-  this->_InvocationHistoryStackTop = NULL;
   this->_xorshf_x = rand();
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
@@ -198,7 +197,6 @@ ThreadLocalState::ThreadLocalState() :
 #else
   this->_Tid = 0;
 #endif
-  this->_InvocationHistoryStackTop = NULL;
   this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
   this->_BufferStrWNsPool.reset_();
   this->_xorshf_x = rand();

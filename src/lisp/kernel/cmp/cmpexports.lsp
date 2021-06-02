@@ -313,7 +313,6 @@
             %uintptr_t%
             %return-type%
             %vaslist%
-            %InvocationHistoryFrame%
             %register-save-area%
             null-t-ptr
             compile-error-if-wrong-number-of-arguments

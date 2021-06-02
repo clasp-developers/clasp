@@ -1031,10 +1031,6 @@ size_t lisp_badge(T_sp obj);
 namespace core {
   class InvocationHistoryStack;
   class InvocationHistoryFrame;
-  InvocationHistoryStack* thread_local_invocation_history_stack();
-  InvocationHistoryFrame* thread_local_invocation_history_stack_top_frame();
-  void thread_local_invocation_history_stack_push_frame(InvocationHistoryFrame* frame);
-  int thread_local_invocation_bindings_size();
 };
 
 
@@ -1135,7 +1131,6 @@ List_sp clasp_grab_rest_args(va_list args, int nargs);
 
 
 namespace core {
-  extern size_t debug_InvocationHistoryFrame;
   void core__mangledSymbols(T_sp stream_designator);
 };
 

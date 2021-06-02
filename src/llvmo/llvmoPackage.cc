@@ -230,7 +230,6 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   List_sp list = _Nil<T_O>();
   list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), _Nil<T_O>());
   list = Cons_O::create(Cons_O::create(_sym_tmv, make_fixnum((int)sizeof(T_mv))), list);
-  list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame, make_fixnum((int)sizeof(InvocationHistoryFrame))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadLocalState))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"), make_fixnum((int)gctools::Alignment())),list);
@@ -326,12 +325,11 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset ihf gcroots-in-module valist register-save-area function-description);
+CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset gcroots-in-module valist register-save-area function-description);
 CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize,
                                                         core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset, core::Fixnum_sp symbol_setf_function_offset,
                                                         core::Fixnum_sp functionSize,
                                                         core::Fixnum_sp function_description_offset,
-                                                        gc::Nilable<core::Fixnum_sp> givenIhfSize,
                                                         core::T_sp gcRootsInModuleSize,
                                                         core::T_sp tvalistsize,
                                                         core::T_sp tRegisterSaveAreaSize,
@@ -361,12 +359,6 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   }
   if (function_description_offset.unsafe_fixnum()!=offsetof(core::Function_O,_EntryPoint)) {
     SIMPLE_ERROR(BF("Mismatch between function entry offset[%d] and core::Function_O.entry offset[%d]") % function_description_offset.unsafe_fixnum() % offsetof(core::Function_O,_EntryPoint));
-  }
-  int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
-  if (givenIhfSize.notnilp() && unbox_fixnum(givenIhfSize) != InvocationHistoryFrame_size) {
-    SIMPLE_ERROR(BF("Mismatch between IR lisp-compiled-function-ihf size[%d]"
-                    " and sizeof(InvocationHistoryFrame)=[%d]") %
-                 _rep_(givenIhfSize) % InvocationHistoryFrame_size);
   }
   if ( gcRootsInModuleSize.notnilp() ) {
     int gcRootsInModule_size = sizeof(gctools::GCRootsInModule);

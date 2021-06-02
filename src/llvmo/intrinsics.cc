@@ -74,12 +74,6 @@ using namespace core;
 
 #pragma GCC visibility push(default)
 
-
-namespace core {
-extern const char* debug_InvocationHistoryFrame_name;
-};
-
-
 extern "C" {
 void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis)
 {
@@ -165,21 +159,6 @@ ALWAYS_INLINE core::T_O *cc_makeCell()
 #endif
   return res.raw_();
 }
-
-ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
-{NO_UNWIND_BEGIN();
-  core::core__stack_monitor(_Nil<core::T_O>());
-  new (frame) InvocationHistoryFrame(va_args, nargs);
-  core::push_InvocationHistoryStack(frame);
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame)
-{NO_UNWIND_BEGIN();
-  core::pop_InvocationHistoryStack(frame);
-  NO_UNWIND_END();
-}
-
 
 ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
 {NO_UNWIND_BEGIN();
