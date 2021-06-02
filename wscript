@@ -1283,7 +1283,6 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS',["-Wl,-lto_library,%s" % lto_library])
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
-        cfg.env.append_value('INCLUDES', '/usr/local/Cellar/libunwind-headers/35.3/include')  # brew install libunwind-headers
 # Add macOS SDK paths
 #        cfg.env.append_value('INCLUDES', [ ''.join( [ macosx_sdk_path(cfg), '/usr/include' ] ) ] ) 
 #        cfg.env.append_value('LINKFLAGS', ''.join( [ '-L', macosx_sdk_path(cfg), '/usr/lib' ] ) ) 
