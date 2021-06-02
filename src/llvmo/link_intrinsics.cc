@@ -57,7 +57,6 @@ extern "C" {
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/stacks.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/random.h>

@@ -29,9 +29,6 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/stacks.h>
-
-
 
 namespace core {
 

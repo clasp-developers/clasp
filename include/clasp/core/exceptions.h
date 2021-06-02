@@ -40,7 +40,6 @@ THE SOFTWARE.
 
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/symbol.fwd.h>
-#include <clasp/core/stacks.h>
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/primitives.fwd.h>
