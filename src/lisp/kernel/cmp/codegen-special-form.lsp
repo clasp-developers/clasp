@@ -872,7 +872,6 @@ jump to blocks within this tagbody."
 					  (bformat nil "%s-start"
 						   (symbol-name operator-symbol))))
 	  (codegen-fill-function-frame operator-symbol function-env functions env evaluate-env)
-          ;;              (dbg-set-activation-frame-for-ihs-top (irc-renv function-env))
 	  (codegen-progn result code function-env))))))
 
 (defun codegen-flet (result rest env)

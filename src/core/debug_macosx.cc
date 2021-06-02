@@ -303,130 +303,6 @@ mygetsectiondata(
   return(0);
 }
 
-#if 0
-SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header) {
-//  printf("%s:%d:%s is_executable(%d) filename= %s  header = %p  exec_header = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, filename, (void*)header, (void*)exec_header);
-  int baddigit = 0;
-  size_t lineno = 0;
-  SymbolTable symbol_table;
-  struct stat buf;
-  if (stat(filename,&buf)!=0) {
-    return symbol_table;
-  }
-  stringstream nm_cmd;
-  nm_cmd << "/usr/bin/nm -p -numeric-sort -defined-only \"" << filename << "\"";
-  FILE* fnm = popen( nm_cmd.str().c_str(), "r");
-  if (fnm==NULL) {
-    printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, nm_cmd.str().c_str());
-    return symbol_table;
-  }
-#define BUFLEN 2048
-  {
-    char* buf = NULL;
-    size_t buf_len = 0;
-    char name[BUFLEN+1];
-    size_t lineno = 0;
-    char prev_type = '\0';
-    uintptr_t prev_real_address;
-    std::string prev_sname;
-    uintptr_t highest_code_address(0);
-    uintptr_t lowest_other_address(~0);
-    while (!feof(fnm)) {
-      int result = getline(&buf,&buf_len,fnm);
-      if (result==-1) {
-        if (feof(fnm)) break;
-        printf("%s:%d Error reading from %s errno->(%d/%s) after %lu lines\n", __FILE__, __LINE__, filename, errno, strerror(errno), lineno);
-      }
-      lineno++;
-      if (feof(fnm)) break;
-      if (!buf) {
-        printf("%s:%d buf is 0x0 when reading output from %s\n", __FILE__, __LINE__, nm_cmd.str().c_str());
-        break;
-      }
-      const char* cur = buf;
-      // printf("%s:%d:%s Read line: %s", __FILE__, __LINE__, __FUNCTION__, cur);
-      // Read the address
-      uintptr_t address = 0;
-      uintptr_t digit;
-      ++lineno;
-      // Read the hex address
-      while (*cur != ' ') {
-        char c = *cur;
-        if (c>='A'&&c<='Z') {
-          digit = c-'A'+10;
-        } else if (c>='0'&&c<='9') {
-          digit = c-'0';
-        } else if (c>='a'&&c<='z') {
-          digit = c-'a'+10;
-        } else {
-          if (baddigit<20) {
-            printf("%s:%d:%s In file: %s lineno: %lu\n", __FILE__, __LINE__, __FUNCTION__, filename, lineno);
-            printf("%s:%d:%s Hit non-hex digit %c in line: %s\n", __FILE__,__LINE__,__FUNCTION__,c,buf);
-            baddigit++;
-          }
-          digit = 0;
-        }
-        address = address*16+digit;
-//        printf("cur: %p c: %c digit: %lu   address: %p\n", cur, c, digit, (void*)address);
-        ++cur;
-      }
-      // skip spaces
-      while (*cur==' ') ++cur;
-      // Read the type
-      char type = *cur;
-      cur++;
-      // skip spaces
-      while (*cur==' ') ++cur;
-      // Read the name
-      size_t nameidx = 0;
-      while (nameidx<(BUFLEN-1)&&*cur!='\0'&&*cur>' ') {
-        name[nameidx] = *cur;
-        ++cur;
-        ++nameidx;
-      }
-      name[nameidx] = '\0';
-      if (nameidx>=BUFLEN) {
-        printf("%s:%d The buffer size needs to be increased beyond %d\n", __FILE__, __LINE__, BUFLEN);
-        abort();
-      }
-      uintptr_t real_address;
-      if (is_executable) {
-        // The executable needs to be handled differently than libraries
-        real_address = (uintptr_t)address - header;
-        real_address += exec_header;
-      } else {
-        real_address = (uintptr_t)address + (uintptr_t)header;
-      }
-      std::string sname(name);
-#if 0
-      if (is_executable) {
-        printf("%s:%d         address: %p  real_address: %p  type: %c   name: %s\n", __FILE__, __LINE__, (void*)address, (void*)real_address, type, name);
-      }
-#endif
-//      printf("         address: %p  type: %c   name: %s\n", (void*)address, type, name);
-      if (type == 't' || type == 'T') {
-        symbol_table.addSymbol(sname,real_address,type);
-        if (real_address>highest_code_address) {
-          highest_code_address = real_address;
-        }
-      } else {
-        if (highest_code_address && real_address > highest_code_address) {
-          if (real_address < lowest_other_address) {
-            lowest_other_address = real_address;
-          }
-        }
-      }
-    }
-    symbol_table.addSymbol("__TAIL_SYMBOL",lowest_other_address,'!'); // The last symbol is to define the size of the last code symbol
-//    symbol_table.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
-    if (buf) free(buf);
-    symbol_table.optimize();
-    pclose(fnm);
-  }
-  return symbol_table;
-}
-#endif
-
 uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size)
 {
   // Use mygetsectiondata to walk the library because stackmaps are mmap'd
@@ -490,22 +366,6 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
   }
 //  printf("%s:%d:%s Executable header _mh_execute_header %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)exec_header);
   SymbolTable symbol_table;
-#if 0
-  if (library_origin!=0) {
-    if (is_executable) {
-      symbol_table = load_macho_symbol_table(is_executable,libraryName.c_str(),(uintptr_t)0x100000000,exec_header); // hard code origin
-    } else {
-      symbol_table = load_macho_symbol_table(is_executable,libraryName.c_str(),library_origin,exec_header);
-    }
-    symbol_table.optimize();
-    symbol_table.sort();
-    if (!symbol_table.is_sorted()) {
-      printf("%s:%d The symbol table for %s is not sorted\n", __FILE__, __LINE__, libraryName.c_str());
-    }
-  } else {
-    printf("%s:%d:%s Could not find start of library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
-  }
-#endif
   size_t section_size;
 //  printf("%s:%d:%s About to load_stackmap_info library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin );
   uintptr_t p_section = load_stackmap_info(libraryName.c_str(),library_origin,section_size);
@@ -528,14 +388,6 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
     General_O general;
     uintptr_t seek = *(uintptr_t*)&general; // get vtable
     found = vmmap(seek,vtableRegionStart,vtableRegionEnd,false);
-#if 0
-    printf("%s:%d:%s       Looking for \n"
-           "vtable region  %p-%p    [ %lu ]\n",
-           __FILE__, __LINE__, __FUNCTION__,
-           (void*)(vtableRegionStart),
-           (void*)(vtableRegionEnd),
-           (vtableRegionEnd-vtableRegionStart));
-#endif
   }
   OpenDynamicLibraryInfo odli(is_executable,
                               libraryName,handle,symbol_table,
