@@ -13,7 +13,6 @@ SRC_CORE_FILES = \
         'functor',
         'creator',
         'sharpEqualWrapper',
-        'stacks',
         'weakHashTable',
         'weakPointer',
         'compiler',

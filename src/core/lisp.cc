@@ -131,7 +131,6 @@ THE SOFTWARE.
 #include <clasp/core/lispDefinitions.h>
 #include <clasp/core/externalObject.h>
 #include <clasp/core/corePackage.h>
-#include <clasp/core/stacks.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/readtable.h>
 #include <clasp/llvmo/intrinsics.h>

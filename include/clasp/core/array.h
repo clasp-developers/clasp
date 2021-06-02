@@ -27,11 +27,11 @@ THE SOFTWARE.
 #ifndef _core_Array_H
 #define _core_Array_H
 
+#include <clasp/core/array.fwd.h>
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h> // need full definitions for to_object.
 #include <clasp/core/character.fwd.h>
-#include <clasp/core/array.fwd.h>
 #include <clasp/core/sequence.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 #include <clasp/core/exceptions.h>

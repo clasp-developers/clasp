@@ -30,7 +30,7 @@ THE SOFTWARE.
 #ifndef _core_Array_fwd_H
 #define _core_Array_fwd_H
 
-
+#include <clasp/core/coretypes.h> // FORWARD
 
 
 namespace core {
