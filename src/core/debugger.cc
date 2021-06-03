@@ -95,20 +95,6 @@ core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start,
 
 namespace core {
 
-std::string thing_as_string(T_sp obj)
-{
-    if (gc::IsA<SimpleBaseString_sp>(obj)) {
-        return gc::As_unsafe<SimpleBaseString_sp>(obj)->get_std_string();
-    } else if (gc::IsA<SimpleCharacterString_sp>(obj)) {
-        return gc::As_unsafe<SimpleBaseString_sp>(obj)->get_std_string();
-    } else if (gc::IsA<Str8Ns_sp>(obj)) {
-        return gc::As_unsafe<Str8Ns_sp>(obj)->get_std_string();
-    } else if (gc::IsA<StrWNs_sp>(obj)) {
-        return gc::As_unsafe<StrWNs_sp>(obj)->get_std_string();
-    }
-    return _rep_(obj);
-}
-
 CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
 {
   Vaslist* vaslist0 = &*v;
