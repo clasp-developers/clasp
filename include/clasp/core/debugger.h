@@ -190,10 +190,7 @@ struct DebugInfo {
   mutable mp::SharedMutex _OpenDynamicLibraryMutex;
 #endif
   map<std::string, OpenDynamicLibraryInfo> _OpenDynamicLibraryHandles;
-  mp::SharedMutex                   _StackMapsLock;
-  std::map<uintptr_t,StackMapRange> _StackMaps;
-  DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD),
-                _StackMapsLock(STCKMAPS_NAMEWORD)
+  DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD)
   {};
 };
 
