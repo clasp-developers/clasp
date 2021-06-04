@@ -141,6 +141,13 @@
   ((begin-enum% :initarg :begin-enum% :accessor begin-enum%)
    (values% :initarg :values% :accessor values%)))
 
+(defclass kind ()
+  ((tag% :initarg :tag% :accessor tag%)
+   (fixed-fields% :initform nil :accessor fixed-fields%)
+   (variable-info% :initform nil :accessor variable-info%)
+   (variable-capacity% :initform nil :accessor variable-capacity%)
+   (variable-fields% :initform nil :accessor variable-fields%)))
+
 (defun lispify-class-name (tag packages)
   (format nil "core::magic_name(\"~a:~a\")" (gethash (tags:package% tag) packages) (tags:class-symbol% tag)))
 
@@ -256,7 +263,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
   (cur-lambda nil) (cur-priority nil) (cur-name nil) (cur-docstring nil)
   (cur-declare nil) (cur-package-nickname-tags nil) (cur-package-use-tags nil)
   (cur-package-shadow-tags nil) (cur-namespace-tag nil) (cur-class nil)
-  (cur-meta-class nil) (cur-begin-enum nil) (cur-values nil)
+  (cur-meta-class nil) (cur-begin-enum nil) (cur-values nil) (cur-kind nil)
   (enums nil) (initializers nil) (exposes nil)
   (terminators nil) (pregcstartups nil)
   (namespace-to-assoc (make-hash-table :test #'equal))
@@ -593,7 +600,6 @@ Compare the symbol against previous definitions of symbols - if there is a misma
               :line% (tags:line% tag)
               :c++type% type-key)))))
 
-
 (defmethod interpret-tag ((tag tags:lisp-internal-class-tag) state)
   (when (state-cur-docstring state)
     (error-if-bad-expose-info-setup* tag (state-cur-docstring state)))
@@ -782,7 +788,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                (state-terminators state)
                :test #'string=
                :key #'function-name%))))
-
+ 
 (defmethod interpret-tag ((tag tags:cl-pregcstartup-tag) state)
   (let* ((namespace (tags:namespace% (state-cur-namespace-tag state)))
          (signature-text (tags:signature-text% tag)))
@@ -798,6 +804,54 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                (state-pregcstartups state)
                :test #'string=
                :key #'function-name%))))
+
+
+(defmethod interpret-tag ((tag tags:class-kind) state)
+  (setf (state-cur-kind state) (make-instance 'kind :tag tag)))
+(defmethod interpret-tag ((tag tags:container-kind) state)
+  (setf (state-cur-kind state) (make-instance 'kind :tag tag)))
+(defmethod interpret-tag ((tag tags:bitunit-container-kind) state)
+  (setf (state-cur-kind state) (make-instance 'kind :tag tag)))
+(defmethod interpret-tag ((tag tags:templated-kind) state)
+  (setf (state-cur-kind state) (make-instance 'kind :tag tag)))
+
+(defmethod interpret-tag ((tag tags:fixed-field) state)
+  (let ((kind (state-cur-kind state)))
+    (assert (not (null kind)))
+    (assert (null (variable-info% kind)))
+    (setf (fixed-fields% kind) (nconc (fixed-fields% kind) (list tag)))))
+
+(defmethod interpret-tag ((tag tags:variable-bit-array0) state)
+  (let ((kind (state-cur-kind state)))
+    (assert (not (null kind)))
+    (assert (null (variable-info% kind)))
+    (setf (variable-info% kind) tag)))
+(defmethod interpret-tag ((tag tags:variable-array0) state)
+  (let ((kind (state-cur-kind state)))
+    (assert (not (null kind)))
+    (assert (null (variable-info% kind)))
+    (setf (variable-info% kind) tag)))
+(defmethod interpret-tag ((tag tags:variable-capacity) state)
+  (let ((kind (state-cur-kind state)))
+    (assert (not (null kind)))
+    (assert (not (null (variable-info% kind))))
+    (assert (null (variable-capacity% kind)))
+    (setf (variable-capacity% kind) tag)))
+(defmethod interpret-tag ((tag tags:variable-field) state)
+  (let ((kind (state-cur-kind state)))
+    (assert (not (null kind)))
+    (assert (not (null (variable-info% kind))))
+    (assert (not (null (variable-capacity% kind))))
+    (assert (listp (variable-fields% kind)))
+    (setf (variable-fields% kind) (nconc (variable-fields% kind) (list tag)))))
+(defmethod interpret-tag ((tag tags:variable-field-only) state)
+  (let ((kind (state-cur-kind state)))
+    (assert (not (null kind)))
+    (assert (not (null (variable-info% kind))))
+    (assert (not (null (variable-capacity% kind))))
+    (assert (null (variable-fields% kind)))
+    (setf (variable-fields% kind) tag)))
+
 
 (defun interpret-tags (tags)
   "* Arguments
