@@ -34,6 +34,10 @@ THE SOFTWARE.
 #include <clasp/clbind/derivable.h>
 #include <clasp/clbind/inheritance.h>
 
+namespace core {
+bool maybe_demangle(const std::string& fnName, std::string& output);
+};
+
 namespace clbind {
 
 template <class OT, class WT>
@@ -91,6 +95,7 @@ struct maybe_delete<OT, false> {
 };
 };
 
+
 namespace clbind {
 
 
@@ -98,8 +103,8 @@ namespace clbind {
       The wrapper does not own the pointer unless the HolderType 
       is a std::unique_ptr or std::shared_ptr some other holder that takes care of ownership
  */
-template <class OT, class HolderType = OT *>
-  class Wrapper : public core::WrappedPointer_O {
+template <class OT, class HolderType = OT*>
+class Wrapper : public core::WrappedPointer_O {
 public:
   typedef core::WrappedPointer_O TemplatedBase;
 
@@ -134,10 +139,14 @@ struct RawGetter<std::shared_ptr<PtrType>> {
  };
 
 public:
-  Wrapper(OT *naked, class_id cid) : externalPtr_gc_ignore(naked), _classId(cid){};
+  Wrapper(OT *naked, class_id cid) : externalPtr_gc_ignore(naked), _classId(cid){
+//    printf("%s:%d:%s DEBUG_WRAPPER ctor OT naked\n", __FILE__, __LINE__, __FUNCTION__ );
+  };
 
   // ctor that takes a unique_ptr
-  Wrapper(std::unique_ptr<OT> naked, class_id cid) : externalPtr_gc_ignore(std::move(naked)), _classId(cid) {};
+  Wrapper(std::unique_ptr<OT> naked, class_id cid) : externalPtr_gc_ignore(std::move(naked)), _classId(cid) {
+    printf("%s:%d:%s ctor OT naked\n", __FILE__, __LINE__, __FUNCTION__ );
+  };
 
 size_t templatedSizeof() const { return sizeof(*this); };
 void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get(this->externalPtr_gc_ignore); };
@@ -153,6 +162,7 @@ void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get(this
   }
 
   static gctools::smart_ptr<WrapperType> make_wrapper(OT *naked, class_id classId) {
+//    printf("%s:%d:%s DEBUG_WRAPPER with OT*\n", __FILE__, __LINE__, __FUNCTION__ );
     GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     if (!classSymbol.unboundp()) {
@@ -163,6 +173,7 @@ void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get(this
   }
 
   static gctools::smart_ptr<WrapperType> make_wrapper(const OT &val, class_id classId) {
+    printf("%s:%d:%s with OT&\n", __FILE__, __LINE__, __FUNCTION__ );
     OT *naked = new OT(val);
     GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
@@ -171,6 +182,7 @@ void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get(this
   }
 
   static gctools::smart_ptr<WrapperType> make_wrapper(std::unique_ptr<OT> val, class_id classId) {
+    printf("%s:%d:%s with unique_ptr\n", __FILE__, __LINE__, __FUNCTION__ );
     GC_ALLOCATE_VARIADIC(WrapperType, obj, std::move(val), classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
@@ -236,21 +248,23 @@ bool validp() const { return RawGetter<HolderType>::get(this->externalPtr_gc_ign
   }
 
   explicit Wrapper(){
-      //            printf("\n%s:%d - explicit ctor for Wrapper@%p\n", __FILE__, __LINE__, this );
+    printf("\n%s:%d - explicit ctor for Wrapper@%p\n", __FILE__, __LINE__, this );
   };
   virtual ~Wrapper(){
       //            TRACE();
-      //            printf("\n%s:%d - dtor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__, this, typeid(HolderType).name(),RawGetter<HolderType>::get(this->externalPtr_gc_ignore),clbind::support_adapterAddress<ExternalType>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore)), this->classId, _rep_(reg::globalClassIdToClassSymbol[this->classId]).c_str() );
-
+#if 0
+    printf("\n%s:%d - DEBUG_WRAPPER dtor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__,
+           this,
+           typeid(HolderType).name(),
+           RawGetter<HolderType>::get(this->externalPtr_gc_ignore),
+           clbind::support_adapterAddress<ExternalType>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore)),
+           this->classId(),
+           _rep_(reg::lisp_classSymbolFromClassId(this->classId())).c_str() );
+#endif
   };
 };
 };
 
-template <typename T>
-class gctools::GCStamp<clbind::Wrapper<T, T *>> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;
-};
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
   static bool constexpr NeedsInitialization = false;
@@ -258,14 +272,29 @@ struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
+template <typename T>
+class gctools::GCStamp<clbind::Wrapper<T, T *>> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;
+};
+
+template <typename T>
+struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+
 /*! Wrappers of unique_ptr need to be finalized */
 template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, std::unique_ptr<T>>> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::Stamp;
 };
+
 template <typename T>
-struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
+struct gctools::GCInfo<clbind::Wrapper<T, std::shared_ptr<T>>> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
@@ -276,12 +305,6 @@ template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, std::shared_ptr<T>>> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, std::shared_ptr<T>>::TemplatedBase>::Stamp;
-};
-template <typename T>
-struct gctools::GCInfo<clbind::Wrapper<T, std::shared_ptr<T>>> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace translate {
@@ -359,7 +382,7 @@ public:
 template <typename T>
 struct to_object<const T *&, translate::dont_adopt_pointer> {
 public:
-  typedef clbind::Wrapper<const T> WrapperType;
+  typedef clbind::Wrapper<const T, const T*> WrapperType;
   static core::T_sp convert(const T *ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
@@ -523,7 +546,7 @@ struct from_object<std::unique_ptr<T>> {
       core::General_O* gp = (core::General_O*)&(*o);
       T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
       if (!v_alien) {
-        SIMPLE_ERROR_SPRINTF("Could not access the Alien object within the clbind object@%p of type: %s", (void*)gp, typeid(T).name());
+        SIMPLE_ERROR_SPRINTF("Wrong type of argument - clbind object@%p of type: %s", (void*)gp, typeid(T).name());
       }
 
       ASSERT(v_alien);
@@ -569,7 +592,14 @@ struct from_object<T *> {
       core::General_O* gp = o.unsafe_general();
       T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
       if (!v_alien) {
-        SIMPLE_ERROR_SPRINTF("Could not access the Alien object within the clbind object@%p of type: %s",  (void*)gp, typeid(T).name());
+        std::string expectedType(typeid(T).name());
+        std::string demangled;
+        bool success = core::maybe_demangle(expectedType,demangled);
+        if (success) {
+          SIMPLE_ERROR(BF("Incorrect object %s passed to function - expected type %s") % _rep_(o).c_str() % demangled);
+        } else {
+          SIMPLE_ERROR(BF("Incorrect object %s passed to function - expected type %s") % _rep_(o).c_str() % typeid(T).name());
+        }
       }
       ASSERT(v_alien);
       this->_v = v_alien;

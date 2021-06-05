@@ -52,7 +52,7 @@ public:
 
 private:
   typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
-  typedef clbind::Wrapper<MemberType> WrapperType;
+  typedef clbind::Wrapper<MemberType,MemberType*> WrapperType;
   VariablePtrType _MemberPtr;
 
 public:
@@ -78,7 +78,7 @@ class TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, MemberType *const(OT:
   typedef core::Closure_O TemplatedBase;
 
 private:
-  typedef clbind::Wrapper<MemberType> WrapperType;
+  typedef clbind::Wrapper<MemberType,MemberType*> WrapperType;
   string _Name;
   typedef MemberType *const(OT::*VariablePtrType);
   VariablePtrType _MemberPtr;
@@ -110,7 +110,7 @@ public:
 
 private:
   typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
-  typedef clbind::Wrapper<MemberType> WrapperType;
+  typedef clbind::Wrapper<MemberType,MemberType*> WrapperType;
   VariablePtrType _MemberPtr;
 
 public:
@@ -138,7 +138,7 @@ class SetterMethoid<SetterPolicies, OT, MemberType *const(OT::*)> : public core:
   typedef core::Closure_O TemplatedBase;
 
 private:
-  typedef clbind::Wrapper<MemberType> WrapperType;
+  typedef clbind::Wrapper<MemberType,MemberType*> WrapperType;
   string _Name;
   typedef MemberType *const(OT::*VariablePtrType);
   VariablePtrType _MemberPtr;
