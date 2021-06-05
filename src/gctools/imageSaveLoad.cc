@@ -1506,7 +1506,7 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       const char* myName = (const char*)&this->_Library._SymbolBuffer[symbolOffset];
       uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT,myName);
       if (!dlsymStart) {
-        printf("%s:%d:%s Could not resolve address for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
+        printf("%s:%d:%s Could not resolve address with dlsym for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
         abort();
       } else {
 //        printf("%s:%d:%s Resolved address[%lu] %p for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, ii, (void*)dlsymStart, ss.str().c_str() );

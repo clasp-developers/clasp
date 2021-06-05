@@ -1674,8 +1674,7 @@ void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size, cons
         return;
       }
       if (dlsym( RTLD_DEFAULT, info.dli_sname ) == 0 ) {
-        printf("%s:%d %lu/%lu FAIL dlsym could not find name %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
-        return;
+        printf("%s:%d %lu/%lu WARNING dlsym could not find name %s - I'm going to add it anyway - if this works - remove this message\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
       }
       global_mangledSymbols.insert(info.dli_sname);
       global_goodPointerCount++;
