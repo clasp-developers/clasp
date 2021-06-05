@@ -277,12 +277,6 @@ def build_extension(bld):
 def grovel(bld):
     bld.recurse("extensions")
 
-def fetch_git_revision(path, url, revision = "", label = "master"):
-    log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
-    ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
-    if ( ret != 0 ):
-        raise Exception("Failed to fetch git url %s" % url)
-
 def generate_output_filename(names):
     if (names==[]):
         return "source-dir:src;main;clasp_gc.cc"
@@ -329,7 +323,8 @@ def update_dependencies(cfg):
 #                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
                         label = "master", revision = "3.3.3.5")
     os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
-
+    cfg.recurse("extensions")
+    
 # run this from a completely cold system with:
 # ./waf distclean configure
 # ./waf build_impsprep
