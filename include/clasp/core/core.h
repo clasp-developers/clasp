@@ -1026,15 +1026,6 @@ size_t lisp_badge(T_sp obj);
 
 #include <clasp/gctools/interrupt.h>
 #include <clasp/gctools/threadlocal.h>
-
-
-namespace core {
-  class InvocationHistoryStack;
-  class InvocationHistoryFrame;
-};
-
-
-
 #include <clasp/core/exceptions.h>
 
 

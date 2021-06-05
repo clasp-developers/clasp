@@ -376,6 +376,7 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
   lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
   
   llvm::DILineInfo info = dicontext->getLineInfoForAddress(addr, lispec);
+  if (info.FileName == info.BadString) return _Nil<core::T_O>();
   if (info.Source.hasValue())
     source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
   else source = _Nil<core::T_O>();

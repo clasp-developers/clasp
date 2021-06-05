@@ -12,7 +12,6 @@
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/myReadLine.h>
 #include <clasp/core/symbol.h>
-#include <clasp/core/stacks.h>
 
 namespace core {
 

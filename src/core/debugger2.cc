@@ -58,7 +58,7 @@ static DebuggerFrame_sp debugger_frame_rel(DebuggerFrame_sp cur, int shift,
   } else return cur;
 }
 
-static std::string thing_as_string2(T_sp obj) {
+static std::string thing_as_string(T_sp obj) {
   if (gc::IsA<SimpleBaseString_sp>(obj)) {
     return gc::As_unsafe<SimpleBaseString_sp>(obj)->get_std_string();
   } else if (gc::IsA<SimpleCharacterString_sp>(obj)) {
@@ -78,7 +78,7 @@ static void debugger_display_frame(DebuggerFrame_sp cur, int index) {
   num << index;
   clasp_write_string(num.str(), stream);
   clasp_write_string(": ", stream);
-  clasp_write_string(thing_as_string2(cur->fname), stream);
+  clasp_write_string(thing_as_string(cur->fname), stream);
   clasp_write_string("\n", stream);
 }
 

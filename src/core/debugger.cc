@@ -86,12 +86,6 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/core/stackmap.h>
 
-#ifdef _TARGET_OS_DARWIN
-namespace core {
-core::SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header);
-};
-#endif
-
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 namespace core {
 void* find_base_of_loaded_object(const char* name);
@@ -100,63 +94,6 @@ core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start,
 #endif
 
 namespace core {
-
-CL_DEFUN int core__ihs_bounded(int idx)
-{
-  Fixnum base = _sym_STARihs_baseSTAR->symbolValue().unsafe_fixnum();
-  Fixnum top = _sym_STARihs_topSTAR->symbolValue().unsafe_fixnum();
-  if (idx < base) idx = base;
-  if (idx >= top) idx = top-1;
-  return idx;
-}
-
-std::string thing_as_string(T_sp obj)
-{
-    if (gc::IsA<SimpleBaseString_sp>(obj)) {
-        return gc::As_unsafe<SimpleBaseString_sp>(obj)->get_std_string();
-    } else if (gc::IsA<SimpleCharacterString_sp>(obj)) {
-        return gc::As_unsafe<SimpleBaseString_sp>(obj)->get_std_string();
-    } else if (gc::IsA<Str8Ns_sp>(obj)) {
-        return gc::As_unsafe<Str8Ns_sp>(obj)->get_std_string();
-    } else if (gc::IsA<StrWNs_sp>(obj)) {
-        return gc::As_unsafe<StrWNs_sp>(obj)->get_std_string();
-    }
-    return _rep_(obj);
-}
-
-CL_DEFUN int core__ihs_top() {
-  return _sym_STARihs_topSTAR->symbolValue().unsafe_fixnum();
-};
-
-CL_LAMBDA(cur);
-CL_DECLARE();
-CL_DOCSTRING("ihsEnv");
-CL_DEFUN T_sp core__ihs_env(int idx) {
-  return _Nil<core::T_O>();
-};
-
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("ihs_currentFrame");
-CL_DEFUN int core__ihs_current_frame() {
-  T_sp cf = _sym_STARihs_currentSTAR->symbolValue();
-  if (!cf.fixnump()) {
-    ASSERT(_sym_STARihs_baseSTAR.fixnump());
-    int icf = _sym_STARihs_baseSTAR->symbolValue().unsafe_fixnum();
-    return core__set_ihs_current_frame(icf);
-  }
-  int icf = cf.unsafe_fixnum();
-  icf = core__ihs_bounded(icf);
-  return icf;
-}
-
-CL_DEFUN int core__set_ihs_current_frame(int icf) {
-  icf = core__ihs_bounded(icf);
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(icf));
-  return icf;
-}
-
 
 CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
 {
@@ -213,14 +150,6 @@ DebugInfo& debugInfo() {
   }
   return *global_DebugInfo;
 }
-
-#if 0
-void add_dynamic_library_using_handle(add_dynamic_library* adder, const std::string& libraryName, void* handle) {
-  printf("%s:%d:%s libraryName: %s need text_start, text_end\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str() );
-  add_dynamic_library_impl(adder, false,libraryName, false, 0, handle, NULL, NULL, false, NULL, NULL );
-}
-#endif
-
 
 void add_dynamic_library_using_origin(add_dynamic_library* adder, bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end, bool hasDataConst, gctools::clasp_ptr_t dataConstStart, gctools::clasp_ptr_t dataConstEnd  ) {
   add_dynamic_library_impl(adder,is_executable,libraryName, true, origin, NULL, text_start, text_end,

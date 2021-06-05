@@ -4321,7 +4321,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             size_t size = sym->getSize();
 #ifdef DEBUG_JIT_LOG_SYMBOLS
             core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)address));
-            //register_symbol_with_libunwind(name,section_address+address,size);
             if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
               DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Registering jit symbol %s address: %p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)address, size ));
               core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
@@ -4482,24 +4481,6 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
   }
   save_object_file_and_code_info(my_thread->topObjectFile());
   buffer.reset();
-}
-
-void register_symbol_with_libunwind(const std::string& name, uint64_t start, size_t size) {
-#if defined(USE_LIBUNWIND) && (defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD))
-  unw_dyn_info_t info;
-  info.start_ip = start;
-  info.end_ip = start+size;
-  info.gp = 0;
-  info.format = UNW_INFO_FORMAT_DYNAMIC;
-  char* saved_name = (char*)malloc(name.size()+1);
-  strncpy( saved_name, name.c_str(), name.size());
-  saved_name[name.size()] = '\0';
-  info.u.pi.name_ptr = saved_name;
-  info.u.pi.segbase = 0;
-  info.u.pi.table_len = 0;
-  info.u.pi.table_data = 0;
-  dyn_register(&info);
-#endif
 }
 
 CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {

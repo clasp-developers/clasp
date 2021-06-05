@@ -9,6 +9,7 @@
 #+(or)(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read*
+          ihs-top ; for asdf compatibility only; remove soon
           cons-car
           cons-cdr
           debug-break))
