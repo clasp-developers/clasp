@@ -519,20 +519,20 @@ struct constructor_registration_base : public registration {
  class construct_non_derivable_class {};
  class construct_derivable_class {};
  
- template <class Class, class Pointer, class Signature, class Policies, class DerivableType>
-struct constructor_registration : public constructor_registration_base<Class, Pointer, Signature, Policies> {
-   typedef constructor_registration_base<Class, Pointer, Signature, Policies> Base;
-  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, Signature, Policies>(policies, name, arguments, declares, docstring){};
+ template <class Class, class HoldType, class Signature, class Policies, class DerivableType>
+struct constructor_registration : public constructor_registration_base<Class, HoldType, Signature, Policies> {
+   typedef constructor_registration_base<Class, HoldType, Signature, Policies> Base;
+  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, HoldType, Signature, Policies>(policies, name, arguments, declares, docstring){};
 };
 
 /*! This is the constructor registration for default constructors */
-template <class Class, class Pointer, class Policies>
-  struct constructor_registration<Class, Pointer, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
-  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
+template <class Class, class HoldType, class Policies>
+  struct constructor_registration<Class, HoldType, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, HoldType, default_constructor, Policies> {
+  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, HoldType, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<Class, Pointer>::entry_point);
-    maybe_register_symbol_using_dladdr((void*)DefaultConstructorCreator_O<Class, Pointer>::entry_point);
-    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, Pointer>>::allocate(ep));
+    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<Class, HoldType>::entry_point);
+    maybe_register_symbol_using_dladdr((void*)DefaultConstructorCreator_O<Class, HoldType>::entry_point);
+    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate(ep));
     return allocator;
   }
 };
@@ -687,8 +687,8 @@ public:
     parameters_type, boost::mpl::not_<
                        boost::mpl::or_<
                          detail::is_bases<boost::mpl::_>, boost::is_base_and_derived<boost::mpl::_, T>, boost::is_base_and_derived<T, boost::mpl::_>>>,
-    T * // Default is to put the pointer into a T*
-    >::type HeldType;
+    std::unique_ptr<T> // Was default to put the pointer into a T*
+    >::type HoldType;
 
   template <class Src, class Target>
   void add_downcast(Src *, Target *, boost::mpl::true_) {
@@ -751,7 +751,7 @@ public:
                           string const &arguments = "",
                           string const &declares = "",
                           string const &docstring = "") {
-    return this->def_constructor_(core::lispify_symbol_name(name), &sig, policies<>(), arguments, declares, docstring);
+    return this->def_constructor_(core::lispify_symbol_name(name), &sig, policies<adopt<result>>(), arguments, declares, docstring);
   }
 
   template <typename... Types>
@@ -760,7 +760,7 @@ public:
                           string const &arguments = "",
                           string const &declares = "",
                           string const &docstring = "") {
-    return this->def_constructor_(name._raw_name, &sig, policies<>(), arguments, declares, docstring);
+    return this->def_constructor_(name._raw_name, &sig, policies<adopt<result>>(), arguments, declares, docstring);
   }
 
   template <typename NameType, class F, class... PTypes>
@@ -948,7 +948,7 @@ private:
 
     add_wrapper_cast((WrappedType *)0);
 #if 0
-    int*** a = HeldType();
+    int*** a = HoldType();
     int*** b = WrappedType();
     int*** i = Base();
     int*** j = parameters_type();
@@ -1015,8 +1015,7 @@ private:
 
     this->set_default_constructor(
                                   new detail::constructor_registration<
-                                  construct_type, HeldType, Signature, Policies,detail::construct_non_derivable_class>(
-                                                                                                                       Policies(), name, arguments, declares, docstring));
+                                  construct_type, HoldType, Signature, Policies,detail::construct_non_derivable_class>(Policies(), name, arguments, declares, docstring));
     return *this;
   }
 
@@ -1026,10 +1025,9 @@ private:
 
     typedef typename boost::mpl::if_<
       boost::is_same<WrappedType, reg::null_type>, T, WrappedType>::type construct_type;
-
     this->add_member(
                      new detail::constructor_registration<
-                     construct_type, HeldType, signature, Policies,detail::construct_non_derivable_class>(Policies(), name, arguments, declares, docstring));
+                     construct_type, HoldType, signature, Policies,detail::construct_non_derivable_class>(Policies(), name, arguments, declares, docstring));
 
     return *this;
   }

@@ -275,8 +275,8 @@ public:
     parameters_type, boost::mpl::not_<
                        boost::mpl::or_<
                          detail::is_bases<boost::mpl::_>, boost::is_base_and_derived<boost::mpl::_, T>, boost::is_base_and_derived<T, boost::mpl::_>>>,
-    T * // Default is to put the pointer into a T*
-    >::type HeldType;
+    std::unique_ptr<T>  // Default is to put the pointer into a std::unique_ptr<T>
+    >::type HoldType;
 
   template <class Src, class Target>
   void add_downcast(Src *, Target *, boost::mpl::true_) {
@@ -651,13 +651,13 @@ private:
 
     this->add_member(
                      new detail::constructor_registration<
-                     construct_type, HeldType, signature, Policies, detail::construct_derivable_class>(
+                     construct_type, HoldType, signature, Policies, detail::construct_derivable_class>(
                                                                                                        Policies(), name, arguments, declares, docstring));
 
 #if 0
     this->add_default_member(
                              new detail::constructor_registration<
-                             construct_type, HeldType, signature, Policies>(
+                             construct_type, HoldType, signature, Policies>(
                                                                             Policies(),name,arguments,declares,docstring));
 #endif
     return *this;

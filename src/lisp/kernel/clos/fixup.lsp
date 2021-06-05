@@ -147,8 +147,7 @@
 (eval-when (:execute)
   (satiate-minimal-generic-functions))
 (eval-when (:load-toplevel)
-  (unless (ext:getenv "CLASP_DISABLE_SATIATE")
-    (satiate-clos)))
+  (satiate-clos))
 
 (mlog "Done satiating%N")
 

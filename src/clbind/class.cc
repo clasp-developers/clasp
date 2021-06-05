@@ -110,7 +110,7 @@ void class_registration::register_() const {
     creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
   //  printf("%s:%d:%s  classNameString->%s  where -> 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, classNameString.c_str(), where);
-  crep->initializeClassSlots(creator,gctools::NextStampWtag(where));
+  crep->initializeClassSlots(creator,gctools::NextClbindStampWtag(where));
   className->exportYourself();
   crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????
