@@ -145,6 +145,9 @@ static void args_from_offset(void* frameptr, int32_t offset,
     T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
     closure = tclosure;
     size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
+    if (nargs>256) {
+      printf("%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+    }
     ql::list largs;
     // Get the first args from the register save area
     for (size_t i = 0; i < std::min(nargs, (size_t)LCC_ARGS_IN_REGISTERS);
@@ -206,7 +209,7 @@ static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
   return DebuggerFrame_O::make(fname, spi, fd, closure, args, INTERN_(kw, lisp));
 }
 
-static bool maybe_demangle(const std::string& fnName, std::string& output)
+bool maybe_demangle(const std::string& fnName, std::string& output)
 {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
