@@ -272,7 +272,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
   (packages-to-create nil)
   (classes (make-hash-table :test #'equal))
   (gc-managed-types (make-hash-table :test #'equal))
-  (functions nil) (symbols nil)
+  (functions nil) (symbols nil) (kinds nil)
   (previous-symbols (make-hash-table :test #'equal)))
 
 (defgeneric interpret-tag (tag state))
@@ -805,15 +805,18 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                :test #'string=
                :key #'function-name%))))
 
-
+(defun interpret-kind-tag (tag state)
+  (let ((kind (make-instance 'kind :tag% tag)))
+    (push kind (state-kinds state))
+    (setf (state-cur-kind state) kind)))
 (defmethod interpret-tag ((tag tags:class-kind) state)
-  (setf (state-cur-kind state) (make-instance 'kind :tag tag)))
+  (interpret-kind-tag tag state))
 (defmethod interpret-tag ((tag tags:container-kind) state)
-  (setf (state-cur-kind state) (make-instance 'kind :tag tag)))
+  (interpret-kind-tag tag state))
 (defmethod interpret-tag ((tag tags:bitunit-container-kind) state)
-  (setf (state-cur-kind state) (make-instance 'kind :tag tag)))
+  (interpret-kind-tag tag state))
 (defmethod interpret-tag ((tag tags:templated-kind) state)
-  (setf (state-cur-kind state) (make-instance 'kind :tag tag)))
+  (interpret-kind-tag tag state))
 
 (defmethod interpret-tag ((tag tags:fixed-field) state)
   (let ((kind (state-cur-kind state)))
@@ -881,4 +884,5 @@ This interprets the tags and generates objects that are used to generate code."
             (state-pregcstartups state)
             (state-initializers state)
             (state-exposes state)
-            (state-terminators state))))
+            (state-terminators state)
+            (state-kinds state))))
