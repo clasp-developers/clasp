@@ -833,8 +833,7 @@ eformat_read_char_no_cursor(T_sp tstrm) {
     buffer_end += byte_size;
     c = strm->_Decoder(strm, &buffer_pos, buffer_end);
   } while(c == EOF && (buffer_end - buffer) < ENCODING_BUFFER_MAX_SIZE);
-  unlikely_if (c == strm->_EofChar)
-    return EOF;
+  unlikely_if (c == strm->_EofChar) return EOF;
   if (c != EOF) {
     strm->_LastChar = c;
     strm->_LastCode[0] = c;
@@ -1858,10 +1857,8 @@ CL_DECLARE();
 CL_DOCSTRING("get_output_stream_string");
 CL_DEFUN T_sp cl__get_output_stream_string(T_sp strm) {
   T_sp strng;
-  unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_string_output)) {
-    printf("%s:%d:%s AnsiStreamTypeP failed expected %d got %d\n", __FILE__, __LINE__, __FUNCTION__, clasp_smm_string_output, StreamMode(strm));
-    af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, strm, _sym_StringOutputStream_O);
-  }
+  unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_string_output))
+    af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, strm, cl::_sym_StringStream_O);
   String_sp buffer = StringOutputStreamOutputString(strm);
   //        printf("%s:%d StringOutputStreamOutputString = %s\n", __FILE__, __LINE__, buffer->get().c_str());
   strng = cl__copy_seq(buffer);
@@ -2950,10 +2947,9 @@ consume_byte_stack(T_sp strm, unsigned char *c, cl_index n) {
 
 static cl_index
 io_file_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
-  unlikely_if(StreamByteStack(strm).notnilp()) { // != _Nil<T_O>()) {
+  if(StreamByteStack(strm).notnilp()) { // != _Nil<T_O>()) {
     return consume_byte_stack(strm, c, n);
-  }
-  else {
+  } else {
     int f = IOFileStreamDescriptor(strm);
     gctools::Fixnum out = 0;
     clasp_disable_interrupts();
@@ -4709,7 +4705,7 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
   return ext__file_stream_file_descriptor(s);
 }
 
-       /**********************************************************************
+    /**********************************************************************
      * MEDIUM LEVEL INTERFACE
      */
 

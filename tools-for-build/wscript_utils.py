@@ -407,3 +407,9 @@ class linux_snapshot_to_object(waflib.Task.Task):
         log.info("linux_snapshot_to_object cmd = %s" % cmd )
         return self.exec_command(cmd)
     
+def fetch_git_revision(path, url, revision = "", label = "master"):
+    log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
+    ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
+    if ( ret != 0 ):
+        raise Exception("Failed to fetch git url %s" % url)
+
