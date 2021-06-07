@@ -118,6 +118,79 @@ void decodeLibrarySaveAddress(Fixup* fixup, uintptr_t* ptrptr);
 void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp code);
 void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp code);
 
+
+struct SymbolLookup {
+  uintptr_t  _textSectionStart;
+  SymbolLookup() : _textSectionStart(0) {};
+  std::map<std::string,uintptr_t> _symbolToAddress;
+  std::map<uintptr_t,std::string> _addressToSymbol;
+  uintptr_t lookupSymbol(const char* name) {
+    std::string sname(name);
+    auto it = this->_symbolToAddress.find(sname);
+    if (it == this->_symbolToAddress.end()) {
+      return 0;
+    }
+    return it->second;
+  }
+  
+  bool lookupAddr(uintptr_t addr, std::string& name) {
+    printf("%s:%d:%s Lookup executable address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr );
+    std::map<std::uintptr_t,std::string>::iterator it = this->_addressToSymbol.find(addr);
+    if (it == this->_addressToSymbol.end()) {
+      return false;
+    }
+    name = it->second;
+    return true;
+  }
+  bool dladdr_(uintptr_t address, std::string& name, size_t& hitBadPointers, PointerType pointerType,uintptr_t& saddr) {
+    Dl_info info;
+    int ret = dladdr( (void*)address, &info );
+    if ( ret == 0 ) {
+      printf("%s:%d:%s During snapshot save the address %p could not be resolved using dladdr\n",
+             __FILE__, __LINE__, __FUNCTION__,
+             (void*)address);
+      hitBadPointers++;
+    } else if (info.dli_sname == NULL) {
+      std::string lookupName;
+      bool found = this->lookupAddr(address,lookupName);
+      if (found) {
+        name = lookupName;
+        saddr = address;
+      return true;
+      } else {
+        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
+               "  When this happens run 'nm <executable> | grep %p'\n"
+               "   Although it may not work - sorry\n"
+               "   Then write a wrapper for that function - it's probably an inlined function \n"
+               "       that dladdr doesn't like - I don't know any other way around this\n"
+               "     The PointerType is %lu\n"
+               "     The info.dli_fname -> %s\n"
+               "     The info.dli_fbase -> %p\n"
+               "     The info.dli_sname -> %p\n"
+               "     The info.dli_saddr -> %p\n"
+               "     The lookupName -> %s\n",
+               __FILE__, __LINE__, __FUNCTION__,
+               (void*)address, 
+               (void*)address, 
+               (uintptr_t)pointerType,
+               info.dli_fname,
+               (void*)info.dli_fbase,
+               (void*)info.dli_sname,
+               (void*)info.dli_saddr,
+               lookupName.c_str());
+        hitBadPointers++;
+      }
+    } else {
+      name = std::string(info.dli_sname);
+      saddr = (uintptr_t)info.dli_saddr;
+      return true;
+    }
+    return false;
+  }
+};
+
+bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout=NULL );
+
 };
 
 

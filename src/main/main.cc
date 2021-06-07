@@ -382,7 +382,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
     end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
     if (start_of_snapshot) {
-      printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
+      //printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
     } else {
 //      printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
     }

@@ -46,6 +46,124 @@ bool global_debugSnapshot = false;
 
 };
 
+namespace imageSaveLoad {
+bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
+  int baddigit = 0;
+  size_t lineno = 0;
+  std::string filename;
+  core::executablePath(filename);
+  struct stat buf;
+  if (stat(filename.c_str(),&buf)!=0) {
+    return false;
+  }
+  stringstream nm_cmd;
+#if defined(_TARGET_OS_LINUX)
+  nm_cmd << "/usr/bin/nm -p --defined-only --no-sort \"" << filename << "\"";
+#elif defined(_TARGET_OS_DARWIN)
+  nm_cmd << "/usr/bin/nm -p --defined-only\"" << filename << "\"";
+#else
+  nm_cmd << "/usr/bin/nm -p --defined-only\"" << filename << "\"";
+#endif  
+  FILE* fnm = popen( nm_cmd.str().c_str(), "r");
+  if (fnm==NULL) {
+    printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, nm_cmd.str().c_str());
+    return false;
+  }
+#define BUFLEN 2048
+  {
+    char* buf = NULL;
+    size_t buf_len = 0;
+    char name[BUFLEN+1];
+    size_t lineno = 0;
+    char prev_type = '\0';
+    uintptr_t prev_real_address;
+    std::string prev_sname;
+    uintptr_t highest_code_address(0);
+    uintptr_t lowest_other_address(~0);
+    while (!feof(fnm)) {
+      int result = getline(&buf,&buf_len,fnm);
+      if (result==-1) {
+        if (feof(fnm)) break;
+        printf("%s:%d Error reading from %s errno->(%d/%s) after %lu lines\n", __FILE__, __LINE__, filename.c_str(), errno, strerror(errno), lineno);
+      }
+      lineno++;
+      if (feof(fnm)) break;
+      if (!buf) {
+        printf("%s:%d buf is 0x0 when reading output from %s\n", __FILE__, __LINE__, nm_cmd.str().c_str());
+        break;
+      }
+      const char* cur = buf;
+      // printf("%s:%d:%s Read line: %s", __FILE__, __LINE__, __FUNCTION__, cur);
+      // Read the address
+      uintptr_t address = 0;
+      uintptr_t digit;
+      ++lineno;
+      // Read the hex address
+      while (*cur != ' ') {
+        char c = *cur;
+        if (c>='A'&&c<='Z') {
+          digit = c-'A'+10;
+        } else if (c>='0'&&c<='9') {
+          digit = c-'0';
+        } else if (c>='a'&&c<='z') {
+          digit = c-'a'+10;
+        } else {
+          if (baddigit<20) {
+            printf("%s:%d:%s In file: %s lineno: %lu\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str(), lineno);
+            printf("%s:%d:%s Hit non-hex digit %c in line: %s\n", __FILE__,__LINE__,__FUNCTION__,c,buf);
+            baddigit++;
+          }
+          digit = 0;
+        }
+        address = address*16+digit;
+//        printf("cur: %p c: %c digit: %lu   address: %p\n", cur, c, digit, (void*)address);
+        ++cur;
+      }
+      // skip spaces
+      while (*cur==' ') ++cur;
+      // Read the type
+      char type = *cur;
+      cur++;
+      // skip spaces
+      while (*cur==' ') ++cur;
+      // Read the name
+      size_t nameidx = 0;
+      while (nameidx<(BUFLEN-1)&&*cur!='\0'&&*cur>' ') {
+        name[nameidx] = *cur;
+        ++cur;
+        ++nameidx;
+      }
+      name[nameidx] = '\0';
+      if (nameidx>=BUFLEN) {
+        printf("%s:%d The buffer size needs to be increased beyond %d\n", __FILE__, __LINE__, BUFLEN);
+        abort();
+      }
+      std::string sname(name);
+      if (type == 't' || type == 'T' || type == 'W' || type == 'V' || type == 'D') {
+        if (fout) fprintf(fout, "%p %c %s\n", (void*)address, type, sname.c_str());
+        symbolLookup._symbolToAddress[sname] = address;
+        symbolLookup._addressToSymbol[address] = sname;
+        if (address>highest_code_address) {
+          highest_code_address = address;
+        }
+      } else {
+        if (highest_code_address && address > highest_code_address) {
+          if (address < lowest_other_address) {
+            lowest_other_address = address;
+          }
+        }
+      }
+    }
+    symbolLookup._symbolToAddress["__TAIL_SYMBOL"] = lowest_other_address; // The last symbol is to define the size of the last code symbol
+    symbolLookup._addressToSymbol[lowest_other_address] = "__TAIL_SYMBOL";
+//    symbolLookup.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
+    if (buf) free(buf);
+    pclose(fnm);
+  }
+  return true;
+}
+
+};
 
 #ifdef USE_PRECISE_GC
 
@@ -132,6 +250,8 @@ bool global_debugSnapshot = false;
 #endif
 
 
+
+;
 
 namespace imageSaveLoad {
 bool globalFwdMustBeInGCMemory = false;
@@ -1312,60 +1432,17 @@ struct SaveSymbolCallback : public core::SymbolCallback {
   //
   // This generates a symbol table for the _Library
   //
-  void generateSymbolTable() {
+  void generateSymbolTable(SymbolLookup& symbolLookup) {
 //    printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
       if (ii%1000==0) {
         printf("%lu remaining pointers to dladdr\n", ii );
       }
-      Dl_info info;
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
-      int ret = dladdr( (void*)address, &info );
-      bool goodSymbol = true;
       std::string saveName("");
-      if ( ret == 0 ) {
-        printf("%s:%d:%s During snapshot save the address %p could not be resolved using dladdr\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               (void*)address);
-        hitBadPointers++;
-        goodSymbol = false;
-      } else if (info.dli_sname == NULL) {
-        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
-               "  When this happens run 'nm <executable> | grep %p\n"
-               "   Then write a wrapper for that function - it's probably an inlined function \n"
-               "       that dladdr doesn't like - I don't know any other way around this\n"
-               "     The PointerType is %lu\n"
-               "     The info.dli_fname -> %s\n"
-               "     The info.dli_fbase -> %p\n"
-               "     The info.dli_sname -> %p\n"
-               "     The info.dli_saddr -> %p\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               (void*)address, 
-               (void*)address, 
-              (uintptr_t)this->_Library._GroupedPointers[ii]._pointerType,
-               info.dli_fname,
-               (void*)info.dli_fbase,
-               (void*)info.dli_sname,
-               (void*)info.dli_saddr);
-#if 0
-        // This hangs - I'm not sure why not
-#ifdef _TARGET_OS_LINUX
-        Dl_info info2;
-        void*   extra_info;
-        int res = dladdr1( (void*)address, &info2, &extra_info, RTLD_DL_SYMENT );
-        printf("%s:%d:%s dladdr1 res = %d\n", __FILE__, __LINE__, __FUNCTION__, res );
-        Elf64_Sym* sym = *(Elf64_Sym**)extra_info;
-        if (sym->st_name) {
-          printf("%s:%d:%s dladdr1 Elf64_Sym name: %s\n", __FILE__, __LINE__, __FUNCTION__, (char*)sym->st_name );
-        }
-#endif
-#endif
-        hitBadPointers++;
-        goodSymbol = false;
-      } else {
-        saveName = std::string(info.dli_sname);
-      }
+      uintptr_t saddr;
+      bool goodSymbol = symbolLookup.dladdr_(address,saveName,hitBadPointers,this->_Library._GroupedPointers[ii]._pointerType,saddr);
       if (global_debugSnapshot) {
         uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,saveName.c_str() );
         if (!dlsymAddr) {
@@ -1403,7 +1480,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
         }
       }
       if (goodSymbol) {
-        uint addressOffset = (address - (uintptr_t)info.dli_saddr);
+        uint addressOffset = (address - (uintptr_t)saddr);
         this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
                                                     (uint)saveName.size(),
                                                     this->_Library._SymbolBuffer.size() );
@@ -1498,20 +1575,25 @@ struct LoadSymbolCallback : public core::SymbolCallback {
     }
   }
 
-  void loadSymbols() {
+  void loadSymbols(SymbolLookup& lookup) {
     size_t num = this->_Library._SymbolInfo.size();
     for (size_t ii = 0; ii<num; ++ii ) {
       size_t symbolOffset = this->_Library._SymbolInfo[ii]._SymbolOffset;
       size_t gpindex = ii;
       const char* myName = (const char*)&this->_Library._SymbolBuffer[symbolOffset];
-      uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT,myName);
-      if (!dlsymStart) {
+      uintptr_t mysymStart = (uintptr_t)lookup.lookupSymbol(myName);
+      uintptr_t dlsymStart = (uintptr_t) dlsym(RTLD_DEFAULT,myName);
+      if (dlsymStart !=0 && mysymStart != dlsymStart) {
+        printf("%s:%d:%s Mismatch between mysymStart %p and dlsymStart %p for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, (void*)mysymStart, (void*)dlsymStart, myName );
+        abort();
+      }
+      if (!mysymStart) {
         printf("%s:%d:%s Could not resolve address with dlsym for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
         abort();
       } else {
 //        printf("%s:%d:%s Resolved address[%lu] %p for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, ii, (void*)dlsymStart, ss.str().c_str() );
       }
-      this->_Library._GroupedPointers[gpindex]._address = dlsymStart;
+      this->_Library._GroupedPointers[gpindex]._address = mysymStart;
 #if 0
       printf("%s:%d:%s GroupedPointers[%lu] restored address %p  offset: %lu saved symbol address %p @%p\n     name: %s\n",
              __FILE__, __LINE__, __FUNCTION__,
@@ -1526,7 +1608,7 @@ struct LoadSymbolCallback : public core::SymbolCallback {
   }
 };
 
-void prepareRelocationTableForSave(Fixup* fixup) {
+void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   class OrderByAddress {
   public:
     OrderByAddress() {}
@@ -1558,7 +1640,7 @@ void prepareRelocationTableForSave(Fixup* fixup) {
 //    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
-    thing.generateSymbolTable();
+    thing.generateSymbolTable(symbolLookup);
 //    printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
     for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
       if (curLib._SymbolInfo[ii]._SymbolLength<0) {
@@ -1568,13 +1650,13 @@ void prepareRelocationTableForSave(Fixup* fixup) {
   }
 }
 
-void updateRelocationTableAfterLoad(ISLLibrary& curLib) {
+void updateRelocationTableAfterLoad(ISLLibrary& curLib,SymbolLookup& symbolLookup) {
   LoadSymbolCallback thing(curLib);
   curLib._GroupedPointers.resize(curLib._SymbolInfo.size(),GroupedPointer());
 #if 0
   core::walk_loaded_objects_symbol_table( &thing );
 #else
-  thing.loadSymbols();
+  thing.loadSymbols(symbolLookup);
 #endif
 //  printf("%s:%d:%s  Library %s contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str(),curLib._GroupedPointers.size() );
   for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
@@ -1586,7 +1668,9 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib) {
   
 void image_save(const std::string& filename) {
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
-  
+  SymbolLookup lookup;
+  loadExecutableSymbolLookup(lookup);
+
   //
   // Release object files
   //
@@ -1800,7 +1884,7 @@ void image_save(const std::string& filename) {
   // Now generate libraries
   //
   // Calculate the size of the libraries section
-  prepareRelocationTableForSave(&fixup);
+  prepareRelocationTableForSave( &fixup, lookup );
   
   size_t librarySize = 0;
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
@@ -1985,6 +2069,8 @@ struct CodeFixup_t {
 
 
 int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
+  SymbolLookup lookup;
+  loadExecutableSymbolLookup(lookup);
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
   if (global_debugSnapshot) {
     if (maybeStartOfSnapshot) {
@@ -2083,7 +2169,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     //
     // Now lookup the pointers
     //
-    updateRelocationTableAfterLoad(lib);
+    updateRelocationTableAfterLoad(lib,lookup);
     fixup._libraries.push_back(lib);
   }
 //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
@@ -2678,7 +2764,6 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   //
   comp::_sym_STARprimitivesSTAR->setf_symbolValue(_Nil<core::T_O>());
 
-  printf("Leaving image_load\n");
   return exitCode;
 }
 

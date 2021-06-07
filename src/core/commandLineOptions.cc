@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "clasp/core/compiler.h"
 #include "clasp/core/ql.h"
 #include "clasp/core/lisp.h"
+#include <clasp/gctools/imageSaveLoad.h>
 #include <clasp/core/commandLineOptions.h>
 
 namespace core {
@@ -78,6 +79,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "--noprint            - Don't prompt or print in read-eval loop\n"
              "-D/--disable-debugger - If the default debugger would be entered, Clasp instead quits\n"
              "--quit               - Don't start a REPL\n"
+             "-a/--addresses [file]- Dump all symbol addresses in executable to file\n"
              "-N/--non-interactive - Short for --disable-debugger --quit\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
@@ -172,7 +174,14 @@ void process_clasp_arguments(CommandLineOptions* options)
       std::cout << CLASP_VERSION << std::endl;
       exit(0);
     }
-    else if (arg == "-I" || arg == "--ignore-image") {
+    else if (arg == "-a" || arg == "--addresses") {
+      string filename = options->_RawArguments[iarg+1];
+      iarg++;
+      FILE* fout = fopen(filename.c_str(),"w");
+      imageSaveLoad::SymbolLookup lookup;
+      imageSaveLoad::loadExecutableSymbolLookup(lookup, fout);
+      fclose(fout);
+    } else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;
     } else if (arg == "--noinform") {
       options->_NoInform = true;

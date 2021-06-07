@@ -175,6 +175,17 @@ bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
   return exists;
 }
 
+void executablePath(std::string& name) {
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  size_t index;
+  for ( auto& entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    if (entry.second._IsExecutable) {
+      name = entry.second._Filename;
+      return;
+    }
+  }
+  SIMPLE_ERROR(BF("Could not find the executablePath"));
+}  
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   size_t index;
@@ -182,6 +193,19 @@ void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_p
     if (entry.second._IsExecutable) {
       start = entry.second._VtableSectionStart;
       end = entry.second._VtableSectionEnd;
+      return;
+    }
+  }
+  SIMPLE_ERROR(BF("Could not find the executableVtableSectionRange"));
+}
+
+void executableTextSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  size_t index;
+  for ( auto& entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    if (entry.second._IsExecutable) {
+      start = entry.second._TextStart;
+      end = entry.second._TextEnd;
       return;
     }
   }

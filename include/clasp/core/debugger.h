@@ -198,6 +198,8 @@ DebugInfo& debugInfo();
 
 
 
+void executablePath( std::string& name);
+void executableTextSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 
 
