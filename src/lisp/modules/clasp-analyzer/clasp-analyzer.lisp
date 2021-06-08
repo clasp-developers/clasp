@@ -817,7 +817,8 @@ to expose."
                 (list 
                  (format nil "( TAGS:CTYPE . ~s)" (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array)))
                  (format nil "( TAGS:OFFSET-BASE-CTYPE . ~s)" (offset-base-ctype array))
-                 (format nil "( TAGS:FIELD-NAMES . ~s)" (layout-offset-field-names array))))
+                 (format nil "( TAGS:END-FIELD-NAMES . ~s)" (layout-offset-field-names end))
+                 (format nil "( TAGS:LENGTH-FIELD-NAMES . ~s)" (layout-offset-field-names length))))
         (dolist (one (elements array))
           (let* ((field-names (layout-offset-field-names one))
                  (ctype-key (ctype-key (base one)))

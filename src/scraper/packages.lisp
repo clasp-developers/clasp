@@ -122,6 +122,7 @@
   ;; Static analyzer tags
   (:export
    #:variable-bit-array0 #:integral-value #:offset-base-ctype #:field-names
+   #:end-field-names #:length-field-names
    #:variable-array0 #:variable-capacity #:ctype
    #:offset-type-cxx-identifier #:ctype-key
    #:fixup-ctype-offset-type-key #:fixup-ctype-key

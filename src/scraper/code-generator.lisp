@@ -1009,9 +1009,9 @@ Convert colons to underscores"
       (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, NULL },~%"
               (tags:ctype vcapacity)
               (tags:offset-base-ctype vcapacity)
-              (tags:field-names vcapacity)
+              (tags:end-field-names vcapacity)
               (tags:offset-base-ctype vcapacity)
-              (tags:field-names vcapacity))
+              (tags:length-field-names vcapacity))
       (etypecase vfields
         (tags:variable-field-only
          (format stream "{    variable_field, ~a, sizeof(~a), 0, 0, \"only\" },~%"

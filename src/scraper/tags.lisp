@@ -185,7 +185,8 @@
 (defclass tags:variable-capacity (tag)
   ((ctype :initarg :ctype :reader ctype)
    (offset-base-ctype :initarg :offset-base-ctype :reader offset-base-ctype)
-   (field-names :initarg :field-names :reader field-names)))
+   (length-field-names :initarg :length-field-names :reader length-field-names)
+   (end-field-names :initarg :end-field-names :reader end-field-names)))
 
 (defclass tags:variable-field (tag)
   ((offset-type-cxx-identifier :initarg :offset-type-cxx-identifier
