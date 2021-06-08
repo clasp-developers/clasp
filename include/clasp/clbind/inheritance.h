@@ -39,11 +39,10 @@ THE SOFTWARE.
 #include <clasp/clbind/typeid.h>
 #include <clasp/clbind/class_rep.h>
 #include <boost/scoped_ptr.hpp>
+#include <clasp/clbind/inheritance.fwd.h>
 
 namespace clbind {
 namespace detail {
-
-typedef void *(*cast_function)(void *);
 
 class cast_graph {
 public:
@@ -57,7 +56,7 @@ public:
   std::pair<void *, int> cast(
       void *p, class_id src, class_id target, class_id dynamic_id, void const *dynamic_ptr) const;
   void insert(class_id src, class_id target, cast_function cast);
-
+  void dump();
 private:
   class impl;
   boost::scoped_ptr<impl> m_impl;
@@ -87,6 +86,7 @@ inline class_id_map::class_id_map()
     : m_local_id(local_id_base) {}
 
 inline class_id class_id_map::get(type_id type) const {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   map_type::const_iterator i = m_classes.find(type);
   if (i == m_classes.end() || i->second >= local_id_base)
     return reg::unknown_class;
@@ -94,6 +94,7 @@ inline class_id class_id_map::get(type_id type) const {
 }
 
 inline class_id class_id_map::get_local(type_id type) {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   std::pair<map_type::iterator, bool> result = m_classes.insert(
       std::make_pair(type, 0));
 
@@ -106,6 +107,7 @@ inline class_id class_id_map::get_local(type_id type) {
 }
 
 inline void class_id_map::put(class_id id, type_id type) {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   assert(id < local_id_base);
 
   std::pair<map_type::iterator, bool> result = m_classes.insert(
@@ -118,12 +120,14 @@ inline void class_id_map::put(class_id id, type_id type) {
 }
 
 inline ClassRep_sp class_map_get(class_id id)  {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   if (id >= _lisp->_Roots._ClassMap.size())
     return _Nil<ClassRep_O>();
   return _lisp->_Roots._ClassMap[id];
 }
 
 inline void class_map_put(class_id id, ClassRep_sp cls) {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   if (id >= _lisp->_Roots._ClassMap.size())
     _lisp->_Roots._ClassMap.resize(id + 1);
   _lisp->_Roots._ClassMap[id] = cls;
@@ -145,7 +149,7 @@ struct dynamic_cast_ {
 
 
 // Thread safe class_id allocation.
-        class_id allocate_class_id(type_id const& cls);
+class_id allocate_class_id(type_id const& cls);
 
         template <class T>
         struct registered_class

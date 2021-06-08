@@ -6,6 +6,7 @@
 #ifndef imageSaveLoad_H //[
 #define imageSaveLoad_H
 
+#include <dlfcn.h>
 #include <clasp/core/common.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/gctools/imageSaveLoad.fwd.h>

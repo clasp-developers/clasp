@@ -23,7 +23,11 @@ namespace core {
 #pragma GCC visibility push(default)
   class DynamicBindingStack {
   public:
-   mutable gctools::Vec0<T_sp>           _ThreadLocalBindings;
+    DynamicBindingStack()
+      : _ThreadLocalBindings(true) // don't allocate GC memory ctor
+    {}; // 
+  public:
+    mutable gctools::Vec0<T_sp>           _ThreadLocalBindings;
   public:
     size_t new_binding_index() const;
     void release_binding_index(size_t index) const;

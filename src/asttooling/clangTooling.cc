@@ -908,7 +908,7 @@ void initialize_clangTooling() {
 //    m.def("runToolOnCode", &clang::tooling::runToolOnCode);
     class_<clang::ast_matchers::MatchFinder::MatchCallback> cl_bb(m,"MatchCallback-abstract");
     derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback> cl_bc(m,"MatchCallback",create_default_constructor);
-    cl_bc.def("run", &DerivableMatchCallback::default_run)
+    cl_bc.def("RUN", &DerivableMatchCallback::default_run)
         .def("onStartOfTranslationUnit", &DerivableMatchCallback::default_onStartOfTranslationUnit)
         .def("onEndOfTranslationUnit", &DerivableMatchCallback::default_onEndOfTranslationUnit);
     class_<clang::ast_matchers::MatchFinderMatchResult> cl_bd(m,"MatchResult");

@@ -216,9 +216,8 @@ void class_base::add_inner_scope(scope_ &s) {
   m_registration->m_scope.operator, (s);
 }
 
-void class_base::add_cast(
-    class_id src, class_id target, cast_function cast) {
-  //            printf("%s:%d:%s   src[%" PRu "] target[%lu]\n", __FILE__,__LINE__,__FUNCTION__,src,target);
+void class_base::add_cast(class_id src, class_id target, cast_function cast) {
+  printf("%s:%d:%s   src[%lu] target[%lu] cast=%p\n", __FILE__,__LINE__,__FUNCTION__,src,target,(void*)cast);
   m_registration->m_casts.push_back(cast_entry(src, target, cast));
 }
 

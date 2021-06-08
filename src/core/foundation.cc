@@ -113,6 +113,7 @@ void dump_class_ids() {
 }
 
 class_id allocate_class_id(type_id const &cls) {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   if ( global_registered_ids_ptr == NULL ) {
     global_registered_ids_ptr = new map_type();
   }
@@ -1639,6 +1640,7 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 
 uint32_t lisp_random()
 {
+  if (!my_thread) return 123456;
   return my_thread->random();
 }
 

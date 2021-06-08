@@ -16,6 +16,10 @@
     class DummyCreator_O;
     class ClassRep_O;
     class ClassRegistry_O;
+    namespace detail {
+        class edge;
+        class vertex;
+    };
  };
  namespace core {
     class ComplexVector_byte32_t_O;
@@ -1421,944 +1425,1065 @@ STAMPWTAG_gctools__GCVector_moveable_char_ = ADJUST_STAMP(2959), // Stamp(739)  
 STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__ = ADJUST_STAMP(2963), // Stamp(740)  wtag(3)
 STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__ = ADJUST_STAMP(2967), // Stamp(741)  wtag(3)
 STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__ = ADJUST_STAMP(2971), // Stamp(742)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__ = ADJUST_STAMP(2975), // Stamp(743)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___ = ADJUST_STAMP(2979), // Stamp(744)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___ = ADJUST_STAMP(2983), // Stamp(745)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__ = ADJUST_STAMP(2987), // Stamp(746)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ = ADJUST_STAMP(2991), // Stamp(747)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__ = ADJUST_STAMP(2995), // Stamp(748)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__ = ADJUST_STAMP(2999), // Stamp(749)  wtag(3)
-STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_ = ADJUST_STAMP(3003), // Stamp(750)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__ = ADJUST_STAMP(3007), // Stamp(751)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__ = ADJUST_STAMP(3011), // Stamp(752)  wtag(3)
-STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_ = ADJUST_STAMP(3015), // Stamp(753)  wtag(3)
-STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_ = ADJUST_STAMP(3019), // Stamp(754)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__ = ADJUST_STAMP(3023), // Stamp(755)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__ = ADJUST_STAMP(3027), // Stamp(756)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_int_ = ADJUST_STAMP(3031), // Stamp(757)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___ = ADJUST_STAMP(3035), // Stamp(758)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__ = ADJUST_STAMP(3039), // Stamp(759)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__ = ADJUST_STAMP(3043), // Stamp(760)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_float_ = ADJUST_STAMP(3047), // Stamp(761)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__ = ADJUST_STAMP(3051), // Stamp(762)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__ = ADJUST_STAMP(3055), // Stamp(763)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___ = ADJUST_STAMP(3059), // Stamp(764)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__T_O___ = ADJUST_STAMP(3063), // Stamp(765)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_ = ADJUST_STAMP(3067), // Stamp(766)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___ = ADJUST_STAMP(3071), // Stamp(767)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_unsigned_int_ = ADJUST_STAMP(3075), // Stamp(768)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__ = ADJUST_STAMP(3079), // Stamp(769)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__ = ADJUST_STAMP(3083), // Stamp(770)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_ = ADJUST_STAMP(3087), // Stamp(771)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = ADJUST_STAMP(3091), // Stamp(772)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_double_ = ADJUST_STAMP(3095), // Stamp(773)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__ = ADJUST_STAMP(3099), // Stamp(774)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__ = ADJUST_STAMP(3103), // Stamp(775)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___ = ADJUST_STAMP(3107), // Stamp(776)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = ADJUST_STAMP(3111), // Stamp(777)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__ = ADJUST_STAMP(3115), // Stamp(778)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_ = ADJUST_STAMP(3119), // Stamp(779)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_ = ADJUST_STAMP(3123), // Stamp(780)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_signed_char_ = ADJUST_STAMP(3127), // Stamp(781)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_ = ADJUST_STAMP(3131), // Stamp(782)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ = ADJUST_STAMP(3135), // Stamp(783)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___ = ADJUST_STAMP(3139), // Stamp(784)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__ = ADJUST_STAMP(3143), // Stamp(785)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__ = ADJUST_STAMP(3147), // Stamp(786)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_ = ADJUST_STAMP(3151), // Stamp(787)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_ = ADJUST_STAMP(3155), // Stamp(788)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = ADJUST_STAMP(3159), // Stamp(789)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__ = ADJUST_STAMP(3163), // Stamp(790)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_ = ADJUST_STAMP(3167), // Stamp(791)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__ = ADJUST_STAMP(3171), // Stamp(792)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__ = ADJUST_STAMP(3175), // Stamp(793)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___ = ADJUST_STAMP(3179), // Stamp(794)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__ = ADJUST_STAMP(3183), // Stamp(795)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_double_ = ADJUST_STAMP(3187), // Stamp(796)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___ = ADJUST_STAMP(3191), // Stamp(797)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__ = ADJUST_STAMP(3195), // Stamp(798)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___ = ADJUST_STAMP(3199), // Stamp(799)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__ = ADJUST_STAMP(3203), // Stamp(800)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_ = ADJUST_STAMP(3207), // Stamp(801)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__ = ADJUST_STAMP(3211), // Stamp(802)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__ = ADJUST_STAMP(3215), // Stamp(803)  wtag(3)
-STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_ = ADJUST_STAMP(3219), // Stamp(804)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_ = ADJUST_STAMP(3223), // Stamp(805)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_ = ADJUST_STAMP(3227), // Stamp(806)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___ = ADJUST_STAMP(3231), // Stamp(807)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___ = ADJUST_STAMP(3235), // Stamp(808)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__ = ADJUST_STAMP(3239), // Stamp(809)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__ = ADJUST_STAMP(3243), // Stamp(810)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___ = ADJUST_STAMP(3247), // Stamp(811)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_ = ADJUST_STAMP(3251), // Stamp(812)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__ = ADJUST_STAMP(3255), // Stamp(813)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_unsigned_long_ = ADJUST_STAMP(3259), // Stamp(814)  wtag(3)
-STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_ = ADJUST_STAMP(3263), // Stamp(815)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_ = ADJUST_STAMP(3267), // Stamp(816)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = ADJUST_STAMP(3271), // Stamp(817)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_ = ADJUST_STAMP(3275), // Stamp(818)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__ = ADJUST_STAMP(3279), // Stamp(819)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__ = ADJUST_STAMP(3283), // Stamp(820)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_ = ADJUST_STAMP(3287), // Stamp(821)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___ = ADJUST_STAMP(3291), // Stamp(822)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_int_ = ADJUST_STAMP(3295), // Stamp(823)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(3299), // Stamp(824)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_ = ADJUST_STAMP(3303), // Stamp(825)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__ = ADJUST_STAMP(3307), // Stamp(826)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_long_ = ADJUST_STAMP(3311), // Stamp(827)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_ = ADJUST_STAMP(3315), // Stamp(828)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_ = ADJUST_STAMP(3319), // Stamp(829)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___ = ADJUST_STAMP(3323), // Stamp(830)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__ = ADJUST_STAMP(3327), // Stamp(831)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = ADJUST_STAMP(3331), // Stamp(832)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_unsigned_int_ = ADJUST_STAMP(3335), // Stamp(833)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_ = ADJUST_STAMP(3339), // Stamp(834)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__ = ADJUST_STAMP(3343), // Stamp(835)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__ = ADJUST_STAMP(3347), // Stamp(836)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____ = ADJUST_STAMP(3351), // Stamp(837)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_unsigned_short_ = ADJUST_STAMP(3355), // Stamp(838)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_float_ = ADJUST_STAMP(3359), // Stamp(839)  wtag(3)
-STAMPWTAG_clang__FrontendAction = ADJUST_STAMP(3363), // Stamp(840)  wtag(3)
-STAMPWTAG_clang__ASTFrontendAction = ADJUST_STAMP(3367), // Stamp(841)  wtag(3)
-STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(3371), // Stamp(842)  wtag(3)
-STAMPWTAG_clang__tooling__ToolAction = ADJUST_STAMP(3375), // Stamp(843)  wtag(3)
-STAMPWTAG_clang__tooling__FrontendActionFactory = ADJUST_STAMP(3379), // Stamp(844)  wtag(3)
-STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback = ADJUST_STAMP(3383), // Stamp(845)  wtag(3)
-// Unused CLEAVIR-BIR::CASE = 1522, 
-// Unused CLASP-CLEAVIR-AST::DEBUG-MESSAGE-AST = 1716, 
-// Unused CLEAVIR-BIR::TYPEQ-TEST = 1521, 
-// Unused CLASP-ANALYZER::BASIC-STRING-CTYPE = 1821, 
-// Unused CLEAVIR-BIR::FUNCTION = 1487, 
-// Unused ECLECTOR.READER::UNQUOTE-CONDITION = 1379, 
-// Unused CLEAVIR-AST::FIXNUM-NOT-GREATER-AST = 1584, 
-// Unused CLASP-CLEAVIR-AST::THROW-AST = 1715, 
-// Unused CONCRETE-SYNTAX-TREE::NULL-CST-REQUIRED = 1259, 
-// Unused CLASP-CLEAVIR-AST::FOREIGN-CALL-POINTER-AST = 1721, 
-// Unused CONCRETE-SYNTAX-TREE::MACRO-LAMBDA-LIST = 1319, 
-// Unused ECLECTOR.READER::SHARPSIGN-EQUALS-LABEL-DEFINED-MORE-THAN-ONCE = 1452, 
-// Unused CLASP-ANALYZER::CXX-SHARED-MUTEX-OFFSET = 1868, 
-// Unused CORE::FRAME = 1089, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-LAMBDA-LIST = 1320, 
-// Unused STATIC-GFS::CLASS-CHANGER = 1111, 
-// Unused CORE::PPRINT-DISPATCH-ENTRY = 1206, 
-// Unused CLASP-CLEAVIR-BIR::CAS-RACK = 1762, 
-// Unused CLEAVIR-AST::FIXNUM-EQUAL-AST = 1587, 
-// Unused CLASP-ANALYZER::DEPENDENT-NAME-CTYPE = 1829, 
-// Unused CLEAVIR-METER::METER = 1535, 
-// Unused CLASP-CLEAVIR-BIR::FOREIGN-CALL-POINTER = 1755, 
-// Unused CLEAVIR-BIR::LEXICAL = 1467, 
-// Unused CLANG-TOOL::MULTITOOL = 1789, 
-// Unused ECLECTOR.READER::READ-OBJECT-TYPE-ERROR = 1350, 
-// Unused CLANG-TOOL::COMPILATION-TOOL-DATABASE = 1780, 
-// Unused CLASP-ANALYZER::ENUM-CTYPE = 1830, 
-// Unused CLASP-ANALYZER::UNIQUE-PTR-CTYPE = 1847, 
-// Unused CLEAVIR-CST-TO-AST::SITUATIONS-MUST-BE-PROPER-LIST = 1670, 
-// Unused ACCLIMATION::TIENG-VIET = 1248, 
-// Unused CLEAVIR-AST::NEQ-AST = 1579, 
-// Unused CLEAVIR-METER::BASIC-METER = 1536, 
-// Unused CLEAVIR-BIR::OUTPUT = 1475, 
-// Unused CLEAVIR-AST::FIXNUM-ADD-AST = 1581, 
-// Unused CLASP-ANALYZER::POINTER-CTYPE = 1840, 
-// Unused COMMON-LISP::METHOD = 1095, 
-// Unused ECLECTOR.READER::UNTERMINATED-LIST = 1388, 
-// Unused COMMON-LISP::TYPE-ERROR = 1131, 
-// Unused CLEAVIR-AST::FLOAT-GREATER-AST = 1594, 
+STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_ = ADJUST_STAMP(2975), // Stamp(743)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__ = ADJUST_STAMP(2979), // Stamp(744)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___ = ADJUST_STAMP(2983), // Stamp(745)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___ = ADJUST_STAMP(2987), // Stamp(746)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__ = ADJUST_STAMP(2991), // Stamp(747)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ = ADJUST_STAMP(2995), // Stamp(748)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__ = ADJUST_STAMP(2999), // Stamp(749)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__ = ADJUST_STAMP(3003), // Stamp(750)  wtag(3)
+STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_ = ADJUST_STAMP(3007), // Stamp(751)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__ = ADJUST_STAMP(3011), // Stamp(752)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__ = ADJUST_STAMP(3015), // Stamp(753)  wtag(3)
+STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_ = ADJUST_STAMP(3019), // Stamp(754)  wtag(3)
+STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_ = ADJUST_STAMP(3023), // Stamp(755)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__ = ADJUST_STAMP(3027), // Stamp(756)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__ = ADJUST_STAMP(3031), // Stamp(757)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_int_ = ADJUST_STAMP(3035), // Stamp(758)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___ = ADJUST_STAMP(3039), // Stamp(759)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__ = ADJUST_STAMP(3043), // Stamp(760)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__ = ADJUST_STAMP(3047), // Stamp(761)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_float_ = ADJUST_STAMP(3051), // Stamp(762)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_ = ADJUST_STAMP(3055), // Stamp(763)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__ = ADJUST_STAMP(3059), // Stamp(764)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__ = ADJUST_STAMP(3063), // Stamp(765)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___ = ADJUST_STAMP(3067), // Stamp(766)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__T_O___ = ADJUST_STAMP(3071), // Stamp(767)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_ = ADJUST_STAMP(3075), // Stamp(768)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___ = ADJUST_STAMP(3079), // Stamp(769)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_unsigned_int_ = ADJUST_STAMP(3083), // Stamp(770)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__ = ADJUST_STAMP(3087), // Stamp(771)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__ = ADJUST_STAMP(3091), // Stamp(772)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_ = ADJUST_STAMP(3095), // Stamp(773)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = ADJUST_STAMP(3099), // Stamp(774)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_double_ = ADJUST_STAMP(3103), // Stamp(775)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__ = ADJUST_STAMP(3107), // Stamp(776)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__ = ADJUST_STAMP(3111), // Stamp(777)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___ = ADJUST_STAMP(3115), // Stamp(778)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = ADJUST_STAMP(3119), // Stamp(779)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__ = ADJUST_STAMP(3123), // Stamp(780)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_ = ADJUST_STAMP(3127), // Stamp(781)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_ = ADJUST_STAMP(3131), // Stamp(782)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_signed_char_ = ADJUST_STAMP(3135), // Stamp(783)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_ = ADJUST_STAMP(3139), // Stamp(784)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ = ADJUST_STAMP(3143), // Stamp(785)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___ = ADJUST_STAMP(3147), // Stamp(786)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__ = ADJUST_STAMP(3151), // Stamp(787)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__ = ADJUST_STAMP(3155), // Stamp(788)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_ = ADJUST_STAMP(3159), // Stamp(789)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_ = ADJUST_STAMP(3163), // Stamp(790)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = ADJUST_STAMP(3167), // Stamp(791)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__ = ADJUST_STAMP(3171), // Stamp(792)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_ = ADJUST_STAMP(3175), // Stamp(793)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__ = ADJUST_STAMP(3179), // Stamp(794)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__ = ADJUST_STAMP(3183), // Stamp(795)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___ = ADJUST_STAMP(3187), // Stamp(796)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__ = ADJUST_STAMP(3191), // Stamp(797)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_double_ = ADJUST_STAMP(3195), // Stamp(798)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___ = ADJUST_STAMP(3199), // Stamp(799)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__ = ADJUST_STAMP(3203), // Stamp(800)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___ = ADJUST_STAMP(3207), // Stamp(801)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__ = ADJUST_STAMP(3211), // Stamp(802)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_ = ADJUST_STAMP(3215), // Stamp(803)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__ = ADJUST_STAMP(3219), // Stamp(804)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__ = ADJUST_STAMP(3223), // Stamp(805)  wtag(3)
+STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_ = ADJUST_STAMP(3227), // Stamp(806)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_ = ADJUST_STAMP(3231), // Stamp(807)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_ = ADJUST_STAMP(3235), // Stamp(808)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___ = ADJUST_STAMP(3239), // Stamp(809)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___ = ADJUST_STAMP(3243), // Stamp(810)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__ = ADJUST_STAMP(3247), // Stamp(811)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__ = ADJUST_STAMP(3251), // Stamp(812)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___ = ADJUST_STAMP(3255), // Stamp(813)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_ = ADJUST_STAMP(3259), // Stamp(814)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__ = ADJUST_STAMP(3263), // Stamp(815)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_unsigned_long_ = ADJUST_STAMP(3267), // Stamp(816)  wtag(3)
+STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_ = ADJUST_STAMP(3271), // Stamp(817)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_ = ADJUST_STAMP(3275), // Stamp(818)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = ADJUST_STAMP(3279), // Stamp(819)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_ = ADJUST_STAMP(3283), // Stamp(820)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__ = ADJUST_STAMP(3287), // Stamp(821)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__ = ADJUST_STAMP(3291), // Stamp(822)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_ = ADJUST_STAMP(3295), // Stamp(823)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___ = ADJUST_STAMP(3299), // Stamp(824)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_int_ = ADJUST_STAMP(3303), // Stamp(825)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(3307), // Stamp(826)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_ = ADJUST_STAMP(3311), // Stamp(827)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__ = ADJUST_STAMP(3315), // Stamp(828)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_long_ = ADJUST_STAMP(3319), // Stamp(829)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_ = ADJUST_STAMP(3323), // Stamp(830)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_ = ADJUST_STAMP(3327), // Stamp(831)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___ = ADJUST_STAMP(3331), // Stamp(832)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__ = ADJUST_STAMP(3335), // Stamp(833)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = ADJUST_STAMP(3339), // Stamp(834)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_unsigned_int_ = ADJUST_STAMP(3343), // Stamp(835)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_ = ADJUST_STAMP(3347), // Stamp(836)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__ = ADJUST_STAMP(3351), // Stamp(837)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__ = ADJUST_STAMP(3355), // Stamp(838)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____ = ADJUST_STAMP(3359), // Stamp(839)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_unsigned_short_ = ADJUST_STAMP(3363), // Stamp(840)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_float_ = ADJUST_STAMP(3367), // Stamp(841)  wtag(3)
+STAMPWTAG_clang__FrontendAction = ADJUST_STAMP(3371), // Stamp(842)  wtag(3)
+STAMPWTAG_clang__ASTFrontendAction = ADJUST_STAMP(3375), // Stamp(843)  wtag(3)
+STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(3379), // Stamp(844)  wtag(3)
+STAMPWTAG_clang__tooling__ToolAction = ADJUST_STAMP(3383), // Stamp(845)  wtag(3)
+STAMPWTAG_clang__tooling__FrontendActionFactory = ADJUST_STAMP(3387), // Stamp(846)  wtag(3)
+STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback = ADJUST_STAMP(3391), // Stamp(847)  wtag(3)
+// Unused CLEAVIR-BIR::CASE = 33233, 
+// Unused UIOP/VERSION::DEPRECATED-FUNCTION-WARNING = 33496, 
+// Unused CLASP-CLEAVIR-AST::DEBUG-MESSAGE-AST = 33427, 
+// Unused CLEAVIR-BIR::TYPEQ-TEST = 33232, 
+// Unused CLASP-ANALYZER::BASIC-STRING-CTYPE = 33651, 
+// Unused CLEAVIR-BIR::FUNCTION = 33198, 
+// Unused ECLECTOR.READER::UNQUOTE-CONDITION = 33090, 
+// Unused CLEAVIR-AST::FIXNUM-NOT-GREATER-AST = 33295, 
+// Unused CLASP-CLEAVIR-AST::THROW-AST = 33426, 
+// Unused CONCRETE-SYNTAX-TREE::NULL-CST-REQUIRED = 32970, 
+// Unused CLASP-CLEAVIR-AST::FOREIGN-CALL-POINTER-AST = 33432, 
+// Unused UIOP/LAUNCH-PROGRAM::PROCESS-INFO = 33505, 
+// Unused CONCRETE-SYNTAX-TREE::MACRO-LAMBDA-LIST = 33030, 
+// Unused ECLECTOR.READER::SHARPSIGN-EQUALS-LABEL-DEFINED-MORE-THAN-ONCE = 33163, 
+// Unused CLASP-ANALYZER::CXX-SHARED-MUTEX-OFFSET = 33698, 
+// Unused CORE::FRAME = 32800, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-LAMBDA-LIST = 33031, 
+// Unused STATIC-GFS::CLASS-CHANGER = 32822, 
+// Unused CORE::PPRINT-DISPATCH-ENTRY = 32917, 
+// Unused CLASP-CLEAVIR-BIR::CAS-RACK = 33473, 
+// Unused CLEAVIR-AST::FIXNUM-EQUAL-AST = 33298, 
+// Unused ASDF/SYSTEM::PROTO-SYSTEM = 33524, 
+// Unused CLASP-ANALYZER::DEPENDENT-NAME-CTYPE = 33659, 
+// Unused CLEAVIR-METER::METER = 33246, 
+// Unused CLASP-CLEAVIR-BIR::FOREIGN-CALL-POINTER = 33466, 
+// Unused CLEAVIR-BIR::LEXICAL = 33178, 
+// Unused CLANG-TOOL::MULTITOOL = 33619, 
+// Unused ECLECTOR.READER::READ-OBJECT-TYPE-ERROR = 33061, 
+// Unused CLANG-TOOL::COMPILATION-TOOL-DATABASE = 33610, 
+// Unused CLASP-ANALYZER::ENUM-CTYPE = 33660, 
+// Unused ASDF/BUNDLE::MONOLITHIC-LIB-OP = 33582, 
+// Unused CLASP-ANALYZER::UNIQUE-PTR-CTYPE = 33677, 
+// Unused CLEAVIR-CST-TO-AST::SITUATIONS-MUST-BE-PROPER-LIST = 33381, 
+// Unused ACCLIMATION::TIENG-VIET = 32959, 
+// Unused CLEAVIR-AST::NEQ-AST = 33290, 
+// Unused CLEAVIR-METER::BASIC-METER = 33247, 
+// Unused CLEAVIR-BIR::OUTPUT = 33186, 
+// Unused CLEAVIR-AST::FIXNUM-ADD-AST = 33292, 
+// Unused CLASP-ANALYZER::POINTER-CTYPE = 33670, 
+// Unused ASDF/ACTION::SIDEWAY-OPERATION = 33530, 
+// Unused ASDF/BUNDLE::LIB-OP = 33574, 
+// Unused COMMON-LISP::METHOD = 32806, 
+// Unused ECLECTOR.READER::UNTERMINATED-LIST = 33099, 
+// Unused ASDF/COMPONENT::C-SOURCE-FILE = 33516, 
+// Unused COMMON-LISP::TYPE-ERROR = 32842, 
+// Unused CLEAVIR-AST::FLOAT-GREATER-AST = 33305, 
 // Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_2__false_ = 713, 
-// Unused CONCRETE-SYNTAX-TREE::EXPLICIT-MULTI-PARAMETER-GROUP = 1273, 
-// Unused CLASP-CLEAVIR-AST::HEADER-STAMP-AST = 1724, 
-// Unused CONCRETE-SYNTAX-TREE::DEFINE-MODIFY-MACRO-LAMBDA-LIST = 1324, 
-// Unused CORE::SIMPLE-STREAM-ERROR = 1148, 
-// Unused CORE::UNRECOGNIZED-KEYWORD-ARGUMENT-ERROR = 1171, 
-// Unused EXT::STACK-OVERFLOW = 1126, 
-// Unused COMMON-LISP::PACKAGE-ERROR = 1153, 
+// Unused UIOP/UTILITY::SIMPLE-STYLE-WARNING = 33491, 
+// Unused CONCRETE-SYNTAX-TREE::EXPLICIT-MULTI-PARAMETER-GROUP = 32984, 
+// Unused CONCRETE-SYNTAX-TREE::DEFINE-MODIFY-MACRO-LAMBDA-LIST = 33035, 
+// Unused CORE::SIMPLE-STREAM-ERROR = 32859, 
+// Unused CLASP-CLEAVIR-AST::HEADER-STAMP-AST = 33435, 
+// Unused CORE::UNRECOGNIZED-KEYWORD-ARGUMENT-ERROR = 32882, 
+// Unused EXT::STACK-OVERFLOW = 32837, 
+// Unused COMMON-LISP::PACKAGE-ERROR = 32864, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___ = 691, 
-// Unused CLEAVIR-BIR::UNWIND = 1516, 
-// Unused ECLECTOR.READER::READ-TIME-EVALUATION-INHIBITED = 1399, 
-// Unused CONCRETE-SYNTAX-TREE::PARAMETER-GROUP = 1268, 
-// Unused CONCRETE-SYNTAX-TREE::DEFSETF-LAMBDA-LIST = 1322, 
-// Unused CLASP-ANALYZER::STAMP = 1806, 
-// Unused CONCRETE-SYNTAX-TREE::IMPLICIT-PARAMETER-GROUP = 1271, 
-// Unused COMMON-LISP::STANDARD-METHOD = 1097, 
-// Unused MP::PROCESS-ERROR = 1145, 
-// Unused CLEAVIR-AST::AST = 1538, 
-// Unused CLEAVIR-BIR::RETURNI = 1506, 
-// Unused CLASP-CLEAVIR-AST::UNWIND-PROTECT-AST = 1747, 
-// Unused CLASP-ANALYZER::CCLASS = 1795, 
-// Unused CLASP-ANALYZER::ROOTCLASSALLOC = 1803, 
-// Unused CLEAVIR-AST::RETURN-FROM-AST = 1560, 
-// Unused CLASP-CLEAVIR::CLASP-ORDINARY-LAMBDA-LIST = 1712, 
-// Unused CLEAVIR-CST-TO-AST::SETQ-MUST-HAVE-EVEN-NUMBER-OF-ARGUMENTS = 1683, 
-// Unused CLEAVIR-BIR::NO-INPUT = 1476, 
-// Unused SB-BSD-SOCKETS::NO-ADDRESS-ERROR = 1243, 
-// Unused CLASP-ANALYZER::INSTANCE-VARIABLE = 1797, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER = 1304, 
-// Unused CLEAVIR-BIR::VERIFICATION-FAILED = 1529, 
-// Unused CORE::FORMAT-ERROR = 1177, 
-// Unused CONCRETE-SYNTAX-TREE::WHOLE-PARAMETER-GROUP = 1291, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-ERROR = 1460, 
-// Unused CLEAVIR-BIR::TERMINATOR0 = 1481, 
-// Unused ECLECTOR.READER::FEATURE-EXPRESSION-TYPE-ERROR = 1443, 
-// Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-S = 1428, 
-// Unused COMPILER::COMPILER-MACRO-EXPANSION-ERROR-WARNING = 1216, 
-// Unused CLEAVIR-AST::FDEFINITION-AST = 1552, 
-// Unused CLEAVIR-ENVIRONMENT::BLOCK-INFO = 1625, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__CacheRecord_ = 717, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-FEATURE-EXPRESSION = 1448, 
-// Unused CLEAVIR-BIR::ACCESSVAR = 1492, 
-// Unused CORE::TAB = 1205, 
-// Unused SB-BSD-SOCKETS::PROTOCOL-NOT-SUPPORTED-ERROR = 1234, 
-// Unused ECLECTOR.READER::SINGLE-FEATURE-EXPECTED = 1445, 
-// Unused CONCRETE-SYNTAX-TREE::MULTI-PARAMETER-GROUP-MIXIN = 1270, 
-// Unused COMMON-LISP::RESTART = 1114, 
-// Unused COMMON-LISP::CELL-ERROR = 1157, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-QUOTE = 1371, 
-// Unused CLEAVIR-AST::BLOCK-AST = 1559, 
-// Unused CLEAVIR-AST::FUNCALLABLE-SLOT-READ-AST = 1607, 
-// Unused CLEAVIR-BIR::TERMINATOR1 = 1482, 
-// Unused CORE::FOREIGN-DATA = 1088, 
-// Unused CLASP-CLEAVIR-AST::DEFCALLBACK-AST = 1722, 
-// Unused CORE::PACKAGE-LOCK-VIOLATION = 1156, 
-// Unused CLASP-ANALYZER::ATOMIC-CTYPE = 1848, 
-// Unused EXT::CHARACTER-CODING-ERROR = 1182, 
-// Unused CLOS::INITARGS-UPDATER = 1106, 
-// Unused COMMON-LISP::SIMPLE-ERROR = 1123, 
-// Unused ECLECTOR.READER::TOO-MANY-ELEMENTS = 1416, 
-// Unused EXT::CHARACTER-DECODING-ERROR = 1184, 
-// Unused CLASP-CLEAVIR-BIR::ATOMIC-RACK-WRITE = 1761, 
-// Unused CONCRETE-SYNTAX-TREE::RULE = 1327, 
-// Unused CLASP-CLEAVIR::KEYWORD-VA-REST = 1711, 
-// Unused CLASP-CLEAVIR-AST::ATOMIC-RACK-WRITE-AST = 1739, 
-// Unused CLEAVIR-COMPILATION-POLICY::UNKNOWN-OPTIMIZE-QUALITY = 1646, 
-// Unused ECLECTOR.READER::UNQUOTE-SPLICING-AT-TOP = 1387, 
-// Unused CLEAVIR-BIR::THEI = 1526, 
-// Unused CLEAVIR-AST::CONSTANT-FDEFINITION-AST = 1553, 
-// Unused CLASP-CLEAVIR-AST::CAS-RACK-AST = 1740, 
-// Unused CLEAVIR-CST-TO-AST::CASE-KEYS-MUST-BE-PROPER-LIST = 1672, 
-// Unused CLASP-ANALYZER::POD-OFFSET = 1866, 
-// Unused CLASP-CLEAVIR-BMIR::STORE = 1775, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-S = 1426, 
-// Unused CLASP-ANALYZER::ALLOC = 1799, 
-// Unused CONCRETE-SYNTAX-TREE::BOA-LAMBDA-LIST = 1321, 
-// Unused COMMON-LISP::FLOATING-POINT-UNDERFLOW = 1165, 
-// Unused CLASP-CLEAVIR-AST::FENCE-AST = 1730, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-PLUS-MINUS = 1441, 
-// Unused CLEAVIR-ENVIRONMENT::VARIABLE-TYPE = 1636, 
-// Unused CLEAVIR-CST-TO-AST::SYMBOL-MACRO-NAMES-CONSTANT = 1687, 
-// Unused COMMON-LISP::FLOATING-POINT-INVALID-OPERATION = 1167, 
-// Unused ACCLIMATION::SWEDISH = 1251, 
-// Unused CLEAVIR-CST-TO-AST::FORM-MUST-BE-PROPER-LIST = 1669, 
-// Unused COMMON-LISP::STORAGE-CONDITION = 1124, 
-// Unused CLEAVIR-AST::LEXICAL-BIND-AST = 1562, 
-// Unused CLEAVIR-BIR::VARIABLE = 1485, 
-// Unused COMMON-LISP::READER-ERROR = 1175, 
-// Unused CLEAVIR-AST::FUNCALLABLE-SLOT-WRITE-AST = 1608, 
-// Unused COMMON-LISP::PROGRAM-ERROR = 1139, 
-// Unused COMMON-LISP::VECTOR = 1082, 
-// Unused CONCRETE-SYNTAX-TREE::TARGET = 1326, 
-// Unused EXT::SEGMENTATION-VIOLATION = 1125, 
-// Unused CORE::LOGICAL-BLOCK = 1198, 
-// Unused CLEAVIR-AST::SETQ-AST = 1561, 
-// Unused CLEAVIR-CST-TO-AST::BINDINGS-MUST-BE-PROPER-LIST = 1678, 
-// Unused SB-BSD-SOCKETS::NO-RECOVERY-ERROR = 1242, 
-// Unused CLEAVIR-BIR::LETI = 1514, 
-// Unused CLEAVIR-AST::PROGN-AST = 1558, 
-// Unused CLOS::STANDARD-EFFECTIVE-SLOT-DEFINITION = 1065, 
-// Unused CLOS::EFFECTIVE-READER-METHOD = 1101, 
-// Unused CONCRETE-SYNTAX-TREE::CST-ERROR = 1258, 
-// Unused CLEAVIR-SET::SET = 1458, 
-// Unused CLEAVIR-AST::CALL-AST = 1554, 
-// Unused CORE::FORMAT-WARNING-TOO-MANY-ARGUMENTS = 1179, 
-// Unused CONCRETE-SYNTAX-TREE::KEY-PARAMETER-GROUP = 1277, 
-// Unused ECLECTOR.PARSE-RESULT::PARSE-RESULT-CLIENT = 1455, 
-// Unused CLASP-CLEAVIR-BIR::BIND = 1753, 
+// Unused CLEAVIR-BIR::UNWIND = 33227, 
+// Unused ECLECTOR.READER::READ-TIME-EVALUATION-INHIBITED = 33110, 
+// Unused CONCRETE-SYNTAX-TREE::PARAMETER-GROUP = 32979, 
+// Unused CONCRETE-SYNTAX-TREE::DEFSETF-LAMBDA-LIST = 33033, 
+// Unused CLASP-ANALYZER::STAMP = 33636, 
+// Unused UIOP/UTILITY::PARAMETER-ERROR = 33493, 
+// Unused ASDF/PACKAGE-INFERRED-SYSTEM::PACKAGE-SYSTEM = 33602, 
+// Unused CONCRETE-SYNTAX-TREE::IMPLICIT-PARAMETER-GROUP = 32982, 
+// Unused COMMON-LISP::STANDARD-METHOD = 32808, 
+// Unused MP::PROCESS-ERROR = 32856, 
+// Unused CLEAVIR-AST::AST = 33249, 
+// Unused CLEAVIR-BIR::RETURNI = 33217, 
+// Unused CLASP-CLEAVIR-AST::UNWIND-PROTECT-AST = 33458, 
+// Unused CLASP-ANALYZER::CCLASS = 33625, 
+// Unused ASDF/LISP-ACTION::BASIC-COMPILE-OP = 33539, 
+// Unused CLASP-ANALYZER::ROOTCLASSALLOC = 33633, 
+// Unused CLEAVIR-AST::RETURN-FROM-AST = 33271, 
+// Unused CLASP-CLEAVIR::CLASP-ORDINARY-LAMBDA-LIST = 33423, 
+// Unused ASDF/LISP-ACTION::CL-SOURCE-FILE = 33535, 
+// Unused CLEAVIR-CST-TO-AST::SETQ-MUST-HAVE-EVEN-NUMBER-OF-ARGUMENTS = 33394, 
+// Unused CLEAVIR-BIR::NO-INPUT = 33187, 
+// Unused SB-BSD-SOCKETS::NO-ADDRESS-ERROR = 32954, 
+// Unused CLASP-ANALYZER::INSTANCE-VARIABLE = 33627, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER = 33015, 
+// Unused CLEAVIR-BIR::VERIFICATION-FAILED = 33240, 
+// Unused CORE::FORMAT-ERROR = 32888, 
+// Unused CONCRETE-SYNTAX-TREE::WHOLE-PARAMETER-GROUP = 33002, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-ERROR = 33171, 
+// Unused CLEAVIR-BIR::TERMINATOR0 = 33192, 
+// Unused ECLECTOR.READER::FEATURE-EXPRESSION-TYPE-ERROR = 33154, 
+// Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-S = 33139, 
+// Unused COMPILER::COMPILER-MACRO-EXPANSION-ERROR-WARNING = 32927, 
+// Unused ASDF/BUNDLE::COMPILED-FILE = 33586, 
+// Unused ASDF/ACTION::SELFWARD-OPERATION = 33531, 
+// Unused ASDF/OPERATION::OPERATION = 33523, 
+// Unused CLEAVIR-AST::FDEFINITION-AST = 33263, 
+// Unused CLEAVIR-ENVIRONMENT::BLOCK-INFO = 33336, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_core__CacheRecord_ = 718, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-FEATURE-EXPRESSION = 33159, 
+// Unused CLEAVIR-BIR::ACCESSVAR = 33203, 
+// Unused CORE::TAB = 32916, 
+// Unused SB-BSD-SOCKETS::PROTOCOL-NOT-SUPPORTED-ERROR = 32945, 
+// Unused ASDF/PLAN::FILTERED-SEQUENTIAL-PLAN = 33557, 
+// Unused ECLECTOR.READER::SINGLE-FEATURE-EXPECTED = 33156, 
+// Unused CONCRETE-SYNTAX-TREE::MULTI-PARAMETER-GROUP-MIXIN = 32981, 
+// Unused COMMON-LISP::RESTART = 32825, 
+// Unused COMMON-LISP::CELL-ERROR = 32868, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-QUOTE = 33082, 
+// Unused CLEAVIR-AST::BLOCK-AST = 33270, 
+// Unused ASDF/ACTION::CIRCULAR-DEPENDENCY = 33527, 
+// Unused CLEAVIR-AST::FUNCALLABLE-SLOT-READ-AST = 33318, 
+// Unused CLEAVIR-BIR::TERMINATOR1 = 33193, 
+// Unused CORE::FOREIGN-DATA = 32799, 
+// Unused CLASP-CLEAVIR-AST::DEFCALLBACK-AST = 33433, 
+// Unused CORE::PACKAGE-LOCK-VIOLATION = 32867, 
+// Unused CLASP-ANALYZER::ATOMIC-CTYPE = 33678, 
+// Unused EXT::CHARACTER-CODING-ERROR = 32893, 
+// Unused CLOS::INITARGS-UPDATER = 32817, 
+// Unused COMMON-LISP::SIMPLE-ERROR = 32834, 
+// Unused ECLECTOR.READER::TOO-MANY-ELEMENTS = 33127, 
+// Unused EXT::CHARACTER-DECODING-ERROR = 32895, 
+// Unused CLASP-CLEAVIR-BIR::ATOMIC-RACK-WRITE = 33472, 
+// Unused CONCRETE-SYNTAX-TREE::RULE = 33038, 
+// Unused CLASP-CLEAVIR::KEYWORD-VA-REST = 33422, 
+// Unused CLASP-CLEAVIR-AST::ATOMIC-RACK-WRITE-AST = 33450, 
+// Unused CLEAVIR-COMPILATION-POLICY::UNKNOWN-OPTIMIZE-QUALITY = 33357, 
+// Unused ECLECTOR.READER::UNQUOTE-SPLICING-AT-TOP = 33098, 
+// Unused CLEAVIR-BIR::THEI = 33237, 
+// Unused CLEAVIR-AST::CONSTANT-FDEFINITION-AST = 33264, 
+// Unused CLASP-CLEAVIR-AST::CAS-RACK-AST = 33451, 
+// Unused CLEAVIR-CST-TO-AST::CASE-KEYS-MUST-BE-PROPER-LIST = 33383, 
+// Unused CLASP-ANALYZER::POD-OFFSET = 33696, 
+// Unused CLASP-CLEAVIR-BMIR::STORE = 33486, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-S = 33137, 
+// Unused CLASP-ANALYZER::ALLOC = 33629, 
+// Unused CONCRETE-SYNTAX-TREE::BOA-LAMBDA-LIST = 33032, 
+// Unused COMMON-LISP::FLOATING-POINT-UNDERFLOW = 32876, 
+// Unused CLASP-CLEAVIR-AST::FENCE-AST = 33441, 
+// Unused ASDF/OPERATE::BUILD-OP = 33559, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-PLUS-MINUS = 33152, 
+// Unused CLEAVIR-ENVIRONMENT::VARIABLE-TYPE = 33347, 
+// Unused CLEAVIR-CST-TO-AST::SYMBOL-MACRO-NAMES-CONSTANT = 33398, 
+// Unused COMMON-LISP::FLOATING-POINT-INVALID-OPERATION = 32878, 
+// Unused ACCLIMATION::SWEDISH = 32962, 
+// Unused CLEAVIR-CST-TO-AST::FORM-MUST-BE-PROPER-LIST = 33380, 
+// Unused COMMON-LISP::STORAGE-CONDITION = 32835, 
+// Unused CLEAVIR-AST::LEXICAL-BIND-AST = 33273, 
+// Unused CLEAVIR-BIR::VARIABLE = 33196, 
+// Unused COMMON-LISP::READER-ERROR = 32886, 
+// Unused CLEAVIR-AST::FUNCALLABLE-SLOT-WRITE-AST = 33319, 
+// Unused COMMON-LISP::PROGRAM-ERROR = 32850, 
+// Unused COMMON-LISP::VECTOR = 32793, 
+// Unused ASDF/ACTION::OPERATION-DEFINITION-WARNING = 33533, 
+// Unused CONCRETE-SYNTAX-TREE::TARGET = 33037, 
+// Unused EXT::SEGMENTATION-VIOLATION = 32836, 
+// Unused CORE::LOGICAL-BLOCK = 32909, 
+// Unused CLEAVIR-AST::SETQ-AST = 33272, 
+// Unused ASDF/COMPONENT::JAVA-SOURCE-FILE = 33517, 
+// Unused CLEAVIR-CST-TO-AST::BINDINGS-MUST-BE-PROPER-LIST = 33389, 
+// Unused SB-BSD-SOCKETS::NO-RECOVERY-ERROR = 32953, 
+// Unused CLEAVIR-BIR::LETI = 33225, 
+// Unused CLEAVIR-AST::PROGN-AST = 33269, 
+// Unused CLOS::STANDARD-EFFECTIVE-SLOT-DEFINITION = 32776, 
+// Unused CLOS::EFFECTIVE-READER-METHOD = 32812, 
+// Unused CONCRETE-SYNTAX-TREE::CST-ERROR = 32969, 
+// Unused CLEAVIR-SET::SET = 33169, 
+// Unused ASDF/COMPONENT::SOURCE-FILE = 33515, 
+// Unused CLEAVIR-AST::CALL-AST = 33265, 
+// Unused CORE::FORMAT-WARNING-TOO-MANY-ARGUMENTS = 32890, 
+// Unused CONCRETE-SYNTAX-TREE::KEY-PARAMETER-GROUP = 32988, 
+// Unused ASDF/BACKWARD-INTERFACE::COMPILE-FAILED = 33608, 
+// Unused ECLECTOR.PARSE-RESULT::PARSE-RESULT-CLIENT = 33166, 
+// Unused CLASP-CLEAVIR-BIR::BIND = 33464, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Isoname_O__ = 644, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-SINGLE-QUOTE = 1395, 
-// Unused CONCRETE-SYNTAX-TREE::SUPPLIED-P-MIXIN = 1294, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-REST = 1308, 
-// Unused CLEAVIR-ENVIRONMENT::TAG-INFO = 1626, 
-// Unused CLASP-CLEAVIR-BMIR::CONSP = 1768, 
-// Unused ECLECTOR.READER::FEATURE-EXPRESSION-TYPE-ERROR/READER = 1444, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER-GROUP = 1281, 
-// Unused CLEAVIR-BIR::CATCH = 1513, 
-// Unused CLEAVIR-BIR::UNUSED-VARIABLE = 1527, 
-// Unused CLASP-ANALYZER::CXX-FIXUP-OFFSET = 1867, 
-// Unused CLASP-ANALYZER::CONTAINER-OFFSET = 1872, 
-// Unused CLASP-ANALYZER::GLOBAL-VARIABLE = 1810, 
-// Unused CLASP-CLEAVIR-BMIR::GENERALP = 1771, 
-// Unused CLASP-CLEAVIR-AST::ATOMIC-CAR-AST = 1731, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__KeyValuePair__ = 730, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-QUOTE = 1370, 
-// Unused CORE::SIMPLE-FILE-ERROR = 1152, 
-// Unused COMMON-LISP::STYLE-WARNING = 1121, 
-// Unused ECLECTOR.READER::UNQUOTE-SPLICING-IN-DOTTED-LIST = 1386, 
-// Unused COMMON-LISP::STANDARD-OBJECT = 1067, 
-// Unused CLEAVIR-CST-TO-AST::VARIABLE-MUST-BE-A-SYMBOL = 1681, 
-// Unused CONCRETE-SYNTAX-TREE::EARLEY-ITEM = 1329, 
-// Unused CLEAVIR-AST::TAG-AST = 1564, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-SINGLE-QUOTE = 33106, 
+// Unused CONCRETE-SYNTAX-TREE::SUPPLIED-P-MIXIN = 33005, 
+// Unused ASDF/BUNDLE::PROGRAM-OP = 33585, 
+// Unused ASDF/BUNDLE::MONOLITHIC-OP = 33567, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-REST = 33019, 
+// Unused ASDF/COMPONENT::COMPONENT = 33512, 
+// Unused CLEAVIR-ENVIRONMENT::TAG-INFO = 33337, 
+// Unused CLASP-CLEAVIR-BMIR::CONSP = 33479, 
+// Unused ECLECTOR.READER::FEATURE-EXPRESSION-TYPE-ERROR/READER = 33155, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER-GROUP = 32992, 
+// Unused CLEAVIR-BIR::CATCH = 33224, 
+// Unused CLEAVIR-BIR::UNUSED-VARIABLE = 33238, 
+// Unused CLASP-ANALYZER::CXX-FIXUP-OFFSET = 33697, 
+// Unused CLASP-ANALYZER::CONTAINER-OFFSET = 33702, 
+// Unused CLASP-ANALYZER::GLOBAL-VARIABLE = 33640, 
+// Unused CLASP-CLEAVIR-BMIR::GENERALP = 33482, 
+// Unused CLASP-CLEAVIR-AST::ATOMIC-CAR-AST = 33442, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__KeyValuePair__ = 731, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-QUOTE = 33081, 
+// Unused ASDF/SESSION::SYSTEM-DEFINITION-ERROR = 33509, 
+// Unused CORE::SIMPLE-FILE-ERROR = 32863, 
+// Unused ASDF/LISP-ACTION::TEST-OP = 33545, 
+// Unused COMMON-LISP::STYLE-WARNING = 32832, 
+// Unused ASDF/COMPONENT::HTML-FILE = 33520, 
+// Unused ASDF/ACTION::OPERATION-DEFINITION-ERROR = 33534, 
+// Unused ECLECTOR.READER::UNQUOTE-SPLICING-IN-DOTTED-LIST = 33097, 
+// Unused COMMON-LISP::STANDARD-OBJECT = 32778, 
+// Unused ASDF/FIND-COMPONENT::MISSING-COMPONENT = 33546, 
+// Unused CLEAVIR-CST-TO-AST::VARIABLE-MUST-BE-A-SYMBOL = 33392, 
+// Unused CONCRETE-SYNTAX-TREE::EARLEY-ITEM = 33040, 
+// Unused CLEAVIR-AST::TAG-AST = 33275, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__TopologyAtomInfo_O__ = 664, 
-// Unused CLASP-ANALYZER::GCVECTOR-OFFSET = 1875, 
-// Unused CLASP-ANALYZER::RAW-POINTER-OFFSET = 1865, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER-GROUP = 1284, 
-// Unused CLANG-TOOL::COUNT-MATCH-CALLBACK = 1784, 
-// Unused CONCRETE-SYNTAX-TREE::FORM-MIXIN = 1293, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER = 1301, 
-// Unused COMMON-LISP::SERIOUS-CONDITION = 1117, 
-// Unused ACCLIMATION::JAPANESE = 1253, 
-// Unused CLEAVIR-CST-TO-AST::SPECIAL-SYMBOL-MACRO = 1686, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__DynamicBinding_ = 718, 
-// Unused CORE::CODE-BLOCK = 1087, 
-// Unused CLEAVIR-ENVIRONMENT::SPECIAL-VARIABLE-INFO = 1617, 
-// Unused CLEAVIR-AST::LEXICAL-AST = 1547, 
-// Unused CLEAVIR-BIR::NO-OUTPUT = 1478, 
-// Unused CLEAVIR-ENVIRONMENT::GLOBAL-FUNCTION-INFO = 1621, 
-// Unused CLEAVIR-AST::COERCE-AST = 1600, 
-// Unused CLASP-ANALYZER::CLASSALLOC = 1802, 
-// Unused CLASP-CLEAVIR-BIR::DEFCALLBACK = 1756, 
-// Unused CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE = 1844, 
+// Unused CLASP-ANALYZER::GCVECTOR-OFFSET = 33705, 
+// Unused CLASP-ANALYZER::RAW-POINTER-OFFSET = 33695, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER-GROUP = 32995, 
+// Unused ASDF/LISP-ACTION::LOAD-SOURCE-OP = 33544, 
+// Unused ASDF/COMPONENT::STATIC-FILE = 33518, 
+// Unused ASDF/OPERATE::REQUIRE-SYSTEM = 33560, 
+// Unused CLANG-TOOL::COUNT-MATCH-CALLBACK = 33614, 
+// Unused CONCRETE-SYNTAX-TREE::FORM-MIXIN = 33004, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER = 33012, 
+// Unused COMMON-LISP::SERIOUS-CONDITION = 32828, 
+// Unused ASDF/PARSE-DEFSYSTEM::NON-SYSTEM-SYSTEM = 33563, 
+// Unused CLEAVIR-CST-TO-AST::SPECIAL-SYMBOL-MACRO = 33397, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_core__DynamicBinding_ = 719, 
+// Unused CORE::CODE-BLOCK = 32798, 
+// Unused ACCLIMATION::JAPANESE = 32964, 
+// Unused CLEAVIR-ENVIRONMENT::SPECIAL-VARIABLE-INFO = 33328, 
+// Unused CLEAVIR-AST::LEXICAL-AST = 33258, 
+// Unused ASDF/BUNDLE::DLL-OP = 33577, 
+// Unused CLEAVIR-BIR::NO-OUTPUT = 33189, 
+// Unused CLEAVIR-ENVIRONMENT::GLOBAL-FUNCTION-INFO = 33332, 
+// Unused CLEAVIR-AST::COERCE-AST = 33311, 
+// Unused CLASP-ANALYZER::CLASSALLOC = 33632, 
+// Unused CLASP-CLEAVIR-BIR::DEFCALLBACK = 33467, 
+// Unused CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE = 33674, 
 // Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_4__false_ = 714, 
-// Unused ECLECTOR.READER::SLOT-NAME-IS-NOT-A-STRING-DESIGNATOR = 1433, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-C = 1419, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-REQUIRED-PARAMETER-GROUP = 1283, 
-// Unused CLEAVIR-AST::MULTIPLE-VALUE-SETQ-AST = 1563, 
-// Unused CLASP-CLEAVIR-AST::ATOMIC-VSET-AST = 1744, 
-// Unused CLEAVIR-ENVIRONMENT::SPECIAL-OPERATOR-INFO = 1624, 
-// Unused CORE::QUEUE = 1779, 
-// Unused CLEAVIR-AST::BRANCH-AST = 1571, 
-// Unused CLEAVIR-CST-TO-AST::EVAL-ERROR = 1702, 
-// Unused ECLECTOR.READER::DIGIT-CONDITION = 1405, 
-// Unused CLEAVIR-AST::IMMEDIATE-AST = 1544, 
-// Unused ALEXANDRIA.0.DEV::SIMPLE-PARSE-ERROR = 1334, 
-// Unused MP::LOCK = 1090, 
-// Unused SB-BSD-SOCKETS::LOCAL-SOCKET = 1222, 
+// Unused ECLECTOR.READER::SLOT-NAME-IS-NOT-A-STRING-DESIGNATOR = 33144, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-C = 33130, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-REQUIRED-PARAMETER-GROUP = 32994, 
+// Unused CLEAVIR-AST::MULTIPLE-VALUE-SETQ-AST = 33274, 
+// Unused CLASP-CLEAVIR-AST::ATOMIC-VSET-AST = 33455, 
+// Unused CLEAVIR-ENVIRONMENT::SPECIAL-OPERATOR-INFO = 33335, 
+// Unused CORE::QUEUE = 33490, 
+// Unused CLEAVIR-AST::BRANCH-AST = 33282, 
+// Unused CLEAVIR-CST-TO-AST::EVAL-ERROR = 33413, 
+// Unused ECLECTOR.READER::DIGIT-CONDITION = 33116, 
+// Unused CLEAVIR-AST::IMMEDIATE-AST = 33255, 
+// Unused ALEXANDRIA.0.DEV::SIMPLE-PARSE-ERROR = 33045, 
+// Unused MP::LOCK = 32801, 
+// Unused SB-BSD-SOCKETS::LOCAL-SOCKET = 32933, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__OctNode_O__ = 674, 
-// Unused CLEAVIR-BIR::ALLOCA = 1509, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKSLASH = 1401, 
-// Unused COMMON-LISP::WARNING = 1116, 
-// Unused CLASP-ANALYZER::CONSTANT-ARRAY-OFFSET = 1871, 
-// Unused CLANG-TOOL::MATCH-INFO = 1785, 
-// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-RIGHT-PARENTHESIS = 1394, 
-// Unused GRAY::FUNDAMENTAL-CHARACTER-INPUT-STREAM = 1192, 
-// Unused CLASP-CLEAVIR-AST::MULTIPLE-VALUE-FOREIGN-CALL-AST = 1719, 
-// Unused ECLECTOR.READER::MULTIPLE-OBJECTS-FOLLOWING-CONSING-DOT = 1393, 
-// Unused ACCLIMATION::LOCALE = 1244, 
-// Unused CLASP-ANALYZER::RVALUE-REFERENCE-CTYPE = 1828, 
-// Unused CLEAVIR-BIR::ONE-INPUT = 1477, 
-// Unused CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE = 1841, 
-// Unused CLASP-CLEAVIR-AST::RACK-STAMP-AST = 1725, 
-// Unused ECLECTOR.READER::SYMBOL-DOES-NOT-EXIST = 1355, 
-// Unused CLEAVIR-ENVIRONMENT::VARIABLE-IGNORE = 1638, 
-// Unused CLASP-ANALYZER::UNCLASSIFIED-TEMPLATE-SPECIALIZATION-CTYPE = 1836, 
-// Unused CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE = 1852, 
-// Unused CLASP-ANALYZER::BITUNIT-CTYPE = 1819, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-AUX = 1312, 
-// Unused GRAY::FUNDAMENTAL-INPUT-STREAM = 1188, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-DOT = 1398, 
-// Unused CLASP-ANALYZER::TEMPLATE-TYPE-PARM-CTYPE = 1827, 
-// Unused CLEAVIR-AST::THE-AST = 1567, 
-// Unused GRAY::FUNDAMENTAL-CHARACTER-OUTPUT-STREAM = 1193, 
-// Unused CLEAVIR-AST::LOAD-TIME-VALUE-AST = 1569, 
-// Unused CLEAVIR-AST::FLOAT-DIV-AST = 1591, 
-// Unused CLOSER-MOP::DEFMETHOD-WITHOUT-GENERIC-FUNCTION = 1337, 
-// Unused CLOS::FUNCALLABLE-STANDARD-CLASS = 1079, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER = 1298, 
-// Unused CLASP-CLEAVIR-AST::ATOMIC-VREF-AST = 1743, 
-// Unused CLEAVIR-AST::CAR-AST = 1601, 
-// Unused CONCRETE-SYNTAX-TREE::PARSER = 1331, 
-// Unused CONCRETE-SYNTAX-TREE::PARAMETER = 1292, 
-// Unused CLASP-ANALYZER::PARALLEL-JOB = 1881, 
-// Unused CLEAVIR-BIR::PHI = 1484, 
-// Unused EXT::BUS-ERROR = 1129, 
-// Unused CLASP-ANALYZER::ATOMIC-SMART-PTR-OFFSET = 1858, 
-// Unused CLOS::SLOT-DEFINITION = 1069, 
-// Unused CLEAVIR-CST-TO-AST::IGNORED-VARIABLE-REFERENCED = 1667, 
-// Unused SEQUENCE::PROTOCOL-UNIMPLEMENTED = 1196, 
-// Unused ECLECTOR.READER::SYMBOL-IS-NOT-EXTERNAL = 1356, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-WARNING = 1461, 
-// Unused CLASP-CLEAVIR-BMIR::MEMREF2 = 1773, 
-// Unused CLASP-ANALYZER::BUILTIN-CTYPE = 1831, 
-// Unused CLEAVIR-AST::FUNCTION-AST = 1555, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-BACKQUOTE = 1377, 
-// Unused CLASP-CLEAVIR::CLASP-GLOBAL-ENVIRONMENT = 1708, 
-// Unused CLEAVIR-AST::FIXNUM-SUB-AST = 1582, 
-// Unused ACCLIMATION::SVENSKA = 1246, 
-// Unused CLASP-ANALYZER::LOCAL-VARIABLE = 1812, 
-// Unused CLASP-ANALYZER::NAMESPACE = 1880, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-SPECIAL-OPERATOR = 1691, 
-// Unused CONCRETE-SYNTAX-TREE::CONS-STRUCTURE-MISMATCH-ERROR = 1615, 
-// Unused COMMON-LISP::METHOD-COMBINATION = 1073, 
-// Unused ECLECTOR.READER::ZERO-DENOMINATOR = 1408, 
-// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION-STYLE-WARNING = 1665, 
-// Unused CLEAVIR-AST::FLOAT-SIN-AST = 1597, 
-// Unused ECLECTOR.READTABLE::CHAR-MUST-BE-A-DISPATCHING-CHARACTER = 1346, 
-// Unused CLEAVIR-ENVIRONMENT::FUNCTION-IGNORE = 1639, 
-// Unused ECLECTOR.READER::NUMERIC-PARAMETER-NOT-SUPPLIED-BUT-REQUIRED = 1369, 
-// Unused CLASP-ANALYZER::INCOMPLETE-ARRAY-CTYPE = 1842, 
-// Unused CLEAVIR-BIR::MULTIPLE-TO-FIXED = 1524, 
-// Unused ACCLIMATION::FRENCH = 1250, 
-// Unused ECLECTOR.READER::STRUCTURE-TYPE-NAME-IS-NOT-A-SYMBOL = 1431, 
-// Unused ECLECTOR.READER::NAMESTRING-MUST-FOLLOW-SHARPSIGN-P = 1438, 
-// Unused CLEAVIR-ENVIRONMENT::GLOBAL-MACRO-INFO = 1623, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-MUST-BE-PROPER-FUNCTION-NAME = 1677, 
-// Unused CLEAVIR-AST::ASET-AST = 1610, 
-// Unused CLASP-ANALYZER::GCARRAY-OFFSET = 1873, 
-// Unused COMMON-LISP::CONTROL-ERROR = 1141, 
-// Unused CLASP-ANALYZER::CXXRECORD-CTYPE = 1843, 
-// Unused CLASP-ANALYZER::GCARRAY-MOVEABLE-CTYPE = 1853, 
-// Unused CLEAVIR-CST-TO-AST::NO-DEFAULT-METHOD = 1692, 
-// Unused CORE::SEQUENCE-OUT-OF-BOUNDS = 1135, 
-// Unused CONCRETE-SYNTAX-TREE::ECL = 1265, 
-// Unused COMMON-LISP::PRINT-NOT-READABLE = 1172, 
-// Unused CONCRETE-SYNTAX-TREE::NULL-STRUCTURE-MISMATCH-ERROR = 1614, 
-// Unused COMMON-LISP::SIMPLE-TYPE-ERROR = 1136, 
-// Unused CLEAVIR-IO::FILE-DOES-NOT-EXIST = 1533, 
-// Unused SB-BSD-SOCKETS::OPERATION-NOT-PERMITTED-ERROR = 1233, 
-// Unused CLOS::STANDARD-WRITER-METHOD = 1100, 
-// Unused CLEAVIR-BIR::LOAD-TIME-VALUE-REFERENCE = 1496, 
-// Unused ECLECTOR.READER::NON-STRING-FOLLOWING-SHARPSIGN-P = 1439, 
-// Unused EXT::ASSERT-ERROR = 1181, 
-// Unused CLASP-ANALYZER::MUTEX-CTYPE = 1824, 
-// Unused CLASP-CLEAVIR::CLASP = 1706, 
-// Unused CONCRETE-SYNTAX-TREE::DEFTYPE-LAMBDA-LIST = 1323, 
-// Unused CORE::CASE-FAILURE = 1137, 
-// Unused CORE::SECTION-START = 1200, 
-// Unused CONCRETE-SYNTAX-TREE::GRAMMAR = 1328, 
-// Unused CLEAVIR-BIR::SSA = 1468, 
-// Unused COMMON-LISP::FILE-ERROR = 1151, 
-// Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE = 1629, 
-// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-CHARACTER-NAME = 1403, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-KEY-PARAMETER = 1299, 
-// Unused CONCRETE-SYNTAX-TREE::CLASP = 1264, 
-// Unused CLEAVIR-AST::IF-AST = 1570, 
-// Unused CORE::SIMPLE-PROGRAM-ERROR = 1140, 
-// Unused CLEAVIR-ENVIRONMENT::VARIABLE-DYNAMIC-EXTENT = 1640, 
-// Unused CLEAVIR-AST::MULTIWAY-AST-MIXIN = 1540, 
-// Unused ECLECTOR.READER::NO-STRUCTURE-TYPE-NAME-FOUND = 1430, 
-// Unused COMMON-LISP::END-OF-FILE = 1150, 
-// Unused CLANG-TOOL::SINGLE-TOOL = 1790, 
-// Unused COMPILER::UNDEFINED-TYPE-WARNING = 1213, 
-// Unused CLEAVIR-BIR::INSTRUCTION = 1474, 
-// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-STRING = 1373, 
-// Unused CLASP-ANALYZER::DONT-ANALYZE-OFFSET = 1861, 
-// Unused CLASP-CLEAVIR::CLASP-64BIT = 1707, 
+// Unused CLEAVIR-BIR::ALLOCA = 33220, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKSLASH = 33112, 
+// Unused COMMON-LISP::WARNING = 32827, 
+// Unused CLASP-ANALYZER::CONSTANT-ARRAY-OFFSET = 33701, 
+// Unused CLANG-TOOL::MATCH-INFO = 33615, 
+// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-RIGHT-PARENTHESIS = 33105, 
+// Unused GRAY::FUNDAMENTAL-CHARACTER-INPUT-STREAM = 32903, 
+// Unused UIOP/VERSION::DEPRECATED-FUNCTION-STYLE-WARNING = 33495, 
+// Unused CLASP-CLEAVIR-AST::MULTIPLE-VALUE-FOREIGN-CALL-AST = 33430, 
+// Unused ECLECTOR.READER::MULTIPLE-OBJECTS-FOLLOWING-CONSING-DOT = 33104, 
+// Unused ACCLIMATION::LOCALE = 32955, 
+// Unused CLASP-ANALYZER::RVALUE-REFERENCE-CTYPE = 33658, 
+// Unused CLEAVIR-BIR::ONE-INPUT = 33188, 
+// Unused CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE = 33671, 
+// Unused CLASP-CLEAVIR-AST::RACK-STAMP-AST = 33436, 
+// Unused ECLECTOR.READER::SYMBOL-DOES-NOT-EXIST = 33066, 
+// Unused CLEAVIR-ENVIRONMENT::VARIABLE-IGNORE = 33349, 
+// Unused CLASP-ANALYZER::UNCLASSIFIED-TEMPLATE-SPECIALIZATION-CTYPE = 33666, 
+// Unused CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE = 33682, 
+// Unused CLASP-ANALYZER::BITUNIT-CTYPE = 33649, 
+// Unused ASDF/COMPONENT::DUPLICATE-NAMES = 33511, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-AUX = 33023, 
+// Unused GRAY::FUNDAMENTAL-INPUT-STREAM = 32899, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-DOT = 33109, 
+// Unused CLASP-ANALYZER::TEMPLATE-TYPE-PARM-CTYPE = 33657, 
+// Unused CLEAVIR-AST::THE-AST = 33278, 
+// Unused GRAY::FUNDAMENTAL-CHARACTER-OUTPUT-STREAM = 32904, 
+// Unused CLEAVIR-AST::LOAD-TIME-VALUE-AST = 33280, 
+// Unused CLEAVIR-AST::FLOAT-DIV-AST = 33302, 
+// Unused CLOSER-MOP::DEFMETHOD-WITHOUT-GENERIC-FUNCTION = 33048, 
+// Unused CLOS::FUNCALLABLE-STANDARD-CLASS = 32790, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER = 33009, 
+// Unused CLASP-CLEAVIR-AST::ATOMIC-VREF-AST = 33454, 
+// Unused CLEAVIR-AST::CAR-AST = 33312, 
+// Unused CONCRETE-SYNTAX-TREE::PARSER = 33042, 
+// Unused ASDF/BUNDLE::BASIC-COMPILE-BUNDLE-OP = 33572, 
+// Unused CONCRETE-SYNTAX-TREE::PARAMETER = 33003, 
+// Unused CLASP-ANALYZER::PARALLEL-JOB = 33711, 
+// Unused CLEAVIR-BIR::PHI = 33195, 
+// Unused UIOP/CONFIGURATION::INVALID-CONFIGURATION = 33507, 
+// Unused UIOP/LISP-BUILD::COMPILE-FAILED-ERROR = 33504, 
+// Unused EXT::BUS-ERROR = 32840, 
+// Unused CLASP-ANALYZER::ATOMIC-SMART-PTR-OFFSET = 33688, 
+// Unused ASDF/BUNDLE::COMPILE-BUNDLE-OP = 33575, 
+// Unused CLOS::SLOT-DEFINITION = 32780, 
+// Unused CLEAVIR-CST-TO-AST::IGNORED-VARIABLE-REFERENCED = 33378, 
+// Unused SEQUENCE::PROTOCOL-UNIMPLEMENTED = 32907, 
+// Unused ECLECTOR.READER::SYMBOL-IS-NOT-EXTERNAL = 33067, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-WARNING = 33172, 
+// Unused CLASP-CLEAVIR-BMIR::MEMREF2 = 33484, 
+// Unused CLASP-ANALYZER::BUILTIN-CTYPE = 33661, 
+// Unused CLEAVIR-AST::FUNCTION-AST = 33266, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-BACKQUOTE = 33088, 
+// Unused CLASP-CLEAVIR::CLASP-GLOBAL-ENVIRONMENT = 33419, 
+// Unused CLEAVIR-AST::FIXNUM-SUB-AST = 33293, 
+// Unused ACCLIMATION::SVENSKA = 32957, 
+// Unused CLASP-ANALYZER::LOCAL-VARIABLE = 33642, 
+// Unused CLASP-ANALYZER::NAMESPACE = 33710, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-SPECIAL-OPERATOR = 33402, 
+// Unused CONCRETE-SYNTAX-TREE::CONS-STRUCTURE-MISMATCH-ERROR = 33326, 
+// Unused COMMON-LISP::METHOD-COMBINATION = 32784, 
+// Unused ECLECTOR.READER::ZERO-DENOMINATOR = 33119, 
+// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION-STYLE-WARNING = 33376, 
+// Unused CLEAVIR-AST::FLOAT-SIN-AST = 33308, 
+// Unused ECLECTOR.READTABLE::CHAR-MUST-BE-A-DISPATCHING-CHARACTER = 33057, 
+// Unused CLEAVIR-ENVIRONMENT::FUNCTION-IGNORE = 33350, 
+// Unused ECLECTOR.READER::NUMERIC-PARAMETER-NOT-SUPPLIED-BUT-REQUIRED = 33080, 
+// Unused CLASP-ANALYZER::INCOMPLETE-ARRAY-CTYPE = 33672, 
+// Unused CLEAVIR-BIR::MULTIPLE-TO-FIXED = 33235, 
+// Unused ACCLIMATION::FRENCH = 32961, 
+// Unused ECLECTOR.READER::STRUCTURE-TYPE-NAME-IS-NOT-A-SYMBOL = 33142, 
+// Unused ECLECTOR.READER::NAMESTRING-MUST-FOLLOW-SHARPSIGN-P = 33149, 
+// Unused CLEAVIR-ENVIRONMENT::GLOBAL-MACRO-INFO = 33334, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-MUST-BE-PROPER-FUNCTION-NAME = 33388, 
+// Unused CLEAVIR-AST::ASET-AST = 33321, 
+// Unused CLASP-ANALYZER::GCARRAY-OFFSET = 33703, 
+// Unused COMMON-LISP::CONTROL-ERROR = 32852, 
+// Unused ASDF/LISP-ACTION::PREPARE-OP = 33540, 
+// Unused CLASP-ANALYZER::CXXRECORD-CTYPE = 33673, 
+// Unused CLASP-ANALYZER::GCARRAY-MOVEABLE-CTYPE = 33683, 
+// Unused CLEAVIR-CST-TO-AST::NO-DEFAULT-METHOD = 33403, 
+// Unused CORE::SEQUENCE-OUT-OF-BOUNDS = 32846, 
+// Unused CONCRETE-SYNTAX-TREE::ECL = 32976, 
+// Unused COMMON-LISP::PRINT-NOT-READABLE = 32883, 
+// Unused CONCRETE-SYNTAX-TREE::NULL-STRUCTURE-MISMATCH-ERROR = 33325, 
+// Unused COMMON-LISP::SIMPLE-TYPE-ERROR = 32847, 
+// Unused CLEAVIR-IO::FILE-DOES-NOT-EXIST = 33244, 
+// Unused SB-BSD-SOCKETS::OPERATION-NOT-PERMITTED-ERROR = 32944, 
+// Unused CLOS::STANDARD-WRITER-METHOD = 32811, 
+// Unused CLEAVIR-BIR::LOAD-TIME-VALUE-REFERENCE = 33207, 
+// Unused ECLECTOR.READER::NON-STRING-FOLLOWING-SHARPSIGN-P = 33150, 
+// Unused EXT::ASSERT-ERROR = 32892, 
+// Unused ASDF/COMPONENT::MODULE = 33522, 
+// Unused CLASP-ANALYZER::MUTEX-CTYPE = 33654, 
+// Unused CLASP-CLEAVIR::CLASP = 33417, 
+// Unused CONCRETE-SYNTAX-TREE::DEFTYPE-LAMBDA-LIST = 33034, 
+// Unused CORE::CASE-FAILURE = 32848, 
+// Unused ASDF/PLAN::PLAN = 33551, 
+// Unused CORE::SECTION-START = 32911, 
+// Unused CONCRETE-SYNTAX-TREE::GRAMMAR = 33039, 
+// Unused CLEAVIR-BIR::SSA = 33179, 
+// Unused COMMON-LISP::FILE-ERROR = 32862, 
+// Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE = 33340, 
+// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-CHARACTER-NAME = 33114, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-KEY-PARAMETER = 33010, 
+// Unused ASDF/LISP-ACTION::COMPILE-OP = 33542, 
+// Unused CONCRETE-SYNTAX-TREE::CLASP = 32975, 
+// Unused ASDF/BUNDLE::GATHER-OPERATION = 33571, 
+// Unused CLEAVIR-AST::IF-AST = 33281, 
+// Unused CORE::SIMPLE-PROGRAM-ERROR = 32851, 
+// Unused CLEAVIR-ENVIRONMENT::VARIABLE-DYNAMIC-EXTENT = 33351, 
+// Unused CLEAVIR-AST::MULTIWAY-AST-MIXIN = 33251, 
+// Unused ECLECTOR.READER::NO-STRUCTURE-TYPE-NAME-FOUND = 33141, 
+// Unused COMMON-LISP::END-OF-FILE = 32861, 
+// Unused CLANG-TOOL::SINGLE-TOOL = 33620, 
+// Unused COMPILER::UNDEFINED-TYPE-WARNING = 32924, 
+// Unused CLEAVIR-BIR::INSTRUCTION = 33185, 
+// Unused ASDF/CONCATENATE-SOURCE::MONOLITHIC-LOAD-CONCATENATED-SOURCE-OP = 33598, 
+// Unused ASDF/PLAN::PLAN-TRAVERSAL = 33552, 
+// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-STRING = 33084, 
+// Unused CLASP-ANALYZER::DONT-ANALYZE-OFFSET = 33691, 
+// Unused CLASP-CLEAVIR::CLASP-64BIT = 33418, 
+// Unused ASDF/LISP-ACTION::LOAD-OP = 33541, 
 // Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_1__false_ = 712, 
-// Unused CONCRETE-SYNTAX-TREE::EARLEY-STATE = 1330, 
-// Unused SB-BSD-SOCKETS::BAD-FILE-DESCRIPTOR-ERROR = 1226, 
-// Unused CLEAVIR-ENVIRONMENT::MACRO = 1633, 
-// Unused CLASP-ANALYZER::STAMP-VALUE-GENERATOR = 1814, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-CONSING-DOT = 1392, 
-// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-STYLE-WARNING = 1663, 
-// Unused CLEAVIR-CST-TO-AST::COMPILATION-STYLE-WARNING = 1651, 
-// Unused CLEAVIR-BIR::MV-CALL = 1502, 
-// Unused CORE::DO-NOT-FUNCALL-SPECIAL-OPERATOR = 1168, 
-// Unused CLASP-ANALYZER::TEMPLATED-STAMP = 1808, 
-// Unused CLASP-ANALYZER::ABSTRACTALLOC = 1800, 
-// Unused CLEAVIR-AST::GO-AST = 1566, 
-// Unused CLASP-CLEAVIR-AST::SLOT-CAS-AST = 1741, 
-// Unused CLEAVIR-AST::BOOLEAN-AST-MIXIN = 1539, 
-// Unused CONCRETE-SYNTAX-TREE::SINGLETON-PARAMETER-GROUP = 1286, 
-// Unused CLEAVIR-BIR::TPRIMOP = 1499, 
-// Unused SB-BSD-SOCKETS::NETDB-INTERNAL-ERROR = 1238, 
-// Unused CLEAVIR-AST::SIDE-EFFECT-FREE-AST-MIXIN = 1543, 
-// Unused CLEAVIR-ENVIRONMENT::SYMBOL-MACRO = 1631, 
-// Unused COMMON-LISP::SEQUENCE = 1080, 
-// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-UNQUOTE = 1381, 
-// Unused CLEAVIR-ENVIRONMENT::ENTRY = 1628, 
-// Unused CLASP-CLEAVIR-AST::HEADER-STAMP-CASE-AST = 1723, 
-// Unused CLASP-ANALYZER::GCBITUNITARRAY-OFFSET = 1874, 
-// Unused CLASP-ANALYZER::ANALYSIS = 1815, 
-// Unused CLEAVIR-AST::FIXNUM-NOT-LESS-AST = 1586, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-KEY-PARAMETER-GROUP = 1279, 
-// Unused COMMON-LISP::BIT-VECTOR = 1085, 
-// Unused ECLECTOR.READTABLE::SUB-CHAR-MUST-NOT-BE-A-DECIMAL-DIGIT = 1345, 
-// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION-WARNING = 1664, 
-// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE = 1352, 
-// Unused CLASP-ANALYZER::DEBUG-INFO = 1794, 
-// Unused CLEAVIR-AST::NO-VALUE-AST-MIXIN = 1541, 
-// Unused CLEAVIR-BIR::EQ-TEST = 1520, 
-// Unused CLEAVIR-BIR::READVAR = 1494, 
-// Unused CLASP-ANALYZER::GCBITUNITARRAY-MOVEABLE-CTYPE = 1854, 
-// Unused ECLECTOR.BASE::STREAM-POSITION-READER-ERROR = 1339, 
-// Unused CLEAVIR-CST-TO-AST::MALFORMED-LAMBDA-LIST = 1694, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-WHOLE = 1314, 
-// Unused CLASP-ANALYZER::CONTAINER = 1851, 
-// Unused CLEAVIR-BIR::LINEAR-DATUM = 1469, 
-// Unused CLASP-CLEAVIR-AST::ATOMIC-RPLACA-AST = 1733, 
-// Unused CLEAVIR-ENVIRONMENT::OPTIMIZE = 1642, 
-// Unused CLEAVIR-AST::SCOPE-AST = 1611, 
-// Unused ECLECTOR.READER::SYMBOL-ACCESS-ERROR = 1354, 
-// Unused GRAY::FUNDAMENTAL-CHARACTER-STREAM = 1190, 
-// Unused ECLECTOR.READER::ARRAY-INITIALIZATION-ERROR = 1415, 
-// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-SYMBOL = 1359, 
-// Unused COMMON-LISP::STRING = 1083, 
-// Unused CLEAVIR-CST-TO-AST::NO-VARIABLE-INFO = 1657, 
-// Unused CONCRETE-SYNTAX-TREE::SBCL = 1262, 
-// Unused EXT::SEQUENCE-STREAM = 1086, 
+// Unused CONCRETE-SYNTAX-TREE::EARLEY-STATE = 33041, 
+// Unused ASDF/CONCATENATE-SOURCE::COMPILE-CONCATENATED-SOURCE-OP = 33595, 
+// Unused ASDF/COMPONENT::PARENT-COMPONENT = 33521, 
+// Unused SB-BSD-SOCKETS::BAD-FILE-DESCRIPTOR-ERROR = 32937, 
+// Unused CLEAVIR-ENVIRONMENT::MACRO = 33344, 
+// Unused UIOP/LISP-BUILD::COMPILE-WARNED-ERROR = 33502, 
+// Unused CLASP-ANALYZER::STAMP-VALUE-GENERATOR = 33644, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-CONSING-DOT = 33103, 
+// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-STYLE-WARNING = 33374, 
+// Unused CLEAVIR-CST-TO-AST::COMPILATION-STYLE-WARNING = 33362, 
+// Unused ASDF/PLAN::DEPENDENCY-NOT-DONE = 33555, 
+// Unused CLEAVIR-BIR::MV-CALL = 33213, 
+// Unused ASDF/BUNDLE::DELIVER-ASD-OP = 33578, 
+// Unused CORE::DO-NOT-FUNCALL-SPECIAL-OPERATOR = 32879, 
+// Unused CLASP-ANALYZER::TEMPLATED-STAMP = 33638, 
+// Unused CLASP-ANALYZER::ABSTRACTALLOC = 33630, 
+// Unused CLEAVIR-AST::GO-AST = 33277, 
+// Unused CLASP-CLEAVIR-AST::SLOT-CAS-AST = 33452, 
+// Unused CLEAVIR-AST::BOOLEAN-AST-MIXIN = 33250, 
+// Unused CONCRETE-SYNTAX-TREE::SINGLETON-PARAMETER-GROUP = 32997, 
+// Unused CLEAVIR-BIR::TPRIMOP = 33210, 
+// Unused SB-BSD-SOCKETS::NETDB-INTERNAL-ERROR = 32949, 
+// Unused CLEAVIR-AST::SIDE-EFFECT-FREE-AST-MIXIN = 33254, 
+// Unused CLEAVIR-ENVIRONMENT::SYMBOL-MACRO = 33342, 
+// Unused COMMON-LISP::SEQUENCE = 32791, 
+// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-UNQUOTE = 33092, 
+// Unused CLEAVIR-ENVIRONMENT::ENTRY = 33339, 
+// Unused CLASP-CLEAVIR-AST::HEADER-STAMP-CASE-AST = 33434, 
+// Unused CLASP-ANALYZER::GCBITUNITARRAY-OFFSET = 33704, 
+// Unused ASDF/BUNDLE::LINK-OP = 33570, 
+// Unused CLASP-ANALYZER::ANALYSIS = 33645, 
+// Unused UIOP/VERSION::DEPRECATED-FUNCTION-ERROR = 33497, 
+// Unused CLEAVIR-AST::FIXNUM-NOT-LESS-AST = 33297, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-KEY-PARAMETER-GROUP = 32990, 
+// Unused COMMON-LISP::BIT-VECTOR = 32796, 
+// Unused ECLECTOR.READTABLE::SUB-CHAR-MUST-NOT-BE-A-DECIMAL-DIGIT = 33056, 
+// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION-WARNING = 33375, 
+// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE = 33063, 
+// Unused CLASP-ANALYZER::DEBUG-INFO = 33624, 
+// Unused ASDF/LISP-ACTION::CL-SOURCE-FILE.LSP = 33537, 
+// Unused CLEAVIR-AST::NO-VALUE-AST-MIXIN = 33252, 
+// Unused CLEAVIR-BIR::EQ-TEST = 33231, 
+// Unused CLEAVIR-BIR::READVAR = 33205, 
+// Unused CLASP-ANALYZER::GCBITUNITARRAY-MOVEABLE-CTYPE = 33684, 
+// Unused ECLECTOR.BASE::STREAM-POSITION-READER-ERROR = 33050, 
+// Unused CLEAVIR-CST-TO-AST::MALFORMED-LAMBDA-LIST = 33405, 
+// Unused ASDF/BUNDLE::MONOLITHIC-DLL-OP = 33583, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-WHOLE = 33025, 
+// Unused CLASP-ANALYZER::CONTAINER = 33681, 
+// Unused CLEAVIR-BIR::LINEAR-DATUM = 33180, 
+// Unused CLASP-CLEAVIR-AST::ATOMIC-RPLACA-AST = 33444, 
+// Unused CLEAVIR-ENVIRONMENT::OPTIMIZE = 33353, 
+// Unused CLEAVIR-AST::SCOPE-AST = 33322, 
+// Unused UIOP/UTILITY::NOT-IMPLEMENTED-ERROR = 33492, 
+// Unused ECLECTOR.READER::SYMBOL-ACCESS-ERROR = 33065, 
+// Unused GRAY::FUNDAMENTAL-CHARACTER-STREAM = 32901, 
+// Unused ASDF/CONCATENATE-SOURCE::BASIC-LOAD-CONCATENATED-SOURCE-OP = 33590, 
+// Unused ECLECTOR.READER::ARRAY-INITIALIZATION-ERROR = 33126, 
+// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-SYMBOL = 33070, 
+// Unused ASDF/PLAN::SYSTEM-OUT-OF-DATE = 33556, 
+// Unused COMMON-LISP::STRING = 32794, 
+// Unused CLEAVIR-CST-TO-AST::NO-VARIABLE-INFO = 33368, 
+// Unused CONCRETE-SYNTAX-TREE::SBCL = 32973, 
+// Unused EXT::SEQUENCE-STREAM = 32797, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___ = 684, 
-// Unused SB-BSD-SOCKETS::NETDB-SUCCESS-ERROR = 1239, 
-// Unused CLEAVIR-CST-TO-AST::EVAL-STYLE-WARNING = 1704, 
-// Unused CLASP-CLEAVIR-BIR::ABSTRACT-VREF = 1763, 
-// Unused CLASP-ANALYZER::LISPALLOC = 1801, 
-// Unused CLEAVIR-CST-TO-AST::DEFAULT-CASE-MISSING = 1695, 
-// Unused CLOS::FUNCALLABLE-STANDARD-OBJECT = 1092, 
-// Unused EXT::CHARACTER-ENCODING-ERROR = 1183, 
-// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-WARNING = 1700, 
-// Unused CLEAVIR-BIR::DYNAMIC-LETI = 1515, 
-// Unused CLEAVIR-BIR::CALL = 1501, 
-// Unused ACCLIMATION::DEUTSCH = 1247, 
-// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-SYMBOL = 1360, 
-// Unused CLEAVIR-ENVIRONMENT::LOCAL-FUNCTION-INFO = 1620, 
-// Unused CLEAVIR-CST-TO-AST::SETQ-VAR-MUST-BE-SYMBOL = 1684, 
-// Unused COMMON-LISP::BASE-STRING = 1084, 
-// Unused CLASP-ANALYZER::POINTER-TO-RECORD-CTYPE = 1846, 
-// Unused CORE::QUEUED-OP = 1199, 
-// Unused ECLECTOR.READER::BACKQUOTE-IN-INVALID-CONTEXT = 1376, 
-// Unused CLEAVIR-AST::TOP-LEVEL-FUNCTION-AST = 1556, 
-// Unused CLEAVIR-AST::CDR-AST = 1602, 
-// Unused CLASP-CLEAVIR-AST::CAS-CAR-AST = 1735, 
-// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-LAMBDA-LIST = 1318, 
-// Unused CLEAVIR-BIR::PROBLEM = 1531, 
-// Unused CLEAVIR-BIR::VPRIMOP = 1498, 
-// Unused CONCRETE-SYNTAX-TREE::DEFINE-METHOD-COMBINATION-LAMBDA-LIST = 1325, 
-// Unused CLASP-CLEAVIR-BMIR::SINGLE-FLOAT-P = 1770, 
-// Unused CLEAVIR-AST::CONSTANT-AST = 1545, 
-// Unused CLEAVIR-AST::FLOAT-SQRT-AST = 1599, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-A = 1413, 
-// Unused CLEAVIR-BIR::VALUE = 1471, 
-// Unused CLEAVIR-AST::CONSTANT-SYMBOL-VALUE-AST = 1549, 
-// Unused COMMON-LISP::GENERIC-FUNCTION = 1093, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-REST-PARAMETER-GROUP = 1288, 
-// Unused CONCRETE-SYNTAX-TREE::REST-PARAMETER-GROUP = 1287, 
-// Unused CLEAVIR-ENVIRONMENT::SPECIAL-VARIABLE = 1630, 
-// Unused CLASP-ANALYZER::JOB-GROUP = 1883, 
-// Unused MP::PROCESS-JOIN-ERROR = 1146, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__ExceptionEntry_ = 719, 
-// Unused CLEAVIR-BIR::ABSTRACT-LOCAL-CALL = 1503, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-GLOBAL-MACRO = 1689, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-FEATURE-EXPRESSION = 1447, 
-// Unused CLEAVIR-IO::MODEL-CONDITION = 1532, 
-// Unused CLASP-ANALYZER::UNCLASSIFIED-CTYPE = 1832, 
-// Unused CORE::FORMAT-WARNING-TOO-FEW-ARGUMENTS = 1178, 
-// Unused CONCRETE-SYNTAX-TREE::AUX-PARAMETER-GROUP = 1280, 
-// Unused CORE::INDENTATION = 1202, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 735, 
-// Unused ECLECTOR.READER::INVALID-RADIX = 1409, 
-// Unused CLOS::%METHOD-FUNCTION = 1104, 
-// Unused CLEAVIR-BIR::MODULE = 1488, 
-// Unused CLEAVIR-AST::FIXNUM-LESS-AST = 1583, 
-// Unused CLASP-CLEAVIR-BIR::UNWIND-PROTECT = 1752, 
-// Unused STATIC-GFS::REINITIALIZER = 1109, 
-// Unused ECLECTOR.READER::COMPLEX-PART-EXPECTED = 1424, 
-// Unused GRAY::FUNDAMENTAL-STREAM = 1187, 
-// Unused CLEAVIR-AST::FLOAT-ADD-AST = 1588, 
-// Unused ECLECTOR.READER::SLOT-VALUE-CONDITION = 1434, 
-// Unused CLEAVIR-AST::SET-CONSTANT-SYMBOL-VALUE-AST = 1551, 
-// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-ERROR = 1699, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-ALLOW-OTHER-KEYS = 1311, 
-// Unused CLASP-CLEAVIR-AST::SETF-FDEFINITION-AST = 1714, 
-// Unused CLASP-CLEAVIR-AST::CAS-AST = 1729, 
-// Unused CLEAVIR-ENVIRONMENT::LOCAL-MACRO-INFO = 1622, 
-// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS = 1653, 
-// Unused CLEAVIR-AST::SLOT-READ-AST = 1605, 
-// Unused COMMON-LISP::FLOATING-POINT-OVERFLOW = 1164, 
-// Unused COMMON-LISP::SIMPLE-CONDITION = 1119, 
-// Unused ECLECTOR.READER::INVALID-DEFAULT-FLOAT-FORMAT = 1410, 
-// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION = 1655, 
-// Unused CLASP-CLEAVIR-BIR::VSET = 1765, 
-// Unused CLEAVIR-CST-TO-AST::READ-ONLY-P-MUST-BE-BOOLEAN = 1682, 
-// Unused SB-BSD-SOCKETS::OUT-OF-MEMORY-ERROR = 1231, 
-// Unused COMMON-LISP::UNBOUND-VARIABLE = 1158, 
-// Unused SB-BSD-SOCKETS::NETWORK-UNREACHABLE-ERROR = 1236, 
-// Unused CLEAVIR-AST::MULTIPLE-VALUE-CALL-AST = 1572, 
-// Unused CLEAVIR-BIR::VERIFICATION-ERROR = 1530, 
-// Unused COMMON-LISP::ERROR = 1118, 
-// Unused EXT::NAME-CONFLICT = 1155, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-A = 1412, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-CONSING-DOT = 1391, 
-// Unused CONCRETE-SYNTAX-TREE::EXPLICIT-PARAMETER-GROUP = 1272, 
-// Unused SB-BSD-SOCKETS::NO-BUFFERS-ERROR = 1230, 
-// Unused CLEAVIR-BIR::DYNAMIC-ENVIRONMENT = 1465, 
-// Unused CLEAVIR-CST-TO-AST::BLOCK-NAME-MUST-BE-A-SYMBOL = 1668, 
-// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE = 1351, 
-// Unused SB-BSD-SOCKETS::HOST-NOT-FOUND-ERROR = 1240, 
-// Unused CLEAVIR-ENVIRONMENT::INLINE-EXPANSION = 1644, 
-// Unused CLEAVIR-BIR::NOP = 1491, 
-// Unused CLEAVIR-AST::AREF-AST = 1609, 
-// Unused CLEAVIR-BIR::CAST = 1525, 
-// Unused CLASP-ANALYZER::MANAGER = 1878, 
-// Unused CLASP-CLEAVIR-BMIR::FIXNUMP = 1767, 
-// Unused COMMON-LISP::VARIABLE = 1809, 
-// Unused ECLECTOR.READER::SINGLE-FEATURE-EXPECTED/READER = 1446, 
-// Unused COMMON-LISP::CONDITION = 1115, 
-// Unused ECLECTOR.READER::TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST = 1364, 
-// Unused COMPILER::UNDEFINED-WARNING = 1210, 
-// Unused CLASP-ANALYZER::DONT-EXPOSE-OFFSET = 1860, 
-// Unused ECLECTOR.READER::REFERENCE-ERROR = 1451, 
-// Unused CORE::ROW-MAJOR-OUT-OF-BOUNDS = 1133, 
-// Unused COMPILER::SIMPLE-COMPILER-WARNING = 1217, 
-// Unused CLOS::FORWARD-REFERENCED-CLASS = 1076, 
-// Unused CLASP-CLEAVIR-AST::ATOMIC-AST = 1728, 
-// Unused CLEAVIR-BIR::PRIMOP = 1497, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-UNQUOTE = 1384, 
-// Unused CLASP-ANALYZER::CLASS-LAYOUT = 1805, 
-// Unused ECLECTOR.READER::BACKQUOTE-ERROR = 1374, 
-// Unused CLEAVIR-AST::ONE-VALUE-AST-MIXIN = 1542, 
-// Unused CLEAVIR-CST-TO-AST::SYMBOL-MACRO-NAMES-GLOBAL-SPECIAL = 1688, 
-// Unused CLOS::METAOBJECT = 1068, 
-// Unused COMMON-LISP::UNDEFINED-FUNCTION = 1160, 
-// Unused ECLECTOR.READER::BACKQUOTE-CONTEXT-ERROR = 1375, 
-// Unused CONCRETE-SYNTAX-TREE::SINGLETON-PARAMETER-GROUP-MIXIN = 1269, 
-// Unused CLASP-CLEAVIR-AST::BIND-AST = 1746, 
-// Unused CORE::PRETTY-STREAM = 1197, 
-// Unused CLANG-TOOL::GOOD-DUMP-MATCH-CALLBACK = 1782, 
-// Unused COMMON-LISP::FLOATING-POINT-INEXACT = 1166, 
-// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-WARNING = 1662, 
-// Unused CONCRETE-SYNTAX-TREE::CCL = 1266, 
-// Unused COMMON-LISP::PARSE-ERROR = 1173, 
-// Unused CLEAVIR-AST::TAGBODY-AST = 1565, 
-// Unused CLASP-ANALYZER::CTYPE = 1818, 
-// Unused SB-BSD-SOCKETS::SOCKET-TYPE-NOT-SUPPORTED-ERROR = 1235, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-CONDITION = 1459, 
-// Unused CLOS::STANDARD-DIRECT-SLOT-DEFINITION = 1066, 
-// Unused CLEAVIR-ENVIRONMENT::BLOCK = 1634, 
-// Unused CLASP-ANALYZER::DONT-EXPOSE-CTYPE = 1849, 
-// Unused CLASP-ANALYZER::SIMPLE-CTYPE = 1820, 
-// Unused ACCLIMATION::VIETNAMESE = 1252, 
-// Unused SB-BSD-SOCKETS::ADDRESS-IN-USE-ERROR = 1224, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-BODY = 1309, 
-// Unused CLASP-CLEAVIR-AST::BIND-VA-LIST-AST = 1748, 
-// Unused CLASP-ANALYZER::ATOMIC-POD-OFFSET = 1859, 
-// Unused COMMON-LISP::UNBOUND-SLOT = 1159, 
-// Unused CLEAVIR-ENVIRONMENT::FUNCTION-DYNAMIC-EXTENT = 1641, 
-// Unused CORE::SIMPLE-PARSE-ERROR = 1174, 
-// Unused ECLECTOR.READER::NO-SLOT-VALUE-FOUND = 1436, 
-// Unused ECLECTOR.READER::END-OF-LIST = 1349, 
-// Unused COMMON-LISP::SIMPLE-WARNING = 1120, 
-// Unused CONCRETE-SYNTAX-TREE::CLIENT = 1261, 
-// Unused CLEAVIR-BIR::IBLOCK = 1486, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-EQUALS = 1449, 
-// Unused CLEAVIR-CST-TO-AST::ENCAPSULATED-CONDITION = 1652, 
-// Unused CLASP-CLEAVIR-BIR::MV-FOREIGN-CALL = 1754, 
-// Unused CLEAVIR-AST::BIND-AST = 1577, 
-// Unused CLEAVIR-BIR::READTEMP = 1511, 
-// Unused STATIC-GFS::CONSTRUCTOR-CELL = 1107, 
-// Unused ECLECTOR.CONCRETE-SYNTAX-TREE::CST-CLIENT = 1456, 
-// Unused CLANG-TOOL::DUMP-MATCH-CALLBACK = 1783, 
-// Unused CLEAVIR-ENVIRONMENT::FUNCTION-TYPE = 1637, 
-// Unused COMPILER::REDEFINED-FUNCTION-WARNING = 1214, 
-// Unused CLASP-ANALYZER::PROJECT = 1813, 
-// Unused CLASP-ANALYZER::INSTANCE-FIELD = 1796, 
-// Unused ECLECTOR.READER::UNQUOTE-ERROR = 1380, 
-// Unused SB-BSD-SOCKETS::INVALID-ARGUMENT-ERROR = 1229, 
-// Unused CLASP-ANALYZER::INSTANCE-ARRAY-ELEMENT = 1798, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-SLOT-VALUE = 1435, 
-// Unused CLASP-CLEAVIR-AST::ATOMIC-CDR-AST = 1732, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-SINGLE-QUOTE = 1396, 
-// Unused CLEAVIR-AST::FLOAT-COS-AST = 1598, 
-// Unused ECLECTOR.BASE::INCOMPLETE-CONSTRUCT = 1341, 
-// Unused CLEAVIR-CST-TO-AST::SETQ-CONSTANT-VARIABLE = 1685, 
-// Unused CLEAVIR-IO::UNKNOWN-FILE-VERSION = 1534, 
-// Unused ECLECTOR.BASE::MISSING-DELIMITER = 1342, 
-// Unused CLASP-CLEAVIR-BIR::VREF = 1764, 
-// Unused CLEAVIR-ENVIRONMENT::FUNCTION = 1632, 
-// Unused CLEAVIR-AST::EQ-AST = 1578, 
-// Unused CLASP-ANALYZER::RECORD-CTYPE = 1837, 
-// Unused CLEAVIR-BIR::ARGUMENT = 1483, 
-// Unused CLANG-TOOL::CODE-MATCH-TIMER = 1781, 
-// Unused CONCRETE-SYNTAX-TREE::CST = 1255, 
-// Unused STATIC-GFS::CELL-UPDATER = 1108, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKQUOTE = 1378, 
-// Unused CLASP-ANALYZER::SIMPLE-STAMP = 1807, 
-// Unused CLEAVIR-AST::LEXICAL-VARIABLE = 1546, 
-// Unused ACCLIMATION::LANGUAGE = 1245, 
-// Unused COMPILER::WRONG-ARGCOUNT-WARNING = 1215, 
-// Unused CLASP-ANALYZER::PARALLEL-RESULT = 1882, 
-// Unused EXT::STORAGE-EXHAUSTED = 1127, 
-// Unused CLEAVIR-AST::SET-SYMBOL-VALUE-AST = 1550, 
-// Unused GRAY::FUNDAMENTAL-BINARY-OUTPUT-STREAM = 1195, 
-// Unused ECLECTOR.READER::READER-CONDITIONAL-CONDITION = 1440, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-COMPLEX-PART = 1423, 
-// Unused CLASP-ANALYZER::SHARED-MUTEX-CTYPE = 1823, 
-// Unused CORE::CXX-CLASS = 1077, 
-// Unused CLEAVIR-BIR::ONE-OUTPUT = 1479, 
-// Unused CLEAVIR-BIR::LOAD-TIME-VALUE = 1473, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER = 1305, 
-// Unused SB-BSD-SOCKETS::SOCKET-ERROR = 1223, 
-// Unused CLEAVIR-CST-TO-AST::NO-BLOCK-INFO = 1659, 
-// Unused CLEAVIR-AST::CASE-AST = 1580, 
-// Unused CONCRETE-SYNTAX-TREE::LAMBDA-LIST-TYPE = 1315, 
-// Unused SB-BSD-SOCKETS::SOCKET = 1220, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-UNQUOTE = 1385, 
-// Unused CLEAVIR-AST::SYMBOL-VALUE-AST = 1548, 
-// Unused ECLECTOR.READER::UNTERMINATED-STRING = 1372, 
-// Unused CORE::NEWLINE = 1201, 
-// Unused CORE::PPRINT-DISPATCH-TABLE = 1207, 
-// Unused ECLECTOR.READER::SHARPSIGN-INVALID = 1367, 
-// Unused CLEAVIR-BIR::VALUES-COLLECT = 1508, 
-// Unused CLEAVIR-AST::RPLACD-AST = 1604, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-OPTIONAL-PARAMETER = 1297, 
-// Unused CLEAVIR-CST-TO-AST::NO-TAG-INFO = 1658, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER-GROUP = 1285, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-LAMBDA-LIST = 1317, 
-// Unused CLEAVIR-CST-TO-AST::INVALID-EVAL-WHEN-SITUATION = 1673, 
-// Unused CLASP-CLEAVIR-BIR::VCAS = 1766, 
+// Unused SB-BSD-SOCKETS::NETDB-SUCCESS-ERROR = 32950, 
+// Unused CLEAVIR-CST-TO-AST::EVAL-STYLE-WARNING = 33415, 
+// Unused CLASP-CLEAVIR-BIR::ABSTRACT-VREF = 33474, 
+// Unused CLASP-ANALYZER::LISPALLOC = 33631, 
+// Unused CLEAVIR-CST-TO-AST::DEFAULT-CASE-MISSING = 33406, 
+// Unused CLOS::FUNCALLABLE-STANDARD-OBJECT = 32803, 
+// Unused EXT::CHARACTER-ENCODING-ERROR = 32894, 
+// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-WARNING = 33411, 
+// Unused CLEAVIR-BIR::DYNAMIC-LETI = 33226, 
+// Unused CLEAVIR-BIR::CALL = 33212, 
+// Unused ACCLIMATION::DEUTSCH = 32958, 
+// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-SYMBOL = 33071, 
+// Unused CLEAVIR-ENVIRONMENT::LOCAL-FUNCTION-INFO = 33331, 
+// Unused CLEAVIR-CST-TO-AST::SETQ-VAR-MUST-BE-SYMBOL = 33395, 
+// Unused UIOP/RUN-PROGRAM::SUBPROCESS-ERROR = 33506, 
+// Unused COMMON-LISP::BASE-STRING = 32795, 
+// Unused CLASP-ANALYZER::POINTER-TO-RECORD-CTYPE = 33676, 
+// Unused CORE::QUEUED-OP = 32910, 
+// Unused ECLECTOR.READER::BACKQUOTE-IN-INVALID-CONTEXT = 33087, 
+// Unused CLEAVIR-AST::TOP-LEVEL-FUNCTION-AST = 33267, 
+// Unused CLEAVIR-AST::CDR-AST = 33313, 
+// Unused CLASP-CLEAVIR-AST::CAS-CAR-AST = 33446, 
+// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-LAMBDA-LIST = 33029, 
+// Unused CLEAVIR-BIR::PROBLEM = 33242, 
+// Unused CLEAVIR-BIR::VPRIMOP = 33209, 
+// Unused CONCRETE-SYNTAX-TREE::DEFINE-METHOD-COMBINATION-LAMBDA-LIST = 33036, 
+// Unused CLASP-CLEAVIR-BMIR::SINGLE-FLOAT-P = 33481, 
+// Unused CLEAVIR-AST::CONSTANT-AST = 33256, 
+// Unused CLEAVIR-AST::FLOAT-SQRT-AST = 33310, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-A = 33124, 
+// Unused CLEAVIR-BIR::VALUE = 33182, 
+// Unused ASDF/COMPONENT::DOC-FILE = 33519, 
+// Unused CLEAVIR-AST::CONSTANT-SYMBOL-VALUE-AST = 33260, 
+// Unused COMMON-LISP::GENERIC-FUNCTION = 32804, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-REST-PARAMETER-GROUP = 32999, 
+// Unused CONCRETE-SYNTAX-TREE::REST-PARAMETER-GROUP = 32998, 
+// Unused CLEAVIR-ENVIRONMENT::SPECIAL-VARIABLE = 33341, 
+// Unused CLASP-ANALYZER::JOB-GROUP = 33713, 
+// Unused MP::PROCESS-JOIN-ERROR = 32857, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_core__ExceptionEntry_ = 720, 
+// Unused CLEAVIR-BIR::ABSTRACT-LOCAL-CALL = 33214, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-GLOBAL-MACRO = 33400, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-FEATURE-EXPRESSION = 33158, 
+// Unused CLEAVIR-IO::MODEL-CONDITION = 33243, 
+// Unused CLASP-ANALYZER::UNCLASSIFIED-CTYPE = 33662, 
+// Unused CORE::FORMAT-WARNING-TOO-FEW-ARGUMENTS = 32889, 
+// Unused CONCRETE-SYNTAX-TREE::AUX-PARAMETER-GROUP = 32991, 
+// Unused CORE::INDENTATION = 32913, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 736, 
+// Unused ECLECTOR.READER::INVALID-RADIX = 33120, 
+// Unused CLOS::%METHOD-FUNCTION = 32815, 
+// Unused CLEAVIR-BIR::MODULE = 33199, 
+// Unused CLEAVIR-AST::FIXNUM-LESS-AST = 33294, 
+// Unused CLASP-CLEAVIR-BIR::UNWIND-PROTECT = 33463, 
+// Unused ASDF/OPERATE::RECURSIVE-OPERATE = 33558, 
+// Unused STATIC-GFS::REINITIALIZER = 32820, 
+// Unused ECLECTOR.READER::COMPLEX-PART-EXPECTED = 33135, 
+// Unused GRAY::FUNDAMENTAL-STREAM = 32898, 
+// Unused CLEAVIR-AST::FLOAT-ADD-AST = 33299, 
+// Unused ECLECTOR.READER::SLOT-VALUE-CONDITION = 33145, 
+// Unused CLEAVIR-AST::SET-CONSTANT-SYMBOL-VALUE-AST = 33262, 
+// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-ERROR = 33410, 
+// Unused ASDF/ACTION::UPWARD-OPERATION = 33529, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-ALLOW-OTHER-KEYS = 33022, 
+// Unused CLASP-CLEAVIR-AST::SETF-FDEFINITION-AST = 33425, 
+// Unused CLASP-CLEAVIR-AST::CAS-AST = 33440, 
+// Unused CLEAVIR-ENVIRONMENT::LOCAL-MACRO-INFO = 33333, 
+// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS = 33364, 
+// Unused CLEAVIR-AST::SLOT-READ-AST = 33316, 
+// Unused COMMON-LISP::FLOATING-POINT-OVERFLOW = 32875, 
+// Unused COMMON-LISP::SIMPLE-CONDITION = 32830, 
+// Unused ASDF/BUNDLE::BUNDLE-OP = 33566, 
+// Unused ECLECTOR.READER::INVALID-DEFAULT-FLOAT-FORMAT = 33121, 
+// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION = 33366, 
+// Unused CLASP-CLEAVIR-BIR::VSET = 33476, 
+// Unused CLEAVIR-CST-TO-AST::READ-ONLY-P-MUST-BE-BOOLEAN = 33393, 
+// Unused SB-BSD-SOCKETS::OUT-OF-MEMORY-ERROR = 32942, 
+// Unused COMMON-LISP::UNBOUND-VARIABLE = 32869, 
+// Unused SB-BSD-SOCKETS::NETWORK-UNREACHABLE-ERROR = 32947, 
+// Unused CLEAVIR-AST::MULTIPLE-VALUE-CALL-AST = 33283, 
+// Unused CLEAVIR-BIR::VERIFICATION-ERROR = 33241, 
+// Unused ASDF/BUNDLE::PREPARE-BUNDLE-OP = 33573, 
+// Unused COMMON-LISP::ERROR = 32829, 
+// Unused EXT::NAME-CONFLICT = 32866, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-A = 33123, 
+// Unused ASDF/BACKWARD-INTERFACE::OPERATION-ERROR = 33606, 
+// Unused ASDF/PLAN::ACTION-STATUS = 33554, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-CONSING-DOT = 33102, 
+// Unused CONCRETE-SYNTAX-TREE::EXPLICIT-PARAMETER-GROUP = 32983, 
+// Unused SB-BSD-SOCKETS::NO-BUFFERS-ERROR = 32941, 
+// Unused CLEAVIR-BIR::DYNAMIC-ENVIRONMENT = 33176, 
+// Unused CLEAVIR-CST-TO-AST::BLOCK-NAME-MUST-BE-A-SYMBOL = 33379, 
+// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE = 33062, 
+// Unused SB-BSD-SOCKETS::HOST-NOT-FOUND-ERROR = 32951, 
+// Unused CLEAVIR-ENVIRONMENT::INLINE-EXPANSION = 33355, 
+// Unused CLEAVIR-BIR::NOP = 33202, 
+// Unused CLEAVIR-AST::AREF-AST = 33320, 
+// Unused CLEAVIR-BIR::CAST = 33236, 
+// Unused CLASP-ANALYZER::MANAGER = 33708, 
+// Unused CLASP-CLEAVIR-BMIR::FIXNUMP = 33478, 
+// Unused COMMON-LISP::VARIABLE = 33639, 
+// Unused ECLECTOR.READER::SINGLE-FEATURE-EXPECTED/READER = 33157, 
+// Unused COMMON-LISP::CONDITION = 32826, 
+// Unused ECLECTOR.READER::TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST = 33075, 
+// Unused COMPILER::UNDEFINED-WARNING = 32921, 
+// Unused CLASP-ANALYZER::DONT-EXPOSE-OFFSET = 33690, 
+// Unused ECLECTOR.READER::REFERENCE-ERROR = 33162, 
+// Unused CORE::ROW-MAJOR-OUT-OF-BOUNDS = 32844, 
+// Unused UIOP/LISP-BUILD::COMPILE-WARNED-WARNING = 33501, 
+// Unused COMPILER::SIMPLE-COMPILER-WARNING = 32928, 
+// Unused CLOS::FORWARD-REFERENCED-CLASS = 32787, 
+// Unused CLASP-CLEAVIR-AST::ATOMIC-AST = 33439, 
+// Unused CLEAVIR-BIR::PRIMOP = 33208, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-UNQUOTE = 33095, 
+// Unused CLASP-ANALYZER::CLASS-LAYOUT = 33635, 
+// Unused ECLECTOR.READER::BACKQUOTE-ERROR = 33085, 
+// Unused CLEAVIR-AST::ONE-VALUE-AST-MIXIN = 33253, 
+// Unused ASDF/ACTION::DOWNWARD-OPERATION = 33528, 
+// Unused CLEAVIR-CST-TO-AST::SYMBOL-MACRO-NAMES-GLOBAL-SPECIAL = 33399, 
+// Unused CLOS::METAOBJECT = 32779, 
+// Unused COMMON-LISP::UNDEFINED-FUNCTION = 32871, 
+// Unused ECLECTOR.READER::BACKQUOTE-CONTEXT-ERROR = 33086, 
+// Unused CONCRETE-SYNTAX-TREE::SINGLETON-PARAMETER-GROUP-MIXIN = 32980, 
+// Unused CLASP-CLEAVIR-AST::BIND-AST = 33457, 
+// Unused UIOP/LISP-BUILD::COMPILE-FAILED-WARNING = 33503, 
+// Unused CORE::PRETTY-STREAM = 32908, 
+// Unused CLANG-TOOL::GOOD-DUMP-MATCH-CALLBACK = 33612, 
+// Unused ASDF/SESSION::FORMATTED-SYSTEM-DEFINITION-ERROR = 33510, 
+// Unused ASDF/BUNDLE::PREBUILT-SYSTEM = 33588, 
+// Unused COMMON-LISP::FLOATING-POINT-INEXACT = 32877, 
+// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-WARNING = 33373, 
+// Unused CONCRETE-SYNTAX-TREE::CCL = 32977, 
+// Unused COMMON-LISP::PARSE-ERROR = 32884, 
+// Unused CLEAVIR-AST::TAGBODY-AST = 33276, 
+// Unused ASDF/CONCATENATE-SOURCE::MONOLITHIC-CONCATENATE-SOURCE-OP = 33597, 
+// Unused CLASP-ANALYZER::CTYPE = 33648, 
+// Unused SB-BSD-SOCKETS::SOCKET-TYPE-NOT-SUPPORTED-ERROR = 32946, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-CONDITION = 33170, 
+// Unused CLOS::STANDARD-DIRECT-SLOT-DEFINITION = 32777, 
+// Unused CLEAVIR-ENVIRONMENT::BLOCK = 33345, 
+// Unused CLASP-ANALYZER::DONT-EXPOSE-CTYPE = 33679, 
+// Unused CLASP-ANALYZER::SIMPLE-CTYPE = 33650, 
+// Unused ASDF/COMPONENT::CHILD-COMPONENT = 33513, 
+// Unused ACCLIMATION::VIETNAMESE = 32963, 
+// Unused ASDF/BUNDLE::MONOLITHIC-DELIVER-ASD-OP = 33579, 
+// Unused SB-BSD-SOCKETS::ADDRESS-IN-USE-ERROR = 32935, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-BODY = 33020, 
+// Unused CLASP-CLEAVIR-AST::BIND-VA-LIST-AST = 33459, 
+// Unused CLASP-ANALYZER::ATOMIC-POD-OFFSET = 33689, 
+// Unused COMMON-LISP::UNBOUND-SLOT = 32870, 
+// Unused CLEAVIR-ENVIRONMENT::FUNCTION-DYNAMIC-EXTENT = 33352, 
+// Unused CORE::SIMPLE-PARSE-ERROR = 32885, 
+// Unused ECLECTOR.READER::NO-SLOT-VALUE-FOUND = 33147, 
+// Unused ECLECTOR.READER::END-OF-LIST = 33060, 
+// Unused COMMON-LISP::SIMPLE-WARNING = 32831, 
+// Unused CONCRETE-SYNTAX-TREE::CLIENT = 32972, 
+// Unused CLEAVIR-BIR::IBLOCK = 33197, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-EQUALS = 33160, 
+// Unused CLEAVIR-CST-TO-AST::ENCAPSULATED-CONDITION = 33363, 
+// Unused CLASP-CLEAVIR-BIR::MV-FOREIGN-CALL = 33465, 
+// Unused CLEAVIR-AST::BIND-AST = 33288, 
+// Unused CLEAVIR-BIR::READTEMP = 33222, 
+// Unused STATIC-GFS::CONSTRUCTOR-CELL = 32818, 
+// Unused ASDF/COMPONENT::FILE-COMPONENT = 33514, 
+// Unused ECLECTOR.CONCRETE-SYNTAX-TREE::CST-CLIENT = 33167, 
+// Unused CLANG-TOOL::DUMP-MATCH-CALLBACK = 33613, 
+// Unused CLEAVIR-ENVIRONMENT::FUNCTION-TYPE = 33348, 
+// Unused COMPILER::REDEFINED-FUNCTION-WARNING = 32925, 
+// Unused CLASP-ANALYZER::PROJECT = 33643, 
+// Unused CLASP-ANALYZER::INSTANCE-FIELD = 33626, 
+// Unused ASDF/LISP-ACTION::PREPARE-SOURCE-OP = 33543, 
+// Unused ECLECTOR.READER::UNQUOTE-ERROR = 33091, 
+// Unused SB-BSD-SOCKETS::INVALID-ARGUMENT-ERROR = 32940, 
+// Unused CLASP-ANALYZER::INSTANCE-ARRAY-ELEMENT = 33628, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-SLOT-VALUE = 33146, 
+// Unused CLASP-CLEAVIR-AST::ATOMIC-CDR-AST = 33443, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-SINGLE-QUOTE = 33107, 
+// Unused CLEAVIR-AST::FLOAT-COS-AST = 33309, 
+// Unused ECLECTOR.BASE::INCOMPLETE-CONSTRUCT = 33052, 
+// Unused CLEAVIR-CST-TO-AST::SETQ-CONSTANT-VARIABLE = 33396, 
+// Unused CLEAVIR-IO::UNKNOWN-FILE-VERSION = 33245, 
+// Unused ECLECTOR.BASE::MISSING-DELIMITER = 33053, 
+// Unused CLASP-CLEAVIR-BIR::VREF = 33475, 
+// Unused CLEAVIR-ENVIRONMENT::FUNCTION = 33343, 
+// Unused ASDF/CONCATENATE-SOURCE::LOAD-CONCATENATED-SOURCE-OP = 33594, 
+// Unused CLEAVIR-AST::EQ-AST = 33289, 
+// Unused CLASP-ANALYZER::RECORD-CTYPE = 33667, 
+// Unused CLEAVIR-BIR::ARGUMENT = 33194, 
+// Unused CLANG-TOOL::CODE-MATCH-TIMER = 33611, 
+// Unused CONCRETE-SYNTAX-TREE::CST = 32966, 
+// Unused STATIC-GFS::CELL-UPDATER = 32819, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKQUOTE = 33089, 
+// Unused CLASP-ANALYZER::SIMPLE-STAMP = 33637, 
+// Unused CLEAVIR-AST::LEXICAL-VARIABLE = 33257, 
+// Unused ACCLIMATION::LANGUAGE = 32956, 
+// Unused COMPILER::WRONG-ARGCOUNT-WARNING = 32926, 
+// Unused ASDF/BUNDLE::MONOLITHIC-LOAD-BUNDLE-OP = 33581, 
+// Unused CLASP-ANALYZER::PARALLEL-RESULT = 33712, 
+// Unused EXT::STORAGE-EXHAUSTED = 32838, 
+// Unused CLEAVIR-AST::SET-SYMBOL-VALUE-AST = 33261, 
+// Unused GRAY::FUNDAMENTAL-BINARY-OUTPUT-STREAM = 32906, 
+// Unused ASDF/BUNDLE::IMAGE-OP = 33584, 
+// Unused ECLECTOR.READER::READER-CONDITIONAL-CONDITION = 33151, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-COMPLEX-PART = 33134, 
+// Unused CLASP-ANALYZER::SHARED-MUTEX-CTYPE = 33653, 
+// Unused CORE::CXX-CLASS = 32788, 
+// Unused CLEAVIR-BIR::ONE-OUTPUT = 33190, 
+// Unused CLEAVIR-BIR::LOAD-TIME-VALUE = 33184, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER = 33016, 
+// Unused SB-BSD-SOCKETS::SOCKET-ERROR = 32934, 
+// Unused CLEAVIR-CST-TO-AST::NO-BLOCK-INFO = 33370, 
+// Unused CLEAVIR-AST::CASE-AST = 33291, 
+// Unused CONCRETE-SYNTAX-TREE::LAMBDA-LIST-TYPE = 33026, 
+// Unused ASDF/PARSE-DEFSYSTEM::NON-TOPLEVEL-SYSTEM = 33564, 
+// Unused SB-BSD-SOCKETS::SOCKET = 32931, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-UNQUOTE = 33096, 
+// Unused CLEAVIR-AST::SYMBOL-VALUE-AST = 33259, 
+// Unused ECLECTOR.READER::UNTERMINATED-STRING = 33083, 
+// Unused CORE::NEWLINE = 32912, 
+// Unused CORE::PPRINT-DISPATCH-TABLE = 32918, 
+// Unused ECLECTOR.READER::SHARPSIGN-INVALID = 33078, 
+// Unused CLEAVIR-BIR::VALUES-COLLECT = 33219, 
+// Unused CLEAVIR-AST::RPLACD-AST = 33315, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-OPTIONAL-PARAMETER = 33008, 
+// Unused CLEAVIR-CST-TO-AST::NO-TAG-INFO = 33369, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER-GROUP = 32996, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-LAMBDA-LIST = 33028, 
+// Unused ASDF/FIND-COMPONENT::MISSING-DEPENDENCY-OF-VERSION = 33549, 
+// Unused CLEAVIR-CST-TO-AST::INVALID-EVAL-WHEN-SITUATION = 33384, 
+// Unused CLASP-CLEAVIR-BIR::VCAS = 33477, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AntechamberRoot_O__ = 645, 
-// Unused CLEAVIR-CST-TO-AST::LAMBDA-MUST-BE-PROPER-LIST = 1675, 
-// Unused EXT::UNIX-SIGNAL-RECEIVED = 1130, 
-// Unused CLASP-ANALYZER::ARRAY-OFFSET = 1870, 
-// Unused CLASP-CLEAVIR-BIR::FENCE = 1759, 
-// Unused CLASP-CLEAVIR-AST::VREF-AST = 1742, 
-// Unused EXT::STREAM-DECODING-ERROR = 1186, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-OPTIONAL-PARAMETER-GROUP = 1276, 
-// Unused CLASP-ANALYZER::FUNCTION-PROTO-CTYPE = 1825, 
-// Unused CLEAVIR-BIR::CONSTANT-REFERENCE = 1495, 
+// Unused CLEAVIR-CST-TO-AST::LAMBDA-MUST-BE-PROPER-LIST = 33386, 
+// Unused EXT::UNIX-SIGNAL-RECEIVED = 32841, 
+// Unused ASDF/ACTION::NON-PROPAGATING-OPERATION = 33532, 
+// Unused CLASP-ANALYZER::ARRAY-OFFSET = 33700, 
+// Unused CLASP-CLEAVIR-BIR::FENCE = 33470, 
+// Unused CLASP-CLEAVIR-AST::VREF-AST = 33453, 
+// Unused ASDF/FIND-SYSTEM::LOAD-SYSTEM-DEFINITION-ERROR = 33561, 
+// Unused EXT::STREAM-DECODING-ERROR = 32897, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-OPTIONAL-PARAMETER-GROUP = 32987, 
+// Unused CLASP-ANALYZER::FUNCTION-PROTO-CTYPE = 33655, 
+// Unused CLEAVIR-BIR::CONSTANT-REFERENCE = 33206, 
+// Unused ASDF/CONCATENATE-SOURCE::BASIC-CONCATENATE-SOURCE-OP = 33589, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O___gctools__smart_ptr_kinematics__MonomerNode_O_____ = 634, 
-// Unused ECLECTOR.READER::INCORRECT-INITIALIZATION-LENGTH = 1418, 
-// Unused CLASP-ANALYZER::POINTER-OFFSET = 1864, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER-GROUP = 1278, 
-// Unused CLEAVIR-AST::FLOAT-EQUAL-AST = 1596, 
-// Unused CORE::WRONG-NUMBER-OF-ARGUMENTS = 1169, 
-// Unused CLOS::EFFECTIVE-SLOT-DEFINITION = 1072, 
-// Unused MP::NOT-ATOMIC = 1144, 
-// Unused ECLECTOR.READTABLE::UNKNOWN-MACRO-SUB-CHARACTER = 1347, 
-// Unused CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT = 1817, 
-// Unused SB-BSD-SOCKETS::TRY-AGAIN-ERROR = 1241, 
-// Unused CONCRETE-SYNTAX-TREE::CONS-CST-REQUIRED = 1260, 
-// Unused CLASP-CLEAVIR-AST::DERIVABLE-STAMP-AST = 1727, 
-// Unused CLEAVIR-BIR::CONSTANT = 1472, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-P = 1437, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-PARAMETER = 1303, 
-// Unused CLASP-ANALYZER::DONT-ANALYZE-CTYPE = 1850, 
-// Unused CLASP-ANALYZER::STATIC-LOCAL-VARIABLE = 1811, 
-// Unused ACCLIMATION::CONDITION = 1254, 
-// Unused CLOS::DIRECT-SLOT-DEFINITION = 1071, 
-// Unused COMPILER::COMPILED-PROGRAM-ERROR = 1208, 
-// Unused CLANG-TOOL::WRONG-MATCHER = 1791, 
-// Unused CLEAVIR-AST::DYNAMIC-ALLOCATION-AST = 1575, 
-// Unused CLASP-ANALYZER::CXX-MUTEX-OFFSET = 1869, 
-// Unused CLEAVIR-AST::FLOAT-SUB-AST = 1589, 
-// Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-END-WITH-PACKAGE-MARKER = 1362, 
-// Unused CLASP-CLEAVIR-BMIR::HEADERQ = 1772, 
-// Unused CLEAVIR-BIR::TERMINATOR = 1480, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-REQUIRED-PARAMETER-GROUP = 1274, 
-// Unused CONCRETE-SYNTAX-TREE::SIMPLE-VARIABLE = 1296, 
-// Unused SB-BSD-SOCKETS::INTERRUPTED-ERROR = 1225, 
-// Unused MP::RWLOCK = 1091, 
-// Unused COMMON-LISP::DIVISION-BY-ZERO = 1163, 
-// Unused CLASP-CLEAVIR-AST::ATOMIC-RPLACD-AST = 1734, 
-// Unused CLEAVIR-BIR::FIXED-TO-MULTIPLE = 1523, 
-// Unused CONCRETE-SYNTAX-TREE::STRUCTURE-MISMATCH-ERROR = 1613, 
-// Unused COMPILER::COMPILER-CONDITION = 1209, 
-// Unused COMMON-LISP::STANDARD-GENERIC-FUNCTION = 1094, 
-// Unused CLEAVIR-ENVIRONMENT::INLINE = 1643, 
-// Unused SB-BSD-SOCKETS::NAME-SERVICE-ERROR = 1237, 
-// Unused CLEAVIR-BIR::LOCAL-CALL = 1504, 
-// Unused CLEAVIR-BIR::UNREACHABLE = 1490, 
-// Unused SB-BSD-SOCKETS::INET-SOCKET = 1221, 
-// Unused CLOSER-MOP::STANDARD-GENERIC-FUNCTION = 1336, 
-// Unused CLEAVIR-AST::RPLACA-AST = 1603, 
-// Unused CORE::ARRAY-OUT-OF-BOUNDS = 1134, 
-// Unused ECLECTOR.READER::UNINTERNED-SYMBOL-MUST-NOT-CONTAIN-PACKAGE-MARKER = 1366, 
-// Unused CONCRETE-SYNTAX-TREE::CONS-CST = 1257, 
-// Unused CLEAVIR-BIR::JUMP = 1517, 
-// Unused CLASP-CLEAVIR::CLASP-CST-CLIENT = 1751, 
-// Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-C = 1421, 
-// Unused CLEAVIR-BIR::WRITEVAR = 1493, 
-// Unused CLASP-ANALYZER::UNKNOWN-CTYPE = 1834, 
-// Unused CLOS::EFFECTIVE-WRITER-METHOD = 1102, 
-// Unused CLEAVIR-ENVIRONMENT::SYMBOL-MACRO-INFO = 1619, 
-// Unused CLEAVIR-ENVIRONMENT::CONSTANT-VARIABLE-INFO = 1618, 
-// Unused GRAY::FUNDAMENTAL-BINARY-STREAM = 1191, 
-// Unused COMPILER::UNDEFINED-FUNCTION-WARNING = 1212, 
-// Unused CLANG-TOOL::SOURCE-LOC-MATCH-CALLBACK = 1787, 
-// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-STYLE-WARNING = 1701, 
-// Unused CLEAVIR-CST-TO-AST::RUN-TIME-PROGRAM-ERROR = 1660, 
-// Unused EXT::STREAM-ENCODING-ERROR = 1185, 
-// Unused CLASP-ANALYZER::UNSUPPORTED-TYPE = 1793, 
-// Unused ECLECTOR.READER::NUMERIC-PARAMETER-SUPPLIED-BUT-IGNORED = 1368, 
-// Unused CLEAVIR-COMPILATION-POLICY::BAD-OPTIMIZE-VALUE = 1645, 
-// Unused CLEAVIR-CST-TO-AST::COMPILATION-PROGRAM-ERROR = 1649, 
-// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-CHARACTER-NAME = 1402, 
-// Unused CLASP-ANALYZER::STD-MAP-CTYPE = 1822, 
-// Unused GRAY::FUNDAMENTAL-OUTPUT-STREAM = 1189, 
-// Unused SB-BSD-SOCKETS::HOST-ENT = 1219, 
-// Unused ECLECTOR.READER::SYMBOL-SYNTAX-ERROR = 1357, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-DOT = 1397, 
-// Unused CLEAVIR-BIR::DATUM = 1466, 
-// Unused CLASP-CLEAVIR-AST::RACK-REF-AST = 1737, 
-// Unused CLEAVIR-CST-TO-AST::COMPILATION-WARNING = 1650, 
-// Unused CLASP-ANALYZER::GCSTRING-OFFSET = 1876, 
-// Unused ECLECTOR.READER::SYMBOL-CAN-HAVE-AT-MOST-TWO-PACKAGE-MARKERS = 1365, 
-// Unused CLOS::STANDARD-ACCESSOR-METHOD = 1098, 
-// Unused CLASP-ANALYZER::TEMPLATE-SPECIALIZATION-CTYPE = 1835, 
-// Unused CLASP-ANALYZER::TAGGED-POINTER-OFFSET = 1863, 
-// Unused COMMON-LISP::STRUCTURE-OBJECT = 1103, 
-// Unused ECLECTOR.READTABLE.SIMPLE::READTABLE = 1348, 
-// Unused CLEAVIR-AST::FLOAT-NOT-GREATER-AST = 1593, 
-// Unused ECLECTOR.READER::INVALID-CONSTITUENT-CHARACTER = 1358, 
-// Unused ECLECTOR.READER::PACKAGE-DOES-NOT-EXIST = 1353, 
-// Unused CLASP-ANALYZER::CONTAINERALLOC = 1804, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-LOCAL-MACRO = 1690, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-LAMBDA-LIST = 1316, 
-// Unused ECLECTOR.READTABLE::CLASP-NON-CST-ELECTOR-CLIENT = 1778, 
-// Unused CORE::CLOSED-STREAM = 1149, 
-// Unused CLEAVIR-AST::PRIMOP-AST = 1557, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-NOTE = 1464, 
-// Unused CLASP-CLEAVIR-AST::VCAS-AST = 1745, 
-// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-STYLE-WARNING = 1698, 
-// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER = 1302, 
-// Unused INTERPRET-AST::CANNOT-INTERPRET = 1749, 
-// Unused CLEAVIR-BIR::MV-LOCAL-CALL = 1505, 
-// Unused CLEAVIR-AST::UNREACHABLE-AST = 1576, 
-// Unused CLASP-CLEAVIR::ABI-X86-64 = 1709, 
-// Unused CLOS::SPECIALIZER = 1074, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-MIXIN = 1295, 
-// Unused CLASP-CLEAVIR-BIR::HEADER-STAMP-CASE = 1757, 
-// Unused SB-BSD-SOCKETS::OPERATION-TIMEOUT-ERROR = 1228, 
-// Unused CLANG-TOOL::NO-NODE-FOR-TAG-ERROR = 1788, 
-// Unused ECLECTOR.READER::TOO-MANY-DOTS = 1389, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-OPTIONAL = 1307, 
-// Unused CLEAVIR-AST-TO-BIR::INSERTER = 1612, 
-// Unused COMMON-LISP::STREAM-ERROR = 1147, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-EQUALS = 1450, 
-// Unused SB-BSD-SOCKETS::CONNECTION-REFUSED-ERROR = 1227, 
-// Unused CLEAVIR-PRIMOP-INFO::INFO = 1457, 
-// Unused CLASP-CLEAVIR::LLVM-FUNCTION-INFO = 1777, 
-// Unused CLEAVIR-BIR::ACCESSTEMP = 1510, 
-// Unused CORE::SIMPLE-READER-ERROR = 1176, 
-// Unused ECLECTOR.READER::TWO-PACKAGE-MARKERS-MUST-BE-ADJACENT = 1363, 
-// Unused CLEAVIR-CST-TO-AST::VALUES-&REST-SYNTAX = 1666, 
-// Unused CLASP-ANALYZER::OFFSET = 1856, 
-// Unused ECLECTOR.READER::COMPLEX-PARTS-MUST-FOLLOW-SHARPSIGN-C = 1420, 
-// Unused CLEAVIR-CST-TO-AST::BODY = 1705, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-KEY = 1310, 
-// Unused CORE::BLOCK-START = 1203, 
-// Unused CLEAVIR-ENVIRONMENT::TAG = 1635, 
-// Unused STATIC-GFS::CHANGER-UPDATER = 1112, 
-// Unused SB-BSD-SOCKETS::OPERATION-NOT-SUPPORTED-ERROR = 1232, 
-// Unused CLASP-ANALYZER::SMART-PTR-OFFSET = 1862, 
-// Unused COMPILER::SIMPLE-COMPILER-STYLE-WARNING = 1218, 
-// Unused ECLECTOR.READER::TOO-MANY-COMPLEX-PARTS = 1425, 
-// Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE-INFO = 1616, 
-// Unused CLOS::STANDARD-SLOT-DEFINITION = 1070, 
-// Unused CLASP-CLEAVIR-AST::DEBUG-BREAK-AST = 1717, 
-// Unused CLASP-ANALYZER::SMART-PTR-CTYPE = 1838, 
-// Unused CLEAVIR-AST::FLOAT-NOT-LESS-AST = 1595, 
-// Unused ECLECTOR.READER::READ-TIME-EVALUATION-ERROR = 1400, 
-// Unused CLASP-CLEAVIR-AST::CAS-CDR-AST = 1736, 
-// Unused CLEAVIR-AST::SLOT-WRITE-AST = 1606, 
-// Unused CLASP-CLEAVIR-AST::BASE-FOREIGN-CALL-AST = 1718, 
-// Unused CLASP-ANALYZER::TAGGED-POINTER-CTYPE = 1839, 
-// Unused CLEAVIR-COMPILATION-POLICY::NO-POLICY-COMPUTER = 1647, 
-// Unused CLASP-ANALYZER::HNODE = 1816, 
-// Unused CLOS::%NO-NEXT-METHOD-CONTINUATION = 1105, 
-// Unused CLEAVIR-ENVIRONMENT::OPTIMIZE-INFO = 1627, 
-// Unused COMMON-LISP::LIST = 1081, 
-// Unused CLEAVIR-CST-TO-AST::NO-FUNCTION-INFO = 1656, 
-// Unused CLEAVIR-CST-TO-AST::NO-INFO = 1654, 
-// Unused CLASP-CLEAVIR::CLASP-ECLECTOR-CLIENT-MIXIN = 1750, 
-// Unused CLASP-CLEAVIR::CLASP-ORDINARY-REST-PARAMETER-GROUP = 1713, 
-// Unused CLASP-ANALYZER::LVALUE-REFERENCE-CTYPE = 1826, 
-// Unused CLEAVIR-AST::FIXNUM-GREATER-AST = 1585, 
-// Unused CLASP-ANALYZER::INJECTED-CLASS-NAME-CTYPE = 1845, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-ARGUMENT-MUST-BE-FUNCTION-NAME-OR-LAMBDA-EXPRESSION = 1676, 
-// Unused CLEAVIR-CST-TO-AST::BINDING-MUST-BE-SYMBOL-OR-LIST = 1679, 
-// Unused CORE::SIMPLE-STYLE-WARNING = 1122, 
-// Unused CLEAVIR-BIR::ABSTRACT-CALL = 1500, 
-// Unused CORE::SIMPLE-CONTROL-ERROR = 1142, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-ENVIRONMENT = 1313, 
-// Unused ALEXANDRIA.0.DEV::SIMPLE-READER-ERROR = 1333, 
-// Unused CLASP-CLEAVIR-AST::ATOMIC-RACK-READ-AST = 1738, 
-// Unused ECLECTOR.READER::UNTERMINATED-VECTOR = 1414, 
-// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-ERROR = 1661, 
-// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-WARNING = 1697, 
-// Unused CLASP-CLEAVIR-BMIR::CAS = 1776, 
-// Unused CONCRETE-SYNTAX-TREE::SICL = 1263, 
-// Unused CONCRETE-SYNTAX-TREE::ENVIRONMENT-PARAMETER-GROUP = 1290, 
-// Unused ACCLIMATION::ENGLISH = 1249, 
-// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER-GROUP = 1282, 
-// Unused CORE::STD-CLASS = 1078, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-DIGIT = 1406, 
-// Unused CONCRETE-SYNTAX-TREE::AUX-PARAMETER = 1300, 
-// Unused CLOS::STANDARD-READER-METHOD = 1099, 
-// Unused EXT::SOURCE-LOCATION = 1113, 
-// Unused CLEAVIR-BIR::WRITETEMP = 1512, 
-// Unused ECLECTOR.READER::UNKNOWN-CHARACTER-NAME = 1404, 
-// Unused CLASP-ANALYZER::COPYABLE-OFFSET = 1857, 
-// Unused CLASP-ANALYZER::UNINTERESTING-CTYPE = 1833, 
-// Unused CLEAVIR-CONDITIONS::ORIGIN = 1463, 
-// Unused ECLECTOR.READER::COMPLEX-PART-CONDITION = 1422, 
-// Unused CLEAVIR-BIR::TYPE-CONFLICT = 1528, 
-// Unused ECLECTOR.READER::DIGIT-EXPECTED = 1407, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-STYLE-WARNING = 1462, 
-// Unused CLASP-CLEAVIR-AST::WRAPPED-STAMP-AST = 1726, 
-// Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-BE-ONLY-PACKAGE-MARKERS = 1361, 
-// Unused ECLECTOR.READER::UNQUOTE-IN-INVALID-CONTEXT = 1383, 
-// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-ERROR = 1696, 
-// Unused CLEAVIR-CST-TO-AST::EVAL-WARNING = 1703, 
-// Unused CLEAVIR-AST::MULTIPLE-VALUE-PROG1-AST = 1574, 
-// Unused CLEAVIR-BIR::TRANSFER = 1470, 
-// Unused CLOS::EQL-SPECIALIZER = 1075, 
-// Unused CLASP-ANALYZER::GCSTRING-MOVEABLE-CTYPE = 1855, 
-// Unused CLEAVIR-CST-TO-AST::CASE-MUST-BE-PROPER-LIST = 1671, 
-// Unused CLEAVIR-BIR::VALUES-SAVE = 1507, 
-// Unused CLASP-ANALYZER::DESTINATION = 1879, 
-// Unused CLEAVIR-METER::SIZE-METER = 1537, 
-// Unused CLASP-CLEAVIR-BMIR::CHARACTERP = 1769, 
-// Unused CLEAVIR-CST-TO-AST::COMPILATION-CONDITION = 1648, 
-// Unused CLANG-TOOL::CODE-MATCH-CALLBACK = 1786, 
-// Unused CONCRETE-SYNTAX-TREE::ATOM-CST = 1256, 
-// Unused ALEXANDRIA.0.DEV::SIMPLE-PROGRAM-ERROR = 1335, 
-// Unused CONCRETE-SYNTAX-TREE::OPTIONAL-PARAMETER-GROUP = 1275, 
-// Unused ECLECTOR.READER::UNQUOTE-NOT-INSIDE-BACKQUOTE = 1382, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-REST-PARAMETER-GROUP = 1289, 
-// Unused COMPILER::UNDEFINED-VARIABLE-WARNING = 1211, 
-// Unused CLEAVIR-BIR::ENCLOSE = 1489, 
-// Unused CLEAVIR-AST::FLOAT-LESS-AST = 1592, 
-// Unused CORE::SIMPLE-PACKAGE-ERROR = 1154, 
-// Unused ECLECTOR.READTABLE::DISPATCH-MACRO-CHARACTER-ERROR = 1343, 
-// Unused CLANG-TOOL::NODE-MATCHER-AMBIGUOUS-ERROR = 1792, 
-// Unused CLEAVIR-AST::FLOAT-MUL-AST = 1590, 
-// Unused COMMON-LISP::ARITHMETIC-ERROR = 1162, 
-// Unused ECLECTOR.READER::FEATURE-EXPRESSION-MUST-FOLLOW-SHARPSIGN-PLUS-MINUS = 1442, 
-// Unused STATIC-GFS::REINITIALIZER-UPDATER = 1110, 
-// Unused CLOS::STD-METHOD = 1096, 
-// Unused CLASP-CLEAVIR-BIR::ATOMIC-RACK-READ = 1760, 
-// Unused CLASP-ANALYZER::SPECIES = 1877, 
-// Unused CLEAVIR-CST-TO-AST::LOCAL-FUNCTION-DEFINITION-MUST-BE-PROPER-LIST = 1674, 
-// Unused EXT::UNDEFINED-CLASS = 1161, 
-// Unused CORE::BLOCK-END = 1204, 
-// Unused ECLECTOR.READER::SHARPSIGN-SHARPSIGN-UNDEFINED-LABEL = 1454, 
-// Unused ECLECTOR.READER::STRUCTURE-CONSTRUCTOR-MUST-FOLLOW-SHARPSIGN-S = 1427, 
-// Unused ALEXANDRIA.0.DEV::SIMPLE-STYLE-WARNING = 1332, 
-// Unused CLASP-CLEAVIR-BMIR::LOAD = 1774, 
-// Unused EXT::INTERACTIVE-INTERRUPT = 1180, 
-// Unused ECLECTOR.READER::NO-ELEMENTS-FOUND = 1417, 
-// Unused CONCRETE-SYNTAX-TREE::LAMBDA-LIST-KEYWORD = 1306, 
-// Unused CORE::OUT-OF-BOUNDS = 1132, 
-// Unused CLOS::NO-APPLICABLE-METHOD-ERROR = 1138, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-STRUCTURE-TYPE-NAME = 1429, 
-// Unused CLEAVIR-CST-TO-AST::BINDING-MUST-HAVE-LENGTH-ONE-OR-TWO = 1680, 
-// Unused CLASP-CLEAVIR-BIR::ATOMIC = 1758, 
-// Unused EXT::ILLEGAL-INSTRUCTION = 1128, 
-// Unused CORE::OUT-OF-EXTENT-UNWIND = 1143, 
-// Unused CONCRETE-SYNTAX-TREE::GRAMMAR-SYMBOL = 1267, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-SLOT-NAME = 1432, 
-// Unused CLASP-CLEAVIR-AST::FOREIGN-CALL-AST = 1720, 
-// Unused CORE::DESTRUCTURE-WRONG-NUMBER-OF-ARGUMENTS = 1170, 
-// Unused CLEAVIR-BIR::IFI = 1518, 
-// Unused CLASP-CLEAVIR::ABI-X86-32 = 1710, 
-// Unused CLEAVIR-BIR::CONDITIONAL-TEST = 1519, 
-// Unused ECLECTOR.BASE::END-OF-FILE = 1340, 
-// Unused CLEAVIR-AST::TYPEQ-AST = 1568, 
-// Unused CLEAVIR-AST::VALUES-AST = 1573, 
-// Unused ECLECTOR.READER::UNTERMINATED-BLOCK-COMMENT = 1411, 
-// Unused GRAY::FUNDAMENTAL-BINARY-INPUT-STREAM = 1194, 
-// Unused ECLECTOR.READER::SHARPSIGN-EQUALS-ONLY-REFERS-TO-SELF = 1453, 
-// Unused ECLECTOR.READTABLE::UNTERMINATED-DISPATCH-MACRO = 1344, 
-// Unused CLEAVIR-CST-TO-AST::LAMBDA-CALL-FIRST-SYMBOL-NOT-LAMBDA = 1693, 
-// Unused ECLECTOR.BASE::STREAM-POSITION-CONDITION = 1338, 
-// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-CONSING-DOT = 1390, 
-  STAMPWTAG_max = 3383,
+// Unused ASDF/LISP-ACTION::BASIC-LOAD-OP = 33538, 
+// Unused ECLECTOR.READER::INCORRECT-INITIALIZATION-LENGTH = 33129, 
+// Unused CLASP-ANALYZER::POINTER-OFFSET = 33694, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER-GROUP = 32989, 
+// Unused CLEAVIR-AST::FLOAT-EQUAL-AST = 33307, 
+// Unused CORE::WRONG-NUMBER-OF-ARGUMENTS = 32880, 
+// Unused CLOS::EFFECTIVE-SLOT-DEFINITION = 32783, 
+// Unused MP::NOT-ATOMIC = 32855, 
+// Unused ECLECTOR.READTABLE::UNKNOWN-MACRO-SUB-CHARACTER = 33058, 
+// Unused CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT = 33647, 
+// Unused SB-BSD-SOCKETS::TRY-AGAIN-ERROR = 32952, 
+// Unused CONCRETE-SYNTAX-TREE::CONS-CST-REQUIRED = 32971, 
+// Unused CLASP-CLEAVIR-AST::DERIVABLE-STAMP-AST = 33438, 
+// Unused ASDF/CONCATENATE-SOURCE::BASIC-COMPILE-CONCATENATED-SOURCE-OP = 33591, 
+// Unused CLEAVIR-BIR::CONSTANT = 33183, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-P = 33148, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-PARAMETER = 33014, 
+// Unused CLASP-ANALYZER::DONT-ANALYZE-CTYPE = 33680, 
+// Unused CLASP-ANALYZER::STATIC-LOCAL-VARIABLE = 33641, 
+// Unused ACCLIMATION::CONDITION = 32965, 
+// Unused CLOS::DIRECT-SLOT-DEFINITION = 32782, 
+// Unused COMPILER::COMPILED-PROGRAM-ERROR = 32919, 
+// Unused CLANG-TOOL::WRONG-MATCHER = 33621, 
+// Unused CLEAVIR-AST::DYNAMIC-ALLOCATION-AST = 33286, 
+// Unused CLASP-ANALYZER::CXX-MUTEX-OFFSET = 33699, 
+// Unused CLEAVIR-AST::FLOAT-SUB-AST = 33300, 
+// Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-END-WITH-PACKAGE-MARKER = 33073, 
+// Unused CLASP-CLEAVIR-BMIR::HEADERQ = 33483, 
+// Unused CLEAVIR-BIR::TERMINATOR = 33191, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-REQUIRED-PARAMETER-GROUP = 32985, 
+// Unused CONCRETE-SYNTAX-TREE::SIMPLE-VARIABLE = 33007, 
+// Unused SB-BSD-SOCKETS::INTERRUPTED-ERROR = 32936, 
+// Unused MP::RWLOCK = 32802, 
+// Unused COMMON-LISP::DIVISION-BY-ZERO = 32874, 
+// Unused CLASP-CLEAVIR-AST::ATOMIC-RPLACD-AST = 33445, 
+// Unused ASDF/SOURCE-REGISTRY::INVALID-SOURCE-REGISTRY = 33605, 
+// Unused CLEAVIR-BIR::FIXED-TO-MULTIPLE = 33234, 
+// Unused CONCRETE-SYNTAX-TREE::STRUCTURE-MISMATCH-ERROR = 33324, 
+// Unused UIOP/VERSION::DEPRECATED-FUNCTION-CONDITION = 33494, 
+// Unused COMPILER::COMPILER-CONDITION = 32920, 
+// Unused COMMON-LISP::STANDARD-GENERIC-FUNCTION = 32805, 
+// Unused SB-BSD-SOCKETS::NAME-SERVICE-ERROR = 32948, 
+// Unused CLEAVIR-ENVIRONMENT::INLINE = 33354, 
+// Unused CLEAVIR-BIR::LOCAL-CALL = 33215, 
+// Unused CLEAVIR-BIR::UNREACHABLE = 33201, 
+// Unused SB-BSD-SOCKETS::INET-SOCKET = 32932, 
+// Unused CLOSER-MOP::STANDARD-GENERIC-FUNCTION = 33047, 
+// Unused CLEAVIR-AST::RPLACA-AST = 33314, 
+// Unused CORE::ARRAY-OUT-OF-BOUNDS = 32845, 
+// Unused ECLECTOR.READER::UNINTERNED-SYMBOL-MUST-NOT-CONTAIN-PACKAGE-MARKER = 33077, 
+// Unused CONCRETE-SYNTAX-TREE::CONS-CST = 32968, 
+// Unused CLEAVIR-BIR::JUMP = 33228, 
+// Unused CLASP-CLEAVIR::CLASP-CST-CLIENT = 33462, 
+// Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-C = 33132, 
+// Unused CLEAVIR-BIR::WRITEVAR = 33204, 
+// Unused UIOP/LISP-BUILD::COMPILE-CONDITION = 33499, 
+// Unused CLASP-ANALYZER::UNKNOWN-CTYPE = 33664, 
+// Unused CLOS::EFFECTIVE-WRITER-METHOD = 32813, 
+// Unused CLEAVIR-ENVIRONMENT::SYMBOL-MACRO-INFO = 33330, 
+// Unused CLEAVIR-ENVIRONMENT::CONSTANT-VARIABLE-INFO = 33329, 
+// Unused ASDF/BUNDLE::MONOLITHIC-BUNDLE-OP = 33568, 
+// Unused GRAY::FUNDAMENTAL-BINARY-STREAM = 32902, 
+// Unused COMPILER::UNDEFINED-FUNCTION-WARNING = 32923, 
+// Unused ASDF/SESSION::SESSION = 33508, 
+// Unused CLANG-TOOL::SOURCE-LOC-MATCH-CALLBACK = 33617, 
+// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-STYLE-WARNING = 33412, 
+// Unused CLEAVIR-CST-TO-AST::RUN-TIME-PROGRAM-ERROR = 33371, 
+// Unused EXT::STREAM-ENCODING-ERROR = 32896, 
+// Unused CLASP-ANALYZER::UNSUPPORTED-TYPE = 33623, 
+// Unused ECLECTOR.READER::NUMERIC-PARAMETER-SUPPLIED-BUT-IGNORED = 33079, 
+// Unused CLEAVIR-COMPILATION-POLICY::BAD-OPTIMIZE-VALUE = 33356, 
+// Unused CLEAVIR-CST-TO-AST::COMPILATION-PROGRAM-ERROR = 33360, 
+// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-CHARACTER-NAME = 33113, 
+// Unused CLASP-ANALYZER::STD-MAP-CTYPE = 33652, 
+// Unused ASDF/PARSE-DEFSYSTEM::BAD-SYSTEM-NAME = 33565, 
+// Unused GRAY::FUNDAMENTAL-OUTPUT-STREAM = 32900, 
+// Unused SB-BSD-SOCKETS::HOST-ENT = 32930, 
+// Unused ECLECTOR.READER::SYMBOL-SYNTAX-ERROR = 33068, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-DOT = 33108, 
+// Unused CLEAVIR-BIR::DATUM = 33177, 
+// Unused CLASP-CLEAVIR-AST::RACK-REF-AST = 33448, 
+// Unused CLEAVIR-CST-TO-AST::COMPILATION-WARNING = 33361, 
+// Unused CLASP-ANALYZER::GCSTRING-OFFSET = 33706, 
+// Unused ECLECTOR.READER::SYMBOL-CAN-HAVE-AT-MOST-TWO-PACKAGE-MARKERS = 33076, 
+// Unused CLOS::STANDARD-ACCESSOR-METHOD = 32809, 
+// Unused CLASP-ANALYZER::TEMPLATE-SPECIALIZATION-CTYPE = 33665, 
+// Unused CLASP-ANALYZER::TAGGED-POINTER-OFFSET = 33693, 
+// Unused COMMON-LISP::STRUCTURE-OBJECT = 32814, 
+// Unused ECLECTOR.READTABLE.SIMPLE::READTABLE = 33059, 
+// Unused CLEAVIR-AST::FLOAT-NOT-GREATER-AST = 33304, 
+// Unused ASDF/BACKWARD-INTERFACE::COMPILE-WARNED = 33609, 
+// Unused ECLECTOR.READER::INVALID-CONSTITUENT-CHARACTER = 33069, 
+// Unused ECLECTOR.READER::PACKAGE-DOES-NOT-EXIST = 33064, 
+// Unused CLASP-ANALYZER::CONTAINERALLOC = 33634, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-LOCAL-MACRO = 33401, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-LAMBDA-LIST = 33027, 
+// Unused ECLECTOR.READTABLE::CLASP-NON-CST-ELECTOR-CLIENT = 33489, 
+// Unused CORE::CLOSED-STREAM = 32860, 
+// Unused CLEAVIR-AST::PRIMOP-AST = 33268, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-NOTE = 33175, 
+// Unused ASDF/SYSTEM::UNDEFINED-SYSTEM = 33526, 
+// Unused CLASP-CLEAVIR-AST::VCAS-AST = 33456, 
+// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-STYLE-WARNING = 33409, 
+// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER = 33013, 
+// Unused INTERPRET-AST::CANNOT-INTERPRET = 33460, 
+// Unused ASDF/OUTPUT-TRANSLATIONS::INVALID-OUTPUT-TRANSLATION = 33604, 
+// Unused CLEAVIR-BIR::MV-LOCAL-CALL = 33216, 
+// Unused CLEAVIR-AST::UNREACHABLE-AST = 33287, 
+// Unused CLASP-CLEAVIR::ABI-X86-64 = 33420, 
+// Unused CLOS::SPECIALIZER = 32785, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-MIXIN = 33006, 
+// Unused CLASP-CLEAVIR-BIR::HEADER-STAMP-CASE = 33468, 
+// Unused SB-BSD-SOCKETS::OPERATION-TIMEOUT-ERROR = 32939, 
+// Unused CLANG-TOOL::NO-NODE-FOR-TAG-ERROR = 33618, 
+// Unused ECLECTOR.READER::TOO-MANY-DOTS = 33100, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-OPTIONAL = 33018, 
+// Unused CLEAVIR-AST-TO-BIR::INSERTER = 33323, 
+// Unused ASDF/FIND-COMPONENT::MISSING-COMPONENT-OF-VERSION = 33547, 
+// Unused COMMON-LISP::STREAM-ERROR = 32858, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-EQUALS = 33161, 
+// Unused ASDF/PACKAGE-INFERRED-SYSTEM::PACKAGE-INFERRED-SYSTEM-MISSING-PACKAGE-ERROR = 33603, 
+// Unused SB-BSD-SOCKETS::CONNECTION-REFUSED-ERROR = 32938, 
+// Unused CLEAVIR-PRIMOP-INFO::INFO = 33168, 
+// Unused CLASP-CLEAVIR::LLVM-FUNCTION-INFO = 33488, 
+// Unused CLEAVIR-BIR::ACCESSTEMP = 33221, 
+// Unused CORE::SIMPLE-READER-ERROR = 32887, 
+// Unused ECLECTOR.READER::TWO-PACKAGE-MARKERS-MUST-BE-ADJACENT = 33074, 
+// Unused CLEAVIR-CST-TO-AST::VALUES-&REST-SYNTAX = 33377, 
+// Unused CLASP-ANALYZER::OFFSET = 33686, 
+// Unused ASDF/CONCATENATE-SOURCE::CONCATENATE-SOURCE-OP = 33593, 
+// Unused ECLECTOR.READER::COMPLEX-PARTS-MUST-FOLLOW-SHARPSIGN-C = 33131, 
+// Unused CLEAVIR-CST-TO-AST::BODY = 33416, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-KEY = 33021, 
+// Unused CORE::BLOCK-START = 32914, 
+// Unused CLEAVIR-ENVIRONMENT::TAG = 33346, 
+// Unused STATIC-GFS::CHANGER-UPDATER = 32823, 
+// Unused SB-BSD-SOCKETS::OPERATION-NOT-SUPPORTED-ERROR = 32943, 
+// Unused CLASP-ANALYZER::SMART-PTR-OFFSET = 33692, 
+// Unused COMPILER::SIMPLE-COMPILER-STYLE-WARNING = 32929, 
+// Unused ECLECTOR.READER::TOO-MANY-COMPLEX-PARTS = 33136, 
+// Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE-INFO = 33327, 
+// Unused CLOS::STANDARD-SLOT-DEFINITION = 32781, 
+// Unused CLASP-CLEAVIR-AST::DEBUG-BREAK-AST = 33428, 
+// Unused CLASP-ANALYZER::SMART-PTR-CTYPE = 33668, 
+// Unused CLEAVIR-AST::FLOAT-NOT-LESS-AST = 33306, 
+// Unused ECLECTOR.READER::READ-TIME-EVALUATION-ERROR = 33111, 
+// Unused CLASP-CLEAVIR-AST::CAS-CDR-AST = 33447, 
+// Unused CLEAVIR-AST::SLOT-WRITE-AST = 33317, 
+// Unused CLASP-CLEAVIR-AST::BASE-FOREIGN-CALL-AST = 33429, 
+// Unused CLASP-ANALYZER::TAGGED-POINTER-CTYPE = 33669, 
+// Unused CLEAVIR-COMPILATION-POLICY::NO-POLICY-COMPUTER = 33358, 
+// Unused ASDF/CONCATENATE-SOURCE::BASIC-LOAD-COMPILED-CONCATENATED-SOURCE-OP = 33592, 
+// Unused CLASP-ANALYZER::HNODE = 33646, 
+// Unused CLOS::%NO-NEXT-METHOD-CONTINUATION = 32816, 
+// Unused CLEAVIR-ENVIRONMENT::OPTIMIZE-INFO = 33338, 
+// Unused COMMON-LISP::LIST = 32792, 
+// Unused CLEAVIR-CST-TO-AST::NO-FUNCTION-INFO = 33367, 
+// Unused CLEAVIR-CST-TO-AST::NO-INFO = 33365, 
+// Unused ASDF/CONCATENATE-SOURCE::MONOLITHIC-LOAD-COMPILED-CONCATENATED-SOURCE-OP = 33600, 
+// Unused CLASP-CLEAVIR::CLASP-ECLECTOR-CLIENT-MIXIN = 33461, 
+// Unused CLASP-CLEAVIR::CLASP-ORDINARY-REST-PARAMETER-GROUP = 33424, 
+// Unused CLASP-ANALYZER::LVALUE-REFERENCE-CTYPE = 33656, 
+// Unused CLEAVIR-AST::FIXNUM-GREATER-AST = 33296, 
+// Unused CLASP-ANALYZER::INJECTED-CLASS-NAME-CTYPE = 33675, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-ARGUMENT-MUST-BE-FUNCTION-NAME-OR-LAMBDA-EXPRESSION = 33387, 
+// Unused CLEAVIR-CST-TO-AST::BINDING-MUST-BE-SYMBOL-OR-LIST = 33390, 
+// Unused CORE::SIMPLE-STYLE-WARNING = 32833, 
+// Unused CLEAVIR-BIR::ABSTRACT-CALL = 33211, 
+// Unused ASDF/BACKWARD-INTERFACE::COMPILE-ERROR = 33607, 
+// Unused ASDF/SYSTEM::SYSTEM = 33525, 
+// Unused CORE::SIMPLE-CONTROL-ERROR = 32853, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-ENVIRONMENT = 33024, 
+// Unused ALEXANDRIA.0.DEV::SIMPLE-READER-ERROR = 33044, 
+// Unused CLASP-CLEAVIR-AST::ATOMIC-RACK-READ-AST = 33449, 
+// Unused ECLECTOR.READER::UNTERMINATED-VECTOR = 33125, 
+// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-ERROR = 33372, 
+// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-WARNING = 33408, 
+// Unused CLASP-CLEAVIR-BMIR::CAS = 33487, 
+// Unused CONCRETE-SYNTAX-TREE::SICL = 32974, 
+// Unused CONCRETE-SYNTAX-TREE::ENVIRONMENT-PARAMETER-GROUP = 33001, 
+// Unused ACCLIMATION::ENGLISH = 32960, 
+// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER-GROUP = 32993, 
+// Unused CORE::STD-CLASS = 32789, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-DIGIT = 33117, 
+// Unused CONCRETE-SYNTAX-TREE::AUX-PARAMETER = 33011, 
+// Unused CLOS::STANDARD-READER-METHOD = 32810, 
+// Unused EXT::SOURCE-LOCATION = 32824, 
+// Unused CLEAVIR-BIR::WRITETEMP = 33223, 
+// Unused ECLECTOR.READER::UNKNOWN-CHARACTER-NAME = 33115, 
+// Unused CLASP-ANALYZER::COPYABLE-OFFSET = 33687, 
+// Unused CLASP-ANALYZER::UNINTERESTING-CTYPE = 33663, 
+// Unused CLEAVIR-CONDITIONS::ORIGIN = 33174, 
+// Unused ECLECTOR.READER::COMPLEX-PART-CONDITION = 33133, 
+// Unused CLEAVIR-BIR::TYPE-CONFLICT = 33239, 
+// Unused ECLECTOR.READER::DIGIT-EXPECTED = 33118, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-STYLE-WARNING = 33173, 
+// Unused ASDF/FIND-COMPONENT::MISSING-DEPENDENCY = 33548, 
+// Unused CLASP-CLEAVIR-AST::WRAPPED-STAMP-AST = 33437, 
+// Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-BE-ONLY-PACKAGE-MARKERS = 33072, 
+// Unused ECLECTOR.READER::UNQUOTE-IN-INVALID-CONTEXT = 33094, 
+// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-ERROR = 33407, 
+// Unused CLEAVIR-CST-TO-AST::EVAL-WARNING = 33414, 
+// Unused CLEAVIR-AST::MULTIPLE-VALUE-PROG1-AST = 33285, 
+// Unused CLEAVIR-BIR::TRANSFER = 33181, 
+// Unused CLOS::EQL-SPECIALIZER = 32786, 
+// Unused CLASP-ANALYZER::GCSTRING-MOVEABLE-CTYPE = 33685, 
+// Unused CLEAVIR-CST-TO-AST::CASE-MUST-BE-PROPER-LIST = 33382, 
+// Unused CLEAVIR-BIR::VALUES-SAVE = 33218, 
+// Unused ASDF/CONCATENATE-SOURCE::LOAD-COMPILED-CONCATENATED-SOURCE-OP = 33596, 
+// Unused CLASP-ANALYZER::DESTINATION = 33709, 
+// Unused CLEAVIR-METER::SIZE-METER = 33248, 
+// Unused ASDF/PACKAGE-INFERRED-SYSTEM::PACKAGE-INFERRED-SYSTEM = 33601, 
+// Unused CLASP-CLEAVIR-BMIR::CHARACTERP = 33480, 
+// Unused CLEAVIR-CST-TO-AST::COMPILATION-CONDITION = 33359, 
+// Unused CLANG-TOOL::CODE-MATCH-CALLBACK = 33616, 
+// Unused CONCRETE-SYNTAX-TREE::ATOM-CST = 32967, 
+// Unused ALEXANDRIA.0.DEV::SIMPLE-PROGRAM-ERROR = 33046, 
+// Unused CONCRETE-SYNTAX-TREE::OPTIONAL-PARAMETER-GROUP = 32986, 
+// Unused ECLECTOR.READER::UNQUOTE-NOT-INSIDE-BACKQUOTE = 33093, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-REST-PARAMETER-GROUP = 33000, 
+// Unused COMPILER::UNDEFINED-VARIABLE-WARNING = 32922, 
+// Unused CLEAVIR-BIR::ENCLOSE = 33200, 
+// Unused ASDF/CONCATENATE-SOURCE::MONOLITHIC-COMPILE-CONCATENATED-SOURCE-OP = 33599, 
+// Unused CLEAVIR-AST::FLOAT-LESS-AST = 33303, 
+// Unused CORE::SIMPLE-PACKAGE-ERROR = 32865, 
+// Unused ECLECTOR.READTABLE::DISPATCH-MACRO-CHARACTER-ERROR = 33054, 
+// Unused ASDF/BUNDLE::PRECOMPILED-SYSTEM = 33587, 
+// Unused CLANG-TOOL::NODE-MATCHER-AMBIGUOUS-ERROR = 33622, 
+// Unused CLEAVIR-AST::FLOAT-MUL-AST = 33301, 
+// Unused COMMON-LISP::ARITHMETIC-ERROR = 32873, 
+// Unused ECLECTOR.READER::FEATURE-EXPRESSION-MUST-FOLLOW-SHARPSIGN-PLUS-MINUS = 33153, 
+// Unused UIOP/LISP-BUILD::COMPILE-FILE-ERROR = 33500, 
+// Unused STATIC-GFS::REINITIALIZER-UPDATER = 32821, 
+// Unused CLOS::STD-METHOD = 32807, 
+// Unused CLASP-CLEAVIR-BIR::ATOMIC-RACK-READ = 33471, 
+// Unused CLASP-ANALYZER::SPECIES = 33707, 
+// Unused UIOP/VERSION::DEPRECATED-FUNCTION-SHOULD-BE-DELETED = 33498, 
+// Unused CLEAVIR-CST-TO-AST::LOCAL-FUNCTION-DEFINITION-MUST-BE-PROPER-LIST = 33385, 
+// Unused EXT::UNDEFINED-CLASS = 32872, 
+// Unused ASDF/BUNDLE::PROGRAM-SYSTEM = 33569, 
+// Unused CORE::BLOCK-END = 32915, 
+// Unused ECLECTOR.READER::SHARPSIGN-SHARPSIGN-UNDEFINED-LABEL = 33165, 
+// Unused ECLECTOR.READER::STRUCTURE-CONSTRUCTOR-MUST-FOLLOW-SHARPSIGN-S = 33138, 
+// Unused ALEXANDRIA.0.DEV::SIMPLE-STYLE-WARNING = 33043, 
+// Unused ASDF/BUNDLE::MONOLITHIC-COMPILE-BUNDLE-OP = 33580, 
+// Unused CLASP-CLEAVIR-BMIR::LOAD = 33485, 
+// Unused EXT::INTERACTIVE-INTERRUPT = 32891, 
+// Unused ECLECTOR.READER::NO-ELEMENTS-FOUND = 33128, 
+// Unused CONCRETE-SYNTAX-TREE::LAMBDA-LIST-KEYWORD = 33017, 
+// Unused CORE::OUT-OF-BOUNDS = 32843, 
+// Unused CLOS::NO-APPLICABLE-METHOD-ERROR = 32849, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-STRUCTURE-TYPE-NAME = 33140, 
+// Unused CLEAVIR-CST-TO-AST::BINDING-MUST-HAVE-LENGTH-ONE-OR-TWO = 33391, 
+// Unused CLASP-CLEAVIR-BIR::ATOMIC = 33469, 
+// Unused EXT::ILLEGAL-INSTRUCTION = 32839, 
+// Unused ASDF/PLAN::SEQUENTIAL-PLAN = 33553, 
+// Unused CORE::OUT-OF-EXTENT-UNWIND = 32854, 
+// Unused CONCRETE-SYNTAX-TREE::GRAMMAR-SYMBOL = 32978, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-SLOT-NAME = 33143, 
+// Unused CLASP-CLEAVIR-AST::FOREIGN-CALL-AST = 33431, 
+// Unused CORE::DESTRUCTURE-WRONG-NUMBER-OF-ARGUMENTS = 32881, 
+// Unused CLEAVIR-BIR::IFI = 33229, 
+// Unused CLASP-CLEAVIR::ABI-X86-32 = 33421, 
+// Unused CLEAVIR-BIR::CONDITIONAL-TEST = 33230, 
+// Unused ASDF/SESSION::FORCING = 33550, 
+// Unused ASDF/LISP-ACTION::CL-SOURCE-FILE.CL = 33536, 
+// Unused ECLECTOR.BASE::END-OF-FILE = 33051, 
+// Unused CLEAVIR-AST::TYPEQ-AST = 33279, 
+// Unused CLEAVIR-AST::VALUES-AST = 33284, 
+// Unused ECLECTOR.READER::UNTERMINATED-BLOCK-COMMENT = 33122, 
+// Unused ASDF/FIND-SYSTEM::DEFINE-OP = 33562, 
+// Unused GRAY::FUNDAMENTAL-BINARY-INPUT-STREAM = 32905, 
+// Unused ECLECTOR.READER::SHARPSIGN-EQUALS-ONLY-REFERS-TO-SELF = 33164, 
+// Unused ASDF/BUNDLE::LOAD-BUNDLE-OP = 33576, 
+// Unused ECLECTOR.READTABLE::UNTERMINATED-DISPATCH-MACRO = 33055, 
+// Unused CLEAVIR-CST-TO-AST::LAMBDA-CALL-FIRST-SYMBOL-NOT-LAMBDA = 33404, 
+// Unused ECLECTOR.BASE::STREAM-POSITION-CONDITION = 33049, 
+// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-CONSING-DOT = 33101, 
+  STAMPWTAG_max = 3391,
 
 #endif // defined(GC_STAMP)
 #if defined(GC_ENUM_NAMES)
@@ -3105,109 +3230,111 @@ register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_char_", ADJUST_STAMP(2
 register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__", ADJUST_STAMP(2963));
 register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__", ADJUST_STAMP(2967));
 register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__", ADJUST_STAMP(2971));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__", ADJUST_STAMP(2975));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___", ADJUST_STAMP(2979));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___", ADJUST_STAMP(2983));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__", ADJUST_STAMP(2987));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___", ADJUST_STAMP(2991));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__", ADJUST_STAMP(2995));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__", ADJUST_STAMP(2999));
-register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_", ADJUST_STAMP(3003));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__", ADJUST_STAMP(3007));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__", ADJUST_STAMP(3011));
-register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_", ADJUST_STAMP(3015));
-register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_", ADJUST_STAMP(3019));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__", ADJUST_STAMP(3023));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__", ADJUST_STAMP(3027));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_int_", ADJUST_STAMP(3031));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___", ADJUST_STAMP(3035));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__", ADJUST_STAMP(3039));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__", ADJUST_STAMP(3043));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_float_", ADJUST_STAMP(3047));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__", ADJUST_STAMP(3051));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__", ADJUST_STAMP(3055));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___", ADJUST_STAMP(3059));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__T_O___", ADJUST_STAMP(3063));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_", ADJUST_STAMP(3067));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___", ADJUST_STAMP(3071));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_int_", ADJUST_STAMP(3075));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__", ADJUST_STAMP(3079));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__", ADJUST_STAMP(3083));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_", ADJUST_STAMP(3087));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__", ADJUST_STAMP(3091));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_double_", ADJUST_STAMP(3095));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__", ADJUST_STAMP(3099));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__", ADJUST_STAMP(3103));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___", ADJUST_STAMP(3107));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__", ADJUST_STAMP(3111));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__", ADJUST_STAMP(3115));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_", ADJUST_STAMP(3119));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_", ADJUST_STAMP(3123));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_signed_char_", ADJUST_STAMP(3127));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_", ADJUST_STAMP(3131));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__", ADJUST_STAMP(3135));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___", ADJUST_STAMP(3139));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__", ADJUST_STAMP(3143));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__", ADJUST_STAMP(3147));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_", ADJUST_STAMP(3151));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_", ADJUST_STAMP(3155));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__", ADJUST_STAMP(3159));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__", ADJUST_STAMP(3163));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_", ADJUST_STAMP(3167));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__", ADJUST_STAMP(3171));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__", ADJUST_STAMP(3175));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___", ADJUST_STAMP(3179));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__", ADJUST_STAMP(3183));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_double_", ADJUST_STAMP(3187));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___", ADJUST_STAMP(3191));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__", ADJUST_STAMP(3195));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___", ADJUST_STAMP(3199));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__", ADJUST_STAMP(3203));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_", ADJUST_STAMP(3207));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__", ADJUST_STAMP(3211));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__", ADJUST_STAMP(3215));
-register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_", ADJUST_STAMP(3219));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_", ADJUST_STAMP(3223));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_", ADJUST_STAMP(3227));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___", ADJUST_STAMP(3231));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___", ADJUST_STAMP(3235));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__", ADJUST_STAMP(3239));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__", ADJUST_STAMP(3243));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___", ADJUST_STAMP(3247));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_", ADJUST_STAMP(3251));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__", ADJUST_STAMP(3255));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_long_", ADJUST_STAMP(3259));
-register_stamp_name("STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_", ADJUST_STAMP(3263));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_", ADJUST_STAMP(3267));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___", ADJUST_STAMP(3271));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_", ADJUST_STAMP(3275));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__", ADJUST_STAMP(3279));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__", ADJUST_STAMP(3283));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_", ADJUST_STAMP(3287));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___", ADJUST_STAMP(3291));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_int_", ADJUST_STAMP(3295));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(3299));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_", ADJUST_STAMP(3303));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__", ADJUST_STAMP(3307));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_long_", ADJUST_STAMP(3311));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_", ADJUST_STAMP(3315));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_", ADJUST_STAMP(3319));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___", ADJUST_STAMP(3323));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__", ADJUST_STAMP(3327));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__", ADJUST_STAMP(3331));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_unsigned_int_", ADJUST_STAMP(3335));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_", ADJUST_STAMP(3339));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__", ADJUST_STAMP(3343));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__", ADJUST_STAMP(3347));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____", ADJUST_STAMP(3351));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_short_", ADJUST_STAMP(3355));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_float_", ADJUST_STAMP(3359));
-register_stamp_name("STAMPWTAG_clang__FrontendAction", ADJUST_STAMP(3363));
-register_stamp_name("STAMPWTAG_clang__ASTFrontendAction", ADJUST_STAMP(3367));
-register_stamp_name("STAMPWTAG_clang__SyntaxOnlyAction", ADJUST_STAMP(3371));
-register_stamp_name("STAMPWTAG_clang__tooling__ToolAction", ADJUST_STAMP(3375));
-register_stamp_name("STAMPWTAG_clang__tooling__FrontendActionFactory", ADJUST_STAMP(3379));
-register_stamp_name("STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback", ADJUST_STAMP(3383));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_", ADJUST_STAMP(2975));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__", ADJUST_STAMP(2979));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___", ADJUST_STAMP(2983));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___", ADJUST_STAMP(2987));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__", ADJUST_STAMP(2991));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___", ADJUST_STAMP(2995));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__", ADJUST_STAMP(2999));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__", ADJUST_STAMP(3003));
+register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_", ADJUST_STAMP(3007));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__", ADJUST_STAMP(3011));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__", ADJUST_STAMP(3015));
+register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_", ADJUST_STAMP(3019));
+register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_", ADJUST_STAMP(3023));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__", ADJUST_STAMP(3027));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__", ADJUST_STAMP(3031));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_int_", ADJUST_STAMP(3035));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___", ADJUST_STAMP(3039));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__", ADJUST_STAMP(3043));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__", ADJUST_STAMP(3047));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_float_", ADJUST_STAMP(3051));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_", ADJUST_STAMP(3055));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__", ADJUST_STAMP(3059));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__", ADJUST_STAMP(3063));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___", ADJUST_STAMP(3067));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__T_O___", ADJUST_STAMP(3071));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_", ADJUST_STAMP(3075));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___", ADJUST_STAMP(3079));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_int_", ADJUST_STAMP(3083));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__", ADJUST_STAMP(3087));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__", ADJUST_STAMP(3091));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_", ADJUST_STAMP(3095));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__", ADJUST_STAMP(3099));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_double_", ADJUST_STAMP(3103));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__", ADJUST_STAMP(3107));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__", ADJUST_STAMP(3111));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___", ADJUST_STAMP(3115));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__", ADJUST_STAMP(3119));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__", ADJUST_STAMP(3123));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_", ADJUST_STAMP(3127));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_", ADJUST_STAMP(3131));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_signed_char_", ADJUST_STAMP(3135));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_", ADJUST_STAMP(3139));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__", ADJUST_STAMP(3143));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___", ADJUST_STAMP(3147));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__", ADJUST_STAMP(3151));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__", ADJUST_STAMP(3155));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_", ADJUST_STAMP(3159));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_", ADJUST_STAMP(3163));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__", ADJUST_STAMP(3167));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__", ADJUST_STAMP(3171));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_", ADJUST_STAMP(3175));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__", ADJUST_STAMP(3179));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__", ADJUST_STAMP(3183));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___", ADJUST_STAMP(3187));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__", ADJUST_STAMP(3191));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_double_", ADJUST_STAMP(3195));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___", ADJUST_STAMP(3199));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__", ADJUST_STAMP(3203));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___", ADJUST_STAMP(3207));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__", ADJUST_STAMP(3211));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_", ADJUST_STAMP(3215));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__", ADJUST_STAMP(3219));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__", ADJUST_STAMP(3223));
+register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_", ADJUST_STAMP(3227));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_", ADJUST_STAMP(3231));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_", ADJUST_STAMP(3235));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___", ADJUST_STAMP(3239));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___", ADJUST_STAMP(3243));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__", ADJUST_STAMP(3247));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__", ADJUST_STAMP(3251));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___", ADJUST_STAMP(3255));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_", ADJUST_STAMP(3259));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__", ADJUST_STAMP(3263));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_long_", ADJUST_STAMP(3267));
+register_stamp_name("STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_", ADJUST_STAMP(3271));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_", ADJUST_STAMP(3275));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___", ADJUST_STAMP(3279));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_", ADJUST_STAMP(3283));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__", ADJUST_STAMP(3287));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__", ADJUST_STAMP(3291));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_", ADJUST_STAMP(3295));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___", ADJUST_STAMP(3299));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_int_", ADJUST_STAMP(3303));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(3307));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_", ADJUST_STAMP(3311));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__", ADJUST_STAMP(3315));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_long_", ADJUST_STAMP(3319));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_", ADJUST_STAMP(3323));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_", ADJUST_STAMP(3327));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___", ADJUST_STAMP(3331));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__", ADJUST_STAMP(3335));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__", ADJUST_STAMP(3339));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_unsigned_int_", ADJUST_STAMP(3343));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_", ADJUST_STAMP(3347));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__", ADJUST_STAMP(3351));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__", ADJUST_STAMP(3355));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____", ADJUST_STAMP(3359));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_short_", ADJUST_STAMP(3363));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_float_", ADJUST_STAMP(3367));
+register_stamp_name("STAMPWTAG_clang__FrontendAction", ADJUST_STAMP(3371));
+register_stamp_name("STAMPWTAG_clang__ASTFrontendAction", ADJUST_STAMP(3375));
+register_stamp_name("STAMPWTAG_clang__SyntaxOnlyAction", ADJUST_STAMP(3379));
+register_stamp_name("STAMPWTAG_clang__tooling__ToolAction", ADJUST_STAMP(3383));
+register_stamp_name("STAMPWTAG_clang__tooling__FrontendActionFactory", ADJUST_STAMP(3387));
+register_stamp_name("STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback", ADJUST_STAMP(3391));
 
 #endif // defined(GC_ENUM_NAMES)
 #if defined(GC_DYNAMIC_CAST)
@@ -3234,8 +3361,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<float> val -> 3359
-      return (kindVal == ISA_ADJUST_STAMP(3359));
+    // IsA-stamp-range gctools::GCVector_moveable<float> val -> 3367
+      return (kindVal == ISA_ADJUST_STAMP(3367));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_fixnum_O
@@ -3252,8 +3379,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned short>*,FP
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned short> val -> 3355
-      return (kindVal == ISA_ADJUST_STAMP(3355));
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned short> val -> 3363
+      return (kindVal == ISA_ADJUST_STAMP(3363));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____
@@ -3261,8 +3388,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::Vec0<gcto
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>> val -> 3351
-      return (kindVal == ISA_ADJUST_STAMP(3351));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>> val -> 3359
+      return (kindVal == ISA_ADJUST_STAMP(3359));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_int32_t_O
@@ -3333,8 +3460,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>> val -> 3347
-      return (kindVal == ISA_ADJUST_STAMP(3347));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>> val -> 3355
+      return (kindVal == ISA_ADJUST_STAMP(3355));
   };
 };
 // STAMPWTAG_llvmo__Linker_O
@@ -3360,8 +3487,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>> val -> 3343
-      return (kindVal == ISA_ADJUST_STAMP(3343));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>> val -> 3351
+      return (kindVal == ISA_ADJUST_STAMP(3351));
   };
 };
 // STAMPWTAG_core__MDArray_float_O
@@ -3423,8 +3550,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyStretc
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyStretch> val -> 3339
-      return (kindVal == ISA_ADJUST_STAMP(3339));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyStretch> val -> 3347
+      return (kindVal == ISA_ADJUST_STAMP(3347));
   };
 };
 // STAMPWTAG_chem__MapOfMonomerNamesToAtomIndexers_O
@@ -3441,8 +3568,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<unsigned int>*,FP>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<unsigned int> val -> 3335
-      return (kindVal == ISA_ADJUST_STAMP(3335));
+    // IsA-stamp-range gctools::GCVector_moveable<unsigned int> val -> 3343
+      return (kindVal == ISA_ADJUST_STAMP(3343));
   };
 };
 // STAMPWTAG_adapt__SymbolSet_O
@@ -3477,8 +3604,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>> val -> 3331
-      return (kindVal == ISA_ADJUST_STAMP(3331));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>> val -> 3339
+      return (kindVal == ISA_ADJUST_STAMP(3339));
   };
 };
 // STAMPWTAG_chem__Molecule_O
@@ -3513,8 +3640,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>> val -> 3327
-      return (kindVal == ISA_ADJUST_STAMP(3327));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>> val -> 3335
+      return (kindVal == ISA_ADJUST_STAMP(3335));
   };
 };
 // STAMPWTAG_chem__Dimacs_O
@@ -3576,8 +3703,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>> val -> 3323
-      return (kindVal == ISA_ADJUST_STAMP(3323));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>> val -> 3331
+      return (kindVal == ISA_ADJUST_STAMP(3331));
   };
 };
 // STAMPWTAG_llvmo__ConstantArray_O
@@ -3657,8 +3784,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::RigidBodyAto
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::RigidBodyAtomInfo> val -> 3319
-      return (kindVal == ISA_ADJUST_STAMP(3319));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::RigidBodyAtomInfo> val -> 3327
+      return (kindVal == ISA_ADJUST_STAMP(3327));
   };
 };
 // STAMPWTAG_chem__EnergyAnchorRestraint_O
@@ -3684,8 +3811,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::ResidueOut>*
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::ResidueOut> val -> 3315
-      return (kindVal == ISA_ADJUST_STAMP(3315));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::ResidueOut> val -> 3323
+      return (kindVal == ISA_ADJUST_STAMP(3323));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_long_
@@ -3693,8 +3820,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<long>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<long> val -> 3311
-      return (kindVal == ISA_ADJUST_STAMP(3311));
+    // IsA-stamp-range gctools::GCArray_moveable<long> val -> 3319
+      return (kindVal == ISA_ADJUST_STAMP(3319));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__
@@ -3702,8 +3829,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>> val -> 3307
-      return (kindVal == ISA_ADJUST_STAMP(3307));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>> val -> 3315
+      return (kindVal == ISA_ADJUST_STAMP(3315));
   };
 };
 // STAMPWTAG_core__ShortFloat_O
@@ -3774,8 +3901,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::AuxArgument>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::AuxArgument> val -> 3303
-      return (kindVal == ISA_ADJUST_STAMP(3303));
+    // IsA-stamp-range gctools::GCVector_moveable<core::AuxArgument> val -> 3311
+      return (kindVal == ISA_ADJUST_STAMP(3311));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__
@@ -3783,8 +3910,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<gctools::smart_ptr<
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>> val -> 3299
-      return (kindVal == ISA_ADJUST_STAMP(3299));
+    // IsA-stamp-range gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>> val -> 3307
+      return (kindVal == ISA_ADJUST_STAMP(3307));
   };
 };
 // STAMPWTAG_chem__ChemInfoNode_O
@@ -3828,8 +3955,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<int> val -> 3295
-      return (kindVal == ISA_ADJUST_STAMP(3295));
+    // IsA-stamp-range gctools::GCArray_moveable<int> val -> 3303
+      return (kindVal == ISA_ADJUST_STAMP(3303));
   };
 };
 // STAMPWTAG_core__IOStreamStream_O
@@ -3873,8 +4000,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>> val -> 3291
-      return (kindVal == ISA_ADJUST_STAMP(3291));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>> val -> 3299
+      return (kindVal == ISA_ADJUST_STAMP(3299));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_
@@ -3882,8 +4009,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyAtom>*
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyAtom> val -> 3287
-      return (kindVal == ISA_ADJUST_STAMP(3287));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyAtom> val -> 3295
+      return (kindVal == ISA_ADJUST_STAMP(3295));
   };
 };
 // STAMPWTAG_core__ComplexVector_double_O
@@ -3918,8 +4045,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>> val -> 3283
-      return (kindVal == ISA_ADJUST_STAMP(3283));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>> val -> 3291
+      return (kindVal == ISA_ADJUST_STAMP(3291));
   };
 };
 // STAMPWTAG_chem__ConstitutionAtoms_O
@@ -3945,8 +4072,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>> val -> 3279
-      return (kindVal == ISA_ADJUST_STAMP(3279));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>> val -> 3287
+      return (kindVal == ISA_ADJUST_STAMP(3287));
   };
 };
 // STAMPWTAG_chem__Branch_O
@@ -3981,8 +4108,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::AtomInfo>*,F
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::AtomInfo> val -> 3275
-      return (kindVal == ISA_ADJUST_STAMP(3275));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::AtomInfo> val -> 3283
+      return (kindVal == ISA_ADJUST_STAMP(3283));
   };
 };
 // STAMPWTAG_chem__ConstitutionBond_O
@@ -4017,8 +4144,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> val -> 3271
-      return (kindVal == ISA_ADJUST_STAMP(3271));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> val -> 3279
+      return (kindVal == ISA_ADJUST_STAMP(3279));
   };
 };
 // STAMPWTAG_mp__Mutex_O
@@ -4044,8 +4171,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyNonbon
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyNonbond> val -> 3267
-      return (kindVal == ISA_ADJUST_STAMP(3267));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyNonbond> val -> 3275
+      return (kindVal == ISA_ADJUST_STAMP(3275));
   };
 };
 // STAMPWTAG_chem__RestraintDihedral_O
@@ -4179,8 +4306,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned long>*,FP>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned long> low high --> 3259 3263 
-      return ((ISA_ADJUST_STAMP(3259) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(3263)));
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned long> low high --> 3267 3271 
+      return ((ISA_ADJUST_STAMP(3267) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(3271)));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_int4_t_O
@@ -4269,8 +4396,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>> val -> 3255
-      return (kindVal == ISA_ADJUST_STAMP(3255));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>> val -> 3263
+      return (kindVal == ISA_ADJUST_STAMP(3263));
   };
 };
 // STAMPWTAG_llvmo__StructType_O
@@ -4359,8 +4486,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::RigidBodyNon
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm> val -> 3251
-      return (kindVal == ISA_ADJUST_STAMP(3251));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm> val -> 3259
+      return (kindVal == ISA_ADJUST_STAMP(3259));
   };
 };
 // STAMPWTAG_core__SimpleVector_byte32_t_O
@@ -4377,8 +4504,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>> val -> 3247
-      return (kindVal == ISA_ADJUST_STAMP(3247));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>> val -> 3255
+      return (kindVal == ISA_ADJUST_STAMP(3255));
   };
 };
 // STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O
@@ -4395,8 +4522,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>> val -> 3243
-      return (kindVal == ISA_ADJUST_STAMP(3243));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>> val -> 3251
+      return (kindVal == ISA_ADJUST_STAMP(3251));
   };
 };
 // STAMPWTAG_llvmo__Module_O
@@ -4521,8 +4648,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>> val -> 3239
-      return (kindVal == ISA_ADJUST_STAMP(3239));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>> val -> 3247
+      return (kindVal == ISA_ADJUST_STAMP(3247));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___
@@ -4530,8 +4657,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>> val -> 3235
-      return (kindVal == ISA_ADJUST_STAMP(3235));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>> val -> 3243
+      return (kindVal == ISA_ADJUST_STAMP(3243));
   };
 };
 // STAMPWTAG_core__DebuggerFrame_O
@@ -4557,8 +4684,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<int,gcto
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>> val -> 3231
-      return (kindVal == ISA_ADJUST_STAMP(3231));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>> val -> 3239
+      return (kindVal == ISA_ADJUST_STAMP(3239));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_
@@ -4566,8 +4693,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::BeyondThresh
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint> val -> 3227
-      return (kindVal == ISA_ADJUST_STAMP(3227));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint> val -> 3235
+      return (kindVal == ISA_ADJUST_STAMP(3235));
   };
 };
 // STAMPWTAG_chem__FrameRecognizer_O
@@ -4593,8 +4720,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolStorag
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolStorage> val -> 3223
-      return (kindVal == ISA_ADJUST_STAMP(3223));
+    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolStorage> val -> 3231
+      return (kindVal == ISA_ADJUST_STAMP(3231));
   };
 };
 // STAMPWTAG_core__MDArray_int32_t_O
@@ -4683,8 +4810,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<4,1>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<4,1> val -> 3219
-      return (kindVal == ISA_ADJUST_STAMP(3219));
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<4,1> val -> 3227
+      return (kindVal == ISA_ADJUST_STAMP(3227));
   };
 };
 // STAMPWTAG_chem__ImproperTorsion_O
@@ -4719,8 +4846,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>> val -> 3215
-      return (kindVal == ISA_ADJUST_STAMP(3215));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>> val -> 3223
+      return (kindVal == ISA_ADJUST_STAMP(3223));
   };
 };
 // STAMPWTAG_core__WeakKeyHashTable_O
@@ -4800,8 +4927,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>> val -> 3211
-      return (kindVal == ISA_ADJUST_STAMP(3211));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>> val -> 3219
+      return (kindVal == ISA_ADJUST_STAMP(3219));
   };
 };
 // STAMPWTAG_chem__StereoisomerAtoms_O
@@ -4845,8 +4972,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::RequiredArgu
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::RequiredArgument> val -> 3207
-      return (kindVal == ISA_ADJUST_STAMP(3207));
+    // IsA-stamp-range gctools::GCVector_moveable<core::RequiredArgument> val -> 3215
+      return (kindVal == ISA_ADJUST_STAMP(3215));
   };
 };
 // STAMPWTAG_kinematics__Checkpoint_O
@@ -5007,8 +5134,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>> val -> 3203
-      return (kindVal == ISA_ADJUST_STAMP(3203));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>> val -> 3211
+      return (kindVal == ISA_ADJUST_STAMP(3211));
   };
 };
 // STAMPWTAG_llvmo__Metadata_O
@@ -5034,8 +5161,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<unsigned
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>> val -> 3199
-      return (kindVal == ISA_ADJUST_STAMP(3199));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>> val -> 3207
+      return (kindVal == ISA_ADJUST_STAMP(3207));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__
@@ -5043,8 +5170,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>> val -> 3195
-      return (kindVal == ISA_ADJUST_STAMP(3195));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>> val -> 3203
+      return (kindVal == ISA_ADJUST_STAMP(3203));
   };
 };
 // STAMPWTAG_chem__RigidBodyEnergyFunction_O
@@ -5061,8 +5188,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>> val -> 3191
-      return (kindVal == ISA_ADJUST_STAMP(3191));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>> val -> 3199
+      return (kindVal == ISA_ADJUST_STAMP(3199));
   };
 };
 // STAMPWTAG_kinematics__ChainNode_O
@@ -5079,8 +5206,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<double> val -> 3187
-      return (kindVal == ISA_ADJUST_STAMP(3187));
+    // IsA-stamp-range gctools::GCArray_moveable<double> val -> 3195
+      return (kindVal == ISA_ADJUST_STAMP(3195));
   };
 };
 // STAMPWTAG_kinematics__CheckpointJoint_O
@@ -5178,8 +5305,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>> val -> 3183
-      return (kindVal == ISA_ADJUST_STAMP(3183));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>> val -> 3191
+      return (kindVal == ISA_ADJUST_STAMP(3191));
   };
 };
 // STAMPWTAG_chem__Angle_O
@@ -5196,8 +5323,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>> val -> 3179
-      return (kindVal == ISA_ADJUST_STAMP(3179));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>> val -> 3187
+      return (kindVal == ISA_ADJUST_STAMP(3187));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__
@@ -5205,8 +5332,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>> val -> 3175
-      return (kindVal == ISA_ADJUST_STAMP(3175));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>> val -> 3183
+      return (kindVal == ISA_ADJUST_STAMP(3183));
   };
 };
 // STAMPWTAG_core__LexicalEnvironment_O
@@ -5250,8 +5377,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>> val -> 3171
-      return (kindVal == ISA_ADJUST_STAMP(3171));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>> val -> 3179
+      return (kindVal == ISA_ADJUST_STAMP(3179));
   };
 };
 // STAMPWTAG_core__SimpleVector_int8_t_O
@@ -5295,8 +5422,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::FixedNonbond
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::FixedNonbondRestraint> val -> 3167
-      return (kindVal == ISA_ADJUST_STAMP(3167));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::FixedNonbondRestraint> val -> 3175
+      return (kindVal == ISA_ADJUST_STAMP(3175));
   };
 };
 // STAMPWTAG_chem__ZMatrixEntry_O
@@ -5322,8 +5449,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>> val -> 3163
-      return (kindVal == ISA_ADJUST_STAMP(3163));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>> val -> 3171
+      return (kindVal == ISA_ADJUST_STAMP(3171));
   };
 };
 // STAMPWTAG_chem__CalculatePositionRelativeToOrigin_O
@@ -5358,8 +5485,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>> val -> 3159
-      return (kindVal == ISA_ADJUST_STAMP(3159));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>> val -> 3167
+      return (kindVal == ISA_ADJUST_STAMP(3167));
   };
 };
 // STAMPWTAG_llvmo__MDNode_O
@@ -5520,8 +5647,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::KeyValuePair
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::KeyValuePair> val -> 3155
-      return (kindVal == ISA_ADJUST_STAMP(3155));
+    // IsA-stamp-range gctools::GCVector_moveable<core::KeyValuePair> val -> 3163
+      return (kindVal == ISA_ADJUST_STAMP(3163));
   };
 };
 // STAMPWTAG_core__Character_dummy_O
@@ -5547,8 +5674,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergySketch
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergySketchNonbond> val -> 3151
-      return (kindVal == ISA_ADJUST_STAMP(3151));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergySketchNonbond> val -> 3159
+      return (kindVal == ISA_ADJUST_STAMP(3159));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__
@@ -5556,8 +5683,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>> val -> 3147
-      return (kindVal == ISA_ADJUST_STAMP(3147));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>> val -> 3155
+      return (kindVal == ISA_ADJUST_STAMP(3155));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__
@@ -5565,8 +5692,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>> val -> 3143
-      return (kindVal == ISA_ADJUST_STAMP(3143));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>> val -> 3151
+      return (kindVal == ISA_ADJUST_STAMP(3151));
   };
 };
 // STAMPWTAG_core__NativeVector_int_O
@@ -5628,8 +5755,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>> val -> 3139
-      return (kindVal == ISA_ADJUST_STAMP(3139));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>> val -> 3147
+      return (kindVal == ISA_ADJUST_STAMP(3147));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__
@@ -5637,8 +5764,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>> val -> 3135
-      return (kindVal == ISA_ADJUST_STAMP(3135));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>> val -> 3143
+      return (kindVal == ISA_ADJUST_STAMP(3143));
   };
 };
 // STAMPWTAG_core__Array_O
@@ -5664,8 +5791,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyOutOfZ
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyOutOfZPlane> val -> 3131
-      return (kindVal == ISA_ADJUST_STAMP(3131));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyOutOfZPlane> val -> 3139
+      return (kindVal == ISA_ADJUST_STAMP(3139));
   };
 };
 // STAMPWTAG_units__Unit_O
@@ -5709,8 +5836,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<signed char>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<signed char> val -> 3127
-      return (kindVal == ISA_ADJUST_STAMP(3127));
+    // IsA-stamp-range gctools::GCArray_moveable<signed char> val -> 3135
+      return (kindVal == ISA_ADJUST_STAMP(3135));
   };
 };
 // STAMPWTAG_chem__CDFragment_O
@@ -5727,8 +5854,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergySketch
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergySketchStretch> val -> 3123
-      return (kindVal == ISA_ADJUST_STAMP(3123));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergySketchStretch> val -> 3131
+      return (kindVal == ISA_ADJUST_STAMP(3131));
   };
 };
 // STAMPWTAG_core__GlueEnvironment_O
@@ -5880,8 +6007,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::AtomPdbRec>*
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::AtomPdbRec> val -> 3119
-      return (kindVal == ISA_ADJUST_STAMP(3119));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::AtomPdbRec> val -> 3127
+      return (kindVal == ISA_ADJUST_STAMP(3127));
   };
 };
 // STAMPWTAG_chem__EntityNameSet_O
@@ -5952,8 +6079,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<int,int>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<int,int>> val -> 3115
-      return (kindVal == ISA_ADJUST_STAMP(3115));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<int,int>> val -> 3123
+      return (kindVal == ISA_ADJUST_STAMP(3123));
   };
 };
 // STAMPWTAG_chem__ProperTorsion_O
@@ -6060,8 +6187,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>> val -> 3111
-      return (kindVal == ISA_ADJUST_STAMP(3111));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>> val -> 3119
+      return (kindVal == ISA_ADJUST_STAMP(3119));
   };
 };
 // STAMPWTAG_chem__StereoisomerVirtualAtom_O
@@ -6150,8 +6277,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>> val -> 3107
-      return (kindVal == ISA_ADJUST_STAMP(3107));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>> val -> 3115
+      return (kindVal == ISA_ADJUST_STAMP(3115));
   };
 };
 // STAMPWTAG_units__Dimension_O
@@ -6186,8 +6313,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>> val -> 3103
-      return (kindVal == ISA_ADJUST_STAMP(3103));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>> val -> 3111
+      return (kindVal == ISA_ADJUST_STAMP(3111));
   };
 };
 // STAMPWTAG_llvmo__PassManager_O
@@ -6276,8 +6403,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>> val -> 3099
-      return (kindVal == ISA_ADJUST_STAMP(3099));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>> val -> 3107
+      return (kindVal == ISA_ADJUST_STAMP(3107));
   };
 };
 // STAMPWTAG_core__DerivableCxxClassCreator_O
@@ -6330,8 +6457,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<double> val -> 3095
-      return (kindVal == ISA_ADJUST_STAMP(3095));
+    // IsA-stamp-range gctools::GCVector_moveable<double> val -> 3103
+      return (kindVal == ISA_ADJUST_STAMP(3103));
   };
 };
 // STAMPWTAG_core__MacroletEnvironment_O
@@ -6402,8 +6529,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>> val -> 3091
-      return (kindVal == ISA_ADJUST_STAMP(3091));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>> val -> 3099
+      return (kindVal == ISA_ADJUST_STAMP(3099));
   };
 };
 // STAMPWTAG_llvmo__Attribute_O
@@ -6465,8 +6592,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::RotamerAtom>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::RotamerAtom> val -> 3087
-      return (kindVal == ISA_ADJUST_STAMP(3087));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::RotamerAtom> val -> 3095
+      return (kindVal == ISA_ADJUST_STAMP(3095));
   };
 };
 // STAMPWTAG_core__ComplexVector_int32_t_O
@@ -6519,8 +6646,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>> val -> 3083
-      return (kindVal == ISA_ADJUST_STAMP(3083));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>> val -> 3091
+      return (kindVal == ISA_ADJUST_STAMP(3091));
   };
 };
 // STAMPWTAG_core__WrappedPointer_O
@@ -6591,8 +6718,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>> val -> 3079
-      return (kindVal == ISA_ADJUST_STAMP(3079));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>> val -> 3087
+      return (kindVal == ISA_ADJUST_STAMP(3087));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_unsigned_int_
@@ -6600,8 +6727,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned int>*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned int> val -> 3075
-      return (kindVal == ISA_ADJUST_STAMP(3075));
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned int> val -> 3083
+      return (kindVal == ISA_ADJUST_STAMP(3083));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___
@@ -6609,8 +6736,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>> val -> 3071
-      return (kindVal == ISA_ADJUST_STAMP(3071));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>> val -> 3079
+      return (kindVal == ISA_ADJUST_STAMP(3079));
   };
 };
 // STAMPWTAG_kinematics__MonomerId_O
@@ -6636,8 +6763,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<chem::EnergyDihedr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyDihedral> val -> 3067
-      return (kindVal == ISA_ADJUST_STAMP(3067));
+    // IsA-stamp-range gctools::GCVector_moveable<chem::EnergyDihedral> val -> 3075
+      return (kindVal == ISA_ADJUST_STAMP(3075));
   };
 };
 // STAMPWTAG_chem__PathMessage_O
@@ -6726,8 +6853,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::T_O *>*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::T_O *> val -> 3063
-      return (kindVal == ISA_ADJUST_STAMP(3063));
+    // IsA-stamp-range gctools::GCVector_moveable<core::T_O *> val -> 3071
+      return (kindVal == ISA_ADJUST_STAMP(3071));
   };
 };
 // STAMPWTAG_chem__Atom_O
@@ -6753,8 +6880,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::Vec0<gcto
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>> val -> 3059
-      return (kindVal == ISA_ADJUST_STAMP(3059));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>> val -> 3067
+      return (kindVal == ISA_ADJUST_STAMP(3067));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__
@@ -6762,8 +6889,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>> val -> 3055
-      return (kindVal == ISA_ADJUST_STAMP(3055));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>> val -> 3063
+      return (kindVal == ISA_ADJUST_STAMP(3063));
   };
 };
 // STAMPWTAG_chem__StereoisomerAtom_O
@@ -6807,8 +6934,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>> val -> 3051
-      return (kindVal == ISA_ADJUST_STAMP(3051));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>> val -> 3059
+      return (kindVal == ISA_ADJUST_STAMP(3059));
   };
 };
 // STAMPWTAG_chem__ZMatrixInternal_O
@@ -6856,13 +6983,22 @@ template <typename FP> struct Cast<chem::ChemDraw_O*,FP> {
       return (kindVal == ISA_ADJUST_STAMP(567));
   };
 };
+// STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_
+template <typename FP> struct Cast<gctools::GCVector_moveable<clbind::detail::edge>*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range gctools::GCVector_moveable<clbind::detail::edge> val -> 3055
+      return (kindVal == ISA_ADJUST_STAMP(3055));
+  };
+};
 // STAMPWTAG_gctools__GCArray_moveable_float_
 template <typename FP> struct Cast<gctools::GCArray_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<float> val -> 3047
-      return (kindVal == ISA_ADJUST_STAMP(3047));
+    // IsA-stamp-range gctools::GCArray_moveable<float> val -> 3051
+      return (kindVal == ISA_ADJUST_STAMP(3051));
   };
 };
 // STAMPWTAG_chem__ReportBase_O
@@ -6888,8 +7024,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>> val -> 3043
-      return (kindVal == ISA_ADJUST_STAMP(3043));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>> val -> 3047
+      return (kindVal == ISA_ADJUST_STAMP(3047));
   };
 };
 // STAMPWTAG_chem__EnergyChiralRestraint_O
@@ -6924,8 +7060,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>> val -> 3039
-      return (kindVal == ISA_ADJUST_STAMP(3039));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>> val -> 3043
+      return (kindVal == ISA_ADJUST_STAMP(3043));
   };
 };
 // STAMPWTAG_chem__Structure_Old_List_O
@@ -6996,8 +7132,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>> val -> 3035
-      return (kindVal == ISA_ADJUST_STAMP(3035));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>> val -> 3039
+      return (kindVal == ISA_ADJUST_STAMP(3039));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_O
@@ -7014,8 +7150,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<int> val -> 3031
-      return (kindVal == ISA_ADJUST_STAMP(3031));
+    // IsA-stamp-range gctools::GCVector_moveable<int> val -> 3035
+      return (kindVal == ISA_ADJUST_STAMP(3035));
   };
 };
 // STAMPWTAG_chem__Smirks_O
@@ -7068,8 +7204,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>> val -> 3027
-      return (kindVal == ISA_ADJUST_STAMP(3027));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>> val -> 3031
+      return (kindVal == ISA_ADJUST_STAMP(3031));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__
@@ -7077,8 +7213,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::Vec0<char
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::Vec0<char>> val -> 3023
-      return (kindVal == ISA_ADJUST_STAMP(3023));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::Vec0<char>> val -> 3027
+      return (kindVal == ISA_ADJUST_STAMP(3027));
   };
 };
 // STAMPWTAG_llvmo__FunctionPass_O
@@ -7104,8 +7240,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<2,1>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,1> val -> 3019
-      return (kindVal == ISA_ADJUST_STAMP(3019));
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,1> val -> 3023
+      return (kindVal == ISA_ADJUST_STAMP(3023));
   };
 };
 // STAMPWTAG_chem__ConstitutionAtom_O
@@ -7149,8 +7285,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,0>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<1,0> val -> 3015
-      return (kindVal == ISA_ADJUST_STAMP(3015));
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<1,0> val -> 3019
+      return (kindVal == ISA_ADJUST_STAMP(3019));
   };
 };
 // STAMPWTAG_adapt__QDomNode_O
@@ -7176,8 +7312,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>> val -> 3011
-      return (kindVal == ISA_ADJUST_STAMP(3011));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>> val -> 3015
+      return (kindVal == ISA_ADJUST_STAMP(3015));
   };
 };
 // STAMPWTAG_chem__BondToAtomTest_O
@@ -7293,8 +7429,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>> val -> 3007
-      return (kindVal == ISA_ADJUST_STAMP(3007));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>> val -> 3011
+      return (kindVal == ISA_ADJUST_STAMP(3011));
   };
 };
 // STAMPWTAG_chem__FFStretchDb_O
@@ -7347,8 +7483,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<2,0>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,0> val -> 3003
-      return (kindVal == ISA_ADJUST_STAMP(3003));
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,0> val -> 3007
+      return (kindVal == ISA_ADJUST_STAMP(3007));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__
@@ -7356,8 +7492,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>> val -> 2999
-      return (kindVal == ISA_ADJUST_STAMP(2999));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>> val -> 3003
+      return (kindVal == ISA_ADJUST_STAMP(3003));
   };
 };
 // STAMPWTAG_llvmo__DILexicalBlock_O
@@ -7392,8 +7528,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>> val -> 2995
-      return (kindVal == ISA_ADJUST_STAMP(2995));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>> val -> 2999
+      return (kindVal == ISA_ADJUST_STAMP(2999));
   };
 };
 // STAMPWTAG_chem__InPlug_O
@@ -7410,8 +7546,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>> val -> 2991
-      return (kindVal == ISA_ADJUST_STAMP(2991));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>> val -> 2995
+      return (kindVal == ISA_ADJUST_STAMP(2995));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__
@@ -7419,8 +7555,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>> val -> 2987
-      return (kindVal == ISA_ADJUST_STAMP(2987));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>> val -> 2991
+      return (kindVal == ISA_ADJUST_STAMP(2991));
   };
 };
 // STAMPWTAG_llvmo__ModulePass_O
@@ -7572,8 +7708,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>> val -> 2983
-      return (kindVal == ISA_ADJUST_STAMP(2983));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>> val -> 2987
+      return (kindVal == ISA_ADJUST_STAMP(2987));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___
@@ -7581,8 +7717,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>> val -> 2979
-      return (kindVal == ISA_ADJUST_STAMP(2979));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>> val -> 2983
+      return (kindVal == ISA_ADJUST_STAMP(2983));
   };
 };
 // STAMPWTAG_llvmo__ConstantPointerNull_O
@@ -7644,8 +7780,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>> val -> 2975
-      return (kindVal == ISA_ADJUST_STAMP(2975));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>> val -> 2979
+      return (kindVal == ISA_ADJUST_STAMP(2979));
   };
 };
 // STAMPWTAG_core__RandomState_O
@@ -7673,6 +7809,15 @@ template <typename FP> struct Cast<chem::AtomReferenceBase_O*,FP> {
       int kindVal = header->shifted_stamp();
     // IsA-stamp-range chem::AtomReferenceBase_O low high --> 415 419 
       return ((ISA_ADJUST_STAMP(415) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(419)));
+  };
+};
+// STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_
+template <typename FP> struct Cast<gctools::GCVector_moveable<clbind::detail::vertex>*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range gctools::GCVector_moveable<clbind::detail::vertex> val -> 2975
+      return (kindVal == ISA_ADJUST_STAMP(2975));
   };
 };
 // STAMPWTAG_core__MDArray_byte64_t_O
@@ -8121,8 +8266,8 @@ template <typename FP> struct Cast<gctools::GCArraySignedLength_moveable<unsigne
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArraySignedLength_moveable<unsigned long> val -> 3263
-      return (kindVal == ISA_ADJUST_STAMP(3263));
+    // IsA-stamp-range gctools::GCArraySignedLength_moveable<unsigned long> val -> 3271
+      return (kindVal == ISA_ADJUST_STAMP(3271));
   };
 };
 // STAMPWTAG_llvmo__ConstantDataArray_O
@@ -12825,6 +12970,10 @@ template <> class gctools::GCStamp<chem::ChemDraw_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__ChemDraw_O ;
 };
+template <> class gctools::GCStamp<gctools::GCVector_moveable<clbind::detail::edge>> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_ ;
+};
 template <> class gctools::GCStamp<gctools::GCArray_moveable<float>> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_float_ ;
@@ -13188,6 +13337,10 @@ public:
 template <> class gctools::GCStamp<chem::AtomReferenceBase_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__AtomReferenceBase_O ;
+};
+template <> class gctools::GCStamp<gctools::GCVector_moveable<clbind::detail::vertex>> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_ ;
 };
 template <> class gctools::GCStamp<core::MDArray_byte64_t_O> {
 public:
@@ -19383,10 +19536,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._Mutex), 0, "_HashTable._Mutex" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
 // StampWtag = core::FunctionDescription_O/1347
 { class_kind, STAMPWTAG_core__FunctionDescription_O, sizeof(core::FunctionDescription_O), 0, IS_POLYMORPHIC, "core::FunctionDescription_O" },
-//      field: "_sourcePathname" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_sourcePathname), 0, "_sourcePathname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_functionName" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_functionName), 0, "_functionName" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+//      field: "_sourcePathname" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_sourcePathname), 0, "_sourcePathname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_lambdaList" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_lambdaList), 0, "_lambdaList" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_docstring" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -23933,7 +24086,7 @@ public:
 { class_kind, STAMPWTAG_core__FileStatus_O, sizeof(core::FileStatus_O), 0, IS_POLYMORPHIC, "core::FileStatus_O" },
 // StampWtag = core::DirectoryEntry_O/2739
 { class_kind, STAMPWTAG_core__DirectoryEntry_O, sizeof(core::DirectoryEntry_O), 0, IS_POLYMORPHIC, "core::DirectoryEntry_O" },
-//      field: "_Entry" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::filesystem::directory_entry" :NAME "directory_entry"))
+//      field: "_Entry" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "std::filesystem::directory_entry" :NAME "directory_entry"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryEntry_O),_Entry), 0, "_Entry" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 // StampWtag = core::LightUserData_O/2743
 { class_kind, STAMPWTAG_core__LightUserData_O, sizeof(core::LightUserData_O), 0, IS_POLYMORPHIC, "core::LightUserData_O" },
@@ -24041,6 +24194,11 @@ public:
 //      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<gctools::smart_ptr<core::FileScope_O>,gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>>" :SPECIALIZER "class gctools::GCVector_moveable<class gctools::smart_ptr<class core::FileScope_O> >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._SourceFiles._Vector._Contents), 0, "_Roots._SourceFiles._Vector._Contents" }, // atomic: NIL public: (T T T T) fixable: TAGGED-POINTER-FIX good-name: T
+//      field: "_Roots" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
+//      field: "._CastGraph" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<clbind::detail::vertex>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::vertex" :NAME "vertex") :INTEGRAL-VALUE NIL)))
+//      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<clbind::detail::vertex,gctools::GCContainerAllocator<gctools::GCVector_moveable<clbind::detail::vertex>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::vertex" :NAME "vertex") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<clbind::detail::vertex>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<clbind::detail::vertex>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::vertex" :NAME "vertex") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
+//      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<clbind::detail::vertex>>" :SPECIALIZER "class gctools::GCVector_moveable<struct clbind::detail::vertex>")
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<clbind::detail::vertex>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._CastGraph._Vector._Contents), 0, "_Roots._CastGraph._Vector._Contents" }, // atomic: NIL public: (T T T T) fixable: TAGGED-POINTER-FIX good-name: T
 //      field: "_Roots" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
 //      field: ".bootClassTable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<core::SymbolClassHolderPair>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::SymbolClassHolderPair" :NAME "SymbolClassHolderPair") :INTEGRAL-VALUE NIL)))
 //      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<core::SymbolClassHolderPair,gctools::GCContainerAllocator<gctools::GCVector_moveable<core::SymbolClassHolderPair>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::SymbolClassHolderPair" :NAME "SymbolClassHolderPair") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<core::SymbolClassHolderPair>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<core::SymbolClassHolderPair>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::SymbolClassHolderPair" :NAME "SymbolClassHolderPair") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
@@ -25270,7 +25428,27 @@ public:
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "chem::EstimateStretch" :NAME "EstimateStretch")
 //     field: "._lnKij" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
     {    variable_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),second._lnKij), 0, "second._lnKij" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>/2975
+// StampWtag = gctools::GCVector_moveable<clbind::detail::vertex>/2975
+{ container_kind, STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_, sizeof(gctools::GCVector_moveable<clbind::detail::vertex>), 0, 0, "gctools::GCVector_moveable<clbind::detail::vertex>" },
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::vertex>),_Data), 0, "_Data" },
+ {  variable_capacity, sizeof(clbind::detail::vertex), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::vertex>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::vertex>),_Capacity), 0, NULL },
+/* (base one) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::vertex" :NAME "vertex")
+*/
+/* (ctype-key (base one)) -> "clbind::detail::vertex"
+*/
+// atomic-smart-ptr-p -> NIL
+//     field: "id" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+    {    variable_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::detail::vertex),id), 0, "id" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+/* (base one) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::vertex" :NAME "vertex")
+*/
+/* (ctype-key (base one)) -> "clbind::detail::vertex"
+*/
+// atomic-smart-ptr-p -> NIL
+//     field: "edges" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<clbind::detail::edge>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::edge" :NAME "edge") :INTEGRAL-VALUE NIL)))
+//     field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<clbind::detail::edge,gctools::GCContainerAllocator<gctools::GCVector_moveable<clbind::detail::edge>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::edge" :NAME "edge") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<clbind::detail::edge>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<clbind::detail::edge>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::edge" :NAME "edge") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
+//     field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<clbind::detail::edge>>" :SPECIALIZER "class gctools::GCVector_moveable<struct clbind::detail::edge>")
+    {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<clbind::detail::edge>>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::detail::vertex),edges._Vector._Contents), 0, "edges._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>/2979
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::ConformationCollectionEntry_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>),_Capacity), 0, NULL },
@@ -25281,7 +25459,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ConformationCollectionEntry_O>" :SPECIALIZER "class chem::ConformationCollectionEntry_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ConformationCollectionEntry_O>" :SPECIALIZER "class chem::ConformationCollectionEntry_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ConformationCollectionEntry_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>/2979
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>/2983
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>),_Capacity), 0, NULL },
@@ -25299,7 +25477,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::BondId_O>" :SPECIALIZER "class kinematics::BondId_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::BondId_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>/2983
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>/2987
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>),_Capacity), 0, NULL },
@@ -25317,7 +25495,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Coupling_O>" :SPECIALIZER "class chem::Coupling_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Coupling_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>/2987
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>/2991
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Matter_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>),_Capacity), 0, NULL },
@@ -25328,7 +25506,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Matter_O>" :SPECIALIZER "class chem::Matter_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Matter_O>" :SPECIALIZER "class chem::Matter_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>/2991
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>/2995
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>),_Capacity), 0, NULL },
@@ -25346,7 +25524,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::AtomIndexer_O>" :SPECIALIZER "class chem::AtomIndexer_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::AtomIndexer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>/2995
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>/2999
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::AGEdge_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>),_Capacity), 0, NULL },
@@ -25357,7 +25535,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::AGEdge_O>" :SPECIALIZER "class chem::AGEdge_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::AGEdge_O>" :SPECIALIZER "class chem::AGEdge_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::AGEdge_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>/2999
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>/3003
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::ComplexRestraint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>),_Capacity), 0, NULL },
@@ -25368,7 +25546,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ComplexRestraint_O>" :SPECIALIZER "class chem::ComplexRestraint_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ComplexRestraint_O>" :SPECIALIZER "class chem::ComplexRestraint_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ComplexRestraint_O>), 0, 0, "only" },
-// StampWtag = gctools::GCBitUnitArray_moveable<2,0>/3003
+// StampWtag = gctools::GCBitUnitArray_moveable<2,0>/3007
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_, sizeof(gctools::GCBitUnitArray_moveable<2,0>), 2, 0, "gctools::GCBitUnitArray_moveable<2,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Length), 0, NULL },
@@ -25379,7 +25557,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>/3007
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>/3011
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<kinematics::ChiDihedral_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>),_Capacity), 0, NULL },
@@ -25390,7 +25568,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::ChiDihedral_O>" :SPECIALIZER "class kinematics::ChiDihedral_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::ChiDihedral_O>" :SPECIALIZER "class kinematics::ChiDihedral_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::ChiDihedral_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>/3011
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>/3015
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Coupling_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>),_Capacity), 0, NULL },
@@ -25401,7 +25579,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Coupling_O>" :SPECIALIZER "class chem::Coupling_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Coupling_O>" :SPECIALIZER "class chem::Coupling_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Coupling_O>), 0, 0, "only" },
-// StampWtag = gctools::GCBitUnitArray_moveable<1,0>/3015
+// StampWtag = gctools::GCBitUnitArray_moveable<1,0>/3019
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_, sizeof(gctools::GCBitUnitArray_moveable<1,0>), 1, 0, "gctools::GCBitUnitArray_moveable<1,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Length), 0, NULL },
@@ -25412,7 +25590,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCBitUnitArray_moveable<2,1>/3019
+// StampWtag = gctools::GCBitUnitArray_moveable<2,1>/3023
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_, sizeof(gctools::GCBitUnitArray_moveable<2,1>), 2, 0, "gctools::GCBitUnitArray_moveable<2,1>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), 0, NULL },
@@ -25423,7 +25601,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::Vec0<char>>/3023
+// StampWtag = gctools::GCVector_moveable<gctools::Vec0<char>>/3027
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__, sizeof(gctools::GCVector_moveable<gctools::Vec0<char>>), 0, 0, "gctools::GCVector_moveable<gctools::Vec0<char>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::Vec0<char>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::Vec0<char>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::Vec0<char>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::Vec0<char>>),_Capacity), 0, NULL },
@@ -25435,7 +25613,7 @@ public:
 //     field: "_Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<char,gctools::GCContainerAllocator<gctools::GCVector_moveable<char>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<char>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<char>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //     field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<char>>" :SPECIALIZER "class gctools::GCVector_moveable<char>")
     {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<char>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::Vec0<char>),_Vector._Contents), 0, "_Vector._Contents" }, // atomic: NIL public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>/3027
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>/3031
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Topology_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>),_Capacity), 0, NULL },
@@ -25446,7 +25624,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Topology_O>" :SPECIALIZER "class chem::Topology_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Topology_O>" :SPECIALIZER "class chem::Topology_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Topology_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<int>/3031
+// StampWtag = gctools::GCVector_moveable<int>/3035
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_int_, sizeof(gctools::GCVector_moveable<int>), 0, 0, "gctools::GCVector_moveable<int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Capacity), 0, NULL },
@@ -25457,7 +25635,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>/3035
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>/3039
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>),_Capacity), 0, NULL },
@@ -25475,7 +25653,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::FrameRecognizer_O>" :SPECIALIZER "class chem::FrameRecognizer_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FrameRecognizer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>/3039
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>/3043
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Stereoisomer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>),_Capacity), 0, NULL },
@@ -25486,7 +25664,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Stereoisomer_O>" :SPECIALIZER "class chem::Stereoisomer_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Stereoisomer_O>" :SPECIALIZER "class chem::Stereoisomer_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Stereoisomer_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>/3043
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>/3047
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Mate_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>),_Capacity), 0, NULL },
@@ -25497,7 +25675,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Mate_O>" :SPECIALIZER "class chem::Mate_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Mate_O>" :SPECIALIZER "class chem::Mate_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Mate_O>), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<float>/3047
+// StampWtag = gctools::GCArray_moveable<float>/3051
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_float_, sizeof(gctools::GCArray_moveable<float>), 0, 0, "gctools::GCArray_moveable<float>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_MaybeSignedLength), 0, NULL },
@@ -25508,7 +25686,25 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>/3051
+// StampWtag = gctools::GCVector_moveable<clbind::detail::edge>/3055
+{ container_kind, STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_, sizeof(gctools::GCVector_moveable<clbind::detail::edge>), 0, 0, "gctools::GCVector_moveable<clbind::detail::edge>" },
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::edge>),_Data), 0, "_Data" },
+ {  variable_capacity, sizeof(clbind::detail::edge), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::edge>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::edge>),_Capacity), 0, NULL },
+/* (base one) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::edge" :NAME "edge")
+*/
+/* (ctype-key (base one)) -> "clbind::detail::edge"
+*/
+// atomic-smart-ptr-p -> NIL
+//     field: "target" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+    {    variable_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::detail::edge),target), 0, "target" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+/* (base one) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::edge" :NAME "edge")
+*/
+/* (ctype-key (base one)) -> "clbind::detail::edge"
+*/
+// atomic-smart-ptr-p -> NIL
+//     field: "cast" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "void *(void *)"))
+    {    variable_field, RAW_POINTER_OFFSET, sizeof(NIL), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::detail::edge),cast), 0, "cast" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>/3059
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Atom_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>),_Capacity), 0, NULL },
@@ -25519,7 +25715,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>/3055
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>/3063
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Bond_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>),_Capacity), 0, NULL },
@@ -25530,7 +25726,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Bond_O>" :SPECIALIZER "class chem::Bond_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Bond_O>" :SPECIALIZER "class chem::Bond_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Bond_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>/3059
+// StampWtag = gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>/3067
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___, sizeof(gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>), 0, 0, "gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>),_Capacity), 0, NULL },
@@ -25542,7 +25738,7 @@ public:
 //     field: "_Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<gctools::smart_ptr<chem::Atom_O>,gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //     field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>" :SPECIALIZER "class gctools::GCVector_moveable<class gctools::smart_ptr<class chem::Atom_O> >")
     {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>),_Vector._Contents), 0, "_Vector._Contents" }, // atomic: NIL public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<core::T_O *>/3063
+// StampWtag = gctools::GCVector_moveable<core::T_O *>/3071
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__T_O___, sizeof(gctools::GCVector_moveable<core::T_O *>), 0, 0, "gctools::GCVector_moveable<core::T_O *>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::T_O*), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), 0, NULL },
@@ -25553,7 +25749,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POINTER-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O")) :base #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O"))>
 {    variable_field, POINTER_OFFSET, sizeof(core::T_O*), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<chem::EnergyDihedral>/3067
+// StampWtag = gctools::GCVector_moveable<chem::EnergyDihedral>/3075
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_, sizeof(gctools::GCVector_moveable<chem::EnergyDihedral>), 0, 0, "gctools::GCVector_moveable<chem::EnergyDihedral>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyDihedral>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::EnergyDihedral), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyDihedral>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyDihedral>),_Capacity), 0, NULL },
@@ -25678,7 +25874,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_CalculatedDihedralDeviation" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
     {    variable_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(chem::EnergyDihedral),_CalculatedDihedralDeviation), 0, "_CalculatedDihedralDeviation" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>/3071
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>/3079
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>),_Capacity), 0, NULL },
@@ -25696,7 +25892,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::MonomerNode_O>" :SPECIALIZER "class kinematics::MonomerNode_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::MonomerNode_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCArray_moveable<unsigned int>/3075
+// StampWtag = gctools::GCArray_moveable<unsigned int>/3083
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_int_, sizeof(gctools::GCArray_moveable<unsigned int>), 0, 0, "gctools::GCArray_moveable<unsigned int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_MaybeSignedLength), 0, NULL },
@@ -25707,7 +25903,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>/3079
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>/3087
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::BondList_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>),_Capacity), 0, NULL },
@@ -25718,7 +25914,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::BondList_O>" :SPECIALIZER "class chem::BondList_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::BondList_O>" :SPECIALIZER "class chem::BondList_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::BondList_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>/3083
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>/3091
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::ConformationExplorerEntry_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>),_Capacity), 0, NULL },
@@ -25729,7 +25925,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ConformationExplorerEntry_O>" :SPECIALIZER "class chem::ConformationExplorerEntry_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ConformationExplorerEntry_O>" :SPECIALIZER "class chem::ConformationExplorerEntry_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ConformationExplorerEntry_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<chem::RotamerAtom>/3087
+// StampWtag = gctools::GCVector_moveable<chem::RotamerAtom>/3095
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_, sizeof(gctools::GCVector_moveable<chem::RotamerAtom>), 0, 0, "gctools::GCVector_moveable<chem::RotamerAtom>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RotamerAtom>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::RotamerAtom), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RotamerAtom>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RotamerAtom>),_Capacity), 0, NULL },
@@ -25754,7 +25950,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Torsion" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
     {    variable_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(chem::RotamerAtom),_Torsion), 0, "_Torsion" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>/3091
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>/3099
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Cons_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Capacity), 0, NULL },
@@ -25765,7 +25961,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cons_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<double>/3095
+// StampWtag = gctools::GCVector_moveable<double>/3103
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_double_, sizeof(gctools::GCVector_moveable<double>), 0, 0, "gctools::GCVector_moveable<double>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Capacity), 0, NULL },
@@ -25776,7 +25972,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>/3099
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>/3107
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<kinematics::Rotamer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>),_Capacity), 0, NULL },
@@ -25787,7 +25983,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Rotamer_O>" :SPECIALIZER "class kinematics::Rotamer_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Rotamer_O>" :SPECIALIZER "class kinematics::Rotamer_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::Rotamer_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>/3103
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>/3111
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Residue_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>),_Capacity), 0, NULL },
@@ -25798,7 +25994,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Residue_O>" :SPECIALIZER "class chem::Residue_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Residue_O>" :SPECIALIZER "class chem::Residue_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Residue_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>/3107
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>/3115
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>),_Capacity), 0, NULL },
@@ -25816,7 +26012,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Molecule_O>" :SPECIALIZER "class chem::Molecule_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Molecule_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>/3111
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>/3119
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Capacity), 0, NULL },
@@ -25827,7 +26023,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<int,int>>/3115
+// StampWtag = gctools::GCVector_moveable<std::pair<int,int>>/3123
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__, sizeof(gctools::GCVector_moveable<std::pair<int,int>>), 0, 0, "gctools::GCVector_moveable<std::pair<int,int>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,int>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<int,int>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,int>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,int>>),_Capacity), 0, NULL },
@@ -25845,7 +26041,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<int,int>),second), 0, "second" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<chem::AtomPdbRec>/3119
+// StampWtag = gctools::GCVector_moveable<chem::AtomPdbRec>/3127
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_, sizeof(gctools::GCVector_moveable<chem::AtomPdbRec>), 0, 0, "gctools::GCVector_moveable<chem::AtomPdbRec>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::AtomPdbRec>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::AtomPdbRec), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::AtomPdbRec>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::AtomPdbRec>),_Capacity), 0, NULL },
@@ -25982,7 +26178,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_moleculeIdx" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(chem::AtomPdbRec),_moleculeIdx), 0, "_moleculeIdx" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<chem::EnergySketchStretch>/3123
+// StampWtag = gctools::GCVector_moveable<chem::EnergySketchStretch>/3131
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_, sizeof(gctools::GCVector_moveable<chem::EnergySketchStretch>), 0, 0, "gctools::GCVector_moveable<chem::EnergySketchStretch>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergySketchStretch>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::EnergySketchStretch), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergySketchStretch>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergySketchStretch>),_Capacity), 0, NULL },
@@ -26018,7 +26214,7 @@ public:
 //     field: "term" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "chem::TermSketchStretch" :NAME "TermSketchStretch")
 //     field: ".I2" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(chem::EnergySketchStretch),term.I2), 0, "term.I2" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = gctools::GCArray_moveable<signed char>/3127
+// StampWtag = gctools::GCArray_moveable<signed char>/3135
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_signed_char_, sizeof(gctools::GCArray_moveable<signed char>), 0, 0, "gctools::GCArray_moveable<signed char>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(signed char), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_MaybeSignedLength), 0, NULL },
@@ -26029,7 +26225,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char")>
 {    variable_field, ctype_signed_char, sizeof(signed char), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<chem::EnergyOutOfZPlane>/3131
+// StampWtag = gctools::GCVector_moveable<chem::EnergyOutOfZPlane>/3139
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_, sizeof(gctools::GCVector_moveable<chem::EnergyOutOfZPlane>), 0, 0, "gctools::GCVector_moveable<chem::EnergyOutOfZPlane>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyOutOfZPlane>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::EnergyOutOfZPlane), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyOutOfZPlane>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyOutOfZPlane>),_Capacity), 0, NULL },
@@ -26057,7 +26253,7 @@ public:
 //     field: "term" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "chem::TermOutOfZPlane" :NAME "TermOutOfZPlane")
 //     field: ".za" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
     {    variable_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(chem::EnergyOutOfZPlane),term.za), 0, "term.za" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>/3135
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>/3143
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Capacity), 0, NULL },
@@ -26068,7 +26264,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>/3139
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>/3147
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>),_Capacity), 0, NULL },
@@ -26086,7 +26282,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Plug_O>" :SPECIALIZER "class chem::Plug_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Plug_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>/3143
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>/3151
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>),_Capacity), 0, NULL },
@@ -26097,7 +26293,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>" :SPECIALIZER "class chem::ConformationExplorerEntryStage_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>" :SPECIALIZER "class chem::ConformationExplorerEntryStage_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>/3147
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>/3155
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::CDBond_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>),_Capacity), 0, NULL },
@@ -26108,7 +26304,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::CDBond_O>" :SPECIALIZER "class chem::CDBond_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::CDBond_O>" :SPECIALIZER "class chem::CDBond_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDBond_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<chem::EnergySketchNonbond>/3151
+// StampWtag = gctools::GCVector_moveable<chem::EnergySketchNonbond>/3159
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_, sizeof(gctools::GCVector_moveable<chem::EnergySketchNonbond>), 0, 0, "gctools::GCVector_moveable<chem::EnergySketchNonbond>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergySketchNonbond>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::EnergySketchNonbond), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergySketchNonbond>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergySketchNonbond>),_Capacity), 0, NULL },
@@ -26140,7 +26336,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "I2" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(chem::EnergySketchNonbond),I2), 0, "I2" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<core::KeyValuePair>/3155
+// StampWtag = gctools::GCVector_moveable<core::KeyValuePair>/3163
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_, sizeof(gctools::GCVector_moveable<core::KeyValuePair>), 0, 0, "gctools::GCVector_moveable<core::KeyValuePair>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeyValuePair>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::KeyValuePair), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeyValuePair>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeyValuePair>),_Capacity), 0, NULL },
@@ -26158,7 +26354,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::KeyValuePair),_Value), 0, "_Value" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>/3159
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>/3167
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Capacity), 0, NULL },
@@ -26169,7 +26365,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>/3163
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>/3171
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Twister_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>),_Capacity), 0, NULL },
@@ -26180,7 +26376,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Twister_O>" :SPECIALIZER "class chem::Twister_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Twister_O>" :SPECIALIZER "class chem::Twister_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Twister_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<chem::FixedNonbondRestraint>/3167
+// StampWtag = gctools::GCVector_moveable<chem::FixedNonbondRestraint>/3175
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_, sizeof(gctools::GCVector_moveable<chem::FixedNonbondRestraint>), 0, 0, "gctools::GCVector_moveable<chem::FixedNonbondRestraint>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::FixedNonbondRestraint>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::FixedNonbondRestraint), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::FixedNonbondRestraint>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::FixedNonbondRestraint>),_Capacity), 0, NULL },
@@ -26205,7 +26401,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_FixedType" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
     {    variable_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(chem::FixedNonbondRestraint),_FixedType), 0, "_FixedType" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>/3171
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>/3179
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<adapt::QDomNode_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>),_Capacity), 0, NULL },
@@ -26216,7 +26412,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<adapt::QDomNode_O>" :SPECIALIZER "class adapt::QDomNode_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<adapt::QDomNode_O>" :SPECIALIZER "class adapt::QDomNode_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<adapt::QDomNode_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>/3175
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>/3183
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::ZMatrixInternal_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>),_Capacity), 0, NULL },
@@ -26227,7 +26423,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ZMatrixInternal_O>" :SPECIALIZER "class chem::ZMatrixInternal_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ZMatrixInternal_O>" :SPECIALIZER "class chem::ZMatrixInternal_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ZMatrixInternal_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>/3179
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>/3187
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>),_Capacity), 0, NULL },
@@ -26245,7 +26441,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::CDFragment_O>" :SPECIALIZER "class chem::CDFragment_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDFragment_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>/3183
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>/3191
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::Molecule_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>),_Capacity), 0, NULL },
@@ -26256,7 +26452,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Molecule_O>" :SPECIALIZER "class chem::Molecule_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Molecule_O>" :SPECIALIZER "class chem::Molecule_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Molecule_O>), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<double>/3187
+// StampWtag = gctools::GCArray_moveable<double>/3195
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_double_, sizeof(gctools::GCArray_moveable<double>), 0, 0, "gctools::GCArray_moveable<double>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_MaybeSignedLength), 0, NULL },
@@ -26267,7 +26463,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>/3191
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>/3199
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>),_Capacity), 0, NULL },
@@ -26285,7 +26481,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::PdbMonomerConnectivity_O>" :SPECIALIZER "class chem::PdbMonomerConnectivity_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::PdbMonomerConnectivity_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>/3195
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>/3203
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>),_Capacity), 0, NULL },
@@ -26303,7 +26499,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
     {    variable_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>),second), 0, "second" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>/3199
+// StampWtag = gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>/3207
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___, sizeof(gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>),_Capacity), 0, NULL },
@@ -26321,7 +26517,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Residue_O>" :SPECIALIZER "class chem::Residue_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Residue_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>/3203
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>/3211
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::PathMessage_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>),_Capacity), 0, NULL },
@@ -26332,7 +26528,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::PathMessage_O>" :SPECIALIZER "class chem::PathMessage_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::PathMessage_O>" :SPECIALIZER "class chem::PathMessage_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::PathMessage_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<core::RequiredArgument>/3207
+// StampWtag = gctools::GCVector_moveable<core::RequiredArgument>/3215
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_, sizeof(gctools::GCVector_moveable<core::RequiredArgument>), 0, 0, "gctools::GCVector_moveable<core::RequiredArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::RequiredArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Capacity), 0, NULL },
@@ -26350,7 +26546,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_ArgTargetFrameIndex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::RequiredArgument),_ArgTargetFrameIndex), 0, "_ArgTargetFrameIndex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>/3211
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>/3219
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::FileScope_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>),_Capacity), 0, NULL },
@@ -26361,7 +26557,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FileScope_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>/3215
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>/3223
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::ZMatrixEntry_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>),_Capacity), 0, NULL },
@@ -26372,7 +26568,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ZMatrixEntry_O>" :SPECIALIZER "class chem::ZMatrixEntry_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ZMatrixEntry_O>" :SPECIALIZER "class chem::ZMatrixEntry_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ZMatrixEntry_O>), 0, 0, "only" },
-// StampWtag = gctools::GCBitUnitArray_moveable<4,1>/3219
+// StampWtag = gctools::GCBitUnitArray_moveable<4,1>/3227
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_, sizeof(gctools::GCBitUnitArray_moveable<4,1>), 4, 0, "gctools::GCBitUnitArray_moveable<4,1>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), 0, NULL },
@@ -26383,7 +26579,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<core::SymbolStorage>/3223
+// StampWtag = gctools::GCVector_moveable<core::SymbolStorage>/3231
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_, sizeof(gctools::GCVector_moveable<core::SymbolStorage>), 0, 0, "gctools::GCVector_moveable<core::SymbolStorage>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::SymbolStorage), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Capacity), 0, NULL },
@@ -26422,7 +26618,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Shadow" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
     {    variable_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Shadow), 0, "_Shadow" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>/3227
+// StampWtag = gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>/3235
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_, sizeof(gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>), 0, 0, "gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::BeyondThresholdFixedNonbondRestraint), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>),_Capacity), 0, NULL },
@@ -26447,7 +26643,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_NonbondDistance" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
     {    variable_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(chem::BeyondThresholdFixedNonbondRestraint),_NonbondDistance), 0, "_NonbondDistance" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>/3231
+// StampWtag = gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>/3239
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___, sizeof(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<int,gctools::smart_ptr<chem::CDNode_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>),_Capacity), 0, NULL },
@@ -26465,7 +26661,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::CDNode_O>" :SPECIALIZER "class chem::CDNode_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDNode_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<int,gctools::smart_ptr<chem::CDNode_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>/3235
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>/3243
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>),_Capacity), 0, NULL },
@@ -26483,7 +26679,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::DoubleFloat_O>" :SPECIALIZER "class core::DoubleFloat_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::DoubleFloat_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>/3239
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>/3247
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>),_Capacity), 0, NULL },
@@ -26494,7 +26690,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>/3243
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>/3251
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<chem::Atom_O>,int>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>),_Capacity), 0, NULL },
@@ -26512,7 +26708,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<chem::Atom_O>,int>),second), 0, "second" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>/3247
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>/3255
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>),_Capacity), 0, NULL },
@@ -26530,7 +26726,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>" :SPECIALIZER "class kinematics::RingClosingMonomerNode_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>/3251
+// StampWtag = gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>/3259
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_, sizeof(gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>), 0, 0, "gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::RigidBodyNonbondCrossTerm), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>),_Capacity), 0, NULL },
@@ -26548,7 +26744,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "dC" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
     {    variable_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(chem::RigidBodyNonbondCrossTerm),dC), 0, "dC" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>/3255
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>/3263
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::MonomerCoordinates_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>),_Capacity), 0, NULL },
@@ -26559,7 +26755,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::MonomerCoordinates_O>" :SPECIALIZER "class chem::MonomerCoordinates_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::MonomerCoordinates_O>" :SPECIALIZER "class chem::MonomerCoordinates_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::MonomerCoordinates_O>), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<unsigned long>/3259
+// StampWtag = gctools::GCArray_moveable<unsigned long>/3267
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_long_, sizeof(gctools::GCArray_moveable<unsigned long>), 0, 0, "gctools::GCArray_moveable<unsigned long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_MaybeSignedLength), 0, NULL },
@@ -26570,7 +26766,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCArraySignedLength_moveable<unsigned long>/3263
+// StampWtag = gctools::GCArraySignedLength_moveable<unsigned long>/3271
 { container_kind, STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_, sizeof(gctools::GCArraySignedLength_moveable<unsigned long>), 0, 0, "gctools::GCArraySignedLength_moveable<unsigned long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArraySignedLength_moveable<unsigned long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArraySignedLength_moveable<unsigned long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArraySignedLength_moveable<unsigned long>),_MaybeSignedLength), 0, NULL },
@@ -26581,7 +26777,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<chem::EnergyNonbond>/3267
+// StampWtag = gctools::GCVector_moveable<chem::EnergyNonbond>/3275
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_, sizeof(gctools::GCVector_moveable<chem::EnergyNonbond>), 0, 0, "gctools::GCVector_moveable<chem::EnergyNonbond>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyNonbond>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::EnergyNonbond), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyNonbond>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyNonbond>),_Capacity), 0, NULL },
@@ -26681,7 +26877,7 @@ public:
 //     field: "term" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "chem::TermNonBond" :NAME "TermNonBond")
 //     field: ".I2" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),term.I2), 0, "term.I2" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>/3271
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>/3279
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), 0, NULL },
@@ -26699,7 +26895,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<chem::AtomInfo>/3275
+// StampWtag = gctools::GCVector_moveable<chem::AtomInfo>/3283
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_, sizeof(gctools::GCVector_moveable<chem::AtomInfo>), 0, 0, "gctools::GCVector_moveable<chem::AtomInfo>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::AtomInfo>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::AtomInfo), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::AtomInfo>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::AtomInfo>),_Capacity), 0, NULL },
@@ -26724,7 +26920,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Type" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::AtomInfo),_Type), 0, "_Type" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>/3279
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>/3287
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::FFVdw_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_Capacity), 0, NULL },
@@ -26735,7 +26931,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::FFVdw_O>" :SPECIALIZER "class chem::FFVdw_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::FFVdw_O>" :SPECIALIZER "class chem::FFVdw_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFVdw_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>/3283
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>/3291
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::ConstitutionAtom_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>),_Capacity), 0, NULL },
@@ -26746,7 +26942,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ConstitutionAtom_O>" :SPECIALIZER "class chem::ConstitutionAtom_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::ConstitutionAtom_O>" :SPECIALIZER "class chem::ConstitutionAtom_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ConstitutionAtom_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<chem::EnergyAtom>/3287
+// StampWtag = gctools::GCVector_moveable<chem::EnergyAtom>/3295
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_, sizeof(gctools::GCVector_moveable<chem::EnergyAtom>), 0, 0, "gctools::GCVector_moveable<chem::EnergyAtom>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyAtom>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::EnergyAtom), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyAtom>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyAtom>),_Capacity), 0, NULL },
@@ -26833,7 +27029,7 @@ public:
 //     field: "[2]" (instance-field-access iv) -> NIL  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::SmallOrderedSet<gctools::smart_ptr<chem::Atom_O>>" :NAME "SmallOrderedSet" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O") :INTEGRAL-VALUE NIL)))
 //     field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>" :SPECIALIZER "class gctools::GCVector_moveable<class gctools::smart_ptr<class chem::Atom_O> >")
     {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::EnergyAtom),_AtomsAtRemoveBondAngle14[2]._Contents), 0, "_AtomsAtRemoveBondAngle14[2]._Contents" }, // atomic: NIL public: (T NIL T) fixable: TAGGED-POINTER-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>/3291
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>/3299
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>),_Capacity), 0, NULL },
@@ -26851,7 +27047,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::CDNode_O>" :SPECIALIZER "class chem::CDNode_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDNode_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCArray_moveable<int>/3295
+// StampWtag = gctools::GCArray_moveable<int>/3303
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_int_, sizeof(gctools::GCArray_moveable<int>), 0, 0, "gctools::GCArray_moveable<int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_MaybeSignedLength), 0, NULL },
@@ -26862,7 +27058,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>/3299
+// StampWtag = gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>/3307
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>), 0, 0, "gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_MaybeSignedLength), 0, NULL },
@@ -26873,7 +27069,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<core::AuxArgument>/3303
+// StampWtag = gctools::GCVector_moveable<core::AuxArgument>/3311
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_, sizeof(gctools::GCVector_moveable<core::AuxArgument>), 0, 0, "gctools::GCVector_moveable<core::AuxArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::AuxArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Capacity), 0, NULL },
@@ -26898,7 +27094,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Expression" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_Expression), 0, "_Expression" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>/3307
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>/3315
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<kinematics::JointTemplate_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>),_Capacity), 0, NULL },
@@ -26909,7 +27105,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::JointTemplate_O>" :SPECIALIZER "class kinematics::JointTemplate_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::JointTemplate_O>" :SPECIALIZER "class kinematics::JointTemplate_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::JointTemplate_O>), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<long>/3311
+// StampWtag = gctools::GCArray_moveable<long>/3319
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_long_, sizeof(gctools::GCArray_moveable<long>), 0, 0, "gctools::GCArray_moveable<long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_MaybeSignedLength), 0, NULL },
@@ -26920,7 +27116,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")>
 {    variable_field, ctype_long, sizeof(long), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<chem::ResidueOut>/3315
+// StampWtag = gctools::GCVector_moveable<chem::ResidueOut>/3323
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_, sizeof(gctools::GCVector_moveable<chem::ResidueOut>), 0, 0, "gctools::GCVector_moveable<chem::ResidueOut>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::ResidueOut>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::ResidueOut), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::ResidueOut>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::ResidueOut>),_Capacity), 0, NULL },
@@ -26945,7 +27141,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "firstAtom" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
     {    variable_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(chem::ResidueOut),firstAtom), 0, "firstAtom" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<chem::RigidBodyAtomInfo>/3319
+// StampWtag = gctools::GCVector_moveable<chem::RigidBodyAtomInfo>/3327
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_, sizeof(gctools::GCVector_moveable<chem::RigidBodyAtomInfo>), 0, 0, "gctools::GCVector_moveable<chem::RigidBodyAtomInfo>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RigidBodyAtomInfo>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::RigidBodyAtomInfo), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RigidBodyAtomInfo>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::RigidBodyAtomInfo>),_Capacity), 0, NULL },
@@ -26984,7 +27180,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Charge" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
     {    variable_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(chem::RigidBodyAtomInfo),_Charge), 0, "_Charge" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>/3323
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>/3331
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>),_Capacity), 0, NULL },
@@ -27002,7 +27198,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Topology_O>" :SPECIALIZER "class chem::Topology_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Topology_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>/3327
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>/3335
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<chem::StereoisomerAtoms_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>),_Capacity), 0, NULL },
@@ -27013,7 +27209,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::StereoisomerAtoms_O>" :SPECIALIZER "class chem::StereoisomerAtoms_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::StereoisomerAtoms_O>" :SPECIALIZER "class chem::StereoisomerAtoms_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::StereoisomerAtoms_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>/3331
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>/3339
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Capacity), 0, NULL },
@@ -27024,7 +27220,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<unsigned int>/3335
+// StampWtag = gctools::GCVector_moveable<unsigned int>/3343
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_unsigned_int_, sizeof(gctools::GCVector_moveable<unsigned int>), 0, 0, "gctools::GCVector_moveable<unsigned int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<unsigned int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<unsigned int>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<unsigned int>),_Capacity), 0, NULL },
@@ -27035,7 +27231,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<chem::EnergyStretch>/3339
+// StampWtag = gctools::GCVector_moveable<chem::EnergyStretch>/3347
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_, sizeof(gctools::GCVector_moveable<chem::EnergyStretch>), 0, 0, "gctools::GCVector_moveable<chem::EnergyStretch>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyStretch>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(chem::EnergyStretch), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyStretch>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyStretch>),_Capacity), 0, NULL },
@@ -27085,7 +27281,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Atom2" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::EnergyStretch),_Atom2), 0, "_Atom2" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>/3343
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>/3351
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Creator_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_Capacity), 0, NULL },
@@ -27096,7 +27292,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Creator_O>" :SPECIALIZER "class core::Creator_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Creator_O>" :SPECIALIZER "class core::Creator_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>/3347
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>/3355
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<kinematics::Joint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>),_Capacity), 0, NULL },
@@ -27107,7 +27303,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<kinematics::Joint_O>" :SPECIALIZER "class kinematics::Joint_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<kinematics::Joint_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>/3351
+// StampWtag = gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>/3359
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____, sizeof(gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>), 0, 0, "gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>),_Capacity), 0, NULL },
@@ -27119,7 +27315,7 @@ public:
 //     field: "_Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>,gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //     field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>" :SPECIALIZER "class gctools::GCVector_moveable<class gctools::Vec0<class gctools::smart_ptr<class chem::Atom_O> > >")
     {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>),_Vector._Contents), 0, "_Vector._Contents" }, // atomic: NIL public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
-// StampWtag = gctools::GCArray_moveable<unsigned short>/3355
+// StampWtag = gctools::GCArray_moveable<unsigned short>/3363
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_short_, sizeof(gctools::GCArray_moveable<unsigned short>), 0, 0, "gctools::GCArray_moveable<unsigned short>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned short), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_MaybeSignedLength), 0, NULL },
@@ -27130,7 +27326,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short")>
 {    variable_field, ctype_unsigned_short, sizeof(unsigned short), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<float>/3359
+// StampWtag = gctools::GCVector_moveable<float>/3367
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_float_, sizeof(gctools::GCVector_moveable<float>), 0, 0, "gctools::GCVector_moveable<float>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Capacity), 0, NULL },
@@ -27141,12 +27337,12 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, 0, "only" },
-// StampWtag = clang::FrontendAction/3363
-// StampWtag = clang::ASTFrontendAction/3367
-// StampWtag = clang::SyntaxOnlyAction/3371
-// StampWtag = clang::tooling::ToolAction/3375
-// StampWtag = clang::tooling::FrontendActionFactory/3379
-// StampWtag = clang::ast_matchers::MatchFinder::MatchCallback/3383
+// StampWtag = clang::FrontendAction/3371
+// StampWtag = clang::ASTFrontendAction/3375
+// StampWtag = clang::SyntaxOnlyAction/3379
+// StampWtag = clang::tooling::ToolAction/3383
+// StampWtag = clang::tooling::FrontendActionFactory/3387
+// StampWtag = clang::ast_matchers::MatchFinder::MatchCallback/3391
 
 #endif // defined(GC_OBJ_SCAN_HELPERS)
 #if defined(GC_OBJ_SCAN_TABLE)
@@ -33823,426 +34019,434 @@ obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_c
 {
      // stamp value 2971
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>"));}
-obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__:
+obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_:
 {
      // stamp value 2975
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<clbind::detail::vertex>"));}
+obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__:
+{
+     // stamp value 2979
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___:
 {
-     // stamp value 2979
+     // stamp value 2983
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___:
 {
-     // stamp value 2983
+     // stamp value 2987
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__:
 {
-     // stamp value 2987
+     // stamp value 2991
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___:
 {
-     // stamp value 2991
+     // stamp value 2995
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__:
 {
-     // stamp value 2995
+     // stamp value 2999
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__:
 {
-     // stamp value 2999
+     // stamp value 3003
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_:
 {
-     // stamp value 3003
+     // stamp value 3007
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<2,0>"));
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__:
 {
-     // stamp value 3007
+     // stamp value 3011
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__:
 {
-     // stamp value 3011
+     // stamp value 3015
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_:
 {
-     // stamp value 3015
+     // stamp value 3019
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<1,0>"));
 }
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_:
 {
-     // stamp value 3019
+     // stamp value 3023
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<2,1>"));
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__:
 {
-     // stamp value 3023
+     // stamp value 3027
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<char>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__:
 {
-     // stamp value 3027
+     // stamp value 3031
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_int_:
 {
-     // stamp value 3031
+     // stamp value 3035
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<int>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___:
 {
-     // stamp value 3035
+     // stamp value 3039
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__:
 {
-     // stamp value 3039
+     // stamp value 3043
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__:
 {
-     // stamp value 3043
+     // stamp value 3047
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_float_:
 {
-     // stamp value 3047
+     // stamp value 3051
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<float>"));}
+obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_:
+{
+     // stamp value 3055
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<clbind::detail::edge>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__:
 {
-     // stamp value 3051
+     // stamp value 3059
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__:
 {
-     // stamp value 3055
+     // stamp value 3063
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___:
 {
-     // stamp value 3059
+     // stamp value 3067
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__T_O___:
 {
-     // stamp value 3063
+     // stamp value 3071
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_:
 {
-     // stamp value 3067
+     // stamp value 3075
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyDihedral>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___:
 {
-     // stamp value 3071
+     // stamp value 3079
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_:
 {
-     // stamp value 3075
+     // stamp value 3083
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned int>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__:
 {
-     // stamp value 3079
+     // stamp value 3087
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__:
 {
-     // stamp value 3083
+     // stamp value 3091
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_:
 {
-     // stamp value 3087
+     // stamp value 3095
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::RotamerAtom>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
-     // stamp value 3091
+     // stamp value 3099
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_double_:
 {
-     // stamp value 3095
+     // stamp value 3103
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<double>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__:
 {
-     // stamp value 3099
+     // stamp value 3107
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__:
 {
-     // stamp value 3103
+     // stamp value 3111
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___:
 {
-     // stamp value 3107
+     // stamp value 3115
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
-     // stamp value 3111
+     // stamp value 3119
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__:
 {
-     // stamp value 3115
+     // stamp value 3123
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<int,int>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_:
 {
-     // stamp value 3119
+     // stamp value 3127
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::AtomPdbRec>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_:
 {
-     // stamp value 3123
+     // stamp value 3131
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergySketchStretch>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_signed_char_:
 {
-     // stamp value 3127
+     // stamp value 3135
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<signed char>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_:
 {
-     // stamp value 3131
+     // stamp value 3139
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyOutOfZPlane>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
-     // stamp value 3135
+     // stamp value 3143
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___:
 {
-     // stamp value 3139
+     // stamp value 3147
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__:
 {
-     // stamp value 3143
+     // stamp value 3151
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__:
 {
-     // stamp value 3147
+     // stamp value 3155
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_:
 {
-     // stamp value 3151
+     // stamp value 3159
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergySketchNonbond>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_:
 {
-     // stamp value 3155
+     // stamp value 3163
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::KeyValuePair>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
-     // stamp value 3159
+     // stamp value 3167
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__:
 {
-     // stamp value 3163
+     // stamp value 3171
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_:
 {
-     // stamp value 3167
+     // stamp value 3175
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::FixedNonbondRestraint>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__:
 {
-     // stamp value 3171
+     // stamp value 3179
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__:
 {
-     // stamp value 3175
+     // stamp value 3183
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___:
 {
-     // stamp value 3179
+     // stamp value 3187
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__:
 {
-     // stamp value 3183
+     // stamp value 3191
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_double_:
 {
-     // stamp value 3187
+     // stamp value 3195
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<double>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___:
 {
-     // stamp value 3191
+     // stamp value 3199
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__:
 {
-     // stamp value 3195
+     // stamp value 3203
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___:
 {
-     // stamp value 3199
+     // stamp value 3207
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__:
 {
-     // stamp value 3203
+     // stamp value 3211
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_:
 {
-     // stamp value 3207
+     // stamp value 3215
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::RequiredArgument>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__:
 {
-     // stamp value 3211
+     // stamp value 3219
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__:
 {
-     // stamp value 3215
+     // stamp value 3223
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_:
 {
-     // stamp value 3219
+     // stamp value 3227
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<4,1>"));
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_:
 {
-     // stamp value 3223
+     // stamp value 3231
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolStorage>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_:
 {
-     // stamp value 3227
+     // stamp value 3235
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___:
 {
-     // stamp value 3231
+     // stamp value 3239
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___:
 {
-     // stamp value 3235
+     // stamp value 3243
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__:
 {
-     // stamp value 3239
+     // stamp value 3247
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__:
 {
-     // stamp value 3243
+     // stamp value 3251
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___:
 {
-     // stamp value 3247
+     // stamp value 3255
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_:
 {
-     // stamp value 3251
+     // stamp value 3259
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__:
 {
-     // stamp value 3255
+     // stamp value 3263
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_:
 {
-     // stamp value 3259
+     // stamp value 3267
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned long>"));}
 obj_finalize_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_:
 {
-     // stamp value 3263
+     // stamp value 3271
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArraySignedLength_moveable<unsigned long>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_:
 {
-     // stamp value 3267
+     // stamp value 3275
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyNonbond>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-     // stamp value 3271
+     // stamp value 3279
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_:
 {
-     // stamp value 3275
+     // stamp value 3283
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::AtomInfo>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__:
 {
-     // stamp value 3279
+     // stamp value 3287
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__:
 {
-     // stamp value 3283
+     // stamp value 3291
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_:
 {
-     // stamp value 3287
+     // stamp value 3295
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAtom>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___:
 {
-     // stamp value 3291
+     // stamp value 3299
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_int_:
 {
-     // stamp value 3295
+     // stamp value 3303
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<int>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
-     // stamp value 3299
+     // stamp value 3307
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_:
 {
-     // stamp value 3303
+     // stamp value 3311
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__:
 {
-     // stamp value 3307
+     // stamp value 3315
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_long_:
 {
-     // stamp value 3311
+     // stamp value 3319
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<long>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_:
 {
-     // stamp value 3315
+     // stamp value 3323
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::ResidueOut>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_:
 {
-     // stamp value 3319
+     // stamp value 3327
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::RigidBodyAtomInfo>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___:
 {
-     // stamp value 3323
+     // stamp value 3331
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__:
 {
-     // stamp value 3327
+     // stamp value 3335
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
-     // stamp value 3331
+     // stamp value 3339
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_unsigned_int_:
 {
-     // stamp value 3335
+     // stamp value 3343
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<unsigned int>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_:
 {
-     // stamp value 3339
+     // stamp value 3347
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyStretch>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__:
 {
-     // stamp value 3343
+     // stamp value 3351
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__:
 {
-     // stamp value 3347
+     // stamp value 3355
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____:
 {
-     // stamp value 3351
+     // stamp value 3359
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_:
 {
-     // stamp value 3355
+     // stamp value 3363
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned short>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_float_:
 {
-     // stamp value 3359
+     // stamp value 3367
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<float>"));}
 obj_finalize_STAMPWTAG_clang__FrontendAction:
 {
-     // do nothing stamp value 3363
+     // do nothing stamp value 3371
     THROW_HARD_ERROR(BF("Should never finalize object clang::FrontendAction"));
 }
 obj_finalize_STAMPWTAG_clang__ASTFrontendAction:
 {
-     // do nothing stamp value 3367
+     // do nothing stamp value 3375
     THROW_HARD_ERROR(BF("Should never finalize object clang::ASTFrontendAction"));
 }
 obj_finalize_STAMPWTAG_clang__SyntaxOnlyAction:
 {
-     // do nothing stamp value 3371
+     // do nothing stamp value 3379
     THROW_HARD_ERROR(BF("Should never finalize object clang::SyntaxOnlyAction"));
 }
 obj_finalize_STAMPWTAG_clang__tooling__ToolAction:
 {
-     // do nothing stamp value 3375
+     // do nothing stamp value 3383
     THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::ToolAction"));
 }
 obj_finalize_STAMPWTAG_clang__tooling__FrontendActionFactory:
 {
-     // do nothing stamp value 3379
+     // do nothing stamp value 3387
     THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::FrontendActionFactory"));
 }
 obj_finalize_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback:
 {
-     // do nothing stamp value 3383
+     // do nothing stamp value 3391
     THROW_HARD_ERROR(BF("Should never finalize object clang::ast_matchers::MatchFinder::MatchCallback"));
 }
 #endif // defined(GC_OBJ_FINALIZE)
@@ -34994,109 +35198,111 @@ static void* OBJ_FINALIZE_table[] = {
   /* 2963 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__,
   /* 2967 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__,
   /* 2971 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__,
-  /* 2975 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__,
-  /* 2979 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___,
-  /* 2983 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___,
-  /* 2987 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__,
-  /* 2991 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___,
-  /* 2995 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__,
-  /* 2999 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__,
-  /* 3003 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_,
-  /* 3007 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__,
-  /* 3011 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__,
-  /* 3015 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_,
-  /* 3019 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_,
-  /* 3023 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__,
-  /* 3027 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__,
-  /* 3031 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_int_,
-  /* 3035 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___,
-  /* 3039 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__,
-  /* 3043 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__,
-  /* 3047 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_float_,
-  /* 3051 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__,
-  /* 3055 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__,
-  /* 3059 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___,
-  /* 3063 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__T_O___,
-  /* 3067 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_,
-  /* 3071 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___,
-  /* 3075 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_,
-  /* 3079 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__,
-  /* 3083 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__,
-  /* 3087 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_,
-  /* 3091 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 3095 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_double_,
-  /* 3099 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__,
-  /* 3103 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__,
-  /* 3107 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___,
-  /* 3111 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
-  /* 3115 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__,
-  /* 3119 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_,
-  /* 3123 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_,
-  /* 3127 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_signed_char_,
-  /* 3131 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_,
-  /* 3135 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
-  /* 3139 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___,
-  /* 3143 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__,
-  /* 3147 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__,
-  /* 3151 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_,
-  /* 3155 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_,
-  /* 3159 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 3163 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__,
-  /* 3167 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_,
-  /* 3171 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__,
-  /* 3175 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__,
-  /* 3179 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___,
-  /* 3183 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__,
-  /* 3187 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_double_,
-  /* 3191 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___,
-  /* 3195 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__,
-  /* 3199 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___,
-  /* 3203 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__,
-  /* 3207 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 3211 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
-  /* 3215 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__,
-  /* 3219 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_,
-  /* 3223 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 3227 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_,
-  /* 3231 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___,
-  /* 3235 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___,
-  /* 3239 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
-  /* 3243 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__,
-  /* 3247 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___,
-  /* 3251 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_,
-  /* 3255 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__,
-  /* 3259 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_,
-  /* 3263 */ &&obj_finalize_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_,
-  /* 3267 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_,
-  /* 3271 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 3275 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_,
-  /* 3279 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__,
-  /* 3283 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__,
-  /* 3287 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_,
-  /* 3291 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___,
-  /* 3295 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_int_,
-  /* 3299 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 3303 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 3307 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__,
-  /* 3311 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_long_,
-  /* 3315 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_,
-  /* 3319 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_,
-  /* 3323 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___,
-  /* 3327 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__,
-  /* 3331 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 3335 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_unsigned_int_,
-  /* 3339 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_,
-  /* 3343 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
-  /* 3347 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__,
-  /* 3351 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____,
-  /* 3355 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_,
-  /* 3359 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_float_,
-  /* 3363 */ &&obj_finalize_STAMPWTAG_clang__FrontendAction,
-  /* 3367 */ &&obj_finalize_STAMPWTAG_clang__ASTFrontendAction,
-  /* 3371 */ &&obj_finalize_STAMPWTAG_clang__SyntaxOnlyAction,
-  /* 3375 */ &&obj_finalize_STAMPWTAG_clang__tooling__ToolAction,
-  /* 3379 */ &&obj_finalize_STAMPWTAG_clang__tooling__FrontendActionFactory,
-  /* 3383 */ &&obj_finalize_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback,
+  /* 2975 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_,
+  /* 2979 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__,
+  /* 2983 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___,
+  /* 2987 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___,
+  /* 2991 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__,
+  /* 2995 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___,
+  /* 2999 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__,
+  /* 3003 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__,
+  /* 3007 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_,
+  /* 3011 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__,
+  /* 3015 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__,
+  /* 3019 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_,
+  /* 3023 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_,
+  /* 3027 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__,
+  /* 3031 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__,
+  /* 3035 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_int_,
+  /* 3039 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___,
+  /* 3043 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__,
+  /* 3047 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__,
+  /* 3051 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_float_,
+  /* 3055 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_,
+  /* 3059 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__,
+  /* 3063 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__,
+  /* 3067 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___,
+  /* 3071 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__T_O___,
+  /* 3075 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_,
+  /* 3079 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___,
+  /* 3083 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_,
+  /* 3087 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__,
+  /* 3091 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__,
+  /* 3095 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_,
+  /* 3099 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 3103 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_double_,
+  /* 3107 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__,
+  /* 3111 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__,
+  /* 3115 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___,
+  /* 3119 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 3123 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__,
+  /* 3127 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_,
+  /* 3131 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_,
+  /* 3135 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_signed_char_,
+  /* 3139 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_,
+  /* 3143 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
+  /* 3147 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___,
+  /* 3151 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__,
+  /* 3155 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__,
+  /* 3159 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_,
+  /* 3163 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_,
+  /* 3167 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 3171 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__,
+  /* 3175 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_,
+  /* 3179 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__,
+  /* 3183 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__,
+  /* 3187 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___,
+  /* 3191 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__,
+  /* 3195 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_double_,
+  /* 3199 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___,
+  /* 3203 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__,
+  /* 3207 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___,
+  /* 3211 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__,
+  /* 3215 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_,
+  /* 3219 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
+  /* 3223 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__,
+  /* 3227 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_,
+  /* 3231 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 3235 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_,
+  /* 3239 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___,
+  /* 3243 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___,
+  /* 3247 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
+  /* 3251 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__,
+  /* 3255 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___,
+  /* 3259 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_,
+  /* 3263 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__,
+  /* 3267 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_,
+  /* 3271 */ &&obj_finalize_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_,
+  /* 3275 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_,
+  /* 3279 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 3283 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_,
+  /* 3287 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__,
+  /* 3291 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__,
+  /* 3295 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_,
+  /* 3299 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___,
+  /* 3303 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_int_,
+  /* 3307 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 3311 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 3315 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__,
+  /* 3319 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_long_,
+  /* 3323 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_,
+  /* 3327 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_,
+  /* 3331 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___,
+  /* 3335 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__,
+  /* 3339 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 3343 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_unsigned_int_,
+  /* 3347 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_,
+  /* 3351 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
+  /* 3355 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__,
+  /* 3359 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____,
+  /* 3363 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_,
+  /* 3367 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_float_,
+  /* 3371 */ &&obj_finalize_STAMPWTAG_clang__FrontendAction,
+  /* 3375 */ &&obj_finalize_STAMPWTAG_clang__ASTFrontendAction,
+  /* 3379 */ &&obj_finalize_STAMPWTAG_clang__SyntaxOnlyAction,
+  /* 3383 */ &&obj_finalize_STAMPWTAG_clang__tooling__ToolAction,
+  /* 3387 */ &&obj_finalize_STAMPWTAG_clang__tooling__FrontendActionFactory,
+  /* 3391 */ &&obj_finalize_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback,
    NULL
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)
@@ -39967,422 +40173,430 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair
 {
      // stamp value 2971
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>"));}
-obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__:
+obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_:
 {
      // stamp value 2975
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<clbind::detail::vertex>"));}
+obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__:
+{
+     // stamp value 2979
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___:
 {
-     // stamp value 2979
+     // stamp value 2983
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___:
 {
-     // stamp value 2983
+     // stamp value 2987
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__:
 {
-     // stamp value 2987
+     // stamp value 2991
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___:
 {
-     // stamp value 2991
+     // stamp value 2995
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__:
 {
-     // stamp value 2995
+     // stamp value 2999
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__:
 {
-     // stamp value 2999
+     // stamp value 3003
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_:
 {
-     // stamp value 3003
+     // stamp value 3007
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,0>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__:
 {
-     // stamp value 3007
+     // stamp value 3011
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__:
 {
-     // stamp value 3011
+     // stamp value 3015
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_:
 {
-     // stamp value 3015
+     // stamp value 3019
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<1,0>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_:
 {
-     // stamp value 3019
+     // stamp value 3023
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,1>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__:
 {
-     // stamp value 3023
+     // stamp value 3027
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<char>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__:
 {
-     // stamp value 3027
+     // stamp value 3031
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_int_:
 {
-     // stamp value 3031
+     // stamp value 3035
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<int>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___:
 {
-     // stamp value 3035
+     // stamp value 3039
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__:
 {
-     // stamp value 3039
+     // stamp value 3043
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__:
 {
-     // stamp value 3043
+     // stamp value 3047
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_float_:
 {
-     // stamp value 3047
+     // stamp value 3051
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<float>"));}
+obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_:
+{
+     // stamp value 3055
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<clbind::detail::edge>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__:
 {
-     // stamp value 3051
+     // stamp value 3059
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__:
 {
-     // stamp value 3055
+     // stamp value 3063
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___:
 {
-     // stamp value 3059
+     // stamp value 3067
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__T_O___:
 {
-     // stamp value 3063
+     // stamp value 3071
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_:
 {
-     // stamp value 3067
+     // stamp value 3075
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyDihedral>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___:
 {
-     // stamp value 3071
+     // stamp value 3079
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_:
 {
-     // stamp value 3075
+     // stamp value 3083
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned int>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__:
 {
-     // stamp value 3079
+     // stamp value 3087
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__:
 {
-     // stamp value 3083
+     // stamp value 3091
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_:
 {
-     // stamp value 3087
+     // stamp value 3095
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::RotamerAtom>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
-     // stamp value 3091
+     // stamp value 3099
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_double_:
 {
-     // stamp value 3095
+     // stamp value 3103
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<double>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__:
 {
-     // stamp value 3099
+     // stamp value 3107
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__:
 {
-     // stamp value 3103
+     // stamp value 3111
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___:
 {
-     // stamp value 3107
+     // stamp value 3115
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
-     // stamp value 3111
+     // stamp value 3119
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__:
 {
-     // stamp value 3115
+     // stamp value 3123
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,int>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_:
 {
-     // stamp value 3119
+     // stamp value 3127
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::AtomPdbRec>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_:
 {
-     // stamp value 3123
+     // stamp value 3131
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergySketchStretch>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_signed_char_:
 {
-     // stamp value 3127
+     // stamp value 3135
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<signed char>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_:
 {
-     // stamp value 3131
+     // stamp value 3139
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyOutOfZPlane>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
-     // stamp value 3135
+     // stamp value 3143
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___:
 {
-     // stamp value 3139
+     // stamp value 3147
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__:
 {
-     // stamp value 3143
+     // stamp value 3151
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__:
 {
-     // stamp value 3147
+     // stamp value 3155
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_:
 {
-     // stamp value 3151
+     // stamp value 3159
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergySketchNonbond>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_:
 {
-     // stamp value 3155
+     // stamp value 3163
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::KeyValuePair>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
-     // stamp value 3159
+     // stamp value 3167
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__:
 {
-     // stamp value 3163
+     // stamp value 3171
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_:
 {
-     // stamp value 3167
+     // stamp value 3175
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::FixedNonbondRestraint>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__:
 {
-     // stamp value 3171
+     // stamp value 3179
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__:
 {
-     // stamp value 3175
+     // stamp value 3183
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___:
 {
-     // stamp value 3179
+     // stamp value 3187
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__:
 {
-     // stamp value 3183
+     // stamp value 3191
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_double_:
 {
-     // stamp value 3187
+     // stamp value 3195
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<double>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___:
 {
-     // stamp value 3191
+     // stamp value 3199
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__:
 {
-     // stamp value 3195
+     // stamp value 3203
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___:
 {
-     // stamp value 3199
+     // stamp value 3207
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__:
 {
-     // stamp value 3203
+     // stamp value 3211
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_:
 {
-     // stamp value 3207
+     // stamp value 3215
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::RequiredArgument>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__:
 {
-     // stamp value 3211
+     // stamp value 3219
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__:
 {
-     // stamp value 3215
+     // stamp value 3223
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_:
 {
-     // stamp value 3219
+     // stamp value 3227
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<4,1>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_:
 {
-     // stamp value 3223
+     // stamp value 3231
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolStorage>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_:
 {
-     // stamp value 3227
+     // stamp value 3235
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___:
 {
-     // stamp value 3231
+     // stamp value 3239
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___:
 {
-     // stamp value 3235
+     // stamp value 3243
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__:
 {
-     // stamp value 3239
+     // stamp value 3247
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__:
 {
-     // stamp value 3243
+     // stamp value 3251
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___:
 {
-     // stamp value 3247
+     // stamp value 3255
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_:
 {
-     // stamp value 3251
+     // stamp value 3259
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__:
 {
-     // stamp value 3255
+     // stamp value 3263
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_:
 {
-     // stamp value 3259
+     // stamp value 3267
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned long>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_:
 {
-     // stamp value 3263
+     // stamp value 3271
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArraySignedLength_moveable<unsigned long>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_:
 {
-     // stamp value 3267
+     // stamp value 3275
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyNonbond>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-     // stamp value 3271
+     // stamp value 3279
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_:
 {
-     // stamp value 3275
+     // stamp value 3283
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::AtomInfo>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__:
 {
-     // stamp value 3279
+     // stamp value 3287
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__:
 {
-     // stamp value 3283
+     // stamp value 3291
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_:
 {
-     // stamp value 3287
+     // stamp value 3295
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAtom>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___:
 {
-     // stamp value 3291
+     // stamp value 3299
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_int_:
 {
-     // stamp value 3295
+     // stamp value 3303
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<int>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
-     // stamp value 3299
+     // stamp value 3307
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_:
 {
-     // stamp value 3303
+     // stamp value 3311
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__:
 {
-     // stamp value 3307
+     // stamp value 3315
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_long_:
 {
-     // stamp value 3311
+     // stamp value 3319
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<long>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_:
 {
-     // stamp value 3315
+     // stamp value 3323
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::ResidueOut>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_:
 {
-     // stamp value 3319
+     // stamp value 3327
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::RigidBodyAtomInfo>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___:
 {
-     // stamp value 3323
+     // stamp value 3331
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__:
 {
-     // stamp value 3327
+     // stamp value 3335
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
-     // stamp value 3331
+     // stamp value 3339
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_unsigned_int_:
 {
-     // stamp value 3335
+     // stamp value 3343
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<unsigned int>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_:
 {
-     // stamp value 3339
+     // stamp value 3347
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyStretch>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__:
 {
-     // stamp value 3343
+     // stamp value 3351
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__:
 {
-     // stamp value 3347
+     // stamp value 3355
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____:
 {
-     // stamp value 3351
+     // stamp value 3359
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_:
 {
-     // stamp value 3355
+     // stamp value 3363
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned short>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_float_:
 {
-     // stamp value 3359
+     // stamp value 3367
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<float>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__FrontendAction:
 {
-     // do nothing stamp value 3363
+     // do nothing stamp value 3371
     THROW_HARD_ERROR(BF("Should never deallocate object clang::FrontendAction"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ASTFrontendAction:
 {
-     // do nothing stamp value 3367
+     // do nothing stamp value 3375
     THROW_HARD_ERROR(BF("Should never deallocate object clang::ASTFrontendAction"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__SyntaxOnlyAction:
 {
-     // do nothing stamp value 3371
+     // do nothing stamp value 3379
     THROW_HARD_ERROR(BF("Should never deallocate object clang::SyntaxOnlyAction"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__ToolAction:
 {
-     // do nothing stamp value 3375
+     // do nothing stamp value 3383
     THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::ToolAction"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__FrontendActionFactory:
 {
-     // do nothing stamp value 3379
+     // do nothing stamp value 3387
     THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::FrontendActionFactory"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback:
 {
-     // do nothing stamp value 3383
+     // do nothing stamp value 3391
     THROW_HARD_ERROR(BF("Should never deallocate object clang::ast_matchers::MatchFinder::MatchCallback"));
 }
 #endif // defined(GC_OBJ_DEALLOCATOR)
@@ -41134,109 +41348,111 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 2963 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__,
   /* 2967 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__,
   /* 2971 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__,
-  /* 2975 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__,
-  /* 2979 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___,
-  /* 2983 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___,
-  /* 2987 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__,
-  /* 2991 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___,
-  /* 2995 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__,
-  /* 2999 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__,
-  /* 3003 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_,
-  /* 3007 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__,
-  /* 3011 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__,
-  /* 3015 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_,
-  /* 3019 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_,
-  /* 3023 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__,
-  /* 3027 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__,
-  /* 3031 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_int_,
-  /* 3035 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___,
-  /* 3039 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__,
-  /* 3043 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__,
-  /* 3047 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_float_,
-  /* 3051 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__,
-  /* 3055 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__,
-  /* 3059 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___,
-  /* 3063 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__T_O___,
-  /* 3067 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_,
-  /* 3071 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___,
-  /* 3075 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_,
-  /* 3079 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__,
-  /* 3083 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__,
-  /* 3087 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_,
-  /* 3091 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 3095 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_double_,
-  /* 3099 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__,
-  /* 3103 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__,
-  /* 3107 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___,
-  /* 3111 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
-  /* 3115 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__,
-  /* 3119 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_,
-  /* 3123 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_,
-  /* 3127 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_signed_char_,
-  /* 3131 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_,
-  /* 3135 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
-  /* 3139 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___,
-  /* 3143 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__,
-  /* 3147 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__,
-  /* 3151 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_,
-  /* 3155 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_,
-  /* 3159 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 3163 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__,
-  /* 3167 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_,
-  /* 3171 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__,
-  /* 3175 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__,
-  /* 3179 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___,
-  /* 3183 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__,
-  /* 3187 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_double_,
-  /* 3191 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___,
-  /* 3195 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__,
-  /* 3199 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___,
-  /* 3203 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__,
-  /* 3207 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 3211 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
-  /* 3215 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__,
-  /* 3219 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_,
-  /* 3223 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 3227 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_,
-  /* 3231 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___,
-  /* 3235 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___,
-  /* 3239 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
-  /* 3243 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__,
-  /* 3247 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___,
-  /* 3251 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_,
-  /* 3255 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__,
-  /* 3259 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_,
-  /* 3263 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_,
-  /* 3267 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_,
-  /* 3271 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 3275 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_,
-  /* 3279 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__,
-  /* 3283 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__,
-  /* 3287 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_,
-  /* 3291 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___,
-  /* 3295 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_int_,
-  /* 3299 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 3303 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 3307 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__,
-  /* 3311 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_long_,
-  /* 3315 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_,
-  /* 3319 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_,
-  /* 3323 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___,
-  /* 3327 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__,
-  /* 3331 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 3335 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_unsigned_int_,
-  /* 3339 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_,
-  /* 3343 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
-  /* 3347 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__,
-  /* 3351 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____,
-  /* 3355 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_,
-  /* 3359 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_float_,
-  /* 3363 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__FrontendAction,
-  /* 3367 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ASTFrontendAction,
-  /* 3371 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__SyntaxOnlyAction,
-  /* 3375 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__ToolAction,
-  /* 3379 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__FrontendActionFactory,
-  /* 3383 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback,
+  /* 2975 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_,
+  /* 2979 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__,
+  /* 2983 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___,
+  /* 2987 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___,
+  /* 2991 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__,
+  /* 2995 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___,
+  /* 2999 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__,
+  /* 3003 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__,
+  /* 3007 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_,
+  /* 3011 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__,
+  /* 3015 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__,
+  /* 3019 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_,
+  /* 3023 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_,
+  /* 3027 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__,
+  /* 3031 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__,
+  /* 3035 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_int_,
+  /* 3039 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___,
+  /* 3043 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__,
+  /* 3047 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__,
+  /* 3051 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_float_,
+  /* 3055 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_,
+  /* 3059 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__,
+  /* 3063 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__,
+  /* 3067 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___,
+  /* 3071 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__T_O___,
+  /* 3075 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_,
+  /* 3079 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___,
+  /* 3083 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_,
+  /* 3087 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__,
+  /* 3091 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__,
+  /* 3095 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_,
+  /* 3099 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 3103 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_double_,
+  /* 3107 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__,
+  /* 3111 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__,
+  /* 3115 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___,
+  /* 3119 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 3123 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__,
+  /* 3127 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_,
+  /* 3131 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_,
+  /* 3135 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_signed_char_,
+  /* 3139 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_,
+  /* 3143 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
+  /* 3147 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___,
+  /* 3151 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__,
+  /* 3155 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__,
+  /* 3159 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_,
+  /* 3163 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_,
+  /* 3167 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 3171 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__,
+  /* 3175 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_,
+  /* 3179 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__,
+  /* 3183 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__,
+  /* 3187 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___,
+  /* 3191 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__,
+  /* 3195 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_double_,
+  /* 3199 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___,
+  /* 3203 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__,
+  /* 3207 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___,
+  /* 3211 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__,
+  /* 3215 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_,
+  /* 3219 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
+  /* 3223 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__,
+  /* 3227 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_,
+  /* 3231 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 3235 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_,
+  /* 3239 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___,
+  /* 3243 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___,
+  /* 3247 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
+  /* 3251 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__,
+  /* 3255 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___,
+  /* 3259 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_,
+  /* 3263 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__,
+  /* 3267 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_,
+  /* 3271 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_,
+  /* 3275 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_,
+  /* 3279 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 3283 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_,
+  /* 3287 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__,
+  /* 3291 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__,
+  /* 3295 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_,
+  /* 3299 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___,
+  /* 3303 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_int_,
+  /* 3307 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 3311 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 3315 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__,
+  /* 3319 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_long_,
+  /* 3323 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_,
+  /* 3327 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_,
+  /* 3331 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___,
+  /* 3335 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__,
+  /* 3339 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 3343 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_unsigned_int_,
+  /* 3347 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_,
+  /* 3351 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
+  /* 3355 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__,
+  /* 3359 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____,
+  /* 3363 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_,
+  /* 3367 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_float_,
+  /* 3371 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__FrontendAction,
+  /* 3375 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ASTFrontendAction,
+  /* 3379 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__SyntaxOnlyAction,
+  /* 3383 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__ToolAction,
+  /* 3387 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__FrontendActionFactory,
+  /* 3391 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback,
    NULL
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)

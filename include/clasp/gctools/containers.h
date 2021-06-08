@@ -62,8 +62,8 @@ public:
   typedef typename vector_type::iterator::const_pointer const_pointer;
 public:
   vector_type _Vector;
-  Vec0_impl() {
-  };
+  Vec0_impl(bool dummy) :_Vector(dummy) {}; // don't allocate GC memory ctor
+  Vec0_impl() {};
 public:
   typename Vec::pointer_to_moveable contents() const { return this->_Vector.contents(); };
 public:
@@ -155,6 +155,7 @@ template <class T>
 class Vec0 : public Vec0_impl<GCVector<T, GCContainerAllocator<GCVector_moveable<T>>>> {
 public:
   typedef Vec0_impl<GCVector<T, GCContainerAllocator<GCVector_moveable<T>>>> Base;
+  Vec0(bool dummy) : Base(dummy) {}; // don't allocate GC memory ctor
   Vec0() : Base() {};
 };
 

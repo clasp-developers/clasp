@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/readtable.fwd.h>
+#include <clasp/clbind/inheritance.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 
 namespace cl {
@@ -338,6 +339,7 @@ class Lisp_O {
     gctools::Vec0<Symbol_sp>    staticClassSymbolsUnshiftedNowhere;
     gctools::Vec0<Creator_sp>   staticInstanceCreatorsUnshiftedNowhere;
     gctools::Vec0<FileScope_sp> _SourceFiles;
+    gctools::Vec0<clbind::detail::vertex> _CastGraph;
     gctools::Vec0<SymbolClassHolderPair> bootClassTable; // Map class symbols to classes
     mpip::Mpi_sp                _MpiWorld;
     //! Class_map

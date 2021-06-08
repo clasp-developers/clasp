@@ -52,25 +52,6 @@ class_id const class_id_map::local_id_base =
 
 namespace {
 
-struct edge {
-  edge(class_id target, cast_function cast)
-      : target(target), cast(cast) {}
-
-  class_id target;
-  cast_function cast;
-};
-
-bool operator<(edge const &x, edge const &y) {
-  return x.target < y.target;
-}
-
-struct vertex {
-  vertex(class_id id)
-      : id(id) {}
-
-  class_id id;
-  std::vector<edge> edges;
-};
 
 typedef std::pair<std::ptrdiff_t, int> cache_entry;
 
@@ -121,10 +102,10 @@ class cast_graph::impl {
 public:
   std::pair<void *, int> cast(
       void *p, class_id src, class_id target, class_id dynamic_id, void const *dynamic_ptr) const;
-  void insert(class_id src, class_id target, cast_function cast);
-
+  void insert_impl(class_id src, class_id target, cast_function cast);
+  void dump_impl();
 private:
-  std::vector<vertex> m_vertices;
+//  std::vector<vertex> m_vertices;
   mutable cache m_cache;
 };
 
@@ -141,12 +122,17 @@ struct queue_entry {
 
 } // namespace unnamed
 
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 std::pair<void *, int> cast_graph::impl::cast(
     void *const p, class_id src, class_id target, class_id dynamic_id, void const *dynamic_ptr) const {
+#if 0
+  printf("%s:%d:%s p=%p src=%lu target=%lu dynamic_id=%lu dynamic_ptr = %p\n",
+         __FILE__, __LINE__, __FUNCTION__, p, src, target, dynamic_id, dynamic_ptr);
+#endif
   if (src == target)
     return std::make_pair(p, 0);
 
-  if (src >= m_vertices.size() || target >= m_vertices.size())
+  if (src >= _lisp->_Roots._CastGraph.size() || target >= _lisp->_Roots._CastGraph.size())
     return std::pair<void *, int>((void *)0, -1);
 
   std::ptrdiff_t const object_offset =
@@ -163,14 +149,14 @@ std::pair<void *, int> cast_graph::impl::cast(
   std::queue<queue_entry> q;
   q.push(queue_entry(p, src, 0));
 
-  boost::dynamic_bitset<> visited(m_vertices.size());
+  boost::dynamic_bitset<> visited(_lisp->_Roots._CastGraph.size());
 
   while (!q.empty()) {
     queue_entry const qe = q.front();
     q.pop();
 
     visited[qe.vertex_id] = true;
-    vertex const &v = m_vertices[qe.vertex_id];
+    vertex const &v = _lisp->_Roots._CastGraph[qe.vertex_id];
 
     if (v.id == target) {
       m_cache.put(
@@ -179,52 +165,70 @@ std::pair<void *, int> cast_graph::impl::cast(
       return std::make_pair(qe.p, qe.distance);
     }
 
-    BOOST_FOREACH (edge const &e, v.edges) {
+    for ( edge const &e : v.edges) {
       if (visited[e.target])
         continue;
       if (void *casted = e.cast(qe.p))
         q.push(queue_entry(casted, e.target, qe.distance + 1));
     }
   }
-
   m_cache.put(src, target, dynamic_id, object_offset, cache::invalid, -1);
-
   return std::pair<void *, int>((void *)0, -1);
 }
 
-void cast_graph::impl::insert(
+void cast_graph::impl::insert_impl(
     class_id src, class_id target, cast_function cast) {
+  printf("%s:%d:%s src=%lu target=%lu cast=%p\n", __FILE__, __LINE__, __FUNCTION__, src, target, (void*)cast);
   class_id const max_id = std::max(src, target);
 
-  if (max_id >= m_vertices.size()) {
-    m_vertices.reserve(max_id + 1);
-    for (class_id i = m_vertices.size(); i < max_id + 1; ++i)
-      m_vertices.push_back(vertex(i));
+  if (max_id >= _lisp->_Roots._CastGraph.size()) {
+    _lisp->_Roots._CastGraph.reserve(max_id + 1);
+    for (class_id i = _lisp->_Roots._CastGraph.size(); i < max_id + 1; ++i)
+      _lisp->_Roots._CastGraph.push_back(vertex(i));
   }
 
-  std::vector<edge> &edges = m_vertices[src].edges;
+  gctools::Vec0<edge> &edges = _lisp->_Roots._CastGraph[src].edges;
 
-  std::vector<edge>::iterator i = std::lower_bound(
-      edges.begin(), edges.end(), edge(target, 0));
-
-  if (i == edges.end() || i->target != target) {
-    edges.insert(i, edge(target, cast));
+  auto ii = std::lower_bound(edges.begin(), edges.end(), edge(target, 0));
+  if (ii == edges.end() || ii->target != target) {
+    edges.insert(ii, edge(target, cast));
     m_cache.invalidate();
+  }
+}
+void cast_graph::impl::dump_impl() {
+  for ( class_id ii = 0; ii < _lisp->_Roots._CastGraph.size(); ++ ii ) {
+    gctools::Vec0<edge>& edges = _lisp->_Roots._CastGraph[ii].edges;
+    if (edges.size()>0) {
+      printf("%s:%d:%s class_id: %lu has %lu edges\n", __FILE__, __LINE__, __FUNCTION__, ii, edges.size() );
+    }
   }
 }
 
 std::pair<void *, int> cast_graph::cast(
     void *p, class_id src, class_id target, class_id dynamic_id, void const *dynamic_ptr) const {
+#if 0
+  printf("%s:%d:%s p=%p src=%lu target=%lu dynamic_id=%lu dynamic_ptr = %p\n",
+         __FILE__, __LINE__, __FUNCTION__, p, src, target, dynamic_id, dynamic_ptr);
+#endif
   return m_impl->cast(p, src, target, dynamic_id, dynamic_ptr);
 }
 
 void cast_graph::insert(class_id src, class_id target, cast_function cast) {
-  m_impl->insert(src, target, cast);
+  printf("%s:%d:%s src=%lu target=%lu cast=%p\n", __FILE__, __LINE__, __FUNCTION__, src, target, (void*)cast);
+  m_impl->insert_impl(src, target, cast);
+}
+
+void cast_graph::dump() {
+  m_impl->dump_impl();
 }
 
 cast_graph::cast_graph()
-    : m_impl(new impl) {}
+    : m_impl(new impl) {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+}
 
-cast_graph::~cast_graph() {}
+cast_graph::~cast_graph() {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+}
 }
 } // namespace clbind::detail

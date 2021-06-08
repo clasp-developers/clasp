@@ -112,6 +112,7 @@ GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned short>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1, false>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<2, false>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<4, false>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<clbind::detail::edge>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::KeyValuePair>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::AuxArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::CacheRecord>);

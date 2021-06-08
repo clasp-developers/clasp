@@ -1291,18 +1291,6 @@ struct fixup_objects_t : public walker_callback_t {
       // 2. entry points to Code_O objects -> offset
 
       isl_obj_scan( 0, client, client_limit, (void*)this->_info );
-#if 0
-      if (header->preciseIsPolymorphic()) {
-        if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__BuiltinClosure_O)) {
-          printf("%s:%d       doing fixup of BuiltinClosure_O\n", __FILE__, __LINE__ );
-          ((core::BuiltinClosure_O*)client)->fixupCodePointers(this->_operation);
-        } else if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__GlobalEntryPoint_O)) {
-          printf("%s:%d       doing fixup of GlobalEntryPoint_O\n", __FILE__, __LINE__ );
-          ((core::GlobalEntryPoint_O*)client)->fixupCodePointers(this->_operation);
-        }
-        // Handle other kinds of code objects
-      }
-#endif
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       size_t consSkip;
