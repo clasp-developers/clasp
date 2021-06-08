@@ -984,6 +984,71 @@ Convert colons to underscores"
                terminators-by-namespace)
       (format sout "#endif // ALL_TERMINATORS_CALL~%"))))
 
+(defun generate-layout-code (kind stream)
+  (dolist (field (fixed-fields% kind))
+    (format stream " {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~a), 0, \"~a\" },~%"
+            (tags:offset-type-cxx-identifier field)
+            (tags:offset-ctype field)
+            (tags:offset-base-ctype field)
+            (tags:layout-offset-field-names field)
+            (tags:layout-offset-field-names field)))
+  (let ((vinfo (variable-info% kind))
+        (vcapacity (variable-capacity% kind))
+        (vfields (variable-fields% kind)))
+    (when vinfo
+      (etypecase vinfo
+        (tags:variable-bit-array0
+         (format stream " {  variable_bit_array0, ~a, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
+                 (tags:integral-value vinfo)
+                 (tags:offset-base-ctype vinfo)
+                 (tags:field-names vinfo) (tags:field-names vinfo)))
+        (tags:variable-array0
+         (format stream " {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
+                 (tags:offset-base-ctype vinfo)
+                 (tags:field-names vinfo) (tags:field-names vinfo))))
+      (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, NULL },~%"
+              (tags:ctype vcapacity)
+              (tags:offset-base-ctype vcapacity)
+              (tags:field-names vcapacity)
+              (tags:offset-base-ctype vcapacity)
+              (tags:field-names vcapacity))
+      (etypecase vfields
+        (tags:variable-field-only
+         (format stream "{    variable_field, ~a, sizeof(~a), 0, 0, \"only\" },~%"
+                 (tags:offset-type-cxx-identifier vfields)
+                 (tags:fixup-type vfields)))
+        (list
+         (dolist (vfield vfields)
+           (format stream "    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~a), 0, \"~a\" },~%"
+                   (tags:offset-type-cxx-identifier vfield)
+                   (tags:fixup-ctype-offset-type-key vfield)
+                   (tags:fixup-ctype-key vfield)
+                   (tags:layout-offset-field-names vfield)
+                   (tags:layout-offset-field-names vfield))))))))
+
+(defgeneric generate-kind-tag-code (kind stream))
+(defmethod generate-kind-tag-code ((kind tags:class-kind) stream)
+  (format stream "{ class_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%"
+          (tags:stamp-name kind) (tags:stamp-key kind)
+          (tags:definition-data kind) (tags:stamp-key kind)))
+(defmethod generate-kind-tag-code ((kind tags:container-kind) stream)
+  (format stream "{ container_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%"
+          (tags:stamp-name kind) (tags:stamp-key kind)
+          (tags:definition-data kind) (tags:stamp-key kind)))
+(defmethod generate-kind-tag-code ((kind tags:bitunit-container-kind) stream)
+  (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, ~a, \"~a\" },~%"
+          (tags:stamp-name kind) (tags:stamp-key kind)
+          (tags:bitwidth kind) (tags:definition-data kind)
+          (tags:stamp-key kind)))
+(defmethod generate-kind-tag-code ((kind tags:templated-kind) stream)
+  (format stream "{ templated_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%"
+          (tags:stamp-name kind) (tags:stamp-key kind)
+          (tags:definition-data kind) (tags:stamp-key kind)))
+
+(defun generate-kind-code (kind stream)
+  (generate-kind-tag-code (tag% kind) stream)
+  (generate-layout-code kind stream))
+
 (defun maybe-relative (dir)
   (cond
     ((eq (car dir) :absolute) (list* :relative (cdr dir)))

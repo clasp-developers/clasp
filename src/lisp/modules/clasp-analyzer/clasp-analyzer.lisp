@@ -835,10 +835,10 @@ to expose."
                        (offset-type-c++-identifier one)
                        (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
                        )
-               (format (destination-description-stream dest) "{ TAGS:VARIABLE-FIELD (~{~a~}) }~%"
+               (format (destination-description-stream dest) "{ TAGS:VARIABLE-FIELD-ONLY (~{~a~}) }~%"
                        (list 
                         (format nil "( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . ~s)" (offset-type-c++-identifier one))
-                        (format nil "( TAGS:CTYPE-KEY . ~s)" (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))))
+                        (format nil "( TAGS:FIXUP-TYPE . ~s)" (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))))
                        )
                )
               (field-names
