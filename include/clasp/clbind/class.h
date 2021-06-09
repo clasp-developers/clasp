@@ -943,8 +943,7 @@ private:
 
     typedef typename boost::mpl::if_<detail::is_bases<bases_t>, bases_t, bases<bases_t>>::type Base;
 
-    class_base::init(
-                     typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id, isDerivableCxxClass<T>(0));
+    class_base::init(typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id, isDerivableCxxClass<T>(0));
 
     add_wrapper_cast((WrappedType *)0);
 #if 0

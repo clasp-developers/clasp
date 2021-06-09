@@ -83,6 +83,7 @@ THE SOFTWARE.
 #include <clasp/gctools/imageSaveLoad.h>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/pathname.h>
+#include <clasp/clbind/open.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #ifdef USE_MPI
 #include <clasp/mpip/mpiPackage.h>
@@ -412,6 +413,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     //
     core::Bundle *bundle = new core::Bundle(argv0,core::global_options->_ResourceDir);
     globals_->_Bundle = bundle;
+    clbind::initializeCastGraph();
     exit_code = imageSaveLoad::image_load( (void*)start_of_snapshot, (void*)end_of_snapshot, core::global_options->_ImageFile );
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");

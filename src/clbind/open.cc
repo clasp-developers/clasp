@@ -125,14 +125,22 @@ public:
   }
 };
   
+class TestChild : public Test {
+public:
+  TestChild() : Test() {};
+};
 
 
+
+void initializeCastGraph() {
+  globalClassIdMap = new detail::class_id_map();
+  globalCastGraph = new detail::cast_graph();
+};  
 
 CLBIND_API void initialize_clbind() {
   ClassRegistry_sp registry = ClassRegistry_O::create();
   _sym_STARtheClassRegistrySTAR->defparameter(registry);
-  globalClassIdMap = new detail::class_id_map();
-  globalCastGraph = new detail::cast_graph();
+  initializeCastGraph();
 #if 1
   clbind::package_ pkg("CLBIND-TEST",{"CLBIND-TEST"}, {"CL"});
   clbind::scope_& m = pkg.scope();
@@ -146,6 +154,9 @@ CLBIND_API void initialize_clbind() {
     .def("set5",&Test::set5)
     .def("set6",&Test::set6)
     .def("print-numbers",&Test::print_numbers);
+  class_<TestChild,Test>(m,"TestChild")
+      .def_constructor("MAKE-TEST-CHILD",constructor<>())
+    ;
 #endif
 }
 

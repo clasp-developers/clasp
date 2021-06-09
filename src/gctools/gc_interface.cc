@@ -41,9 +41,14 @@ Layout_code* get_stamp_layout_codes() {
   static Layout_code codes[] = {
 #if defined(USE_PRECISE_GC)
 #ifndef RUNNING_MPSPREP
+      // sometimes we get sizeof(NIL) - this will quiet those errors
+      // This may be a terrible idea because it may hide deeper problems
+#define NIL uintptr_t 
+      
 #define GC_OBJ_SCAN_HELPERS
 #include CLASP_GC_FILENAME
 #undef GC_OBJ_SCAN_HELPERS
+#undef NIL
 #endif // #ifndef RUNNING_MPSPREP
 #endif // #if defined(USE_PRECISE_GC)
       {layout_end, 0, 0, 0, 0, "" }

@@ -176,8 +176,8 @@ class_base::class_base(const RawName &name)
   , m_init_counter(0) {
 }
 
-void class_base::init(
-    type_id const &type_id_, class_id id, type_id const &wrapper_type, class_id wrapper_id, bool derivable) {
+void class_base::init(type_id const &type_id_, class_id id, type_id const &wrapper_type, class_id wrapper_id, bool derivable) {
+//  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   m_registration->m_type = type_id_;
   m_registration->m_id = id;
   m_registration->m_wrapper_type = wrapper_type;
@@ -217,7 +217,7 @@ void class_base::add_inner_scope(scope_ &s) {
 }
 
 void class_base::add_cast(class_id src, class_id target, cast_function cast) {
-  printf("%s:%d:%s   src[%lu] target[%lu] cast=%p\n", __FILE__,__LINE__,__FUNCTION__,src,target,(void*)cast);
+//  printf("%s:%d:%s   src[%lu] target[%lu] cast=%p\n", __FILE__,__LINE__,__FUNCTION__,src,target,(void*)cast);
   m_registration->m_casts.push_back(cast_entry(src, target, cast));
 }
 

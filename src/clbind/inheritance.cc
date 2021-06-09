@@ -178,7 +178,7 @@ std::pair<void *, int> cast_graph::impl::cast(
 
 void cast_graph::impl::insert_impl(
     class_id src, class_id target, cast_function cast) {
-  printf("%s:%d:%s src=%lu target=%lu cast=%p\n", __FILE__, __LINE__, __FUNCTION__, src, target, (void*)cast);
+//  printf("%s:%d:%s src=%lu target=%lu cast=%p\n", __FILE__, __LINE__, __FUNCTION__, src, target, (void*)cast);
   class_id const max_id = std::max(src, target);
 
   if (max_id >= _lisp->_Roots._CastGraph.size()) {
@@ -214,7 +214,7 @@ std::pair<void *, int> cast_graph::cast(
 }
 
 void cast_graph::insert(class_id src, class_id target, cast_function cast) {
-  printf("%s:%d:%s src=%lu target=%lu cast=%p\n", __FILE__, __LINE__, __FUNCTION__, src, target, (void*)cast);
+//  printf("%s:%d:%s src=%lu target=%lu cast=%p\n", __FILE__, __LINE__, __FUNCTION__, src, target, (void*)cast);
   m_impl->insert_impl(src, target, cast);
 }
 
@@ -224,11 +224,27 @@ void cast_graph::dump() {
 
 cast_graph::cast_graph()
     : m_impl(new impl) {
-  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
 }
 
 cast_graph::~cast_graph() {
-  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
-}
+//  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
 }
 } // namespace clbind::detail
+}
+
+namespace clbind {
+
+CL_DEFUN void clbind__dump_class_id_map() {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+  printf("local_id_base = %lu\n", globalClassIdMap->local_id_base );
+  printf("m_local_id = %lu\n", globalClassIdMap->m_local_id );
+  printf("Dump of m_classes\n");
+  for ( auto entry : globalClassIdMap->m_type_id_to_class_id ) {
+    printf(" type_id @%p (%s) -> class_id(%lu)\n", (void*)entry.first.get_type_info(), entry.first.name(), entry.second );
+  }
+  printf("------\n");    
+};
+
+};
+

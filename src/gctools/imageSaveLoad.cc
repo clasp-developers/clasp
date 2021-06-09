@@ -991,6 +991,15 @@ struct prepare_for_image_save_t : public walker_callback_t {
       //
       // Fixup general objects that need it
       //
+      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
+//        printf("%s:%d:%s save_image saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__ );
+        gctools::GCVector_moveable<clbind::detail::edge>* edges = (gctools::GCVector_moveable<clbind::detail::edge>*)HEADER_PTR_TO_GENERAL_PTR(header);
+//        printf("%s:%d:%s save_image          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
+        for ( size_t ii = 0; ii< edges->size(); ii++ ) {
+//          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
+          registerLibraryFunctionPointer(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
+        }
+      }
       // Handle them on a case by case basis
       if (header->preciseIsPolymorphic()) {
         core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
@@ -1315,6 +1324,15 @@ struct fixup_internals_t : public walker_callback_t {
   void callback(gctools::Header_s* header) {
     if (header->_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
+      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
+//        printf("%s:%d:%s load_image saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__  );
+        gctools::GCVector_moveable<clbind::detail::edge>* edges = (gctools::GCVector_moveable<clbind::detail::edge>*)HEADER_PTR_TO_GENERAL_PTR(header);
+//        printf("%s:%d:%s load_image          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
+        for ( size_t ii = 0; ii< edges->size(); ii++ ) {
+//          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
+          decodeLibrarySaveAddress(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
+        }
+      }
       if (header->preciseIsPolymorphic()) {
         //
         // Fixup objects when loading/saving
@@ -1624,6 +1642,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
       }
     // Now encode the relocation
       *curLib._Pointers[ii]._ptrptr = encodeRelocation(*(void**)curLib._Pointers[ii]._ptrptr, idx, groupPointerIdx );
+//      printf("%s:%d:%s Wrote relocation @%p to %p\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers[ii]._ptrptr, *curLib._Pointers[ii]._ptrptr );
     }
 //    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
     SaveSymbolCallback thing(curLib);
@@ -1851,12 +1870,10 @@ void image_save(const std::string& filename) {
   //
   // Last thing - fixup vtables
   //
-#if 1
   // I'm going to try this right before I fixup the vtables
   DBG_SL(BF("0. Prepare objects for image save\n"));
   prepare_for_image_save_t prepare(&fixup,&islInfo);
   walk_image_save_load_objects((ISLHeader_s*)image._Memory->_BufferStart,prepare);
-#endif
 
   {
     DBG_SL(BF(" image_save fixing up vtable pointers\n"));
