@@ -19,7 +19,7 @@
 (defmacro cfp-log (fmt &rest args) (declare (ignore fmt args)))
 
 (defstruct (ast-job (:type vector) :named)
-  ast environment output-object
+  form ast environment output-object
   form-index   ; Uses (core:next-startup-position) to keep count
   form-counter ; Counts from zero
   module
@@ -124,12 +124,13 @@
                            :intermediate-output-type intermediate-output-type
                            :write-bitcode write-bitcode))
 
+(defparameter *ast-job* nil)
 (defun wait-for-ast-job (queue &key compile-func optimize optimize-level intermediate-output-type write-bitcode)
   (unwind-protect
        (loop for ast-job = (core:dequeue queue :timeout 1.0 :timeout-val nil)
              until (eq ast-job :quit)
              do (if ast-job
-                    (progn
+                    (let ((*ast-job* ast-job))
                       (cfp-log "Thread ~a compiling form~%" (mp:process-name mp:*current-process*))
                       (block nil
                         (handler-bind
@@ -241,7 +242,8 @@ multithreaded performance that we should explore."
                           (clasp-cleavir-translate-bir::cst->ast cst)))
                     (ast (clasp-cleavir-translate-bir::wrap-ast pre-ast)))
                (declare (ignore _))
-               (let ((ast-job (make-ast-job :ast ast
+               (let ((ast-job (make-ast-job :form form
+                                            :ast ast
                                             :environment environment
                                             :current-source-pos-info current-source-pos-info
                                             :form-output-path form-output-path
