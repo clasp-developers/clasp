@@ -1,4 +1,4 @@
-import os
+import os, logging
 
 def subdirectories():
     dir = os.listdir("./extensions")
