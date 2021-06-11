@@ -1230,7 +1230,6 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
   T_sp prefix = clasp_namestring(base_dir, CLASP_NAMESTRING_FORCE_BASE_STRING);
   T_sp component, component_path, kind;
   char *text;
-#if defined(HAVE_DIRENT_H)
   DIR *dir;
   struct dirent *entry;
 
@@ -1243,49 +1242,6 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
 
   while ((entry = readdir(dir))) {
     text = entry->d_name;
-#else
-#ifdef CLASP_MS_WINDOWS_HOST
-  WIN32_FIND_DATA fd;
-  HANDLE hFind = NULL;
-  BOOL found = false;
-
-  clasp_disable_interrupts();
-  for (;;) {
-    if (hFind == NULL) {
-      T_sp aux = make_constant_base_string(".\\*");
-      T_sp mask = base_string_concatenate(2, prefix, aux);
-      hFind = FindFirstFile((char *)mask->c_str(), &fd);
-      if (hFind == INVALID_HANDLE_VALUE) {
-        out = _Nil<T_O>();
-        goto OUTPUT;
-      }
-      found = true;
-    } else {
-      found = FindNextFile(hFind, &fd);
-    }
-    if (!found)
-      break;
-    text = fd.cFileName;
-#else  /* sys/dir.h as in SYSV */
-  FILE *fp;
-  char iobuffer[BUFSIZ];
-  DIRECTORY dir;
-
-  clasp_disable_interrupts();
-  fp = fopen((char *)prefix->c_str(), OPEN_R);
-  if (fp == NULL) {
-    out = _Nil<T_O>();
-    goto OUTPUT;
-  }
-  setbuf(fp, iobuffer);
-  for (;;) {
-    if (fread(&dir, sizeof(DIRECTORY), 1, fp) <= 0)
-      break;
-    if (dir.d_ino == 0)
-      continue;
-    text = dir.d_name;
-#endif /* !CLASP_MS_WINDOWS_HOST */
-#endif /* !HAVE_DIRENT_H */
     if (text[0] == '.' &&
         (text[1] == '\0' ||
          (text[1] == '.' && text[2] == '\0')))
@@ -1293,7 +1249,6 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     if (!string_match(text, text_mask))
       continue;
     component = SimpleBaseString_O::make(std::string(text));
-#if 1
     stringstream concat;
     String_sp str_prefix = coerce::stringDesignator(prefix);
     concat << str_prefix->get_std_string();
@@ -1301,9 +1256,6 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     concat << str_component->get_std_string();
     // TODO Support proper strings
     component = SimpleBaseString_O::make(concat.str());
-#else
-    component = base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
-#endif
     if (component.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
     component_path = cl__pathname(component);
     if (!pathname_mask.nilp()) {
@@ -1315,15 +1267,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     kind = component_path_mv.valueGet_(1);
     out = Cons_O::create(Cons_O::create(component_path, kind), out);
   }
-#ifdef HAVE_DIRENT_H
   closedir(dir);
-#else
-#ifdef CLASP_MS_WINDOWS_HOST
-  FindClose(hFind);
-#else
-  fclose(fp);
-#endif /* !CLASP_MS_WINDOWS_HOST */
-#endif /* !HAVE_DIRENT_H */
   clasp_enable_interrupts();
 OUTPUT:
   return cl__nreverse(out);
