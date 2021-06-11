@@ -1203,10 +1203,10 @@
                    for i from 0
                    for offset = (cmp:%closure-with-slots%.offset-of[n]/t* i)
                    collect (cmp:irc-load-atomic
-                            (cmp::gen-memref-address closure-vec offset)))))
+                            (cmp::gen-memref-address closure-vec offset))))
+           (source-pos-info (function-source-pos-info ir)))
       ;; Tail call the real function.
-      (cmp:with-debug-info-source-position
-          ((core:make-source-pos-info "no-source-info-available" 999905 999905 999905))
+      (cmp:with-debug-info-source-position (source-pos-info)
         (cmp:irc-ret
          (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
                 (c
