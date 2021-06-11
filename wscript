@@ -325,6 +325,7 @@ def update_dependencies(cfg):
     os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
     log.pprint('BLUE', "About to recurse into extensions update_dependencies ()")
     cfg.recurse("extensions",name="update_dependencies")
+    log.pprint('BLUE', "Returned from recursing into extensions")
     
 # run this from a completely cold system with:
 # ./waf distclean configure
