@@ -26,6 +26,7 @@ def configure(cfg):
     print("After recurse cfg.extensions_names = %s" % cfg.extensions_names)
 
 def update_dependencies(cfg):
+    log.pprint('BLUE', "In extensions update_dependencies - about to recurse into %s" % (" ".join(subdirectories())))
     cfg.recurse(" ".join(subdirectories()))
     
 def options(bld):

@@ -323,7 +323,8 @@ def update_dependencies(cfg):
 #                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
                         label = "master", revision = "3.3.3.5")
     os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
-    cfg.recurse("extensions")
+    log.pprint('BLUE', "About to recurse into extensions update_dependencies ()")
+    cfg.recurse("extensions",name="update_dependencies")
     
 # run this from a completely cold system with:
 # ./waf distclean configure
