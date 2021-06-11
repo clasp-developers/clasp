@@ -342,9 +342,9 @@ class Cons_O(T_O):
         car = translate_tagged_ptr(self._debugger,self.car())
         cdr = translate_tagged_ptr(self._debugger,self.cdr())
         if (cdr.consp()):
-            return ("(%s %s)\n" % ( car, cdr ))
+            return ("(%s %s)" % ( car, cdr ))
         else:
-            return ("(%s . %s )\n" % ( car, cdr))
+            return ("(%s . %s )" % ( car, cdr))
         
 class General_O(T_O):
     def __init__(self,debugger,tclient):
@@ -608,8 +608,15 @@ def do_lisp_head(debugger_mod,arg):
         header = client - info["stampWtagMtagStruct"]._sizeof
     debugger_mod.dump_memory(header)
 
-
-
-
+def do_lisp_head_bytes(debugger_mod,arg):
+    tptr = arg_to_tptr(debugger_mod,arg)
+    tag = (tptr & info["ints"]["IMMEDIATE_MASK"])
+    client = tptr - tag
+    if (tag == info["ints"]["GENERAL_TAG"]):
+        header = client - info["headerStruct"]._sizeof
+    else:
+        header = client - info["stampWtagMtagStruct"]._sizeof
+    debugger_mod.dump_memory(header,bytes=True)
+    
 load_clasp_layout()
 
