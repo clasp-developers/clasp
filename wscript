@@ -1141,6 +1141,7 @@ def configure(cfg):
     cfg.extensions_lib = []
     cfg.extensions_names = []
     cfg.extensions_clasp_gc_names = []
+    cfg.extension_startup_loads = []
     cfg.recurse('extensions')
     log.debug("cfg.extensions_names before sort = %s", cfg.extensions_names)
     cfg.extensions_names = sorted(cfg.extensions_names)
@@ -1150,6 +1151,8 @@ def configure(cfg):
         clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.extensions_names))
     log.debug("clasp_gc_filename = %s", clasp_gc_filename)
     cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
+    log.debug("cfg.extension_startup_loads = %s", cfg.extension_startup_loads)
+    cfg.define("CLASP_EXTENSION_STARTUP_LOADS",cfg.extension_startup_loads)
     llvm_liblto_dir = run_llvm_config(cfg, "--libdir")
     llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
@@ -1515,9 +1518,7 @@ def build(bld):
     bld.cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % bld.variant_obj.fasl_dir(stage='c')))
 
     bld.set_group('compiling/c++')
-
     bld.recurse('extensions',name='build')
-    
     log.info("There are %d extensions_builders", len(bld.extensions_builders))
     for x in bld.extensions_builders:
         x.run()
@@ -1718,22 +1719,25 @@ def build(bld):
                 os.unlink(clasp_symlink_node.abspath())
                 
         print("Building exported symbols")
-        bld.exported_symbols_file = bld.path.find_or_declare("generated/exported_symbols_list")
         if (bld.env["DEST_OS"] == DARWIN_OS):
-            export_symbols_list_task = export_symbols_list(env=bld.env)
-            export_symbols_list_task.set_inputs([bld.iclasp_executable, bld.cclasp_link_product] + bld.iclasp_link_task.inputs)
-            export_symbols_list_task.set_outputs([bld.exported_symbols_file])
-            bld.add_to_group(export_symbols_list_task)
-            print("Done adding task for export_symbols_list")
-            bld.add_group()
-            env2 = bld.env.derive()
-            env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
-            link2 = cxx.cxxprogram(env=env2)
-            link2.name = "foo"
-            link2.run_after = [export_symbols_list_task]
-            link2.set_inputs( [bld.exported_symbols_file] + bld.iclasp_link_task.inputs)
-            link2.set_outputs( [ bld.cclasp_executable ] )
-            bld.add_to_group(link2)
+            task = symlink_executable(env=bld.env)
+            task.set_inputs(bld.iclasp_executable)
+            task.set_outputs(bld.cclasp_executable)
+            bld.add_to_group(task)
+            # export_symbols_list_task = export_symbols_list(env=bld.env)
+            # export_symbols_list_task.set_inputs([bld.iclasp_executable, bld.cclasp_link_product] + bld.iclasp_link_task.inputs)
+            # export_symbols_list_task.set_outputs([bld.exported_symbols_file])
+            # bld.add_to_group(export_symbols_list_task)
+            # print("Done adding task for export_symbols_list")
+            # bld.add_group()
+            # env2 = bld.env.derive()
+            # env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
+            # link2 = cxx.cxxprogram(env=env2)
+            # link2.name = "foo"
+            # link2.run_after = [export_symbols_list_task]
+            # link2.set_inputs( [bld.exported_symbols_file] + bld.iclasp_link_task.inputs)
+            # link2.set_outputs( [ bld.cclasp_executable ] )
+            # bld.add_to_group(link2)
         elif (bld.env["DEST_OS"] == LINUX_OS ):
             task = symlink_executable(env=bld.env)
             task.set_inputs(bld.iclasp_executable)
@@ -2351,37 +2355,37 @@ def runCmdLargeOutput(cmd):
         print("%s" % strerr )
     return outf.getvalue()
 
-class export_symbols_list(Task.Task):
-    def run(self):
-        # Get everything already external
-        cando_sym_name = "%s_cando" % self.outputs[0].abspath()
-        cmd = [ self.inputs[0].abspath(), "-y", cando_sym_name, "-N" ]
-        result = runCmdLargeOutput(cmd);
-        cando_sym_file = open(cando_sym_name,"r")
-        externals = cando_sym_file.read().splitlines()
-        cando_sym_file.close();
-        # Get the vtables
-        for obj in self.inputs[2:]:
-            if (self.bld.env["DEST_OS"] == DARWIN_OS):
-                cmd = self.bld.env.LLVM_NM + [ "-Ugj", "--quiet", obj.abspath() ]
-            else:
-                cmd = [ 'nm', '--defined-only', obj.abspath() ]
-            result = runCmdLargeOutput(cmd);
-            nm_lines = result.splitlines()
-            for line in nm_lines:
-                symbol = line.split()[-1]
-                if ( symbol.find("__ZTV")>=0 ):
-                    externals.append(symbol)
-                elif (symbol.find("_wrapped_") >= 0):
-                    externals.append(symbol)
-        externals_set = set(externals)
-        text_file = open(self.outputs[0].abspath(),"w+")
-        for entry in sorted(externals_set):
-            text_file.write(entry)
-            text_file.write('\n')
-        text_file.close()
-        cmd = [ "echo", "Ignore \"no symbols\" above" ]
-        return self.exec_command(cmd)
+# class export_symbols_list(Task.Task):
+#     def run(self):
+#         # Get everything already external
+#         cando_sym_name = "%s_cando" % self.outputs[0].abspath()
+#         cmd = [ self.inputs[0].abspath(), "-y", cando_sym_name, "-N" ]
+#         result = runCmdLargeOutput(cmd);
+#         cando_sym_file = open(cando_sym_name,"r")
+#         externals = cando_sym_file.read().splitlines()
+#         cando_sym_file.close();
+#         # Get the vtables
+#         for obj in self.inputs[2:]:
+#             if (self.bld.env["DEST_OS"] == DARWIN_OS):
+#                 cmd = self.bld.env.LLVM_NM + [ "-Ugj", "--quiet", obj.abspath() ]
+#             else:
+#                 cmd = [ 'nm', '--defined-only', obj.abspath() ]
+#             result = runCmdLargeOutput(cmd);
+#             nm_lines = result.splitlines()
+#             for line in nm_lines:
+#                 symbol = line.split()[-1]
+#                 if ( symbol.find("__ZTV")>=0 ):
+#                     externals.append(symbol)
+#                 elif (symbol.find("_wrapped_") >= 0):
+#                     externals.append(symbol)
+#         externals_set = set(externals)
+#         text_file = open(self.outputs[0].abspath(),"w+")
+#         for entry in sorted(externals_set):
+#             text_file.write(entry)
+#             text_file.write('\n')
+#         text_file.close()
+#         cmd = [ "echo", "Ignore \"no symbols\" above" ]
+#         return self.exec_command(cmd)
 
 class build_clasp_extension(waflib.Task.Task):
     def run(self):
