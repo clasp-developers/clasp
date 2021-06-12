@@ -121,22 +121,29 @@ void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp code);
 
 
 struct SymbolLookup {
-  uintptr_t  _textSectionStart;
-  SymbolLookup() : _textSectionStart(0) {};
+  uintptr_t  _adjustAddress;
+  SymbolLookup() : _adjustAddress(0) {};
   std::map<std::string,uintptr_t> _symbolToAddress;
   std::map<uintptr_t,std::string> _addressToSymbol;
   uintptr_t lookupSymbol(const char* name) {
     std::string sname(name);
     auto it = this->_symbolToAddress.find(sname);
     if (it == this->_symbolToAddress.end()) {
-      return 0;
+#ifdef _TARGET_OS_DARWIN
+      stringstream sname_underscore;
+      sname_underscore << "_" << sname;
+      it = this->_symbolToAddress.find(sname_underscore.str());
+      if (it == this->_symbolToAddress.end()) {
+        return 0;
+      }
     }
-    return it->second;
+#endif
+    return it->second+this->_adjustAddress;
   }
   
   bool lookupAddr(uintptr_t addr, std::string& name) {
     printf("%s:%d:%s Lookup executable address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr );
-    std::map<std::uintptr_t,std::string>::iterator it = this->_addressToSymbol.find(addr);
+    std::map<std::uintptr_t,std::string>::iterator it = this->_addressToSymbol.find(addr-this->_adjustAddress);
     if (it == this->_addressToSymbol.end()) {
       return false;
     }

@@ -379,7 +379,6 @@ def embed_snapshot(bld,snapshot_file,input_executable,output_executable,install_
     if (bld.env["DEST_OS"] == DARWIN_OS):
         log.info("dtarget -> %s" % output_executable )
         env2 = bld.env.derive()
-        env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
         env2.append_value("LINKFLAGS",["-sectcreate", "__CLASP", "__clasp", snapshot_file.abspath()])
         link2 = embed_command_line_cxxprogram(env=env2)
         link2.name = "final_build"

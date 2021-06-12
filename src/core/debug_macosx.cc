@@ -88,8 +88,6 @@ THE SOFTWARE.
 
 namespace core {
 
-
-
 void walk_loaded_objects_symbol_table(SymbolCallback* callback) {
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
@@ -344,7 +342,7 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
     uint32_t num_loaded = _dyld_image_count();
     for ( size_t idx = 0; idx<num_loaded; ++idx ) {
       const char* filename = _dyld_get_image_name(idx);
-//      printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+      printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
       if (strcmp(filename,libraryName.c_str())==0) {
         printf("%s:%d:%s Found library: %s !!!! I need the size!!!!!!\n", __FILE__, __LINE__, __FUNCTION__, filename);
         library_origin = (uintptr_t)_dyld_get_image_header(idx);

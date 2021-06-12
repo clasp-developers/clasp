@@ -48,28 +48,41 @@ bool global_debugSnapshot = false;
 
 namespace imageSaveLoad {
 bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
+#define BUFLEN 2048
   int baddigit = 0;
   size_t lineno = 0;
   std::string filename;
   core::executablePath(filename);
+
   struct stat buf;
   if (stat(filename.c_str(),&buf)!=0) {
     return false;
   }
   stringstream nm_cmd;
+  uintptr_t textRegionStart = 0;
+  uintptr_t main_search = 0;
 #if defined(_TARGET_OS_LINUX)
+#define SEARCH_MAIN "_main"
+#define DLSYM_MAIN "_main"
   nm_cmd << "/usr/bin/nm -p --defined-only --no-sort \"" << filename << "\"";
 #elif defined(_TARGET_OS_DARWIN)
-  nm_cmd << "/usr/bin/nm -p --defined-only\"" << filename << "\"";
+#define SEARCH_MAIN "_main"
+#define DLSYM_MAIN "main"
+  gctools::clasp_ptr_t start;
+  gctools::clasp_ptr_t end;
+  core::executableTextSectionRange( start, end );
+  textRegionStart = (uintptr_t)start;
+  nm_cmd << "/usr/bin/nm -p --defined-only \"" << filename << "\"";
 #else
-  nm_cmd << "/usr/bin/nm -p --defined-only\"" << filename << "\"";
+#define SEARCH_MAIN "_main"
+#define DLSYM_MAIN "__main"
+  nm_cmd << "/usr/bin/nm -p --defined-only \"" << filename << "\"";
 #endif  
   FILE* fnm = popen( nm_cmd.str().c_str(), "r");
   if (fnm==NULL) {
     printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, nm_cmd.str().c_str());
     return false;
   }
-#define BUFLEN 2048
   {
     char* buf = NULL;
     size_t buf_len = 0;
@@ -139,8 +152,15 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
         abort();
       }
       std::string sname(name);
-      if (type == 't' || type == 'T' || type == 'W' || type == 'V' || type == 'D') {
+      if (type == 't' ||
+          type == 'T' ||
+          type == 'W' ||
+          type == 'V' ||
+          type == 'D' ||
+          type == 's' ||
+          type == 'S') {
         if (fout) fprintf(fout, "%p %c %s\n", (void*)address, type, sname.c_str());
+        if (sname == SEARCH_MAIN) main_search = address;
         symbolLookup._symbolToAddress[sname] = address;
         symbolLookup._addressToSymbol[address] = sname;
         if (address>highest_code_address) {
@@ -159,6 +179,22 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
 //    symbolLookup.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
     if (buf) free(buf);
     pclose(fnm);
+  }
+
+  if (main_search==0) {
+    printf("%s:%d:%s Could not find address of %s in nm output!!!\n", __FILE__, __LINE__, __FUNCTION__, SEARCH_MAIN );
+    abort();
+  }
+   
+  uintptr_t main_dlsym = (uintptr_t)dlsym(RTLD_DEFAULT,DLSYM_MAIN);
+  if (main_dlsym==0) {
+    printf("%s:%d:%s Could not find address of %s for dlsym!!!\n", __FILE__, __LINE__, __FUNCTION__, DLSYM_MAIN );
+    abort();
+  }
+  uintptr_t adjustAddress = main_dlsym - main_search;
+  symbolLookup._adjustAddress = adjustAddress;
+  if (fout) {
+    fprintf( fout, "# adjust address using %p\n", (void*)adjustAddress);
   }
   return true;
 }
