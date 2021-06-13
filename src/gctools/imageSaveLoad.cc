@@ -2112,6 +2112,7 @@ struct CodeFixup_t {
 int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
   SymbolLookup lookup;
   loadExecutableSymbolLookup(lookup);
+  printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
   if (global_debugSnapshot) {
     if (maybeStartOfSnapshot) {

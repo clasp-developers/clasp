@@ -360,6 +360,7 @@ class embed_command_line_cxxprogram(cxx.cxxprogram):
     def exec_command(self,cmd,**kw):
         link_filename = "%s/link_command_%s" % (tempfile.gettempdir(), os.getpid())
         object_filename = "%s.o" % link_filename
+        print("Writing link command to: %s" % link_filename)
         text_file = open(link_filename, "w")
         for line in cmd:
             text_file.write(line)
@@ -384,6 +385,7 @@ def embed_snapshot(bld,snapshot_file,input_executable,output_executable,install_
         link2.name = "final_build"
         link2.set_inputs( bld.iclasp_link_task.inputs) # snapshot_file
         link2.set_outputs( [ output_executable ] )
+        log.info("final_build -> %s" % link2)
         bld.add_to_group(link2)
     else:
         snapshot_object_file = bld.path.find_or_declare("generated/%s_snapshot.o" % install_name)

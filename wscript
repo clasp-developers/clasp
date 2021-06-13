@@ -1509,10 +1509,9 @@ def build(bld):
     bld.extensions_source_files = []
     bld.extensions_gcinterface_include_files = []
     bld.extensions_builders = []
-
+    bld.extension_startup_load_output_nodes = []
     bld.iclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='i'))
     bld.bclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='b'))
-    bld.cclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='c'))
 
     bld.cclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'c')
     bld.cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % bld.variant_obj.fasl_dir(stage='c')))
@@ -1717,35 +1716,6 @@ def build(bld):
             log.debug("clasp_symlink_node =  %s", clasp_symlink_node)
             if (os.path.islink(clasp_symlink_node.abspath())):
                 os.unlink(clasp_symlink_node.abspath())
-                
-        print("Building exported symbols")
-        if (bld.env["DEST_OS"] == DARWIN_OS):
-            task = symlink_executable(env=bld.env)
-            task.set_inputs(bld.iclasp_executable)
-            task.set_outputs(bld.cclasp_executable)
-            bld.add_to_group(task)
-            # export_symbols_list_task = export_symbols_list(env=bld.env)
-            # export_symbols_list_task.set_inputs([bld.iclasp_executable, bld.cclasp_link_product] + bld.iclasp_link_task.inputs)
-            # export_symbols_list_task.set_outputs([bld.exported_symbols_file])
-            # bld.add_to_group(export_symbols_list_task)
-            # print("Done adding task for export_symbols_list")
-            # bld.add_group()
-            # env2 = bld.env.derive()
-            # env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
-            # link2 = cxx.cxxprogram(env=env2)
-            # link2.name = "foo"
-            # link2.run_after = [export_symbols_list_task]
-            # link2.set_inputs( [bld.exported_symbols_file] + bld.iclasp_link_task.inputs)
-            # link2.set_outputs( [ bld.cclasp_executable ] )
-            # bld.add_to_group(link2)
-        elif (bld.env["DEST_OS"] == LINUX_OS ):
-            task = symlink_executable(env=bld.env)
-            task.set_inputs(bld.iclasp_executable)
-            task.set_outputs(bld.cclasp_executable)
-            bld.add_to_group(task)
-        else:
-            print("What do you do with other OSs?")
-            exit(1)
         #
         # Now build stage 3 is done in the main wscript - recurse into the extensions
         #
@@ -1756,13 +1726,14 @@ def build(bld):
         bld_extensions = build_clasp_extension(env=bld.env)
         snapshot_file = bld.path.find_or_declare("generated/%s.snapshot" % "clasp")
         log.info("snapshot_file -> %s" % snapshot_file.abspath())
-        bld_extensions.set_inputs([bld.cclasp_executable,
-                                   bld.cclasp_link_product])
+        bld_extensions.set_inputs([bld.iclasp_executable,
+                                   bld.cclasp_link_product] +
+                                  bld.extension_startup_load_output_nodes)
         bld_extensions.set_outputs([snapshot_file])
         bld.add_to_group(bld_extensions)
         bld.add_group()
         bld.dclasp_executable = bld.path.find_or_declare("clasp")
-        embed_snapshot(bld,snapshot_file,bld.cclasp_executable,bld.dclasp_executable,"clasp")
+        embed_snapshot(bld,snapshot_file,bld.iclasp_executable,bld.dclasp_executable,"clasp")
         bld.recurse('extensions',name='build4')
 
 def init(ctx):
