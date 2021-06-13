@@ -181,17 +181,18 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
     pclose(fnm);
   }
 
+  uintptr_t main_dlsym = 0;
 #ifndef _TARGET_OS_LINUX  
   if (main_search==0) {
     printf("%s:%d:%s Could not find address of %s in nm output!!!\n", __FILE__, __LINE__, __FUNCTION__, SEARCH_MAIN );
     abort();
   }
-#endif
-  uintptr_t main_dlsym = (uintptr_t)dlsym(RTLD_DEFAULT,DLSYM_MAIN);
+  main_dlsym = (uintptr_t)dlsym(RTLD_DEFAULT,DLSYM_MAIN);
   if (main_dlsym==0) {
     printf("%s:%d:%s Could not find address of %s for dlsym!!!\n", __FILE__, __LINE__, __FUNCTION__, DLSYM_MAIN );
     abort();
   }
+#endif
   uintptr_t adjustAddress = main_dlsym - main_search;
   symbolLookup._adjustAddress = adjustAddress;
   if (fout) {
