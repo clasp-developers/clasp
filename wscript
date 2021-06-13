@@ -1727,7 +1727,8 @@ def build(bld):
         snapshot_file = bld.path.find_or_declare("generated/%s.snapshot" % "clasp")
         log.info("snapshot_file -> %s" % snapshot_file.abspath())
         bld_extensions.set_inputs([bld.iclasp_executable,
-                                   bld.cclasp_link_product] +
+                                   bld.cclasp_link_product,
+                                   bld.cclasp_asdf_fasl] +
                                   bld.extension_startup_load_output_nodes)
         bld_extensions.set_outputs([snapshot_file])
         bld.add_to_group(bld_extensions)
