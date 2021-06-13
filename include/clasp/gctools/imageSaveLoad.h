@@ -18,7 +18,7 @@ namespace imageSaveLoad {
 extern bool global_debugSnapshot;
 
 
-  enum PointerType { UninitializedPointer=0, EndPointer=1, FunctionPointer=2, VtablePointer=3 };
+enum PointerType { UninitializedPointer=0, EndPointer=1, FunctionPointer=2, VtablePointer=3 };
 
 struct PointerBase {
   PointerType _pointerType;
@@ -30,12 +30,12 @@ struct PointerBase {
 struct GroupedPointer {
   PointerType _pointerType;
   uintptr_t   _address;
-GroupedPointer() :
-  _pointerType(UninitializedPointer),
+  GroupedPointer() :
+    _pointerType(UninitializedPointer),
     _address(0)
   {};
-GroupedPointer( PointerType t, uintptr_t address ) :
-  _pointerType(t),
+  GroupedPointer( PointerType t, uintptr_t address ) :
+    _pointerType(t),
     _address(address)
   {};
 };
@@ -136,8 +136,10 @@ struct SymbolLookup {
       if (it == this->_symbolToAddress.end()) {
         return 0;
       }
-    }
+#else
+      return 0;
 #endif
+    }
     return it->second+this->_adjustAddress;
   }
   
@@ -164,7 +166,7 @@ struct SymbolLookup {
       if (found) {
         name = lookupName;
         saddr = address;
-      return true;
+        return true;
       } else {
         printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
                "  When this happens run 'nm <executable> | grep %p'\n"
