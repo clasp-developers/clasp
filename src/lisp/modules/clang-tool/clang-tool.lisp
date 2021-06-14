@@ -450,6 +450,7 @@ Sets up a dynamic environment where clang-tooling:*compilation-tool-database* is
    (arguments-adjuster-list :initform nil :initarg :arguments-adjuster-list :accessor arguments-adjuster-list)))
 
 (defmethod initialize-instance :after ((obj compilation-tool-database) &rest args)
+  (declare (ignore args))
   "* Description
 Initialize the source-namestrings using all filenames in the database if they haven't already been set."
   (unless (slot-boundp obj 'source-namestrings)
@@ -515,6 +516,7 @@ Otherwise the value of convert-relative-includes-to-absolute is used.
 * Description
 Setup the default arguments adjusters."
   (push (lambda (args filename)
+          (declare (ignore filename))
           (format t "Arguments:~%")
           (format t "~{~A \\~%~}%" (coerce args 'list))
           (format t "If nothing seems to be working - try running the arguments on the command line and look for errors~%")
@@ -523,6 +525,7 @@ Setup the default arguments adjusters."
   (push (ast-tooling:get-clang-syntax-only-adjuster) (arguments-adjuster-list compilation-tool-database))
   (push (ast-tooling:get-clang-strip-output-adjuster) (arguments-adjuster-list compilation-tool-database))
   (push (lambda (args filename)
+          (declare (ignore filename))
           (concatenate 'vector
                        args
                        (vector #+target-os-darwin "-isysroot" #+target-os-darwin +isysroot+
@@ -532,10 +535,12 @@ Setup the default arguments adjusters."
   (cond
     ((eq convert-relative-includes-to-absolute t)
      (push (lambda (args filename)
+             (declare (ignore filename))
              (convert-relative-includes-to-absolute args (main-pathname compilation-tool-database)))
            (arguments-adjuster-list compilation-tool-database)))
     (convert-relative-includes-to-absolute
      (push (lambda (args filename)
+             (declare (ignore filename))
              (convert-relative-includes-to-absolute args convert-relative-includes-to-absolute))
            (arguments-adjuster-list compilation-tool-database)))
     (t #| Do nothing |#)))
@@ -567,6 +572,7 @@ it contains the string source-path-identifier.  So /a/b/c/d.cc will match /b/"
     ctd))
 
 (defun main-pathname (&optional (compilation-tool-database *compilation-tool-database*))
+  (declare (ignore compilation-tool-database))
   "* Arguments
 - compilation-tool-database :: The compilation database.
 * Return Value
@@ -700,10 +706,8 @@ Select a subset (or all) source file names from the compilation database and ret
 (defclass count-match-callback (ast-tooling:match-callback) ()
   (:metaclass core:derivable-cxx-class))
 (core:defvirtual ast-tooling:run ((self count-match-callback) match)
-  (let* ((nodes (ast-tooling:nodes match))
-         (id-to-node-map (ast-tooling:idto-node-map nodes))
-         (node (gethash :whole id-to-node-map)))
-    (advance-match-counter)))
+  (declare (ignore match))
+  (advance-match-counter))
 
 
 
@@ -791,7 +795,7 @@ Return true if the node describes source code that matches source-loc-match-call
          (match-info (make-instance 'match-info
                                     :id-to-node-map id-to-node-map
                                     :ast-context (match-result-context match)
-                                    :source-manager (ast-tooling:source-manager match))))
+                                    :source-manager source-manager)))
     (when (source-loc-equal match-info self node)
       (when (match-code self)
         (funcall (match-code self) match-info))
@@ -823,10 +827,8 @@ This can only be run in the context set up by the code-match-callback::run metho
          (_end (get-end-loc node))
          (end (lexer-get-loc-for-end-of-token _end 0 (source-manager match-info) lang-options))
          (token-range (new-char-source-range-get-char-range begin end)))
-    (multiple-value-bind (source invalid)
-        (lexer-get-source-text token-range (source-manager match-info) lang-options)
-      source)))
-
+    (values (lexer-get-source-text
+             token-range (source-manager match-info) lang-options))))
 
 
 (defgeneric mtag-name (match-info tag-node)
@@ -845,6 +847,7 @@ Return the name of the node that has been associated with a tag."))
 
 
 (defmethod mtag-name (match-info (node clang-ast:decl))
+  (declare (ignore match-info))
   (if (cast:get-identifier node)
       (cast:get-name node)
       "NO-NAME"))
@@ -858,6 +861,7 @@ Return the name of the node that has been associated with a tag."))
   (mtag-source-decl-stmt-impl match-info node))
 
 (defmethod mtag-source-impl (match-info (node clang-ast:qual-type))
+  (declare (ignore match-info))
   (get-as-string node))
 
 (defmethod mtag-source-impl (match-info (node clang-ast:type-loc))
@@ -1235,7 +1239,7 @@ and match them to the match-comments regex.  If they match, run the code."
                      :callback callback
                      :counter-limit limit))
 
-(defun batch-match-run (match-sexp &key compilation-tool-database limit the-code-match-callback run-and-save)
+(defun batch-match-run (match-sexp &key compilation-tool-database the-code-match-callback run-and-save)
   "* Arguments
 - match-sexp :: A matcher in s-expression form.
 - compilation-tool-database :: The compilation-tool-database.
@@ -1386,7 +1390,7 @@ Code for representing ASTMatchers as s-expressions
                    "ANYTHING"
                    (super-class-matchers prev-environment))
                prev-environment node sexp))
-    (node-matcher-ambiguous-error (err)
+    (node-matcher-ambiguous-error ()
       (error "Hint node environment is ambiguous prev-environment is ~a; node is ~a; sexp is ~a~%"
              prev-environment (car sexp)  sexp))))
 
