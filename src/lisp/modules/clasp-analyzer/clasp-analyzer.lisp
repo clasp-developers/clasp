@@ -1605,6 +1605,8 @@ can be saved and reloaded within the project for later analysis"
       (with-open-file (fout (project-pathname "project" "dat") :direction :output)
         (prin1 project fout))))
 
+(defvar *project*)
+
 (defun load-project (db &optional pathname)
   (let ((*package* (find-package :clasp-analyzer)))
     (clang-tool:with-compilation-tool-database db
@@ -2396,7 +2398,7 @@ so that they don't have to be constantly recalculated"
   (when (simple-stamp-p stamp)
     (expand-forwards-with-template-arguments forwards (alloc-ctype (simple-stamp-alloc stamp)))))
 
-(defun generate-forward-declarations (&optional (analysis *analysis*))
+(defun generate-forward-declarations (analysis)
   (let* ((forwards (analysis-forwards analysis)))
     (maphash (lambda (key stamp) (fill-forward-declarations forwards stamp analysis)) (analysis-stamps analysis))))
 
@@ -3085,7 +3087,6 @@ so that they don't have to be constantly recalculated"
 
 
 
-(defvar *project*)
 (defun derived-from-cclass* (child ancestor searched project)
   (cond ((gethash child searched)
          ;; Protect ourselves from loops in the inheritance
