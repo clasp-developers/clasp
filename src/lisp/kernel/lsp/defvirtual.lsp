@@ -15,10 +15,7 @@
       (multiple-value-bind (declares code docstring specials)
           (core:process-declarations body t)
         (declare (ignore specials))
-        (let* ((fn `(lambda ,simple-lambda-list
-                      (flet ((call-next-method (&rest args)
-                               (error "In defvirtual defined call-next-method implement a proper one")))
-                        ,@code))))
+        (let* ((fn `(lambda ,simple-lambda-list ,@code)))
           `(core:ensure-single-dispatch-method (fdefinition ',name)
                                                ',name
                                                (find-class ',dispatch-class)
