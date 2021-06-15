@@ -46,7 +46,8 @@
 ;;; Should not need to modify below here
 ;;; --------------------------------------------------
 ;;; --------------------------------------------------
-(defmacro gclog (fmt &rest args))
+(defmacro gclog (fmt &rest args)
+  (declare (ignore fmt args)))
 ;;(defmacro gclog (fmt &rest args) `(format *debug-io* ,fmt ,@args))
 
 
@@ -123,6 +124,7 @@
           (instance-variable-field-name x)))
 
 (defmethod instance-field-as-string ((x instance-array-element) first)
+  (declare (ignore first))
   (format nil "[~a]" (instance-array-element-index x)))
 
 (defstruct alloc
@@ -223,7 +225,6 @@
   (stamps (make-hash-table :test #'equal))
   stamp-children
   sorted-stamps
-  (scanner-jump-table-indices-for-stamp-names (make-hash-table :test #'equal))
   stamp-roots
   )
 
@@ -285,16 +286,9 @@ This could change the value of stamps for specific classes - but that would brea
 (defmethod print-object ((object analysis) stream)
   (format stream "#<analysis>"))
 
-(defun scanner-jump-table-index-for-stamp-name (stamp-name anal)
-  (let* ((jt (analysis-scanner-jump-table-indices-for-stamp-names anal))
-         (jt-index (gethash stamp-name jt)))
-    (if jt-index
-        jt-index
-        (setf (gethash stamp-name jt) (hash-table-count jt)))))
-
 ;; Return "inline" if the function should be inlined
 ;; For now it's really simple, inline if it's in a list and don't if it's not
-(defun inline-analysis (func key analysis)
+(defun inline-analysis (key analysis)
   (if (member key (analysis-inline analysis) :test #'string=)
     "ALWAYS_INLINE"
     "MAYBE_INLINE"))
@@ -311,10 +305,7 @@ This could change the value of stamps for specific classes - but that would brea
   children )
 
 (defun in-stamps-p (name analysis)
-  (multiple-value-bind (stamp stamp-p)
-      (gethash name (analysis-stamps analysis))
-    stamp-p))
-
+  (nth-value 1 (gethash name (analysis-stamps analysis))))
 
 (defun notify-base-names (class-name base-names analysis)
   (when (> (length base-names) 1)
@@ -345,11 +336,13 @@ This could change the value of stamps for specific classes - but that would brea
 
 (defun build-hierarchy (analysis)
   (maphash #'(lambda (node-name stamp)
+               (declare (ignore stamp))
                (notify-parents node-name analysis))
            (analysis-stamps analysis)))
 
 
 (defun no-stamp-value (analysis stamp operation)
+  (declare (ignore analysis stamp operation))
   "Some classes don't get a stamp because they inherit it from their base."
   :no-stamp-value)
 
@@ -377,7 +370,8 @@ This could change the value of stamps for specific classes - but that would brea
   (setf (analysis-stamp-children analysis) (make-hash-table))
   (setf (analysis-stamp-roots analysis) nil)
   (build-hierarchy analysis)
-  (maphash (lambda (k v) (setf (stamp-value% v) nil)) (analysis-stamps analysis))
+  (maphash (lambda (k v) (declare (ignore k)) (setf (stamp-value% v) nil))
+           (analysis-stamps analysis))
   (reset-stamp-value-generator analysis))
 
 (defun assign-stamp-values-to-hierarchy (analysis)
@@ -397,8 +391,9 @@ This could change the value of stamps for specific classes - but that would brea
   (dolist (root (remove "core::T_O" (analysis-stamp-roots analysis) :test #'string=))
     (traverse-inheritance-tree root analysis (format nil "inherit from ~a" root) root 'assign-stamp-value)))
 
-(defun assign-stamp-values-to-those-without (analysis operation)
+(defun assign-stamp-values-to-those-without (analysis)
   (maphash (lambda (name stamp)
+             (declare (ignore name))
              (when (eq (stamp-value% stamp) :unassigned)
                (let ((stamp-value (assign-stamp-value analysis stamp)))
                  (setf (stamp-value% stamp) stamp-value
@@ -407,7 +402,7 @@ This could change the value of stamps for specific classes - but that would brea
 
 (defun analyze-hierarchy (analysis)
   (assign-stamp-values-to-hierarchy analysis)
-  (assign-stamp-values-to-those-without analysis "outside of hierarchy"))
+  (assign-stamp-values-to-those-without analysis))
 
 (defvar *accumulate-stamps* nil)
 
@@ -884,6 +879,7 @@ to expose."
 
 
 (defun is-atomic (one &optional (stream *standard-output*))
+  (declare (ignorable stream))
   "Return T if the field in ONE is a std::atomic<Foo> type."
   (let* ((second-last-field (car (last (fields one) 2)))
          (second-last-field-type (instance-field-ctype second-last-field))
@@ -1025,6 +1021,7 @@ to expose to C++.
                            :elements (ensure-list (linearize-class-layout-impl arg0-ctype arg0-ctype analysis)))))))
 
 (defmethod linearize-class-layout-impl ((x gcbitunitarray-moveable-ctype) base analysis)
+  (declare (ignore analysis))
   (let ((nodes (call-next-method)))
     (format t "linearize-class-layout-impl for gcbitunitarray-moveable-ctype  nodes -> ~a~%" nodes)
     (let* ((arguments (gcbitunitarray-moveable-ctype-arguments x))
@@ -1036,6 +1033,7 @@ to expose to C++.
            #+(or)(arg2 (find 2 arguments :test #'eql :key #'gc-template-argument-index))
            #+(or)(arg2-ctype (gc-template-argument-ctype arg2))
            )
+      (declare (ignore _))
       (unless (member arg0-integral-value '("1" "2" "4") :test #'string=)
         (error "The argument ~s, which describes the bit width of a bitunit, must be a positive integer 1,2, or 4 - it is not" arg0-integral-value))
       (format t "bitunit arg0-integral-value -> ~s arg1-ctype -> ~s~%" arg0-integral-value arg1-ctype)
@@ -1076,6 +1074,7 @@ to expose to C++.
 
 
 (defmethod linearize-class-layout-impl ((x unclassified-ctype) base analysis)
+  (declare (ignore analysis))
   (if (ignorable-ctype-p x)
       nil
       (list (make-instance 'pod-offset
@@ -1083,11 +1082,14 @@ to expose to C++.
                            :offset-type x))))
 
 (defmethod linearize-class-layout-impl ((x lvalue-reference-ctype) base analysis)
+  (declare (ignore base analysis))
   nil)
 
 (defmethod linearize-class-layout-impl ((x enum-ctype) base analysis)
+  (declare (ignore base analysis))
   nil)
 (defmethod linearize-class-layout-impl ((x builtin-ctype) base analysis)
+  (declare (ignore analysis))
   (if (ignorable-ctype-p x)
       nil
       (list (make-instance 'pod-offset
@@ -1095,6 +1097,7 @@ to expose to C++.
                            :offset-type x))))
 
 (defmethod linearize-class-layout-impl ((x atomic-ctype) base analysis)
+  (declare (ignore analysis))
   (cond
     ((or (smart-ptr-ctype-p (atomic-ctype-argument x))
          (tagged-pointer-ctype-p (atomic-ctype-argument x)))
@@ -1106,6 +1109,7 @@ to expose to C++.
                             :offset-type (atomic-ctype-argument x))))))
 
 (defmethod linearize-class-layout-impl ((x basic-string-ctype) base analysis)
+  (declare (ignore analysis))
   (if (ignorable-ctype-p x)
       nil
       (list (make-instance 'cxx-fixup-offset
@@ -1113,22 +1117,26 @@ to expose to C++.
                            :offset-type x))))
 
 (defmethod linearize-class-layout-impl ((x std-map-ctype) base analysis)
+  (declare (ignore analysis))
   (list (make-instance 'cxx-fixup-offset
                        :base base
                        :offset-type x)))
 
 (defmethod linearize-class-layout-impl ((x shared-mutex-ctype) base analysis)
+  (declare (ignore analysis))
   (list (make-instance 'cxx-shared-mutex-offset
                        :base base
                        :offset-type x)))
 
 (defmethod linearize-class-layout-impl ((x mutex-ctype) base analysis)
+  (declare (ignorable base) (ignore analysis))
   nil
   #+(or)(list (make-instance 'cxx-mutex-offset
                        :base base
                        :offset-type x)))
 
 (defmethod linearize-class-layout-impl ((x unique-ptr-ctype) base analysis)
+  (declare (ignore analysis))
   (if (ignorable-ctype-p x)
       nil
       (list (make-instance 'cxx-fixup-offset
@@ -1136,9 +1144,11 @@ to expose to C++.
                            :offset-type x))))
 
 (defmethod linearize-class-layout-impl ((x dont-expose-ctype) base analysis)
+  (declare (ignorable base) (ignore analysis))
   nil) ;;; (list (make-instance 'dont-expose-offset :base base :offset-type (gc-template-argument-ctype (first (dont-expose-ctype-argument x))))))
 
 (defmethod linearize-class-layout-impl ((x dont-analyze-ctype) base analysis)
+  (declare (ignore analysis))
   (list (make-instance 'dont-analyze-offset :base base :offset-type (gc-template-argument-ctype (first (dont-analyze-ctype-argument x))))))
 
 (defmethod linearize-class-layout-impl ((x cxxrecord-ctype) base analysis)
@@ -1154,18 +1164,18 @@ to expose to C++.
      (linearize-class-layout-impl (gethash (ctype-key x) (project-classes (analysis-project analysis))) base analysis))))
 
 (defmethod linearize-class-layout-impl ((x smart-ptr-ctype) base analysis)
+  (declare (ignore analysis))
   (list (make-instance 'smart-ptr-offset :base base :offset-type x)))
 
 (defmethod linearize-class-layout-impl ((x tagged-pointer-ctype) base analysis)
+  (declare (ignore analysis))
   (list (make-instance 'tagged-pointer-offset :base base :offset-type x)))
 
-(defun linearize-constant-array-contents (array element-type elements base analysis)
+(defun linearize-constant-array-contents (array element-type elements)
   "* Arguments
 - array :: A constant-array-ctype.
 - element-type :: A ctype.
 - elements :: A list of the fields to expose in element-type.
-- base :: The ctype that contains the array.
-- analysis :: An analysis object.
 * Description
 Generate offsets for every array element that exposes the fields in elements."
   (let ((number-of-elements (constant-array-ctype-array-size array))
@@ -1192,7 +1202,7 @@ Generate offsets for every array element that exposes the fields in elements."
                        (linearize-class-layout-impl element-type base analysis))))
     (if (> (constant-array-ctype-array-size x) 0)
         (if (fixable-instance-variables element-type analysis)
-            (linearize-constant-array-contents x element-type elements base analysis)
+            (linearize-constant-array-contents x element-type elements)
             nil)
         (list (make-instance 'constant-array-offset
                              :base base
@@ -1591,7 +1601,7 @@ can be saved and reloaded within the project for later analysis"
   (let ((*print-readably* t)
         (*print-array* t)
         (*print-circle* nil)
-        (*print-width* 140)
+        (*print-right-margin* 140)
         (*print-pretty* nil))
     (with-open-file (fout pathname :direction :output)
       (prin1 run fout))))
@@ -1693,13 +1703,13 @@ can be saved and reloaded within the project for later analysis"
                  ;; Run a matcher to find the base classes and their namespaces
                  ;;
                  (gclog "Starting (ext:do-c++-iterator (it (cast:bases-iterator class-node))~%")
-                 (multiple-value-bind (start end)
-                     (cast:bases-iterator class-node)
-                   (let* ((next1 (sys:iterator-step start))
-                          (next2 (sys:iterator-step next1)))
-                     (gclog "(cast:bases-iterator class-node) start == end -> ~s~%" (core:iterator= start end))
-                     (gclog "(cast:bases-iterator class-node) next1 == end -> ~s~%" (core:iterator= next1 end))
-                     (gclog "(cast:bases-iterator class-node) next2 == end -> ~s~%" (core:iterator= next2 end))))
+                 (let* ((start (cast:bases-iterator class-node))
+                        (next1 (sys:iterator-step start))
+                        (next2 (sys:iterator-step next1)))
+                   (declare (ignorable next2))
+                   (gclog "(cast:bases-iterator class-node) start == end -> ~s~%" (core:iterator= start end))
+                   (gclog "(cast:bases-iterator class-node) next1 == end -> ~s~%" (core:iterator= next1 end))
+                   (gclog "(cast:bases-iterator class-node) next2 == end -> ~s~%" (core:iterator= next2 end)))
                  (ext:do-c++-iterator (it (cast:bases-iterator class-node))
                    (gclog "In do-c++-iterator bases-iterator~%")
                    (gclog "In do-c++-iterator bases-iterator it -> ~s~%" it)
@@ -1757,7 +1767,7 @@ can be saved and reloaded within the project for later analysis"
                                                                                :location loc)))
                                             (classify-ctype (to-canonical-type type))))
                                   fields))
-                        (unsupported-type (err)
+                        (unsupported-type ()
                           (error "Add support for classifying type: ~a (type-of type): ~a  source: ~a"
                                  type (type-of type) (clang-tool:mtag-source minfo :field)))))))
                  ;;
@@ -2298,19 +2308,21 @@ so that they don't have to be constantly recalculated"
            (if c
                (contains-fixptr-impl-p c project)
                nil))))))
-(defmethod contains-fixptr-impl-p ((x basic-string-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x std-map-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x shared-mutex-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x mutex-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x unique-ptr-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x injected-class-name-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x unclassified-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x builtin-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x enum-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x lvalue-reference-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x function-proto-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x unclassified-template-specialization-ctype) project) nil)
-(defmethod contains-fixptr-impl-p ((x smart-ptr-ctype) project) t)
+
+(macrolet ((defnot (name)
+             `(defmethod contains-fixptr-impl-p ((x ,name) project)
+                (declare (ignore project))
+                nil))
+           (defnots (&rest names)
+             `(progn ,@(loop for name in names collect `(defnot ,name)))))
+  (defnots basic-string-ctype std-map-ctype shared-mutex-ctype mutex-ctype
+    unique-ptr-ctype injected-class-name-ctype unclassified-ctype
+    builtin-ctype enum-ctype lvalue-reference-ctype function-proto-ctype
+    unclassified-template-specialization-ctype))
+
+(defmethod contains-fixptr-impl-p ((x smart-ptr-ctype) project)
+  (declare (ignore project))
+  t)
 (defmethod contains-fixptr-impl-p ((x gc-template-argument) project)
   (let ((ctype (gc-template-argument-ctype x)))
      (contains-fixptr-impl-p ctype project)))
@@ -2334,7 +2346,9 @@ so that they don't have to be constantly recalculated"
 (defmethod contains-fixptr-impl-p ((x atomic-ctype) project)
   (contains-fixptr-impl-p (atomic-ctype-argument x) project))
 
-(defmethod contains-fixptr-impl-p ((x tagged-pointer-ctype) project) t)
+(defmethod contains-fixptr-impl-p ((x tagged-pointer-ctype) project)
+  (declare (ignore project))
+  t)
 (defmethod contains-fixptr-impl-p ((x pointer-ctype) project)
   (cond
     ((container-p (pointer-ctype-pointee x)) t)
@@ -2379,12 +2393,23 @@ so that they don't have to be constantly recalculated"
 (defgeneric expand-forwards-with-template-arguments (forwards alloc-ctype))
                                         ; don't need anything for cxxrecord-ctype
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype t))
+  (declare (ignore forwards))
   (warn "expand-forwards-with-template-arguments most general  alloc-ctype--> ~a~%" alloc-ctype))
-(defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype cxxrecord-ctype)) nil)
-(defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype null)) nil)
-(defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype unclassified-ctype)) nil)
-(defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype smart-ptr-ctype)) nil)
-(defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype tagged-pointer-ctype)) nil)
+(defmethod expand-forwards-with-template-arguments
+    ((forwards t) (alloc-ctype cxxrecord-ctype))
+  nil)
+(defmethod expand-forwards-with-template-arguments
+    ((forwards t) (alloc-ctype null))
+  nil)
+(defmethod expand-forwards-with-template-arguments
+    ((forwards t) (alloc-ctype unclassified-ctype))
+  nil)
+(defmethod expand-forwards-with-template-arguments
+    ((forwards t) (alloc-ctype smart-ptr-ctype))
+  nil)
+(defmethod expand-forwards-with-template-arguments
+    ((forwards t) (alloc-ctype tagged-pointer-ctype))
+  nil)
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype cxxrecord-ctype))
   (add-ctype forwards (ctype-key alloc-ctype) alloc-ctype))
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype pointer-ctype))
@@ -2394,13 +2419,13 @@ so that they don't have to be constantly recalculated"
   (mapc (lambda (template-arg) (expand-forwards-with-template-arguments forwards (gc-template-argument-ctype template-arg)))
         (class-template-specialization-ctype-arguments alloc-ctype)))
 
-(defun fill-forward-declarations (forwards stamp analysis)
+(defun fill-forward-declarations (forwards stamp)
   (when (simple-stamp-p stamp)
     (expand-forwards-with-template-arguments forwards (alloc-ctype (simple-stamp-alloc stamp)))))
 
 (defun generate-forward-declarations (analysis)
   (let* ((forwards (analysis-forwards analysis)))
-    (maphash (lambda (key stamp) (fill-forward-declarations forwards stamp analysis)) (analysis-stamps analysis))))
+    (maphash (lambda (key stamp) (declare (ignore key)) (fill-forward-declarations forwards stamp)) (analysis-stamps analysis))))
 
 (defun compact-stamp-value (species-num alloc-num)
   (logior (ash species-num 16) alloc-num))
@@ -2566,13 +2591,13 @@ so that they don't have to be constantly recalculated"
                                  :alloc alloc
                                  :species species)))))))
 
-(defun organize-allocs-into-species-and-create-stamps (analysis &aux (project (analysis-project analysis)))
+(defun organize-allocs-into-species-and-create-stamps (analysis)
   "Every GCObject and GCContainer is assigned to a species and given a GCStamp stamp value."
   (let ((project (analysis-project analysis)))
-    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-lispallocs project))
-    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-containerallocs project))
-    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-classallocs project))
-    (maphash (lambda (k alloc) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-rootclassallocs project))))
+    (maphash (lambda (k alloc) (declare (ignore k)) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-lispallocs project))
+    (maphash (lambda (k alloc) (declare (ignore k)) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-containerallocs project))
+    (maphash (lambda (k alloc) (declare (ignore k)) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-classallocs project))
+    (maphash (lambda (k alloc) (declare (ignore k)) (ensure-stamp-for-alloc-and-parent-classes alloc analysis)) (project-rootclassallocs project))))
 
 (defgeneric fixer-macro-name (fixer-head))
 (defmethod fixer-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_FIX")
@@ -2628,18 +2653,22 @@ so that they don't have to be constantly recalculated"
               (format nil "~{~a~^.~}" reverse-names)))))
 
 (defun scanner-for-abstract-species (dest stamp anal)
+  (declare (ignore dest stamp anal))
   nil)
 
 (defun dumper-for-abstract-species (dest stamp anal)
+  (declare (ignore dest stamp anal))
   nil)
 
 (defun finalizer-for-abstract-species (dest stamp anal)
+  (declare (ignore anal))
   (with-jump-table (fout jti dest stamp)
     (format fout "     // do nothing stamp value ~a~%" (stamp-value% stamp))
     (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize object ~a\"));~%" (stamp-key stamp)))
   nil)
 
 (defun deallocator-for-abstract-species (dest stamp anal)
+  (declare (ignore anal))
   (with-jump-table (fout jti dest stamp)
     (format fout "     // do nothing stamp value ~a~%" (stamp-value% stamp))
     (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate object ~a\"));~%" (stamp-key stamp)))
@@ -2658,6 +2687,7 @@ so that they don't have to be constantly recalculated"
         (codegen-lisp-layout dest stamp key layout definition-data anal)))))
 
 (defun dumper-for-lispallocs (dest stamp anal)
+  (declare (ignore anal))
   (assert (simple-stamp-p stamp))
   (let* ((alloc (simple-stamp-alloc stamp))
          (key (alloc-key alloc))
@@ -2668,6 +2698,7 @@ so that they don't have to be constantly recalculated"
       (format fout "    sout << \"~a size[\" << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) << \"]\" ;~%" stamp-name stamp-name ))))
 
 (defun finalizer-for-lispallocs (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (key (alloc-key alloc))
@@ -2687,6 +2718,7 @@ so that they don't have to be constantly recalculated"
 
 
 (defun deallocator-for-lispallocs (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (key (alloc-key alloc))
@@ -2725,6 +2757,7 @@ so that they don't have to be constantly recalculated"
 
 
 (defun dumper-for-templated-lispallocs (dest stamp anal)
+  (declare (ignore anal))
   (assert (templated-stamp-p stamp))
   (let* ((key (stamp-key stamp))
          (stamp-name (get-stamp-name stamp)))
@@ -2735,6 +2768,7 @@ so that they don't have to be constantly recalculated"
       )))
 
 (defun finalizer-for-templated-lispallocs (dest stamp anal)
+  (declare (ignore anal))
   (assert (templated-stamp-p stamp))
   (let* ((key (stamp-key stamp))
          (stamp-name (get-stamp-name stamp))
@@ -2748,6 +2782,7 @@ so that they don't have to be constantly recalculated"
       )))
 
 (defun deallocator-for-templated-lispallocs (dest stamp anal)
+  (declare (ignore anal))
   (assert (templated-stamp-p stamp))
   (let* ((key (stamp-key stamp))
          (stamp-name (get-stamp-name stamp))
@@ -2778,6 +2813,7 @@ so that they don't have to be constantly recalculated"
 
 
 (defun dumper-for-gccontainer (dest stamp anal)
+  (declare (ignorable dest) (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
@@ -2804,6 +2840,7 @@ so that they don't have to be constantly recalculated"
 
 
 (defun finalizer-for-gccontainer (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
@@ -2823,6 +2860,7 @@ so that they don't have to be constantly recalculated"
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize containers ~a\"));" (record-ctype-key decl)))))))
 
 (defun deallocator-for-gccontainer (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
@@ -2856,6 +2894,7 @@ so that they don't have to be constantly recalculated"
         (codegen-container-layout dest stamp-name key layout definition-data anal)))))
 
 (defun dumper-for-gcstring (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
@@ -2876,6 +2915,7 @@ so that they don't have to be constantly recalculated"
 			  (format fout "    sout << \"~a\" << \"bytes[\" << header_and_gcstring_size << \"]\";~%" stamp-name ))))))
 
 (defun finalizer-for-gcstring (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
@@ -2895,6 +2935,7 @@ so that they don't have to be constantly recalculated"
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize gcstrings ~a\"));" (record-ctype-key decl)))))))
 
 (defun deallocator-for-gcstring (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
@@ -2928,6 +2969,7 @@ so that they don't have to be constantly recalculated"
         (codegen-bitunit-container-layout dest stamp key layout definition-data anal)))))
 
 (defun dumper-for-gcbitunit (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
@@ -2948,6 +2990,7 @@ so that they don't have to be constantly recalculated"
 	     (format fout "    sout << \"~a\" << \"bytes[\" << header_and_gcbitunit_size << \"]\";~%" stamp-name ))))))
 
 (defun finalizer-for-gcbitunit (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
@@ -2958,6 +3001,7 @@ so that they don't have to be constantly recalculated"
       (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))))
 
 (defun deallocator-for-gcbitunit (dest stamp anal)
+  (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
@@ -3064,6 +3108,7 @@ so that they don't have to be constantly recalculated"
 (defun sort-stamps-by-value (analysis)
   (let (names)
     (maphash #'(lambda (k stamp)
+                 (declare (ignore k))
                  (when (not (eq (stamp-value% stamp) :no-stamp-value))
                    (push (cons (stamp-value% stamp) stamp) names)))
              (analysis-stamps analysis))
@@ -3188,6 +3233,7 @@ so that they don't have to be constantly recalculated"
 
 (defun generate-gckind-for-stamps (fout anal)
   (maphash (lambda (key stamp)
+             (declare (ignore key))
              (when (and (not (eq (stamp-value% stamp) :no-stamp-value))
                         (not (abstract-species-stamp-p stamp anal)))
                (generate-one-gckind-for-stamp fout stamp)))
@@ -3268,16 +3314,35 @@ Recursively analyze x and return T if x contains fixable pointers."
     (when vbase-code (setq result (append result vbase-code)))
     (when field-code (setq result (append result field-code)))
     result))
-(defmethod fixable-instance-variables-impl ((x builtin-ctype) analysis) nil)
-(defmethod fixable-instance-variables-impl ((x basic-string-ctype) analysis) nil)
-(defmethod fixable-instance-variables-impl ((x std-map-ctype) analysis) nil)
-(defmethod fixable-instance-variables-impl ((x shared-mutex-ctype) analysis) nil)
-(defmethod fixable-instance-variables-impl ((x mutex-ctype) analysis) nil)
-(defmethod fixable-instance-variables-impl ((x unique-ptr-ctype) analysis) nil)
-(defmethod fixable-instance-variables-impl ((x atomic-ctype) analysis) nil)
-(defmethod fixable-instance-variables-impl ((x dont-expose-ctype) analysis) nil)
-(defmethod fixable-instance-variables-impl ((x dont-analyze-ctype) analysis) nil)
+(defmethod fixable-instance-variables-impl ((x builtin-ctype) analysis)
+  (declare (ignore analysis))
+  nil)
+(defmethod fixable-instance-variables-impl ((x basic-string-ctype) analysis)
+  (declare (ignore analysis))
+  nil)
+(defmethod fixable-instance-variables-impl ((x std-map-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fixable-instance-variables-impl ((x shared-mutex-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fixable-instance-variables-impl ((x mutex-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fixable-instance-variables-impl ((x unique-ptr-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fixable-instance-variables-impl ((x atomic-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fixable-instance-variables-impl ((x dont-expose-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fixable-instance-variables-impl ((x dont-analyze-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
 (defmethod fixable-instance-variables-impl ((x unclassified-ctype) analysis)
+  (declare (ignore analysis))
   (cond
     ((ignorable-ctype-p x) nil)
     (t (warn "ignoring fixable-instance-variables-impl for ~a" x)))
@@ -3295,9 +3360,13 @@ Recursively analyze x and return T if x contains fixable pointers."
     (t
      (fixable-instance-variables-impl (gethash (ctype-key x) (project-classes (analysis-project analysis))) analysis))))
 
-(defmethod fixable-instance-variables-impl ((x smart-ptr-ctype) analysis) :smart-ptr-fix)
+(defmethod fixable-instance-variables-impl ((x smart-ptr-ctype) analysis)
+  (declare (ignore analysis))
+  :smart-ptr-fix)
 
-(defmethod fixable-instance-variables-impl ((x tagged-pointer-ctype) analysis) :tagged-pointer-fix)
+(defmethod fixable-instance-variables-impl ((x tagged-pointer-ctype) analysis)
+  (declare (ignore analysis))
+  :tagged-pointer-fix)
 
 (defmethod fixable-instance-variables-impl ((x constant-array-ctype) analysis)
   (when (contains-fixptr-p x (analysis-project analysis))
@@ -3550,6 +3619,7 @@ Recursively analyze x and return T if x contains fixable pointers."
   (let ((forwards (analysis-forwards analysis))
         (top-namespace (make-namespace)))
     (maphash (lambda (name value)
+               (declare (ignore value))
                (let ((split-name (separate-namespace-name name)))
                  (namespace-add-name top-namespace split-name)))
              forwards)
@@ -3583,6 +3653,7 @@ Recursively analyze x and return T if x contains fixable pointers."
       ""))
 
 (defun generate-alloc-stamp (&key (fout t) (fdesc t) (analysis *analysis*))
+  (declare (ignorable fdesc))
   (let ((maxstamp 0))
     (format fout "STAMPWTAG_null = ADJUST_STAMP(0), ~%")
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
@@ -3629,28 +3700,74 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defgeneric fix-variable-p (var analysis))
 (defmethod fix-variable-p ((var global-variable) analysis)
   (fix-variable-p (global-variable-ctype var) analysis))
-(defmethod fix-variable-p ((var unclassified-ctype) analysis) nil)
-(defmethod fix-variable-p ((var lvalue-reference-ctype) analysis) nil)
-(defmethod fix-variable-p ((var builtin-ctype) analysis) nil)
-(defmethod fix-variable-p ((var dependent-name-ctype) analysis) nil)
-(defmethod fix-variable-p ((var template-type-parm-ctype) analysis) nil)
-(defmethod fix-variable-p ((var unclassified-template-specialization-ctype) analysis) (format *debug-io* "unclassified-template-specialization-ctype -> ~a~%" var) nil)
-(defmethod fix-variable-p ((var rvalue-reference-ctype) analysis) (format *debug-io* "rvalue-reference-ctype -> ~a~%" var) nil)
-(defmethod fix-variable-p ((var incomplete-array-ctype) analysis) (format *debug-io* "incomplete-array-ctype -> ~a~%" var) nil)
-(defmethod fix-variable-p ((var basic-string-ctype) analysis) nil)
-(defmethod fix-variable-p ((var std-map-ctype) analysis) nil)
-(defmethod fix-variable-p ((var shared-mutex-ctype) analysis) nil)
-(defmethod fix-variable-p ((var mutex-ctype) analysis) nil)
-(defmethod fix-variable-p ((var unique-ptr-ctype) analysis) nil)
-(defmethod fix-variable-p ((var atomic-ctype) analysis) nil)
-(defmethod fix-variable-p ((var dont-expose-ctype) analysis) nil)
-(defmethod fix-variable-p ((var dont-analyze-ctype) analysis) nil)
-(defmethod fix-variable-p ((var enum-ctype) analysis) nil)
-(defmethod fix-variable-p ((var smart-ptr-ctype) analysis) t)
-(defmethod fix-variable-p ((var tagged-pointer-ctype) analysis) t)
-(defmethod fix-variable-p ((var class-template-specialization-ctype) analysis) nil)
-(defmethod fix-variable-p ((var constant-array-ctype) analysis) nil)
+(defmethod fix-variable-p ((var unclassified-ctype) analysis)
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var lvalue-reference-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var builtin-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var dependent-name-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var template-type-parm-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var unclassified-template-specialization-ctype) analysis)
+  (declare (ignore analysis))
+  (format *debug-io* "unclassified-template-specialization-ctype -> ~a~%" var)
+  nil)
+(defmethod fix-variable-p ((var rvalue-reference-ctype) analysis)
+  (declare (ignore analysis))
+  (format *debug-io* "rvalue-reference-ctype -> ~a~%" var)
+  nil)
+(defmethod fix-variable-p ((var incomplete-array-ctype) analysis)
+  (declare (ignore analysis))
+  (format *debug-io* "incomplete-array-ctype -> ~a~%" var)
+  nil)
+(defmethod fix-variable-p ((var basic-string-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var std-map-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var shared-mutex-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var mutex-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var unique-ptr-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var atomic-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var dont-expose-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var dont-analyze-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var enum-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var smart-ptr-ctype) analysis) 
+  (declare (ignore analysis))
+  t)
+(defmethod fix-variable-p ((var tagged-pointer-ctype) analysis) 
+  (declare (ignore analysis))
+  t)
+(defmethod fix-variable-p ((var class-template-specialization-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
+(defmethod fix-variable-p ((var constant-array-ctype) analysis) 
+  (declare (ignore analysis))
+  nil)
 (defmethod fix-variable-p ((var unknown-ctype) analysis)
+  (declare (ignore analysis))
   (warn "fix-variable-p called with ~a" var)
   nil)
 (defmethod fix-variable-p ((var pointer-ctype) analysis)
@@ -3663,7 +3780,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var cxxrecord-ctype) analysis) 
   (contains-fixptr-p var (analysis-project analysis)))
 
-(defmethod fix-variable-p ((var injected-class-name-ctype) analysis) nil)
+(defmethod fix-variable-p ((var injected-class-name-ctype) analysis)
+  (declare (ignore analysis))
+  nil)
 
   
 (defgeneric fix-macro-name (var))                           
@@ -3685,6 +3804,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 (defun generate-code-for-global-non-symbol-variables (stream analysis)
   (maphash (lambda (k v)
+             (declare (ignore k))
              (when (and (fix-variable-p v analysis) (not (search "_sym_" (global-variable-name v))))
                (format stream " ~a(~a);~%" (fix-macro-name v) (global-variable-name v))))
            (project-global-variables (analysis-project analysis)))
@@ -3715,7 +3835,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (format (destination-stream dest) "   NULL~%" )
   (format (destination-stream dest) "};~%"))
 
-(defmacro do-generator (stream description-stream analysis &key table-name function-declaration function-prefix function-table-type generator jump-table-index-function)
+(defmacro do-generator (stream description-stream analysis &key table-name function-prefix generator)
   (let ((dest-gs (gensym)))
     `(let ((,dest-gs (make-destination :stream ,stream
 				       :table-name ,table-name
@@ -3760,27 +3880,20 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
         (format stream "#endif // defined(GC_STAMP_SELECTORS)~%")
         (do-generator stream fdesc analysis
           :table-name "OBJ_SCAN"
-          :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
           :function-prefix "obj_scan"
-          :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
-          :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
           :generator (lambda (dest anal)
                        (dolist (stamp (analysis-sorted-stamps anal))
                          (format (destination-helper-stream dest) "// StampWtag = ~a/~a~%" (stamp-key stamp) (stamp-value% stamp))
                          (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
         (do-generator stream fdesc analysis
           :table-name "OBJ_FINALIZE"
-          :function-declaration "void ~a(mps_addr_t client)"
           :function-prefix "obj_finalize"
-          :function-table-type "void (*OBJ_FINALIZE_table[])(mps_addr_t client)"
           :generator (lambda (dest anal)
                        (dolist (stamp (analysis-sorted-stamps anal))
                          (funcall (species-finalize (stamp-species stamp)) dest stamp anal))))
         (do-generator stream fdesc analysis
           :table-name "OBJ_DEALLOCATOR"
-          :function-declaration "void ~a(mps_addr_t client)"
           :function-prefix "obj_deallocate_unmanaged_instance"
-          :function-table-type "void (*OBJ_DEALLOCATOR_table[])(mps_addr_t client)"
           :generator (lambda (dest anal)
                        (dolist (stamp (analysis-sorted-stamps anal))
                          (funcall (species-deallocator (stamp-species stamp)) dest stamp anal))))
@@ -3795,7 +3908,8 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 
 (defun build-arguments-adjuster ()
   "Build a function that fixes up compile command arguments to run the static analyzer."
-  (lambda (args filename) 
+  (lambda (args filename)
+    (declare (ignore filename))
     (let ((result (concatenate 'vector args
                                (vector "-v" "-DRUNNING_MPSPREP" "-Wno-nullability-completeness"))))
       result)))
@@ -3994,6 +4108,7 @@ Run searches in *tools* on the source files in the compilation database."
                               (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
                               (save-project t)
                               (jobs 4))
+  (declare (ignorable output-file save-project))
   "* Arguments
 - test :: A list of files to run the search on, or NIL for all of them.
 - arguments-adjuster :: The arguments adjuster.
@@ -4032,6 +4147,7 @@ Run searches in *tools* on the source files in the compilation database."
           (values project output-file))))))
 
 (defun translate-include (args filename)
+  (declare (ignore filename))
   "* Arguments
 - args :: A vector of strings (compilation arguments)
 * Description
