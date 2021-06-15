@@ -56,24 +56,23 @@
 
 (defmacro with-dibuilder ((module) &rest body)
   `(let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module)))
-     (if *dbg-generate-dwarf*
-         (unwind-protect
-              (progn ,@body)
-           (llvm-sys:finalize *the-module-dibuilder*)
-           ;; add the flag that defines the Dwarf Version
-           (llvm-sys:add-module-flag *the-module*
-                                     (llvm-sys:mdnode-get (thread-local-llvm-context)
-                                                          (list
-                                                           (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                           (llvm-sys:mdstring-get (thread-local-llvm-context) "Dwarf Version")
-                                                           (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
-           (llvm-sys:add-module-flag *the-module*
-                                     (llvm-sys:mdnode-get (thread-local-llvm-context)
-                                                          (list
-                                                           (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                           (llvm-sys:mdstring-get (thread-local-llvm-context) "Debug Info Version")
-                                                           (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))))
-         (progn ,@body))))
+     (unwind-protect
+          (progn ,@body)
+       (when *dbg-generate-dwarf*
+         (llvm-sys:finalize *the-module-dibuilder*)
+         ;; add the flag that defines the Dwarf Version
+         (llvm-sys:add-module-flag *the-module*
+                                   (llvm-sys:mdnode-get (thread-local-llvm-context)
+                                                        (list
+                                                         (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                         (llvm-sys:mdstring-get (thread-local-llvm-context) "Dwarf Version")
+                                                         (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
+         (llvm-sys:add-module-flag *the-module*
+                                   (llvm-sys:mdnode-get (thread-local-llvm-context)
+                                                        (list
+                                                         (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                         (llvm-sys:mdstring-get (thread-local-llvm-context) "Debug Info Version")
+                                                         (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+)))))))))
     
 (defmacro with-dbg-compile-unit ((source-pathname) &rest body)
   (let ((path (gensym))
