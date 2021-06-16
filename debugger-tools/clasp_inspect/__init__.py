@@ -1,9 +1,9 @@
 
 from io import StringIO
 
-verbose = False
+verbose = True
 layout = None
-debugger = None
+debugger = False
 
 def dbg_print(msg):
     if (verbose):
@@ -226,7 +226,7 @@ def vaslistp(tptr):
     return (tptr&info["ints"]["IMMEDIATE_MASK"]==info["ints"]["VASLIST0_TAG"])
 
 def untag_vaslist(tptr):
-    return (tptr - info["ints"]["VASLIST1_TAG"])
+    return (tptr - info["ints"]["VASLIST0_TAG"])
 
 def read_unsigned_at_offset(debugger,verbose,base,offset):
     tptr = debugger.read_memory(base+offset,8)
@@ -292,11 +292,20 @@ def read_string(debugger,address,char_size,end):
         str += char_char
     return str
         
+def twos_comp(val, bits):
+    """compute the 2's complement of int value val"""
+    if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
+        val = val - (1 << bits)        # compute negative value
+    return val
 
 class Fixnum:
     def __init__(self,debugger,address):
         if (fixnump(address)):
-            self._Value = address >> info["ints"]["FIXNUM_SHIFT"]
+            val = address >> info["ints"]["FIXNUM_SHIFT"]
+            if ((val & (1<<61))>0):
+                self._Value = twos_comp(val,62)
+            else:
+                self._Value = val
             return
         raise("%x is not a fixnum" % address)
     def value(self):
@@ -309,13 +318,42 @@ class Fixnum:
 class Vaslist:
     def __init__(self,debugger,address):
         if (vaslistp(address)):
+            self._debugger = debugger
             self._Value = address
+            self._address = untag_vaslist(address)
+            self._register_save_area = debugger.read_memory(self._address+16,8)
+            self._gp_offset_cur = debugger.read_memory(self._address+8,8)
+            nargs = self._debugger.read_memory(self._register_save_area+8,8)
+            self._gp_offset_start = self._gp_offset_cur - (8*(nargs-6))
             return
         raise("%x is not a vaslist" % address)
     def value(self):
         return self._Value
     def __repr__(self):
-        return str(self._Value)
+        out = StringIO()
+        out.write("Vaslist: 0x%x reg_save_area: 0x%x\n" % (self._Value,self._register_save_area))
+        closure = self._debugger.read_memory(self._register_save_area,8)
+        nargs = self._debugger.read_memory(self._register_save_area+8,8)
+        farg0 = self._debugger.read_memory(self._register_save_area+16,8)
+        farg1 = self._debugger.read_memory(self._register_save_area+24,8)
+        farg2 = self._debugger.read_memory(self._register_save_area+32,8)
+        farg3 = self._debugger.read_memory(self._register_save_area+40,8)
+        out.write("   closure = 0x%x\n" % closure )
+        out.write("     nargs = %d\n" % nargs )
+        if (nargs>2):
+            out.write("     farg0 = 0x%x\n" % farg0 )
+        if (nargs>3):
+            out.write("     farg1 = 0x%x\n" % farg1 )
+        if (nargs>4):
+            out.write("     farg2 = 0x%x\n" % farg2 )
+        if (nargs>5):
+            out.write("     farg3 = 0x%x\n" % farg3 )
+        if (nargs>6):
+            for index in range(0,(nargs-6)):
+                rgp = self._gp_offset_start+8*index
+                val = self._debugger.read_memory(rgp,8)
+                out.write("     farg%d = 0x%x\n" % (index+4,val))
+        return out.getvalue()
     
 class T_O:
     def consp(self):
@@ -368,13 +406,27 @@ class General_O(T_O):
         
     def generalp(self):
         return True
-    def field(self,name):
+    def fieldWithName(self,name):
         field_ = None
         for idx in range(len(self._class._fields)):
             cur = self._class._fields[idx]
             if (cur._field_name==name):
                 field_ = cur
                 break
+        if (field_):
+            return field_
+        raise Exception("Could not find field named: %s" % name)
+
+    def offsetOfFieldWithName(self,name):
+        field_ = self.fieldWithName(name)
+        return field_._field_offset
+
+    def field_tagged_ptr(self,name):
+        field_ = self.fieldWithName(name)
+        return self._debugger.read_memory(self._address+field_._field_offset,8)
+
+    def field(self,name):
+        field_ = self.fieldWithName(name)
         if (field_):
             if (field_._data_type == 0):
                 offset = field_._field_offset
@@ -402,6 +454,30 @@ class Array_O(General_O):
     def __init__(self,debugger,address):
         General_O.__init__(self,debugger,address)
 
+class SimpleVector_O(Array_O):
+    def __init__(self,debugger,tptr):
+        Array_O.__init__(self,debugger,tptr)
+        self._end_offset = self._class._variable_capacity._end_offset
+        self._element_size = self._class._variable_capacity._element_size
+        self._data_offset = self._class._variable_array0._offset
+        self._debugger = debugger
+        self._end = debugger.read_memory(self._address+self._end_offset,8)
+    def str(self):
+        return "#<SimpleVector %d>"%self._end
+    def dump(self,start=0,end=None):
+        out = StringIO();
+        if (end==None):
+            end = self._end;
+        end = min(end,self._end);
+        start = max(0,start);
+        for x in range(start,end):
+           val = self._debugger.read_memory(self._data_offset+self._address+(x*self._element_size),self._element_size);
+           out.write("[%d] = %s\n" % (x,any_tagged_ptr(val).str()))
+        return out.getvalue();
+    def __repr__(self):
+        return self.str()
+
+    
 class SimpleCharacterString_O(Array_O):
     def __init__(self,debugger,tptr):
         Array_O.__init__(self,debugger,tptr)
@@ -451,6 +527,29 @@ class Symbol_O(General_O):
             return "Symbol[%s::%s]" % (self._Package.name().str(),self._Name.str())
         except:
             return "Symbol[%s %s]" % (self._Package, self._Name )
+
+class Rack_O(General_O):
+    def __init__(self,debugger,tptr):
+        General_O.__init__(self,debugger,tptr)
+    def __repr__(self):
+        return "#<Rack>"
+
+class Instance_O(General_O):
+    def __init__(self,debugger,tptr):
+        General_O.__init__(self,debugger,tptr)
+        self._debugger = debugger
+        self._Class_tagged_ptr = self.field_tagged_ptr("_Class")
+        self._Rack_tagged_ptr = self.field_tagged_ptr("_Rack")
+        dbg_print("Instance_O self._class._fields = %s" % self._class._fields)
+    def className(self):
+        return "Instance of something @0x%x" % self._Class_tagged_ptr 
+    def str(self):
+        return "#<a %s>" % self.className()
+    def dump(self,start=0,end=None):
+        return self.str()
+    def __repr__(self):
+        return self.str()
+
 
 def nextConvenienceCharacter():
     global convenience
@@ -524,6 +623,12 @@ def translate_tagged_ptr(debugger,tptr):
                     return SimpleBaseString_O(debugger,tptr)
                 if (name=="core::SimpleCharacterString_O"):
                     return SimpleCharacterString_O(debugger,tptr)
+                if (name=="core::SimpleVector_O"):
+                    return SimpleVector_O(debugger,tptr)
+                if (name=="core::Instance_O"):
+                    return Instance_O(debugger,tptr)
+                if (name=="core::Rack_O"):
+                    return Rack_O(debugger,tptr)
                 return General_O(debugger,tptr)
         return
     if (consp(tptr)):
@@ -554,6 +659,7 @@ def any_tagged_ptr(debugger,tptr):
     if (fixnump(tptr)):
         return Fixnum(debugger,tptr)
     if (vaslistp(tptr)):
+        dbg_print("vaslistp is True")
         return Vaslist(debugger,tptr)
 
 
@@ -617,6 +723,20 @@ def do_lisp_head_bytes(debugger_mod,arg):
     else:
         header = client - info["stampWtagMtagStruct"]._sizeof
     debugger_mod.dump_memory(header,bytes=True)
+
+def do_(debugger_mod,arg):
+    tptr = arg_to_tptr(debugger_mod,arg)
+    tag = (tptr & info["ints"]["IMMEDIATE_MASK"])
+    client = tptr - tag
+    if (tag == info["ints"]["GENERAL_TAG"]):
+        header = client - info["headerStruct"]._sizeof
+    else:
+        header = client - info["stampWtagMtagStruct"]._sizeof
+    debugger_mod.dump_memory(header,bytes=True)
+
+
+def dome():
+    print("In dome")
     
 load_clasp_layout()
 
