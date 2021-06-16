@@ -1400,6 +1400,7 @@ struct ErrorSimpleDepthCounter {
 
 
 
+DONT_OPTIMIZE_ALWAYS
 NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;

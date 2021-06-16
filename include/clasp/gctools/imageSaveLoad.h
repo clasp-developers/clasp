@@ -144,7 +144,7 @@ struct SymbolLookup {
   }
   
   bool lookupAddr(uintptr_t addr, std::string& name) {
-    printf("%s:%d:%s Lookup executable address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr );
+//    printf("%s:%d:%s Lookup executable address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr );
     std::map<std::uintptr_t,std::string>::iterator it = this->_addressToSymbol.find(addr-this->_adjustAddress);
     if (it == this->_addressToSymbol.end()) {
       return false;
