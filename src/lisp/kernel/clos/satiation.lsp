@@ -264,7 +264,10 @@
           collect outcome into outcome-cache
         collect (cons (coerce list-of-specializers 'vector) outcome)
           into entries
-        finally (return entries)))
+        nconc (remove-if-not (lambda (sp) (typep sp 'class))
+                             list-of-specializers)
+          into all-classes
+        finally (return (values entries all-classes))))
 
 ;;; Given an outcome, return a form that, when evaluated, returns an outcome
 ;;; similar to it.
@@ -395,17 +398,36 @@ a list (EQL object) - just like DEFMETHOD."
                  ,@(mapcar (lambda (form) (ext:constant-form-value form env)) lists))
       form))
 
+;;; This function checks that stamps at satiation time match stamps at load
+;;; time. If this is not true, objects will end up in methods for other
+;;; classes, which can cause very strange problems; verifying will check for
+;;; this ahead of time, when the precompiled discriminating function is loaded.
+(defun verify-stamp-consistency (alist)
+  (let ((inconsistent
+          (loop for (class . compile-stamp) in alist
+                unless (= (core:class-stamp-for-instances class)
+                          compile-stamp)
+                  collect class)))
+    (unless (null inconsistent)
+      (error "Stamps for the following classes changed between build and load time: ~a"
+             inconsistent))))
+
 ;;; Macro version of SATIATE, that the exported function sometimes expands into.
 (defmacro %satiate (generic-function-name &rest lists-of-specializer-names)
-  (let* ((generic-function (fdefinition generic-function-name))
-         (call-history (apply #'compile-time-call-history
-                              generic-function lists-of-specializer-names)))
-    `(let* ((gf (fdefinition ',generic-function-name)))
-       (append-generic-function-call-history
-        gf
-        ,(call-history-producer call-history (gf-arg-info generic-function)))
-       (set-funcallable-instance-function
-        gf ,(compile-time-discriminator generic-function call-history)))))
+  (let ((generic-function (fdefinition generic-function-name)))
+    (multiple-value-bind (call-history classes)
+        (apply #'compile-time-call-history
+               generic-function lists-of-specializer-names)
+      `(let* ((gf (fdefinition ',generic-function-name)))
+         (verify-stamp-consistency
+          '(,@(loop for class in classes
+                    collect (cons class
+                                  (core:class-stamp-for-instances class)))))
+         (append-generic-function-call-history
+          gf
+          ,(call-history-producer call-history (gf-arg-info generic-function)))
+         (set-funcallable-instance-function
+          gf ,(compile-time-discriminator generic-function call-history))))))
 
 ;;; Exported auxiliary version for the common case of wanting to skip recompilations
 ;;; of shared-initialize etc. Just pass it a list of class designators and it'll fix
