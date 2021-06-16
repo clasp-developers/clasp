@@ -894,9 +894,14 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 (define-condition unbound-slot (cell-error)
   ((instance :INITARG :INSTANCE :READER unbound-slot-instance))
   (:REPORT (lambda (condition stream)
-	     (format stream "The slot ~S in the object ~S is unbound."
-		     (cell-error-name condition)
-		     (unbound-slot-instance condition)))))
+             (handler-case
+	         (format stream "~@<The slot ~S in the object ~S is unbound.~@:>"
+		         (cell-error-name condition)
+		         (unbound-slot-instance condition))
+               (serious-condition ()
+                 (format stream "~@<The slot ~s is unbound in an instance of ~s.~@:>"
+                         (cell-error-name condition)
+                         (type-of (unbound-slot-instance condition))))))))
 
 (define-condition undefined-function (cell-error)
   ()
