@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -1742,6 +1743,80 @@ CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string
     return result;
   }
   SIMPLE_ERROR(BF("Handle Don't get here"));
+}
+
+
+CL_LAMBDA(filename &optional (max-lines 0) (approach 2))
+CL_DOCSTRING("Count number of lines in text file up to max-lines if max-lines is not 0. Use one of three approaches: 0=get(); 1=getline(); 2=mmap and search.");
+CL_DEFUN size_t core__countLinesInFile(const std::string& filename, size_t maxLines, bool approach) {
+  int numberOfLines = 0;
+  int charsSinceLastEol = 0;
+  std::string line;
+  if (approach==0) {
+    // Use get() - character at a time
+    std::ifstream myfile(filename);
+    do {
+      char c = myfile.get();
+      if (c == EOF) {
+        return numberOfLines + ((charsSinceLastEol>0) ? 1 : 0);
+      }
+      if (maxLines && (numberOfLines>=maxLines)) return numberOfLines;
+      if (c == '\n') {
+        ++numberOfLines;
+        charsSinceLastEol = 0;
+      } else {
+        ++charsSinceLastEol;
+      }
+      if ((numberOfLines & 0xffff) == 0) {
+        gctools::handle_all_queued_interrupts();
+      }
+    } while (true);
+  } else if (approach==1) {
+    // Use getline() - "line" at a time? (ha)
+    std::ifstream myfile(filename);
+    while (std::getline(myfile, line)) {
+      ++numberOfLines;
+      if (maxLines && (numberOfLines>=maxLines)) return numberOfLines;
+      if ((numberOfLines & 0xffff) == 0) {
+        gctools::handle_all_queued_interrupts();
+      }
+    }
+    return numberOfLines;
+  } else {
+    // Use mmap and memchr
+    int fd = open(filename.c_str(),O_RDONLY);
+    off_t fsize = lseek(fd, 0, SEEK_END);
+    lseek(fd,0,SEEK_SET);
+    void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
+    if (memory==MAP_FAILED) {
+      close(fd);
+      SIMPLE_ERROR(BF("Could not mmap %s because of %s") % (filename) % strerror(errno));
+    }
+    size_t remaining = fsize;
+    char* cur = (char*)memory;
+    char* prev = cur;
+    do {
+      cur = (char*)memchr(cur,'\n',remaining);
+      if (!cur) {
+        ++numberOfLines;
+        break;
+      }
+      cur++; // advance past '\n'
+      remaining = remaining-(cur-prev);
+      prev = cur;
+      if (maxLines && (numberOfLines>=maxLines)) break;
+      if (remaining==0) break;
+      if ((numberOfLines & 0xffff) == 0) {
+        gctools::handle_all_queued_interrupts();
+      }
+    } while (remaining);
+    int res = munmap(memory,fsize);
+    if (res!=0) {
+      SIMPLE_ERROR(BF("Could not munmap memory"));
+    }
+    close(fd);
+    return numberOfLines;
+  }
 }
 };
 
