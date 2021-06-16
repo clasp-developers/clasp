@@ -175,4 +175,8 @@ namespace gctools {
   };
 };
 
+namespace core {
+void registerOrDumpDtreeInfo(FILE* fout);
+};
+
 #endif /* _core_funcallable_instance_H_ */

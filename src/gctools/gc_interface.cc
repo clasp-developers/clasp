@@ -756,6 +756,7 @@ void dumpBoehmLayoutTables(FILE* fout) {
 #define Init_global_ints(_name_,_value_) fprintf(fout,"Init_global_ints(name=\"%s\",value=%d)\n", _name_,_value_);
   printf("Dumping interface\n");
   gctools::dump_data_types(fout,"");
+  core::registerOrDumpDtreeInfo(fout);
   Init_class_kind(core::T_O);
   Init_class_kind(core::General_O);
   Init_class_kind(core::Cons_O);
