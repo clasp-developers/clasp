@@ -664,6 +664,9 @@ void shutdown_gcroots_in_module(GCRootsInModule* roots) {
 CL_DEFUN Fixnum gctools__nextStampValue() {
   return Header_s::StampWtagMtag::shift_unshifted_stamp(global_NextUnshiftedStamp);
 }
+CL_DEFUN Fixnum gctools__NextUnshiftedStampValue() {
+  return global_NextUnshiftedStamp;
+}
 
 CL_LAMBDA(address args);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {

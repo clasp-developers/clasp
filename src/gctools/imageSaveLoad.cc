@@ -781,6 +781,9 @@ struct ISLFileHeader {
   uintptr_t _ObjectFileSize;
   uintptr_t _ObjectFileCount;
 
+  uintptr_t _NextUnshiftedClbindStamp;
+  uintptr_t _NextUnshiftedStamp;
+  
   size_t _global_JITDylibCounter;
   size_t _global_JITCompileCounter;
 
@@ -809,6 +812,8 @@ struct ISLFileHeader {
     printf(" %30s -> %lu\n", "size_t _SymbolRootsCount", _SymbolRootsCount );
     printf(" %30s -> %lu(0x%lx)\n", "uintptr_t _ObjectFileStart", _ObjectFileStart, _ObjectFileStart  );
     printf(" %30s -> %lu(0x%lx)\n", "uintptr_t _ObjectFileSize", _ObjectFileSize, _ObjectFileSize  );
+    printf(" %30s -> %lu(0x%lx)\n", "NextUnshiftedClbindStamp", _NextUnshiftedClbindStamp, _NextUnshiftedClbindStamp );
+    printf(" %30s -> %lu(0x%lx)\n", "NextUnshiftedStamp", _NextUnshiftedStamp, _NextUnshiftedStamp );
   }
 };
 
@@ -1878,7 +1883,13 @@ void image_save(const std::string& filename) {
   image._FileHeader->_SymbolRootsOffset = image._Memory->write_buffer( (char*)&roots3 ,  sizeof(ISLRootHeader_s)) - image._Memory->_BufferStart;
   image._FileHeader->_SymbolRootsCount = global_symbol_count;
   image._Memory->write_buffer( (char*)&global_symbols[0] ,  sizeof(void*)*global_symbol_count);
-  
+
+  //
+  // Save the NextUnshiftedStamp so when we load we will pick up where we left off
+  // in terms of assigning stamps.
+  //
+  image._FileHeader->_NextUnshiftedClbindStamp = gctools::global_NextUnshiftedClbindStamp;
+  image._FileHeader->_NextUnshiftedStamp = gctools::global_NextUnshiftedStamp;
   //
   // 5. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
   //
@@ -2153,6 +2164,10 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     abort();
   }
   ISLFileHeader* fileHeader = reinterpret_cast<ISLFileHeader*>(memory);
+  printf("%s:%d:%s  Read NextUnshiftedStamp from snapshot --> %lu    global_NextUnshiftedStamp --> %lu ... updating\n",
+         __FILE__, __LINE__, __FUNCTION__, fileHeader->_NextUnshiftedStamp, gctools::global_NextUnshiftedStamp.load() );
+  gctools::global_NextUnshiftedStamp.store(fileHeader->_NextUnshiftedStamp);
+  gctools::global_NextUnshiftedClbindStamp.store(fileHeader->_NextUnshiftedClbindStamp);
   char* objectFilesStartAddress = (char*)memory + fileHeader->_ObjectFileStart;
   if (!fileHeader->good_magic()) {
     printf("The file is not an image file magic_value should be %p - read... %p\n", (void*)MAGIC_NUMBER, (void*)fileHeader->_Magic );
