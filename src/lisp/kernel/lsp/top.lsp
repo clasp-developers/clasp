@@ -468,6 +468,13 @@ Use special code 0 to cancel this operation.")
   #-threads
   (single-threaded-terminal-interrupt))
 
+(defun princ-condition-to-string (condition)
+  (handler-case (princ-to-string condition)
+    (error (e)
+      (format nil "#<~a signaled while printing condition>"
+              (handler-case (class-name (class-of e))
+                (error () 'error))))))
+
 (defun tpl (&key ((:commands *tpl-commands*) tpl-commands)
 	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
 	      noprint
@@ -496,7 +503,8 @@ Use special code 0 to cancel this operation.")
 			   (t
 			    (format t "~&Debugger received error of type: ~A~%~A~%~
                                          Error flushed.~%"
-				    (type-of condition) condition)
+				    (type-of condition)
+                                    (princ-condition-to-string condition))
 			    (clear-input)
 			    (return-from rep t) ;; go back into the debugger loop.
 			    )
@@ -590,7 +598,8 @@ Use special code 0 to cancel this operation.")
      ((error (lambda (condition)
 	       (unless *debug-tpl-commands*
 		 (format t "~&Command aborted.~%Received condition of type: ~A~%~A"
-			 (type-of condition) condition)
+			 (type-of condition)
+                         (princ-condition-to-string condition))
 		 (clear-input)
 		 (return-from tpl-command nil)
 		 )
@@ -939,7 +948,8 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
            (*readtable* (or *break-readtable* *readtable*))
 	   (*break-condition* condition)
            (*break-message* (format nil "~&Condition of type: ~A~%~A~%"
-				    (type-of condition) condition))
+				    (type-of condition)
+                                    (princ-condition-to-string condition)))
            (*break-level* (1+ *break-level*))
            (break-level *break-level*)
            (*break-env* nil)
@@ -978,7 +988,7 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
 
 (defun non-debugger (condition)
   (format *error-output* "~&Condition of type: ~a~%~a~%"
-          (type-of condition) condition)
+          (type-of condition) (princ-condition-to-string condition))
   (let ((clasp-debug:*frame-filters* nil))
     (clasp-debug:print-backtrace :stream *error-output*
                                  :source-positions t

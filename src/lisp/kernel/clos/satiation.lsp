@@ -251,7 +251,6 @@
 
 (defun compile-time-call-history (generic-function &rest lists-of-specializer-names)
   (loop with mc = (generic-function-method-combination generic-function)
-        with all-methods = nil
         for list-of-specializer-names in lists-of-specializer-names
         for list-of-specializers
           = (coerce-to-list-of-specializers list-of-specializer-names)
@@ -263,10 +262,9 @@
                           (compute-outcome generic-function mc am list-of-specializers))
         when (not cached-outcome)
           collect outcome into outcome-cache
-        do (setf all-methods (union all-methods am))
         collect (cons (coerce list-of-specializers 'vector) outcome)
           into entries
-        finally (return (values entries all-methods))))
+        finally (return entries)))
 
 ;;; Given an outcome, return a form that, when evaluated, returns an outcome
 ;;; similar to it.
@@ -399,15 +397,15 @@ a list (EQL object) - just like DEFMETHOD."
 
 ;;; Macro version of SATIATE, that the exported function sometimes expands into.
 (defmacro %satiate (generic-function-name &rest lists-of-specializer-names)
-  (let ((generic-function (fdefinition generic-function-name)))
-    (multiple-value-bind (call-history all-methods)
-        (apply #'compile-time-call-history generic-function lists-of-specializer-names)
-      (declare (ignore all-methods))
-      `(let* ((gf (fdefinition ',generic-function-name)))
-         (append-generic-function-call-history
-          gf ,(call-history-producer call-history (gf-arg-info generic-function)))
-         (set-funcallable-instance-function
-          gf ,(compile-time-discriminator generic-function call-history))))))
+  (let* ((generic-function (fdefinition generic-function-name))
+         (call-history (apply #'compile-time-call-history
+                              generic-function lists-of-specializer-names)))
+    `(let* ((gf (fdefinition ',generic-function-name)))
+       (append-generic-function-call-history
+        gf
+        ,(call-history-producer call-history (gf-arg-info generic-function)))
+       (set-funcallable-instance-function
+        gf ,(compile-time-discriminator generic-function call-history)))))
 
 ;;; Exported auxiliary version for the common case of wanting to skip recompilations
 ;;; of shared-initialize etc. Just pass it a list of class designators and it'll fix
