@@ -1190,16 +1190,16 @@ uint Lisp_O::nextEnvironmentId() {
 void dumpDebuggingLayouts(const std::string& filename) {
   #if defined(USE_PRECISE_GC)
   FILE* fout = fopen(filename.c_str(),"w");
-    gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
-    llvmo::dump_objects_for_lldb(fout,"");
-    fclose(fout);
-    printf("Wrote class layouts for lldb interface to %s\n", filename.c_str());
+  gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
+  llvmo::dump_objects_for_lldb(fout,"");
+  fclose(fout);
+  printf("Wrote class layouts for lldb interface to %s\n", filename.c_str());
 #else
-    FILE* fout = fopen(filename.c_str(),"w");
-    dumpBoehmLayoutTables(fout);
-    llvmo::dump_objects_for_lldb(fout,"");
-    fclose(fout);
-    printf("Wrote class layouts for lldb interface to %s\n", filename.c_str());
+  FILE* fout = fopen(filename.c_str(),"w");
+  dumpBoehmLayoutTables(fout);
+  llvmo::dump_objects_for_lldb(fout,"");
+  fclose(fout);
+  printf("Wrote class layouts for lldb interface to %s\n", filename.c_str());
 #endif
 }
 

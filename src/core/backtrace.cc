@@ -138,6 +138,7 @@ static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
   }
 }
 
+__attribute__((optnone))
 static void args_from_offset(void* frameptr, int32_t offset,
                              T_sp& closure, T_sp& args) {
   if (frameptr) {
