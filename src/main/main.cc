@@ -352,7 +352,14 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
     printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
-    core::dumpDebuggingLayouts();
+    stringstream ss;
+    char* username = getenv("USER");
+    if (!username) {
+      printf("Could not get USER environment variable\n");
+      exit(1);
+    }
+    ss << "/tmp/clasp_layouts_" << getenv("USER");
+    core::dumpDebuggingLayouts(ss.str());
   }
 
     // Create the one global CommandLineOptions object and do some minimal argument processing
@@ -566,7 +573,18 @@ int main( int argc, char *argv[] )
 
     if (getenv("CLASP_DEBUGGER_SUPPORT")) {
       printf("%s:%d:%s  Setting up clasp for debugging - writing PID to /tmp/clasp_pid\n", __FILE__, __LINE__, __FUNCTION__);
-      FILE* fout = fopen("/tmp/clasp_pid","w");
+      stringstream ss;
+      char* username = getenv("USER");
+      if (!username) {
+        printf("%s:%d:%s Could not get USER environment variable\n", __FILE__, __LINE__, __FUNCTION__ );
+        exit(1);
+      }
+      ss << "/tmp/clasp_pid_" << getenv("USER");
+      FILE* fout = fopen(ss.str().c_str(),"w");
+      if (!fout) {
+        printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
+        exit(1);
+      }
       fprintf(fout,"%d",getpid());
       fclose(fout);
     }

@@ -989,7 +989,7 @@ FILE* monitor_file(const std::string& filename_prefix);
 #endif
 extern bool global_Started;
 
-void dumpDebuggingLayouts(const std::string& filename = "/tmp/clasp_layout.py");
+void dumpDebuggingLayouts(const std::string& filename);
 T_mv cl__intern(String_sp symbol_name, T_sp package_desig);
 };
 

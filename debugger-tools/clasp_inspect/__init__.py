@@ -1,4 +1,4 @@
-
+import os
 from io import StringIO
 
 verbose = True
@@ -11,7 +11,7 @@ def dbg_print(msg):
 
 def load_clasp_layout():
     #print( "Loading /tmp/clasp_layout.py 2")
-    filename = "/tmp/clasp_layout.py"
+    filename = "/tmp/clasp_layout_%s.py" % os.getenv("USER")
     with open(filename, "rb") as source_file:
         code = compile(source_file.read(), filename, "exec")
     exec(code)
