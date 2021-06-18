@@ -283,7 +283,8 @@ SYMBOL_EXPORT_SC_(ClPkg, subseq);
 SYMBOL_EXPORT_SC_(CorePkg, make_atom_cst);
 SYMBOL_EXPORT_SC_(CorePkg, make_cons_cst);
 SYMBOL_EXPORT_SC_(CorePkg, setf_subseq);
-SYMBOL_EXPORT_SC_(CorePkg,STARextension_startup_loadsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARextension_startup_loadsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARextension_startup_evalsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, multiple_value_foreign_call);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call_pointer);
@@ -1217,6 +1218,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
 //  printf("%s:%d:%s Initializing *extension-startup-loads* -> %s\n", __FILE__, __LINE__, __FUNCTION__, CLASP_EXTENSION_STARTUP_LOADS );
   _sym_STARextension_startup_loadsSTAR->defparameter(generateStartupLoads(CLASP_EXTENSION_STARTUP_LOADS));
+  _sym_STARextension_startup_evalsSTAR->defparameter(_Nil<core::T_O>());
   SimpleBaseString_sp sbsr1 = SimpleBaseString_O::make("SYSPMNR");
   SimpleBaseString_sp sbsw1 = SimpleBaseString_O::make("SYSPMNW");
   _lisp->_Roots._Finalizers = WeakKeyHashTable_O::create();

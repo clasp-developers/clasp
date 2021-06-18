@@ -52,24 +52,6 @@ THE SOFTWARE.
 namespace core {
 
 
-struct BundleDirectories {
-  std::filesystem::path _StartupWorkingDir;
-  std::filesystem::path _InstallDir;
-  std::filesystem::path _ExecutableDir;
-  std::filesystem::path _ContentsDir;
-  std::filesystem::path _ResourcesDir;
-  std::filesystem::path _LispSourceDir;
-  std::filesystem::path _GeneratedDir;
-  std::filesystem::path _SourceDir;
-  std::filesystem::path _IncludeDir;
-  std::filesystem::path _LibDir;
-  std::filesystem::path _DatabasesDir;
-  std::filesystem::path _FaslDir;
-  std::filesystem::path _BitcodeDir;
-  std::filesystem::path _QuicklispDir;
-};
-
-
 bool safe_is_directory(const std::filesystem::path& path) {
   try {
     return std::filesystem::is_directory(path);

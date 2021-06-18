@@ -1352,9 +1352,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     dumpDebuggingLayouts(options._DescribeFile);
   }
     
-  if (options._HasImageFile) {
+  if (options._StartupFileP) {
     SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
-    _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(SimpleBaseString_O::make(options._ImageFile)));
+    _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(SimpleBaseString_O::make(options._StartupFile)));
   } else {
     _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._Stage));
   }

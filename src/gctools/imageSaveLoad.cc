@@ -2171,8 +2171,8 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   gctools::global_NextUnshiftedClbindStamp.store(fileHeader->_NextUnshiftedClbindStamp);
   char* objectFilesStartAddress = (char*)memory + fileHeader->_ObjectFileStart;
   if (!fileHeader->good_magic()) {
-    printf("The file is not an image file magic_value should be %p - read... %p\n", (void*)MAGIC_NUMBER, (void*)fileHeader->_Magic );
-    exit(1);
+    printf("The file %s is not a snapshot file magic_value should be %p - read... %p\n", filename.c_str(), (void*)MAGIC_NUMBER, (void*)fileHeader->_Magic );
+    abort();
   }
   gctools::clasp_ptr_t islbuffer = (gctools::clasp_ptr_t)((char*)memory + fileHeader->_MemoryStart);
   gctools::clasp_ptr_t islend = islbuffer+fileHeader->_MemorySize;

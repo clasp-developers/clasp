@@ -69,8 +69,8 @@ void process_clasp_arguments(CommandLineOptions* options)
     if (arg == "-h" || arg == "--help") {
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
-             "-i/--image file      - Use the file as the boot image\n"
-             "-T/--type (snapshot|image) - Set the type of the image file. (image == default for now)\n"             
+             "-i/--image file      - Use the file as the boot image. If file ends in .snapshot then treat as a snapshot.\n"
+             "-T/--type (default|snapshot|image) - Set the type of the default startup file to use (default means snapshot->image).\n"             
              "-g/--debug           - Describe the clasp data structures for lldb Python API to /tmp/clasp.py\n"
              "-d/--describe [file] - Describe the clasp data structures for lldb Python API [file] default is /tmp/clasp.py\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
@@ -199,13 +199,14 @@ void process_clasp_arguments(CommandLineOptions* options)
       iarg++;
     } else if (arg == "-T" || arg == "--type") {
       std::string type = options->_RawArguments[iarg+1];
-      if (type == "snapshot" || type == "SNAPSHOT" || type == "Snapshot" ) {
-        options->_ImageType = cloSnapshot;
+      if (type == "default" || type == "DEFAULT" || type == "Default" ) {
+        options->_DefaultStartupType = cloDefault;
+      } else if (type == "snapshot" || type == "SNAPSHOT" || type == "Snapshot" ) {
+        options->_DefaultStartupType = cloSnapshot;
       } else if (type == "image" || type == "IMAGE" || type == "Image" ) {
-        options->_ImageType = cloImage;
+        options->_DefaultStartupType = cloImage;
       } else {
-        printf("Illegal argument for --type, legal values (snapshot|image)\n");
-        std::exit(1);
+        options->_DefaultStartupType = cloDefault;
       }
       iarg++;
     } else if (arg == "--rc") {
@@ -233,9 +234,15 @@ void process_clasp_arguments(CommandLineOptions* options)
       iarg++;
     } else if (arg == "-i" || arg == "--image") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --image,-i"));
-      options->_HasImageFile = true;
-      options->_ImageFile = options->_RawArguments[iarg + 1];
+      options->_StartupFileP = true;
+      std::string startupFile = options->_RawArguments[iarg + 1];
       iarg++;
+      options->_StartupFile = startupFile;
+      if (startupFile.compare(startupFile.length()-9,9,".snapshot")==0) {
+        options->_StartupFileType = cloSnapshot;
+      } else {
+        options->_StartupFileType = cloImage;
+      }
     } else if (arg == "-g" || arg == "--debug") {
       options->_HasDescribeFile = true;
       options->_DescribeFile = "/tmp/clasp-layout.py";
@@ -273,11 +280,12 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _DontLoadImage(false),
     _DontLoadInitLsp(false),
     _DisableMpi(false),
-    _HasImageFile(false),
+    _StartupFileP(false),
+    _StartupFileType(cloDefault),
     _HasDescribeFile(false),
     _Stage('c'),
-    _ImageFile(""),
-    _ImageType(cloImage),
+    _StartupFile(""),
+    _DefaultStartupType(cloDefault),
     _ExportedSymbolsAccumulate(false),
     _GotRandomNumberSeed(false),
     _RandomNumberSeed(0),

@@ -38,7 +38,23 @@ THE SOFTWARE.
 
 namespace core {
 
-  struct BundleDirectories;
+struct BundleDirectories {
+  std::filesystem::path _StartupWorkingDir;
+  std::filesystem::path _InstallDir;
+  std::filesystem::path _ExecutableDir;
+  std::filesystem::path _ContentsDir;
+  std::filesystem::path _ResourcesDir;
+  std::filesystem::path _LispSourceDir;
+  std::filesystem::path _GeneratedDir;
+  std::filesystem::path _SourceDir;
+  std::filesystem::path _IncludeDir;
+  std::filesystem::path _LibDir;
+  std::filesystem::path _DatabasesDir;
+  std::filesystem::path _FaslDir;
+  std::filesystem::path _BitcodeDir;
+  std::filesystem::path _QuicklispDir;
+};
+
   
 /*! Maintains the file paths to the different directories of the Cando bundle
  */
@@ -47,7 +63,7 @@ class Bundle {
   friend mps_res_t globals_scan(mps_ss_t ss, void *p, size_t s);
 #endif
 
-private:
+public:
   bool _Initialized;
   BundleDirectories* _Directories;
 

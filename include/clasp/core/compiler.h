@@ -28,6 +28,7 @@ THE SOFTWARE.
 #define _core_compiler_H_
 
 #include <clasp/core/object.h>
+#include <clasp/core/bundle.h>
 
 namespace llvmo {
 FORWARD(ClaspJIT);
@@ -35,6 +36,7 @@ FORWARD(ClaspJIT);
 
 namespace core {
 
+std::string startup_snapshot_name(Bundle& bundle);
 T_sp core__startup_image_pathname(char stage);
 T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
 T_mv core__load_binary(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);

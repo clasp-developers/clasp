@@ -441,6 +441,23 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   return Values(_Nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
+/*! Return the default snapshot name
+ */
+std::string startup_snapshot_name(Bundle& bundle) {
+  stringstream ss;
+  std::string executablePath;
+  core::executablePath(executablePath);
+  std::string name;
+  size_t pos = executablePath.find_last_of('/');
+  if (pos == std::string::npos) {
+    name = executablePath;
+  } else {
+    name = executablePath.substr(pos+1);
+  }
+  ss << bundle._Directories->_FaslDir.string() << "/" << name << ".snapshot";
+  return ss.str();
+};
+
 CL_LAMBDA("&optional (stage #\\c)");
 CL_DECLARE();
 CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");

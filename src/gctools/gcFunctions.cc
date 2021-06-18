@@ -29,6 +29,7 @@ int gcFunctions_after;
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/pathname.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/lispStream.h>
@@ -43,6 +44,7 @@ int gcFunctions_after;
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/wrappers.h>
 
 
@@ -833,23 +835,23 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 
 namespace gctools {
 
-CL_DEFUN void gctools__save_lisp_and_die(const std::string& filename) {
-#if 0
+CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename) {
 #ifdef USE_PRECISE_GC
-  imageSaveLoad::image_save(filename);
-#endif
-#else
-#ifdef USE_PRECISE_GC
-  throw(core::SaveLispAndDie(filename));
+  std::string sFilename = "";
+  if (filename.nilp()) {
+    sFilename = startup_snapshot_name(*globals_->_Bundle);
+    printf("%s:%d:%s Saving snapshot to %s\n", __FILE__, __LINE__, __FUNCTION__, sFilename.c_str());
+  } else {
+    sFilename = gc::As<core::String_sp>(filename)->get_std_string();
+  }
+  throw(core::SaveLispAndDie(sFilename));
 #else
   SIMPLE_ERROR(BF("save-lisp-and-die only works for precise GC"));
 #endif
-#endif
-  
 }
 
 CL_DEFUN void gctools__slad() {
-  gctools__save_lisp_and_die("test.snapshot");
+  gctools__save_lisp_and_die(_Nil<core::T_O>());
 }
 
 
