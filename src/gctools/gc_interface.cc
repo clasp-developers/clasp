@@ -741,6 +741,7 @@ void initialize_classes_and_methods()
 
 
 void dumpBoehmLayoutTables(FILE* fout) {
+  fprintf(fout, "# dumpBoehmLayoutTables when static analyzer output is not available\n" );
 #define Init_class_kind(_class_) \
   fprintf(fout, "Init_class_kind( stamp=%d, name=\"%s\", size=%lu)\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
 #define Init_templated_kind(_class_) \
@@ -826,7 +827,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::ClassHolder_O);
      Init_class_kind(core::SymbolToEnumConverter_O);
      Init_class_kind(llvmo::Attribute_O);
-     Init_class_kind(core::LambdaListHandler_O);
      Init_class_kind(llvmo::AttributeSet_O);
      Init_class_kind(core::ClassRepCreator_O);
      Init_class_kind(core::DerivableCxxClassCreator_O);
@@ -925,7 +925,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::AbstractSimpleVector_O);
      Init_class_kind(core::SimpleString_O);
      Init_class_kind(core::SimpleCharacterString_O);
-     Init_class_kind(core::SimpleBaseString_O);
      Init_class_kind(core::SimpleVector_int16_t_O);
      Init_class_kind(core::SimpleVector_byte16_t_O);
      Init_class_kind(core::SimpleBitVector_O);
@@ -1132,7 +1131,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::UserData_O);
      Init_class_kind(core::Record_O);
      Init_class_kind(clbind::ClassRegistry_O);
-     Init_class_kind(core::Cons_O);
      Init_class_kind(asttooling::AstVisitor_O);
 
      Init_templated_kind(core::WrappedPointer_O);
