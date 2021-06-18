@@ -407,6 +407,7 @@ void encodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Cod
   uintptr_t codeStart = (uintptr_t)code->codeStart();
   if (!codeStart) {
     printf("%s:%d:%s The start address for code: %p can not be zero!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() );
+    abort();
   }
   uintptr_t result = (((uintptr_t)firstByte<<56) | (address - codeStart));
   DBG_SL_ENTRY_POINT(BF("base: %p encoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
