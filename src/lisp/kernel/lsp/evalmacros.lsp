@@ -362,6 +362,9 @@ values of the last FORM.  If no FORM is given, returns NIL."
 (defmacro sys::until (test &body body)
   (while-until test body 'unless))
 
+(defun si::simple-program-error (datum &rest arguments)
+  (signal-simple-error 'simple-program-error nil datum arguments))
+
 (defmacro case (keyform &rest clauses)
   (let* ((last t)
 	 (form nil)
@@ -373,10 +376,9 @@ values of the last FORM.  If no FORM is given, returns NIL."
         (let ((selector (car clause)))
           (cond ((or (eq selector T) (eq selector 'OTHERWISE))
                  (unless last
-                   (si::signal-simple-error
-                    'simple-program-error nil
+                   (simple-program-error
                     "CASE: The selector ~A can only appear at the last position."
-                    (list selector)))
+                    selector))
                  (setq form `(PROGN ,@(cdr clause))))
                 ((listp selector)
                  (setq form `(IF (or ,@(ext:with-current-source-form (selector)

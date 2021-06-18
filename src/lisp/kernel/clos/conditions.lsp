@@ -338,10 +338,9 @@
                                      (ext:with-current-source-form (binding)
                                        (unless (and (listp binding)
                                                     (= (length binding) 2))
-                                         (signal-simple-error
-                                          'simple-program-error nil
+                                         (simple-program-error
                                           "Ill-formed handler binding ~s."
-                                          (list binding)))
+                                          binding))
                                        `(cons (lambda (condition)
                                                 (typep condition ',(car binding)))
                                               ,(cadr binding))))
