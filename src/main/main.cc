@@ -419,6 +419,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   // Figure out if we are starting up with a snapshot or an image
   //
   bool loadSnapshotFile = false;
+#ifdef USE_PRECISE_GC  
   std::string snapshotFileName = "";
   if (!start_of_snapshot) {
     if (core::global_options->_StartupFileP &&
@@ -440,9 +441,14 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
       }
     }
   }
+#endif
   if ( loadSnapshotFile ||          // We want to load a snapshot
        (start_of_snapshot != NULL) // We found an embedded snapshot
       ) {
+    if (core::startup_snapshot_is_stale(snapshotFileName)) {
+      printf("The startup snapshot file %s is stale - remove it or create a new one\n", snapshotFileName.c_str() );
+      std::exit(1);
+    }
 #ifdef USE_PRECISE_GC
     llvmo::initialize_llvm();
 

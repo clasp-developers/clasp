@@ -172,6 +172,7 @@ class clasp_task(Task.Task):
 
         cmd = [ clasp_exe_path,
                 "--norc",
+                "--type", "image",
                 "--disable-mpi",
         ]
 

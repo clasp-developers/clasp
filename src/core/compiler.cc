@@ -458,6 +458,19 @@ std::string startup_snapshot_name(Bundle& bundle) {
   return ss.str();
 };
 
+
+bool startup_snapshot_is_stale(const std::string& snapshotFileName) {
+  stringstream ss;
+  std::string executablePath;
+  core::executablePath(executablePath);
+  std::filesystem::path executable(executablePath);
+  std::filesystem::path snapshot(snapshotFileName);
+  if (!std::filesystem::exists(snapshot)) return true;
+  return (std::filesystem::last_write_time(executable)
+          > std::filesystem::last_write_time(snapshot));
+};
+
+
 CL_LAMBDA("&optional (stage #\\c)");
 CL_DECLARE();
 CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");

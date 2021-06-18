@@ -1511,7 +1511,6 @@ def build(bld):
     bld.extensions_builders = []
     bld.extension_startup_load_output_nodes = []
     bld.iclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='i'))
-    bld.bclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='b'))
 
     bld.cclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'c')
     bld.cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % bld.variant_obj.fasl_dir(stage='c')))

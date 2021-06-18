@@ -835,6 +835,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 
 namespace gctools {
 
+CL_LAMBDA(&optional filename);
 CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename) {
 #ifdef USE_PRECISE_GC
   std::string sFilename = "";
