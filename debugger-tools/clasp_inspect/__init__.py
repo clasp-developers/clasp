@@ -1,7 +1,7 @@
 import os
 from io import StringIO
 
-verbose = True
+verbose = False   # turns on dbg_print(xxxx)
 layout = None
 debugger = False
 
@@ -167,8 +167,9 @@ def Init__variable_array0(stamp,name,offset):
     classKind._variable_array0 = VariableArray0(name,offset)
 
 def Init__variable_capacity(stamp,element_size,end_offset,capacity_offset):
-    # print("Init__variable_capacity stamp = %d\n" % stamp)
+    dbg_print("Init__variable_capacity stamp = %d\n" % stamp)
     classKind = global_kinds[stamp]
+    dbg_print("Init__variable_capacity for %s" % classKind._name )
     classKind._variable_capacity = VariableCapacity(element_size,end_offset,capacity_offset)
 
 def Init__variable_field(stamp,index,data_type,field_name,field_offset):
