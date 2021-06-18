@@ -445,11 +445,11 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   if ( loadSnapshotFile ||          // We want to load a snapshot
        (start_of_snapshot != NULL) // We found an embedded snapshot
       ) {
+#ifdef USE_PRECISE_GC
     if (core::startup_snapshot_is_stale(snapshotFileName)) {
       printf("The startup snapshot file %s is stale - remove it or create a new one\n", snapshotFileName.c_str() );
       std::exit(1);
     }
-#ifdef USE_PRECISE_GC
     llvmo::initialize_llvm();
 
     clbind::initializeCastGraph();
