@@ -358,7 +358,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
       printf("Could not get USER environment variable\n");
       exit(1);
     }
-    ss << "/tmp/clasp_layouts_" << getenv("USER");
+    ss << "/tmp/clasp_layout_" << getenv("USER") << ".py";
     core::dumpDebuggingLayouts(ss.str());
   }
 
