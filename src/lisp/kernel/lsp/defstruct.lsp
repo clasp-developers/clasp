@@ -105,7 +105,9 @@
 ;;; (and thereby, interning) before we do much susbstantial processing.
 
 (defun error-defstruct-slot-syntax (slot-description)
-  (error "~a is not a valid DEFSTRUCT slot specification." slot-description))
+  (signal-simple-error
+   'simple-program-error nil
+   "~a is not a valid DEFSTRUCT slot specification." (list slot-description)))
 
 (defun defstruct-accessor-name (conc-name slot-name)
   ;; NOTE: No conc-name is not the same as a conc-name of "",
@@ -580,8 +582,10 @@
             ((and (consp type) (eq (car type) 'vector)
                   (consp (cdr type)) (null (cddr type)))
              (values 'vector (second type)))
-            (t (error "~a is not a valid :TYPE in structure definition for ~a"
-                      type name)))
+            (t (signal-simple-error
+                'simple-program-error nil
+                "~a is not a valid :TYPE in structure definition for ~a"
+                (list type name))))
     `(progn
        (eval-when (:compile-toplevel :load-toplevel :execute)
          (setf (structure-type ',name) ',type-base
@@ -666,16 +670,22 @@
 
 (defun check-defstruct-option-too-many-args (name extra)
   (unless (null extra)
-    (error "Too many options to ~a" name)))
+    (signal-simple-error
+     'simple-program-error nil
+     "Too many options to ~a" (list name))))
 
 (defun error-defstruct-option-duplicated (name)
-  (error "Multiple ~a options to defstruct" name))
+  (signal-simple-error 'simple-program-error nil
+                       "Multiple ~a options to defstruct" (list name)))
 
 (defun error-defstruct-options-incompatible (name1 name2)
-  (error "~a and ~a options to defstruct are incompatible" name1 name2))
+  (signal-simple-error 'simple-program-error nil
+                       "~a and ~a options to defstruct are incompatible"
+                       (list name1 name2)))
 
 (defun error-unknown-defstruct-option (name)
-  (error "~a is not a valid option to defstruct" name))
+  (signal-simple-error 'simple-program-error nil
+                       "~a is not a valid option to defstruct" (list name)))
 
 (defun default-constructor-name (name)
   (intern (base-string-concatenate "MAKE-" name)))
@@ -700,8 +710,10 @@
             ((symbolp name&opts)
              (values name&opts nil))
             (t
-             (error "Name of a structure class must be a symbol, not ~a"
-                    name&opts)))
+             (signal-simple-error
+              'simple-program-error nil
+              "Name of a structure class must be a symbol, not ~a"
+              (list name&opts))))
     (let (type include conc-name seen-conc-name
           overriding-slot-descriptions
           constructors kw-constructors no-constructor
@@ -719,7 +731,9 @@
                   ((:conc-name)
                    (check-defstruct-option-too-many-args :conc-name rest)
                    (if seen-conc-name
-                       (error "Specified ~a more than once" :conc-name)
+                       (signal-simple-error
+                        'simple-program-error nil
+                        "Specified ~a more than once" (list :conc-name))
                        (setq conc-name (if (null second)
                                            nil
                                            (string second))
@@ -740,7 +754,9 @@
                        (error-defstruct-option-duplicated :copier)
                        (setq seen-copier t))
                    (unless (symbolp second)
-                     (error "~a option must specify a symbol" :copier))
+                     (signal-simple-error
+                      'simple-program-error nil
+                      "~a option must specify a symbol" (list :copier)))
                    (setq copier second))
                   ((:predicate)
                    (check-defstruct-option-too-many-args :predicate rest)
@@ -748,7 +764,9 @@
                        (error-defstruct-option-duplicated :predicate)
                        (setq seen-predicate t))
                    (unless (symbolp second)
-                     (error "~a option must specify a symbol" :predicate))
+                     (signal-simple-error
+                      'simple-program-error nil
+                      "~a option must specify a symbol" (list :predicate)))
                    (setq predicate second))
                   ((:initial-offset)
                    (check-defstruct-option-too-many-args :initial-offset rest)
@@ -756,8 +774,10 @@
                        (error-defstruct-option-duplicated :initial-offset)
                        (setq seen-initial-offset t))
                    (unless (and (integerp second) (>= second 0))
-                     (error "~a option must specify a nonnegative integer"
-                            :initial-offset))
+                     (signal-simple-error
+                      'simple-program-error nil
+                      "~a option must specify a nonnegative integer"
+                      (list :initial-offset)))
                    (setq initial-offset second))
                   ((:print-function)
                    (check-defstruct-option-too-many-args :print-function rest)
@@ -765,16 +785,20 @@
                      (error-defstruct-option-duplicated :print-function))
                    (if second
                        (setq print-function second)
-                       (error "~a option must specify a function name"
-                              :print-function)))
+                       (signal-simple-error
+                        'simple-program-error nil
+                        "~a option must specify a function name"
+                        (list :print-function))))
                   ((:print-object)
                    (check-defstruct-option-too-many-args :print-object rest)
                    (when print-object
                      (error-defstruct-option-duplicated :print-object))
                    (if second
                        (setq print-object second)
-                       (error "~a option must specify a function name, not NIL"
-                              :print-object)))
+                       (signal-simple-error
+                        'simple-program-error nil
+                        "~a option must specify a function name, not NIL"
+                        (list :print-object))))
                   ((:type)
                    (check-defstruct-option-too-many-args :type rest)
                    (if type
@@ -782,7 +806,9 @@
                        (setq type second)))
                   ((:include)
                    (if (null second)
-                       (error "NIL is not a valid included structure name")
+                       (signal-simple-error
+                        'simple-program-error nil
+                        "NIL is not a valid included structure name" nil)
                        (setq include second))
                    (setq overriding-slot-descriptions rest))
                   (otherwise
@@ -793,7 +819,9 @@
                    (push (default-constructor-name name) kw-constructors))
                   ((:conc-name)
                    (if seen-conc-name
-                       (error "Specified ~a more than once" :conc-name)
+                       (signal-simple-error
+                        'simple-program-error nil
+                        "Specified ~a more than once" (list :conc-name))
                        (setq conc-name nil seen-conc-name t)))
                   ((:copier)
                    (if seen-copier
@@ -808,8 +836,10 @@
                   ((:print-function :print-object)) ; FIXME: What do these mean...?
                   ((:named)
                    (cond ((consp option)
-                          (error "~a was specified but is invalid syntax - it should just be ~a"
-                                 option :named))
+                          (signal-simple-error
+                           'simple-program-error nil
+                           "~a was specified but is invalid syntax - it should just be ~a"
+                           (list option :named)))
                          (named
                           (error-defstruct-option-duplicated :named))
                          (t (setq named t))))
@@ -819,8 +849,10 @@
       ;; and set defaults.
       (if no-constructor
           (unless (and (null constructors) (null kw-constructors))
-            (error "~a was specified, but there were other ~a options"
-                   '(:constructor nil) :constructor))
+            (signal-simple-error
+             'simple-program-error nil
+             "~a was specified, but there were other ~a options"
+             (list '(:constructor nil) :constructor)))
           (when (and (null constructors) (null kw-constructors))
             (push (default-constructor-name name) kw-constructors)))
       (when (and (not seen-copier) (null copier))
@@ -828,8 +860,10 @@
       ;; default predicate + consistency
       (if (and type (not named))
           (when predicate
-            (error "Cannot specify :TYPE and a PREDICATE but not :NAMED, in structure definition for ~a"
-                   name))
+            (signal-simple-error
+             'simple-program-error nil
+             "Cannot specify :TYPE and a PREDICATE but not :NAMED, in structure definition for ~a"
+             (list name)))
           ;;; This option takes one argument, which specifies the name of the type predicate. 
           ;;; If the argument is provided and is nil, no predicate is defined.
           ;;; If the argument is not supplied or if the option itself is not supplied,
@@ -843,13 +877,17 @@
       ;; check initial-offset and type consistency.
       (when initial-offset
         (unless type
-          (error "Structure definition for ~a cannot have :INITIAL-OFFSET without :TYPE."
-                 name)))
+          (signal-simple-error
+           'simple-program-error nil
+           "Structure definition for ~a cannot have :INITIAL-OFFSET without :TYPE."
+           (list name))))
       ;; :named and type consistency.
       (when named
         (unless type
-          (error "Structure definition for ~a cannot have :NAMED without :TYPE."
-                 name)))
+          (signal-simple-error
+           'simple-program-error nil
+           "Structure definition for ~a cannot have :NAMED without :TYPE."
+           (list name))))
       ;; :print-object or :print-function and type consistency.
       (when (and print-object print-function)
         (error-defstruct-options-incompatible :print-object :print-function))
@@ -902,7 +940,9 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
       (when named
         (unless (or (subtypep '(vector symbol) type env)
                     (subtypep type 'list env))
-          (error "Structure cannot have type ~S and be :NAMED." type))
+          (signal-simple-error
+           'simple-program-error nil
+           "Structure cannot have type ~S and be :NAMED." (list type)))
         (setq name-offset (or initial-offset 0)))
 
       ;; Parse slot-descriptions.
