@@ -414,8 +414,8 @@ values of the last FORM.  If no FORM is given, returns NIL."
 
 (defmacro define-symbol-macro (symbol expansion)
   (cond ((not (symbolp symbol))
-	 (error "DEFINE-SYMBOL-MACRO: ~A is not a symbol"
-		symbol))
+	 (simple-program-error "DEFINE-SYMBOL-MACRO: ~A is not a symbol"
+		               symbol))
 	((ext:specialp symbol)
 	 (error "DEFINE-SYMBOL-MACRO: cannot redefine a special variable, ~A"
 		symbol))

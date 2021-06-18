@@ -72,7 +72,7 @@ all functions."
            (list
             (one-trace* spec break exitbreak entrycond exitcond entry exit step)))
           ((not (proper-list-p spec))
-           (error "Not a valid argument to TRACE: ~s" spec))
+           (simple-program-error "Not a valid argument to TRACE: ~s" spec))
           (t ; long form
 	   (do ((specs (cdr spec) (cdr specs)))
 	       ((null specs))
@@ -86,20 +86,24 @@ all functions."
 	       (:cond-after (setq barfp specs specs (cdr specs) exitcond (car specs)))
 	       (:print (setq barfp specs specs (cdr specs) entry (car specs)))
 	       (:print-after (setq barfp specs specs (cdr specs) exit (car specs)))
-	       (t (error "Meaningless TRACE keyword: ~S" (car specs))))
-	     (unless barfp (error "Parameter missing")))
+	       (t (simple-program-error
+                   "Meaningless TRACE keyword: ~S" (car specs))))
+	     (unless barfp (simple-program-error "Parameter missing")))
            (cond ((proper-list-p (first spec))
                   (let (results)
                     (dolist (fname (first spec) (nreverse results))
                       (unless (valid-function-name-p fname)
-                        (error "Invalid function name for TRACE: ~s" fname))
+                        (simple-program-error
+                         "Invalid function name for TRACE: ~s" fname))
                       (let ((one (one-trace* spec break exitbreak
                                              entrycond exitcond entry exit step)))
                         (push one results)))))
                  ((valid-function-name-p (first spec))
                   (list
                    (one-trace* (first spec) break exitbreak entrycond exitcond entry exit step)))
-                 (t (error "Invalid function name or list for TRACE: ~s" (first spec))))))))
+                 (t (simple-program-error
+                     "Invalid function name or list for TRACE: ~s"
+                     (first spec))))))))
 
 (defun one-trace* (fname break exitbreak entrycond exitcond entry exit step)
   `(when (traceable ',fname)
