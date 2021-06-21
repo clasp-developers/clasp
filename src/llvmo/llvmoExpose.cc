@@ -108,10 +108,6 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm-c/Disassembler.h>
 //#include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
 
-#if defined(USE_LIBUNWIND) && defined(_TARGET_OS_LINUX)
-#include <libunwind.h>
-#endif
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/cons.h>

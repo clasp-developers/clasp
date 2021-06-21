@@ -30,10 +30,6 @@ THE SOFTWARE.
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <clasp/core/foundation.h>
-
-#ifdef USE_LIBUNWIND
-#include <libunwind.h>
-#endif
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/arguments.h>
