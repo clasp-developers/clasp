@@ -140,16 +140,14 @@
          (progn
            ,@body))))
 
-(defvar *with-debug-info-generator* nil)
 (defmacro with-debug-info-generator ((&key module pathname) &rest body)
   "One macro that uses three other macros"
   (let ((body-func (gensym)))
     `(flet ((,body-func () ,@body))
-       (let ((*with-debug-info-generator* t))
-         (with-dibuilder (,module)
-           (with-dbg-file-descriptor (,pathname)
-             (with-dbg-compile-unit (,pathname)
-               (funcall #',body-func))))))))
+       (with-dibuilder (,module)
+         (with-dbg-file-descriptor (,pathname)
+           (with-dbg-compile-unit (,pathname)
+             (funcall #',body-func)))))))
 
 (defun make-function-metadata (&key file-metadata linkage-name function-type lineno)
   (llvm-sys:create-function
@@ -183,23 +181,18 @@
 |#
    ))
 
-(defvar *with-dbg-function* nil)
-;; Set to NIL in with-dbg-function and T in dbg-set-current-source-pos
-(defvar *dbg-set-current-source-pos* nil)
 (defun do-dbg-function (closure lineno linkage-name function-type function)
-  (let ((*with-dbg-function* t)
-        (*dbg-set-current-source-pos* nil))
-    (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-        (let* ((*dbg-current-function-metadata*
-                 (make-function-metadata :file-metadata *dbg-current-file*
-                                         :linkage-name linkage-name
-                                         :function-type function-type
-                                         :lineno lineno))
-               (*dbg-current-scope* *dbg-current-function-metadata*)
-               (*dbg-current-function-lineno* lineno))
-          (llvm-sys:set-subprogram function *dbg-current-function-metadata*)
-          (funcall closure))
-      (funcall closure))))
+  (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
+      (let* ((*dbg-current-function-metadata*
+               (make-function-metadata :file-metadata *dbg-current-file*
+                                       :linkage-name linkage-name
+                                       :function-type function-type
+                                       :lineno lineno))
+             (*dbg-current-scope* *dbg-current-function-metadata*)
+             (*dbg-current-function-lineno* lineno))
+        (llvm-sys:set-subprogram function *dbg-current-function-metadata*)
+        (funcall closure))
+      (funcall closure)))
 
 (defmacro with-dbg-function ((&key lineno linkage-name function-type function) &rest body)
   `(do-dbg-function
@@ -267,7 +260,6 @@
 (defun dbg-set-current-source-pos (form)
   (declare (ignorable form))
   (when *dbg-generate-dwarf*
-    (setq *dbg-set-current-source-pos* t)
     (when *current-source-pos-info*
       (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
       (unless *dbg-current-scope*
