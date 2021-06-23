@@ -107,8 +107,6 @@
        (cmp-log "with-dbg-compile-unit dir-name: [%s]%N" ,dir-name)
        ,@body)))
 
-(namestring (make-pathname :directory (pathname-directory #P"a/b/c/d.txt")))
-
 (defun make-file-metadata (pathname)
   (let* ((dir-name-slash (directory-namestring pathname))
          (dir-name (if (> (length dir-name-slash) 0)
@@ -246,16 +244,6 @@
 (defun dbg-set-irbuilder-source-location (irbuilder spi)
   (when *dbg-generate-dwarf*
     (llvm-sys:set-current-debug-location irbuilder (get-dilocation spi))))
-
-(defun dbg-set-current-source-pos (form)
-  (declare (ignorable form))
-  (when *dbg-generate-dwarf*
-    (when *current-source-pos-info*
-      (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
-      (unless *dbg-current-scope*
-        (error "*dbg-current-scope* must not be NIL"))
-      (dbg-set-irbuilder-source-location
-       *irbuilder* *current-source-pos-info*))))
 
 (defun dbg-create-auto-variable (&key (scope *dbg-current-scope*)
                                    name (file *dbg-current-file*)

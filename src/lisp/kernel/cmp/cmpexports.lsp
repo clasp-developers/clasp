@@ -288,7 +288,6 @@
             with-new-function
             with-dbg-function
             with-dbg-lexical-block
-            dbg-set-current-source-pos
             dbg-variable-alloca
             dbg-variable-value
             compile-file-source-pos-info

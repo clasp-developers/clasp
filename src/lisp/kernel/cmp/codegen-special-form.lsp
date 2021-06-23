@@ -187,7 +187,6 @@
       ;; Compile the THEN branch.
       (irc-begin-block thenbb)
       (irc-low-level-trace)
-      (dbg-set-current-source-pos ithen)
       (codegen result ithen env)
       (irc-branch-if-no-terminator-inst mergebb)
 
@@ -346,7 +345,6 @@ and put the values into the activation frame for new-env."
           (temp (alloca-t* "let") (alloca-t* "let")))
          ((endp cur-req) nil)
       (vector-push-extend temp temps)
-      (dbg-set-current-source-pos exp)
       (codegen temp exp evaluate-env))
     ;; Now generate code for let
     (cmp-log "About to generate code for exps: %s%N" exps)
