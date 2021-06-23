@@ -58,7 +58,7 @@
   `(let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module)))
      (unwind-protect
           (progn ,@body)
-       (when *dbg-generate-dwarf*
+       (progn
          (llvm-sys:finalize *the-module-dibuilder*)
          ;; add the flag that defines the Dwarf Version
          (llvm-sys:add-module-flag *the-module*
@@ -78,41 +78,34 @@
   (let ((path (gensym))
         (file (gensym))
         (dir-name (gensym)))
-    `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-         (progn
-           (let* ((,path (pathname ,source-pathname))
-                  (,file *dbg-current-file*)
-                  (,dir-name (directory-namestring ,path))
-                  (*dbg-function-metadata-cache* (make-hash-table :test #'equal))
-                  (*dbg-compile-unit* (llvm-sys:create-compile-unit
-                                       *the-module-dibuilder* ; dibuilder
-                                       llvm-sys:dw-lang-c-plus-plus ; 1 llvm-sys:dw-lang-common-lisp
-                                       ,file ; 2 file
-                                       "clasp Common Lisp compiler" ; 4 producer
-                                       nil  ; 5 isOptimized
-                                       "-v" ; 6 compiler flags
-                                       1    ; 7 RV run-time version
-                                       "the-split-name.log" ; 8 splitname
-                                       :full-debug ; 9 DebugEmissionKind (:full-debug :line-tables-only)
-                                       0           ; 10 DWOld
-                                       t   ; 11 SplitDebugInlining
-                                       nil ; 12 DebugInfoForProfiling
-                                       :dntk-default ; 13 DebugNameTableKind
-                                       nil ; 14 RangesBaseAddress
-                                       "" ; 15 SysRoot (-isysroot value)
-                                       "" ; 16 SDK
-                                       )))
-             (declare (ignorable ,dir-name)) ; cmp-log may expand empty
-             (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
-             (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
-             (cmp-log "with-dbg-compile-unit file-name: [%s]%N" ,file)
-             (cmp-log "with-dbg-compile-unit dir-name: [%s]%N" ,dir-name)
-             ,@body
-             ))
-         (progn
-           (cmp-log "with-dbg-compile-unit not generating *dbg-compile-unit*%N")
-           ,@body))))
-
+    `(let* ((,path (pathname ,source-pathname))
+            (,file *dbg-current-file*)
+            (,dir-name (directory-namestring ,path))
+            (*dbg-function-metadata-cache* (make-hash-table :test #'equal))
+            (*dbg-compile-unit* (llvm-sys:create-compile-unit
+                                 *the-module-dibuilder* ; dibuilder
+                                 llvm-sys:dw-lang-c-plus-plus ; 1 llvm-sys:dw-lang-common-lisp
+                                 ,file ; 2 file
+                                 "clasp Common Lisp compiler" ; 4 producer
+                                 nil  ; 5 isOptimized
+                                 "-v" ; 6 compiler flags
+                                 1    ; 7 RV run-time version
+                                 "the-split-name.log" ; 8 splitname
+                                 :full-debug ; 9 DebugEmissionKind (:full-debug :line-tables-only)
+                                 0           ; 10 DWOld
+                                 t   ; 11 SplitDebugInlining
+                                 nil ; 12 DebugInfoForProfiling
+                                 :dntk-default ; 13 DebugNameTableKind
+                                 nil ; 14 RangesBaseAddress
+                                 "" ; 15 SysRoot (-isysroot value)
+                                 "" ; 16 SDK
+                                 )))
+       (declare (ignorable ,dir-name)) ; cmp-log may expand empty
+       (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
+       (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
+       (cmp-log "with-dbg-compile-unit file-name: [%s]%N" ,file)
+       (cmp-log "with-dbg-compile-unit dir-name: [%s]%N" ,dir-name)
+       ,@body)))
 
 (namestring (make-pathname :directory (pathname-directory #P"a/b/c/d.txt")))
 
@@ -132,22 +125,19 @@
                           )))
 
 (defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
-  (let ((path (gensym)))
-    `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-         (let* ((,path (pathname ,source-pathname))
-                (*dbg-current-file* (make-file-metadata ,path)))
-           ,@body)
-         (progn
-           ,@body))))
+  `(let ((*dbg-current-file* (make-file-metadata (pathname ,source-pathname))))
+     ,@body))
 
 (defmacro with-debug-info-generator ((&key module pathname) &rest body)
   "One macro that uses three other macros"
   (let ((body-func (gensym)))
     `(flet ((,body-func () ,@body))
-       (with-dibuilder (,module)
-         (with-dbg-file-descriptor (,pathname)
-           (with-dbg-compile-unit (,pathname)
-             (funcall #',body-func)))))))
+       (if *dbg-generate-dwarf*
+           (with-dibuilder (,module)
+             (with-dbg-file-descriptor (,pathname)
+               (with-dbg-compile-unit (,pathname)
+                 (funcall #',body-func))))
+           (funcall #',body-func)))))
 
 (defun make-function-metadata (&key file-metadata linkage-name function-type lineno)
   (llvm-sys:create-function
