@@ -1094,7 +1094,8 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
         cfg.env.append_value('INCLUDES', "/usr/local/include" )
     if (cfg.env['DEST_OS'] == LINUX_OS ):
-        cfg.env.append_value('LINKFLAGS',"--unwindlib=libgcc")
+        cfg.env.append_value('LINKFLAGS',"--unwindlib=libunwind")
+        cfg.env.append_value('LINKFLAGS',"--rtlib=compiler-rt")
     cfg.check_cxx(lib='gmpxx gmp'.split(), cxxflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cxxflags='-Wall', uselib_store='FFI')
     try:
@@ -1117,10 +1118,11 @@ def configure(cfg):
         cfg.check_cxx(lib='bsd', cflags='-Wall', uselib_store='BSD')
 #        cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
 #        cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
-#        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
-#        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
+    if (cfg.env['DEST_OS'] == DARWIN_OS):
+        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
     else:
-        pass
+        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
+#        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     # Check the boost libraries one at a time and then all together to put them in uselib_store
     boost_libs = BOOST_LIBRARIES
     if (cfg.options.enable_mpi):
@@ -1189,6 +1191,7 @@ def configure(cfg):
         cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",1)
     cfg.define("USE_CLASP_DYNAMIC_CAST",1)
     cfg.define("BUILDING_CLASP",1)
+    cfg.define("USE_LIBUNWIND",1) # use LIBUNWIND
     log.debug("cfg.env['DEST_OS'] == %s", cfg.env['DEST_OS'])
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.define("_TARGET_OS_DARWIN",1)
@@ -1241,6 +1244,7 @@ def configure(cfg):
     if (not cfg.env['USE_LLD']):
         cfg.env['USE_LLD'] = False
     if (cfg.env['DEST_OS'] == LINUX_OS ):
+        cfg.env.append_value('INCLUDES', ['/opt/clasp/include/libunwind/'] )
         if ( (cfg.env['USE_LLD'] == True) and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
             # Only use lld if USE_LLD is set and CLASP_BUILD_MODE is bitcode
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % LLVM_VERSION)
@@ -1366,11 +1370,13 @@ def configure(cfg):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
         cfg.env.append_value('LIB', cfg.env.LIB_ELF)
         cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)
-        cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
-        cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)
         cfg.env.append_value('LIB', cfg.env.LIB_LZMA)
     if (cfg.env['DEST_OS'] == LINUX_OS):
         cfg.env.append_value('LIB', cfg.env.LIB_BSD)
+#    cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
+    cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)
+    if (cfg.env['DEST_OS'] == LINUX_OS):
+        cfg.env.append_value('RPATH',"%s/lib" % cfg.env.PREFIX)
     cfg.env.append_value('LIB', cfg.env.LIB_CLANG)
     cfg.env.append_value('LIB', cfg.env.LIB_LLVM)
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)
@@ -1380,6 +1386,9 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.env.LIB_Z)
     log.debug("cfg.env.STLIB = %s", cfg.env.STLIB)
     log.debug("cfg.env.LIB = %s", cfg.env.LIB)
+#    if (cfg.env['DEST_OS'] == LINUX_OS):
+#        cfg.env.append_value('LINKFLAGS',["-Bstatic","-lunwind","-Bdynamic"])
+
 ####### Setup the variants
     env_copy = cfg.env.derive()
     log.info("About to setup variants - cfg.options.enabl_empi = %s" % cfg.options.enable_mpi)
