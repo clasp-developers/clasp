@@ -1119,7 +1119,7 @@ def configure(cfg):
 #        cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
 #        cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
     if (cfg.env['DEST_OS'] == DARWIN_OS):
-        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
+        pass
     else:
         cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
 #        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
