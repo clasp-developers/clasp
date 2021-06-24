@@ -625,9 +625,6 @@ eg:  (f closure-ptr nargs a b c d ...)
       (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
       (when rewind (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
 
-
-(defparameter *debug-register-parameter* nil)
-
 #+x86-64
 (progn
 ;;; X86_64 calling convention The general function prototypes pass the following pass:
@@ -657,7 +654,9 @@ eg:  (f closure-ptr nargs a b c d ...)
   (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
   ;; (Maybe) generate code to store registers in memory. Return value unspecified.
 
-  (defun dbg-register-parameter (register name argno &optional (type-name "T_O*") (type llvm-sys:+dw-ate-address+))
+  (defun dbg-register-parameter (register name argno
+                                 &optional (type-name "T_O*")
+                                   (type llvm-sys:+dw-ate-address+))
     (let* ((dbg-arg0 (dbg-create-parameter-variable :name name
                                                     :argno argno
                                                     :lineno *dbg-current-function-lineno*
@@ -666,8 +665,8 @@ eg:  (f closure-ptr nargs a b c d ...)
            (diexpression (llvm-sys:create-expression-none *the-module-dibuilder*))
            (dbg-arg0-value (llvm-sys:metadata-as-value-get (thread-local-llvm-context) dbg-arg0))
            (diexpr-value (llvm-sys:metadata-as-value-get (thread-local-llvm-context) diexpression)))
-      (if *debug-register-parameter*
-          (irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get (thread-local-llvm-context) (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value))))
+      (when (llvm-sys:current-debug-location *irbuilder*)
+        (irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get (thread-local-llvm-context) (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value))))
   
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
     (cond
