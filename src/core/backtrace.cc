@@ -11,6 +11,9 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/core/stackmap.h>
 #include <clasp/core/backtrace.h>
+#ifdef USE_LIBUNWIND
+#include <libunwind.h>
+#endif
 #include <stdlib.h> // calloc, realloc, free
 #include <execinfo.h> // backtrace
 
@@ -22,67 +25,37 @@
  * inherently has only dynamic extent.
  * This information takes the form of objects called "frames"; see backtrace.h
  * for definitions. Hopefully should be simple to understand.
- * This mechanism uses backtrace, backtrace_symbols, and DWARF metadata.
- *
- * The function core:call-with-operating-system-backtrace is similar but lower
- * level, collecting only information from the system backtrace and
- * backtrace_symbols function, and stack frame pointers. This is not used by
- * call-with-frame but may very occasionally be useful on its own, mostly for
- * debugging the debugger (gods help you).
+ * There are two versions - one using libunwind, and one using the "backtrace"
+ * family of functions, which are not POSIX standard but roughly present on both
+ * Linux and BSD derivatives (e.g. Mac). At the time of writing, libunwind
+ * appears to be broken on some platformers in relation to JITted code.
  */
 
 namespace core {
-NEVER_OPTIMIZE
-CL_DEFUN T_mv core__call_with_operating_system_backtrace(Function_sp function) {
-  // Get an operating system backtrace, i.e. with the backtrace and
-  // backtrace_symbols functions (which are not POSIX, but are present in both
-  // GNU and Apple systems).
-  // backtrace requires a number of frames to get, and will fill only that many
-  // entries. To get the full backtrace, we repeatedly try larger frame numbers
-  // until backtrace finally doesn't fill everything in.
-#define START_BACKTRACE_SIZE 512
-#define MAX_BACKTRACE_SIZE_LOG2 20
-  size_t num = START_BACKTRACE_SIZE;
-  void** buffer = (void**)calloc(sizeof(void*), num);
-  for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
-    size_t returned = backtrace(buffer,num);
-    if (returned < num) {
-      char **strings = backtrace_symbols(buffer, returned);
-      ql::list pointers;
-      ql::list names;
-      ql::list basepointers;
-      void* fbp = __builtin_frame_address(0);
-      uintptr_t bplow = (uintptr_t)&fbp;
-      uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
-      void* newfbp;
-      for (size_t j = 0; j < returned; ++j) {
-        pointers << Pointer_O::create(buffer[j]);
-        names << SimpleBaseString_O::make(strings[j]);
-        basepointers << Pointer_O::create(fbp);
-        if (fbp) newfbp = *(void**)fbp;
-        if (newfbp && !(bplow<(uintptr_t)newfbp && (uintptr_t)newfbp<bphigh)) {  // newfbp is out of the stack.
-//          printf("%s:%d:%s The frame pointer walk went out of bounds bplow is %p bphigh is %p and newfbp is %p\n",
-//                 __FILE__, __LINE__, __FUNCTION__, (void*)bplow, (void*)bphigh, newfbp );
-          newfbp = NULL;
-        } else if (newfbp && !((uintptr_t)fbp < (uintptr_t)newfbp) ) {             // fbp < newfbp
-          printf("%s:%d:%s The frame pointer is not monotonically increasing fbp is %p and newfbp is %p\n",
-                 __FILE__, __LINE__, __FUNCTION__, fbp, newfbp );
-          newfbp = NULL;
-        }
-        fbp = newfbp;
-      }
-      free(buffer);
-      free(strings);
-      return eval::funcall(function, pointers.cons(), names.cons(),
-                           basepointers.cons());
+
+#ifdef USE_LIBUNWIND
+static SimpleBaseString_sp lu_procname(unw_cursor_t* cursorp) {
+  size_t nbytes = 64; // numbers chosen arbitrarily
+  do {
+    char fname[nbytes];
+    unw_word_t ignore; // not sure if unw_get_proc_name accepts NULL, so
+    switch (unw_get_proc_name(cursorp, fname, nbytes, &ignore)) {
+    case 0: return SimpleBaseString_O::make(fname);
+    case UNW_ENOMEM: break;
+    case UNW_ENOINFO: return SimpleBaseString_O::make("<name not available>");
+    default: return SimpleBaseString_O::make("<unknown libunwind error>");
     }
-    // realloc_array would be nice, but macs don't have it
-    num *= 2;
-    buffer = (void**)realloc(buffer, sizeof(void*)*num);
-  }
-  printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
-  abort();
+    if (nbytes >= 4096) {
+      // Too long. Give up, putting an ellipsis on the end
+      char fnamedot[nbytes+3];
+      fnamedot[0] = '\0';
+      strcat(fnamedot, fname);
+      strcat(fnamedot, "...");
+      return SimpleBaseString_O::make(fnamedot);
+    } else nbytes <<= 1;
+  } while (true);
 }
+#endif // USE_LIBUNWIND
 
 static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
                       llvmo::SectionedAddress_sp sa) {
@@ -237,7 +210,10 @@ bool maybe_demangle(const std::string& fnName, std::string& output)
   return false;
 }
 
-static DebuggerFrame_sp make_cxx_frame(void* ip, char* cstring) {
+static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
+#ifdef USE_LIBUNWIND
+  std::string linkname(cstring);
+#else // with os backtraces, we have to parse the function name out.
   std::string str(cstring);
   std::string linkname;
 #if defined(_TARGET_OS_DARWIN)
@@ -271,6 +247,7 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, char* cstring) {
     // I don't know what other OS's backtrace_symbols return - punt
   linkname = str;
 #endif
+#endif // USE_LIBUNWIND
   std::string name;
   if (!(maybe_demangle(linkname, name)))
     // couldn't demangle, so just use the unadulterated string
@@ -280,13 +257,42 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, char* cstring) {
                                _Nil<T_O>(), INTERN_(kw, c_PLUS__PLUS_));
 }
 
-static DebuggerFrame_sp make_frame(void* ip, char* string, void* fbp) {
+static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp) {
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp()) return make_cxx_frame(ip, string);
   else return make_lisp_frame(ip, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
 }
 
-T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
+#ifdef USE_LIBUNWIND
+static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
+  unw_cursor_t cursor;
+  unw_word_t ip, fbp;
+  unw_context_t uc;
+
+  unw_getcontext(&uc);
+  unw_init_local(&cursor, &uc);
+
+  unw_get_reg(&cursor, UNW_REG_IP, &ip);
+  unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+  // This is slightly inefficient in that we allocate a simple base string
+  // only to get a C string from it, but writing it to use stack allocation
+  // is a pain in the ass for very little gain.
+  std::string sstring = lu_procname(&cursor)->get_std_string();
+  DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
+  DebuggerFrame_sp prev = bot;
+  while (unw_step(&cursor) > 0) {
+    unw_get_reg(&cursor, UNW_REG_IP, &ip);
+    unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+    std::string sstring = lu_procname(&cursor)->get_std_string();
+    DebuggerFrame_sp frame = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
+    frame->down = prev;
+    prev->up = frame;
+    prev = frame;
+  }
+  return f(bot);
+}
+#else // non-libunwind version
+static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   size_t num = START_BACKTRACE_SIZE;
   void** buffer = (void**)calloc(sizeof(void*), num);
   for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
@@ -326,6 +332,15 @@ T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   }
   printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
   abort();
+}
+#endif // USE_LIBUNWIND
+
+T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
+#ifdef USE_LIBUNWIND
+  return lu_call_with_frame(f);
+#else
+  return os_call_with_frame(f);
+#endif
 }
 
 CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
