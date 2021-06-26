@@ -100,7 +100,7 @@ XCODE_SDK = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platfor
 LIBGCC_S = "libgcc_s"
 GNU_LIBUNWIND = "gnu_libunwind"
 LLVM_LIBUNWIND = "llvm_libunwind"
-UNWINDER = GNU_LIBUNWIND
+UNWINDER = LLVM_LIBUNWIND
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
