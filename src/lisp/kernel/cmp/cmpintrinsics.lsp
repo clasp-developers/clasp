@@ -707,17 +707,21 @@ eg:  (f closure-ptr nargs a b c d ...)
 #-(and x86-64)
 (error "Define calling convention for system")
 
+(defparameter *%dbg-variable* nil)
+
 (defun %dbg-variable-addr (addr var)
-  (let* ((addrmd (llvm-sys:metadata-as-value-get
-                  (thread-local-llvm-context)
-                  (llvm-sys:value-as-metadata-get addr)))
-         (varmd (llvm-sys:metadata-as-value-get
-                 (thread-local-llvm-context)
-                 var))
-         (diexpr (llvm-sys:metadata-as-value-get
-                  (thread-local-llvm-context)
-                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
-    (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr)))
+  (when *%dbg-variable*
+    (let* ((addrmd (llvm-sys:metadata-as-value-get
+                    (thread-local-llvm-context)
+                    (llvm-sys:value-as-metadata-get addr)))
+           (varmd (llvm-sys:metadata-as-value-get
+                   (thread-local-llvm-context)
+                   var))
+           (diexpr (llvm-sys:metadata-as-value-get
+                    (thread-local-llvm-context)
+                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
+      (format t "llvm.dbg.addr ~s ~s ~s~%" addrmd varmd diexpr)
+      (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr))))
 
 ;;; Put in debug information for a variable corresponding to an alloca.
 (defun dbg-variable-alloca (alloca name spi
@@ -739,16 +743,18 @@ eg:  (f closure-ptr nargs a b c d ...)
       (%dbg-variable-addr alloca auto-variable))))
 
 (defun %dbg-variable-value (value var)
-  (let* ((valuemd (llvm-sys:metadata-as-value-get
+  (when *%dbg-variable*
+    (let* ((valuemd (llvm-sys:metadata-as-value-get
+                     (thread-local-llvm-context)
+                     (llvm-sys:value-as-metadata-get value)))
+           (varmd (llvm-sys:metadata-as-value-get
                    (thread-local-llvm-context)
-                   (llvm-sys:value-as-metadata-get value)))
-         (varmd (llvm-sys:metadata-as-value-get
-                 (thread-local-llvm-context)
-                 var))
-         (diexpr (llvm-sys:metadata-as-value-get
-                  (thread-local-llvm-context)
-                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
-    (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr)))
+                   var))
+           (diexpr (llvm-sys:metadata-as-value-get
+                    (thread-local-llvm-context)
+                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
+      (format t "llvm.dbg.value ~s ~s ~s~%" valuemd varmd diexpr)
+      (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr))))
 
 ;;; Put in debug information for a variable corresponding to an llvm Value.
 (defun dbg-variable-value (value name spi
