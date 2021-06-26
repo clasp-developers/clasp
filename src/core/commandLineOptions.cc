@@ -120,6 +120,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
              "export CLASP_DEBUGGER_SUPPORT=1 Generate files that lldb/gdb/udb can use to debug clasp.\n"
+             "export CLASP_JIT_LOADER_GDB_REGISTRAR=1 Register object files with gdb/lldb for source level debugging.\n"
              "export CLASP_SNAPSHOT=1  Debug snapshot generation.\n"
              "export CLASP_DONT_HANDLE_CRASH_SIGNALS=1  Don't insert signal handlers for crash signals.\n"
              "export CLASP_GC_MESSAGES=1 Print a message when garbage collection takes place.\n"

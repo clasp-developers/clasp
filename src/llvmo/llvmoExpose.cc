@@ -4766,8 +4766,9 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
                        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
                        ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
                        // GDB registrar isn't working at the moment
-                       if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-                         ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*this->_TPC))));
+                       if (getenv("CLASP_JIT_LOADER_GDB_REGISTRAR")) {
+                           printf("%s:%d:%s Adding ObjLinkingLayer plugin for orc::createJITLoaderGDBRegistrar\n", __FILE__, __LINE__, __FUNCTION__ );
+                           ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*this->_TPC))));
                        }
                        ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
                        return ObjLinkingLayer;
