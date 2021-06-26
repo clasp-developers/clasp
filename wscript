@@ -101,6 +101,7 @@ LIBGCC_S = "libgcc_s"
 GNU_LIBUNWIND = "gnu_libunwind"
 LLVM_LIBUNWIND = "llvm_libunwind"
 UNWINDER = LLVM_LIBUNWIND
+UNWINDER_PATH = "/opt/clasp/lib"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -1094,13 +1095,13 @@ def configure(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
 ### Without these checks the following error happens: AttributeError: 'BuildContext' object has no attribute 'variant_obj'
-#    cfg.env.append_value('LINKFLAGS', "-L/opt/clasp-support/lib")
 #    cfg.env.append_value('INCLUDES', "/opt/clasp-support/include")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
         cfg.env.append_value('INCLUDES', "/usr/local/include" )
     if (UNWINDER == LLVM_LIBUNWIND):
         if (cfg.env['DEST_OS'] == LINUX_OS ):
+            cfg.env.append_value('LINKFLAGS', "-L%s" % UNWINDER_PATH )
             cfg.env.append_value('LINKFLAGS',"--unwindlib=libunwind")
             cfg.env.append_value('LINKFLAGS',"--rtlib=compiler-rt")
     cfg.check_cxx(lib='gmpxx gmp'.split(), cxxflags='-Wall', uselib_store='GMP')
@@ -1603,10 +1604,10 @@ def build(bld):
     out_dir_node = bld.path.find_dir(out)
     bclasp_symlink_node = out_dir_node.make_node("bclasp")
     bld.clasp_taskgen = bld.program(source = clasp_c_source_files,
-                              features='cxx cxxprogram c cprogram increase_weight',
-                              includes = include_dirs,
-                              target = [bld.iclasp_executable],
-                              install_path = '${PREFIX}/bin')
+                                    features='cxx cxxprogram c cprogram increase_weight',
+                                    includes = include_dirs,
+                                    target = [bld.iclasp_executable],
+                                    install_path = '${PREFIX}/bin')
 
     bld.clasp_taskgen.post()
     idx = 0
