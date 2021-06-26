@@ -117,6 +117,9 @@ static void args_from_offset(void* frameptr, int32_t offset,
   if (frameptr) {
     T_O** register_save_area = (T_O**)((uintptr_t)frameptr + offset);
     T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
+    if (!gc::IsA<Function_sp>(tclosure)) {
+      printf("%s:%d:%s When trying to get arguments from CL frame read what should be a closure %p but it isn't\n", __FILE__, __LINE__, __FUNCTION__, tclosure.raw_());
+    }
     closure = tclosure;
     size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
     if (nargs>256) {
@@ -139,6 +142,7 @@ static void args_from_offset(void* frameptr, int32_t offset,
   }
 }
 
+__attribute__((optnone))
 static void args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
                                  void* frameptr,
                                  T_sp& closure, T_sp& args) {
@@ -168,6 +172,7 @@ static void args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
   walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
 }
 
+__attribute__((optnone))
 static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
                                         void* fbp) {
   llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
@@ -257,6 +262,7 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
                                _Nil<T_O>(), INTERN_(kw, c_PLUS__PLUS_));
 }
 
+__attribute__((optnone))
 static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp) {
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp()) return make_cxx_frame(ip, string);
@@ -264,6 +270,7 @@ static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp) {
 }
 
 #ifdef USE_LIBUNWIND
+__attribute__((optnone))
 static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   unw_cursor_t cursor;
   unw_word_t ip, fbp;
@@ -281,8 +288,9 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
   DebuggerFrame_sp prev = bot;
   while (unw_step(&cursor) > 0) {
-    unw_get_reg(&cursor, UNW_REG_IP, &ip);
-    unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+    int resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
+    int resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+//    printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
     std::string sstring = lu_procname(&cursor)->get_std_string();
     DebuggerFrame_sp frame = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
     frame->down = prev;
@@ -292,6 +300,7 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   return f(bot);
 }
 #else // non-libunwind version
+__attribute__((optnone))
 static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   size_t num = START_BACKTRACE_SIZE;
   void** buffer = (void**)calloc(sizeof(void*), num);
@@ -343,6 +352,7 @@ T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
 #endif
 }
 
+__attribute__((optnone))
 CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
   auto th = [&](DebuggerFrame_sp bot){ return eval::funcall(function, bot); };
   return call_with_frame(th);
