@@ -374,6 +374,7 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  std::string __repr__() const;
   DISubprogram_O(){};
   virtual ~DISubprogram_O() {}
 };

@@ -115,6 +115,12 @@ THE SOFTWARE.
 
 namespace llvmo {
 
+std::string DISubprogram_O::__repr__() const {
+  stringstream ss;
+  ss << "#<DISubprogram " << this->wrappedPtr()->getName().str() << ">";
+  return ss.str();
+}
+
 CL_LAMBDA(llvm-context line col scope &optional inlined-at);
 CL_LISPIFY_NAME(get-dilocation);
 CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
