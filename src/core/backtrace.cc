@@ -279,8 +279,11 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   unw_getcontext(&uc);
   unw_init_local(&cursor, &uc);
 
-  unw_get_reg(&cursor, UNW_REG_IP, &ip);
-  unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+  int resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
+  int resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+  if (resip || resbp) {
+    printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
+  }
   // This is slightly inefficient in that we allocate a simple base string
   // only to get a C string from it, but writing it to use stack allocation
   // is a pain in the ass for very little gain.
@@ -288,9 +291,11 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
   DebuggerFrame_sp prev = bot;
   while (unw_step(&cursor) > 0) {
-    int resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
-    int resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
-//    printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
+    resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
+    resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+    if (resip || resbp) {
+      printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
+    }
     std::string sstring = lu_procname(&cursor)->get_std_string();
     DebuggerFrame_sp frame = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
     frame->down = prev;
