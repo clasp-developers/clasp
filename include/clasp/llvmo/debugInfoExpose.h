@@ -803,6 +803,8 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  std::string __repr__() const;
+  std::string getVariableName() const;
   DILocalVariable_O(){};
   virtual ~DILocalVariable_O() {}
 };
