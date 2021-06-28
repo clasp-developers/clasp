@@ -1,6 +1,6 @@
 (in-package #:clasp-cleavir)
 
-(defmethod cst-to-ast:convert-code (lambda-list body
+(defmethod cleavir-cst-to-ast:convert-code (lambda-list body
                                     env (system clasp-cleavir:clasp)
                                     &key block-name-cst origin)
   (declare (ignore env block-name-cst origin))
@@ -30,3 +30,7 @@
                     (ast:name function-ast) ; local functions named by cleavir
                     (list 'lambda (cmp::lambda-list-for-name original-lambda-list))))
           function-ast)))))
+
+(defmethod print-object ((object cleavir-ast:function-ast) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "~s ~s" (cleavir-ast:name object) (cleavir-ast:origin object))))
