@@ -1130,7 +1130,10 @@ def configure(cfg):
         cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
         cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
     elif (UNWINDER == LLVM_LIBUNWIND):
-        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
+        if (cfg.env['DEST_OS'] == DARWIN_OS):
+            pass
+        else:
+            cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
 #        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
     # Check the boost libraries one at a time and then all together to put them in uselib_store
     boost_libs = BOOST_LIBRARIES
