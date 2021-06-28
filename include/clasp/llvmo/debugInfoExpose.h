@@ -302,6 +302,8 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  std::string __repr__() const;
+  std::string getPath() const;
   DIFile_O(){};
   virtual ~DIFile_O() {}
 };
