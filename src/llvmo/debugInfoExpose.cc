@@ -121,6 +121,10 @@ std::string DISubprogram_O::__repr__() const {
   return ss.str();
 }
 
+CL_DEFMETHOD std::string DISubprogram_O::getSubprogram() const {
+  return this->wrappedPtr()->getName().str();
+}
+
 
 CL_DEFMETHOD std::string DIFile_O::getPath() const {
   stringstream ss;

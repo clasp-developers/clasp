@@ -377,6 +377,7 @@ public:
     this->_ptr = ptr;
   }
   std::string __repr__() const;
+  std::string getSubprogram() const;
   DISubprogram_O(){};
   virtual ~DISubprogram_O() {}
 };
