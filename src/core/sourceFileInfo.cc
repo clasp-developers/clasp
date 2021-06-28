@@ -310,7 +310,7 @@ CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_function_scope(T_sp func
 CL_DEFMETHOD void SourcePosInfo_O::setf_source_pos_info_extra(T_sp inlinedAt,
                                                               T_sp functionScope) {
   this->_InlinedAt = inlinedAt;
-  this->_FunctionScope = functionScope;
+  this->setf_source_pos_info_function_scope(functionScope);
 }
 
 void SourcePosInfo_O::fields(Record_sp node)
@@ -350,6 +350,8 @@ string SourcePosInfo_O::__repr__() const {
   ss << " :filepos " << this->_Filepos;
   ss << " :lineno " << this->_Lineno;
   ss << " :column " << this->_Column;
+  ss << " :function-scope " << _rep_(this->_FunctionScope);
+  ss << " @" << (void*)this;
   ss << ">";
   return ss.str();
 }
