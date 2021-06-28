@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/bundle.h>
+#include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/wrappers.h>
 
@@ -303,6 +304,19 @@ CL_DEFMETHOD T_sp SourcePosInfo_O::source_pos_info_function_scope() const {
 
 CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_function_scope(T_sp function_scope) {
   this->_FunctionScope = function_scope;
+#if 0
+  if (_sym_STARdebugSourcePosInfoSTAR.boundp() && _sym_STARdebugSourcePosInfoSTAR->boundP() && _sym_STARdebugSourcePosInfoSTAR->symbolValue().notnilp()) {
+    std::string subprog;
+    if (function_scope.consp()) {
+      subprog = gc::As<String_sp>(CONS_CAR(function_scope))->get_std_string();
+    } else if (gc::IsA<llvmo::DISubprogram_sp>(function_scope)) {
+      subprog = gc::As<llvmo::DISubprogram_sp>(function_scope)->getSubprogram();
+    }
+    if (subprog[subprog.size()-1] == '^') {
+      SIMPLE_ERROR(BF("Caught function scope %s ending with ^") % subprog);
+    }
+  }
+#endif
   return function_scope;
 }
 

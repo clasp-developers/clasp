@@ -300,6 +300,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedClosureSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugFlowControlSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugStartupSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugByteCodeSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARdebugSourcePosInfoSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, bitArrayOp);
 SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
@@ -1270,6 +1271,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARcache_macroexpandSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebugByteCodeSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebugSourcePosInfoSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dtree_interpreterSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_symbol_lookupSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
