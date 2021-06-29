@@ -302,6 +302,8 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  std::string __repr__() const;
+  std::string getPath() const;
   DIFile_O(){};
   virtual ~DIFile_O() {}
 };
@@ -375,6 +377,7 @@ public:
     this->_ptr = ptr;
   }
   std::string __repr__() const;
+  std::string getSubprogram() const;
   DISubprogram_O(){};
   virtual ~DISubprogram_O() {}
 };
@@ -800,6 +803,8 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  std::string __repr__() const;
+  std::string getVariableName() const;
   DILocalVariable_O(){};
   virtual ~DILocalVariable_O() {}
 };

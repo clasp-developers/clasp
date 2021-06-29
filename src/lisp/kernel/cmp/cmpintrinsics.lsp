@@ -427,6 +427,7 @@ Boehm and MPS use a single pointer"
    (%size_t%  :number-of-functions)))
 
 (defun gcroots-in-module-initial-value (&optional literals size)
+  (declare (ignore literals))
   (llvm-sys:constant-struct-get %gcroots-in-module%
                                 (list
                                  (jit-constant-size_t 0)
@@ -720,7 +721,6 @@ eg:  (f closure-ptr nargs a b c d ...)
            (diexpr (llvm-sys:metadata-as-value-get
                     (thread-local-llvm-context)
                     (llvm-sys:create-expression-none *the-module-dibuilder*))))
-      (format t "llvm.dbg.addr ~s ~s ~s~%" addrmd varmd diexpr)
       (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr))))
 
 ;;; Put in debug information for a variable corresponding to an alloca.
@@ -753,7 +753,9 @@ eg:  (f closure-ptr nargs a b c d ...)
            (diexpr (llvm-sys:metadata-as-value-get
                     (thread-local-llvm-context)
                     (llvm-sys:create-expression-none *the-module-dibuilder*))))
-      (format t "llvm.dbg.value ~s ~s ~s~%" valuemd varmd diexpr)
+      (format t "%dbg-variable-value ~s ~s :variable-name ~s~%" value var (llvm-sys:get-variable-name var))
+      (when (string= (llvm-sys:get-variable-name var) "#<VAR" :start1 0 :end1 5)
+        (break "Caught weird dbg-variable-value"))
       (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr))))
 
 ;;; Put in debug information for a variable corresponding to an llvm Value.
@@ -1006,7 +1008,7 @@ and initialize it with an array consisting of one function pointer."
                        func-designator)
                       (t (error "~a must be a function name or llvm-sys:function" func-designator)))))
     (unless startup-fn
-      (error "Could not find ~a in module" startup-name))
+      (error "Could not find ~a in module" func-designator))
     #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
             (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
     (let* ((global-ctor (add-global-ctor-function module startup-fn

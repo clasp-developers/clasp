@@ -117,7 +117,37 @@ namespace llvmo {
 
 std::string DISubprogram_O::__repr__() const {
   stringstream ss;
-  ss << "#<DISubprogram " << this->wrappedPtr()->getName().str() << ">";
+  ss << "#<DISubprogram " << this->wrappedPtr()->getName().str() << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+std::string DILocalVariable_O::__repr__() const {
+  stringstream ss;
+  ss << "#<DILOCAL-VARIABLE " << this->wrappedPtr()->getName().str() << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+CL_DEFMETHOD std::string DILocalVariable_O::getVariableName() const {
+  return this->wrappedPtr()->getName().str();
+}
+
+CL_DEFMETHOD std::string DISubprogram_O::getSubprogram() const {
+  return this->wrappedPtr()->getName().str();
+}
+
+
+CL_DEFMETHOD std::string DIFile_O::getPath() const {
+  stringstream ss;
+  std::string filename = this->wrappedPtr()->getFilename().str();
+  std::string directory = this->wrappedPtr()->getDirectory().str();
+  ss << directory << "/" << filename;
+  return ss.str();
+}
+
+std::string DIFile_O::__repr__() const {
+  stringstream ss;
+  std::string path = this->getPath();
+  ss << "#<DIFile " << path << " @" << (void*)this << ">";
   return ss.str();
 }
 
