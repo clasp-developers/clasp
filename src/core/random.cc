@@ -107,6 +107,22 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
   TYPE_ERROR_cl_random(olimit);
 }
 
+// Return a double, sampled from a unit uniform distribution.
+// This used to be done through a totally different random mechanism, and is now
+// only here to be compatible with cando (chem/energySketchNonbond.cc).
+double randomNumber01() {
+  RandomState_sp random_state = gc::As<RandomState_sp>(cl::_sym_STARrandom_stateSTAR->symbolValue());
+  std::uniform_real_distribution<> range(0.0, 1.0);
+  return range(random_state->_Producer._value);
+}
+
+// Like the above, including being defined for compatibility (chem/twister.cc),
+// but samples a normal distribution with mean 0 and stddev 1.
+double randomNumberNormal01() {
+  RandomState_sp random_state = gc::As<RandomState_sp>(cl::_sym_STARrandom_stateSTAR->symbolValue());
+  std::normal_distribution<> gauss(0.0, 1.0);
+  return gauss(random_state->_Producer._value);
+}
 
 void RandomState_O::__write__(T_sp stream) const {
   bool readably = clasp_print_readably();
