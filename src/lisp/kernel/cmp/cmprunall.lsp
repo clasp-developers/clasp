@@ -56,7 +56,6 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
               (*irbuilder-run-all-body* ,irbuilder-body)
               (*current-function* ,run-all-fn))
          (cmp:with-dbg-function (:lineno 0
-                                 :linkage-name (llvm-sys:get-name ,run-all-fn)
                                  :function ,run-all-fn
                                  :function-type cmp:%fn-prototype%)
            ;; Set up dummy debug info for these irbuilders

@@ -307,6 +307,8 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
 #else // non-libunwind version
 __attribute__((optnone))
 static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
+#define START_BACKTRACE_SIZE 512
+#define MAX_BACKTRACE_SIZE_LOG2 20
   size_t num = START_BACKTRACE_SIZE;
   void** buffer = (void**)calloc(sizeof(void*), num);
   for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {

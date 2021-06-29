@@ -97,10 +97,10 @@ LLVM_HASH = "972b6a3a3471c2a742c5c5d8ec004ff640d544c4"
 XCODE_SDK = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk"
 
 # valid values "libgcc_s", "gnu/libunwind", "llvm/libunwind"
-LIBGCC_S = "libgcc_s"
+DEFAULT = "default"
 GNU_LIBUNWIND = "gnu_libunwind"
 LLVM_LIBUNWIND = "llvm_libunwind"
-UNWINDER = LLVM_LIBUNWIND
+UNWINDER = DEFAULT
 UNWINDER_PATH = "/opt/clasp/lib"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
@@ -1124,9 +1124,14 @@ def configure(cfg):
         cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store="FFI")
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='bsd', cflags='-Wall', uselib_store='BSD')
-    if (UNWINDER == LIBGCC_S):
-        cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
+    if (UNWINDER == DEFAULT):
+        if (cfg.env['DEST_OS'] == DARWIN_OS):
+            pass
+        else:
+            cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
     elif (UNWINDER == GNU_LIBUNWIND):
+        if (cfg.env['DEST_OS'] == DARWIN_OS):
+            raise Exception("You cannot use GNU_LIBUNWIND on MacOS")
         cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
         cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
     elif (UNWINDER == LLVM_LIBUNWIND):
@@ -1203,7 +1208,7 @@ def configure(cfg):
         cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",1)
     cfg.define("USE_CLASP_DYNAMIC_CAST",1)
     cfg.define("BUILDING_CLASP",1)
-    if (UNWINDER != LIBGCC_S):
+    if (UNWINDER != DEFAULT):
         cfg.define("USE_LIBUNWIND",1) # use LIBUNWIND
     log.debug("cfg.env['DEST_OS'] == %s", cfg.env['DEST_OS'])
     if (cfg.env['DEST_OS'] == DARWIN_OS ):

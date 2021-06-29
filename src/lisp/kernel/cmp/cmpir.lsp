@@ -888,7 +888,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
          (with-irbuilder (*irbuilder-function-body*)
            (with-new-function-prepare-for-try (,fn)
              (with-dbg-function (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                 :linkage-name *current-function-name*
                                  :function ,fn
                                  :function-type ,function-type)
                (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
@@ -1041,8 +1040,8 @@ and then the irbuilder-alloca, irbuilder-body."
   (when (or function-type-p argument-names-p)
     (when (not (and function-type-p argument-names-p))
       (error "If you provide one of function-type or argument-names you must provide both")))
-  (let* ((llvm-function-name (jit-function-name lisp-function-name))
-         (fn (irc-simple-function-create llvm-function-name
+  (let* ((jit-function-name (jit-function-name lisp-function-name))
+         (fn (irc-simple-function-create jit-function-name
                                          function-type
                                          linkage
                                          *the-module*
@@ -1050,7 +1049,7 @@ and then the irbuilder-alloca, irbuilder-body."
                                          :argument-names argument-names)))
     (let* ((fn-description-ref (irc-create-entry-point-reference
                                 :global
-                                llvm-function-name
+                                (llvm-sys:get-name fn) ; llvm-function-name
                                 fn
                                 *the-module*
                                 function-info))
@@ -1074,16 +1073,18 @@ and then the irbuilder-alloca, irbuilder-body."
         (values fn func-env irbuilder-alloca irbuilder-body result fn-description-ref)))))
 
 
-(defun irc-cclasp-local-function-create (llvm-function-type linkage llvm-function-name module function-info)
+(defun irc-cclasp-local-function-create (llvm-function-type linkage function-name module function-info)
   "Create a local function and no function description is needed"
-  (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module))
-         (entry-point-reference (irc-create-entry-point-reference :local llvm-function-name fn module function-info)))         
+  (let* ((local-function-name (concatenate 'string function-name "-lcl"))
+         (fn (irc-function-create llvm-function-type linkage local-function-name module))
+         (entry-point-reference (irc-create-entry-point-reference :local (llvm-sys:get-name fn) fn module function-info)))         
     (values fn entry-point-reference)))
 
-(defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module function-info)
+(defun irc-cclasp-function-create (llvm-function-type linkage function-name module function-info)
   "Create a function and a function description for a cclasp function"
-  (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module))
-         (entry-point-reference (irc-create-entry-point-reference :global llvm-function-name fn module function-info)))
+  (let* ((xep-function-name (concatenate 'string function-name "-xep"))
+         (fn (irc-function-create llvm-function-type linkage xep-function-name module))
+         (entry-point-reference (irc-create-entry-point-reference :global (llvm-sys:get-name fn) fn module function-info)))
     (values fn entry-point-reference)))
 
 (defun irc-verify-no-function-environment-cleanup (env)

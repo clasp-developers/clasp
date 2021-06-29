@@ -42,7 +42,7 @@
 
 (defun allocate-llvm-function-info (function &key (linkage 'llvm-sys:internal-linkage))
   (let* ((lambda-name (get-or-create-lambda-name function))
-         (llvm-function-name (cmp:jit-function-name lambda-name))
+         (jit-function-name (cmp:jit-function-name lambda-name))
          (function-info (calculate-function-info function lambda-name))
          (arguments
            (let ((arglist '()))
@@ -65,7 +65,7 @@
                                         (length arguments))
                                      :initial-element cmp::%t*%))
                          'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
-                         llvm-function-name
+                         jit-function-name
                          cmp:*the-module*
                          function-info)))
       (multiple-value-bind (xep-function xep-function-description)
@@ -73,7 +73,7 @@
               (cmp:irc-cclasp-function-create
                cmp:%fn-prototype%
                linkage
-               llvm-function-name
+               jit-function-name
                cmp:*the-module*
                function-info)
               (values :xep-unallocated :xep-unallocated))
@@ -99,14 +99,16 @@
   (declare (ignore abi))
   (cmp:with-debug-info-source-position ((ensure-origin
                                          (bir:origin instruction)
-                                         999902))
+                                         999902)
+                                        cmp:*current-function*)
     (call-next-method)))
 (defmethod translate-terminator :around
     ((instruction bir:instruction) abi next)
   (declare (ignore abi next))
   (cmp:with-debug-info-source-position ((ensure-origin
                                          (bir:origin instruction)
-                                         999903))
+                                         999903)
+                                        cmp:*current-function*)
     (call-next-method)))
 
 (defmethod translate-terminator ((instruction bir:unreachable)
@@ -1206,7 +1208,7 @@
                             (cmp::gen-memref-address closure-vec offset))))
            (source-pos-info (function-source-pos-info ir)))
       ;; Tail call the real function.
-      (cmp:with-debug-info-source-position (source-pos-info)
+      (cmp:with-debug-info-source-position (source-pos-info the-function)
         (cmp:irc-ret
          (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
                 (c
@@ -1248,10 +1250,10 @@
 
 (defun layout-xep-function (function lambda-name abi)
   (let* ((*datum-values* (make-hash-table :test #'eq))
-         (llvm-function-name (cmp:jit-function-name lambda-name))
-         (cmp:*current-function-name* llvm-function-name)
+         (jit-function-name (cmp:jit-function-name lambda-name))
+         (cmp:*current-function-name* jit-function-name)
          (cmp:*gv-current-function-name*
-           (cmp:module-make-global-string llvm-function-name "fn-name"))
+           (cmp:module-make-global-string jit-function-name "fn-name"))
          (llvm-function-type cmp:%fn-prototype%)
          (function-info (find-llvm-function-info function))
          (xep-function (xep-function function-info))
@@ -1264,7 +1266,7 @@
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
          (source-pos-info (function-source-pos-info function))
          (lineno (core:source-pos-info-lineno source-pos-info)))
-    (cmp:with-dbg-function (:lineno lineno :linkage-name llvm-function-name
+    (cmp:with-dbg-function (:lineno lineno
                             :function-type llvm-function-type
                             :function xep-function)
       (llvm-sys:set-personality-fn xep-function
@@ -1277,7 +1279,7 @@
       (cmp:irc-set-insert-point-basic-block entry-block
                                             cmp:*irbuilder-function-alloca*)
       (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-        (cmp:with-debug-info-source-position (source-pos-info)
+        (cmp:with-debug-info-source-position (source-pos-info xep-function)
           (let* ((fn-args (llvm-sys:get-argument-list xep-function))
                  (lambda-list (bir:lambda-list function))
                  (calling-convention
@@ -1295,10 +1297,10 @@
   (let* ((*tags* (make-hash-table :test #'eq))
          (*datum-values* (make-hash-table :test #'eq))
          (*dynenv-storage* (make-hash-table :test #'eq))
-         (llvm-function-name (cmp:jit-function-name lambda-name))
-         (cmp:*current-function-name* llvm-function-name)
+         (jit-function-name (cmp:jit-function-name lambda-name))
+         (cmp:*current-function-name* jit-function-name)
          (cmp:*gv-current-function-name*
-           (cmp:module-make-global-string llvm-function-name "fn-name"))
+           (cmp:module-make-global-string jit-function-name "fn-name"))
          (llvm-function-type cmp:%fn-prototype%)
          (function-info (find-llvm-function-info function))
          (the-function (main-function function-info))
@@ -1314,7 +1316,7 @@
          (body-block (cmp:irc-basic-block-create "body"))
          (source-pos-info (function-source-pos-info function))
          (lineno (core:source-pos-info-lineno source-pos-info)))
-    (cmp:with-dbg-function (:lineno lineno :linkage-name llvm-function-name
+    (cmp:with-dbg-function (:lineno lineno
                             :function-type llvm-function-type
                             :function the-function)
       #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
@@ -1336,7 +1338,7 @@
       (cmp:irc-set-insert-point-basic-block entry-block
                                             cmp:*irbuilder-function-alloca*)
       (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-        (cmp:with-debug-info-source-position (source-pos-info)
+        (cmp:with-debug-info-source-position (source-pos-info the-function)
           (cmp:with-dbg-lexical-block
               (:lineno (core:source-pos-info-lineno source-pos-info))
             
