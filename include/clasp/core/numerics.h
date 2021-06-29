@@ -62,12 +62,6 @@ extern vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int
 
 extern Bignum numberOfIndicesForMixedBase(const vector<int> &bases);
 
-void seedRandomNumberGenerators(uint i);
-void seedRandomNumberGeneratorsUsingTime();
-
-double randomNumber01();
-double randomNumberNormal01();
-
 bool almostEqualAbsoluteOrRelative(double va, double vb,
                                    double absEpsilon, double relEpsilon);
 
