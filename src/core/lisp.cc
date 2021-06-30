@@ -1343,11 +1343,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   globals_->_NoRc = options._NoRc;
   globals_->_ExportedSymbolsAccumulate = options._ExportedSymbolsAccumulate;
   globals_->_ExportedSymbolsFilename = options._ExportedSymbolsFilename;
-  if (options._GotRandomNumberSeed) {
-    seedRandomNumberGenerators(options._RandomNumberSeed);
-  } else {
-    seedRandomNumberGenerators(this->mpiRank());
-  }
   if (options._HasDescribeFile) {
     dumpDebuggingLayouts(options._DescribeFile);
   }

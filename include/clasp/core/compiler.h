@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/core/bundle.h>
+#include <chrono> // for MaybeDebugStartup timing
 
 namespace llvmo {
 FORWARD(ClaspJIT);
@@ -75,9 +76,9 @@ core::T_O* startup_functions_invoke(T_O* literals_or_null);
 
 
 namespace core {
-FORWARD(PosixTime);
 struct MaybeDebugStartup {
-  PosixTime_sp start;
+  bool started;
+  std::chrono::time_point<std::chrono::steady_clock> start;
   std::string  name;
   size_t start_jit_compile_counter;
   void* fptr;

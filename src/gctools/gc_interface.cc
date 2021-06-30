@@ -950,12 +950,10 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::SharpEqualWrapper_O);
      Init_class_kind(llvmo::ClaspJIT_O);
      Init_class_kind(core::Readtable_O);
-     Init_class_kind(core::PosixTime_O);
      Init_class_kind(core::Exposer_O);
      Init_class_kind(core::CoreExposer_O);
      Init_class_kind(asttooling::AsttoolingExposer_O);
      Init_class_kind(llvmo::StructLayout_O);
-     Init_class_kind(core::PosixTimeDuration_O);
      Init_class_kind(clasp_ffi::ForeignTypeSpec_O);
      Init_class_kind(core::Instance_O);
      Init_class_kind(core::DerivableCxxObject_O);

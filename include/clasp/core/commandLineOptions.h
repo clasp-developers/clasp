@@ -58,7 +58,6 @@ struct CommandLineOptions {
   bool _HasDescribeFile;
   std::string _DescribeFile;
   char _Stage;
-  bool _GotRandomNumberSeed;
   long _RandomNumberSeed;
   bool _ExportedSymbolsAccumulate;
   std::string _ExportedSymbolsFilename;

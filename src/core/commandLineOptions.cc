@@ -288,7 +288,6 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _StartupFile(""),
     _DefaultStartupType(cloDefault),
     _ExportedSymbolsAccumulate(false),
-    _GotRandomNumberSeed(false),
     _RandomNumberSeed(0),
     _NoInform(false),
     _NoPrint(false),

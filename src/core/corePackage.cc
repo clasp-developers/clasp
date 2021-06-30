@@ -48,7 +48,6 @@ THE SOFTWARE.
 #include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/cleavirEnvPackage.fwd.h>
 #include <clasp/core/hashTable.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/random.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/readtable.h>
@@ -79,7 +78,6 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/pointer.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/random.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/record.h>
@@ -1109,7 +1107,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARbreakOnSignalsSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARdebuggerHookSTAR->defparameter(_Nil<T_O>());
   cl::_sym_internalTimeUnitsPerSecond->defconstant(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
-  _sym_STARstartRunTimeSTAR->defparameter(PosixTime_O::createNow());
   cl::_sym_MultipleValuesLimit->defconstant(make_fixnum(MultipleValues::MultipleValuesLimit));
   _sym_STARprintPackageSTAR->defparameter(_Nil<T_O>());
   _sym_STARcircle_counterSTAR->defparameter(_Nil<T_O>());

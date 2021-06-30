@@ -60,7 +60,6 @@ extern "C" {
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/debugger.h>
