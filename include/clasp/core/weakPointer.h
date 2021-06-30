@@ -68,7 +68,7 @@ public:
   static WeakPointer_sp make(T_sp obj);
 public:
   void*    _Link; // Use a boehm disappearing link
-  T_O*     _Object;
+  void*    _Object;
 public: // Functions here
   /*! Value of the reference to the object. If the object was destroyed then return nil. */
   T_sp value() const;

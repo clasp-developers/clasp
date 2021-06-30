@@ -175,7 +175,8 @@ inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_h
   true_size += tail_size;
 #endif
 #ifdef USE_PRECISE_GC
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC_KIND(the_header.stamp(),true_size,global_stamp_layout[the_header.stamp()].boehm._kind,&global_stamp_layout[the_header.stamp()].boehm._kind));
+  uintptr_t stamp = the_header.stamp();
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC_KIND(stamp,true_size,global_stamp_layout[stamp].boehm._kind,&global_stamp_layout[stamp].boehm._kind));
 #else
   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
 #endif
