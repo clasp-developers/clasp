@@ -198,7 +198,7 @@ inline bool unboundOrDeletedOrSplatted(core::T_sp bucket) {
 template <class T, class U>
 struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
   typedef typename BucketsBase<T, U>::value_type value_type;
- Buckets(int l) : BucketsBase<T, U>(l){};
+  Buckets(int l) : BucketsBase<T, U>(l){};
   Buckets(imageSaveLoad::image_save_load_init_s* isl) {
     isl->fill((void*)this);
   }
@@ -227,20 +227,23 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
     if (!unboundOrDeletedOrSplatted(this->bucket[idx])) {
       auto &rawRef = this->bucket[idx].rawRef_();
       void **linkAddress = reinterpret_cast<void **>(&rawRef);
-      //		printf("%s:%d Buckets set idx: %zu unregister disappearing link @%p\n", __FILE__, __LINE__, idx, linkAddress );
       int result = GC_unregister_disappearing_link(linkAddress); //reinterpret_cast<void**>(&this->bucket[idx].rawRef_()));
-      if (!result) {
-        throw_hard_error("The link was not registered as a disappearing link!");
-      }
+      if (!result) throw_hard_error("The link was not registered as a disappearing link!");
     }
-    if (!unboundOrDeletedOrSplatted(val)) {
-      this->bucket[idx] = val;
-      //		printf("%s:%d Buckets set idx: %zu register disappearing link @%p\n", __FILE__, __LINE__, idx, &this->bucket[idx].rawRef_());
-      GCTOOLS_ASSERT(val.objectp());
-      GC_general_register_disappearing_link(reinterpret_cast<void **>(&this->bucket[idx].rawRef_()), reinterpret_cast<void *>(this->bucket[idx].rawRef_()));
+    this->bucket[idx] = val;
+    GCTOOLS_ASSERT(val.objectp());
+    // We need the base of the object that we want a weak pointer to...
+    // general, cons and later weak objects have different header sizes
+    void* base = NULL;
+    if (val.generalp()) {
+      base = gctools::GeneralPtrToHeaderPtr(&*(val));
+    } else if (val.consp()) {
+      base = gctools::ConsPtrToHeaderPtr(&*(val));
     } else {
-      this->bucket[idx] = val;
-    }
+      printf("%s:%d:%s Add support to use %s as key\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(val).c_str());
+      base = (void*)&*val; // FIXME - this is wrong for Weak objects
+    };
+    GC_general_register_disappearing_link(reinterpret_cast<void **>(&this->bucket[idx].rawRef_()), base );
 #endif
 #ifdef USE_MPS
     GCWEAK_LOG(BF("Setting Buckets<T,U,WeakLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));

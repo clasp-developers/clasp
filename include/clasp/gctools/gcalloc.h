@@ -196,9 +196,10 @@ inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_hea
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef USE_PRECISE_GC
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_STRONG_WEAK_KIND(true_size,global_strong_weak_kind));
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
+//   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_STRONG_WEAK_KIND_ATOMIC(true_size,global_strong_weak_kind));
 #else
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC(true_size));
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
 #endif
   my_thread_low_level->_Allocations.registerWeakAllocation(the_header._value,true_size);
 #ifdef DEBUG_GUARD

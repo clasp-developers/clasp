@@ -38,8 +38,11 @@ namespace core {
 
 CL_LISPIFY_NAME(make-weak-pointer);
 CL_DEFUN WeakPointer_sp WeakPointer_O::make(T_sp obj) {
-  GC_ALLOCATE_VARIADIC(WeakPointer_O, me, obj);
-  return me;
+  if (obj.objectp()) {
+    GC_ALLOCATE_VARIADIC(WeakPointer_O, me, obj);
+    return me;
+  }
+  SIMPLE_ERROR(BF("You cannot make a weak pointer to an immediate"));
 };
 
 
