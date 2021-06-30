@@ -54,10 +54,11 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("getInternalRealTime");
 CL_DEFUN T_sp cl__get_internal_real_time() {
+  // boost uses 64 bits for time, so we shouldn't have any y2k/2038 problems
   boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
   boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
   boost::posix_time::time_duration diff = now - epoch;
-  return Integer_O::create(diff.total_milliseconds() * (CLASP_INTERNAL_TIME_UNITS_PER_SECOND / 1000 ));
+  return Integer_O::create(diff.total_microseconds() * (CLASP_INTERNAL_TIME_UNITS_PER_SECOND / 1000000 ));
 };
 
 /* Return the time in nanoseconds form the system defined starting time */
