@@ -1216,18 +1216,13 @@ struct SafeGCPark {
  * This is a template type that indicates that we do not want
  * to expose a variable of this type by the static analyzer.
  *
- * See PosixTime_O for example - it declares the field
- * dont_expose<boost::posix_time::ptime> _Time;
- *
- *  This indicates to the static analyzer that the _Time field
+ *  This indicates to the static analyzer that the field
  *   shouldn't be recursively introspected further by the static
  *   analyzer and that it
  *   shouldn't be saved or loaded in image save/load.
  *   There can be many reasons for this:
- *     1. The type boost::posix_time::ptime may contain private
- *         fields that we can't access.
- *     2. The type boost::posix_time::ptime may contain pointers to
- *         C++ memory that we can't save/load.
+ *     1. The type may contain private fields that we can't access.
+ *     2. The type may contain pointers to C++ memory that we can't save/load.
  *
  *  The static analyzer will generate an entry in the clasp_gc_xxx.cc file
  *  for this that looks like...

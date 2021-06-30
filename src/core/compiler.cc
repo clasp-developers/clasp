@@ -58,11 +58,9 @@ THE SOFTWARE.
 #include <clasp/core/functor.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/pointer.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/environment.h>
