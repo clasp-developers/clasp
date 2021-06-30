@@ -8182,9 +8182,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ImmobileObject_O),_Tail), 0, "_Tail" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // StampWtag = core::WeakPointer_O/115
 { class_kind, STAMPWTAG_core__WeakPointer_O, sizeof(core::WeakPointer_O), 0, IS_POLYMORPHIC, "core::WeakPointer_O" },
-//      field: "_WeakObject" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::WeakPointerManager" :NAME "WeakPointerManager")
-//      field: ".pointer" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::WeakPointer>" :SPECIALIZER "struct gctools::WeakPointer")
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::WeakPointer>), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakPointer_O),_WeakObject.pointer), 0, "_WeakObject.pointer" }, // atomic: NIL public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+//      field: "_Link" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
+ {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakPointer_O),_Link), 0, "_Link" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_Object" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
+ {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakPointer_O),_Object), 0, "_Object" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // StampWtag = llvmo::DebugLoc_O/119
 { class_kind, STAMPWTAG_llvmo__DebugLoc_O, sizeof(llvmo::DebugLoc_O), 0, IS_POLYMORPHIC, "llvmo::DebugLoc_O" },
 // StampWtag = core::Pointer_O/123
