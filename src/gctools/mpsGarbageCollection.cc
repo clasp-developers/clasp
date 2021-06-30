@@ -581,7 +581,9 @@ size_t processMpsMessages(size_t& finalizations) {
   finalizations = 0;
   int mGcStart(0);
   int mGc(0);
+#if 0
   core::Number_sp startTime = gc::As<core::Number_sp>(core::cl__get_internal_run_time());
+#endif
   mps_message_type_t type;
   while (mps_message_queue_type(&type, global_arena)) {
     mps_message_t message;
