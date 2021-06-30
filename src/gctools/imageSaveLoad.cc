@@ -1493,42 +1493,6 @@ struct SaveSymbolCallback : public core::SymbolCallback {
       std::string saveName("");
       uintptr_t saddr;
       bool goodSymbol = symbolLookup.dladdr_(address,saveName,hitBadPointers,this->_Library._GroupedPointers[ii]._pointerType,saddr);
-      if (global_debugSnapshot) {
-        uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,saveName.c_str() );
-        if (!dlsymAddr) {
-          printf("%s:%d:%s FAIL! address %lu/%lu save the address %p resolved to the symbol %s but that could not be dlsym'd back to an address\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 ii, this->_Library._GroupedPointers.size(),
-                 (void*)address,
-                 saveName.c_str()
-               );
-          hitBadPointers++;
-          goodSymbol = false;
-        // abort();
-        } else if ( (address-dlsymAddr) > 64 ) {
-          printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 ii, this->_Library._GroupedPointers.size(),
-                 (void*)address,
-                 (void*)dlsymAddr,
-                 (address - dlsymAddr),
-                 saveName.c_str()
-                 );
-          hitBadPointers++;
-          goodSymbol = false;
-        } else {
-#if 0
-          printf("%s:%d:%s PASS! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 ii, this->_Library._GroupedPointers.size(),
-                 (void*)address,
-                 (void*)dlsymAddr,
-                 (address - dlsymAddr),
-                 saveName.c_str()
-                 );
-#endif
-        }
-      }
       if (goodSymbol) {
         uint addressOffset = (address - (uintptr_t)saddr);
         this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
