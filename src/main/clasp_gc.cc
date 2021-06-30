@@ -31,8 +31,8 @@
     class GlobalValue_O;
     class UnaryInstruction_O;
     class Triple_O;
-    class LLVMTargetMachine_O;
     class DWARFContext_O;
+    class LLVMTargetMachine_O;
     class TargetOptions_O;
     class ConstantDataArray_O;
     class TargetSubtargetInfo_O;
@@ -148,15 +148,14 @@
  namespace core {
     class TwoWayStream_O;
     class KeyValuePair;
-    class ComplexVector_byte32_t_O;
     class CoreExposer_O;
-    class GlobalEntryPointGenerator_O;
+    class ComplexVector_byte32_t_O;
     class BitVectorNs_O;
     class SimpleMDArray_byte64_t_O;
     class HashTableEqual_O;
+    class GlobalEntryPointGenerator_O;
     class LocalEntryPointGenerator_O;
     class ClassHolder_O;
-    class PosixTimeDuration_O;
     class Bignum_O;
     class Unused_dummy_O;
     class SimpleMDArray_byte32_t_O;
@@ -329,7 +328,6 @@
     class SimpleVector_int8_t_O;
     class FunctionContainerEnvironment_O;
     class SimpleBitVector_O;
-    class PosixTime_O;
     class HashTable_O;
     class LexicalEnvironment_O;
     class MDArray_byte2_t_O;
@@ -617,256 +615,254 @@ STAMPWTAG_core__LoadTimeValues_O = ADJUST_STAMP(911), // Stamp(227)  wtag(3)
 STAMPWTAG_core__SharpEqualWrapper_O = ADJUST_STAMP(915), // Stamp(228)  wtag(3)
 STAMPWTAG_llvmo__ClaspJIT_O = ADJUST_STAMP(919), // Stamp(229)  wtag(3)
 STAMPWTAG_core__Readtable_O = ADJUST_STAMP(923), // Stamp(230)  wtag(3)
-STAMPWTAG_core__PosixTime_O = ADJUST_STAMP(927), // Stamp(231)  wtag(3)
-STAMPWTAG_core__Exposer_O = ADJUST_STAMP(931), // Stamp(232)  wtag(3)
-STAMPWTAG_core__CoreExposer_O = ADJUST_STAMP(935), // Stamp(233)  wtag(3)
-STAMPWTAG_asttooling__AsttoolingExposer_O = ADJUST_STAMP(939), // Stamp(234)  wtag(3)
-STAMPWTAG_llvmo__StructLayout_O = ADJUST_STAMP(943), // Stamp(235)  wtag(3)
-STAMPWTAG_core__PosixTimeDuration_O = ADJUST_STAMP(947), // Stamp(236)  wtag(3)
-STAMPWTAG_clasp_ffi__ForeignTypeSpec_O = ADJUST_STAMP(951), // Stamp(237)  wtag(3)
-STAMPWTAG_core__Instance_O = ADJUST_STAMP(953), // Stamp(238)  wtag(1)
-STAMPWTAG_core__DerivableCxxObject_O = ADJUST_STAMP(956), // Stamp(239)  wtag(0)
-STAMPWTAG_clbind__ClassRep_O = ADJUST_STAMP(961), // Stamp(240)  wtag(1)
-STAMPWTAG_core__SmallMap_O = ADJUST_STAMP(967), // Stamp(241)  wtag(3)
-STAMPWTAG_mpip__Mpi_O = ADJUST_STAMP(971), // Stamp(242)  wtag(3)
-STAMPWTAG_core__ExternalObject_O = ADJUST_STAMP(975), // Stamp(243)  wtag(3)
-STAMPWTAG_llvmo__Pass_O = ADJUST_STAMP(979), // Stamp(244)  wtag(3)
-STAMPWTAG_llvmo__ModulePass_O = ADJUST_STAMP(983), // Stamp(245)  wtag(3)
-STAMPWTAG_llvmo__ImmutablePass_O = ADJUST_STAMP(987), // Stamp(246)  wtag(3)
-STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O = ADJUST_STAMP(991), // Stamp(247)  wtag(3)
-STAMPWTAG_llvmo__FunctionPass_O = ADJUST_STAMP(995), // Stamp(248)  wtag(3)
-STAMPWTAG_llvmo__ExecutionEngine_O = ADJUST_STAMP(999), // Stamp(249)  wtag(3)
-STAMPWTAG_llvmo__MCSubtargetInfo_O = ADJUST_STAMP(1003), // Stamp(250)  wtag(3)
-STAMPWTAG_llvmo__TargetSubtargetInfo_O = ADJUST_STAMP(1007), // Stamp(251)  wtag(3)
-STAMPWTAG_llvmo__Type_O = ADJUST_STAMP(1011), // Stamp(252)  wtag(3)
-STAMPWTAG_llvmo__PointerType_O = ADJUST_STAMP(1015), // Stamp(253)  wtag(3)
-STAMPWTAG_llvmo__ArrayType_O = ADJUST_STAMP(1019), // Stamp(254)  wtag(3)
-STAMPWTAG_llvmo__FunctionType_O = ADJUST_STAMP(1023), // Stamp(255)  wtag(3)
-STAMPWTAG_llvmo__IntegerType_O = ADJUST_STAMP(1027), // Stamp(256)  wtag(3)
-STAMPWTAG_llvmo__StructType_O = ADJUST_STAMP(1031), // Stamp(257)  wtag(3)
-STAMPWTAG_llvmo__VectorType_O = ADJUST_STAMP(1035), // Stamp(258)  wtag(3)
-STAMPWTAG_llvmo__JITDylib_O = ADJUST_STAMP(1039), // Stamp(259)  wtag(3)
-STAMPWTAG_llvmo__DIContext_O = ADJUST_STAMP(1043), // Stamp(260)  wtag(3)
-STAMPWTAG_llvmo__TargetPassConfig_O = ADJUST_STAMP(1047), // Stamp(261)  wtag(3)
-STAMPWTAG_llvmo__IRBuilderBase_O = ADJUST_STAMP(1051), // Stamp(262)  wtag(3)
-STAMPWTAG_llvmo__IRBuilder_O = ADJUST_STAMP(1055), // Stamp(263)  wtag(3)
-STAMPWTAG_llvmo__APFloat_O = ADJUST_STAMP(1059), // Stamp(264)  wtag(3)
-STAMPWTAG_llvmo__APInt_O = ADJUST_STAMP(1063), // Stamp(265)  wtag(3)
-STAMPWTAG_llvmo__DIBuilder_O = ADJUST_STAMP(1067), // Stamp(266)  wtag(3)
-STAMPWTAG_llvmo__SectionedAddress_O = ADJUST_STAMP(1071), // Stamp(267)  wtag(3)
-STAMPWTAG_llvmo__EngineBuilder_O = ADJUST_STAMP(1075), // Stamp(268)  wtag(3)
-STAMPWTAG_llvmo__PassManagerBase_O = ADJUST_STAMP(1079), // Stamp(269)  wtag(3)
-STAMPWTAG_llvmo__PassManager_O = ADJUST_STAMP(1083), // Stamp(270)  wtag(3)
-STAMPWTAG_llvmo__FunctionPassManager_O = ADJUST_STAMP(1087), // Stamp(271)  wtag(3)
-STAMPWTAG_llvmo__Metadata_O = ADJUST_STAMP(1091), // Stamp(272)  wtag(3)
-STAMPWTAG_llvmo__MDNode_O = ADJUST_STAMP(1095), // Stamp(273)  wtag(3)
-STAMPWTAG_llvmo__DINode_O = ADJUST_STAMP(1099), // Stamp(274)  wtag(3)
-STAMPWTAG_llvmo__DIVariable_O = ADJUST_STAMP(1103), // Stamp(275)  wtag(3)
-STAMPWTAG_llvmo__DILocalVariable_O = ADJUST_STAMP(1107), // Stamp(276)  wtag(3)
-STAMPWTAG_llvmo__DIScope_O = ADJUST_STAMP(1111), // Stamp(277)  wtag(3)
-STAMPWTAG_llvmo__DIFile_O = ADJUST_STAMP(1115), // Stamp(278)  wtag(3)
-STAMPWTAG_llvmo__DIType_O = ADJUST_STAMP(1119), // Stamp(279)  wtag(3)
-STAMPWTAG_llvmo__DICompositeType_O = ADJUST_STAMP(1123), // Stamp(280)  wtag(3)
-STAMPWTAG_llvmo__DIDerivedType_O = ADJUST_STAMP(1127), // Stamp(281)  wtag(3)
-STAMPWTAG_llvmo__DIBasicType_O = ADJUST_STAMP(1131), // Stamp(282)  wtag(3)
-STAMPWTAG_llvmo__DISubroutineType_O = ADJUST_STAMP(1135), // Stamp(283)  wtag(3)
-STAMPWTAG_llvmo__DILocalScope_O = ADJUST_STAMP(1139), // Stamp(284)  wtag(3)
-STAMPWTAG_llvmo__DISubprogram_O = ADJUST_STAMP(1143), // Stamp(285)  wtag(3)
-STAMPWTAG_llvmo__DILexicalBlockBase_O = ADJUST_STAMP(1147), // Stamp(286)  wtag(3)
-STAMPWTAG_llvmo__DILexicalBlock_O = ADJUST_STAMP(1151), // Stamp(287)  wtag(3)
-STAMPWTAG_llvmo__DICompileUnit_O = ADJUST_STAMP(1155), // Stamp(288)  wtag(3)
-STAMPWTAG_llvmo__DIExpression_O = ADJUST_STAMP(1159), // Stamp(289)  wtag(3)
-STAMPWTAG_llvmo__DILocation_O = ADJUST_STAMP(1163), // Stamp(290)  wtag(3)
-STAMPWTAG_llvmo__ValueAsMetadata_O = ADJUST_STAMP(1167), // Stamp(291)  wtag(3)
-STAMPWTAG_llvmo__MDString_O = ADJUST_STAMP(1171), // Stamp(292)  wtag(3)
-STAMPWTAG_core__Test_O = ADJUST_STAMP(1175), // Stamp(293)  wtag(3)
-STAMPWTAG_llvmo__Value_O = ADJUST_STAMP(1179), // Stamp(294)  wtag(3)
-STAMPWTAG_llvmo__Argument_O = ADJUST_STAMP(1183), // Stamp(295)  wtag(3)
-STAMPWTAG_llvmo__BasicBlock_O = ADJUST_STAMP(1187), // Stamp(296)  wtag(3)
-STAMPWTAG_llvmo__MetadataAsValue_O = ADJUST_STAMP(1191), // Stamp(297)  wtag(3)
-STAMPWTAG_llvmo__User_O = ADJUST_STAMP(1195), // Stamp(298)  wtag(3)
-STAMPWTAG_llvmo__Instruction_O = ADJUST_STAMP(1199), // Stamp(299)  wtag(3)
-STAMPWTAG_llvmo__UnaryInstruction_O = ADJUST_STAMP(1203), // Stamp(300)  wtag(3)
-STAMPWTAG_llvmo__VAArgInst_O = ADJUST_STAMP(1207), // Stamp(301)  wtag(3)
-STAMPWTAG_llvmo__LoadInst_O = ADJUST_STAMP(1211), // Stamp(302)  wtag(3)
-STAMPWTAG_llvmo__AllocaInst_O = ADJUST_STAMP(1215), // Stamp(303)  wtag(3)
-STAMPWTAG_llvmo__SwitchInst_O = ADJUST_STAMP(1219), // Stamp(304)  wtag(3)
-STAMPWTAG_llvmo__AtomicRMWInst_O = ADJUST_STAMP(1223), // Stamp(305)  wtag(3)
-STAMPWTAG_llvmo__LandingPadInst_O = ADJUST_STAMP(1227), // Stamp(306)  wtag(3)
-STAMPWTAG_llvmo__StoreInst_O = ADJUST_STAMP(1231), // Stamp(307)  wtag(3)
-STAMPWTAG_llvmo__UnreachableInst_O = ADJUST_STAMP(1235), // Stamp(308)  wtag(3)
-STAMPWTAG_llvmo__ReturnInst_O = ADJUST_STAMP(1239), // Stamp(309)  wtag(3)
-STAMPWTAG_llvmo__ResumeInst_O = ADJUST_STAMP(1243), // Stamp(310)  wtag(3)
-STAMPWTAG_llvmo__AtomicCmpXchgInst_O = ADJUST_STAMP(1247), // Stamp(311)  wtag(3)
-STAMPWTAG_llvmo__FenceInst_O = ADJUST_STAMP(1251), // Stamp(312)  wtag(3)
-STAMPWTAG_llvmo__CallBase_O = ADJUST_STAMP(1255), // Stamp(313)  wtag(3)
-STAMPWTAG_llvmo__CallInst_O = ADJUST_STAMP(1259), // Stamp(314)  wtag(3)
-STAMPWTAG_llvmo__InvokeInst_O = ADJUST_STAMP(1263), // Stamp(315)  wtag(3)
-STAMPWTAG_llvmo__PHINode_O = ADJUST_STAMP(1267), // Stamp(316)  wtag(3)
-STAMPWTAG_llvmo__IndirectBrInst_O = ADJUST_STAMP(1271), // Stamp(317)  wtag(3)
-STAMPWTAG_llvmo__BranchInst_O = ADJUST_STAMP(1275), // Stamp(318)  wtag(3)
-STAMPWTAG_llvmo__Constant_O = ADJUST_STAMP(1279), // Stamp(319)  wtag(3)
-STAMPWTAG_llvmo__GlobalValue_O = ADJUST_STAMP(1283), // Stamp(320)  wtag(3)
-STAMPWTAG_llvmo__Function_O = ADJUST_STAMP(1287), // Stamp(321)  wtag(3)
-STAMPWTAG_llvmo__GlobalVariable_O = ADJUST_STAMP(1291), // Stamp(322)  wtag(3)
-STAMPWTAG_llvmo__BlockAddress_O = ADJUST_STAMP(1295), // Stamp(323)  wtag(3)
-STAMPWTAG_llvmo__ConstantDataSequential_O = ADJUST_STAMP(1299), // Stamp(324)  wtag(3)
-STAMPWTAG_llvmo__ConstantDataArray_O = ADJUST_STAMP(1303), // Stamp(325)  wtag(3)
-STAMPWTAG_llvmo__ConstantStruct_O = ADJUST_STAMP(1307), // Stamp(326)  wtag(3)
-STAMPWTAG_llvmo__ConstantInt_O = ADJUST_STAMP(1311), // Stamp(327)  wtag(3)
-STAMPWTAG_llvmo__ConstantFP_O = ADJUST_STAMP(1315), // Stamp(328)  wtag(3)
-STAMPWTAG_llvmo__ConstantExpr_O = ADJUST_STAMP(1319), // Stamp(329)  wtag(3)
-STAMPWTAG_llvmo__ConstantPointerNull_O = ADJUST_STAMP(1323), // Stamp(330)  wtag(3)
-STAMPWTAG_llvmo__UndefValue_O = ADJUST_STAMP(1327), // Stamp(331)  wtag(3)
-STAMPWTAG_llvmo__ConstantArray_O = ADJUST_STAMP(1331), // Stamp(332)  wtag(3)
-STAMPWTAG_llvmo__TargetMachine_O = ADJUST_STAMP(1335), // Stamp(333)  wtag(3)
-STAMPWTAG_llvmo__LLVMTargetMachine_O = ADJUST_STAMP(1339), // Stamp(334)  wtag(3)
-STAMPWTAG_llvmo__ThreadSafeContext_O = ADJUST_STAMP(1343), // Stamp(335)  wtag(3)
-STAMPWTAG_llvmo__NamedMDNode_O = ADJUST_STAMP(1347), // Stamp(336)  wtag(3)
-STAMPWTAG_llvmo__Triple_O = ADJUST_STAMP(1351), // Stamp(337)  wtag(3)
-STAMPWTAG_llvmo__DWARFContext_O = ADJUST_STAMP(1355), // Stamp(338)  wtag(3)
-STAMPWTAG_llvmo__TargetOptions_O = ADJUST_STAMP(1359), // Stamp(339)  wtag(3)
-STAMPWTAG_llvmo__LLVMContext_O = ADJUST_STAMP(1363), // Stamp(340)  wtag(3)
-STAMPWTAG_llvmo__PassManagerBuilder_O = ADJUST_STAMP(1367), // Stamp(341)  wtag(3)
-STAMPWTAG_llvmo__Module_O = ADJUST_STAMP(1371), // Stamp(342)  wtag(3)
-STAMPWTAG_llvmo__Target_O = ADJUST_STAMP(1375), // Stamp(343)  wtag(3)
-STAMPWTAG_llvmo__Linker_O = ADJUST_STAMP(1379), // Stamp(344)  wtag(3)
-STAMPWTAG_core__Rack_O = ADJUST_STAMP(1383), // Stamp(345)  wtag(3)
-STAMPWTAG_core__SmallMultimap_O = ADJUST_STAMP(1387), // Stamp(346)  wtag(3)
-STAMPWTAG_core__Sigset_O = ADJUST_STAMP(1391), // Stamp(347)  wtag(3)
-STAMPWTAG_core__DebuggerFrame_O = ADJUST_STAMP(1395), // Stamp(348)  wtag(3)
-STAMPWTAG_core__Environment_O = ADJUST_STAMP(1399), // Stamp(349)  wtag(3)
-STAMPWTAG_core__GlueEnvironment_O = ADJUST_STAMP(1403), // Stamp(350)  wtag(3)
-STAMPWTAG_core__LexicalEnvironment_O = ADJUST_STAMP(1407), // Stamp(351)  wtag(3)
-STAMPWTAG_core__RuntimeVisibleEnvironment_O = ADJUST_STAMP(1411), // Stamp(352)  wtag(3)
-STAMPWTAG_core__FunctionValueEnvironment_O = ADJUST_STAMP(1415), // Stamp(353)  wtag(3)
-STAMPWTAG_core__TagbodyEnvironment_O = ADJUST_STAMP(1419), // Stamp(354)  wtag(3)
-STAMPWTAG_core__BlockEnvironment_O = ADJUST_STAMP(1423), // Stamp(355)  wtag(3)
-STAMPWTAG_core__ValueEnvironment_O = ADJUST_STAMP(1427), // Stamp(356)  wtag(3)
-STAMPWTAG_core__CompileTimeEnvironment_O = ADJUST_STAMP(1431), // Stamp(357)  wtag(3)
-STAMPWTAG_core__CatchEnvironment_O = ADJUST_STAMP(1435), // Stamp(358)  wtag(3)
-STAMPWTAG_core__MacroletEnvironment_O = ADJUST_STAMP(1439), // Stamp(359)  wtag(3)
-STAMPWTAG_core__SymbolMacroletEnvironment_O = ADJUST_STAMP(1443), // Stamp(360)  wtag(3)
-STAMPWTAG_core__FunctionContainerEnvironment_O = ADJUST_STAMP(1447), // Stamp(361)  wtag(3)
-STAMPWTAG_core__UnwindProtectEnvironment_O = ADJUST_STAMP(1451), // Stamp(362)  wtag(3)
-STAMPWTAG_core__ActivationFrame_O = ADJUST_STAMP(1455), // Stamp(363)  wtag(3)
-STAMPWTAG_core__ValueFrame_O = ADJUST_STAMP(1459), // Stamp(364)  wtag(3)
-STAMPWTAG_core__FunctionFrame_O = ADJUST_STAMP(1463), // Stamp(365)  wtag(3)
-STAMPWTAG_core__RandomState_O = ADJUST_STAMP(1467), // Stamp(366)  wtag(3)
-STAMPWTAG_core__EntryPointBase_O = ADJUST_STAMP(1471), // Stamp(367)  wtag(3)
-STAMPWTAG_core__GlobalEntryPointGenerator_O = ADJUST_STAMP(1475), // Stamp(368)  wtag(3)
-STAMPWTAG_core__LocalEntryPointGenerator_O = ADJUST_STAMP(1479), // Stamp(369)  wtag(3)
-STAMPWTAG_core__CodeEntryPoint_O = ADJUST_STAMP(1483), // Stamp(370)  wtag(3)
-STAMPWTAG_core__GlobalEntryPoint_O = ADJUST_STAMP(1487), // Stamp(371)  wtag(3)
-STAMPWTAG_core__LocalEntryPoint_O = ADJUST_STAMP(1491), // Stamp(372)  wtag(3)
-STAMPWTAG_core__DebuggerLocal_O = ADJUST_STAMP(1495), // Stamp(373)  wtag(3)
-STAMPWTAG_core__HashTableBase_O = ADJUST_STAMP(1499), // Stamp(374)  wtag(3)
-STAMPWTAG_core__WeakKeyHashTable_O = ADJUST_STAMP(1503), // Stamp(375)  wtag(3)
-STAMPWTAG_core__HashTable_O = ADJUST_STAMP(1507), // Stamp(376)  wtag(3)
-STAMPWTAG_core__HashTableEqualp_O = ADJUST_STAMP(1511), // Stamp(377)  wtag(3)
-STAMPWTAG_core__HashTableEq_O = ADJUST_STAMP(1515), // Stamp(378)  wtag(3)
-STAMPWTAG_core__HashTableEql_O = ADJUST_STAMP(1519), // Stamp(379)  wtag(3)
-STAMPWTAG_core__HashTableEqual_O = ADJUST_STAMP(1523), // Stamp(380)  wtag(3)
-STAMPWTAG_core__HashTableCustom_O = ADJUST_STAMP(1527), // Stamp(381)  wtag(3)
-STAMPWTAG_core__FunctionDescription_O = ADJUST_STAMP(1531), // Stamp(382)  wtag(3)
-STAMPWTAG_llvmo__InsertPoint_O = ADJUST_STAMP(1535), // Stamp(383)  wtag(3)
-STAMPWTAG_core__Scope_O = ADJUST_STAMP(1539), // Stamp(384)  wtag(3)
-STAMPWTAG_core__FileScope_O = ADJUST_STAMP(1543), // Stamp(385)  wtag(3)
-STAMPWTAG_core__Path_O = ADJUST_STAMP(1547), // Stamp(386)  wtag(3)
-STAMPWTAG_core__Pathname_O = ADJUST_STAMP(1551), // Stamp(387)  wtag(3)
-STAMPWTAG_core__LogicalPathname_O = ADJUST_STAMP(1555), // Stamp(388)  wtag(3)
-STAMPWTAG_core__Number_O = ADJUST_STAMP(1559), // Stamp(389)  wtag(3)
-STAMPWTAG_core__Real_O = ADJUST_STAMP(1563), // Stamp(390)  wtag(3)
-STAMPWTAG_core__Rational_O = ADJUST_STAMP(1567), // Stamp(391)  wtag(3)
-STAMPWTAG_core__Ratio_O = ADJUST_STAMP(1571), // Stamp(392)  wtag(3)
-STAMPWTAG_core__Integer_O = ADJUST_STAMP(1575), // Stamp(393)  wtag(3)
-STAMPWTAG_core__Bignum_O = ADJUST_STAMP(1579), // Stamp(394)  wtag(3)
-STAMPWTAG_core__Fixnum_dummy_O = ADJUST_STAMP(1583), // Stamp(395)  wtag(3)
-STAMPWTAG_core__Float_O = ADJUST_STAMP(1587), // Stamp(396)  wtag(3)
-STAMPWTAG_core__DoubleFloat_O = ADJUST_STAMP(1591), // Stamp(397)  wtag(3)
-STAMPWTAG_core__SingleFloat_dummy_O = ADJUST_STAMP(1595), // Stamp(398)  wtag(3)
-STAMPWTAG_core__LongFloat_O = ADJUST_STAMP(1599), // Stamp(399)  wtag(3)
-STAMPWTAG_core__ShortFloat_O = ADJUST_STAMP(1603), // Stamp(400)  wtag(3)
-STAMPWTAG_core__Complex_O = ADJUST_STAMP(1607), // Stamp(401)  wtag(3)
-STAMPWTAG_core__Stream_O = ADJUST_STAMP(1611), // Stamp(402)  wtag(3)
-STAMPWTAG_core__AnsiStream_O = ADJUST_STAMP(1615), // Stamp(403)  wtag(3)
-STAMPWTAG_core__TwoWayStream_O = ADJUST_STAMP(1619), // Stamp(404)  wtag(3)
-STAMPWTAG_core__SynonymStream_O = ADJUST_STAMP(1623), // Stamp(405)  wtag(3)
-STAMPWTAG_core__ConcatenatedStream_O = ADJUST_STAMP(1627), // Stamp(406)  wtag(3)
-STAMPWTAG_core__FileStream_O = ADJUST_STAMP(1631), // Stamp(407)  wtag(3)
-STAMPWTAG_core__IOFileStream_O = ADJUST_STAMP(1635), // Stamp(408)  wtag(3)
-STAMPWTAG_core__IOStreamStream_O = ADJUST_STAMP(1639), // Stamp(409)  wtag(3)
-STAMPWTAG_core__BroadcastStream_O = ADJUST_STAMP(1643), // Stamp(410)  wtag(3)
-STAMPWTAG_core__StringStream_O = ADJUST_STAMP(1647), // Stamp(411)  wtag(3)
-STAMPWTAG_core__StringOutputStream_O = ADJUST_STAMP(1651), // Stamp(412)  wtag(3)
-STAMPWTAG_core__StringInputStream_O = ADJUST_STAMP(1655), // Stamp(413)  wtag(3)
-STAMPWTAG_core__EchoStream_O = ADJUST_STAMP(1659), // Stamp(414)  wtag(3)
-STAMPWTAG_core__Package_O = ADJUST_STAMP(1663), // Stamp(415)  wtag(3)
-STAMPWTAG_core__FileStatus_O = ADJUST_STAMP(1667), // Stamp(416)  wtag(3)
-STAMPWTAG_core__SourcePosInfo_O = ADJUST_STAMP(1671), // Stamp(417)  wtag(3)
-STAMPWTAG_core__DirectoryEntry_O = ADJUST_STAMP(1675), // Stamp(418)  wtag(3)
-STAMPWTAG_core__LightUserData_O = ADJUST_STAMP(1679), // Stamp(419)  wtag(3)
-STAMPWTAG_core__UserData_O = ADJUST_STAMP(1683), // Stamp(420)  wtag(3)
-STAMPWTAG_core__Record_O = ADJUST_STAMP(1687), // Stamp(421)  wtag(3)
-STAMPWTAG_clbind__ClassRegistry_O = ADJUST_STAMP(1691), // Stamp(422)  wtag(3)
-STAMPWTAG_core__Cons_O = ADJUST_STAMP(1695), // Stamp(423)  wtag(3)
-STAMPWTAG_core__Lisp_O = ADJUST_STAMP(1699), // Stamp(424)  wtag(3)
-STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_ = ADJUST_STAMP(1703), // Stamp(425)  wtag(3)
-STAMPWTAG_asttooling__AstVisitor_O = ADJUST_STAMP(1707), // Stamp(426)  wtag(3)
-STAMPWTAG_clang__tooling__ToolAction = ADJUST_STAMP(1711), // Stamp(427)  wtag(3)
-STAMPWTAG_clang__tooling__FrontendActionFactory = ADJUST_STAMP(1715), // Stamp(428)  wtag(3)
-STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback = ADJUST_STAMP(1719), // Stamp(429)  wtag(3)
-STAMPWTAG_gctools__GCContainer = ADJUST_STAMP(1723), // Stamp(430)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_unsigned_int_ = ADJUST_STAMP(1727), // Stamp(431)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = ADJUST_STAMP(1731), // Stamp(432)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_short_ = ADJUST_STAMP(1735), // Stamp(433)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = ADJUST_STAMP(1739), // Stamp(434)  wtag(3)
-STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_ = ADJUST_STAMP(1743), // Stamp(435)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_ = ADJUST_STAMP(1747), // Stamp(436)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_signed_char_ = ADJUST_STAMP(1751), // Stamp(437)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ = ADJUST_STAMP(1755), // Stamp(438)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ = ADJUST_STAMP(1759), // Stamp(439)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_unsigned_char_ = ADJUST_STAMP(1763), // Stamp(440)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_ = ADJUST_STAMP(1767), // Stamp(441)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = ADJUST_STAMP(1771), // Stamp(442)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(1775), // Stamp(443)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_double_ = ADJUST_STAMP(1779), // Stamp(444)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_ = ADJUST_STAMP(1783), // Stamp(445)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_ = ADJUST_STAMP(1787), // Stamp(446)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_ = ADJUST_STAMP(1791), // Stamp(447)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__ = ADJUST_STAMP(1795), // Stamp(448)  wtag(3)
-STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_ = ADJUST_STAMP(1799), // Stamp(449)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_ = ADJUST_STAMP(1803), // Stamp(450)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__ = ADJUST_STAMP(1807), // Stamp(451)  wtag(3)
-STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(1811), // Stamp(452)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_ = ADJUST_STAMP(1815), // Stamp(453)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_unsigned_long_ = ADJUST_STAMP(1819), // Stamp(454)  wtag(3)
-STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_ = ADJUST_STAMP(1823), // Stamp(455)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = ADJUST_STAMP(1827), // Stamp(456)  wtag(3)
-STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_ = ADJUST_STAMP(1831), // Stamp(457)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_int_ = ADJUST_STAMP(1835), // Stamp(458)  wtag(3)
-STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_ = ADJUST_STAMP(1839), // Stamp(459)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(1843), // Stamp(460)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_ = ADJUST_STAMP(1847), // Stamp(461)  wtag(3)
-STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_ = ADJUST_STAMP(1851), // Stamp(462)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_long_ = ADJUST_STAMP(1855), // Stamp(463)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_int_ = ADJUST_STAMP(1859), // Stamp(464)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = ADJUST_STAMP(1863), // Stamp(465)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_float_ = ADJUST_STAMP(1867), // Stamp(466)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_ = ADJUST_STAMP(1871), // Stamp(467)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__ = ADJUST_STAMP(1875), // Stamp(468)  wtag(3)
-STAMPWTAG_gctools__GCVector_moveable_core__T_O___ = ADJUST_STAMP(1879), // Stamp(469)  wtag(3)
-STAMPWTAG_gctools__GCArray_moveable_unsigned_short_ = ADJUST_STAMP(1883), // Stamp(470)  wtag(3)
-STAMPWTAG_clang__FrontendAction = ADJUST_STAMP(1887), // Stamp(471)  wtag(3)
-STAMPWTAG_clang__ASTFrontendAction = ADJUST_STAMP(1891), // Stamp(472)  wtag(3)
-STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
+STAMPWTAG_core__Exposer_O = ADJUST_STAMP(927), // Stamp(231)  wtag(3)
+STAMPWTAG_core__CoreExposer_O = ADJUST_STAMP(931), // Stamp(232)  wtag(3)
+STAMPWTAG_asttooling__AsttoolingExposer_O = ADJUST_STAMP(935), // Stamp(233)  wtag(3)
+STAMPWTAG_llvmo__StructLayout_O = ADJUST_STAMP(939), // Stamp(234)  wtag(3)
+STAMPWTAG_clasp_ffi__ForeignTypeSpec_O = ADJUST_STAMP(943), // Stamp(235)  wtag(3)
+STAMPWTAG_core__Instance_O = ADJUST_STAMP(945), // Stamp(236)  wtag(1)
+STAMPWTAG_core__DerivableCxxObject_O = ADJUST_STAMP(948), // Stamp(237)  wtag(0)
+STAMPWTAG_clbind__ClassRep_O = ADJUST_STAMP(953), // Stamp(238)  wtag(1)
+STAMPWTAG_core__SmallMap_O = ADJUST_STAMP(959), // Stamp(239)  wtag(3)
+STAMPWTAG_mpip__Mpi_O = ADJUST_STAMP(963), // Stamp(240)  wtag(3)
+STAMPWTAG_core__ExternalObject_O = ADJUST_STAMP(967), // Stamp(241)  wtag(3)
+STAMPWTAG_llvmo__Pass_O = ADJUST_STAMP(971), // Stamp(242)  wtag(3)
+STAMPWTAG_llvmo__ModulePass_O = ADJUST_STAMP(975), // Stamp(243)  wtag(3)
+STAMPWTAG_llvmo__ImmutablePass_O = ADJUST_STAMP(979), // Stamp(244)  wtag(3)
+STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O = ADJUST_STAMP(983), // Stamp(245)  wtag(3)
+STAMPWTAG_llvmo__FunctionPass_O = ADJUST_STAMP(987), // Stamp(246)  wtag(3)
+STAMPWTAG_llvmo__ExecutionEngine_O = ADJUST_STAMP(991), // Stamp(247)  wtag(3)
+STAMPWTAG_llvmo__MCSubtargetInfo_O = ADJUST_STAMP(995), // Stamp(248)  wtag(3)
+STAMPWTAG_llvmo__TargetSubtargetInfo_O = ADJUST_STAMP(999), // Stamp(249)  wtag(3)
+STAMPWTAG_llvmo__Type_O = ADJUST_STAMP(1003), // Stamp(250)  wtag(3)
+STAMPWTAG_llvmo__PointerType_O = ADJUST_STAMP(1007), // Stamp(251)  wtag(3)
+STAMPWTAG_llvmo__ArrayType_O = ADJUST_STAMP(1011), // Stamp(252)  wtag(3)
+STAMPWTAG_llvmo__FunctionType_O = ADJUST_STAMP(1015), // Stamp(253)  wtag(3)
+STAMPWTAG_llvmo__IntegerType_O = ADJUST_STAMP(1019), // Stamp(254)  wtag(3)
+STAMPWTAG_llvmo__StructType_O = ADJUST_STAMP(1023), // Stamp(255)  wtag(3)
+STAMPWTAG_llvmo__VectorType_O = ADJUST_STAMP(1027), // Stamp(256)  wtag(3)
+STAMPWTAG_llvmo__JITDylib_O = ADJUST_STAMP(1031), // Stamp(257)  wtag(3)
+STAMPWTAG_llvmo__DIContext_O = ADJUST_STAMP(1035), // Stamp(258)  wtag(3)
+STAMPWTAG_llvmo__TargetPassConfig_O = ADJUST_STAMP(1039), // Stamp(259)  wtag(3)
+STAMPWTAG_llvmo__IRBuilderBase_O = ADJUST_STAMP(1043), // Stamp(260)  wtag(3)
+STAMPWTAG_llvmo__IRBuilder_O = ADJUST_STAMP(1047), // Stamp(261)  wtag(3)
+STAMPWTAG_llvmo__APFloat_O = ADJUST_STAMP(1051), // Stamp(262)  wtag(3)
+STAMPWTAG_llvmo__APInt_O = ADJUST_STAMP(1055), // Stamp(263)  wtag(3)
+STAMPWTAG_llvmo__DIBuilder_O = ADJUST_STAMP(1059), // Stamp(264)  wtag(3)
+STAMPWTAG_llvmo__SectionedAddress_O = ADJUST_STAMP(1063), // Stamp(265)  wtag(3)
+STAMPWTAG_llvmo__EngineBuilder_O = ADJUST_STAMP(1067), // Stamp(266)  wtag(3)
+STAMPWTAG_llvmo__PassManagerBase_O = ADJUST_STAMP(1071), // Stamp(267)  wtag(3)
+STAMPWTAG_llvmo__PassManager_O = ADJUST_STAMP(1075), // Stamp(268)  wtag(3)
+STAMPWTAG_llvmo__FunctionPassManager_O = ADJUST_STAMP(1079), // Stamp(269)  wtag(3)
+STAMPWTAG_llvmo__Metadata_O = ADJUST_STAMP(1083), // Stamp(270)  wtag(3)
+STAMPWTAG_llvmo__MDNode_O = ADJUST_STAMP(1087), // Stamp(271)  wtag(3)
+STAMPWTAG_llvmo__DINode_O = ADJUST_STAMP(1091), // Stamp(272)  wtag(3)
+STAMPWTAG_llvmo__DIVariable_O = ADJUST_STAMP(1095), // Stamp(273)  wtag(3)
+STAMPWTAG_llvmo__DILocalVariable_O = ADJUST_STAMP(1099), // Stamp(274)  wtag(3)
+STAMPWTAG_llvmo__DIScope_O = ADJUST_STAMP(1103), // Stamp(275)  wtag(3)
+STAMPWTAG_llvmo__DIFile_O = ADJUST_STAMP(1107), // Stamp(276)  wtag(3)
+STAMPWTAG_llvmo__DIType_O = ADJUST_STAMP(1111), // Stamp(277)  wtag(3)
+STAMPWTAG_llvmo__DICompositeType_O = ADJUST_STAMP(1115), // Stamp(278)  wtag(3)
+STAMPWTAG_llvmo__DIDerivedType_O = ADJUST_STAMP(1119), // Stamp(279)  wtag(3)
+STAMPWTAG_llvmo__DIBasicType_O = ADJUST_STAMP(1123), // Stamp(280)  wtag(3)
+STAMPWTAG_llvmo__DISubroutineType_O = ADJUST_STAMP(1127), // Stamp(281)  wtag(3)
+STAMPWTAG_llvmo__DILocalScope_O = ADJUST_STAMP(1131), // Stamp(282)  wtag(3)
+STAMPWTAG_llvmo__DISubprogram_O = ADJUST_STAMP(1135), // Stamp(283)  wtag(3)
+STAMPWTAG_llvmo__DILexicalBlockBase_O = ADJUST_STAMP(1139), // Stamp(284)  wtag(3)
+STAMPWTAG_llvmo__DILexicalBlock_O = ADJUST_STAMP(1143), // Stamp(285)  wtag(3)
+STAMPWTAG_llvmo__DICompileUnit_O = ADJUST_STAMP(1147), // Stamp(286)  wtag(3)
+STAMPWTAG_llvmo__DIExpression_O = ADJUST_STAMP(1151), // Stamp(287)  wtag(3)
+STAMPWTAG_llvmo__DILocation_O = ADJUST_STAMP(1155), // Stamp(288)  wtag(3)
+STAMPWTAG_llvmo__ValueAsMetadata_O = ADJUST_STAMP(1159), // Stamp(289)  wtag(3)
+STAMPWTAG_llvmo__MDString_O = ADJUST_STAMP(1163), // Stamp(290)  wtag(3)
+STAMPWTAG_core__Test_O = ADJUST_STAMP(1167), // Stamp(291)  wtag(3)
+STAMPWTAG_llvmo__Value_O = ADJUST_STAMP(1171), // Stamp(292)  wtag(3)
+STAMPWTAG_llvmo__Argument_O = ADJUST_STAMP(1175), // Stamp(293)  wtag(3)
+STAMPWTAG_llvmo__BasicBlock_O = ADJUST_STAMP(1179), // Stamp(294)  wtag(3)
+STAMPWTAG_llvmo__MetadataAsValue_O = ADJUST_STAMP(1183), // Stamp(295)  wtag(3)
+STAMPWTAG_llvmo__User_O = ADJUST_STAMP(1187), // Stamp(296)  wtag(3)
+STAMPWTAG_llvmo__Instruction_O = ADJUST_STAMP(1191), // Stamp(297)  wtag(3)
+STAMPWTAG_llvmo__UnaryInstruction_O = ADJUST_STAMP(1195), // Stamp(298)  wtag(3)
+STAMPWTAG_llvmo__VAArgInst_O = ADJUST_STAMP(1199), // Stamp(299)  wtag(3)
+STAMPWTAG_llvmo__LoadInst_O = ADJUST_STAMP(1203), // Stamp(300)  wtag(3)
+STAMPWTAG_llvmo__AllocaInst_O = ADJUST_STAMP(1207), // Stamp(301)  wtag(3)
+STAMPWTAG_llvmo__SwitchInst_O = ADJUST_STAMP(1211), // Stamp(302)  wtag(3)
+STAMPWTAG_llvmo__AtomicRMWInst_O = ADJUST_STAMP(1215), // Stamp(303)  wtag(3)
+STAMPWTAG_llvmo__LandingPadInst_O = ADJUST_STAMP(1219), // Stamp(304)  wtag(3)
+STAMPWTAG_llvmo__StoreInst_O = ADJUST_STAMP(1223), // Stamp(305)  wtag(3)
+STAMPWTAG_llvmo__UnreachableInst_O = ADJUST_STAMP(1227), // Stamp(306)  wtag(3)
+STAMPWTAG_llvmo__ReturnInst_O = ADJUST_STAMP(1231), // Stamp(307)  wtag(3)
+STAMPWTAG_llvmo__ResumeInst_O = ADJUST_STAMP(1235), // Stamp(308)  wtag(3)
+STAMPWTAG_llvmo__AtomicCmpXchgInst_O = ADJUST_STAMP(1239), // Stamp(309)  wtag(3)
+STAMPWTAG_llvmo__FenceInst_O = ADJUST_STAMP(1243), // Stamp(310)  wtag(3)
+STAMPWTAG_llvmo__CallBase_O = ADJUST_STAMP(1247), // Stamp(311)  wtag(3)
+STAMPWTAG_llvmo__CallInst_O = ADJUST_STAMP(1251), // Stamp(312)  wtag(3)
+STAMPWTAG_llvmo__InvokeInst_O = ADJUST_STAMP(1255), // Stamp(313)  wtag(3)
+STAMPWTAG_llvmo__PHINode_O = ADJUST_STAMP(1259), // Stamp(314)  wtag(3)
+STAMPWTAG_llvmo__IndirectBrInst_O = ADJUST_STAMP(1263), // Stamp(315)  wtag(3)
+STAMPWTAG_llvmo__BranchInst_O = ADJUST_STAMP(1267), // Stamp(316)  wtag(3)
+STAMPWTAG_llvmo__Constant_O = ADJUST_STAMP(1271), // Stamp(317)  wtag(3)
+STAMPWTAG_llvmo__GlobalValue_O = ADJUST_STAMP(1275), // Stamp(318)  wtag(3)
+STAMPWTAG_llvmo__Function_O = ADJUST_STAMP(1279), // Stamp(319)  wtag(3)
+STAMPWTAG_llvmo__GlobalVariable_O = ADJUST_STAMP(1283), // Stamp(320)  wtag(3)
+STAMPWTAG_llvmo__BlockAddress_O = ADJUST_STAMP(1287), // Stamp(321)  wtag(3)
+STAMPWTAG_llvmo__ConstantDataSequential_O = ADJUST_STAMP(1291), // Stamp(322)  wtag(3)
+STAMPWTAG_llvmo__ConstantDataArray_O = ADJUST_STAMP(1295), // Stamp(323)  wtag(3)
+STAMPWTAG_llvmo__ConstantStruct_O = ADJUST_STAMP(1299), // Stamp(324)  wtag(3)
+STAMPWTAG_llvmo__ConstantInt_O = ADJUST_STAMP(1303), // Stamp(325)  wtag(3)
+STAMPWTAG_llvmo__ConstantFP_O = ADJUST_STAMP(1307), // Stamp(326)  wtag(3)
+STAMPWTAG_llvmo__ConstantExpr_O = ADJUST_STAMP(1311), // Stamp(327)  wtag(3)
+STAMPWTAG_llvmo__ConstantPointerNull_O = ADJUST_STAMP(1315), // Stamp(328)  wtag(3)
+STAMPWTAG_llvmo__UndefValue_O = ADJUST_STAMP(1319), // Stamp(329)  wtag(3)
+STAMPWTAG_llvmo__ConstantArray_O = ADJUST_STAMP(1323), // Stamp(330)  wtag(3)
+STAMPWTAG_llvmo__TargetMachine_O = ADJUST_STAMP(1327), // Stamp(331)  wtag(3)
+STAMPWTAG_llvmo__LLVMTargetMachine_O = ADJUST_STAMP(1331), // Stamp(332)  wtag(3)
+STAMPWTAG_llvmo__ThreadSafeContext_O = ADJUST_STAMP(1335), // Stamp(333)  wtag(3)
+STAMPWTAG_llvmo__NamedMDNode_O = ADJUST_STAMP(1339), // Stamp(334)  wtag(3)
+STAMPWTAG_llvmo__Triple_O = ADJUST_STAMP(1343), // Stamp(335)  wtag(3)
+STAMPWTAG_llvmo__DWARFContext_O = ADJUST_STAMP(1347), // Stamp(336)  wtag(3)
+STAMPWTAG_llvmo__TargetOptions_O = ADJUST_STAMP(1351), // Stamp(337)  wtag(3)
+STAMPWTAG_llvmo__LLVMContext_O = ADJUST_STAMP(1355), // Stamp(338)  wtag(3)
+STAMPWTAG_llvmo__PassManagerBuilder_O = ADJUST_STAMP(1359), // Stamp(339)  wtag(3)
+STAMPWTAG_llvmo__Module_O = ADJUST_STAMP(1363), // Stamp(340)  wtag(3)
+STAMPWTAG_llvmo__Target_O = ADJUST_STAMP(1367), // Stamp(341)  wtag(3)
+STAMPWTAG_llvmo__Linker_O = ADJUST_STAMP(1371), // Stamp(342)  wtag(3)
+STAMPWTAG_core__Rack_O = ADJUST_STAMP(1375), // Stamp(343)  wtag(3)
+STAMPWTAG_core__SmallMultimap_O = ADJUST_STAMP(1379), // Stamp(344)  wtag(3)
+STAMPWTAG_core__Sigset_O = ADJUST_STAMP(1383), // Stamp(345)  wtag(3)
+STAMPWTAG_core__DebuggerFrame_O = ADJUST_STAMP(1387), // Stamp(346)  wtag(3)
+STAMPWTAG_core__Environment_O = ADJUST_STAMP(1391), // Stamp(347)  wtag(3)
+STAMPWTAG_core__GlueEnvironment_O = ADJUST_STAMP(1395), // Stamp(348)  wtag(3)
+STAMPWTAG_core__LexicalEnvironment_O = ADJUST_STAMP(1399), // Stamp(349)  wtag(3)
+STAMPWTAG_core__RuntimeVisibleEnvironment_O = ADJUST_STAMP(1403), // Stamp(350)  wtag(3)
+STAMPWTAG_core__FunctionValueEnvironment_O = ADJUST_STAMP(1407), // Stamp(351)  wtag(3)
+STAMPWTAG_core__TagbodyEnvironment_O = ADJUST_STAMP(1411), // Stamp(352)  wtag(3)
+STAMPWTAG_core__BlockEnvironment_O = ADJUST_STAMP(1415), // Stamp(353)  wtag(3)
+STAMPWTAG_core__ValueEnvironment_O = ADJUST_STAMP(1419), // Stamp(354)  wtag(3)
+STAMPWTAG_core__CompileTimeEnvironment_O = ADJUST_STAMP(1423), // Stamp(355)  wtag(3)
+STAMPWTAG_core__CatchEnvironment_O = ADJUST_STAMP(1427), // Stamp(356)  wtag(3)
+STAMPWTAG_core__MacroletEnvironment_O = ADJUST_STAMP(1431), // Stamp(357)  wtag(3)
+STAMPWTAG_core__SymbolMacroletEnvironment_O = ADJUST_STAMP(1435), // Stamp(358)  wtag(3)
+STAMPWTAG_core__FunctionContainerEnvironment_O = ADJUST_STAMP(1439), // Stamp(359)  wtag(3)
+STAMPWTAG_core__UnwindProtectEnvironment_O = ADJUST_STAMP(1443), // Stamp(360)  wtag(3)
+STAMPWTAG_core__ActivationFrame_O = ADJUST_STAMP(1447), // Stamp(361)  wtag(3)
+STAMPWTAG_core__ValueFrame_O = ADJUST_STAMP(1451), // Stamp(362)  wtag(3)
+STAMPWTAG_core__FunctionFrame_O = ADJUST_STAMP(1455), // Stamp(363)  wtag(3)
+STAMPWTAG_core__RandomState_O = ADJUST_STAMP(1459), // Stamp(364)  wtag(3)
+STAMPWTAG_core__EntryPointBase_O = ADJUST_STAMP(1463), // Stamp(365)  wtag(3)
+STAMPWTAG_core__GlobalEntryPointGenerator_O = ADJUST_STAMP(1467), // Stamp(366)  wtag(3)
+STAMPWTAG_core__LocalEntryPointGenerator_O = ADJUST_STAMP(1471), // Stamp(367)  wtag(3)
+STAMPWTAG_core__CodeEntryPoint_O = ADJUST_STAMP(1475), // Stamp(368)  wtag(3)
+STAMPWTAG_core__GlobalEntryPoint_O = ADJUST_STAMP(1479), // Stamp(369)  wtag(3)
+STAMPWTAG_core__LocalEntryPoint_O = ADJUST_STAMP(1483), // Stamp(370)  wtag(3)
+STAMPWTAG_core__DebuggerLocal_O = ADJUST_STAMP(1487), // Stamp(371)  wtag(3)
+STAMPWTAG_core__HashTableBase_O = ADJUST_STAMP(1491), // Stamp(372)  wtag(3)
+STAMPWTAG_core__WeakKeyHashTable_O = ADJUST_STAMP(1495), // Stamp(373)  wtag(3)
+STAMPWTAG_core__HashTable_O = ADJUST_STAMP(1499), // Stamp(374)  wtag(3)
+STAMPWTAG_core__HashTableEqualp_O = ADJUST_STAMP(1503), // Stamp(375)  wtag(3)
+STAMPWTAG_core__HashTableEq_O = ADJUST_STAMP(1507), // Stamp(376)  wtag(3)
+STAMPWTAG_core__HashTableEql_O = ADJUST_STAMP(1511), // Stamp(377)  wtag(3)
+STAMPWTAG_core__HashTableEqual_O = ADJUST_STAMP(1515), // Stamp(378)  wtag(3)
+STAMPWTAG_core__HashTableCustom_O = ADJUST_STAMP(1519), // Stamp(379)  wtag(3)
+STAMPWTAG_core__FunctionDescription_O = ADJUST_STAMP(1523), // Stamp(380)  wtag(3)
+STAMPWTAG_llvmo__InsertPoint_O = ADJUST_STAMP(1527), // Stamp(381)  wtag(3)
+STAMPWTAG_core__Scope_O = ADJUST_STAMP(1531), // Stamp(382)  wtag(3)
+STAMPWTAG_core__FileScope_O = ADJUST_STAMP(1535), // Stamp(383)  wtag(3)
+STAMPWTAG_core__Path_O = ADJUST_STAMP(1539), // Stamp(384)  wtag(3)
+STAMPWTAG_core__Pathname_O = ADJUST_STAMP(1543), // Stamp(385)  wtag(3)
+STAMPWTAG_core__LogicalPathname_O = ADJUST_STAMP(1547), // Stamp(386)  wtag(3)
+STAMPWTAG_core__Number_O = ADJUST_STAMP(1551), // Stamp(387)  wtag(3)
+STAMPWTAG_core__Real_O = ADJUST_STAMP(1555), // Stamp(388)  wtag(3)
+STAMPWTAG_core__Rational_O = ADJUST_STAMP(1559), // Stamp(389)  wtag(3)
+STAMPWTAG_core__Ratio_O = ADJUST_STAMP(1563), // Stamp(390)  wtag(3)
+STAMPWTAG_core__Integer_O = ADJUST_STAMP(1567), // Stamp(391)  wtag(3)
+STAMPWTAG_core__Bignum_O = ADJUST_STAMP(1571), // Stamp(392)  wtag(3)
+STAMPWTAG_core__Fixnum_dummy_O = ADJUST_STAMP(1575), // Stamp(393)  wtag(3)
+STAMPWTAG_core__Float_O = ADJUST_STAMP(1579), // Stamp(394)  wtag(3)
+STAMPWTAG_core__DoubleFloat_O = ADJUST_STAMP(1583), // Stamp(395)  wtag(3)
+STAMPWTAG_core__SingleFloat_dummy_O = ADJUST_STAMP(1587), // Stamp(396)  wtag(3)
+STAMPWTAG_core__LongFloat_O = ADJUST_STAMP(1591), // Stamp(397)  wtag(3)
+STAMPWTAG_core__ShortFloat_O = ADJUST_STAMP(1595), // Stamp(398)  wtag(3)
+STAMPWTAG_core__Complex_O = ADJUST_STAMP(1599), // Stamp(399)  wtag(3)
+STAMPWTAG_core__Stream_O = ADJUST_STAMP(1603), // Stamp(400)  wtag(3)
+STAMPWTAG_core__AnsiStream_O = ADJUST_STAMP(1607), // Stamp(401)  wtag(3)
+STAMPWTAG_core__TwoWayStream_O = ADJUST_STAMP(1611), // Stamp(402)  wtag(3)
+STAMPWTAG_core__SynonymStream_O = ADJUST_STAMP(1615), // Stamp(403)  wtag(3)
+STAMPWTAG_core__ConcatenatedStream_O = ADJUST_STAMP(1619), // Stamp(404)  wtag(3)
+STAMPWTAG_core__FileStream_O = ADJUST_STAMP(1623), // Stamp(405)  wtag(3)
+STAMPWTAG_core__IOFileStream_O = ADJUST_STAMP(1627), // Stamp(406)  wtag(3)
+STAMPWTAG_core__IOStreamStream_O = ADJUST_STAMP(1631), // Stamp(407)  wtag(3)
+STAMPWTAG_core__BroadcastStream_O = ADJUST_STAMP(1635), // Stamp(408)  wtag(3)
+STAMPWTAG_core__StringStream_O = ADJUST_STAMP(1639), // Stamp(409)  wtag(3)
+STAMPWTAG_core__StringOutputStream_O = ADJUST_STAMP(1643), // Stamp(410)  wtag(3)
+STAMPWTAG_core__StringInputStream_O = ADJUST_STAMP(1647), // Stamp(411)  wtag(3)
+STAMPWTAG_core__EchoStream_O = ADJUST_STAMP(1651), // Stamp(412)  wtag(3)
+STAMPWTAG_core__Package_O = ADJUST_STAMP(1655), // Stamp(413)  wtag(3)
+STAMPWTAG_core__FileStatus_O = ADJUST_STAMP(1659), // Stamp(414)  wtag(3)
+STAMPWTAG_core__SourcePosInfo_O = ADJUST_STAMP(1663), // Stamp(415)  wtag(3)
+STAMPWTAG_core__DirectoryEntry_O = ADJUST_STAMP(1667), // Stamp(416)  wtag(3)
+STAMPWTAG_core__LightUserData_O = ADJUST_STAMP(1671), // Stamp(417)  wtag(3)
+STAMPWTAG_core__UserData_O = ADJUST_STAMP(1675), // Stamp(418)  wtag(3)
+STAMPWTAG_core__Record_O = ADJUST_STAMP(1679), // Stamp(419)  wtag(3)
+STAMPWTAG_clbind__ClassRegistry_O = ADJUST_STAMP(1683), // Stamp(420)  wtag(3)
+STAMPWTAG_core__Cons_O = ADJUST_STAMP(1687), // Stamp(421)  wtag(3)
+STAMPWTAG_core__Lisp_O = ADJUST_STAMP(1691), // Stamp(422)  wtag(3)
+STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_ = ADJUST_STAMP(1695), // Stamp(423)  wtag(3)
+STAMPWTAG_asttooling__AstVisitor_O = ADJUST_STAMP(1699), // Stamp(424)  wtag(3)
+STAMPWTAG_clang__tooling__ToolAction = ADJUST_STAMP(1703), // Stamp(425)  wtag(3)
+STAMPWTAG_clang__tooling__FrontendActionFactory = ADJUST_STAMP(1707), // Stamp(426)  wtag(3)
+STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback = ADJUST_STAMP(1711), // Stamp(427)  wtag(3)
+STAMPWTAG_gctools__GCContainer = ADJUST_STAMP(1715), // Stamp(428)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_unsigned_int_ = ADJUST_STAMP(1719), // Stamp(429)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = ADJUST_STAMP(1723), // Stamp(430)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_short_ = ADJUST_STAMP(1727), // Stamp(431)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = ADJUST_STAMP(1731), // Stamp(432)  wtag(3)
+STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_ = ADJUST_STAMP(1735), // Stamp(433)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_ = ADJUST_STAMP(1739), // Stamp(434)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_signed_char_ = ADJUST_STAMP(1743), // Stamp(435)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ = ADJUST_STAMP(1747), // Stamp(436)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ = ADJUST_STAMP(1751), // Stamp(437)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_unsigned_char_ = ADJUST_STAMP(1755), // Stamp(438)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_ = ADJUST_STAMP(1759), // Stamp(439)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = ADJUST_STAMP(1763), // Stamp(440)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(1767), // Stamp(441)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_double_ = ADJUST_STAMP(1771), // Stamp(442)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_ = ADJUST_STAMP(1775), // Stamp(443)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_ = ADJUST_STAMP(1779), // Stamp(444)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_ = ADJUST_STAMP(1783), // Stamp(445)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__ = ADJUST_STAMP(1787), // Stamp(446)  wtag(3)
+STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_ = ADJUST_STAMP(1791), // Stamp(447)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_ = ADJUST_STAMP(1795), // Stamp(448)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__ = ADJUST_STAMP(1799), // Stamp(449)  wtag(3)
+STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(1803), // Stamp(450)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_ = ADJUST_STAMP(1807), // Stamp(451)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_unsigned_long_ = ADJUST_STAMP(1811), // Stamp(452)  wtag(3)
+STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_ = ADJUST_STAMP(1815), // Stamp(453)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = ADJUST_STAMP(1819), // Stamp(454)  wtag(3)
+STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_ = ADJUST_STAMP(1823), // Stamp(455)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_int_ = ADJUST_STAMP(1827), // Stamp(456)  wtag(3)
+STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_ = ADJUST_STAMP(1831), // Stamp(457)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(1835), // Stamp(458)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_ = ADJUST_STAMP(1839), // Stamp(459)  wtag(3)
+STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_ = ADJUST_STAMP(1843), // Stamp(460)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_long_ = ADJUST_STAMP(1847), // Stamp(461)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_int_ = ADJUST_STAMP(1851), // Stamp(462)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = ADJUST_STAMP(1855), // Stamp(463)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_float_ = ADJUST_STAMP(1859), // Stamp(464)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_ = ADJUST_STAMP(1863), // Stamp(465)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__ = ADJUST_STAMP(1867), // Stamp(466)  wtag(3)
+STAMPWTAG_gctools__GCVector_moveable_core__T_O___ = ADJUST_STAMP(1871), // Stamp(467)  wtag(3)
+STAMPWTAG_gctools__GCArray_moveable_unsigned_short_ = ADJUST_STAMP(1875), // Stamp(468)  wtag(3)
+STAMPWTAG_clang__FrontendAction = ADJUST_STAMP(1879), // Stamp(469)  wtag(3)
+STAMPWTAG_clang__ASTFrontendAction = ADJUST_STAMP(1883), // Stamp(470)  wtag(3)
+STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1887), // Stamp(471)  wtag(3)
 // Unused CORE::FORMAT-WARNING-TOO-FEW-ARGUMENTS = 32889, 
 // Unused UIOP/VERSION::DEPRECATED-FUNCTION-WARNING = 33496, 
 // Unused CONCRETE-SYNTAX-TREE::AUX-PARAMETER-GROUP = 32991, 
 // Unused CORE::INDENTATION = 32913, 
 // Unused CLEAVIR-BIR::CASE = 33233, 
 // Unused ECLECTOR.READER::INVALID-RADIX = 33120, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 381, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 379, 
 // Unused CLASP-CLEAVIR-AST::DEBUG-MESSAGE-AST = 33427, 
 // Unused CLOS::%METHOD-FUNCTION = 32815, 
 // Unused CLEAVIR-BIR::TYPEQ-TEST = 33232, 
@@ -931,7 +927,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
 // Unused ASDF/COMPONENT::C-SOURCE-FILE = 33516, 
 // Unused COMMON-LISP::TYPE-ERROR = 32842, 
 // Unused CLEAVIR-AST::FLOAT-GREATER-AST = 33305, 
-// Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_2__false_ = 358, 
+// Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_2__false_ = 356, 
 // Unused COMMON-LISP::SIMPLE-CONDITION = 32830, 
 // Unused UIOP/UTILITY::SIMPLE-STYLE-WARNING = 33491, 
 // Unused CONCRETE-SYNTAX-TREE::EXPLICIT-MULTI-PARAMETER-GROUP = 32984, 
@@ -1023,7 +1019,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-UNQUOTE = 33095, 
 // Unused ECLECTOR.READER::BACKQUOTE-ERROR = 33085, 
 // Unused CLASP-ANALYZER::CLASS-LAYOUT = 33635, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__CacheRecord_ = 363, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_core__CacheRecord_ = 361, 
 // Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-FEATURE-EXPRESSION = 33159, 
 // Unused CLEAVIR-AST::ONE-VALUE-AST-MIXIN = 33253, 
 // Unused ASDF/ACTION::DOWNWARD-OPERATION = 33528, 
@@ -1225,7 +1221,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
 // Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER-GROUP = 32996, 
 // Unused CLASP-CLEAVIR-BMIR::GENERALP = 33482, 
 // Unused CLASP-CLEAVIR-AST::ATOMIC-CAR-AST = 33442, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__KeyValuePair__ = 376, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__KeyValuePair__ = 374, 
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-QUOTE = 33081, 
 // Unused CLASP-ANALYZER::CONTAINER-OFFSET = 33702, 
 // Unused CORE::SIMPLE-FILE-ERROR = 32863, 
@@ -1267,9 +1263,9 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
 // Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER = 33012, 
 // Unused COMMON-LISP::SERIOUS-CONDITION = 32828, 
 // Unused CLEAVIR-CST-TO-AST::SPECIAL-SYMBOL-MACRO = 33397, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__DynamicBinding_ = 364, 
-// Unused CORE::CODE-BLOCK = 32798, 
 // Unused ASDF/PARSE-DEFSYSTEM::NON-SYSTEM-SYSTEM = 33563, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_core__DynamicBinding_ = 362, 
+// Unused CORE::CODE-BLOCK = 32798, 
 // Unused ASDF/LISP-ACTION::BASIC-LOAD-OP = 33538, 
 // Unused ACCLIMATION::JAPANESE = 32964, 
 // Unused ECLECTOR.READER::INCORRECT-INITIALIZATION-LENGTH = 33129, 
@@ -1283,14 +1279,14 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
 // Unused CLEAVIR-BIR::NO-OUTPUT = 33189, 
 // Unused CLEAVIR-ENVIRONMENT::GLOBAL-FUNCTION-INFO = 33332, 
 // Unused CLOS::EFFECTIVE-SLOT-DEFINITION = 32783, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_float_ = 373, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_float_ = 371, 
 // Unused CLEAVIR-AST::COERCE-AST = 33311, 
 // Unused CLASP-ANALYZER::CLASSALLOC = 33632, 
 // Unused CLASP-CLEAVIR-BIR::DEFCALLBACK = 33467, 
 // Unused CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE = 33674, 
 // Unused MP::NOT-ATOMIC = 32855, 
 // Unused ECLECTOR.READTABLE::UNKNOWN-MACRO-SUB-CHARACTER = 33058, 
-// Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_4__false_ = 359, 
+// Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_4__false_ = 357, 
 // Unused ECLECTOR.READER::SLOT-NAME-IS-NOT-A-STRING-DESIGNATOR = 33144, 
 // Unused CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT = 33647, 
 // Unused SB-BSD-SOCKETS::TRY-AGAIN-ERROR = 32952, 
@@ -1317,7 +1313,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
 // Unused CLOS::DIRECT-SLOT-DEFINITION = 32782, 
 // Unused COMPILER::COMPILED-PROGRAM-ERROR = 32919, 
 // Unused MP::LOCK = 32801, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_double_ = 372, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_double_ = 370, 
 // Unused SB-BSD-SOCKETS::LOCAL-SOCKET = 32933, 
 // Unused CLANG-TOOL::WRONG-MATCHER = 33621, 
 // Unused CLEAVIR-AST::DYNAMIC-ALLOCATION-AST = 33286, 
@@ -1564,7 +1560,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
 // Unused CLASP-CLEAVIR-AST::DEBUG-BREAK-AST = 33428, 
 // Unused CLOS::STANDARD-SLOT-DEFINITION = 32781, 
 // Unused CLASP-ANALYZER::SMART-PTR-CTYPE = 33668, 
-// Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_1__false_ = 357, 
+// Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_1__false_ = 355, 
 // Unused ECLECTOR.READER::READ-TIME-EVALUATION-ERROR = 33111, 
 // Unused CONCRETE-SYNTAX-TREE::EARLEY-STATE = 33041, 
 // Unused CLEAVIR-AST::SLOT-WRITE-AST = 33317, 
@@ -1793,7 +1789,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
 // Unused CLEAVIR-AST::TYPEQ-AST = 33279, 
 // Unused MP::PROCESS-JOIN-ERROR = 32857, 
 // Unused CLASP-ANALYZER::JOB-GROUP = 33713, 
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__ExceptionEntry_ = 365, 
+// Unused STAMPWTAG_gctools__GCVector_moveable_core__ExceptionEntry_ = 363, 
 // Unused ECLECTOR.READER::UNTERMINATED-BLOCK-COMMENT = 33122, 
 // Unused CLEAVIR-BIR::ABSTRACT-LOCAL-CALL = 33214, 
 // Unused GRAY::FUNDAMENTAL-BINARY-INPUT-STREAM = 32905, 
@@ -1808,7 +1804,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1895), // Stamp(473)  wtag(3)
 // Unused CLEAVIR-CST-TO-AST::LAMBDA-CALL-FIRST-SYMBOL-NOT-LAMBDA = 33404, 
 // Unused ECLECTOR.BASE::STREAM-POSITION-CONDITION = 33049, 
 // Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-CONSING-DOT = 33101, 
-  STAMPWTAG_max = 1895,
+  STAMPWTAG_max = 1887,
 
 #endif // defined(GC_STAMP)
 #if defined(GC_ENUM_NAMES)
@@ -2043,249 +2039,247 @@ register_stamp_name("STAMPWTAG_core__LoadTimeValues_O", ADJUST_STAMP(911));
 register_stamp_name("STAMPWTAG_core__SharpEqualWrapper_O", ADJUST_STAMP(915));
 register_stamp_name("STAMPWTAG_llvmo__ClaspJIT_O", ADJUST_STAMP(919));
 register_stamp_name("STAMPWTAG_core__Readtable_O", ADJUST_STAMP(923));
-register_stamp_name("STAMPWTAG_core__PosixTime_O", ADJUST_STAMP(927));
-register_stamp_name("STAMPWTAG_core__Exposer_O", ADJUST_STAMP(931));
-register_stamp_name("STAMPWTAG_core__CoreExposer_O", ADJUST_STAMP(935));
-register_stamp_name("STAMPWTAG_asttooling__AsttoolingExposer_O", ADJUST_STAMP(939));
-register_stamp_name("STAMPWTAG_llvmo__StructLayout_O", ADJUST_STAMP(943));
-register_stamp_name("STAMPWTAG_core__PosixTimeDuration_O", ADJUST_STAMP(947));
-register_stamp_name("STAMPWTAG_clasp_ffi__ForeignTypeSpec_O", ADJUST_STAMP(951));
-register_stamp_name("STAMPWTAG_core__Instance_O", ADJUST_STAMP(953));
-register_stamp_name("STAMPWTAG_core__DerivableCxxObject_O", ADJUST_STAMP(956));
-register_stamp_name("STAMPWTAG_clbind__ClassRep_O", ADJUST_STAMP(961));
-register_stamp_name("STAMPWTAG_core__SmallMap_O", ADJUST_STAMP(967));
-register_stamp_name("STAMPWTAG_mpip__Mpi_O", ADJUST_STAMP(971));
-register_stamp_name("STAMPWTAG_core__ExternalObject_O", ADJUST_STAMP(975));
-register_stamp_name("STAMPWTAG_llvmo__Pass_O", ADJUST_STAMP(979));
-register_stamp_name("STAMPWTAG_llvmo__ModulePass_O", ADJUST_STAMP(983));
-register_stamp_name("STAMPWTAG_llvmo__ImmutablePass_O", ADJUST_STAMP(987));
-register_stamp_name("STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O", ADJUST_STAMP(991));
-register_stamp_name("STAMPWTAG_llvmo__FunctionPass_O", ADJUST_STAMP(995));
-register_stamp_name("STAMPWTAG_llvmo__ExecutionEngine_O", ADJUST_STAMP(999));
-register_stamp_name("STAMPWTAG_llvmo__MCSubtargetInfo_O", ADJUST_STAMP(1003));
-register_stamp_name("STAMPWTAG_llvmo__TargetSubtargetInfo_O", ADJUST_STAMP(1007));
-register_stamp_name("STAMPWTAG_llvmo__Type_O", ADJUST_STAMP(1011));
-register_stamp_name("STAMPWTAG_llvmo__PointerType_O", ADJUST_STAMP(1015));
-register_stamp_name("STAMPWTAG_llvmo__ArrayType_O", ADJUST_STAMP(1019));
-register_stamp_name("STAMPWTAG_llvmo__FunctionType_O", ADJUST_STAMP(1023));
-register_stamp_name("STAMPWTAG_llvmo__IntegerType_O", ADJUST_STAMP(1027));
-register_stamp_name("STAMPWTAG_llvmo__StructType_O", ADJUST_STAMP(1031));
-register_stamp_name("STAMPWTAG_llvmo__VectorType_O", ADJUST_STAMP(1035));
-register_stamp_name("STAMPWTAG_llvmo__JITDylib_O", ADJUST_STAMP(1039));
-register_stamp_name("STAMPWTAG_llvmo__DIContext_O", ADJUST_STAMP(1043));
-register_stamp_name("STAMPWTAG_llvmo__TargetPassConfig_O", ADJUST_STAMP(1047));
-register_stamp_name("STAMPWTAG_llvmo__IRBuilderBase_O", ADJUST_STAMP(1051));
-register_stamp_name("STAMPWTAG_llvmo__IRBuilder_O", ADJUST_STAMP(1055));
-register_stamp_name("STAMPWTAG_llvmo__APFloat_O", ADJUST_STAMP(1059));
-register_stamp_name("STAMPWTAG_llvmo__APInt_O", ADJUST_STAMP(1063));
-register_stamp_name("STAMPWTAG_llvmo__DIBuilder_O", ADJUST_STAMP(1067));
-register_stamp_name("STAMPWTAG_llvmo__SectionedAddress_O", ADJUST_STAMP(1071));
-register_stamp_name("STAMPWTAG_llvmo__EngineBuilder_O", ADJUST_STAMP(1075));
-register_stamp_name("STAMPWTAG_llvmo__PassManagerBase_O", ADJUST_STAMP(1079));
-register_stamp_name("STAMPWTAG_llvmo__PassManager_O", ADJUST_STAMP(1083));
-register_stamp_name("STAMPWTAG_llvmo__FunctionPassManager_O", ADJUST_STAMP(1087));
-register_stamp_name("STAMPWTAG_llvmo__Metadata_O", ADJUST_STAMP(1091));
-register_stamp_name("STAMPWTAG_llvmo__MDNode_O", ADJUST_STAMP(1095));
-register_stamp_name("STAMPWTAG_llvmo__DINode_O", ADJUST_STAMP(1099));
-register_stamp_name("STAMPWTAG_llvmo__DIVariable_O", ADJUST_STAMP(1103));
-register_stamp_name("STAMPWTAG_llvmo__DILocalVariable_O", ADJUST_STAMP(1107));
-register_stamp_name("STAMPWTAG_llvmo__DIScope_O", ADJUST_STAMP(1111));
-register_stamp_name("STAMPWTAG_llvmo__DIFile_O", ADJUST_STAMP(1115));
-register_stamp_name("STAMPWTAG_llvmo__DIType_O", ADJUST_STAMP(1119));
-register_stamp_name("STAMPWTAG_llvmo__DICompositeType_O", ADJUST_STAMP(1123));
-register_stamp_name("STAMPWTAG_llvmo__DIDerivedType_O", ADJUST_STAMP(1127));
-register_stamp_name("STAMPWTAG_llvmo__DIBasicType_O", ADJUST_STAMP(1131));
-register_stamp_name("STAMPWTAG_llvmo__DISubroutineType_O", ADJUST_STAMP(1135));
-register_stamp_name("STAMPWTAG_llvmo__DILocalScope_O", ADJUST_STAMP(1139));
-register_stamp_name("STAMPWTAG_llvmo__DISubprogram_O", ADJUST_STAMP(1143));
-register_stamp_name("STAMPWTAG_llvmo__DILexicalBlockBase_O", ADJUST_STAMP(1147));
-register_stamp_name("STAMPWTAG_llvmo__DILexicalBlock_O", ADJUST_STAMP(1151));
-register_stamp_name("STAMPWTAG_llvmo__DICompileUnit_O", ADJUST_STAMP(1155));
-register_stamp_name("STAMPWTAG_llvmo__DIExpression_O", ADJUST_STAMP(1159));
-register_stamp_name("STAMPWTAG_llvmo__DILocation_O", ADJUST_STAMP(1163));
-register_stamp_name("STAMPWTAG_llvmo__ValueAsMetadata_O", ADJUST_STAMP(1167));
-register_stamp_name("STAMPWTAG_llvmo__MDString_O", ADJUST_STAMP(1171));
-register_stamp_name("STAMPWTAG_core__Test_O", ADJUST_STAMP(1175));
-register_stamp_name("STAMPWTAG_llvmo__Value_O", ADJUST_STAMP(1179));
-register_stamp_name("STAMPWTAG_llvmo__Argument_O", ADJUST_STAMP(1183));
-register_stamp_name("STAMPWTAG_llvmo__BasicBlock_O", ADJUST_STAMP(1187));
-register_stamp_name("STAMPWTAG_llvmo__MetadataAsValue_O", ADJUST_STAMP(1191));
-register_stamp_name("STAMPWTAG_llvmo__User_O", ADJUST_STAMP(1195));
-register_stamp_name("STAMPWTAG_llvmo__Instruction_O", ADJUST_STAMP(1199));
-register_stamp_name("STAMPWTAG_llvmo__UnaryInstruction_O", ADJUST_STAMP(1203));
-register_stamp_name("STAMPWTAG_llvmo__VAArgInst_O", ADJUST_STAMP(1207));
-register_stamp_name("STAMPWTAG_llvmo__LoadInst_O", ADJUST_STAMP(1211));
-register_stamp_name("STAMPWTAG_llvmo__AllocaInst_O", ADJUST_STAMP(1215));
-register_stamp_name("STAMPWTAG_llvmo__SwitchInst_O", ADJUST_STAMP(1219));
-register_stamp_name("STAMPWTAG_llvmo__AtomicRMWInst_O", ADJUST_STAMP(1223));
-register_stamp_name("STAMPWTAG_llvmo__LandingPadInst_O", ADJUST_STAMP(1227));
-register_stamp_name("STAMPWTAG_llvmo__StoreInst_O", ADJUST_STAMP(1231));
-register_stamp_name("STAMPWTAG_llvmo__UnreachableInst_O", ADJUST_STAMP(1235));
-register_stamp_name("STAMPWTAG_llvmo__ReturnInst_O", ADJUST_STAMP(1239));
-register_stamp_name("STAMPWTAG_llvmo__ResumeInst_O", ADJUST_STAMP(1243));
-register_stamp_name("STAMPWTAG_llvmo__AtomicCmpXchgInst_O", ADJUST_STAMP(1247));
-register_stamp_name("STAMPWTAG_llvmo__FenceInst_O", ADJUST_STAMP(1251));
-register_stamp_name("STAMPWTAG_llvmo__CallBase_O", ADJUST_STAMP(1255));
-register_stamp_name("STAMPWTAG_llvmo__CallInst_O", ADJUST_STAMP(1259));
-register_stamp_name("STAMPWTAG_llvmo__InvokeInst_O", ADJUST_STAMP(1263));
-register_stamp_name("STAMPWTAG_llvmo__PHINode_O", ADJUST_STAMP(1267));
-register_stamp_name("STAMPWTAG_llvmo__IndirectBrInst_O", ADJUST_STAMP(1271));
-register_stamp_name("STAMPWTAG_llvmo__BranchInst_O", ADJUST_STAMP(1275));
-register_stamp_name("STAMPWTAG_llvmo__Constant_O", ADJUST_STAMP(1279));
-register_stamp_name("STAMPWTAG_llvmo__GlobalValue_O", ADJUST_STAMP(1283));
-register_stamp_name("STAMPWTAG_llvmo__Function_O", ADJUST_STAMP(1287));
-register_stamp_name("STAMPWTAG_llvmo__GlobalVariable_O", ADJUST_STAMP(1291));
-register_stamp_name("STAMPWTAG_llvmo__BlockAddress_O", ADJUST_STAMP(1295));
-register_stamp_name("STAMPWTAG_llvmo__ConstantDataSequential_O", ADJUST_STAMP(1299));
-register_stamp_name("STAMPWTAG_llvmo__ConstantDataArray_O", ADJUST_STAMP(1303));
-register_stamp_name("STAMPWTAG_llvmo__ConstantStruct_O", ADJUST_STAMP(1307));
-register_stamp_name("STAMPWTAG_llvmo__ConstantInt_O", ADJUST_STAMP(1311));
-register_stamp_name("STAMPWTAG_llvmo__ConstantFP_O", ADJUST_STAMP(1315));
-register_stamp_name("STAMPWTAG_llvmo__ConstantExpr_O", ADJUST_STAMP(1319));
-register_stamp_name("STAMPWTAG_llvmo__ConstantPointerNull_O", ADJUST_STAMP(1323));
-register_stamp_name("STAMPWTAG_llvmo__UndefValue_O", ADJUST_STAMP(1327));
-register_stamp_name("STAMPWTAG_llvmo__ConstantArray_O", ADJUST_STAMP(1331));
-register_stamp_name("STAMPWTAG_llvmo__TargetMachine_O", ADJUST_STAMP(1335));
-register_stamp_name("STAMPWTAG_llvmo__LLVMTargetMachine_O", ADJUST_STAMP(1339));
-register_stamp_name("STAMPWTAG_llvmo__ThreadSafeContext_O", ADJUST_STAMP(1343));
-register_stamp_name("STAMPWTAG_llvmo__NamedMDNode_O", ADJUST_STAMP(1347));
-register_stamp_name("STAMPWTAG_llvmo__Triple_O", ADJUST_STAMP(1351));
-register_stamp_name("STAMPWTAG_llvmo__DWARFContext_O", ADJUST_STAMP(1355));
-register_stamp_name("STAMPWTAG_llvmo__TargetOptions_O", ADJUST_STAMP(1359));
-register_stamp_name("STAMPWTAG_llvmo__LLVMContext_O", ADJUST_STAMP(1363));
-register_stamp_name("STAMPWTAG_llvmo__PassManagerBuilder_O", ADJUST_STAMP(1367));
-register_stamp_name("STAMPWTAG_llvmo__Module_O", ADJUST_STAMP(1371));
-register_stamp_name("STAMPWTAG_llvmo__Target_O", ADJUST_STAMP(1375));
-register_stamp_name("STAMPWTAG_llvmo__Linker_O", ADJUST_STAMP(1379));
-register_stamp_name("STAMPWTAG_core__Rack_O", ADJUST_STAMP(1383));
-register_stamp_name("STAMPWTAG_core__SmallMultimap_O", ADJUST_STAMP(1387));
-register_stamp_name("STAMPWTAG_core__Sigset_O", ADJUST_STAMP(1391));
-register_stamp_name("STAMPWTAG_core__DebuggerFrame_O", ADJUST_STAMP(1395));
-register_stamp_name("STAMPWTAG_core__Environment_O", ADJUST_STAMP(1399));
-register_stamp_name("STAMPWTAG_core__GlueEnvironment_O", ADJUST_STAMP(1403));
-register_stamp_name("STAMPWTAG_core__LexicalEnvironment_O", ADJUST_STAMP(1407));
-register_stamp_name("STAMPWTAG_core__RuntimeVisibleEnvironment_O", ADJUST_STAMP(1411));
-register_stamp_name("STAMPWTAG_core__FunctionValueEnvironment_O", ADJUST_STAMP(1415));
-register_stamp_name("STAMPWTAG_core__TagbodyEnvironment_O", ADJUST_STAMP(1419));
-register_stamp_name("STAMPWTAG_core__BlockEnvironment_O", ADJUST_STAMP(1423));
-register_stamp_name("STAMPWTAG_core__ValueEnvironment_O", ADJUST_STAMP(1427));
-register_stamp_name("STAMPWTAG_core__CompileTimeEnvironment_O", ADJUST_STAMP(1431));
-register_stamp_name("STAMPWTAG_core__CatchEnvironment_O", ADJUST_STAMP(1435));
-register_stamp_name("STAMPWTAG_core__MacroletEnvironment_O", ADJUST_STAMP(1439));
-register_stamp_name("STAMPWTAG_core__SymbolMacroletEnvironment_O", ADJUST_STAMP(1443));
-register_stamp_name("STAMPWTAG_core__FunctionContainerEnvironment_O", ADJUST_STAMP(1447));
-register_stamp_name("STAMPWTAG_core__UnwindProtectEnvironment_O", ADJUST_STAMP(1451));
-register_stamp_name("STAMPWTAG_core__ActivationFrame_O", ADJUST_STAMP(1455));
-register_stamp_name("STAMPWTAG_core__ValueFrame_O", ADJUST_STAMP(1459));
-register_stamp_name("STAMPWTAG_core__FunctionFrame_O", ADJUST_STAMP(1463));
-register_stamp_name("STAMPWTAG_core__RandomState_O", ADJUST_STAMP(1467));
-register_stamp_name("STAMPWTAG_core__EntryPointBase_O", ADJUST_STAMP(1471));
-register_stamp_name("STAMPWTAG_core__GlobalEntryPointGenerator_O", ADJUST_STAMP(1475));
-register_stamp_name("STAMPWTAG_core__LocalEntryPointGenerator_O", ADJUST_STAMP(1479));
-register_stamp_name("STAMPWTAG_core__CodeEntryPoint_O", ADJUST_STAMP(1483));
-register_stamp_name("STAMPWTAG_core__GlobalEntryPoint_O", ADJUST_STAMP(1487));
-register_stamp_name("STAMPWTAG_core__LocalEntryPoint_O", ADJUST_STAMP(1491));
-register_stamp_name("STAMPWTAG_core__DebuggerLocal_O", ADJUST_STAMP(1495));
-register_stamp_name("STAMPWTAG_core__HashTableBase_O", ADJUST_STAMP(1499));
-register_stamp_name("STAMPWTAG_core__WeakKeyHashTable_O", ADJUST_STAMP(1503));
-register_stamp_name("STAMPWTAG_core__HashTable_O", ADJUST_STAMP(1507));
-register_stamp_name("STAMPWTAG_core__HashTableEqualp_O", ADJUST_STAMP(1511));
-register_stamp_name("STAMPWTAG_core__HashTableEq_O", ADJUST_STAMP(1515));
-register_stamp_name("STAMPWTAG_core__HashTableEql_O", ADJUST_STAMP(1519));
-register_stamp_name("STAMPWTAG_core__HashTableEqual_O", ADJUST_STAMP(1523));
-register_stamp_name("STAMPWTAG_core__HashTableCustom_O", ADJUST_STAMP(1527));
-register_stamp_name("STAMPWTAG_core__FunctionDescription_O", ADJUST_STAMP(1531));
-register_stamp_name("STAMPWTAG_llvmo__InsertPoint_O", ADJUST_STAMP(1535));
-register_stamp_name("STAMPWTAG_core__Scope_O", ADJUST_STAMP(1539));
-register_stamp_name("STAMPWTAG_core__FileScope_O", ADJUST_STAMP(1543));
-register_stamp_name("STAMPWTAG_core__Path_O", ADJUST_STAMP(1547));
-register_stamp_name("STAMPWTAG_core__Pathname_O", ADJUST_STAMP(1551));
-register_stamp_name("STAMPWTAG_core__LogicalPathname_O", ADJUST_STAMP(1555));
-register_stamp_name("STAMPWTAG_core__Number_O", ADJUST_STAMP(1559));
-register_stamp_name("STAMPWTAG_core__Real_O", ADJUST_STAMP(1563));
-register_stamp_name("STAMPWTAG_core__Rational_O", ADJUST_STAMP(1567));
-register_stamp_name("STAMPWTAG_core__Ratio_O", ADJUST_STAMP(1571));
-register_stamp_name("STAMPWTAG_core__Integer_O", ADJUST_STAMP(1575));
-register_stamp_name("STAMPWTAG_core__Bignum_O", ADJUST_STAMP(1579));
-register_stamp_name("STAMPWTAG_core__Fixnum_dummy_O", ADJUST_STAMP(1583));
-register_stamp_name("STAMPWTAG_core__Float_O", ADJUST_STAMP(1587));
-register_stamp_name("STAMPWTAG_core__DoubleFloat_O", ADJUST_STAMP(1591));
-register_stamp_name("STAMPWTAG_core__SingleFloat_dummy_O", ADJUST_STAMP(1595));
-register_stamp_name("STAMPWTAG_core__LongFloat_O", ADJUST_STAMP(1599));
-register_stamp_name("STAMPWTAG_core__ShortFloat_O", ADJUST_STAMP(1603));
-register_stamp_name("STAMPWTAG_core__Complex_O", ADJUST_STAMP(1607));
-register_stamp_name("STAMPWTAG_core__Stream_O", ADJUST_STAMP(1611));
-register_stamp_name("STAMPWTAG_core__AnsiStream_O", ADJUST_STAMP(1615));
-register_stamp_name("STAMPWTAG_core__TwoWayStream_O", ADJUST_STAMP(1619));
-register_stamp_name("STAMPWTAG_core__SynonymStream_O", ADJUST_STAMP(1623));
-register_stamp_name("STAMPWTAG_core__ConcatenatedStream_O", ADJUST_STAMP(1627));
-register_stamp_name("STAMPWTAG_core__FileStream_O", ADJUST_STAMP(1631));
-register_stamp_name("STAMPWTAG_core__IOFileStream_O", ADJUST_STAMP(1635));
-register_stamp_name("STAMPWTAG_core__IOStreamStream_O", ADJUST_STAMP(1639));
-register_stamp_name("STAMPWTAG_core__BroadcastStream_O", ADJUST_STAMP(1643));
-register_stamp_name("STAMPWTAG_core__StringStream_O", ADJUST_STAMP(1647));
-register_stamp_name("STAMPWTAG_core__StringOutputStream_O", ADJUST_STAMP(1651));
-register_stamp_name("STAMPWTAG_core__StringInputStream_O", ADJUST_STAMP(1655));
-register_stamp_name("STAMPWTAG_core__EchoStream_O", ADJUST_STAMP(1659));
-register_stamp_name("STAMPWTAG_core__Package_O", ADJUST_STAMP(1663));
-register_stamp_name("STAMPWTAG_core__FileStatus_O", ADJUST_STAMP(1667));
-register_stamp_name("STAMPWTAG_core__SourcePosInfo_O", ADJUST_STAMP(1671));
-register_stamp_name("STAMPWTAG_core__DirectoryEntry_O", ADJUST_STAMP(1675));
-register_stamp_name("STAMPWTAG_core__LightUserData_O", ADJUST_STAMP(1679));
-register_stamp_name("STAMPWTAG_core__UserData_O", ADJUST_STAMP(1683));
-register_stamp_name("STAMPWTAG_core__Record_O", ADJUST_STAMP(1687));
-register_stamp_name("STAMPWTAG_clbind__ClassRegistry_O", ADJUST_STAMP(1691));
-register_stamp_name("STAMPWTAG_core__Cons_O", ADJUST_STAMP(1695));
-register_stamp_name("STAMPWTAG_core__Lisp_O", ADJUST_STAMP(1699));
-register_stamp_name("STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_", ADJUST_STAMP(1703));
-register_stamp_name("STAMPWTAG_asttooling__AstVisitor_O", ADJUST_STAMP(1707));
-register_stamp_name("STAMPWTAG_clang__tooling__ToolAction", ADJUST_STAMP(1711));
-register_stamp_name("STAMPWTAG_clang__tooling__FrontendActionFactory", ADJUST_STAMP(1715));
-register_stamp_name("STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback", ADJUST_STAMP(1719));
-register_stamp_name("STAMPWTAG_gctools__GCContainer", ADJUST_STAMP(1723));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_int_", ADJUST_STAMP(1727));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__", ADJUST_STAMP(1731));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_short_", ADJUST_STAMP(1735));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__", ADJUST_STAMP(1739));
-register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_", ADJUST_STAMP(1743));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_", ADJUST_STAMP(1747));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_signed_char_", ADJUST_STAMP(1751));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__", ADJUST_STAMP(1755));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___", ADJUST_STAMP(1759));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_char_", ADJUST_STAMP(1763));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_", ADJUST_STAMP(1767));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__", ADJUST_STAMP(1771));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(1775));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_double_", ADJUST_STAMP(1779));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_", ADJUST_STAMP(1783));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_", ADJUST_STAMP(1787));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_", ADJUST_STAMP(1791));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__", ADJUST_STAMP(1795));
-register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_", ADJUST_STAMP(1799));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_", ADJUST_STAMP(1803));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__", ADJUST_STAMP(1807));
-register_stamp_name("STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(1811));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_", ADJUST_STAMP(1815));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_long_", ADJUST_STAMP(1819));
-register_stamp_name("STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_", ADJUST_STAMP(1823));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___", ADJUST_STAMP(1827));
-register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_", ADJUST_STAMP(1831));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_int_", ADJUST_STAMP(1835));
-register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_", ADJUST_STAMP(1839));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(1843));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_", ADJUST_STAMP(1847));
-register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_", ADJUST_STAMP(1851));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_long_", ADJUST_STAMP(1855));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_int_", ADJUST_STAMP(1859));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__", ADJUST_STAMP(1863));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_float_", ADJUST_STAMP(1867));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_", ADJUST_STAMP(1871));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__", ADJUST_STAMP(1875));
-register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__T_O___", ADJUST_STAMP(1879));
-register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_short_", ADJUST_STAMP(1883));
-register_stamp_name("STAMPWTAG_clang__FrontendAction", ADJUST_STAMP(1887));
-register_stamp_name("STAMPWTAG_clang__ASTFrontendAction", ADJUST_STAMP(1891));
-register_stamp_name("STAMPWTAG_clang__SyntaxOnlyAction", ADJUST_STAMP(1895));
+register_stamp_name("STAMPWTAG_core__Exposer_O", ADJUST_STAMP(927));
+register_stamp_name("STAMPWTAG_core__CoreExposer_O", ADJUST_STAMP(931));
+register_stamp_name("STAMPWTAG_asttooling__AsttoolingExposer_O", ADJUST_STAMP(935));
+register_stamp_name("STAMPWTAG_llvmo__StructLayout_O", ADJUST_STAMP(939));
+register_stamp_name("STAMPWTAG_clasp_ffi__ForeignTypeSpec_O", ADJUST_STAMP(943));
+register_stamp_name("STAMPWTAG_core__Instance_O", ADJUST_STAMP(945));
+register_stamp_name("STAMPWTAG_core__DerivableCxxObject_O", ADJUST_STAMP(948));
+register_stamp_name("STAMPWTAG_clbind__ClassRep_O", ADJUST_STAMP(953));
+register_stamp_name("STAMPWTAG_core__SmallMap_O", ADJUST_STAMP(959));
+register_stamp_name("STAMPWTAG_mpip__Mpi_O", ADJUST_STAMP(963));
+register_stamp_name("STAMPWTAG_core__ExternalObject_O", ADJUST_STAMP(967));
+register_stamp_name("STAMPWTAG_llvmo__Pass_O", ADJUST_STAMP(971));
+register_stamp_name("STAMPWTAG_llvmo__ModulePass_O", ADJUST_STAMP(975));
+register_stamp_name("STAMPWTAG_llvmo__ImmutablePass_O", ADJUST_STAMP(979));
+register_stamp_name("STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O", ADJUST_STAMP(983));
+register_stamp_name("STAMPWTAG_llvmo__FunctionPass_O", ADJUST_STAMP(987));
+register_stamp_name("STAMPWTAG_llvmo__ExecutionEngine_O", ADJUST_STAMP(991));
+register_stamp_name("STAMPWTAG_llvmo__MCSubtargetInfo_O", ADJUST_STAMP(995));
+register_stamp_name("STAMPWTAG_llvmo__TargetSubtargetInfo_O", ADJUST_STAMP(999));
+register_stamp_name("STAMPWTAG_llvmo__Type_O", ADJUST_STAMP(1003));
+register_stamp_name("STAMPWTAG_llvmo__PointerType_O", ADJUST_STAMP(1007));
+register_stamp_name("STAMPWTAG_llvmo__ArrayType_O", ADJUST_STAMP(1011));
+register_stamp_name("STAMPWTAG_llvmo__FunctionType_O", ADJUST_STAMP(1015));
+register_stamp_name("STAMPWTAG_llvmo__IntegerType_O", ADJUST_STAMP(1019));
+register_stamp_name("STAMPWTAG_llvmo__StructType_O", ADJUST_STAMP(1023));
+register_stamp_name("STAMPWTAG_llvmo__VectorType_O", ADJUST_STAMP(1027));
+register_stamp_name("STAMPWTAG_llvmo__JITDylib_O", ADJUST_STAMP(1031));
+register_stamp_name("STAMPWTAG_llvmo__DIContext_O", ADJUST_STAMP(1035));
+register_stamp_name("STAMPWTAG_llvmo__TargetPassConfig_O", ADJUST_STAMP(1039));
+register_stamp_name("STAMPWTAG_llvmo__IRBuilderBase_O", ADJUST_STAMP(1043));
+register_stamp_name("STAMPWTAG_llvmo__IRBuilder_O", ADJUST_STAMP(1047));
+register_stamp_name("STAMPWTAG_llvmo__APFloat_O", ADJUST_STAMP(1051));
+register_stamp_name("STAMPWTAG_llvmo__APInt_O", ADJUST_STAMP(1055));
+register_stamp_name("STAMPWTAG_llvmo__DIBuilder_O", ADJUST_STAMP(1059));
+register_stamp_name("STAMPWTAG_llvmo__SectionedAddress_O", ADJUST_STAMP(1063));
+register_stamp_name("STAMPWTAG_llvmo__EngineBuilder_O", ADJUST_STAMP(1067));
+register_stamp_name("STAMPWTAG_llvmo__PassManagerBase_O", ADJUST_STAMP(1071));
+register_stamp_name("STAMPWTAG_llvmo__PassManager_O", ADJUST_STAMP(1075));
+register_stamp_name("STAMPWTAG_llvmo__FunctionPassManager_O", ADJUST_STAMP(1079));
+register_stamp_name("STAMPWTAG_llvmo__Metadata_O", ADJUST_STAMP(1083));
+register_stamp_name("STAMPWTAG_llvmo__MDNode_O", ADJUST_STAMP(1087));
+register_stamp_name("STAMPWTAG_llvmo__DINode_O", ADJUST_STAMP(1091));
+register_stamp_name("STAMPWTAG_llvmo__DIVariable_O", ADJUST_STAMP(1095));
+register_stamp_name("STAMPWTAG_llvmo__DILocalVariable_O", ADJUST_STAMP(1099));
+register_stamp_name("STAMPWTAG_llvmo__DIScope_O", ADJUST_STAMP(1103));
+register_stamp_name("STAMPWTAG_llvmo__DIFile_O", ADJUST_STAMP(1107));
+register_stamp_name("STAMPWTAG_llvmo__DIType_O", ADJUST_STAMP(1111));
+register_stamp_name("STAMPWTAG_llvmo__DICompositeType_O", ADJUST_STAMP(1115));
+register_stamp_name("STAMPWTAG_llvmo__DIDerivedType_O", ADJUST_STAMP(1119));
+register_stamp_name("STAMPWTAG_llvmo__DIBasicType_O", ADJUST_STAMP(1123));
+register_stamp_name("STAMPWTAG_llvmo__DISubroutineType_O", ADJUST_STAMP(1127));
+register_stamp_name("STAMPWTAG_llvmo__DILocalScope_O", ADJUST_STAMP(1131));
+register_stamp_name("STAMPWTAG_llvmo__DISubprogram_O", ADJUST_STAMP(1135));
+register_stamp_name("STAMPWTAG_llvmo__DILexicalBlockBase_O", ADJUST_STAMP(1139));
+register_stamp_name("STAMPWTAG_llvmo__DILexicalBlock_O", ADJUST_STAMP(1143));
+register_stamp_name("STAMPWTAG_llvmo__DICompileUnit_O", ADJUST_STAMP(1147));
+register_stamp_name("STAMPWTAG_llvmo__DIExpression_O", ADJUST_STAMP(1151));
+register_stamp_name("STAMPWTAG_llvmo__DILocation_O", ADJUST_STAMP(1155));
+register_stamp_name("STAMPWTAG_llvmo__ValueAsMetadata_O", ADJUST_STAMP(1159));
+register_stamp_name("STAMPWTAG_llvmo__MDString_O", ADJUST_STAMP(1163));
+register_stamp_name("STAMPWTAG_core__Test_O", ADJUST_STAMP(1167));
+register_stamp_name("STAMPWTAG_llvmo__Value_O", ADJUST_STAMP(1171));
+register_stamp_name("STAMPWTAG_llvmo__Argument_O", ADJUST_STAMP(1175));
+register_stamp_name("STAMPWTAG_llvmo__BasicBlock_O", ADJUST_STAMP(1179));
+register_stamp_name("STAMPWTAG_llvmo__MetadataAsValue_O", ADJUST_STAMP(1183));
+register_stamp_name("STAMPWTAG_llvmo__User_O", ADJUST_STAMP(1187));
+register_stamp_name("STAMPWTAG_llvmo__Instruction_O", ADJUST_STAMP(1191));
+register_stamp_name("STAMPWTAG_llvmo__UnaryInstruction_O", ADJUST_STAMP(1195));
+register_stamp_name("STAMPWTAG_llvmo__VAArgInst_O", ADJUST_STAMP(1199));
+register_stamp_name("STAMPWTAG_llvmo__LoadInst_O", ADJUST_STAMP(1203));
+register_stamp_name("STAMPWTAG_llvmo__AllocaInst_O", ADJUST_STAMP(1207));
+register_stamp_name("STAMPWTAG_llvmo__SwitchInst_O", ADJUST_STAMP(1211));
+register_stamp_name("STAMPWTAG_llvmo__AtomicRMWInst_O", ADJUST_STAMP(1215));
+register_stamp_name("STAMPWTAG_llvmo__LandingPadInst_O", ADJUST_STAMP(1219));
+register_stamp_name("STAMPWTAG_llvmo__StoreInst_O", ADJUST_STAMP(1223));
+register_stamp_name("STAMPWTAG_llvmo__UnreachableInst_O", ADJUST_STAMP(1227));
+register_stamp_name("STAMPWTAG_llvmo__ReturnInst_O", ADJUST_STAMP(1231));
+register_stamp_name("STAMPWTAG_llvmo__ResumeInst_O", ADJUST_STAMP(1235));
+register_stamp_name("STAMPWTAG_llvmo__AtomicCmpXchgInst_O", ADJUST_STAMP(1239));
+register_stamp_name("STAMPWTAG_llvmo__FenceInst_O", ADJUST_STAMP(1243));
+register_stamp_name("STAMPWTAG_llvmo__CallBase_O", ADJUST_STAMP(1247));
+register_stamp_name("STAMPWTAG_llvmo__CallInst_O", ADJUST_STAMP(1251));
+register_stamp_name("STAMPWTAG_llvmo__InvokeInst_O", ADJUST_STAMP(1255));
+register_stamp_name("STAMPWTAG_llvmo__PHINode_O", ADJUST_STAMP(1259));
+register_stamp_name("STAMPWTAG_llvmo__IndirectBrInst_O", ADJUST_STAMP(1263));
+register_stamp_name("STAMPWTAG_llvmo__BranchInst_O", ADJUST_STAMP(1267));
+register_stamp_name("STAMPWTAG_llvmo__Constant_O", ADJUST_STAMP(1271));
+register_stamp_name("STAMPWTAG_llvmo__GlobalValue_O", ADJUST_STAMP(1275));
+register_stamp_name("STAMPWTAG_llvmo__Function_O", ADJUST_STAMP(1279));
+register_stamp_name("STAMPWTAG_llvmo__GlobalVariable_O", ADJUST_STAMP(1283));
+register_stamp_name("STAMPWTAG_llvmo__BlockAddress_O", ADJUST_STAMP(1287));
+register_stamp_name("STAMPWTAG_llvmo__ConstantDataSequential_O", ADJUST_STAMP(1291));
+register_stamp_name("STAMPWTAG_llvmo__ConstantDataArray_O", ADJUST_STAMP(1295));
+register_stamp_name("STAMPWTAG_llvmo__ConstantStruct_O", ADJUST_STAMP(1299));
+register_stamp_name("STAMPWTAG_llvmo__ConstantInt_O", ADJUST_STAMP(1303));
+register_stamp_name("STAMPWTAG_llvmo__ConstantFP_O", ADJUST_STAMP(1307));
+register_stamp_name("STAMPWTAG_llvmo__ConstantExpr_O", ADJUST_STAMP(1311));
+register_stamp_name("STAMPWTAG_llvmo__ConstantPointerNull_O", ADJUST_STAMP(1315));
+register_stamp_name("STAMPWTAG_llvmo__UndefValue_O", ADJUST_STAMP(1319));
+register_stamp_name("STAMPWTAG_llvmo__ConstantArray_O", ADJUST_STAMP(1323));
+register_stamp_name("STAMPWTAG_llvmo__TargetMachine_O", ADJUST_STAMP(1327));
+register_stamp_name("STAMPWTAG_llvmo__LLVMTargetMachine_O", ADJUST_STAMP(1331));
+register_stamp_name("STAMPWTAG_llvmo__ThreadSafeContext_O", ADJUST_STAMP(1335));
+register_stamp_name("STAMPWTAG_llvmo__NamedMDNode_O", ADJUST_STAMP(1339));
+register_stamp_name("STAMPWTAG_llvmo__Triple_O", ADJUST_STAMP(1343));
+register_stamp_name("STAMPWTAG_llvmo__DWARFContext_O", ADJUST_STAMP(1347));
+register_stamp_name("STAMPWTAG_llvmo__TargetOptions_O", ADJUST_STAMP(1351));
+register_stamp_name("STAMPWTAG_llvmo__LLVMContext_O", ADJUST_STAMP(1355));
+register_stamp_name("STAMPWTAG_llvmo__PassManagerBuilder_O", ADJUST_STAMP(1359));
+register_stamp_name("STAMPWTAG_llvmo__Module_O", ADJUST_STAMP(1363));
+register_stamp_name("STAMPWTAG_llvmo__Target_O", ADJUST_STAMP(1367));
+register_stamp_name("STAMPWTAG_llvmo__Linker_O", ADJUST_STAMP(1371));
+register_stamp_name("STAMPWTAG_core__Rack_O", ADJUST_STAMP(1375));
+register_stamp_name("STAMPWTAG_core__SmallMultimap_O", ADJUST_STAMP(1379));
+register_stamp_name("STAMPWTAG_core__Sigset_O", ADJUST_STAMP(1383));
+register_stamp_name("STAMPWTAG_core__DebuggerFrame_O", ADJUST_STAMP(1387));
+register_stamp_name("STAMPWTAG_core__Environment_O", ADJUST_STAMP(1391));
+register_stamp_name("STAMPWTAG_core__GlueEnvironment_O", ADJUST_STAMP(1395));
+register_stamp_name("STAMPWTAG_core__LexicalEnvironment_O", ADJUST_STAMP(1399));
+register_stamp_name("STAMPWTAG_core__RuntimeVisibleEnvironment_O", ADJUST_STAMP(1403));
+register_stamp_name("STAMPWTAG_core__FunctionValueEnvironment_O", ADJUST_STAMP(1407));
+register_stamp_name("STAMPWTAG_core__TagbodyEnvironment_O", ADJUST_STAMP(1411));
+register_stamp_name("STAMPWTAG_core__BlockEnvironment_O", ADJUST_STAMP(1415));
+register_stamp_name("STAMPWTAG_core__ValueEnvironment_O", ADJUST_STAMP(1419));
+register_stamp_name("STAMPWTAG_core__CompileTimeEnvironment_O", ADJUST_STAMP(1423));
+register_stamp_name("STAMPWTAG_core__CatchEnvironment_O", ADJUST_STAMP(1427));
+register_stamp_name("STAMPWTAG_core__MacroletEnvironment_O", ADJUST_STAMP(1431));
+register_stamp_name("STAMPWTAG_core__SymbolMacroletEnvironment_O", ADJUST_STAMP(1435));
+register_stamp_name("STAMPWTAG_core__FunctionContainerEnvironment_O", ADJUST_STAMP(1439));
+register_stamp_name("STAMPWTAG_core__UnwindProtectEnvironment_O", ADJUST_STAMP(1443));
+register_stamp_name("STAMPWTAG_core__ActivationFrame_O", ADJUST_STAMP(1447));
+register_stamp_name("STAMPWTAG_core__ValueFrame_O", ADJUST_STAMP(1451));
+register_stamp_name("STAMPWTAG_core__FunctionFrame_O", ADJUST_STAMP(1455));
+register_stamp_name("STAMPWTAG_core__RandomState_O", ADJUST_STAMP(1459));
+register_stamp_name("STAMPWTAG_core__EntryPointBase_O", ADJUST_STAMP(1463));
+register_stamp_name("STAMPWTAG_core__GlobalEntryPointGenerator_O", ADJUST_STAMP(1467));
+register_stamp_name("STAMPWTAG_core__LocalEntryPointGenerator_O", ADJUST_STAMP(1471));
+register_stamp_name("STAMPWTAG_core__CodeEntryPoint_O", ADJUST_STAMP(1475));
+register_stamp_name("STAMPWTAG_core__GlobalEntryPoint_O", ADJUST_STAMP(1479));
+register_stamp_name("STAMPWTAG_core__LocalEntryPoint_O", ADJUST_STAMP(1483));
+register_stamp_name("STAMPWTAG_core__DebuggerLocal_O", ADJUST_STAMP(1487));
+register_stamp_name("STAMPWTAG_core__HashTableBase_O", ADJUST_STAMP(1491));
+register_stamp_name("STAMPWTAG_core__WeakKeyHashTable_O", ADJUST_STAMP(1495));
+register_stamp_name("STAMPWTAG_core__HashTable_O", ADJUST_STAMP(1499));
+register_stamp_name("STAMPWTAG_core__HashTableEqualp_O", ADJUST_STAMP(1503));
+register_stamp_name("STAMPWTAG_core__HashTableEq_O", ADJUST_STAMP(1507));
+register_stamp_name("STAMPWTAG_core__HashTableEql_O", ADJUST_STAMP(1511));
+register_stamp_name("STAMPWTAG_core__HashTableEqual_O", ADJUST_STAMP(1515));
+register_stamp_name("STAMPWTAG_core__HashTableCustom_O", ADJUST_STAMP(1519));
+register_stamp_name("STAMPWTAG_core__FunctionDescription_O", ADJUST_STAMP(1523));
+register_stamp_name("STAMPWTAG_llvmo__InsertPoint_O", ADJUST_STAMP(1527));
+register_stamp_name("STAMPWTAG_core__Scope_O", ADJUST_STAMP(1531));
+register_stamp_name("STAMPWTAG_core__FileScope_O", ADJUST_STAMP(1535));
+register_stamp_name("STAMPWTAG_core__Path_O", ADJUST_STAMP(1539));
+register_stamp_name("STAMPWTAG_core__Pathname_O", ADJUST_STAMP(1543));
+register_stamp_name("STAMPWTAG_core__LogicalPathname_O", ADJUST_STAMP(1547));
+register_stamp_name("STAMPWTAG_core__Number_O", ADJUST_STAMP(1551));
+register_stamp_name("STAMPWTAG_core__Real_O", ADJUST_STAMP(1555));
+register_stamp_name("STAMPWTAG_core__Rational_O", ADJUST_STAMP(1559));
+register_stamp_name("STAMPWTAG_core__Ratio_O", ADJUST_STAMP(1563));
+register_stamp_name("STAMPWTAG_core__Integer_O", ADJUST_STAMP(1567));
+register_stamp_name("STAMPWTAG_core__Bignum_O", ADJUST_STAMP(1571));
+register_stamp_name("STAMPWTAG_core__Fixnum_dummy_O", ADJUST_STAMP(1575));
+register_stamp_name("STAMPWTAG_core__Float_O", ADJUST_STAMP(1579));
+register_stamp_name("STAMPWTAG_core__DoubleFloat_O", ADJUST_STAMP(1583));
+register_stamp_name("STAMPWTAG_core__SingleFloat_dummy_O", ADJUST_STAMP(1587));
+register_stamp_name("STAMPWTAG_core__LongFloat_O", ADJUST_STAMP(1591));
+register_stamp_name("STAMPWTAG_core__ShortFloat_O", ADJUST_STAMP(1595));
+register_stamp_name("STAMPWTAG_core__Complex_O", ADJUST_STAMP(1599));
+register_stamp_name("STAMPWTAG_core__Stream_O", ADJUST_STAMP(1603));
+register_stamp_name("STAMPWTAG_core__AnsiStream_O", ADJUST_STAMP(1607));
+register_stamp_name("STAMPWTAG_core__TwoWayStream_O", ADJUST_STAMP(1611));
+register_stamp_name("STAMPWTAG_core__SynonymStream_O", ADJUST_STAMP(1615));
+register_stamp_name("STAMPWTAG_core__ConcatenatedStream_O", ADJUST_STAMP(1619));
+register_stamp_name("STAMPWTAG_core__FileStream_O", ADJUST_STAMP(1623));
+register_stamp_name("STAMPWTAG_core__IOFileStream_O", ADJUST_STAMP(1627));
+register_stamp_name("STAMPWTAG_core__IOStreamStream_O", ADJUST_STAMP(1631));
+register_stamp_name("STAMPWTAG_core__BroadcastStream_O", ADJUST_STAMP(1635));
+register_stamp_name("STAMPWTAG_core__StringStream_O", ADJUST_STAMP(1639));
+register_stamp_name("STAMPWTAG_core__StringOutputStream_O", ADJUST_STAMP(1643));
+register_stamp_name("STAMPWTAG_core__StringInputStream_O", ADJUST_STAMP(1647));
+register_stamp_name("STAMPWTAG_core__EchoStream_O", ADJUST_STAMP(1651));
+register_stamp_name("STAMPWTAG_core__Package_O", ADJUST_STAMP(1655));
+register_stamp_name("STAMPWTAG_core__FileStatus_O", ADJUST_STAMP(1659));
+register_stamp_name("STAMPWTAG_core__SourcePosInfo_O", ADJUST_STAMP(1663));
+register_stamp_name("STAMPWTAG_core__DirectoryEntry_O", ADJUST_STAMP(1667));
+register_stamp_name("STAMPWTAG_core__LightUserData_O", ADJUST_STAMP(1671));
+register_stamp_name("STAMPWTAG_core__UserData_O", ADJUST_STAMP(1675));
+register_stamp_name("STAMPWTAG_core__Record_O", ADJUST_STAMP(1679));
+register_stamp_name("STAMPWTAG_clbind__ClassRegistry_O", ADJUST_STAMP(1683));
+register_stamp_name("STAMPWTAG_core__Cons_O", ADJUST_STAMP(1687));
+register_stamp_name("STAMPWTAG_core__Lisp_O", ADJUST_STAMP(1691));
+register_stamp_name("STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_", ADJUST_STAMP(1695));
+register_stamp_name("STAMPWTAG_asttooling__AstVisitor_O", ADJUST_STAMP(1699));
+register_stamp_name("STAMPWTAG_clang__tooling__ToolAction", ADJUST_STAMP(1703));
+register_stamp_name("STAMPWTAG_clang__tooling__FrontendActionFactory", ADJUST_STAMP(1707));
+register_stamp_name("STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback", ADJUST_STAMP(1711));
+register_stamp_name("STAMPWTAG_gctools__GCContainer", ADJUST_STAMP(1715));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_int_", ADJUST_STAMP(1719));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__", ADJUST_STAMP(1723));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_short_", ADJUST_STAMP(1727));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__", ADJUST_STAMP(1731));
+register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_", ADJUST_STAMP(1735));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_", ADJUST_STAMP(1739));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_signed_char_", ADJUST_STAMP(1743));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__", ADJUST_STAMP(1747));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___", ADJUST_STAMP(1751));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_char_", ADJUST_STAMP(1755));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_", ADJUST_STAMP(1759));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__", ADJUST_STAMP(1763));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(1767));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_double_", ADJUST_STAMP(1771));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_", ADJUST_STAMP(1775));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_", ADJUST_STAMP(1779));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_", ADJUST_STAMP(1783));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__", ADJUST_STAMP(1787));
+register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_", ADJUST_STAMP(1791));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_", ADJUST_STAMP(1795));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__", ADJUST_STAMP(1799));
+register_stamp_name("STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(1803));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_", ADJUST_STAMP(1807));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_long_", ADJUST_STAMP(1811));
+register_stamp_name("STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_", ADJUST_STAMP(1815));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___", ADJUST_STAMP(1819));
+register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_", ADJUST_STAMP(1823));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_int_", ADJUST_STAMP(1827));
+register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_", ADJUST_STAMP(1831));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(1835));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_", ADJUST_STAMP(1839));
+register_stamp_name("STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_", ADJUST_STAMP(1843));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_long_", ADJUST_STAMP(1847));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_int_", ADJUST_STAMP(1851));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__", ADJUST_STAMP(1855));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_float_", ADJUST_STAMP(1859));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_", ADJUST_STAMP(1863));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__", ADJUST_STAMP(1867));
+register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_core__T_O___", ADJUST_STAMP(1871));
+register_stamp_name("STAMPWTAG_gctools__GCArray_moveable_unsigned_short_", ADJUST_STAMP(1875));
+register_stamp_name("STAMPWTAG_clang__FrontendAction", ADJUST_STAMP(1879));
+register_stamp_name("STAMPWTAG_clang__ASTFrontendAction", ADJUST_STAMP(1883));
+register_stamp_name("STAMPWTAG_clang__SyntaxOnlyAction", ADJUST_STAMP(1887));
 
 #endif // defined(GC_ENUM_NAMES)
 #if defined(GC_DYNAMIC_CAST)
@@ -2321,8 +2315,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned short>*,FP
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned short> val -> 1883
-      return (kindVal == ISA_ADJUST_STAMP(1883));
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned short> val -> 1875
+      return (kindVal == ISA_ADJUST_STAMP(1875));
   };
 };
 // STAMPWTAG_core__ComplexVector_O
@@ -2348,8 +2342,8 @@ template <typename FP> struct Cast<core::Integer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Integer_O low high --> 1575 1583 
-      return ((ISA_ADJUST_STAMP(1575) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1583)));
+    // IsA-stamp-range core::Integer_O low high --> 1567 1575 
+      return ((ISA_ADJUST_STAMP(1567) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1575)));
   };
 };
 // STAMPWTAG_clbind__ClassRegistry_O
@@ -2357,8 +2351,8 @@ template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range clbind::ClassRegistry_O val -> 1691
-      return (kindVal == ISA_ADJUST_STAMP(1691));
+    // IsA-stamp-range clbind::ClassRegistry_O val -> 1683
+      return (kindVal == ISA_ADJUST_STAMP(1683));
   };
 };
 // STAMPWTAG_asttooling__AstVisitor_O
@@ -2366,8 +2360,8 @@ template <typename FP> struct Cast<asttooling::AstVisitor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range asttooling::AstVisitor_O val -> 1707
-      return (kindVal == ISA_ADJUST_STAMP(1707));
+    // IsA-stamp-range asttooling::AstVisitor_O val -> 1699
+      return (kindVal == ISA_ADJUST_STAMP(1699));
   };
 };
 // STAMPWTAG_mp__Process_O
@@ -2384,8 +2378,8 @@ template <typename FP> struct Cast<core::Record_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Record_O val -> 1687
-      return (kindVal == ISA_ADJUST_STAMP(1687));
+    // IsA-stamp-range core::Record_O val -> 1679
+      return (kindVal == ISA_ADJUST_STAMP(1679));
   };
 };
 // STAMPWTAG_core__LightUserData_O
@@ -2393,8 +2387,8 @@ template <typename FP> struct Cast<core::LightUserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LightUserData_O low high --> 1679 1683 
-      return ((ISA_ADJUST_STAMP(1679) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1683)));
+    // IsA-stamp-range core::LightUserData_O low high --> 1671 1675 
+      return ((ISA_ADJUST_STAMP(1671) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1675)));
   };
 };
 // STAMPWTAG_core__MDArrayT_O
@@ -2411,8 +2405,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::T_O *>*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::T_O *> val -> 1879
-      return (kindVal == ISA_ADJUST_STAMP(1879));
+    // IsA-stamp-range gctools::GCVector_moveable<core::T_O *> val -> 1871
+      return (kindVal == ISA_ADJUST_STAMP(1871));
   };
 };
 // STAMPWTAG_core__DirectoryEntry_O
@@ -2420,8 +2414,8 @@ template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::DirectoryEntry_O val -> 1675
-      return (kindVal == ISA_ADJUST_STAMP(1675));
+    // IsA-stamp-range core::DirectoryEntry_O val -> 1667
+      return (kindVal == ISA_ADJUST_STAMP(1667));
   };
 };
 // STAMPWTAG_llvmo__Linker_O
@@ -2429,8 +2423,8 @@ template <typename FP> struct Cast<llvmo::Linker_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Linker_O val -> 1379
-      return (kindVal == ISA_ADJUST_STAMP(1379));
+    // IsA-stamp-range llvmo::Linker_O val -> 1371
+      return (kindVal == ISA_ADJUST_STAMP(1371));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__
@@ -2438,8 +2432,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>> val -> 1875
-      return (kindVal == ISA_ADJUST_STAMP(1875));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>> val -> 1867
+      return (kindVal == ISA_ADJUST_STAMP(1867));
   };
 };
 // STAMPWTAG_core__MDArray_float_O
@@ -2456,8 +2450,8 @@ template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SourcePosInfo_O val -> 1671
-      return (kindVal == ISA_ADJUST_STAMP(1671));
+    // IsA-stamp-range core::SourcePosInfo_O val -> 1663
+      return (kindVal == ISA_ADJUST_STAMP(1663));
   };
 };
 // STAMPWTAG_llvmo__BranchInst_O
@@ -2465,8 +2459,8 @@ template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::BranchInst_O val -> 1275
-      return (kindVal == ISA_ADJUST_STAMP(1275));
+    // IsA-stamp-range llvmo::BranchInst_O val -> 1267
+      return (kindVal == ISA_ADJUST_STAMP(1267));
   };
 };
 // STAMPWTAG_llvmo__AllocaInst_O
@@ -2474,8 +2468,8 @@ template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::AllocaInst_O val -> 1215
-      return (kindVal == ISA_ADJUST_STAMP(1215));
+    // IsA-stamp-range llvmo::AllocaInst_O val -> 1207
+      return (kindVal == ISA_ADJUST_STAMP(1207));
   };
 };
 // STAMPWTAG_core__StandardClassCreator_O
@@ -2501,8 +2495,8 @@ template <typename FP> struct Cast<core::HashTableCustom_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::HashTableCustom_O val -> 1527
-      return (kindVal == ISA_ADJUST_STAMP(1527));
+    // IsA-stamp-range core::HashTableCustom_O val -> 1519
+      return (kindVal == ISA_ADJUST_STAMP(1519));
   };
 };
 // STAMPWTAG_core__ComplexVector_byte8_t_O
@@ -2519,8 +2513,8 @@ template <typename FP> struct Cast<core::HashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::HashTable_O low high --> 1507 1527 
-      return ((ISA_ADJUST_STAMP(1507) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1527)));
+    // IsA-stamp-range core::HashTable_O low high --> 1499 1519 
+      return ((ISA_ADJUST_STAMP(1499) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1519)));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_
@@ -2528,8 +2522,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<clbind::detail::ed
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<clbind::detail::edge> val -> 1871
-      return (kindVal == ISA_ADJUST_STAMP(1871));
+    // IsA-stamp-range gctools::GCVector_moveable<clbind::detail::edge> val -> 1863
+      return (kindVal == ISA_ADJUST_STAMP(1863));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_float_
@@ -2537,8 +2531,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<float> val -> 1867
-      return (kindVal == ISA_ADJUST_STAMP(1867));
+    // IsA-stamp-range gctools::GCArray_moveable<float> val -> 1859
+      return (kindVal == ISA_ADJUST_STAMP(1859));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__
@@ -2546,8 +2540,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>> val -> 1863
-      return (kindVal == ISA_ADJUST_STAMP(1863));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>> val -> 1855
+      return (kindVal == ISA_ADJUST_STAMP(1855));
   };
 };
 // STAMPWTAG_core__SimpleVector_size_t_O
@@ -2564,8 +2558,8 @@ template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIScope_O low high --> 1111 1155 
-      return ((ISA_ADJUST_STAMP(1111) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1155)));
+    // IsA-stamp-range llvmo::DIScope_O low high --> 1103 1147 
+      return ((ISA_ADJUST_STAMP(1103) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1147)));
   };
 };
 // STAMPWTAG_core__FileStatus_O
@@ -2573,8 +2567,8 @@ template <typename FP> struct Cast<core::FileStatus_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FileStatus_O val -> 1667
-      return (kindVal == ISA_ADJUST_STAMP(1667));
+    // IsA-stamp-range core::FileStatus_O val -> 1659
+      return (kindVal == ISA_ADJUST_STAMP(1659));
   };
 };
 // STAMPWTAG_llvmo__IndirectBrInst_O
@@ -2582,8 +2576,8 @@ template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::IndirectBrInst_O val -> 1271
-      return (kindVal == ISA_ADJUST_STAMP(1271));
+    // IsA-stamp-range llvmo::IndirectBrInst_O val -> 1263
+      return (kindVal == ISA_ADJUST_STAMP(1263));
   };
 };
 // STAMPWTAG_llvmo__ConstantArray_O
@@ -2591,8 +2585,8 @@ template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantArray_O val -> 1331
-      return (kindVal == ISA_ADJUST_STAMP(1331));
+    // IsA-stamp-range llvmo::ConstantArray_O val -> 1323
+      return (kindVal == ISA_ADJUST_STAMP(1323));
   };
 };
 // STAMPWTAG_llvmo__PHINode_O
@@ -2600,8 +2594,8 @@ template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::PHINode_O val -> 1267
-      return (kindVal == ISA_ADJUST_STAMP(1267));
+    // IsA-stamp-range llvmo::PHINode_O val -> 1259
+      return (kindVal == ISA_ADJUST_STAMP(1259));
   };
 };
 // STAMPWTAG_core__Package_O
@@ -2609,8 +2603,8 @@ template <typename FP> struct Cast<core::Package_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Package_O val -> 1663
-      return (kindVal == ISA_ADJUST_STAMP(1663));
+    // IsA-stamp-range core::Package_O val -> 1655
+      return (kindVal == ISA_ADJUST_STAMP(1655));
   };
 };
 // STAMPWTAG_core__SimpleMDArrayBaseChar_O
@@ -2627,8 +2621,8 @@ template <typename FP> struct Cast<llvmo::DILocation_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILocation_O val -> 1163
-      return (kindVal == ISA_ADJUST_STAMP(1163));
+    // IsA-stamp-range llvmo::DILocation_O val -> 1155
+      return (kindVal == ISA_ADJUST_STAMP(1155));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_O
@@ -2645,8 +2639,8 @@ template <typename FP> struct Cast<core::Stream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Stream_O low high --> 1611 1659 
-      return ((ISA_ADJUST_STAMP(1611) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1659)));
+    // IsA-stamp-range core::Stream_O low high --> 1603 1651 
+      return ((ISA_ADJUST_STAMP(1603) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1651)));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_int_
@@ -2654,8 +2648,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<int> val -> 1859
-      return (kindVal == ISA_ADJUST_STAMP(1859));
+    // IsA-stamp-range gctools::GCVector_moveable<int> val -> 1851
+      return (kindVal == ISA_ADJUST_STAMP(1851));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_long_
@@ -2663,8 +2657,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<long>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<long> val -> 1855
-      return (kindVal == ISA_ADJUST_STAMP(1855));
+    // IsA-stamp-range gctools::GCArray_moveable<long> val -> 1847
+      return (kindVal == ISA_ADJUST_STAMP(1847));
   };
 };
 // STAMPWTAG_llvmo__MDString_O
@@ -2672,8 +2666,8 @@ template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::MDString_O val -> 1171
-      return (kindVal == ISA_ADJUST_STAMP(1171));
+    // IsA-stamp-range llvmo::MDString_O val -> 1163
+      return (kindVal == ISA_ADJUST_STAMP(1163));
   };
 };
 // STAMPWTAG_core__ShortFloat_O
@@ -2681,8 +2675,8 @@ template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ShortFloat_O val -> 1603
-      return (kindVal == ISA_ADJUST_STAMP(1603));
+    // IsA-stamp-range core::ShortFloat_O val -> 1595
+      return (kindVal == ISA_ADJUST_STAMP(1595));
   };
 };
 // STAMPWTAG_core__Number_O
@@ -2690,8 +2684,8 @@ template <typename FP> struct Cast<core::Number_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Number_O low high --> 1559 1607 
-      return ((ISA_ADJUST_STAMP(1559) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1607)));
+    // IsA-stamp-range core::Number_O low high --> 1551 1599 
+      return ((ISA_ADJUST_STAMP(1551) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1599)));
   };
 };
 // STAMPWTAG_core__T_O
@@ -2699,8 +2693,8 @@ template <typename FP> struct Cast<core::T_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::T_O low high --> 7 1695 
-      return ((ISA_ADJUST_STAMP(7) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1695)));
+    // IsA-stamp-range core::T_O low high --> 7 1687 
+      return ((ISA_ADJUST_STAMP(7) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1687)));
   };
 };
 // STAMPWTAG_llvmo__DICompileUnit_O
@@ -2708,8 +2702,8 @@ template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DICompileUnit_O val -> 1155
-      return (kindVal == ISA_ADJUST_STAMP(1155));
+    // IsA-stamp-range llvmo::DICompileUnit_O val -> 1147
+      return (kindVal == ISA_ADJUST_STAMP(1147));
   };
 };
 // STAMPWTAG_core__AbstractSimpleVector_O
@@ -2735,8 +2729,8 @@ template <typename FP> struct Cast<core::Pathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Pathname_O low high --> 1551 1555 
-      return ((ISA_ADJUST_STAMP(1551) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1555)));
+    // IsA-stamp-range core::Pathname_O low high --> 1543 1547 
+      return ((ISA_ADJUST_STAMP(1543) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1547)));
   };
 };
 // STAMPWTAG_core__Str8Ns_O
@@ -2753,8 +2747,8 @@ template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::FunctionPass_O val -> 995
-      return (kindVal == ISA_ADJUST_STAMP(995));
+    // IsA-stamp-range llvmo::FunctionPass_O val -> 987
+      return (kindVal == ISA_ADJUST_STAMP(987));
   };
 };
 // STAMPWTAG_core__SimpleVector_byte4_t_O
@@ -2771,8 +2765,8 @@ template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::UndefValue_O val -> 1327
-      return (kindVal == ISA_ADJUST_STAMP(1327));
+    // IsA-stamp-range llvmo::UndefValue_O val -> 1319
+      return (kindVal == ISA_ADJUST_STAMP(1319));
   };
 };
 // STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_
@@ -2780,8 +2774,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<2,1>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,1> val -> 1851
-      return (kindVal == ISA_ADJUST_STAMP(1851));
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,1> val -> 1843
+      return (kindVal == ISA_ADJUST_STAMP(1843));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_
@@ -2789,8 +2783,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::AuxArgument>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::AuxArgument> val -> 1847
-      return (kindVal == ISA_ADJUST_STAMP(1847));
+    // IsA-stamp-range gctools::GCVector_moveable<core::AuxArgument> val -> 1839
+      return (kindVal == ISA_ADJUST_STAMP(1839));
   };
 };
 // STAMPWTAG_llvmo__CallBase_O
@@ -2798,8 +2792,8 @@ template <typename FP> struct Cast<llvmo::CallBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::CallBase_O low high --> 1255 1263 
-      return ((ISA_ADJUST_STAMP(1255) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1263)));
+    // IsA-stamp-range llvmo::CallBase_O low high --> 1247 1255 
+      return ((ISA_ADJUST_STAMP(1247) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1255)));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__
@@ -2807,8 +2801,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<gctools::smart_ptr<
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>> val -> 1843
-      return (kindVal == ISA_ADJUST_STAMP(1843));
+    // IsA-stamp-range gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>> val -> 1835
+      return (kindVal == ISA_ADJUST_STAMP(1835));
   };
 };
 // STAMPWTAG_core__CompileTimeEnvironment_O
@@ -2816,8 +2810,8 @@ template <typename FP> struct Cast<core::CompileTimeEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::CompileTimeEnvironment_O low high --> 1431 1451 
-      return ((ISA_ADJUST_STAMP(1431) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1451)));
+    // IsA-stamp-range core::CompileTimeEnvironment_O low high --> 1423 1443 
+      return ((ISA_ADJUST_STAMP(1423) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1443)));
   };
 };
 // STAMPWTAG_core__Path_O
@@ -2825,8 +2819,8 @@ template <typename FP> struct Cast<core::Path_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Path_O val -> 1547
-      return (kindVal == ISA_ADJUST_STAMP(1547));
+    // IsA-stamp-range core::Path_O val -> 1539
+      return (kindVal == ISA_ADJUST_STAMP(1539));
   };
 };
 // STAMPWTAG_mp__SharedMutex_O
@@ -2843,8 +2837,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<1,0>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<1,0> val -> 1839
-      return (kindVal == ISA_ADJUST_STAMP(1839));
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<1,0> val -> 1831
+      return (kindVal == ISA_ADJUST_STAMP(1831));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_int_
@@ -2852,8 +2846,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<int> val -> 1835
-      return (kindVal == ISA_ADJUST_STAMP(1835));
+    // IsA-stamp-range gctools::GCArray_moveable<int> val -> 1827
+      return (kindVal == ISA_ADJUST_STAMP(1827));
   };
 };
 // STAMPWTAG_core__InstanceCreator_O
@@ -2870,8 +2864,8 @@ template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::IOStreamStream_O val -> 1639
-      return (kindVal == ISA_ADJUST_STAMP(1639));
+    // IsA-stamp-range core::IOStreamStream_O val -> 1631
+      return (kindVal == ISA_ADJUST_STAMP(1631));
   };
 };
 // STAMPWTAG_core__Scope_O
@@ -2879,8 +2873,8 @@ template <typename FP> struct Cast<core::Scope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Scope_O low high --> 1539 1543 
-      return ((ISA_ADJUST_STAMP(1539) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1543)));
+    // IsA-stamp-range core::Scope_O low high --> 1531 1535 
+      return ((ISA_ADJUST_STAMP(1531) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1535)));
   };
 };
 // STAMPWTAG_llvmo__InsertPoint_O
@@ -2888,8 +2882,8 @@ template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::InsertPoint_O val -> 1535
-      return (kindVal == ISA_ADJUST_STAMP(1535));
+    // IsA-stamp-range llvmo::InsertPoint_O val -> 1527
+      return (kindVal == ISA_ADJUST_STAMP(1527));
   };
 };
 // STAMPWTAG_core__FunctionDescription_O
@@ -2897,8 +2891,8 @@ template <typename FP> struct Cast<core::FunctionDescription_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FunctionDescription_O val -> 1531
-      return (kindVal == ISA_ADJUST_STAMP(1531));
+    // IsA-stamp-range core::FunctionDescription_O val -> 1523
+      return (kindVal == ISA_ADJUST_STAMP(1523));
   };
 };
 // STAMPWTAG_core__ComplexVector_double_O
@@ -2924,8 +2918,8 @@ template <typename FP> struct Cast<core::EchoStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::EchoStream_O val -> 1659
-      return (kindVal == ISA_ADJUST_STAMP(1659));
+    // IsA-stamp-range core::EchoStream_O val -> 1651
+      return (kindVal == ISA_ADJUST_STAMP(1651));
   };
 };
 // STAMPWTAG_core__HashTableBase_O
@@ -2933,8 +2927,8 @@ template <typename FP> struct Cast<core::HashTableBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::HashTableBase_O low high --> 1499 1527 
-      return ((ISA_ADJUST_STAMP(1499) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1527)));
+    // IsA-stamp-range core::HashTableBase_O low high --> 1491 1519 
+      return ((ISA_ADJUST_STAMP(1491) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1519)));
   };
 };
 // STAMPWTAG_core__SimpleMDArrayBit_O
@@ -2969,8 +2963,8 @@ template <typename FP> struct Cast<llvmo::DILocalScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILocalScope_O low high --> 1139 1151 
-      return ((ISA_ADJUST_STAMP(1139) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1151)));
+    // IsA-stamp-range llvmo::DILocalScope_O low high --> 1131 1143 
+      return ((ISA_ADJUST_STAMP(1131) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1143)));
   };
 };
 // STAMPWTAG_core__LocalEntryPoint_O
@@ -2978,8 +2972,8 @@ template <typename FP> struct Cast<core::LocalEntryPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LocalEntryPoint_O val -> 1491
-      return (kindVal == ISA_ADJUST_STAMP(1491));
+    // IsA-stamp-range core::LocalEntryPoint_O val -> 1483
+      return (kindVal == ISA_ADJUST_STAMP(1483));
   };
 };
 // STAMPWTAG_core__ComplexVector_int2_t_O
@@ -2996,8 +2990,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<2,0>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,0> val -> 1831
-      return (kindVal == ISA_ADJUST_STAMP(1831));
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,0> val -> 1823
+      return (kindVal == ISA_ADJUST_STAMP(1823));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___
@@ -3005,8 +2999,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> val -> 1827
-      return (kindVal == ISA_ADJUST_STAMP(1827));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>> val -> 1819
+      return (kindVal == ISA_ADJUST_STAMP(1819));
   };
 };
 // STAMPWTAG_llvmo__DILexicalBlock_O
@@ -3014,8 +3008,8 @@ template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILexicalBlock_O val -> 1151
-      return (kindVal == ISA_ADJUST_STAMP(1151));
+    // IsA-stamp-range llvmo::DILexicalBlock_O val -> 1143
+      return (kindVal == ISA_ADJUST_STAMP(1143));
   };
 };
 // STAMPWTAG_llvmo__DITypeRefArray_O
@@ -3050,8 +3044,8 @@ template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::StringInputStream_O val -> 1655
-      return (kindVal == ISA_ADJUST_STAMP(1655));
+    // IsA-stamp-range core::StringInputStream_O val -> 1647
+      return (kindVal == ISA_ADJUST_STAMP(1647));
   };
 };
 // STAMPWTAG_core__DebuggerLocal_O
@@ -3059,8 +3053,8 @@ template <typename FP> struct Cast<core::DebuggerLocal_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::DebuggerLocal_O val -> 1495
-      return (kindVal == ISA_ADJUST_STAMP(1495));
+    // IsA-stamp-range core::DebuggerLocal_O val -> 1487
+      return (kindVal == ISA_ADJUST_STAMP(1487));
   };
 };
 // STAMPWTAG_llvmo__ModulePass_O
@@ -3068,8 +3062,8 @@ template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ModulePass_O low high --> 983 991 
-      return ((ISA_ADJUST_STAMP(983) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(991)));
+    // IsA-stamp-range llvmo::ModulePass_O low high --> 975 983 
+      return ((ISA_ADJUST_STAMP(975) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(983)));
   };
 };
 // STAMPWTAG_core__FunctionFrame_O
@@ -3077,8 +3071,8 @@ template <typename FP> struct Cast<core::FunctionFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FunctionFrame_O val -> 1463
-      return (kindVal == ISA_ADJUST_STAMP(1463));
+    // IsA-stamp-range core::FunctionFrame_O val -> 1455
+      return (kindVal == ISA_ADJUST_STAMP(1455));
   };
 };
 // STAMPWTAG_llvmo__DILocalVariable_O
@@ -3086,8 +3080,8 @@ template <typename FP> struct Cast<llvmo::DILocalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILocalVariable_O val -> 1107
-      return (kindVal == ISA_ADJUST_STAMP(1107));
+    // IsA-stamp-range llvmo::DILocalVariable_O val -> 1099
+      return (kindVal == ISA_ADJUST_STAMP(1099));
   };
 };
 // STAMPWTAG_core__LongFloat_O
@@ -3095,8 +3089,8 @@ template <typename FP> struct Cast<core::LongFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LongFloat_O val -> 1599
-      return (kindVal == ISA_ADJUST_STAMP(1599));
+    // IsA-stamp-range core::LongFloat_O val -> 1591
+      return (kindVal == ISA_ADJUST_STAMP(1591));
   };
 };
 // STAMPWTAG_core__ComplexVector_int4_t_O
@@ -3113,8 +3107,8 @@ template <typename FP> struct Cast<llvmo::TargetLibraryInfoWrapperPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetLibraryInfoWrapperPass_O val -> 991
-      return (kindVal == ISA_ADJUST_STAMP(991));
+    // IsA-stamp-range llvmo::TargetLibraryInfoWrapperPass_O val -> 983
+      return (kindVal == ISA_ADJUST_STAMP(983));
   };
 };
 // STAMPWTAG_asttooling__QualType_O
@@ -3140,8 +3134,8 @@ template <typename FP> struct Cast<llvmo::User_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::User_O low high --> 1195 1331 
-      return ((ISA_ADJUST_STAMP(1195) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1331)));
+    // IsA-stamp-range llvmo::User_O low high --> 1187 1323 
+      return ((ISA_ADJUST_STAMP(1187) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1323)));
   };
 };
 // STAMPWTAG_core__MDArray_int16_t_O
@@ -3167,8 +3161,8 @@ template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::FenceInst_O val -> 1251
-      return (kindVal == ISA_ADJUST_STAMP(1251));
+    // IsA-stamp-range llvmo::FenceInst_O val -> 1243
+      return (kindVal == ISA_ADJUST_STAMP(1243));
   };
 };
 // STAMPWTAG_llvmo__AtomicCmpXchgInst_O
@@ -3176,8 +3170,8 @@ template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::AtomicCmpXchgInst_O val -> 1247
-      return (kindVal == ISA_ADJUST_STAMP(1247));
+    // IsA-stamp-range llvmo::AtomicCmpXchgInst_O val -> 1239
+      return (kindVal == ISA_ADJUST_STAMP(1239));
   };
 };
 // STAMPWTAG_core__ValueFrame_O
@@ -3185,8 +3179,8 @@ template <typename FP> struct Cast<core::ValueFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ValueFrame_O val -> 1459
-      return (kindVal == ISA_ADJUST_STAMP(1459));
+    // IsA-stamp-range core::ValueFrame_O val -> 1451
+      return (kindVal == ISA_ADJUST_STAMP(1451));
   };
 };
 // STAMPWTAG_core__ComplexVector_int8_t_O
@@ -3203,8 +3197,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned long>*,FP>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned long> low high --> 1819 1823 
-      return ((ISA_ADJUST_STAMP(1819) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1823)));
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned long> low high --> 1811 1815 
+      return ((ISA_ADJUST_STAMP(1811) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1815)));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_int4_t_O
@@ -3239,8 +3233,8 @@ template <typename FP> struct Cast<core::Complex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Complex_O val -> 1607
-      return (kindVal == ISA_ADJUST_STAMP(1607));
+    // IsA-stamp-range core::Complex_O val -> 1599
+      return (kindVal == ISA_ADJUST_STAMP(1599));
   };
 };
 // STAMPWTAG_llvmo__ConstantPointerNull_O
@@ -3248,8 +3242,8 @@ template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantPointerNull_O val -> 1323
-      return (kindVal == ISA_ADJUST_STAMP(1323));
+    // IsA-stamp-range llvmo::ConstantPointerNull_O val -> 1315
+      return (kindVal == ISA_ADJUST_STAMP(1315));
   };
 };
 // STAMPWTAG_llvmo__VectorType_O
@@ -3257,8 +3251,8 @@ template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::VectorType_O val -> 1035
-      return (kindVal == ISA_ADJUST_STAMP(1035));
+    // IsA-stamp-range llvmo::VectorType_O val -> 1027
+      return (kindVal == ISA_ADJUST_STAMP(1027));
   };
 };
 // STAMPWTAG_core__EntryPointBase_O
@@ -3266,8 +3260,8 @@ template <typename FP> struct Cast<core::EntryPointBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::EntryPointBase_O low high --> 1471 1491 
-      return ((ISA_ADJUST_STAMP(1471) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1491)));
+    // IsA-stamp-range core::EntryPointBase_O low high --> 1463 1483 
+      return ((ISA_ADJUST_STAMP(1463) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1483)));
   };
 };
 // STAMPWTAG_llvmo__ValueAsMetadata_O
@@ -3275,8 +3269,8 @@ template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ValueAsMetadata_O val -> 1167
-      return (kindVal == ISA_ADJUST_STAMP(1167));
+    // IsA-stamp-range llvmo::ValueAsMetadata_O val -> 1159
+      return (kindVal == ISA_ADJUST_STAMP(1159));
   };
 };
 // STAMPWTAG_llvmo__ConstantExpr_O
@@ -3284,8 +3278,8 @@ template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantExpr_O val -> 1319
-      return (kindVal == ISA_ADJUST_STAMP(1319));
+    // IsA-stamp-range llvmo::ConstantExpr_O val -> 1311
+      return (kindVal == ISA_ADJUST_STAMP(1311));
   };
 };
 // STAMPWTAG_llvmo__StructType_O
@@ -3293,8 +3287,8 @@ template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::StructType_O val -> 1031
-      return (kindVal == ISA_ADJUST_STAMP(1031));
+    // IsA-stamp-range llvmo::StructType_O val -> 1023
+      return (kindVal == ISA_ADJUST_STAMP(1023));
   };
 };
 // STAMPWTAG_core__RandomState_O
@@ -3302,8 +3296,8 @@ template <typename FP> struct Cast<core::RandomState_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::RandomState_O val -> 1467
-      return (kindVal == ISA_ADJUST_STAMP(1467));
+    // IsA-stamp-range core::RandomState_O val -> 1459
+      return (kindVal == ISA_ADJUST_STAMP(1459));
   };
 };
 // STAMPWTAG_core__ComplexVector_int16_t_O
@@ -3329,8 +3323,8 @@ template <typename FP> struct Cast<llvmo::Target_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Target_O val -> 1375
-      return (kindVal == ISA_ADJUST_STAMP(1375));
+    // IsA-stamp-range llvmo::Target_O val -> 1367
+      return (kindVal == ISA_ADJUST_STAMP(1367));
   };
 };
 // STAMPWTAG_core__SimpleVector_int2_t_O
@@ -3347,8 +3341,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<clbind::detail::ve
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<clbind::detail::vertex> val -> 1815
-      return (kindVal == ISA_ADJUST_STAMP(1815));
+    // IsA-stamp-range gctools::GCVector_moveable<clbind::detail::vertex> val -> 1807
+      return (kindVal == ISA_ADJUST_STAMP(1807));
   };
 };
 // STAMPWTAG_core__MDArray_byte64_t_O
@@ -3392,8 +3386,8 @@ template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::AnsiStream_O low high --> 1615 1659 
-      return ((ISA_ADJUST_STAMP(1615) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1659)));
+    // IsA-stamp-range core::AnsiStream_O low high --> 1607 1651 
+      return ((ISA_ADJUST_STAMP(1607) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1651)));
   };
 };
 // STAMPWTAG_core__BuiltinClosure_O
@@ -3410,8 +3404,8 @@ template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SingleFloat_dummy_O val -> 1595
-      return (kindVal == ISA_ADJUST_STAMP(1595));
+    // IsA-stamp-range core::SingleFloat_dummy_O val -> 1587
+      return (kindVal == ISA_ADJUST_STAMP(1587));
   };
 };
 // STAMPWTAG_llvmo__DIExpression_O
@@ -3419,8 +3413,8 @@ template <typename FP> struct Cast<llvmo::DIExpression_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIExpression_O val -> 1159
-      return (kindVal == ISA_ADJUST_STAMP(1159));
+    // IsA-stamp-range llvmo::DIExpression_O val -> 1151
+      return (kindVal == ISA_ADJUST_STAMP(1151));
   };
 };
 // STAMPWTAG_llvmo__Module_O
@@ -3428,8 +3422,8 @@ template <typename FP> struct Cast<llvmo::Module_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Module_O val -> 1371
-      return (kindVal == ISA_ADJUST_STAMP(1371));
+    // IsA-stamp-range llvmo::Module_O val -> 1363
+      return (kindVal == ISA_ADJUST_STAMP(1363));
   };
 };
 // STAMPWTAG_core__Environment_O
@@ -3437,8 +3431,8 @@ template <typename FP> struct Cast<core::Environment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Environment_O low high --> 1399 1463 
-      return ((ISA_ADJUST_STAMP(1399) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1463)));
+    // IsA-stamp-range core::Environment_O low high --> 1391 1455 
+      return ((ISA_ADJUST_STAMP(1391) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1455)));
   };
 };
 // STAMPWTAG_core__ValueEnvironment_O
@@ -3446,8 +3440,8 @@ template <typename FP> struct Cast<core::ValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ValueEnvironment_O val -> 1427
-      return (kindVal == ISA_ADJUST_STAMP(1427));
+    // IsA-stamp-range core::ValueEnvironment_O val -> 1419
+      return (kindVal == ISA_ADJUST_STAMP(1419));
   };
 };
 // STAMPWTAG_llvmo__InvokeInst_O
@@ -3455,8 +3449,8 @@ template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::InvokeInst_O val -> 1263
-      return (kindVal == ISA_ADJUST_STAMP(1263));
+    // IsA-stamp-range llvmo::InvokeInst_O val -> 1255
+      return (kindVal == ISA_ADJUST_STAMP(1255));
   };
 };
 // STAMPWTAG_core__StrNs_O
@@ -3473,8 +3467,8 @@ template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::UnwindProtectEnvironment_O val -> 1451
-      return (kindVal == ISA_ADJUST_STAMP(1451));
+    // IsA-stamp-range core::UnwindProtectEnvironment_O val -> 1443
+      return (kindVal == ISA_ADJUST_STAMP(1443));
   };
 };
 // STAMPWTAG_clasp_ffi__ForeignData_O
@@ -3491,8 +3485,8 @@ template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::CallInst_O val -> 1259
-      return (kindVal == ISA_ADJUST_STAMP(1259));
+    // IsA-stamp-range llvmo::CallInst_O val -> 1251
+      return (kindVal == ISA_ADJUST_STAMP(1251));
   };
 };
 // STAMPWTAG_llvmo__FunctionPassManager_O
@@ -3500,8 +3494,8 @@ template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::FunctionPassManager_O val -> 1087
-      return (kindVal == ISA_ADJUST_STAMP(1087));
+    // IsA-stamp-range llvmo::FunctionPassManager_O val -> 1079
+      return (kindVal == ISA_ADJUST_STAMP(1079));
   };
 };
 // STAMPWTAG_core__DoubleFloat_O
@@ -3509,8 +3503,8 @@ template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::DoubleFloat_O val -> 1591
-      return (kindVal == ISA_ADJUST_STAMP(1591));
+    // IsA-stamp-range core::DoubleFloat_O val -> 1583
+      return (kindVal == ISA_ADJUST_STAMP(1583));
   };
 };
 // STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__
@@ -3518,8 +3512,8 @@ template <typename FP> struct Cast<gctools::GCArray_atomic<gctools::smart_ptr<co
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>> val -> 1811
-      return (kindVal == ISA_ADJUST_STAMP(1811));
+    // IsA-stamp-range gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>> val -> 1803
+      return (kindVal == ISA_ADJUST_STAMP(1803));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__
@@ -3527,8 +3521,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>> val -> 1807
-      return (kindVal == ISA_ADJUST_STAMP(1807));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>> val -> 1799
+      return (kindVal == ISA_ADJUST_STAMP(1799));
   };
 };
 // STAMPWTAG_core__DebuggerFrame_O
@@ -3536,8 +3530,8 @@ template <typename FP> struct Cast<core::DebuggerFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::DebuggerFrame_O val -> 1395
-      return (kindVal == ISA_ADJUST_STAMP(1395));
+    // IsA-stamp-range core::DebuggerFrame_O val -> 1387
+      return (kindVal == ISA_ADJUST_STAMP(1387));
   };
 };
 // STAMPWTAG_core__StringStream_O
@@ -3545,8 +3539,8 @@ template <typename FP> struct Cast<core::StringStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::StringStream_O low high --> 1647 1655 
-      return ((ISA_ADJUST_STAMP(1647) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1655)));
+    // IsA-stamp-range core::StringStream_O low high --> 1639 1647 
+      return ((ISA_ADJUST_STAMP(1639) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1647)));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_
@@ -3554,8 +3548,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolStorag
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolStorage> val -> 1803
-      return (kindVal == ISA_ADJUST_STAMP(1803));
+    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolStorage> val -> 1795
+      return (kindVal == ISA_ADJUST_STAMP(1795));
   };
 };
 // STAMPWTAG_llvmo__LibraryBase_O
@@ -3572,8 +3566,8 @@ template <typename FP> struct Cast<core::Sigset_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Sigset_O val -> 1391
-      return (kindVal == ISA_ADJUST_STAMP(1391));
+    // IsA-stamp-range core::Sigset_O val -> 1383
+      return (kindVal == ISA_ADJUST_STAMP(1383));
   };
 };
 // STAMPWTAG_core__MDArray_int32_t_O
@@ -3590,8 +3584,8 @@ template <typename FP> struct Cast<asttooling::AsttoolingExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range asttooling::AsttoolingExposer_O val -> 939
-      return (kindVal == ISA_ADJUST_STAMP(939));
+    // IsA-stamp-range asttooling::AsttoolingExposer_O val -> 935
+      return (kindVal == ISA_ADJUST_STAMP(935));
   };
 };
 // STAMPWTAG_llvmo__IntegerType_O
@@ -3599,8 +3593,8 @@ template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::IntegerType_O val -> 1027
-      return (kindVal == ISA_ADJUST_STAMP(1027));
+    // IsA-stamp-range llvmo::IntegerType_O val -> 1019
+      return (kindVal == ISA_ADJUST_STAMP(1019));
   };
 };
 // STAMPWTAG_core__MDArray_int64_t_O
@@ -3626,8 +3620,8 @@ template <typename FP> struct Cast<core::SmallMultimap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SmallMultimap_O val -> 1387
-      return (kindVal == ISA_ADJUST_STAMP(1387));
+    // IsA-stamp-range core::SmallMultimap_O val -> 1379
+      return (kindVal == ISA_ADJUST_STAMP(1379));
   };
 };
 // STAMPWTAG_llvmo__PassManagerBuilder_O
@@ -3635,8 +3629,8 @@ template <typename FP> struct Cast<llvmo::PassManagerBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::PassManagerBuilder_O val -> 1367
-      return (kindVal == ISA_ADJUST_STAMP(1367));
+    // IsA-stamp-range llvmo::PassManagerBuilder_O val -> 1359
+      return (kindVal == ISA_ADJUST_STAMP(1359));
   };
 };
 // STAMPWTAG_core__Fixnum_dummy_O
@@ -3644,8 +3638,8 @@ template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Fixnum_dummy_O val -> 1583
-      return (kindVal == ISA_ADJUST_STAMP(1583));
+    // IsA-stamp-range core::Fixnum_dummy_O val -> 1575
+      return (kindVal == ISA_ADJUST_STAMP(1575));
   };
 };
 // STAMPWTAG_core__MDArray_int8_t_O
@@ -3662,8 +3656,8 @@ template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantFP_O val -> 1315
-      return (kindVal == ISA_ADJUST_STAMP(1315));
+    // IsA-stamp-range llvmo::ConstantFP_O val -> 1307
+      return (kindVal == ISA_ADJUST_STAMP(1307));
   };
 };
 // STAMPWTAG_core__Cons_O
@@ -3671,8 +3665,8 @@ template <typename FP> struct Cast<core::Cons_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Cons_O val -> 1695
-      return (kindVal == ISA_ADJUST_STAMP(1695));
+    // IsA-stamp-range core::Cons_O val -> 1687
+      return (kindVal == ISA_ADJUST_STAMP(1687));
   };
 };
 // STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_
@@ -3680,8 +3674,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<4,1>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<4,1> val -> 1799
-      return (kindVal == ISA_ADJUST_STAMP(1799));
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<4,1> val -> 1791
+      return (kindVal == ISA_ADJUST_STAMP(1791));
   };
 };
 // STAMPWTAG_llvmo__LLVMContext_O
@@ -3689,8 +3683,8 @@ template <typename FP> struct Cast<llvmo::LLVMContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::LLVMContext_O val -> 1363
-      return (kindVal == ISA_ADJUST_STAMP(1363));
+    // IsA-stamp-range llvmo::LLVMContext_O val -> 1355
+      return (kindVal == ISA_ADJUST_STAMP(1355));
   };
 };
 // STAMPWTAG_core__MDArray_int4_t_O
@@ -3707,8 +3701,8 @@ template <typename FP> struct Cast<core::WeakKeyHashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::WeakKeyHashTable_O val -> 1503
-      return (kindVal == ISA_ADJUST_STAMP(1503));
+    // IsA-stamp-range core::WeakKeyHashTable_O val -> 1495
+      return (kindVal == ISA_ADJUST_STAMP(1495));
   };
 };
 // STAMPWTAG_core__Rack_O
@@ -3716,8 +3710,8 @@ template <typename FP> struct Cast<core::Rack_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Rack_O val -> 1383
-      return (kindVal == ISA_ADJUST_STAMP(1383));
+    // IsA-stamp-range core::Rack_O val -> 1375
+      return (kindVal == ISA_ADJUST_STAMP(1375));
   };
 };
 // STAMPWTAG_core__MDArrayBaseChar_O
@@ -3734,8 +3728,8 @@ template <typename FP> struct Cast<core::UserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::UserData_O val -> 1683
-      return (kindVal == ISA_ADJUST_STAMP(1683));
+    // IsA-stamp-range core::UserData_O val -> 1675
+      return (kindVal == ISA_ADJUST_STAMP(1675));
   };
 };
 // STAMPWTAG_core__ExternalObject_O
@@ -3743,8 +3737,8 @@ template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ExternalObject_O low high --> 975 1379 
-      return ((ISA_ADJUST_STAMP(975) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1379)));
+    // IsA-stamp-range core::ExternalObject_O low high --> 967 1371 
+      return ((ISA_ADJUST_STAMP(967) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1371)));
   };
 };
 // STAMPWTAG_llvmo__DINode_O
@@ -3752,8 +3746,8 @@ template <typename FP> struct Cast<llvmo::DINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DINode_O low high --> 1099 1155 
-      return ((ISA_ADJUST_STAMP(1099) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1155)));
+    // IsA-stamp-range llvmo::DINode_O low high --> 1091 1147 
+      return ((ISA_ADJUST_STAMP(1091) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1147)));
   };
 };
 // STAMPWTAG_llvmo__GlobalVariable_O
@@ -3761,8 +3755,8 @@ template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::GlobalVariable_O val -> 1291
-      return (kindVal == ISA_ADJUST_STAMP(1291));
+    // IsA-stamp-range llvmo::GlobalVariable_O val -> 1283
+      return (kindVal == ISA_ADJUST_STAMP(1283));
   };
 };
 // STAMPWTAG_core__BroadcastStream_O
@@ -3770,8 +3764,8 @@ template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::BroadcastStream_O val -> 1643
-      return (kindVal == ISA_ADJUST_STAMP(1643));
+    // IsA-stamp-range core::BroadcastStream_O val -> 1635
+      return (kindVal == ISA_ADJUST_STAMP(1635));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__
@@ -3779,8 +3773,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>> val -> 1795
-      return (kindVal == ISA_ADJUST_STAMP(1795));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>> val -> 1787
+      return (kindVal == ISA_ADJUST_STAMP(1787));
   };
 };
 // STAMPWTAG_core__General_O
@@ -3788,8 +3782,8 @@ template <typename FP> struct Cast<core::General_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::General_O low high --> 19 1691 
-      return ((ISA_ADJUST_STAMP(19) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1691)));
+    // IsA-stamp-range core::General_O low high --> 19 1683 
+      return ((ISA_ADJUST_STAMP(19) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1683)));
   };
 };
 // STAMPWTAG_llvmo__ObjectFile_O
@@ -3833,8 +3827,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::RequiredArgu
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::RequiredArgument> val -> 1791
-      return (kindVal == ISA_ADJUST_STAMP(1791));
+    // IsA-stamp-range gctools::GCVector_moveable<core::RequiredArgument> val -> 1783
+      return (kindVal == ISA_ADJUST_STAMP(1783));
   };
 };
 // STAMPWTAG_core__BlockEnvironment_O
@@ -3842,8 +3836,8 @@ template <typename FP> struct Cast<core::BlockEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::BlockEnvironment_O val -> 1423
-      return (kindVal == ISA_ADJUST_STAMP(1423));
+    // IsA-stamp-range core::BlockEnvironment_O val -> 1415
+      return (kindVal == ISA_ADJUST_STAMP(1415));
   };
 };
 // STAMPWTAG_mpip__Mpi_O
@@ -3851,8 +3845,8 @@ template <typename FP> struct Cast<mpip::Mpi_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range mpip::Mpi_O val -> 971
-      return (kindVal == ISA_ADJUST_STAMP(971));
+    // IsA-stamp-range mpip::Mpi_O val -> 963
+      return (kindVal == ISA_ADJUST_STAMP(963));
   };
 };
 // STAMPWTAG_llvmo__DINodeArray_O
@@ -3869,8 +3863,8 @@ template <typename FP> struct Cast<gctools::GCArraySignedLength_moveable<unsigne
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArraySignedLength_moveable<unsigned long> val -> 1823
-      return (kindVal == ISA_ADJUST_STAMP(1823));
+    // IsA-stamp-range gctools::GCArraySignedLength_moveable<unsigned long> val -> 1815
+      return (kindVal == ISA_ADJUST_STAMP(1815));
   };
 };
 // STAMPWTAG_llvmo__ConstantDataArray_O
@@ -3878,8 +3872,8 @@ template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantDataArray_O val -> 1303
-      return (kindVal == ISA_ADJUST_STAMP(1303));
+    // IsA-stamp-range llvmo::ConstantDataArray_O val -> 1295
+      return (kindVal == ISA_ADJUST_STAMP(1295));
   };
 };
 // STAMPWTAG_core__SmallMap_O
@@ -3887,8 +3881,8 @@ template <typename FP> struct Cast<core::SmallMap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SmallMap_O val -> 967
-      return (kindVal == ISA_ADJUST_STAMP(967));
+    // IsA-stamp-range core::SmallMap_O val -> 959
+      return (kindVal == ISA_ADJUST_STAMP(959));
   };
 };
 // STAMPWTAG_core__Instance_O
@@ -3896,8 +3890,8 @@ template <typename FP> struct Cast<core::Instance_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Instance_O low high --> 953 961 
-      if ((ISA_ADJUST_STAMP(953) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(961))) return true;
+    // IsA-stamp-range core::Instance_O low high --> 945 953 
+      if ((ISA_ADJUST_STAMP(945) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(953))) return true;
       return (dynamic_cast<core::Instance_O*>(client)!=NULL);
   };
 };
@@ -3906,8 +3900,8 @@ template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetOptions_O val -> 1359
-      return (kindVal == ISA_ADJUST_STAMP(1359));
+    // IsA-stamp-range llvmo::TargetOptions_O val -> 1351
+      return (kindVal == ISA_ADJUST_STAMP(1351));
   };
 };
 // STAMPWTAG_clasp_ffi__ForeignTypeSpec_O
@@ -3915,8 +3909,8 @@ template <typename FP> struct Cast<clasp_ffi::ForeignTypeSpec_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range clasp_ffi::ForeignTypeSpec_O val -> 951
-      return (kindVal == ISA_ADJUST_STAMP(951));
+    // IsA-stamp-range clasp_ffi::ForeignTypeSpec_O val -> 943
+      return (kindVal == ISA_ADJUST_STAMP(943));
   };
 };
 // STAMPWTAG_core__Unused_dummy_O
@@ -3928,22 +3922,13 @@ template <typename FP> struct Cast<core::Unused_dummy_O*,FP> {
       return (kindVal == ISA_ADJUST_STAMP(15));
   };
 };
-// STAMPWTAG_core__PosixTimeDuration_O
-template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::PosixTimeDuration_O val -> 947
-      return (kindVal == ISA_ADJUST_STAMP(947));
-  };
-};
 // STAMPWTAG_llvmo__DWARFContext_O
 template <typename FP> struct Cast<llvmo::DWARFContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DWARFContext_O val -> 1355
-      return (kindVal == ISA_ADJUST_STAMP(1355));
+    // IsA-stamp-range llvmo::DWARFContext_O val -> 1347
+      return (kindVal == ISA_ADJUST_STAMP(1347));
   };
 };
 // STAMPWTAG_core__HashTableEqual_O
@@ -3951,8 +3936,8 @@ template <typename FP> struct Cast<core::HashTableEqual_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::HashTableEqual_O val -> 1523
-      return (kindVal == ISA_ADJUST_STAMP(1523));
+    // IsA-stamp-range core::HashTableEqual_O val -> 1515
+      return (kindVal == ISA_ADJUST_STAMP(1515));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_byte64_t_O
@@ -3969,8 +3954,8 @@ template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Triple_O val -> 1351
-      return (kindVal == ISA_ADJUST_STAMP(1351));
+    // IsA-stamp-range llvmo::Triple_O val -> 1343
+      return (kindVal == ISA_ADJUST_STAMP(1343));
   };
 };
 // STAMPWTAG_core__BitVectorNs_O
@@ -3987,8 +3972,8 @@ template <typename FP> struct Cast<core::CoreExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::CoreExposer_O val -> 935
-      return (kindVal == ISA_ADJUST_STAMP(935));
+    // IsA-stamp-range core::CoreExposer_O val -> 931
+      return (kindVal == ISA_ADJUST_STAMP(931));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_
@@ -3996,8 +3981,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::KeywordArgum
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::KeywordArgument> val -> 1787
-      return (kindVal == ISA_ADJUST_STAMP(1787));
+    // IsA-stamp-range gctools::GCVector_moveable<core::KeywordArgument> val -> 1779
+      return (kindVal == ISA_ADJUST_STAMP(1779));
   };
 };
 // STAMPWTAG_llvmo__NamedMDNode_O
@@ -4005,8 +3990,8 @@ template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::NamedMDNode_O val -> 1347
-      return (kindVal == ISA_ADJUST_STAMP(1347));
+    // IsA-stamp-range llvmo::NamedMDNode_O val -> 1339
+      return (kindVal == ISA_ADJUST_STAMP(1339));
   };
 };
 // STAMPWTAG_core__SimpleVector_byte16_t_O
@@ -4023,8 +4008,8 @@ template <typename FP> struct Cast<llvmo::ThreadSafeContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ThreadSafeContext_O val -> 1343
-      return (kindVal == ISA_ADJUST_STAMP(1343));
+    // IsA-stamp-range llvmo::ThreadSafeContext_O val -> 1335
+      return (kindVal == ISA_ADJUST_STAMP(1335));
   };
 };
 // STAMPWTAG_llvmo__TargetMachine_O
@@ -4032,8 +4017,8 @@ template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetMachine_O low high --> 1335 1339 
-      return ((ISA_ADJUST_STAMP(1335) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1339)));
+    // IsA-stamp-range llvmo::TargetMachine_O low high --> 1327 1331 
+      return ((ISA_ADJUST_STAMP(1327) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1331)));
   };
 };
 // STAMPWTAG_core__SimpleVector_byte64_t_O
@@ -4050,8 +4035,8 @@ template <typename FP> struct Cast<llvmo::Value_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Value_O low high --> 1179 1331 
-      return ((ISA_ADJUST_STAMP(1179) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1331)));
+    // IsA-stamp-range llvmo::Value_O low high --> 1171 1323 
+      return ((ISA_ADJUST_STAMP(1171) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1323)));
   };
 };
 // STAMPWTAG_core__SimpleBaseString_O
@@ -4068,8 +4053,8 @@ template <typename FP> struct Cast<core::Test_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Test_O val -> 1175
-      return (kindVal == ISA_ADJUST_STAMP(1175));
+    // IsA-stamp-range core::Test_O val -> 1167
+      return (kindVal == ISA_ADJUST_STAMP(1167));
   };
 };
 // STAMPWTAG_llvmo__Metadata_O
@@ -4077,8 +4062,8 @@ template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Metadata_O low high --> 1091 1171 
-      return ((ISA_ADJUST_STAMP(1091) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1171)));
+    // IsA-stamp-range llvmo::Metadata_O low high --> 1083 1163 
+      return ((ISA_ADJUST_STAMP(1083) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1163)));
   };
 };
 // STAMPWTAG_core__MDArray_O
@@ -4095,8 +4080,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::OptionalArgu
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::OptionalArgument> val -> 1783
-      return (kindVal == ISA_ADJUST_STAMP(1783));
+    // IsA-stamp-range gctools::GCVector_moveable<core::OptionalArgument> val -> 1775
+      return (kindVal == ISA_ADJUST_STAMP(1775));
   };
 };
 // STAMPWTAG_clbind__ClassRep_O
@@ -4104,8 +4089,8 @@ template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range clbind::ClassRep_O val -> 961
-      return (kindVal == ISA_ADJUST_STAMP(961));
+    // IsA-stamp-range clbind::ClassRep_O val -> 953
+      return (kindVal == ISA_ADJUST_STAMP(953));
   };
 };
 // STAMPWTAG_llvmo__ConstantInt_O
@@ -4113,8 +4098,8 @@ template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantInt_O val -> 1311
-      return (kindVal == ISA_ADJUST_STAMP(1311));
+    // IsA-stamp-range llvmo::ConstantInt_O val -> 1303
+      return (kindVal == ISA_ADJUST_STAMP(1303));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_double_
@@ -4122,8 +4107,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<double> val -> 1779
-      return (kindVal == ISA_ADJUST_STAMP(1779));
+    // IsA-stamp-range gctools::GCArray_moveable<double> val -> 1771
+      return (kindVal == ISA_ADJUST_STAMP(1771));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_int16_t_O
@@ -4140,8 +4125,8 @@ template <typename FP> struct Cast<llvmo::StructLayout_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::StructLayout_O val -> 943
-      return (kindVal == ISA_ADJUST_STAMP(943));
+    // IsA-stamp-range llvmo::StructLayout_O val -> 939
+      return (kindVal == ISA_ADJUST_STAMP(939));
   };
 };
 // STAMPWTAG_core__SimpleMDArrayT_O
@@ -4158,8 +4143,8 @@ template <typename FP> struct Cast<core::ActivationFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ActivationFrame_O low high --> 1455 1463 
-      return ((ISA_ADJUST_STAMP(1455) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1463)));
+    // IsA-stamp-range core::ActivationFrame_O low high --> 1447 1455 
+      return ((ISA_ADJUST_STAMP(1447) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1455)));
   };
 };
 // STAMPWTAG_llvmo__PassManagerBase_O
@@ -4167,8 +4152,8 @@ template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::PassManagerBase_O low high --> 1079 1087 
-      return ((ISA_ADJUST_STAMP(1079) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1087)));
+    // IsA-stamp-range llvmo::PassManagerBase_O low high --> 1071 1079 
+      return ((ISA_ADJUST_STAMP(1071) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1079)));
   };
 };
 // STAMPWTAG_llvmo__LoadInst_O
@@ -4176,8 +4161,8 @@ template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::LoadInst_O val -> 1211
-      return (kindVal == ISA_ADJUST_STAMP(1211));
+    // IsA-stamp-range llvmo::LoadInst_O val -> 1203
+      return (kindVal == ISA_ADJUST_STAMP(1203));
   };
 };
 // STAMPWTAG_llvmo__ConstantStruct_O
@@ -4185,8 +4170,8 @@ template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantStruct_O val -> 1307
-      return (kindVal == ISA_ADJUST_STAMP(1307));
+    // IsA-stamp-range llvmo::ConstantStruct_O val -> 1299
+      return (kindVal == ISA_ADJUST_STAMP(1299));
   };
 };
 // STAMPWTAG_core__Exposer_O
@@ -4194,8 +4179,8 @@ template <typename FP> struct Cast<core::Exposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Exposer_O low high --> 931 939 
-      return ((ISA_ADJUST_STAMP(931) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(939)));
+    // IsA-stamp-range core::Exposer_O low high --> 927 935 
+      return ((ISA_ADJUST_STAMP(927) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(935)));
   };
 };
 // STAMPWTAG_core__DirectoryIterator_O
@@ -4221,8 +4206,8 @@ template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DISubroutineType_O val -> 1135
-      return (kindVal == ISA_ADJUST_STAMP(1135));
+    // IsA-stamp-range llvmo::DISubroutineType_O val -> 1127
+      return (kindVal == ISA_ADJUST_STAMP(1127));
   };
 };
 // STAMPWTAG_core__LexicalEnvironment_O
@@ -4230,17 +4215,8 @@ template <typename FP> struct Cast<core::LexicalEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LexicalEnvironment_O low high --> 1407 1451 
-      return ((ISA_ADJUST_STAMP(1407) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1451)));
-  };
-};
-// STAMPWTAG_core__PosixTime_O
-template <typename FP> struct Cast<core::PosixTime_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::PosixTime_O val -> 927
-      return (kindVal == ISA_ADJUST_STAMP(927));
+    // IsA-stamp-range core::LexicalEnvironment_O low high --> 1399 1443 
+      return ((ISA_ADJUST_STAMP(1399) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1443)));
   };
 };
 // STAMPWTAG_llvmo__MetadataAsValue_O
@@ -4248,8 +4224,8 @@ template <typename FP> struct Cast<llvmo::MetadataAsValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::MetadataAsValue_O val -> 1191
-      return (kindVal == ISA_ADJUST_STAMP(1191));
+    // IsA-stamp-range llvmo::MetadataAsValue_O val -> 1183
+      return (kindVal == ISA_ADJUST_STAMP(1183));
   };
 };
 // STAMPWTAG_core__SimpleBitVector_O
@@ -4266,8 +4242,8 @@ template <typename FP> struct Cast<core::FunctionContainerEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FunctionContainerEnvironment_O val -> 1447
-      return (kindVal == ISA_ADJUST_STAMP(1447));
+    // IsA-stamp-range core::FunctionContainerEnvironment_O val -> 1439
+      return (kindVal == ISA_ADJUST_STAMP(1439));
   };
 };
 // STAMPWTAG_core__SimpleVector_int8_t_O
@@ -4284,8 +4260,8 @@ template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ResumeInst_O val -> 1243
-      return (kindVal == ISA_ADJUST_STAMP(1243));
+    // IsA-stamp-range llvmo::ResumeInst_O val -> 1235
+      return (kindVal == ISA_ADJUST_STAMP(1235));
   };
 };
 // STAMPWTAG_llvmo__Function_O
@@ -4293,8 +4269,8 @@ template <typename FP> struct Cast<llvmo::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Function_O val -> 1287
-      return (kindVal == ISA_ADJUST_STAMP(1287));
+    // IsA-stamp-range llvmo::Function_O val -> 1279
+      return (kindVal == ISA_ADJUST_STAMP(1279));
   };
 };
 // STAMPWTAG_llvmo__DIType_O
@@ -4302,8 +4278,8 @@ template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIType_O low high --> 1119 1135 
-      return ((ISA_ADJUST_STAMP(1119) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1135)));
+    // IsA-stamp-range llvmo::DIType_O low high --> 1111 1127 
+      return ((ISA_ADJUST_STAMP(1111) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1127)));
   };
 };
 // STAMPWTAG_core__Readtable_O
@@ -4320,8 +4296,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>> val -> 1775
-      return (kindVal == ISA_ADJUST_STAMP(1775));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>> val -> 1767
+      return (kindVal == ISA_ADJUST_STAMP(1767));
   };
 };
 // STAMPWTAG_llvmo__IRBuilder_O
@@ -4329,8 +4305,8 @@ template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::IRBuilder_O val -> 1055
-      return (kindVal == ISA_ADJUST_STAMP(1055));
+    // IsA-stamp-range llvmo::IRBuilder_O val -> 1047
+      return (kindVal == ISA_ADJUST_STAMP(1047));
   };
 };
 // STAMPWTAG_llvmo__ClaspJIT_O
@@ -4347,8 +4323,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>> val -> 1771
-      return (kindVal == ISA_ADJUST_STAMP(1771));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>> val -> 1763
+      return (kindVal == ISA_ADJUST_STAMP(1763));
   };
 };
 // STAMPWTAG_core__SimpleVector_byte8_t_O
@@ -4365,8 +4341,8 @@ template <typename FP> struct Cast<llvmo::DILexicalBlockBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILexicalBlockBase_O low high --> 1147 1151 
-      return ((ISA_ADJUST_STAMP(1147) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1151)));
+    // IsA-stamp-range llvmo::DILexicalBlockBase_O low high --> 1139 1143 
+      return ((ISA_ADJUST_STAMP(1139) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1143)));
   };
 };
 // STAMPWTAG_llvmo__MDNode_O
@@ -4374,8 +4350,8 @@ template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::MDNode_O low high --> 1095 1163 
-      return ((ISA_ADJUST_STAMP(1095) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1163)));
+    // IsA-stamp-range llvmo::MDNode_O low high --> 1087 1155 
+      return ((ISA_ADJUST_STAMP(1087) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1155)));
   };
 };
 // STAMPWTAG_core__ComplexVector_fixnum_O
@@ -4410,8 +4386,8 @@ template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::VAArgInst_O val -> 1207
-      return (kindVal == ISA_ADJUST_STAMP(1207));
+    // IsA-stamp-range llvmo::VAArgInst_O val -> 1199
+      return (kindVal == ISA_ADJUST_STAMP(1199));
   };
 };
 // STAMPWTAG_core__SimpleVector_int4_t_O
@@ -4455,8 +4431,8 @@ template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIFile_O val -> 1115
-      return (kindVal == ISA_ADJUST_STAMP(1115));
+    // IsA-stamp-range llvmo::DIFile_O val -> 1107
+      return (kindVal == ISA_ADJUST_STAMP(1107));
   };
 };
 // STAMPWTAG_llvmo__CodeBase_O
@@ -4482,8 +4458,8 @@ template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::BasicBlock_O val -> 1187
-      return (kindVal == ISA_ADJUST_STAMP(1187));
+    // IsA-stamp-range llvmo::BasicBlock_O val -> 1179
+      return (kindVal == ISA_ADJUST_STAMP(1179));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_int8_t_O
@@ -4500,8 +4476,8 @@ template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::EngineBuilder_O val -> 1075
-      return (kindVal == ISA_ADJUST_STAMP(1075));
+    // IsA-stamp-range llvmo::EngineBuilder_O val -> 1067
+      return (kindVal == ISA_ADJUST_STAMP(1067));
   };
 };
 // STAMPWTAG_core__ComplexVector_byte64_t_O
@@ -4518,8 +4494,8 @@ template <typename FP> struct Cast<llvmo::SectionedAddress_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::SectionedAddress_O val -> 1071
-      return (kindVal == ISA_ADJUST_STAMP(1071));
+    // IsA-stamp-range llvmo::SectionedAddress_O val -> 1063
+      return (kindVal == ISA_ADJUST_STAMP(1063));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_
@@ -4527,8 +4503,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::KeyValuePair
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::KeyValuePair> val -> 1767
-      return (kindVal == ISA_ADJUST_STAMP(1767));
+    // IsA-stamp-range gctools::GCVector_moveable<core::KeyValuePair> val -> 1759
+      return (kindVal == ISA_ADJUST_STAMP(1759));
   };
 };
 // STAMPWTAG_core__MDArray_byte32_t_O
@@ -4554,8 +4530,8 @@ template <typename FP> struct Cast<core::TagbodyEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::TagbodyEnvironment_O val -> 1419
-      return (kindVal == ISA_ADJUST_STAMP(1419));
+    // IsA-stamp-range core::TagbodyEnvironment_O val -> 1411
+      return (kindVal == ISA_ADJUST_STAMP(1411));
   };
 };
 // STAMPWTAG_llvmo__Constant_O
@@ -4563,8 +4539,8 @@ template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Constant_O low high --> 1279 1331 
-      return ((ISA_ADJUST_STAMP(1279) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1331)));
+    // IsA-stamp-range llvmo::Constant_O low high --> 1271 1323 
+      return ((ISA_ADJUST_STAMP(1271) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1323)));
   };
 };
 // STAMPWTAG_core__SpecialForm_O
@@ -4590,8 +4566,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned char>*,FP>
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned char> val -> 1763
-      return (kindVal == ISA_ADJUST_STAMP(1763));
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned char> val -> 1755
+      return (kindVal == ISA_ADJUST_STAMP(1755));
   };
 };
 // STAMPWTAG_llvmo__DIBasicType_O
@@ -4599,8 +4575,8 @@ template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIBasicType_O val -> 1131
-      return (kindVal == ISA_ADJUST_STAMP(1131));
+    // IsA-stamp-range llvmo::DIBasicType_O val -> 1123
+      return (kindVal == ISA_ADJUST_STAMP(1123));
   };
 };
 // STAMPWTAG_llvmo__DIBuilder_O
@@ -4608,8 +4584,8 @@ template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIBuilder_O val -> 1067
-      return (kindVal == ISA_ADJUST_STAMP(1067));
+    // IsA-stamp-range llvmo::DIBuilder_O val -> 1059
+      return (kindVal == ISA_ADJUST_STAMP(1059));
   };
 };
 // STAMPWTAG_core__NativeVector_int_O
@@ -4626,8 +4602,8 @@ template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::APInt_O val -> 1063
-      return (kindVal == ISA_ADJUST_STAMP(1063));
+    // IsA-stamp-range llvmo::APInt_O val -> 1055
+      return (kindVal == ISA_ADJUST_STAMP(1055));
   };
 };
 // STAMPWTAG_llvmo__APFloat_O
@@ -4635,8 +4611,8 @@ template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::APFloat_O val -> 1059
-      return (kindVal == ISA_ADJUST_STAMP(1059));
+    // IsA-stamp-range llvmo::APFloat_O val -> 1051
+      return (kindVal == ISA_ADJUST_STAMP(1051));
   };
 };
 // STAMPWTAG_core__SimpleMDArrayCharacter_O
@@ -4671,8 +4647,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> val -> 1759
-      return (kindVal == ISA_ADJUST_STAMP(1759));
+    // IsA-stamp-range gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>> val -> 1751
+      return (kindVal == ISA_ADJUST_STAMP(1751));
   };
 };
 // STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__
@@ -4680,8 +4656,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>> val -> 1755
-      return (kindVal == ISA_ADJUST_STAMP(1755));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>> val -> 1747
+      return (kindVal == ISA_ADJUST_STAMP(1747));
   };
 };
 // STAMPWTAG_core__Array_O
@@ -4707,8 +4683,8 @@ template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Argument_O val -> 1183
-      return (kindVal == ISA_ADJUST_STAMP(1183));
+    // IsA-stamp-range llvmo::Argument_O val -> 1175
+      return (kindVal == ISA_ADJUST_STAMP(1175));
   };
 };
 // STAMPWTAG_core__Iterator_O
@@ -4725,8 +4701,8 @@ template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::IRBuilderBase_O low high --> 1051 1055 
-      return ((ISA_ADJUST_STAMP(1051) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1055)));
+    // IsA-stamp-range llvmo::IRBuilderBase_O low high --> 1043 1047 
+      return ((ISA_ADJUST_STAMP(1043) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1047)));
   };
 };
 // STAMPWTAG_core__GlobalEntryPoint_O
@@ -4734,8 +4710,8 @@ template <typename FP> struct Cast<core::GlobalEntryPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::GlobalEntryPoint_O val -> 1487
-      return (kindVal == ISA_ADJUST_STAMP(1487));
+    // IsA-stamp-range core::GlobalEntryPoint_O val -> 1479
+      return (kindVal == ISA_ADJUST_STAMP(1479));
   };
 };
 // STAMPWTAG_core__Null_O
@@ -4752,8 +4728,8 @@ template <typename FP> struct Cast<llvmo::TargetPassConfig_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetPassConfig_O val -> 1047
-      return (kindVal == ISA_ADJUST_STAMP(1047));
+    // IsA-stamp-range llvmo::TargetPassConfig_O val -> 1039
+      return (kindVal == ISA_ADJUST_STAMP(1039));
   };
 };
 // STAMPWTAG_core__SingleDispatchMethod_O
@@ -4770,8 +4746,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<signed char>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<signed char> val -> 1751
-      return (kindVal == ISA_ADJUST_STAMP(1751));
+    // IsA-stamp-range gctools::GCArray_moveable<signed char> val -> 1743
+      return (kindVal == ISA_ADJUST_STAMP(1743));
   };
 };
 // STAMPWTAG_core__GlueEnvironment_O
@@ -4779,8 +4755,8 @@ template <typename FP> struct Cast<core::GlueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::GlueEnvironment_O val -> 1403
-      return (kindVal == ISA_ADJUST_STAMP(1403));
+    // IsA-stamp-range core::GlueEnvironment_O val -> 1395
+      return (kindVal == ISA_ADJUST_STAMP(1395));
   };
 };
 // STAMPWTAG_core__CxxObject_O
@@ -4797,8 +4773,8 @@ template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ReturnInst_O val -> 1239
-      return (kindVal == ISA_ADJUST_STAMP(1239));
+    // IsA-stamp-range llvmo::ReturnInst_O val -> 1231
+      return (kindVal == ISA_ADJUST_STAMP(1231));
   };
 };
 // STAMPWTAG_llvmo__FunctionType_O
@@ -4806,8 +4782,8 @@ template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::FunctionType_O val -> 1023
-      return (kindVal == ISA_ADJUST_STAMP(1023));
+    // IsA-stamp-range llvmo::FunctionType_O val -> 1015
+      return (kindVal == ISA_ADJUST_STAMP(1015));
   };
 };
 // STAMPWTAG_clbind__DummyCreator_O
@@ -4833,8 +4809,8 @@ template <typename FP> struct Cast<llvmo::DIContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIContext_O val -> 1043
-      return (kindVal == ISA_ADJUST_STAMP(1043));
+    // IsA-stamp-range llvmo::DIContext_O val -> 1035
+      return (kindVal == ISA_ADJUST_STAMP(1035));
   };
 };
 // STAMPWTAG_llvmo__JITDylib_O
@@ -4842,8 +4818,8 @@ template <typename FP> struct Cast<llvmo::JITDylib_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::JITDylib_O val -> 1039
-      return (kindVal == ISA_ADJUST_STAMP(1039));
+    // IsA-stamp-range llvmo::JITDylib_O val -> 1031
+      return (kindVal == ISA_ADJUST_STAMP(1031));
   };
 };
 // STAMPWTAG_llvmo__Type_O
@@ -4851,8 +4827,8 @@ template <typename FP> struct Cast<llvmo::Type_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Type_O low high --> 1011 1035 
-      return ((ISA_ADJUST_STAMP(1011) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1035)));
+    // IsA-stamp-range llvmo::Type_O low high --> 1003 1027 
+      return ((ISA_ADJUST_STAMP(1003) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1027)));
   };
 };
 // STAMPWTAG_core__Pointer_O
@@ -4869,8 +4845,8 @@ template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::UnreachableInst_O val -> 1235
-      return (kindVal == ISA_ADJUST_STAMP(1235));
+    // IsA-stamp-range llvmo::UnreachableInst_O val -> 1227
+      return (kindVal == ISA_ADJUST_STAMP(1227));
   };
 };
 // STAMPWTAG_core__ComplexVector_int64_t_O
@@ -4887,8 +4863,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::SymbolClassH
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolClassHolderPair> val -> 1747
-      return (kindVal == ISA_ADJUST_STAMP(1747));
+    // IsA-stamp-range gctools::GCVector_moveable<core::SymbolClassHolderPair> val -> 1739
+      return (kindVal == ISA_ADJUST_STAMP(1739));
   };
 };
 // STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_
@@ -4896,8 +4872,8 @@ template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<4,0>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<4,0> val -> 1743
-      return (kindVal == ISA_ADJUST_STAMP(1743));
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<4,0> val -> 1735
+      return (kindVal == ISA_ADJUST_STAMP(1735));
   };
 };
 // STAMPWTAG_core__FileScope_O
@@ -4905,8 +4881,8 @@ template <typename FP> struct Cast<core::FileScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FileScope_O val -> 1543
-      return (kindVal == ISA_ADJUST_STAMP(1543));
+    // IsA-stamp-range core::FileScope_O val -> 1535
+      return (kindVal == ISA_ADJUST_STAMP(1535));
   };
 };
 // STAMPWTAG_core__Float_O
@@ -4914,8 +4890,8 @@ template <typename FP> struct Cast<core::Float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Float_O low high --> 1587 1603 
-      return ((ISA_ADJUST_STAMP(1587) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1603)));
+    // IsA-stamp-range core::Float_O low high --> 1579 1595 
+      return ((ISA_ADJUST_STAMP(1579) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1595)));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_byte4_t_O
@@ -4932,8 +4908,8 @@ template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIDerivedType_O val -> 1127
-      return (kindVal == ISA_ADJUST_STAMP(1127));
+    // IsA-stamp-range llvmo::DIDerivedType_O val -> 1119
+      return (kindVal == ISA_ADJUST_STAMP(1119));
   };
 };
 // STAMPWTAG_clbind__ConstructorCreator_O
@@ -4959,8 +4935,8 @@ template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantDataSequential_O low high --> 1299 1303 
-      return ((ISA_ADJUST_STAMP(1299) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1303)));
+    // IsA-stamp-range llvmo::ConstantDataSequential_O low high --> 1291 1295 
+      return ((ISA_ADJUST_STAMP(1291) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1295)));
   };
 };
 // STAMPWTAG_core__TranslationFunctor_O
@@ -4995,8 +4971,8 @@ template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::StoreInst_O val -> 1231
-      return (kindVal == ISA_ADJUST_STAMP(1231));
+    // IsA-stamp-range llvmo::StoreInst_O val -> 1223
+      return (kindVal == ISA_ADJUST_STAMP(1223));
   };
 };
 // STAMPWTAG_llvmo__DebugLoc_O
@@ -5022,8 +4998,8 @@ template <typename FP> struct Cast<core::CodeEntryPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::CodeEntryPoint_O low high --> 1483 1491 
-      return ((ISA_ADJUST_STAMP(1483) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1491)));
+    // IsA-stamp-range core::CodeEntryPoint_O low high --> 1475 1483 
+      return ((ISA_ADJUST_STAMP(1475) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1483)));
   };
 };
 // STAMPWTAG_core__IOFileStream_O
@@ -5031,8 +5007,8 @@ template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::IOFileStream_O val -> 1635
-      return (kindVal == ISA_ADJUST_STAMP(1635));
+    // IsA-stamp-range core::IOFileStream_O val -> 1627
+      return (kindVal == ISA_ADJUST_STAMP(1627));
   };
 };
 // STAMPWTAG_core__RuntimeVisibleEnvironment_O
@@ -5040,8 +5016,8 @@ template <typename FP> struct Cast<core::RuntimeVisibleEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::RuntimeVisibleEnvironment_O low high --> 1411 1427 
-      return ((ISA_ADJUST_STAMP(1411) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1427)));
+    // IsA-stamp-range core::RuntimeVisibleEnvironment_O low high --> 1403 1419 
+      return ((ISA_ADJUST_STAMP(1403) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1419)));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_byte8_t_O
@@ -5058,8 +5034,8 @@ template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Instruction_O low high --> 1199 1275 
-      return ((ISA_ADJUST_STAMP(1199) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1275)));
+    // IsA-stamp-range llvmo::Instruction_O low high --> 1191 1267 
+      return ((ISA_ADJUST_STAMP(1191) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1267)));
   };
 };
 // STAMPWTAG_core__FileStream_O
@@ -5067,8 +5043,8 @@ template <typename FP> struct Cast<core::FileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FileStream_O low high --> 1631 1639 
-      return ((ISA_ADJUST_STAMP(1631) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1639)));
+    // IsA-stamp-range core::FileStream_O low high --> 1623 1631 
+      return ((ISA_ADJUST_STAMP(1623) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1631)));
   };
 };
 // STAMPWTAG_core__Rational_O
@@ -5076,8 +5052,8 @@ template <typename FP> struct Cast<core::Rational_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Rational_O low high --> 1567 1583 
-      return ((ISA_ADJUST_STAMP(1567) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1583)));
+    // IsA-stamp-range core::Rational_O low high --> 1559 1575 
+      return ((ISA_ADJUST_STAMP(1559) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1575)));
   };
 };
 // STAMPWTAG_core__MDArrayCharacter_O
@@ -5094,8 +5070,8 @@ template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::LandingPadInst_O val -> 1227
-      return (kindVal == ISA_ADJUST_STAMP(1227));
+    // IsA-stamp-range llvmo::LandingPadInst_O val -> 1219
+      return (kindVal == ISA_ADJUST_STAMP(1219));
   };
 };
 // STAMPWTAG_core__ImmobileObject_O
@@ -5130,8 +5106,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>> val -> 1739
-      return (kindVal == ISA_ADJUST_STAMP(1739));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>> val -> 1731
+      return (kindVal == ISA_ADJUST_STAMP(1731));
   };
 };
 // STAMPWTAG_core__HashTableEql_O
@@ -5139,8 +5115,8 @@ template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::HashTableEql_O val -> 1519
-      return (kindVal == ISA_ADJUST_STAMP(1519));
+    // IsA-stamp-range core::HashTableEql_O val -> 1511
+      return (kindVal == ISA_ADJUST_STAMP(1511));
   };
 };
 // STAMPWTAG_mp__ConditionVariable_O
@@ -5157,8 +5133,8 @@ template <typename FP> struct Cast<core::Real_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Real_O low high --> 1563 1603 
-      return ((ISA_ADJUST_STAMP(1563) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1603)));
+    // IsA-stamp-range core::Real_O low high --> 1555 1595 
+      return ((ISA_ADJUST_STAMP(1555) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1595)));
   };
 };
 // STAMPWTAG_core__MDArray_byte8_t_O
@@ -5184,8 +5160,8 @@ template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::StringOutputStream_O val -> 1651
-      return (kindVal == ISA_ADJUST_STAMP(1651));
+    // IsA-stamp-range core::StringOutputStream_O val -> 1643
+      return (kindVal == ISA_ADJUST_STAMP(1643));
   };
 };
 // STAMPWTAG_llvmo__AttributeSet_O
@@ -5202,8 +5178,8 @@ template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::AtomicRMWInst_O val -> 1223
-      return (kindVal == ISA_ADJUST_STAMP(1223));
+    // IsA-stamp-range llvmo::AtomicRMWInst_O val -> 1215
+      return (kindVal == ISA_ADJUST_STAMP(1215));
   };
 };
 // STAMPWTAG_llvmo__MDBuilder_O
@@ -5220,8 +5196,8 @@ template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::PassManager_O val -> 1083
-      return (kindVal == ISA_ADJUST_STAMP(1083));
+    // IsA-stamp-range llvmo::PassManager_O val -> 1075
+      return (kindVal == ISA_ADJUST_STAMP(1075));
   };
 };
 // STAMPWTAG_core__SimpleVector_O
@@ -5238,8 +5214,8 @@ template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DISubprogram_O val -> 1143
-      return (kindVal == ISA_ADJUST_STAMP(1143));
+    // IsA-stamp-range llvmo::DISubprogram_O val -> 1135
+      return (kindVal == ISA_ADJUST_STAMP(1135));
   };
 };
 // STAMPWTAG_core__Creator_O
@@ -5256,8 +5232,8 @@ template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ArrayType_O val -> 1019
-      return (kindVal == ISA_ADJUST_STAMP(1019));
+    // IsA-stamp-range llvmo::ArrayType_O val -> 1011
+      return (kindVal == ISA_ADJUST_STAMP(1011));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_int64_t_O
@@ -5283,8 +5259,8 @@ template <typename FP> struct Cast<llvmo::DIVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIVariable_O low high --> 1103 1107 
-      return ((ISA_ADJUST_STAMP(1103) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1107)));
+    // IsA-stamp-range llvmo::DIVariable_O low high --> 1095 1099 
+      return ((ISA_ADJUST_STAMP(1095) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1099)));
   };
 };
 // STAMPWTAG_core__SimpleMDArray_byte2_t_O
@@ -5301,8 +5277,8 @@ template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::BlockAddress_O val -> 1295
-      return (kindVal == ISA_ADJUST_STAMP(1295));
+    // IsA-stamp-range llvmo::BlockAddress_O val -> 1287
+      return (kindVal == ISA_ADJUST_STAMP(1287));
   };
 };
 // STAMPWTAG_llvmo__DICompositeType_O
@@ -5310,8 +5286,8 @@ template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DICompositeType_O val -> 1123
-      return (kindVal == ISA_ADJUST_STAMP(1123));
+    // IsA-stamp-range llvmo::DICompositeType_O val -> 1115
+      return (kindVal == ISA_ADJUST_STAMP(1115));
   };
 };
 // STAMPWTAG_llvmo__MCSubtargetInfo_O
@@ -5319,8 +5295,8 @@ template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::MCSubtargetInfo_O low high --> 1003 1007 
-      return ((ISA_ADJUST_STAMP(1003) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1007)));
+    // IsA-stamp-range llvmo::MCSubtargetInfo_O low high --> 995 999 
+      return ((ISA_ADJUST_STAMP(995) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(999)));
   };
 };
 // STAMPWTAG_core__FunctionValueEnvironment_O
@@ -5328,8 +5304,8 @@ template <typename FP> struct Cast<core::FunctionValueEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FunctionValueEnvironment_O val -> 1415
-      return (kindVal == ISA_ADJUST_STAMP(1415));
+    // IsA-stamp-range core::FunctionValueEnvironment_O val -> 1407
+      return (kindVal == ISA_ADJUST_STAMP(1407));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_short_
@@ -5337,8 +5313,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<short>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<short> val -> 1735
-      return (kindVal == ISA_ADJUST_STAMP(1735));
+    // IsA-stamp-range gctools::GCArray_moveable<short> val -> 1727
+      return (kindVal == ISA_ADJUST_STAMP(1727));
   };
 };
 // STAMPWTAG_core__DerivableCxxClassCreator_O
@@ -5355,8 +5331,8 @@ template <typename FP> struct Cast<core::HashTableEq_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::HashTableEq_O val -> 1515
-      return (kindVal == ISA_ADJUST_STAMP(1515));
+    // IsA-stamp-range core::HashTableEq_O val -> 1507
+      return (kindVal == ISA_ADJUST_STAMP(1507));
   };
 };
 // STAMPWTAG_core__HashTableEqualp_O
@@ -5364,8 +5340,8 @@ template <typename FP> struct Cast<core::HashTableEqualp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::HashTableEqualp_O val -> 1511
-      return (kindVal == ISA_ADJUST_STAMP(1511));
+    // IsA-stamp-range core::HashTableEqualp_O val -> 1503
+      return (kindVal == ISA_ADJUST_STAMP(1503));
   };
 };
 // STAMPWTAG_asttooling__PresumedLoc_O
@@ -5391,8 +5367,8 @@ template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ConcatenatedStream_O val -> 1627
-      return (kindVal == ISA_ADJUST_STAMP(1627));
+    // IsA-stamp-range core::ConcatenatedStream_O val -> 1619
+      return (kindVal == ISA_ADJUST_STAMP(1619));
   };
 };
 // STAMPWTAG_core__SymbolMacroletEnvironment_O
@@ -5400,8 +5376,8 @@ template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SymbolMacroletEnvironment_O val -> 1443
-      return (kindVal == ISA_ADJUST_STAMP(1443));
+    // IsA-stamp-range core::SymbolMacroletEnvironment_O val -> 1435
+      return (kindVal == ISA_ADJUST_STAMP(1435));
   };
 };
 // STAMPWTAG_core__MacroletEnvironment_O
@@ -5409,8 +5385,8 @@ template <typename FP> struct Cast<core::MacroletEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MacroletEnvironment_O val -> 1439
-      return (kindVal == ISA_ADJUST_STAMP(1439));
+    // IsA-stamp-range core::MacroletEnvironment_O val -> 1431
+      return (kindVal == ISA_ADJUST_STAMP(1431));
   };
 };
 // STAMPWTAG_llvmo__ImmutablePass_O
@@ -5418,8 +5394,8 @@ template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ImmutablePass_O low high --> 987 991 
-      return ((ISA_ADJUST_STAMP(987) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(991)));
+    // IsA-stamp-range llvmo::ImmutablePass_O low high --> 979 983 
+      return ((ISA_ADJUST_STAMP(979) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(983)));
   };
 };
 // STAMPWTAG_core__FuncallableInstance_O
@@ -5436,8 +5412,8 @@ template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SynonymStream_O val -> 1623
-      return (kindVal == ISA_ADJUST_STAMP(1623));
+    // IsA-stamp-range core::SynonymStream_O val -> 1615
+      return (kindVal == ISA_ADJUST_STAMP(1615));
   };
 };
 // STAMPWTAG_core__Ratio_O
@@ -5445,8 +5421,8 @@ template <typename FP> struct Cast<core::Ratio_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Ratio_O val -> 1571
-      return (kindVal == ISA_ADJUST_STAMP(1571));
+    // IsA-stamp-range core::Ratio_O val -> 1563
+      return (kindVal == ISA_ADJUST_STAMP(1563));
   };
 };
 // STAMPWTAG_core__MDArray_int2_t_O
@@ -5481,8 +5457,8 @@ template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ExecutionEngine_O val -> 999
-      return (kindVal == ISA_ADJUST_STAMP(999));
+    // IsA-stamp-range llvmo::ExecutionEngine_O val -> 991
+      return (kindVal == ISA_ADJUST_STAMP(991));
   };
 };
 // STAMPWTAG_core__ClassRepCreator_O
@@ -5508,8 +5484,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>> val -> 1731
-      return (kindVal == ISA_ADJUST_STAMP(1731));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>> val -> 1723
+      return (kindVal == ISA_ADJUST_STAMP(1723));
   };
 };
 // STAMPWTAG_llvmo__Attribute_O
@@ -5526,8 +5502,8 @@ template <typename FP> struct Cast<core::DerivableCxxObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::DerivableCxxObject_O val -> 956
-      return (kindVal == ISA_ADJUST_STAMP(956));
+    // IsA-stamp-range core::DerivableCxxObject_O val -> 948
+      return (kindVal == ISA_ADJUST_STAMP(948));
   };
 };
 // STAMPWTAG_core__SymbolToEnumConverter_O
@@ -5544,8 +5520,8 @@ template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::SwitchInst_O val -> 1219
-      return (kindVal == ISA_ADJUST_STAMP(1219));
+    // IsA-stamp-range llvmo::SwitchInst_O val -> 1211
+      return (kindVal == ISA_ADJUST_STAMP(1211));
   };
 };
 // STAMPWTAG_llvmo__Pass_O
@@ -5553,8 +5529,8 @@ template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Pass_O low high --> 979 995 
-      return ((ISA_ADJUST_STAMP(979) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(995)));
+    // IsA-stamp-range llvmo::Pass_O low high --> 971 987 
+      return ((ISA_ADJUST_STAMP(971) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(987)));
   };
 };
 // STAMPWTAG_core__ComplexVector_int32_t_O
@@ -5571,8 +5547,8 @@ template <typename FP> struct Cast<core::Lisp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Lisp_O val -> 1699
-      return (kindVal == ISA_ADJUST_STAMP(1699));
+    // IsA-stamp-range core::Lisp_O val -> 1691
+      return (kindVal == ISA_ADJUST_STAMP(1691));
   };
 };
 // STAMPWTAG_core__VaList_dummy_O
@@ -5607,8 +5583,8 @@ template <typename FP> struct Cast<core::CatchEnvironment_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::CatchEnvironment_O val -> 1435
-      return (kindVal == ISA_ADJUST_STAMP(1435));
+    // IsA-stamp-range core::CatchEnvironment_O val -> 1427
+      return (kindVal == ISA_ADJUST_STAMP(1427));
   };
 };
 // STAMPWTAG_core__LogicalPathname_O
@@ -5616,8 +5592,8 @@ template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LogicalPathname_O val -> 1555
-      return (kindVal == ISA_ADJUST_STAMP(1555));
+    // IsA-stamp-range core::LogicalPathname_O val -> 1547
+      return (kindVal == ISA_ADJUST_STAMP(1547));
   };
 };
 // STAMPWTAG_llvmo__TargetSubtargetInfo_O
@@ -5625,8 +5601,8 @@ template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetSubtargetInfo_O val -> 1007
-      return (kindVal == ISA_ADJUST_STAMP(1007));
+    // IsA-stamp-range llvmo::TargetSubtargetInfo_O val -> 999
+      return (kindVal == ISA_ADJUST_STAMP(999));
   };
 };
 // STAMPWTAG_core__WrappedPointer_O
@@ -5661,8 +5637,8 @@ template <typename FP> struct Cast<core::Bignum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Bignum_O val -> 1579
-      return (kindVal == ISA_ADJUST_STAMP(1579));
+    // IsA-stamp-range core::Bignum_O val -> 1571
+      return (kindVal == ISA_ADJUST_STAMP(1571));
   };
 };
 // STAMPWTAG_llvmo__LLVMTargetMachine_O
@@ -5670,8 +5646,8 @@ template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::LLVMTargetMachine_O val -> 1339
-      return (kindVal == ISA_ADJUST_STAMP(1339));
+    // IsA-stamp-range llvmo::LLVMTargetMachine_O val -> 1331
+      return (kindVal == ISA_ADJUST_STAMP(1331));
   };
 };
 // STAMPWTAG_core__ClassHolder_O
@@ -5688,8 +5664,8 @@ template <typename FP> struct Cast<core::LocalEntryPointGenerator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LocalEntryPointGenerator_O val -> 1479
-      return (kindVal == ISA_ADJUST_STAMP(1479));
+    // IsA-stamp-range core::LocalEntryPointGenerator_O val -> 1471
+      return (kindVal == ISA_ADJUST_STAMP(1471));
   };
 };
 // STAMPWTAG_core__GlobalEntryPointGenerator_O
@@ -5697,8 +5673,8 @@ template <typename FP> struct Cast<core::GlobalEntryPointGenerator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::GlobalEntryPointGenerator_O val -> 1475
-      return (kindVal == ISA_ADJUST_STAMP(1475));
+    // IsA-stamp-range core::GlobalEntryPointGenerator_O val -> 1467
+      return (kindVal == ISA_ADJUST_STAMP(1467));
   };
 };
 // STAMPWTAG_core__ComplexVector_byte32_t_O
@@ -5715,8 +5691,8 @@ template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::UnaryInstruction_O low high --> 1203 1215 
-      return ((ISA_ADJUST_STAMP(1203) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1215)));
+    // IsA-stamp-range llvmo::UnaryInstruction_O low high --> 1195 1207 
+      return ((ISA_ADJUST_STAMP(1195) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1207)));
   };
 };
 // STAMPWTAG_llvmo__GlobalValue_O
@@ -5724,8 +5700,8 @@ template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::GlobalValue_O low high --> 1283 1291 
-      return ((ISA_ADJUST_STAMP(1283) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1291)));
+    // IsA-stamp-range llvmo::GlobalValue_O low high --> 1275 1283 
+      return ((ISA_ADJUST_STAMP(1275) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1283)));
   };
 };
 // STAMPWTAG_llvmo__PointerType_O
@@ -5733,8 +5709,8 @@ template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::PointerType_O val -> 1015
-      return (kindVal == ISA_ADJUST_STAMP(1015));
+    // IsA-stamp-range llvmo::PointerType_O val -> 1007
+      return (kindVal == ISA_ADJUST_STAMP(1007));
   };
 };
 // STAMPWTAG_gctools__GCArray_moveable_unsigned_int_
@@ -5742,8 +5718,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned int>*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned int> val -> 1727
-      return (kindVal == ISA_ADJUST_STAMP(1727));
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned int> val -> 1719
+      return (kindVal == ISA_ADJUST_STAMP(1719));
   };
 };
 // STAMPWTAG_core__TwoWayStream_O
@@ -5751,8 +5727,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::TwoWayStream_O val -> 1619
-      return (kindVal == ISA_ADJUST_STAMP(1619));
+    // IsA-stamp-range core::TwoWayStream_O val -> 1611
+      return (kindVal == ISA_ADJUST_STAMP(1611));
   };
 };
 #endif // defined(GC_DYNAMIC_CAST)
@@ -5762,345 +5738,343 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_fixnum_O,TYPEQ_ADJUST_STAMP(491));
       ADD_RANGE_TYPEQ_TEST(core::ComplexVector_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(559),TYPEQ_ADJUST_STAMP(723));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int32_t_O,TYPEQ_ADJUST_STAMP(435));
-      ADD_RANGE_TYPEQ_TEST(core::Integer_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1575),TYPEQ_ADJUST_STAMP(1583));
-      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1691));
-      ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,TYPEQ_ADJUST_STAMP(1707));
+      ADD_RANGE_TYPEQ_TEST(core::Integer_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1567),TYPEQ_ADJUST_STAMP(1575));
+      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1683));
+      ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,TYPEQ_ADJUST_STAMP(1699));
       ADD_SINGLE_TYPEQ_TEST(mp::Process_O,TYPEQ_ADJUST_STAMP(207));
-      ADD_SINGLE_TYPEQ_TEST(core::Record_O,TYPEQ_ADJUST_STAMP(1687));
-      ADD_RANGE_TYPEQ_TEST(core::LightUserData_O,core::UserData_O,TYPEQ_ADJUST_STAMP(1679),TYPEQ_ADJUST_STAMP(1683));
+      ADD_SINGLE_TYPEQ_TEST(core::Record_O,TYPEQ_ADJUST_STAMP(1679));
+      ADD_RANGE_TYPEQ_TEST(core::LightUserData_O,core::UserData_O,TYPEQ_ADJUST_STAMP(1671),TYPEQ_ADJUST_STAMP(1675));
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayT_O,TYPEQ_ADJUST_STAMP(359));
-      ADD_SINGLE_TYPEQ_TEST(core::DirectoryEntry_O,TYPEQ_ADJUST_STAMP(1675));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Linker_O,TYPEQ_ADJUST_STAMP(1379));
+      ADD_SINGLE_TYPEQ_TEST(core::DirectoryEntry_O,TYPEQ_ADJUST_STAMP(1667));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Linker_O,TYPEQ_ADJUST_STAMP(1371));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_float_O,TYPEQ_ADJUST_STAMP(271));
-      ADD_SINGLE_TYPEQ_TEST(core::SourcePosInfo_O,TYPEQ_ADJUST_STAMP(1671));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1275));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1215));
+      ADD_SINGLE_TYPEQ_TEST(core::SourcePosInfo_O,TYPEQ_ADJUST_STAMP(1663));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1267));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1207));
       ADD_SINGLE_TYPEQ_TEST(core::StandardClassCreator_O,TYPEQ_ADJUST_STAMP(83));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_float_O,TYPEQ_ADJUST_STAMP(623));
-      ADD_SINGLE_TYPEQ_TEST(core::HashTableCustom_O,TYPEQ_ADJUST_STAMP(1527));
+      ADD_SINGLE_TYPEQ_TEST(core::HashTableCustom_O,TYPEQ_ADJUST_STAMP(1519));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte8_t_O,TYPEQ_ADJUST_STAMP(663));
-      ADD_RANGE_TYPEQ_TEST(core::HashTable_O,core::HashTableCustom_O,TYPEQ_ADJUST_STAMP(1507),TYPEQ_ADJUST_STAMP(1527));
+      ADD_RANGE_TYPEQ_TEST(core::HashTable_O,core::HashTableCustom_O,TYPEQ_ADJUST_STAMP(1499),TYPEQ_ADJUST_STAMP(1519));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_size_t_O,TYPEQ_ADJUST_STAMP(795));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DIScope_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1111),TYPEQ_ADJUST_STAMP(1155));
-      ADD_SINGLE_TYPEQ_TEST(core::FileStatus_O,TYPEQ_ADJUST_STAMP(1667));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::IndirectBrInst_O,TYPEQ_ADJUST_STAMP(1271));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1331));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PHINode_O,TYPEQ_ADJUST_STAMP(1267));
-      ADD_SINGLE_TYPEQ_TEST(core::Package_O,TYPEQ_ADJUST_STAMP(1663));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DIScope_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1103),TYPEQ_ADJUST_STAMP(1147));
+      ADD_SINGLE_TYPEQ_TEST(core::FileStatus_O,TYPEQ_ADJUST_STAMP(1659));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::IndirectBrInst_O,TYPEQ_ADJUST_STAMP(1263));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1323));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PHINode_O,TYPEQ_ADJUST_STAMP(1259));
+      ADD_SINGLE_TYPEQ_TEST(core::Package_O,TYPEQ_ADJUST_STAMP(1655));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBaseChar_O,TYPEQ_ADJUST_STAMP(507));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DILocation_O,TYPEQ_ADJUST_STAMP(1163));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DILocation_O,TYPEQ_ADJUST_STAMP(1155));
       ADD_RANGE_TYPEQ_TEST(core::SimpleMDArray_O,core::SimpleMDArray_int64_t_O,TYPEQ_ADJUST_STAMP(379),TYPEQ_ADJUST_STAMP(539));
-      ADD_RANGE_TYPEQ_TEST(core::Stream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1611),TYPEQ_ADJUST_STAMP(1659));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::MDString_O,TYPEQ_ADJUST_STAMP(1171));
-      ADD_SINGLE_TYPEQ_TEST(core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1603));
-      ADD_RANGE_TYPEQ_TEST(core::Number_O,core::Complex_O,TYPEQ_ADJUST_STAMP(1559),TYPEQ_ADJUST_STAMP(1607));
-      ADD_RANGE_TYPEQ_TEST(core::T_O,core::Cons_O,TYPEQ_ADJUST_STAMP(7),TYPEQ_ADJUST_STAMP(1695));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1155));
+      ADD_RANGE_TYPEQ_TEST(core::Stream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1603),TYPEQ_ADJUST_STAMP(1651));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::MDString_O,TYPEQ_ADJUST_STAMP(1163));
+      ADD_SINGLE_TYPEQ_TEST(core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1595));
+      ADD_RANGE_TYPEQ_TEST(core::Number_O,core::Complex_O,TYPEQ_ADJUST_STAMP(1551),TYPEQ_ADJUST_STAMP(1599));
+      ADD_RANGE_TYPEQ_TEST(core::T_O,core::Cons_O,TYPEQ_ADJUST_STAMP(7),TYPEQ_ADJUST_STAMP(1687));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1147));
       ADD_RANGE_TYPEQ_TEST(core::AbstractSimpleVector_O,core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(727),TYPEQ_ADJUST_STAMP(891));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte16_t_O,TYPEQ_ADJUST_STAMP(499));
-      ADD_RANGE_TYPEQ_TEST(core::Pathname_O,core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1551),TYPEQ_ADJUST_STAMP(1555));
+      ADD_RANGE_TYPEQ_TEST(core::Pathname_O,core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1543),TYPEQ_ADJUST_STAMP(1547));
       ADD_SINGLE_TYPEQ_TEST(core::Str8Ns_O,TYPEQ_ADJUST_STAMP(691));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(995));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(987));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(891));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::UndefValue_O,TYPEQ_ADJUST_STAMP(1327));
-      ADD_RANGE_TYPEQ_TEST(llvmo::CallBase_O,llvmo::InvokeInst_O,TYPEQ_ADJUST_STAMP(1255),TYPEQ_ADJUST_STAMP(1263));
-      ADD_RANGE_TYPEQ_TEST(core::CompileTimeEnvironment_O,core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1431),TYPEQ_ADJUST_STAMP(1451));
-      ADD_SINGLE_TYPEQ_TEST(core::Path_O,TYPEQ_ADJUST_STAMP(1547));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::UndefValue_O,TYPEQ_ADJUST_STAMP(1319));
+      ADD_RANGE_TYPEQ_TEST(llvmo::CallBase_O,llvmo::InvokeInst_O,TYPEQ_ADJUST_STAMP(1247),TYPEQ_ADJUST_STAMP(1255));
+      ADD_RANGE_TYPEQ_TEST(core::CompileTimeEnvironment_O,core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1423),TYPEQ_ADJUST_STAMP(1443));
+      ADD_SINGLE_TYPEQ_TEST(core::Path_O,TYPEQ_ADJUST_STAMP(1539));
       ADD_SINGLE_TYPEQ_TEST(mp::SharedMutex_O,TYPEQ_ADJUST_STAMP(203));
       ADD_SINGLE_TYPEQ_TEST(core::InstanceCreator_O,TYPEQ_ADJUST_STAMP(79));
-      ADD_SINGLE_TYPEQ_TEST(core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1639));
-      ADD_RANGE_TYPEQ_TEST(core::Scope_O,core::FileScope_O,TYPEQ_ADJUST_STAMP(1539),TYPEQ_ADJUST_STAMP(1543));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::InsertPoint_O,TYPEQ_ADJUST_STAMP(1535));
-      ADD_SINGLE_TYPEQ_TEST(core::FunctionDescription_O,TYPEQ_ADJUST_STAMP(1531));
+      ADD_SINGLE_TYPEQ_TEST(core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1631));
+      ADD_RANGE_TYPEQ_TEST(core::Scope_O,core::FileScope_O,TYPEQ_ADJUST_STAMP(1531),TYPEQ_ADJUST_STAMP(1535));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::InsertPoint_O,TYPEQ_ADJUST_STAMP(1527));
+      ADD_SINGLE_TYPEQ_TEST(core::FunctionDescription_O,TYPEQ_ADJUST_STAMP(1523));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_double_O,TYPEQ_ADJUST_STAMP(567));
       ADD_SINGLE_TYPEQ_TEST(core::StrWNs_O,TYPEQ_ADJUST_STAMP(699));
-      ADD_SINGLE_TYPEQ_TEST(core::EchoStream_O,TYPEQ_ADJUST_STAMP(1659));
-      ADD_RANGE_TYPEQ_TEST(core::HashTableBase_O,core::HashTableCustom_O,TYPEQ_ADJUST_STAMP(1499),TYPEQ_ADJUST_STAMP(1527));
+      ADD_SINGLE_TYPEQ_TEST(core::EchoStream_O,TYPEQ_ADJUST_STAMP(1651));
+      ADD_RANGE_TYPEQ_TEST(core::HashTableBase_O,core::HashTableCustom_O,TYPEQ_ADJUST_STAMP(1491),TYPEQ_ADJUST_STAMP(1519));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBit_O,TYPEQ_ADJUST_STAMP(523));
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayBit_O,TYPEQ_ADJUST_STAMP(367));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte16_t_O,TYPEQ_ADJUST_STAMP(615));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DILocalScope_O,llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1139),TYPEQ_ADJUST_STAMP(1151));
-      ADD_SINGLE_TYPEQ_TEST(core::LocalEntryPoint_O,TYPEQ_ADJUST_STAMP(1491));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DILocalScope_O,llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1131),TYPEQ_ADJUST_STAMP(1143));
+      ADD_SINGLE_TYPEQ_TEST(core::LocalEntryPoint_O,TYPEQ_ADJUST_STAMP(1483));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int2_t_O,TYPEQ_ADJUST_STAMP(599));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1151));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1143));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DITypeRefArray_O,TYPEQ_ADJUST_STAMP(199));
       ADD_RANGE_TYPEQ_TEST(mp::Mutex_O,mp::RecursiveMutex_O,TYPEQ_ADJUST_STAMP(191),TYPEQ_ADJUST_STAMP(195));
       ADD_SINGLE_TYPEQ_TEST(core::RecursiveDirectoryIterator_O,TYPEQ_ADJUST_STAMP(223));
-      ADD_SINGLE_TYPEQ_TEST(core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1655));
-      ADD_SINGLE_TYPEQ_TEST(core::DebuggerLocal_O,TYPEQ_ADJUST_STAMP(1495));
-      ADD_RANGE_TYPEQ_TEST(llvmo::ModulePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(983),TYPEQ_ADJUST_STAMP(991));
-      ADD_SINGLE_TYPEQ_TEST(core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1463));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(1107));
-      ADD_SINGLE_TYPEQ_TEST(core::LongFloat_O,TYPEQ_ADJUST_STAMP(1599));
+      ADD_SINGLE_TYPEQ_TEST(core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1647));
+      ADD_SINGLE_TYPEQ_TEST(core::DebuggerLocal_O,TYPEQ_ADJUST_STAMP(1487));
+      ADD_RANGE_TYPEQ_TEST(llvmo::ModulePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(975),TYPEQ_ADJUST_STAMP(983));
+      ADD_SINGLE_TYPEQ_TEST(core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1455));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(1099));
+      ADD_SINGLE_TYPEQ_TEST(core::LongFloat_O,TYPEQ_ADJUST_STAMP(1591));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int4_t_O,TYPEQ_ADJUST_STAMP(639));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(991));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(983));
       ADD_SINGLE_TYPEQ_TEST(asttooling::QualType_O,TYPEQ_ADJUST_STAMP(187));
       ADD_SINGLE_TYPEQ_TEST(llvmo::LibraryFile_O,TYPEQ_ADJUST_STAMP(183));
-      ADD_RANGE_TYPEQ_TEST(llvmo::User_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1195),TYPEQ_ADJUST_STAMP(1331));
+      ADD_RANGE_TYPEQ_TEST(llvmo::User_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1187),TYPEQ_ADJUST_STAMP(1323));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int16_t_O,TYPEQ_ADJUST_STAMP(239));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_T_O,TYPEQ_ADJUST_STAMP(591));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FenceInst_O,TYPEQ_ADJUST_STAMP(1251));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicCmpXchgInst_O,TYPEQ_ADJUST_STAMP(1247));
-      ADD_SINGLE_TYPEQ_TEST(core::ValueFrame_O,TYPEQ_ADJUST_STAMP(1459));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FenceInst_O,TYPEQ_ADJUST_STAMP(1243));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicCmpXchgInst_O,TYPEQ_ADJUST_STAMP(1239));
+      ADD_SINGLE_TYPEQ_TEST(core::ValueFrame_O,TYPEQ_ADJUST_STAMP(1451));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int8_t_O,TYPEQ_ADJUST_STAMP(575));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int4_t_O,TYPEQ_ADJUST_STAMP(467));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int32_t_O,TYPEQ_ADJUST_STAMP(883));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_double_O,TYPEQ_ADJUST_STAMP(395));
-      ADD_SINGLE_TYPEQ_TEST(core::Complex_O,TYPEQ_ADJUST_STAMP(1607));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantPointerNull_O,TYPEQ_ADJUST_STAMP(1323));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1035));
-      ADD_RANGE_TYPEQ_TEST(core::EntryPointBase_O,core::LocalEntryPoint_O,TYPEQ_ADJUST_STAMP(1471),TYPEQ_ADJUST_STAMP(1491));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ValueAsMetadata_O,TYPEQ_ADJUST_STAMP(1167));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantExpr_O,TYPEQ_ADJUST_STAMP(1319));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::StructType_O,TYPEQ_ADJUST_STAMP(1031));
-      ADD_SINGLE_TYPEQ_TEST(core::RandomState_O,TYPEQ_ADJUST_STAMP(1467));
+      ADD_SINGLE_TYPEQ_TEST(core::Complex_O,TYPEQ_ADJUST_STAMP(1599));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantPointerNull_O,TYPEQ_ADJUST_STAMP(1315));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1027));
+      ADD_RANGE_TYPEQ_TEST(core::EntryPointBase_O,core::LocalEntryPoint_O,TYPEQ_ADJUST_STAMP(1463),TYPEQ_ADJUST_STAMP(1483));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ValueAsMetadata_O,TYPEQ_ADJUST_STAMP(1159));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantExpr_O,TYPEQ_ADJUST_STAMP(1311));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::StructType_O,TYPEQ_ADJUST_STAMP(1023));
+      ADD_SINGLE_TYPEQ_TEST(core::RandomState_O,TYPEQ_ADJUST_STAMP(1459));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int16_t_O,TYPEQ_ADJUST_STAMP(631));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_float_O,TYPEQ_ADJUST_STAMP(443));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Target_O,TYPEQ_ADJUST_STAMP(1375));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Target_O,TYPEQ_ADJUST_STAMP(1367));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int2_t_O,TYPEQ_ADJUST_STAMP(819));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte64_t_O,TYPEQ_ADJUST_STAMP(343));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_fixnum_O,TYPEQ_ADJUST_STAMP(835));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte32_t_O,TYPEQ_ADJUST_STAMP(787));
       ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(107));
-      ADD_RANGE_TYPEQ_TEST(core::AnsiStream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1615),TYPEQ_ADJUST_STAMP(1659));
+      ADD_RANGE_TYPEQ_TEST(core::AnsiStream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1607),TYPEQ_ADJUST_STAMP(1651));
       ADD_RANGE_TYPEQ_TEST(core::BuiltinClosure_O,core::TranslationFunctor_O,TYPEQ_ADJUST_STAMP(99),TYPEQ_ADJUST_STAMP(103));
-      ADD_SINGLE_TYPEQ_TEST(core::SingleFloat_dummy_O,TYPEQ_ADJUST_STAMP(1595));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIExpression_O,TYPEQ_ADJUST_STAMP(1159));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Module_O,TYPEQ_ADJUST_STAMP(1371));
-      ADD_RANGE_TYPEQ_TEST(core::Environment_O,core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1399),TYPEQ_ADJUST_STAMP(1463));
-      ADD_SINGLE_TYPEQ_TEST(core::ValueEnvironment_O,TYPEQ_ADJUST_STAMP(1427));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::InvokeInst_O,TYPEQ_ADJUST_STAMP(1263));
+      ADD_SINGLE_TYPEQ_TEST(core::SingleFloat_dummy_O,TYPEQ_ADJUST_STAMP(1587));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIExpression_O,TYPEQ_ADJUST_STAMP(1151));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Module_O,TYPEQ_ADJUST_STAMP(1363));
+      ADD_RANGE_TYPEQ_TEST(core::Environment_O,core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1391),TYPEQ_ADJUST_STAMP(1455));
+      ADD_SINGLE_TYPEQ_TEST(core::ValueEnvironment_O,TYPEQ_ADJUST_STAMP(1419));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::InvokeInst_O,TYPEQ_ADJUST_STAMP(1255));
       ADD_RANGE_TYPEQ_TEST(core::StrNs_O,core::StrWNs_O,TYPEQ_ADJUST_STAMP(683),TYPEQ_ADJUST_STAMP(699));
-      ADD_SINGLE_TYPEQ_TEST(core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1451));
+      ADD_SINGLE_TYPEQ_TEST(core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1443));
       ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignData_O,TYPEQ_ADJUST_STAMP(127));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::CallInst_O,TYPEQ_ADJUST_STAMP(1259));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPassManager_O,TYPEQ_ADJUST_STAMP(1087));
-      ADD_SINGLE_TYPEQ_TEST(core::DoubleFloat_O,TYPEQ_ADJUST_STAMP(1591));
-      ADD_SINGLE_TYPEQ_TEST(core::DebuggerFrame_O,TYPEQ_ADJUST_STAMP(1395));
-      ADD_RANGE_TYPEQ_TEST(core::StringStream_O,core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1647),TYPEQ_ADJUST_STAMP(1655));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::CallInst_O,TYPEQ_ADJUST_STAMP(1251));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPassManager_O,TYPEQ_ADJUST_STAMP(1079));
+      ADD_SINGLE_TYPEQ_TEST(core::DoubleFloat_O,TYPEQ_ADJUST_STAMP(1583));
+      ADD_SINGLE_TYPEQ_TEST(core::DebuggerFrame_O,TYPEQ_ADJUST_STAMP(1387));
+      ADD_RANGE_TYPEQ_TEST(core::StringStream_O,core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1639),TYPEQ_ADJUST_STAMP(1647));
       ADD_RANGE_TYPEQ_TEST(llvmo::LibraryBase_O,llvmo::LibraryFile_O,TYPEQ_ADJUST_STAMP(175),TYPEQ_ADJUST_STAMP(183));
-      ADD_SINGLE_TYPEQ_TEST(core::Sigset_O,TYPEQ_ADJUST_STAMP(1391));
+      ADD_SINGLE_TYPEQ_TEST(core::Sigset_O,TYPEQ_ADJUST_STAMP(1383));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int32_t_O,TYPEQ_ADJUST_STAMP(255));
-      ADD_SINGLE_TYPEQ_TEST(asttooling::AsttoolingExposer_O,TYPEQ_ADJUST_STAMP(939));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::IntegerType_O,TYPEQ_ADJUST_STAMP(1027));
+      ADD_SINGLE_TYPEQ_TEST(asttooling::AsttoolingExposer_O,TYPEQ_ADJUST_STAMP(935));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::IntegerType_O,TYPEQ_ADJUST_STAMP(1019));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int64_t_O,TYPEQ_ADJUST_STAMP(295));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_size_t_O,TYPEQ_ADJUST_STAMP(459));
-      ADD_SINGLE_TYPEQ_TEST(core::SmallMultimap_O,TYPEQ_ADJUST_STAMP(1387));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManagerBuilder_O,TYPEQ_ADJUST_STAMP(1367));
-      ADD_SINGLE_TYPEQ_TEST(core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1583));
+      ADD_SINGLE_TYPEQ_TEST(core::SmallMultimap_O,TYPEQ_ADJUST_STAMP(1379));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManagerBuilder_O,TYPEQ_ADJUST_STAMP(1359));
+      ADD_SINGLE_TYPEQ_TEST(core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1575));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int8_t_O,TYPEQ_ADJUST_STAMP(247));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantFP_O,TYPEQ_ADJUST_STAMP(1315));
-      ADD_SINGLE_TYPEQ_TEST(core::Cons_O,TYPEQ_ADJUST_STAMP(1695));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMContext_O,TYPEQ_ADJUST_STAMP(1363));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantFP_O,TYPEQ_ADJUST_STAMP(1307));
+      ADD_SINGLE_TYPEQ_TEST(core::Cons_O,TYPEQ_ADJUST_STAMP(1687));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMContext_O,TYPEQ_ADJUST_STAMP(1355));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int4_t_O,TYPEQ_ADJUST_STAMP(547));
-      ADD_SINGLE_TYPEQ_TEST(core::WeakKeyHashTable_O,TYPEQ_ADJUST_STAMP(1503));
-      ADD_SINGLE_TYPEQ_TEST(core::Rack_O,TYPEQ_ADJUST_STAMP(1383));
+      ADD_SINGLE_TYPEQ_TEST(core::WeakKeyHashTable_O,TYPEQ_ADJUST_STAMP(1495));
+      ADD_SINGLE_TYPEQ_TEST(core::Rack_O,TYPEQ_ADJUST_STAMP(1375));
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayBaseChar_O,TYPEQ_ADJUST_STAMP(335));
-      ADD_SINGLE_TYPEQ_TEST(core::UserData_O,TYPEQ_ADJUST_STAMP(1683));
-      ADD_RANGE_TYPEQ_TEST(core::ExternalObject_O,llvmo::Linker_O,TYPEQ_ADJUST_STAMP(975),TYPEQ_ADJUST_STAMP(1379));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DINode_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1099),TYPEQ_ADJUST_STAMP(1155));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1291));
-      ADD_SINGLE_TYPEQ_TEST(core::BroadcastStream_O,TYPEQ_ADJUST_STAMP(1643));
-      ADD_RANGE_TYPEQ_TEST(core::General_O,clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(19),TYPEQ_ADJUST_STAMP(1691));
+      ADD_SINGLE_TYPEQ_TEST(core::UserData_O,TYPEQ_ADJUST_STAMP(1675));
+      ADD_RANGE_TYPEQ_TEST(core::ExternalObject_O,llvmo::Linker_O,TYPEQ_ADJUST_STAMP(967),TYPEQ_ADJUST_STAMP(1371));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DINode_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1091),TYPEQ_ADJUST_STAMP(1147));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1283));
+      ADD_SINGLE_TYPEQ_TEST(core::BroadcastStream_O,TYPEQ_ADJUST_STAMP(1635));
+      ADD_RANGE_TYPEQ_TEST(core::General_O,clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(19),TYPEQ_ADJUST_STAMP(1683));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ObjectFile_O,TYPEQ_ADJUST_STAMP(179));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Library_O,TYPEQ_ADJUST_STAMP(167));
       ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(91),TYPEQ_ADJUST_STAMP(107));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_size_t_O,TYPEQ_ADJUST_STAMP(647));
-      ADD_SINGLE_TYPEQ_TEST(core::BlockEnvironment_O,TYPEQ_ADJUST_STAMP(1423));
-      ADD_SINGLE_TYPEQ_TEST(mpip::Mpi_O,TYPEQ_ADJUST_STAMP(971));
+      ADD_SINGLE_TYPEQ_TEST(core::BlockEnvironment_O,TYPEQ_ADJUST_STAMP(1415));
+      ADD_SINGLE_TYPEQ_TEST(mpip::Mpi_O,TYPEQ_ADJUST_STAMP(963));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DINodeArray_O,TYPEQ_ADJUST_STAMP(171));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(1303));
-      ADD_SINGLE_TYPEQ_TEST(core::SmallMap_O,TYPEQ_ADJUST_STAMP(967));
-      ADD_RANGE_TYPEQ_TEST_INSTANCE(core::Instance_O,clbind::ClassRep_O,TYPEQ_ADJUST_STAMP(953),TYPEQ_ADJUST_STAMP(961));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetOptions_O,TYPEQ_ADJUST_STAMP(1359));
-      ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignTypeSpec_O,TYPEQ_ADJUST_STAMP(951));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(1295));
+      ADD_SINGLE_TYPEQ_TEST(core::SmallMap_O,TYPEQ_ADJUST_STAMP(959));
+      ADD_RANGE_TYPEQ_TEST_INSTANCE(core::Instance_O,clbind::ClassRep_O,TYPEQ_ADJUST_STAMP(945),TYPEQ_ADJUST_STAMP(953));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetOptions_O,TYPEQ_ADJUST_STAMP(1351));
+      ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignTypeSpec_O,TYPEQ_ADJUST_STAMP(943));
       ADD_SINGLE_TYPEQ_TEST(core::Unused_dummy_O,TYPEQ_ADJUST_STAMP(15));
-      ADD_SINGLE_TYPEQ_TEST(core::PosixTimeDuration_O,TYPEQ_ADJUST_STAMP(947));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DWARFContext_O,TYPEQ_ADJUST_STAMP(1355));
-      ADD_SINGLE_TYPEQ_TEST(core::HashTableEqual_O,TYPEQ_ADJUST_STAMP(1523));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DWARFContext_O,TYPEQ_ADJUST_STAMP(1347));
+      ADD_SINGLE_TYPEQ_TEST(core::HashTableEqual_O,TYPEQ_ADJUST_STAMP(1515));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte64_t_O,TYPEQ_ADJUST_STAMP(515));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Triple_O,TYPEQ_ADJUST_STAMP(1351));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Triple_O,TYPEQ_ADJUST_STAMP(1343));
       ADD_SINGLE_TYPEQ_TEST(core::BitVectorNs_O,TYPEQ_ADJUST_STAMP(679));
-      ADD_SINGLE_TYPEQ_TEST(core::CoreExposer_O,TYPEQ_ADJUST_STAMP(935));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::NamedMDNode_O,TYPEQ_ADJUST_STAMP(1347));
+      ADD_SINGLE_TYPEQ_TEST(core::CoreExposer_O,TYPEQ_ADJUST_STAMP(931));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::NamedMDNode_O,TYPEQ_ADJUST_STAMP(1339));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte16_t_O,TYPEQ_ADJUST_STAMP(763));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ThreadSafeContext_O,TYPEQ_ADJUST_STAMP(1343));
-      ADD_RANGE_TYPEQ_TEST(llvmo::TargetMachine_O,llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1335),TYPEQ_ADJUST_STAMP(1339));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ThreadSafeContext_O,TYPEQ_ADJUST_STAMP(1335));
+      ADD_RANGE_TYPEQ_TEST(llvmo::TargetMachine_O,llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1327),TYPEQ_ADJUST_STAMP(1331));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte64_t_O,TYPEQ_ADJUST_STAMP(811));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Value_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1179),TYPEQ_ADJUST_STAMP(1331));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Value_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1171),TYPEQ_ADJUST_STAMP(1323));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleBaseString_O,TYPEQ_ADJUST_STAMP(739));
-      ADD_SINGLE_TYPEQ_TEST(core::Test_O,TYPEQ_ADJUST_STAMP(1175));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Metadata_O,llvmo::MDString_O,TYPEQ_ADJUST_STAMP(1091),TYPEQ_ADJUST_STAMP(1171));
+      ADD_SINGLE_TYPEQ_TEST(core::Test_O,TYPEQ_ADJUST_STAMP(1167));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Metadata_O,llvmo::MDString_O,TYPEQ_ADJUST_STAMP(1083),TYPEQ_ADJUST_STAMP(1163));
       ADD_RANGE_TYPEQ_TEST(core::MDArray_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(231),TYPEQ_ADJUST_STAMP(723));
-      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRep_O,TYPEQ_ADJUST_STAMP(961));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantInt_O,TYPEQ_ADJUST_STAMP(1311));
+      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRep_O,TYPEQ_ADJUST_STAMP(953));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantInt_O,TYPEQ_ADJUST_STAMP(1303));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int16_t_O,TYPEQ_ADJUST_STAMP(451));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::StructLayout_O,TYPEQ_ADJUST_STAMP(943));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::StructLayout_O,TYPEQ_ADJUST_STAMP(939));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayT_O,TYPEQ_ADJUST_STAMP(411));
-      ADD_RANGE_TYPEQ_TEST(core::ActivationFrame_O,core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1455),TYPEQ_ADJUST_STAMP(1463));
-      ADD_RANGE_TYPEQ_TEST(llvmo::PassManagerBase_O,llvmo::FunctionPassManager_O,TYPEQ_ADJUST_STAMP(1079),TYPEQ_ADJUST_STAMP(1087));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LoadInst_O,TYPEQ_ADJUST_STAMP(1211));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantStruct_O,TYPEQ_ADJUST_STAMP(1307));
-      ADD_RANGE_TYPEQ_TEST(core::Exposer_O,asttooling::AsttoolingExposer_O,TYPEQ_ADJUST_STAMP(931),TYPEQ_ADJUST_STAMP(939));
+      ADD_RANGE_TYPEQ_TEST(core::ActivationFrame_O,core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1447),TYPEQ_ADJUST_STAMP(1455));
+      ADD_RANGE_TYPEQ_TEST(llvmo::PassManagerBase_O,llvmo::FunctionPassManager_O,TYPEQ_ADJUST_STAMP(1071),TYPEQ_ADJUST_STAMP(1079));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LoadInst_O,TYPEQ_ADJUST_STAMP(1203));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantStruct_O,TYPEQ_ADJUST_STAMP(1299));
+      ADD_RANGE_TYPEQ_TEST(core::Exposer_O,asttooling::AsttoolingExposer_O,TYPEQ_ADJUST_STAMP(927),TYPEQ_ADJUST_STAMP(935));
       ADD_SINGLE_TYPEQ_TEST(core::DirectoryIterator_O,TYPEQ_ADJUST_STAMP(219));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte2_t_O,TYPEQ_ADJUST_STAMP(311));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubroutineType_O,TYPEQ_ADJUST_STAMP(1135));
-      ADD_RANGE_TYPEQ_TEST(core::LexicalEnvironment_O,core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1407),TYPEQ_ADJUST_STAMP(1451));
-      ADD_SINGLE_TYPEQ_TEST(core::PosixTime_O,TYPEQ_ADJUST_STAMP(927));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::MetadataAsValue_O,TYPEQ_ADJUST_STAMP(1191));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubroutineType_O,TYPEQ_ADJUST_STAMP(1127));
+      ADD_RANGE_TYPEQ_TEST(core::LexicalEnvironment_O,core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1399),TYPEQ_ADJUST_STAMP(1443));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::MetadataAsValue_O,TYPEQ_ADJUST_STAMP(1183));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleBitVector_O,TYPEQ_ADJUST_STAMP(771));
-      ADD_SINGLE_TYPEQ_TEST(core::FunctionContainerEnvironment_O,TYPEQ_ADJUST_STAMP(1447));
+      ADD_SINGLE_TYPEQ_TEST(core::FunctionContainerEnvironment_O,TYPEQ_ADJUST_STAMP(1439));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int8_t_O,TYPEQ_ADJUST_STAMP(843));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ResumeInst_O,TYPEQ_ADJUST_STAMP(1243));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Function_O,TYPEQ_ADJUST_STAMP(1287));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DIType_O,llvmo::DISubroutineType_O,TYPEQ_ADJUST_STAMP(1119),TYPEQ_ADJUST_STAMP(1135));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ResumeInst_O,TYPEQ_ADJUST_STAMP(1235));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Function_O,TYPEQ_ADJUST_STAMP(1279));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DIType_O,llvmo::DISubroutineType_O,TYPEQ_ADJUST_STAMP(1111),TYPEQ_ADJUST_STAMP(1127));
       ADD_SINGLE_TYPEQ_TEST(core::Readtable_O,TYPEQ_ADJUST_STAMP(923));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::IRBuilder_O,TYPEQ_ADJUST_STAMP(1055));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::IRBuilder_O,TYPEQ_ADJUST_STAMP(1047));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ClaspJIT_O,TYPEQ_ADJUST_STAMP(919));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte8_t_O,TYPEQ_ADJUST_STAMP(867));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DILexicalBlockBase_O,llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1147),TYPEQ_ADJUST_STAMP(1151));
-      ADD_RANGE_TYPEQ_TEST(llvmo::MDNode_O,llvmo::DILocation_O,TYPEQ_ADJUST_STAMP(1095),TYPEQ_ADJUST_STAMP(1163));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DILexicalBlockBase_O,llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1139),TYPEQ_ADJUST_STAMP(1143));
+      ADD_RANGE_TYPEQ_TEST(llvmo::MDNode_O,llvmo::DILocation_O,TYPEQ_ADJUST_STAMP(1087),TYPEQ_ADJUST_STAMP(1155));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_fixnum_O,TYPEQ_ADJUST_STAMP(715));
       ADD_SINGLE_TYPEQ_TEST(mp::RecursiveMutex_O,TYPEQ_ADJUST_STAMP(195));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_float_O,TYPEQ_ADJUST_STAMP(851));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::VAArgInst_O,TYPEQ_ADJUST_STAMP(1207));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::VAArgInst_O,TYPEQ_ADJUST_STAMP(1199));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int4_t_O,TYPEQ_ADJUST_STAMP(779));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_fixnum_O,TYPEQ_ADJUST_STAMP(327));
       ADD_SINGLE_TYPEQ_TEST(core::SharpEqualWrapper_O,TYPEQ_ADJUST_STAMP(915));
       ADD_SINGLE_TYPEQ_TEST(core::LoadTimeValues_O,TYPEQ_ADJUST_STAMP(911));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIFile_O,TYPEQ_ADJUST_STAMP(1115));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIFile_O,TYPEQ_ADJUST_STAMP(1107));
       ADD_RANGE_TYPEQ_TEST(llvmo::CodeBase_O,llvmo::Library_O,TYPEQ_ADJUST_STAMP(159),TYPEQ_ADJUST_STAMP(167));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DataLayout_O,TYPEQ_ADJUST_STAMP(907));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BasicBlock_O,TYPEQ_ADJUST_STAMP(1187));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BasicBlock_O,TYPEQ_ADJUST_STAMP(1179));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int8_t_O,TYPEQ_ADJUST_STAMP(387));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::EngineBuilder_O,TYPEQ_ADJUST_STAMP(1075));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::EngineBuilder_O,TYPEQ_ADJUST_STAMP(1067));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte64_t_O,TYPEQ_ADJUST_STAMP(583));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::SectionedAddress_O,TYPEQ_ADJUST_STAMP(1071));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::SectionedAddress_O,TYPEQ_ADJUST_STAMP(1063));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte32_t_O,TYPEQ_ADJUST_STAMP(303));
       ADD_SINGLE_TYPEQ_TEST(core::Character_dummy_O,TYPEQ_ADJUST_STAMP(903));
-      ADD_SINGLE_TYPEQ_TEST(core::TagbodyEnvironment_O,TYPEQ_ADJUST_STAMP(1419));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Constant_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1279),TYPEQ_ADJUST_STAMP(1331));
+      ADD_SINGLE_TYPEQ_TEST(core::TagbodyEnvironment_O,TYPEQ_ADJUST_STAMP(1411));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Constant_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1271),TYPEQ_ADJUST_STAMP(1323));
       ADD_SINGLE_TYPEQ_TEST(core::SpecialForm_O,TYPEQ_ADJUST_STAMP(87));
       ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionCallee_O,TYPEQ_ADJUST_STAMP(155));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBasicType_O,TYPEQ_ADJUST_STAMP(1131));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBuilder_O,TYPEQ_ADJUST_STAMP(1067));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBasicType_O,TYPEQ_ADJUST_STAMP(1123));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBuilder_O,TYPEQ_ADJUST_STAMP(1059));
       ADD_SINGLE_TYPEQ_TEST(core::NativeVector_int_O,TYPEQ_ADJUST_STAMP(151));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::APInt_O,TYPEQ_ADJUST_STAMP(1063));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::APFloat_O,TYPEQ_ADJUST_STAMP(1059));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::APInt_O,TYPEQ_ADJUST_STAMP(1055));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::APFloat_O,TYPEQ_ADJUST_STAMP(1051));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayCharacter_O,TYPEQ_ADJUST_STAMP(475));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleCharacterString_O,TYPEQ_ADJUST_STAMP(747));
       ADD_RANGE_TYPEQ_TEST(core::Symbol_O,core::Null_O,TYPEQ_ADJUST_STAMP(895),TYPEQ_ADJUST_STAMP(899));
       ADD_RANGE_TYPEQ_TEST(core::Array_O,core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(227),TYPEQ_ADJUST_STAMP(891));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte4_t_O,TYPEQ_ADJUST_STAMP(263));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Argument_O,TYPEQ_ADJUST_STAMP(1183));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Argument_O,TYPEQ_ADJUST_STAMP(1175));
       ADD_RANGE_TYPEQ_TEST(core::Iterator_O,core::RecursiveDirectoryIterator_O,TYPEQ_ADJUST_STAMP(215),TYPEQ_ADJUST_STAMP(223));
-      ADD_RANGE_TYPEQ_TEST(llvmo::IRBuilderBase_O,llvmo::IRBuilder_O,TYPEQ_ADJUST_STAMP(1051),TYPEQ_ADJUST_STAMP(1055));
-      ADD_SINGLE_TYPEQ_TEST(core::GlobalEntryPoint_O,TYPEQ_ADJUST_STAMP(1487));
+      ADD_RANGE_TYPEQ_TEST(llvmo::IRBuilderBase_O,llvmo::IRBuilder_O,TYPEQ_ADJUST_STAMP(1043),TYPEQ_ADJUST_STAMP(1047));
+      ADD_SINGLE_TYPEQ_TEST(core::GlobalEntryPoint_O,TYPEQ_ADJUST_STAMP(1479));
       ADD_SINGLE_TYPEQ_TEST(core::Null_O,TYPEQ_ADJUST_STAMP(899));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetPassConfig_O,TYPEQ_ADJUST_STAMP(1047));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetPassConfig_O,TYPEQ_ADJUST_STAMP(1039));
       ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchMethod_O,TYPEQ_ADJUST_STAMP(211));
-      ADD_SINGLE_TYPEQ_TEST(core::GlueEnvironment_O,TYPEQ_ADJUST_STAMP(1403));
+      ADD_SINGLE_TYPEQ_TEST(core::GlueEnvironment_O,TYPEQ_ADJUST_STAMP(1395));
       ADD_RANGE_TYPEQ_TEST(core::CxxObject_O,mp::Process_O,TYPEQ_ADJUST_STAMP(131),TYPEQ_ADJUST_STAMP(207));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ReturnInst_O,TYPEQ_ADJUST_STAMP(1239));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionType_O,TYPEQ_ADJUST_STAMP(1023));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ReturnInst_O,TYPEQ_ADJUST_STAMP(1231));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionType_O,TYPEQ_ADJUST_STAMP(1015));
       ADD_SINGLE_TYPEQ_TEST(clbind::DummyCreator_O,TYPEQ_ADJUST_STAMP(75));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte16_t_O,TYPEQ_ADJUST_STAMP(375));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIContext_O,TYPEQ_ADJUST_STAMP(1043));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::JITDylib_O,TYPEQ_ADJUST_STAMP(1039));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Type_O,llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1011),TYPEQ_ADJUST_STAMP(1035));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIContext_O,TYPEQ_ADJUST_STAMP(1035));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::JITDylib_O,TYPEQ_ADJUST_STAMP(1031));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Type_O,llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1003),TYPEQ_ADJUST_STAMP(1027));
       ADD_RANGE_TYPEQ_TEST(core::Pointer_O,clasp_ffi::ForeignData_O,TYPEQ_ADJUST_STAMP(123),TYPEQ_ADJUST_STAMP(127));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::UnreachableInst_O,TYPEQ_ADJUST_STAMP(1235));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::UnreachableInst_O,TYPEQ_ADJUST_STAMP(1227));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(723));
-      ADD_SINGLE_TYPEQ_TEST(core::FileScope_O,TYPEQ_ADJUST_STAMP(1543));
-      ADD_RANGE_TYPEQ_TEST(core::Float_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1587),TYPEQ_ADJUST_STAMP(1603));
+      ADD_SINGLE_TYPEQ_TEST(core::FileScope_O,TYPEQ_ADJUST_STAMP(1535));
+      ADD_RANGE_TYPEQ_TEST(core::Float_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1579),TYPEQ_ADJUST_STAMP(1595));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte4_t_O,TYPEQ_ADJUST_STAMP(427));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIDerivedType_O,TYPEQ_ADJUST_STAMP(1127));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIDerivedType_O,TYPEQ_ADJUST_STAMP(1119));
       ADD_SINGLE_TYPEQ_TEST(clbind::ConstructorCreator_O,TYPEQ_ADJUST_STAMP(71));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int64_t_O,TYPEQ_ADJUST_STAMP(827));
-      ADD_RANGE_TYPEQ_TEST(llvmo::ConstantDataSequential_O,llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(1299),TYPEQ_ADJUST_STAMP(1303));
+      ADD_RANGE_TYPEQ_TEST(llvmo::ConstantDataSequential_O,llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(1291),TYPEQ_ADJUST_STAMP(1295));
       ADD_SINGLE_TYPEQ_TEST(core::TranslationFunctor_O,TYPEQ_ADJUST_STAMP(103));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Code_O,TYPEQ_ADJUST_STAMP(163));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_double_O,TYPEQ_ADJUST_STAMP(555));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::StoreInst_O,TYPEQ_ADJUST_STAMP(1231));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::StoreInst_O,TYPEQ_ADJUST_STAMP(1223));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DebugLoc_O,TYPEQ_ADJUST_STAMP(119));
       ADD_SINGLE_TYPEQ_TEST(core::WeakPointer_O,TYPEQ_ADJUST_STAMP(115));
-      ADD_RANGE_TYPEQ_TEST(core::CodeEntryPoint_O,core::LocalEntryPoint_O,TYPEQ_ADJUST_STAMP(1483),TYPEQ_ADJUST_STAMP(1491));
-      ADD_SINGLE_TYPEQ_TEST(core::IOFileStream_O,TYPEQ_ADJUST_STAMP(1635));
-      ADD_RANGE_TYPEQ_TEST(core::RuntimeVisibleEnvironment_O,core::ValueEnvironment_O,TYPEQ_ADJUST_STAMP(1411),TYPEQ_ADJUST_STAMP(1427));
+      ADD_RANGE_TYPEQ_TEST(core::CodeEntryPoint_O,core::LocalEntryPoint_O,TYPEQ_ADJUST_STAMP(1475),TYPEQ_ADJUST_STAMP(1483));
+      ADD_SINGLE_TYPEQ_TEST(core::IOFileStream_O,TYPEQ_ADJUST_STAMP(1627));
+      ADD_RANGE_TYPEQ_TEST(core::RuntimeVisibleEnvironment_O,core::ValueEnvironment_O,TYPEQ_ADJUST_STAMP(1403),TYPEQ_ADJUST_STAMP(1419));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte8_t_O,TYPEQ_ADJUST_STAMP(531));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Instruction_O,llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1199),TYPEQ_ADJUST_STAMP(1275));
-      ADD_RANGE_TYPEQ_TEST(core::FileStream_O,core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1631),TYPEQ_ADJUST_STAMP(1639));
-      ADD_RANGE_TYPEQ_TEST(core::Rational_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1567),TYPEQ_ADJUST_STAMP(1583));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Instruction_O,llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1191),TYPEQ_ADJUST_STAMP(1267));
+      ADD_RANGE_TYPEQ_TEST(core::FileStream_O,core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1623),TYPEQ_ADJUST_STAMP(1631));
+      ADD_RANGE_TYPEQ_TEST(core::Rational_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1559),TYPEQ_ADJUST_STAMP(1575));
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayCharacter_O,TYPEQ_ADJUST_STAMP(351));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,TYPEQ_ADJUST_STAMP(1227));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,TYPEQ_ADJUST_STAMP(1219));
       ADD_SINGLE_TYPEQ_TEST(core::ImmobileObject_O,TYPEQ_ADJUST_STAMP(111));
       ADD_RANGE_TYPEQ_TEST(core::Function_O,core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(47),TYPEQ_ADJUST_STAMP(107));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int2_t_O,TYPEQ_ADJUST_STAMP(419));
-      ADD_SINGLE_TYPEQ_TEST(core::HashTableEql_O,TYPEQ_ADJUST_STAMP(1519));
+      ADD_SINGLE_TYPEQ_TEST(core::HashTableEql_O,TYPEQ_ADJUST_STAMP(1511));
       ADD_SINGLE_TYPEQ_TEST(mp::ConditionVariable_O,TYPEQ_ADJUST_STAMP(147));
-      ADD_RANGE_TYPEQ_TEST(core::Real_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1563),TYPEQ_ADJUST_STAMP(1603));
+      ADD_RANGE_TYPEQ_TEST(core::Real_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1555),TYPEQ_ADJUST_STAMP(1595));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte8_t_O,TYPEQ_ADJUST_STAMP(287));
       ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstanceCreator_O,TYPEQ_ADJUST_STAMP(67));
-      ADD_SINGLE_TYPEQ_TEST(core::StringOutputStream_O,TYPEQ_ADJUST_STAMP(1651));
+      ADD_SINGLE_TYPEQ_TEST(core::StringOutputStream_O,TYPEQ_ADJUST_STAMP(1643));
       ADD_SINGLE_TYPEQ_TEST(llvmo::AttributeSet_O,TYPEQ_ADJUST_STAMP(43));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicRMWInst_O,TYPEQ_ADJUST_STAMP(1223));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicRMWInst_O,TYPEQ_ADJUST_STAMP(1215));
       ADD_SINGLE_TYPEQ_TEST(llvmo::MDBuilder_O,TYPEQ_ADJUST_STAMP(143));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManager_O,TYPEQ_ADJUST_STAMP(1083));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManager_O,TYPEQ_ADJUST_STAMP(1075));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_O,TYPEQ_ADJUST_STAMP(859));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubprogram_O,TYPEQ_ADJUST_STAMP(1143));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubprogram_O,TYPEQ_ADJUST_STAMP(1135));
       ADD_RANGE_TYPEQ_TEST(core::Creator_O,core::StandardClassCreator_O,TYPEQ_ADJUST_STAMP(55),TYPEQ_ADJUST_STAMP(83));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ArrayType_O,TYPEQ_ADJUST_STAMP(1019));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ArrayType_O,TYPEQ_ADJUST_STAMP(1011));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int64_t_O,TYPEQ_ADJUST_STAMP(539));
       ADD_RANGE_TYPEQ_TEST(core::SimpleString_O,core::SimpleCharacterString_O,TYPEQ_ADJUST_STAMP(731),TYPEQ_ADJUST_STAMP(747));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DIVariable_O,llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(1103),TYPEQ_ADJUST_STAMP(1107));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DIVariable_O,llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(1095),TYPEQ_ADJUST_STAMP(1099));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte2_t_O,TYPEQ_ADJUST_STAMP(483));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BlockAddress_O,TYPEQ_ADJUST_STAMP(1295));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompositeType_O,TYPEQ_ADJUST_STAMP(1123));
-      ADD_RANGE_TYPEQ_TEST(llvmo::MCSubtargetInfo_O,llvmo::TargetSubtargetInfo_O,TYPEQ_ADJUST_STAMP(1003),TYPEQ_ADJUST_STAMP(1007));
-      ADD_SINGLE_TYPEQ_TEST(core::FunctionValueEnvironment_O,TYPEQ_ADJUST_STAMP(1415));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BlockAddress_O,TYPEQ_ADJUST_STAMP(1287));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompositeType_O,TYPEQ_ADJUST_STAMP(1115));
+      ADD_RANGE_TYPEQ_TEST(llvmo::MCSubtargetInfo_O,llvmo::TargetSubtargetInfo_O,TYPEQ_ADJUST_STAMP(995),TYPEQ_ADJUST_STAMP(999));
+      ADD_SINGLE_TYPEQ_TEST(core::FunctionValueEnvironment_O,TYPEQ_ADJUST_STAMP(1407));
       ADD_SINGLE_TYPEQ_TEST(core::DerivableCxxClassCreator_O,TYPEQ_ADJUST_STAMP(63));
-      ADD_SINGLE_TYPEQ_TEST(core::HashTableEq_O,TYPEQ_ADJUST_STAMP(1515));
-      ADD_SINGLE_TYPEQ_TEST(core::HashTableEqualp_O,TYPEQ_ADJUST_STAMP(1511));
+      ADD_SINGLE_TYPEQ_TEST(core::HashTableEq_O,TYPEQ_ADJUST_STAMP(1507));
+      ADD_SINGLE_TYPEQ_TEST(core::HashTableEqualp_O,TYPEQ_ADJUST_STAMP(1503));
       ADD_SINGLE_TYPEQ_TEST(asttooling::PresumedLoc_O,TYPEQ_ADJUST_STAMP(139));
       ADD_SINGLE_TYPEQ_TEST(core::LambdaListHandler_O,TYPEQ_ADJUST_STAMP(39));
-      ADD_SINGLE_TYPEQ_TEST(core::ConcatenatedStream_O,TYPEQ_ADJUST_STAMP(1627));
-      ADD_SINGLE_TYPEQ_TEST(core::SymbolMacroletEnvironment_O,TYPEQ_ADJUST_STAMP(1443));
-      ADD_SINGLE_TYPEQ_TEST(core::MacroletEnvironment_O,TYPEQ_ADJUST_STAMP(1439));
-      ADD_RANGE_TYPEQ_TEST(llvmo::ImmutablePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(987),TYPEQ_ADJUST_STAMP(991));
+      ADD_SINGLE_TYPEQ_TEST(core::ConcatenatedStream_O,TYPEQ_ADJUST_STAMP(1619));
+      ADD_SINGLE_TYPEQ_TEST(core::SymbolMacroletEnvironment_O,TYPEQ_ADJUST_STAMP(1435));
+      ADD_SINGLE_TYPEQ_TEST(core::MacroletEnvironment_O,TYPEQ_ADJUST_STAMP(1431));
+      ADD_RANGE_TYPEQ_TEST(llvmo::ImmutablePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(979),TYPEQ_ADJUST_STAMP(983));
       ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstance_O,TYPEQ_ADJUST_STAMP(49));
-      ADD_SINGLE_TYPEQ_TEST(core::SynonymStream_O,TYPEQ_ADJUST_STAMP(1623));
-      ADD_SINGLE_TYPEQ_TEST(core::Ratio_O,TYPEQ_ADJUST_STAMP(1571));
+      ADD_SINGLE_TYPEQ_TEST(core::SynonymStream_O,TYPEQ_ADJUST_STAMP(1615));
+      ADD_SINGLE_TYPEQ_TEST(core::Ratio_O,TYPEQ_ADJUST_STAMP(1563));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int2_t_O,TYPEQ_ADJUST_STAMP(319));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte2_t_O,TYPEQ_ADJUST_STAMP(655));
       ADD_SINGLE_TYPEQ_TEST(core::ClosureWithSlots_O,TYPEQ_ADJUST_STAMP(95));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ExecutionEngine_O,TYPEQ_ADJUST_STAMP(999));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ExecutionEngine_O,TYPEQ_ADJUST_STAMP(991));
       ADD_SINGLE_TYPEQ_TEST(core::ClassRepCreator_O,TYPEQ_ADJUST_STAMP(59));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int16_t_O,TYPEQ_ADJUST_STAMP(755));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Attribute_O,TYPEQ_ADJUST_STAMP(35));
-      ADD_SINGLE_TYPEQ_TEST(core::DerivableCxxObject_O,TYPEQ_ADJUST_STAMP(956));
+      ADD_SINGLE_TYPEQ_TEST(core::DerivableCxxObject_O,TYPEQ_ADJUST_STAMP(948));
       ADD_SINGLE_TYPEQ_TEST(core::SymbolToEnumConverter_O,TYPEQ_ADJUST_STAMP(31));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::SwitchInst_O,TYPEQ_ADJUST_STAMP(1219));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Pass_O,llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(979),TYPEQ_ADJUST_STAMP(995));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::SwitchInst_O,TYPEQ_ADJUST_STAMP(1211));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Pass_O,llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(971),TYPEQ_ADJUST_STAMP(987));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int32_t_O,TYPEQ_ADJUST_STAMP(607));
       ADD_SINGLE_TYPEQ_TEST(core::VaList_dummy_O,TYPEQ_ADJUST_STAMP(11));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte4_t_O,TYPEQ_ADJUST_STAMP(707));
       ADD_SINGLE_TYPEQ_TEST(asttooling::SourceLocation_O,TYPEQ_ADJUST_STAMP(135));
-      ADD_SINGLE_TYPEQ_TEST(core::CatchEnvironment_O,TYPEQ_ADJUST_STAMP(1435));
-      ADD_SINGLE_TYPEQ_TEST(core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1555));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetSubtargetInfo_O,TYPEQ_ADJUST_STAMP(1007));
+      ADD_SINGLE_TYPEQ_TEST(core::CatchEnvironment_O,TYPEQ_ADJUST_STAMP(1427));
+      ADD_SINGLE_TYPEQ_TEST(core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1547));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetSubtargetInfo_O,TYPEQ_ADJUST_STAMP(999));
       ADD_SINGLE_TYPEQ_TEST(core::WrappedPointer_O,TYPEQ_ADJUST_STAMP(26));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_double_O,TYPEQ_ADJUST_STAMP(803));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte32_t_O,TYPEQ_ADJUST_STAMP(403));
-      ADD_SINGLE_TYPEQ_TEST(core::Bignum_O,TYPEQ_ADJUST_STAMP(1579));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1339));
+      ADD_SINGLE_TYPEQ_TEST(core::Bignum_O,TYPEQ_ADJUST_STAMP(1571));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1331));
       ADD_SINGLE_TYPEQ_TEST(core::ClassHolder_O,TYPEQ_ADJUST_STAMP(23));
-      ADD_SINGLE_TYPEQ_TEST(core::LocalEntryPointGenerator_O,TYPEQ_ADJUST_STAMP(1479));
-      ADD_SINGLE_TYPEQ_TEST(core::GlobalEntryPointGenerator_O,TYPEQ_ADJUST_STAMP(1475));
+      ADD_SINGLE_TYPEQ_TEST(core::LocalEntryPointGenerator_O,TYPEQ_ADJUST_STAMP(1471));
+      ADD_SINGLE_TYPEQ_TEST(core::GlobalEntryPointGenerator_O,TYPEQ_ADJUST_STAMP(1467));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte32_t_O,TYPEQ_ADJUST_STAMP(671));
-      ADD_RANGE_TYPEQ_TEST(llvmo::UnaryInstruction_O,llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1203),TYPEQ_ADJUST_STAMP(1215));
-      ADD_RANGE_TYPEQ_TEST(llvmo::GlobalValue_O,llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1283),TYPEQ_ADJUST_STAMP(1291));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PointerType_O,TYPEQ_ADJUST_STAMP(1015));
-      ADD_SINGLE_TYPEQ_TEST(core::TwoWayStream_O,TYPEQ_ADJUST_STAMP(1619));
+      ADD_RANGE_TYPEQ_TEST(llvmo::UnaryInstruction_O,llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1195),TYPEQ_ADJUST_STAMP(1207));
+      ADD_RANGE_TYPEQ_TEST(llvmo::GlobalValue_O,llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1275),TYPEQ_ADJUST_STAMP(1283));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PointerType_O,TYPEQ_ADJUST_STAMP(1007));
+      ADD_SINGLE_TYPEQ_TEST(core::TwoWayStream_O,TYPEQ_ADJUST_STAMP(1611));
 #endif // defined(GC_TYPEQ)
 #if defined(DO_CLASS)
 DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_size_t_O),STAMPWTAG_core__MDArray_size_t_O);
@@ -6261,7 +6235,6 @@ DO_CLASS(SAFE_TYPE_MACRO(core::Instance_O),STAMPWTAG_core__Instance_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::TargetOptions_O),STAMPWTAG_llvmo__TargetOptions_O);
 DO_CLASS(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),STAMPWTAG_clasp_ffi__ForeignTypeSpec_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::Unused_dummy_O),STAMPWTAG_core__Unused_dummy_O);
-DO_CLASS(SAFE_TYPE_MACRO(core::PosixTimeDuration_O),STAMPWTAG_core__PosixTimeDuration_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::DWARFContext_O),STAMPWTAG_llvmo__DWARFContext_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::HashTableEqual_O),STAMPWTAG_core__HashTableEqual_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),STAMPWTAG_core__SimpleMDArray_byte64_t_O);
@@ -6292,7 +6265,6 @@ DO_CLASS(SAFE_TYPE_MACRO(core::DirectoryIterator_O),STAMPWTAG_core__DirectoryIte
 DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_byte2_t_O),STAMPWTAG_core__MDArray_byte2_t_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::DISubroutineType_O),STAMPWTAG_llvmo__DISubroutineType_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::LexicalEnvironment_O),STAMPWTAG_core__LexicalEnvironment_O);
-DO_CLASS(SAFE_TYPE_MACRO(core::PosixTime_O),STAMPWTAG_core__PosixTime_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),STAMPWTAG_llvmo__MetadataAsValue_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::SimpleBitVector_O),STAMPWTAG_core__SimpleBitVector_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),STAMPWTAG_core__FunctionContainerEnvironment_O);
@@ -7177,10 +7149,6 @@ template <> class gctools::GCStamp<core::Unused_dummy_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Unused_dummy_O ;
 };
-template <> class gctools::GCStamp<core::PosixTimeDuration_O> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__PosixTimeDuration_O ;
-};
 template <> class gctools::GCStamp<llvmo::DWARFContext_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DWARFContext_O ;
@@ -7312,10 +7280,6 @@ public:
 template <> class gctools::GCStamp<core::LexicalEnvironment_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__LexicalEnvironment_O ;
-};
-template <> class gctools::GCStamp<core::PosixTime_O> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__PosixTime_O ;
 };
 template <> class gctools::GCStamp<llvmo::MetadataAsValue_O> {
 public:
@@ -10344,33 +10308,29 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Readtable_O),MacroCharacters_), 0, "MacroCharacters_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "DispatchMacroCharacters_" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTable_O>" :SPECIALIZER "class core::HashTable_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Readtable_O),DispatchMacroCharacters_), 0, "DispatchMacroCharacters_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::PosixTime_O/927
-{ class_kind, STAMPWTAG_core__PosixTime_O, sizeof(core::PosixTime_O), 0, IS_POLYMORPHIC, "core::PosixTime_O" },
-// StampWtag = core::Exposer_O/931
+// StampWtag = core::Exposer_O/927
 { class_kind, STAMPWTAG_core__Exposer_O, sizeof(core::Exposer_O), 0, IS_POLYMORPHIC, "core::Exposer_O" },
 //      field: "_Package" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Exposer_O),_Package), 0, "_Package" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_PackageName" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Exposer_O),_PackageName), 0, "_PackageName" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::CoreExposer_O/935
+// StampWtag = core::CoreExposer_O/931
 { class_kind, STAMPWTAG_core__CoreExposer_O, sizeof(core::CoreExposer_O), 0, IS_POLYMORPHIC, "core::CoreExposer_O" },
 //      field: "_Package" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CoreExposer_O),_Package), 0, "_Package" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_PackageName" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CoreExposer_O),_PackageName), 0, "_PackageName" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = asttooling::AsttoolingExposer_O/939
+// StampWtag = asttooling::AsttoolingExposer_O/935
 { class_kind, STAMPWTAG_asttooling__AsttoolingExposer_O, sizeof(asttooling::AsttoolingExposer_O), 0, IS_POLYMORPHIC, "asttooling::AsttoolingExposer_O" },
 //      field: "_Package" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AsttoolingExposer_O),_Package), 0, "_Package" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_PackageName" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AsttoolingExposer_O),_PackageName), 0, "_PackageName" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = llvmo::StructLayout_O/943
+// StampWtag = llvmo::StructLayout_O/939
 { class_kind, STAMPWTAG_llvmo__StructLayout_O, sizeof(llvmo::StructLayout_O), 0, IS_POLYMORPHIC, "llvmo::StructLayout_O" },
 //      field: "_StructLayout" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::StructLayout" :NAME "StructLayout"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructLayout_O),_StructLayout), 0, "_StructLayout" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::PosixTimeDuration_O/947
-{ class_kind, STAMPWTAG_core__PosixTimeDuration_O, sizeof(core::PosixTimeDuration_O), 0, IS_POLYMORPHIC, "core::PosixTimeDuration_O" },
-// StampWtag = clasp_ffi::ForeignTypeSpec_O/951
+// StampWtag = clasp_ffi::ForeignTypeSpec_O/943
 { class_kind, STAMPWTAG_clasp_ffi__ForeignTypeSpec_O, sizeof(clasp_ffi::ForeignTypeSpec_O), 0, IS_POLYMORPHIC, "clasp_ffi::ForeignTypeSpec_O" },
 //      field: "m_lisp_symbol" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),m_lisp_symbol), 0, "m_lisp_symbol" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10392,19 +10352,19 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clasp_ffi::ForeignData_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),m_to_object_fn_ptr), 0, "m_to_object_fn_ptr" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "m_from_object_fn_ptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clasp_ffi::ForeignData_O>" :SPECIALIZER "class clasp_ffi::ForeignData_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clasp_ffi::ForeignData_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),m_from_object_fn_ptr), 0, "m_from_object_fn_ptr" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::Instance_O/953
+// StampWtag = core::Instance_O/945
 { class_kind, STAMPWTAG_core__Instance_O, sizeof(core::Instance_O), 0, IS_POLYMORPHIC, "core::Instance_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Class), 0, "_Class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Rack" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Rack_O>" :SPECIALIZER "class core::Rack_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Rack_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Rack), 0, "_Rack" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::DerivableCxxObject_O/956
+// StampWtag = core::DerivableCxxObject_O/948
 { class_kind, STAMPWTAG_core__DerivableCxxObject_O, sizeof(core::DerivableCxxObject_O), 0, IS_POLYMORPHIC, "core::DerivableCxxObject_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Class), 0, "_Class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Rack" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Rack_O>" :SPECIALIZER "class core::Rack_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Rack_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Rack), 0, "_Rack" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = clbind::ClassRep_O/961
+// StampWtag = clbind::ClassRep_O/953
 { class_kind, STAMPWTAG_clbind__ClassRep_O, sizeof(clbind::ClassRep_O), 0, IS_POLYMORPHIC, "clbind::ClassRep_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Class), 0, "_Class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10418,12 +10378,12 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_name), 0, "m_name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "m_derivable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_derivable), 0, "m_derivable" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = core::SmallMap_O/967
+// StampWtag = core::SmallMap_O/959
 { class_kind, STAMPWTAG_core__SmallMap_O, sizeof(core::SmallMap_O), 0, IS_POLYMORPHIC, "core::SmallMap_O" },
 //      field: "map" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::SmallMap<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>" :NAME "SmallMap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>" :SPECIALIZER "class gctools::GCVector_moveable<struct std::pair<class gctools::smart_ptr<core::T_O>, class gctools::smart_ptr<core::T_O> > >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),map._Contents), 0, "map._Contents" }, // atomic: NIL public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
-// StampWtag = mpip::Mpi_O/971
+// StampWtag = mpip::Mpi_O/963
 { class_kind, STAMPWTAG_mpip__Mpi_O, sizeof(mpip::Mpi_O), 0, IS_POLYMORPHIC, "mpip::Mpi_O" },
 //      field: "_LastReturnCode" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(mpip::Mpi_O),_LastReturnCode), 0, "_LastReturnCode" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
@@ -10431,41 +10391,41 @@ public:
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(mpip::Mpi_O),_Source), 0, "_Source" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_Tag" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(mpip::Mpi_O),_Tag), 0, "_Tag" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::ExternalObject_O/975
+// StampWtag = core::ExternalObject_O/967
 { class_kind, STAMPWTAG_core__ExternalObject_O, sizeof(core::ExternalObject_O), 0, IS_POLYMORPHIC, "core::ExternalObject_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ExternalObject_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = llvmo::Pass_O/979
+// StampWtag = llvmo::Pass_O/971
 { class_kind, STAMPWTAG_llvmo__Pass_O, sizeof(llvmo::Pass_O), 0, IS_POLYMORPHIC, "llvmo::Pass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Pass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Pass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ModulePass_O/983
+// StampWtag = llvmo::ModulePass_O/975
 { class_kind, STAMPWTAG_llvmo__ModulePass_O, sizeof(llvmo::ModulePass_O), 0, IS_POLYMORPHIC, "llvmo::ModulePass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ModulePass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ModulePass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ImmutablePass_O/987
+// StampWtag = llvmo::ImmutablePass_O/979
 { class_kind, STAMPWTAG_llvmo__ImmutablePass_O, sizeof(llvmo::ImmutablePass_O), 0, IS_POLYMORPHIC, "llvmo::ImmutablePass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ImmutablePass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ImmutablePass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::TargetLibraryInfoWrapperPass_O/991
+// StampWtag = llvmo::TargetLibraryInfoWrapperPass_O/983
 { class_kind, STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O, sizeof(llvmo::TargetLibraryInfoWrapperPass_O), 0, IS_POLYMORPHIC, "llvmo::TargetLibraryInfoWrapperPass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetLibraryInfoWrapperPass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetLibraryInfoWrapperPass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::FunctionPass_O/995
+// StampWtag = llvmo::FunctionPass_O/987
 { class_kind, STAMPWTAG_llvmo__FunctionPass_O, sizeof(llvmo::FunctionPass_O), 0, IS_POLYMORPHIC, "llvmo::FunctionPass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ExecutionEngine_O/999
+// StampWtag = llvmo::ExecutionEngine_O/991
 { class_kind, STAMPWTAG_llvmo__ExecutionEngine_O, sizeof(llvmo::ExecutionEngine_O), 0, IS_POLYMORPHIC, "llvmo::ExecutionEngine_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10473,61 +10433,61 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_DependentModules" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEqual_O>" :SPECIALIZER "class core::HashTableEqual_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_DependentModules), 0, "_DependentModules" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = llvmo::MCSubtargetInfo_O/1003
+// StampWtag = llvmo::MCSubtargetInfo_O/995
 { class_kind, STAMPWTAG_llvmo__MCSubtargetInfo_O, sizeof(llvmo::MCSubtargetInfo_O), 0, IS_POLYMORPHIC, "llvmo::MCSubtargetInfo_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MCSubtargetInfo_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::MCSubtargetInfo" :NAME "MCSubtargetInfo"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MCSubtargetInfo_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::TargetSubtargetInfo_O/1007
+// StampWtag = llvmo::TargetSubtargetInfo_O/999
 { class_kind, STAMPWTAG_llvmo__TargetSubtargetInfo_O, sizeof(llvmo::TargetSubtargetInfo_O), 0, IS_POLYMORPHIC, "llvmo::TargetSubtargetInfo_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetSubtargetInfo_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::MCSubtargetInfo" :NAME "MCSubtargetInfo"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetSubtargetInfo_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Type_O/1011
+// StampWtag = llvmo::Type_O/1003
 { class_kind, STAMPWTAG_llvmo__Type_O, sizeof(llvmo::Type_O), 0, IS_POLYMORPHIC, "llvmo::Type_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Type_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Type_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::PointerType_O/1015
+// StampWtag = llvmo::PointerType_O/1007
 { class_kind, STAMPWTAG_llvmo__PointerType_O, sizeof(llvmo::PointerType_O), 0, IS_POLYMORPHIC, "llvmo::PointerType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PointerType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PointerType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ArrayType_O/1019
+// StampWtag = llvmo::ArrayType_O/1011
 { class_kind, STAMPWTAG_llvmo__ArrayType_O, sizeof(llvmo::ArrayType_O), 0, IS_POLYMORPHIC, "llvmo::ArrayType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ArrayType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ArrayType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::FunctionType_O/1023
+// StampWtag = llvmo::FunctionType_O/1015
 { class_kind, STAMPWTAG_llvmo__FunctionType_O, sizeof(llvmo::FunctionType_O), 0, IS_POLYMORPHIC, "llvmo::FunctionType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::IntegerType_O/1027
+// StampWtag = llvmo::IntegerType_O/1019
 { class_kind, STAMPWTAG_llvmo__IntegerType_O, sizeof(llvmo::IntegerType_O), 0, IS_POLYMORPHIC, "llvmo::IntegerType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IntegerType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IntegerType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::StructType_O/1031
+// StampWtag = llvmo::StructType_O/1023
 { class_kind, STAMPWTAG_llvmo__StructType_O, sizeof(llvmo::StructType_O), 0, IS_POLYMORPHIC, "llvmo::StructType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::VectorType_O/1035
+// StampWtag = llvmo::VectorType_O/1027
 { class_kind, STAMPWTAG_llvmo__VectorType_O, sizeof(llvmo::VectorType_O), 0, IS_POLYMORPHIC, "llvmo::VectorType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VectorType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VectorType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::JITDylib_O/1039
+// StampWtag = llvmo::JITDylib_O/1031
 { class_kind, STAMPWTAG_llvmo__JITDylib_O, sizeof(llvmo::JITDylib_O), 0, IS_POLYMORPHIC, "llvmo::JITDylib_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::JITDylib_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10537,19 +10497,19 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::JITDylib_O),_Id), 0, "_Id" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::JITDylib_O),_name), 0, "_name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = llvmo::DIContext_O/1043
+// StampWtag = llvmo::DIContext_O/1035
 { class_kind, STAMPWTAG_llvmo__DIContext_O, sizeof(llvmo::DIContext_O), 0, IS_POLYMORPHIC, "llvmo::DIContext_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIContext_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DIContext" :NAME "DIContext"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIContext_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::TargetPassConfig_O/1047
+// StampWtag = llvmo::TargetPassConfig_O/1039
 { class_kind, STAMPWTAG_llvmo__TargetPassConfig_O, sizeof(llvmo::TargetPassConfig_O), 0, IS_POLYMORPHIC, "llvmo::TargetPassConfig_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetPassConfig_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::TargetPassConfig" :NAME "TargetPassConfig"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetPassConfig_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::IRBuilderBase_O/1051
+// StampWtag = llvmo::IRBuilderBase_O/1043
 { class_kind, STAMPWTAG_llvmo__IRBuilderBase_O, sizeof(llvmo::IRBuilderBase_O), 0, IS_POLYMORPHIC, "llvmo::IRBuilderBase_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10557,7 +10517,7 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_CurrentDebugLocationSet" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),_CurrentDebugLocationSet), 0, "_CurrentDebugLocationSet" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::IRBuilder_O/1055
+// StampWtag = llvmo::IRBuilder_O/1047
 { class_kind, STAMPWTAG_llvmo__IRBuilder_O, sizeof(llvmo::IRBuilder_O), 0, IS_POLYMORPHIC, "llvmo::IRBuilder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10565,23 +10525,23 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_CurrentDebugLocationSet" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_CurrentDebugLocationSet), 0, "_CurrentDebugLocationSet" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::APFloat_O/1059
+// StampWtag = llvmo::APFloat_O/1051
 { class_kind, STAMPWTAG_llvmo__APFloat_O, sizeof(llvmo::APFloat_O), 0, IS_POLYMORPHIC, "llvmo::APFloat_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_valueP" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::APFloat" :NAME "APFloat"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_valueP), 0, "_valueP" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = llvmo::APInt_O/1063
+// StampWtag = llvmo::APInt_O/1055
 { class_kind, STAMPWTAG_llvmo__APInt_O, sizeof(llvmo::APInt_O), 0, IS_POLYMORPHIC, "llvmo::APInt_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APInt_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = llvmo::DIBuilder_O/1067
+// StampWtag = llvmo::DIBuilder_O/1059
 { class_kind, STAMPWTAG_llvmo__DIBuilder_O, sizeof(llvmo::DIBuilder_O), 0, IS_POLYMORPHIC, "llvmo::DIBuilder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBuilder_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DIBuilder" :NAME "DIBuilder"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBuilder_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::SectionedAddress_O/1071
+// StampWtag = llvmo::SectionedAddress_O/1063
 { class_kind, STAMPWTAG_llvmo__SectionedAddress_O, sizeof(llvmo::SectionedAddress_O), 0, IS_POLYMORPHIC, "llvmo::SectionedAddress_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SectionedAddress_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10591,7 +10551,7 @@ public:
 //      field: "_value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::object::SectionedAddress" :NAME "SectionedAddress")
 //      field: ".SectionIndex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SectionedAddress_O),_value.SectionIndex), 0, "_value.SectionIndex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = llvmo::EngineBuilder_O/1075
+// StampWtag = llvmo::EngineBuilder_O/1067
 { class_kind, STAMPWTAG_llvmo__EngineBuilder_O, sizeof(llvmo::EngineBuilder_O), 0, IS_POLYMORPHIC, "llvmo::EngineBuilder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10599,313 +10559,313 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_ErrorStr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BASIC-STRING-CTYPE :KEY "std::basic_string<char,std::char_traits<char>,std::allocator<char>>" :NAME "basic_string")
  {  fixed_field, CXX_FIXUP_OFFSET, sizeof(std::basic_string<char,std::char_traits<char>,std::allocator<char>>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_ErrorStr), 0, "_ErrorStr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::PassManagerBase_O/1079
+// StampWtag = llvmo::PassManagerBase_O/1071
 { class_kind, STAMPWTAG_llvmo__PassManagerBase_O, sizeof(llvmo::PassManagerBase_O), 0, IS_POLYMORPHIC, "llvmo::PassManagerBase_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBase_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::legacy::PassManagerBase" :NAME "PassManagerBase"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBase_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::PassManager_O/1083
+// StampWtag = llvmo::PassManager_O/1075
 { class_kind, STAMPWTAG_llvmo__PassManager_O, sizeof(llvmo::PassManager_O), 0, IS_POLYMORPHIC, "llvmo::PassManager_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManager_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::legacy::PassManagerBase" :NAME "PassManagerBase"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManager_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::FunctionPassManager_O/1087
+// StampWtag = llvmo::FunctionPassManager_O/1079
 { class_kind, STAMPWTAG_llvmo__FunctionPassManager_O, sizeof(llvmo::FunctionPassManager_O), 0, IS_POLYMORPHIC, "llvmo::FunctionPassManager_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPassManager_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::legacy::PassManagerBase" :NAME "PassManagerBase"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPassManager_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Metadata_O/1091
+// StampWtag = llvmo::Metadata_O/1083
 { class_kind, STAMPWTAG_llvmo__Metadata_O, sizeof(llvmo::Metadata_O), 0, IS_POLYMORPHIC, "llvmo::Metadata_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Metadata_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Metadata_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::MDNode_O/1095
+// StampWtag = llvmo::MDNode_O/1087
 { class_kind, STAMPWTAG_llvmo__MDNode_O, sizeof(llvmo::MDNode_O), 0, IS_POLYMORPHIC, "llvmo::MDNode_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDNode_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDNode_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DINode_O/1099
+// StampWtag = llvmo::DINode_O/1091
 { class_kind, STAMPWTAG_llvmo__DINode_O, sizeof(llvmo::DINode_O), 0, IS_POLYMORPHIC, "llvmo::DINode_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DINode_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DINode_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DIVariable_O/1103
+// StampWtag = llvmo::DIVariable_O/1095
 { class_kind, STAMPWTAG_llvmo__DIVariable_O, sizeof(llvmo::DIVariable_O), 0, IS_POLYMORPHIC, "llvmo::DIVariable_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIVariable_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIVariable_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DILocalVariable_O/1107
+// StampWtag = llvmo::DILocalVariable_O/1099
 { class_kind, STAMPWTAG_llvmo__DILocalVariable_O, sizeof(llvmo::DILocalVariable_O), 0, IS_POLYMORPHIC, "llvmo::DILocalVariable_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalVariable_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalVariable_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DIScope_O/1111
+// StampWtag = llvmo::DIScope_O/1103
 { class_kind, STAMPWTAG_llvmo__DIScope_O, sizeof(llvmo::DIScope_O), 0, IS_POLYMORPHIC, "llvmo::DIScope_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIScope_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIScope_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DIFile_O/1115
+// StampWtag = llvmo::DIFile_O/1107
 { class_kind, STAMPWTAG_llvmo__DIFile_O, sizeof(llvmo::DIFile_O), 0, IS_POLYMORPHIC, "llvmo::DIFile_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIFile_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIFile_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DIType_O/1119
+// StampWtag = llvmo::DIType_O/1111
 { class_kind, STAMPWTAG_llvmo__DIType_O, sizeof(llvmo::DIType_O), 0, IS_POLYMORPHIC, "llvmo::DIType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DICompositeType_O/1123
+// StampWtag = llvmo::DICompositeType_O/1115
 { class_kind, STAMPWTAG_llvmo__DICompositeType_O, sizeof(llvmo::DICompositeType_O), 0, IS_POLYMORPHIC, "llvmo::DICompositeType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompositeType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompositeType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DIDerivedType_O/1127
+// StampWtag = llvmo::DIDerivedType_O/1119
 { class_kind, STAMPWTAG_llvmo__DIDerivedType_O, sizeof(llvmo::DIDerivedType_O), 0, IS_POLYMORPHIC, "llvmo::DIDerivedType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIDerivedType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIDerivedType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DIBasicType_O/1131
+// StampWtag = llvmo::DIBasicType_O/1123
 { class_kind, STAMPWTAG_llvmo__DIBasicType_O, sizeof(llvmo::DIBasicType_O), 0, IS_POLYMORPHIC, "llvmo::DIBasicType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBasicType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBasicType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DISubroutineType_O/1135
+// StampWtag = llvmo::DISubroutineType_O/1127
 { class_kind, STAMPWTAG_llvmo__DISubroutineType_O, sizeof(llvmo::DISubroutineType_O), 0, IS_POLYMORPHIC, "llvmo::DISubroutineType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubroutineType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubroutineType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DILocalScope_O/1139
+// StampWtag = llvmo::DILocalScope_O/1131
 { class_kind, STAMPWTAG_llvmo__DILocalScope_O, sizeof(llvmo::DILocalScope_O), 0, IS_POLYMORPHIC, "llvmo::DILocalScope_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalScope_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalScope_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DISubprogram_O/1143
+// StampWtag = llvmo::DISubprogram_O/1135
 { class_kind, STAMPWTAG_llvmo__DISubprogram_O, sizeof(llvmo::DISubprogram_O), 0, IS_POLYMORPHIC, "llvmo::DISubprogram_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubprogram_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubprogram_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DILexicalBlockBase_O/1147
+// StampWtag = llvmo::DILexicalBlockBase_O/1139
 { class_kind, STAMPWTAG_llvmo__DILexicalBlockBase_O, sizeof(llvmo::DILexicalBlockBase_O), 0, IS_POLYMORPHIC, "llvmo::DILexicalBlockBase_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlockBase_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlockBase_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DILexicalBlock_O/1151
+// StampWtag = llvmo::DILexicalBlock_O/1143
 { class_kind, STAMPWTAG_llvmo__DILexicalBlock_O, sizeof(llvmo::DILexicalBlock_O), 0, IS_POLYMORPHIC, "llvmo::DILexicalBlock_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlock_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlock_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DICompileUnit_O/1155
+// StampWtag = llvmo::DICompileUnit_O/1147
 { class_kind, STAMPWTAG_llvmo__DICompileUnit_O, sizeof(llvmo::DICompileUnit_O), 0, IS_POLYMORPHIC, "llvmo::DICompileUnit_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompileUnit_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompileUnit_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DIExpression_O/1159
+// StampWtag = llvmo::DIExpression_O/1151
 { class_kind, STAMPWTAG_llvmo__DIExpression_O, sizeof(llvmo::DIExpression_O), 0, IS_POLYMORPHIC, "llvmo::DIExpression_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIExpression_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIExpression_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DILocation_O/1163
+// StampWtag = llvmo::DILocation_O/1155
 { class_kind, STAMPWTAG_llvmo__DILocation_O, sizeof(llvmo::DILocation_O), 0, IS_POLYMORPHIC, "llvmo::DILocation_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocation_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocation_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ValueAsMetadata_O/1167
+// StampWtag = llvmo::ValueAsMetadata_O/1159
 { class_kind, STAMPWTAG_llvmo__ValueAsMetadata_O, sizeof(llvmo::ValueAsMetadata_O), 0, IS_POLYMORPHIC, "llvmo::ValueAsMetadata_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ValueAsMetadata_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ValueAsMetadata_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::MDString_O/1171
+// StampWtag = llvmo::MDString_O/1163
 { class_kind, STAMPWTAG_llvmo__MDString_O, sizeof(llvmo::MDString_O), 0, IS_POLYMORPHIC, "llvmo::MDString_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDString_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDString_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::Test_O/1175
+// StampWtag = core::Test_O/1167
 { class_kind, STAMPWTAG_core__Test_O, sizeof(core::Test_O), 0, IS_POLYMORPHIC, "core::Test_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Test_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Test" :NAME "Test"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::Test_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Value_O/1179
+// StampWtag = llvmo::Value_O/1171
 { class_kind, STAMPWTAG_llvmo__Value_O, sizeof(llvmo::Value_O), 0, IS_POLYMORPHIC, "llvmo::Value_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Value_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Value_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Argument_O/1183
+// StampWtag = llvmo::Argument_O/1175
 { class_kind, STAMPWTAG_llvmo__Argument_O, sizeof(llvmo::Argument_O), 0, IS_POLYMORPHIC, "llvmo::Argument_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Argument_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Argument_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::BasicBlock_O/1187
+// StampWtag = llvmo::BasicBlock_O/1179
 { class_kind, STAMPWTAG_llvmo__BasicBlock_O, sizeof(llvmo::BasicBlock_O), 0, IS_POLYMORPHIC, "llvmo::BasicBlock_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BasicBlock_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BasicBlock_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::MetadataAsValue_O/1191
+// StampWtag = llvmo::MetadataAsValue_O/1183
 { class_kind, STAMPWTAG_llvmo__MetadataAsValue_O, sizeof(llvmo::MetadataAsValue_O), 0, IS_POLYMORPHIC, "llvmo::MetadataAsValue_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::User_O/1195
+// StampWtag = llvmo::User_O/1187
 { class_kind, STAMPWTAG_llvmo__User_O, sizeof(llvmo::User_O), 0, IS_POLYMORPHIC, "llvmo::User_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::User_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::User_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Instruction_O/1199
+// StampWtag = llvmo::Instruction_O/1191
 { class_kind, STAMPWTAG_llvmo__Instruction_O, sizeof(llvmo::Instruction_O), 0, IS_POLYMORPHIC, "llvmo::Instruction_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Instruction_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Instruction_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::UnaryInstruction_O/1203
+// StampWtag = llvmo::UnaryInstruction_O/1195
 { class_kind, STAMPWTAG_llvmo__UnaryInstruction_O, sizeof(llvmo::UnaryInstruction_O), 0, IS_POLYMORPHIC, "llvmo::UnaryInstruction_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnaryInstruction_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnaryInstruction_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::VAArgInst_O/1207
+// StampWtag = llvmo::VAArgInst_O/1199
 { class_kind, STAMPWTAG_llvmo__VAArgInst_O, sizeof(llvmo::VAArgInst_O), 0, IS_POLYMORPHIC, "llvmo::VAArgInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VAArgInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VAArgInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::LoadInst_O/1211
+// StampWtag = llvmo::LoadInst_O/1203
 { class_kind, STAMPWTAG_llvmo__LoadInst_O, sizeof(llvmo::LoadInst_O), 0, IS_POLYMORPHIC, "llvmo::LoadInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LoadInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LoadInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::AllocaInst_O/1215
+// StampWtag = llvmo::AllocaInst_O/1207
 { class_kind, STAMPWTAG_llvmo__AllocaInst_O, sizeof(llvmo::AllocaInst_O), 0, IS_POLYMORPHIC, "llvmo::AllocaInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AllocaInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AllocaInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::SwitchInst_O/1219
+// StampWtag = llvmo::SwitchInst_O/1211
 { class_kind, STAMPWTAG_llvmo__SwitchInst_O, sizeof(llvmo::SwitchInst_O), 0, IS_POLYMORPHIC, "llvmo::SwitchInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SwitchInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SwitchInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::AtomicRMWInst_O/1223
+// StampWtag = llvmo::AtomicRMWInst_O/1215
 { class_kind, STAMPWTAG_llvmo__AtomicRMWInst_O, sizeof(llvmo::AtomicRMWInst_O), 0, IS_POLYMORPHIC, "llvmo::AtomicRMWInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicRMWInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicRMWInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::LandingPadInst_O/1227
+// StampWtag = llvmo::LandingPadInst_O/1219
 { class_kind, STAMPWTAG_llvmo__LandingPadInst_O, sizeof(llvmo::LandingPadInst_O), 0, IS_POLYMORPHIC, "llvmo::LandingPadInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LandingPadInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LandingPadInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::StoreInst_O/1231
+// StampWtag = llvmo::StoreInst_O/1223
 { class_kind, STAMPWTAG_llvmo__StoreInst_O, sizeof(llvmo::StoreInst_O), 0, IS_POLYMORPHIC, "llvmo::StoreInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StoreInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StoreInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::UnreachableInst_O/1235
+// StampWtag = llvmo::UnreachableInst_O/1227
 { class_kind, STAMPWTAG_llvmo__UnreachableInst_O, sizeof(llvmo::UnreachableInst_O), 0, IS_POLYMORPHIC, "llvmo::UnreachableInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnreachableInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnreachableInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ReturnInst_O/1239
+// StampWtag = llvmo::ReturnInst_O/1231
 { class_kind, STAMPWTAG_llvmo__ReturnInst_O, sizeof(llvmo::ReturnInst_O), 0, IS_POLYMORPHIC, "llvmo::ReturnInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ReturnInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ReturnInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ResumeInst_O/1243
+// StampWtag = llvmo::ResumeInst_O/1235
 { class_kind, STAMPWTAG_llvmo__ResumeInst_O, sizeof(llvmo::ResumeInst_O), 0, IS_POLYMORPHIC, "llvmo::ResumeInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ResumeInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ResumeInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::AtomicCmpXchgInst_O/1247
+// StampWtag = llvmo::AtomicCmpXchgInst_O/1239
 { class_kind, STAMPWTAG_llvmo__AtomicCmpXchgInst_O, sizeof(llvmo::AtomicCmpXchgInst_O), 0, IS_POLYMORPHIC, "llvmo::AtomicCmpXchgInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicCmpXchgInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicCmpXchgInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::FenceInst_O/1251
+// StampWtag = llvmo::FenceInst_O/1243
 { class_kind, STAMPWTAG_llvmo__FenceInst_O, sizeof(llvmo::FenceInst_O), 0, IS_POLYMORPHIC, "llvmo::FenceInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FenceInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FenceInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::CallBase_O/1255
+// StampWtag = llvmo::CallBase_O/1247
 { class_kind, STAMPWTAG_llvmo__CallBase_O, sizeof(llvmo::CallBase_O), 0, IS_POLYMORPHIC, "llvmo::CallBase_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallBase_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallBase_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::CallInst_O/1259
+// StampWtag = llvmo::CallInst_O/1251
 { class_kind, STAMPWTAG_llvmo__CallInst_O, sizeof(llvmo::CallInst_O), 0, IS_POLYMORPHIC, "llvmo::CallInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::InvokeInst_O/1263
+// StampWtag = llvmo::InvokeInst_O/1255
 { class_kind, STAMPWTAG_llvmo__InvokeInst_O, sizeof(llvmo::InvokeInst_O), 0, IS_POLYMORPHIC, "llvmo::InvokeInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::InvokeInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::InvokeInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::PHINode_O/1267
+// StampWtag = llvmo::PHINode_O/1259
 { class_kind, STAMPWTAG_llvmo__PHINode_O, sizeof(llvmo::PHINode_O), 0, IS_POLYMORPHIC, "llvmo::PHINode_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PHINode_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PHINode_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::IndirectBrInst_O/1271
+// StampWtag = llvmo::IndirectBrInst_O/1263
 { class_kind, STAMPWTAG_llvmo__IndirectBrInst_O, sizeof(llvmo::IndirectBrInst_O), 0, IS_POLYMORPHIC, "llvmo::IndirectBrInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IndirectBrInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IndirectBrInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::BranchInst_O/1275
+// StampWtag = llvmo::BranchInst_O/1267
 { class_kind, STAMPWTAG_llvmo__BranchInst_O, sizeof(llvmo::BranchInst_O), 0, IS_POLYMORPHIC, "llvmo::BranchInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BranchInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BranchInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Constant_O/1279
+// StampWtag = llvmo::Constant_O/1271
 { class_kind, STAMPWTAG_llvmo__Constant_O, sizeof(llvmo::Constant_O), 0, IS_POLYMORPHIC, "llvmo::Constant_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Constant_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Constant_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::GlobalValue_O/1283
+// StampWtag = llvmo::GlobalValue_O/1275
 { class_kind, STAMPWTAG_llvmo__GlobalValue_O, sizeof(llvmo::GlobalValue_O), 0, IS_POLYMORPHIC, "llvmo::GlobalValue_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10913,7 +10873,7 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_PtrIsOwned" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_PtrIsOwned), 0, "_PtrIsOwned" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Function_O/1287
+// StampWtag = llvmo::Function_O/1279
 { class_kind, STAMPWTAG_llvmo__Function_O, sizeof(llvmo::Function_O), 0, IS_POLYMORPHIC, "llvmo::Function_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Function_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10923,7 +10883,7 @@ public:
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Function_O),_PtrIsOwned), 0, "_PtrIsOwned" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_RunTimeValues" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::LoadTimeValues_O>" :SPECIALIZER "class core::LoadTimeValues_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LoadTimeValues_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Function_O),_RunTimeValues), 0, "_RunTimeValues" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = llvmo::GlobalVariable_O/1291
+// StampWtag = llvmo::GlobalVariable_O/1283
 { class_kind, STAMPWTAG_llvmo__GlobalVariable_O, sizeof(llvmo::GlobalVariable_O), 0, IS_POLYMORPHIC, "llvmo::GlobalVariable_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10931,121 +10891,121 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_PtrIsOwned" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),_PtrIsOwned), 0, "_PtrIsOwned" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::BlockAddress_O/1295
+// StampWtag = llvmo::BlockAddress_O/1287
 { class_kind, STAMPWTAG_llvmo__BlockAddress_O, sizeof(llvmo::BlockAddress_O), 0, IS_POLYMORPHIC, "llvmo::BlockAddress_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BlockAddress_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BlockAddress_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ConstantDataSequential_O/1299
+// StampWtag = llvmo::ConstantDataSequential_O/1291
 { class_kind, STAMPWTAG_llvmo__ConstantDataSequential_O, sizeof(llvmo::ConstantDataSequential_O), 0, IS_POLYMORPHIC, "llvmo::ConstantDataSequential_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataSequential_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataSequential_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ConstantDataArray_O/1303
+// StampWtag = llvmo::ConstantDataArray_O/1295
 { class_kind, STAMPWTAG_llvmo__ConstantDataArray_O, sizeof(llvmo::ConstantDataArray_O), 0, IS_POLYMORPHIC, "llvmo::ConstantDataArray_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataArray_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataArray_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ConstantStruct_O/1307
+// StampWtag = llvmo::ConstantStruct_O/1299
 { class_kind, STAMPWTAG_llvmo__ConstantStruct_O, sizeof(llvmo::ConstantStruct_O), 0, IS_POLYMORPHIC, "llvmo::ConstantStruct_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantStruct_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantStruct_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ConstantInt_O/1311
+// StampWtag = llvmo::ConstantInt_O/1303
 { class_kind, STAMPWTAG_llvmo__ConstantInt_O, sizeof(llvmo::ConstantInt_O), 0, IS_POLYMORPHIC, "llvmo::ConstantInt_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantInt_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantInt_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ConstantFP_O/1315
+// StampWtag = llvmo::ConstantFP_O/1307
 { class_kind, STAMPWTAG_llvmo__ConstantFP_O, sizeof(llvmo::ConstantFP_O), 0, IS_POLYMORPHIC, "llvmo::ConstantFP_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantFP_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantFP_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ConstantExpr_O/1319
+// StampWtag = llvmo::ConstantExpr_O/1311
 { class_kind, STAMPWTAG_llvmo__ConstantExpr_O, sizeof(llvmo::ConstantExpr_O), 0, IS_POLYMORPHIC, "llvmo::ConstantExpr_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantExpr_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantExpr_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ConstantPointerNull_O/1323
+// StampWtag = llvmo::ConstantPointerNull_O/1315
 { class_kind, STAMPWTAG_llvmo__ConstantPointerNull_O, sizeof(llvmo::ConstantPointerNull_O), 0, IS_POLYMORPHIC, "llvmo::ConstantPointerNull_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantPointerNull_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantPointerNull_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::UndefValue_O/1327
+// StampWtag = llvmo::UndefValue_O/1319
 { class_kind, STAMPWTAG_llvmo__UndefValue_O, sizeof(llvmo::UndefValue_O), 0, IS_POLYMORPHIC, "llvmo::UndefValue_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UndefValue_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UndefValue_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ConstantArray_O/1331
+// StampWtag = llvmo::ConstantArray_O/1323
 { class_kind, STAMPWTAG_llvmo__ConstantArray_O, sizeof(llvmo::ConstantArray_O), 0, IS_POLYMORPHIC, "llvmo::ConstantArray_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantArray_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantArray_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::TargetMachine_O/1335
+// StampWtag = llvmo::TargetMachine_O/1327
 { class_kind, STAMPWTAG_llvmo__TargetMachine_O, sizeof(llvmo::TargetMachine_O), 0, IS_POLYMORPHIC, "llvmo::TargetMachine_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetMachine_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::TargetMachine" :NAME "TargetMachine"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetMachine_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::LLVMTargetMachine_O/1339
+// StampWtag = llvmo::LLVMTargetMachine_O/1331
 { class_kind, STAMPWTAG_llvmo__LLVMTargetMachine_O, sizeof(llvmo::LLVMTargetMachine_O), 0, IS_POLYMORPHIC, "llvmo::LLVMTargetMachine_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMTargetMachine_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::TargetMachine" :NAME "TargetMachine"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMTargetMachine_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::ThreadSafeContext_O/1343
+// StampWtag = llvmo::ThreadSafeContext_O/1335
 { class_kind, STAMPWTAG_llvmo__ThreadSafeContext_O, sizeof(llvmo::ThreadSafeContext_O), 0, IS_POLYMORPHIC, "llvmo::ThreadSafeContext_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ThreadSafeContext_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::orc::ThreadSafeContext" :NAME "ThreadSafeContext"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ThreadSafeContext_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::NamedMDNode_O/1347
+// StampWtag = llvmo::NamedMDNode_O/1339
 { class_kind, STAMPWTAG_llvmo__NamedMDNode_O, sizeof(llvmo::NamedMDNode_O), 0, IS_POLYMORPHIC, "llvmo::NamedMDNode_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::NamedMDNode_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::NamedMDNode" :NAME "NamedMDNode"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::NamedMDNode_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Triple_O/1351
+// StampWtag = llvmo::Triple_O/1343
 { class_kind, STAMPWTAG_llvmo__Triple_O, sizeof(llvmo::Triple_O), 0, IS_POLYMORPHIC, "llvmo::Triple_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Triple_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Triple" :NAME "Triple"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Triple_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::DWARFContext_O/1355
+// StampWtag = llvmo::DWARFContext_O/1347
 { class_kind, STAMPWTAG_llvmo__DWARFContext_O, sizeof(llvmo::DWARFContext_O), 0, IS_POLYMORPHIC, "llvmo::DWARFContext_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DWARFContext_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DWARFContext" :NAME "DWARFContext"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DWARFContext_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::TargetOptions_O/1359
+// StampWtag = llvmo::TargetOptions_O/1351
 { class_kind, STAMPWTAG_llvmo__TargetOptions_O, sizeof(llvmo::TargetOptions_O), 0, IS_POLYMORPHIC, "llvmo::TargetOptions_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetOptions_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::TargetOptions" :NAME "TargetOptions"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetOptions_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::LLVMContext_O/1363
+// StampWtag = llvmo::LLVMContext_O/1355
 { class_kind, STAMPWTAG_llvmo__LLVMContext_O, sizeof(llvmo::LLVMContext_O), 0, IS_POLYMORPHIC, "llvmo::LLVMContext_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMContext_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::LLVMContext" :NAME "LLVMContext"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMContext_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = llvmo::PassManagerBuilder_O/1367
+// StampWtag = llvmo::PassManagerBuilder_O/1359
 { class_kind, STAMPWTAG_llvmo__PassManagerBuilder_O, sizeof(llvmo::PassManagerBuilder_O), 0, IS_POLYMORPHIC, "llvmo::PassManagerBuilder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBuilder_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::PassManagerBuilder" :NAME "PassManagerBuilder"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBuilder_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Module_O/1371
+// StampWtag = llvmo::Module_O/1363
 { class_kind, STAMPWTAG_llvmo__Module_O, sizeof(llvmo::Module_O), 0, IS_POLYMORPHIC, "llvmo::Module_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11055,19 +11015,19 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_UniqueGlobalVariableStrings" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEqual_O>" :SPECIALIZER "class core::HashTableEqual_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_UniqueGlobalVariableStrings), 0, "_UniqueGlobalVariableStrings" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = llvmo::Target_O/1375
+// StampWtag = llvmo::Target_O/1367
 { class_kind, STAMPWTAG_llvmo__Target_O, sizeof(llvmo::Target_O), 0, IS_POLYMORPHIC, "llvmo::Target_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Target_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Target" :NAME "Target"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Target_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = llvmo::Linker_O/1379
+// StampWtag = llvmo::Linker_O/1371
 { class_kind, STAMPWTAG_llvmo__Linker_O, sizeof(llvmo::Linker_O), 0, IS_POLYMORPHIC, "llvmo::Linker_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Linker_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Linker" :NAME "Linker"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Linker_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::Rack_O/1383
+// StampWtag = core::Rack_O/1375
 { class_kind, STAMPWTAG_core__Rack_O, sizeof(core::Rack_O), 0, IS_POLYMORPHIC, "core::Rack_O" },
 //      field: "_ShiftedStamp" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Rack_O),_ShiftedStamp), 0, "_ShiftedStamp" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -11082,14 +11042,14 @@ public:
 // atomic-smart-ptr-p -> T
 // one -> #<ATOMIC-SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))>
 {    variable_field, ATOMIC_SMART_PTR_OFFSET, sizeof(std::atomic<gctools::smart_ptr<core::T_O>>), 0, 0, "only" },
-// StampWtag = core::SmallMultimap_O/1387
+// StampWtag = core::SmallMultimap_O/1379
 { class_kind, STAMPWTAG_core__SmallMultimap_O, sizeof(core::SmallMultimap_O), 0, IS_POLYMORPHIC, "core::SmallMultimap_O" },
 //      field: "map" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::SmallMultimap<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>,core::SymbolComparer>" :NAME "SmallMultimap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::SymbolComparer" :NAME "SymbolComparer") :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>" :SPECIALIZER "class gctools::GCVector_moveable<struct std::pair<class gctools::smart_ptr<core::Symbol_O>, class gctools::smart_ptr<core::T_O> > >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SmallMultimap_O),map._Contents), 0, "map._Contents" }, // atomic: NIL public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
-// StampWtag = core::Sigset_O/1391
+// StampWtag = core::Sigset_O/1383
 { class_kind, STAMPWTAG_core__Sigset_O, sizeof(core::Sigset_O), 0, IS_POLYMORPHIC, "core::Sigset_O" },
-// StampWtag = core::DebuggerFrame_O/1395
+// StampWtag = core::DebuggerFrame_O/1387
 { class_kind, STAMPWTAG_core__DebuggerFrame_O, sizeof(core::DebuggerFrame_O), 0, IS_POLYMORPHIC, "core::DebuggerFrame_O" },
 //      field: "fname" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),fname), 0, "fname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11107,21 +11067,21 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),up), 0, "up" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "down" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),down), 0, "down" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::Environment_O/1399
+// StampWtag = core::Environment_O/1391
 { class_kind, STAMPWTAG_core__Environment_O, sizeof(core::Environment_O), 0, IS_POLYMORPHIC, "core::Environment_O" },
-// StampWtag = core::GlueEnvironment_O/1403
+// StampWtag = core::GlueEnvironment_O/1395
 { class_kind, STAMPWTAG_core__GlueEnvironment_O, sizeof(core::GlueEnvironment_O), 0, IS_POLYMORPHIC, "core::GlueEnvironment_O" },
 //      field: "_Map" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlueEnvironment_O),_Map), 0, "_Map" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Args" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlueEnvironment_O),_Args), 0, "_Args" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::LexicalEnvironment_O/1407
+// StampWtag = core::LexicalEnvironment_O/1399
 { class_kind, STAMPWTAG_core__LexicalEnvironment_O, sizeof(core::LexicalEnvironment_O), 0, IS_POLYMORPHIC, "core::LexicalEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LexicalEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Metadata" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LexicalEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::RuntimeVisibleEnvironment_O/1411
+// StampWtag = core::RuntimeVisibleEnvironment_O/1403
 { class_kind, STAMPWTAG_core__RuntimeVisibleEnvironment_O, sizeof(core::RuntimeVisibleEnvironment_O), 0, IS_POLYMORPHIC, "core::RuntimeVisibleEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11131,7 +11091,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_RuntimeEnvironment), 0, "_RuntimeEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Invisible" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_Invisible), 0, "_Invisible" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = core::FunctionValueEnvironment_O/1415
+// StampWtag = core::FunctionValueEnvironment_O/1407
 { class_kind, STAMPWTAG_core__FunctionValueEnvironment_O, sizeof(core::FunctionValueEnvironment_O), 0, IS_POLYMORPHIC, "core::FunctionValueEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11145,7 +11105,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_FunctionIndices), 0, "_FunctionIndices" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_FunctionFrame" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionFrame_O>" :SPECIALIZER "class core::FunctionFrame_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionFrame_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_FunctionFrame), 0, "_FunctionFrame" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::TagbodyEnvironment_O/1419
+// StampWtag = core::TagbodyEnvironment_O/1411
 { class_kind, STAMPWTAG_core__TagbodyEnvironment_O, sizeof(core::TagbodyEnvironment_O), 0, IS_POLYMORPHIC, "core::TagbodyEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11165,7 +11125,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::ActivationFrame_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_ActivationFrame), 0, "_ActivationFrame" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_LocalBlocks" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_LocalBlocks), 0, "_LocalBlocks" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::BlockEnvironment_O/1423
+// StampWtag = core::BlockEnvironment_O/1415
 { class_kind, STAMPWTAG_core__BlockEnvironment_O, sizeof(core::BlockEnvironment_O), 0, IS_POLYMORPHIC, "core::BlockEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BlockEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11183,7 +11143,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BlockEnvironment_O),_LocalReturnBlock), 0, "_LocalReturnBlock" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_LocalReturnValue" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BlockEnvironment_O),_LocalReturnValue), 0, "_LocalReturnValue" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::ValueEnvironment_O/1427
+// StampWtag = core::ValueEnvironment_O/1419
 { class_kind, STAMPWTAG_core__ValueEnvironment_O, sizeof(core::ValueEnvironment_O), 0, IS_POLYMORPHIC, "core::ValueEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11197,19 +11157,19 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_SymbolIndex_alist), 0, "_SymbolIndex_alist" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ActivationFrame" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::ValueFrame_O>" :SPECIALIZER "class core::ValueFrame_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::ValueFrame_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_ActivationFrame), 0, "_ActivationFrame" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::CompileTimeEnvironment_O/1431
+// StampWtag = core::CompileTimeEnvironment_O/1423
 { class_kind, STAMPWTAG_core__CompileTimeEnvironment_O, sizeof(core::CompileTimeEnvironment_O), 0, IS_POLYMORPHIC, "core::CompileTimeEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CompileTimeEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Metadata" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CompileTimeEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::CatchEnvironment_O/1435
+// StampWtag = core::CatchEnvironment_O/1427
 { class_kind, STAMPWTAG_core__CatchEnvironment_O, sizeof(core::CatchEnvironment_O), 0, IS_POLYMORPHIC, "core::CatchEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CatchEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Metadata" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CatchEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::MacroletEnvironment_O/1439
+// StampWtag = core::MacroletEnvironment_O/1431
 { class_kind, STAMPWTAG_core__MacroletEnvironment_O, sizeof(core::MacroletEnvironment_O), 0, IS_POLYMORPHIC, "core::MacroletEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::MacroletEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11217,7 +11177,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::MacroletEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Macros" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::MacroletEnvironment_O),_Macros), 0, "_Macros" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::SymbolMacroletEnvironment_O/1443
+// StampWtag = core::SymbolMacroletEnvironment_O/1435
 { class_kind, STAMPWTAG_core__SymbolMacroletEnvironment_O, sizeof(core::SymbolMacroletEnvironment_O), 0, IS_POLYMORPHIC, "core::SymbolMacroletEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11225,7 +11185,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Macros" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),_Macros), 0, "_Macros" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::FunctionContainerEnvironment_O/1447
+// StampWtag = core::FunctionContainerEnvironment_O/1439
 { class_kind, STAMPWTAG_core__FunctionContainerEnvironment_O, sizeof(core::FunctionContainerEnvironment_O), 0, IS_POLYMORPHIC, "core::FunctionContainerEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11235,7 +11195,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),_Closure), 0, "_Closure" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Function" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),_Function), 0, "_Function" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::UnwindProtectEnvironment_O/1451
+// StampWtag = core::UnwindProtectEnvironment_O/1443
 { class_kind, STAMPWTAG_core__UnwindProtectEnvironment_O, sizeof(core::UnwindProtectEnvironment_O), 0, IS_POLYMORPHIC, "core::UnwindProtectEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::UnwindProtectEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11243,11 +11203,11 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::UnwindProtectEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_CleanupForm" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::UnwindProtectEnvironment_O),_CleanupForm), 0, "_CleanupForm" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::ActivationFrame_O/1455
+// StampWtag = core::ActivationFrame_O/1447
 { class_kind, STAMPWTAG_core__ActivationFrame_O, sizeof(core::ActivationFrame_O), 0, IS_POLYMORPHIC, "core::ActivationFrame_O" },
 //      field: "_Parent" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ActivationFrame_O),_Parent), 0, "_Parent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::ValueFrame_O/1459
+// StampWtag = core::ValueFrame_O/1451
 { class_kind, STAMPWTAG_core__ValueFrame_O, sizeof(core::ValueFrame_O), 0, IS_POLYMORPHIC, "core::ValueFrame_O" },
 //      field: "_Parent" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Parent), 0, "_Parent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11260,7 +11220,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// StampWtag = core::FunctionFrame_O/1463
+// StampWtag = core::FunctionFrame_O/1455
 { class_kind, STAMPWTAG_core__FunctionFrame_O, sizeof(core::FunctionFrame_O), 0, IS_POLYMORPHIC, "core::FunctionFrame_O" },
 //      field: "_Parent" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Parent), 0, "_Parent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11273,37 +11233,37 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// StampWtag = core::RandomState_O/1467
+// StampWtag = core::RandomState_O/1459
 { class_kind, STAMPWTAG_core__RandomState_O, sizeof(core::RandomState_O), 0, IS_POLYMORPHIC, "core::RandomState_O" },
-// StampWtag = core::EntryPointBase_O/1471
+// StampWtag = core::EntryPointBase_O/1463
 { class_kind, STAMPWTAG_core__EntryPointBase_O, sizeof(core::EntryPointBase_O), 0, IS_POLYMORPHIC, "core::EntryPointBase_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::EntryPointBase_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::GlobalEntryPointGenerator_O/1475
+// StampWtag = core::GlobalEntryPointGenerator_O/1467
 { class_kind, STAMPWTAG_core__GlobalEntryPointGenerator_O, sizeof(core::GlobalEntryPointGenerator_O), 0, IS_POLYMORPHIC, "core::GlobalEntryPointGenerator_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlobalEntryPointGenerator_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_entry_point_indices" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlobalEntryPointGenerator_O),_entry_point_indices), 0, "_entry_point_indices" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::LocalEntryPointGenerator_O/1479
+// StampWtag = core::LocalEntryPointGenerator_O/1471
 { class_kind, STAMPWTAG_core__LocalEntryPointGenerator_O, sizeof(core::LocalEntryPointGenerator_O), 0, IS_POLYMORPHIC, "core::LocalEntryPointGenerator_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPointGenerator_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_entry_point_indices" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPointGenerator_O),_entry_point_indices), 0, "_entry_point_indices" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::CodeEntryPoint_O/1483
+// StampWtag = core::CodeEntryPoint_O/1475
 { class_kind, STAMPWTAG_core__CodeEntryPoint_O, sizeof(core::CodeEntryPoint_O), 0, IS_POLYMORPHIC, "core::CodeEntryPoint_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CodeEntryPoint_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Code" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<llvmo::CodeBase_O>" :SPECIALIZER "class llvmo::CodeBase_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::CodeBase_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CodeEntryPoint_O),_Code), 0, "_Code" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::GlobalEntryPoint_O/1487
+// StampWtag = core::GlobalEntryPoint_O/1479
 { class_kind, STAMPWTAG_core__GlobalEntryPoint_O, sizeof(core::GlobalEntryPoint_O), 0, IS_POLYMORPHIC, "core::GlobalEntryPoint_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlobalEntryPoint_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Code" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<llvmo::CodeBase_O>" :SPECIALIZER "class llvmo::CodeBase_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::CodeBase_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlobalEntryPoint_O),_Code), 0, "_Code" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::LocalEntryPoint_O/1491
+// StampWtag = core::LocalEntryPoint_O/1483
 { class_kind, STAMPWTAG_core__LocalEntryPoint_O, sizeof(core::LocalEntryPoint_O), 0, IS_POLYMORPHIC, "core::LocalEntryPoint_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPoint_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11311,7 +11271,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::CodeBase_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPoint_O),_Code), 0, "_Code" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPoint_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = core::DebuggerLocal_O/1495
+// StampWtag = core::DebuggerLocal_O/1487
 { class_kind, STAMPWTAG_core__DebuggerLocal_O, sizeof(core::DebuggerLocal_O), 0, IS_POLYMORPHIC, "core::DebuggerLocal_O" },
 //      field: "fname" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerLocal_O),fname), 0, "fname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11321,9 +11281,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerLocal_O),declfile), 0, "declfile" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "declline" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerLocal_O),declline), 0, "declline" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::HashTableBase_O/1499
+// StampWtag = core::HashTableBase_O/1491
 { class_kind, STAMPWTAG_core__HashTableBase_O, sizeof(core::HashTableBase_O), 0, IS_POLYMORPHIC, "core::HashTableBase_O" },
-// StampWtag = core::WeakKeyHashTable_O/1503
+// StampWtag = core::WeakKeyHashTable_O/1495
 { class_kind, STAMPWTAG_core__WeakKeyHashTable_O, sizeof(core::WeakKeyHashTable_O), 0, IS_POLYMORPHIC, "core::WeakKeyHashTable_O" },
 //      field: "_HashTable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::WeakKeyHashTable" :NAME "WeakKeyHashTable")
 //      field: "._RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
@@ -11343,7 +11303,7 @@ public:
 //      field: "_HashTable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::WeakKeyHashTable" :NAME "WeakKeyHashTable")
 //      field: "._Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._Mutex), 0, "_HashTable._Mutex" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::HashTable_O/1507
+// StampWtag = core::HashTable_O/1499
 { class_kind, STAMPWTAG_core__HashTable_O, sizeof(core::HashTable_O), 0, IS_POLYMORPHIC, "core::HashTable_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11357,7 +11317,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::HashTableEqualp_O/1511
+// StampWtag = core::HashTableEqualp_O/1503
 { class_kind, STAMPWTAG_core__HashTableEqualp_O, sizeof(core::HashTableEqualp_O), 0, IS_POLYMORPHIC, "core::HashTableEqualp_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11371,7 +11331,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::HashTableEq_O/1515
+// StampWtag = core::HashTableEq_O/1507
 { class_kind, STAMPWTAG_core__HashTableEq_O, sizeof(core::HashTableEq_O), 0, IS_POLYMORPHIC, "core::HashTableEq_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11385,7 +11345,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::HashTableEql_O/1519
+// StampWtag = core::HashTableEql_O/1511
 { class_kind, STAMPWTAG_core__HashTableEql_O, sizeof(core::HashTableEql_O), 0, IS_POLYMORPHIC, "core::HashTableEql_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11399,7 +11359,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::HashTableEqual_O/1523
+// StampWtag = core::HashTableEqual_O/1515
 { class_kind, STAMPWTAG_core__HashTableEqual_O, sizeof(core::HashTableEqual_O), 0, IS_POLYMORPHIC, "core::HashTableEqual_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11413,7 +11373,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::HashTableCustom_O/1527
+// StampWtag = core::HashTableCustom_O/1519
 { class_kind, STAMPWTAG_core__HashTableCustom_O, sizeof(core::HashTableCustom_O), 0, IS_POLYMORPHIC, "core::HashTableCustom_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableCustom_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11431,7 +11391,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableCustom_O),comparator), 0, "comparator" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "hasher" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Function_O>" :SPECIALIZER "class core::Function_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableCustom_O),hasher), 0, "hasher" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::FunctionDescription_O/1531
+// StampWtag = core::FunctionDescription_O/1523
 { class_kind, STAMPWTAG_core__FunctionDescription_O, sizeof(core::FunctionDescription_O), 0, IS_POLYMORPHIC, "core::FunctionDescription_O" },
 //      field: "_functionName" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_functionName), 0, "_functionName" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11449,11 +11409,11 @@ public:
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),column), 0, "column" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "filepos" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),filepos), 0, "filepos" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = llvmo::InsertPoint_O/1535
+// StampWtag = llvmo::InsertPoint_O/1527
 { class_kind, STAMPWTAG_llvmo__InsertPoint_O, sizeof(llvmo::InsertPoint_O), 0, IS_POLYMORPHIC, "llvmo::InsertPoint_O" },
-// StampWtag = core::Scope_O/1539
+// StampWtag = core::Scope_O/1531
 { class_kind, STAMPWTAG_core__Scope_O, sizeof(core::Scope_O), 0, IS_POLYMORPHIC, "core::Scope_O" },
-// StampWtag = core::FileScope_O/1543
+// StampWtag = core::FileScope_O/1535
 { class_kind, STAMPWTAG_core__FileScope_O, sizeof(core::FileScope_O), 0, IS_POLYMORPHIC, "core::FileScope_O" },
 //      field: "_pathname" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Pathname_O>" :SPECIALIZER "class core::Pathname_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Pathname_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileScope_O),_pathname), 0, "_pathname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11463,9 +11423,9 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileScope_O),_PermanentFileName), 0, "_PermanentFileName" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_FileHandle" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileScope_O),_FileHandle), 0, "_FileHandle" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = core::Path_O/1547
+// StampWtag = core::Path_O/1539
 { class_kind, STAMPWTAG_core__Path_O, sizeof(core::Path_O), 0, IS_POLYMORPHIC, "core::Path_O" },
-// StampWtag = core::Pathname_O/1551
+// StampWtag = core::Pathname_O/1543
 { class_kind, STAMPWTAG_core__Pathname_O, sizeof(core::Pathname_O), 0, IS_POLYMORPHIC, "core::Pathname_O" },
 //      field: "_Host" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Host), 0, "_Host" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11479,7 +11439,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Type), 0, "_Type" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Version" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Version), 0, "_Version" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::LogicalPathname_O/1555
+// StampWtag = core::LogicalPathname_O/1547
 { class_kind, STAMPWTAG_core__LogicalPathname_O, sizeof(core::LogicalPathname_O), 0, IS_POLYMORPHIC, "core::LogicalPathname_O" },
 //      field: "_Host" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LogicalPathname_O),_Host), 0, "_Host" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11493,21 +11453,21 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LogicalPathname_O),_Type), 0, "_Type" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Version" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LogicalPathname_O),_Version), 0, "_Version" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::Number_O/1559
+// StampWtag = core::Number_O/1551
 { class_kind, STAMPWTAG_core__Number_O, sizeof(core::Number_O), 0, IS_POLYMORPHIC, "core::Number_O" },
-// StampWtag = core::Real_O/1563
+// StampWtag = core::Real_O/1555
 { class_kind, STAMPWTAG_core__Real_O, sizeof(core::Real_O), 0, IS_POLYMORPHIC, "core::Real_O" },
-// StampWtag = core::Rational_O/1567
+// StampWtag = core::Rational_O/1559
 { class_kind, STAMPWTAG_core__Rational_O, sizeof(core::Rational_O), 0, IS_POLYMORPHIC, "core::Rational_O" },
-// StampWtag = core::Ratio_O/1571
+// StampWtag = core::Ratio_O/1563
 { class_kind, STAMPWTAG_core__Ratio_O, sizeof(core::Ratio_O), 0, IS_POLYMORPHIC, "core::Ratio_O" },
 //      field: "_numerator" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Integer_O>" :SPECIALIZER "class core::Integer_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Integer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Ratio_O),_numerator), 0, "_numerator" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_denominator" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Integer_O>" :SPECIALIZER "class core::Integer_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Integer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Ratio_O),_denominator), 0, "_denominator" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::Integer_O/1575
+// StampWtag = core::Integer_O/1567
 { class_kind, STAMPWTAG_core__Integer_O, sizeof(core::Integer_O), 0, IS_POLYMORPHIC, "core::Integer_O" },
-// StampWtag = core::Bignum_O/1579
+// StampWtag = core::Bignum_O/1571
 { class_kind, STAMPWTAG_core__Bignum_O, sizeof(core::Bignum_O), 0, IS_POLYMORPHIC, "core::Bignum_O" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_limbs._Data), 0, "_limbs._Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_limbs._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_limbs._MaybeSignedLength), 0, NULL },
@@ -11518,29 +11478,29 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = core::Fixnum_dummy_O/1583
+// StampWtag = core::Fixnum_dummy_O/1575
 { class_kind, STAMPWTAG_core__Fixnum_dummy_O, sizeof(core::Fixnum_dummy_O), 0, IS_POLYMORPHIC, "core::Fixnum_dummy_O" },
-// StampWtag = core::Float_O/1587
+// StampWtag = core::Float_O/1579
 { class_kind, STAMPWTAG_core__Float_O, sizeof(core::Float_O), 0, IS_POLYMORPHIC, "core::Float_O" },
-// StampWtag = core::DoubleFloat_O/1591
+// StampWtag = core::DoubleFloat_O/1583
 { class_kind, STAMPWTAG_core__DoubleFloat_O, sizeof(core::DoubleFloat_O), 0, IS_POLYMORPHIC, "core::DoubleFloat_O" },
 //      field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
  {  fixed_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(core::DoubleFloat_O),_Value), 0, "_Value" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::SingleFloat_dummy_O/1595
+// StampWtag = core::SingleFloat_dummy_O/1587
 { class_kind, STAMPWTAG_core__SingleFloat_dummy_O, sizeof(core::SingleFloat_dummy_O), 0, IS_POLYMORPHIC, "core::SingleFloat_dummy_O" },
-// StampWtag = core::LongFloat_O/1599
+// StampWtag = core::LongFloat_O/1591
 { class_kind, STAMPWTAG_core__LongFloat_O, sizeof(core::LongFloat_O), 0, IS_POLYMORPHIC, "core::LongFloat_O" },
-// StampWtag = core::ShortFloat_O/1603
+// StampWtag = core::ShortFloat_O/1595
 { class_kind, STAMPWTAG_core__ShortFloat_O, sizeof(core::ShortFloat_O), 0, IS_POLYMORPHIC, "core::ShortFloat_O" },
 //      field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")
  {  fixed_field, ctype_float, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(core::ShortFloat_O),_Value), 0, "_Value" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::Complex_O/1607
+// StampWtag = core::Complex_O/1599
 { class_kind, STAMPWTAG_core__Complex_O, sizeof(core::Complex_O), 0, IS_POLYMORPHIC, "core::Complex_O" },
 //      field: "_real" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Real_O>" :SPECIALIZER "class core::Real_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Real_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Complex_O),_real), 0, "_real" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_imaginary" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Real_O>" :SPECIALIZER "class core::Real_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Real_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Complex_O),_imaginary), 0, "_imaginary" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::Stream_O/1611
+// StampWtag = core::Stream_O/1603
 { class_kind, STAMPWTAG_core__Stream_O, sizeof(core::Stream_O), 0, IS_POLYMORPHIC, "core::Stream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -11657,7 +11617,7 @@ public:
 //      field: "_InputCursor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::StreamCursor" :NAME "StreamCursor")
 //      field: "._PrevColumn" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = core::AnsiStream_O/1615
+// StampWtag = core::AnsiStream_O/1607
 { class_kind, STAMPWTAG_core__AnsiStream_O, sizeof(core::AnsiStream_O), 0, IS_POLYMORPHIC, "core::AnsiStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -11774,7 +11734,7 @@ public:
 //      field: "_InputCursor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::StreamCursor" :NAME "StreamCursor")
 //      field: "._PrevColumn" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = core::TwoWayStream_O/1619
+// StampWtag = core::TwoWayStream_O/1611
 { class_kind, STAMPWTAG_core__TwoWayStream_O, sizeof(core::TwoWayStream_O), 0, IS_POLYMORPHIC, "core::TwoWayStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -11895,7 +11855,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_In), 0, "_In" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Out" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Out), 0, "_Out" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::SynonymStream_O/1623
+// StampWtag = core::SynonymStream_O/1615
 { class_kind, STAMPWTAG_core__SynonymStream_O, sizeof(core::SynonymStream_O), 0, IS_POLYMORPHIC, "core::SynonymStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -12014,7 +11974,7 @@ public:
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_SynonymSymbol" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_SynonymSymbol), 0, "_SynonymSymbol" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::ConcatenatedStream_O/1627
+// StampWtag = core::ConcatenatedStream_O/1619
 { class_kind, STAMPWTAG_core__ConcatenatedStream_O, sizeof(core::ConcatenatedStream_O), 0, IS_POLYMORPHIC, "core::ConcatenatedStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -12133,7 +12093,7 @@ public:
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_List" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_List), 0, "_List" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::FileStream_O/1631
+// StampWtag = core::FileStream_O/1623
 { class_kind, STAMPWTAG_core__FileStream_O, sizeof(core::FileStream_O), 0, IS_POLYMORPHIC, "core::FileStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -12254,7 +12214,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_Filename), 0, "_Filename" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ElementType" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_ElementType), 0, "_ElementType" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::IOFileStream_O/1635
+// StampWtag = core::IOFileStream_O/1627
 { class_kind, STAMPWTAG_core__IOFileStream_O, sizeof(core::IOFileStream_O), 0, IS_POLYMORPHIC, "core::IOFileStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -12377,7 +12337,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_ElementType), 0, "_ElementType" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_FileDescriptor" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_FileDescriptor), 0, "_FileDescriptor" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::IOStreamStream_O/1639
+// StampWtag = core::IOStreamStream_O/1631
 { class_kind, STAMPWTAG_core__IOStreamStream_O, sizeof(core::IOStreamStream_O), 0, IS_POLYMORPHIC, "core::IOStreamStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -12500,7 +12460,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_ElementType), 0, "_ElementType" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_File" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_IO_FILE" :NAME "_IO_FILE"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_File), 0, "_File" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::BroadcastStream_O/1643
+// StampWtag = core::BroadcastStream_O/1635
 { class_kind, STAMPWTAG_core__BroadcastStream_O, sizeof(core::BroadcastStream_O), 0, IS_POLYMORPHIC, "core::BroadcastStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -12619,7 +12579,7 @@ public:
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_Streams" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Streams), 0, "_Streams" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::StringStream_O/1647
+// StampWtag = core::StringStream_O/1639
 { class_kind, STAMPWTAG_core__StringStream_O, sizeof(core::StringStream_O), 0, IS_POLYMORPHIC, "core::StringStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -12736,7 +12696,7 @@ public:
 //      field: "_InputCursor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::StreamCursor" :NAME "StreamCursor")
 //      field: "._PrevColumn" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = core::StringOutputStream_O/1651
+// StampWtag = core::StringOutputStream_O/1643
 { class_kind, STAMPWTAG_core__StringOutputStream_O, sizeof(core::StringOutputStream_O), 0, IS_POLYMORPHIC, "core::StringOutputStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -12855,7 +12815,7 @@ public:
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Array_O>" :SPECIALIZER "class core::Array_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Contents), 0, "_Contents" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::StringInputStream_O/1655
+// StampWtag = core::StringInputStream_O/1647
 { class_kind, STAMPWTAG_core__StringInputStream_O, sizeof(core::StringInputStream_O), 0, IS_POLYMORPHIC, "core::StringInputStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -12978,7 +12938,7 @@ public:
  {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputPosition), 0, "_InputPosition" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_InputLimit" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
  {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputLimit), 0, "_InputLimit" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = core::EchoStream_O/1659
+// StampWtag = core::EchoStream_O/1651
 { class_kind, STAMPWTAG_core__EchoStream_O, sizeof(core::EchoStream_O), 0, IS_POLYMORPHIC, "core::EchoStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long (gctools::smart_ptr<core::T_O>, unsigned char *, long)"))
@@ -13099,7 +13059,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_In), 0, "_In" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Out" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Out), 0, "_Out" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::Package_O/1663
+// StampWtag = core::Package_O/1655
 { class_kind, STAMPWTAG_core__Package_O, sizeof(core::Package_O), 0, IS_POLYMORPHIC, "core::Package_O" },
 //      field: "_InternalSymbols" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEqual_O>" :SPECIALIZER "class core::HashTableEqual_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Package_O),_InternalSymbols), 0, "_InternalSymbols" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13137,9 +13097,9 @@ public:
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::Package_O),userLockedP), 0, "userLockedP" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "zombieP" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::Package_O),zombieP), 0, "zombieP" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = core::FileStatus_O/1667
+// StampWtag = core::FileStatus_O/1659
 { class_kind, STAMPWTAG_core__FileStatus_O, sizeof(core::FileStatus_O), 0, IS_POLYMORPHIC, "core::FileStatus_O" },
-// StampWtag = core::SourcePosInfo_O/1671
+// StampWtag = core::SourcePosInfo_O/1663
 { class_kind, STAMPWTAG_core__SourcePosInfo_O, sizeof(core::SourcePosInfo_O), 0, IS_POLYMORPHIC, "core::SourcePosInfo_O" },
 //      field: "_FileId" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_FileId), 0, "_FileId" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -13153,21 +13113,21 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_FunctionScope), 0, "_FunctionScope" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_InlinedAt" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_InlinedAt), 0, "_InlinedAt" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::DirectoryEntry_O/1675
+// StampWtag = core::DirectoryEntry_O/1667
 { class_kind, STAMPWTAG_core__DirectoryEntry_O, sizeof(core::DirectoryEntry_O), 0, IS_POLYMORPHIC, "core::DirectoryEntry_O" },
 //      field: "_Entry" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "std::filesystem::directory_entry" :NAME "directory_entry"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryEntry_O),_Entry), 0, "_Entry" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::LightUserData_O/1679
+// StampWtag = core::LightUserData_O/1671
 { class_kind, STAMPWTAG_core__LightUserData_O, sizeof(core::LightUserData_O), 0, IS_POLYMORPHIC, "core::LightUserData_O" },
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::LightUserData_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = core::UserData_O/1683
+// StampWtag = core::UserData_O/1675
 { class_kind, STAMPWTAG_core__UserData_O, sizeof(core::UserData_O), 0, IS_POLYMORPHIC, "core::UserData_O" },
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::UserData_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Dtor" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "void (void *)"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::UserData_O),_Dtor), 0, "_Dtor" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// StampWtag = core::Record_O/1687
+// StampWtag = core::Record_O/1679
 { class_kind, STAMPWTAG_core__Record_O, sizeof(core::Record_O), 0, IS_POLYMORPHIC, "core::Record_O" },
 //      field: "_alist" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_alist), 0, "_alist" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13175,17 +13135,17 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_patching_callback), 0, "_patching_callback" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Seen" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_Seen), 0, "_Seen" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = clbind::ClassRegistry_O/1691
+// StampWtag = clbind::ClassRegistry_O/1683
 { class_kind, STAMPWTAG_clbind__ClassRegistry_O, sizeof(clbind::ClassRegistry_O), 0, IS_POLYMORPHIC, "clbind::ClassRegistry_O" },
 //      field: "m_classes" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEql_O>" :SPECIALIZER "class core::HashTableEql_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),m_classes), 0, "m_classes" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = core::Cons_O/1695
+// StampWtag = core::Cons_O/1687
 { class_kind, STAMPWTAG_core__Cons_O, sizeof(core::Cons_O), 0, 0, "core::Cons_O" },
 //      field: "_Car" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_Car), 0, "_Car" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Cdr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_Cdr), 0, "_Cdr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = core::Lisp_O/1699
+// StampWtag = core::Lisp_O/1691
 { class_kind, STAMPWTAG_core__Lisp_O, sizeof(core::Lisp_O), 0, IS_POLYMORPHIC, "core::Lisp_O" },
 //      field: "_Roots" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
 //      field: "._TrueObject" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -13427,16 +13387,16 @@ public:
  {  fixed_field, ATOMIC_POD_OFFSET_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_EnvironmentId), 0, "_EnvironmentId" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_LineNumber" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LineNumber), 0, "_LineNumber" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = clang::RecursiveASTVisitor<asttooling::AstVisitor_O>/1703
-// StampWtag = asttooling::AstVisitor_O/1707
+// StampWtag = clang::RecursiveASTVisitor<asttooling::AstVisitor_O>/1695
+// StampWtag = asttooling::AstVisitor_O/1699
 { class_kind, STAMPWTAG_asttooling__AstVisitor_O, sizeof(asttooling::AstVisitor_O), 0, IS_POLYMORPHIC, "asttooling::AstVisitor_O" },
 //      field: "_Target" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AstVisitor_O),_Target), 0, "_Target" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = clang::tooling::ToolAction/1711
-// StampWtag = clang::tooling::FrontendActionFactory/1715
-// StampWtag = clang::ast_matchers::MatchFinder::MatchCallback/1719
-// StampWtag = gctools::GCContainer/1723
-// StampWtag = gctools::GCArray_moveable<unsigned int>/1727
+// StampWtag = clang::tooling::ToolAction/1703
+// StampWtag = clang::tooling::FrontendActionFactory/1707
+// StampWtag = clang::ast_matchers::MatchFinder::MatchCallback/1711
+// StampWtag = gctools::GCContainer/1715
+// StampWtag = gctools::GCArray_moveable<unsigned int>/1719
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_int_, sizeof(gctools::GCArray_moveable<unsigned int>), 0, 0, "gctools::GCArray_moveable<unsigned int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_MaybeSignedLength), 0, NULL },
@@ -13447,7 +13407,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>/1731
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>/1723
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Cons_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Capacity), 0, NULL },
@@ -13458,7 +13418,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cons_O>), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<short>/1735
+// StampWtag = gctools::GCArray_moveable<short>/1727
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_short_, sizeof(gctools::GCArray_moveable<short>), 0, 0, "gctools::GCArray_moveable<short>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(short), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_MaybeSignedLength), 0, NULL },
@@ -13469,7 +13429,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short")>
 {    variable_field, ctype_short, sizeof(short), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>/1739
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>/1731
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Capacity), 0, NULL },
@@ -13480,7 +13440,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), 0, 0, "only" },
-// StampWtag = gctools::GCBitUnitArray_moveable<4,0>/1743
+// StampWtag = gctools::GCBitUnitArray_moveable<4,0>/1735
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_, sizeof(gctools::GCBitUnitArray_moveable<4,0>), 4, 0, "gctools::GCBitUnitArray_moveable<4,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,0>),_Length), 0, NULL },
@@ -13491,7 +13451,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<core::SymbolClassHolderPair>/1747
+// StampWtag = gctools::GCVector_moveable<core::SymbolClassHolderPair>/1739
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_, sizeof(gctools::GCVector_moveable<core::SymbolClassHolderPair>), 0, 0, "gctools::GCVector_moveable<core::SymbolClassHolderPair>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassHolderPair>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::SymbolClassHolderPair), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassHolderPair>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassHolderPair>),_Capacity), 0, NULL },
@@ -13509,7 +13469,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "theClassHolder" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::ClassHolder_O>" :SPECIALIZER "class core::ClassHolder_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::ClassHolder_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolClassHolderPair),theClassHolder), 0, "theClassHolder" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCArray_moveable<signed char>/1751
+// StampWtag = gctools::GCArray_moveable<signed char>/1743
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_signed_char_, sizeof(gctools::GCArray_moveable<signed char>), 0, 0, "gctools::GCArray_moveable<signed char>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(signed char), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_MaybeSignedLength), 0, NULL },
@@ -13520,7 +13480,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char")>
 {    variable_field, ctype_signed_char, sizeof(signed char), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>/1755
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>/1747
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Capacity), 0, NULL },
@@ -13531,7 +13491,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>/1759
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>/1751
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), 0, NULL },
@@ -13549,7 +13509,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCArray_moveable<unsigned char>/1763
+// StampWtag = gctools::GCArray_moveable<unsigned char>/1755
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_char_, sizeof(gctools::GCArray_moveable<unsigned char>), 0, 0, "gctools::GCArray_moveable<unsigned char>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned char), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_MaybeSignedLength), 0, NULL },
@@ -13560,7 +13520,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<core::KeyValuePair>/1767
+// StampWtag = gctools::GCVector_moveable<core::KeyValuePair>/1759
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_, sizeof(gctools::GCVector_moveable<core::KeyValuePair>), 0, 0, "gctools::GCVector_moveable<core::KeyValuePair>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeyValuePair>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::KeyValuePair), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeyValuePair>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeyValuePair>),_Capacity), 0, NULL },
@@ -13578,7 +13538,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::KeyValuePair),_Value), 0, "_Value" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>/1771
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>/1763
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Capacity), 0, NULL },
@@ -13589,7 +13549,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>/1775
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>/1767
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Capacity), 0, NULL },
@@ -13600,7 +13560,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<double>/1779
+// StampWtag = gctools::GCArray_moveable<double>/1771
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_double_, sizeof(gctools::GCArray_moveable<double>), 0, 0, "gctools::GCArray_moveable<double>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_MaybeSignedLength), 0, NULL },
@@ -13611,7 +13571,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<core::OptionalArgument>/1783
+// StampWtag = gctools::GCVector_moveable<core::OptionalArgument>/1775
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_, sizeof(gctools::GCVector_moveable<core::OptionalArgument>), 0, 0, "gctools::GCVector_moveable<core::OptionalArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::OptionalArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Capacity), 0, NULL },
@@ -13652,7 +13612,7 @@ public:
 //     field: "_Sensor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Argument" :NAME "Argument")
 //     field: "._ArgTargetFrameIndex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_Sensor._ArgTargetFrameIndex), 0, "_Sensor._ArgTargetFrameIndex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<core::KeywordArgument>/1787
+// StampWtag = gctools::GCVector_moveable<core::KeywordArgument>/1779
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_, sizeof(gctools::GCVector_moveable<core::KeywordArgument>), 0, 0, "gctools::GCVector_moveable<core::KeywordArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::KeywordArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_Capacity), 0, NULL },
@@ -13700,7 +13660,7 @@ public:
 //     field: "_Sensor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Argument" :NAME "Argument")
 //     field: "._ArgTargetFrameIndex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Sensor._ArgTargetFrameIndex), 0, "_Sensor._ArgTargetFrameIndex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<core::RequiredArgument>/1791
+// StampWtag = gctools::GCVector_moveable<core::RequiredArgument>/1783
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_, sizeof(gctools::GCVector_moveable<core::RequiredArgument>), 0, 0, "gctools::GCVector_moveable<core::RequiredArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::RequiredArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Capacity), 0, NULL },
@@ -13718,7 +13678,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_ArgTargetFrameIndex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::RequiredArgument),_ArgTargetFrameIndex), 0, "_ArgTargetFrameIndex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>/1795
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>/1787
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::FileScope_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>),_Capacity), 0, NULL },
@@ -13729,7 +13689,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FileScope_O>), 0, 0, "only" },
-// StampWtag = gctools::GCBitUnitArray_moveable<4,1>/1799
+// StampWtag = gctools::GCBitUnitArray_moveable<4,1>/1791
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_, sizeof(gctools::GCBitUnitArray_moveable<4,1>), 4, 0, "gctools::GCBitUnitArray_moveable<4,1>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), 0, NULL },
@@ -13740,7 +13700,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<core::SymbolStorage>/1803
+// StampWtag = gctools::GCVector_moveable<core::SymbolStorage>/1795
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_, sizeof(gctools::GCVector_moveable<core::SymbolStorage>), 0, 0, "gctools::GCVector_moveable<core::SymbolStorage>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::SymbolStorage), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Capacity), 0, NULL },
@@ -13779,7 +13739,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Shadow" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
     {    variable_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Shadow), 0, "_Shadow" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>/1807
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>/1799
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>),_Capacity), 0, NULL },
@@ -13790,7 +13750,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), 0, 0, "only" },
-// StampWtag = gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>/1811
+// StampWtag = gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>/1803
 { container_kind, STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>), 0, 0, "gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::atomic<gctools::smart_ptr<core::T_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>),_Length), 0, NULL },
@@ -13801,7 +13761,7 @@ public:
 // atomic-smart-ptr-p -> T
 // one -> #<ATOMIC-SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))>
 {    variable_field, ATOMIC_SMART_PTR_OFFSET, sizeof(std::atomic<gctools::smart_ptr<core::T_O>>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<clbind::detail::vertex>/1815
+// StampWtag = gctools::GCVector_moveable<clbind::detail::vertex>/1807
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_, sizeof(gctools::GCVector_moveable<clbind::detail::vertex>), 0, 0, "gctools::GCVector_moveable<clbind::detail::vertex>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::vertex>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(clbind::detail::vertex), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::vertex>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::vertex>),_Capacity), 0, NULL },
@@ -13821,7 +13781,7 @@ public:
 //     field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<clbind::detail::edge,gctools::GCContainerAllocator<gctools::GCVector_moveable<clbind::detail::edge>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::edge" :NAME "edge") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<clbind::detail::edge>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<clbind::detail::edge>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clbind::detail::edge" :NAME "edge") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //     field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<clbind::detail::edge>>" :SPECIALIZER "class gctools::GCVector_moveable<struct clbind::detail::edge>")
     {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<clbind::detail::edge>>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::detail::vertex),edges._Vector._Contents), 0, "edges._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// StampWtag = gctools::GCArray_moveable<unsigned long>/1819
+// StampWtag = gctools::GCArray_moveable<unsigned long>/1811
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_long_, sizeof(gctools::GCArray_moveable<unsigned long>), 0, 0, "gctools::GCArray_moveable<unsigned long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_MaybeSignedLength), 0, NULL },
@@ -13832,7 +13792,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCArraySignedLength_moveable<unsigned long>/1823
+// StampWtag = gctools::GCArraySignedLength_moveable<unsigned long>/1815
 { container_kind, STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_, sizeof(gctools::GCArraySignedLength_moveable<unsigned long>), 0, 0, "gctools::GCArraySignedLength_moveable<unsigned long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArraySignedLength_moveable<unsigned long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArraySignedLength_moveable<unsigned long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArraySignedLength_moveable<unsigned long>),_MaybeSignedLength), 0, NULL },
@@ -13843,7 +13803,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>/1827
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>/1819
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), 0, NULL },
@@ -13861,7 +13821,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCBitUnitArray_moveable<2,0>/1831
+// StampWtag = gctools::GCBitUnitArray_moveable<2,0>/1823
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_, sizeof(gctools::GCBitUnitArray_moveable<2,0>), 2, 0, "gctools::GCBitUnitArray_moveable<2,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Length), 0, NULL },
@@ -13872,7 +13832,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<int>/1835
+// StampWtag = gctools::GCArray_moveable<int>/1827
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_int_, sizeof(gctools::GCArray_moveable<int>), 0, 0, "gctools::GCArray_moveable<int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_MaybeSignedLength), 0, NULL },
@@ -13883,7 +13843,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, 0, "only" },
-// StampWtag = gctools::GCBitUnitArray_moveable<1,0>/1839
+// StampWtag = gctools::GCBitUnitArray_moveable<1,0>/1831
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_, sizeof(gctools::GCBitUnitArray_moveable<1,0>), 1, 0, "gctools::GCBitUnitArray_moveable<1,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Length), 0, NULL },
@@ -13894,7 +13854,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>/1843
+// StampWtag = gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>/1835
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>), 0, 0, "gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_MaybeSignedLength), 0, NULL },
@@ -13905,7 +13865,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<core::AuxArgument>/1847
+// StampWtag = gctools::GCVector_moveable<core::AuxArgument>/1839
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_, sizeof(gctools::GCVector_moveable<core::AuxArgument>), 0, 0, "gctools::GCVector_moveable<core::AuxArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::AuxArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Capacity), 0, NULL },
@@ -13930,7 +13890,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Expression" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_Expression), 0, "_Expression" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = gctools::GCBitUnitArray_moveable<2,1>/1851
+// StampWtag = gctools::GCBitUnitArray_moveable<2,1>/1843
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_, sizeof(gctools::GCBitUnitArray_moveable<2,1>), 2, 0, "gctools::GCBitUnitArray_moveable<2,1>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), 0, NULL },
@@ -13941,7 +13901,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<long>/1855
+// StampWtag = gctools::GCArray_moveable<long>/1847
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_long_, sizeof(gctools::GCArray_moveable<long>), 0, 0, "gctools::GCArray_moveable<long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_MaybeSignedLength), 0, NULL },
@@ -13952,7 +13912,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")>
 {    variable_field, ctype_long, sizeof(long), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<int>/1859
+// StampWtag = gctools::GCVector_moveable<int>/1851
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_int_, sizeof(gctools::GCVector_moveable<int>), 0, 0, "gctools::GCVector_moveable<int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Capacity), 0, NULL },
@@ -13963,7 +13923,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>/1863
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>/1855
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Capacity), 0, NULL },
@@ -13974,7 +13934,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<float>/1867
+// StampWtag = gctools::GCArray_moveable<float>/1859
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_float_, sizeof(gctools::GCArray_moveable<float>), 0, 0, "gctools::GCArray_moveable<float>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_MaybeSignedLength), 0, NULL },
@@ -13985,7 +13945,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<clbind::detail::edge>/1871
+// StampWtag = gctools::GCVector_moveable<clbind::detail::edge>/1863
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_, sizeof(gctools::GCVector_moveable<clbind::detail::edge>), 0, 0, "gctools::GCVector_moveable<clbind::detail::edge>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::edge>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(clbind::detail::edge), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::edge>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<clbind::detail::edge>),_Capacity), 0, NULL },
@@ -14003,7 +13963,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "cast" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "void *(void *)"))
     {    variable_field, RAW_POINTER_OFFSET, sizeof(NIL), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::detail::edge),cast), 0, "cast" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>/1875
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>/1867
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Creator_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_Capacity), 0, NULL },
@@ -14014,7 +13974,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Creator_O>" :SPECIALIZER "class core::Creator_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Creator_O>" :SPECIALIZER "class core::Creator_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), 0, 0, "only" },
-// StampWtag = gctools::GCVector_moveable<core::T_O *>/1879
+// StampWtag = gctools::GCVector_moveable<core::T_O *>/1871
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__T_O___, sizeof(gctools::GCVector_moveable<core::T_O *>), 0, 0, "gctools::GCVector_moveable<core::T_O *>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::T_O*), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), 0, NULL },
@@ -14025,7 +13985,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POINTER-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O")) :base #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O"))>
 {    variable_field, POINTER_OFFSET, sizeof(core::T_O*), 0, 0, "only" },
-// StampWtag = gctools::GCArray_moveable<unsigned short>/1883
+// StampWtag = gctools::GCArray_moveable<unsigned short>/1875
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_short_, sizeof(gctools::GCArray_moveable<unsigned short>), 0, 0, "gctools::GCArray_moveable<unsigned short>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned short), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_MaybeSignedLength), 0, NULL },
@@ -14036,9 +13996,9 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short")>
 {    variable_field, ctype_unsigned_short, sizeof(unsigned short), 0, 0, "only" },
-// StampWtag = clang::FrontendAction/1887
-// StampWtag = clang::ASTFrontendAction/1891
-// StampWtag = clang::SyntaxOnlyAction/1895
+// StampWtag = clang::FrontendAction/1879
+// StampWtag = clang::ASTFrontendAction/1883
+// StampWtag = clang::SyntaxOnlyAction/1887
 
 #endif // defined(GC_OBJ_SCAN_HELPERS)
 #if defined(GC_OBJ_SCAN_TABLE)
@@ -15928,19 +15888,9 @@ obj_finalize_STAMPWTAG_core__Readtable_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMPWTAG_core__PosixTime_O:
-{
-     // stamp value 927
-    core::PosixTime_O* obj_gc_safe = reinterpret_cast<core::PosixTime_O*>(client);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~PosixTime_O();
-#pragma clang diagnostic pop
-    goto finalize_done;
-}
 obj_finalize_STAMPWTAG_core__Exposer_O:
 {
-     // stamp value 931
+     // stamp value 927
     core::Exposer_O* obj_gc_safe = reinterpret_cast<core::Exposer_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15950,7 +15900,7 @@ obj_finalize_STAMPWTAG_core__Exposer_O:
 }
 obj_finalize_STAMPWTAG_core__CoreExposer_O:
 {
-     // stamp value 935
+     // stamp value 931
     core::CoreExposer_O* obj_gc_safe = reinterpret_cast<core::CoreExposer_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15960,7 +15910,7 @@ obj_finalize_STAMPWTAG_core__CoreExposer_O:
 }
 obj_finalize_STAMPWTAG_asttooling__AsttoolingExposer_O:
 {
-     // stamp value 939
+     // stamp value 935
     asttooling::AsttoolingExposer_O* obj_gc_safe = reinterpret_cast<asttooling::AsttoolingExposer_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15970,7 +15920,7 @@ obj_finalize_STAMPWTAG_asttooling__AsttoolingExposer_O:
 }
 obj_finalize_STAMPWTAG_llvmo__StructLayout_O:
 {
-     // stamp value 943
+     // stamp value 939
     llvmo::StructLayout_O* obj_gc_safe = reinterpret_cast<llvmo::StructLayout_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15978,19 +15928,9 @@ obj_finalize_STAMPWTAG_llvmo__StructLayout_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMPWTAG_core__PosixTimeDuration_O:
-{
-     // stamp value 947
-    core::PosixTimeDuration_O* obj_gc_safe = reinterpret_cast<core::PosixTimeDuration_O*>(client);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~PosixTimeDuration_O();
-#pragma clang diagnostic pop
-    goto finalize_done;
-}
 obj_finalize_STAMPWTAG_clasp_ffi__ForeignTypeSpec_O:
 {
-     // stamp value 951
+     // stamp value 943
     clasp_ffi::ForeignTypeSpec_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignTypeSpec_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16000,7 +15940,7 @@ obj_finalize_STAMPWTAG_clasp_ffi__ForeignTypeSpec_O:
 }
 obj_finalize_STAMPWTAG_core__Instance_O:
 {
-     // stamp value 953
+     // stamp value 945
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16010,7 +15950,7 @@ obj_finalize_STAMPWTAG_core__Instance_O:
 }
 obj_finalize_STAMPWTAG_core__DerivableCxxObject_O:
 {
-     // stamp value 956
+     // stamp value 948
     core::DerivableCxxObject_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxObject_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16020,7 +15960,7 @@ obj_finalize_STAMPWTAG_core__DerivableCxxObject_O:
 }
 obj_finalize_STAMPWTAG_clbind__ClassRep_O:
 {
-     // stamp value 961
+     // stamp value 953
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16030,7 +15970,7 @@ obj_finalize_STAMPWTAG_clbind__ClassRep_O:
 }
 obj_finalize_STAMPWTAG_core__SmallMap_O:
 {
-     // stamp value 967
+     // stamp value 959
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16040,7 +15980,7 @@ obj_finalize_STAMPWTAG_core__SmallMap_O:
 }
 obj_finalize_STAMPWTAG_mpip__Mpi_O:
 {
-     // stamp value 971
+     // stamp value 963
     mpip::Mpi_O* obj_gc_safe = reinterpret_cast<mpip::Mpi_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16050,7 +15990,7 @@ obj_finalize_STAMPWTAG_mpip__Mpi_O:
 }
 obj_finalize_STAMPWTAG_core__ExternalObject_O:
 {
-     // stamp value 975
+     // stamp value 967
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16060,7 +16000,7 @@ obj_finalize_STAMPWTAG_core__ExternalObject_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Pass_O:
 {
-     // stamp value 979
+     // stamp value 971
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16070,7 +16010,7 @@ obj_finalize_STAMPWTAG_llvmo__Pass_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ModulePass_O:
 {
-     // stamp value 983
+     // stamp value 975
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16080,7 +16020,7 @@ obj_finalize_STAMPWTAG_llvmo__ModulePass_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ImmutablePass_O:
 {
-     // stamp value 987
+     // stamp value 979
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16090,7 +16030,7 @@ obj_finalize_STAMPWTAG_llvmo__ImmutablePass_O:
 }
 obj_finalize_STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O:
 {
-     // stamp value 991
+     // stamp value 983
     llvmo::TargetLibraryInfoWrapperPass_O* obj_gc_safe = reinterpret_cast<llvmo::TargetLibraryInfoWrapperPass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16100,7 +16040,7 @@ obj_finalize_STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O:
 }
 obj_finalize_STAMPWTAG_llvmo__FunctionPass_O:
 {
-     // stamp value 995
+     // stamp value 987
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16110,7 +16050,7 @@ obj_finalize_STAMPWTAG_llvmo__FunctionPass_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ExecutionEngine_O:
 {
-     // stamp value 999
+     // stamp value 991
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16120,7 +16060,7 @@ obj_finalize_STAMPWTAG_llvmo__ExecutionEngine_O:
 }
 obj_finalize_STAMPWTAG_llvmo__MCSubtargetInfo_O:
 {
-     // stamp value 1003
+     // stamp value 995
     llvmo::MCSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::MCSubtargetInfo_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16130,7 +16070,7 @@ obj_finalize_STAMPWTAG_llvmo__MCSubtargetInfo_O:
 }
 obj_finalize_STAMPWTAG_llvmo__TargetSubtargetInfo_O:
 {
-     // stamp value 1007
+     // stamp value 999
     llvmo::TargetSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::TargetSubtargetInfo_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16140,7 +16080,7 @@ obj_finalize_STAMPWTAG_llvmo__TargetSubtargetInfo_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Type_O:
 {
-     // stamp value 1011
+     // stamp value 1003
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16150,7 +16090,7 @@ obj_finalize_STAMPWTAG_llvmo__Type_O:
 }
 obj_finalize_STAMPWTAG_llvmo__PointerType_O:
 {
-     // stamp value 1015
+     // stamp value 1007
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16160,7 +16100,7 @@ obj_finalize_STAMPWTAG_llvmo__PointerType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ArrayType_O:
 {
-     // stamp value 1019
+     // stamp value 1011
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16170,7 +16110,7 @@ obj_finalize_STAMPWTAG_llvmo__ArrayType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__FunctionType_O:
 {
-     // stamp value 1023
+     // stamp value 1015
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16180,7 +16120,7 @@ obj_finalize_STAMPWTAG_llvmo__FunctionType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__IntegerType_O:
 {
-     // stamp value 1027
+     // stamp value 1019
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16190,7 +16130,7 @@ obj_finalize_STAMPWTAG_llvmo__IntegerType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__StructType_O:
 {
-     // stamp value 1031
+     // stamp value 1023
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16200,7 +16140,7 @@ obj_finalize_STAMPWTAG_llvmo__StructType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__VectorType_O:
 {
-     // stamp value 1035
+     // stamp value 1027
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16210,7 +16150,7 @@ obj_finalize_STAMPWTAG_llvmo__VectorType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__JITDylib_O:
 {
-     // stamp value 1039
+     // stamp value 1031
     llvmo::JITDylib_O* obj_gc_safe = reinterpret_cast<llvmo::JITDylib_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16220,7 +16160,7 @@ obj_finalize_STAMPWTAG_llvmo__JITDylib_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DIContext_O:
 {
-     // stamp value 1043
+     // stamp value 1035
     llvmo::DIContext_O* obj_gc_safe = reinterpret_cast<llvmo::DIContext_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16230,7 +16170,7 @@ obj_finalize_STAMPWTAG_llvmo__DIContext_O:
 }
 obj_finalize_STAMPWTAG_llvmo__TargetPassConfig_O:
 {
-     // stamp value 1047
+     // stamp value 1039
     llvmo::TargetPassConfig_O* obj_gc_safe = reinterpret_cast<llvmo::TargetPassConfig_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16240,7 +16180,7 @@ obj_finalize_STAMPWTAG_llvmo__TargetPassConfig_O:
 }
 obj_finalize_STAMPWTAG_llvmo__IRBuilderBase_O:
 {
-     // stamp value 1051
+     // stamp value 1043
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16250,7 +16190,7 @@ obj_finalize_STAMPWTAG_llvmo__IRBuilderBase_O:
 }
 obj_finalize_STAMPWTAG_llvmo__IRBuilder_O:
 {
-     // stamp value 1055
+     // stamp value 1047
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16260,7 +16200,7 @@ obj_finalize_STAMPWTAG_llvmo__IRBuilder_O:
 }
 obj_finalize_STAMPWTAG_llvmo__APFloat_O:
 {
-     // stamp value 1059
+     // stamp value 1051
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16270,7 +16210,7 @@ obj_finalize_STAMPWTAG_llvmo__APFloat_O:
 }
 obj_finalize_STAMPWTAG_llvmo__APInt_O:
 {
-     // stamp value 1063
+     // stamp value 1055
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16280,7 +16220,7 @@ obj_finalize_STAMPWTAG_llvmo__APInt_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DIBuilder_O:
 {
-     // stamp value 1067
+     // stamp value 1059
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16290,7 +16230,7 @@ obj_finalize_STAMPWTAG_llvmo__DIBuilder_O:
 }
 obj_finalize_STAMPWTAG_llvmo__SectionedAddress_O:
 {
-     // stamp value 1071
+     // stamp value 1063
     llvmo::SectionedAddress_O* obj_gc_safe = reinterpret_cast<llvmo::SectionedAddress_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16300,7 +16240,7 @@ obj_finalize_STAMPWTAG_llvmo__SectionedAddress_O:
 }
 obj_finalize_STAMPWTAG_llvmo__EngineBuilder_O:
 {
-     // stamp value 1075
+     // stamp value 1067
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16310,7 +16250,7 @@ obj_finalize_STAMPWTAG_llvmo__EngineBuilder_O:
 }
 obj_finalize_STAMPWTAG_llvmo__PassManagerBase_O:
 {
-     // stamp value 1079
+     // stamp value 1071
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16320,7 +16260,7 @@ obj_finalize_STAMPWTAG_llvmo__PassManagerBase_O:
 }
 obj_finalize_STAMPWTAG_llvmo__PassManager_O:
 {
-     // stamp value 1083
+     // stamp value 1075
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16330,7 +16270,7 @@ obj_finalize_STAMPWTAG_llvmo__PassManager_O:
 }
 obj_finalize_STAMPWTAG_llvmo__FunctionPassManager_O:
 {
-     // stamp value 1087
+     // stamp value 1079
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16340,7 +16280,7 @@ obj_finalize_STAMPWTAG_llvmo__FunctionPassManager_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Metadata_O:
 {
-     // stamp value 1091
+     // stamp value 1083
     llvmo::Metadata_O* obj_gc_safe = reinterpret_cast<llvmo::Metadata_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16350,7 +16290,7 @@ obj_finalize_STAMPWTAG_llvmo__Metadata_O:
 }
 obj_finalize_STAMPWTAG_llvmo__MDNode_O:
 {
-     // stamp value 1095
+     // stamp value 1087
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16360,7 +16300,7 @@ obj_finalize_STAMPWTAG_llvmo__MDNode_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DINode_O:
 {
-     // stamp value 1099
+     // stamp value 1091
     llvmo::DINode_O* obj_gc_safe = reinterpret_cast<llvmo::DINode_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16370,7 +16310,7 @@ obj_finalize_STAMPWTAG_llvmo__DINode_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DIVariable_O:
 {
-     // stamp value 1103
+     // stamp value 1095
     llvmo::DIVariable_O* obj_gc_safe = reinterpret_cast<llvmo::DIVariable_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16380,7 +16320,7 @@ obj_finalize_STAMPWTAG_llvmo__DIVariable_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DILocalVariable_O:
 {
-     // stamp value 1107
+     // stamp value 1099
     llvmo::DILocalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalVariable_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16390,7 +16330,7 @@ obj_finalize_STAMPWTAG_llvmo__DILocalVariable_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DIScope_O:
 {
-     // stamp value 1111
+     // stamp value 1103
     llvmo::DIScope_O* obj_gc_safe = reinterpret_cast<llvmo::DIScope_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16400,7 +16340,7 @@ obj_finalize_STAMPWTAG_llvmo__DIScope_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DIFile_O:
 {
-     // stamp value 1115
+     // stamp value 1107
     llvmo::DIFile_O* obj_gc_safe = reinterpret_cast<llvmo::DIFile_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16410,7 +16350,7 @@ obj_finalize_STAMPWTAG_llvmo__DIFile_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DIType_O:
 {
-     // stamp value 1119
+     // stamp value 1111
     llvmo::DIType_O* obj_gc_safe = reinterpret_cast<llvmo::DIType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16420,7 +16360,7 @@ obj_finalize_STAMPWTAG_llvmo__DIType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DICompositeType_O:
 {
-     // stamp value 1123
+     // stamp value 1115
     llvmo::DICompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::DICompositeType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16430,7 +16370,7 @@ obj_finalize_STAMPWTAG_llvmo__DICompositeType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DIDerivedType_O:
 {
-     // stamp value 1127
+     // stamp value 1119
     llvmo::DIDerivedType_O* obj_gc_safe = reinterpret_cast<llvmo::DIDerivedType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16440,7 +16380,7 @@ obj_finalize_STAMPWTAG_llvmo__DIDerivedType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DIBasicType_O:
 {
-     // stamp value 1131
+     // stamp value 1123
     llvmo::DIBasicType_O* obj_gc_safe = reinterpret_cast<llvmo::DIBasicType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16450,7 +16390,7 @@ obj_finalize_STAMPWTAG_llvmo__DIBasicType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DISubroutineType_O:
 {
-     // stamp value 1135
+     // stamp value 1127
     llvmo::DISubroutineType_O* obj_gc_safe = reinterpret_cast<llvmo::DISubroutineType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16460,7 +16400,7 @@ obj_finalize_STAMPWTAG_llvmo__DISubroutineType_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DILocalScope_O:
 {
-     // stamp value 1139
+     // stamp value 1131
     llvmo::DILocalScope_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalScope_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16470,7 +16410,7 @@ obj_finalize_STAMPWTAG_llvmo__DILocalScope_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DISubprogram_O:
 {
-     // stamp value 1143
+     // stamp value 1135
     llvmo::DISubprogram_O* obj_gc_safe = reinterpret_cast<llvmo::DISubprogram_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16480,7 +16420,7 @@ obj_finalize_STAMPWTAG_llvmo__DISubprogram_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DILexicalBlockBase_O:
 {
-     // stamp value 1147
+     // stamp value 1139
     llvmo::DILexicalBlockBase_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlockBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16490,7 +16430,7 @@ obj_finalize_STAMPWTAG_llvmo__DILexicalBlockBase_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DILexicalBlock_O:
 {
-     // stamp value 1151
+     // stamp value 1143
     llvmo::DILexicalBlock_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlock_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16500,7 +16440,7 @@ obj_finalize_STAMPWTAG_llvmo__DILexicalBlock_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DICompileUnit_O:
 {
-     // stamp value 1155
+     // stamp value 1147
     llvmo::DICompileUnit_O* obj_gc_safe = reinterpret_cast<llvmo::DICompileUnit_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16510,7 +16450,7 @@ obj_finalize_STAMPWTAG_llvmo__DICompileUnit_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DIExpression_O:
 {
-     // stamp value 1159
+     // stamp value 1151
     llvmo::DIExpression_O* obj_gc_safe = reinterpret_cast<llvmo::DIExpression_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16520,7 +16460,7 @@ obj_finalize_STAMPWTAG_llvmo__DIExpression_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DILocation_O:
 {
-     // stamp value 1163
+     // stamp value 1155
     llvmo::DILocation_O* obj_gc_safe = reinterpret_cast<llvmo::DILocation_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16530,7 +16470,7 @@ obj_finalize_STAMPWTAG_llvmo__DILocation_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ValueAsMetadata_O:
 {
-     // stamp value 1167
+     // stamp value 1159
     llvmo::ValueAsMetadata_O* obj_gc_safe = reinterpret_cast<llvmo::ValueAsMetadata_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16540,7 +16480,7 @@ obj_finalize_STAMPWTAG_llvmo__ValueAsMetadata_O:
 }
 obj_finalize_STAMPWTAG_llvmo__MDString_O:
 {
-     // stamp value 1171
+     // stamp value 1163
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16550,7 +16490,7 @@ obj_finalize_STAMPWTAG_llvmo__MDString_O:
 }
 obj_finalize_STAMPWTAG_core__Test_O:
 {
-     // stamp value 1175
+     // stamp value 1167
     core::Test_O* obj_gc_safe = reinterpret_cast<core::Test_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16560,7 +16500,7 @@ obj_finalize_STAMPWTAG_core__Test_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Value_O:
 {
-     // stamp value 1179
+     // stamp value 1171
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16570,7 +16510,7 @@ obj_finalize_STAMPWTAG_llvmo__Value_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Argument_O:
 {
-     // stamp value 1183
+     // stamp value 1175
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16580,7 +16520,7 @@ obj_finalize_STAMPWTAG_llvmo__Argument_O:
 }
 obj_finalize_STAMPWTAG_llvmo__BasicBlock_O:
 {
-     // stamp value 1187
+     // stamp value 1179
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16590,7 +16530,7 @@ obj_finalize_STAMPWTAG_llvmo__BasicBlock_O:
 }
 obj_finalize_STAMPWTAG_llvmo__MetadataAsValue_O:
 {
-     // stamp value 1191
+     // stamp value 1183
     llvmo::MetadataAsValue_O* obj_gc_safe = reinterpret_cast<llvmo::MetadataAsValue_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16600,7 +16540,7 @@ obj_finalize_STAMPWTAG_llvmo__MetadataAsValue_O:
 }
 obj_finalize_STAMPWTAG_llvmo__User_O:
 {
-     // stamp value 1195
+     // stamp value 1187
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16610,7 +16550,7 @@ obj_finalize_STAMPWTAG_llvmo__User_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Instruction_O:
 {
-     // stamp value 1199
+     // stamp value 1191
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16620,7 +16560,7 @@ obj_finalize_STAMPWTAG_llvmo__Instruction_O:
 }
 obj_finalize_STAMPWTAG_llvmo__UnaryInstruction_O:
 {
-     // stamp value 1203
+     // stamp value 1195
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16630,7 +16570,7 @@ obj_finalize_STAMPWTAG_llvmo__UnaryInstruction_O:
 }
 obj_finalize_STAMPWTAG_llvmo__VAArgInst_O:
 {
-     // stamp value 1207
+     // stamp value 1199
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16640,7 +16580,7 @@ obj_finalize_STAMPWTAG_llvmo__VAArgInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__LoadInst_O:
 {
-     // stamp value 1211
+     // stamp value 1203
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16650,7 +16590,7 @@ obj_finalize_STAMPWTAG_llvmo__LoadInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__AllocaInst_O:
 {
-     // stamp value 1215
+     // stamp value 1207
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16660,7 +16600,7 @@ obj_finalize_STAMPWTAG_llvmo__AllocaInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__SwitchInst_O:
 {
-     // stamp value 1219
+     // stamp value 1211
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16670,7 +16610,7 @@ obj_finalize_STAMPWTAG_llvmo__SwitchInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__AtomicRMWInst_O:
 {
-     // stamp value 1223
+     // stamp value 1215
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16680,7 +16620,7 @@ obj_finalize_STAMPWTAG_llvmo__AtomicRMWInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__LandingPadInst_O:
 {
-     // stamp value 1227
+     // stamp value 1219
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16690,7 +16630,7 @@ obj_finalize_STAMPWTAG_llvmo__LandingPadInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__StoreInst_O:
 {
-     // stamp value 1231
+     // stamp value 1223
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16700,7 +16640,7 @@ obj_finalize_STAMPWTAG_llvmo__StoreInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__UnreachableInst_O:
 {
-     // stamp value 1235
+     // stamp value 1227
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16710,7 +16650,7 @@ obj_finalize_STAMPWTAG_llvmo__UnreachableInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ReturnInst_O:
 {
-     // stamp value 1239
+     // stamp value 1231
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16720,7 +16660,7 @@ obj_finalize_STAMPWTAG_llvmo__ReturnInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ResumeInst_O:
 {
-     // stamp value 1243
+     // stamp value 1235
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16730,7 +16670,7 @@ obj_finalize_STAMPWTAG_llvmo__ResumeInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__AtomicCmpXchgInst_O:
 {
-     // stamp value 1247
+     // stamp value 1239
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16740,7 +16680,7 @@ obj_finalize_STAMPWTAG_llvmo__AtomicCmpXchgInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__FenceInst_O:
 {
-     // stamp value 1251
+     // stamp value 1243
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16750,7 +16690,7 @@ obj_finalize_STAMPWTAG_llvmo__FenceInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__CallBase_O:
 {
-     // stamp value 1255
+     // stamp value 1247
     llvmo::CallBase_O* obj_gc_safe = reinterpret_cast<llvmo::CallBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16760,7 +16700,7 @@ obj_finalize_STAMPWTAG_llvmo__CallBase_O:
 }
 obj_finalize_STAMPWTAG_llvmo__CallInst_O:
 {
-     // stamp value 1259
+     // stamp value 1251
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16770,7 +16710,7 @@ obj_finalize_STAMPWTAG_llvmo__CallInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__InvokeInst_O:
 {
-     // stamp value 1263
+     // stamp value 1255
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16780,7 +16720,7 @@ obj_finalize_STAMPWTAG_llvmo__InvokeInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__PHINode_O:
 {
-     // stamp value 1267
+     // stamp value 1259
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16790,7 +16730,7 @@ obj_finalize_STAMPWTAG_llvmo__PHINode_O:
 }
 obj_finalize_STAMPWTAG_llvmo__IndirectBrInst_O:
 {
-     // stamp value 1271
+     // stamp value 1263
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16800,7 +16740,7 @@ obj_finalize_STAMPWTAG_llvmo__IndirectBrInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__BranchInst_O:
 {
-     // stamp value 1275
+     // stamp value 1267
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16810,7 +16750,7 @@ obj_finalize_STAMPWTAG_llvmo__BranchInst_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Constant_O:
 {
-     // stamp value 1279
+     // stamp value 1271
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16820,7 +16760,7 @@ obj_finalize_STAMPWTAG_llvmo__Constant_O:
 }
 obj_finalize_STAMPWTAG_llvmo__GlobalValue_O:
 {
-     // stamp value 1283
+     // stamp value 1275
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16830,7 +16770,7 @@ obj_finalize_STAMPWTAG_llvmo__GlobalValue_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Function_O:
 {
-     // stamp value 1287
+     // stamp value 1279
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16840,7 +16780,7 @@ obj_finalize_STAMPWTAG_llvmo__Function_O:
 }
 obj_finalize_STAMPWTAG_llvmo__GlobalVariable_O:
 {
-     // stamp value 1291
+     // stamp value 1283
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16850,7 +16790,7 @@ obj_finalize_STAMPWTAG_llvmo__GlobalVariable_O:
 }
 obj_finalize_STAMPWTAG_llvmo__BlockAddress_O:
 {
-     // stamp value 1295
+     // stamp value 1287
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16860,7 +16800,7 @@ obj_finalize_STAMPWTAG_llvmo__BlockAddress_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ConstantDataSequential_O:
 {
-     // stamp value 1299
+     // stamp value 1291
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16870,7 +16810,7 @@ obj_finalize_STAMPWTAG_llvmo__ConstantDataSequential_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ConstantDataArray_O:
 {
-     // stamp value 1303
+     // stamp value 1295
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16880,7 +16820,7 @@ obj_finalize_STAMPWTAG_llvmo__ConstantDataArray_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ConstantStruct_O:
 {
-     // stamp value 1307
+     // stamp value 1299
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16890,7 +16830,7 @@ obj_finalize_STAMPWTAG_llvmo__ConstantStruct_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ConstantInt_O:
 {
-     // stamp value 1311
+     // stamp value 1303
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16900,7 +16840,7 @@ obj_finalize_STAMPWTAG_llvmo__ConstantInt_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ConstantFP_O:
 {
-     // stamp value 1315
+     // stamp value 1307
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16910,7 +16850,7 @@ obj_finalize_STAMPWTAG_llvmo__ConstantFP_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ConstantExpr_O:
 {
-     // stamp value 1319
+     // stamp value 1311
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16920,7 +16860,7 @@ obj_finalize_STAMPWTAG_llvmo__ConstantExpr_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ConstantPointerNull_O:
 {
-     // stamp value 1323
+     // stamp value 1315
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16930,7 +16870,7 @@ obj_finalize_STAMPWTAG_llvmo__ConstantPointerNull_O:
 }
 obj_finalize_STAMPWTAG_llvmo__UndefValue_O:
 {
-     // stamp value 1327
+     // stamp value 1319
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16940,7 +16880,7 @@ obj_finalize_STAMPWTAG_llvmo__UndefValue_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ConstantArray_O:
 {
-     // stamp value 1331
+     // stamp value 1323
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16950,7 +16890,7 @@ obj_finalize_STAMPWTAG_llvmo__ConstantArray_O:
 }
 obj_finalize_STAMPWTAG_llvmo__TargetMachine_O:
 {
-     // stamp value 1335
+     // stamp value 1327
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16960,7 +16900,7 @@ obj_finalize_STAMPWTAG_llvmo__TargetMachine_O:
 }
 obj_finalize_STAMPWTAG_llvmo__LLVMTargetMachine_O:
 {
-     // stamp value 1339
+     // stamp value 1331
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16970,7 +16910,7 @@ obj_finalize_STAMPWTAG_llvmo__LLVMTargetMachine_O:
 }
 obj_finalize_STAMPWTAG_llvmo__ThreadSafeContext_O:
 {
-     // stamp value 1343
+     // stamp value 1335
     llvmo::ThreadSafeContext_O* obj_gc_safe = reinterpret_cast<llvmo::ThreadSafeContext_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16980,7 +16920,7 @@ obj_finalize_STAMPWTAG_llvmo__ThreadSafeContext_O:
 }
 obj_finalize_STAMPWTAG_llvmo__NamedMDNode_O:
 {
-     // stamp value 1347
+     // stamp value 1339
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16990,7 +16930,7 @@ obj_finalize_STAMPWTAG_llvmo__NamedMDNode_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Triple_O:
 {
-     // stamp value 1351
+     // stamp value 1343
     llvmo::Triple_O* obj_gc_safe = reinterpret_cast<llvmo::Triple_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17000,7 +16940,7 @@ obj_finalize_STAMPWTAG_llvmo__Triple_O:
 }
 obj_finalize_STAMPWTAG_llvmo__DWARFContext_O:
 {
-     // stamp value 1355
+     // stamp value 1347
     llvmo::DWARFContext_O* obj_gc_safe = reinterpret_cast<llvmo::DWARFContext_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17010,7 +16950,7 @@ obj_finalize_STAMPWTAG_llvmo__DWARFContext_O:
 }
 obj_finalize_STAMPWTAG_llvmo__TargetOptions_O:
 {
-     // stamp value 1359
+     // stamp value 1351
     llvmo::TargetOptions_O* obj_gc_safe = reinterpret_cast<llvmo::TargetOptions_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17020,7 +16960,7 @@ obj_finalize_STAMPWTAG_llvmo__TargetOptions_O:
 }
 obj_finalize_STAMPWTAG_llvmo__LLVMContext_O:
 {
-     // stamp value 1363
+     // stamp value 1355
     llvmo::LLVMContext_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMContext_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17030,7 +16970,7 @@ obj_finalize_STAMPWTAG_llvmo__LLVMContext_O:
 }
 obj_finalize_STAMPWTAG_llvmo__PassManagerBuilder_O:
 {
-     // stamp value 1367
+     // stamp value 1359
     llvmo::PassManagerBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBuilder_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17040,7 +16980,7 @@ obj_finalize_STAMPWTAG_llvmo__PassManagerBuilder_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Module_O:
 {
-     // stamp value 1371
+     // stamp value 1363
     llvmo::Module_O* obj_gc_safe = reinterpret_cast<llvmo::Module_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17050,7 +16990,7 @@ obj_finalize_STAMPWTAG_llvmo__Module_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Target_O:
 {
-     // stamp value 1375
+     // stamp value 1367
     llvmo::Target_O* obj_gc_safe = reinterpret_cast<llvmo::Target_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17060,7 +17000,7 @@ obj_finalize_STAMPWTAG_llvmo__Target_O:
 }
 obj_finalize_STAMPWTAG_llvmo__Linker_O:
 {
-     // stamp value 1379
+     // stamp value 1371
     llvmo::Linker_O* obj_gc_safe = reinterpret_cast<llvmo::Linker_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17070,7 +17010,7 @@ obj_finalize_STAMPWTAG_llvmo__Linker_O:
 }
 obj_finalize_STAMPWTAG_core__Rack_O:
 {
-     // stamp value 1383
+     // stamp value 1375
     core::Rack_O* obj_gc_safe = reinterpret_cast<core::Rack_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17080,7 +17020,7 @@ obj_finalize_STAMPWTAG_core__Rack_O:
 }
 obj_finalize_STAMPWTAG_core__SmallMultimap_O:
 {
-     // stamp value 1387
+     // stamp value 1379
     core::SmallMultimap_O* obj_gc_safe = reinterpret_cast<core::SmallMultimap_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17090,7 +17030,7 @@ obj_finalize_STAMPWTAG_core__SmallMultimap_O:
 }
 obj_finalize_STAMPWTAG_core__Sigset_O:
 {
-     // stamp value 1391
+     // stamp value 1383
     core::Sigset_O* obj_gc_safe = reinterpret_cast<core::Sigset_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17100,7 +17040,7 @@ obj_finalize_STAMPWTAG_core__Sigset_O:
 }
 obj_finalize_STAMPWTAG_core__DebuggerFrame_O:
 {
-     // stamp value 1395
+     // stamp value 1387
     core::DebuggerFrame_O* obj_gc_safe = reinterpret_cast<core::DebuggerFrame_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17110,7 +17050,7 @@ obj_finalize_STAMPWTAG_core__DebuggerFrame_O:
 }
 obj_finalize_STAMPWTAG_core__Environment_O:
 {
-     // stamp value 1399
+     // stamp value 1391
     core::Environment_O* obj_gc_safe = reinterpret_cast<core::Environment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17120,7 +17060,7 @@ obj_finalize_STAMPWTAG_core__Environment_O:
 }
 obj_finalize_STAMPWTAG_core__GlueEnvironment_O:
 {
-     // stamp value 1403
+     // stamp value 1395
     core::GlueEnvironment_O* obj_gc_safe = reinterpret_cast<core::GlueEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17130,7 +17070,7 @@ obj_finalize_STAMPWTAG_core__GlueEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__LexicalEnvironment_O:
 {
-     // stamp value 1407
+     // stamp value 1399
     core::LexicalEnvironment_O* obj_gc_safe = reinterpret_cast<core::LexicalEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17140,7 +17080,7 @@ obj_finalize_STAMPWTAG_core__LexicalEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__RuntimeVisibleEnvironment_O:
 {
-     // stamp value 1411
+     // stamp value 1403
     core::RuntimeVisibleEnvironment_O* obj_gc_safe = reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17150,7 +17090,7 @@ obj_finalize_STAMPWTAG_core__RuntimeVisibleEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__FunctionValueEnvironment_O:
 {
-     // stamp value 1415
+     // stamp value 1407
     core::FunctionValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionValueEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17160,7 +17100,7 @@ obj_finalize_STAMPWTAG_core__FunctionValueEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__TagbodyEnvironment_O:
 {
-     // stamp value 1419
+     // stamp value 1411
     core::TagbodyEnvironment_O* obj_gc_safe = reinterpret_cast<core::TagbodyEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17170,7 +17110,7 @@ obj_finalize_STAMPWTAG_core__TagbodyEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__BlockEnvironment_O:
 {
-     // stamp value 1423
+     // stamp value 1415
     core::BlockEnvironment_O* obj_gc_safe = reinterpret_cast<core::BlockEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17180,7 +17120,7 @@ obj_finalize_STAMPWTAG_core__BlockEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__ValueEnvironment_O:
 {
-     // stamp value 1427
+     // stamp value 1419
     core::ValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::ValueEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17190,7 +17130,7 @@ obj_finalize_STAMPWTAG_core__ValueEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__CompileTimeEnvironment_O:
 {
-     // stamp value 1431
+     // stamp value 1423
     core::CompileTimeEnvironment_O* obj_gc_safe = reinterpret_cast<core::CompileTimeEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17200,7 +17140,7 @@ obj_finalize_STAMPWTAG_core__CompileTimeEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__CatchEnvironment_O:
 {
-     // stamp value 1435
+     // stamp value 1427
     core::CatchEnvironment_O* obj_gc_safe = reinterpret_cast<core::CatchEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17210,7 +17150,7 @@ obj_finalize_STAMPWTAG_core__CatchEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__MacroletEnvironment_O:
 {
-     // stamp value 1439
+     // stamp value 1431
     core::MacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::MacroletEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17220,7 +17160,7 @@ obj_finalize_STAMPWTAG_core__MacroletEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__SymbolMacroletEnvironment_O:
 {
-     // stamp value 1443
+     // stamp value 1435
     core::SymbolMacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::SymbolMacroletEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17230,7 +17170,7 @@ obj_finalize_STAMPWTAG_core__SymbolMacroletEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__FunctionContainerEnvironment_O:
 {
-     // stamp value 1447
+     // stamp value 1439
     core::FunctionContainerEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionContainerEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17240,7 +17180,7 @@ obj_finalize_STAMPWTAG_core__FunctionContainerEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__UnwindProtectEnvironment_O:
 {
-     // stamp value 1451
+     // stamp value 1443
     core::UnwindProtectEnvironment_O* obj_gc_safe = reinterpret_cast<core::UnwindProtectEnvironment_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17250,7 +17190,7 @@ obj_finalize_STAMPWTAG_core__UnwindProtectEnvironment_O:
 }
 obj_finalize_STAMPWTAG_core__ActivationFrame_O:
 {
-     // stamp value 1455
+     // stamp value 1447
     core::ActivationFrame_O* obj_gc_safe = reinterpret_cast<core::ActivationFrame_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17260,7 +17200,7 @@ obj_finalize_STAMPWTAG_core__ActivationFrame_O:
 }
 obj_finalize_STAMPWTAG_core__ValueFrame_O:
 {
-     // stamp value 1459
+     // stamp value 1451
     core::ValueFrame_O* obj_gc_safe = reinterpret_cast<core::ValueFrame_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17270,7 +17210,7 @@ obj_finalize_STAMPWTAG_core__ValueFrame_O:
 }
 obj_finalize_STAMPWTAG_core__FunctionFrame_O:
 {
-     // stamp value 1463
+     // stamp value 1455
     core::FunctionFrame_O* obj_gc_safe = reinterpret_cast<core::FunctionFrame_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17280,7 +17220,7 @@ obj_finalize_STAMPWTAG_core__FunctionFrame_O:
 }
 obj_finalize_STAMPWTAG_core__RandomState_O:
 {
-     // stamp value 1467
+     // stamp value 1459
     core::RandomState_O* obj_gc_safe = reinterpret_cast<core::RandomState_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17290,7 +17230,7 @@ obj_finalize_STAMPWTAG_core__RandomState_O:
 }
 obj_finalize_STAMPWTAG_core__EntryPointBase_O:
 {
-     // stamp value 1471
+     // stamp value 1463
     core::EntryPointBase_O* obj_gc_safe = reinterpret_cast<core::EntryPointBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17300,7 +17240,7 @@ obj_finalize_STAMPWTAG_core__EntryPointBase_O:
 }
 obj_finalize_STAMPWTAG_core__GlobalEntryPointGenerator_O:
 {
-     // stamp value 1475
+     // stamp value 1467
     core::GlobalEntryPointGenerator_O* obj_gc_safe = reinterpret_cast<core::GlobalEntryPointGenerator_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17310,7 +17250,7 @@ obj_finalize_STAMPWTAG_core__GlobalEntryPointGenerator_O:
 }
 obj_finalize_STAMPWTAG_core__LocalEntryPointGenerator_O:
 {
-     // stamp value 1479
+     // stamp value 1471
     core::LocalEntryPointGenerator_O* obj_gc_safe = reinterpret_cast<core::LocalEntryPointGenerator_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17320,7 +17260,7 @@ obj_finalize_STAMPWTAG_core__LocalEntryPointGenerator_O:
 }
 obj_finalize_STAMPWTAG_core__CodeEntryPoint_O:
 {
-     // stamp value 1483
+     // stamp value 1475
     core::CodeEntryPoint_O* obj_gc_safe = reinterpret_cast<core::CodeEntryPoint_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17330,7 +17270,7 @@ obj_finalize_STAMPWTAG_core__CodeEntryPoint_O:
 }
 obj_finalize_STAMPWTAG_core__GlobalEntryPoint_O:
 {
-     // stamp value 1487
+     // stamp value 1479
     core::GlobalEntryPoint_O* obj_gc_safe = reinterpret_cast<core::GlobalEntryPoint_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17340,7 +17280,7 @@ obj_finalize_STAMPWTAG_core__GlobalEntryPoint_O:
 }
 obj_finalize_STAMPWTAG_core__LocalEntryPoint_O:
 {
-     // stamp value 1491
+     // stamp value 1483
     core::LocalEntryPoint_O* obj_gc_safe = reinterpret_cast<core::LocalEntryPoint_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17350,7 +17290,7 @@ obj_finalize_STAMPWTAG_core__LocalEntryPoint_O:
 }
 obj_finalize_STAMPWTAG_core__DebuggerLocal_O:
 {
-     // stamp value 1495
+     // stamp value 1487
     core::DebuggerLocal_O* obj_gc_safe = reinterpret_cast<core::DebuggerLocal_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17360,7 +17300,7 @@ obj_finalize_STAMPWTAG_core__DebuggerLocal_O:
 }
 obj_finalize_STAMPWTAG_core__HashTableBase_O:
 {
-     // stamp value 1499
+     // stamp value 1491
     core::HashTableBase_O* obj_gc_safe = reinterpret_cast<core::HashTableBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17370,7 +17310,7 @@ obj_finalize_STAMPWTAG_core__HashTableBase_O:
 }
 obj_finalize_STAMPWTAG_core__WeakKeyHashTable_O:
 {
-     // stamp value 1503
+     // stamp value 1495
     core::WeakKeyHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakKeyHashTable_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17380,7 +17320,7 @@ obj_finalize_STAMPWTAG_core__WeakKeyHashTable_O:
 }
 obj_finalize_STAMPWTAG_core__HashTable_O:
 {
-     // stamp value 1507
+     // stamp value 1499
     core::HashTable_O* obj_gc_safe = reinterpret_cast<core::HashTable_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17390,7 +17330,7 @@ obj_finalize_STAMPWTAG_core__HashTable_O:
 }
 obj_finalize_STAMPWTAG_core__HashTableEqualp_O:
 {
-     // stamp value 1511
+     // stamp value 1503
     core::HashTableEqualp_O* obj_gc_safe = reinterpret_cast<core::HashTableEqualp_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17400,7 +17340,7 @@ obj_finalize_STAMPWTAG_core__HashTableEqualp_O:
 }
 obj_finalize_STAMPWTAG_core__HashTableEq_O:
 {
-     // stamp value 1515
+     // stamp value 1507
     core::HashTableEq_O* obj_gc_safe = reinterpret_cast<core::HashTableEq_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17410,7 +17350,7 @@ obj_finalize_STAMPWTAG_core__HashTableEq_O:
 }
 obj_finalize_STAMPWTAG_core__HashTableEql_O:
 {
-     // stamp value 1519
+     // stamp value 1511
     core::HashTableEql_O* obj_gc_safe = reinterpret_cast<core::HashTableEql_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17420,7 +17360,7 @@ obj_finalize_STAMPWTAG_core__HashTableEql_O:
 }
 obj_finalize_STAMPWTAG_core__HashTableEqual_O:
 {
-     // stamp value 1523
+     // stamp value 1515
     core::HashTableEqual_O* obj_gc_safe = reinterpret_cast<core::HashTableEqual_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17430,7 +17370,7 @@ obj_finalize_STAMPWTAG_core__HashTableEqual_O:
 }
 obj_finalize_STAMPWTAG_core__HashTableCustom_O:
 {
-     // stamp value 1527
+     // stamp value 1519
     core::HashTableCustom_O* obj_gc_safe = reinterpret_cast<core::HashTableCustom_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17440,7 +17380,7 @@ obj_finalize_STAMPWTAG_core__HashTableCustom_O:
 }
 obj_finalize_STAMPWTAG_core__FunctionDescription_O:
 {
-     // stamp value 1531
+     // stamp value 1523
     core::FunctionDescription_O* obj_gc_safe = reinterpret_cast<core::FunctionDescription_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17450,7 +17390,7 @@ obj_finalize_STAMPWTAG_core__FunctionDescription_O:
 }
 obj_finalize_STAMPWTAG_llvmo__InsertPoint_O:
 {
-     // stamp value 1535
+     // stamp value 1527
     llvmo::InsertPoint_O* obj_gc_safe = reinterpret_cast<llvmo::InsertPoint_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17460,7 +17400,7 @@ obj_finalize_STAMPWTAG_llvmo__InsertPoint_O:
 }
 obj_finalize_STAMPWTAG_core__Scope_O:
 {
-     // stamp value 1539
+     // stamp value 1531
     core::Scope_O* obj_gc_safe = reinterpret_cast<core::Scope_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17470,7 +17410,7 @@ obj_finalize_STAMPWTAG_core__Scope_O:
 }
 obj_finalize_STAMPWTAG_core__FileScope_O:
 {
-     // stamp value 1543
+     // stamp value 1535
     core::FileScope_O* obj_gc_safe = reinterpret_cast<core::FileScope_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17480,7 +17420,7 @@ obj_finalize_STAMPWTAG_core__FileScope_O:
 }
 obj_finalize_STAMPWTAG_core__Path_O:
 {
-     // stamp value 1547
+     // stamp value 1539
     core::Path_O* obj_gc_safe = reinterpret_cast<core::Path_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17490,7 +17430,7 @@ obj_finalize_STAMPWTAG_core__Path_O:
 }
 obj_finalize_STAMPWTAG_core__Pathname_O:
 {
-     // stamp value 1551
+     // stamp value 1543
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17500,7 +17440,7 @@ obj_finalize_STAMPWTAG_core__Pathname_O:
 }
 obj_finalize_STAMPWTAG_core__LogicalPathname_O:
 {
-     // stamp value 1555
+     // stamp value 1547
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17510,7 +17450,7 @@ obj_finalize_STAMPWTAG_core__LogicalPathname_O:
 }
 obj_finalize_STAMPWTAG_core__Number_O:
 {
-     // stamp value 1559
+     // stamp value 1551
     core::Number_O* obj_gc_safe = reinterpret_cast<core::Number_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17520,7 +17460,7 @@ obj_finalize_STAMPWTAG_core__Number_O:
 }
 obj_finalize_STAMPWTAG_core__Real_O:
 {
-     // stamp value 1563
+     // stamp value 1555
     core::Real_O* obj_gc_safe = reinterpret_cast<core::Real_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17530,7 +17470,7 @@ obj_finalize_STAMPWTAG_core__Real_O:
 }
 obj_finalize_STAMPWTAG_core__Rational_O:
 {
-     // stamp value 1567
+     // stamp value 1559
     core::Rational_O* obj_gc_safe = reinterpret_cast<core::Rational_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17540,7 +17480,7 @@ obj_finalize_STAMPWTAG_core__Rational_O:
 }
 obj_finalize_STAMPWTAG_core__Ratio_O:
 {
-     // stamp value 1571
+     // stamp value 1563
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17550,7 +17490,7 @@ obj_finalize_STAMPWTAG_core__Ratio_O:
 }
 obj_finalize_STAMPWTAG_core__Integer_O:
 {
-     // stamp value 1575
+     // stamp value 1567
     core::Integer_O* obj_gc_safe = reinterpret_cast<core::Integer_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17560,7 +17500,7 @@ obj_finalize_STAMPWTAG_core__Integer_O:
 }
 obj_finalize_STAMPWTAG_core__Bignum_O:
 {
-     // stamp value 1579
+     // stamp value 1571
     core::Bignum_O* obj_gc_safe = reinterpret_cast<core::Bignum_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17570,7 +17510,7 @@ obj_finalize_STAMPWTAG_core__Bignum_O:
 }
 obj_finalize_STAMPWTAG_core__Fixnum_dummy_O:
 {
-     // stamp value 1583
+     // stamp value 1575
     core::Fixnum_dummy_O* obj_gc_safe = reinterpret_cast<core::Fixnum_dummy_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17580,7 +17520,7 @@ obj_finalize_STAMPWTAG_core__Fixnum_dummy_O:
 }
 obj_finalize_STAMPWTAG_core__Float_O:
 {
-     // stamp value 1587
+     // stamp value 1579
     core::Float_O* obj_gc_safe = reinterpret_cast<core::Float_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17590,7 +17530,7 @@ obj_finalize_STAMPWTAG_core__Float_O:
 }
 obj_finalize_STAMPWTAG_core__DoubleFloat_O:
 {
-     // stamp value 1591
+     // stamp value 1583
     core::DoubleFloat_O* obj_gc_safe = reinterpret_cast<core::DoubleFloat_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17600,7 +17540,7 @@ obj_finalize_STAMPWTAG_core__DoubleFloat_O:
 }
 obj_finalize_STAMPWTAG_core__SingleFloat_dummy_O:
 {
-     // stamp value 1595
+     // stamp value 1587
     core::SingleFloat_dummy_O* obj_gc_safe = reinterpret_cast<core::SingleFloat_dummy_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17610,7 +17550,7 @@ obj_finalize_STAMPWTAG_core__SingleFloat_dummy_O:
 }
 obj_finalize_STAMPWTAG_core__LongFloat_O:
 {
-     // stamp value 1599
+     // stamp value 1591
     core::LongFloat_O* obj_gc_safe = reinterpret_cast<core::LongFloat_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17620,7 +17560,7 @@ obj_finalize_STAMPWTAG_core__LongFloat_O:
 }
 obj_finalize_STAMPWTAG_core__ShortFloat_O:
 {
-     // stamp value 1603
+     // stamp value 1595
     core::ShortFloat_O* obj_gc_safe = reinterpret_cast<core::ShortFloat_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17630,7 +17570,7 @@ obj_finalize_STAMPWTAG_core__ShortFloat_O:
 }
 obj_finalize_STAMPWTAG_core__Complex_O:
 {
-     // stamp value 1607
+     // stamp value 1599
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17640,7 +17580,7 @@ obj_finalize_STAMPWTAG_core__Complex_O:
 }
 obj_finalize_STAMPWTAG_core__Stream_O:
 {
-     // stamp value 1611
+     // stamp value 1603
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17650,7 +17590,7 @@ obj_finalize_STAMPWTAG_core__Stream_O:
 }
 obj_finalize_STAMPWTAG_core__AnsiStream_O:
 {
-     // stamp value 1615
+     // stamp value 1607
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17660,7 +17600,7 @@ obj_finalize_STAMPWTAG_core__AnsiStream_O:
 }
 obj_finalize_STAMPWTAG_core__TwoWayStream_O:
 {
-     // stamp value 1619
+     // stamp value 1611
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17670,7 +17610,7 @@ obj_finalize_STAMPWTAG_core__TwoWayStream_O:
 }
 obj_finalize_STAMPWTAG_core__SynonymStream_O:
 {
-     // stamp value 1623
+     // stamp value 1615
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17680,7 +17620,7 @@ obj_finalize_STAMPWTAG_core__SynonymStream_O:
 }
 obj_finalize_STAMPWTAG_core__ConcatenatedStream_O:
 {
-     // stamp value 1627
+     // stamp value 1619
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17690,7 +17630,7 @@ obj_finalize_STAMPWTAG_core__ConcatenatedStream_O:
 }
 obj_finalize_STAMPWTAG_core__FileStream_O:
 {
-     // stamp value 1631
+     // stamp value 1623
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17700,7 +17640,7 @@ obj_finalize_STAMPWTAG_core__FileStream_O:
 }
 obj_finalize_STAMPWTAG_core__IOFileStream_O:
 {
-     // stamp value 1635
+     // stamp value 1627
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17710,7 +17650,7 @@ obj_finalize_STAMPWTAG_core__IOFileStream_O:
 }
 obj_finalize_STAMPWTAG_core__IOStreamStream_O:
 {
-     // stamp value 1639
+     // stamp value 1631
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17720,7 +17660,7 @@ obj_finalize_STAMPWTAG_core__IOStreamStream_O:
 }
 obj_finalize_STAMPWTAG_core__BroadcastStream_O:
 {
-     // stamp value 1643
+     // stamp value 1635
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17730,7 +17670,7 @@ obj_finalize_STAMPWTAG_core__BroadcastStream_O:
 }
 obj_finalize_STAMPWTAG_core__StringStream_O:
 {
-     // stamp value 1647
+     // stamp value 1639
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17740,7 +17680,7 @@ obj_finalize_STAMPWTAG_core__StringStream_O:
 }
 obj_finalize_STAMPWTAG_core__StringOutputStream_O:
 {
-     // stamp value 1651
+     // stamp value 1643
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17750,7 +17690,7 @@ obj_finalize_STAMPWTAG_core__StringOutputStream_O:
 }
 obj_finalize_STAMPWTAG_core__StringInputStream_O:
 {
-     // stamp value 1655
+     // stamp value 1647
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17760,7 +17700,7 @@ obj_finalize_STAMPWTAG_core__StringInputStream_O:
 }
 obj_finalize_STAMPWTAG_core__EchoStream_O:
 {
-     // stamp value 1659
+     // stamp value 1651
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17770,7 +17710,7 @@ obj_finalize_STAMPWTAG_core__EchoStream_O:
 }
 obj_finalize_STAMPWTAG_core__Package_O:
 {
-     // stamp value 1663
+     // stamp value 1655
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17780,7 +17720,7 @@ obj_finalize_STAMPWTAG_core__Package_O:
 }
 obj_finalize_STAMPWTAG_core__FileStatus_O:
 {
-     // stamp value 1667
+     // stamp value 1659
     core::FileStatus_O* obj_gc_safe = reinterpret_cast<core::FileStatus_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17790,7 +17730,7 @@ obj_finalize_STAMPWTAG_core__FileStatus_O:
 }
 obj_finalize_STAMPWTAG_core__SourcePosInfo_O:
 {
-     // stamp value 1671
+     // stamp value 1663
     core::SourcePosInfo_O* obj_gc_safe = reinterpret_cast<core::SourcePosInfo_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17800,7 +17740,7 @@ obj_finalize_STAMPWTAG_core__SourcePosInfo_O:
 }
 obj_finalize_STAMPWTAG_core__DirectoryEntry_O:
 {
-     // stamp value 1675
+     // stamp value 1667
     core::DirectoryEntry_O* obj_gc_safe = reinterpret_cast<core::DirectoryEntry_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17810,7 +17750,7 @@ obj_finalize_STAMPWTAG_core__DirectoryEntry_O:
 }
 obj_finalize_STAMPWTAG_core__LightUserData_O:
 {
-     // stamp value 1679
+     // stamp value 1671
     core::LightUserData_O* obj_gc_safe = reinterpret_cast<core::LightUserData_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17820,7 +17760,7 @@ obj_finalize_STAMPWTAG_core__LightUserData_O:
 }
 obj_finalize_STAMPWTAG_core__UserData_O:
 {
-     // stamp value 1683
+     // stamp value 1675
     core::UserData_O* obj_gc_safe = reinterpret_cast<core::UserData_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17830,7 +17770,7 @@ obj_finalize_STAMPWTAG_core__UserData_O:
 }
 obj_finalize_STAMPWTAG_core__Record_O:
 {
-     // stamp value 1687
+     // stamp value 1679
     core::Record_O* obj_gc_safe = reinterpret_cast<core::Record_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17840,7 +17780,7 @@ obj_finalize_STAMPWTAG_core__Record_O:
 }
 obj_finalize_STAMPWTAG_clbind__ClassRegistry_O:
 {
-     // stamp value 1691
+     // stamp value 1683
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17850,7 +17790,7 @@ obj_finalize_STAMPWTAG_clbind__ClassRegistry_O:
 }
 obj_finalize_STAMPWTAG_core__Cons_O:
 {
-     // stamp value 1695
+     // stamp value 1687
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17860,7 +17800,7 @@ obj_finalize_STAMPWTAG_core__Cons_O:
 }
 obj_finalize_STAMPWTAG_core__Lisp_O:
 {
-     // stamp value 1699
+     // stamp value 1691
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17870,12 +17810,12 @@ obj_finalize_STAMPWTAG_core__Lisp_O:
 }
 obj_finalize_STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_:
 {
-     // do nothing stamp value 1703
+     // do nothing stamp value 1695
     THROW_HARD_ERROR(BF("Should never finalize object clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"));
 }
 obj_finalize_STAMPWTAG_asttooling__AstVisitor_O:
 {
-     // stamp value 1707
+     // stamp value 1699
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17885,202 +17825,202 @@ obj_finalize_STAMPWTAG_asttooling__AstVisitor_O:
 }
 obj_finalize_STAMPWTAG_clang__tooling__ToolAction:
 {
-     // do nothing stamp value 1711
+     // do nothing stamp value 1703
     THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::ToolAction"));
 }
 obj_finalize_STAMPWTAG_clang__tooling__FrontendActionFactory:
 {
-     // do nothing stamp value 1715
+     // do nothing stamp value 1707
     THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::FrontendActionFactory"));
 }
 obj_finalize_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback:
 {
-     // do nothing stamp value 1719
+     // do nothing stamp value 1711
     THROW_HARD_ERROR(BF("Should never finalize object clang::ast_matchers::MatchFinder::MatchCallback"));
 }
 obj_finalize_STAMPWTAG_gctools__GCContainer:
 {
-     // do nothing stamp value 1723
+     // do nothing stamp value 1715
     THROW_HARD_ERROR(BF("Should never finalize object gctools::GCContainer"));
 }
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_:
 {
-     // stamp value 1727
+     // stamp value 1719
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned int>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
-     // stamp value 1731
+     // stamp value 1723
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_short_:
 {
-     // stamp value 1735
+     // stamp value 1727
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<short>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
-     // stamp value 1739
+     // stamp value 1731
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_:
 {
-     // stamp value 1743
+     // stamp value 1735
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<4,0>"));
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_:
 {
-     // stamp value 1747
+     // stamp value 1739
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolClassHolderPair>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_signed_char_:
 {
-     // stamp value 1751
+     // stamp value 1743
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<signed char>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
-     // stamp value 1755
+     // stamp value 1747
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-     // stamp value 1759
+     // stamp value 1751
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_char_:
 {
-     // stamp value 1763
+     // stamp value 1755
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned char>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_:
 {
-     // stamp value 1767
+     // stamp value 1759
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::KeyValuePair>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
-     // stamp value 1771
+     // stamp value 1763
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
-     // stamp value 1775
+     // stamp value 1767
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_double_:
 {
-     // stamp value 1779
+     // stamp value 1771
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<double>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_:
 {
-     // stamp value 1783
+     // stamp value 1775
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::OptionalArgument>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_:
 {
-     // stamp value 1787
+     // stamp value 1779
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::KeywordArgument>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_:
 {
-     // stamp value 1791
+     // stamp value 1783
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::RequiredArgument>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__:
 {
-     // stamp value 1795
+     // stamp value 1787
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_:
 {
-     // stamp value 1799
+     // stamp value 1791
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<4,1>"));
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_:
 {
-     // stamp value 1803
+     // stamp value 1795
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolStorage>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__:
 {
-     // stamp value 1807
+     // stamp value 1799
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__:
 {
-     // stamp value 1811
+     // stamp value 1803
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_:
 {
-     // stamp value 1815
+     // stamp value 1807
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<clbind::detail::vertex>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_:
 {
-     // stamp value 1819
+     // stamp value 1811
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned long>"));}
 obj_finalize_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_:
 {
-     // stamp value 1823
+     // stamp value 1815
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArraySignedLength_moveable<unsigned long>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-     // stamp value 1827
+     // stamp value 1819
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_:
 {
-     // stamp value 1831
+     // stamp value 1823
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<2,0>"));
 }
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_int_:
 {
-     // stamp value 1835
+     // stamp value 1827
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<int>"));}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_:
 {
-     // stamp value 1839
+     // stamp value 1831
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<1,0>"));
 }
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
-     // stamp value 1843
+     // stamp value 1835
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_:
 {
-     // stamp value 1847
+     // stamp value 1839
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>"));}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_:
 {
-     // stamp value 1851
+     // stamp value 1843
     THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<2,1>"));
 }
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_long_:
 {
-     // stamp value 1855
+     // stamp value 1847
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<long>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_int_:
 {
-     // stamp value 1859
+     // stamp value 1851
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<int>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
-     // stamp value 1863
+     // stamp value 1855
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_float_:
 {
-     // stamp value 1867
+     // stamp value 1859
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<float>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_:
 {
-     // stamp value 1871
+     // stamp value 1863
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<clbind::detail::edge>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__:
 {
-     // stamp value 1875
+     // stamp value 1867
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>"));}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__T_O___:
 {
-     // stamp value 1879
+     // stamp value 1871
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_:
 {
-     // stamp value 1883
+     // stamp value 1875
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned short>"));}
 obj_finalize_STAMPWTAG_clang__FrontendAction:
 {
-     // do nothing stamp value 1887
+     // do nothing stamp value 1879
     THROW_HARD_ERROR(BF("Should never finalize object clang::FrontendAction"));
 }
 obj_finalize_STAMPWTAG_clang__ASTFrontendAction:
 {
-     // do nothing stamp value 1891
+     // do nothing stamp value 1883
     THROW_HARD_ERROR(BF("Should never finalize object clang::ASTFrontendAction"));
 }
 obj_finalize_STAMPWTAG_clang__SyntaxOnlyAction:
 {
-     // do nothing stamp value 1895
+     // do nothing stamp value 1887
     THROW_HARD_ERROR(BF("Should never finalize object clang::SyntaxOnlyAction"));
 }
 #endif // defined(GC_OBJ_FINALIZE)
@@ -18320,249 +18260,247 @@ static void* OBJ_FINALIZE_table[] = {
   /* 915 */ &&obj_finalize_STAMPWTAG_core__SharpEqualWrapper_O,
   /* 919 */ &&obj_finalize_STAMPWTAG_llvmo__ClaspJIT_O,
   /* 923 */ &&obj_finalize_STAMPWTAG_core__Readtable_O,
-  /* 927 */ &&obj_finalize_STAMPWTAG_core__PosixTime_O,
-  /* 931 */ &&obj_finalize_STAMPWTAG_core__Exposer_O,
-  /* 935 */ &&obj_finalize_STAMPWTAG_core__CoreExposer_O,
-  /* 939 */ &&obj_finalize_STAMPWTAG_asttooling__AsttoolingExposer_O,
-  /* 943 */ &&obj_finalize_STAMPWTAG_llvmo__StructLayout_O,
-  /* 947 */ &&obj_finalize_STAMPWTAG_core__PosixTimeDuration_O,
-  /* 951 */ &&obj_finalize_STAMPWTAG_clasp_ffi__ForeignTypeSpec_O,
-  /* 953 */ &&obj_finalize_STAMPWTAG_core__Instance_O,
-  /* 956 */ &&obj_finalize_STAMPWTAG_core__DerivableCxxObject_O,
-  /* 961 */ &&obj_finalize_STAMPWTAG_clbind__ClassRep_O,
-  /* 967 */ &&obj_finalize_STAMPWTAG_core__SmallMap_O,
-  /* 971 */ &&obj_finalize_STAMPWTAG_mpip__Mpi_O,
-  /* 975 */ &&obj_finalize_STAMPWTAG_core__ExternalObject_O,
-  /* 979 */ &&obj_finalize_STAMPWTAG_llvmo__Pass_O,
-  /* 983 */ &&obj_finalize_STAMPWTAG_llvmo__ModulePass_O,
-  /* 987 */ &&obj_finalize_STAMPWTAG_llvmo__ImmutablePass_O,
-  /* 991 */ &&obj_finalize_STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 995 */ &&obj_finalize_STAMPWTAG_llvmo__FunctionPass_O,
-  /* 999 */ &&obj_finalize_STAMPWTAG_llvmo__ExecutionEngine_O,
-  /* 1003 */ &&obj_finalize_STAMPWTAG_llvmo__MCSubtargetInfo_O,
-  /* 1007 */ &&obj_finalize_STAMPWTAG_llvmo__TargetSubtargetInfo_O,
-  /* 1011 */ &&obj_finalize_STAMPWTAG_llvmo__Type_O,
-  /* 1015 */ &&obj_finalize_STAMPWTAG_llvmo__PointerType_O,
-  /* 1019 */ &&obj_finalize_STAMPWTAG_llvmo__ArrayType_O,
-  /* 1023 */ &&obj_finalize_STAMPWTAG_llvmo__FunctionType_O,
-  /* 1027 */ &&obj_finalize_STAMPWTAG_llvmo__IntegerType_O,
-  /* 1031 */ &&obj_finalize_STAMPWTAG_llvmo__StructType_O,
-  /* 1035 */ &&obj_finalize_STAMPWTAG_llvmo__VectorType_O,
-  /* 1039 */ &&obj_finalize_STAMPWTAG_llvmo__JITDylib_O,
-  /* 1043 */ &&obj_finalize_STAMPWTAG_llvmo__DIContext_O,
-  /* 1047 */ &&obj_finalize_STAMPWTAG_llvmo__TargetPassConfig_O,
-  /* 1051 */ &&obj_finalize_STAMPWTAG_llvmo__IRBuilderBase_O,
-  /* 1055 */ &&obj_finalize_STAMPWTAG_llvmo__IRBuilder_O,
-  /* 1059 */ &&obj_finalize_STAMPWTAG_llvmo__APFloat_O,
-  /* 1063 */ &&obj_finalize_STAMPWTAG_llvmo__APInt_O,
-  /* 1067 */ &&obj_finalize_STAMPWTAG_llvmo__DIBuilder_O,
-  /* 1071 */ &&obj_finalize_STAMPWTAG_llvmo__SectionedAddress_O,
-  /* 1075 */ &&obj_finalize_STAMPWTAG_llvmo__EngineBuilder_O,
-  /* 1079 */ &&obj_finalize_STAMPWTAG_llvmo__PassManagerBase_O,
-  /* 1083 */ &&obj_finalize_STAMPWTAG_llvmo__PassManager_O,
-  /* 1087 */ &&obj_finalize_STAMPWTAG_llvmo__FunctionPassManager_O,
-  /* 1091 */ &&obj_finalize_STAMPWTAG_llvmo__Metadata_O,
-  /* 1095 */ &&obj_finalize_STAMPWTAG_llvmo__MDNode_O,
-  /* 1099 */ &&obj_finalize_STAMPWTAG_llvmo__DINode_O,
-  /* 1103 */ &&obj_finalize_STAMPWTAG_llvmo__DIVariable_O,
-  /* 1107 */ &&obj_finalize_STAMPWTAG_llvmo__DILocalVariable_O,
-  /* 1111 */ &&obj_finalize_STAMPWTAG_llvmo__DIScope_O,
-  /* 1115 */ &&obj_finalize_STAMPWTAG_llvmo__DIFile_O,
-  /* 1119 */ &&obj_finalize_STAMPWTAG_llvmo__DIType_O,
-  /* 1123 */ &&obj_finalize_STAMPWTAG_llvmo__DICompositeType_O,
-  /* 1127 */ &&obj_finalize_STAMPWTAG_llvmo__DIDerivedType_O,
-  /* 1131 */ &&obj_finalize_STAMPWTAG_llvmo__DIBasicType_O,
-  /* 1135 */ &&obj_finalize_STAMPWTAG_llvmo__DISubroutineType_O,
-  /* 1139 */ &&obj_finalize_STAMPWTAG_llvmo__DILocalScope_O,
-  /* 1143 */ &&obj_finalize_STAMPWTAG_llvmo__DISubprogram_O,
-  /* 1147 */ &&obj_finalize_STAMPWTAG_llvmo__DILexicalBlockBase_O,
-  /* 1151 */ &&obj_finalize_STAMPWTAG_llvmo__DILexicalBlock_O,
-  /* 1155 */ &&obj_finalize_STAMPWTAG_llvmo__DICompileUnit_O,
-  /* 1159 */ &&obj_finalize_STAMPWTAG_llvmo__DIExpression_O,
-  /* 1163 */ &&obj_finalize_STAMPWTAG_llvmo__DILocation_O,
-  /* 1167 */ &&obj_finalize_STAMPWTAG_llvmo__ValueAsMetadata_O,
-  /* 1171 */ &&obj_finalize_STAMPWTAG_llvmo__MDString_O,
-  /* 1175 */ &&obj_finalize_STAMPWTAG_core__Test_O,
-  /* 1179 */ &&obj_finalize_STAMPWTAG_llvmo__Value_O,
-  /* 1183 */ &&obj_finalize_STAMPWTAG_llvmo__Argument_O,
-  /* 1187 */ &&obj_finalize_STAMPWTAG_llvmo__BasicBlock_O,
-  /* 1191 */ &&obj_finalize_STAMPWTAG_llvmo__MetadataAsValue_O,
-  /* 1195 */ &&obj_finalize_STAMPWTAG_llvmo__User_O,
-  /* 1199 */ &&obj_finalize_STAMPWTAG_llvmo__Instruction_O,
-  /* 1203 */ &&obj_finalize_STAMPWTAG_llvmo__UnaryInstruction_O,
-  /* 1207 */ &&obj_finalize_STAMPWTAG_llvmo__VAArgInst_O,
-  /* 1211 */ &&obj_finalize_STAMPWTAG_llvmo__LoadInst_O,
-  /* 1215 */ &&obj_finalize_STAMPWTAG_llvmo__AllocaInst_O,
-  /* 1219 */ &&obj_finalize_STAMPWTAG_llvmo__SwitchInst_O,
-  /* 1223 */ &&obj_finalize_STAMPWTAG_llvmo__AtomicRMWInst_O,
-  /* 1227 */ &&obj_finalize_STAMPWTAG_llvmo__LandingPadInst_O,
-  /* 1231 */ &&obj_finalize_STAMPWTAG_llvmo__StoreInst_O,
-  /* 1235 */ &&obj_finalize_STAMPWTAG_llvmo__UnreachableInst_O,
-  /* 1239 */ &&obj_finalize_STAMPWTAG_llvmo__ReturnInst_O,
-  /* 1243 */ &&obj_finalize_STAMPWTAG_llvmo__ResumeInst_O,
-  /* 1247 */ &&obj_finalize_STAMPWTAG_llvmo__AtomicCmpXchgInst_O,
-  /* 1251 */ &&obj_finalize_STAMPWTAG_llvmo__FenceInst_O,
-  /* 1255 */ &&obj_finalize_STAMPWTAG_llvmo__CallBase_O,
-  /* 1259 */ &&obj_finalize_STAMPWTAG_llvmo__CallInst_O,
-  /* 1263 */ &&obj_finalize_STAMPWTAG_llvmo__InvokeInst_O,
-  /* 1267 */ &&obj_finalize_STAMPWTAG_llvmo__PHINode_O,
-  /* 1271 */ &&obj_finalize_STAMPWTAG_llvmo__IndirectBrInst_O,
-  /* 1275 */ &&obj_finalize_STAMPWTAG_llvmo__BranchInst_O,
-  /* 1279 */ &&obj_finalize_STAMPWTAG_llvmo__Constant_O,
-  /* 1283 */ &&obj_finalize_STAMPWTAG_llvmo__GlobalValue_O,
-  /* 1287 */ &&obj_finalize_STAMPWTAG_llvmo__Function_O,
-  /* 1291 */ &&obj_finalize_STAMPWTAG_llvmo__GlobalVariable_O,
-  /* 1295 */ &&obj_finalize_STAMPWTAG_llvmo__BlockAddress_O,
-  /* 1299 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantDataSequential_O,
-  /* 1303 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantDataArray_O,
-  /* 1307 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantStruct_O,
-  /* 1311 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantInt_O,
-  /* 1315 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantFP_O,
-  /* 1319 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantExpr_O,
-  /* 1323 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantPointerNull_O,
-  /* 1327 */ &&obj_finalize_STAMPWTAG_llvmo__UndefValue_O,
-  /* 1331 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantArray_O,
-  /* 1335 */ &&obj_finalize_STAMPWTAG_llvmo__TargetMachine_O,
-  /* 1339 */ &&obj_finalize_STAMPWTAG_llvmo__LLVMTargetMachine_O,
-  /* 1343 */ &&obj_finalize_STAMPWTAG_llvmo__ThreadSafeContext_O,
-  /* 1347 */ &&obj_finalize_STAMPWTAG_llvmo__NamedMDNode_O,
-  /* 1351 */ &&obj_finalize_STAMPWTAG_llvmo__Triple_O,
-  /* 1355 */ &&obj_finalize_STAMPWTAG_llvmo__DWARFContext_O,
-  /* 1359 */ &&obj_finalize_STAMPWTAG_llvmo__TargetOptions_O,
-  /* 1363 */ &&obj_finalize_STAMPWTAG_llvmo__LLVMContext_O,
-  /* 1367 */ &&obj_finalize_STAMPWTAG_llvmo__PassManagerBuilder_O,
-  /* 1371 */ &&obj_finalize_STAMPWTAG_llvmo__Module_O,
-  /* 1375 */ &&obj_finalize_STAMPWTAG_llvmo__Target_O,
-  /* 1379 */ &&obj_finalize_STAMPWTAG_llvmo__Linker_O,
-  /* 1383 */ &&obj_finalize_STAMPWTAG_core__Rack_O,
-  /* 1387 */ &&obj_finalize_STAMPWTAG_core__SmallMultimap_O,
-  /* 1391 */ &&obj_finalize_STAMPWTAG_core__Sigset_O,
-  /* 1395 */ &&obj_finalize_STAMPWTAG_core__DebuggerFrame_O,
-  /* 1399 */ &&obj_finalize_STAMPWTAG_core__Environment_O,
-  /* 1403 */ &&obj_finalize_STAMPWTAG_core__GlueEnvironment_O,
-  /* 1407 */ &&obj_finalize_STAMPWTAG_core__LexicalEnvironment_O,
-  /* 1411 */ &&obj_finalize_STAMPWTAG_core__RuntimeVisibleEnvironment_O,
-  /* 1415 */ &&obj_finalize_STAMPWTAG_core__FunctionValueEnvironment_O,
-  /* 1419 */ &&obj_finalize_STAMPWTAG_core__TagbodyEnvironment_O,
-  /* 1423 */ &&obj_finalize_STAMPWTAG_core__BlockEnvironment_O,
-  /* 1427 */ &&obj_finalize_STAMPWTAG_core__ValueEnvironment_O,
-  /* 1431 */ &&obj_finalize_STAMPWTAG_core__CompileTimeEnvironment_O,
-  /* 1435 */ &&obj_finalize_STAMPWTAG_core__CatchEnvironment_O,
-  /* 1439 */ &&obj_finalize_STAMPWTAG_core__MacroletEnvironment_O,
-  /* 1443 */ &&obj_finalize_STAMPWTAG_core__SymbolMacroletEnvironment_O,
-  /* 1447 */ &&obj_finalize_STAMPWTAG_core__FunctionContainerEnvironment_O,
-  /* 1451 */ &&obj_finalize_STAMPWTAG_core__UnwindProtectEnvironment_O,
-  /* 1455 */ &&obj_finalize_STAMPWTAG_core__ActivationFrame_O,
-  /* 1459 */ &&obj_finalize_STAMPWTAG_core__ValueFrame_O,
-  /* 1463 */ &&obj_finalize_STAMPWTAG_core__FunctionFrame_O,
-  /* 1467 */ &&obj_finalize_STAMPWTAG_core__RandomState_O,
-  /* 1471 */ &&obj_finalize_STAMPWTAG_core__EntryPointBase_O,
-  /* 1475 */ &&obj_finalize_STAMPWTAG_core__GlobalEntryPointGenerator_O,
-  /* 1479 */ &&obj_finalize_STAMPWTAG_core__LocalEntryPointGenerator_O,
-  /* 1483 */ &&obj_finalize_STAMPWTAG_core__CodeEntryPoint_O,
-  /* 1487 */ &&obj_finalize_STAMPWTAG_core__GlobalEntryPoint_O,
-  /* 1491 */ &&obj_finalize_STAMPWTAG_core__LocalEntryPoint_O,
-  /* 1495 */ &&obj_finalize_STAMPWTAG_core__DebuggerLocal_O,
-  /* 1499 */ &&obj_finalize_STAMPWTAG_core__HashTableBase_O,
-  /* 1503 */ &&obj_finalize_STAMPWTAG_core__WeakKeyHashTable_O,
-  /* 1507 */ &&obj_finalize_STAMPWTAG_core__HashTable_O,
-  /* 1511 */ &&obj_finalize_STAMPWTAG_core__HashTableEqualp_O,
-  /* 1515 */ &&obj_finalize_STAMPWTAG_core__HashTableEq_O,
-  /* 1519 */ &&obj_finalize_STAMPWTAG_core__HashTableEql_O,
-  /* 1523 */ &&obj_finalize_STAMPWTAG_core__HashTableEqual_O,
-  /* 1527 */ &&obj_finalize_STAMPWTAG_core__HashTableCustom_O,
-  /* 1531 */ &&obj_finalize_STAMPWTAG_core__FunctionDescription_O,
-  /* 1535 */ &&obj_finalize_STAMPWTAG_llvmo__InsertPoint_O,
-  /* 1539 */ &&obj_finalize_STAMPWTAG_core__Scope_O,
-  /* 1543 */ &&obj_finalize_STAMPWTAG_core__FileScope_O,
-  /* 1547 */ &&obj_finalize_STAMPWTAG_core__Path_O,
-  /* 1551 */ &&obj_finalize_STAMPWTAG_core__Pathname_O,
-  /* 1555 */ &&obj_finalize_STAMPWTAG_core__LogicalPathname_O,
-  /* 1559 */ &&obj_finalize_STAMPWTAG_core__Number_O,
-  /* 1563 */ &&obj_finalize_STAMPWTAG_core__Real_O,
-  /* 1567 */ &&obj_finalize_STAMPWTAG_core__Rational_O,
-  /* 1571 */ &&obj_finalize_STAMPWTAG_core__Ratio_O,
-  /* 1575 */ &&obj_finalize_STAMPWTAG_core__Integer_O,
-  /* 1579 */ &&obj_finalize_STAMPWTAG_core__Bignum_O,
-  /* 1583 */ &&obj_finalize_STAMPWTAG_core__Fixnum_dummy_O,
-  /* 1587 */ &&obj_finalize_STAMPWTAG_core__Float_O,
-  /* 1591 */ &&obj_finalize_STAMPWTAG_core__DoubleFloat_O,
-  /* 1595 */ &&obj_finalize_STAMPWTAG_core__SingleFloat_dummy_O,
-  /* 1599 */ &&obj_finalize_STAMPWTAG_core__LongFloat_O,
-  /* 1603 */ &&obj_finalize_STAMPWTAG_core__ShortFloat_O,
-  /* 1607 */ &&obj_finalize_STAMPWTAG_core__Complex_O,
-  /* 1611 */ &&obj_finalize_STAMPWTAG_core__Stream_O,
-  /* 1615 */ &&obj_finalize_STAMPWTAG_core__AnsiStream_O,
-  /* 1619 */ &&obj_finalize_STAMPWTAG_core__TwoWayStream_O,
-  /* 1623 */ &&obj_finalize_STAMPWTAG_core__SynonymStream_O,
-  /* 1627 */ &&obj_finalize_STAMPWTAG_core__ConcatenatedStream_O,
-  /* 1631 */ &&obj_finalize_STAMPWTAG_core__FileStream_O,
-  /* 1635 */ &&obj_finalize_STAMPWTAG_core__IOFileStream_O,
-  /* 1639 */ &&obj_finalize_STAMPWTAG_core__IOStreamStream_O,
-  /* 1643 */ &&obj_finalize_STAMPWTAG_core__BroadcastStream_O,
-  /* 1647 */ &&obj_finalize_STAMPWTAG_core__StringStream_O,
-  /* 1651 */ &&obj_finalize_STAMPWTAG_core__StringOutputStream_O,
-  /* 1655 */ &&obj_finalize_STAMPWTAG_core__StringInputStream_O,
-  /* 1659 */ &&obj_finalize_STAMPWTAG_core__EchoStream_O,
-  /* 1663 */ &&obj_finalize_STAMPWTAG_core__Package_O,
-  /* 1667 */ &&obj_finalize_STAMPWTAG_core__FileStatus_O,
-  /* 1671 */ &&obj_finalize_STAMPWTAG_core__SourcePosInfo_O,
-  /* 1675 */ &&obj_finalize_STAMPWTAG_core__DirectoryEntry_O,
-  /* 1679 */ &&obj_finalize_STAMPWTAG_core__LightUserData_O,
-  /* 1683 */ &&obj_finalize_STAMPWTAG_core__UserData_O,
-  /* 1687 */ &&obj_finalize_STAMPWTAG_core__Record_O,
-  /* 1691 */ &&obj_finalize_STAMPWTAG_clbind__ClassRegistry_O,
-  /* 1695 */ &&obj_finalize_STAMPWTAG_core__Cons_O,
-  /* 1699 */ &&obj_finalize_STAMPWTAG_core__Lisp_O,
-  /* 1703 */ &&obj_finalize_STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
-  /* 1707 */ &&obj_finalize_STAMPWTAG_asttooling__AstVisitor_O,
-  /* 1711 */ &&obj_finalize_STAMPWTAG_clang__tooling__ToolAction,
-  /* 1715 */ &&obj_finalize_STAMPWTAG_clang__tooling__FrontendActionFactory,
-  /* 1719 */ &&obj_finalize_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback,
-  /* 1723 */ &&obj_finalize_STAMPWTAG_gctools__GCContainer,
-  /* 1727 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_,
-  /* 1731 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 1735 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_short_,
-  /* 1739 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
-  /* 1743 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_,
-  /* 1747 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_,
-  /* 1751 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_signed_char_,
-  /* 1755 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
-  /* 1759 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
-  /* 1763 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_char_,
-  /* 1767 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_,
-  /* 1771 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 1775 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
-  /* 1779 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_double_,
-  /* 1783 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_,
-  /* 1787 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_,
-  /* 1791 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 1795 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
-  /* 1799 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_,
-  /* 1803 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 1807 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
-  /* 1811 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__,
-  /* 1815 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_,
-  /* 1819 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_,
-  /* 1823 */ &&obj_finalize_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_,
-  /* 1827 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 1831 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_,
-  /* 1835 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_int_,
-  /* 1839 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_,
-  /* 1843 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 1847 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 1851 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_,
-  /* 1855 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_long_,
-  /* 1859 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_int_,
-  /* 1863 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 1867 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_float_,
-  /* 1871 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_,
-  /* 1875 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
-  /* 1879 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__T_O___,
-  /* 1883 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_,
-  /* 1887 */ &&obj_finalize_STAMPWTAG_clang__FrontendAction,
-  /* 1891 */ &&obj_finalize_STAMPWTAG_clang__ASTFrontendAction,
-  /* 1895 */ &&obj_finalize_STAMPWTAG_clang__SyntaxOnlyAction,
+  /* 927 */ &&obj_finalize_STAMPWTAG_core__Exposer_O,
+  /* 931 */ &&obj_finalize_STAMPWTAG_core__CoreExposer_O,
+  /* 935 */ &&obj_finalize_STAMPWTAG_asttooling__AsttoolingExposer_O,
+  /* 939 */ &&obj_finalize_STAMPWTAG_llvmo__StructLayout_O,
+  /* 943 */ &&obj_finalize_STAMPWTAG_clasp_ffi__ForeignTypeSpec_O,
+  /* 945 */ &&obj_finalize_STAMPWTAG_core__Instance_O,
+  /* 948 */ &&obj_finalize_STAMPWTAG_core__DerivableCxxObject_O,
+  /* 953 */ &&obj_finalize_STAMPWTAG_clbind__ClassRep_O,
+  /* 959 */ &&obj_finalize_STAMPWTAG_core__SmallMap_O,
+  /* 963 */ &&obj_finalize_STAMPWTAG_mpip__Mpi_O,
+  /* 967 */ &&obj_finalize_STAMPWTAG_core__ExternalObject_O,
+  /* 971 */ &&obj_finalize_STAMPWTAG_llvmo__Pass_O,
+  /* 975 */ &&obj_finalize_STAMPWTAG_llvmo__ModulePass_O,
+  /* 979 */ &&obj_finalize_STAMPWTAG_llvmo__ImmutablePass_O,
+  /* 983 */ &&obj_finalize_STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 987 */ &&obj_finalize_STAMPWTAG_llvmo__FunctionPass_O,
+  /* 991 */ &&obj_finalize_STAMPWTAG_llvmo__ExecutionEngine_O,
+  /* 995 */ &&obj_finalize_STAMPWTAG_llvmo__MCSubtargetInfo_O,
+  /* 999 */ &&obj_finalize_STAMPWTAG_llvmo__TargetSubtargetInfo_O,
+  /* 1003 */ &&obj_finalize_STAMPWTAG_llvmo__Type_O,
+  /* 1007 */ &&obj_finalize_STAMPWTAG_llvmo__PointerType_O,
+  /* 1011 */ &&obj_finalize_STAMPWTAG_llvmo__ArrayType_O,
+  /* 1015 */ &&obj_finalize_STAMPWTAG_llvmo__FunctionType_O,
+  /* 1019 */ &&obj_finalize_STAMPWTAG_llvmo__IntegerType_O,
+  /* 1023 */ &&obj_finalize_STAMPWTAG_llvmo__StructType_O,
+  /* 1027 */ &&obj_finalize_STAMPWTAG_llvmo__VectorType_O,
+  /* 1031 */ &&obj_finalize_STAMPWTAG_llvmo__JITDylib_O,
+  /* 1035 */ &&obj_finalize_STAMPWTAG_llvmo__DIContext_O,
+  /* 1039 */ &&obj_finalize_STAMPWTAG_llvmo__TargetPassConfig_O,
+  /* 1043 */ &&obj_finalize_STAMPWTAG_llvmo__IRBuilderBase_O,
+  /* 1047 */ &&obj_finalize_STAMPWTAG_llvmo__IRBuilder_O,
+  /* 1051 */ &&obj_finalize_STAMPWTAG_llvmo__APFloat_O,
+  /* 1055 */ &&obj_finalize_STAMPWTAG_llvmo__APInt_O,
+  /* 1059 */ &&obj_finalize_STAMPWTAG_llvmo__DIBuilder_O,
+  /* 1063 */ &&obj_finalize_STAMPWTAG_llvmo__SectionedAddress_O,
+  /* 1067 */ &&obj_finalize_STAMPWTAG_llvmo__EngineBuilder_O,
+  /* 1071 */ &&obj_finalize_STAMPWTAG_llvmo__PassManagerBase_O,
+  /* 1075 */ &&obj_finalize_STAMPWTAG_llvmo__PassManager_O,
+  /* 1079 */ &&obj_finalize_STAMPWTAG_llvmo__FunctionPassManager_O,
+  /* 1083 */ &&obj_finalize_STAMPWTAG_llvmo__Metadata_O,
+  /* 1087 */ &&obj_finalize_STAMPWTAG_llvmo__MDNode_O,
+  /* 1091 */ &&obj_finalize_STAMPWTAG_llvmo__DINode_O,
+  /* 1095 */ &&obj_finalize_STAMPWTAG_llvmo__DIVariable_O,
+  /* 1099 */ &&obj_finalize_STAMPWTAG_llvmo__DILocalVariable_O,
+  /* 1103 */ &&obj_finalize_STAMPWTAG_llvmo__DIScope_O,
+  /* 1107 */ &&obj_finalize_STAMPWTAG_llvmo__DIFile_O,
+  /* 1111 */ &&obj_finalize_STAMPWTAG_llvmo__DIType_O,
+  /* 1115 */ &&obj_finalize_STAMPWTAG_llvmo__DICompositeType_O,
+  /* 1119 */ &&obj_finalize_STAMPWTAG_llvmo__DIDerivedType_O,
+  /* 1123 */ &&obj_finalize_STAMPWTAG_llvmo__DIBasicType_O,
+  /* 1127 */ &&obj_finalize_STAMPWTAG_llvmo__DISubroutineType_O,
+  /* 1131 */ &&obj_finalize_STAMPWTAG_llvmo__DILocalScope_O,
+  /* 1135 */ &&obj_finalize_STAMPWTAG_llvmo__DISubprogram_O,
+  /* 1139 */ &&obj_finalize_STAMPWTAG_llvmo__DILexicalBlockBase_O,
+  /* 1143 */ &&obj_finalize_STAMPWTAG_llvmo__DILexicalBlock_O,
+  /* 1147 */ &&obj_finalize_STAMPWTAG_llvmo__DICompileUnit_O,
+  /* 1151 */ &&obj_finalize_STAMPWTAG_llvmo__DIExpression_O,
+  /* 1155 */ &&obj_finalize_STAMPWTAG_llvmo__DILocation_O,
+  /* 1159 */ &&obj_finalize_STAMPWTAG_llvmo__ValueAsMetadata_O,
+  /* 1163 */ &&obj_finalize_STAMPWTAG_llvmo__MDString_O,
+  /* 1167 */ &&obj_finalize_STAMPWTAG_core__Test_O,
+  /* 1171 */ &&obj_finalize_STAMPWTAG_llvmo__Value_O,
+  /* 1175 */ &&obj_finalize_STAMPWTAG_llvmo__Argument_O,
+  /* 1179 */ &&obj_finalize_STAMPWTAG_llvmo__BasicBlock_O,
+  /* 1183 */ &&obj_finalize_STAMPWTAG_llvmo__MetadataAsValue_O,
+  /* 1187 */ &&obj_finalize_STAMPWTAG_llvmo__User_O,
+  /* 1191 */ &&obj_finalize_STAMPWTAG_llvmo__Instruction_O,
+  /* 1195 */ &&obj_finalize_STAMPWTAG_llvmo__UnaryInstruction_O,
+  /* 1199 */ &&obj_finalize_STAMPWTAG_llvmo__VAArgInst_O,
+  /* 1203 */ &&obj_finalize_STAMPWTAG_llvmo__LoadInst_O,
+  /* 1207 */ &&obj_finalize_STAMPWTAG_llvmo__AllocaInst_O,
+  /* 1211 */ &&obj_finalize_STAMPWTAG_llvmo__SwitchInst_O,
+  /* 1215 */ &&obj_finalize_STAMPWTAG_llvmo__AtomicRMWInst_O,
+  /* 1219 */ &&obj_finalize_STAMPWTAG_llvmo__LandingPadInst_O,
+  /* 1223 */ &&obj_finalize_STAMPWTAG_llvmo__StoreInst_O,
+  /* 1227 */ &&obj_finalize_STAMPWTAG_llvmo__UnreachableInst_O,
+  /* 1231 */ &&obj_finalize_STAMPWTAG_llvmo__ReturnInst_O,
+  /* 1235 */ &&obj_finalize_STAMPWTAG_llvmo__ResumeInst_O,
+  /* 1239 */ &&obj_finalize_STAMPWTAG_llvmo__AtomicCmpXchgInst_O,
+  /* 1243 */ &&obj_finalize_STAMPWTAG_llvmo__FenceInst_O,
+  /* 1247 */ &&obj_finalize_STAMPWTAG_llvmo__CallBase_O,
+  /* 1251 */ &&obj_finalize_STAMPWTAG_llvmo__CallInst_O,
+  /* 1255 */ &&obj_finalize_STAMPWTAG_llvmo__InvokeInst_O,
+  /* 1259 */ &&obj_finalize_STAMPWTAG_llvmo__PHINode_O,
+  /* 1263 */ &&obj_finalize_STAMPWTAG_llvmo__IndirectBrInst_O,
+  /* 1267 */ &&obj_finalize_STAMPWTAG_llvmo__BranchInst_O,
+  /* 1271 */ &&obj_finalize_STAMPWTAG_llvmo__Constant_O,
+  /* 1275 */ &&obj_finalize_STAMPWTAG_llvmo__GlobalValue_O,
+  /* 1279 */ &&obj_finalize_STAMPWTAG_llvmo__Function_O,
+  /* 1283 */ &&obj_finalize_STAMPWTAG_llvmo__GlobalVariable_O,
+  /* 1287 */ &&obj_finalize_STAMPWTAG_llvmo__BlockAddress_O,
+  /* 1291 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantDataSequential_O,
+  /* 1295 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantDataArray_O,
+  /* 1299 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantStruct_O,
+  /* 1303 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantInt_O,
+  /* 1307 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantFP_O,
+  /* 1311 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantExpr_O,
+  /* 1315 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantPointerNull_O,
+  /* 1319 */ &&obj_finalize_STAMPWTAG_llvmo__UndefValue_O,
+  /* 1323 */ &&obj_finalize_STAMPWTAG_llvmo__ConstantArray_O,
+  /* 1327 */ &&obj_finalize_STAMPWTAG_llvmo__TargetMachine_O,
+  /* 1331 */ &&obj_finalize_STAMPWTAG_llvmo__LLVMTargetMachine_O,
+  /* 1335 */ &&obj_finalize_STAMPWTAG_llvmo__ThreadSafeContext_O,
+  /* 1339 */ &&obj_finalize_STAMPWTAG_llvmo__NamedMDNode_O,
+  /* 1343 */ &&obj_finalize_STAMPWTAG_llvmo__Triple_O,
+  /* 1347 */ &&obj_finalize_STAMPWTAG_llvmo__DWARFContext_O,
+  /* 1351 */ &&obj_finalize_STAMPWTAG_llvmo__TargetOptions_O,
+  /* 1355 */ &&obj_finalize_STAMPWTAG_llvmo__LLVMContext_O,
+  /* 1359 */ &&obj_finalize_STAMPWTAG_llvmo__PassManagerBuilder_O,
+  /* 1363 */ &&obj_finalize_STAMPWTAG_llvmo__Module_O,
+  /* 1367 */ &&obj_finalize_STAMPWTAG_llvmo__Target_O,
+  /* 1371 */ &&obj_finalize_STAMPWTAG_llvmo__Linker_O,
+  /* 1375 */ &&obj_finalize_STAMPWTAG_core__Rack_O,
+  /* 1379 */ &&obj_finalize_STAMPWTAG_core__SmallMultimap_O,
+  /* 1383 */ &&obj_finalize_STAMPWTAG_core__Sigset_O,
+  /* 1387 */ &&obj_finalize_STAMPWTAG_core__DebuggerFrame_O,
+  /* 1391 */ &&obj_finalize_STAMPWTAG_core__Environment_O,
+  /* 1395 */ &&obj_finalize_STAMPWTAG_core__GlueEnvironment_O,
+  /* 1399 */ &&obj_finalize_STAMPWTAG_core__LexicalEnvironment_O,
+  /* 1403 */ &&obj_finalize_STAMPWTAG_core__RuntimeVisibleEnvironment_O,
+  /* 1407 */ &&obj_finalize_STAMPWTAG_core__FunctionValueEnvironment_O,
+  /* 1411 */ &&obj_finalize_STAMPWTAG_core__TagbodyEnvironment_O,
+  /* 1415 */ &&obj_finalize_STAMPWTAG_core__BlockEnvironment_O,
+  /* 1419 */ &&obj_finalize_STAMPWTAG_core__ValueEnvironment_O,
+  /* 1423 */ &&obj_finalize_STAMPWTAG_core__CompileTimeEnvironment_O,
+  /* 1427 */ &&obj_finalize_STAMPWTAG_core__CatchEnvironment_O,
+  /* 1431 */ &&obj_finalize_STAMPWTAG_core__MacroletEnvironment_O,
+  /* 1435 */ &&obj_finalize_STAMPWTAG_core__SymbolMacroletEnvironment_O,
+  /* 1439 */ &&obj_finalize_STAMPWTAG_core__FunctionContainerEnvironment_O,
+  /* 1443 */ &&obj_finalize_STAMPWTAG_core__UnwindProtectEnvironment_O,
+  /* 1447 */ &&obj_finalize_STAMPWTAG_core__ActivationFrame_O,
+  /* 1451 */ &&obj_finalize_STAMPWTAG_core__ValueFrame_O,
+  /* 1455 */ &&obj_finalize_STAMPWTAG_core__FunctionFrame_O,
+  /* 1459 */ &&obj_finalize_STAMPWTAG_core__RandomState_O,
+  /* 1463 */ &&obj_finalize_STAMPWTAG_core__EntryPointBase_O,
+  /* 1467 */ &&obj_finalize_STAMPWTAG_core__GlobalEntryPointGenerator_O,
+  /* 1471 */ &&obj_finalize_STAMPWTAG_core__LocalEntryPointGenerator_O,
+  /* 1475 */ &&obj_finalize_STAMPWTAG_core__CodeEntryPoint_O,
+  /* 1479 */ &&obj_finalize_STAMPWTAG_core__GlobalEntryPoint_O,
+  /* 1483 */ &&obj_finalize_STAMPWTAG_core__LocalEntryPoint_O,
+  /* 1487 */ &&obj_finalize_STAMPWTAG_core__DebuggerLocal_O,
+  /* 1491 */ &&obj_finalize_STAMPWTAG_core__HashTableBase_O,
+  /* 1495 */ &&obj_finalize_STAMPWTAG_core__WeakKeyHashTable_O,
+  /* 1499 */ &&obj_finalize_STAMPWTAG_core__HashTable_O,
+  /* 1503 */ &&obj_finalize_STAMPWTAG_core__HashTableEqualp_O,
+  /* 1507 */ &&obj_finalize_STAMPWTAG_core__HashTableEq_O,
+  /* 1511 */ &&obj_finalize_STAMPWTAG_core__HashTableEql_O,
+  /* 1515 */ &&obj_finalize_STAMPWTAG_core__HashTableEqual_O,
+  /* 1519 */ &&obj_finalize_STAMPWTAG_core__HashTableCustom_O,
+  /* 1523 */ &&obj_finalize_STAMPWTAG_core__FunctionDescription_O,
+  /* 1527 */ &&obj_finalize_STAMPWTAG_llvmo__InsertPoint_O,
+  /* 1531 */ &&obj_finalize_STAMPWTAG_core__Scope_O,
+  /* 1535 */ &&obj_finalize_STAMPWTAG_core__FileScope_O,
+  /* 1539 */ &&obj_finalize_STAMPWTAG_core__Path_O,
+  /* 1543 */ &&obj_finalize_STAMPWTAG_core__Pathname_O,
+  /* 1547 */ &&obj_finalize_STAMPWTAG_core__LogicalPathname_O,
+  /* 1551 */ &&obj_finalize_STAMPWTAG_core__Number_O,
+  /* 1555 */ &&obj_finalize_STAMPWTAG_core__Real_O,
+  /* 1559 */ &&obj_finalize_STAMPWTAG_core__Rational_O,
+  /* 1563 */ &&obj_finalize_STAMPWTAG_core__Ratio_O,
+  /* 1567 */ &&obj_finalize_STAMPWTAG_core__Integer_O,
+  /* 1571 */ &&obj_finalize_STAMPWTAG_core__Bignum_O,
+  /* 1575 */ &&obj_finalize_STAMPWTAG_core__Fixnum_dummy_O,
+  /* 1579 */ &&obj_finalize_STAMPWTAG_core__Float_O,
+  /* 1583 */ &&obj_finalize_STAMPWTAG_core__DoubleFloat_O,
+  /* 1587 */ &&obj_finalize_STAMPWTAG_core__SingleFloat_dummy_O,
+  /* 1591 */ &&obj_finalize_STAMPWTAG_core__LongFloat_O,
+  /* 1595 */ &&obj_finalize_STAMPWTAG_core__ShortFloat_O,
+  /* 1599 */ &&obj_finalize_STAMPWTAG_core__Complex_O,
+  /* 1603 */ &&obj_finalize_STAMPWTAG_core__Stream_O,
+  /* 1607 */ &&obj_finalize_STAMPWTAG_core__AnsiStream_O,
+  /* 1611 */ &&obj_finalize_STAMPWTAG_core__TwoWayStream_O,
+  /* 1615 */ &&obj_finalize_STAMPWTAG_core__SynonymStream_O,
+  /* 1619 */ &&obj_finalize_STAMPWTAG_core__ConcatenatedStream_O,
+  /* 1623 */ &&obj_finalize_STAMPWTAG_core__FileStream_O,
+  /* 1627 */ &&obj_finalize_STAMPWTAG_core__IOFileStream_O,
+  /* 1631 */ &&obj_finalize_STAMPWTAG_core__IOStreamStream_O,
+  /* 1635 */ &&obj_finalize_STAMPWTAG_core__BroadcastStream_O,
+  /* 1639 */ &&obj_finalize_STAMPWTAG_core__StringStream_O,
+  /* 1643 */ &&obj_finalize_STAMPWTAG_core__StringOutputStream_O,
+  /* 1647 */ &&obj_finalize_STAMPWTAG_core__StringInputStream_O,
+  /* 1651 */ &&obj_finalize_STAMPWTAG_core__EchoStream_O,
+  /* 1655 */ &&obj_finalize_STAMPWTAG_core__Package_O,
+  /* 1659 */ &&obj_finalize_STAMPWTAG_core__FileStatus_O,
+  /* 1663 */ &&obj_finalize_STAMPWTAG_core__SourcePosInfo_O,
+  /* 1667 */ &&obj_finalize_STAMPWTAG_core__DirectoryEntry_O,
+  /* 1671 */ &&obj_finalize_STAMPWTAG_core__LightUserData_O,
+  /* 1675 */ &&obj_finalize_STAMPWTAG_core__UserData_O,
+  /* 1679 */ &&obj_finalize_STAMPWTAG_core__Record_O,
+  /* 1683 */ &&obj_finalize_STAMPWTAG_clbind__ClassRegistry_O,
+  /* 1687 */ &&obj_finalize_STAMPWTAG_core__Cons_O,
+  /* 1691 */ &&obj_finalize_STAMPWTAG_core__Lisp_O,
+  /* 1695 */ &&obj_finalize_STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
+  /* 1699 */ &&obj_finalize_STAMPWTAG_asttooling__AstVisitor_O,
+  /* 1703 */ &&obj_finalize_STAMPWTAG_clang__tooling__ToolAction,
+  /* 1707 */ &&obj_finalize_STAMPWTAG_clang__tooling__FrontendActionFactory,
+  /* 1711 */ &&obj_finalize_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback,
+  /* 1715 */ &&obj_finalize_STAMPWTAG_gctools__GCContainer,
+  /* 1719 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_,
+  /* 1723 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 1727 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_short_,
+  /* 1731 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 1735 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_,
+  /* 1739 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_,
+  /* 1743 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_signed_char_,
+  /* 1747 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
+  /* 1751 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
+  /* 1755 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_char_,
+  /* 1759 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_,
+  /* 1763 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 1767 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
+  /* 1771 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_double_,
+  /* 1775 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_,
+  /* 1779 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_,
+  /* 1783 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_,
+  /* 1787 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
+  /* 1791 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_,
+  /* 1795 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 1799 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
+  /* 1803 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__,
+  /* 1807 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_,
+  /* 1811 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_,
+  /* 1815 */ &&obj_finalize_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_,
+  /* 1819 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 1823 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_,
+  /* 1827 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_int_,
+  /* 1831 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_,
+  /* 1835 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 1839 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 1843 */ &&obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_,
+  /* 1847 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_long_,
+  /* 1851 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_int_,
+  /* 1855 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 1859 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_float_,
+  /* 1863 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_,
+  /* 1867 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
+  /* 1871 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__T_O___,
+  /* 1875 */ &&obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_,
+  /* 1879 */ &&obj_finalize_STAMPWTAG_clang__FrontendAction,
+  /* 1883 */ &&obj_finalize_STAMPWTAG_clang__ASTFrontendAction,
+  /* 1887 */ &&obj_finalize_STAMPWTAG_clang__SyntaxOnlyAction,
    NULL
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)
@@ -20012,1569 +19950,1555 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__Readtable_O:
     GC<core::Readtable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMPWTAG_core__PosixTime_O:
-{
-     // stamp value 927
-    core::PosixTime_O* obj_gc_safe = reinterpret_cast<core::PosixTime_O*>(client);
-    GC<core::PosixTime_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Exposer_O:
 {
-     // stamp value 931
+     // stamp value 927
     core::Exposer_O* obj_gc_safe = reinterpret_cast<core::Exposer_O*>(client);
     GC<core::Exposer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__CoreExposer_O:
 {
-     // stamp value 935
+     // stamp value 931
     core::CoreExposer_O* obj_gc_safe = reinterpret_cast<core::CoreExposer_O*>(client);
     GC<core::CoreExposer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_asttooling__AsttoolingExposer_O:
 {
-     // stamp value 939
+     // stamp value 935
     asttooling::AsttoolingExposer_O* obj_gc_safe = reinterpret_cast<asttooling::AsttoolingExposer_O*>(client);
     GC<asttooling::AsttoolingExposer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__StructLayout_O:
 {
-     // stamp value 943
+     // stamp value 939
     llvmo::StructLayout_O* obj_gc_safe = reinterpret_cast<llvmo::StructLayout_O*>(client);
     GC<llvmo::StructLayout_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMPWTAG_core__PosixTimeDuration_O:
-{
-     // stamp value 947
-    core::PosixTimeDuration_O* obj_gc_safe = reinterpret_cast<core::PosixTimeDuration_O*>(client);
-    GC<core::PosixTimeDuration_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
 obj_deallocate_unmanaged_instance_STAMPWTAG_clasp_ffi__ForeignTypeSpec_O:
 {
-     // stamp value 951
+     // stamp value 943
     clasp_ffi::ForeignTypeSpec_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignTypeSpec_O*>(client);
     GC<clasp_ffi::ForeignTypeSpec_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Instance_O:
 {
-     // stamp value 953
+     // stamp value 945
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
     GC<core::Instance_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__DerivableCxxObject_O:
 {
-     // stamp value 956
+     // stamp value 948
     core::DerivableCxxObject_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxObject_O*>(client);
     GC<core::DerivableCxxObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clbind__ClassRep_O:
 {
-     // stamp value 961
+     // stamp value 953
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
     GC<clbind::ClassRep_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SmallMap_O:
 {
-     // stamp value 967
+     // stamp value 959
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
     GC<core::SmallMap_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_mpip__Mpi_O:
 {
-     // stamp value 971
+     // stamp value 963
     mpip::Mpi_O* obj_gc_safe = reinterpret_cast<mpip::Mpi_O*>(client);
     GC<mpip::Mpi_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ExternalObject_O:
 {
-     // stamp value 975
+     // stamp value 967
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
     GC<core::ExternalObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Pass_O:
 {
-     // stamp value 979
+     // stamp value 971
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
     GC<llvmo::Pass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ModulePass_O:
 {
-     // stamp value 983
+     // stamp value 975
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
     GC<llvmo::ModulePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ImmutablePass_O:
 {
-     // stamp value 987
+     // stamp value 979
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
     GC<llvmo::ImmutablePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O:
 {
-     // stamp value 991
+     // stamp value 983
     llvmo::TargetLibraryInfoWrapperPass_O* obj_gc_safe = reinterpret_cast<llvmo::TargetLibraryInfoWrapperPass_O*>(client);
     GC<llvmo::TargetLibraryInfoWrapperPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FunctionPass_O:
 {
-     // stamp value 995
+     // stamp value 987
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
     GC<llvmo::FunctionPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ExecutionEngine_O:
 {
-     // stamp value 999
+     // stamp value 991
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
     GC<llvmo::ExecutionEngine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MCSubtargetInfo_O:
 {
-     // stamp value 1003
+     // stamp value 995
     llvmo::MCSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::MCSubtargetInfo_O*>(client);
     GC<llvmo::MCSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetSubtargetInfo_O:
 {
-     // stamp value 1007
+     // stamp value 999
     llvmo::TargetSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::TargetSubtargetInfo_O*>(client);
     GC<llvmo::TargetSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Type_O:
 {
-     // stamp value 1011
+     // stamp value 1003
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
     GC<llvmo::Type_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PointerType_O:
 {
-     // stamp value 1015
+     // stamp value 1007
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
     GC<llvmo::PointerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ArrayType_O:
 {
-     // stamp value 1019
+     // stamp value 1011
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
     GC<llvmo::ArrayType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FunctionType_O:
 {
-     // stamp value 1023
+     // stamp value 1015
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
     GC<llvmo::FunctionType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IntegerType_O:
 {
-     // stamp value 1027
+     // stamp value 1019
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
     GC<llvmo::IntegerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__StructType_O:
 {
-     // stamp value 1031
+     // stamp value 1023
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
     GC<llvmo::StructType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__VectorType_O:
 {
-     // stamp value 1035
+     // stamp value 1027
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
     GC<llvmo::VectorType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__JITDylib_O:
 {
-     // stamp value 1039
+     // stamp value 1031
     llvmo::JITDylib_O* obj_gc_safe = reinterpret_cast<llvmo::JITDylib_O*>(client);
     GC<llvmo::JITDylib_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIContext_O:
 {
-     // stamp value 1043
+     // stamp value 1035
     llvmo::DIContext_O* obj_gc_safe = reinterpret_cast<llvmo::DIContext_O*>(client);
     GC<llvmo::DIContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetPassConfig_O:
 {
-     // stamp value 1047
+     // stamp value 1039
     llvmo::TargetPassConfig_O* obj_gc_safe = reinterpret_cast<llvmo::TargetPassConfig_O*>(client);
     GC<llvmo::TargetPassConfig_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IRBuilderBase_O:
 {
-     // stamp value 1051
+     // stamp value 1043
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
     GC<llvmo::IRBuilderBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IRBuilder_O:
 {
-     // stamp value 1055
+     // stamp value 1047
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
     GC<llvmo::IRBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__APFloat_O:
 {
-     // stamp value 1059
+     // stamp value 1051
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
     GC<llvmo::APFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__APInt_O:
 {
-     // stamp value 1063
+     // stamp value 1055
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
     GC<llvmo::APInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIBuilder_O:
 {
-     // stamp value 1067
+     // stamp value 1059
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
     GC<llvmo::DIBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__SectionedAddress_O:
 {
-     // stamp value 1071
+     // stamp value 1063
     llvmo::SectionedAddress_O* obj_gc_safe = reinterpret_cast<llvmo::SectionedAddress_O*>(client);
     GC<llvmo::SectionedAddress_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__EngineBuilder_O:
 {
-     // stamp value 1075
+     // stamp value 1067
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
     GC<llvmo::EngineBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PassManagerBase_O:
 {
-     // stamp value 1079
+     // stamp value 1071
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
     GC<llvmo::PassManagerBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PassManager_O:
 {
-     // stamp value 1083
+     // stamp value 1075
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
     GC<llvmo::PassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FunctionPassManager_O:
 {
-     // stamp value 1087
+     // stamp value 1079
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
     GC<llvmo::FunctionPassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Metadata_O:
 {
-     // stamp value 1091
+     // stamp value 1083
     llvmo::Metadata_O* obj_gc_safe = reinterpret_cast<llvmo::Metadata_O*>(client);
     GC<llvmo::Metadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MDNode_O:
 {
-     // stamp value 1095
+     // stamp value 1087
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
     GC<llvmo::MDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DINode_O:
 {
-     // stamp value 1099
+     // stamp value 1091
     llvmo::DINode_O* obj_gc_safe = reinterpret_cast<llvmo::DINode_O*>(client);
     GC<llvmo::DINode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIVariable_O:
 {
-     // stamp value 1103
+     // stamp value 1095
     llvmo::DIVariable_O* obj_gc_safe = reinterpret_cast<llvmo::DIVariable_O*>(client);
     GC<llvmo::DIVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILocalVariable_O:
 {
-     // stamp value 1107
+     // stamp value 1099
     llvmo::DILocalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalVariable_O*>(client);
     GC<llvmo::DILocalVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIScope_O:
 {
-     // stamp value 1111
+     // stamp value 1103
     llvmo::DIScope_O* obj_gc_safe = reinterpret_cast<llvmo::DIScope_O*>(client);
     GC<llvmo::DIScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIFile_O:
 {
-     // stamp value 1115
+     // stamp value 1107
     llvmo::DIFile_O* obj_gc_safe = reinterpret_cast<llvmo::DIFile_O*>(client);
     GC<llvmo::DIFile_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIType_O:
 {
-     // stamp value 1119
+     // stamp value 1111
     llvmo::DIType_O* obj_gc_safe = reinterpret_cast<llvmo::DIType_O*>(client);
     GC<llvmo::DIType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DICompositeType_O:
 {
-     // stamp value 1123
+     // stamp value 1115
     llvmo::DICompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::DICompositeType_O*>(client);
     GC<llvmo::DICompositeType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIDerivedType_O:
 {
-     // stamp value 1127
+     // stamp value 1119
     llvmo::DIDerivedType_O* obj_gc_safe = reinterpret_cast<llvmo::DIDerivedType_O*>(client);
     GC<llvmo::DIDerivedType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIBasicType_O:
 {
-     // stamp value 1131
+     // stamp value 1123
     llvmo::DIBasicType_O* obj_gc_safe = reinterpret_cast<llvmo::DIBasicType_O*>(client);
     GC<llvmo::DIBasicType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DISubroutineType_O:
 {
-     // stamp value 1135
+     // stamp value 1127
     llvmo::DISubroutineType_O* obj_gc_safe = reinterpret_cast<llvmo::DISubroutineType_O*>(client);
     GC<llvmo::DISubroutineType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILocalScope_O:
 {
-     // stamp value 1139
+     // stamp value 1131
     llvmo::DILocalScope_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalScope_O*>(client);
     GC<llvmo::DILocalScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DISubprogram_O:
 {
-     // stamp value 1143
+     // stamp value 1135
     llvmo::DISubprogram_O* obj_gc_safe = reinterpret_cast<llvmo::DISubprogram_O*>(client);
     GC<llvmo::DISubprogram_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILexicalBlockBase_O:
 {
-     // stamp value 1147
+     // stamp value 1139
     llvmo::DILexicalBlockBase_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlockBase_O*>(client);
     GC<llvmo::DILexicalBlockBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILexicalBlock_O:
 {
-     // stamp value 1151
+     // stamp value 1143
     llvmo::DILexicalBlock_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlock_O*>(client);
     GC<llvmo::DILexicalBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DICompileUnit_O:
 {
-     // stamp value 1155
+     // stamp value 1147
     llvmo::DICompileUnit_O* obj_gc_safe = reinterpret_cast<llvmo::DICompileUnit_O*>(client);
     GC<llvmo::DICompileUnit_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIExpression_O:
 {
-     // stamp value 1159
+     // stamp value 1151
     llvmo::DIExpression_O* obj_gc_safe = reinterpret_cast<llvmo::DIExpression_O*>(client);
     GC<llvmo::DIExpression_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILocation_O:
 {
-     // stamp value 1163
+     // stamp value 1155
     llvmo::DILocation_O* obj_gc_safe = reinterpret_cast<llvmo::DILocation_O*>(client);
     GC<llvmo::DILocation_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ValueAsMetadata_O:
 {
-     // stamp value 1167
+     // stamp value 1159
     llvmo::ValueAsMetadata_O* obj_gc_safe = reinterpret_cast<llvmo::ValueAsMetadata_O*>(client);
     GC<llvmo::ValueAsMetadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MDString_O:
 {
-     // stamp value 1171
+     // stamp value 1163
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
     GC<llvmo::MDString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Test_O:
 {
-     // stamp value 1175
+     // stamp value 1167
     core::Test_O* obj_gc_safe = reinterpret_cast<core::Test_O*>(client);
     GC<core::Test_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Value_O:
 {
-     // stamp value 1179
+     // stamp value 1171
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
     GC<llvmo::Value_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Argument_O:
 {
-     // stamp value 1183
+     // stamp value 1175
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
     GC<llvmo::Argument_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__BasicBlock_O:
 {
-     // stamp value 1187
+     // stamp value 1179
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
     GC<llvmo::BasicBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MetadataAsValue_O:
 {
-     // stamp value 1191
+     // stamp value 1183
     llvmo::MetadataAsValue_O* obj_gc_safe = reinterpret_cast<llvmo::MetadataAsValue_O*>(client);
     GC<llvmo::MetadataAsValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__User_O:
 {
-     // stamp value 1195
+     // stamp value 1187
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
     GC<llvmo::User_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Instruction_O:
 {
-     // stamp value 1199
+     // stamp value 1191
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
     GC<llvmo::Instruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__UnaryInstruction_O:
 {
-     // stamp value 1203
+     // stamp value 1195
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
     GC<llvmo::UnaryInstruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__VAArgInst_O:
 {
-     // stamp value 1207
+     // stamp value 1199
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
     GC<llvmo::VAArgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LoadInst_O:
 {
-     // stamp value 1211
+     // stamp value 1203
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
     GC<llvmo::LoadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__AllocaInst_O:
 {
-     // stamp value 1215
+     // stamp value 1207
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
     GC<llvmo::AllocaInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__SwitchInst_O:
 {
-     // stamp value 1219
+     // stamp value 1211
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
     GC<llvmo::SwitchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__AtomicRMWInst_O:
 {
-     // stamp value 1223
+     // stamp value 1215
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
     GC<llvmo::AtomicRMWInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LandingPadInst_O:
 {
-     // stamp value 1227
+     // stamp value 1219
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
     GC<llvmo::LandingPadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__StoreInst_O:
 {
-     // stamp value 1231
+     // stamp value 1223
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
     GC<llvmo::StoreInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__UnreachableInst_O:
 {
-     // stamp value 1235
+     // stamp value 1227
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
     GC<llvmo::UnreachableInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ReturnInst_O:
 {
-     // stamp value 1239
+     // stamp value 1231
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
     GC<llvmo::ReturnInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ResumeInst_O:
 {
-     // stamp value 1243
+     // stamp value 1235
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
     GC<llvmo::ResumeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__AtomicCmpXchgInst_O:
 {
-     // stamp value 1247
+     // stamp value 1239
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
     GC<llvmo::AtomicCmpXchgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FenceInst_O:
 {
-     // stamp value 1251
+     // stamp value 1243
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
     GC<llvmo::FenceInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__CallBase_O:
 {
-     // stamp value 1255
+     // stamp value 1247
     llvmo::CallBase_O* obj_gc_safe = reinterpret_cast<llvmo::CallBase_O*>(client);
     GC<llvmo::CallBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__CallInst_O:
 {
-     // stamp value 1259
+     // stamp value 1251
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
     GC<llvmo::CallInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__InvokeInst_O:
 {
-     // stamp value 1263
+     // stamp value 1255
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
     GC<llvmo::InvokeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PHINode_O:
 {
-     // stamp value 1267
+     // stamp value 1259
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
     GC<llvmo::PHINode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IndirectBrInst_O:
 {
-     // stamp value 1271
+     // stamp value 1263
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
     GC<llvmo::IndirectBrInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__BranchInst_O:
 {
-     // stamp value 1275
+     // stamp value 1267
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
     GC<llvmo::BranchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Constant_O:
 {
-     // stamp value 1279
+     // stamp value 1271
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
     GC<llvmo::Constant_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__GlobalValue_O:
 {
-     // stamp value 1283
+     // stamp value 1275
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
     GC<llvmo::GlobalValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Function_O:
 {
-     // stamp value 1287
+     // stamp value 1279
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
     GC<llvmo::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__GlobalVariable_O:
 {
-     // stamp value 1291
+     // stamp value 1283
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
     GC<llvmo::GlobalVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__BlockAddress_O:
 {
-     // stamp value 1295
+     // stamp value 1287
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
     GC<llvmo::BlockAddress_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantDataSequential_O:
 {
-     // stamp value 1299
+     // stamp value 1291
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
     GC<llvmo::ConstantDataSequential_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantDataArray_O:
 {
-     // stamp value 1303
+     // stamp value 1295
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
     GC<llvmo::ConstantDataArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantStruct_O:
 {
-     // stamp value 1307
+     // stamp value 1299
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
     GC<llvmo::ConstantStruct_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantInt_O:
 {
-     // stamp value 1311
+     // stamp value 1303
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
     GC<llvmo::ConstantInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantFP_O:
 {
-     // stamp value 1315
+     // stamp value 1307
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
     GC<llvmo::ConstantFP_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantExpr_O:
 {
-     // stamp value 1319
+     // stamp value 1311
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
     GC<llvmo::ConstantExpr_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantPointerNull_O:
 {
-     // stamp value 1323
+     // stamp value 1315
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
     GC<llvmo::ConstantPointerNull_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__UndefValue_O:
 {
-     // stamp value 1327
+     // stamp value 1319
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
     GC<llvmo::UndefValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantArray_O:
 {
-     // stamp value 1331
+     // stamp value 1323
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
     GC<llvmo::ConstantArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetMachine_O:
 {
-     // stamp value 1335
+     // stamp value 1327
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
     GC<llvmo::TargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LLVMTargetMachine_O:
 {
-     // stamp value 1339
+     // stamp value 1331
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
     GC<llvmo::LLVMTargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ThreadSafeContext_O:
 {
-     // stamp value 1343
+     // stamp value 1335
     llvmo::ThreadSafeContext_O* obj_gc_safe = reinterpret_cast<llvmo::ThreadSafeContext_O*>(client);
     GC<llvmo::ThreadSafeContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__NamedMDNode_O:
 {
-     // stamp value 1347
+     // stamp value 1339
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
     GC<llvmo::NamedMDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Triple_O:
 {
-     // stamp value 1351
+     // stamp value 1343
     llvmo::Triple_O* obj_gc_safe = reinterpret_cast<llvmo::Triple_O*>(client);
     GC<llvmo::Triple_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DWARFContext_O:
 {
-     // stamp value 1355
+     // stamp value 1347
     llvmo::DWARFContext_O* obj_gc_safe = reinterpret_cast<llvmo::DWARFContext_O*>(client);
     GC<llvmo::DWARFContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetOptions_O:
 {
-     // stamp value 1359
+     // stamp value 1351
     llvmo::TargetOptions_O* obj_gc_safe = reinterpret_cast<llvmo::TargetOptions_O*>(client);
     GC<llvmo::TargetOptions_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LLVMContext_O:
 {
-     // stamp value 1363
+     // stamp value 1355
     llvmo::LLVMContext_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMContext_O*>(client);
     GC<llvmo::LLVMContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PassManagerBuilder_O:
 {
-     // stamp value 1367
+     // stamp value 1359
     llvmo::PassManagerBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBuilder_O*>(client);
     GC<llvmo::PassManagerBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Module_O:
 {
-     // stamp value 1371
+     // stamp value 1363
     llvmo::Module_O* obj_gc_safe = reinterpret_cast<llvmo::Module_O*>(client);
     GC<llvmo::Module_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Target_O:
 {
-     // stamp value 1375
+     // stamp value 1367
     llvmo::Target_O* obj_gc_safe = reinterpret_cast<llvmo::Target_O*>(client);
     GC<llvmo::Target_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Linker_O:
 {
-     // stamp value 1379
+     // stamp value 1371
     llvmo::Linker_O* obj_gc_safe = reinterpret_cast<llvmo::Linker_O*>(client);
     GC<llvmo::Linker_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Rack_O:
 {
-     // stamp value 1383
+     // stamp value 1375
     core::Rack_O* obj_gc_safe = reinterpret_cast<core::Rack_O*>(client);
     GC<core::Rack_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SmallMultimap_O:
 {
-     // stamp value 1387
+     // stamp value 1379
     core::SmallMultimap_O* obj_gc_safe = reinterpret_cast<core::SmallMultimap_O*>(client);
     GC<core::SmallMultimap_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Sigset_O:
 {
-     // stamp value 1391
+     // stamp value 1383
     core::Sigset_O* obj_gc_safe = reinterpret_cast<core::Sigset_O*>(client);
     GC<core::Sigset_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__DebuggerFrame_O:
 {
-     // stamp value 1395
+     // stamp value 1387
     core::DebuggerFrame_O* obj_gc_safe = reinterpret_cast<core::DebuggerFrame_O*>(client);
     GC<core::DebuggerFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Environment_O:
 {
-     // stamp value 1399
+     // stamp value 1391
     core::Environment_O* obj_gc_safe = reinterpret_cast<core::Environment_O*>(client);
     GC<core::Environment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__GlueEnvironment_O:
 {
-     // stamp value 1403
+     // stamp value 1395
     core::GlueEnvironment_O* obj_gc_safe = reinterpret_cast<core::GlueEnvironment_O*>(client);
     GC<core::GlueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__LexicalEnvironment_O:
 {
-     // stamp value 1407
+     // stamp value 1399
     core::LexicalEnvironment_O* obj_gc_safe = reinterpret_cast<core::LexicalEnvironment_O*>(client);
     GC<core::LexicalEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__RuntimeVisibleEnvironment_O:
 {
-     // stamp value 1411
+     // stamp value 1403
     core::RuntimeVisibleEnvironment_O* obj_gc_safe = reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(client);
     GC<core::RuntimeVisibleEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionValueEnvironment_O:
 {
-     // stamp value 1415
+     // stamp value 1407
     core::FunctionValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionValueEnvironment_O*>(client);
     GC<core::FunctionValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__TagbodyEnvironment_O:
 {
-     // stamp value 1419
+     // stamp value 1411
     core::TagbodyEnvironment_O* obj_gc_safe = reinterpret_cast<core::TagbodyEnvironment_O*>(client);
     GC<core::TagbodyEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__BlockEnvironment_O:
 {
-     // stamp value 1423
+     // stamp value 1415
     core::BlockEnvironment_O* obj_gc_safe = reinterpret_cast<core::BlockEnvironment_O*>(client);
     GC<core::BlockEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ValueEnvironment_O:
 {
-     // stamp value 1427
+     // stamp value 1419
     core::ValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::ValueEnvironment_O*>(client);
     GC<core::ValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__CompileTimeEnvironment_O:
 {
-     // stamp value 1431
+     // stamp value 1423
     core::CompileTimeEnvironment_O* obj_gc_safe = reinterpret_cast<core::CompileTimeEnvironment_O*>(client);
     GC<core::CompileTimeEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__CatchEnvironment_O:
 {
-     // stamp value 1435
+     // stamp value 1427
     core::CatchEnvironment_O* obj_gc_safe = reinterpret_cast<core::CatchEnvironment_O*>(client);
     GC<core::CatchEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MacroletEnvironment_O:
 {
-     // stamp value 1439
+     // stamp value 1431
     core::MacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::MacroletEnvironment_O*>(client);
     GC<core::MacroletEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SymbolMacroletEnvironment_O:
 {
-     // stamp value 1443
+     // stamp value 1435
     core::SymbolMacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::SymbolMacroletEnvironment_O*>(client);
     GC<core::SymbolMacroletEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionContainerEnvironment_O:
 {
-     // stamp value 1447
+     // stamp value 1439
     core::FunctionContainerEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionContainerEnvironment_O*>(client);
     GC<core::FunctionContainerEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__UnwindProtectEnvironment_O:
 {
-     // stamp value 1451
+     // stamp value 1443
     core::UnwindProtectEnvironment_O* obj_gc_safe = reinterpret_cast<core::UnwindProtectEnvironment_O*>(client);
     GC<core::UnwindProtectEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ActivationFrame_O:
 {
-     // stamp value 1455
+     // stamp value 1447
     core::ActivationFrame_O* obj_gc_safe = reinterpret_cast<core::ActivationFrame_O*>(client);
     GC<core::ActivationFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ValueFrame_O:
 {
-     // stamp value 1459
+     // stamp value 1451
     core::ValueFrame_O* obj_gc_safe = reinterpret_cast<core::ValueFrame_O*>(client);
     GC<core::ValueFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionFrame_O:
 {
-     // stamp value 1463
+     // stamp value 1455
     core::FunctionFrame_O* obj_gc_safe = reinterpret_cast<core::FunctionFrame_O*>(client);
     GC<core::FunctionFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__RandomState_O:
 {
-     // stamp value 1467
+     // stamp value 1459
     core::RandomState_O* obj_gc_safe = reinterpret_cast<core::RandomState_O*>(client);
     GC<core::RandomState_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__EntryPointBase_O:
 {
-     // stamp value 1471
+     // stamp value 1463
     core::EntryPointBase_O* obj_gc_safe = reinterpret_cast<core::EntryPointBase_O*>(client);
     GC<core::EntryPointBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__GlobalEntryPointGenerator_O:
 {
-     // stamp value 1475
+     // stamp value 1467
     core::GlobalEntryPointGenerator_O* obj_gc_safe = reinterpret_cast<core::GlobalEntryPointGenerator_O*>(client);
     GC<core::GlobalEntryPointGenerator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__LocalEntryPointGenerator_O:
 {
-     // stamp value 1479
+     // stamp value 1471
     core::LocalEntryPointGenerator_O* obj_gc_safe = reinterpret_cast<core::LocalEntryPointGenerator_O*>(client);
     GC<core::LocalEntryPointGenerator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__CodeEntryPoint_O:
 {
-     // stamp value 1483
+     // stamp value 1475
     core::CodeEntryPoint_O* obj_gc_safe = reinterpret_cast<core::CodeEntryPoint_O*>(client);
     GC<core::CodeEntryPoint_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__GlobalEntryPoint_O:
 {
-     // stamp value 1487
+     // stamp value 1479
     core::GlobalEntryPoint_O* obj_gc_safe = reinterpret_cast<core::GlobalEntryPoint_O*>(client);
     GC<core::GlobalEntryPoint_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__LocalEntryPoint_O:
 {
-     // stamp value 1491
+     // stamp value 1483
     core::LocalEntryPoint_O* obj_gc_safe = reinterpret_cast<core::LocalEntryPoint_O*>(client);
     GC<core::LocalEntryPoint_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__DebuggerLocal_O:
 {
-     // stamp value 1495
+     // stamp value 1487
     core::DebuggerLocal_O* obj_gc_safe = reinterpret_cast<core::DebuggerLocal_O*>(client);
     GC<core::DebuggerLocal_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableBase_O:
 {
-     // stamp value 1499
+     // stamp value 1491
     core::HashTableBase_O* obj_gc_safe = reinterpret_cast<core::HashTableBase_O*>(client);
     GC<core::HashTableBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__WeakKeyHashTable_O:
 {
-     // stamp value 1503
+     // stamp value 1495
     core::WeakKeyHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakKeyHashTable_O*>(client);
     GC<core::WeakKeyHashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTable_O:
 {
-     // stamp value 1507
+     // stamp value 1499
     core::HashTable_O* obj_gc_safe = reinterpret_cast<core::HashTable_O*>(client);
     GC<core::HashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEqualp_O:
 {
-     // stamp value 1511
+     // stamp value 1503
     core::HashTableEqualp_O* obj_gc_safe = reinterpret_cast<core::HashTableEqualp_O*>(client);
     GC<core::HashTableEqualp_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEq_O:
 {
-     // stamp value 1515
+     // stamp value 1507
     core::HashTableEq_O* obj_gc_safe = reinterpret_cast<core::HashTableEq_O*>(client);
     GC<core::HashTableEq_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEql_O:
 {
-     // stamp value 1519
+     // stamp value 1511
     core::HashTableEql_O* obj_gc_safe = reinterpret_cast<core::HashTableEql_O*>(client);
     GC<core::HashTableEql_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEqual_O:
 {
-     // stamp value 1523
+     // stamp value 1515
     core::HashTableEqual_O* obj_gc_safe = reinterpret_cast<core::HashTableEqual_O*>(client);
     GC<core::HashTableEqual_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableCustom_O:
 {
-     // stamp value 1527
+     // stamp value 1519
     core::HashTableCustom_O* obj_gc_safe = reinterpret_cast<core::HashTableCustom_O*>(client);
     GC<core::HashTableCustom_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionDescription_O:
 {
-     // stamp value 1531
+     // stamp value 1523
     core::FunctionDescription_O* obj_gc_safe = reinterpret_cast<core::FunctionDescription_O*>(client);
     GC<core::FunctionDescription_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__InsertPoint_O:
 {
-     // stamp value 1535
+     // stamp value 1527
     llvmo::InsertPoint_O* obj_gc_safe = reinterpret_cast<llvmo::InsertPoint_O*>(client);
     GC<llvmo::InsertPoint_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Scope_O:
 {
-     // stamp value 1539
+     // stamp value 1531
     core::Scope_O* obj_gc_safe = reinterpret_cast<core::Scope_O*>(client);
     GC<core::Scope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__FileScope_O:
 {
-     // stamp value 1543
+     // stamp value 1535
     core::FileScope_O* obj_gc_safe = reinterpret_cast<core::FileScope_O*>(client);
     GC<core::FileScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Path_O:
 {
-     // stamp value 1547
+     // stamp value 1539
     core::Path_O* obj_gc_safe = reinterpret_cast<core::Path_O*>(client);
     GC<core::Path_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Pathname_O:
 {
-     // stamp value 1551
+     // stamp value 1543
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
     GC<core::Pathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__LogicalPathname_O:
 {
-     // stamp value 1555
+     // stamp value 1547
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
     GC<core::LogicalPathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Number_O:
 {
-     // stamp value 1559
+     // stamp value 1551
     core::Number_O* obj_gc_safe = reinterpret_cast<core::Number_O*>(client);
     GC<core::Number_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Real_O:
 {
-     // stamp value 1563
+     // stamp value 1555
     core::Real_O* obj_gc_safe = reinterpret_cast<core::Real_O*>(client);
     GC<core::Real_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Rational_O:
 {
-     // stamp value 1567
+     // stamp value 1559
     core::Rational_O* obj_gc_safe = reinterpret_cast<core::Rational_O*>(client);
     GC<core::Rational_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Ratio_O:
 {
-     // stamp value 1571
+     // stamp value 1563
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
     GC<core::Ratio_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Integer_O:
 {
-     // stamp value 1575
+     // stamp value 1567
     core::Integer_O* obj_gc_safe = reinterpret_cast<core::Integer_O*>(client);
     GC<core::Integer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Bignum_O:
 {
-     // stamp value 1579
+     // stamp value 1571
     core::Bignum_O* obj_gc_safe = reinterpret_cast<core::Bignum_O*>(client);
     GC<core::Bignum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Fixnum_dummy_O:
 {
-     // stamp value 1583
+     // stamp value 1575
     core::Fixnum_dummy_O* obj_gc_safe = reinterpret_cast<core::Fixnum_dummy_O*>(client);
     GC<core::Fixnum_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Float_O:
 {
-     // stamp value 1587
+     // stamp value 1579
     core::Float_O* obj_gc_safe = reinterpret_cast<core::Float_O*>(client);
     GC<core::Float_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__DoubleFloat_O:
 {
-     // stamp value 1591
+     // stamp value 1583
     core::DoubleFloat_O* obj_gc_safe = reinterpret_cast<core::DoubleFloat_O*>(client);
     GC<core::DoubleFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SingleFloat_dummy_O:
 {
-     // stamp value 1595
+     // stamp value 1587
     core::SingleFloat_dummy_O* obj_gc_safe = reinterpret_cast<core::SingleFloat_dummy_O*>(client);
     GC<core::SingleFloat_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__LongFloat_O:
 {
-     // stamp value 1599
+     // stamp value 1591
     core::LongFloat_O* obj_gc_safe = reinterpret_cast<core::LongFloat_O*>(client);
     GC<core::LongFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ShortFloat_O:
 {
-     // stamp value 1603
+     // stamp value 1595
     core::ShortFloat_O* obj_gc_safe = reinterpret_cast<core::ShortFloat_O*>(client);
     GC<core::ShortFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Complex_O:
 {
-     // stamp value 1607
+     // stamp value 1599
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
     GC<core::Complex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Stream_O:
 {
-     // stamp value 1611
+     // stamp value 1603
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
     GC<core::Stream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__AnsiStream_O:
 {
-     // stamp value 1615
+     // stamp value 1607
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
     GC<core::AnsiStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__TwoWayStream_O:
 {
-     // stamp value 1619
+     // stamp value 1611
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
     GC<core::TwoWayStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SynonymStream_O:
 {
-     // stamp value 1623
+     // stamp value 1615
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
     GC<core::SynonymStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ConcatenatedStream_O:
 {
-     // stamp value 1627
+     // stamp value 1619
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
     GC<core::ConcatenatedStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__FileStream_O:
 {
-     // stamp value 1631
+     // stamp value 1623
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
     GC<core::FileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__IOFileStream_O:
 {
-     // stamp value 1635
+     // stamp value 1627
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
     GC<core::IOFileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__IOStreamStream_O:
 {
-     // stamp value 1639
+     // stamp value 1631
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
     GC<core::IOStreamStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__BroadcastStream_O:
 {
-     // stamp value 1643
+     // stamp value 1635
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
     GC<core::BroadcastStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__StringStream_O:
 {
-     // stamp value 1647
+     // stamp value 1639
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
     GC<core::StringStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__StringOutputStream_O:
 {
-     // stamp value 1651
+     // stamp value 1643
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
     GC<core::StringOutputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__StringInputStream_O:
 {
-     // stamp value 1655
+     // stamp value 1647
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
     GC<core::StringInputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__EchoStream_O:
 {
-     // stamp value 1659
+     // stamp value 1651
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
     GC<core::EchoStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Package_O:
 {
-     // stamp value 1663
+     // stamp value 1655
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
     GC<core::Package_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__FileStatus_O:
 {
-     // stamp value 1667
+     // stamp value 1659
     core::FileStatus_O* obj_gc_safe = reinterpret_cast<core::FileStatus_O*>(client);
     GC<core::FileStatus_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SourcePosInfo_O:
 {
-     // stamp value 1671
+     // stamp value 1663
     core::SourcePosInfo_O* obj_gc_safe = reinterpret_cast<core::SourcePosInfo_O*>(client);
     GC<core::SourcePosInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__DirectoryEntry_O:
 {
-     // stamp value 1675
+     // stamp value 1667
     core::DirectoryEntry_O* obj_gc_safe = reinterpret_cast<core::DirectoryEntry_O*>(client);
     GC<core::DirectoryEntry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__LightUserData_O:
 {
-     // stamp value 1679
+     // stamp value 1671
     core::LightUserData_O* obj_gc_safe = reinterpret_cast<core::LightUserData_O*>(client);
     GC<core::LightUserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__UserData_O:
 {
-     // stamp value 1683
+     // stamp value 1675
     core::UserData_O* obj_gc_safe = reinterpret_cast<core::UserData_O*>(client);
     GC<core::UserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Record_O:
 {
-     // stamp value 1687
+     // stamp value 1679
     core::Record_O* obj_gc_safe = reinterpret_cast<core::Record_O*>(client);
     GC<core::Record_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clbind__ClassRegistry_O:
 {
-     // stamp value 1691
+     // stamp value 1683
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
     GC<clbind::ClassRegistry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Cons_O:
 {
-     // stamp value 1695
+     // stamp value 1687
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
     GC<core::Cons_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Lisp_O:
 {
-     // stamp value 1699
+     // stamp value 1691
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
     GC<core::Lisp_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_:
 {
-     // do nothing stamp value 1703
+     // do nothing stamp value 1695
     THROW_HARD_ERROR(BF("Should never deallocate object clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_asttooling__AstVisitor_O:
 {
-     // stamp value 1707
+     // stamp value 1699
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
     GC<asttooling::AstVisitor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__ToolAction:
 {
-     // do nothing stamp value 1711
+     // do nothing stamp value 1703
     THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::ToolAction"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__FrontendActionFactory:
 {
-     // do nothing stamp value 1715
+     // do nothing stamp value 1707
     THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::FrontendActionFactory"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback:
 {
-     // do nothing stamp value 1719
+     // do nothing stamp value 1711
     THROW_HARD_ERROR(BF("Should never deallocate object clang::ast_matchers::MatchFinder::MatchCallback"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCContainer:
 {
-     // do nothing stamp value 1723
+     // do nothing stamp value 1715
     THROW_HARD_ERROR(BF("Should never deallocate object gctools::GCContainer"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_:
 {
-     // stamp value 1727
+     // stamp value 1719
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned int>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
-     // stamp value 1731
+     // stamp value 1723
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_short_:
 {
-     // stamp value 1735
+     // stamp value 1727
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<short>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
-     // stamp value 1739
+     // stamp value 1731
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_:
 {
-     // stamp value 1743
+     // stamp value 1735
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<4,0>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_:
 {
-     // stamp value 1747
+     // stamp value 1739
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolClassHolderPair>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_signed_char_:
 {
-     // stamp value 1751
+     // stamp value 1743
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<signed char>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
-     // stamp value 1755
+     // stamp value 1747
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-     // stamp value 1759
+     // stamp value 1751
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_char_:
 {
-     // stamp value 1763
+     // stamp value 1755
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned char>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_:
 {
-     // stamp value 1767
+     // stamp value 1759
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::KeyValuePair>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
-     // stamp value 1771
+     // stamp value 1763
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
-     // stamp value 1775
+     // stamp value 1767
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_double_:
 {
-     // stamp value 1779
+     // stamp value 1771
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<double>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_:
 {
-     // stamp value 1783
+     // stamp value 1775
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::OptionalArgument>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_:
 {
-     // stamp value 1787
+     // stamp value 1779
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::KeywordArgument>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_:
 {
-     // stamp value 1791
+     // stamp value 1783
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::RequiredArgument>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__:
 {
-     // stamp value 1795
+     // stamp value 1787
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_:
 {
-     // stamp value 1799
+     // stamp value 1791
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<4,1>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_:
 {
-     // stamp value 1803
+     // stamp value 1795
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolStorage>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__:
 {
-     // stamp value 1807
+     // stamp value 1799
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__:
 {
-     // stamp value 1811
+     // stamp value 1803
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_:
 {
-     // stamp value 1815
+     // stamp value 1807
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<clbind::detail::vertex>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_:
 {
-     // stamp value 1819
+     // stamp value 1811
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned long>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_:
 {
-     // stamp value 1823
+     // stamp value 1815
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArraySignedLength_moveable<unsigned long>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-     // stamp value 1827
+     // stamp value 1819
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_:
 {
-     // stamp value 1831
+     // stamp value 1823
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,0>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_int_:
 {
-     // stamp value 1835
+     // stamp value 1827
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<int>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_:
 {
-     // stamp value 1839
+     // stamp value 1831
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<1,0>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
-     // stamp value 1843
+     // stamp value 1835
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_:
 {
-     // stamp value 1847
+     // stamp value 1839
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_:
 {
-     // stamp value 1851
+     // stamp value 1843
     THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,1>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_long_:
 {
-     // stamp value 1855
+     // stamp value 1847
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<long>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_int_:
 {
-     // stamp value 1859
+     // stamp value 1851
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<int>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
-     // stamp value 1863
+     // stamp value 1855
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_float_:
 {
-     // stamp value 1867
+     // stamp value 1859
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<float>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_:
 {
-     // stamp value 1871
+     // stamp value 1863
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<clbind::detail::edge>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__:
 {
-     // stamp value 1875
+     // stamp value 1867
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__T_O___:
 {
-     // stamp value 1879
+     // stamp value 1871
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_:
 {
-     // stamp value 1883
+     // stamp value 1875
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned short>"));}
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__FrontendAction:
 {
-     // do nothing stamp value 1887
+     // do nothing stamp value 1879
     THROW_HARD_ERROR(BF("Should never deallocate object clang::FrontendAction"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ASTFrontendAction:
 {
-     // do nothing stamp value 1891
+     // do nothing stamp value 1883
     THROW_HARD_ERROR(BF("Should never deallocate object clang::ASTFrontendAction"));
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__SyntaxOnlyAction:
 {
-     // do nothing stamp value 1895
+     // do nothing stamp value 1887
     THROW_HARD_ERROR(BF("Should never deallocate object clang::SyntaxOnlyAction"));
 }
 #endif // defined(GC_OBJ_DEALLOCATOR)
@@ -21814,249 +21738,247 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 915 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SharpEqualWrapper_O,
   /* 919 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ClaspJIT_O,
   /* 923 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Readtable_O,
-  /* 927 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__PosixTime_O,
-  /* 931 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Exposer_O,
-  /* 935 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__CoreExposer_O,
-  /* 939 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_asttooling__AsttoolingExposer_O,
-  /* 943 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__StructLayout_O,
-  /* 947 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__PosixTimeDuration_O,
-  /* 951 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clasp_ffi__ForeignTypeSpec_O,
-  /* 953 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Instance_O,
-  /* 956 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DerivableCxxObject_O,
-  /* 961 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clbind__ClassRep_O,
-  /* 967 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SmallMap_O,
-  /* 971 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_mpip__Mpi_O,
-  /* 975 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ExternalObject_O,
-  /* 979 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Pass_O,
-  /* 983 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ModulePass_O,
-  /* 987 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ImmutablePass_O,
-  /* 991 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 995 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FunctionPass_O,
-  /* 999 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ExecutionEngine_O,
-  /* 1003 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MCSubtargetInfo_O,
-  /* 1007 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetSubtargetInfo_O,
-  /* 1011 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Type_O,
-  /* 1015 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PointerType_O,
-  /* 1019 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ArrayType_O,
-  /* 1023 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FunctionType_O,
-  /* 1027 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IntegerType_O,
-  /* 1031 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__StructType_O,
-  /* 1035 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__VectorType_O,
-  /* 1039 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__JITDylib_O,
-  /* 1043 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIContext_O,
-  /* 1047 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetPassConfig_O,
-  /* 1051 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IRBuilderBase_O,
-  /* 1055 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IRBuilder_O,
-  /* 1059 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__APFloat_O,
-  /* 1063 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__APInt_O,
-  /* 1067 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIBuilder_O,
-  /* 1071 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__SectionedAddress_O,
-  /* 1075 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__EngineBuilder_O,
-  /* 1079 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PassManagerBase_O,
-  /* 1083 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PassManager_O,
-  /* 1087 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FunctionPassManager_O,
-  /* 1091 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Metadata_O,
-  /* 1095 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MDNode_O,
-  /* 1099 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DINode_O,
-  /* 1103 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIVariable_O,
-  /* 1107 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILocalVariable_O,
-  /* 1111 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIScope_O,
-  /* 1115 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIFile_O,
-  /* 1119 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIType_O,
-  /* 1123 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DICompositeType_O,
-  /* 1127 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIDerivedType_O,
-  /* 1131 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIBasicType_O,
-  /* 1135 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DISubroutineType_O,
-  /* 1139 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILocalScope_O,
-  /* 1143 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DISubprogram_O,
-  /* 1147 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILexicalBlockBase_O,
-  /* 1151 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILexicalBlock_O,
-  /* 1155 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DICompileUnit_O,
-  /* 1159 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIExpression_O,
-  /* 1163 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILocation_O,
-  /* 1167 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ValueAsMetadata_O,
-  /* 1171 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MDString_O,
-  /* 1175 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Test_O,
-  /* 1179 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Value_O,
-  /* 1183 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Argument_O,
-  /* 1187 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__BasicBlock_O,
-  /* 1191 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MetadataAsValue_O,
-  /* 1195 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__User_O,
-  /* 1199 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Instruction_O,
-  /* 1203 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__UnaryInstruction_O,
-  /* 1207 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__VAArgInst_O,
-  /* 1211 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LoadInst_O,
-  /* 1215 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__AllocaInst_O,
-  /* 1219 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__SwitchInst_O,
-  /* 1223 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__AtomicRMWInst_O,
-  /* 1227 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LandingPadInst_O,
-  /* 1231 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__StoreInst_O,
-  /* 1235 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__UnreachableInst_O,
-  /* 1239 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ReturnInst_O,
-  /* 1243 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ResumeInst_O,
-  /* 1247 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__AtomicCmpXchgInst_O,
-  /* 1251 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FenceInst_O,
-  /* 1255 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__CallBase_O,
-  /* 1259 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__CallInst_O,
-  /* 1263 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__InvokeInst_O,
-  /* 1267 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PHINode_O,
-  /* 1271 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IndirectBrInst_O,
-  /* 1275 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__BranchInst_O,
-  /* 1279 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Constant_O,
-  /* 1283 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__GlobalValue_O,
-  /* 1287 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Function_O,
-  /* 1291 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__GlobalVariable_O,
-  /* 1295 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__BlockAddress_O,
-  /* 1299 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantDataSequential_O,
-  /* 1303 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantDataArray_O,
-  /* 1307 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantStruct_O,
-  /* 1311 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantInt_O,
-  /* 1315 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantFP_O,
-  /* 1319 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantExpr_O,
-  /* 1323 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantPointerNull_O,
-  /* 1327 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__UndefValue_O,
-  /* 1331 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantArray_O,
-  /* 1335 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetMachine_O,
-  /* 1339 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LLVMTargetMachine_O,
-  /* 1343 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ThreadSafeContext_O,
-  /* 1347 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__NamedMDNode_O,
-  /* 1351 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Triple_O,
-  /* 1355 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DWARFContext_O,
-  /* 1359 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetOptions_O,
-  /* 1363 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LLVMContext_O,
-  /* 1367 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PassManagerBuilder_O,
-  /* 1371 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Module_O,
-  /* 1375 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Target_O,
-  /* 1379 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Linker_O,
-  /* 1383 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Rack_O,
-  /* 1387 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SmallMultimap_O,
-  /* 1391 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Sigset_O,
-  /* 1395 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DebuggerFrame_O,
-  /* 1399 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Environment_O,
-  /* 1403 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__GlueEnvironment_O,
-  /* 1407 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LexicalEnvironment_O,
-  /* 1411 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__RuntimeVisibleEnvironment_O,
-  /* 1415 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionValueEnvironment_O,
-  /* 1419 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__TagbodyEnvironment_O,
-  /* 1423 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__BlockEnvironment_O,
-  /* 1427 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ValueEnvironment_O,
-  /* 1431 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__CompileTimeEnvironment_O,
-  /* 1435 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__CatchEnvironment_O,
-  /* 1439 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__MacroletEnvironment_O,
-  /* 1443 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SymbolMacroletEnvironment_O,
-  /* 1447 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionContainerEnvironment_O,
-  /* 1451 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__UnwindProtectEnvironment_O,
-  /* 1455 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ActivationFrame_O,
-  /* 1459 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ValueFrame_O,
-  /* 1463 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionFrame_O,
-  /* 1467 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__RandomState_O,
-  /* 1471 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__EntryPointBase_O,
-  /* 1475 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__GlobalEntryPointGenerator_O,
-  /* 1479 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LocalEntryPointGenerator_O,
-  /* 1483 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__CodeEntryPoint_O,
-  /* 1487 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__GlobalEntryPoint_O,
-  /* 1491 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LocalEntryPoint_O,
-  /* 1495 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DebuggerLocal_O,
-  /* 1499 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableBase_O,
-  /* 1503 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__WeakKeyHashTable_O,
-  /* 1507 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTable_O,
-  /* 1511 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEqualp_O,
-  /* 1515 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEq_O,
-  /* 1519 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEql_O,
-  /* 1523 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEqual_O,
-  /* 1527 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableCustom_O,
-  /* 1531 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionDescription_O,
-  /* 1535 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__InsertPoint_O,
-  /* 1539 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Scope_O,
-  /* 1543 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FileScope_O,
-  /* 1547 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Path_O,
-  /* 1551 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Pathname_O,
-  /* 1555 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LogicalPathname_O,
-  /* 1559 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Number_O,
-  /* 1563 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Real_O,
-  /* 1567 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Rational_O,
-  /* 1571 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Ratio_O,
-  /* 1575 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Integer_O,
-  /* 1579 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Bignum_O,
-  /* 1583 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Fixnum_dummy_O,
-  /* 1587 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Float_O,
-  /* 1591 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DoubleFloat_O,
-  /* 1595 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SingleFloat_dummy_O,
-  /* 1599 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LongFloat_O,
-  /* 1603 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ShortFloat_O,
-  /* 1607 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Complex_O,
-  /* 1611 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Stream_O,
-  /* 1615 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__AnsiStream_O,
-  /* 1619 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__TwoWayStream_O,
-  /* 1623 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SynonymStream_O,
-  /* 1627 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ConcatenatedStream_O,
-  /* 1631 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FileStream_O,
-  /* 1635 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__IOFileStream_O,
-  /* 1639 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__IOStreamStream_O,
-  /* 1643 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__BroadcastStream_O,
-  /* 1647 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__StringStream_O,
-  /* 1651 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__StringOutputStream_O,
-  /* 1655 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__StringInputStream_O,
-  /* 1659 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__EchoStream_O,
-  /* 1663 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Package_O,
-  /* 1667 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FileStatus_O,
-  /* 1671 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SourcePosInfo_O,
-  /* 1675 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DirectoryEntry_O,
-  /* 1679 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LightUserData_O,
-  /* 1683 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__UserData_O,
-  /* 1687 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Record_O,
-  /* 1691 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clbind__ClassRegistry_O,
-  /* 1695 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Cons_O,
-  /* 1699 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Lisp_O,
-  /* 1703 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
-  /* 1707 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_asttooling__AstVisitor_O,
-  /* 1711 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__ToolAction,
-  /* 1715 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__FrontendActionFactory,
-  /* 1719 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback,
-  /* 1723 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCContainer,
-  /* 1727 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_,
-  /* 1731 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 1735 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_short_,
-  /* 1739 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
-  /* 1743 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_,
-  /* 1747 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_,
-  /* 1751 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_signed_char_,
-  /* 1755 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
-  /* 1759 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
-  /* 1763 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_char_,
-  /* 1767 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_,
-  /* 1771 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 1775 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
-  /* 1779 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_double_,
-  /* 1783 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_,
-  /* 1787 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_,
-  /* 1791 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 1795 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
-  /* 1799 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_,
-  /* 1803 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 1807 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
-  /* 1811 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__,
-  /* 1815 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_,
-  /* 1819 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_,
-  /* 1823 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_,
-  /* 1827 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 1831 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_,
-  /* 1835 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_int_,
-  /* 1839 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_,
-  /* 1843 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 1847 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 1851 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_,
-  /* 1855 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_long_,
-  /* 1859 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_int_,
-  /* 1863 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 1867 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_float_,
-  /* 1871 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_,
-  /* 1875 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
-  /* 1879 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__T_O___,
-  /* 1883 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_,
-  /* 1887 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__FrontendAction,
-  /* 1891 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ASTFrontendAction,
-  /* 1895 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__SyntaxOnlyAction,
+  /* 927 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Exposer_O,
+  /* 931 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__CoreExposer_O,
+  /* 935 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_asttooling__AsttoolingExposer_O,
+  /* 939 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__StructLayout_O,
+  /* 943 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clasp_ffi__ForeignTypeSpec_O,
+  /* 945 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Instance_O,
+  /* 948 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DerivableCxxObject_O,
+  /* 953 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clbind__ClassRep_O,
+  /* 959 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SmallMap_O,
+  /* 963 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_mpip__Mpi_O,
+  /* 967 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ExternalObject_O,
+  /* 971 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Pass_O,
+  /* 975 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ModulePass_O,
+  /* 979 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ImmutablePass_O,
+  /* 983 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 987 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FunctionPass_O,
+  /* 991 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ExecutionEngine_O,
+  /* 995 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MCSubtargetInfo_O,
+  /* 999 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetSubtargetInfo_O,
+  /* 1003 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Type_O,
+  /* 1007 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PointerType_O,
+  /* 1011 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ArrayType_O,
+  /* 1015 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FunctionType_O,
+  /* 1019 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IntegerType_O,
+  /* 1023 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__StructType_O,
+  /* 1027 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__VectorType_O,
+  /* 1031 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__JITDylib_O,
+  /* 1035 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIContext_O,
+  /* 1039 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetPassConfig_O,
+  /* 1043 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IRBuilderBase_O,
+  /* 1047 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IRBuilder_O,
+  /* 1051 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__APFloat_O,
+  /* 1055 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__APInt_O,
+  /* 1059 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIBuilder_O,
+  /* 1063 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__SectionedAddress_O,
+  /* 1067 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__EngineBuilder_O,
+  /* 1071 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PassManagerBase_O,
+  /* 1075 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PassManager_O,
+  /* 1079 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FunctionPassManager_O,
+  /* 1083 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Metadata_O,
+  /* 1087 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MDNode_O,
+  /* 1091 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DINode_O,
+  /* 1095 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIVariable_O,
+  /* 1099 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILocalVariable_O,
+  /* 1103 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIScope_O,
+  /* 1107 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIFile_O,
+  /* 1111 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIType_O,
+  /* 1115 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DICompositeType_O,
+  /* 1119 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIDerivedType_O,
+  /* 1123 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIBasicType_O,
+  /* 1127 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DISubroutineType_O,
+  /* 1131 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILocalScope_O,
+  /* 1135 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DISubprogram_O,
+  /* 1139 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILexicalBlockBase_O,
+  /* 1143 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILexicalBlock_O,
+  /* 1147 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DICompileUnit_O,
+  /* 1151 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DIExpression_O,
+  /* 1155 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DILocation_O,
+  /* 1159 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ValueAsMetadata_O,
+  /* 1163 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MDString_O,
+  /* 1167 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Test_O,
+  /* 1171 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Value_O,
+  /* 1175 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Argument_O,
+  /* 1179 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__BasicBlock_O,
+  /* 1183 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__MetadataAsValue_O,
+  /* 1187 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__User_O,
+  /* 1191 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Instruction_O,
+  /* 1195 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__UnaryInstruction_O,
+  /* 1199 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__VAArgInst_O,
+  /* 1203 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LoadInst_O,
+  /* 1207 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__AllocaInst_O,
+  /* 1211 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__SwitchInst_O,
+  /* 1215 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__AtomicRMWInst_O,
+  /* 1219 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LandingPadInst_O,
+  /* 1223 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__StoreInst_O,
+  /* 1227 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__UnreachableInst_O,
+  /* 1231 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ReturnInst_O,
+  /* 1235 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ResumeInst_O,
+  /* 1239 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__AtomicCmpXchgInst_O,
+  /* 1243 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__FenceInst_O,
+  /* 1247 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__CallBase_O,
+  /* 1251 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__CallInst_O,
+  /* 1255 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__InvokeInst_O,
+  /* 1259 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PHINode_O,
+  /* 1263 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__IndirectBrInst_O,
+  /* 1267 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__BranchInst_O,
+  /* 1271 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Constant_O,
+  /* 1275 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__GlobalValue_O,
+  /* 1279 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Function_O,
+  /* 1283 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__GlobalVariable_O,
+  /* 1287 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__BlockAddress_O,
+  /* 1291 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantDataSequential_O,
+  /* 1295 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantDataArray_O,
+  /* 1299 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantStruct_O,
+  /* 1303 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantInt_O,
+  /* 1307 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantFP_O,
+  /* 1311 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantExpr_O,
+  /* 1315 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantPointerNull_O,
+  /* 1319 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__UndefValue_O,
+  /* 1323 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ConstantArray_O,
+  /* 1327 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetMachine_O,
+  /* 1331 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LLVMTargetMachine_O,
+  /* 1335 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__ThreadSafeContext_O,
+  /* 1339 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__NamedMDNode_O,
+  /* 1343 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Triple_O,
+  /* 1347 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DWARFContext_O,
+  /* 1351 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__TargetOptions_O,
+  /* 1355 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__LLVMContext_O,
+  /* 1359 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__PassManagerBuilder_O,
+  /* 1363 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Module_O,
+  /* 1367 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Target_O,
+  /* 1371 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__Linker_O,
+  /* 1375 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Rack_O,
+  /* 1379 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SmallMultimap_O,
+  /* 1383 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Sigset_O,
+  /* 1387 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DebuggerFrame_O,
+  /* 1391 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Environment_O,
+  /* 1395 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__GlueEnvironment_O,
+  /* 1399 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LexicalEnvironment_O,
+  /* 1403 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__RuntimeVisibleEnvironment_O,
+  /* 1407 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionValueEnvironment_O,
+  /* 1411 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__TagbodyEnvironment_O,
+  /* 1415 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__BlockEnvironment_O,
+  /* 1419 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ValueEnvironment_O,
+  /* 1423 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__CompileTimeEnvironment_O,
+  /* 1427 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__CatchEnvironment_O,
+  /* 1431 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__MacroletEnvironment_O,
+  /* 1435 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SymbolMacroletEnvironment_O,
+  /* 1439 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionContainerEnvironment_O,
+  /* 1443 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__UnwindProtectEnvironment_O,
+  /* 1447 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ActivationFrame_O,
+  /* 1451 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ValueFrame_O,
+  /* 1455 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionFrame_O,
+  /* 1459 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__RandomState_O,
+  /* 1463 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__EntryPointBase_O,
+  /* 1467 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__GlobalEntryPointGenerator_O,
+  /* 1471 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LocalEntryPointGenerator_O,
+  /* 1475 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__CodeEntryPoint_O,
+  /* 1479 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__GlobalEntryPoint_O,
+  /* 1483 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LocalEntryPoint_O,
+  /* 1487 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DebuggerLocal_O,
+  /* 1491 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableBase_O,
+  /* 1495 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__WeakKeyHashTable_O,
+  /* 1499 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTable_O,
+  /* 1503 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEqualp_O,
+  /* 1507 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEq_O,
+  /* 1511 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEql_O,
+  /* 1515 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableEqual_O,
+  /* 1519 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__HashTableCustom_O,
+  /* 1523 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FunctionDescription_O,
+  /* 1527 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__InsertPoint_O,
+  /* 1531 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Scope_O,
+  /* 1535 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FileScope_O,
+  /* 1539 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Path_O,
+  /* 1543 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Pathname_O,
+  /* 1547 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LogicalPathname_O,
+  /* 1551 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Number_O,
+  /* 1555 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Real_O,
+  /* 1559 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Rational_O,
+  /* 1563 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Ratio_O,
+  /* 1567 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Integer_O,
+  /* 1571 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Bignum_O,
+  /* 1575 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Fixnum_dummy_O,
+  /* 1579 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Float_O,
+  /* 1583 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DoubleFloat_O,
+  /* 1587 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SingleFloat_dummy_O,
+  /* 1591 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LongFloat_O,
+  /* 1595 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ShortFloat_O,
+  /* 1599 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Complex_O,
+  /* 1603 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Stream_O,
+  /* 1607 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__AnsiStream_O,
+  /* 1611 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__TwoWayStream_O,
+  /* 1615 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SynonymStream_O,
+  /* 1619 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ConcatenatedStream_O,
+  /* 1623 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FileStream_O,
+  /* 1627 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__IOFileStream_O,
+  /* 1631 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__IOStreamStream_O,
+  /* 1635 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__BroadcastStream_O,
+  /* 1639 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__StringStream_O,
+  /* 1643 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__StringOutputStream_O,
+  /* 1647 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__StringInputStream_O,
+  /* 1651 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__EchoStream_O,
+  /* 1655 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Package_O,
+  /* 1659 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__FileStatus_O,
+  /* 1663 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SourcePosInfo_O,
+  /* 1667 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__DirectoryEntry_O,
+  /* 1671 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LightUserData_O,
+  /* 1675 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__UserData_O,
+  /* 1679 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Record_O,
+  /* 1683 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clbind__ClassRegistry_O,
+  /* 1687 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Cons_O,
+  /* 1691 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Lisp_O,
+  /* 1695 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
+  /* 1699 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_asttooling__AstVisitor_O,
+  /* 1703 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__ToolAction,
+  /* 1707 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__FrontendActionFactory,
+  /* 1711 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback,
+  /* 1715 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCContainer,
+  /* 1719 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_,
+  /* 1723 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 1727 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_short_,
+  /* 1731 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 1735 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_,
+  /* 1739 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_,
+  /* 1743 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_signed_char_,
+  /* 1747 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
+  /* 1751 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
+  /* 1755 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_char_,
+  /* 1759 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_,
+  /* 1763 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 1767 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
+  /* 1771 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_double_,
+  /* 1775 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_,
+  /* 1779 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_,
+  /* 1783 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_,
+  /* 1787 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
+  /* 1791 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_,
+  /* 1795 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 1799 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
+  /* 1803 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__,
+  /* 1807 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_,
+  /* 1811 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_,
+  /* 1815 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_,
+  /* 1819 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 1823 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_,
+  /* 1827 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_int_,
+  /* 1831 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_,
+  /* 1835 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 1839 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 1843 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_,
+  /* 1847 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_long_,
+  /* 1851 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_int_,
+  /* 1855 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 1859 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_float_,
+  /* 1863 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_,
+  /* 1867 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
+  /* 1871 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__T_O___,
+  /* 1875 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_,
+  /* 1879 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__FrontendAction,
+  /* 1883 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ASTFrontendAction,
+  /* 1887 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__SyntaxOnlyAction,
    NULL
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)
