@@ -321,8 +321,8 @@ multithreaded performance that we should explore."
 - output-path :: A pathname.
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
-  ;; TODO: Save read-table and package with unwind-protect
   (let* ((*package* *package*)
+         (*readtable* *readtable*)
          (clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
          (source-sin (open given-input-pathname :direction :input :external-format (or external-format :default))))
