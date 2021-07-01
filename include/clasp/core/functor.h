@@ -132,6 +132,7 @@ fields at the same offset as Instance_O.
   // Accessors
    EntryPointBase_O(FunctionDescription_sp fdesc) : _FunctionDescription(fdesc) {  };
    CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
+   virtual Pointer_sp defaultEntryAddress() const;
  };
 
  FORWARD(CodeEntryPoint);
@@ -160,6 +161,7 @@ fields at the same offset as Instance_O.
    LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {};
  public:
    virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+   virtual Pointer_sp defaultEntryAddress() const;
 };
 
 FORWARD(LocalEntryPointGenerator);
@@ -182,6 +184,7 @@ FORWARD(GlobalEntryPoint);
    GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : CodeEntryPoint_O(fdesc, code), _EntryPoints{entry_point} {};
  public:
    virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+   virtual Pointer_sp defaultEntryAddress() const;
  };
 
 FORWARD(GlobalEntryPointGenerator);

@@ -79,6 +79,17 @@ void CodeEntryPoint_O::fixupOneCodePointer( imageSaveLoad::Fixup* fixup, void** 
 #endif
 }
 
+CL_DEFMETHOD Pointer_sp EntryPointBase_O::defaultEntryAddress() const {
+  SUBCLASS_MUST_IMPLEMENT();
+}
+
+Pointer_sp GlobalEntryPoint_O::defaultEntryAddress() const {
+  return Pointer_O::create(this->_EntryPoints[0]);
+};
+Pointer_sp LocalEntryPoint_O::defaultEntryAddress() const {
+  return Pointer_O::create(this->_EntryPoint);
+};
+
 void GlobalEntryPoint_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
   this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints[0]);
 };
