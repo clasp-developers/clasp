@@ -529,7 +529,12 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
     ObjectFile_sp object_file = gc::As<ObjectFile_sp>(object_info.second());
     DWARFContext_sp context = DWARFContext_O::createDwarfContext(object_file);
     if (verbose){
-      core::write_bf_stream(BF("ObjectFile_sp: %s SectionedAddress: %s DWARFContext: %s\n") % _rep_(object_file) % _rep_(sectioned_address) % _rep_(context));
+      core::write_bf_stream(BF("Address: %p\n") % address );
+      core::write_bf_stream(BF("ObjectFile: %s SectionedAddress: %s DWARFContext: %s\n") % _rep_(object_file) % _rep_(sectioned_address) % _rep_(context));
+      Code_sp code = object_file->_Code;
+      core::write_bf_stream(BF("Code object: %s\n") % _rep_(code));
+      core::write_bf_stream(BF("Code _text start: %p   end: %p\n") % code->_TextSegmentStart % code->_TextSegmentEnd );
+      core::write_bf_stream(BF("address (%p) - _TextSegmentStart(%p) -> %p\n") % (void*)address % (void*)code->_TextSegmentStart % ((uintptr_t)address - (uintptr_t)code->_TextSegmentStart ));
     }
     return getLineInfoForAddress(context,sectioned_address, verbose);
   }
