@@ -534,7 +534,7 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
       Code_sp code = object_file->_Code;
       core::write_bf_stream(BF("Code object: %s\n") % _rep_(code));
       core::write_bf_stream(BF("Code _text start: %p   end: %p\n") % code->_TextSegmentStart % code->_TextSegmentEnd );
-      core::write_bf_stream(BF("address (%p) - _TextSegmentStart(%p) -> %p\n") % (void*)address % (void*)code->_TextSegmentStart % ((uintptr_t)address - (uintptr_t)code->_TextSegmentStart ));
+      core::write_bf_stream(BF("address (%p) - _TextSegmentStart(%p) -> %ld\n") % (void*)address % (void*)code->_TextSegmentStart % (intptr_t)((uintptr_t)address - (uintptr_t)code->_TextSegmentStart ));
     }
     return getLineInfoForAddress(context,sectioned_address, verbose);
   }

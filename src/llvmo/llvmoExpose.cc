@@ -4212,11 +4212,17 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                       for (auto ssym : G.defined_symbols()) {
                                         std::string sname = ssym->getName().str();
                                         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
+                                        bool keptAlive = false;
                                         if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
-                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
-                                          ssym->setLive(true);
+                                          keptAlive = true;
                                         } else if ( sname.find(literals_name) != std::string::npos ) {
-                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
+                                          keptAlive = true;
+                                        } else if ( sname.find("^^") != std::string::npos ) {
+                                          // Keep alive mangled symbols that we care about
+//                                          keptAlive = true;
+                                        } 
+                                        if (keptAlive) {
+//                                          printf("%s:%d:%s preprune symbol: %s  alive: %d\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str(), keptAlive );
                                           ssym->setLive(true);
                                         }
                                       }
