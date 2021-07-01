@@ -404,18 +404,23 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
 
 namespace llvmo { // DIContext_O
 
-core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::SectionedAddress addr) {
+core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::SectionedAddress addr, bool verbose) {
   core::T_sp source;
 
   llvm::DILineInfoSpecifier lispec;
   lispec.FNKind = llvm::DILineInfoSpecifier::FunctionNameKind::LinkageName;
   lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
   
+  if (verbose) core::write_bf_stream(BF("Entered %s %s %s\n") % __FILE__ % __LINE__ % __FUNCTION__ );
   llvm::DILineInfo info = dicontext->getLineInfoForAddress(addr, lispec);
   if (info.FileName == info.BadString) return _Nil<core::T_O>();
   if (info.Source.hasValue())
     source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
   else source = _Nil<core::T_O>();
+  if (verbose) {
+    core::write_bf_stream(BF("Source %s\n") % _rep_(source) );
+    core::write_bf_stream(BF("info.Line %lu\n") % info.Line );
+  }
   
   return Values(core::SimpleBaseString_O::make(info.FileName),
                 core::SimpleBaseString_O::make(info.FunctionName),
@@ -428,10 +433,10 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
 
 // We can't translate a DWARFContext_sp into a DIContext* directly, apparently.
 // The SectionedAddress translation is also a bust.
-CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LAMBDA(dwarfcontext sectioned-address &key verbose);
 CL_LISPIFY_NAME(getLineInfoForAddress);
-CL_DEFUN core::T_mv getLineInfoForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
-  return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value);
+CL_DEFUN core::T_mv getLineInfoForAddress(DWARFContext_sp dc, SectionedAddress_sp addr, bool verbose) {
+  return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value,verbose);
 }
 
 CL_LAMBDA(dwarfcontext sectioned-address);
@@ -508,7 +513,13 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
     SectionedAddress_sp sectioned_address = gc::As<SectionedAddress_sp>(object_info);
     ObjectFile_sp object_file = gc::As<ObjectFile_sp>(object_info.second());
     DWARFContext_sp context = DWARFContext_O::createDwarfContext(object_file);
-    return getLineInfoForAddress(context,sectioned_address);
+    if (verbose){
+      core::write_bf_stream(BF("ObjectFile_sp: %s SectionedAddress: %s DWARFContext: %s\n") % _rep_(object_file) % _rep_(sectioned_address) % _rep_(context));
+    }
+    return getLineInfoForAddress(context,sectioned_address, verbose);
+  }
+  if (verbose){
+    core::write_bf_stream(BF("Could not find ObjectFile\n"));
   }
   return Values(_Nil<core::T_O>());
 }

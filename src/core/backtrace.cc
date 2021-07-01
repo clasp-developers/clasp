@@ -60,7 +60,7 @@ static SimpleBaseString_sp lu_procname(unw_cursor_t* cursorp) {
 static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
                       llvmo::SectionedAddress_sp sa) {
     // FIXME: Might be better to just use the llvm::DILineInfo directly.
-  T_mv lineinfo = llvmo::getLineInfoForAddress(dcontext, sa);
+  T_mv lineinfo = llvmo::getLineInfoForAddress( dcontext, sa, false );
   if (lineinfo.notnilp()) {
     SimpleBaseString_sp filename = gc::As<SimpleBaseString_sp>(lineinfo);
     Integer_sp line = gc::As<Integer_sp>(lineinfo.valueGet_(3));

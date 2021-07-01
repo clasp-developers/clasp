@@ -969,7 +969,7 @@ public:
   }
 }; // DWARFContext_O class def
 // FIXME: move?
-core::T_mv getLineInfoForAddress(DWARFContext_sp, SectionedAddress_sp);
+core::T_mv getLineInfoForAddress(DWARFContext_sp, SectionedAddress_sp, bool verbose);
 llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressInner(DWARFContext_sp, SectionedAddress_sp);
 }; // llvmo
 /* from_object translators */
