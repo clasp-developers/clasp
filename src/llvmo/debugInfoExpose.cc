@@ -410,16 +410,31 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
   llvm::DILineInfoSpecifier lispec;
   lispec.FNKind = llvm::DILineInfoSpecifier::FunctionNameKind::LinkageName;
   lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
-  
-  if (verbose) core::write_bf_stream(BF("Entered %s %s %s\n") % __FILE__ % __LINE__ % __FUNCTION__ );
+
+  if (verbose) {
+    core::write_bf_stream(BF("Entered %s %s %s\n") % __FILE__ % __LINE__ % __FUNCTION__ );
+    core::write_bf_stream(BF("  DIContext* %p  SectionedAddress: %p %p\n") % (void*)dicontext % (void*)addr.SectionIndex % (void*)addr.Address );
+  }
   llvm::DILineInfo info = dicontext->getLineInfoForAddress(addr, lispec);
-  if (info.FileName == info.BadString) return _Nil<core::T_O>();
+  if (info.FileName == info.BadString) {
+  if (verbose) {
+    core::write_bf_stream(BF("info.Filename is info.BadString:  %s\n") % info.FileName );
+    core::write_bf_stream(BF("Source %s\n") % _rep_(source) );
+    core::write_bf_stream(BF("info.Line %lu\n") % info.Line );
+    core::write_bf_stream(BF("info.Column %lu\n") % info.Column );
+    core::write_bf_stream(BF("info.StartLine %lu\n") % info.StartLine );
+  }
+    return _Nil<core::T_O>();
+  }
   if (info.Source.hasValue())
     source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
   else source = _Nil<core::T_O>();
   if (verbose) {
+    core::write_bf_stream(BF("info.Filename %s\n") % info.FileName );
     core::write_bf_stream(BF("Source %s\n") % _rep_(source) );
     core::write_bf_stream(BF("info.Line %lu\n") % info.Line );
+    core::write_bf_stream(BF("info.Column %lu\n") % info.Column );
+    core::write_bf_stream(BF("info.StartLine %lu\n") % info.StartLine );
   }
   
   return Values(core::SimpleBaseString_O::make(info.FileName),
