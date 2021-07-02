@@ -671,29 +671,29 @@ eg:  (f closure-ptr nargs a b c d ...)
                 (let ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
                       (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*")))
                   (irc-store reg-i8* addr t)
-                  addr))
-              (dbg (idx addr-name &optional (type-name "T_O*")
-                                    (type llvm-sys:+dw-ate-address+))
-                (let (;; LLVM argno is counted from 1, not 0
-                      (var (dbg-parameter-var addr-name (1+ idx)
-                                              type-name type)))
-                  (%dbg-variable-value (elt registers idx) var)
-                  (%dbg-variable-addr (irc-gep register-save-area*
-                                               (list (jit-constant-size_t 0)
-                                                     (jit-constant-size_t idx))
-                                               addr-name)
-                                      var))))
+                  (when (llvm-sys:current-debug-location *irbuilder*)
+                    (let ((var (dbg-parameter-var addr-name (1+ idx))))
+                      (%dbg-variable-value reg-i8* var)
+                      (%dbg-variable-addr addr var)))
+                  addr)))
          (spill-reg 0 (elt registers 0) "closure0")
          (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1")
          ;; this is the first fixed arg currently.
          (spill-reg 2 (elt registers 2) "arg0")
          (spill-reg 3 (elt registers 3) "arg1")
          (spill-reg 4 (elt registers 4) "arg2")
-         (spill-reg 5 (elt registers 5) "arg3")
-         (when (llvm-sys:current-debug-location *irbuilder*)
-           (dbg 0 "closure")
-           (dbg 1 "nargs" "int" llvm-sys:+dw-ate-signed-fixed+)
-           (dbg 2 "farg0") (dbg 3 "farg1") (dbg 4 "farg2") (dbg 5 "farg3"))))
+         (spill-reg 5 (elt registers 5) "arg3"))
+       ;; Spill the register-save-area as a whole, because LLVM deletes a whole
+       ;; lot of debug information for no obvious reason
+       (when (llvm-sys:current-debug-location *irbuilder*)
+         (let ((rsa-var (dbg-create-auto-variable
+                         :name "register-save-area"
+                         :lineno *dbg-current-function-lineno*
+                         :type (llvm-sys:create-basic-type
+                                *the-module-dibuilder*
+                                "T_O**" 64 llvm-sys:+dw-ate-address+ 0)
+                         :always-preserve t)))
+           (%dbg-variable-value register-save-area* rsa-var))))
       (register-save-area*
        (error "If registers is NIL then register-save-area* also must be NIL"))))
 
@@ -709,16 +709,16 @@ eg:  (f closure-ptr nargs a b c d ...)
 (error "Define calling convention for system")
 
 (defun %dbg-variable-addr (addr var)
-    (let* ((addrmd (llvm-sys:metadata-as-value-get
-                    (thread-local-llvm-context)
-                    (llvm-sys:value-as-metadata-get addr)))
-           (varmd (llvm-sys:metadata-as-value-get
-                   (thread-local-llvm-context)
-                   var))
-           (diexpr (llvm-sys:metadata-as-value-get
-                    (thread-local-llvm-context)
-                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
-      (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr)))
+  (let* ((addrmd (llvm-sys:metadata-as-value-get
+                  (thread-local-llvm-context)
+                  (llvm-sys:value-as-metadata-get addr)))
+         (varmd (llvm-sys:metadata-as-value-get
+                 (thread-local-llvm-context)
+                 var))
+         (diexpr (llvm-sys:metadata-as-value-get
+                  (thread-local-llvm-context)
+                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
+    (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr)))
 
 ;;; Put in debug information for a variable corresponding to an alloca.
 (defun dbg-variable-alloca (alloca name spi
