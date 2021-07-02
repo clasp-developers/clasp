@@ -22,16 +22,17 @@ class DebuggerFrame_O : public General_O {
   virtual ~DebuggerFrame_O() {};
 public:
   DebuggerFrame_O(T_sp a_fname, T_sp a_sp, T_sp a_fd,
-                  T_sp a_closure, T_sp a_args, bool a_av, T_sp a_lang)
+                  T_sp a_closure, T_sp a_args, bool a_av, T_sp a_lang,
+                  bool a_is_xep)
     : fname(a_fname), source_position(a_sp), function_description(a_fd),
-      closure(a_closure), args(a_args), args_available(a_av),
+      closure(a_closure), args(a_args), args_available(a_av), is_xep(a_is_xep),
       lang(a_lang), up(_Nil<T_O>()), down(_Nil<T_O>())
   {}
   static DebuggerFrame_sp make(T_sp fname, T_sp sp, T_sp fd,
                                T_sp closure, T_sp args, bool args_available,
-                               T_sp lang) {
+                               T_sp lang, bool is_xep) {
     GC_ALLOCATE_VARIADIC(DebuggerFrame_O, ret, fname, sp, fd,
-                         closure, args, args_available, lang);
+                         closure, args, args_available, lang, is_xep);
     return ret;
   }
 public:
@@ -44,6 +45,7 @@ public:
   T_sp lang;
   T_sp up;
   T_sp down;
+  bool is_xep;
 };
 
 T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)>);

@@ -75,7 +75,8 @@ static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
 
 static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
                      llvmo::DWARFContext_sp dcontext,
-                     llvmo::SectionedAddress_sp sa) {
+                     llvmo::SectionedAddress_sp sa,
+                     bool& XEPp) {
   auto eranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
   if (eranges) {
     auto ranges = eranges.get();
@@ -97,8 +98,10 @@ static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
         for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
           uintptr_t ip = (uintptr_t)(ep->_EntryPoints[j]) - code_start;
           for (auto range : ranges) {
-            if ((range.LowPC <= ip) && (ip < range.HighPC))
+            if ((range.LowPC <= ip) && (ip < range.HighPC)) {
+              XEPp = true;
               return ep;
+            }
           }
         }
       }
@@ -186,7 +189,8 @@ static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
   llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
   llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDwarfContext(ofi);
   T_sp spi = dwarf_spi(dcontext, sa);
-  T_sp ep = dwarf_ep(ofi, dcontext, sa);
+  bool XEPp = false;
+  T_sp ep = dwarf_ep(ofi, dcontext, sa, XEPp);
   T_sp fd = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : _Nil<FunctionDescription_O>();
   T_sp closure = _Nil<T_O>(), args = _Nil<T_O>();
   bool args_available = args_for_entry_point(ofi, ep, fbp, closure, args);
@@ -194,7 +198,7 @@ static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
   if (fd.notnilp())
     fname = gc::As_unsafe<FunctionDescription_sp>(fd)->functionName();
   return DebuggerFrame_O::make(fname, spi, fd, closure, args, args_available,
-                               INTERN_(kw, lisp));
+                               INTERN_(kw, lisp), XEPp);
 }
 
 bool maybe_demangle(const std::string& fnName, std::string& output)
@@ -268,7 +272,8 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
     name = linkname;
   T_sp lname = SimpleBaseString_O::make(name);
   return DebuggerFrame_O::make(lname, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
-                               _Nil<T_O>(), false, INTERN_(kw, c_PLUS__PLUS_));
+                               _Nil<T_O>(), false, INTERN_(kw, c_PLUS__PLUS_),
+                               false);
 }
 
 __attribute__((optnone))
@@ -394,6 +399,9 @@ CL_DEFUN T_sp core__debugger_frame_args(DebuggerFrame_sp df) {
 }
 CL_DEFUN bool core__debugger_frame_args_available_p(DebuggerFrame_sp df) {
   return df->args_available;
+}
+CL_DEFUN bool core__debugger_frame_xep_p(DebuggerFrame_sp df) {
+  return df->is_xep;
 }
 CL_DEFUN T_sp core__debugger_frame_up(DebuggerFrame_sp df) {
   return df->up;
