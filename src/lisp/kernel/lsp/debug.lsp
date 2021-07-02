@@ -227,7 +227,7 @@ The delimiters and visibility may be ignored by using the lower level FRAME-UP, 
                     ,@kwargs))
 
 (defparameter *frame-filters* (list 'non-lisp-frame-p
-                                    'xep-p
+                                    'redundant-xep-p
                                     'package-hider
                                     'fname-hider)
   "A list of function designators. Any CLASP-DEBUG:FRAME for which any of the functions returns true will be considered invisible by the mid level CLASP-DEBUG interface (e.g. UP, DOWN)")
@@ -345,12 +345,17 @@ Note that as such, the frame returned may not be visible."
 ;;; The XEP should do a tail call, but usually doesn't for whatever reason,
 ;;; so we have a XEP and local function on the stack for essentially every Lisp
 ;;; function call.
-;;; We hide the XEP because it has non-specific source information (since it
-;;; doesn't have the function's actual code), but have the local inherit the
-;;; arguments from the XEP - see frame-arguments above.
-(defun xep-p (frame)
+;;; We hide XEPs that have a local function call with the same name in the next
+;;; frame down, to avoid redundancy; but the local inherits the arguments from
+;;; the XEP - see frame-arguments above.
+(defun redundant-xep-p (frame)
   (and (eq (frame-language frame) :lisp)
-       (core:debugger-frame-xep-p frame)))
+       (core:debugger-frame-xep-p frame)
+       (let ((down (core:debugger-frame-down frame)))
+         (and down
+              (eq (frame-language down) :lisp)
+              (equal (core:debugger-frame-fname down)
+                     (core:debugger-frame-fname frame))))))
 
 (defparameter *hidden-packages* nil)
 
