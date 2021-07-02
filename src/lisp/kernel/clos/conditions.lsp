@@ -1280,16 +1280,17 @@ Extra care is taken to ensure no errors are signaled. If the object cannot be pr
 (defun prin1-frame-call (frame &optional output-stream-designator)
   "PRIN1 a representation of the given frame's call to the stream (default *STANDARD-OUTPUT*).
 Extra care is taken to ensure no errors are signaled, using SAFE-PRIN1."
-  (let ((fname (frame-function-name frame))
-        (args (frame-arguments frame)))
-    (if (null args)
-        (display-fname fname output-stream-designator)
-        (progn (write-char #\( output-stream-designator)
-               (display-fname fname output-stream-designator)
-               (loop for arg in args
-                     do (write-char #\Space output-stream-designator)
-                        (safe-prin1 arg output-stream-designator))
-               (write-char #\) output-stream-designator))))
+  (let ((fname (frame-function-name frame)))
+    (multiple-value-bind (args availablep)
+        (clasp-debug:frame-arguments frame)
+      (cond (availablep
+             (write-char #\( output-stream-designator)
+             (display-fname fname output-stream-designator)
+             (loop for arg in args
+                   do (write-char #\Space output-stream-designator)
+                      (safe-prin1 arg output-stream-designator))
+             (write-char #\) output-stream-designator))
+            (t (display-fname fname output-stream-designator)))))
   frame)
 
 (defun princ-code-source-line (code-source-line &optional output-stream-designator)

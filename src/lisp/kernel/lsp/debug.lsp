@@ -84,8 +84,10 @@ This function ignores visibility and may not halt at delimiters. DOWN is the low
 Note that this function may be less reliable than the FRAME-FUNCTION-etc functions."
   (core:debugger-frame-closure frame))
 (defun frame-arguments (frame)
-  "Return the list of arguments to the call for this frame."
-  (core:debugger-frame-args frame))
+  "Return the list of arguments to the call for this frame, and T.
+If the arguments are not available, returns NIL NIL."
+  (values (core:debugger-frame-args frame)
+          (core:debugger-frame-args-available-p frame)))
 (defun frame-locals (frame)
     "Return an alist of local lexical variables and their values at the continuation the frame represents. The CARs are variable names and CDRs their values.
 Multiple bindings with the same name may be returned, as there is no notion of lexical scope in this interface."

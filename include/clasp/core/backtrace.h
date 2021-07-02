@@ -22,15 +22,16 @@ class DebuggerFrame_O : public General_O {
   virtual ~DebuggerFrame_O() {};
 public:
   DebuggerFrame_O(T_sp a_fname, T_sp a_sp, T_sp a_fd,
-                  T_sp a_closure, T_sp a_args, T_sp a_lang)
+                  T_sp a_closure, T_sp a_args, bool a_av, T_sp a_lang)
     : fname(a_fname), source_position(a_sp), function_description(a_fd),
-      closure(a_closure), args(a_args),
+      closure(a_closure), args(a_args), args_available(a_av),
       lang(a_lang), up(_Nil<T_O>()), down(_Nil<T_O>())
   {}
   static DebuggerFrame_sp make(T_sp fname, T_sp sp, T_sp fd,
-                               T_sp closure, T_sp args, T_sp lang) {
+                               T_sp closure, T_sp args, bool args_available,
+                               T_sp lang) {
     GC_ALLOCATE_VARIADIC(DebuggerFrame_O, ret, fname, sp, fd,
-                         closure, args, lang);
+                         closure, args, args_available, lang);
     return ret;
   }
 public:
@@ -39,6 +40,7 @@ public:
   T_sp function_description;
   T_sp closure;
   T_sp args;
+  bool args_available;
   T_sp lang;
   T_sp up;
   T_sp down;

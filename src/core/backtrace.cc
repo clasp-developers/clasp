@@ -112,18 +112,20 @@ static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
 }
 
 __attribute__((optnone))
-static void args_from_offset(void* frameptr, int32_t offset,
+static bool args_from_offset(void* frameptr, int32_t offset,
                              T_sp& closure, T_sp& args) {
   if (frameptr) {
     T_O** register_save_area = (T_O**)((uintptr_t)frameptr + offset);
     T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
     if (!gc::IsA<Function_sp>(tclosure)) {
       printf("%s:%d:%s When trying to get arguments from CL frame read what should be a closure %p but it isn't\n", __FILE__, __LINE__, __FUNCTION__, tclosure.raw_());
+      return false;
     }
     closure = tclosure;
     size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
     if (nargs>256) {
       printf("%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+      return false;
     }
     ql::list largs;
     // Get the first args from the register save area
@@ -139,37 +141,43 @@ static void args_from_offset(void* frameptr, int32_t offset,
       largs << temp;
     }
     args = largs.cons();
-  }
+    return true;
+  } else return false;
 }
 
 __attribute__((optnone))
-static void args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
+static bool args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
                                  void* frameptr,
                                  T_sp& closure, T_sp& args) {
-  if (ep.nilp()) return;
+  if (ep.nilp()) return false;
   uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);
-  if (!stackmap_start) return; // ends up as null sometimes apparently
+  if (!stackmap_start) return false; // ends up as null sometimes apparently
   uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
+  bool args_available = false;
   // FIXME: we could check the entry point type ahead of time
   auto thunk = [&](size_t _, const smStkSizeRecord& function,
                    int32_t offsetOrSmallConstant) {
     if (gc::IsA<LocalEntryPoint_sp>(ep)) {
       LocalEntryPoint_sp lep = gc::As_unsafe<LocalEntryPoint_sp>(ep);
       if (function.FunctionAddress == (uintptr_t)(lep->_EntryPoint)) {
-        args_from_offset(frameptr, offsetOrSmallConstant, closure, args);
+        if (args_from_offset(frameptr, offsetOrSmallConstant, closure, args))
+          args_available |= true;
         return;
       }
     } else if (gc::IsA<GlobalEntryPoint_sp>(ep)) {
       GlobalEntryPoint_sp gep = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
       for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
         if (function.FunctionAddress == (uintptr_t)(gep->_EntryPoints[j])) {
-          args_from_offset(frameptr, offsetOrSmallConstant, closure, args);
+          if (args_from_offset(frameptr, offsetOrSmallConstant,
+                               closure, args))
+            args_available |= true;
           return;
         }
       }
     }
   };
   walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
+  return args_available;
 }
 
 __attribute__((optnone))
@@ -181,11 +189,12 @@ static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
   T_sp ep = dwarf_ep(ofi, dcontext, sa);
   T_sp fd = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : _Nil<FunctionDescription_O>();
   T_sp closure = _Nil<T_O>(), args = _Nil<T_O>();
-  args_for_entry_point(ofi, ep, fbp, closure, args);
+  bool args_available = args_for_entry_point(ofi, ep, fbp, closure, args);
   T_sp fname = _Nil<T_O>();
   if (fd.notnilp())
     fname = gc::As_unsafe<FunctionDescription_sp>(fd)->functionName();
-  return DebuggerFrame_O::make(fname, spi, fd, closure, args, INTERN_(kw, lisp));
+  return DebuggerFrame_O::make(fname, spi, fd, closure, args, args_available,
+                               INTERN_(kw, lisp));
 }
 
 bool maybe_demangle(const std::string& fnName, std::string& output)
@@ -259,7 +268,7 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
     name = linkname;
   T_sp lname = SimpleBaseString_O::make(name);
   return DebuggerFrame_O::make(lname, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
-                               _Nil<T_O>(), INTERN_(kw, c_PLUS__PLUS_));
+                               _Nil<T_O>(), false, INTERN_(kw, c_PLUS__PLUS_));
 }
 
 __attribute__((optnone))
@@ -382,6 +391,9 @@ CL_DEFUN T_sp core__debugger_frame_closure(DebuggerFrame_sp df) {
 }
 CL_DEFUN T_sp core__debugger_frame_args(DebuggerFrame_sp df) {
   return df->args;
+}
+CL_DEFUN bool core__debugger_frame_args_available_p(DebuggerFrame_sp df) {
+  return df->args_available;
 }
 CL_DEFUN T_sp core__debugger_frame_up(DebuggerFrame_sp df) {
   return df->up;
