@@ -4217,9 +4217,12 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                           keptAlive = true;
                                         } else if ( sname.find(literals_name) != std::string::npos ) {
                                           keptAlive = true;
+#if 0
+                                          // I'd like to do this on linux because jit symbols need to be exposed but it slows down startup enormously
                                         } else if ( sname.find("^^") != std::string::npos ) {
                                           // Keep alive mangled symbols that we care about
 //                                          keptAlive = true;
+#endif
                                         } 
                                         if (keptAlive) {
 //                                          printf("%s:%d:%s preprune symbol: %s  alive: %d\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str(), keptAlive );
