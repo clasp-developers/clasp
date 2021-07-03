@@ -1,5 +1,5 @@
 /*
-    File: imageSaveLoad.cc
+    File: snapshotSaveLoad.cc
 
 */
 
@@ -33,20 +33,20 @@
 #include <clasp/core/sort.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_boot.h>
-#include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 
 #ifdef _TARGET_OS_LINUX
 #include <elf.h>
 #endif
 
-namespace imageSaveLoad {
+namespace snapshotSaveLoad {
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
 
 bool global_debugSnapshot = false;
 
 };
 
-namespace imageSaveLoad {
+namespace snapshotSaveLoad {
 bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
 #define BUFLEN 2048
   int baddigit = 0;
@@ -291,7 +291,7 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
 
 ;
 
-namespace imageSaveLoad {
+namespace snapshotSaveLoad {
 bool globalFwdMustBeInGCMemory = false;
 #define DEBUG_SL_FFWD 1
 
@@ -461,7 +461,7 @@ void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp codeba
 
 };
 
-namespace imageSaveLoad {
+namespace snapshotSaveLoad {
 
 struct MemoryRange {
   gctools::clasp_ptr_t _Start;
@@ -478,7 +478,7 @@ struct MemoryRange {
 };
 
 //
-// This stores if the client object is in image save/load memory (true) or
+// This stores if the client object is in snapshot save/load memory (true) or
 // from garbage collected memory (false)
 //
 MemoryRange globalISLBufferRange;
@@ -747,10 +747,10 @@ void relocateLoadedRootPointers(gctools::clasp_ptr_t* start, size_t number, void
 
 
 
-namespace imageSaveLoad {
+namespace snapshotSaveLoad {
 
 /* 
- * These are strings that are visible in the image save file
+ * These are strings that are visible in the snapshot save file
  */
 typedef enum {
     General  = 0xbedabb1e01010101, // !OBJECT!
@@ -869,14 +869,14 @@ struct copy_buffer_t {
 };
 
 
-struct Image {
+struct Snapshot {
   ISLFileHeader*    _FileHeader;
   copy_buffer_t*    _HeaderBuffer;
   copy_buffer_t*    _Memory;
   copy_buffer_t*    _Libraries;
   copy_buffer_t*    _ObjectFiles;
 
-  ~Image() {
+  ~Snapshot() {
     delete this->_HeaderBuffer;
     delete this->_Memory;
     delete this->_Libraries;
@@ -897,7 +897,7 @@ struct walker_callback_t {
 
 extern "C" {
 void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
-  imageSaveLoad::walker_callback_t* walker = (imageSaveLoad::walker_callback_t*)client_data;
+  snapshotSaveLoad::walker_callback_t* walker = (snapshotSaveLoad::walker_callback_t*)client_data;
   int kind;
   size_t psize;
 #ifdef USE_BOEHM
@@ -931,7 +931,7 @@ void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
 };
 
 
-namespace imageSaveLoad {
+namespace snapshotSaveLoad {
 
 
 
@@ -1027,7 +1027,7 @@ struct ensure_forward_t : public walker_callback_t {
 };
 
 
-struct prepare_for_image_save_t : public walker_callback_t {
+struct prepare_for_snapshot_save_t : public walker_callback_t {
   Fixup* _fixup;
   void callback(gctools::Header_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
@@ -1036,9 +1036,9 @@ struct prepare_for_image_save_t : public walker_callback_t {
       // Fixup general objects that need it
       //
       if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
-//        printf("%s:%d:%s save_image saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__ );
+//        printf("%s:%d:%s save_snapshot saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__ );
         gctools::GCVector_moveable<clbind::detail::edge>* edges = (gctools::GCVector_moveable<clbind::detail::edge>*)HEADER_PTR_TO_GENERAL_PTR(header);
-//        printf("%s:%d:%s save_image          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
+//        printf("%s:%d:%s save_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
         for ( size_t ii = 0; ii< edges->size(); ii++ ) {
 //          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
           registerLibraryFunctionPointer(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
@@ -1049,7 +1049,7 @@ struct prepare_for_image_save_t : public walker_callback_t {
         core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
         if (cast::Cast<core::General_O*,core::T_O*>::isA(client)) {
           core::General_O* generalObject = (core::General_O*)client;
-          generalObject->fixupInternalsForImageSaveLoad(this->_fixup);
+          generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
         }
       }
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
@@ -1059,7 +1059,7 @@ struct prepare_for_image_save_t : public walker_callback_t {
     }
   }
 
-  prepare_for_image_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup) {};
+  prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup) {};
 };
 
 struct calculate_size_t : public walker_callback_t {
@@ -1199,7 +1199,7 @@ struct copy_objects_t : public walker_callback_t {
         char* islh = this->_objects->write_buffer( (char*)&islheader, sizeof(ISLGeneralHeader_s)); 
         char* new_addr = this->_objects->write_buffer((char*)clientStart, clientEndFront-clientStart);
         llvmo::Code_O* new_code = (llvmo::Code_O*)new_addr;
-        // Set the state and capacity of the new Code_O in the image save load memory
+        // Set the state and capacity of the new Code_O in the snapshot save load memory
         new_code->_State = llvmo::SaveState;
         new_code->_DataCode._MaybeSignedLength = clientEndAndLiterals - clientEndFront;
         // Write the bytes for the literals
@@ -1289,10 +1289,10 @@ struct copy_objects_t : public walker_callback_t {
 };
 
 //
-// walk image save/load objects that start at cur
+// walk snapshot save/load objects that start at cur
 //
 template <typename Walker>
-void walk_image_save_load_objects( ISLHeader_s* start, Walker& walker) {
+void walk_snapshot_save_load_objects( ISLHeader_s* start, Walker& walker) {
   DBG_SL_WALK_SL(BF("Starting walk cur = %p\n") % (void*)cur);
   ISLHeader_s* cur = start;
   while (cur->_Kind != End) {
@@ -1369,9 +1369,9 @@ struct fixup_internals_t : public walker_callback_t {
     if (header->_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
-//        printf("%s:%d:%s load_image saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__  );
+//        printf("%s:%d:%s load_snapshot saw STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_\n", __FILE__, __LINE__, __FUNCTION__  );
         gctools::GCVector_moveable<clbind::detail::edge>* edges = (gctools::GCVector_moveable<clbind::detail::edge>*)HEADER_PTR_TO_GENERAL_PTR(header);
-//        printf("%s:%d:%s load_image          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
+//        printf("%s:%d:%s load_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
         for ( size_t ii = 0; ii< edges->size(); ii++ ) {
 //          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
           decodeLibrarySaveAddress(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
@@ -1384,7 +1384,7 @@ struct fixup_internals_t : public walker_callback_t {
         core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
         if (cast::Cast<core::General_O*,core::T_O*>::isA(client)) {
           core::General_O* generalObject = (core::General_O*)client;
-          generalObject->fixupInternalsForImageSaveLoad(this->_fixup);
+          generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
         }
       }
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
@@ -1681,7 +1681,7 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib,SymbolLookup& symbolLooku
   }
 }
   
-void image_save(const std::string& filename) {
+void snapshot_save(const std::string& filename) {
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
   SymbolLookup lookup;
   loadExecutableSymbolLookup(lookup);
@@ -1696,9 +1696,9 @@ void image_save(const std::string& filename) {
 #endif
 
   //
-  // Call Common Lisp code to release things at image-save time
+  // Call Common Lisp code to release things at snapshot-save time
   //
-//  printf("%s:%d:%s About to invoke-image-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__, comp::_sym_invoke_save_hooks->boundP());
+//  printf("%s:%d:%s About to invoke-snapshot-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__, comp::_sym_invoke_save_hooks->boundP());
   if (comp::_sym_invoke_save_hooks->fboundp()) {
     core::eval::funcall( comp::_sym_invoke_save_hooks );
   }
@@ -1713,16 +1713,16 @@ void image_save(const std::string& filename) {
   gctools::gctools__garbage_collect();
   gctools::cl__room(_Nil<core::T_O>());
   //
-  // Start the image save process
+  // Start the snapshot save process
   //
-  Image image;
+  Snapshot snapshot;
   
 #ifdef USE_BOEHM
   GC_stop_world_external();
 #endif
   
   if (sizeof(ISLGeneralHeader_s)-offsetof(ISLGeneralHeader_s,_Header) != sizeof(gctools::Header_s)) {
-    printf("%s:%d:%s Sanity check for headers in image save/load failed.\n"
+    printf("%s:%d:%s Sanity check for headers in snapshot save/load failed.\n"
            "The _Header field must be the last field in ISLGeneralHeader so that it is IMMEDIATELY followed by a client\n",
            __FILE__, __LINE__, __FUNCTION__ );
     abort();
@@ -1740,9 +1740,9 @@ void image_save(const std::string& filename) {
   // 5. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
   // 6. Fixup pointers in roots
   //
-  // At this point we could write out the image - but it may contain garbage.
+  // At this point we could write out the snapshot - but it may contain garbage.
   //
-  //   Steps 7-14 are an attempt to eliminate objects that made it into the save-image
+  //   Steps 7-14 are an attempt to eliminate objects that made it into the save-snapshot
   //      but are garbage.  I'm not sure the GC is cleaning up enough garbage.
   //      It's basically a mark-and-sweep garbage collection cycle.
   //      Steps 8-13 are identical to 1-6, they just walk different objects.
@@ -1781,8 +1781,8 @@ void image_save(const std::string& filename) {
 
 #if 0
   // I'm going to try this right before I fixup the vtables
-  DBG_SL(BF("0. Prepare objects for image save\n"));
-  prepare_for_image_save_t prepare(&islInfo);
+  DBG_SL(BF("0. Prepare objects for snapshot save\n"));
+  prepare_for_snapshot_save_t prepare(&islInfo);
   walk_garbage_collected_objects(true,prepare);
 #endif
   
@@ -1807,62 +1807,62 @@ void image_save(const std::string& filename) {
   // Align up memory_size to pagesize
 
   
-  // Add the image save load buffer limits to islInfo
-  image._Memory = new copy_buffer_t( gctools::AlignUp(buffer_size) );
-  image._ObjectFiles = new copy_buffer_t( calc_size._ObjectFileTotalSize );
-  islInfo._islStart = (uintptr_t)image._Memory->_BufferStart;
-  islInfo._islEnd = (uintptr_t)image._Memory->_BufferStart+image._Memory->_Size;
+  // Add the snapshot save load buffer limits to islInfo
+  snapshot._Memory = new copy_buffer_t( gctools::AlignUp(buffer_size) );
+  snapshot._ObjectFiles = new copy_buffer_t( calc_size._ObjectFileTotalSize );
+  islInfo._islStart = (uintptr_t)snapshot._Memory->_BufferStart;
+  islInfo._islEnd = (uintptr_t)snapshot._Memory->_BufferStart+snapshot._Memory->_Size;
 //  printf("%s:%d:%s Setting globalISLBufferRange\n", __FILE__, __LINE__, __FUNCTION__ );
-  globalISLBufferRange._Start = (gctools::clasp_ptr_t)image._Memory->_BufferStart;
-  globalISLBufferRange._End = (gctools::clasp_ptr_t)(image._Memory->_BufferStart+image._Memory->_Size);
+  globalISLBufferRange._Start = (gctools::clasp_ptr_t)snapshot._Memory->_BufferStart;
+  globalISLBufferRange._End = (gctools::clasp_ptr_t)(snapshot._Memory->_BufferStart+snapshot._Memory->_Size);
 
   //
   // 3. Walk all objects in memory
   //     (a) copy them to next position in intermediate-buffer
   //     (b) Set a forwarding pointer in the original object
   //
-  DBG_SL(BF("  image._Memory->_BufferStart = %p\n") % (void*)image._Memory->_BufferStart );
-  copy_objects_t copy_objects( image._Memory, image._ObjectFiles, &islInfo );
+  DBG_SL(BF("  snapshot._Memory->_BufferStart = %p\n") % (void*)snapshot._Memory->_BufferStart );
+  copy_objects_t copy_objects( snapshot._Memory, snapshot._ObjectFiles, &islInfo );
   walk_garbage_collected_objects(true,copy_objects);
 
-  image._HeaderBuffer = new copy_buffer_t(getpagesize()); // enough room for header page aligned
-  image._FileHeader = (ISLFileHeader*)image._HeaderBuffer->_BufferStart;
-  new (image._FileHeader) ISLFileHeader(image._Memory->_Size,copy_objects._NumberOfObjects,getpagesize());
+  snapshot._HeaderBuffer = new copy_buffer_t(getpagesize()); // enough room for header page aligned
+  snapshot._FileHeader = (ISLFileHeader*)snapshot._HeaderBuffer->_BufferStart;
+  new (snapshot._FileHeader) ISLFileHeader(snapshot._Memory->_Size,copy_objects._NumberOfObjects,getpagesize());
 
   ISLEndHeader_s end_header( End );
-  char* endend = image._Memory->write_buffer( (char*)&end_header ,  sizeof(end_header));
+  char* endend = snapshot._Memory->write_buffer( (char*)&end_header ,  sizeof(end_header));
   DBG_SAVECOPY(BF("   copying END into buffer @ %p\n") % (void*)endend );
 
   //
   // 4. Copy roots into intermediate-buffer
   //
   ISLRootHeader_s roots1( Roots,  sizeof(core::T_O*) );
-  image._FileHeader->_LispRootOffset = image._Memory->write_buffer( (char*)&roots1 ,  sizeof(ISLRootHeader_s)) - image._Memory->_BufferStart;
-  image._FileHeader->_LispRootCount = 1;
-  image._Memory->write_buffer( (char*)&_lisp ,  sizeof(void*));
+  snapshot._FileHeader->_LispRootOffset = snapshot._Memory->write_buffer( (char*)&roots1 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
+  snapshot._FileHeader->_LispRootCount = 1;
+  snapshot._Memory->write_buffer( (char*)&_lisp ,  sizeof(void*));
   ISLRootHeader_s roots2( Roots, sizeof(core::T_O*)*NUMBER_OF_CORE_SYMBOLS );
-  image._FileHeader->_CoreSymbolRootsOffset = image._Memory->write_buffer( (char*)&roots2 ,  sizeof(ISLRootHeader_s)) - image._Memory->_BufferStart;
-  image._FileHeader->_CoreSymbolRootsCount = NUMBER_OF_CORE_SYMBOLS;
-  image._Memory->write_buffer( (char*)&gctools::global_core_symbols[0] ,  sizeof(void*)*NUMBER_OF_CORE_SYMBOLS);
+  snapshot._FileHeader->_CoreSymbolRootsOffset = snapshot._Memory->write_buffer( (char*)&roots2 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
+  snapshot._FileHeader->_CoreSymbolRootsCount = NUMBER_OF_CORE_SYMBOLS;
+  snapshot._Memory->write_buffer( (char*)&gctools::global_core_symbols[0] ,  sizeof(void*)*NUMBER_OF_CORE_SYMBOLS);
   ISLRootHeader_s roots3( Roots, sizeof(core::T_O*)*global_symbol_count );
-  image._FileHeader->_SymbolRootsOffset = image._Memory->write_buffer( (char*)&roots3 ,  sizeof(ISLRootHeader_s)) - image._Memory->_BufferStart;
-  image._FileHeader->_SymbolRootsCount = global_symbol_count;
-  image._Memory->write_buffer( (char*)&global_symbols[0] ,  sizeof(void*)*global_symbol_count);
+  snapshot._FileHeader->_SymbolRootsOffset = snapshot._Memory->write_buffer( (char*)&roots3 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
+  snapshot._FileHeader->_SymbolRootsCount = global_symbol_count;
+  snapshot._Memory->write_buffer( (char*)&global_symbols[0] ,  sizeof(void*)*global_symbol_count);
 
   //
   // Save the NextUnshiftedStamp so when we load we will pick up where we left off
   // in terms of assigning stamps.
   //
-  image._FileHeader->_NextUnshiftedClbindStamp = gctools::global_NextUnshiftedClbindStamp;
-  image._FileHeader->_NextUnshiftedStamp = gctools::global_NextUnshiftedStamp;
+  snapshot._FileHeader->_NextUnshiftedClbindStamp = gctools::global_NextUnshiftedClbindStamp;
+  snapshot._FileHeader->_NextUnshiftedStamp = gctools::global_NextUnshiftedStamp;
   //
   // 5. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
   //
-  DBG_SL(BF("  Fixing objects starting at %p\n") % (void*)image._Memory->_BufferStart);
+  DBG_SL(BF("  Fixing objects starting at %p\n") % (void*)snapshot._Memory->_BufferStart);
   {
-    fixup_objects_t fixup_objects(SaveOp, (gctools::clasp_ptr_t)image._Memory->_BufferStart, &islInfo );
+    fixup_objects_t fixup_objects(SaveOp, (gctools::clasp_ptr_t)snapshot._Memory->_BufferStart, &islInfo );
     globalPointerFix = maybe_follow_forwarding_pointer;
-    walk_image_save_load_objects((ISLHeader_s*)image._Memory->_BufferStart,fixup_objects);
+    walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart,fixup_objects);
   }
 
 
@@ -1872,30 +1872,30 @@ void image_save(const std::string& filename) {
 
   {
     globalPointerFix = maybe_follow_forwarding_pointer;
-//    printf("%s:%d:%s  Fixing roots image._Memory->_BufferStart = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)image._Memory->_BufferStart, (void*)((char*)image._Memory->_BufferStart+image._Memory->_Size ));
-    gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)image._Memory->_BufferStart + image._FileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( lispRoot, image._FileHeader->_LispRootCount, (void*)&islInfo );
-    gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)image._Memory->_BufferStart + image._FileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( coreSymbolRoots, image._FileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
-    gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)image._Memory->_BufferStart + image._FileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( symbolRoots, image._FileHeader->_SymbolRootsCount, (void*)&islInfo );
+//    printf("%s:%d:%s  Fixing roots snapshot._Memory->_BufferStart = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)snapshot._Memory->_BufferStart, (void*)((char*)snapshot._Memory->_BufferStart+snapshot._Memory->_Size ));
+    gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)snapshot._Memory->_BufferStart + snapshot._FileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
+    followForwardingPointersForRoots( lispRoot, snapshot._FileHeader->_LispRootCount, (void*)&islInfo );
+    gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)snapshot._Memory->_BufferStart + snapshot._FileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
+    followForwardingPointersForRoots( coreSymbolRoots, snapshot._FileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
+    gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)snapshot._Memory->_BufferStart + snapshot._FileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
+    followForwardingPointersForRoots( symbolRoots, snapshot._FileHeader->_SymbolRootsCount, (void*)&islInfo );
   }
 
   //
   // Last thing - fixup vtables
   //
   // I'm going to try this right before I fixup the vtables
-  DBG_SL(BF("0. Prepare objects for image save\n"));
-  prepare_for_image_save_t prepare(&fixup,&islInfo);
-  walk_image_save_load_objects((ISLHeader_s*)image._Memory->_BufferStart,prepare);
+  DBG_SL(BF("0. Prepare objects for snapshot save\n"));
+  prepare_for_snapshot_save_t prepare(&fixup,&islInfo);
+  walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart,prepare);
 
   {
-    DBG_SL(BF(" image_save fixing up vtable pointers\n"));
+    DBG_SL(BF(" snapshot_save fixing up vtable pointers\n"));
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
     core::executableVtableSectionRange(start,end);
     fixup_vtables_t fixup_vtables( &fixup, (uintptr_t)start, (uintptr_t)end, &islInfo );
-    walk_image_save_load_objects((ISLHeader_s*)image._Memory->_BufferStart,fixup_vtables);
+    walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart,fixup_vtables);
   }
 
 
@@ -1909,7 +1909,7 @@ void image_save(const std::string& filename) {
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     librarySize += fixup._libraries[idx].writeSize();
   }
-  image._Libraries = new copy_buffer_t(librarySize);
+  snapshot._Libraries = new copy_buffer_t(librarySize);
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     size_t alignedLen = fixup._libraries[idx].nameSize();
     char* buffer = (char*)malloc(alignedLen);
@@ -1917,10 +1917,10 @@ void image_save(const std::string& filename) {
     memset(buffer,'\0',alignedLen);
     strcpy(buffer,lib._Name.c_str());
     ISLLibraryHeader_s libhead(Library,lib._Executable,lib.writeSize(), alignedLen, alignedLen+lib.symbolBufferSize(), fixup._libraries[idx]._SymbolInfo.size() );
-    image._Libraries->write_buffer((char*)&libhead,sizeof(ISLLibraryHeader_s));
-    image._Libraries->write_buffer(buffer,alignedLen);
-    image._Libraries->write_buffer(lib._SymbolBuffer.data(),lib.symbolBufferSize());
-    image._Libraries->write_buffer((char*)lib._SymbolInfo.data(), lib.symbolInfoSize() );
+    snapshot._Libraries->write_buffer((char*)&libhead,sizeof(ISLLibraryHeader_s));
+    snapshot._Libraries->write_buffer(buffer,alignedLen);
+    snapshot._Libraries->write_buffer(lib._SymbolBuffer.data(),lib.symbolBufferSize());
+    snapshot._Libraries->write_buffer((char*)lib._SymbolInfo.data(), lib.symbolInfoSize() );
 #if 0
     printf("%s:%d:%s libhead._Size = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._Size );
     printf("%s:%d:%s libhead._SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolBufferOffset );
@@ -1939,19 +1939,19 @@ void image_save(const std::string& filename) {
   }
 
   
-  ISLFileHeader* fileHeader = image._FileHeader;
-  uintptr_t offset = image._HeaderBuffer->_Size;
+  ISLFileHeader* fileHeader = snapshot._FileHeader;
+  uintptr_t offset = snapshot._HeaderBuffer->_Size;
   fileHeader->_LibrariesOffset = offset;
   fileHeader->_NumberOfLibraries = fixup._libraries.size();
-  offset += image._Libraries->_Size;
-  fileHeader->_SaveTimeMemoryAddress = (uintptr_t)image._Memory->_BufferStart;
+  offset += snapshot._Libraries->_Size;
+  fileHeader->_SaveTimeMemoryAddress = (uintptr_t)snapshot._Memory->_BufferStart;
   fileHeader->_MemoryStart = offset;
   fileHeader->_NumberOfObjects = copy_objects._NumberOfObjects;
-  offset += image._Memory->_Size;
+  offset += snapshot._Memory->_Size;
 
   fileHeader->_ObjectFileStart = offset;
-  fileHeader->_ObjectFileSize = image._ObjectFiles->_Size;
-  fileHeader->_ObjectFileCount = image._ObjectFiles->_WriteCount;
+  fileHeader->_ObjectFileSize = snapshot._ObjectFiles->_Size;
+  fileHeader->_ObjectFileCount = snapshot._ObjectFiles->_WriteCount;
   fileHeader->describe("Loaded");
 
   std::ofstream wf(filename, std::ios::out | std::ios::binary);
@@ -1959,13 +1959,13 @@ void image_save(const std::string& filename) {
     printf("Cannot open file %s\n", filename.c_str());
     return;
   }
-  image._HeaderBuffer->write_to_stream(wf);
-  image._Libraries->write_to_stream(wf);
-  image._Memory->write_to_stream(wf);
-  image._ObjectFiles->write_to_stream(wf);
+  snapshot._HeaderBuffer->write_to_stream(wf);
+  snapshot._Libraries->write_to_stream(wf);
+  snapshot._Memory->write_to_stream(wf);
+  snapshot._ObjectFiles->write_to_stream(wf);
   wf.close();
   
-  printf("%s:%d:%s Wrote file %s - leaving image_save\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
+  printf("%s:%d:%s Wrote file %s - leaving snapshot_save\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
 
 #if 1
   if (getenv("CLASP_PAUSE_EXIT")) {
@@ -2087,7 +2087,7 @@ struct CodeFixup_t {
 };
 
 
-int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
+int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
   SymbolLookup lookup;
   loadExecutableSymbolLookup(lookup);
   printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -2104,7 +2104,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   globalFwdMustBeInGCMemory = true;
   core::FunctionDescription_O funcdes;
   DBG_SL(BF("FunctionDescription_O vtable pointer is: %p\n") % *(void**)&funcdes );
-  DBG_SL(BF(" image_load entered\n"));
+  DBG_SL(BF(" snapshot_load entered\n"));
   if (filename.size() == 0 && maybeStartOfSnapshot == NULL) {
     printf("You must specify a snapshot with -i or one must be embedded within the executable\n");
     std::exit(1);
@@ -2149,7 +2149,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   //
   // Setup the libraries
   //
-//  printf("%s:%d:%s Registering %lu globalISLLibraries from image\n", __FILE__, __LINE__, __FUNCTION__, fileHeader->_NumberOfLibraries );
+//  printf("%s:%d:%s Registering %lu globalISLLibraries from snapshot\n", __FILE__, __LINE__, __FUNCTION__, fileHeader->_NumberOfLibraries );
   ISLLibraryHeader_s* libheader;
   for ( size_t idx =0; idx<fileHeader->_NumberOfLibraries; idx++ ) {
     if (idx==0) {
@@ -2209,24 +2209,24 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   //
   // Fixup the vtables
   //
-  DBG_SL(BF(" image_load fixing up vtable pointers\n"));
+  DBG_SL(BF(" snapshot_load fixing up vtable pointers\n"));
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
   core::executableVtableSectionRange(start,end);
   fixup_vtables_t fixup_vtables( &fixup, (uintptr_t)start, (uintptr_t)end, &islInfo );
-  walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_vtables);
+  walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,fixup_vtables);
 
   //
   // Let's fix the pointers so that they are correct for the loaded location in memory
   //
 
-  DBG_SL(BF(" image_load relocating addresses\n"));
+  DBG_SL(BF(" snapshot_load relocating addresses\n"));
   globalSavedBase = (intptr_t)fileHeader->_SaveTimeMemoryAddress;
   globalLoadedBase = (intptr_t)islbuffer;
   DBG_SL(BF("  Starting   globalSavedBase %p    globalLoadedBase  %p\n") % (void*)globalSavedBase % (void*)globalLoadedBase );
   globalPointerFix = relocate_pointer;
   relocate_objects_t relocate_objects(&islInfo);
-  walk_image_save_load_objects( (ISLHeader_s*)islbuffer, relocate_objects );
+  walk_snapshot_save_load_objects( (ISLHeader_s*)islbuffer, relocate_objects );
   
   // Do the roots as well
   // After this they will be internally consistent with the loaded objects
@@ -2266,7 +2266,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     }
   };
   fixup_CodeBase_t fixupCodeBase( &islInfo );
-  walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixupCodeBase);
+  walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,fixupCodeBase);
 
   //
   // Allocate space for temporary roots
@@ -2300,8 +2300,8 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
       lisp_source_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(theLoadedLisp);
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(theLoadedLisp);
       gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Lisp_O);
-      image_save_load_init_s init(lisp_source_header,clientStart,clientEnd);
-      core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
+      snapshot_save_load_init_s init(lisp_source_header,clientStart,clientEnd);
+      core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
       gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
       DBG_SL_ALLOCATE(BF("allocated Lisp_O general %p fwd: %p\n")
                       % (void*) obj.raw_()
@@ -2336,8 +2336,8 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
       gctools::Header_s* source_header = GENERAL_PTR_TO_HEADER_PTR(generalNil);
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalNil);
       gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Null_O);
-      image_save_load_init_s init(source_header,clientStart,clientEnd);
-      core::T_sp nil = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
+      snapshot_save_load_init_s init(source_header,clientStart,clientEnd);
+      core::T_sp nil = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
       gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)nil.raw_());
       DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
                       % (void*) nil.raw_()
@@ -2352,7 +2352,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     
     //
     // Initialize the JITDylibs
-    // We can't use gc::As<xxx>(...) at this point because we are working in the image save/load buffer
+    // We can't use gc::As<xxx>(...) at this point because we are working in the snapshot save/load buffer
     //  and the headers aren't the same as in main memory
     //
     core::T_sp tjit = ::_lisp->_Roots._ClaspJIT;
@@ -2385,7 +2385,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
         gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader+1);
         gctools::clasp_ptr_t clientEnd = clientStart + generalHeader->_Size;
-        image_save_load_init_s init(&generalHeader->_Header,clientStart,clientEnd);
+        snapshot_save_load_init_s init(&generalHeader->_Header,clientStart,clientEnd);
         DBG_SL_ALLOCATE(BF("  source_header %p  stamp: %u  size: %lu kind: %s\n")
                         % (void*) source_header
                         % generalHeader->_stamp_wtag_mtag._value
@@ -2421,7 +2421,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
           loadedObjectFile->_MemoryBuffer = std::move(memoryBuffer);
           llvmo::Code_sp oldCode = loadedObjectFile->_Code;
           // Allocate a new ObjectFile_O
-          core::T_sp tallocatedObjectFile = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
+          core::T_sp tallocatedObjectFile = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
           llvmo::ObjectFile_sp allocatedObjectFile = gc::As<llvmo::ObjectFile_sp>(tallocatedObjectFile);
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to pass a freshly allocated ObjectFile_sp %p to the LLJIT\n"
                                     "!!!!    The unix object file is at %p size: %lu\n"
@@ -2452,7 +2452,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
                                     __FILE__, __LINE__, __FUNCTION__,
                                     oldCode.raw_(),
                                     allocatedObjectFile->_Code.raw_()));
-//          core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
+//          core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
           DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
                           % (void*) obj.raw_()
@@ -2494,7 +2494,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Null_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
           countNullObjects++;
         } else {
-          core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
+          core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
                           % (void*) obj.raw_()
@@ -2508,7 +2508,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
         gctools::Header_s* header = consHeader->header();
         core::Cons_O* cons = (core::Cons_O*)clientStart;
-        auto obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::image_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
+        auto obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::snapshot_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
         gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
         DBG_SL_ALLOCATE(BF("---- Allocated Cons %p copy from %p header: %p  set fwd to %p\n")
                         % (void*)obj.raw_()
@@ -2521,12 +2521,12 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
         gctools::Header_s* header = (gctools::Header_s*)&weakHeader->_Header;
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(weakHeader+1);
         gctools::clasp_ptr_t clientEnd = clientStart + weakHeader->_Size;
-        image_save_load_init_s init(header,clientStart,clientEnd);
+        snapshot_save_load_init_s init(header,clientStart,clientEnd);
         gctools::Header_s::WeakKinds kind = (gctools::Header_s::WeakKinds)header->_stamp_wtag_mtag._value;
         switch (kind) {
 #if 1
         case gctools::Header_s::WeakBucketKind: {
-          auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::WeakLinks>>::image_save_load_allocate(&init);
+          auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
                           % (void*) obj.raw_()
@@ -2538,7 +2538,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
           break;
         }
         case gctools::Header_s::StrongBucketKind: {
-          auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::StrongLinks>>::image_save_load_allocate(&init);
+          auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
                           % (void*) obj.raw_()
@@ -2552,7 +2552,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
 #endif
 #if 0
         case gctools::Header_s::WeakMappingKind: {
-          auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::WeakLinks>>::image_save_load_allocate(&init);
+          auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
                           % (void*) obj.raw_()
@@ -2564,7 +2564,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
           break;
         }
         case gctools::Header_s::StrongBucketKind: {
-          auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::StrongLinks>>::image_save_load_allocate(&init);
+          auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
                           % (void*) obj.raw_()
@@ -2578,7 +2578,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
 #endif
 #if 0
         case gctools::Header_s::WeakPointerKind: {
-          auto obj = gctools::GCWeakPointerAllocator<gctools::WeakPointer>::image_save_load_allocate(&init);
+          auto obj = gctools::GCWeakPointerAllocator<gctools::WeakPointer>::snapshot_save_load_allocate(&init);
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
                           % (void*) obj.raw_()
@@ -2665,8 +2665,8 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
     }
     
     if (countNullObjects!=1) {
-      printf("%s:%d:%s The number of Null_O objects in the loaded image must be exactly 1(one) - it is: %lu\n"
-             "This means that more than one Null_O objects was saved at image save time - that's wrong wrong wrong\n"
+      printf("%s:%d:%s The number of Null_O objects in the loaded snapshot must be exactly 1(one) - it is: %lu\n"
+             "This means that more than one Null_O objects was saved at snapshot save time - that's wrong wrong wrong\n"
              "Figure out why there are more than one Null_O objects\n", __FILE__, __LINE__, __FUNCTION__, countNullObjects);
       abort();
     }
@@ -2678,7 +2678,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   //
   {
     ensure_forward_t ensure_forward( &islInfo );
-    walk_image_save_load_objects((ISLHeader_s*)islbuffer,ensure_forward);
+    walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,ensure_forward);
   }
   
   //
@@ -2723,16 +2723,16 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   // munmap the memory
   //
 #if 0
-  printf("%s:%d:%s Not munmap'ing loaded image - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
+  printf("%s:%d:%s Not munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
   // Fill it with 0xc0
 //  memset(memory,0xc0,fsize);
 #else  
-//  printf("%s:%d:%s munmap'ing loaded image - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
   if (maybeStartOfSnapshot==NULL) {
     int res = munmap( memory, fsize );
     if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
   } else {
-    // It's a copy of the embedded image
+    // It's a copy of the embedded snapshot
     free(memory);
   }
 #endif
@@ -2761,7 +2761,7 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
 #if 1
       gctools::wait_for_user_signal("Paused at startup before all initialization");
 #else
-      printf("%s:%d PID = %d Paused after image-load - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+      printf("%s:%d PID = %d Paused after snapshot-load - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
 #endif
@@ -2769,8 +2769,8 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
   }
   int exitCode;
   try {
-    if (ext::_sym_STARimage_save_load_startupSTAR->symbolValue().notnilp()) {
-      core::T_sp fn = ext::_sym_STARimage_save_load_startupSTAR->symbolValue();
+    if (ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue().notnilp()) {
+      core::T_sp fn = ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue();
       core::eval::funcall(fn);
     } else {
       _lisp->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));

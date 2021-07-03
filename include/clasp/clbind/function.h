@@ -121,7 +121,7 @@ public:
     this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup) {
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     this->fixupOneCodePointer(fixup,(void**)&this->fptr,sizeof(this->fptr));
   }
   static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -164,7 +164,7 @@ public:
         this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
     };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-    virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup ) {
+    virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup ) {
     this->fixupOneCodePointer( fixup, (void**)&this->fptr, sizeof(this->fptr) );
   }
   static inline LCC_RETURN LISP_CALLING_CONVENTION()

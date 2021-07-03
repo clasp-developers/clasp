@@ -1,19 +1,19 @@
 /*
-    File: imageSaveLoad.h
+    File: snapshotSaveLoad.h
 */
 
 
-#ifndef imageSaveLoad_H //[
-#define imageSaveLoad_H
+#ifndef snapshotSaveLoad_H //[
+#define snapshotSaveLoad_H
 
 #include <dlfcn.h>
 #include <clasp/core/common.h>
 #include <clasp/llvmo/llvmoExpose.h>
-#include <clasp/gctools/imageSaveLoad.fwd.h>
+#include <clasp/gctools/snapshotSaveLoad.fwd.h>
 
 
 
-namespace imageSaveLoad {
+namespace snapshotSaveLoad {
 
 extern bool global_debugSnapshot;
 
@@ -108,8 +108,8 @@ private:
 
 
 
-void image_save(const std::string& filename);
-int image_load(void* maybeStartOfImage, void* maybeEndOfImage, const std::string& filename);
+void snapshot_save(const std::string& filename);
+int snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename);
 
 
 void clearLibraries();
@@ -204,4 +204,4 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout=NULL );
 };
 
 
-#endif // imageSaveLoad_H
+#endif // snapshotSaveLoad_H

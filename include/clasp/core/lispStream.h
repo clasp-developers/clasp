@@ -387,7 +387,7 @@ public: // Functions here
 public:
   int fileDescriptor() const { return this->_FileDescriptor; };
   virtual bool has_file_position() const override;
-  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
 };
 };
 
@@ -422,7 +422,7 @@ public: // Functions here
 
 public:
   FILE *file() const { return this->_File; };
-  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
 
 };
 }; // core namespace
@@ -458,7 +458,7 @@ class StringOutputStream_O : public StringStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
-  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
 public:
   // Use the cl__make_string_output_stream
 //  static StringOutputStream_sp make() { GC_ALLOCATE(StringOutputStream_O,ss); return ss; }
@@ -487,7 +487,7 @@ class StringInputStream_O : public StringStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringInputStream_O);
-  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
 
 public:    // ctor/dtor for classes with shared virtual base
            //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
@@ -530,7 +530,7 @@ public:
 public: // Functions here
   virtual string __repr__() const override;
   T_sp filename() const override;
-  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
 
 }; // SynonymStream class
 
@@ -559,7 +559,7 @@ public:
   static T_sp make(T_sp in, T_sp out) {
     return cl__make_two_way_stream(in, out);
   };
-  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
 }; // TwoWayStream class
 
 }; // core namespace

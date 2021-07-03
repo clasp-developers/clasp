@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
-#include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
@@ -65,14 +65,14 @@ GlobalEntryPoint_sp ensureEntryPoint(GlobalEntryPoint_sp ep, claspFunction entry
   return ep;
 }
 
-void CodeEntryPoint_O::fixupOneCodePointer( imageSaveLoad::Fixup* fixup, void** ptr) {
+void CodeEntryPoint_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** ptr) {
 #ifdef USE_PRECISE_GC
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::SaveOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
-    imageSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code);
-  } else if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+    snapshotSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code);
+  } else if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
-    imageSaveLoad::decodeEntryPoint(fixup,ptrptr,this->_Code);
+    snapshotSaveLoad::decodeEntryPoint(fixup,ptrptr,this->_Code);
   } else {
     SIMPLE_ERROR(BF("Illegal image save/load operation"));
   }
@@ -90,12 +90,12 @@ Pointer_sp LocalEntryPoint_O::defaultEntryAddress() const {
   return Pointer_O::create(this->_EntryPoint);
 };
 
-void GlobalEntryPoint_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+void GlobalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
   this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints[0]);
 };
 
 
-void LocalEntryPoint_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup) {
+void LocalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) {
   this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoint);
 };
 
@@ -764,18 +764,18 @@ NEVER_OPTIMIZE LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
 
 
 
-void BuiltinClosure_O::fixupOneCodePointer( imageSaveLoad::Fixup* fixup, void** funcPtr, size_t sizeofFuncPtr ) {
+void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** funcPtr, size_t sizeofFuncPtr ) {
 #ifdef USE_PRECISE_GC
     // Virtual method pointers look different from function pointers - they are small integers
     //  here we assume a virtual method is always < 1024
-  if ( imageSaveLoad::operation(fixup)==imageSaveLoad::SaveOp) {
+  if ( snapshotSaveLoad::operation(fixup)==snapshotSaveLoad::SaveOp) {
     if ((uintptr_t)funcPtr[0] > 1024) {
       uintptr_t* ptrptr = (uintptr_t*)&funcPtr[0];
-      imageSaveLoad::registerLibraryFunctionPointer(fixup,ptrptr);
+      snapshotSaveLoad::registerLibraryFunctionPointer(fixup,ptrptr);
     }
-  } else if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+  } else if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     if ((uintptr_t)funcPtr[0] > 1024) {
-      imageSaveLoad::decodeLibrarySaveAddress(fixup,(uintptr_t*)&funcPtr[0]);
+      snapshotSaveLoad::decodeLibrarySaveAddress(fixup,(uintptr_t*)&funcPtr[0]);
     }
   } else {
     SIMPLE_ERROR(BF("Illegal image save/load operation"));

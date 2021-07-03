@@ -349,7 +349,7 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value value
   static void register_class_with_redeye() {                            \
     gctools::GCObjectAllocator<oClass>::register_class_with_redeye();   \
   }                                                                     \
-  oClass(imageSaveLoad::image_save_load_init_s* isl) { isl->fill((void*)this); }; \
+  oClass(snapshotSaveLoad::image_save_load_init_s* isl) { isl->fill((void*)this); }; \
   static void expose_to_clasp();
 
 #define LISP_TEMPLATE_CLASS(oClass) \
@@ -431,14 +431,14 @@ namespace core {
     virtual void sxhash_equalp(HashGenerator &hg) const {return this->sxhash_equal(hg);};
     
     virtual size_t templatedSizeof() const { return 0; };
-    virtual bool enableImageSaveLoad() const { return true; };
+    virtual bool enableSnapshotSaveLoad() const { return true; };
     virtual void validateCodePointer( void** funcPtr, size_t sizeofFuncPtr ) {
       // Do nothing currently
     }
-    virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup) {
+    virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
       // Do nothing by default
     };
-    virtual void fixupOneCodePointer( imageSaveLoad::Fixup* fixup, void** address, size_t size ) {
+    virtual void fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** address, size_t size ) {
       printf("%s:%d:%s Should never be called - subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ );
     };
       //! Initialize member variables and those that depend on sharedThis

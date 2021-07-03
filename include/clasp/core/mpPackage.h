@@ -268,8 +268,8 @@ namespace mp {
     void setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName);
     string __repr__() const override;
 
-    virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
-      if (imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+      if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
 //        printf("%s:%d:%s About to initialize an mp::SharedMutex for a Package_O object\n", __FILE__, __LINE__, __FUNCTION__ );
         new (&this->_SharedMutex) mp::UpgradableSharedMutex(core::lisp_nameword(this->_Name));
       }

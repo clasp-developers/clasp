@@ -5922,15 +5922,15 @@ IOStreamStream_O::~IOStreamStream_O() {
 IOFileStream_O::~IOFileStream_O() {
   stream_dispatch_table(this->asSmartPtr()).close(this->asSmartPtr());
 }
-void IOFileStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup) {
-  if (imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+void IOFileStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) {
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     std::string name = gc::As<String_sp>(this->_Filename)->get_std_string();
     printf("%s:%d:%s What do we do with IOFileStream_O  %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
   }
 }
 
-void IOStreamStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+void IOStreamStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     std::string name = gc::As<String_sp>(this->_Filename)->get_std_string();
     T_sp stream = this->asSmartPtr();
 //    printf("%s:%d:%s Opening %s stream = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)stream.raw_());
@@ -5963,16 +5963,16 @@ int Stream_O::column() const {
   return 0;
 };
 
-void SynonymStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+void SynonymStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
   T_sp stream = this->asSmartPtr();
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     StreamOps(stream) = duplicate_dispatch_table(synonym_ops);
   }
 };
 
-void TwoWayStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+void TwoWayStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
   T_sp stream = this->asSmartPtr();
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     StreamOps(stream) = duplicate_dispatch_table(two_way_ops);
   }
 };
@@ -6043,16 +6043,16 @@ T_sp StringInputStream_O::make(const string &str) {
   return cl__make_string_input_stream(s, make_fixnum(0), _Nil<T_O>());
 }
 
-void StringInputStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+void StringInputStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
   T_sp stream = this->asSmartPtr();
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     StreamOps(stream) = duplicate_dispatch_table(str_in_ops);
   }
 };
 
-void StringOutputStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+void StringOutputStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
   T_sp stream = this->asSmartPtr();
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     StreamOps(stream) = duplicate_dispatch_table(str_out_ops);
   }
 };

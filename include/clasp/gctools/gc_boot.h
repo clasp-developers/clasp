@@ -194,7 +194,7 @@ struct Stamp_layout {
   uint              data_offset;
   uint              end_offset;
   uint              capacity_offset;
-  uint              image_save_load_poison;
+  uint              snapshot_save_load_poison;
   Field_layout*     field_layout_start; // Points into global_field_layout_table
   Container_layout* container_layout;
 Stamp_layout() : layout_op(undefined_op)
@@ -207,7 +207,7 @@ Stamp_layout() : layout_op(undefined_op)
     , data_offset(0)
     , end_offset(0)
     , capacity_offset(0)
-    , image_save_load_poison(0)
+    , snapshot_save_load_poison(0)
     , field_layout_start(NULL) // Points into global_field_layout_table
   {};
 };

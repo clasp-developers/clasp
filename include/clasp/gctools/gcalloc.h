@@ -36,7 +36,7 @@ THE SOFTWARE.
 #include <limits>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/gctools/threadlocal.fwd.h>
-#include <clasp/gctools/imageSaveLoad.fwd.h>
+#include <clasp/gctools/snapshotSaveLoad.fwd.h>
 
 
 #define STACK_ALIGNMENT alignof(char *)
@@ -611,7 +611,7 @@ namespace gctools {
 #endif
       };
 
-    static smart_pointer_type image_save_load_allocate(imageSaveLoad::image_save_load_init_s* image_save_load_init) {
+    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init) {
         size_t sizeWithHeader = sizeof(Header_s)+(image_save_load_init->_clientEnd-image_save_load_init->_clientStart);
 #ifdef USE_BOEHM
         Header_s* base = do_boehm_general_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
@@ -679,7 +679,7 @@ namespace gctools {
       // so that the static analyzer has something to call
     };
 
-    static smart_pointer_type image_save_load_allocate(imageSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
+    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
       Header_s* base = do_boehm_atomic_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
 #ifdef DEBUG_GUARD
@@ -730,7 +730,7 @@ When would I ever want the GC to automatically collect objects but not move them
       // so that the static analyzer has something to call
     };
 
-    static smart_pointer_type image_save_load_allocate(imageSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
+    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
       Header_s* base = do_boehm_general_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
 #ifdef DEBUG_GUARD
@@ -778,7 +778,7 @@ should not be managed by the GC */
 #endif
     }
 
-    static smart_pointer_type image_save_load_allocate(imageSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
+    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
       Header_s* base = do_boehm_uncollectable_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
 #ifdef DEBUG_GUARD
@@ -914,7 +914,7 @@ namespace gctools {
       return sp;
     };
 
-    static smart_pointer_type image_save_load_allocate(imageSaveLoad::image_save_load_init_s* image_save_load_init ) {
+    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init ) {
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::image_save_load_allocate( image_save_load_init );
       // No initializer
 //      GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
@@ -1375,7 +1375,7 @@ struct StrongWeakAllocationPoint<WeakLinks> {
 #endif
   }
 
-   static gctools::tagged_pointer<container_type> image_save_load_allocate( imageSaveLoad::image_save_load_init_s* init ) {
+   static gctools::tagged_pointer<container_type> image_save_load_allocate( snapshotSaveLoad::image_save_load_init_s* init ) {
     size_t size = (init->_clientEnd-init->_clientStart)+SizeofWeakHeader();
 #ifdef USE_BOEHM
     Header_s* base = do_boehm_weak_allocation(init->_headStart->_stamp_wtag_mtag, size);

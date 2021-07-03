@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include "clasp/core/compiler.h"
 #include "clasp/core/ql.h"
 #include "clasp/core/lisp.h"
-#include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/commandLineOptions.h>
 
 namespace core {
@@ -179,8 +179,8 @@ void process_clasp_arguments(CommandLineOptions* options)
       string filename = options->_RawArguments[iarg+1];
       iarg++;
       FILE* fout = fopen(filename.c_str(),"w");
-      imageSaveLoad::SymbolLookup lookup;
-      imageSaveLoad::loadExecutableSymbolLookup(lookup, fout);
+      snapshotSaveLoad::SymbolLookup lookup;
+      snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
       fclose(fout);
     } else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;

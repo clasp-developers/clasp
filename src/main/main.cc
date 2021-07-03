@@ -80,7 +80,7 @@ THE SOFTWARE.
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/asttooling/asttoolingPackage.h>
-#include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/pathname.h>
 #include <clasp/clbind/open.h>
@@ -453,7 +453,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     llvmo::initialize_llvm();
 
     clbind::initializeCastGraph();
-    exit_code = imageSaveLoad::image_load( (void*)start_of_snapshot, (void*)end_of_snapshot, snapshotFileName );
+    exit_code = snapshotSaveLoad::snapshot_load( (void*)start_of_snapshot, (void*)end_of_snapshot, snapshotFileName );
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");
 #endif

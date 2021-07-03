@@ -108,10 +108,10 @@ public:
     return n;
   };
 public:
-  void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup) {
+  void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     // Write any thread local symbol value into the global value and
     // reset the _BindingIdx
-    if (imageSaveLoad::operation(fixup)==imageSaveLoad::SaveOp) {
+    if (snapshotSaveLoad::operation(fixup)==snapshotSaveLoad::SaveOp) {
       this->_BindingIdx.store(NO_THREAD_LOCAL_BINDINGS);
     }
   }

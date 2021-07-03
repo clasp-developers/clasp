@@ -146,8 +146,8 @@ fields at the same offset as Instance_O.
   // Accessors
    CodeEntryPoint_O(FunctionDescription_sp fdesc, llvmo::CodeBase_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
  public:
-   virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup) { SIMPLE_ERROR(BF("Subclass must implement")); };
-   void fixupOneCodePointer(imageSaveLoad::Fixup* fixup, void** ptr);
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(BF("Subclass must implement")); };
+   void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
    CL_DEFMETHOD llvmo::CodeBase_sp EntryPoint_code() const { return this->_Code; };
  };
 
@@ -160,7 +160,7 @@ fields at the same offset as Instance_O.
   // Accessors
    LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {};
  public:
-   virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
 };
 
@@ -183,7 +183,7 @@ FORWARD(GlobalEntryPoint);
   // Accessors
    GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : CodeEntryPoint_O(fdesc, code), _EntryPoints{entry_point} {};
  public:
-   virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
  };
 
@@ -392,8 +392,8 @@ namespace core {
     T_sp closedEnvironment() const override { return _Nil<T_O>(); };
     virtual size_t templatedSizeof() const override { return sizeof(*this); };
     // Fixup the code pointers
-    virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) { SIMPLE_ERROR(BF("Subclass must implement")); };
-    void fixupOneCodePointer( imageSaveLoad::Fixup* fixup, void** address, size_t size );
+    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) { SIMPLE_ERROR(BF("Subclass must implement")); };
+    void fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** address, size_t size );
     virtual const char *describe() const override { return "BuiltinClosure"; };
     bool builtinP() const override { return true; };
     T_sp lambdaListHandler() const override { return this->_lambdaListHandler; };

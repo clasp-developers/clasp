@@ -57,7 +57,7 @@ private:
 
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup ) {
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup ) {
   }
 
 public:

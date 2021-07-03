@@ -43,7 +43,7 @@ int gcFunctions_after;
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/threadlocal.h>
-#include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/wrappers.h>
 
@@ -902,7 +902,7 @@ void save_lisp_and_die(const std::string& filename)
   // 19. DIE
 
 #ifdef USE_PRECISE_GC
-  imageSaveLoad::image_save(filename);
+  snapshotSaveLoad::snapshot_save(filename);
 #endif
 }
 

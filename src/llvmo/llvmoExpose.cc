@@ -11,7 +11,7 @@
 #include <string>
 #include <clasp/core/foundation.h>
 #include <clasp/llvmo/code.h>
-#include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 //
 // The include for Debug.h must be first so we can force NDEBUG undefined
 // otherwise setCurrentDebugTypes will be an empty macro
@@ -4304,7 +4304,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         Code_sp currentCode = my_thread->topObjectFile()->_Code;
         currentCode->_TextSectionStart = (void*)range.getStart();
         currentCode->_TextSectionEnd = (void*)((char*)range.getStart()+range.getSize());
-        if (imageSaveLoad::global_debugSnapshot) {
+        if (snapshotSaveLoad::global_debugSnapshot) {
           printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
                  __FILE__, __LINE__, __FUNCTION__,
                  my_thread->topObjectFile().raw_(),
@@ -4482,7 +4482,7 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 #endif
   // Grab the buffer and put it in the current ObjectFile
   my_thread->topObjectFile()->_MemoryBuffer = std::move(buffer);
-  if (imageSaveLoad::global_debugSnapshot) {
+  if (snapshotSaveLoad::global_debugSnapshot) {
     printf("%s:%d:%s   ObjectFile_sp %p start %p size %lu\n",
            __FILE__, __LINE__, __FUNCTION__,
            my_thread->topObjectFile().raw_(),

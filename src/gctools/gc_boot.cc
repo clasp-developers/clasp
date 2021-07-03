@@ -229,7 +229,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
              data_type == CXX_FIXUP_OFFSET ||
              data_type == ctype_opaque_ptr
              ) {
-          local_stamp_layout[cur_stamp].image_save_load_poison++;
+          local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
         }
         if ( (data_type == SMART_PTR_OFFSET
               || data_type == ATOMIC_SMART_PTR_OFFSET
@@ -368,7 +368,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         if ( data_type == CXX_SHARED_MUTEX_OFFSET ||
              data_type == CXX_FIXUP_OFFSET ||
              data_type == ctype_opaque_ptr ) {
-          local_stamp_layout[cur_stamp].image_save_load_poison++;
+          local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
         }
         if ( ((data_type) == SMART_PTR_OFFSET
               || (data_type) == ATOMIC_SMART_PTR_OFFSET

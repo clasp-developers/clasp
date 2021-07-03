@@ -1,13 +1,13 @@
 /*
-    File: imageSaveLoad.h
+    File: snapshotSaveLoad.h
 */
 
 
-#ifndef imageSaveLoad_fwd_H //[
-#define imageSaveLoad_fwd_H
+#ifndef snapshotSaveLoad_fwd_H //[
+#define snapshotSaveLoad_fwd_H
 
 
-namespace imageSaveLoad {
+namespace snapshotSaveLoad {
 
 
 typedef enum { SaveOp, LoadOp } FixupOperation_;
@@ -35,4 +35,4 @@ struct image_save_load_init_s {
 };
 
 
-#endif // imageSaveLoad_fwd_H
+#endif // snapshotSaveLoad_fwd_H
