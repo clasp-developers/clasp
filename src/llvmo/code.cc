@@ -321,8 +321,8 @@ CL_DOCSTRING("For an instruction pointer inside of code generated from an object
 CL_LISPIFY_NAME(object_file_sectioned_address);
 CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_pointer, ObjectFile_sp ofi, bool verbose) {
         // Here is the info for the SectionedAddress
-  uintptr_t sectionID = ofi->_Code->_TextSegmentSectionId;
-  uintptr_t offset = ((char*)instruction_pointer - (char*)ofi->_Code->_TextSegmentStart);
+  uintptr_t sectionID = ofi->_Code->_TextSectionId;
+  uintptr_t offset = ((char*)instruction_pointer - (char*)ofi->_Code->_TextSectionStart);
   SectionedAddress_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
       // now the object file
   if (verbose) {
@@ -347,8 +347,8 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
   while (cur.consp()) {
     core::T_sp car = CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur));
     ObjectFile_sp ofi = gc::As<ObjectFile_sp>(car);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Looking at object file _text %p to %p\n", __FILE__, __LINE__, __FUNCTION__, ofi->_Code->_TextSegmentStart, ofi->_Code->_TextSegmentEnd));
-    if ((char*)instruction_pointer>=(char*)ofi->_Code->_TextSegmentStart&&(char*)instruction_pointer<((char*)ofi->_Code->_TextSegmentEnd)) {
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Looking at object file _text %p to %p\n", __FILE__, __LINE__, __FUNCTION__, ofi->_Code->_TextSectionStart, ofi->_Code->_TextSectionEnd));
+    if ((char*)instruction_pointer>=(char*)ofi->_Code->_TextSectionStart&&(char*)instruction_pointer<((char*)ofi->_Code->_TextSectionEnd)) {
       core::T_sp sectionedAddress = object_file_sectioned_address(instruction_pointer,ofi,verbose);
       return Values(sectionedAddress,ofi);
     }
@@ -363,8 +363,8 @@ core::T_sp only_object_file_for_instruction_pointer(void* ip) {
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   while (cur.consp()) {
     ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur)));
-    if (((char*)ip >= (char*)ofi->_Code->_TextSegmentStart) &&
-        ((char*)ip <  (char*)ofi->_Code->_TextSegmentEnd))
+    if (((char*)ip >= (char*)ofi->_Code->_TextSectionStart) &&
+        ((char*)ip <  (char*)ofi->_Code->_TextSectionEnd))
       return ofi;
     cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
   }

@@ -169,9 +169,9 @@ class Code_O : public CodeBase_O {
   uintptr_t     _TailOffset;
   ObjectFile_sp _ObjectFile;
   gctools::GCRootsInModule* _gcroots;
-  void*         _TextSegmentStart;
-  void*         _TextSegmentEnd;
-  uintptr_t     _TextSegmentSectionId;
+  void*         _TextSectionStart;
+  void*         _TextSectionEnd;
+  uintptr_t     _TextSectionId;
   void*         _StackmapStart;
   uintptr_t     _StackmapSize;
 // Absolute address of literals in memory - this must be in the _DataCode vector.
@@ -196,7 +196,7 @@ public:
    , _DataCode(totalSize,0,true) {};
 
   ~Code_O();
-  uintptr_t codeStart() const { return (uintptr_t)this->_TextSegmentStart; };
+  uintptr_t codeStart() const { return (uintptr_t)this->_TextSectionStart; };
 
   size_t frontSize() const { return sizeof(*this); };
   size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };

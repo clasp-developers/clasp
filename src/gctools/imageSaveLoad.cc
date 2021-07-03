@@ -2479,8 +2479,8 @@ int image_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std:
                    fileHeader->_ObjectFileCount );
           }
           llvmo::Code_sp ccode = gc::As<llvmo::Code_sp>(code);
-          if (ccode->_TextSegmentStart == NULL) {
-            printf("%s:%d:%s The Code_sp %p object has NULL for the _TextSegmentStart\n",
+          if (ccode->_TextSectionStart == NULL) {
+            printf("%s:%d:%s The Code_sp %p object has NULL for the _TextSectionStart\n",
                    __FILE__, __LINE__, __FUNCTION__,
                    ccode.raw_());
           }

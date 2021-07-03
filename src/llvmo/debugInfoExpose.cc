@@ -533,8 +533,8 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
       core::write_bf_stream(BF("ObjectFile: %s SectionedAddress: %s DWARFContext: %s\n") % _rep_(object_file) % _rep_(sectioned_address) % _rep_(context));
       Code_sp code = object_file->_Code;
       core::write_bf_stream(BF("Code object: %s\n") % _rep_(code));
-      core::write_bf_stream(BF("Code _text start: %p   end: %p\n") % code->_TextSegmentStart % code->_TextSegmentEnd );
-      core::write_bf_stream(BF("address (%p) - _TextSegmentStart(%p) -> %ld\n") % (void*)address % (void*)code->_TextSegmentStart % (intptr_t)((uintptr_t)address - (uintptr_t)code->_TextSegmentStart ));
+      core::write_bf_stream(BF("Code _text start: %p   end: %p\n") % code->_TextSectionStart % code->_TextSectionEnd );
+      core::write_bf_stream(BF("address (%p) - _TextSectionStart(%p) -> %ld\n") % (void*)address % (void*)code->_TextSectionStart % (intptr_t)((uintptr_t)address - (uintptr_t)code->_TextSectionStart ));
     }
     return getLineInfoForAddress(context,sectioned_address, verbose);
   }
