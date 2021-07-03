@@ -4691,6 +4691,8 @@ public:
     _value.Address = Address;
   }
   ~SectionedAddress_O(){};
+  std::string __repr__() const;
+  
 }; // SectionedAddress_O
 }; // llvmo
 namespace translate {

@@ -5010,6 +5010,13 @@ SectionedAddress_sp SectionedAddress_O::create(uint64_t SectionIndex, uint64_t A
   return sa;
 }
 
+std::string SectionedAddress_O::__repr__() const {
+  stringstream ss;
+  ss << "#<SECTIONED-ADDRESS ";
+  ss << ":section-index " << this->_value.SectionIndex << " ";
+  ss << ":address " << this->_value.Address << ">";
+  return ss.str();
+}
 
 void python_dump_field(FILE* fout, const char* name, bool comma, gctools::Data_types dt, size_t offset, size_t sz=0)
 {
