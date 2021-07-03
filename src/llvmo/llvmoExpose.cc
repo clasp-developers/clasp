@@ -4455,6 +4455,17 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 std::atomic<size_t> global_object_file_number;
 
 
+uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf) {
+  for (llvm::object::SectionRef Sec : objf.sections()) {
+    if (!Sec.isText() || Sec.isVirtual()) continue;
+    if (Sec.getName()->str() == TEXT_NAME) {
+      return Sec.getIndex();
+    }
+  }
+  return llvm::object::SectionedAddress::UndefSection;
+}
+
+
 void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s You now OWN MemoryBuffer @%p  size: %lu\n",
                       __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() ));
@@ -4475,6 +4486,11 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
            my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferStart(),
            my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferSize() );
   }
+  auto objf = my_thread->topObjectFile()->getObjectFile();
+  llvm::object::ObjectFile& of = *objf->release();
+  uint64_t secId = getModuleSectionIndexForText( of );
+  Code_sp code = my_thread->topObjectFile()->_Code;
+  code->_TextSectionId = secId;
   save_object_file_and_code_info(my_thread->topObjectFile());
   buffer.reset();
 }
