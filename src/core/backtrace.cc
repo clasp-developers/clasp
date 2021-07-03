@@ -33,6 +33,28 @@
 
 namespace core {
 
+void DebuggerFrame_O::fields(Record_sp node) {
+  node->field(INTERN_(kw,function_name),this->fname);
+  node->field(INTERN_(kw,return_address),this->return_address);
+  node->field(INTERN_(kw,source_position),this->source_position);
+  node->field(INTERN_(kw,function_description),this->function_description);
+  node->field(INTERN_(kw,closure),this->closure);
+  node->field(INTERN_(kw,args),this->args);
+  node->field(INTERN_(kw,lang),this->lang);
+  node->field(INTERN_(kw,up),this->up);
+  node->field(INTERN_(kw,down),this->down);
+}
+
+std::string DebuggerFrame_O::__repr__() const {
+  stringstream ss;
+  ss << "#<DEBUGGER-FRAME ";
+  ss << _rep_(this->fname) << " ";
+  ss << _rep_(this->return_address);
+  ss << ">";
+  return ss.str();
+}
+
+
 #ifdef USE_LIBUNWIND
 static SimpleBaseString_sp lu_procname(unw_cursor_t* cursorp) {
   size_t nbytes = 64; // numbers chosen arbitrarily
@@ -197,7 +219,7 @@ static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
   T_sp fname = _Nil<T_O>();
   if (fd.notnilp())
     fname = gc::As_unsafe<FunctionDescription_sp>(fd)->functionName();
-  return DebuggerFrame_O::make(fname, spi, fd, closure, args, args_available,
+  return DebuggerFrame_O::make(fname, Cons_O::create(sa,ofi), spi, fd, closure, args, args_available,
                                INTERN_(kw, lisp), XEPp);
 }
 
@@ -271,13 +293,17 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
     // couldn't demangle, so just use the unadulterated string
     name = linkname;
   T_sp lname = SimpleBaseString_O::make(name);
-  return DebuggerFrame_O::make(lname, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
+  return DebuggerFrame_O::make(lname, Pointer_O::create(ip),
+                               _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
                                _Nil<T_O>(), false, INTERN_(kw, c_PLUS__PLUS_),
                                false);
 }
 
 __attribute__((optnone))
-static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp) {
+static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp, bool firstFrame) {
+  if (!firstFrame) {
+    ip = (void*)((uintptr_t)ip-1); // For everything but the first frame subtract 1
+  }
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp()) return make_cxx_frame(ip, string);
   else return make_lisp_frame(ip, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
@@ -302,7 +328,7 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   // only to get a C string from it, but writing it to use stack allocation
   // is a pain in the ass for very little gain.
   std::string sstring = lu_procname(&cursor)->get_std_string();
-  DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
+  DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp, true );
   DebuggerFrame_sp prev = bot;
   while (unw_step(&cursor) > 0) {
     resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
@@ -311,7 +337,7 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
       printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
     }
     std::string sstring = lu_procname(&cursor)->get_std_string();
-    DebuggerFrame_sp frame = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
+    DebuggerFrame_sp frame = make_frame((void*)ip, sstring.c_str(), (void*)fbp, false );
     frame->down = prev;
     prev->up = frame;
     prev = frame;
@@ -332,7 +358,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
       void* fbp = __builtin_frame_address(0); // TODO later
       uintptr_t bplow = (uintptr_t)&fbp;
       uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
-      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp);
+      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp, true);
       DebuggerFrame_sp prev = bot;
       void* newfbp;
       for (size_t j = 1; j < returned; ++j) {
@@ -347,7 +373,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
           newfbp = NULL;
         }
         fbp = newfbp;
-        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j], fbp);
+        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j], fbp, false);
         frame->down = prev;
         prev->up = frame;
         prev = frame;
