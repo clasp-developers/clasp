@@ -499,7 +499,7 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
 struct FasoHeader;
 
 struct ObjectFileInfo {
-  size_t    _ObjectID;
+  size_t    _ObjectId;
   size_t    _StartPage;
   size_t    _NumberOfPages;
   size_t    _ObjectFileSize;
@@ -543,7 +543,7 @@ void setup_FasoHeader(FasoHeader* header)
 
 CL_LAMBDA(path-desig object-files &key (start-object-id 0));
 CL_DOCSTRING(R"doc(Concatenate object files in OBJECT-FILES into a faso file and write it out to PATH-DESIG.
-You can set the starting objectID using the keyword START-OBJECT-ID argument.)doc");
+You can set the starting ObjectId using the keyword START-OBJECT-ID argument.)doc");
 CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_object_id)
 {
   //  write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(pathDesig) % cl__length(objectFiles));
@@ -566,7 +566,7 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
   List_sp cur = objectFiles;
   size_t nextPage = header->_HeaderPageCount;
   for ( size_t ii=0; ii<cl__length(objectFiles); ++ii ) {
-    header->_ObjectFiles[ii]._ObjectID = ii+start_object_id;
+    header->_ObjectFiles[ii]._ObjectId = ii+start_object_id;
     header->_ObjectFiles[ii]._StartPage = nextPage;
     Array_sp of = gc::As<Array_sp>(oCar(cur));
     cur = oCdr(cur);
@@ -624,9 +624,9 @@ struct MmapInfo {
 
 
 struct FasoObjectFileInfo {
-  size_t _ObjectID;
+  size_t _ObjectId;
   size_t _ObjectFileSize;
-  FasoObjectFileInfo(size_t oid, size_t ofs) : _ObjectID(oid), _ObjectFileSize(ofs) {};
+  FasoObjectFileInfo(size_t oid, size_t ofs) : _ObjectId(oid), _ObjectFileSize(ofs) {};
 };
   
 CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))
@@ -655,8 +655,8 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
       mmaps.emplace_back(MmapInfo(fd,memory,object0_offset,(size_t)fsize-object0_offset));
       for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
         size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-        if (verbose) write_bf_stream(BF("%s:%d object file %lu id: %lu  length: %lu\n") % __FILE__ % __LINE__ % ofi % header->_ObjectFiles[ofi]._ObjectID % of_length);
-        FasoObjectFileInfo fofi(header->_ObjectFiles[ofi]._ObjectID,of_length);
+        if (verbose) write_bf_stream(BF("%s:%d object file %lu id: %lu  length: %lu\n") % __FILE__ % __LINE__ % ofi % header->_ObjectFiles[ofi]._ObjectId % of_length);
+        FasoObjectFileInfo fofi(header->_ObjectFiles[ofi]._ObjectId,of_length);
         allObjectFiles.emplace_back(fofi);
         if (verbose) write_bf_stream(BF("allObjectFiles.size() = %lu\n") % allObjectFiles.size());
       }
@@ -671,7 +671,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
   if (verbose) write_bf_stream(BF("Writing out all object files %lu\n") % allObjectFiles.size());
   size_t nextPage = header->_HeaderPageCount;
   for (size_t ofi=0; ofi<allObjectFiles.size(); ofi++ ) {
-    header->_ObjectFiles[ofi]._ObjectID = allObjectFiles[ofi]._ObjectID;
+    header->_ObjectFiles[ofi]._ObjectId = allObjectFiles[ofi]._ObjectId;
     header->_ObjectFiles[ofi]._StartPage = nextPage;
     size_t num_pages = header->calculateObjectFileNumberOfPages(allObjectFiles[ofi]._ObjectFileSize);
     header->_ObjectFiles[ofi]._NumberOfPages = num_pages;
@@ -768,20 +768,20 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
   FasoHeader* header = (FasoHeader*)memory;
   llvmo::JITDylib_sp jitDylib;
-  for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
-    if (!jitDylib || header->_ObjectFiles[ofi]._ObjectID==0) {
+  for (size_t fasoIndex = 0; fasoIndex<header->_NumberOfObjectFiles; ++fasoIndex) {
+    if (!jitDylib || header->_ObjectFiles[fasoIndex]._ObjectId==0) {
       jitDylib = jit->createAndRegisterJITDylib(filename);
     }
-    void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
-    size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % ofi);
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage*header->_PageSize);
+    size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
+    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % fasoIndex);
     llvm::StringRef sbuffer((const char*)of_start, of_length);
-    std::string uniqueName = llvmo::uniqueMemoryBufferName("buffer",header->_ObjectFiles[ofi]._ObjectID, ofi);
+    std::string uniqueName = llvmo::uniqueMemoryBufferName("buffer",header->_ObjectFiles[fasoIndex]._ObjectId, fasoIndex);
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
-    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[ofi]._ObjectID,jitDylib,filename,ofi);
+    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[fasoIndex]._ObjectId,jitDylib,filename,fasoIndex);
     jit->addObjectFile(of,print.notnilp());
-    T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[ofi]._ObjectID,_Nil<core::T_O>());
+    T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId,_Nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
     llvmo::Code_sp codeObject;
@@ -804,16 +804,16 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
   llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
   FasoHeader* header = (FasoHeader*)memory;
   write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
-  for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
-    size_t ofId =  header->_ObjectFiles[ofi]._ObjectID;
-    void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
-    size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-    //    write_bf_stream(BF("Adding faso %s object file %d to jit\n") % _rep_(filename) % ofi);
-    write_bf_stream(BF("Object file %d  ObjectID: %lu start-page: %lu  bytes: %lu pages: %lu\n")
-                    % ofi
-                    % header->_ObjectFiles[ofi]._ObjectID
-                    % header->_ObjectFiles[ofi]._StartPage
-                    % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
+  for (size_t fasoIndex = 0; fasoIndex<header->_NumberOfObjectFiles; ++fasoIndex) {
+    size_t fasoIndexd =  header->_ObjectFiles[fasoIndex]._ObjectId;
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage*header->_PageSize);
+    size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
+    //    write_bf_stream(BF("Adding faso %s object file %d to jit\n") % _rep_(filename) % fasoIndex);
+    write_bf_stream(BF("Object file %d  ObjectId: %lu start-page: %lu  bytes: %lu pages: %lu\n")
+                    % fasoIndex
+                    % header->_ObjectFiles[fasoIndex]._ObjectId
+                    % header->_ObjectFiles[fasoIndex]._StartPage
+                    % header->_ObjectFiles[fasoIndex]._ObjectFileSize % header->_ObjectFiles[fasoIndex]._NumberOfPages );
   }
   return _lisp->_true();
 }
@@ -834,15 +834,15 @@ void clasp_unpack_faso(const std::string& path_designator) {
   }
   FasoHeader* header = (FasoHeader*)memory;
   printf("NumberOfObjectFiles %lu\n", header->_NumberOfObjectFiles);
-  for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
-    void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
-    size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
+  for (size_t fasoIndex = 0; fasoIndex<header->_NumberOfObjectFiles; ++fasoIndex) {
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage*header->_PageSize);
+    size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
     stringstream sfilename;
-    sfilename << prefix << "-" << ofi << "-" << header->_ObjectFiles[ofi]._ObjectID << ".o";
+    sfilename << prefix << "-" << fasoIndex << "-" << header->_ObjectFiles[fasoIndex]._ObjectId << ".o";
     FILE* fout = fopen(sfilename.str().c_str(),"w");
     fwrite(of_start,of_length,1,fout);
     fclose(fout);
-    printf("Object file[%lu] ObjectID: %lu  start-page: %lu  bytes: %lu pages: %lu\n", ofi , header->_ObjectFiles[ofi]._ObjectID , header->_ObjectFiles[ofi]._StartPage , header->_ObjectFiles[ofi]._ObjectFileSize , header->_ObjectFiles[ofi]._NumberOfPages );
+    printf("Object file[%lu] ObjectId: %lu  start-page: %lu  bytes: %lu pages: %lu\n", fasoIndex , header->_ObjectFiles[fasoIndex]._ObjectId , header->_ObjectFiles[fasoIndex]._StartPage , header->_ObjectFiles[fasoIndex]._ObjectFileSize , header->_ObjectFiles[fasoIndex]._NumberOfPages );
   }
 }
     

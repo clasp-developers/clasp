@@ -59,7 +59,7 @@ size_t Code_O::sizeofInState(Code_O* code, CodeState_t state ) {
 
 std::string Code_O::filename() const {
   stringstream ss;
-  ss << this->_ObjectFile->_FasoName->get_std_string() << ":" << this->_ObjectFile->_StartupID;
+  ss << this->_ObjectFile->_FasoName->get_std_string() << ":" << this->_ObjectFile->_ObjectId;
   return ss.str();
 }
 
@@ -94,7 +94,10 @@ void* Code_O::literalsStart() const {
     
 std::string ObjectFile_O::__repr__() const {
   stringstream ss;
-  ss << "#<OBJECT-FILE " << this->_FasoName << " @" << (void*)this << ">";
+  ss << "#<OBJECT-FILE " << this->_FasoName;
+  ss << " :faso-index " << this->_FasoIndex << " ";
+  ss << " :code @" << (void*)this->_Code.raw_() << " ";
+  ss << " @" << (void*)this << ">";
   return ss.str();
 };
 
@@ -323,7 +326,7 @@ CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_poi
   SectionedAddress_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
       // now the object file
   if (verbose) {
-    core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % ofi->_FasoName % ofi->_FasoIndex % ofi->_StartupID);
+    core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % ofi->_FasoName % ofi->_FasoIndex % ofi->_ObjectId);
     core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % ofi->_FasoIndex % offset );
   }
   return sectioned_address;

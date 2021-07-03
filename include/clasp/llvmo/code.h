@@ -46,15 +46,15 @@ typedef enum { SaveState, RunState } CodeState_t;
     uintptr_t      _ObjectFileOffset; // Only has meaning when _State is SaveState
     uintptr_t      _ObjectFileSize; // Only has meaning when _State is SaveState
     size_t         _Size;
-    size_t         _StartupID;
+    size_t         _ObjectId;
     JITDylib_sp    _JITDylib;
     core::SimpleBaseString_sp _FasoName;
     size_t         _FasoIndex;
     Code_sp        _Code;
   public:
-    static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
-    ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   startupID = %lu\n", __FILE__, __LINE__, __FUNCTION__, startupID));
+    static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
+    ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId, JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _ObjectId(objectId), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId));
     };
     ~ObjectFile_O();
     std::string __repr__() const;
