@@ -8200,12 +8200,12 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::ObjectFile_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_ObjectFile), 0, "_ObjectFile" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_gcroots" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::GCRootsInModule" :NAME "GCRootsInModule"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_gcroots), 0, "_gcroots" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-//      field: "_TextSegmentStart" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
- {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_TextSegmentStart), 0, "_TextSegmentStart" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-//      field: "_TextSegmentEnd" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
- {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_TextSegmentEnd), 0, "_TextSegmentEnd" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-//      field: "_TextSegmentSectionId" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_TextSegmentSectionId), 0, "_TextSegmentSectionId" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_TextSectionStart" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
+ {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_TextSectionStart), 0, "_TextSectionStart" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_TextSectionEnd" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
+ {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_TextSectionEnd), 0, "_TextSectionEnd" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_TextSectionId" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_TextSectionId), 0, "_TextSectionId" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_StackmapStart" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_StackmapStart), 0, "_StackmapStart" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_StackmapSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
@@ -8251,8 +8251,8 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_ObjectFileSize), 0, "_ObjectFileSize" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Size" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_Size), 0, "_Size" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-//      field: "_StartupID" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_StartupID), 0, "_StartupID" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_ObjectId" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_ObjectId), 0, "_ObjectId" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_JITDylib" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<llvmo::JITDylib_O>" :SPECIALIZER "class llvmo::JITDylib_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::JITDylib_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_JITDylib), 0, "_JITDylib" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_FasoName" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
@@ -11053,6 +11053,8 @@ public:
 { class_kind, STAMPWTAG_core__DebuggerFrame_O, sizeof(core::DebuggerFrame_O), 0, IS_POLYMORPHIC, "core::DebuggerFrame_O" },
 //      field: "fname" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),fname), 0, "fname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+//      field: "return_address" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),return_address), 0, "return_address" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "source_position" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),source_position), 0, "source_position" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "function_description" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -11061,12 +11063,16 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),closure), 0, "closure" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "args" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),args), 0, "args" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+//      field: "args_available" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
+ {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),args_available), 0, "args_available" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "lang" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),lang), 0, "lang" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "up" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),up), 0, "up" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "down" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),down), 0, "down" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+//      field: "is_xep" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
+ {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::DebuggerFrame_O),is_xep), 0, "is_xep" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // StampWtag = core::Environment_O/1391
 { class_kind, STAMPWTAG_core__Environment_O, sizeof(core::Environment_O), 0, IS_POLYMORPHIC, "core::Environment_O" },
 // StampWtag = core::GlueEnvironment_O/1395
