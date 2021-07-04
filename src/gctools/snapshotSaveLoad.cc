@@ -2409,12 +2409,12 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to pass LLJIT ObjectFile_O @ %p  startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
                                     __FILE__, __LINE__, __FUNCTION__,
                                     loadedObjectFile,
-                                    loadedObjectFile->_StartupID,
+                                    loadedObjectFile->_ObjectId,
                                     loadedObjectFile->_ObjectFileOffset,
                                     loadedObjectFile->_ObjectFileSize,
                                     of_start ));
           llvm::StringRef sbuffer((const char*)of_start, of_length);
-          std::string uniqueName = llvmo::uniqueMemoryBufferName("of",loadedObjectFile->_StartupID, loadedObjectFile->_ObjectFileSize );
+          std::string uniqueName = llvmo::uniqueMemoryBufferName("of",loadedObjectFile->_ObjectId, loadedObjectFile->_ObjectFileSize );
           llvm::StringRef name(uniqueName);
           std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
           loadedObjectFile->_MemoryBuffer.reset();
@@ -2432,7 +2432,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                                     (void*)allocatedObjectFile.raw_(),
                                     of_start, of_length ));
           jit->addObjectFile(allocatedObjectFile->asSmartPtr(),false);
-          core::T_mv startupName = core::core__startup_linkage_shutdown_names(allocatedObjectFile->_StartupID,_Nil<core::T_O>());
+          core::T_mv startupName = core::core__startup_linkage_shutdown_names(allocatedObjectFile->_ObjectId,_Nil<core::T_O>());
           core::String_sp str = gc::As<core::String_sp>(startupName);
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s I added the ObjectFile to the LLJIT - startupName: %s  --- what do I do to get the code\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(str).c_str() ));
           void* ptr;

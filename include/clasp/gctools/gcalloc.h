@@ -571,7 +571,7 @@ struct ConsAllocator {
 
 
 #ifdef USE_PRECISE_GC
-  static smart_ptr<Cons> image_save_load_allocate(Header_s::StampWtagMtag the_header, core::T_sp car, core::T_sp cdr ) {
+  static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::StampWtagMtag the_header, core::T_sp car, core::T_sp cdr ) {
 # ifdef USE_BOEHM
     Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons),global_cons_kind,&global_cons_kind));
     header->_stamp_wtag_mtag = the_header;
@@ -611,20 +611,20 @@ namespace gctools {
 #endif
       };
 
-    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init) {
-        size_t sizeWithHeader = sizeof(Header_s)+(image_save_load_init->_clientEnd-image_save_load_init->_clientStart);
+    static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
+        size_t sizeWithHeader = sizeof(Header_s)+(snapshot_save_load_init->_clientEnd-snapshot_save_load_init->_clientStart);
 #ifdef USE_BOEHM
-        Header_s* base = do_boehm_general_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
+        Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
 #ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
-        base->_source = image_save_load_init->_headStart->_source;
+        base->_source = snapshot_save_load_init->_headStart->_source;
 #endif
         pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
 #ifdef DEBUG_GUARD        
         uintptr_t guardBefore0 = *(uintptr_t*)((uintptr_t*)ptr-1);
         uintptr_t guardAfter0 = *(uintptr_t*)((uintptr_t*)((char*)ptr+sizeWithHeader-sizeof(Header_s))+1);
 #endif
-        new (ptr) OT(image_save_load_init);
+        new (ptr) OT(snapshot_save_load_init);
 #ifdef DEBUG_GUARD        
         uintptr_t guardBefore1 = *(uintptr_t*)((uintptr_t*)ptr-1);
         uintptr_t guardAfter1 = *(uintptr_t*)((uintptr_t*)((char*)ptr+sizeWithHeader-sizeof(Header_s))+1);
@@ -679,16 +679,16 @@ namespace gctools {
       // so that the static analyzer has something to call
     };
 
-    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
+    static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_atomic_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_atomic_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
 #ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
-        base->_source = image_save_load_init->_headStart->_source;
+        base->_source = snapshot_save_load_init->_headStart->_source;
 #endif
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-      new (ptr) OT(image_save_load_init);
-      printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
+      new (ptr) OT(snapshot_save_load_init);
+      printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
       smart_pointer_type sp = smart_ptr<value_type>(ptr);
       return sp;
 #endif
@@ -730,16 +730,16 @@ When would I ever want the GC to automatically collect objects but not move them
       // so that the static analyzer has something to call
     };
 
-    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
+    static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_general_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
 #ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
-        base->_source = image_save_load_init->_headStart->_source;
+        base->_source = snapshot_save_load_init->_headStart->_source;
 #endif
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-      new (ptr) OT(image_save_load_init);
-      printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
+      new (ptr) OT(snapshot_save_load_init);
+      printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
       smart_pointer_type sp = smart_ptr<value_type>(ptr);
       return sp;
 #endif
@@ -778,16 +778,16 @@ should not be managed by the GC */
 #endif
     }
 
-    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init, size_t size) {
+    static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_uncollectable_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_uncollectable_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
 #ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
-        base->_source = image_save_load_init->_headStart->_source;
+        base->_source = snapshot_save_load_init->_headStart->_source;
 #endif
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-      new (ptr) OT(image_save_load_init);
-      printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
+      new (ptr) OT(snapshot_save_load_init);
+      printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
       smart_pointer_type sp = smart_ptr<value_type>(ptr);
       return sp;
 #endif
@@ -914,8 +914,8 @@ namespace gctools {
       return sp;
     };
 
-    static smart_pointer_type image_save_load_allocate(snapshotSaveLoad::image_save_load_init_s* image_save_load_init ) {
-      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::image_save_load_allocate( image_save_load_init );
+    static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init ) {
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::snapshot_save_load_allocate( snapshot_save_load_init );
       // No initializer
 //      GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
@@ -1375,7 +1375,7 @@ struct StrongWeakAllocationPoint<WeakLinks> {
 #endif
   }
 
-   static gctools::tagged_pointer<container_type> image_save_load_allocate( snapshotSaveLoad::image_save_load_init_s* init ) {
+   static gctools::tagged_pointer<container_type> snapshot_save_load_allocate( snapshotSaveLoad::snapshot_save_load_init_s* init ) {
     size_t size = (init->_clientEnd-init->_clientStart)+SizeofWeakHeader();
 #ifdef USE_BOEHM
     Header_s* base = do_boehm_weak_allocation(init->_headStart->_stamp_wtag_mtag, size);

@@ -349,7 +349,7 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value value
   static void register_class_with_redeye() {                            \
     gctools::GCObjectAllocator<oClass>::register_class_with_redeye();   \
   }                                                                     \
-  oClass(snapshotSaveLoad::image_save_load_init_s* isl) { isl->fill((void*)this); }; \
+  oClass(snapshotSaveLoad::snapshot_save_load_init_s* isl) { isl->fill((void*)this); }; \
   static void expose_to_clasp();
 
 #define LISP_TEMPLATE_CLASS(oClass) \
