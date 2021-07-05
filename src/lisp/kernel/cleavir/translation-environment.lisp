@@ -18,7 +18,7 @@
 
 (defun ensure-origin (origin &optional (num 999905))
   (or origin
-      (core:make-source-pos-info "no-source-info-available" num num num)))
+      (core:make-source-pos-info :filepos num :lineno num :column num)))
 
 (defun delay-initializer (initializer-thunk)
   (push initializer-thunk *enclose-initializers*))

@@ -62,7 +62,7 @@
                 (cond ((consp orig) (car orig))
                       ((null orig)
                        ;; KLUDGE: If no source info, make one up
-                       (core:make-source-pos-info "no-source-info-available" 0 0 0))
+                       (core:make-source-pos-info))
                       (t orig)))))
     ;; See usage in cmp/debuginfo.lsp
     (list (cmp:jit-function-name (cleavir-ast:name ast))

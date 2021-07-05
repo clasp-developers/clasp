@@ -87,11 +87,12 @@ static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
     SimpleBaseString_sp filename = gc::As<SimpleBaseString_sp>(lineinfo);
     Integer_sp line = gc::As<Integer_sp>(lineinfo.valueGet_(3));
     Integer_sp column = gc::As<Integer_sp>(lineinfo.valueGet_(4));
-    return SourcePosInfo_O::make(filename->get_std_string(),
-                                 0, // eck
+    return core__makeSourcePosInfo(filename->get_std_string(), true,
+                                   0, true, // eck
                                  // See above FIXME; these should all be fine,
                                  // but then why go through Integer_O at all?
-                                 line.unsafe_fixnum(), column.unsafe_fixnum());
+                                   line.unsafe_fixnum(), true,
+                                   column.unsafe_fixnum(), true );
   } else return _Nil<T_O>();
 }
 
