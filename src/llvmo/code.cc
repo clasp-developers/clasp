@@ -39,6 +39,11 @@ ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, s
   return of;
 }
 
+CL_LISPIFY_NAME(code);
+CL_DEFMETHOD
+Code_sp ObjectFile_O::code() const {
+  return this->_Code;
+};
 
 ObjectFile_O::~ObjectFile_O() {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this ));

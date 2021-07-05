@@ -66,6 +66,7 @@ typedef enum { SaveState, RunState } CodeState_t;
       return gctools::AlignUp(this->objectFileSize());
     }
     llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> getObjectFile();
+    Code_sp code() const;
   }; // ObjectFile_O class def
 }; // llvmo
 
