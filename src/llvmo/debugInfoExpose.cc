@@ -514,9 +514,14 @@ CL_DEFUN DWARFContext_sp DWARFContext_O::createDwarfContext(ObjectFile_sp ofi) {
 //  printf("%s:%d uniqueName = %s\n", __FILE__, __LINE__, uniqueName.c_str());
   std::unique_ptr<llvm::MemoryBuffer> mbuf = llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false);
   llvm::MemoryBufferRef mbuf_ref(*mbuf);
-  auto eom = llvm::object::ObjectFile::createObjectFile(mbuf_ref);
-  std::unique_ptr<llvm::DWARFContext> uptr = llvm::DWARFContext::create(*eom->release());
-  return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
+  if (auto errOrObj = llvm::object::ObjectFile::createObjectFile(mbuf_ref)) {
+    auto& obj = *errOrObj;
+//    auto name = obj->getFileName();
+//    printf("%s:%d:%s filename: %s\n", __FILE__, __LINE__, __FUNCTION__, name.str().c_str());
+    std::unique_ptr<llvm::DWARFContext> uptr = llvm::DWARFContext::create(*obj.release());
+    return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
+  }
+  SIMPLE_ERROR(BF("Could not get ObjectFile"));
 }
 
 
