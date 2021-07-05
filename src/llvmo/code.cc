@@ -460,8 +460,7 @@ CL_DEFUN core::T_sp jit_code_entries() {
 
 
 CL_DOCSTRING("Generate a list of JITted symbols to /tmp/perf-<pid>.map");
-CL_LISPIFY_NAME(generate-perf-map)
-CL_DEFUN void generate_perf_map() {
+CL_DEFUN void ext__generate_perf_map() {
   stringstream ss;
   ss << "/tmp/perf-" << getpid() << ".map";
   core::write_bf_stream(BF("Writing to %s\n") % ss.str());
