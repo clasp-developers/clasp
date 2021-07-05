@@ -70,7 +70,8 @@ void process_clasp_arguments(CommandLineOptions* options)
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image. If file ends in .snapshot then treat as a snapshot.\n"
-             "-T/--type (default|snapshot|image) - Set the type of the default startup file to use (default means snapshot->image).\n"             
+             "-T/--type (default|snapshot|image) - Set the type of the default startup file to use (default means snapshot->image).\n"
+             "-L/--llvm-debug (options) - Pass arg to llvm::cl::ParseCommandLineOptions --debug-only. Lets you debug llvm with LLVM_DEBUG(...).\n"
              "-g/--debug           - Describe the clasp data structures for lldb Python API to /tmp/clasp.py\n"
              "-d/--describe [file] - Describe the clasp data structures for lldb Python API [file] default is /tmp/clasp.py\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
@@ -244,6 +245,18 @@ void process_clasp_arguments(CommandLineOptions* options)
       } else {
         options->_StartupFileType = cloImage;
       }
+    } else if (arg == "-L" || arg == "--llvm-debug") {
+      ASSERTF(iarg < (endArg + 1), BF("Missing argument for --eval,-e"));
+      std::string args = options->_RawArguments[iarg+1];
+      char* bogus_args[3];
+      bogus_args[0] = "clasp";
+      bogus_args[1] = "--debug-only";
+      bogus_args[2] = (char*)malloc(args.size()+1);
+      strcpy(bogus_args[2],args.c_str());
+      bogus_args[2][args.size()] = '\0';
+      printf("%s:%d:%s Passing arguments: <%s>\n", __FILE__, __LINE__, __FUNCTION__, bogus_args[2] );
+      llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
+      iarg++;
     } else if (arg == "-g" || arg == "--debug") {
       options->_HasDescribeFile = true;
       options->_DescribeFile = "/tmp/clasp-layout.py";
