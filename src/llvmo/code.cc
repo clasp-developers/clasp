@@ -14,6 +14,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/pointer.h>
 #include <clasp/llvmo/code.h>
 
 
@@ -102,6 +103,8 @@ std::string ObjectFile_O::__repr__() const {
   ss << "#<OBJECT-FILE " << this->_FasoName;
   ss << " :faso-index " << this->_FasoIndex << " ";
   ss << " :code @" << (void*)this->_Code.raw_() << " ";
+  ss << " :object-file @" << (void*)this->_MemoryBuffer->getBufferStart() << " ";
+  ss << " :object-file-size " << (size_t)this->_MemoryBuffer->getBufferSize() << " ";
   ss << " @" << (void*)this << ">";
   return ss.str();
 };
