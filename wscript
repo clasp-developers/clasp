@@ -1744,9 +1744,10 @@ def build(bld):
                 cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl.dwarf" % bld.variant_obj.fasl_dir(stage = 'c'))
                 install('lib/clasp/', cclasp_asdf_dwarf_file)
             clasp_symlink_node = out_dir_node.make_node("clasp")
-            log.debug("clasp_symlink_node =  %s", clasp_symlink_node)
+            log.info("clasp_symlink_node =  %s", clasp_symlink_node)
             if (os.path.islink(clasp_symlink_node.abspath())):
                 os.unlink(clasp_symlink_node.abspath())
+            os.symlink(bld.iclasp_executable.abspath(),clasp_symlink_node.abspath());
         #
         # Now build stage 3 is done in the main wscript - recurse into the extensions
         #
