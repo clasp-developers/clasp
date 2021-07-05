@@ -413,6 +413,80 @@ struct StackmapHeader {
   uint16_t _reserved1;
 };
 
+CL_LISPIFY_NAME(all_object_files);
+CL_DEFUN core::T_sp all_object_files() {
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+  return cur;
+}
+
+extern "C" {
+struct jit_code_entry
+{
+  struct jit_code_entry *next_entry;
+  struct jit_code_entry *prev_entry;
+  const char *symfile_addr;
+  uint64_t symfile_size;
+};
+
+struct jit_descriptor
+{
+  uint32_t version;
+  /* This type should be jit_actions_t, but we use uint32_t
+     to be explicit about the bitwidth.  */
+  uint32_t action_flag;
+  struct jit_code_entry *relevant_entry;
+  struct jit_code_entry *first_entry;
+};
+
+extern struct jit_descriptor __jit_debug_descriptor;
+
+};
+
+CL_DOCSTRING("Generate a list of jit_code_entry objects");
+CL_LISPIFY_NAME(jit_code_entries)
+CL_DEFUN core::T_sp jit_code_entries() {
+  jit_code_entry* jce = __jit_debug_descriptor.first_entry;
+  ql::list ll;
+  while (jce) {
+    core::T_sp obj = core::Cons_O::create(core::Pointer_O::create((void*)jce->symfile_addr),core::Integer_O::create(jce->symfile_size));
+    ll << obj;
+    jce = jce->next_entry;
+  }
+  return ll.result();
+}
+
+
+CL_DOCSTRING("Generate a list of JITted symbols to /tmp/perf-<pid>.map");
+CL_LISPIFY_NAME(generate-perf-map)
+CL_DEFUN void generate_perf_map() {
+  stringstream ss;
+  ss << "/tmp/perf-" << getpid() << ".map";
+  core::write_bf_stream(BF("Writing to %s\n") % ss.str());
+  FILE* fout = fopen(ss.str().c_str(),"w");
+  jit_code_entry* jce = __jit_debug_descriptor.first_entry;
+  ql::list ll;
+  size_t idx;
+  while (jce) {
+    const char* of_start = jce->symfile_addr;
+    size_t of_length = jce->symfile_size;
+    llvm::StringRef sbuffer((const char*)of_start, of_length);
+    stringstream ss;
+    ss << "buffer" << (void*)of_start;
+    std::string mem = ss.str();
+    llvm::StringRef name(mem);
+    std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
+    llvm::MemoryBufferRef memr = *(memoryBuffer);
+    llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> obj = llvm::object::ObjectFile::createObjectFile(memr);
+    for ( auto sym : (*obj)->symbols() ) {
+      if ((*sym.getAddress())!=0)
+        fprintf(fout,"%lX %lX %s\n", (uintptr_t)(*sym.getAddress()), (size_t)sym.getCommonSize(), (sym).getName()->str().c_str() );
+    }
+    jce = jce->next_entry;
+  }
+  fclose(fout);
+}
+
+
 CL_LISPIFY_NAME(describe_code);
 CL_DEFUN void describe_code() {
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
