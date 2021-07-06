@@ -12,6 +12,7 @@
 #include <clasp/core/stackmap.h>
 #include <clasp/core/backtrace.h>
 #ifdef USE_LIBUNWIND
+#define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #endif
 #include <stdlib.h> // calloc, realloc, free
