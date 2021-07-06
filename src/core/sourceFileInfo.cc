@@ -272,7 +272,7 @@ const char *FileScope_O::permanentFileName() {
 SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
 
 CL_DOCSTRING(R"doc(Like make-pathname lets you build a source-pos-info object from scratch or by referencing a defaults source-pos-info that provides default information)doc");
-CL_LAMBDA(&key (filename "-nofile-" filenamep) (filepos 0 fileposp) (lineno 0 linenop) (column 0 columnp) (function_scope nil function_scope_p) (inlined_at nil inlined_at_p) (defaults nil defaults_p));
+CL_LAMBDA(&key (filename "-nofile-" filenamep) (filepos 0 fileposp) (lineno 0 linenop) (column 0 columnp) (function-scope nil function_scope_p) (inlined-at nil inlined_at_p) (defaults nil defaults_p));
 CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno, bool linenop, size_t column, bool columnp, T_sp function_scope, bool function_scope_p, T_sp inlined_at, bool inlined_at_p, T_sp defaults, bool defaults_p )
 {
   SourcePosInfo_sp defaults_spi; 
