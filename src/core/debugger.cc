@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <iomanip>
 #include <clasp/core/foundation.h>
 #ifdef USE_LIBUNWIND
+#define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #endif
 #ifdef _TARGET_OS_DARWIN

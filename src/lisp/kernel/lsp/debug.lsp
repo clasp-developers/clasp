@@ -354,6 +354,7 @@ Note that as such, the frame returned may not be visible."
        (let ((down (core:debugger-frame-down frame)))
          (and down
               (eq (frame-language down) :lisp)
+              (not (core:debugger-frame-xep-p down))
               (equal (core:debugger-frame-fname down)
                      (core:debugger-frame-fname frame))))))
 

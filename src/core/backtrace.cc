@@ -12,10 +12,13 @@
 #include <clasp/core/stackmap.h>
 #include <clasp/core/backtrace.h>
 #ifdef USE_LIBUNWIND
+#define UNW_LOCAL_ONLY
 #include <libunwind.h>
-#endif
-#include <stdlib.h> // calloc, realloc, free
+#else
 #include <execinfo.h> // backtrace
+#endif
+#include <stdio.h> // debug messaging
+#include <stdlib.h> // calloc, realloc, free
 
 /*
  * This file contains the low-ish level code to get backtrace information.
@@ -144,13 +147,13 @@ static bool args_from_offset(void* frameptr, int32_t offset,
     T_O** register_save_area = (T_O**)((uintptr_t)frameptr + offset);
     T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
     if (!gc::IsA<Function_sp>(tclosure)) {
-      printf("%s:%d:%s When trying to get arguments from CL frame read what should be a closure %p but it isn't\n", __FILE__, __LINE__, __FUNCTION__, tclosure.raw_());
+      fprintf(stderr, "%s:%d:%s When trying to get arguments from CL frame read what should be a closure %p but it isn't\n", __FILE__, __LINE__, __FUNCTION__, tclosure.raw_());
       return false;
     }
     closure = tclosure;
     size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
     if (nargs>256) {
-      printf("%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+      fprintf(stderr, "%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
       return false;
     }
     ql::list largs;
@@ -169,6 +172,23 @@ static bool args_from_offset(void* frameptr, int32_t offset,
     args = largs.cons();
     return true;
   } else return false;
+}
+
+bool sanity_check_args(void* frameptr, int32_t offset) {
+  if (frameptr) {
+    T_O** register_save_area = (T_O**)((uintptr_t)frameptr + offset);
+    T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
+    if (!gc::IsA<Function_sp>(tclosure)) {
+      fprintf(stderr, "%s:%d:%s When trying to get arguments from CL frame read what should be a closure %p but it isn't\n", __FILE__, __LINE__, __FUNCTION__, tclosure.raw_());
+      return false;
+    }
+    size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
+    if (nargs > 256) {
+      fprintf(stderr, "%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+      return false;
+    }
+    return true;
+  } return true; // information not being available is unfortunate but sane
 }
 
 __attribute__((optnone))
@@ -310,6 +330,56 @@ static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp, bool
   else return make_lisp_frame(ip, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
 }
 
+static bool sanity_check_frame(void* ip, void* fbp) {
+  T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
+  if (of.nilp()) return true; // C++ frames are always fine for our purposes
+  else if (gc::IsA<llvmo::ObjectFile_sp>(of)) {
+    llvmo::ObjectFile_sp ofi = gc::As_unsafe<llvmo::ObjectFile_sp>(of);
+    llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
+    llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDwarfContext(ofi);
+    bool XEPp = false;
+    T_sp ep = dwarf_ep(ofi, dcontext, sa, XEPp);
+    uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);
+    uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
+    if (gc::IsA<LocalEntryPoint_sp>(ep)) {
+      LocalEntryPoint_sp lep = gc::As_unsafe<LocalEntryPoint_sp>(ep);
+      bool result = true;
+      auto thunk = [&](size_t _, const smStkSizeRecord& function,
+                       int32_t offsetOrSmallConstant) {
+        if (function.FunctionAddress == (uintptr_t)(lep->_EntryPoint)) {
+          if (!sanity_check_args(fbp, offsetOrSmallConstant)) result = false;
+          return;
+        }
+      };
+      walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
+      return result;
+    } else if (gc::IsA<GlobalEntryPoint_sp>(ep)) {
+      GlobalEntryPoint_sp gep = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
+      bool result = true;
+      auto thunk = [&](size_t _, const smStkSizeRecord& function,
+                       int32_t offsetOrSmallConstant) {
+        for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
+          if (function.FunctionAddress == (uintptr_t)(gep->_EntryPoints[j])) {
+            if (!sanity_check_args(fbp, offsetOrSmallConstant)) result = false;
+            return;
+          }
+        }
+      };
+      walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
+      return result;
+    } else if (ep.nilp()) return true; // annoying but sane
+    else {
+      fprintf(stderr, "%s:%d:%s  dwarf_fp returned object of wrong type\n",
+              __FILE__, __LINE__, __FUNCTION__);
+      return false;
+    }
+  } else {
+    fprintf(stderr, "%s:%d:%s  only_object_file_for_instruction_pointer returned object of wrong type\n",
+            __FILE__, __LINE__, __FUNCTION__);
+    return false;
+  }
+}
+
 #ifdef USE_LIBUNWIND
 __attribute__((optnone))
 static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
@@ -323,7 +393,7 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   int resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
   int resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
   if (resip || resbp) {
-    printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
+    fprintf(stderr, "%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
   }
   // This is slightly inefficient in that we allocate a simple base string
   // only to get a C string from it, but writing it to use stack allocation
@@ -345,6 +415,30 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   }
   return f(bot);
 }
+static bool lu_sanity_check_backtrace() {
+  unw_cursor_t cursor;
+  unw_word_t ip, fbp;
+  unw_context_t uc;
+  unw_getcontext(&uc);
+  unw_init_local(&cursor, &uc);
+  do {
+    int resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
+    int resbp = unw_get_reg(&cursor, UNW_X86_64_RBP, &fbp);
+    if (resip || resbp) {
+      fprintf(stderr, "%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
+      return false;
+    }
+    if (!(sanity_check_frame((void*)ip, (void*)fbp))) return false;
+    int resstep = unw_step(&cursor);
+    if (resstep == 0) return true;
+    else if (resstep < 0) { // error
+      fprintf(stderr, "%s:%d:%s  unw_step returned error %d",
+              __FILE__, __LINE__, __FUNCTION__, resstep);
+      return false;
+    }
+  } while (true);
+}
+
 #else // non-libunwind version
 __attribute__((optnone))
 static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
@@ -365,11 +459,11 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
       for (size_t j = 1; j < returned; ++j) {
         if (fbp) newfbp = *(void**)fbp;
         if (newfbp && !(bplow<(uintptr_t)newfbp && (uintptr_t)newfbp<bphigh)) {  // newfbp is out of the stack.
-//          printf("%s:%d:%s The frame pointer walk went out of bounds bplow is %p bphigh is %p and newfbp is %p\n",
+//          fprintf(stderr, "%s:%d:%s The frame pointer walk went out of bounds bplow is %p bphigh is %p and newfbp is %p\n",
 //                 __FILE__, __LINE__, __FUNCTION__, (void*)bplow, (void*)bphigh, newfbp );
           newfbp = NULL;
         } else if (newfbp && !((uintptr_t)fbp < (uintptr_t)newfbp) ) {             // fbp < newfbp
-          printf("%s:%d:%s The frame pointer is not monotonically increasing fbp is %p and newfbp is %p\n",
+          fprintf(stderr, "%s:%d:%s The frame pointer is not monotonically increasing fbp is %p and newfbp is %p\n",
                  __FILE__, __LINE__, __FUNCTION__, fbp, newfbp );
           newfbp = NULL;
         }
@@ -387,8 +481,46 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
     num *= 2;
     buffer = (void**)realloc(buffer, sizeof(void*)*num);
   }
-  printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
+  fprintf(stderr, "%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
   abort();
+}
+static bool os_sanity_check_backtrace() {
+  uintptr_t stacktop = (uintptr_t)my_thread_low_level->_StackTop;
+  size_t num = START_BACKTRACE_SIZE;
+  void** buffer = (void**)calloc(sizeof(void*), num);
+  for (size_t attempt = 0; attempt < MAX_BACKTRACE_SIZE_LOG2; ++attempt) {
+    size_t returned = backtrace(buffer, num);
+    if (returned < num) {
+      void* fbp = __builtin_frame_address(0);
+      uintptr_t stackbot = (uintptr_t)&fbp;
+      for (size_t j = 0; j < returned; ++j) {
+        /*
+        if (fbp && !((stackbot <= (uintptr_t)fbp) && ((uintptr_t)fbp <= stacktop))) {
+          fprintf(stderr, "%s:%d:%s In backtrace sanity check, the frame pointer went out of bounds. Stack low is %p stack high is %p frame pointer is %p\n",
+                  __FILE__, __LINE__, __FUNCTION__,
+                  (char*)stackbot, (char*)stacktop, fbp);
+          return false;
+        }
+        */
+        if (!sanity_check_frame(buffer[j], fbp)) return false;
+        void* nfbp = *(void**)fbp;
+        if (nfbp && !((uintptr_t)fbp < (uintptr_t)nfbp)) {
+          fprintf(stderr, "%s:%d:%s In backtrace sanity check, the frame pointer is not monotonically increasing from %p to %p\n",
+                  __FILE__, __LINE__, __FUNCTION__, fbp, nfbp);
+          return false;
+        }
+        fbp = nfbp;
+      }
+      free(buffer);
+      return true;
+    } else {
+      num *= 2;
+      buffer = (void**)realloc(buffer, sizeof(void*)*num);
+    }
+  }
+  fprintf(stderr, "%s:%d:%s  too many frames\n",
+          __FILE__, __LINE__, __FUNCTION__);
+  return false;
 }
 #endif // USE_LIBUNWIND
 
@@ -397,6 +529,13 @@ T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   return lu_call_with_frame(f);
 #else
   return os_call_with_frame(f);
+#endif
+}
+CL_DEFUN bool core__sanity_check_backtrace() {
+#ifdef USE_LIBUNWIND
+  return lu_sanity_check_backtrace();
+#else
+  return os_sanity_check_backtrace();
 #endif
 }
 

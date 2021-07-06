@@ -256,11 +256,9 @@
                                  col
                                  dbg-current-scope))))
 
-(defparameter *instruction-source-position* nil)
 (defun dbg-set-irbuilder-source-location (irbuilder spi &optional fn-scope)
   (when *dbg-generate-dwarf*
     (let ((diloc (get-dilocation spi fn-scope *dbg-current-scope*)))
-      (setf *instruction-source-position* diloc)
       (llvm-sys:set-current-debug-location irbuilder diloc))))
 
 (defun dbg-create-auto-variable (&key (scope *dbg-current-scope*)
