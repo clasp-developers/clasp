@@ -247,13 +247,10 @@ void process_clasp_arguments(CommandLineOptions* options)
       }
     } else if (arg == "-L" || arg == "--llvm-debug") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --eval,-e"));
-      std::string args = options->_RawArguments[iarg+1];
-      char* bogus_args[3];
+      const char* bogus_args[3];
       bogus_args[0] = "clasp";
       bogus_args[1] = "--debug-only";
-      bogus_args[2] = (char*)malloc(args.size()+1);
-      strcpy(bogus_args[2],args.c_str());
-      bogus_args[2][args.size()] = '\0';
+      bogus_args[2] = options->_RawArguments[iarg+1].c_str();
       printf("%s:%d:%s Passing arguments: <%s>\n", __FILE__, __LINE__, __FUNCTION__, bogus_args[2] );
       llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
       iarg++;
