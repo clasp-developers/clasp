@@ -520,11 +520,6 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
-#if 0
-  const char* bogus_args[3] = {"clasp","--debug-only", "jitlink"};
-  llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
-#endif
-
   const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
   if (dof) {
     if (strcmp(dof,"save")==0) {
