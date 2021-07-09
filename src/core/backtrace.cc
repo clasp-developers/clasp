@@ -200,18 +200,22 @@ static bool args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
   if (!stackmap_start) return false; // ends up as null sometimes apparently
   uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
   bool args_available = false;
-  // FIXME: we could check the entry point type ahead of time
-  auto thunk = [&](size_t _, const smStkSizeRecord& function,
-                   int32_t offsetOrSmallConstant) {
-    if (gc::IsA<LocalEntryPoint_sp>(ep)) {
-      LocalEntryPoint_sp lep = gc::As_unsafe<LocalEntryPoint_sp>(ep);
+  if (gc::IsA<LocalEntryPoint_sp>(ep)) {
+    LocalEntryPoint_sp lep = gc::As_unsafe<LocalEntryPoint_sp>(ep);
+    auto thunk = [&](size_t _, const smStkSizeRecord& function,
+                     int32_t offsetOrSmallConstant) {
       if (function.FunctionAddress == (uintptr_t)(lep->_EntryPoint)) {
         if (args_from_offset(frameptr, offsetOrSmallConstant, closure, args))
           args_available |= true;
         return;
       }
-    } else if (gc::IsA<GlobalEntryPoint_sp>(ep)) {
-      GlobalEntryPoint_sp gep = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
+    };
+    walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
+    return args_available;
+  } else if (gc::IsA<GlobalEntryPoint_sp>(ep)) {
+    GlobalEntryPoint_sp gep = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
+    auto thunk = [&](size_t _, const smStkSizeRecord& function,
+                     int32_t offsetOrSmallConstant) {
       for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
         if (function.FunctionAddress == (uintptr_t)(gep->_EntryPoints[j])) {
           if (args_from_offset(frameptr, offsetOrSmallConstant,
@@ -220,10 +224,12 @@ static bool args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
           return;
         }
       }
-    }
-  };
-  walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
-  return args_available;
+    };
+    walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
+    return args_available;
+  }
+  // dwarf_ep returned something impossible; FIXME error?
+  return false;
 }
 
 __attribute__((optnone))

@@ -1530,9 +1530,9 @@ CL_DECLARE();
 CL_DOCSTRING("Like unix rmdir");
 CL_DEFUN T_sp core__rmdir(T_sp directory) {
   return cl__delete_file(eval::funcall(cl::_sym_makePathname,
-                                     kw::_sym_name, _Nil<T_O>(),
-                                     kw::_sym_type, _Nil<T_O>(),
-                                     kw::_sym_defaults, directory));
+                                       kw::_sym_name, _Nil<T_O>(),
+                                       kw::_sym_type, _Nil<T_O>(),
+                                       kw::_sym_defaults, directory));
 }
 
 CL_LAMBDA(file mode);
