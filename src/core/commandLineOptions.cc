@@ -126,6 +126,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "export CLASP_DONT_HANDLE_CRASH_SIGNALS=1  Don't insert signal handlers for crash signals.\n"
              "export CLASP_GC_MESSAGES=1 Print a message when garbage collection takes place.\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
+             "export CLASP_TIME_SNAPSHOT=1   Turn on timing of snapshot load\n"
              "export CLASP_OPTIMIZATION_LEVEL=0|1|2|3 Set the llvm optimization level for compiled code\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
@@ -248,12 +249,12 @@ void process_clasp_arguments(CommandLineOptions* options)
     } else if (arg == "-L" || arg == "--llvm-debug") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --eval,-e"));
       std::string args = options->_RawArguments[iarg+1];
-      char* bogus_args[3];
+      const char* bogus_args[3];
       bogus_args[0] = "clasp";
       bogus_args[1] = "--debug-only";
-      bogus_args[2] = (char*)malloc(args.size()+1);
-      strcpy(bogus_args[2],args.c_str());
-      bogus_args[2][args.size()] = '\0';
+      char* opt = (char*)malloc(args.size()+1);
+      strcpy(opt,args.c_str());
+      bogus_args[2] = opt;
       printf("%s:%d:%s Passing arguments: <%s>\n", __FILE__, __LINE__, __FUNCTION__, bogus_args[2] );
       llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
       iarg++;

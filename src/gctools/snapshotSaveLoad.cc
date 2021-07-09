@@ -47,6 +47,35 @@ bool global_debugSnapshot = false;
 };
 
 namespace snapshotSaveLoad {
+
+
+struct MaybeTimeStartup {
+  std::chrono::time_point<std::chrono::steady_clock> start;
+  std::string  name;
+  bool         timerOn;
+  MaybeTimeStartup(const char* n = NULL) : timerOn(false) {
+    if (n) this->name = n;
+    if (getenv("CLASP_TIME_SNAPSHOT")) {
+      this->timerOn = true;
+      this->start = std::chrono::steady_clock::now();
+    }
+  };
+
+  ~MaybeTimeStartup() {
+    if (this->timerOn) {
+      auto end = std::chrono::steady_clock::now();
+      auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - this->start);
+      stringstream name_;
+      if (this->name!="") name_ << this->name << " ";
+      printf("%s us %s\n", _rep_(core::Integer_O::create(us.count())).c_str(), name_.str().c_str() );
+    }
+  };
+};
+
+
+
+
+
 bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
 #define BUFLEN 2048
   int baddigit = 0;
@@ -2088,61 +2117,63 @@ struct CodeFixup_t {
 
 
 int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
-  SymbolLookup lookup;
-  loadExecutableSymbolLookup(lookup);
-  printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
-  global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
-  if (global_debugSnapshot) {
-    if (maybeStartOfSnapshot) {
-      printf("%s:%d using maybeStartOfSnapshot %p\n", __FILE__, __LINE__, maybeStartOfSnapshot );
-    } else {
-      printf("%s:%d NOT using maybeStartOfSnapshot\n", __FILE__, __LINE__ );
+  {
+    MaybeTimeStartup time1("Overall snapshot load time");
+    SymbolLookup lookup;
+    loadExecutableSymbolLookup(lookup);
+    printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
+    global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
+    if (global_debugSnapshot) {
+      if (maybeStartOfSnapshot) {
+        printf("%s:%d using maybeStartOfSnapshot %p\n", __FILE__, __LINE__, maybeStartOfSnapshot );
+      } else {
+        printf("%s:%d NOT using maybeStartOfSnapshot\n", __FILE__, __LINE__ );
+      }
     }
-  }
   // When loading forwarding pointers must always forward into GC managed objects
-  size_t loadTimeID = 0;
-  globalFwdMustBeInGCMemory = true;
-  core::FunctionDescription_O funcdes;
-  DBG_SL(BF("FunctionDescription_O vtable pointer is: %p\n") % *(void**)&funcdes );
-  DBG_SL(BF(" snapshot_load entered\n"));
-  if (filename.size() == 0 && maybeStartOfSnapshot == NULL) {
-    printf("You must specify a snapshot with -i or one must be embedded within the executable\n");
-    std::exit(1);
-  }
-  off_t fsize = 0;
-  void* memory = NULL;
-  if ( filename.size() != 0) {
-    int fd = open(filename.c_str(),O_RDONLY);
-    fsize = lseek(fd, 0, SEEK_END);
-    lseek(fd,0,SEEK_SET);
-    memory = mmap(NULL, fsize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FILE, fd, 0);
-    if (memory==MAP_FAILED) {
-      close(fd);
-      SIMPLE_ERROR(BF("Could not mmap %s because of %s") % filename % strerror(errno));
+    size_t loadTimeID = 0;
+    globalFwdMustBeInGCMemory = true;
+    core::FunctionDescription_O funcdes;
+    DBG_SL(BF("FunctionDescription_O vtable pointer is: %p\n") % *(void**)&funcdes );
+    DBG_SL(BF(" snapshot_load entered\n"));
+    if (filename.size() == 0 && maybeStartOfSnapshot == NULL) {
+      printf("You must specify a snapshot with -i or one must be embedded within the executable\n");
+      std::exit(1);
     }
-  } else if (maybeStartOfSnapshot && maybeEndOfSnapshot && (maybeStartOfSnapshot<maybeEndOfSnapshot)) {
-    size_t size = (uintptr_t)maybeEndOfSnapshot - (uintptr_t)maybeStartOfSnapshot;
-    memory = malloc(size);
-    memcpy( memory, maybeStartOfSnapshot, size);
-  } else {
-    printf("There is no snapshot file or embedded\n");
-    abort();
-  }
-  ISLFileHeader* fileHeader = reinterpret_cast<ISLFileHeader*>(memory);
-  printf("%s:%d:%s  Read NextUnshiftedStamp from snapshot --> %lu    global_NextUnshiftedStamp --> %lu ... updating\n",
-         __FILE__, __LINE__, __FUNCTION__, fileHeader->_NextUnshiftedStamp, gctools::global_NextUnshiftedStamp.load() );
-  gctools::global_NextUnshiftedStamp.store(fileHeader->_NextUnshiftedStamp);
-  gctools::global_NextUnshiftedClbindStamp.store(fileHeader->_NextUnshiftedClbindStamp);
-  char* objectFilesStartAddress = (char*)memory + fileHeader->_ObjectFileStart;
-  if (!fileHeader->good_magic()) {
-    printf("The file %s is not a snapshot file magic_value should be %p - read... %p\n", filename.c_str(), (void*)MAGIC_NUMBER, (void*)fileHeader->_Magic );
-    abort();
-  }
-  gctools::clasp_ptr_t islbuffer = (gctools::clasp_ptr_t)((char*)memory + fileHeader->_MemoryStart);
-  gctools::clasp_ptr_t islend = islbuffer+fileHeader->_MemorySize;
+    off_t fsize = 0;
+    void* memory = NULL;
+    if ( filename.size() != 0) {
+      int fd = open(filename.c_str(),O_RDONLY);
+      fsize = lseek(fd, 0, SEEK_END);
+      lseek(fd,0,SEEK_SET);
+      memory = mmap(NULL, fsize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FILE, fd, 0);
+      if (memory==MAP_FAILED) {
+        close(fd);
+        SIMPLE_ERROR(BF("Could not mmap %s because of %s") % filename % strerror(errno));
+      }
+    } else if (maybeStartOfSnapshot && maybeEndOfSnapshot && (maybeStartOfSnapshot<maybeEndOfSnapshot)) {
+      size_t size = (uintptr_t)maybeEndOfSnapshot - (uintptr_t)maybeStartOfSnapshot;
+      memory = malloc(size);
+      memcpy( memory, maybeStartOfSnapshot, size);
+    } else {
+      printf("There is no snapshot file or embedded\n");
+      abort();
+    }
+    ISLFileHeader* fileHeader = reinterpret_cast<ISLFileHeader*>(memory);
+    printf("%s:%d:%s  Read NextUnshiftedStamp from snapshot --> %lu    global_NextUnshiftedStamp --> %lu ... updating\n",
+           __FILE__, __LINE__, __FUNCTION__, fileHeader->_NextUnshiftedStamp, gctools::global_NextUnshiftedStamp.load() );
+    gctools::global_NextUnshiftedStamp.store(fileHeader->_NextUnshiftedStamp);
+    gctools::global_NextUnshiftedClbindStamp.store(fileHeader->_NextUnshiftedClbindStamp);
+    char* objectFilesStartAddress = (char*)memory + fileHeader->_ObjectFileStart;
+    if (!fileHeader->good_magic()) {
+      printf("The file %s is not a snapshot file magic_value should be %p - read... %p\n", filename.c_str(), (void*)MAGIC_NUMBER, (void*)fileHeader->_Magic );
+      abort();
+    }
+    gctools::clasp_ptr_t islbuffer = (gctools::clasp_ptr_t)((char*)memory + fileHeader->_MemoryStart);
+    gctools::clasp_ptr_t islend = islbuffer+fileHeader->_MemorySize;
   
-  ISLInfo islInfo( LoadOp,(uintptr_t)islbuffer,(uintptr_t)islend);
-  Fixup fixup(LoadOp);
+    ISLInfo islInfo( LoadOp,(uintptr_t)islbuffer,(uintptr_t)islend);
+    Fixup fixup(LoadOp);
 
 //  printf("%s:%d:%s Loaded file %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str());
 //  printf("%s:%d:%s islbuffer = %p\n",  __FILE__, __LINE__, __FUNCTION__,(void*)islbuffer);
@@ -2150,52 +2181,55 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   // Setup the libraries
   //
 //  printf("%s:%d:%s Registering %lu globalISLLibraries from snapshot\n", __FILE__, __LINE__, __FUNCTION__, fileHeader->_NumberOfLibraries );
-  ISLLibraryHeader_s* libheader;
-  for ( size_t idx =0; idx<fileHeader->_NumberOfLibraries; idx++ ) {
-    if (idx==0) {
-      libheader = (ISLLibraryHeader_s*)((char*)fileHeader + fileHeader->_LibrariesOffset);
-    } else {
+    ISLLibraryHeader_s* libheader;
+    {
+      MaybeTimeStartup time2("Adjust pointers");
+      for ( size_t idx =0; idx<fileHeader->_NumberOfLibraries; idx++ ) {
+        if (idx==0) {
+          libheader = (ISLLibraryHeader_s*)((char*)fileHeader + fileHeader->_LibrariesOffset);
+        } else {
       // advance to the next ISLLibraryHeader_s
-      libheader = (ISLLibraryHeader_s*)((const char*)(libheader + 1) + libheader->_Size);
-    }
-    char* bufferStart = (char*)(libheader+1);
-    std::string name(bufferStart);
-    uintptr_t start;
-    uintptr_t end;
-    uintptr_t vtableStart;
-    uintptr_t vtableEnd;
-    bool isexec = libheader->_Executable;
-    std::string libraryPath;
-    core::library_with_name(name,isexec,libraryPath,start,end,vtableStart,vtableEnd);
-    ISLLibrary lib(name,isexec,(gctools::clasp_ptr_t)start,(gctools::clasp_ptr_t)end,vtableStart,vtableEnd);
+          libheader = (ISLLibraryHeader_s*)((const char*)(libheader + 1) + libheader->_Size);
+        }
+        char* bufferStart = (char*)(libheader+1);
+        std::string name(bufferStart);
+        uintptr_t start;
+        uintptr_t end;
+        uintptr_t vtableStart;
+        uintptr_t vtableEnd;
+        bool isexec = libheader->_Executable;
+        std::string libraryPath;
+        core::library_with_name(name,isexec,libraryPath,start,end,vtableStart,vtableEnd);
+        ISLLibrary lib(name,isexec,(gctools::clasp_ptr_t)start,(gctools::clasp_ptr_t)end,vtableStart,vtableEnd);
 //    printf("%s:%d:%s Registered library: %s @ %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)start );
-    size_t symbolBufferSize = libheader->_SymbolInfoOffset - libheader->_SymbolBufferOffset;
-    lib._SymbolBuffer.resize(symbolBufferSize);
-    const char* symbolBufferStart = (const char*)(libheader+1)+libheader->_SymbolBufferOffset;
-    memcpy((char*)lib._SymbolBuffer.data(),symbolBufferStart,symbolBufferSize);
-    size_t symbolInfoSize = libheader->_SymbolInfoCount*sizeof(SymbolInfo);
+        size_t symbolBufferSize = libheader->_SymbolInfoOffset - libheader->_SymbolBufferOffset;
+        lib._SymbolBuffer.resize(symbolBufferSize);
+        const char* symbolBufferStart = (const char*)(libheader+1)+libheader->_SymbolBufferOffset;
+        memcpy((char*)lib._SymbolBuffer.data(),symbolBufferStart,symbolBufferSize);
+        size_t symbolInfoSize = libheader->_SymbolInfoCount*sizeof(SymbolInfo);
 //    printf("%s:%d:%s symbolBufferSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, symbolBufferSize );
 //    printf("%s:%d:%s symbolInfoSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, symbolInfoSize );
-    lib._SymbolInfo.resize(libheader->_SymbolInfoCount);
-    const char* symbolInfoStart = (const char*)(libheader+1)+libheader->_SymbolInfoOffset;
-    memcpy((char*)lib._SymbolInfo.data(),symbolInfoStart,symbolInfoSize);
+        lib._SymbolInfo.resize(libheader->_SymbolInfoCount);
+        const char* symbolInfoStart = (const char*)(libheader+1)+libheader->_SymbolInfoOffset;
+        memcpy((char*)lib._SymbolInfo.data(),symbolInfoStart,symbolInfoSize);
 #if 0
-    printf("%s:%d:%s libheader->_Size = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_Size );
-    printf("%s:%d:%s libheader->_SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolBufferOffset );
-    printf("%s:%d:%s libheader->_SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolInfoOffset );
-    printf("%s:%d:%s lib.writeSize() -> %lu\n", __FILE__, __LINE__, __FUNCTION__, lib.writeSize() );
-    printf("%s:%d:%s first _SymbolBuffer name: %s\n", __FILE__, __LINE__, __FUNCTION__, (const char*)lib._SymbolBuffer.data());
-    printf("%s:%d:%s size _SymbolBuffer %lu\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolBuffer.size());
-    printf("%s:%d:%s num _SymbolInfo %lu\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo.size());
-    printf("%s:%d:%s first _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[0]._SymbolLength, lib._SymbolInfo[0]._SymbolOffset );
-    printf("%s:%d:%s last _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolLength, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolOffset );
+        printf("%s:%d:%s libheader->_Size = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_Size );
+        printf("%s:%d:%s libheader->_SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolBufferOffset );
+        printf("%s:%d:%s libheader->_SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolInfoOffset );
+        printf("%s:%d:%s lib.writeSize() -> %lu\n", __FILE__, __LINE__, __FUNCTION__, lib.writeSize() );
+        printf("%s:%d:%s first _SymbolBuffer name: %s\n", __FILE__, __LINE__, __FUNCTION__, (const char*)lib._SymbolBuffer.data());
+        printf("%s:%d:%s size _SymbolBuffer %lu\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolBuffer.size());
+        printf("%s:%d:%s num _SymbolInfo %lu\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo.size());
+        printf("%s:%d:%s first _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[0]._SymbolLength, lib._SymbolInfo[0]._SymbolOffset );
+        printf("%s:%d:%s last _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolLength, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolOffset );
 #endif
     //
     // Now lookup the pointers
     //
-    updateRelocationTableAfterLoad(lib,lookup);
-    fixup._libraries.push_back(lib);
-  }
+        updateRelocationTableAfterLoad(lib,lookup);
+        fixup._libraries.push_back(lib);
+      }
+    }
 //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
 
 
@@ -2203,568 +2237,609 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // Define the buffer range
   //
-  globalISLBufferRange._Start = (gctools::clasp_ptr_t)islbuffer;
-  globalISLBufferRange._End = (gctools::clasp_ptr_t)islbuffer+fileHeader->_MemorySize;
+    globalISLBufferRange._Start = (gctools::clasp_ptr_t)islbuffer;
+    globalISLBufferRange._End = (gctools::clasp_ptr_t)islbuffer+fileHeader->_MemorySize;
 
   //
   // Fixup the vtables
   //
-  DBG_SL(BF(" snapshot_load fixing up vtable pointers\n"));
-  gctools::clasp_ptr_t start;
-  gctools::clasp_ptr_t end;
-  core::executableVtableSectionRange(start,end);
-  fixup_vtables_t fixup_vtables( &fixup, (uintptr_t)start, (uintptr_t)end, &islInfo );
-  walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,fixup_vtables);
+    DBG_SL(BF(" snapshot_load fixing up vtable pointers\n"));
+    gctools::clasp_ptr_t start;
+    gctools::clasp_ptr_t end;
+    core::executableVtableSectionRange(start,end);
+    {
+      MaybeTimeStartup time3("Fixup vtables");
+      fixup_vtables_t fixup_vtables( &fixup, (uintptr_t)start, (uintptr_t)end, &islInfo );
+      walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,fixup_vtables);
+    }
 
   //
   // Let's fix the pointers so that they are correct for the loaded location in memory
   //
 
-  DBG_SL(BF(" snapshot_load relocating addresses\n"));
-  globalSavedBase = (intptr_t)fileHeader->_SaveTimeMemoryAddress;
-  globalLoadedBase = (intptr_t)islbuffer;
-  DBG_SL(BF("  Starting   globalSavedBase %p    globalLoadedBase  %p\n") % (void*)globalSavedBase % (void*)globalLoadedBase );
-  globalPointerFix = relocate_pointer;
-  relocate_objects_t relocate_objects(&islInfo);
-  walk_snapshot_save_load_objects( (ISLHeader_s*)islbuffer, relocate_objects );
-  
+    {
+      MaybeTimeStartup time4("Relocate addresses\n");
+      DBG_SL(BF(" snapshot_load relocating addresses\n"));
+      globalSavedBase = (intptr_t)fileHeader->_SaveTimeMemoryAddress;
+      globalLoadedBase = (intptr_t)islbuffer;
+      DBG_SL(BF("  Starting   globalSavedBase %p    globalLoadedBase  %p\n") % (void*)globalSavedBase % (void*)globalLoadedBase );
+      globalPointerFix = relocate_pointer;
+      relocate_objects_t relocate_objects(&islInfo);
+      walk_snapshot_save_load_objects( (ISLHeader_s*)islbuffer, relocate_objects );
+    }
   // Do the roots as well
   // After this they will be internally consistent with the loaded objects
   
-  gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
-  relocateLoadedRootPointers(lispRoot,1, (void*)&islInfo );
-  gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
-  relocateLoadedRootPointers( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
-  gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
-  relocateLoadedRootPointers( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo  );
+    gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
+    relocateLoadedRootPointers(lispRoot,1, (void*)&islInfo );
+    gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
+    relocateLoadedRootPointers( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
+    gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
+    relocateLoadedRootPointers( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo  );
     
   //
   // Fixup the CodeBase_O objects
   //
-  DBG_SL(BF("Fixup the Library_O objects\n"));
-  struct fixup_CodeBase_t : public walker_callback_t {
-    fixup_CodeBase_t( ISLInfo* info) : walker_callback_t(info) {};
+    DBG_SL(BF("Fixup the Library_O objects\n"));
+    struct fixup_CodeBase_t : public walker_callback_t {
+      fixup_CodeBase_t( ISLInfo* info) : walker_callback_t(info) {};
     
-    void callback(gctools::Header_s* header) {
-      if (header->_stamp_wtag_mtag.stampP() && header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
-        llvmo::Library_O* lib = (llvmo::Library_O*)(HEADER_PTR_TO_GENERAL_PTR(header));
-        core::SimpleBaseString_sp name = lib->_Name;
-        std::string libraryPath = name->get_std_string();
-        std::string libraryFilename = std::filesystem::path(libraryPath).filename();
-        std::string libraryName;
-        uintptr_t start;
-        uintptr_t end;
-        uintptr_t vtableStart, vtableEnd;
-        bool isExecutable = lib->_Executable;
-        core::library_with_name(libraryFilename,isExecutable,libraryName,start,end,vtableStart,vtableEnd);
-        lib->_Start = (gctools::clasp_ptr_t)start;
-        lib->_End = (gctools::clasp_ptr_t)end;
-        lib->_VtableStart = vtableStart;
-        lib->_VtableEnd = vtableEnd;
+      void callback(gctools::Header_s* header) {
+        if (header->_stamp_wtag_mtag.stampP() && header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
+          llvmo::Library_O* lib = (llvmo::Library_O*)(HEADER_PTR_TO_GENERAL_PTR(header));
+          core::SimpleBaseString_sp name = lib->_Name;
+          std::string libraryPath = name->get_std_string();
+          std::string libraryFilename = std::filesystem::path(libraryPath).filename();
+          std::string libraryName;
+          uintptr_t start;
+          uintptr_t end;
+          uintptr_t vtableStart, vtableEnd;
+          bool isExecutable = lib->_Executable;
+          core::library_with_name(libraryFilename,isExecutable,libraryName,start,end,vtableStart,vtableEnd);
+          lib->_Start = (gctools::clasp_ptr_t)start;
+          lib->_End = (gctools::clasp_ptr_t)end;
+          lib->_VtableStart = vtableStart;
+          lib->_VtableEnd = vtableEnd;
 //        printf("%s:%d:%s Setting the .text start of %s to %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), (void*)start );
+        }
       }
-    }
-  };
-  fixup_CodeBase_t fixupCodeBase( &islInfo );
-  walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,fixupCodeBase);
+    };
+    fixup_CodeBase_t fixupCodeBase( &islInfo );
+    walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,fixupCodeBase);
 
   //
   // Allocate space for temporary roots
   //
 
-  temporary_root_holder_t root_holder(fileHeader->_NumberOfObjects);
+    temporary_root_holder_t root_holder(fileHeader->_NumberOfObjects);
 
   //
   // Allocate new objects for everything we just loaded and set the forwarding pointers
   //
-  DBG_SL(BF("Allocate objects\n"));
-  {
-    ISLHeader_s* start_header = reinterpret_cast<ISLHeader_s*>(islbuffer);
-    gctools::clasp_ptr_t startVtables;
-    gctools::clasp_ptr_t end;
-    core::executableVtableSectionRange(startVtables,end);
-    DBG_SL(BF(" allocate objects\n"));
-    ISLHeader_s* next_header;
-    ISLHeader_s* cur_header;
+    DBG_SL(BF("Allocate objects\n"));
+    {
+      ISLHeader_s* start_header = reinterpret_cast<ISLHeader_s*>(islbuffer);
+      gctools::clasp_ptr_t startVtables;
+      gctools::clasp_ptr_t end;
+      core::executableVtableSectionRange(startVtables,end);
+      DBG_SL(BF(" allocate objects\n"));
+      ISLHeader_s* next_header;
+      ISLHeader_s* cur_header;
 
 
-    core::Lisp_O* theLoadedLisp = (core::Lisp_O*)gc::untag_general<core::T_O*>((core::T_O*)*lispRoot);
+      core::Lisp_O* theLoadedLisp = (core::Lisp_O*)gc::untag_general<core::T_O*>((core::T_O*)*lispRoot);
 
     ///////////////////////////////////////////////////////////////
     //
     // Now we have the Lisp_O
     //
     // Move the Lisp_O object into GC managed memory 
-    gctools::Header_s* lisp_source_header = NULL;
-    {
-      lisp_source_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(theLoadedLisp);
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(theLoadedLisp);
-      gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Lisp_O);
-      snapshot_save_load_init_s init(lisp_source_header,clientStart,clientEnd);
-      core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
-      gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-      DBG_SL_ALLOCATE(BF("allocated Lisp_O general %p fwd: %p\n")
-                      % (void*) obj.raw_()
-                      % (void*)fwd);
-      set_forwarding_pointer( lisp_source_header, (char*)fwd, &islInfo );
-      root_holder.add((void*)obj.raw_());
-      ::_lisp.thePointer = (core::Lisp_O*)obj.theObject;
+      gctools::Header_s* lisp_source_header = NULL;
+      {
+        lisp_source_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(theLoadedLisp);
+        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(theLoadedLisp);
+        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Lisp_O);
+        snapshot_save_load_init_s init(lisp_source_header,clientStart,clientEnd);
+        core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
+        gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+        DBG_SL_ALLOCATE(BF("allocated Lisp_O general %p fwd: %p\n")
+                        % (void*) obj.raw_()
+                        % (void*)fwd);
+        set_forwarding_pointer( lisp_source_header, (char*)fwd, &islInfo );
+        root_holder.add((void*)obj.raw_());
+        ::_lisp.thePointer = (core::Lisp_O*)obj.theObject;
       // Now the global _lisp is defined - don't change it below when we look at roots
-    }
+      }
 //    printf("%s:%d:%s the ::_lisp object is at %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)_lisp.rawRef_());
     
     //
     // Initialize the ClaspJIT_O object
     //
-    llvmo::global_JITDylibCounter.store(fileHeader->_global_JITDylibCounter);
-    core::core__update_max_jit_compile_counter(fileHeader->_global_JITCompileCounter);
-    llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
-    llvmo::JITDylib_O* mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(claspJIT->_MainJITDylib.raw_());
-    new (claspJIT) llvmo::ClaspJIT_O(true,mainJITDylib);
-    if (mainJITDylib->_Id != 0) {
-      printf("%s:%d:%s The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n", __FILE__, __LINE__, __FUNCTION__, mainJITDylib->_Id);
-      abort();
-    }
+      llvmo::global_JITDylibCounter.store(fileHeader->_global_JITDylibCounter);
+      core::core__update_max_jit_compile_counter(fileHeader->_global_JITCompileCounter);
+      llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
+      llvmo::JITDylib_O* mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(claspJIT->_MainJITDylib.raw_());
+      new (claspJIT) llvmo::ClaspJIT_O(true,mainJITDylib);
+      if (mainJITDylib->_Id != 0) {
+        printf("%s:%d:%s The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n", __FILE__, __LINE__, __FUNCTION__, mainJITDylib->_Id);
+        abort();
+      }
 
     //
     // We need to handle the NIL object specially, we need to allocate it in GC memory first
     //
-    gctools::Header_s* nil_source_header = NULL;
-    {
-      core::T_sp theNil = ::_lisp->_Roots._NilObject;
-      core::General_O* generalNil = theNil.unsafe_general();
-      gctools::Header_s* source_header = GENERAL_PTR_TO_HEADER_PTR(generalNil);
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalNil);
-      gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Null_O);
-      snapshot_save_load_init_s init(source_header,clientStart,clientEnd);
-      core::T_sp nil = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
-      gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)nil.raw_());
-      DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
-                      % (void*) nil.raw_()
-                      % (void*)fwd);
-      set_forwarding_pointer(source_header,((char*)fwd), &islInfo );
-      nil_source_header = source_header;
-      root_holder.add((void*)nil.raw_());
-      my_thread->finish_initialization_main_thread(nil);
+      gctools::Header_s* nil_source_header = NULL;
+      {
+        core::T_sp theNil = ::_lisp->_Roots._NilObject;
+        core::General_O* generalNil = theNil.unsafe_general();
+        gctools::Header_s* source_header = GENERAL_PTR_TO_HEADER_PTR(generalNil);
+        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalNil);
+        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Null_O);
+        snapshot_save_load_init_s init(source_header,clientStart,clientEnd);
+        core::T_sp nil = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
+        gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)nil.raw_());
+        DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
+                        % (void*) nil.raw_()
+                        % (void*)fwd);
+        set_forwarding_pointer(source_header,((char*)fwd), &islInfo );
+        nil_source_header = source_header;
+        root_holder.add((void*)nil.raw_());
+        my_thread->finish_initialization_main_thread(nil);
       // Now we have NIL in 'nil' - use it to initialize a few things.
-      _lisp->_Roots._AllObjectFiles.store(nil);
-    }
+        _lisp->_Roots._AllObjectFiles.store(nil);
+      }
     
     //
     // Initialize the JITDylibs
     // We can't use gc::As<xxx>(...) at this point because we are working in the snapshot save/load buffer
     //  and the headers aren't the same as in main memory
     //
-    core::T_sp tjit = ::_lisp->_Roots._ClaspJIT;
-    llvmo::ClaspJIT_sp jit;
-    if (tjit.notnilp()) {
-      jit = gc::As_unsafe<llvmo::ClaspJIT_sp>(tjit);
-      core::T_sp cur = ::_lisp->_Roots._JITDylibs.load();
-      while (cur.consp()) {
-        llvmo::JITDylib_sp dy = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
-        jit->registerJITDylibAfterLoad(&*dy);
-        if (dy->_Id == 0) {
-          printf("%s:%d:%s The JITDylib _Id must NOT be zero - that is reserved for the main JITDylib !!!  Instead it is: %lu\n", __FILE__, __LINE__, __FUNCTION__, dy->_Id);
-          abort();
+      core::T_sp tjit = ::_lisp->_Roots._ClaspJIT;
+      llvmo::ClaspJIT_sp jit;
+      if (tjit.notnilp()) {
+        jit = gc::As_unsafe<llvmo::ClaspJIT_sp>(tjit);
+        core::T_sp cur = ::_lisp->_Roots._JITDylibs.load();
+        while (cur.consp()) {
+          llvmo::JITDylib_sp dy = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
+          jit->registerJITDylibAfterLoad(&*dy);
+          if (dy->_Id == 0) {
+            printf("%s:%d:%s The JITDylib _Id must NOT be zero - that is reserved for the main JITDylib !!!  Instead it is: %lu\n", __FILE__, __LINE__, __FUNCTION__, dy->_Id);
+            abort();
+          }
+          cur = CONS_CDR(cur);
         }
-        cur = CONS_CDR(cur);
+      } else {
+        printf("%s:%d:%s Could not find the LLJIT!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
+        abort();
       }
-    } else {
-      printf("%s:%d:%s Could not find the LLJIT!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
-      abort();
-    }
 
-    std::vector<CodeFixup_t> codeFixups;
+      std::vector<CodeFixup_t> codeFixups;
     
-    size_t countNullObjects = 0;
-    size_t objectFileCount = 0;
-    for ( cur_header = start_header; cur_header->_Kind != End; ) {
-      DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );
-      if (cur_header->_Kind == General) {
-        ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
-        gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
-        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader+1);
-        gctools::clasp_ptr_t clientEnd = clientStart + generalHeader->_Size;
-        snapshot_save_load_init_s init(&generalHeader->_Header,clientStart,clientEnd);
-        DBG_SL_ALLOCATE(BF("  source_header %p  stamp: %u  size: %lu kind: %s\n")
-                        % (void*) source_header
-                        % generalHeader->_stamp_wtag_mtag._value
-                        % generalHeader->_Size
-                        % source_header->description().c_str());
-        if (source_header == lisp_source_header) {
-//          printf("%s:%d:%s About to skip allocation of the Lisp_O object - this is just for information - delete this message\n", __FILE__, __LINE__, __FUNCTION__ );
-        } else if (source_header == nil_source_header) {
-          // Skip the NIL object we handled above
-          countNullObjects++; // It's a Null_O object but its header has been obliterated by a fwd
-        } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
+      size_t countNullObjects = 0;
+      size_t objectFileCount = 0;
+      std::map<gctools::Header_s*,char*> objectFileForwards;
+      {
+      // Link all the code objects
+        MaybeTimeStartup time5("Object file linking");
+        for ( cur_header = start_header; cur_header->_Kind != End; ) {
+          DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );
+          if (cur_header->_Kind == General) {
+            ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
+            gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
+            gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader+1);
+            gctools::clasp_ptr_t clientEnd = clientStart + generalHeader->_Size;
+            snapshot_save_load_init_s init(&generalHeader->_Header,clientStart,clientEnd);
+            DBG_SL_ALLOCATE(BF("  source_header %p  stamp: %u  size: %lu kind: %s\n")
+                            % (void*) source_header
+                            % generalHeader->_stamp_wtag_mtag._value
+                            % generalHeader->_Size
+                            % source_header->description().c_str());
+            if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
           // Handle the ObjectFile_O objects - pass them to the LLJIT
-          llvmo::ObjectFile_O* loadedObjectFile = (llvmo::ObjectFile_O*)clientStart;
+              llvmo::ObjectFile_O* loadedObjectFile = (llvmo::ObjectFile_O*)clientStart;
           //
           // Now copy the object file into C++ memory
           //
-          char* loadedObjectFileStart = objectFilesStartAddress + loadedObjectFile->_ObjectFileOffset;
-          size_t of_length = loadedObjectFile->_ObjectFileSize;
-          char* of_start = (char*)malloc(loadedObjectFile->_ObjectFileSize);
-          memcpy((void*)of_start, loadedObjectFileStart, of_length );
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to pass LLJIT ObjectFile_O @ %p  startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
-                                    __FILE__, __LINE__, __FUNCTION__,
-                                    loadedObjectFile,
-                                    loadedObjectFile->_ObjectId,
-                                    loadedObjectFile->_ObjectFileOffset,
-                                    loadedObjectFile->_ObjectFileSize,
-                                    of_start ));
-          llvm::StringRef sbuffer((const char*)of_start, of_length);
-          std::string uniqueName = llvmo::uniqueMemoryBufferName("of",loadedObjectFile->_ObjectId, loadedObjectFile->_ObjectFileSize );
-          llvm::StringRef name(uniqueName);
-          std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
-          loadedObjectFile->_MemoryBuffer.reset();
-          loadedObjectFile->_MemoryBuffer = std::move(memoryBuffer);
-          llvmo::Code_sp oldCode = loadedObjectFile->_Code;
+              char* loadedObjectFileStart = objectFilesStartAddress + loadedObjectFile->_ObjectFileOffset;
+              size_t of_length = loadedObjectFile->_ObjectFileSize;
+              char* of_start = (char*)malloc(loadedObjectFile->_ObjectFileSize);
+              memcpy((void*)of_start, loadedObjectFileStart, of_length );
+              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to pass LLJIT ObjectFile_O @ %p  startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
+                                        __FILE__, __LINE__, __FUNCTION__,
+                                        loadedObjectFile,
+                                        loadedObjectFile->_ObjectId,
+                                        loadedObjectFile->_ObjectFileOffset,
+                                        loadedObjectFile->_ObjectFileSize,
+                                        of_start ));
+              llvm::StringRef sbuffer((const char*)of_start, of_length);
+              std::string uniqueName = llvmo::uniqueMemoryBufferName("of",loadedObjectFile->_ObjectId, loadedObjectFile->_ObjectFileSize );
+              llvm::StringRef name(uniqueName);
+              std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
+              loadedObjectFile->_MemoryBuffer.reset();
+              loadedObjectFile->_MemoryBuffer = std::move(memoryBuffer);
+              llvmo::Code_sp oldCode = loadedObjectFile->_Code;
           // Allocate a new ObjectFile_O
-          core::T_sp tallocatedObjectFile = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
-          llvmo::ObjectFile_sp allocatedObjectFile = gc::As<llvmo::ObjectFile_sp>(tallocatedObjectFile);
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to pass a freshly allocated ObjectFile_sp %p to the LLJIT\n"
-                                    "!!!!    The unix object file is at %p size: %lu\n"
-                                    "!!!!   - when we get it back in ClaspReturnObjectBuffer will it be at the same place?\n"
-                                    "!!!!     Turn on DEBUG_OBJECT_FILES to find out where ClaspReturnObjectBuffer sees the object file\n"
-                                    ,
-                                    __FILE__, __LINE__, __FUNCTION__,
-                                    (void*)allocatedObjectFile.raw_(),
-                                    of_start, of_length ));
-          jit->addObjectFile(allocatedObjectFile->asSmartPtr(),false);
-          core::T_mv startupName = core::core__startup_linkage_shutdown_names(allocatedObjectFile->_ObjectId,_Nil<core::T_O>());
-          core::String_sp str = gc::As<core::String_sp>(startupName);
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s I added the ObjectFile to the LLJIT - startupName: %s  --- what do I do to get the code\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(str).c_str() ));
-          void* ptr;
+              core::T_sp tallocatedObjectFile = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
+              llvmo::ObjectFile_sp allocatedObjectFile = gc::As<llvmo::ObjectFile_sp>(tallocatedObjectFile);
+              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to pass a freshly allocated ObjectFile_sp %p to the LLJIT\n"
+                                        "!!!!    The unix object file is at %p size: %lu\n"
+                                        "!!!!   - when we get it back in ClaspReturnObjectBuffer will it be at the same place?\n"
+                                        "!!!!     Turn on DEBUG_OBJECT_FILES to find out where ClaspReturnObjectBuffer sees the object file\n"
+                                        ,
+                                        __FILE__, __LINE__, __FUNCTION__,
+                                        (void*)allocatedObjectFile.raw_(),
+                                        of_start, of_length ));
+              jit->addObjectFile(allocatedObjectFile->asSmartPtr(),false);
+              core::T_mv startupName = core::core__startup_linkage_shutdown_names(allocatedObjectFile->_ObjectId,_Nil<core::T_O>());
+              core::String_sp str = gc::As<core::String_sp>(startupName);
+              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s I added the ObjectFile to the LLJIT - startupName: %s  --- what do I do to get the code\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(str).c_str() ));
+              void* ptr;
           //
           // Everything after this will have to change when we do multicore startup.
           // lookup will cause multicore linking and with multicore linking we have to do things after this in a thread safe way
-          bool found = jit->do_lookup( *allocatedObjectFile->_JITDylib->wrappedPtr(), str->get_std_string(), ptr );
-          if (!found) {
-            printf("%s:%d:%s Could not find startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str() );
-            abort();
-          }
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ClaspReturnObjectBuffer modified our current ObjectFile_O object\n"
-                                    "!!!!     We want to get the ObjectFile_O->_Code object and use that as the forward pointer for the\n"
-                                    "!!!!     Code_O object @ %p that was in the ObjectFile_O object BEFORE we called jit->addObjectFile\n"
-                                    "!!!!     After jit->addObjectFile the ObjectFile_O->_Code is %p\n"
-                                    ,
-                                    __FILE__, __LINE__, __FUNCTION__,
-                                    oldCode.raw_(),
-                                    allocatedObjectFile->_Code.raw_()));
+              bool found = jit->do_lookup( *allocatedObjectFile->_JITDylib->wrappedPtr(), str->get_std_string(), ptr );
+              if (!found) {
+                printf("%s:%d:%s Could not find startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str() );
+                abort();
+              }
+              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ClaspReturnObjectBuffer modified our current ObjectFile_O object\n"
+                                        "!!!!     We want to get the ObjectFile_O->_Code object and use that as the forward pointer for the\n"
+                                        "!!!!     Code_O object @ %p that was in the ObjectFile_O object BEFORE we called jit->addObjectFile\n"
+                                        "!!!!     After jit->addObjectFile the ObjectFile_O->_Code is %p\n"
+                                        ,
+                                        __FILE__, __LINE__, __FUNCTION__,
+                                        oldCode.raw_(),
+                                        allocatedObjectFile->_Code.raw_()));
 //          core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
-          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
-          DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
-                          % (void*) obj.raw_()
-                          % (void*)fwd);
-          set_forwarding_pointer(source_header,((char*)fwd), &islInfo );
-          root_holder.add((void*)allocatedObjectFile.raw_());
+              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
+              DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
+                              % (void*) obj.raw_()
+                              % (void*)fwd);
+              objectFileForwards[source_header] = (char*)fwd;
+            // set_forwarding_pointer(source_header,((char*)fwd), &islInfo );
+              root_holder.add((void*)allocatedObjectFile.raw_());
           //
           // Now set the new code pointer as the forward for the oldCode object
           //
-          core::T_sp code = allocatedObjectFile->_Code;
-          if (code == oldCode) {
-            printf("%s:%d:%s Something is wrong - the new code %p is the same as the old code %p\n",
-                   __FILE__, __LINE__, __FUNCTION__,
-                   (void*)code.raw_(), (void*)oldCode.raw_() );
+              core::T_sp code = allocatedObjectFile->_Code;
+              if (code == oldCode) {
+                printf("%s:%d:%s Something is wrong - the new code %p is the same as the old code %p\n",
+                       __FILE__, __LINE__, __FUNCTION__,
+                       (void*)code.raw_(), (void*)oldCode.raw_() );
+              }
+              root_holder.add((void*)code.raw_());
+              codeFixups.emplace_back(CodeFixup_t((llvmo::Code_O*)oldCode.unsafe_general(),((llvmo::Code_O*)code.unsafe_general())));
+              if (global_debugSnapshot) {
+                printf("%s:%d:%s Passed     ObjectFile_sp %p Code_sp %p  %lu/%lu to LLJIT\n",
+                       __FILE__, __LINE__, __FUNCTION__,
+                       allocatedObjectFile.raw_(),
+                       code.raw_(),
+                       objectFileCount,
+                       fileHeader->_ObjectFileCount );
+              }
+              llvmo::Code_sp ccode = gc::As<llvmo::Code_sp>(code);
+              if (ccode->_TextSectionStart == NULL) {
+                printf("%s:%d:%s The Code_sp %p object has NULL for the _TextSectionStart\n",
+                       __FILE__, __LINE__, __FUNCTION__,
+                       ccode.raw_());
+              }
+              objectFileCount++;
+            }
           }
-          root_holder.add((void*)code.raw_());
-          codeFixups.emplace_back(CodeFixup_t((llvmo::Code_O*)oldCode.unsafe_general(),((llvmo::Code_O*)code.unsafe_general())));
-          if (global_debugSnapshot) {
-            printf("%s:%d:%s Passed     ObjectFile_sp %p Code_sp %p  %lu/%lu to LLJIT\n",
-                   __FILE__, __LINE__, __FUNCTION__,
-                   allocatedObjectFile.raw_(),
-                   code.raw_(),
-                   objectFileCount,
-                   fileHeader->_ObjectFileCount );
-          }
-          llvmo::Code_sp ccode = gc::As<llvmo::Code_sp>(code);
-          if (ccode->_TextSectionStart == NULL) {
-            printf("%s:%d:%s The Code_sp %p object has NULL for the _TextSectionStart\n",
-                   __FILE__, __LINE__, __FUNCTION__,
-                   ccode.raw_());
-          }
-          objectFileCount++;
-        } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O) ) {
+          next_header = cur_header->next(cur_header->_Kind);
+          size_t size = cur_header->_Size;
+          DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
+          cur_header = next_header;
+        }
+      }
+      {
+      // Allocate all other objects
+        MaybeTimeStartup time6("Allocate objects");
+        for ( cur_header = start_header; cur_header->_Kind != End; ) {
+          DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );
+          if (cur_header->_Kind == General) {
+            ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
+            gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
+            gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader+1);
+            gctools::clasp_ptr_t clientEnd = clientStart + generalHeader->_Size;
+            snapshot_save_load_init_s init(&generalHeader->_Header,clientStart,clientEnd);
+            DBG_SL_ALLOCATE(BF("  source_header %p  stamp: %u  size: %lu kind: %s\n")
+                            % (void*) source_header
+                            % generalHeader->_stamp_wtag_mtag._value
+                            % generalHeader->_Size
+                            % source_header->description().c_str());
+            if (source_header == lisp_source_header) {
+//          printf("%s:%d:%s About to skip allocation of the Lisp_O object - this is just for information - delete this message\n", __FILE__, __LINE__, __FUNCTION__ );
+            } else if (source_header == nil_source_header) {
+          // Skip the NIL object we handled above
+              countNullObjects++; // It's a Null_O object but its header has been obliterated by a fwd
+            } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
+            // Set the forwarding pointer defined above.
+              gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_Header;
+              char* fwd = objectFileForwards[source_header];
+              set_forwarding_pointer( source_header, fwd, &islInfo );
+            } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O) ) {
           // Don't do anything with Code_O objects - they are create by the ObjectFile_O objects
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
-        } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Null_O) ) {
+              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
+            } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Null_O) ) {
           // Don't do anything with the only Null_O object - it was allocated above when we fished it out
           // of the Lisp_O object and allocated it.
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Null_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
-          countNullObjects++;
-        } else {
-          core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
-          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-          DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
-                          % (void*) obj.raw_()
-                          % (void*)fwd);
-          set_forwarding_pointer(source_header,((char*)fwd), &islInfo);
-          root_holder.add((void*)obj.raw_());
-        }
-      } else if (cur_header->_Kind == Cons ) {
-        ISLConsHeader_s* consHeader = (ISLConsHeader_s*)cur_header;
-        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(consHeader+1);
-        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
-        gctools::Header_s* header = consHeader->header();
-        core::Cons_O* cons = (core::Cons_O*)clientStart;
-        auto obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::snapshot_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
-        gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-        DBG_SL_ALLOCATE(BF("---- Allocated Cons %p copy from %p header: %p  set fwd to %p\n")
-                        % (void*)obj.raw_()
-                        % (void*) header
-                        % (void*)clientStart % (void*)fwd );
-        set_forwarding_pointer(header,((char*)fwd), &islInfo);
-        root_holder.add((void*)obj.raw_());
-      } else if (cur_header->_Kind == Weak ) {
-        ISLWeakHeader_s* weakHeader = (ISLWeakHeader_s*)cur_header;
-        gctools::Header_s* header = (gctools::Header_s*)&weakHeader->_Header;
-        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(weakHeader+1);
-        gctools::clasp_ptr_t clientEnd = clientStart + weakHeader->_Size;
-        snapshot_save_load_init_s init(header,clientStart,clientEnd);
-        gctools::Header_s::WeakKinds kind = (gctools::Header_s::WeakKinds)header->_stamp_wtag_mtag._value;
-        switch (kind) {
+              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Null_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
+              countNullObjects++;
+            } else {
+              core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
+              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
+                              % (void*) obj.raw_()
+                              % (void*)fwd);
+              set_forwarding_pointer(source_header,((char*)fwd), &islInfo);
+              root_holder.add((void*)obj.raw_());
+            }
+          } else if (cur_header->_Kind == Cons ) {
+            ISLConsHeader_s* consHeader = (ISLConsHeader_s*)cur_header;
+            gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(consHeader+1);
+            gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
+            gctools::Header_s* header = consHeader->header();
+            core::Cons_O* cons = (core::Cons_O*)clientStart;
+            auto obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::snapshot_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
+            gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+            DBG_SL_ALLOCATE(BF("---- Allocated Cons %p copy from %p header: %p  set fwd to %p\n")
+                            % (void*)obj.raw_()
+                            % (void*) header
+                            % (void*)clientStart % (void*)fwd );
+            set_forwarding_pointer(header,((char*)fwd), &islInfo);
+            root_holder.add((void*)obj.raw_());
+          } else if (cur_header->_Kind == Weak ) {
+            ISLWeakHeader_s* weakHeader = (ISLWeakHeader_s*)cur_header;
+            gctools::Header_s* header = (gctools::Header_s*)&weakHeader->_Header;
+            gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(weakHeader+1);
+            gctools::clasp_ptr_t clientEnd = clientStart + weakHeader->_Size;
+            snapshot_save_load_init_s init(header,clientStart,clientEnd);
+            gctools::Header_s::WeakKinds kind = (gctools::Header_s::WeakKinds)header->_stamp_wtag_mtag._value;
+            switch (kind) {
 #if 1
-        case gctools::Header_s::WeakBucketKind: {
-          auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
-          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-          DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
-                          % (void*) obj.raw_()
-                          % (void*) header
-                          % (uintptr_t)kind
-                          % (void*)fwd );
-          set_forwarding_pointer(header,((char*)fwd), &islInfo);
-          root_holder.add((void*)obj.raw_());
-          break;
-        }
-        case gctools::Header_s::StrongBucketKind: {
-          auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
-          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-          DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
-                          % (void*) obj.raw_()
-                          % (void*) header
-                          % (uintptr_t)kind
-                          % (void*)fwd );
-          set_forwarding_pointer(header,((char*)fwd), &islInfo);
-          root_holder.add((void*)obj.raw_());
-          break;
-        }
+            case gctools::Header_s::WeakBucketKind: {
+              auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
+              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
+                              % (void*) obj.raw_()
+                              % (void*) header
+                              % (uintptr_t)kind
+                              % (void*)fwd );
+              set_forwarding_pointer(header,((char*)fwd), &islInfo);
+              root_holder.add((void*)obj.raw_());
+              break;
+            }
+            case gctools::Header_s::StrongBucketKind: {
+              auto obj = gctools::GCBucketAllocator<gctools::Buckets<core::T_sp,core::T_sp,gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
+              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
+                              % (void*) obj.raw_()
+                              % (void*) header
+                              % (uintptr_t)kind
+                              % (void*)fwd );
+              set_forwarding_pointer(header,((char*)fwd), &islInfo);
+              root_holder.add((void*)obj.raw_());
+              break;
+            }
 #endif
 #if 0
-        case gctools::Header_s::WeakMappingKind: {
-          auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
-          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-          DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
-                          % (void*) obj.raw_()
-                          % (void*) header
-                          % (uintptr_t)kind
-                          % (void*)fwd );
-          set_forwarding_pointer(header,((void*)fwd),this->_info);
-          root_holder.add((void*)obj.raw_());
-          break;
-        }
-        case gctools::Header_s::StrongBucketKind: {
-          auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
-          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-          DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
-                          % (void*) obj.raw_()
-                          % (void*) header
-                          % (uintptr_t)kind
-                          % (void*)fwd );
-          set_forwarding_pointer(header,((void*)fwd),this->_info);
-          root_holder.add((void*)obj.raw_());
-          break;
-        }
+            case gctools::Header_s::WeakMappingKind: {
+              auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::WeakLinks>>::snapshot_save_load_allocate(&init);
+              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
+                              % (void*) obj.raw_()
+                              % (void*) header
+                              % (uintptr_t)kind
+                              % (void*)fwd );
+              set_forwarding_pointer(header,((void*)fwd),this->_info);
+              root_holder.add((void*)obj.raw_());
+              break;
+            }
+            case gctools::Header_s::StrongBucketKind: {
+              auto obj = gctools::GCMappingAllocator<gctools::Mapping<core::T_sp,core::T_sp,gctools::StrongLinks>>::snapshot_save_load_allocate(&init);
+              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu fwd: %p\n")
+                              % (void*) obj.raw_()
+                              % (void*) header
+                              % (uintptr_t)kind
+                              % (void*)fwd );
+              set_forwarding_pointer(header,((void*)fwd),this->_info);
+              root_holder.add((void*)obj.raw_());
+              break;
+            }
 #endif
 #if 0
-        case gctools::Header_s::WeakPointerKind: {
-          auto obj = gctools::GCWeakPointerAllocator<gctools::WeakPointer>::snapshot_save_load_allocate(&init);
-          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-          DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
-                          % (void*) obj.raw_()
-                          % (void*) header
-                          % (uintptr_t)kind
-                          % (void*)fwd );
-          set_forwarding_pointer(header,((void*)fwd),this->_info);
-          root_holder.add((void*)obj.raw_());
-          break;
-        }
+            case gctools::Header_s::WeakPointerKind: {
+              auto obj = gctools::GCWeakPointerAllocator<gctools::WeakPointer>::snapshot_save_load_allocate(&init);
+              gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+              DBG_SL_ALLOCATE(BF("allocated weak %p header: %p stamp: %lu  fwd: %p\n")
+                              % (void*) obj.raw_()
+                              % (void*) header
+                              % (uintptr_t)kind
+                              % (void*)fwd );
+              set_forwarding_pointer(header,((void*)fwd),this->_info);
+              root_holder.add((void*)obj.raw_());
+              break;
+            }
 #endif
-        default:
-            printf("%s:%d:%s  Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__ );
-            break;
+            default:
+                printf("%s:%d:%s  Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__ );
+                break;
+            }
+          } else {
+            printf("%s:%d:%s Unknown header at offset 0x%lx qword: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, (uintptr_t)cur_header - (uintptr_t)fileHeader, *(uintptr_t*)cur_header );
+          }
+          next_header = cur_header->next(cur_header->_Kind);
+          size_t size = cur_header->_Size;
+          DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
+          cur_header = next_header;
         }
-      } else {
-        printf("%s:%d:%s Unknown header at offset 0x%lx qword: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, (uintptr_t)cur_header - (uintptr_t)fileHeader, *(uintptr_t*)cur_header );
       }
-      next_header = cur_header->next(cur_header->_Kind);
-      size_t size = cur_header->_Size;
-      DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
-      cur_header = next_header;
-    }
 
     //
     // Fixup all the code objects now
     //
-    for ( size_t idx = 0; idx<codeFixups.size(); idx++ ) {
-      llvmo::Code_O* oldCodeClient = codeFixups[idx]._oldCode;
-      llvmo::Code_O* newCodeClient = codeFixups[idx]._newCode;
+      for ( size_t idx = 0; idx<codeFixups.size(); idx++ ) {
+        llvmo::Code_O* oldCodeClient = codeFixups[idx]._oldCode;
+        llvmo::Code_O* newCodeClient = codeFixups[idx]._newCode;
       //
       // This is where we move the literals and change the state of the new code
       //
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  Fixup code old: %p new: %p  new literals start %p  size: %lu\n",
-                                __FILE__, __LINE__, __FUNCTION__,
-                                oldCodeClient, newCodeClient,
-                                (void*)newCodeClient->literalsStart(),
-                                newCodeClient->literalsSize() ));
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s This is where I would copy the literals from the oldCodeClient to the newCodeClient\n", __FILE__, __LINE__, __FUNCTION__ ));
-      if (oldCodeClient->_State != llvmo::SaveState) {
-        printf("%s:%d:%s The oldCodeClient at %p must be in SaveState\n", __FILE__, __LINE__, __FUNCTION__, oldCodeClient );
-        abort();
-      }
-      if (newCodeClient->_State != llvmo::RunState) {
-        printf("%s:%d:%s The newCodeClient at %p must be in RunState\n", __FILE__, __LINE__, __FUNCTION__, newCodeClient );
-        abort();
-      }
-      if (oldCodeClient->literalsSize() != newCodeClient->literalsSize() ) {
-        printf("%s:%d:%s The oldCodeClient at %p has literalsSize() %lu and the newCodeClient at %p has literalsSize() %lu - the do not match and they must match\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               oldCodeClient, oldCodeClient->literalsSize(),
-               newCodeClient, newCodeClient->literalsSize() );
-        abort();
-      }
-      uintptr_t newCodeLiteralsStart = (uintptr_t)newCodeClient->literalsStart();
-      uintptr_t newCodeLiteralsEnd = (uintptr_t)newCodeClient->literalsStart() + newCodeClient->literalsSize();
-      uintptr_t newCodeDataStart = (uintptr_t)&newCodeClient->_DataCode[0];
-      uintptr_t newCodeDataEnd = (uintptr_t)&newCodeClient->_DataCode[newCodeClient->_DataCode.size()];
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  Fixup code old: %p new: %p  new literals start %p  size: %lu\n",
+                                  __FILE__, __LINE__, __FUNCTION__,
+                                  oldCodeClient, newCodeClient,
+                                  (void*)newCodeClient->literalsStart(),
+                                  newCodeClient->literalsSize() ));
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s This is where I would copy the literals from the oldCodeClient to the newCodeClient\n", __FILE__, __LINE__, __FUNCTION__ ));
+        if (oldCodeClient->_State != llvmo::SaveState) {
+          printf("%s:%d:%s The oldCodeClient at %p must be in SaveState\n", __FILE__, __LINE__, __FUNCTION__, oldCodeClient );
+          abort();
+        }
+        if (newCodeClient->_State != llvmo::RunState) {
+          printf("%s:%d:%s The newCodeClient at %p must be in RunState\n", __FILE__, __LINE__, __FUNCTION__, newCodeClient );
+          abort();
+        }
+        if (oldCodeClient->literalsSize() != newCodeClient->literalsSize() ) {
+          printf("%s:%d:%s The oldCodeClient at %p has literalsSize() %lu and the newCodeClient at %p has literalsSize() %lu - the do not match and they must match\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 oldCodeClient, oldCodeClient->literalsSize(),
+                 newCodeClient, newCodeClient->literalsSize() );
+          abort();
+        }
+        uintptr_t newCodeLiteralsStart = (uintptr_t)newCodeClient->literalsStart();
+        uintptr_t newCodeLiteralsEnd = (uintptr_t)newCodeClient->literalsStart() + newCodeClient->literalsSize();
+        uintptr_t newCodeDataStart = (uintptr_t)&newCodeClient->_DataCode[0];
+        uintptr_t newCodeDataEnd = (uintptr_t)&newCodeClient->_DataCode[newCodeClient->_DataCode.size()];
       
-      if (oldCodeClient->literalsSize() != 0 &&
-          !( newCodeDataStart <= newCodeLiteralsStart
-             && newCodeLiteralsEnd <= newCodeDataEnd ) ) {
-        printf("%s:%d:%s The newCodeClient literals range %p - %p must be within the bounds of the newCodeClient data range %p - %p and it is not\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               (void*)newCodeLiteralsStart,
-               (void*)newCodeLiteralsEnd,
-               (void*)newCodeDataStart,
-               (void*)newCodeDataEnd );
-        abort();
-      }
+        if (oldCodeClient->literalsSize() != 0 &&
+            !( newCodeDataStart <= newCodeLiteralsStart
+               && newCodeLiteralsEnd <= newCodeDataEnd ) ) {
+          printf("%s:%d:%s The newCodeClient literals range %p - %p must be within the bounds of the newCodeClient data range %p - %p and it is not\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 (void*)newCodeLiteralsStart,
+                 (void*)newCodeLiteralsEnd,
+                 (void*)newCodeDataStart,
+                 (void*)newCodeDataEnd );
+          abort();
+        }
       //
       // Finally, finally, finally - we copy the oldCodeClient literal vector into the newCodeClient literal vector.
       //
-      if (oldCodeClient->literalsSize()!=0) {
-        memcpy( (void*)newCodeLiteralsStart, (void*)oldCodeClient->literalsStart(), newCodeClient->literalsSize() );
-      }
+        if (oldCodeClient->literalsSize()!=0) {
+          memcpy( (void*)newCodeLiteralsStart, (void*)oldCodeClient->literalsStart(), newCodeClient->literalsSize() );
+        }
       //
       // Now set the forwarding pointer from the oldCode object to the newCodeClient
       //
-      gctools::Header_s* oldCode_source_header = GENERAL_PTR_TO_HEADER_PTR(oldCodeClient);
-      set_forwarding_pointer(oldCode_source_header,((char*)newCodeClient), &islInfo );
-      DBG_SL_FWD(BF("setFwdPointer code header %p new_addr -> %p  reread fwdPointer -> %p\n")
-                 % (void*)oldCode_source_header % (void*)newCodeClient % (void*)forwarding_pointer(oldCode_source_header,&islInfo));
-    }
+        gctools::Header_s* oldCode_source_header = GENERAL_PTR_TO_HEADER_PTR(oldCodeClient);
+        set_forwarding_pointer(oldCode_source_header,((char*)newCodeClient), &islInfo );
+        DBG_SL_FWD(BF("setFwdPointer code header %p new_addr -> %p  reread fwdPointer -> %p\n")
+                   % (void*)oldCode_source_header % (void*)newCodeClient % (void*)forwarding_pointer(oldCode_source_header,&islInfo));
+      }
     
-    if (countNullObjects!=1) {
-      printf("%s:%d:%s The number of Null_O objects in the loaded snapshot must be exactly 1(one) - it is: %lu\n"
-             "This means that more than one Null_O objects was saved at snapshot save time - that's wrong wrong wrong\n"
-             "Figure out why there are more than one Null_O objects\n", __FILE__, __LINE__, __FUNCTION__, countNullObjects);
-      abort();
+      if (countNullObjects!=1) {
+        printf("%s:%d:%s The number of Null_O objects in the loaded snapshot must be exactly 1(one) - it is: %lu\n"
+               "This means that more than one Null_O objects was saved at snapshot save time - that's wrong wrong wrong\n"
+               "Figure out why there are more than one Null_O objects\n", __FILE__, __LINE__, __FUNCTION__, countNullObjects);
+        abort();
+      }
+      DBG_SL(BF("Done working with all objects cur_header@%p\n") % (void*)cur_header );
     }
-    DBG_SL(BF("Done working with all objects cur_header@%p\n") % (void*)cur_header );
-  }
 
   //
   // Ensure all isl buffer objects are forwarding
   //
-  {
-    ensure_forward_t ensure_forward( &islInfo );
-    walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,ensure_forward);
-  }
+    {
+      ensure_forward_t ensure_forward( &islInfo );
+      walk_snapshot_save_load_objects((ISLHeader_s*)islbuffer,ensure_forward);
+    }
   
   //
   // Walk all the objects and fixup all the pointers
   //
-  DBG_SL(BF("======================= fixup pointers\n"));
-  {
-    fixup_objects_t fixup_objects( LoadOp, (gctools::clasp_ptr_t)islbuffer, &islInfo );
-    globalPointerFix = maybe_follow_forwarding_pointer;
-    walk_temporary_root_objects(root_holder,fixup_objects);
-  }
+    DBG_SL(BF("======================= fixup pointers\n"));
+    {
+      fixup_objects_t fixup_objects( LoadOp, (gctools::clasp_ptr_t)islbuffer, &islInfo );
+      globalPointerFix = maybe_follow_forwarding_pointer;
+      walk_temporary_root_objects(root_holder,fixup_objects);
+    }
 
   //
   // Fixup the roots
   //
-  {
-    gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
+    {
+      gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
 //    followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount, (void*)&islInfo );
 //    copyRoots((uintptr_t*)&_lisp, (uintptr_t*)lispRoot, fileHeader->_LispRootCount );
-    gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
-    copyRoots((uintptr_t*)&gctools::global_core_symbols[0], (uintptr_t*)coreSymbolRoots, fileHeader->_CoreSymbolRootsCount );
-    gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo );
-    copyRoots((uintptr_t*)&global_symbols[0], (uintptr_t*)symbolRoots, fileHeader->_SymbolRootsCount );
-  }
+      gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
+      followForwardingPointersForRoots( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
+      copyRoots((uintptr_t*)&gctools::global_core_symbols[0], (uintptr_t*)coreSymbolRoots, fileHeader->_CoreSymbolRootsCount );
+      gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
+      followForwardingPointersForRoots( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo );
+      copyRoots((uintptr_t*)&global_symbols[0], (uintptr_t*)symbolRoots, fileHeader->_SymbolRootsCount );
+    }
 
 //  printf("%s:%d:%s Number of fixup._libraries %lu\n", __FILE__, __LINE__, __FUNCTION__, fixup._libraries.size() );
-  fixup_internals_t  internals( &fixup, &islInfo );
-  walk_temporary_root_objects( root_holder, internals );
+    fixup_internals_t  internals( &fixup, &islInfo );
+    walk_temporary_root_objects( root_holder, internals );
 
   //
   // Release the temporary roots
   //
 #if 0
-  printf("%s:%d:%s Not releasing temporary roots\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s Not releasing temporary roots\n", __FILE__, __LINE__, __FUNCTION__ );
 #else
-  root_holder.release();
+    root_holder.release();
 #endif
 
   //
   // munmap the memory
   //
 #if 0
-  printf("%s:%d:%s Not munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s Not munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
   // Fill it with 0xc0
 //  memset(memory,0xc0,fsize);
 #else  
 //  printf("%s:%d:%s munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
-  if (maybeStartOfSnapshot==NULL) {
-    int res = munmap( memory, fsize );
-    if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
-  } else {
+    if (maybeStartOfSnapshot==NULL) {
+      int res = munmap( memory, fsize );
+      if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
+    } else {
     // It's a copy of the embedded snapshot
-    free(memory);
-  }
+      free(memory);
+    }
 #endif
 
   // 
   // Initialize the main thread
   //  and some other vital objects
   //
-  SYMBOL_EXPORT_SC_(CompPkg,STARthread_local_builtins_moduleSTAR);
+    SYMBOL_EXPORT_SC_(CompPkg,STARthread_local_builtins_moduleSTAR);
   
-  _lisp->initializeMainThread();
-  comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
-  comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(_Nil<core::T_O>());
-  FILE *null_out = fopen("/dev/null", "w");
-  _lisp->_Roots._NullStream = core::IOStreamStream_O::makeIO("/dev/null", null_out);
+    _lisp->initializeMainThread();
+    comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
+    comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(_Nil<core::T_O>());
+    FILE *null_out = fopen("/dev/null", "w");
+    _lisp->_Roots._NullStream = core::IOStreamStream_O::makeIO("/dev/null", null_out);
 
   //
   // Setup the pathname info for wherever the executable was loaded
   //
 //  printf("%s:%d:%s Calling setup_pathname_translations\n", __FILE__, __LINE__, __FUNCTION__);
-  globals_->_Bundle->setup_pathname_translations();
-  core::getcwd(true);                                        // set *default-pathname-defaults*
-  {
-    char* pause_startup = getenv("CLASP_PAUSE_INIT");
-    if (pause_startup) {
+    globals_->_Bundle->setup_pathname_translations();
+    core::getcwd(true);                                        // set *default-pathname-defaults*
+    {
+      char* pause_startup = getenv("CLASP_PAUSE_INIT");
+      if (pause_startup) {
 #if 1
-      gctools::wait_for_user_signal("Paused at startup before all initialization");
+        gctools::wait_for_user_signal("Paused at startup before all initialization");
 #else
-      printf("%s:%d PID = %d Paused after snapshot-load - press enter to continue: \n", __FILE__, __LINE__, getpid() );
-      fflush(stdout);
-      getchar();
+        printf("%s:%d PID = %d Paused after snapshot-load - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+        fflush(stdout);
+        getchar();
 #endif
+      }
     }
   }
   int exitCode;
