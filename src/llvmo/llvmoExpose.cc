@@ -101,7 +101,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/AssemblyAnnotationWriter.h> // will be llvm/IR
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
-#include <llvm/ExecutionEngine/Orc/TargetProcessControl.h>
+#include <llvm/ExecutionEngine/Orc/ExecutorProcessControl.h>
 #include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
 #include <llvm/ExecutionEngine/Orc/TargetProcess/RegisterEHFrames.h>
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
@@ -1063,7 +1063,7 @@ CL_DEFUN void llvm_sys__printModuleToStream(Module_sp module, core::T_sp stream)
 CL_DEFUN void llvm_sys__writeIrToFile(Module_sp module, core::String_sp path) {
   std::error_code errcode;
   string pathName = path->get_std_string();
-  llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
+  llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::OF_None);
   if (errcode) {
     SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % errcode.message());
   }
@@ -1076,7 +1076,7 @@ CL_LAMBDA(module pathname &optional (use-thin-lto t));
 CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pathname, bool useThinLTO) {
   string pn = pathname->get_std_string();
   std::error_code errcode;
-  llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
+  llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::OF_None);
   if (errcode) {
     SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message());
   }
@@ -2248,7 +2248,9 @@ CL_EXTERN_DEFUN((llvm::ConstantInt *(*)(llvm::LLVMContext &)) &llvm::ConstantInt
 
 string ConstantInt_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << this->wrappedPtr()->getValue().toString(10, true) << ">";
+  llvm::SmallString<40> nstr;
+  this->wrappedPtr()->getValue().toString(nstr,10,true);
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << nstr.str().str() << ">";
   return ss.str();
 }
 }; // llvmo
@@ -2406,20 +2408,25 @@ namespace llvmo {
 
 CL_LISPIFY_NAME("toString");
 CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
-  return this->_value._value.toString(radix, isigned);
+  llvm::SmallString<40> istr;
+  this->_value._value.toString(istr,radix, isigned);
+  return istr.str().str();
 }
 
 CL_LAMBDA(api &optional (issigned t))
 CL_LISPIFY_NAME("toInteger");
 CL_DEFUN core::Integer_sp toInteger(APInt_sp api, bool issigned) {
-  string s = api->toString(10,issigned);
-  return core::Integer_O::create(s);
+  llvm::SmallString<40> istr;
+  api->_value._value.toString( istr, 10, issigned);
+  return core::Integer_O::create(istr.str().str());
 }
 
 string APInt_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
-  ss << this->_value._value.toString(10, true);
+  llvm::SmallString<40> istr;
+  this->_value._value.toString(istr,10,true);
+  ss << istr.str().str();
   ss << ">";
   return ss.str();
 }
@@ -4217,7 +4224,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                           keptAlive = true;
                                         } else if ( sname.find(literals_name) != std::string::npos ) {
                                           keptAlive = true;
-#if 0
+#if 1
                                           // I'd like to do this on linux because jit symbols need to be exposed but it slows down startup enormously
                                         } else if ( sname.find("^^") != std::string::npos ) {
                                           // Keep alive mangled symbols that we care about
@@ -4772,7 +4779,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
         auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
         JTMB.setCodeModel(CodeModel::Small);
         JTMB.setRelocationModel(Reloc::Model::PIC_);
-        this->_TPC = ExitOnErr(orc::SelfTargetProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
+        this->_TPC = ExitOnErr(orc::SelfExecutorProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
         auto J = ExitOnErr(
                            LLJITBuilder()
                            .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.

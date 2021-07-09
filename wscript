@@ -1099,6 +1099,12 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
         cfg.env.append_value('INCLUDES', "/usr/local/include" )
+    if (UNWINDER == DEFAULT):
+        if (cfg.env['DEST_OS'] == LINUX_OS ):
+            cfg.env.append_value('LINKFLAGS',"--unwindlib=libgcc")
+            cfg.env.append_value('LINKFLAGS',"--rtlib=libgcc")
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            print("What do I do about --unwindlib/--rtlib")
     if (UNWINDER == LLVM_LIBUNWIND):
         if (cfg.env['DEST_OS'] == LINUX_OS ):
             cfg.env.append_value('LINKFLAGS', "-L%s" % UNWINDER_PATH )

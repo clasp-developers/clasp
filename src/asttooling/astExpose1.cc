@@ -793,8 +793,9 @@ void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core:
 
 core::T_sp af_constant_array_get_size(clang::ConstantArrayType *cat) {
     llvm::APInt size = cat->getSize();
-  string s = size.toString(10,true);
-  return core::Integer_O::create(s);
+    llvm::SmallString<40> svi;
+    size.toString(svi,10,true,false);
+    return core::Integer_O::create(svi.str().str());
 }
 
 
