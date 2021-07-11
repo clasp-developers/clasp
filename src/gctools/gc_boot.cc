@@ -20,9 +20,9 @@
 extern "C" {
 void* obj_skip(void*);
 };
-#define GC_LISP_OBJECT_MARK
-#include "obj_scan.cc"
-#undef GC_LISP_OBJECT_MARK
+# define GC_LISP_OBJECT_MARK
+# include "obj_scan.cc"
+# undef GC_LISP_OBJECT_MARK
 #endif
 
 

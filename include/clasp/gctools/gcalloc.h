@@ -87,7 +87,7 @@ struct GCObjectInitializer<tagged_pointer<OT>, false> {
 #endif // end TAGGED_POINTER
 }
 
-#if defined(USE_BOEHM) || defined(USE_MPS)
+#if defined(USE_BOEHM) || defined(USE_MPS) || defined(USE_MMTK)
 
 #if defined(USE_BOEHM)
 namespace gctools {
@@ -128,149 +128,6 @@ extern void* malloc_kind_error(uintptr_t expected_kind, uintptr_t kind, uintptr_
 #define MAYBE_MONITOR_ALLOC(_alloc_,_sz_) (_alloc_)
 #endif
 
-#if defined(USE_BOEHM)
-# if TAG_BITS==3
-#  define ALIGNED_GC_MALLOC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC(sz),sz)
-#  define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_ATOMIC(sz),sz)
-#  define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_UNCOLLECTABLE(sz),sz)
-#  define ALIGNED_GC_MALLOC_KIND(stmp,sz,knd,kndaddr) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz,knd),sz)
-#  define ALIGNED_GC_MALLOC_STRONG_WEAK_KIND(sz,knd) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz,knd),sz)
-#  define ALIGNED_GC_MALLOC_ATOMIC_KIND(stmp,sz,knd,kndaddr) MAYBE_MONITOR_ALLOC((knd==GC_I_PTRFREE) ? GC_malloc_kind_global(sz,knd) : malloc_kind_error(GC_I_PTRFREE,knd,sz,stmp,kndaddr), sz)
-#  define ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(stmp,sz,knd,kndaddr) MAYBE_MONITOR_ALLOC(GC_generic_malloc_uncollectable(sz,knd),sz)
-# else
-#  error "There is more work to do to support more than 3 tag bits"
-#  define ALIGNED_GC_MALLOC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
-#  define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
-#  define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_VERIFY_ALIGNMENT((void*)gctools::AlignUp((uintptr_t)GC_MALLOC_UNCOLLECTABLE(sz+Alignment())))
-# endif
-#endif
-
-namespace gctools {
-#ifdef USE_BOEHM
-
-template <typename Cons, typename...ARGS>
-inline Cons* do_boehm_cons_allocation(size_t size,ARGS&&... args)
-{ RAII_DISABLE_INTERRUPTS();
-#ifdef USE_PRECISE_GC
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),size,global_cons_kind,&global_cons_kind));
-# ifdef DEBUG_BOEHMPRECISE_ALLOC
-  printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons );
-# endif
-#else
-  Header_s::StampWtagMtag* header = reinterpret_cast<Header_s::StampWtagMtag*>(ALIGNED_GC_MALLOC(size));
-#endif
-  Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
-  new (header) Header_s::StampWtagMtag(cons);
-  new (cons) Cons(std::forward<ARGS>(args)...);
-  return cons;
-}
-
-
-inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
-{
-  RAII_DISABLE_INTERRUPTS();
-  size_t true_size = size;
-#ifdef DEBUG_GUARD
-  size_t tail_size = ((rand()%8)+1)*Alignment();
-  true_size += tail_size;
-#endif
-#ifdef USE_PRECISE_GC
-  uintptr_t stamp = the_header.stamp();
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC_KIND(stamp,true_size,global_stamp_layout[stamp].boehm._kind,&global_stamp_layout[stamp].boehm._kind));
-#else
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
-#endif
-  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
-#ifdef DEBUG_GUARD
-  memset(header,0x00,true_size);
-  new (header) Header_s(the_header,size,tail_size,true_size);
-#else
-  new (header) Header_s(the_header);
-#endif
-  return header;
-};
-#endif
-
-#ifdef USE_BOEHM
-inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
-{
-  RAII_DISABLE_INTERRUPTS();
-  size_t true_size = size;
-#ifdef USE_PRECISE_GC
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
-//   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_STRONG_WEAK_KIND_ATOMIC(true_size,global_strong_weak_kind));
-#else
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
-#endif
-  my_thread_low_level->_Allocations.registerWeakAllocation(the_header._value,true_size);
-#ifdef DEBUG_GUARD
-  memset(header,0x00,true_size);
-  new (header) Header_s(the_header,0,0,true_size);
-#else
-  new (header) Header_s(the_header);
-#endif
-  return header;
-};
-#endif
-
-#ifdef USE_BOEHM
-inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_header,  size_t size) 
-{
-  RAII_DISABLE_INTERRUPTS();
-  size_t true_size = size;
-#ifdef DEBUG_GUARD
-  size_t tail_size = ((rand()%8)+1)*Alignment();
-  true_size += tail_size;
-#endif
-#ifdef USE_PRECISE_GC
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(the_header.stamp(),true_size,global_stamp_layout[the_header.stamp()].boehm._kind,&global_stamp_layout[the_header.stamp()].boehm._kind));
-# ifdef DEBUG_BOEHMPRECISE_ALLOC
-  printf("%s:%d:%s header = %p\n", __FILE__, __LINE__, __FUNCTION__, header );
-# endif
-#else
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC(true_size));
-#endif
-  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
-#ifdef DEBUG_GUARD
-  memset(header,0x00,true_size);
-  new (header) Header_s(the_header,size,tail_size,true_size);
-#else
-  new (header) Header_s(the_header);
-#endif
-  return header;
-};
-#endif
-
-
-
-#ifdef USE_BOEHM
-inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
-{
-  RAII_DISABLE_INTERRUPTS();
-  size_t true_size = size;
-#ifdef DEBUG_GUARD
-  size_t tail_size = ((rand()%8)+1)*Alignment();
-  true_size += tail_size;
-#endif
-#ifdef USE_PRECISE_GC
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(the_header.stamp(),true_size,global_stamp_layout[the_header.stamp()].boehm._kind,&global_stamp_layout[the_header.stamp()].boehm._kind));
-# ifdef DEBUG_BOEHMPRECISE_ALLOC
-  printf("%s:%d:%s header = %p\n", __FILE__, __LINE__, __FUNCTION__, header );
-# endif
-#else
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(true_size));
-#endif
-  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
-#ifdef DEBUG_GUARD
-  memset(header,0x00,true_size);
-  new (header) Header_s(the_header,size,tail_size,true_size);
-#else
-  new (header) Header_s(the_header);
-#endif
-  return header;
-};
-#endif
-};
 
 
 namespace gctools {
@@ -295,177 +152,21 @@ struct ConsSizeCalculator<Cons,DoRegister> {
     return size;
   }
 };
-
-#ifdef USE_MPS
-extern void bad_cons_mps_reserve_error();
-
-template <typename ConsType, typename Register, typename... ARGS>
-#ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
-__attribute__((always_inline))
-#else
-inline
-#endif
-smart_ptr<ConsType> do_cons_mps_allocation(mps_ap_t& allocation_point,
-                                           const char* ap_name,
-                                           ARGS &&... args) {
-  gc::smart_ptr<ConsType> tagged_obj;
-  { RAII_DISABLE_INTERRUPTS();
-    RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMPWTAG_CONS);
-    // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
-    mps_addr_t addr;
-    ConsType* cons;
-    size_t cons_size = ConsSizeCalculator<ConsType,Register>::value();
-    do {
-      mps_res_t res = mps_reserve(&addr, allocation_point, cons_size);
-      if ( res != MPS_RES_OK ) bad_cons_mps_reserve_error();
-      cons = reinterpret_cast<ConsType*>(addr);
-      new (cons) ConsType(std::forward<ARGS>(args)...);
-      tagged_obj = smart_ptr<ConsType>((Tagged)tag_cons(cons));
-    } while (!mps_commit(allocation_point, addr, cons_size));
-    MAYBE_VERIFY_ALIGNMENT((void*)addr);
-    //      printf("%s:%d cons_mps_allocation addr=%p size=%lu\n", __FILE__, __LINE__, addr, sizeof(Cons));
-  }
-  DEBUG_MPS_UNDERSCANNING_TESTS();
-  handle_all_queued_interrupts();
-#if 0
-  globalMpsMetrics.totalMemoryAllocated += cons_size;
-  ++globalMpsMetrics.consAllocations;
-#endif    
-  return tagged_obj;
 };
 
-
-extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
-  
-template <class PTR_TYPE, typename... ARGS>
-#ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
-__attribute__((always_inline))
+#if defined(USE_BOEHM)
+# include <clasp/gctools/gcalloc_boehm.h>
+#elif defined(USE_MPS)
+# include <clasp/gctools/gcalloc_mps.h>
+#elif defined(USE_MMTK)
+# include <clasp/gctools/gcalloc_mmtk.h>
 #else
-inline
+# error "Unsupported GC"
 #endif
-PTR_TYPE general_mps_allocation(const Header_s::StampWtagMtag& the_header,
-                                size_t size,
-                                mps_ap_t& allocation_point,
-                                ARGS &&... args) {
-  mps_addr_t addr;
-  typedef typename PTR_TYPE::Type T;
-  typedef typename GCHeader<T>::HeaderType HeadT;
-  RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_UNSHIFT_MTAG(the_header._value));
-  PTR_TYPE tagged_obj;
-  T* obj;
-  size_t allocate_size = AlignUp(size);
-#ifdef DEBUG_GUARD
-  size_t tail_size = ((rand()%8)+1)*Alignment();
-  allocate_size += tail_size;
-#endif
-  HeadT *header;
-  { RAII_DISABLE_INTERRUPTS(); 
-    do {
-      mps_res_t res = mps_reserve(&addr, allocation_point, allocate_size);
-      if ( res != MPS_RES_OK ) bad_general_mps_reserve_error(&allocation_point);
-      header = reinterpret_cast<HeadT *>(addr);
-#ifdef DEBUG_GUARD
-      memset(header,0x00,allocate_size);
-      new (header) HeadT(the_header,size,tail_size, allocate_size);
-#else
-      new (header) HeadT(the_header);
-#endif
-      obj = HeaderPtrToGeneralPtr<typename PTR_TYPE::Type>(addr);
-      new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
-      tagged_obj = PTR_TYPE(obj);
-    } while (!mps_commit(allocation_point, addr, allocate_size));
-    MAYBE_VERIFY_ALIGNMENT((void*)addr);
-    my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),allocate_size);
-  }
-#ifdef DEBUG_VALIDATE_GUARD
-  header->validate();
-#endif
-  DEBUG_MPS_UNDERSCANNING_TESTS();
-  handle_all_queued_interrupts();
-  globalMpsMetrics.totalMemoryAllocated += allocate_size;
-#ifdef DEBUG_MPS_SIZE
-  {
-    if ((((uintptr_t)obj)&ptag_mask)!=0) {
-      printf("%s:%d The pointer at %p must be aligned to the Alignment() %lu ptag_mask=0x%zx ((uintptr_t)obj)&ptag_mask) = 0x%zx\n", __FILE__, __LINE__, (void*)obj, Alignment(), ptag_mask, (((uintptr_t)obj)&ptag_mask));
-      abort();
-    }
-    if (AlignUp(allocate_size)!=allocate_size) {
-      printf("%s:%d The allocate_size %lu must be a multiple of the Alignment() %lu\n", __FILE__, __LINE__, allocate_size, Alignment());
-      abort();
-    }
-    mps_addr_t nextClient = obj_skip((mps_addr_t)obj);
-    int skip_size = (int)((char*)nextClient-(char*)obj);
-    if (skip_size != allocate_size) {
-      mps_addr_t againNextClient = obj_skip_debug_wrong_size((mps_addr_t)obj,header,(size_t)header->_stamp_wtag_mtag._value,header->_stamp_wtag_mtag.stamp_(),
-                                                             allocate_size,
-                                                             skip_size,
-                                                             ((int)allocate_size-(int)skip_size));
-#ifdef DEBUG_GUARD
-      printf("      header-size= %lu size= %zu tail_size=%lu \n", sizeof(HeadT), size, tail_size );
-#else        
-      printf("      header-size= %lu size= %zu\n", sizeof(HeadT), size );
-#endif
-    }
-  }
-#endif
-  return tagged_obj;
-};
 
 
 
-template <class PTR_TYPE, typename... ARGS>
-inline PTR_TYPE do_mps_weak_allocation(size_t allocate_size,
-                                       mps_ap_t& allocation_point,
-                                       const char* ap_name,
-                                       ARGS &&... args) {
-  typedef typename PTR_TYPE::Type T;
-  typedef typename GCHeader<T>::HeaderType HeadT;
-  PTR_TYPE tagged_obj;
-  mps_addr_t addr;
-  T* obj;
-  { RAII_DISABLE_INTERRUPTS();
-    RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMPWTAG_UNUSED);
-    allocate_size = AlignUp(allocate_size);
-    do {
-      mps_res_t res = mps_reserve(&addr, allocation_point, allocate_size);
-      if (res != MPS_RES_OK)
-        throw_hard_error("Out of memory");
-      GC_LOG(("allocated @%p %zu bytes\n", addr, allocate_size));
-      obj = reinterpret_cast<T*>(addr);
-      if (!obj)
-        throw_hard_error("NULL address in allocate!");
-      new (obj) T(std::forward<ARGS>(args)...);
-      tagged_obj = PTR_TYPE(obj);
-    } while (!mps_commit(allocation_point, addr, allocate_size));
-    MAYBE_VERIFY_ALIGNMENT((void*)addr);
-    my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_null,allocate_size);
-  }
-#ifdef DEBUG_MPS_SIZE
-  {
-    if ((((uintptr_t)obj)&ptag_mask)!=0) {
-      printf("%s:%d The pointer at %p must be aligned to the Alignment() %lu ptag_mask=0x%zx ((uintptr_t)obj)&ptag_mask) = 0x%zx\n", __FILE__, __LINE__, (void*)obj, Alignment(), ptag_mask, (((uintptr_t)obj)&ptag_mask));
-      abort();
-    }
-    if (AlignUp(allocate_size)!=allocate_size) {
-      printf("%s:%d The allocate_size %lu must be a multiple of the Alignment() %lu\n", __FILE__, __LINE__, allocate_size, Alignment());
-      abort();
-    }
-    mps_addr_t nextClient = weak_obj_skip((mps_addr_t)obj);
-    int skip_size = (int)((char*)nextClient-(char*)obj);
-    if (skip_size != allocate_size) {
-      mps_addr_t againNextClient = weak_obj_skip_debug_wrong_size((mps_addr_t)obj,allocate_size,skip_size);
-      printf("      header-size= %lu size= %zu\n", sizeof(HeadT), allocate_size );
-    }
-  }
-#endif
-  handle_all_queued_interrupts();
-  DEBUG_MPS_UNDERSCANNING_TESTS();
-  if (!obj)
-    throw_hard_error("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>");
-  GC_LOG(("malloc@%p %zu bytes\n", obj, allocate_size));
-  return tagged_obj;
-}
-#endif // #ifdef USE_MPS
+namespace gctools {
 
 /*! Allocate regular C++ classes that are considered roots */
 template <class T>
@@ -477,15 +178,21 @@ struct RootClassAllocator {
 
   template <class... ARGS>
   static gctools::tagged_pointer<T> allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
     T *obj = HeaderPtrToGeneralPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
     handle_all_queued_interrupts();
     gctools::tagged_pointer<T> tagged_obj(obj);
     return tagged_obj;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+    Header_s* base = do_mmtk_uncollectable_allocation(the_header,size);
+    T *obj = HeaderPtrToGeneralPtr<T>(base);
+    new (obj) T(std::forward<ARGS>(args)...);
+    handle_all_queued_interrupts();
+    gctools::tagged_pointer<T> tagged_obj(obj);
+    return tagged_obj;
+#elif defined(USE_MPS)
     globalMpsMetrics.nonMovingAllocations++;
     tagged_pointer<T> tagged_obj =
         general_mps_allocation<tagged_pointer<T>>(the_header,
@@ -505,38 +212,43 @@ struct RootClassAllocator {
   static void deallocate(gctools::tagged_pointer<T> memory) {
 #if defined(USE_BOEHM)
     GC_FREE(&*memory);
-#endif
-#if defined(USE_MPS) && !defined(RUNNING_MPSPREP)
+#elif defined(USE_MPS) && !defined(RUNNING_MPSPREP)
     throw_hard_error("I need a way to deallocate MPS allocated objects that are not moveable or collectable");
     GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
+#elif defined(USE_MMTK)
+    MISSING_GC_SUPPORT();
 #endif
   };
 
   static void untagged_deallocate(void *memory) {
 #if defined(USE_BOEHM)
     GC_FREE(memory);
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
     GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
+#elif defined(USE_MMTK)
+    MISSING_GC_SUPPORT();
 #endif
   };
 
   static void* allocateRootsAndZero(size_t num) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     void* buffer = ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(void*)*num);
     memset( buffer, 0, sizeof(void*)*num);
-#else
+    return buffer;
+#elif defined(USE_MPS)
     void* buffer = NULL;
     printf("%s:%d:%s Add support\n", __FILE__, __LINE__, __FUNCTION__ );
-#endif
     return buffer;
+#elif defined(USE_MMTK)
+    MISSING_GC_SUPPORT();
+#endif
   }
 
   static void freeRoots(void* roots) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     GC_FREE(roots);
 #else
-    printf("%s:%d:%s Add support\n", __FILE__, __LINE__, __FUNCTION__ );
+    MISSING_GC_SUPPORT();
 #endif
   };
   
@@ -552,14 +264,19 @@ struct ConsAllocator {
   inline
 #endif
   static smart_ptr<Cons> allocate(ARGS &&... args) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     Cons* cons;
     size_t cons_size = ConsSizeCalculator<Cons,Register>::value();
     cons = do_boehm_cons_allocation<Cons,ARGS...>(cons_size,std::forward<ARGS>(args)...);
     handle_all_queued_interrupts();
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+    Cons* cons;
+    size_t cons_size = ConsSizeCalculator<Cons,Register>::value();
+    cons = do_mmtk_cons_allocation<Cons,ARGS...>(cons_size,std::forward<ARGS>(args)...);
+    handle_all_queued_interrupts();
+    return smart_ptr<Cons>((Tagged)tag_cons(cons));
+#elif defined(USE_MPS)
     mps_ap_t obj_ap = my_thread_allocation_points._cons_allocation_point;
         //        globalMpsMetrics.consAllocations++;
     smart_ptr<Cons> obj =
@@ -572,11 +289,14 @@ struct ConsAllocator {
 
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::StampWtagMtag the_header, core::T_sp car, core::T_sp cdr ) {
-# ifdef USE_BOEHM
+# if defined(USE_BOEHM)
     Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons),global_cons_kind,&global_cons_kind));
     header->_stamp_wtag_mtag = the_header;
+# elif defined(USE_MMTK)
+    Header_s* header = reinterpret_cast<Header_s*>do_mmtk_allocate_cons(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons));
+    header->_stamp_wtag_mtag = the_header;
 # else
-    printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
+    MISSING_GC_SUPPORT();
 # endif
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(car,cdr);
@@ -594,38 +314,43 @@ namespace gctools {
       typedef smart_ptr<OT> smart_pointer_type;
       template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
         Header_s* base = do_boehm_general_allocation(the_header,size);
         pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
         new (ptr) OT(std::forward<ARGS>(args)...);
         smart_pointer_type sp = smart_ptr<value_type>(ptr);
         return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+        Header_s* base = do_mmtk_general_allocation(the_header,size);
+        pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
+        new (ptr) OT(std::forward<ARGS>(args)...);
+        smart_pointer_type sp = smart_ptr<value_type>(ptr);
+        return sp;
+#elif defined(USE_MPS)
         mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_allocation_point;
         globalMpsMetrics.movingAllocations++;
         smart_ptr<OT> sp =
-          general_mps_allocation<smart_ptr<OT>>(the_header,size,obj_ap,
-                                           std::forward<ARGS>(args)...);
+            general_mps_allocation<smart_ptr<OT>>(the_header,size,obj_ap,
+                                                  std::forward<ARGS>(args)...);
         return sp;
 #endif
       };
 
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init) {
         size_t sizeWithHeader = sizeof(Header_s)+(snapshot_save_load_init->_clientEnd-snapshot_save_load_init->_clientStart);
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
         Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
-#ifdef DEBUG_GUARD
+# ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
-#endif
+# endif
         pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
-#ifdef DEBUG_GUARD        
+# ifdef DEBUG_GUARD        
         uintptr_t guardBefore0 = *(uintptr_t*)((uintptr_t*)ptr-1);
         uintptr_t guardAfter0 = *(uintptr_t*)((uintptr_t*)((char*)ptr+sizeWithHeader-sizeof(Header_s))+1);
-#endif
+# endif
         new (ptr) OT(snapshot_save_load_init);
-#ifdef DEBUG_GUARD        
+# ifdef DEBUG_GUARD        
         uintptr_t guardBefore1 = *(uintptr_t*)((uintptr_t*)ptr-1);
         uintptr_t guardAfter1 = *(uintptr_t*)((uintptr_t*)((char*)ptr+sizeWithHeader-sizeof(Header_s))+1);
         if (guardBefore0!=guardBefore1) {
@@ -634,11 +359,34 @@ namespace gctools {
         if (guardAfter0!=guardAfter1) {
           printf("%s:%d:%s We stomped on the memory after the object\n", __FILE__, __LINE__, __FUNCTION__ );
         }
-#endif
+# endif
         smart_pointer_type sp = smart_ptr<value_type>(ptr);
         return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+        Header_s* base = do_mmtk_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
+# ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = snapshot_save_load_init->_headStart->_source;
+# endif
+        pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
+# ifdef DEBUG_GUARD        
+        uintptr_t guardBefore0 = *(uintptr_t*)((uintptr_t*)ptr-1);
+        uintptr_t guardAfter0 = *(uintptr_t*)((uintptr_t*)((char*)ptr+sizeWithHeader-sizeof(Header_s))+1);
+# endif
+        new (ptr) OT(snapshot_save_load_init);
+# ifdef DEBUG_GUARD        
+        uintptr_t guardBefore1 = *(uintptr_t*)((uintptr_t*)ptr-1);
+        uintptr_t guardAfter1 = *(uintptr_t*)((uintptr_t*)((char*)ptr+sizeWithHeader-sizeof(Header_s))+1);
+        if (guardBefore0!=guardBefore1) {
+          printf("%s:%d:%s We stomped on the memory before the object\n", __FILE__, __LINE__, __FUNCTION__ );
+        }
+        if (guardAfter0!=guardAfter1) {
+          printf("%s:%d:%s We stomped on the memory after the object\n", __FILE__, __LINE__, __FUNCTION__ );
+        }
+# endif
+        smart_pointer_type sp = smart_ptr<value_type>(ptr);
+        return sp;
+#elif defined(USE_MPS)
         printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
       };
@@ -657,15 +405,21 @@ namespace gctools {
     typedef smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     // Atomic objects (do not contain pointers) are allocated in separate pool
       Header_s* base = do_boehm_atomic_allocation(the_header,size);
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
       smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
       return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+    // Atomic objects (do not contain pointers) are allocated in separate pool
+      Header_s* base = do_mmtk_atomic_allocation(the_header,size);
+      pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
+      new (ptr) OT(std::forward<ARGS>(args)...);
+      smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
+      return sp;
+#elif defined(USE_MPS)
       mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point;
       globalMpsMetrics.movingZeroRankAllocations++;
       smart_pointer_type sp =
@@ -680,19 +434,29 @@ namespace gctools {
     };
 
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
       Header_s* base = do_boehm_atomic_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
-#ifdef DEBUG_GUARD
+# ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
-#endif
+# endif
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(snapshot_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
       smart_pointer_type sp = smart_ptr<value_type>(ptr);
       return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+      Header_s* base = do_mmtk_atomic_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
+# ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = snapshot_save_load_init->_headStart->_source;
+# endif
+      pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
+      new (ptr) OT(snapshot_save_load_init);
+      printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
+      smart_pointer_type sp = smart_ptr<value_type>(ptr);
+      return sp;
+#elif defined(USE_MPS)
       printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     };
@@ -709,14 +473,19 @@ When would I ever want the GC to automatically collect objects but not move them
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
     static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
       Header_s* base = do_boehm_general_allocation(the_header,size);
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
       smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
       return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+      Header_s* base = do_mmtk_general_allocation(the_header,size);
+      pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
+      new (ptr) OT(std::forward<ARGS>(args)...);
+      smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
+      return sp;
+#elif defined(USE_MPS)
       mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       globalMpsMetrics.nonMovingAllocations++;
       smart_pointer_type sp =
@@ -731,19 +500,29 @@ When would I ever want the GC to automatically collect objects but not move them
     };
 
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
       Header_s* base = do_boehm_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
-#ifdef DEBUG_GUARD
+# ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
-#endif
+# endif
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(snapshot_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
       smart_pointer_type sp = smart_ptr<value_type>(ptr);
       return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+      Header_s* base = do_mmtk_general_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
+# ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = snapshot_save_load_init->_headStart->_source;
+# endif
+      pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
+      new (ptr) OT(snapshot_save_load_init);
+      printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
+      smart_pointer_type sp = smart_ptr<value_type>(ptr);
+      return sp;
+#elif defined(USE_MPS)
       printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     };
@@ -760,15 +539,21 @@ should not be managed by the GC */
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       OT *obj = HeaderPtrToGeneralPtr<OT>(base);
       new (obj) OT(std::forward<ARGS>(args)...);
       handle_all_queued_interrupts();
       gctools::smart_ptr<OT> sp(obj);
       return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+      Header_s* base = do_mmtk_uncollectable_allocation(the_header,size);
+      OT *obj = HeaderPtrToGeneralPtr<OT>(base);
+      new (obj) OT(std::forward<ARGS>(args)...);
+      handle_all_queued_interrupts();
+      gctools::smart_ptr<OT> sp(obj);
+      return sp;
+#elif defined(USE_MPS)
       mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       globalMpsMetrics.nonMovingAllocations++;
       gctools::smart_ptr<OT> sp =
@@ -779,29 +564,40 @@ should not be managed by the GC */
     }
 
     static smart_pointer_type snapshot_save_load_allocate(snapshotSaveLoad::snapshot_save_load_init_s* snapshot_save_load_init, size_t size) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
       Header_s* base = do_boehm_uncollectable_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
-#ifdef DEBUG_GUARD
+# ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = snapshot_save_load_init->_headStart->_source;
-#endif
+# endif
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(snapshot_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
       smart_pointer_type sp = smart_ptr<value_type>(ptr);
       return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+      Header_s* base = do_mmtk_uncollectable_allocation(snapshot_save_load_init->_headStart->_stamp_wtag_mtag,size);
+# ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = snapshot_save_load_init->_headStart->_source;
+# endif
+      pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
+      new (ptr) OT(snapshot_save_load_init);
+      printf("%s:%d:%s This is where we should copy in the stuff from the snapshot_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
+      smart_pointer_type sp = smart_ptr<value_type>(ptr);
+      return sp;
+#elif defined(USE_MPS)
       printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     };
 
     static void deallocate(OT* memory) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
       printf("%s:%d Using GC_FREE to free memory at@%p\n", __FILE__, __LINE__, memory );
       GC_FREE(memory);
-#endif
-#if defined(USE_MPS) && !defined(RUNNING_MPSPREP)
+#elif defined(USE_MMTK)
+      MISSING_GC_SUPPORT();
+#elif defined(USE_MPS) && !defined(RUNNING_MPSPREP)
       throw_hard_error(" GCObjectAppropriatePoolAllocator<OT, unmanaged > I need a way to deallocate MPS allocated objects that are not moveable or collectable");
       GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
@@ -834,7 +630,7 @@ template <class OT, bool Needed = true>
 struct GCObjectFinalizer {
   typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
   static void finalizeIfNeeded(smart_pointer_type sp) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     void *dummyData;
     BoehmFinalizerFn dummyFn;
 //    printf("%s:%d About to register finalize base -> %p\n", __FILE__, __LINE__, (void*)sp.tagged_());
@@ -842,8 +638,9 @@ struct GCObjectFinalizer {
                                    BoehmFinalizer<OT>, NULL,
                                    &dummyFn, &dummyData);
 //    printf("%s:%d Finished finalize sp -> %p\n", __FILE__, __LINE__, (void*)sp.tagged_());
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+    printf("%s:%d:%s Add finalization support for mmtk\n", __FILE__, __LINE__, __FUNCTION__ );
+#elif defined(USE_MPS)
     // Defined in mpsGarbageCollection.cc
     my_mps_finalize(sp.raw_());
 #endif
@@ -875,7 +672,7 @@ namespace gctools {
     }
     template <typename... ARGS>
       static smart_pointer_type root_allocate_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
@@ -883,8 +680,15 @@ namespace gctools {
       GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
       return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+      Header_s* base = do_mmtk_uncollectable_allocation(the_header,size);
+      pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
+      new (ptr) OT(std::forward<ARGS>(args)...);
+      smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
+      GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
+      GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+      return sp;
+#elif defined(USE_MPS)
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
@@ -940,15 +744,16 @@ namespace gctools {
       throw_hard_error("Never call this - it's only used to register with the redeye static analyzer");
     }
     static smart_pointer_type copy_kind(const Header_s::StampWtagMtag& the_header, size_t size, const OT &that) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     // Copied objects must be allocated in the appropriate pool
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(  the_header, size, that);
     // Copied objects are not initialized.
     // Copied objects are finalized if necessary
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
       return sp;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+      MISSING_GC_SUPPORT();
+#elif defined(USE_MPS)
     // Copied objects must be allocated in the appropriate pool
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(  the_header, size, that);
     // Copied objects are not initialized.
@@ -1142,21 +947,24 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate_kind(const Header_s::StampWtagMtag& the_header, size_type num, const void * = 0) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     size_t size = sizeof_container_with_header<TY>(num);
     Header_s* base = do_boehm_general_allocation(the_header,size);
     container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
     handle_all_queued_interrupts();
     return gctools::tagged_pointer<container_type>(myAddress);
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+    size_t size = sizeof_container_with_header<TY>(num);
+    Header_s* base = do_mmtk_general_allocation(the_header,size);
+    container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
+    handle_all_queued_interrupts();
+    return gctools::tagged_pointer<container_type>(myAddress);
+#elif defined(USE_MPS)
     size_t size = sizeof_container_with_header<TY>(num);
     mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_allocation_point;
     globalMpsMetrics.movingAllocations++;
     gc::tagged_pointer<container_type> obj =
-      general_mps_allocation<gc::tagged_pointer<container_type>>(the_header,
-                                                            size,obj_ap,
-                                                            num);
+        general_mps_allocation<gc::tagged_pointer<container_type>>(the_header, size,obj_ap, num);
     return obj;
 #endif
   }
@@ -1246,15 +1054,21 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   gctools::tagged_pointer<container_type> allocate_kind( const Header_s::StampWtagMtag& the_header, size_type num, const void * = 0) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     size_t size = sizeof_container_with_header<TY>(num);
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s* base = do_boehm_general_allocation(the_header,size);
     container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
     handle_all_queued_interrupts();
     return myAddress;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+    size_t size = sizeof_container_with_header<TY>(num);
+    // prepend a one pointer header with a pointer to the typeinfo.name
+    Header_s* base = do_mmtk_general_allocation(the_header,size);
+    container_pointer myAddress = HeaderPtrToGeneralPtr<TY>(base);
+    handle_all_queued_interrupts();
+    return myAddress;
+#elif defined(USE_MPS)
     size_t size = sizeof_container_with_header<TY>(num);
     mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
     globalMpsMetrics.nonMovingAllocations++;
@@ -1354,17 +1168,25 @@ struct StrongWeakAllocationPoint<WeakLinks> {
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate(Header_s::StampWtagMtag the_header, size_type num, const void * = 0) {
     size_t size = sizeof_container_with_header<container_type>(num);
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     Header_s* base = do_boehm_weak_allocation(the_header,size);
     container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
     if (!myAddress) throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(num);
-#ifdef DEBUG_GCWEAK
+# ifdef DEBUG_GCWEAK
     printf("%s:%d Check if Buckets has been initialized to unbound\n", __FILE__, __LINE__);
-#endif
+# endif
     return gctools::tagged_pointer<container_type>(myAddress);
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+    Header_s* base = do_mmtk_weak_allocation(the_header,size);
+    container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
+    if (!myAddress) throw_hard_error("Out of memory in allocate");
+    new (myAddress) container_type(num);
+# ifdef DEBUG_GCWEAK
+    printf("%s:%d Check if Buckets has been initialized to unbound\n", __FILE__, __LINE__);
+# endif
+    return gctools::tagged_pointer<container_type>(myAddress);
+#elif defined(USE_MPS)
     printf("%s:%d:%s Handle allocation\n",__FILE__, __LINE__, __FUNCTION__);
     mps_addr_t addr;
     container_pointer myAddress(NULL);
@@ -1377,17 +1199,25 @@ struct StrongWeakAllocationPoint<WeakLinks> {
 
    static gctools::tagged_pointer<container_type> snapshot_save_load_allocate( snapshotSaveLoad::snapshot_save_load_init_s* init ) {
     size_t size = (init->_clientEnd-init->_clientStart)+SizeofWeakHeader();
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     Header_s* base = do_boehm_weak_allocation(init->_headStart->_stamp_wtag_mtag, size);
-#ifdef DEBUG_GUARD
+# ifdef DEBUG_GUARD
         // Copy the source from the image save/load memory.
         base->_source = init->_headStart->_source;
-#endif
+# endif
     container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
     new (myAddress) container_type(init);
     return gctools::tagged_pointer<container_type>(myAddress);
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+    Header_s* base = do_mmtk_weak_allocation(init->_headStart->_stamp_wtag_mtag, size);
+# ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = init->_headStart->_source;
+# endif
+    container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
+    new (myAddress) container_type(init);
+    return gctools::tagged_pointer<container_type>(myAddress);
+#elif defined(USE_MPS)
     printf("%s:%d:%s Handle allocation in MPS\n");
     mps_addr_t addr;
     container_pointer myAddress(NULL);
@@ -1445,15 +1275,21 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate(Header_s::StampWtagMtag the_header, const VT &val) {
     size_t size = sizeof_with_header<container_type>();
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     Header_s* base = do_boehm_weak_allocation(the_header,size);
     container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
     if (!myAddress) throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(val);
     printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__);
     return gctools::tagged_pointer<container_type>(myAddress);
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+    Header_s* base = do_mmtk_weak_allocation(the_header,size);
+    container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
+    if (!myAddress) throw_hard_error("Out of memory in allocate");
+    new (myAddress) container_type(val);
+    printf("%s:%d Check if Mapping has been initialized to unbound\n", __FILE__, __LINE__);
+    return gctools::tagged_pointer<container_type>(myAddress);
+#elif defined(USE_MPS)
     typedef typename GCHeader<TY>::HeaderType HeadT;
     mps_addr_t addr;
     container_pointer myAddress(NULL);
@@ -1484,17 +1320,25 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<value_type> allocate(Header_s::StampWtagMtag the_header, const contained_type &val) {
     size_t size = sizeof_with_header<VT>();
-#ifdef USE_BOEHM
-#ifdef DEBUG_GCWEAK
+#if defined(USE_BOEHM)
+# ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-#endif
+# endif
     Header_s* base = do_boehm_weak_allocation(the_header,size);
     VT* myAddress = (VT*)HeaderPtrToWeakPtr(base);
     if (!myAddress) throw_hard_error("Out of memory in allocate");
     new (myAddress) VT(val);
     return gctools::tagged_pointer<value_type>(myAddress);
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MMTK)
+# ifdef DEBUG_GCWEAK
+    printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
+# endif
+    Header_s* base = do_mmtk_weak_allocation(the_header,size);
+    VT* myAddress = (VT*)HeaderPtrToWeakPtr(base);
+    if (!myAddress) throw_hard_error("Out of memory in allocate");
+    new (myAddress) VT(val);
+    return gctools::tagged_pointer<value_type>(myAddress);
+#elif defined(USE_MPS)
     mps_addr_t addr;
     value_pointer myAddress;
     gctools::tagged_pointer<value_type> obj =
@@ -1506,172 +1350,6 @@ public:
 };
 
 
-namespace gctools {
-
-#if 0
-/*! Maintain a stack containing pointers that are garbage collected
-*/
-class GCStack {
-public:
-  typedef enum { undefined_t,
-                 frame_t,
-                 pad_t } frameType;
-  size_t _MaxSize;
-  size_t _TotalSize;
-  size_t _TotalAllocations;
-#ifdef USE_BOEHM
-#ifdef BOEHM_ONE_BIG_STACK
-  uintptr_t *_StackCur;
-  uintptr_t *_StackBottom;
-  size_t _StackMinOffset;
-  size_t _StackMiddleOffset;
-  uintptr_t *_StackLimit;
-#else
-// Nothing
-#endif
-#endif
-#ifdef USE_MPS
-  mps_pool_t _Pool;
-  mps_ap_t _AllocationPoint;
-  mps_fmt_t _ObjectFormat;
-  bool _IsActive;
-  vector<mps_frame_t> frames;
-#endif
-  //! Return true if this Stack object is active and can receive pushFrame/popFrame messages
-public:
-  size_t maxSize() const { return this->_MaxSize; };
-  bool isActive() {
-#ifdef USE_BOEHM
-    return true;
-#endif
-#ifdef USE_MPS
-    return _IsActive;
-#endif
-  };
-#ifdef BOEHM_ONE_BIG_STACK
-  void growStack();
-  void shrinkStack();
-#endif
-  //*! Allocate a buffer for this
-  bool allocateStack(size_t bufferSize) {
-    bufferSize = STACK_ALIGN_UP(bufferSize);
-#ifdef USE_BOEHM
-#ifdef BOEHM_ONE_BIG_STACK
-    DEPRECATED();
-    this->_StackBottom = (uintptr_t *)ALIGNED_GC_MALLOC(bufferSize);
-    this->_StackMiddleOffset = (bufferSize / 2);
-    this->_StackLimit = (uintptr_t *)((char *)this->_StackBottom + bufferSize);
-    this->_StackMinOffset = bufferSize;
-    this->_StackCur = this->_StackBottom;
-    memset(this->_StackBottom, 0, bufferSize);
-#else
-// Do nothing
-#endif
-#endif
-    return true;
-  };
-  void deallocateStack() {
-#ifdef USE_BOEHM
-#ifdef BOEHM_ONE_BIG_STACK
-    if (this->_StackCur != this->_StackBottom) {
-      throw_hard_error("The stack is not empty");
-    }
-    GC_FREE(this->_StackBottom);
-#else
-// Do nothing
-#endif
-#endif
-  };
-
-  size_t totalSize() const {
-    return this->_TotalSize;
-  }
-
-  size_t totalAllocations() const {
-    return this->_TotalAllocations;
-  }
-
-#define FRAME_HEADER_SIZE (sizeof(int) * 2)
-#define FRAME_HEADER_TYPE_FIELD(hptr) *(((int *)hptr))
-#define FRAME_HEADER_SIZE_FIELD(hptr) *(((int *)hptr) + 1)
-#define FRAME_START(hptr) (uintptr_t *)(((char *)hptr) + FRAME_HEADER_SIZE)
-#define FRAME_HEADER(fptr) (uintptr_t *)(((char *)fptr) - FRAME_HEADER_SIZE)
-  void *frameImplHeaderAddress(void *frameImpl) {
-    return (void *)((char *)frameImpl - FRAME_HEADER_SIZE);
-  }
-  GCStack::frameType frameImplHeaderType(void *frameImpl) {
-    void *frameImplHeader = (void *)((char *)frameImpl - FRAME_HEADER_SIZE);
-    return (GCStack::frameType)(FRAME_HEADER_TYPE_FIELD(frameImplHeader));
-  }
-  int frameImplHeaderSize(void *frameImpl) {
-    void *frameImplHeader = (void *)((char *)frameImpl - FRAME_HEADER_SIZE);
-    return (int)(FRAME_HEADER_SIZE_FIELD(frameImplHeader));
-  }
-
-  int frameImplBodySize(void *frameImpl) {
-    void *frameImplHeader = (void *)((char *)frameImpl - FRAME_HEADER_SIZE);
-    return (int)(FRAME_HEADER_SIZE_FIELD(frameImplHeader) - FRAME_HEADER_SIZE);
-  }
-
-  void *pushFrameImpl(size_t frameSize);
-  void popFrameImpl(void *frameImpl) {
-#ifdef USE_BOEHM
-    uintptr_t *frameHeaderP = reinterpret_cast<uintptr_t *>(frameImpl) - 1;
-    uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
-    this->_TotalSize = this->_TotalSize - headerAndFrameSize;
-#ifdef BOEHM_ONE_BIG_STACK
-    memset(frameHeaderP, 0, headerAndFrameSize);
-    this->_StackCur = frameHeaderP;
-    if (this->_StackMinOffset <= (this->_StackLimit - this->_StackBottom) && (this->_StackCur - this->_StackBottom) < this->_StackMiddleOffset)
-      this->shrinkStack();
-#ifdef DEBUG_BOEHM_STACK
-    size_t calcSize = (char *)this->_StackTop - (char *)this->_StackBottom;
-    if (calcSize != this->_TotalSize) {
-      throw_hard_error_side_stack_damaged(this->_TotalSize,calcSize);
-    }
-    for (char *i = (char *)this->_StackTop; i < (char *)this->_StackLimit; ++i) {
-      if (*i) {
-        throw_hard_error("The side-stack has garbage in it!");
-      }
-    }
-#endif
-#else
-    GC_FREE(frameHeaderP);
-#endif
-#endif // USE_BOEHM
-#ifdef USE_MPS
-    uintptr_t *frameHeaderP = FRAME_HEADER(frameImpl);
-    uintptr_t headerAndFrameSize = FRAME_HEADER_SIZE_FIELD(frameHeaderP);
-    this->_TotalSize -= headerAndFrameSize;
-    mps_frame_t frame_o = this->frames.back();
-    this->frames.pop_back();
-    mps_res_t res = mps_ap_frame_pop(this->_AllocationPoint, frame_o);
-    if (res != MPS_RES_OK) {
-      throw_hard_error_mps_bad_result(res);
-    }
-#endif // USE_MPS
-  }
-
- GCStack() : _TotalSize(0), _TotalAllocations(0), _MaxSize(0)
-#ifdef USE_BOEHM
-#endif
-#ifdef USE_MPS
-// What do I do here?
-#endif
-              {};
-  virtual ~GCStack(){
-#ifdef USE_BOEHM
-// Nothing to do
-#endif
-#ifdef USE_MPS
-// What do I do here?
-#endif
-  };
-};
-#endif
- 
-};
-
-#endif // USE_BOEHM || USE_MPS
+#endif // USE_BOEHM || USE_MPS || USE_MMTK
 
 #endif

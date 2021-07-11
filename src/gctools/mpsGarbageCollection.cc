@@ -108,6 +108,80 @@ void destroy_custom_allocation_point_info() {
 
 
 
+
+
+struct ReachableMPSObject {
+  ReachableMPSObject(int k) : stamp(k) {};
+  size_t stamp = 0;
+  size_t instances = 0;
+  size_t totalMemory = 0;
+  size_t largest = 0;
+  size_t print(const std::string &shortName,const vector<std::string> stampNames) {
+    if (this->instances > 0) {
+      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                          % shortName % this->totalMemory % this->instances % (this->totalMemory/this->instances)
+                          % stampNames[this->stamp] % this->stamp).str(),
+                         cl::_sym_STARstandard_outputSTAR->symbolValue());
+      core::clasp_finish_output_t();
+    }
+    return this->totalMemory;
+  }
+};
+
+extern "C" {
+void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
+  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(client));
+  if (((uintptr_t)header&gctools::ptag_mask)!=0) {
+    printf("%s:%d The header at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)header,gctools::Alignment());
+    abort();
+  }
+  if (((uintptr_t)client&gctools::ptag_mask)!=0) {
+    printf("%s:%d The client at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)client,gctools::Alignment());
+    abort();
+  }
+  vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
+  // Very expensive to validate every object on the heap
+  if (header->_stamp_wtag_mtag.stampP()) {
+    header->validate();
+    ReachableMPSObject &obj = (*reachablesP)[header->_stamp_wtag_mtag.stamp_()];
+    ++obj.instances;
+    size_t sz = (char *)(obj_skip(client)) - (char *)client;
+    obj.totalMemory += sz;
+    if (sz > obj.largest)
+      obj.largest = sz;
+  }
+}
+};
+
+size_t dumpMPSResults(const std::string &name, const std::string &shortName, vector<ReachableMPSObject> &values) {
+  size_t totalSize(0);
+  typedef ReachableMPSObject value_type;
+  sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
+            return (x.totalMemory > y.totalMemory);
+  });
+  size_t idx = 0;
+  vector<std::string> stampNames;
+  stampNames.resize(gctools::global_NextUnshiftedStamp.load());
+  for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
+    stampNames[it.second] = it.first;
+  }
+  for (auto it : values) {
+    // Does that print? If so should go to the OutputStream
+    totalSize += it.print(shortName,stampNames);
+    idx += 1;
+#if 0
+    if ( idx % 100 == 0 ) {
+      gctools::poll_signals();
+    }
+#endif
+  }
+  return totalSize;
+}
+
+
+
 extern "C" {
 struct PointerSearcher {
   PointerSearcher() : poolObjects(0){};

@@ -84,7 +84,7 @@ string lisp_rep(T_sp obj);
 
 namespace gctools {
 
-#if defined(USE_BOEHM) &&  !defined(CLASP_THREADS)
+#if defined(USE_BOEHM) && !defined(CLASP_THREADS)
 #define call_with_alloc_lock GC_call_with_alloc_lock
 #else
 typedef void *(*fn_type)(void *client_data);
@@ -214,6 +214,8 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
         }
       }
     }
+#else
+    THROW_HARD_ERROR(BF("Add support for other GCs"));
 #endif
   }
 
@@ -222,7 +224,7 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
       printf("%s:%d Only  objectp() objects can be added to Mapping\n", __FILE__, __LINE__);
       abort();
     }
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     //	    printf("%s:%d ---- Buckets set idx: %zu   this->bucket[idx] = %p\n", __FILE__, __LINE__, idx, this->bucket[idx].raw_() );
     if (!unboundOrDeletedOrSplatted(this->bucket[idx])) {
       auto &rawRef = this->bucket[idx].rawRef_();
@@ -244,10 +246,11 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
       base = (void*)&*val; // FIXME - this is wrong for Weak objects
     };
     GC_general_register_disappearing_link(reinterpret_cast<void **>(&this->bucket[idx].rawRef_()), base );
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
     GCWEAK_LOG(BF("Setting Buckets<T,U,WeakLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));
     this->bucket[idx] = val;
+#elif defined(USE_MMTK)
+    THROW_HARD_ERROR(BF("Add support for mmtk"));
 #endif
   }
 };
@@ -507,13 +510,15 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
       printf("%s:%d Only  objectp() objects can be added to Mapping\n", __FILE__, __LINE__);
       abort();
     }
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     GCTOOLS_ASSERT(this->bucket.objectp());
     if (!unboundOrDeletedOrSplatted(this->bucket)) {
       // printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
       GCTOOLS_ASSERT(val.objectp());
       GC_general_register_disappearing_link(reinterpret_cast<void **>(&this->bucket.rawRef_()), reinterpret_cast<void *>(this->bucket.rawRef_()));
     }
+#else
+    THROW_HARD_ERROR(BF("Add support for new GC"));
 #endif
   };
 
@@ -521,7 +526,7 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wexceptions"
   virtual ~Mapping() {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     GCTOOLS_ASSERT(this->bucket.objectp());
     if (!unboundOrDeletedOrSplatted(this->bucket)) {
       // printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
@@ -531,6 +536,8 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
         abort();
       }
     }
+#else
+    MISSING_GC_SUPPORT();
 #endif
   }
 #pragma clang diagnostic pop
@@ -577,7 +584,7 @@ struct WeakPointerManager {
     }
 #if 0
     this->pointer = AllocatorType::allocate(val);
-#ifdef USE_BOEHM
+# if defined(USE_BOEHM)
     GCTOOLS_ASSERT(this->pointer->value.objectp());
     if (!unboundOrDeletedOrSplatted(this->pointer->value)) {
       GCTOOLS_ASSERT(val.objectp());
@@ -585,13 +592,15 @@ struct WeakPointerManager {
     } else {
       GCTOOLS_ASSERT(false); // ERROR("value can never contain anything but a pointer - if it does then when it gets set to NULL by the BoehmGC it will be interpreted as a Fixnum 0!!!!!");
     }
-#endif
+# else
+    MISSING_GC_SUPPORT();
+# endif
 #endif
   }
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wexceptions"
   virtual ~WeakPointerManager() {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     GCTOOLS_ASSERT(this->pointer->value.objectp());
     if (!unboundOrDeletedOrSplatted(this->pointer->value)) {
       int result = GC_unregister_disappearing_link(reinterpret_cast<void **>(&this->pointer->value.rawRef_()));
@@ -600,6 +609,8 @@ struct WeakPointerManager {
         abort();
       }
     }
+#else
+    MISSING_GC_SUPPORT();
 #endif
   };
 #pragma clang diagnostic pop

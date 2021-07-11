@@ -154,7 +154,7 @@ size_t WeakKeyHashTable::find_no_lock(gctools::tagged_pointer<KeyBucketsType> ke
 #endif
       return 1;
     }
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     // Handle splatting
     if (!k.raw_()) {
       auto deleted = value_type(gctools::make_tagged_deleted<core::T_O*>());
@@ -162,6 +162,8 @@ size_t WeakKeyHashTable::find_no_lock(gctools::tagged_pointer<KeyBucketsType> ke
       ValueBucketsType *values = dynamic_cast<ValueBucketsType *>(&*keys->dependent);
       (*values)[i] = value_type(gctools::make_tagged_unbound<core::T_O*>());
     }
+#else
+    MISSING_GC_SUPPORT();
 #endif
     if (result == 0 && (k.deletedp())) {
       b = i;
@@ -554,7 +556,7 @@ size_t StrongKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, co
 #endif
       return 1;
     }
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     // Handle splatting
     if (!k.raw_()) {
       auto deleted = value_type(gctools::make_tagged_deleted<core::T_O*>());
@@ -562,6 +564,8 @@ size_t StrongKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, co
       ValueBucketsType *values = dynamic_cast<ValueBucketsType *>(&*keys->dependent);
       (*values)[i] = value_type(gctools::make_tagged_unbound<core::T_O*>());
     }
+#else
+    MISSING_GC_SUPPORT();
 #endif
     if (result == 0 && (k.deletedp())) {
       b = i;

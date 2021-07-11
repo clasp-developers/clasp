@@ -613,7 +613,7 @@ string Function_O::__repr__() const {
 #if 1
   ss << " " << _rep_(name);
 #else
-#ifdef USE_BOEHM
+#ifdef NON_MOVING_GC
   ss << "@" << (void*)this << " ";
 #endif
   ss << " " << _rep_(name);
@@ -684,7 +684,7 @@ string ClosureWithSlots_O::__repr__() const {
   T_sp name = this->functionName();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
-#ifdef USE_BOEHM
+#ifdef NON_MOVING_GC
   ss << "@" << (void*)this << " ";
 #endif
   ss << " " << _rep_(name);

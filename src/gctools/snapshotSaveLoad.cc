@@ -925,13 +925,12 @@ struct walker_callback_t {
 };
 
 extern "C" {
+#if defined(USE_BOEHM)
 void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
   snapshotSaveLoad::walker_callback_t* walker = (snapshotSaveLoad::walker_callback_t*)client_data;
   int kind;
   size_t psize;
-#ifdef USE_BOEHM
   kind = GC_get_kind_and_size((void*)ptr, &psize );
-#endif
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
   if ( kind == gctools::global_lisp_kind ||
        kind == gctools::global_cons_kind ||
@@ -957,6 +956,7 @@ void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
     DBG_SL_DONTWALK(BF("NOT walking to GC managed header %p kind: %d value -> %p\n") % (void*)ptr % kind % *(void**)ptr );
   }
 }
+#endif
 };
 
 
@@ -1174,7 +1174,7 @@ void* walk_garbage_collected_objects_with_alloc_lock(void* client_data) {
 
 template <typename Walker>
 void walk_garbage_collected_objects(bool saving, Walker& walker) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   if (saving) {
     // We stopped the world - so I think we already have the lock
     GC_enumerate_reachable_objects_inner(boehm_walker_callback, (void*)&walker);
@@ -1182,9 +1182,10 @@ void walk_garbage_collected_objects(bool saving, Walker& walker) {
     GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock,
                              (void*)&walker );
   }    
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   printf("%s:%d:%s  Walk MPS objects\n", __FILE__, __LINE__, __FUNCTION__ );
+#elif defined(USE_MMTK)
+  printf("%s:%d:%s  Walk MMTK objects\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
 }
 
@@ -1746,8 +1747,10 @@ void snapshot_save(const std::string& filename) {
   //
   Snapshot snapshot;
   
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   GC_stop_world_external();
+#else
+  MISSING_GC_SUPPORT();
 #endif
   
   if (sizeof(ISLGeneralHeader_s)-offsetof(ISLGeneralHeader_s,_Header) != sizeof(gctools::Header_s)) {

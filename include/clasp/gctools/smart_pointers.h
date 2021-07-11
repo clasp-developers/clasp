@@ -1698,8 +1698,6 @@ namespace gctools {
 
 // LambdaListHandler_sp llh(ptr)
 
-#if defined(USE_BOEHM) || defined(USE_MPS)
-
 template <class TO, class FROM>
 smart_ptr<TO> dynamic_pointer_cast(const smart_ptr<FROM> &ptr) {
   return smart_ptr<TO>(dynamic_cast<TO *>(ptr.pxget()));
@@ -1709,19 +1707,6 @@ template <class TO, class FROM>
 smart_ptr<TO> dynamic_pointer_cast(FROM ptr) {
   return smart_ptr<TO>(dynamic_cast<typename TO::PointerType>(ptr.pxget()));
 };
-
-#else
-
-template <class TO, class FROM>
-smart_ptr<TO> dynamic_pointer_cast(const smart_ptr<FROM> &ptr) {
-  return smart_ptr<TO>(boost::dynamic_pointer_cast<TO>(ptr));
-};
-
-template <class TO, class FROM>
-smart_ptr<TO> dynamic_pointer_cast(FROM ptr) {
-  return smart_ptr<TO>(boost::dynamic_pointer_cast<TO>(ptr));
-};
-#endif
 
 };
 

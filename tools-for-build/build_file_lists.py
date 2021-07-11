@@ -149,6 +149,7 @@ def collect_clasp_c_source_files(bld):
                  'exposeClasses2',
                  'exposeClasses3',
                  'boehmGarbageCollection',
+                 'mmtkGarbageCollection',
                  'mpsGarbageCollection',
                  'hardErrors',
                  'source_info',

@@ -536,6 +536,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun build-configuration ()
   (let ((gc (cond
               ((member :use-mps *features*) "mps")
+              ((member :use-mmtk *features*)
+               (if (member :use-precise-gc *features*)
+                   "mmtkprecise"
+                   "mmtk"))
               ((member :use-boehm *features*)
                (if (member :use-precise-gc *features*)
                    "boehmprecise"

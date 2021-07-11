@@ -36,9 +36,6 @@ THE SOFTWARE.
 
 // To debug memory usage turn this on and then you can mark
 // objects as they are allocated with an integer using gctools::MARKER
-#ifdef USE_BOEHM
-//#define USE_BOEHM_MEMORY_MARKER
-#endif
 #ifndef APPLICATION_CONFIG
 //#error "You must define the APPLICATION_CONFIG as something like <clasp/main/application.config>"
 #define APPLICATION_CONFIG <clasp/main/application.config>
@@ -54,6 +51,7 @@ THE SOFTWARE.
 // Turn on USE_MPS and turn off USE_BOEHM
 #ifdef RUNNING_MPSPREP
 #undef USE_BOEHM
+#undef USE_MMTK
 #define USE_MPS
 #endif
 /*! Configure the application Clasp or Cando currently */
@@ -815,16 +813,15 @@ namespace gctools {
   extern Layout_code* get_stamp_layout_codes();
 };
 
-#if defined(USE_BOEHM)
-#define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-#endif
-#if defined(USE_MPS)
-#ifdef RUNNING_MPSPREP
-#define FRIEND_GC_SCANNER(nscl)
-#else
+#if defined(USE_BOEHM) || defined(USE_MMTK)
+# define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
+#elif defined(USE_MPS)
+# ifdef RUNNING_MPSPREP
+#  define FRIEND_GC_SCANNER(nscl)
+# else
 //#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
-#define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-#endif
+#  define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
+# endif
 #endif
 
 
