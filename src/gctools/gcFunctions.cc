@@ -388,7 +388,7 @@ SYMBOL_EXPORT_SC_(GcToolsPkg, ramp);
 SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 
 CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
-#ifdef USE_MPS
+#if defined(USE_MPS)
   mps_alloc_pattern_t mps_pat;
   if (pattern == _sym_ramp) {
     mps_pat = mps_alloc_pattern_ramp();
@@ -404,13 +404,13 @@ CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
 #else
-  MISSING_GC_SUPPORT();
+  // Do nothing
 #endif
 };
 
 CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   core::Symbol_sp pattern(_Nil<core::Symbol_O>());
-#ifdef USE_MPS
+#if defined(USE_MPS)
   core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
   if (patternStack.nilp())
     return _Nil<core::Symbol_O>();
@@ -426,7 +426,7 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   mps_ap_alloc_pattern_end(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
 #else
-  MISSING_GC_SUPPORT();
+  // Do nothing
 #endif
   return pattern;
 };
@@ -543,22 +543,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   gctools__garbage_collect();
   gctools__garbage_collect();
 #if defined(USE_BOEHM)
-  static_ReachableClassKinds = new (ReachableClassMap);
-  invalidHeaderTotalSize = 0;
-  GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
-  OutputStream << "Walked LispKinds\n" ;
-  size_t totalSize(0);
-  OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
-  totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
-  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
-  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
-  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
-
-  delete static_ReachableClassKinds;
+  boehm_room(OutputStream);
 #elif defined(USE_MPS)
   mps_arena_park(global_arena);
   mps_word_t numCollections = mps_collections(global_arena);
@@ -679,7 +664,7 @@ CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
   SIMPLE_ERROR(BF("Add support for MPS"));
 #elif defined(USE_BOEHM)
   if (stamp.fixnump()) {
-    FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
+    gctools::FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
 # if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
     GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_stamps, (void*)&findStamp);
 # else
@@ -708,7 +693,7 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 #elif defined(USE_BOEHM)
   if (obj.fixnump()) {
     void* base = GC_base((void*)obj.unsafe_fixnum());
-    FindOwner findOwner(base);
+    gctools::FindOwner findOwner(base);
 # if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
     GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_owners, (void*)&findOwner);
 # else
