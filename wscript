@@ -1244,9 +1244,9 @@ def configure(cfg):
     cfg.check_cxx(lib='gmpxx gmp'.split(), cxxflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cxxflags='-Wall', uselib_store='FFI')
     try:
-        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
-    except ConfigurationError:
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    except ConfigurationError:
+        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
 
     if (cfg.env.ENABLE_MMTK==True):
         cfg.check_cxx(lib='mmtk_clasp', cflags='-Wall', linkflags="-L/opt/clasp/lib/", uselib_store='MMTK')

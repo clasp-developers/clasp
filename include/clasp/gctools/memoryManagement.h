@@ -38,7 +38,9 @@
 # endif
 # include <gc/gc.h>
 # include <gc/gc_mark.h>
+extern "C" {
 # include <gc/gc_inline.h>
+};
 #elif defined(USE_MMTK)
 # include <mmtk/api/mmtk.h>
 #elif defined(USE_MPS) 
