@@ -1710,45 +1710,29 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib,SymbolLookup& symbolLooku
     }
   }
 }
-  
-void snapshot_save(const std::string& filename) {
+
+struct Snapshot_save_data {
+  std::string filename_;
+  Snapshot_save_data(const std::string& fn) : filename_(fn) {};
+};
+
+
+/* This is not allowed to do any allocations. */
+void* snapshot_save_impl(void* data) {
+  Snapshot_save_data* snapshot_data = (Snapshot_save_data*)data;
+  std::string filename = snapshot_data->filename_;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
   SymbolLookup lookup;
   loadExecutableSymbolLookup(lookup);
 
-  //
-  // Release object files
-  //
-#if 0
-  _lisp->_Roots._AllObjectFiles.store(_Nil<core::T_O>());
-#else
-//  printf("%s:%d:%s NOT releasing code objects\n", __FILE__, __LINE__, __FUNCTION__ );
-#endif
-
-  //
-  // Call Common Lisp code to release things at snapshot-save time
-  //
-//  printf("%s:%d:%s About to invoke-snapshot-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__, comp::_sym_invoke_save_hooks->boundP());
-  if (comp::_sym_invoke_save_hooks->fboundp()) {
-    core::eval::funcall( comp::_sym_invoke_save_hooks );
-  }
-
-  //
-  // Clear out a few things
-  //
-  comp::_sym_STARprimitivesSTAR->setf_symbolValue(_Nil<core::T_O>());
-
-  gctools::gctools__garbage_collect();
-  gctools::gctools__garbage_collect();
-  gctools::gctools__garbage_collect();
-  gctools::cl__room(_Nil<core::T_O>());
   //
   // Start the snapshot save process
   //
   Snapshot snapshot;
   
 #if defined(USE_BOEHM)
-  GC_stop_world_external();
+  printf("%s:%d:%s Not using GC_stop_world_external();\n", __FILE__, __LINE__, __FUNCTION__ );
+//  GC_stop_world_external();
 #else
   MISSING_GC_SUPPORT();
 #endif
@@ -1833,9 +1817,9 @@ void snapshot_save(const std::string& filename) {
   //
   size_t roots = sizeof(ISLHeader_s)* (1 + NUMBER_OF_CORE_SYMBOLS + global_symbol_count );
   size_t buffer_size = 
-    + calc_size._TotalSize            // for all objects
-    + roots                                            // size for roots
-    + sizeof(ISLHeader_s)*2;                           // size of last End header
+      + calc_size._TotalSize            // for all objects
+      + roots                                            // size for roots
+      + sizeof(ISLHeader_s)*2;                           // size of last End header
   // Align up memory_size to pagesize
 
   
@@ -1989,7 +1973,7 @@ void snapshot_save(const std::string& filename) {
   std::ofstream wf(filename, std::ios::out | std::ios::binary);
   if (!wf) {
     printf("Cannot open file %s\n", filename.c_str());
-    return;
+    return NULL;
   }
   snapshot._HeaderBuffer->write_to_stream(wf);
   snapshot._Libraries->write_to_stream(wf);
@@ -2011,8 +1995,36 @@ void snapshot_save(const std::string& filename) {
 #endif
   exit(0);
 
-  GC_start_world_external();
+#ifdef USE_BOEHM
+  printf("%s:%d:%s Not using GC_start_world_external();\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
+  return NULL;
+}
 
+void snapshot_save(const std::string& filename) {
+  //
+  // Call Common Lisp code to release things at snapshot-save time
+  //
+  //  printf("%s:%d:%s About to invoke-snapshot-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__, comp::_sym_invoke_save_hooks->boundP());
+  if (comp::_sym_invoke_save_hooks->fboundp()) {
+    core::eval::funcall( comp::_sym_invoke_save_hooks );
+  }
+  //
+  // Clear out a few things
+  //
+  comp::_sym_STARprimitivesSTAR->setf_symbolValue(_Nil<core::T_O>());
+
+  gctools::gctools__garbage_collect();
+  gctools::gctools__garbage_collect();
+  gctools::gctools__garbage_collect();
+  gctools::cl__room(_Nil<core::T_O>());
+
+#if defined(USE_BOEHM)
+  Snapshot_save_data data(filename);
+  GC_call_with_alloc_lock( snapshot_save_impl, &data );
+#else
+  MISSING_GC_SUPPORT();
+#endif
 }
 
 struct temporary_root_holder_t {
