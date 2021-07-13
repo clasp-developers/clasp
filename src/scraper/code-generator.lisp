@@ -1118,9 +1118,7 @@ template <typename FP> struct Cast<~a,FP> {
   inline static bool isA(FP client) {
     gctools::Header_s header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
     int kindVal = header->shifted_stamp();
-    if (~a) return true;~
-~@[~%    if (dynamic_cast<core::Instance_O*>(client) != NULL) return true;~%~]~
-    return false;
+    return (~a);
   };
 };~%"
           (tags:stamp-name kind)
@@ -1131,19 +1129,14 @@ template <typename FP> struct Cast<~a,FP> {
                         (adjust-stamp min (tags:stamp-wtag kind)))
                 (format nil "(ISA_ADJUST_STAMP(~d) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~d)"
                         (adjust-stamp min 0)
-                        (adjust-stamp max +max-wtag+))))
-          ;; Special case put in for the sake of derivable cxx classes,
-          ;; but this might warrant rethinking
-          (string= (class-key% kind) "core::Instance_O")))
+                        (adjust-stamp max +max-wtag+))))))
 
 (defun generate-typeq (kind stream)
   (multiple-value-bind (min max max-kind) (hierarchy-class-stamp-range kind)
     (if (= min max)
-        (format stream "ADD_SINGLE_TYPEQ_TEST~:[~;_INSTANCE~](~a, TYPEQ_ADJUST_STAMP(~d));"
-                (string= (class-key% kind) "core::Instance_O")
+        (format stream "ADD_SINGLE_TYPEQ_TEST(~a, TYPEQ_ADJUST_STAMP(~d));"
                 (class-key% kind) (adjust-stamp min (tags:stamp-wtag kind)))
-        (format stream "ADD_RANGE_TYPEQ_TEST~:[~;_INSTANCE~](~a, ~a, TYPEQ_ADJUST_STAMP(~d), TYPEQ_ADJUST_STAMP(~d));"
-                (string= (class-key% kind) "core::Instance_O")
+        (format stream "ADD_RANGE_TYPEQ_TEST(~a, ~a, TYPEQ_ADJUST_STAMP(~d), TYPEQ_ADJUST_STAMP(~d));"
                 (class-key% kind) (class-key% max-kind)
                 (adjust-stamp min 0) (adjust-stamp max +max-wtag+)))))
 

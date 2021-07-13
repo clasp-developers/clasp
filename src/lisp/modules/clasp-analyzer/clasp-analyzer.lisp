@@ -464,15 +464,9 @@ This could change the value of stamps for specific classes - but that would brea
                        (if (= stamp-value-low stamp-value-high)
                            (format fout "    // IsA-stamp-range ~a val -> ~a~%" key stamp-value-low)
                            (format fout "    // IsA-stamp-range ~a low high --> ~a ~a ~%" key stamp-value-low stamp-value-high))
-                       (if (string= key "core::Instance_O") ; special case core::Instance_O
-                           (progn
-                             (if (= stamp-value-low stamp-value-high)
-                                 (format fout "      if (kindVal == ISA_ADJUST_STAMP(~a)) return true;~%" stamp-value-low)
-                                 (format fout "      if ((ISA_ADJUST_STAMP(~a) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~a))) return true;~%" stamp-value-low stamp-value-high))
-                             (format fout "      return (dynamic_cast<core::Instance_O*>(client)!=NULL);~%"))
-                           (if (= stamp-value-low stamp-value-high)
-                               (format fout "      return (kindVal == ISA_ADJUST_STAMP(~a));~%" stamp-value-low)
-                               (format fout "      return ((ISA_ADJUST_STAMP(~a) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~a)));~%" stamp-value-low stamp-value-high))))))
+                       (if (= stamp-value-low stamp-value-high)
+                           (format fout "      return (kindVal == ISA_ADJUST_STAMP(~a));~%" stamp-value-low)
+                           (format fout "      return ((ISA_ADJUST_STAMP(~a) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~a)));~%" stamp-value-low stamp-value-high)))))
                (format fout "  };~%")
                (format fout "};~%")))
            (analysis-stamps analysis)))
@@ -488,13 +482,9 @@ This could change the value of stamps for specific classes - but that would brea
                    (hierarchy-class-stamp-range key analysis)
                  (if (null contig)
                      (format fout "#error \"The stamp values of child classes of ~a do not form a contiguious range!!!\"~%" key)
-                     (if (string= key "core::Instance_O") ; special case core::Instance_O
-                         (if (= low high)
-                             (format fout "      ADD_SINGLE_TYPEQ_TEST_INSTANCE(~a,TYPEQ_ADJUST_STAMP(~a));~%" key low)
-                             (format fout "      ADD_RANGE_TYPEQ_TEST_INSTANCE(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%" key (stamp-key high-stamp) low high))
-                         (if (= low high)
-                             (format fout "      ADD_SINGLE_TYPEQ_TEST(~a,TYPEQ_ADJUST_STAMP(~a));~%" key low)
-                             (format fout "      ADD_RANGE_TYPEQ_TEST(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%" key (stamp-key high-stamp) low high)))))))
+                     (if (= low high)
+                         (format fout "      ADD_SINGLE_TYPEQ_TEST(~a,TYPEQ_ADJUST_STAMP(~a));~%" key low)
+                         (format fout "      ADD_RANGE_TYPEQ_TEST(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%" key (stamp-key high-stamp) low high))))))
            (analysis-stamps analysis)))
 
 
@@ -3056,12 +3046,6 @@ so that they don't have to be constantly recalculated"
                                        :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
                                        :deallocator 'deallocator-for-gccontainer))
-    #+(or)(add-species manager (make-species :name :GCSTRING
-                                             :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCString" (alloc-key x))))
-                                             :scan 'scanner-for-gcstring ;; don't need to scan but do need to calculate size
-                                             :dump 'dumper-for-gcstring
-                                             :finalize 'finalizer-for-gcstring
-                                             :deallocator 'deallocator-for-gcstring))
     (add-species manager (make-species :name :classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (not (alloc-template-specializer-p x *analysis*))))
                                        :scan 'scanner-for-lispallocs
@@ -3251,7 +3235,7 @@ so that they don't have to be constantly recalculated"
                       :when (typep var 'container-offset)
                       :collect var)))
     (when (> (length variable) 1)
-      (analysis-error "Class ~a has more than one GCVector/GCArray/GCString part" (cclass-key x)))
+      (analysis-error "Class ~a has more than one GCVector/GCArray part" (cclass-key x)))
     (make-instance 'class-layout
                    :layout-class x
                    :fixed-part fixed
