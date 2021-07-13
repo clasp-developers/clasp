@@ -431,6 +431,9 @@ Convert colons to underscores"
           if (alphanumericp c) do (princ c sout)
             else do (princ #\_ sout))))
 
+;;; This is used to determine stamp ranges. Since subclasses always have a
+;;; higher stamp value than their superclasses, the low end of the range for
+;;; any class is just that class itself.
 (defun highest-stamp-class (c)
   (if (direct-subclasses% c)
       (let ((high-stamp 0)
@@ -497,7 +500,7 @@ Convert colons to underscores"
   (logior (ash stamp +stamp-shift+) wtag))
 
 (defmethod stamp-value ((class gc-managed-type))
-  (logior (ash (stamp% class) +stamp-shift+) +header-wtag+))
+  (adjust-stamp (stamp% class) +header-wtag+))
 
 (defun class-wtag (class)
   (let ((ckey (class-key% class)))
@@ -511,10 +514,12 @@ Convert colons to underscores"
            +derivable-wtag+)
           (t +header-wtag+))))
 
+(defmethod stamp-value ((class kind))
+  (adjust-stamp (stamp% class) (tags:stamp-wtag class)))
+
 (defmethod stamp-value ((class t))
   "This could change the value of stamps for specific classes - but that would break quick typechecks like (typeq x Number)"
-;;;  (format t "Assigning stamp-value for class ~s~%" (class-key% class))
-  (logior (ash (stamp% class) +stamp-shift+) (class-wtag class)))
+  (adjust-stamp (stamp% class) (class-wtag class)))
 
 (defun generate-declare-forwards (stream exposed-classes)
   (format stream "#ifdef DECLARE_FORWARDS~%")
@@ -1076,76 +1081,14 @@ void ~a::expose_to_clasp() {
   (generate-kind-tag-code (tag% kind) stream)
   (generate-layout-code kind stream))
 
-(defun adjusted-stamp (kind)
-  (adjust-stamp (stamp% kind) (tags:stamp-wtag kind)))
-
 (defun generate-gc-stamp (kind stream)
   (format stream "~a = ADJUST_STAMP(~a) // Stamp(~a)  wtag(~a)~%"
-          (tags:stamp-name kind) (adjusted-stamp kind)
+          (tags:stamp-name kind) (stamp-value kind)
           (stamp% kind) (tags:stamp-wtag kind)))
 
 (defun generate-register-stamp (kind stream)
   (format stream "register_stamp_name(\"~a\", ADJUST_STAMP(~a));~%"
-          (tags:stamp-name kind) (adjusted-stamp kind)))
-
-(defun %hierarchy-class-stamp-range (kind)
-  (let* ((count 1) ; number of subclasses of this class
-         (stamp (stamp% kind))
-         (min stamp) ; minimum stamp number of a subclass
-         (max stamp) ; maximum stamp number of a subclass
-         (max-kind kind)) ; kind with the maximum stamp number
-    (dolist (subkind (direct-subclasses% kind))
-      (multiple-value-bind (sub-min sub-max sub-count sub-max-kind)
-          (%hierarchy-class-stamp-range subkind)
-        (incf count sub-count)
-        (when (< sub-min min)
-          (error "Subclass of ~a has a lower stamp somehow" kind))
-        (when (> sub-max max)
-          (setf max sub-max max-kind sub-max-kind))))
-    (values min max count max-kind)))
-
-(defun hierarchy-class-stamp-range (kind)
-  (multiple-value-bind (min max count max-kind)
-      (%hierarchy-class-stamp-range kind)
-    (if (= (- max min) (- count 1))
-        (values min max max-kind)
-        (error "Stamp range for ~a is not continuous" kind))))
-
-(defun generate-isA (kind stream)
-  (format stream "// ~a
-template <typename FP> struct Cast<~a,FP> {
-  inline static bool isA(FP client) {
-    gctools::Header_s header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
-    int kindVal = header->shifted_stamp();
-    return (~a);
-  };
-};~%"
-          (tags:stamp-name kind)
-          (class-key% kind)
-          (multiple-value-bind (min max) (hierarchy-class-stamp-range kind)
-            (if (= min max)
-                (format nil "kindVal == ISA_ADJUST_STAMP(~d)"
-                        (adjust-stamp min (tags:stamp-wtag kind)))
-                (format nil "(ISA_ADJUST_STAMP(~d) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~d)"
-                        (adjust-stamp min 0)
-                        (adjust-stamp max +max-wtag+))))))
-
-(defun generate-typeq (kind stream)
-  (multiple-value-bind (min max max-kind) (hierarchy-class-stamp-range kind)
-    (if (= min max)
-        (format stream "ADD_SINGLE_TYPEQ_TEST(~a, TYPEQ_ADJUST_STAMP(~d));"
-                (class-key% kind) (adjust-stamp min (tags:stamp-wtag kind)))
-        (format stream "ADD_RANGE_TYPEQ_TEST(~a, ~a, TYPEQ_ADJUST_STAMP(~d), TYPEQ_ADJUST_STAMP(~d));"
-                (class-key% kind) (class-key% max-kind)
-                (adjust-stamp min 0) (adjust-stamp max +max-wtag+)))))
-
-(defun generate-gckind-stamp (kind stream)
-  (format stream
-          "template <> class gctools::GCStamp<~a> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::~a;
-};~%"
-          (class-key% kind) (tags:stamp-name kind)))
+          (tags:stamp-name kind) (stamp-value kind)))
 
 (defun maybe-relative (dir)
   (cond
