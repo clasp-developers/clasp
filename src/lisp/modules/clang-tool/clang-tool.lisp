@@ -452,6 +452,7 @@ Sets up a dynamic environment where clang-tooling:*compilation-tool-database* is
 (defmethod initialize-instance :after ((obj compilation-tool-database) &rest args)
   "* Description
 Initialize the source-namestrings using all filenames in the database if they haven't already been set."
+  (declare (ignore args))
   (unless (slot-boundp obj 'source-namestrings)
     (setf (source-namestrings obj) (select-source-namestrings obj))))
 
@@ -515,6 +516,7 @@ Otherwise the value of convert-relative-includes-to-absolute is used.
 * Description
 Setup the default arguments adjusters."
   (push (lambda (args filename)
+          (declare (ignore filename))
           (format t "Arguments:~%")
           (format t "~{~A \\~%~}%" (coerce args 'list))
           (format t "If nothing seems to be working - try running the arguments on the command line and look for errors~%")
@@ -573,7 +575,7 @@ it contains the string source-path-identifier.  So /a/b/c/d.cc will match /b/"
 A pathname.
 * Description
 Return the pathname of the directory that contains the main source file. This is where the project.dat and clasp_gc.cc file will be written."
-  (translate-logical-pathname #P"source-dir:src/main/"))
+  (translate-logical-pathname #P"source-dir:src;main;"))
 
 
 (defun select-source-namestrings (compilation-tool-database &optional (pattern nil))
@@ -896,7 +898,9 @@ Return the source code for the node that has been associated with the tag."
                                                    :defaults relative) absolute))
          (probed-file (memoized-probe-file pathname)))
     (if (null probed-file)
-        (format nil "[ploc-as-string could not locate ~a --> result after merging ~a]" relative pathname)
+        (progn
+          (break "Check args ~s" (list absolute relative))
+          (format nil "[ploc-as-string could not locate ~a --> result after merging ~a]" relative pathname))
         (format nil "~a:~a:~a" (namestring probed-file) (ast-tooling:get-line ploc) (ast-tooling:get-column ploc)))))
 
 
@@ -1021,16 +1025,17 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
       (apply-arguments-adjusters compilation-tool-database tool)
       ;;    (ast-tooling:run tool factory)
       (format t "Loading ASTs for the files: ~a~%" files)
-      (multiple-value-bind (num asts)
-          (ast-tooling:build-asts tool)
-        (if (> num 0)
+      (format t "Tool -> ~a~%" tool)
+      (let ((asts (ast-tooling:build-asts tool)))
+        (if (> (length asts) 0)
             (progn
-              (format t "build-asts result: ~s ~s~%" num asts)
+              (format t "build-asts result: ~s ~s~%" (length asts) asts)
               (setq *asts* asts))
             (progn
               (setq *asts* nil)
               (format t "NO ASTS WERE LOADED!!!!~%")))
-        (format t "Built asts: ~a~%" asts)))))
+        (format t "Built asts: ~a~%" asts)
+        asts))))
 
 (defun safe-add-dynamic-matcher (match-finder compiled-matcher callback &key matcher-sexp)
   (or (ast-tooling:add-dynamic-matcher match-finder compiled-matcher callback)

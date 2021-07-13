@@ -853,8 +853,16 @@ void initialize_clangTooling() {
         .def("clearArgumentsAdjusters", &clang::tooling::ClangTool::clearArgumentsAdjusters)
         //            .  def("addArgumentsAdjuster",&clang::tooling::ClangTool::addArgumentsAdjuster)
         .def("appendArgumentsAdjuster", &clang::tooling::ClangTool::appendArgumentsAdjuster)
-        .def("clangToolRun", &clang::tooling::ClangTool::run)
-        .def("buildASTs", &clang::tooling::ClangTool::buildASTs, pureOutValue<1>());
+        .def("clangToolRun", &clang::tooling::ClangTool::run);
+    m.def("buildASTs", +[](clang::tooling::ClangTool& tool ){
+          std::vector<std::unique_ptr<clang::ASTUnit>> ASTs;
+          tool.buildASTs(ASTs);
+          ql::list ll;
+          for (int i(0), iEnd(ASTs.size()); i < iEnd; ++i) {
+            ll << clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::make_wrapper(std::move(ASTs[i]), reg::registered_class<clang::ASTUnit>::id);
+          }
+          return ll.result();
+        });
     class_<clang::tooling::Replacement>(m,"Replacement")
         .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, llvm::StringRef>())
         .def("toString", &clang::tooling::Replacement::toString)
