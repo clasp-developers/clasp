@@ -483,7 +483,7 @@ Convert colons to underscores"
     (setf *deep-inheritance* deep-inheritance)
     deep-inheritance))
 
-(defgeneric stamp-value (class &optional stamp))
+(defgeneric stamp-value (class))
 
 
 (defconstant +stamp-shift+    2)
@@ -493,10 +493,11 @@ Convert colons to underscores"
 (defconstant +header-wtag+    #B11)
 (defconstant +max-wtag+       #B11)
 
-(defmethod stamp-value ((class gc-managed-type) &optional stamp)
-  (if stamp
-      (logior (ash stamp +stamp-shift+) +max-wtag+)
-      (logior (ash (stamp% class) +stamp-shift+) +header-wtag+)))
+(defun adjust-stamp (stamp &optional (wtag +max-wtag+))
+  (logior (ash stamp +stamp-shift+) wtag))
+
+(defmethod stamp-value ((class gc-managed-type))
+  (logior (ash (stamp% class) +stamp-shift+) +header-wtag+))
 
 (defun class-wtag (class)
   (let ((ckey (class-key% class)))
@@ -510,12 +511,10 @@ Convert colons to underscores"
            +derivable-wtag+)
           (t +header-wtag+))))
 
-(defmethod stamp-value ((class t) &optional stamp)
+(defmethod stamp-value ((class t))
   "This could change the value of stamps for specific classes - but that would break quick typechecks like (typeq x Number)"
 ;;;  (format t "Assigning stamp-value for class ~s~%" (class-key% class))
-  (if stamp
-      (logior (ash stamp +stamp-shift+) +max-wtag+) ;; Cover the entire range
-      (logior (ash (stamp% class) +stamp-shift+) (class-wtag class))))
+  (logior (ash (stamp% class) +stamp-shift+) (class-wtag class)))
 
 (defun generate-declare-forwards (stream exposed-classes)
   (format stream "#ifdef DECLARE_FORWARDS~%")
@@ -547,8 +546,8 @@ Convert colons to underscores"
     (dolist (c sorted-classes)
       (format stream "STAMPWTAG_~a = ADJUST_STAMP(~a), // stamp ~d unshifted 0x~x  shifted 0x~x~%"
               (build-enum-name (class-key% c)) (stamp-value c)
-              (ash (stamp-value c) -2) (stamp-value c)
-              (* 4 (stamp-value c)))
+              (ash (stamp-value c) (- +stamp-shift+)) (stamp-value c)
+              (ash (stamp-value c) +stamp-shift+))
       (setf stamp-max (max stamp-max (stamp-value c))))
     (maphash (lambda (key type)
                (declare (ignore key))
@@ -606,8 +605,8 @@ public:
           (format stream "    // IsA-stamp-range ~a low high -> ISA_ADJUST_STAMP(~a) ISA_ADJUST_STAMP(~a)
     return ((ISA_ADJUST_STAMP(~a) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~a)));~%"
                   (class-key% c)
-                  (stamp-value c) (stamp-value c high-stamp)
-                  (stamp-value c) (stamp-value c high-stamp))))
+                  (stamp-value c) (adjust-stamp high-stamp)
+                  (stamp-value c) (adjust-stamp high-stamp))))
     (format stream "  };~%};~%"))
   (format stream "#endif // GC_DYNAMIC_CAST~%"))
 
@@ -617,8 +616,11 @@ public:
     (multiple-value-bind (high-stamp high-class)
         (highest-stamp-class c)
       (if (eq (stamp% c) high-stamp)
-          (format stream "    ADD_SINGLE_TYPEQ_TEST(~a,TYPEQ_ADJUST_STAMP(~a)); ~%" (class-key% c) (stamp-value c))
-          (format stream "    ADD_RANGE_TYPEQ_TEST(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%" (class-key% c) (class-key% high-class) (stamp-value c) (stamp-value high-class (stamp% c))))))
+          (format stream "    ADD_SINGLE_TYPEQ_TEST(~a,TYPEQ_ADJUST_STAMP(~a)); ~%"
+                  (class-key% c) (stamp-value c))
+          (format stream "    ADD_RANGE_TYPEQ_TEST(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%"
+                  (class-key% c) (class-key% high-class)
+                  (stamp-value c) (adjust-stamp high-stamp)))))
   (format stream "#endif // GC_TYPEQ~%"))
 
 (defun generate-allocate-all-classes (stream sorted-classes)
@@ -1073,9 +1075,6 @@ void ~a::expose_to_clasp() {
 (defun generate-kind-code (kind stream)
   (generate-kind-tag-code (tag% kind) stream)
   (generate-layout-code kind stream))
-
-(defun adjust-stamp (stamp wtag)
-  (logior (ash stamp +stamp-shift+) wtag))
 
 (defun adjusted-stamp (kind)
   (adjust-stamp (stamp% kind) (tags:stamp-wtag kind)))
