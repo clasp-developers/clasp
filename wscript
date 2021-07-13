@@ -1391,7 +1391,7 @@ def configure(cfg):
 #    cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
 #    cfg.env.append_value('CFLAGS', includes_from_build_dir )
 #    log.debug("DEBUG includes_from_build_dir = %s", includes_from_build_dir)
-    cfg.env.append_value('CXXFLAGS', [ '-std=c++17'])
+    cfg.env.append_value('CXXFLAGS', [ '-std=c++20'])
 
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     if (cfg.env.LTO_FLAG):
@@ -1504,7 +1504,9 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-error=c++11-narrowing'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-c++11-narrowing'] )
-
+    cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-enum-enum-conversion'])
+    cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-anon-enum-enum-conversion'])
+    
     cfg.env.append_value('LIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('STLIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])

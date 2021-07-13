@@ -186,7 +186,7 @@ public:
         shared_locks_array[register_index].value.store(recursion_depth + 1, std::memory_order_seq_cst); // if first -> sequential
         while (want_x_lock.load(std::memory_order_seq_cst)) {
           shared_locks_array[register_index].value.store(recursion_depth, std::memory_order_seq_cst);
-          for (volatile size_t i = 0; want_x_lock.load(std::memory_order_seq_cst); ++i) 
+          for ( size_t i = 0; want_x_lock.load(std::memory_order_seq_cst); ++i) 
             if (i % 100000 == 0) std::this_thread::yield();
           shared_locks_array[register_index].value.store(recursion_depth + 1, std::memory_order_seq_cst);
         }
