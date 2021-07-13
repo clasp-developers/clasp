@@ -467,7 +467,7 @@ size_t ReachableClass::print(const std::string& shortName) {
   }
 }
 
-void boehm_room(std::ostringstream& OutputStream) {
+void clasp_gc_room(std::ostringstream& OutputStream) {
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
   GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );

@@ -145,7 +145,11 @@ struct FindOwner {
   std::vector<void*> _addresses;
   FindOwner(void* pointer) : _pointer(pointer) {};
 };
-void boehm_room(std::ostringstream& OutputStream);
+
+/*!
+ * claspgc_room - the GC specific implementation of ROOM
+ */
+void clasp_gc_room(std::ostringstream& OutputStream);
 
 };
 

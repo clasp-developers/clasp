@@ -542,38 +542,8 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
   gctools__garbage_collect();
   gctools__garbage_collect();
-#if defined(USE_BOEHM)
-  boehm_room(OutputStream);
-#elif defined(USE_MPS)
-  mps_arena_park(global_arena);
-  mps_word_t numCollections = mps_collections(global_arena);
-  size_t arena_committed = mps_arena_committed(global_arena);
-  size_t arena_reserved = mps_arena_reserved(global_arena);
-  vector<ReachableMPSObject> reachables;
-  for (int i = 0; i < global_NextUnshiftedStamp.load(); ++i) {
-    reachables.push_back(ReachableMPSObject(i));
-  }
-  mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
-  mps_amc_apply(global_amcz_pool, amc_apply_stepper, &reachables, 0);
-  mps_arena_release(global_arena);
-  OutputStream << "-------------------- Reachable Kinds -------------------\n";
-  dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
-  OutputStream << std::setw(12) << numCollections << " collections\n";
-  OutputStream << std::setw(12) << arena_committed << " mps_arena_committed\n";
-  OutputStream << std::setw(12) << arena_reserved << " mps_arena_reserved\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.finalizationRequests.load() << " finalization requests\n";
-  size_t totalAllocations = globalMpsMetrics.nonMovingAllocations.load()
-    + globalMpsMetrics.movingAllocations.load()
-    + globalMpsMetrics.movingZeroRankAllocations.load()
-    + globalMpsMetrics.unknownAllocations.load();
-  OutputStream << std::setw(12) << totalAllocations << " total allocations\n";
-  OutputStream << std::setw(12) <<  globalMpsMetrics.nonMovingAllocations.load() << "    non-moving(AWL) allocations\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.movingAllocations.load() << "    moving(AMC) allocations\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.movingZeroRankAllocations.load() << "    moving zero-rank(AMCZ) allocations\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.unknownAllocations.load() << "    unknown(configurable) allocations\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.totalMemoryAllocated.load() << " total memory allocated\n";
-  OutputStream << std::setw(12) << global_NumberOfRootTables.load() << " module root tables\n";
-  OutputStream << std::setw(12) << global_TotalRootTableSize.load() << " words - total module root table size\n";
+#if defined(USE_BOEHM) || defined(USE_MPS)
+  clasp_gc_room(OutputStream);
 #else
   MISSING_GC_SUPPORT();
 #endif
