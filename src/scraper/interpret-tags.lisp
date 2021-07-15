@@ -155,6 +155,8 @@
   (tags:stamp-key (tag% object)))
 (defmethod base% ((object kind))
   (tags:parent-class (tag% object)))
+(defmethod c++type% ((object kind))
+  (class-key% object))
 
 (defun lispify-class-name (tag packages)
   (format nil "core::magic_name(\"~a:~a\")" (gethash (tags:package% tag) packages) (tags:class-symbol% tag)))

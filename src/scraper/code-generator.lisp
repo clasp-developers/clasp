@@ -378,7 +378,6 @@ Convert colons to underscores"
         (y-name (class-key% y)))
     (inherits-from* x-name y-name inheritance)))
 
-(defparameter *inheritance* nil)
 (defun sort-classes-by-inheritance (exposed-classes)
   (declare (optimize debug))
   (let ((inheritance (make-hash-table :test #'equal))
@@ -388,7 +387,6 @@ Convert colons to underscores"
                  (when base (setf (gethash k inheritance) base))
                  (push v classes)))
              exposed-classes)
-    (setf *inheritance* inheritance)
     (handler-case
         (setf classes (sort classes (lambda (x y)
                                       (not (inherits-from x y inheritance)))))
@@ -471,7 +469,7 @@ Convert colons to underscores"
   (loop for x in (gethash class-key inheritance)
         append (cons x
                      (gather-all-subclasses-for x inheritance))))
-(defparameter *deep-inheritance* nil)
+
 (defun gather-all-subclasses (inheritance)
   (let ((reverse-inheritance (make-hash-table :test #'equal))
         (deep-inheritance (make-hash-table :test #'equal)))
@@ -483,7 +481,6 @@ Convert colons to underscores"
                      do (loop for sub in (gather-all-subclasses-for key reverse-inheritance)
                               do (pushnew sub (gethash key deep-inheritance) :test #'string=))))
              reverse-inheritance)
-    (setf *deep-inheritance* deep-inheritance)
     deep-inheritance))
 
 (defgeneric stamp-value (class))
@@ -831,8 +828,6 @@ void ~a::expose_to_clasp() {
            symbols-by-namespace)
   (format stream "#endif // EXTERN_ALL_SYMBOLS~%"))
 
-(defparameter *symbols-by-package* nil)
-(defparameter *symbols-by-namespace* nil)
 (defun generate-code-for-symbols (packages-to-create symbols)
   (declare (optimize (speed 3)))
   ;; Uniqify the symbols
@@ -840,8 +835,6 @@ void ~a::expose_to_clasp() {
     (let ((symbols-by-package (make-hash-table :test #'equal))
           (symbols-by-namespace (make-hash-table :test #'equal))
           (index 0))
-      (setq *symbols-by-package* symbols-by-package)
-      (setq *symbols-by-namespace* symbols-by-namespace)
       ;; Organize symbols by package
       (dolist (symbol symbols)
         (pushnew symbol
@@ -1081,14 +1074,101 @@ void ~a::expose_to_clasp() {
   (generate-kind-tag-code (tag% kind) stream)
   (generate-layout-code kind stream))
 
-(defun generate-gc-stamp (kind stream)
-  (format stream "~a = ADJUST_STAMP(~a) // Stamp(~a)  wtag(~a)~%"
-          (tags:stamp-name kind) (stamp-value kind)
-          (stamp% kind) (tags:stamp-wtag kind)))
+(defconstant +ptr-name+
+  (if (boundp '+ptr-name+) ; avoid redefinition warnings
+      (symbol-value '+ptr-name+)
+      "obj_gc_safe")
+  "This variable is used to temporarily hold a pointer to a Wrapper<...> object - we want the GC to ignore it")
 
-(defun generate-register-stamp (kind stream)
-  (format stream "register_stamp_name(\"~a\", ADJUST_STAMP(~a));~%"
-          (tags:stamp-name kind) (stamp-value kind)))
+(defgeneric %generate-finalizer (stream kind tag)
+  (:argument-precedence-order tag kind stream))
+(defun generate-finalizer (stream kind)
+  (%generate-finalizer stream kind (tag% kind)))
+
+(defun strip-all-namespaces-from-name (name)
+  (let ((pos (search "::" name :from-end t)))
+    (if pos
+        (subseq name (+ 2 pos)) ; +2 for the :: itself
+        name)))
+
+(defun generate-finalizer-for-lispalloc (stream kind)
+  (format stream "obj_finalize_STAMPWTAG_~a:
+{
+    // stamp value ~a
+    ~a* ~a = reinterpret_cast<~a*>(client);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored \"-Wignored-qualifiers\"
+    ~a->~~~a();
+#pragma clang diagnostic pop
+    goto finalize_done;
+}~%"
+          (build-enum-name (class-key% kind)) (stamp-value% kind)
+          (class-key% kind) +ptr-name+ (class-key% kind)
+          +ptr-name+ (strip-all-namespaces-from-name (class-key% kind))))
+
+(defmethod %generate-finalizer (stream kind (tag tags:class-kind))
+  (generate-finalizer-for-lispalloc stream kind))
+(defmethod %generate-finalizer (stream kind (tag tags:templated-kind))
+  (generate-finalizer-for-lispalloc stream kind))
+
+(defun generate-error-finalizer (stream kind)
+  (format stream "obj_finalize_STAMPWTAG_~a:
+{
+    // stamp value ~a
+    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));
+}~%"
+          (build-enum-name (class-key% kind)) (stamp-value% kind)
+          (class-key% kind)))
+
+(defmethod %generate-finalizer (stream kind (tag tags:container-kind))
+  (generate-error-finalizer stream kind))
+(defmethod %generate-finalizer (stream kind (tag tags:bitunit-container-kind))
+  (generate-error-finalizer stream kind))
+
+(defun generate-finalizer-table-entry (stream kind)
+  (format stream "  /* ~d */ &&obj_finalize_STAMPWTAG_~a,~%"
+          (stamp-value kind) (build-enum-name (class-key% kind))))
+
+(defgeneric %generate-deallocator (stream kind tag)
+  (:argument-precedence-order tag kind stream))
+(defun generate-deallocator (stream kind)
+  (%generate-deallocator stream kind (tag% kind)))
+
+(defun generate-deallocator-for-lispalloc (stream kind)
+  (format stream "obj_deallocate_unmanaged_instance_STAMPWTAG_~a:
+{
+    // stamp value ~a
+    ~a* ~a = reinterpret_cast<~a*>(client);
+    GC<~a>::deallocate_unmanaged_instance(~a);
+    return;
+}~%"
+          (build-enum-name (class-key% kind)) (stamp-value% kind)
+          (class-key% kind) +ptr-name+ (class-key% kind)
+          (class-key% kind) +ptr-name+))
+
+(defmethod %generate-deallocator (stream kind (tag tags:class-kind))
+  (generate-deallocator-for-lispalloc stream kind))
+(defmethod %generate-deallocator (stream kind (tag tags:templated-kind))
+  (generate-deallocator-for-lispalloc stream kind))
+
+(defun generate-error-deallocator (stream kind)
+  (format stream "obj_deallocate_unmanaged_instance_STAMPWTAG_~a:
+{
+    // do nothing stamp value ~a
+    THROW_HARD_ERROR(BF(\"Should never deallocate object ~a\"));
+}~%"
+          (build-enum-name (class-key% kind)) (stamp-value% kind)
+          (class-key% kind)))
+
+(defmethod %generate-deallocator (stream kind (tag tags:container-kind))
+  (generate-error-deallocator stream kind))
+(defmethod %generate-deallocator (stream kind (tag tags:bitunit-container-kind))
+  (generate-error-deallocator stream kind))
+
+(defun generate-deallocator-table-entry (stream kind)
+  (format stream
+          "  /* ~d */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_~a,~%"
+          (stamp-value kind) (build-enum-name (class-key% kind))))
 
 (defun maybe-relative (dir)
   (cond
