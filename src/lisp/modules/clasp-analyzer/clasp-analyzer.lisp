@@ -8,7 +8,7 @@
 (defpackage #:clasp-analyzer
   (:shadow #:function-info #:function-type)
   (:use #:common-lisp #:ast-tooling #:clang-ast)
-  (:shadow #:dump #:get-string #:size #:type)
+  (:shadow #:get-string #:size #:type)
   (:export
    #:setup-clasp-analyzer-compilation-tool-database
    #:load-project
@@ -2460,7 +2460,6 @@ so that they don't have to be constantly recalculated"
   scan          ;; Function - generates scanner for species
   finalize      ;; Function - generates obj_finalize code for species
   deallocator   ;; Function - generates obj_deallocate_unmanaged_instance code for species
-  dump          ;; Function - fills a stringstream with a dump of the species
   index
   )
 
@@ -2613,12 +2612,11 @@ so that they don't have to be constantly recalculated"
   label-list
   label-prefix )
 
-(defmacro with-jump-table ((fout jump-table-index dest stamp &optional continue) &body body)
+(defmacro with-jump-table ((fout dest stamp &optional continue) &body body)
   (let ((label-gs (gensym)))
     `(let* ((,fout (destination-stream ,dest))
 	    (,label-gs (format nil "~a_~a" (destination-label-prefix ,dest)
-                               (get-stamp-name ,stamp)))
-            (,jump-table-index (length (destination-label-list ,dest))))
+                               (get-stamp-name ,stamp))))
        (push (cons (stamp-value% ,stamp) ,label-gs) (destination-label-list ,dest))
        (format ,fout "~a:~%" ,label-gs)
        (format ,fout "{~%")
@@ -2646,20 +2644,16 @@ so that they don't have to be constantly recalculated"
   (declare (ignore dest stamp anal))
   nil)
 
-(defun dumper-for-abstract-species (dest stamp anal)
-  (declare (ignore dest stamp anal))
-  nil)
-
 (defun finalizer-for-abstract-species (dest stamp anal)
   (declare (ignore anal))
-  (with-jump-table (fout jti dest stamp)
+  (with-jump-table (fout dest stamp)
     (format fout "     // do nothing stamp value ~a~%" (stamp-value% stamp))
     (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize object ~a\"));~%" (stamp-key stamp)))
   nil)
 
 (defun deallocator-for-abstract-species (dest stamp anal)
   (declare (ignore anal))
-  (with-jump-table (fout jti dest stamp)
+  (with-jump-table (fout dest stamp)
     (format fout "     // do nothing stamp value ~a~%" (stamp-value% stamp))
     (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate object ~a\"));~%" (stamp-key stamp)))
   nil)
@@ -2676,17 +2670,6 @@ so that they don't have to be constantly recalculated"
              (definition-data (cclass-definition-data class-node)))
         (codegen-lisp-layout dest stamp key layout definition-data anal)))))
 
-(defun dumper-for-lispallocs (dest stamp anal)
-  (declare (ignore anal))
-  (assert (simple-stamp-p stamp))
-  (let* ((alloc (simple-stamp-alloc stamp))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
-    (with-jump-table (fout jti dest stamp "goto BOTTOM")
-      ;;    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-      (format fout "    typedef ~A type_~A;~%" key stamp-name)
-      (format fout "    sout << \"~a size[\" << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) << \"]\" ;~%" stamp-name stamp-name ))))
-
 (defun finalizer-for-lispallocs (dest stamp anal)
   (declare (ignore anal))
   (check-type stamp simple-stamp)
@@ -2695,7 +2678,7 @@ so that they don't have to be constantly recalculated"
          (stamp-name (get-stamp-name stamp))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
-    (with-jump-table (fout jti dest stamp)
+    (with-jump-table (fout dest stamp)
       (gclog "build-mps-finalize-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
@@ -2715,7 +2698,7 @@ so that they don't have to be constantly recalculated"
          (stamp-name (get-stamp-name stamp))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
-    (with-jump-table (fout jti dest stamp)
+    (with-jump-table (fout dest stamp)
       (gclog "build-mps-deallocator-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
@@ -2730,32 +2713,19 @@ so that they don't have to be constantly recalculated"
   (let* ((key (stamp-key stamp))
          (stamp-name (get-stamp-name stamp)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-;;    (with-jump-table (fout jti dest stamp "goto SCAN_ADVANCE")
+;;    (with-jump-table (fout dest stamp "goto SCAN_ADVANCE")
       (let ((fh (destination-helper-stream dest)))
         (let* ((class-node (gethash key (project-classes (analysis-project anal))))
                (layout (class-layout class-node anal))
                (definition-data (cclass-definition-data class-node))                       )
           (codegen-templated-layout dest stamp key layout definition-data anal))
         (progn
-          #+(or)(format fh "{ templated_class_kind, ~d, ~s },~%" stamp-name key)
-          #+(or)(format fh "{ templated_class_jump_table_index, ~d, 0, 0, \"\" },~%" jti))
+          #+(or)(format fh "{ templated_class_kind, ~d, ~s },~%" stamp-name key))
         #+(or)(format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
         #+(or)(let ((all-instance-variables (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
                 (dolist (instance-var all-instance-variables)
                   (scanner-code-for-instance-var fout +ptr-name+ instance-var)))
         #+(or)(format fout "    size = ~a->templatedSizeof();" +ptr-name+))))
-
-
-(defun dumper-for-templated-lispallocs (dest stamp anal)
-  (declare (ignore anal))
-  (assert (templated-stamp-p stamp))
-  (let* ((key (stamp-key stamp))
-         (stamp-name (get-stamp-name stamp)))
-    (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-jump-table (fout jti dest stamp "goto BOTTOM")
-      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-      (format fout "    sout << \"~a size[\" << (AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header) << \"]\" ;~%" stamp-name +ptr-name+ )
-      )))
 
 (defun finalizer-for-templated-lispallocs (dest stamp anal)
   (declare (ignore anal))
@@ -2764,7 +2734,7 @@ so that they don't have to be constantly recalculated"
          (stamp-name (get-stamp-name stamp))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
-    (with-jump-table (fout jti dest stamp)
+    (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
       ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
@@ -2778,7 +2748,7 @@ so that they don't have to be constantly recalculated"
          (stamp-name (get-stamp-name stamp))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
-    (with-jump-table (fout jti dest stamp)
+    (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
       ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
@@ -2801,34 +2771,6 @@ so that they don't have to be constantly recalculated"
                    (definition-data (cclass-definition-data class-node)))
               (codegen-container-layout dest stamp key layout definition-data anal)))))))
 
-
-(defun dumper-for-gccontainer (dest stamp anal)
-  (declare (ignorable dest) (ignore anal))
-  (check-type stamp simple-stamp)
-  (let* ((alloc (simple-stamp-alloc stamp))
-         (decl (containeralloc-ctype alloc))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
-    #+(or)(with-jump-table (fout jti dest stamp "goto BOTTOM")
-            ;;    (format fout "// processing ~a~%" alloc)
-            (if (cxxrecord-ctype-p decl)
-                (progn
-                  (format fout "    THROW_HARD_ERROR(BF(\"Should never dumper ~a\"));~%" (cxxrecord-ctype-key decl)))
-                (let* ((parms (class-template-specialization-ctype-arguments decl))
-                       (parm0 (car parms))
-                       (parm0-ctype (gc-template-argument-ctype parm0)))
-                  ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-                  (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-                  (format fout "    sout << \"~a\" << \" size/capacity[\" << ~a->size() << \"/\" << ~a->capacity();~%" key +ptr-name+ +ptr-name+)
-                  (format fout "    typedef typename ~A type_~A;~%" key stamp-name)
-                  (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" stamp-name +ptr-name+)
-                  (format fout "    sout << \"bytes[\" << header_and_gccontainer_size << \"]\";~%" )
-                  ))
-            ;;              (format fout "    base = (char*)base + length;~%")
-            )))
-
-
-
 (defun finalizer-for-gccontainer (dest stamp anal)
   (declare (ignore anal))
   (check-type stamp simple-stamp)
@@ -2836,7 +2778,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (stamp-name (get-stamp-name stamp)))
-    (with-jump-table (fout jti dest stamp)
+    (with-jump-table (fout dest stamp)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -2856,7 +2798,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (stamp-name (get-stamp-name stamp)))
-    (with-jump-table (fout jti dest stamp)
+    (with-jump-table (fout dest stamp)
       ;;    (format fout "// processing ~a~%" alloc)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (if (cxxrecord-ctype-p decl)
@@ -2882,27 +2824,6 @@ so that they don't have to be constantly recalculated"
              (definition-data (cclass-definition-data class-node)))
         (codegen-bitunit-container-layout dest stamp key layout definition-data anal)))))
 
-(defun dumper-for-gcbitunit (dest stamp anal)
-  (declare (ignore anal))
-  (check-type stamp simple-stamp)
-  (let* ((alloc (simple-stamp-alloc stamp))
-         (decl (containeralloc-ctype alloc))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
-   (with-jump-table (fout jti dest stamp "goto BOTTOM")
-    ;;    (format fout "// processing ~a~%" alloc)
-    (if (cxxrecord-ctype-p decl)
-	(progn
-	 (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
-	    (let* ((parms (class-template-specialization-ctype-arguments decl))
-		   (parm0 (car parms))
-		   (parm0-ctype (gc-template-argument-ctype parm0)))
-	     ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-	     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-	     (format fout "    typedef typename ~A type_~A;~%" key stamp-name)
-	     (format fout "    size_t header_and_gcbitunit_size = AlignUp(sizeof_bitunit_container<type_~a>(~a->;emgtj()))+AlignUp(sizeof(gctools::Header_s));~%" stamp-name +ptr-name+)
-	     (format fout "    sout << \"~a\" << \"bytes[\" << header_and_gcbitunit_size << \"]\";~%" stamp-name ))))))
-
 (defun finalizer-for-gcbitunit (dest stamp anal)
   (declare (ignore anal))
   (check-type stamp simple-stamp)
@@ -2910,7 +2831,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (stamp-name (get-stamp-name stamp)))
-    (with-jump-table (fout jti dest stamp)
+    (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))))
 
@@ -2921,7 +2842,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (stamp-name (get-stamp-name stamp)))
-    (with-jump-table (fout jti dest stamp)
+    (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate gcbitunits ~a\"));" (record-ctype-key decl)))))
 
@@ -2934,14 +2855,12 @@ so that they don't have to be constantly recalculated"
   (let* ((manager (make-manager :abstract-species
                                 (make-species :name :abstract
                                               :scan 'scanner-for-abstract-species
-                                              :dump 'dumper-for-abstract-species
                                               :finalize 'finalizer-for-abstract-species
                                               :deallocator 'deallocator-for-abstract-species))))
     (add-species manager (make-species :name :bootstrap
                                        :discriminator (lambda (x) (and (lispalloc-p x)
                                                                        (gctools::bootstrap-kind-p (alloc-key x))))
                                        :scan 'scanner-for-lispallocs
-                                       :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        :deallocator 'deallocator-for-lispallocs))
     (add-species manager (make-species :name :lispalloc
@@ -2949,43 +2868,36 @@ so that they don't have to be constantly recalculated"
                                                                        (not (gctools:bootstrap-kind-p (alloc-key x)))
                                                                        (not (alloc-template-specializer-p x *analysis*))))
                                        :scan 'scanner-for-lispallocs
-                                       :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        :deallocator 'deallocator-for-lispallocs))
     (add-species manager (make-species :name :templated-lispalloc
                                        :discriminator (lambda (x) (and (lispalloc-p x) (alloc-template-specializer-p x *analysis*)))
                                        :scan 'scanner-for-templated-lispallocs
-                                       :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
                                        :deallocator 'deallocator-for-templated-lispallocs))
     (add-species manager (make-species :name :GCVECTOR
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCVector" (alloc-key x))))
                                        :scan 'scanner-for-gccontainer
-                                       :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
                                        :deallocator 'deallocator-for-gccontainer))
     (add-species manager (make-species :name :GCARRAY
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCArray" (alloc-key x))))
                                        :scan 'scanner-for-gccontainer
-                                       :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
                                        :deallocator 'deallocator-for-gccontainer))
     (add-species manager (make-species :name :classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (not (alloc-template-specializer-p x *analysis*))))
                                        :scan 'scanner-for-lispallocs
-                                       :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        :deallocator 'deallocator-for-lispallocs))
     (add-species manager (make-species :name :rootclassalloc
                                        :discriminator (lambda (x) (rootclassalloc-p x))
                                        :scan 'scanner-for-lispallocs
-                                       :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        :deallocator 'deallocator-for-lispallocs))
     (add-species manager (make-species :name :templated-classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (alloc-template-specializer-p x *analysis*)))
                                        :scan 'scanner-for-templated-lispallocs
-                                       :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
                                        :deallocator 'deallocator-for-templated-lispallocs))
     (loop for cur-bitwidth in '(1 2 4)
@@ -3003,7 +2915,6 @@ so that they don't have to be constantly recalculated"
                                                                        t))))
                                                 :bitwidth cur-bitwidth
                                                 :scan 'scanner-for-gcbitunit ;; don't need to scan but do need to calculate size
-                                                :dump 'dumper-for-gcbitunit
                                                 :finalize 'finalizer-for-gcbitunit
                                                 :deallocator 'deallocator-for-gcbitunit)))
     manager))
