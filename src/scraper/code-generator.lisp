@@ -360,7 +360,9 @@ Convert colons to underscores"
        (setf ancestor (gethash x-name inheritance))
        (when (string= ancestor +root-dummy-class+)
          (return-from inherits-from* nil))
-       (unless ancestor
+      (unless ancestor
+        (return-from inherits-from* nil)
+        #+(or)
          (error 'broken-inheritance
                 :class-with-missing-parent x-name
                 :starting-possible-child-class entry-x-name
@@ -461,9 +463,11 @@ Convert colons to underscores"
 
 (defun generate-mps-poison (sout)
   "Sections that are only applicable to Boehm builds include this to prevent them from compiling in MPS builds"
+  #+(or)
+  (progn
   (format sout " #if defined(USE_ANALYSIS)~%")
   (format sout "  #error \"Do not include this section when USE_ANALYSIS is defined - use the section from clasp_gc_xxx.cc\"~%")
-  (format sout " #endif // USE_ANALYSIS~%"))
+  (format sout " #endif // USE_ANALYSIS~%")))
 
 (defun gather-all-subclasses-for (class-key inheritance)
   (loop for x in (gethash class-key inheritance)
@@ -1079,7 +1083,8 @@ void ~a::expose_to_clasp() {
 #endif // defined(GC_OBJ_SCAN)
 #if defined(GC_OBJ_SCAN_HELPERS)~%")
   (loop for kind in classes do (generate-kind-code kind stream))
-  (loop for kind in gc-managed-types do (generate-kind-code kind stream))
+  (loop for kind being the hash-values of gc-managed-types
+        do (generate-kind-code kind stream))
   (format stream "#endif // defined(GC_OBJ_SCAN_HELPERS)~%"))
 
 (defconstant +ptr-name+
@@ -1110,7 +1115,7 @@ void ~a::expose_to_clasp() {
 #pragma clang diagnostic pop
     goto finalize_done;
 }~%"
-          (build-enum-name (class-key% kind)) (stamp-value% kind)
+          (build-enum-name (class-key% kind)) (stamp-value kind)
           (class-key% kind) +ptr-name+ (class-key% kind)
           +ptr-name+ (strip-all-namespaces-from-name (class-key% kind))))
 
@@ -1125,7 +1130,7 @@ void ~a::expose_to_clasp() {
     // stamp value ~a
     THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));
 }~%"
-          (build-enum-name (class-key% kind)) (stamp-value% kind)
+          (build-enum-name (class-key% kind)) (stamp-value kind)
           (class-key% kind)))
 
 (defmethod %generate-finalizer (stream kind (tag tags:container-kind))
@@ -1136,7 +1141,8 @@ void ~a::expose_to_clasp() {
 (defun generate-obj-finalize (stream classes gc-managed-types)
   (format stream "#if defined(GC_OBJ_FINALIZE)~%")
   (loop for k in classes do (generate-finalizer stream k))
-  (loop for k in gc-managed-types do (generate-finalizer stream k))
+  (loop for k being the hash-values of gc-managed-types
+        do (generate-finalizer stream k))
   (format stream "#endif // defined(GC_OBJ_FINALIZE)
 #if defined(GC_OBJ_FINALIZE_HELPERS)
 #endif // defined(GC_OBJ_FINALIZE_HELPERS)~%"))
@@ -1149,7 +1155,8 @@ void ~a::expose_to_clasp() {
   (format stream "#if defined(GC_OBJ_FINALIZE_TABLE)
 static void* OBJ_FINALIZE_table[] = {~%")
   (loop for k in classes do (generate-finalizer-table-entry stream k))
-  (loop for k in gc-managed-types do (generate-finalizer-table-entry stream k))
+  (loop for k being the hash-values of gc-managed-types
+        do (generate-finalizer-table-entry stream k))
   (format stream "   NULL
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)~%"))
@@ -1167,7 +1174,7 @@ static void* OBJ_FINALIZE_table[] = {~%")
     GC<~a>::deallocate_unmanaged_instance(~a);
     return;
 }~%"
-          (build-enum-name (class-key% kind)) (stamp-value% kind)
+          (build-enum-name (class-key% kind)) (stamp-value kind)
           (class-key% kind) +ptr-name+ (class-key% kind)
           (class-key% kind) +ptr-name+))
 
@@ -1182,7 +1189,7 @@ static void* OBJ_FINALIZE_table[] = {~%")
     // do nothing stamp value ~a
     THROW_HARD_ERROR(BF(\"Should never deallocate object ~a\"));
 }~%"
-          (build-enum-name (class-key% kind)) (stamp-value% kind)
+          (build-enum-name (class-key% kind)) (stamp-value kind)
           (class-key% kind)))
 
 (defmethod %generate-deallocator (stream kind (tag tags:container-kind))
@@ -1193,7 +1200,8 @@ static void* OBJ_FINALIZE_table[] = {~%")
 (defun generate-obj-deallocator (stream classes gc-managed-types)
   (format stream "#if defined(GC_OBJ_DEALLOCATOR)~%")
   (loop for k in classes do (generate-deallocator stream k))
-  (loop for k in gc-managed-types do (generate-deallocator stream k))
+  (loop for k being the hash-values of gc-managed-types
+        do (generate-deallocator stream k))
   (format stream "#endif // defined(GC_OBJ_DEALLOCATOR)
 #if defined(GC_OBJ_DEALLOCATOR_HELPERS)
 #endif // defined(GC_OBJ_DEALLOCATOR_HELPERS)~%"))
@@ -1207,7 +1215,7 @@ static void* OBJ_FINALIZE_table[] = {~%")
   (format stream "#if defined(GC_OBJ_DEALLOCATOR_TABLE)
 static void* OBJ_DEALLOCATOR_table[] + {~%")
   (loop for k in classes do (generate-deallocator-table-entry stream k))
-  (loop for k in gc-managed-types
+  (loop for k being the hash-values of gc-managed-types
         do (generate-deallocator-table-entry stream k))
   (format stream "#endif // defined(GC_OBJ_DEALLOCATOR_TABLE)~%"))
 
