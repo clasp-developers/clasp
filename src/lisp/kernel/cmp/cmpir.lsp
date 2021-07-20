@@ -1106,7 +1106,11 @@ and then the irbuilder-alloca, irbuilder-body."
     (bformat t "%s -> %s%N" label irbuilder))
 
 (defun irc-constant-string-ptr (global-string-var)
-  (let ((ptr (llvm-sys:create-geparray *irbuilder* global-string-var (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 0)) "ptr")))
+  (let* ((type (llvm-sys:get-pointer-element-type
+                                      (llvm-sys:get-scalar-type
+                                       (llvm-sys:get-type
+                                        global-string-var))))
+         (ptr (llvm-sys:create-geparray *irbuilder* global-string-var (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 0)) "ptr")))
     ptr))
 
 (defun irc-dtor (name obj)
@@ -1143,6 +1147,9 @@ and then the irbuilder-alloca, irbuilder-body."
     al))
 
 (defun alloca-i8* (&optional (label "i8*-")) (alloca %i8*% 1 label))
+
+
+
 (defun alloca-i32 (&optional (label "i32-")) (alloca %i32% 1 label))
 (defun alloca-va_list (&optional (label "va_list")) (alloca %va_list% 1 label))
 (defun alloca-size_t (&optional (label "var")) (alloca %size_t% 1 label))

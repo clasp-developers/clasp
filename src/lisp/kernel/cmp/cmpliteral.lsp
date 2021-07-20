@@ -535,11 +535,16 @@ rewrite the slot in the literal table to store a closure."
         (cond
           ((eq kind :literal)
            (let* ((label (object-label creator index))
-                  (entry (llvm-sys:create-geparray cmp:*irbuilder*
-                                                   cmp:*load-time-value-holder-global-var*
-                                                   (list (cmp:jit-constant-i32 0)
-                                                         (cmp:jit-constant-i32 index))
-                                                   label))
+                  (entry (let ((type (llvm-sys:get-pointer-element-type
+                                      (llvm-sys:get-scalar-type
+                                       (llvm-sys:get-type
+                                        cmp:*load-time-value-holder-global-var*)))))
+                           (llvm-sys:create-geparray cmp:*irbuilder*
+                                                     type
+                                                     cmp:*load-time-value-holder-global-var*
+                                                     (list (cmp:jit-constant-i32 0)
+                                                           (cmp:jit-constant-i32 index))
+                                                     label)))
                   (arg (cmp:irc-load entry label)))
              arg))
           ((eq kind :transient)

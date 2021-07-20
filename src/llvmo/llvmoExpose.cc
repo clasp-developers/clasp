@@ -3088,10 +3088,12 @@ CL_LISPIFY_NAME(CreateLoad_value_twine);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
 CL_LISPIFY_NAME(CreateLoad_value_bool_twine);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, bool, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
+CL_DOCSTRING("The type must be equiv to firstValue->getType()->getScalarType()->getPointerElementType()");
 CL_LISPIFY_NAME(CreateGEP0);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Type*, llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
+CL_DOCSTRING("The type must be equiv to firstValue->getType()->getScalarType()->getPointerElementType()");
 CL_LISPIFY_NAME(CreateGEPArray);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Type*, llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
 
 CL_LISPIFY_NAME(CreateInBoundsGEPType);
 //CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Type *, llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateInBoundsGEP);
@@ -3409,6 +3411,11 @@ CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getSequentialElementType);
 CL_LISPIFY_NAME(getSequentialElementType);
 CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
 #endif
+CL_LISPIFY_NAME(getScalarType);
+CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getScalarType);
+CL_LISPIFY_NAME(getPointerElementType);
+CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getPointerElementType);
+
   CL_LISPIFY_NAME("type-get-void-ty");
   CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getVoidTy);
   CL_LISPIFY_NAME("type-get-float-ty");
@@ -3451,7 +3458,6 @@ CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&ll
 CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt32PtrTy);
   CL_LISPIFY_NAME("type-get-int64-ptr-ty");
 CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt64PtrTy);
-
 ;
 
 
@@ -4785,7 +4791,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
                            .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
                            .setExecutionSession(std::make_unique<ExecutionSession>(this->_TPC->getSymbolStringPool()))
                            .setJITTargetMachineBuilder(std::move(JTMB))
-                           .setPlatformSetUp(orc::setUpMachOPlatform)
+//                           .setPlatformSetUp(orc::setUpMachOPlatform)
                            .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
                        auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
                        ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
