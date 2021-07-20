@@ -229,8 +229,14 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   #else
     std::string target = "mps";
   #endif
+#elif defined(USE_MMTK)
+  #if defined(_DEBUG_BUILD)
+    std::string target = "mmtk_d";
+  #else
+    std::string target = "mmtk";
+  #endif
 #else
-#error "There must be a target - only boehm and mps are supported"
+#error "There must be a target - only (boehm | mmtk ) are supported"
 #endif
 #ifdef USE_MPI
     target = target + "_mpi";

@@ -32,19 +32,21 @@
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
-#if  defined(USE_BOEHM)
+#if defined(USE_BOEHM)
 # ifdef CLASP_THREADS
 #  define GC_THREADS
 # endif
 # include <gc/gc.h>
 # include <gc/gc_mark.h>
-# include <gc/gc_inline.h>
-#endif // USE_BOEHM
-
-#ifdef USE_MPS
 extern "C" {
-#include <clasp/mps/code/mps.h>
-#include <clasp/mps/code/mpsavm.h>
+# include <gc/gc_inline.h>
+};
+#elif defined(USE_MMTK)
+# include <mmtk/api/mmtk.h>
+#elif defined(USE_MPS) 
+extern "C" {
+# include <clasp/mps/code/mps.h>
+# include <clasp/mps/code/mpsavm.h>
 };
 #endif
 
@@ -969,12 +971,13 @@ inline void* HeaderPtrToConsPtr(void *header) {
 };
 
 
-#if  defined(USE_BOEHM)
-#include <clasp/gctools/boehmGarbageCollection.h>
-#endif
-
-#ifdef USE_MPS
-#include <clasp/gctools/mpsGarbageCollection.h>
+#if defined(USE_BOEHM)
+# define NON_MOVING_GC 1
+# include <clasp/gctools/boehmGarbageCollection.h>
+#elif defined(USE_MMTK)
+# include <clasp/gctools/mmtkGarbageCollection.h>
+#elif defined(USE_MPS)
+# include <clasp/gctools/mpsGarbageCollection.h>
 #endif
 
 

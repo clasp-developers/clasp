@@ -215,15 +215,20 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   }
   ss << program_name();
   ss << "-";
-#ifdef USE_MPS
+#if defined(USE_MPS)
   ss << "mps-";
-#endif
-#ifdef USE_BOEHM
-  #ifdef USE_PRECISE_GC
+#elif defined(USE_BOEHM)
+# ifdef USE_PRECISE_GC
   ss << "boehmprecise-";
-  #else
+# else
   ss << "boehm-";
-  #endif
+# endif
+#elif defined(USE_MMTK)
+# ifdef USE_PRECISE_GC
+  ss << "mmtkprecise-";
+# else
+  ss << "mmtk-";
+# endif
 #endif
 #ifdef USE_MPSPREP
   ss << "mpsprep-";

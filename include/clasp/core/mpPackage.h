@@ -131,11 +131,10 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
     size_t _StackSize;
     dont_expose<pthread_t> _TheThread;
     // Need to match fields in the two GC's
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM) || defined(USE_MMTK)
     dont_expose<void*> thr_o;
     dont_expose<void*> root;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
     dont_expose<mps_thr_t> thr_o;
     dont_expose<mps_root_t> root;
 #endif

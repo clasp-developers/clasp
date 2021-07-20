@@ -59,20 +59,22 @@ THE SOFTWARE.
 
 extern "C" {
 void gc_park() {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   boehm_park();
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   mps_park();
+#elif defined(USE_MMTK)
+  
 #endif
 };
 
 void gc_release() {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   boehm_release();
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   mps_release();
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 };
 
@@ -192,25 +194,27 @@ AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size
 namespace gctools {
 
 void register_thread(mp::Process_sp process, void* stack_base) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   // ----   Boehm stuff needs to be done in the thread function
   GC_stack_base gc_stack_base;
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   my_mps_thread_reg(&process->thr_o._value);
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 };
 
 void unregister_thread(mp::Process_sp process) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   // ----   Boehm stuff needs to be done in the thread function
   GC_unregister_my_thread();
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   my_mps_thread_deref(process->thr_o._value);
 //  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 };
 
@@ -371,13 +375,13 @@ void Header_s::validate() const {
 #endif
   if ( this->_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
   if ( this->_stamp_wtag_mtag.stampP() ) {
-#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
+#if defined(USE_PRECISE_GC)
     uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
     if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }
-#endif // USE_BOEHM
+#endif // USE_PRECISE_GC
 #ifdef DEBUG_GUARD    
     if ( this->_guard != GUARD1) signal_invalid_object(this,"normal object bad header guard");
     if ( this->_guard2!= GUARD2) signal_invalid_object(this,"normal object bad header guard2");
@@ -499,16 +503,6 @@ stamp_t global_next_header_stamp = (stamp_t)STAMPWTAG_max+1;
     StackRoot* 	rooted_StackRoots = NULL;
 #endif
 };
-
-#if 0
-#ifdef USE_BOEHM
-#include "boehmGarbageCollection.cc"
-#endif
-
-#if defined(USE_MPS)
-#include "mpsGarbageCollection.cc"
-#endif
-#endif
 
 namespace gctools {
 
@@ -720,9 +714,10 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
-#endif
-#if defined(USE_BOEHM)
+#elif defined(USE_BOEHM)
   int exitCode = gctools::initializeBoehm(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
+#elif defined(USE_MMTK)
+  int exitCode = gctools::initializeMmtk(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize );
 #endif
   mp::ClaspThreads_exit(); // run pthreads_exit
   return exitCode;

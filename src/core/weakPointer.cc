@@ -48,24 +48,24 @@ CL_DEFUN WeakPointer_sp WeakPointer_O::make(T_sp obj) {
 
 CL_LISPIFY_NAME("weakPointerValid");
 CL_DEFMETHOD bool WeakPointer_O::valid() const {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   return this->_Link!=NULL;
 #else
-  SIMPLE_ERROR(BF("WeakPointer_O not supported"));
+  SIMPLE_ERROR(BF("WeakPointer_O not supported in this GC"));
 #endif
 }
 
 /*! Return (values value t) or (values nil nil) */
 CL_LISPIFY_NAME("weakPointerValue");
 CL_DEFMETHOD T_sp WeakPointer_O::value() const {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   if (this->_Link!=NULL) {
     T_sp obj((gctools::Tagged)this->_Object);
     return obj;
   }
   return _Nil<core::T_O>();
 #else
-  SIMPLE_ERROR(BF("WeakPointer_O not supported"));
+  SIMPLE_ERROR(BF("WeakPointer_O not supported by this GC"));
 #endif
 }
 

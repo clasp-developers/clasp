@@ -2579,7 +2579,7 @@ string IRBuilder_O::__repr__() const {
   } else {
     ss << " :insert-block-name UNDEFINED-BASIC_BLOCK! ";
   }
-#ifdef USE_BOEHM
+#ifdef NON_MOVING_GC
   ss << "@" << (void*)this->_ptr;
 #endif
   ss << " >";

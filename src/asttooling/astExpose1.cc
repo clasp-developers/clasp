@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 
 #include <clang/AST/Comment.h>
+#include <clang/AST/ASTDumper.h>
 #include <clang/AST/DeclTemplate.h>
 #include <clang/AST/DeclFriend.h>
 #include <clang/AST/DeclOpenMP.h>
@@ -45,8 +46,10 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
+#include <clasp/core/wrappedPointer.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/package.h>
+#include <clasp/llvmo/llvmoExpose.h>
 
 #include <clasp/asttooling/astExpose.h>
 #include <clasp/llvmo/translators.h>
@@ -749,6 +752,33 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
   return _Nil<core::T_O>();
 };
 
+CL_LAMBDA(astnode &optional (stream *standard-output*))
+CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp stream) {
+//    .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
+//    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
+//    .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
+  void* ptr = gc::As<core::WrappedPointer_sp>(obj)->mostDerivedPointer();
+  bool stringOutputStream = false;
+  llvm::SmallString<1024> stringOutput;
+  llvm::raw_svector_ostream ostream(stringOutput);
+  core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(obj);
+  if (clang::Decl *decl = wp_node->castOrNull<clang::Decl>()) {
+    decl->dump(ostream);
+  } else if (clang::Stmt *stmt = wp_node->castOrNull<clang::Stmt>()) {
+    clang::ASTDumper P(ostream, /*ShowColors=*/false);
+    P.Visit(stmt);
+  } else if (clang::Type *type = wp_node->castOrNull<clang::Type>()) {
+    clang::ASTDumper P(ostream, /*ShowColors=*/false);
+    P.Visit(type);
+  } else if (clang::QualType *qtype = wp_node->castOrNull<clang::QualType>()) {
+    clang::ASTDumper P(ostream, /*ShowColors=*/false);
+    P.Visit(*qtype);
+  } else {
+    SIMPLE_ERROR(BF("%s:%d Handle unboxing of other node types in cast__dump") % __FILE__ % __LINE__);
+  }
+  core::clasp_write_string(ostream.str().str(),stream);
+}
+
 CL_DEFUN clang::QualType cast__makeQualTypeDefault() {
   clang::QualType qt;
   return qt;
@@ -849,6 +879,7 @@ clang::QualType getPointeeType(clang::Type* type) {
 }
 
 
+
 void initialize_astExpose() {
   core::Package_sp pkg = gc::As<core::Package_sp>(_lisp->findPackage(ClangAstPkg)); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
   pkg->shadow(core::SimpleBaseString_O::make("TYPE"));
@@ -858,7 +889,6 @@ void initialize_astExpose() {
   cl.def("getGlobalID", &clang::Decl::getGlobalID)
     .def("isImplicit", &clang::Decl::isImplicit)
     .def("setImplicit", &clang::Decl::setImplicit)
-    .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
     .def("getBeginLoc", &clang::Decl::getBeginLoc)
     .def("getEndLoc", &clang::Decl::getEndLoc)
     .def("getAccess",&clang::Decl::getAccess);
@@ -977,7 +1007,6 @@ void initialize_astExpose() {
   CLASS_DECL(m,TranslationUnit, Decl);
 #undef DECL
   class_<Stmt>(m,"Stmt")
-    .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
     .def("getBeginLoc", &clang::Stmt::getBeginLoc)
     .def("getEndLoc", &clang::Stmt::getEndLoc);
 #define CLASS_STMT(_m_,_Class_, _Base_) class_<_Class_, _Base_>(_m_,#_Class_)
@@ -1134,7 +1163,6 @@ void initialize_astExpose() {
   CLASS_STMT(m,SwitchStmt, Stmt);
   CLASS_STMT(m,WhileStmt, Stmt);
   class_<Type>(m,"Type")
-    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
         //            .  def("getAsCXXRecordDecl",&clang::Type::getAsCXXRecordDecl)
         //            .  def("getAsStructureType",&clang::Type::getAsStructureType)
     .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>)

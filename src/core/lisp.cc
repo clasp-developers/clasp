@@ -1280,12 +1280,12 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef USE_MPI
   features = Cons_O::create(_lisp->internKeyword("USE-MPI"), features);
 #endif
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
-#endif
-#ifdef USE_MPS
-  // Informs CL that MPS is being used
+#elif defined(USE_MPS)
   features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
+#elif defined(USE_MMTK)  
+  features = Cons_O::create(_lisp->internKeyword("USE-MMTK"), features);
 #endif
 #ifdef USE_PRECISE_GC
   // Informs CL that precise GC is being used

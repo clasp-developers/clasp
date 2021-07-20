@@ -124,20 +124,21 @@ const char *obj_kind_name(core::T_O *tagged_ptr) {
 }
 
 bool valid_stamp(gctools::stamp_t stamp) {
-#ifdef USE_MPS
+#if defined(USE_MPS)
   size_t stamp_index = (size_t)stamp;
   if (stamp_index<global_stamp_max) return true;
   return false;
-#endif
-#ifdef USE_BOEHM
+#elif defined(USE_BOEHM)
   if (stamp<=global_unshifted_nowhere_stamp_names.size()) {
     return true;
   }
   return false;
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 }
 const char *obj_name(gctools::stamp_t stamp) {
-#ifdef USE_MPS
+#if defined(USE_MPS)
   if (stamp == (gctools::stamp_t)STAMPWTAG_null) {
     return "UNDEFINED";
   }
@@ -146,14 +147,15 @@ const char *obj_name(gctools::stamp_t stamp) {
   ASSERT(stamp_index<=global_stamp_max);
 //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
   return global_stamp_info[stamp_index].name;
-  #endif
-#ifdef USE_BOEHM
+#elif defined(USE_BOEHM)
   if (stamp<=global_unshifted_nowhere_stamp_names.size()) {
 //    printf("%s:%d obj_name stamp= %lu\n", __FILE__, __LINE__, stamp);
     return global_unshifted_nowhere_stamp_names[stamp].c_str();
   }
   printf("%s:%d obj_name stamp = %lu is out of bounds - max is %lu\n", __FILE__, __LINE__, (uintptr_t)stamp, global_unshifted_nowhere_stamp_names.size());
   return "BoehmNoClass";
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
   
 }

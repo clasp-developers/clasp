@@ -94,18 +94,6 @@ struct from_object<const vector<string> &> {
   }
 };
 
-// You will need the following from_object and to_object to wrap ClangTool::buildASTs
-// You will also need to make clbind::Wrappers do the right thing with std::unique_ptrs
-//
-template <>
-struct from_object<std::vector<std::unique_ptr<clang::ASTUnit>> &, std::false_type> {
-  typedef std::vector<std::unique_ptr<clang::ASTUnit>> DeclareType;
-  DeclareType _v;
-  from_object(core::T_sp o) {
-    // Do nothing
-  }
-};
-
 template <>
 struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>> &> {
   typedef std::vector<std::unique_ptr<clang::ASTUnit>> GivenType;

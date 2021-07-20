@@ -190,7 +190,7 @@ CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base)
   
 
 
-#ifdef USE_MPS
+#if defined(USE_MPS)
 static int LockDepth = 0;
 struct HashTableLocker {
   HashTableLocker() {
@@ -208,9 +208,8 @@ struct HashTableLocker {
     --LockDepth;
   }
 };
-#define HASH_TABLE_LOCK() HashTableLocker zzzzHashTableLocker;
-#endif
-#ifdef USE_BOEHM
+# define HASH_TABLE_LOCK() HashTableLocker zzzzHashTableLocker;
+#elif defined(USE_BOEHM) || defined(USE_MMTK)
 #define HASH_TABLE_LOCK()
 #endif
 

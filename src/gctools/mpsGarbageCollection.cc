@@ -64,6 +64,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/core/mpPackage.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/lispStream.h>
 
 #ifdef USE_MPS
 
@@ -105,6 +106,63 @@ void destroy_custom_allocation_point_info() {
 }
 
 };
+
+
+
+
+
+
+extern "C" {
+void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
+  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(client));
+  if (((uintptr_t)header&gctools::ptag_mask)!=0) {
+    printf("%s:%d The header at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)header,gctools::Alignment());
+    abort();
+  }
+  if (((uintptr_t)client&gctools::ptag_mask)!=0) {
+    printf("%s:%d The client at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)client,gctools::Alignment());
+    abort();
+  }
+  vector<gctools::ReachableMPSObject> *reachablesP = reinterpret_cast<vector<gctools::ReachableMPSObject> *>(p);
+  // Very expensive to validate every object on the heap
+  if (header->_stamp_wtag_mtag.stampP()) {
+    header->validate();
+    gctools::ReachableMPSObject &obj = (*reachablesP)[header->_stamp_wtag_mtag.stamp_()];
+    ++obj.instances;
+    size_t sz = (char *)(obj_skip(client)) - (char *)client;
+    obj.totalMemory += sz;
+    if (sz > obj.largest)
+      obj.largest = sz;
+  }
+}
+};
+
+size_t dumpMPSResults(const std::string &name, const std::string &shortName, vector<gctools::ReachableMPSObject> &values) {
+  size_t totalSize(0);
+  typedef gctools::ReachableMPSObject value_type;
+  sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
+            return (x.totalMemory > y.totalMemory);
+  });
+  size_t idx = 0;
+  vector<std::string> stampNames;
+  stampNames.resize(gctools::global_NextUnshiftedStamp.load());
+  for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
+    stampNames[it.second] = it.first;
+  }
+  for (auto it : values) {
+    // Does that print? If so should go to the OutputStream
+    totalSize += it.print(shortName,stampNames);
+    idx += 1;
+#if 0
+    if ( idx % 100 == 0 ) {
+      gctools::poll_signals();
+    }
+#endif
+  }
+  return totalSize;
+}
 
 
 
@@ -1258,6 +1316,53 @@ void ThreadLocalAllocationPoints::destroyAllocationPoints() {
   mps_ap_destroy(this->_strong_link_allocation_point);
   mps_ap_destroy(this->_non_moving_allocation_point);
 };
+
+
+size_t ReachableMPSObject::print(const std::string &shortName,const vector<std::string> stampNames) {
+  if (this->instances > 0) {
+    clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                        % shortName % this->totalMemory % this->instances % (this->totalMemory/this->instances)
+                        % stampNames[this->stamp] % this->stamp).str(),
+                       cl::_sym_STARstandard_outputSTAR->symbolValue());
+    core::clasp_finish_output_t();
+  }
+  return this->totalMemory;
+}
+
+
+void clasp_gc_room(std::ostringstream& OutputStream) {
+  mps_arena_park(global_arena);
+  mps_word_t numCollections = mps_collections(global_arena);
+  size_t arena_committed = mps_arena_committed(global_arena);
+  size_t arena_reserved = mps_arena_reserved(global_arena);
+  vector<ReachableMPSObject> reachables;
+  for (int i = 0; i < global_NextUnshiftedStamp.load(); ++i) {
+    reachables.push_back(ReachableMPSObject(i));
+  }
+  mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
+  mps_amc_apply(global_amcz_pool, amc_apply_stepper, &reachables, 0);
+  mps_arena_release(global_arena);
+  OutputStream << "-------------------- Reachable Kinds -------------------\n";
+  dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
+  OutputStream << std::setw(12) << numCollections << " collections\n";
+  OutputStream << std::setw(12) << arena_committed << " mps_arena_committed\n";
+  OutputStream << std::setw(12) << arena_reserved << " mps_arena_reserved\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.finalizationRequests.load() << " finalization requests\n";
+  size_t totalAllocations = globalMpsMetrics.nonMovingAllocations.load()
+    + globalMpsMetrics.movingAllocations.load()
+    + globalMpsMetrics.movingZeroRankAllocations.load()
+    + globalMpsMetrics.unknownAllocations.load();
+  OutputStream << std::setw(12) << totalAllocations << " total allocations\n";
+  OutputStream << std::setw(12) <<  globalMpsMetrics.nonMovingAllocations.load() << "    non-moving(AWL) allocations\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.movingAllocations.load() << "    moving(AMC) allocations\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.movingZeroRankAllocations.load() << "    moving zero-rank(AMCZ) allocations\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.unknownAllocations.load() << "    unknown(configurable) allocations\n";
+  OutputStream << std::setw(12) << globalMpsMetrics.totalMemoryAllocated.load() << " total memory allocated\n";
+  OutputStream << std::setw(12) << global_NumberOfRootTables.load() << " module root tables\n";
+  OutputStream << std::setw(12) << global_TotalRootTableSize.load() << " words - total module root table size\n";
+}
+
+
 
 };
 #endif // whole file #ifdef USE_MPS

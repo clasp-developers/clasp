@@ -4736,6 +4736,8 @@ void dump_objects_for_lldb(FILE* fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 
 std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size);
+llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream,llvm::SmallString<1024>& stringOutput,bool& stringOutputStream);
+
  
 typedef enum {DebugObjectFilesOff, DebugObjectFilesPrint, DebugObjectFilesPrintSave } DebugObjectFilesEnum;
 extern DebugObjectFilesEnum globalDebugObjectFiles;

@@ -334,256 +334,16 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 
 };
 
-#ifdef USE_BOEHM
-
-struct ReachableClass {
-  ReachableClass() : _Kind(gctools::STAMPWTAG_null){};
-  ReachableClass(gctools::GCStampEnum tn) : _Kind(tn), instances(0), totalSize(0) {}
-  void update(size_t sz) {
-    ++this->instances;
-    this->totalSize += sz;
-  };
-  gctools::GCStampEnum _Kind;
-  size_t instances;
-  size_t totalSize;
-  size_t print(const std::string &shortName) {
-    core::Fixnum k = this->_Kind;
-    stringstream className;
-    if (k <= gctools::STAMPWTAG_max) {
-//      printf("%s:%d searching for name for this->_Kind: %u\n", __FILE__, __LINE__, this->_Kind);
-      const char* nm = obj_name(k);
-      if (!nm) {
-        className << "NULL-NAME";
-      } else {
-        className << nm;
-      }
-      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-                          % shortName % this->totalSize % this->instances
-                          % (this->totalSize / this->instances) % className.str().c_str() % k).str()
-                         ,cl::_sym_STARstandard_outputSTAR->symbolValue());
-      core::clasp_finish_output_t();
-      return this->totalSize;
-    } else {
-      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-                          % shortName % this->totalSize % this->instances
-                          % (this->totalSize / this->instances) % "UNKNOWN" % k).str()
-                         ,cl::_sym_STARstandard_outputSTAR->symbolValue());
-      core::clasp_finish_output_t();
-      return this->totalSize;
-    }
-  }
-};
-
-
-typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
-static ReachableClassMap *static_ReachableClassKinds;
-static size_t invalidHeaderTotalSize = 0;
-extern "C" {
-void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
-  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
-  if (!valid_stamp(stamp)) {
-    if (sz==sizeof(core::Cons_O)) {
-      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
-//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
-    } else {
-      stamp = (gctools::GCStampEnum)0; // unknown uses 0
-    }
-  }
-  ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
-  if (it == static_ReachableClassKinds->end()) {
-    ReachableClass reachableClass(stamp);
-    reachableClass.update(sz);
-    (*static_ReachableClassKinds)[stamp] = reachableClass;
-  } else {
-    it->second.update(sz);
-  }
-#if 0
-  if (stamp==(gctools::GCStampEnum)(gctools::STAMPWTAG_core__Symbol_O>>gctools::Header_s::wtag_width)) {
-    core::Symbol_O* sym = (core::Symbol_O*)ptr;
-    printf("%s:%d symbol %s\n", __FILE__, __LINE__, sym->formattedName(true).c_str());
-  }
-#endif
-}
-
-struct FindStamp {
-  gctools::GCStampEnum _stamp;
-  std::vector<void*> _addresses;
-  FindStamp(gctools::GCStampEnum stamp) : _stamp(stamp) {};
-};
-
-void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *client_data) {
-  FindStamp* findStamp = (FindStamp*)client_data;
-  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
-  if (!valid_stamp(stamp)) {
-    if (sz==32) {
-      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
-//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
-    } else {
-      stamp = (gctools::GCStampEnum)0; // unknown uses 0
-    }
-  }
-  if (stamp == findStamp->_stamp) {
-    findStamp->_addresses.push_back(ptr);
-  }
-}
-
-
-struct FindOwner {
-  void*  _pointer;
-  std::vector<void*> _addresses;
-  FindOwner(void* pointer) : _pointer(pointer) {};
-};
-
-void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *client_data) {
-  FindOwner* findOwner = (FindOwner*)client_data;
-  for ( void** cur = (void**)ptr ; cur < (void**)((void**)ptr+(sz/8)); cur += 1 ) {
-    void* tp = *cur;
-    uintptr_t tag = (uintptr_t)tp&0xf;
-    if (GC_is_heap_ptr(tp) && (tag == GENERAL_TAG || tag == CONS_TAG)) {
-      void* obj = gctools::untag_object(tp);
-      uintptr_t addr = (uintptr_t)obj;
-      void* base = gctools::GeneralPtrToHeaderPtr(obj);
-#if 0
-      printf("%s:%d Looking at cur->%p\n", __FILE__, __LINE__, cur);
-      printf("%s:%d             tp->%p\n", __FILE__, __LINE__, tp);
-      printf("%s:%d           base->%p\n", __FILE__, __LINE__, base);
-      printf("%s:%d        pointer->%p\n", __FILE__, __LINE__, findOwner->_pointer);
-#endif
-      if (base == findOwner->_pointer ) {
-        uintptr_t* uptr = (uintptr_t*)ptr;
-#ifdef USE_BOEHM
-        printf("%p  %s\n", ptr, obj_name((*uptr)>>4));
-#endif
-        findOwner->_addresses.push_back((void*)uptr);
-        }
-      }
-    }
-  }
-}
-
-
-template <typename T>
-size_t dumpResults(const std::string &name, const std::string &shortName, T *data) {
-  typedef typename T::value_type::second_type value_type;
-  vector<value_type> values;
-  for (auto it : *data) {
-    values.push_back(it.second);
-  }
-  size_t totalSize(0);
-  sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
-                                       return (x.totalSize > y.totalSize);
-                                     });
-  size_t idx = 0;
-  size_t totalCons = 0;
-  size_t numCons = 0;
-  for (auto it : values) {
-    // Does that print? If so should go to the OutputStream
-    size_t sz = it.print(shortName);
-    totalSize += sz;
-    if (sz < 1) break;
-    idx += 1;
-#if 0
-    if ( idx % 100 == 0 ) {
-      gctools::poll_signals();
-    }
-#endif
-  }
-  return totalSize;
-}
-
-
-
-void* walk_garbage_collected_objects_with_alloc_lock(void* client_data) {
-  GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, client_data );
-  return NULL;
-}
-
-#endif
-
-#ifdef USE_MPS
-struct ReachableMPSObject {
-  ReachableMPSObject(int k) : stamp(k) {};
-  size_t stamp = 0;
-  size_t instances = 0;
-  size_t totalMemory = 0;
-  size_t largest = 0;
-  size_t print(const std::string &shortName,const vector<std::string> stampNames) {
-    if (this->instances > 0) {
-      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-                          % shortName % this->totalMemory % this->instances % (this->totalMemory/this->instances)
-                          % stampNames[this->stamp] % this->stamp).str(),
-                         cl::_sym_STARstandard_outputSTAR->symbolValue());
-      core::clasp_finish_output_t();
-    }
-    return this->totalMemory;
-  }
-};
-
-extern "C" {
-void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
-  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(client));
-  if (((uintptr_t)header&gctools::ptag_mask)!=0) {
-    printf("%s:%d The header at %p is not aligned to %lu\n", __FILE__, __LINE__,
-           (void*)header,gctools::Alignment());
-    abort();
-  }
-  if (((uintptr_t)client&gctools::ptag_mask)!=0) {
-    printf("%s:%d The client at %p is not aligned to %lu\n", __FILE__, __LINE__,
-           (void*)client,gctools::Alignment());
-    abort();
-  }
-  vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
-  // Very expensive to validate every object on the heap
-  if (header->_stamp_wtag_mtag.stampP()) {
-    header->validate();
-    ReachableMPSObject &obj = (*reachablesP)[header->_stamp_wtag_mtag.stamp_()];
-    ++obj.instances;
-    size_t sz = (char *)(obj_skip(client)) - (char *)client;
-    obj.totalMemory += sz;
-    if (sz > obj.largest)
-      obj.largest = sz;
-  }
-}
-};
-
-size_t dumpMPSResults(const std::string &name, const std::string &shortName, vector<ReachableMPSObject> &values) {
-  size_t totalSize(0);
-  typedef ReachableMPSObject value_type;
-  sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
-            return (x.totalMemory > y.totalMemory);
-  });
-  size_t idx = 0;
-  vector<std::string> stampNames;
-  stampNames.resize(gctools::global_NextUnshiftedStamp.load());
-  for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
-    stampNames[it.second] = it.first;
-  }
-  for (auto it : values) {
-    // Does that print? If so should go to the OutputStream
-    totalSize += it.print(shortName,stampNames);
-    idx += 1;
-#if 0
-    if ( idx % 100 == 0 ) {
-      gctools::poll_signals();
-    }
-#endif
-  }
-  return totalSize;
-}
-
-#endif // USE_MPS
-
 namespace gctools {
 
 CL_LAMBDA(&optional x (marker 0));
 CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
-#ifdef USE_MPS
+#if defined(USE_MPS)
   return Values(_Nil<core::T_O>());
-#endif
-#ifdef USE_BOEHM
+#elif defined(USE_BOEHM)
   return Values(_Nil<core::T_O>());
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 };
 
@@ -606,8 +366,8 @@ CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceSta
 
 CL_LAMBDA(&optional marker);
 CL_DEFUN Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
-#ifdef USE_BOEHM
-#ifdef USE_BOEHM_MEMORY_MARKER
+#if defined(USE_BOEHM)
+# ifdef USE_BOEHM_MEMORY_MARKER
   if (marker.nilp()) {
     return gctools::globalBoehmMarker;
   }
@@ -616,9 +376,9 @@ CL_DEFUN Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
   Fixnum m = marker.unsafe_fixnum();
   gctools::globalBoehmMarker = m;
   return oldm;
-#endif
+# endif
 #else
-  printf("%s:%d Only boehm supports memory markers\n", __FILE__, __LINE__);
+  MISSING_GC_SUPPORT();
 #endif
   return 0;
 }
@@ -628,7 +388,7 @@ SYMBOL_EXPORT_SC_(GcToolsPkg, ramp);
 SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 
 CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
-#ifdef USE_MPS
+#if defined(USE_MPS)
   mps_alloc_pattern_t mps_pat;
   if (pattern == _sym_ramp) {
     mps_pat = mps_alloc_pattern_ramp();
@@ -643,12 +403,14 @@ CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
+#else
+  // Do nothing
 #endif
 };
 
 CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   core::Symbol_sp pattern(_Nil<core::Symbol_O>());
-#ifdef USE_MPS
+#if defined(USE_MPS)
   core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
   if (patternStack.nilp())
     return _Nil<core::Symbol_O>();
@@ -663,6 +425,8 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
   mps_ap_alloc_pattern_end(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
+#else
+  // Do nothing
 #endif
   return pattern;
 };
@@ -778,55 +542,10 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
   gctools__garbage_collect();
   gctools__garbage_collect();
-#ifdef USE_BOEHM
-  static_ReachableClassKinds = new (ReachableClassMap);
-  invalidHeaderTotalSize = 0;
-  GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
-  OutputStream << "Walked LispKinds\n" ;
-  size_t totalSize(0);
-  OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
-  totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
-  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
-  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
-  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
-
-  delete static_ReachableClassKinds;
-#endif
-#ifdef USE_MPS
-  mps_arena_park(global_arena);
-  mps_word_t numCollections = mps_collections(global_arena);
-  size_t arena_committed = mps_arena_committed(global_arena);
-  size_t arena_reserved = mps_arena_reserved(global_arena);
-  vector<ReachableMPSObject> reachables;
-  for (int i = 0; i < global_NextUnshiftedStamp.load(); ++i) {
-    reachables.push_back(ReachableMPSObject(i));
-  }
-  mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
-  mps_amc_apply(global_amcz_pool, amc_apply_stepper, &reachables, 0);
-  mps_arena_release(global_arena);
-  OutputStream << "-------------------- Reachable Kinds -------------------\n";
-  dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
-  OutputStream << std::setw(12) << numCollections << " collections\n";
-  OutputStream << std::setw(12) << arena_committed << " mps_arena_committed\n";
-  OutputStream << std::setw(12) << arena_reserved << " mps_arena_reserved\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.finalizationRequests.load() << " finalization requests\n";
-  size_t totalAllocations = globalMpsMetrics.nonMovingAllocations.load()
-    + globalMpsMetrics.movingAllocations.load()
-    + globalMpsMetrics.movingZeroRankAllocations.load()
-    + globalMpsMetrics.unknownAllocations.load();
-  OutputStream << std::setw(12) << totalAllocations << " total allocations\n";
-  OutputStream << std::setw(12) <<  globalMpsMetrics.nonMovingAllocations.load() << "    non-moving(AWL) allocations\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.movingAllocations.load() << "    moving(AMC) allocations\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.movingZeroRankAllocations.load() << "    moving zero-rank(AMCZ) allocations\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.unknownAllocations.load() << "    unknown(configurable) allocations\n";
-  OutputStream << std::setw(12) << globalMpsMetrics.totalMemoryAllocated.load() << " total memory allocated\n";
-  OutputStream << std::setw(12) << global_NumberOfRootTables.load() << " module root tables\n";
-  OutputStream << std::setw(12) << global_TotalRootTableSize.load() << " words - total module root table size\n";
-                                                                
+#if defined(USE_BOEHM) || defined(USE_MPS)
+  clasp_gc_room(OutputStream);
+#else
+  MISSING_GC_SUPPORT();
 #endif
   clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
   return Values(_Nil<core::T_O>());
@@ -854,8 +573,6 @@ CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename) {
 CL_DEFUN void gctools__slad() {
   gctools__save_lisp_and_die(_Nil<core::T_O>());
 }
-
-
 
 void save_lisp_and_die(const std::string& filename)
 {
@@ -913,17 +630,16 @@ CL_LAMBDA(stamp);
 CL_DECLARE();
 CL_DOCSTRING("Return a list of addresses of objects with the given stamp");
 CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
-#ifdef USE_MPS
+#if defined(USE_MPS)
   SIMPLE_ERROR(BF("Add support for MPS"));
-#endif
-#ifdef USE_BOEHM
+#elif defined(USE_BOEHM)
   if (stamp.fixnump()) {
-    FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
-#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+    gctools::FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
+# if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
     GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_stamps, (void*)&findStamp);
-#else
+# else
     SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
-#endif
+# endif
     core::List_sp result = _Nil<core::T_O>();
     for ( size_t ii=0; ii<findStamp._addresses.size(); ii++ ) {
       core::Pointer_sp ptr = core::Pointer_O::create((void*)findStamp._addresses[ii]);
@@ -931,6 +647,8 @@ CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
     }
     return result;
   }
+#else
+  MISSING_GC_SUPPORT();
 #endif // USE_BOEHM
   SIMPLE_ERROR(BF("You must pass a stamp value"));
 }
@@ -940,24 +658,25 @@ CL_LAMBDA(address);
 CL_DECLARE();
 CL_DOCSTRING("Return a list of addresses of objects with the given stamp");
 CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
-#ifdef USE_MPS
+#if defined(USE_MPS)
   SIMPLE_ERROR(BF("Add support for MPS"));
-#endif
-#ifdef USE_BOEHM
+#elif defined(USE_BOEHM)
   if (obj.fixnump()) {
     void* base = GC_base((void*)obj.unsafe_fixnum());
-    FindOwner findOwner(base);
-#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+    gctools::FindOwner findOwner(base);
+# if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
     GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_owners, (void*)&findOwner);
-#else
+# else
     SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
-#endif
+# endif
     core::List_sp result = _Nil<core::T_O>();
     for ( size_t ii=0; ii<findOwner._addresses.size(); ii++ ) {
       result = core::Cons_O::create(core::Pointer_O::create(findOwner._addresses[ii]),result);
     }
     return result;
   }
+#else
+  MISSING_GC_SUPPORT();
 #endif // USE_BOEHM
   SIMPLE_ERROR(BF("You must pass a pointer"));
 }
@@ -1006,22 +725,22 @@ CL_DOCSTRING("function-call-count-profiler - Evaluate a function, count every fu
 CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   core::HashTable_sp func_counters_start = core::HashTableEq_O::create_default();
   core::HashTable_sp func_counters_end = core::HashTableEq_O::create_default();
-#ifdef USE_MPS
+#if defined(USE_MPS)
   mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
-#endif
-#ifdef USE_BOEHM
-#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+#elif defined(USE_BOEHM)
+# if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_start);
-#endif
+# endif
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
   core::eval::funcall(func);
-#ifdef USE_MPS
+#if defined(USE_MPS)
   mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
-#endif
-#ifdef USE_BOEHM
-#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+#elif defined(USE_BOEHM)
+# if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_end);
-#endif
+# endif
 #endif
   func_counters_start->mapHash([func_counters_end](core::T_sp f, core::T_sp start_value) {
       core::T_sp end_value = func_counters_end->gethash(f);
@@ -1063,13 +782,14 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
 //  printf("%s:%d      Adding finalizer to list new length --> %lu   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
   ht->hash_table_setf_gethash(object,finalizers);
     // Register the finalizer with the GC
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   boehm_set_finalizer_list(object.tagged_(),finalizers.tagged_());
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   if (object.generalp() || object.consp()) {
     my_mps_finalize(object.raw_());
   }
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 };
 
@@ -1078,14 +798,16 @@ CL_DEFUN void gctools__definalize(core::T_sp object) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
   core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   if (ht->gethash(object)) ht->remhash(object);
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   boehm_clear_finalizer_list(object.tagged_());
-#endif
-  #ifdef USE_MPS
+#elif defined(USE_MPS)
   // Don't use mps_definalize here - definalize is taken care of by erasing the weak-key-hash-table
   // entry above.  We may still need to get a finalization message if this class needs
   // its destructor be called.
-  #endif
+  MISSING_GC_SUPPORT();
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
+#endif
 }
 
 };
@@ -1100,33 +822,6 @@ namespace gctools {
 
 
 namespace gctools {
-
-CL_DEFUN void gctools__telemetryFlush() {
-#ifdef USE_BOEHM
-  IMPLEMENT_ME();
-#endif
-#ifdef USE_MPS
-  mps_telemetry_flush();
-#endif
-};
-
-CL_DEFUN void gctools__telemetrySet(core::Fixnum_sp flags) {
-#ifdef USE_BOEHM
-  IMPLEMENT_ME();
-#endif
-#ifdef USE_MPS
-  mps_telemetry_set(unbox_fixnum(flags));
-#endif
-};
-
-CL_DEFUN void gctools__telemetryReset(core::Fixnum_sp flags) {
-#ifdef USE_BOEHM
-  IMPLEMENT_ME();
-#endif
-#ifdef USE_MPS
-  mps_telemetry_reset(unbox_fixnum(flags));
-#endif
-};
 
 CL_DEFUN core::T_mv gctools__memory_profile_status() {
   int64_t allocationNumberCounter = my_thread_low_level->_Allocations._AllocationNumberCounter;
@@ -1148,17 +843,17 @@ CL_DEFUN core::T_sp gctools__stack_depth() {
 };
 
 CL_DEFUN void gctools__garbage_collect() {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   GC_gcollect();
 //  write_bf_stream(BF("GC_invoke_finalizers\n"));
   GC_invoke_finalizers();
-#endif
-//        printf("%s:%d Starting garbage collection of arena\n", __FILE__, __LINE__ );
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   mps_arena_collect(global_arena);
   size_t finalizations;
   processMpsMessages(finalizations);
   mps_arena_release(global_arena);
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
   //        printf("Garbage collection done\n");
 };

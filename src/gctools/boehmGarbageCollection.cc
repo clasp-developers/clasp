@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <clasp/gctools/boehmGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/compiler.h>
 
 #ifdef USE_PRECISE_GC
@@ -53,6 +54,128 @@ void boehm_release() {
   GC_enable();
 }
 };
+
+
+static gctools::ReachableClassMap *static_ReachableClassKinds;
+static size_t invalidHeaderTotalSize = 0;
+
+extern "C" {
+void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
+  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
+  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
+  if (!valid_stamp(stamp)) {
+    if (sz==sizeof(core::Cons_O)) {
+      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
+//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
+    } else {
+      stamp = (gctools::GCStampEnum)0; // unknown uses 0
+    }
+  }
+  gctools::ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
+  if (it == static_ReachableClassKinds->end()) {
+    gctools::ReachableClass reachableClass(stamp);
+    reachableClass.update(sz);
+    (*static_ReachableClassKinds)[stamp] = reachableClass;
+  } else {
+    it->second.update(sz);
+  }
+#if 0
+  if (stamp==(gctools::GCStampEnum)(gctools::STAMPWTAG_core__Symbol_O>>gctools::Header_s::wtag_width)) {
+    core::Symbol_O* sym = (core::Symbol_O*)ptr;
+    printf("%s:%d symbol %s\n", __FILE__, __LINE__, sym->formattedName(true).c_str());
+  }
+#endif
+}
+
+void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *client_data) {
+  gctools::FindStamp* findStamp = (gctools::FindStamp*)client_data;
+  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
+  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
+  if (!valid_stamp(stamp)) {
+    if (sz==32) {
+      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
+//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
+    } else {
+      stamp = (gctools::GCStampEnum)0; // unknown uses 0
+    }
+  }
+  if (stamp == findStamp->_stamp) {
+    findStamp->_addresses.push_back(ptr);
+  }
+}
+
+
+
+void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *client_data) {
+  gctools::FindOwner* findOwner = (gctools::FindOwner*)client_data;
+  for ( void** cur = (void**)ptr ; cur < (void**)((void**)ptr+(sz/8)); cur += 1 ) {
+    void* tp = *cur;
+    uintptr_t tag = (uintptr_t)tp&0xf;
+    if (GC_is_heap_ptr(tp) && (tag == GENERAL_TAG || tag == CONS_TAG)) {
+      void* obj = gctools::untag_object(tp);
+      uintptr_t addr = (uintptr_t)obj;
+      void* base = gctools::GeneralPtrToHeaderPtr(obj);
+#if 0
+      printf("%s:%d Looking at cur->%p\n", __FILE__, __LINE__, cur);
+      printf("%s:%d             tp->%p\n", __FILE__, __LINE__, tp);
+      printf("%s:%d           base->%p\n", __FILE__, __LINE__, base);
+      printf("%s:%d        pointer->%p\n", __FILE__, __LINE__, findOwner->_pointer);
+#endif
+      if (base == findOwner->_pointer ) {
+        uintptr_t* uptr = (uintptr_t*)ptr;
+#ifdef USE_BOEHM
+        printf("%p  %s\n", ptr, obj_name((*uptr)>>4));
+#endif
+        findOwner->_addresses.push_back((void*)uptr);
+        }
+      }
+    }
+  }
+}
+
+
+template <typename T>
+size_t dumpResults(const std::string &name, const std::string &shortName, T *data) {
+  typedef typename T::value_type::second_type value_type;
+  vector<value_type> values;
+  for (auto it : *data) {
+    values.push_back(it.second);
+  }
+  size_t totalSize(0);
+  sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
+                                       return (x.totalSize > y.totalSize);
+                                     });
+  size_t idx = 0;
+  size_t totalCons = 0;
+  size_t numCons = 0;
+  for (auto it : values) {
+    // Does that print? If so should go to the OutputStream
+    size_t sz = it.print(shortName);
+    totalSize += sz;
+    if (sz < 1) break;
+    idx += 1;
+#if 0
+    if ( idx % 100 == 0 ) {
+      gctools::poll_signals();
+    }
+#endif
+  }
+  return totalSize;
+}
+
+
+
+void* walk_garbage_collected_objects_with_alloc_lock(void* client_data) {
+  GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, client_data );
+  return NULL;
+}
+
+
+// ------------
+
+
+
+
 
 
 namespace gctools {
@@ -314,6 +437,54 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   return exitCode;
 }
 
+
+
+
+size_t ReachableClass::print(const std::string& shortName) {
+  Fixnum k = this->_Kind;
+  stringstream className;
+  if (k <= gctools::STAMPWTAG_max) {
+//      printf("%s:%d searching for name for this->_Kind: %u\n", __FILE__, __LINE__, this->_Kind);
+    const char* nm = obj_name(k);
+    if (!nm) {
+      className << "NULL-NAME";
+    } else {
+      className << nm;
+    }
+    clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                        % shortName % this->totalSize % this->instances
+                        % (this->totalSize / this->instances) % className.str().c_str() % k).str()
+                       , cl::_sym_STARstandard_outputSTAR->symbolValue());
+    core::clasp_finish_output_t();
+    return this->totalSize;
+  } else {
+    clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                        % shortName % this->totalSize % this->instances
+                        % (this->totalSize / this->instances) % "UNKNOWN" % k).str()
+                       ,cl::_sym_STARstandard_outputSTAR->symbolValue());
+    core::clasp_finish_output_t();
+    return this->totalSize;
+  }
+}
+
+void clasp_gc_room(std::ostringstream& OutputStream) {
+  static_ReachableClassKinds = new (ReachableClassMap);
+  invalidHeaderTotalSize = 0;
+  GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
+  OutputStream << "Walked LispKinds\n" ;
+  size_t totalSize(0);
+  OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
+  totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
+  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
+  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
+  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
+
+  delete static_ReachableClassKinds;
+}
 
 
 };

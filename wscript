@@ -78,6 +78,8 @@ def options(ctx):
                    help = '? Probably some debugging helper to start a REPL with cclasp loaded...')
     ctx.add_option('--enable-mpi', action = 'store_true', dest = 'enable_mpi',
                    help = 'Build OpenMPI version of iclasp and cclasp')
+    ctx.add_option('--enable-mmtk', action = 'store_true', dest = 'enable_mmtk',
+                   help = 'Build mmtk version of iclasp and cclasp')
     ctx.add_option('--mpi-path', action = 'store', dest = 'mpi_path',
                    help = 'Build OpenMPI version of iclasp and cclasp, provide the path to mpicc and mpic++')
     ctx.add_option('--enable-mpi', action = 'store_true', dest = 'enable_mpi',
@@ -90,7 +92,7 @@ top = '.'
 out = 'build'
 APP_NAME = 'clasp'
 LLVM_VERSION = 13
-SBCL_VERSION = (2, 1)
+SBCL_VERSION = (2, 0)
 SBCL_VERSION_STRING = "2.1"
 CLANG_SPECIFIC_VERSION = "13.0.0git"
 LLVM_HASH = "972b6a3a3471c2a742c5c5d8ec004ff640d544c4"
@@ -109,6 +111,8 @@ STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 LTO_OPTION = "-flto=thin"
 GCS_NAMES = [ 'boehm',
               'boehmprecise',
+              'mmtk',
+              'mmtkprecise',
               'mpsprep',
               'mps' ]
 
@@ -618,6 +622,52 @@ class boehmprecise_d(boehm_base):
         cfg.setenv("boehmprecise_d", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
         super(boehmprecise_d,self).configure_variant(cfg,env_copy)
+
+class mmtk_base(variant):
+    enable_mpi = False
+    def configure_variant(self,cfg,env_copy):
+        cfg.define("USE_MMTK",1)
+        setup_clang_compiler(cfg,self)
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            log.debug("mmtk_base cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
+            if (cfg.env.LTO_FLAG):
+                cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
+        log.info("Setting up mmtk library cfg.env.STLIB_MMTK = %s ", cfg.env.STLIB_MMTK)
+        log.info("Setting up mmtk library cfg.env.LIB_MMTK = %s", cfg.env.LIB_MMTK)
+        if (cfg.env.LIB_MMTK == [] ):
+            cfg.env.append_value('STLIB',cfg.env.STLIB_MMTK)
+        else:
+            cfg.env.append_value('LIB',cfg.env.LIB_MMTK)
+        self.common_setup(cfg)
+
+class mmtk(mmtk_base):
+    gc_name = 'mmtk'
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv(self.variant_dir(), env=env_copy.derive())
+        super(mmtk,self).configure_variant(cfg,env_copy)
+
+class mmtk_d(mmtk_base):
+    gc_name = 'mmtk'
+    build_with_debug_info = True
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mmtk_d", env=env_copy.derive())
+        super(mmtk_d,self).configure_variant(cfg,env_copy)
+
+class mmtkprecise(mmtk_base):
+    gc_name = 'mmtkprecise'
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mmtkprecise", env=env_copy.derive())
+        cfg.define("USE_PRECISE_GC",1)
+        super(mmtkprecise,self).configure_variant(cfg,env_copy)
+
+class mmtkprecise_d(mmtk_base):
+    gc_name = 'mmtkprecise'
+    build_with_debug_info = True
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mmtkprecise_d", env=env_copy.derive())
+        cfg.define("USE_PRECISE_GC",1)
+        super(mmtkprecise_d,self).configure_variant(cfg,env_copy)
+        
         
 class mps_base(variant):
     enable_mpi = False
@@ -695,6 +745,43 @@ class bboehmprecise_d(boehmprecise_d):
     stage_char = 'b'
 class cboehmprecise_d(boehmprecise_d):
     stage_char = 'c'
+
+class immtk(mmtk):
+    stage_char = 'i'
+class ammtk(mmtk):
+    stage_char = 'a'
+class bmmtk(mmtk):
+    stage_char = 'b'
+class cmmtk(mmtk):
+    stage_char = 'c'
+
+class immtk_d(mmtk_d):
+    stage_char = 'i'
+class ammtk_d(mmtk_d):
+    stage_char = 'a'
+class bmmtk_d(mmtk_d):
+    stage_char = 'b'
+class cmmtk_d(mmtk_d):
+    stage_char = 'c'
+
+class immtkprecise(mmtkprecise):
+    stage_char = 'i'
+class ammtkprecise(mmtkprecise):
+    stage_char = 'a'
+class bmmtkprecise(mmtkprecise):
+    stage_char = 'b'
+class cmmtkprecise(mmtkprecise):
+    stage_char = 'c'
+
+class immtkprecise_d(mmtkprecise_d):
+    stage_char = 'i'
+class ammtkprecise_d(mmtkprecise_d):
+    stage_char = 'a'
+class bmmtkprecise_d(mmtkprecise_d):
+    stage_char = 'b'
+class cmmtkprecise_d(mmtkprecise_d):
+    stage_char = 'c'
+
     
 class imps(mps):
     stage_char = 'i'
@@ -764,6 +851,37 @@ class boehm_mpi_d(boehm_mpi_base):
         cfg.setenv("boehm_mpi_d", env=env_copy.derive())
         super(boehm_mpi_d,self).configure_variant(cfg,env_copy)
 
+class mmtk_mpi_base(variant):
+    gc_name = 'mmtk'
+    enable_mpi = True
+    def configure_variant(self,cfg,env_copy):
+        cfg.define("USE_MMTK",1)
+        cfg.define("USE_MPI",1)
+        setup_mpi_compiler(cfg,self)
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            log.debug("mmtk_mpi_base cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
+            if (cfg.env.LTO_FLAG):
+                cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
+        log.info("Setting up mmtk library cfg.env.STLIB_MMTK = %s ", cfg.env.STLIB_MMTK)
+        log.info("Setting up mmtk library cfg.env.LIB_MMTK = %s", cfg.env.LIB_MMTK)
+        if (cfg.env.LIB_MMTK == [] ):
+            cfg.env.append_value('STLIB',cfg.env.STLIB_MMTK)
+        else:
+            cfg.env.append_value('LIB',cfg.env.LIB_MMTK)
+        self.common_setup(cfg)
+
+class mmtk_mpi(mmtk_mpi_base):
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv(self.variant_dir(), env=env_copy.derive())
+        super(mmtk_mpi,self).configure_variant(cfg,env_copy)
+
+class mmtk_mpi_d(mmtk_mpi_base):
+    build_with_debug_info = True
+
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mmtk_mpi_d", env=env_copy.derive())
+        super(mmtk_mpi_d,self).configure_variant(cfg,env_copy)
+
 class mps_mpi_base(variant):
     enable_mpi = True
     def configure_variant(self,cfg,env_copy):
@@ -824,6 +942,24 @@ class aboehm_mpi_d(boehm_mpi_d):
 class bboehm_mpi_d(boehm_mpi_d):
     stage_char = 'b'
 class cboehm_mpi_d(boehm_mpi_d):
+    stage_char = 'c'
+
+class immtk_mpi(mmtk_mpi):
+    stage_char = 'i'
+class ammtk_mpi(mmtk_mpi):
+    stage_char = 'a'
+class bmmtk_mpi(mmtk_mpi):
+    stage_char = 'b'
+class cmmtk_mpi(mmtk_mpi):
+    stage_char = 'c'
+
+class immtk_mpi_d(mmtk_mpi_d):
+    stage_char = 'i'
+class ammtk_mpi_d(mmtk_mpi_d):
+    stage_char = 'a'
+class bmmtk_mpi_d(mmtk_mpi_d):
+    stage_char = 'b'
+class cmmtk_mpi_d(mmtk_mpi_d):
     stage_char = 'c'
 
 class imps_mpi(mps_mpi):
@@ -954,7 +1090,8 @@ def configure(cfg):
     log.pprint('BLUE', 'configure()')
 
     linker_in_use = "not specifically specified"
-
+    cfg.env.ENABLE_MMTK = cfg.options.enable_mmtk
+    print("cfg.env.ENABLE_MMTK = %s" % cfg.env.ENABLE_MMTK)
     cfg.env["BUILD_ROOT"] = os.path.abspath(top) # KLUDGE there should be a better way than this
     load_local_config(cfg)
     
@@ -1113,9 +1250,12 @@ def configure(cfg):
     cfg.check_cxx(lib='gmpxx gmp'.split(), cxxflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cxxflags='-Wall', uselib_store='FFI')
     try:
-        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
-    except ConfigurationError:
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    except ConfigurationError:
+        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
+
+    if (cfg.env.ENABLE_MMTK==True):
+        cfg.check_cxx(lib='mmtk_clasp', cflags='-Wall', linkflags="-L/opt/clasp/lib/", uselib_store='MMTK')
     #libz
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):
@@ -1208,10 +1348,7 @@ def configure(cfg):
 # Check if GC_enumerate_reachable_objects_inner is available
 # If so define  BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
 #
-    if (cfg.env["BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE"] == False):
-        cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",0)
-    else:
-        cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",1)
+    cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",1)
     cfg.define("USE_CLASP_DYNAMIC_CAST",1)
     cfg.define("BUILDING_CLASP",1)
     if (UNWINDER != DEFAULT):
@@ -1225,6 +1362,9 @@ def configure(cfg):
         cfg.define("_TARGET_OS_FREEBSD",1);
     else:
         raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
+    if (cfg.env["ENABLE_MMTK"] == True):
+        mmtk_path = cfg.path.find_node("src/mmtk-clasp/")
+        cfg.env.append_value('INCLUDES',[mmtk_path.abspath()])
     cfg.define("PROGRAM_CLASP",1)
     cfg.define("CLASP_THREADS",1)
     cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
@@ -1257,7 +1397,7 @@ def configure(cfg):
 #    cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
 #    cfg.env.append_value('CFLAGS', includes_from_build_dir )
 #    log.debug("DEBUG includes_from_build_dir = %s", includes_from_build_dir)
-    cfg.env.append_value('CXXFLAGS', [ '-std=c++17'])
+    cfg.env.append_value('CXXFLAGS', [ '-std=c++20'])
 
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     if (cfg.env.LTO_FLAG):
@@ -1370,7 +1510,9 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-error=c++11-narrowing'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-c++11-narrowing'] )
-
+    cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-enum-enum-conversion'])
+    cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-anon-enum-enum-conversion'])
+    
     cfg.env.append_value('LIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('STLIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])

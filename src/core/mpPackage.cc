@@ -285,7 +285,7 @@ string Mutex_O::__repr__() const {
   ss << "#<MUTEX ";
   ss << _rep_(this->_Name);
   ss << " :owner " << _rep_(this->_Owner) << " :counter " << this->counter();
-#ifdef USE_BOEHM // things don't move in boehm
+#ifdef NON_MOVING_GC // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
   ss << ">";
@@ -334,7 +334,7 @@ string SharedMutex_O::__repr__() const {
   stringstream ss;
   ss << "#<SHARED-MUTEX ";
   ss << _rep_(this->_Name);
-#ifdef USE_BOEHM // things don't move in boehm
+#ifdef NON_MOVING_GC // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
   ss << ">";
@@ -363,7 +363,7 @@ string Process_O::__repr__() const {
   stringstream ss;
   ss << "#<PROCESS ";
   ss << _rep_(this->_Name);
-#ifdef USE_BOEHM // things don't move in boehm
+#ifdef NON_MOVING_GC // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
   ss << " " << this->phase_as_string();

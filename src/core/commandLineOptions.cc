@@ -167,12 +167,18 @@ void process_clasp_arguments(CommandLineOptions* options)
 #ifdef USE_MPS
       std::cout << "-mps-";
 #endif
-#ifdef USE_BOEHM
-#ifdef USE_PRECISE_GC 
+#if defined(USE_BOEHM)
+# ifdef USE_PRECISE_GC 
       std::cout << "-boehmprecise-";
-#else
+# else
       std::cout << "-boehm-";
-#endif
+# endif
+#elif defined(USE_MMTK)
+# ifdef USE_PRECISE_GC 
+      std::cout << "-mmtkprecise-";
+# else
+      std::cout << "-mmtk-";
+# endif
 #endif
       std::cout << CLASP_VERSION << std::endl;
       exit(0);
