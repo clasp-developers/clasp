@@ -390,8 +390,8 @@ Convert colons to underscores"
     (handler-case
         (setf classes (sort classes (lambda (x y)
                                       (not (inherits-from x y inheritance)))))
+      #+(or)
       (broken-inheritance (e)
-        (print-object e t)
         (let ((x (starting-possible-child-class e)))
           (error "~a~%    The info for ~a is ~a"
                  (with-output-to-string (sout) (print-object e sout))
@@ -1074,6 +1074,14 @@ void ~a::expose_to_clasp() {
   (generate-kind-tag-code (tag% kind) stream)
   (generate-layout-code kind stream))
 
+(defun generate-gc-obj-scan (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_SCAN)
+#endif // defined(GC_OBJ_SCAN)
+#if defined(GC_OBJ_SCAN_HELPERS)~%")
+  (loop for kind in classes do (generate-kind-code kind stream))
+  (loop for kind in gc-managed-types do (generate-kind-code kind stream))
+  (format stream "#endif // defined(GC_OBJ_SCAN_HELPERS)~%"))
+
 (defconstant +ptr-name+
   (if (boundp '+ptr-name+) ; avoid redefinition warnings
       (symbol-value '+ptr-name+)
@@ -1125,9 +1133,26 @@ void ~a::expose_to_clasp() {
 (defmethod %generate-finalizer (stream kind (tag tags:bitunit-container-kind))
   (generate-error-finalizer stream kind))
 
+(defun generate-obj-finalize (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_FINALIZE)~%")
+  (loop for k in classes do (generate-finalizer stream k))
+  (loop for k in gc-managed-types do (generate-finalizer stream k))
+  (format stream "#endif // defined(GC_OBJ_FINALIZE)
+#if defined(GC_OBJ_FINALIZE_HELPERS)
+#endif // defined(GC_OBJ_FINALIZE_HELPERS)~%"))
+
 (defun generate-finalizer-table-entry (stream kind)
   (format stream "  /* ~d */ &&obj_finalize_STAMPWTAG_~a,~%"
           (stamp-value kind) (build-enum-name (class-key% kind))))
+
+(defun generate-finalize-table (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_FINALIZE_TABLE)
+static void* OBJ_FINALIZE_table[] = {~%")
+  (loop for k in classes do (generate-finalizer-table-entry stream k))
+  (loop for k in gc-managed-types do (generate-finalizer-table-entry stream k))
+  (format stream "   NULL
+};
+#endif // defined(GC_OBJ_FINALIZE_TABLE)~%"))
 
 (defgeneric %generate-deallocator (stream kind tag)
   (:argument-precedence-order tag kind stream))
@@ -1165,10 +1190,31 @@ void ~a::expose_to_clasp() {
 (defmethod %generate-deallocator (stream kind (tag tags:bitunit-container-kind))
   (generate-error-deallocator stream kind))
 
+(defun generate-obj-deallocator (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_DEALLOCATOR)~%")
+  (loop for k in classes do (generate-deallocator stream k))
+  (loop for k in gc-managed-types do (generate-deallocator stream k))
+  (format stream "#endif // defined(GC_OBJ_DEALLOCATOR)
+#if defined(GC_OBJ_DEALLOCATOR_HELPERS)
+#endif // defined(GC_OBJ_DEALLOCATOR_HELPERS)~%"))
+
 (defun generate-deallocator-table-entry (stream kind)
   (format stream
           "  /* ~d */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_~a,~%"
           (stamp-value kind) (build-enum-name (class-key% kind))))
+
+(defun generate-deallocator-table (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_DEALLOCATOR_TABLE)
+static void* OBJ_DEALLOCATOR_table[] + {~%")
+  (loop for k in classes do (generate-deallocator-table-entry stream k))
+  (loop for k in gc-managed-types
+        do (generate-deallocator-table-entry stream k))
+  (format stream "#endif // defined(GC_OBJ_DEALLOCATOR_TABLE)~%"))
+
+(defun generate-gc-globals (stream)
+  (format stream "#if defined(GC_GLOBALS)
+ TAGGED_POINTER_FIX(_lisp);
+#endif // defined(GC_GLOBALS)~%"))
 
 (defun maybe-relative (dir)
   (cond
@@ -1205,6 +1251,24 @@ void ~a::expose_to_clasp() {
     (unless value
       (error "Could not get key: ~s from app-config" key))
     value))
+
+(defun generate-gc-code  (classes gc-managed-types)
+  (with-output-to-string (s)
+    (generate-declare-forwards s classes)
+    (multiple-value-bind (sorted-classes inheritance)
+        (sort-classes-by-inheritance classes)
+      (declare (ignore inheritance))
+      (generate-gc-enum s sorted-classes gc-managed-types)
+      (generate-gc-enum-names s sorted-classes gc-managed-types)
+      (generate-gc-dynamic-cast s sorted-classes)
+      (generate-gc-typeq s sorted-classes)
+      (generate-gc-stamp-selectors s sorted-classes gc-managed-types)
+      (generate-gc-obj-scan s sorted-classes gc-managed-types)
+      (generate-obj-finalize s sorted-classes gc-managed-types)
+      (generate-finalize-table s sorted-classes gc-managed-types)
+      (generate-obj-deallocator s sorted-classes gc-managed-types)
+      (generate-deallocator-table s sorted-classes gc-managed-types)
+      (generate-gc-globals s))))
 
 (defun generate-code (packages-to-create functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config)
   (let ((init-functions (generate-code-for-init-functions functions))
