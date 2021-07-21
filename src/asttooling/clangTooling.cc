@@ -877,7 +877,7 @@ void initialize_clangTooling() {
         .def("applyAllReplacements", &clang::tooling::RefactoringTool::applyAllReplacements)
         .def("runAndSave", &clang::tooling::RefactoringTool::runAndSave);
     class_<clang::Rewriter> cl_aq(m,"Rewriter");
-    cl_aq.def_constructor("newRewriter", constructor<clang::SourceManager &, const clang::LangOptions &>());
+    cl_aq.def_constructor("makeRewriter", constructor<clang::SourceManager &, const clang::LangOptions &>());
     class_<clang::ASTUnit> cl_ar(m,"ASTUnit");
     cl_ar.def("getASTContext", clang_ASTUnit_getASTContext); // (clang::ASTContext&(*)())&clang::ASTUnit::getASTContext)
     derivable_class_<DerivableSyntaxOnlyAction, clang::SyntaxOnlyAction> cl_as(m,"SyntaxOnlyAction",create_default_constructor);

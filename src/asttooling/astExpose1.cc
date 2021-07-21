@@ -393,7 +393,7 @@ typedef clbind::Wrapper<clang::TemplateName, std::unique_ptr<clang::TemplateName
 
 namespace asttooling {
 
-template <typename T>
+template <typename T, typename B>
 core::T_sp cast_decl(clang::Decl *d) {
   if (T *x = dyn_cast<T>(d)) {
     return clbind::Wrapper<T, T *>::make_wrapper(x, reg::registered_class<T>::id);
@@ -414,7 +414,7 @@ core::T_sp mostDerivedDecl(const clang::Decl *cd) {
   }
 #define DECL(_C_, _B_)                               \
   case clang::Decl::_C_: {                           \
-    core::T_sp res = cast_decl<clang::_C_##Decl>(d); \
+    core::T_sp res = cast_decl<clang::_C_##Decl,clang::_B_>(d); \
     return res;                                      \
   }
   switch (d->getKind()) {
@@ -753,15 +753,16 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
 };
 
 CL_LAMBDA(astnode &optional (stream *standard-output*))
+__attribute__((optnone))
 CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp stream) {
 //    .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
 //    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
 //    .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
-  void* ptr = gc::As<core::WrappedPointer_sp>(obj)->mostDerivedPointer();
   bool stringOutputStream = false;
   llvm::SmallString<1024> stringOutput;
   llvm::raw_svector_ostream ostream(stringOutput);
   core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(obj);
+//  printf("%s:%d:%s About to try and cast wp_node id: %lu to %lu \n", __FILE__, __LINE__, __FUNCTION__, wp_node->classId(), reg::registered_class<clang::Decl>::id);
   if (clang::Decl *decl = wp_node->castOrNull<clang::Decl>()) {
     decl->dump(ostream);
   } else if (clang::Stmt *stmt = wp_node->castOrNull<clang::Stmt>()) {

@@ -19,6 +19,7 @@ Find directories that look like them and replace the ones defined in the constan
    #:match-in-compilation-tool-database-source-tree
    #:main-pathname
    #:clang-database
+   #:copy-compilation-tool-database
    #:multitool-compilation-tool-database
    #:source-namestrings
    #:main-source-filename
@@ -36,9 +37,14 @@ Find directories that look like them and replace the ones defined in the constan
    #:multitool-results
    #:code-match-callback
    #:code-match-timer
+   #:*match-refactoring-tool*
+   #:*run-and-save*
+   #:lsel
    #:mtag-node
    #:mtag-loc-start
+   #:mtag-loc-end
    #:mtag-source
+   #:mtag-source-impl
    #:mtag-name
    #:mtag-replace
    #:mtag-result
@@ -449,6 +455,20 @@ Sets up a dynamic environment where clang-tooling:*compilation-tool-database* is
    (source-namestrings :initarg :source-namestrings :accessor source-namestrings)
    (arguments-adjuster-list :initform nil :initarg :arguments-adjuster-list :accessor arguments-adjuster-list)))
 
+
+(defun copy-compilation-tool-database (defaults &key source-pattern)
+  (let ((copy (make-instance 'compilation-tool-database
+                             :clang-database (clang-database defaults)
+                             :source-path-identifier (source-path-identifier defaults)
+                             :main-source-filename (main-source-filename defaults)
+                             :source-namestrings (source-namestrings defaults)
+                             :arguments-adjuster-list (arguments-adjuster-list defaults)
+                             )))
+    (when source-pattern
+      (setf (source-namestrings copy) (select-source-namestrings (source-namestrings defaults) source-pattern)))
+    copy))
+
+
 (defmethod initialize-instance :after ((obj compilation-tool-database) &rest args)
   "* Description
 Initialize the source-namestrings using all filenames in the database if they haven't already been set."
@@ -525,6 +545,7 @@ Setup the default arguments adjusters."
   (push (ast-tooling:get-clang-syntax-only-adjuster) (arguments-adjuster-list compilation-tool-database))
   (push (ast-tooling:get-clang-strip-output-adjuster) (arguments-adjuster-list compilation-tool-database))
   (push (lambda (args filename)
+          (declare (ignore filename))
           (concatenate 'vector
                        args
                        (vector #+target-os-darwin "-isysroot" #+target-os-darwin +isysroot+
@@ -534,10 +555,12 @@ Setup the default arguments adjusters."
   (cond
     ((eq convert-relative-includes-to-absolute t)
      (push (lambda (args filename)
+             (declare (ignore filename))
              (convert-relative-includes-to-absolute args (main-pathname compilation-tool-database)))
            (arguments-adjuster-list compilation-tool-database)))
     (convert-relative-includes-to-absolute
      (push (lambda (args filename)
+             (declare (ignore filename))
              (convert-relative-includes-to-absolute args convert-relative-includes-to-absolute))
            (arguments-adjuster-list compilation-tool-database)))
     (t #| Do nothing |#)))
@@ -575,19 +598,19 @@ it contains the string source-path-identifier.  So /a/b/c/d.cc will match /b/"
 A pathname.
 * Description
 Return the pathname of the directory that contains the main source file. This is where the project.dat and clasp_gc.cc file will be written."
+  (declare (ignore compilation-tool-database))
   (translate-logical-pathname #P"source-dir:src;main;"))
 
 
-(defun select-source-namestrings (compilation-tool-database &optional (pattern nil))
+(defun select-source-namestrings (list-names &optional (pattern nil))
   "* Arguments
 - compilation-tool-database :: The compilation database.
 - pattern :: A string for selecting file names from the database that contain that string.
 * Description
 Select a subset (or all) source file names from the compilation database and return them as a list."
-  (let ((list-names (map 'list #'identity (ast-tooling:get-all-files (clang-database compilation-tool-database)))))
     (if pattern
         (remove-if-not #'(lambda (x) (search pattern x)) list-names)
-        list-names)))
+        list-names))
 
 
 (defparameter *match-refactoring-tool* nil)
@@ -667,6 +690,7 @@ Select a subset (or all) source file names from the compilation database and ret
 (defclass good-dump-match-callback (ast-tooling:match-callback) ()
   (:metaclass core:derivable-cxx-class))
 (core:defvirtual ast-tooling:run ((self good-dump-match-callback) match)
+  (declare (ignore self))
   (let* ((nodes (ast-tooling:nodes match))
          (id-to-node-map (ast-tooling:idto-node-map nodes))
          (node (gethash *match-dump-tag* id-to-node-map))
@@ -886,22 +910,26 @@ Return the source code for the node that has been associated with the tag."
     (if lookup
         lookup
         (setf (gethash pathname *probed-files*) (probe-file pathname)))))
-  
-(defun ploc-as-string (ploc)
+
+(defun ploc-parts (ploc)
   (declare (special *compilation-tool-database*))
   (when (ast-tooling:is-invalid ploc)
-    (return-from ploc-as-string "<invalid source-location>"))
+    (error "invalid source-location"))
   (let* ((relative (pathname (ast-tooling:presumed-loc-get-filename ploc)))
          (absolute (make-pathname :name nil :type nil :defaults (main-pathname *compilation-tool-database*)))
          (pathname (merge-pathnames (make-pathname :host (pathname-host absolute)
                                                    :device (pathname-device absolute)
                                                    :defaults relative) absolute))
          (probed-file (memoized-probe-file pathname)))
+    (values probed-file (ast-tooling:get-line ploc) (ast-tooling:get-column ploc))))
+
+(defun ploc-as-string (ploc)
+  (multiple-value-bind (probed-file line column)
+      (ploc-parts ploc)
     (if (null probed-file)
         (progn
-          (break "Check args ~s" (list absolute relative))
-          (format nil "[ploc-as-string could not locate ~a --> result after merging ~a]" relative pathname))
-        (format nil "~a:~a:~a" (namestring probed-file) (ast-tooling:get-line ploc) (ast-tooling:get-column ploc)))))
+          (format nil "[ploc-as-string could not locate ~a]" ploc))
+        (format nil "~a:~a:~a" (namestring probed-file) line column))))
 
 
 (defun source-loc-as-string (match-info sloc)
@@ -927,6 +955,16 @@ Return a string that describes the start of a source location for the node indic
   (let* ((node (mtag-node match-info tag))
          (begin-sloc (get-begin-loc node)))
     (source-loc-as-string match-info begin-sloc)))
+
+(defun mtag-loc-end (match-info tag)
+  "* Arguments
+- match-info :: The match-info.
+- tag :: The tag of the node.
+* Description 
+Return a string that describes the end of a source location for the node indicated by the tag."
+  (let* ((node (mtag-node match-info tag))
+         (end-sloc (get-end-loc node)))
+    (source-loc-as-string match-info end-sloc)))
 
 
 
@@ -1007,8 +1045,9 @@ Generates a string using fmt/fmt-args and accumulates internally so that they ca
      (push ,rep-gs *match-results*))))
 
 
-(defvar *asts* nil)
-
+(defun lsel (list-name search-str)
+  "Select file names from the list and return them"
+  (remove-if-not #'(lambda (x) (search search-str x)) list-name))
 
 
 (defun load-asts (compilation-tool-database)
@@ -1029,10 +1068,8 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
       (let ((asts (ast-tooling:build-asts tool)))
         (if (> (length asts) 0)
             (progn
-              (format t "build-asts result: ~s ~s~%" (length asts) asts)
-              (setq *asts* asts))
+              (format t "build-asts result: ~s ~s~%" (length asts) asts))
             (progn
-              (setq *asts* nil)
               (format t "NO ASTS WERE LOADED!!!!~%")))
         (format t "Built asts: ~a~%" asts)
         asts))))
@@ -1160,7 +1197,7 @@ Run a matcher on a node and everything underneath it."
       (safe-add-dynamic-matcher sub-match-finder compiled-matcher callback :matcher-sexp matcher-sexp)
       (match sub-match-finder node ast-context))))
 
-(defun run-matcher-on-loaded-asts (match-sexp &key callback counter-limit)
+(defun run-matcher-on-loaded-asts (asts match-sexp &key callback counter-limit)
   "* Arguments
 - match-sexp :: A matcher in s-expression form.
 - callback :: A callback that is evaluated on matches.
@@ -1175,9 +1212,9 @@ Limit the number of times you call the callback with counter-limit."
            (matcher (compile-matcher whole-matcher-sexp))
            (match-finder (ast-tooling:new-match-finder)))
       (safe-add-dynamic-matcher match-finder matcher callback :matcher-sexp match-sexp)
-      (format t "About to start matching asts -> ~a~%" *asts*)
+      (format t "About to start matching asts -> ~a~%" asts)
       (catch 'match-counter-reached-limit
-        (map 'list #'(lambda (x) (match-ast match-finder (get-astcontext x))) *asts*))
+        (map 'list #'(lambda (x) (match-ast match-finder (get-astcontext x))) asts))
       (format t "Number of matches ~a~%" *match-counter*))))
 
 (defun match-count-loaded-asts (match-sexp &key limit &allow-other-keys)
@@ -1227,7 +1264,7 @@ and match them to the match-comments regex.  If they match, run the code."
       (format t "Matched the desired location: ~a~%" *match-source-location*))))
 
 
-(defun match-run-loaded-asts (match-sexp &key limit callback)
+(defun match-run-loaded-asts (asts match-sexp &key limit callback)
   "* Arguments
 - match-sexp :: A matcher in s-expression form.
 - limit :: Limit the number of callback calls.
@@ -1236,9 +1273,9 @@ and match them to the match-comments regex.  If they match, run the code."
 I'm guessing at what this function does!!!!!
 Run the-code-match-callback (a functionRun the match-sexp on the loaded ASTs and for each match, extract the associated comments
 and match them to the match-comments regex.  If they match, run the code."
-  (run-matcher-on-loaded-asts match-sexp
-                     :callback callback
-                     :counter-limit limit))
+  (run-matcher-on-loaded-asts asts match-sexp
+                              :callback callback
+                              :counter-limit limit))
 
 (defun batch-match-run (match-sexp &key compilation-tool-database limit the-code-match-callback run-and-save)
   "* Arguments

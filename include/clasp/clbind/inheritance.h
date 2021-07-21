@@ -56,7 +56,7 @@ public:
   std::pair<void *, int> cast(
       void *p, class_id src, class_id target, class_id dynamic_id, void const *dynamic_ptr) const;
   void insert(class_id src, class_id target, cast_function cast);
-  void dump();
+  void dump(FILE* fout);
 private:
   class impl;
   boost::scoped_ptr<impl> m_impl;

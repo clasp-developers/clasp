@@ -1,12 +1,14 @@
-(getpid)
+(core:getpid)
+(require :asdf)
 
+(progn
+  (asdf:load-asd (probe-file "source-dir:src;lisp;modules;clang-tool;clang-tool.asd"))
+  (asdf:load-system :clang-tool))
 
 (progn
   (format t "---- 1. Setup and load the compilation database~%")
-  (require 'clang-tool)
-
-  (load-compilation-database
-   "/Users/meister/Development/clasp/build/clasp/Contents/Resources/build-databases/clasp_compile_commands.json"))
+  (defparameter *db* (clang-tool:load-compilation-tool-database
+                      "/home/meister/Development/clasp/build/mpsprep/compile_commands.json")))
 
 
 
@@ -19,49 +21,44 @@
 
 (progn
   (format t "---- 2. Defining the matcher for class/field/method~%")
+;;;
+;;; Adjust the compiler arguments for refactoring
+;;;
+  (defparameter *arg-adjuster* (lambda (args filename)
+                                 (declare (ignore filename))
+                                 (prog1
+                                     (concatenate 'vector args
+                                                  #("-DUSE_BOEHM"))
+                                   (format t "Leaving arg-adjuster~%"))))
 
-  ;;;
-  ;;; Adjust the compiler arguments for refactoring
-  ;;;
-  (defparameter *arg-adjuster*
-    (lambda (args)
-      (prog1
-	  (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
-		       #("-DUSE_MPS"
-			 "-DRUNNING_GC_BUILDER"
-			 "-resource-dir"
-			 "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.0")
-		       (vector "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include"))
-	(format t "Leaving arg-adjuster~%"))))
-
-  ;;;
-  ;;; Define the matcher for method calls with nullary (0) arguments
-  ;;; Note: I could make this more specific to look for particular methods
-  ;;;       but I'll do that checking in the callback
+;;;
+;;; Define the matcher for method calls with nullary (0) arguments
+;;; Note: I could make this more specific to look for particular methods
+;;;       but I'll do that checking in the callback
   (defparameter *matcher*
-    '(:member-call-expr
+    '(:cxxmember-call-expr
       (:argument-count-is 0)
       (:bind :CALL
-       (:member-call-expr))))
+       (:cxxmember-call-expr))))
 
-  ;;;
-  ;;; Define the callback that looks for method calls like:
-  ;;;    x->get() where x-> is dereferencing a Fixnum_O pointer
-  ;;; rewrite it as unbox_fixnum(x)
-  ;;;
+;;;
+;;; Define the callback that looks for method calls like:
+;;;    x->get() where x-> is dereferencing a Fixnum_O pointer
+;;; rewrite it as unbox_fixnum(x)
+;;;
   (defparameter *refactor-fixnum-get*
     (make-instance
-     'code-match-callback
+     'clang-tool:code-match-callback
      :match-code
-     (lambda ()
-       (let* ((call (mtag-node :CALL))
-	      (call-source (mtag-source :CALL))
-	      (loc (mtag-loc-start :CALL))
+     (lambda (node)
+       (let* ((call (clang-tool:mtag-node node :CALL))
+	      (call-source (clang-tool:mtag-source node :CALL))
+	      (loc (clang-tool:mtag-loc-start node :CALL))
 	      (method-decl (cast:get-method-decl call)))
-	 (when method-decl
+         (when method-decl
 	   (let* ((method-name (cast:get-name-as-string method-decl))
 		  (expr (cast:get-implicit-object-argument call))
-		  (expr-source (mtag-source-impl expr))
+		  (expr-source (clang-tool:mtag-source-impl expr))
 		  (most-derived-type (cast:get-best-dynamic-class-type expr))
 		  (m-d-t-name (cast:get-qualified-name-as-string most-derived-type)))
 	     (when (and (eql method-name "get") (string= m-d-t-name "core::Fixnum_O") )
@@ -73,16 +70,16 @@
 	       (format t "m-d-t-name: ~a~%" m-d-t-name)
 	       (format t "Source: ~a~%" expr-source)
 	       (if (string/= call-source "")
-		   (when *match-refactoring-tool*
-		     (mtag-replace :CALL "unbox_fixnum(~a)" expr-source))
+		   (when clang-tool:*match-refactoring-tool*
+		     (clang-tool:mtag-replace :CALL "unbox_fixnum(~a)" expr-source))
 		   (format t "!!!!!Skipping replacement due to macro~%")))))))
      :end-of-translation-unit-code
      (lambda ()
        (format t "!!!!!!!! Hit the end-of-translation-unit~%")
-       (format t "*match-refactoring-tool* ~a~%" *match-refactoring-tool*)
-       (format t "*run-and-save* ~a~%" *run-and-save*)
-       (let ((repl (ast-tooling:get-replacements *match-refactoring-tool*)))
-	 (format t "replacements: ~a~%" repl))))))
+       (format t "*match-refactoring-tool* ~a~%" clang-tool:*match-refactoring-tool*)
+       (format t "*run-and-save* ~a~%" clang-tool:*run-and-save*)
+       (let ((repl (ast-tooling:get-replacements clang-tool:*match-refactoring-tool*)))
+         (format t "replacements: ~a~%" repl))))))
 
 
 
@@ -97,11 +94,12 @@
 ;;;
 ;;; Load a subset of the ASTs and run a quick test of the matcher on them
 ;;;
-(defparameter $test-search (lsel $* ".*/array\.cc"))
-(load-asts $test-search :arguments-adjuster-code *arg-adjuster*)
+(defparameter *test-db* (clang-tool:copy-compilation-tool-database *db* :source-pattern "/array.cc"))
+
+(defparameter *asts* (clang-tool:load-asts *test-db*))
 
 (progn
-  (match-run *matcher* :the-code-match-callback *refactor-fixnum-get*)
+  (clang-tool:match-run-loaded-asts *asts* *matcher* :callback *refactor-fixnum-get*)
   (print "Done"))
 
 

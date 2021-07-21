@@ -12,7 +12,9 @@
       (declare (ignore specials))
       (let* ((fn `(lambda ,simple-lambda-list
                     (flet ((call-next-method (&rest args)
+                             (declare (ignore args))
                              (error "In defvirtual defined call-next-method implement a proper one")))
+                      (declare (ignorable call-next-method))
                       ,@code))))
         `(core:ensure-single-dispatch-method (fdefinition ',name)
                                              ',name

@@ -180,6 +180,7 @@ class DerivableMatchCallback
 public:
   virtual void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
     const clang::ast_matchers::MatchFinderMatchResult conv(Result); //  = static_cast<const clang::ast_matchers::MatchFinderMatchResult&>(Result);
+//    printf("%s:%d:%s Found a MatchResult context: %p sourceManger %p\n", __FILE__, __LINE__, __FUNCTION__, conv.getContext(), conv.getSourceManager() );
     core::T_sp val =  translate::to_object<const clang::ast_matchers::MatchFinderMatchResult &>::convert(conv);
     core::eval::funcall(asttooling::_sym_run, this->asSmartPtr(), val);
   }
