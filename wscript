@@ -92,7 +92,7 @@ top = '.'
 out = 'build'
 APP_NAME = 'clasp'
 LLVM_VERSION = 13
-SBCL_VERSION = (2, 1)
+SBCL_VERSION = (2, 0)
 SBCL_VERSION_STRING = "2.1"
 CLANG_SPECIFIC_VERSION = "13.0.0git"
 LLVM_HASH = "972b6a3a3471c2a742c5c5d8ec004ff640d544c4"
@@ -1244,9 +1244,9 @@ def configure(cfg):
     cfg.check_cxx(lib='gmpxx gmp'.split(), cxxflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cxxflags='-Wall', uselib_store='FFI')
     try:
-        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
-    except ConfigurationError:
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    except ConfigurationError:
+        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
 
     if (cfg.env.ENABLE_MMTK==True):
         cfg.check_cxx(lib='mmtk_clasp', cflags='-Wall', linkflags="-L/opt/clasp/lib/", uselib_store='MMTK')
