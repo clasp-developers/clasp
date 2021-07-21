@@ -463,6 +463,7 @@ Convert colons to underscores"
 
 (defun generate-mps-poison (sout)
   "Sections that are only applicable to Boehm builds include this to prevent them from compiling in MPS builds"
+  (declare (ignorable sout))
   #+(or)
   (progn
   (format sout " #if defined(USE_ANALYSIS)~%")
@@ -547,7 +548,8 @@ Convert colons to underscores"
   (format stream "#endif // DECLARE_INHERITANCE~%"))
 
 (defun generate-gc-enum (stream sorted-classes gc-managed-types)
-  (format stream "#ifdef GC_ENUM~%")
+  (format stream "#ifdef GC_ENUM
+STAMPWTAG_null = ADJUST_STAMP(0),~%")
   (let ((stamp-max 0))
     (dolist (c sorted-classes)
       (format stream "STAMPWTAG_~a = ADJUST_STAMP(~a), // stamp ~d unshifted 0x~x  shifted 0x~x~%"
@@ -565,7 +567,8 @@ Convert colons to underscores"
   (format stream "#endif // GC_ENUM~%"))
 
 (defun generate-gc-enum-names (stream sorted-classes gc-managed-types)
-  (format stream "#ifdef GC_ENUM_NAMES~%")
+  (format stream "#ifdef GC_ENUM_NAMES
+register_stamp_name(\"STAMPWTAG_null\",0);~%")
   (dolist (c sorted-classes)
     (format stream "register_stamp_name(\"STAMPWTAG_~a\",ADJUST_STAMP(~a));~%" (build-enum-name (class-key% c)) (stamp-value c)))
   (maphash (lambda (key type)
@@ -1213,11 +1216,13 @@ static void* OBJ_FINALIZE_table[] = {~%")
 
 (defun generate-deallocator-table (stream classes gc-managed-types)
   (format stream "#if defined(GC_OBJ_DEALLOCATOR_TABLE)
-static void* OBJ_DEALLOCATOR_table[] + {~%")
+static void* OBJ_DEALLOCATOR_table[] = {~%")
   (loop for k in classes do (generate-deallocator-table-entry stream k))
   (loop for k being the hash-values of gc-managed-types
         do (generate-deallocator-table-entry stream k))
-  (format stream "#endif // defined(GC_OBJ_DEALLOCATOR_TABLE)~%"))
+  (format stream "   NULL
+};
+#endif // defined(GC_OBJ_DEALLOCATOR_TABLE)~%"))
 
 (defun generate-gc-globals (stream)
   (format stream "#if defined(GC_GLOBALS)
