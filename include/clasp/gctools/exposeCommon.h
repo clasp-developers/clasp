@@ -130,7 +130,7 @@ typedef bool _Bool;
 
 #include <clasp/asttooling/astExpose.h>
 #include <clasp/asttooling/clangTooling.h>
-#include <clasp/asttooling/astVisitor.h>
+#include <clasp/asttooling/asttoolingPackage.h>
 #include <clasp/asttooling/example.h>
 
 #include <clasp/asttooling/translators.h>

@@ -60,7 +60,6 @@ THE SOFTWARE.
 // ------------------- include all headers for corePackage here
 
 #include <clasp/core/object.h>
-#include <clasp/asttooling/astVisitor.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/character.h>
