@@ -622,14 +622,18 @@ public:
 (defun generate-gc-typeq (stream sorted-classes)
   (format stream "#ifdef GC_TYPEQ~%")
   (dolist (c sorted-classes)
-    (multiple-value-bind (high-stamp high-class)
-        (highest-stamp-class c)
-      (if (eq (stamp% c) high-stamp)
-          (format stream "    ADD_SINGLE_TYPEQ_TEST(~a,TYPEQ_ADJUST_STAMP(~a)); ~%"
-                  (class-key% c) (stamp-value c))
-          (format stream "    ADD_RANGE_TYPEQ_TEST(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%"
-                  (class-key% c) (class-key% high-class)
-                  (stamp-value c) (adjust-stamp high-stamp)))))
+    (when (or (not (typep c 'kind))
+              (let ((root (tags:root-class (tag% c))))
+                (or (string= root "core::T_O")
+                    (string= root "clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"))))
+      (multiple-value-bind (high-stamp high-class)
+          (highest-stamp-class c)
+        (if (eq (stamp% c) high-stamp)
+            (format stream "    ADD_SINGLE_TYPEQ_TEST(~a,TYPEQ_ADJUST_STAMP(~a)); ~%"
+                    (class-key% c) (stamp-value c))
+            (format stream "    ADD_RANGE_TYPEQ_TEST(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%"
+                    (class-key% c) (class-key% high-class)
+                    (stamp-value c) (adjust-stamp high-stamp))))))
   (format stream "#endif // GC_TYPEQ~%"))
 
 (defun generate-allocate-all-classes (stream sorted-classes)
