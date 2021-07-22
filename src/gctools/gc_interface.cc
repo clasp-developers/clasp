@@ -1131,7 +1131,7 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::UserData_O);
      Init_class_kind(core::Record_O);
      Init_class_kind(clbind::ClassRegistry_O);
-     Init_class_kind(asttooling::AstVisitor_O);
+     Init_class_kind(core::Cons_O);
 
      Init_templated_kind(core::WrappedPointer_O);
      Init_templated_kind(core::Creator_O);
