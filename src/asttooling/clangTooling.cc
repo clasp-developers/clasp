@@ -596,12 +596,43 @@ core::T_sp ast_tooling__newFrontendActionFactory(core::T_sp consumerFactory) {
   SIMPLE_ERROR(BF("Implement newFrontendActionFactory for %s") % _rep_(consumerFactory));
 };
 
-bool ast_tooling__Replacements_add(clang::tooling::Replacements &replacements, const clang::tooling::Replacement &one) {
+core::List_sp ast_tooling__ReplacementsAsList(clang::tooling::RefactoringTool& refactoringTool ) {
+  map<std::string,clang::tooling::Replacements>& mapReplacements = refactoringTool.getReplacements();
+  ql::list ll;
+  for ( auto pair : mapReplacements ) {
+    for ( auto rep : pair.second ) {
+      ll << core::SimpleBaseString_O::make(rep.toString());
+    }
+  }
+  return ll.result();
+}
+
+void ast_tooling__RefactoringToolReplacementsAdd(clang::tooling::RefactoringTool& refactoringTool, const clang::tooling::Replacement& replacement) {
+  auto filePath = replacement.getFilePath();
+//  printf("%s:%d:%s filePath = %s\n", __FILE__, __LINE__, __FUNCTION__, filePath.str().c_str() );
+  map<std::string,clang::tooling::Replacements>& mapReplacements = refactoringTool.getReplacements();
+//  printf("%s:%d:%s map size = %lu\n", __FILE__, __LINE__, __FUNCTION__, mapReplacements.size() );
+  auto ii = mapReplacements.find(filePath.str());
+  if ( ii == mapReplacements.end() ) {
+    clang::tooling::Replacements repls;
+    auto res = repls.add(replacement);
+    if (res) {
+      SIMPLE_ERROR(BF("Error adding replacement"));
+    }
+    mapReplacements[filePath.str()] =repls;
+  } else {
+    auto res = ii->second.add(replacement);
+    if (res) {
+      SIMPLE_ERROR(BF("Error adding replacement to existing replacements"));
+    }
+  }
+#if 0  
   llvm::Error err = replacements.add(one);
   if (err) {
     return false;
   }
   return true;
+#endif
 }
 #if 0
 
@@ -828,6 +859,8 @@ void initialize_clangTooling() {
     cl_ai.def("getBegin", &clang::SourceRange::getBegin)
         .def("getEnd", &clang::SourceRange::getEnd);
     class_<clang::CharSourceRange> cl_aj(m,"CharSourceRange");
+    cl_aj.def("isTokenRange",&clang::CharSourceRange::isTokenRange);
+    cl_aj.def("isCharRange",&clang::CharSourceRange::isTokenRange);
     // Create a CharSourceRange from a pair of begin/end SourceLocations that contains a TokenRange
     m.def("newCharSourceRange-getTokenRange",
           (clang::CharSourceRange (*)(clang::SourceLocation, clang::SourceLocation)) & clang::CharSourceRange::getTokenRange);
@@ -866,14 +899,16 @@ void initialize_clangTooling() {
     class_<clang::tooling::Replacement>(m,"Replacement")
         .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, llvm::StringRef>())
         .def("toString", &clang::tooling::Replacement::toString)
+        .def("getFilePath", &clang::tooling::Replacement::getFilePath)
         .def("replacement-apply", &clang::tooling::Replacement::apply);
     class_<clang::tooling::Range> cl_an(m,"Range");
 
+    m.def("refactoring-tool-replacements-add", &ast_tooling__RefactoringToolReplacementsAdd);
     class_<clang::tooling::Replacements> cl_ao(m,"Replacements");
-    m.def("Replacements-add", &ast_tooling__Replacements_add); // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
+    m.def("replacements-as-list", &ast_tooling__ReplacementsAsList);
     class_<clang::tooling::RefactoringTool, clang::tooling::ClangTool> cl_ap(m,"RefactoringTool");
     cl_ap.def_constructor("newRefactoringTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
-        .def("getReplacements", &clang::tooling::RefactoringTool::getReplacements)
+//        .def("getReplacements", &clang::tooling::RefactoringTool::getReplacements)
         .def("applyAllReplacements", &clang::tooling::RefactoringTool::applyAllReplacements)
         .def("runAndSave", &clang::tooling::RefactoringTool::runAndSave);
     class_<clang::Rewriter> cl_aq(m,"Rewriter");
