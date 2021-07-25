@@ -32,6 +32,7 @@
                                       (lambda (match-info tag)
                                         fixup)))
            (let ((loc (clang-tool:mtag-loc-start node :root)))
+             (format t "Bad match at ~s~%" loc)
              (push loc *bad-matches*)))))
    :end-of-translation-unit-code
    (lambda ()
@@ -146,7 +147,7 @@ int main(int argc, const char* argv[]) {
 ;;;
 ;;; Load a subset of the ASTs and run a quick test of the matcher on them
 ;;;
-(defparameter *test-db* (clang-tool:copy-compilation-tool-database *db* :source-pattern "/array.cc"))
+(defparameter *test-db* (clang-tool:copy-compilation-tool-database *db* :source-pattern "/symbol.cc"))
 
 
 (defun do-match-test ()
@@ -180,3 +181,5 @@ int main(int argc, const char* argv[]) {
      :compilation-tool-database *db*
      :the-code-match-callback *refactor*
      :run-and-save t))
+
+(do-change-all)
