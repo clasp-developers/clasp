@@ -77,19 +77,22 @@ struct from_object<const llvm::Twine &> {
 template <>
 struct to_object<const llvm::StringRef &> {
   static core::T_sp convert(llvm::StringRef const &sr) {
-    _G();
-    return (Values(core::SimpleBaseString_O::make(sr.data())));
+    return sr.empty() ? core::SimpleBaseString_O::make("") : core::SimpleBaseString_O::make(sr.data(),sr.size());
   }
 };
 
 template <>
 struct to_object<llvm::StringRef &> {
-  static core::T_sp convert(llvm::StringRef &sr) { return core::SimpleBaseString_O::make(sr.data()); }
+  static core::T_sp convert(llvm::StringRef &sr) {
+    return sr.empty() ? core::SimpleBaseString_O::make("") : core::SimpleBaseString_O::make(sr.data(),sr.size());
+  }
 };
 
 template <>
 struct to_object<llvm::StringRef> {
-  static core::T_sp convert(const llvm::StringRef &sr) { return core::SimpleBaseString_O::make(sr.data()); }
+  static core::T_sp convert(const llvm::StringRef &sr) {
+    return sr.empty() ? core::SimpleBaseString_O::make("") : core::SimpleBaseString_O::make(sr.data(),sr.size());
+  }
 };
 
  template <>

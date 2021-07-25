@@ -190,19 +190,19 @@ public:
   };
 
   virtual void onStartOfTranslationUnit() {
-    printf("%s:%d entered onStartOfTranslationUnit funcalling\n", __FILE__, __LINE__);
+//    printf("%s:%d entered onStartOfTranslationUnit funcalling\n", __FILE__, __LINE__);
     core::eval::funcall(_sym_onStartOfTranslationUnit, this->asSmartPtr());
   }
   void default_onStartOfTranslationUnit() {
-    printf("%s:%d entered default_onStartOfTranslationUnit\n", __FILE__, __LINE__);
+//    printf("%s:%d entered default_onStartOfTranslationUnit\n", __FILE__, __LINE__);
     this->AlienBase::onStartOfTranslationUnit();
   }
   virtual void onEndOfTranslationUnit() {
-    printf("%s:%d entered onEndOfTranslationUnit funcalling\n", __FILE__, __LINE__);
+//    printf("%s:%d entered onEndOfTranslationUnit funcalling\n", __FILE__, __LINE__);
     core::eval::funcall(_sym_onEndOfTranslationUnit, this->asSmartPtr());
   }
   void default_onEndOfTranslationUnit() {
-    printf("%s:%d entered default_onEndOfTranslationUnit\n", __FILE__, __LINE__);
+//    printf("%s:%d entered default_onEndOfTranslationUnit\n", __FILE__, __LINE__);
     this->AlienBase::onEndOfTranslationUnit();
   }
 

@@ -17,6 +17,52 @@
 ;;; Define the ASTMatcher and the code to carry out the refactoring
 ;;;
 
+(defparameter *refactor*
+  (make-instance
+   'clang-tool:code-match-callback
+   :match-code
+   (lambda (match-info)
+     (cast:dump (clang-tool:mtag-node match-info :all)))))
+
+#+(or)(defparameter *refactor-method-call*
+        (make-instance
+         'clang-tool:code-match-callback
+         :match-code
+         (lambda (node)
+           (let* ((call (clang-tool:mtag-node node :CALL))
+                  (call-source (clang-tool:mtag-source node :CALL))
+                  (loc (clang-tool:mtag-loc-start node :CALL))
+                  (method-decl (cast:get-method-decl call)))
+             (when method-decl
+               (let* ((method-name (cast:get-name-as-string method-decl))
+                      (expr (cast:get-implicit-object-argument call))
+                      (expr-source (clang-tool:mtag-source-impl node expr))
+                      (most-derived-type (cast:get-best-dynamic-class-type expr))
+                      (m-d-t-name (cast:get-qualified-name-as-string most-derived-type)))
+                 (when (and (string= m-d-t-name "core::HashGenerator") (string= method-name "isFilling"))
+                   (format t "-------- loc: ~a~%" loc )
+                   (format t "Call: ~a name: ~a~%" call method-name)
+                   (format t "call-source: ~a~%" call-source)
+                   (format t "expr: ~a~%" expr)
+                   (format t "most-derived-type: ~a~%" most-derived-type)
+                   (format t "m-d-t-name: ~a~%" m-d-t-name)
+                   (format t "Source: ~a~%" expr-source)
+                   (if (string/= call-source "")
+                       (progn
+                         (format t "About to do mtag-replace~%")
+                         (when clang-tool:*match-refactoring-tool*
+                           (clang-tool:mtag-replace node :CALL
+                                                    (lambda (match-info tag)
+                                                      (format t "Returning replacement thing~%")
+                                                      expr-source))))
+                       (format t "!!!!!Skipping replacement due to macro~%")))))))
+         :end-of-translation-unit-code
+         (lambda ()
+           (format t "!!!!!!!! Hit the end-of-translation-unit~%")
+           (format t "*match-refactoring-tool* ~a~%" clang-tool:*match-refactoring-tool*)
+           (format t "*run-and-save* ~a~%" clang-tool:*run-and-save*)
+           (let ((repl (ast-tooling:replacements-as-list clang-tool:*match-refactoring-tool*)))
+             (format t "~a~%" repl)))))
 
 
 (progn
@@ -31,58 +77,41 @@
                                                   #("-DUSE_BOEHM"))
                                    (format t "Leaving arg-adjuster~%"))))
 
+
+  #|
+#include <cstdint>
+namespace gctools {
+typedef std::size_t Tagged;
+template <class T>
+struct smart_ptr {
+    T* _raw;
+    smart_ptr(Tagged x) : _raw((T*)x) {};
+};
+}
+template <class T>
+gctools::smart_ptr<T> _Nil() {
+  gctools::smart_ptr<T> x((gctools::Tagged)0);
+  return x;
+}    
+int main(int argc, const char* argv[]) {
+    gctools::smart_ptr<void> v = _Nil<void>();
+}
+|#
 ;;;
 ;;; Define the matcher for method calls with nullary (0) arguments
 ;;; Note: I could make this more specific to look for particular methods
 ;;;       but I'll do that checking in the callback
   (defparameter *matcher*
-    '(:cxxmember-call-expr
-      (:argument-count-is 0)
-      (:bind :CALL
-       (:cxxmember-call-expr))))
+    '(:call-expr
+      (:bind :ALL (:call-expr))
+      ))
 
 ;;;
 ;;; Define the callback that looks for method calls like:
 ;;;    x->get() where x-> is dereferencing a Fixnum_O pointer
 ;;; rewrite it as unbox_fixnum(x)
 ;;;
-  (defparameter *refactor-fixnum-get*
-    (make-instance
-     'clang-tool:code-match-callback
-     :match-code
-     (lambda (node)
-       (let* ((call (clang-tool:mtag-node node :CALL))
-	      (call-source (clang-tool:mtag-source node :CALL))
-	      (loc (clang-tool:mtag-loc-start node :CALL))
-	      (method-decl (cast:get-method-decl call)))
-         (when method-decl
-	   (let* ((method-name (cast:get-name-as-string method-decl))
-		  (expr (cast:get-implicit-object-argument call))
-		  (expr-source (clang-tool:mtag-source-impl expr))
-		  (most-derived-type (cast:get-best-dynamic-class-type expr))
-		  (m-d-t-name (cast:get-qualified-name-as-string most-derived-type)))
-	     (when (and (eql method-name "get") (string= m-d-t-name "core::Fixnum_O") )
-	       (format t "-------- loc: ~a~%" loc )
-	       (format t "Call: ~a name: ~a~%" call method-name)
-	       (format t "call-source: ~a~%" call-source)
-	       (format t "expr: ~a~%" expr)
-	       (format t "most-derived-type: ~a~%" most-derived-type)
-	       (format t "m-d-t-name: ~a~%" m-d-t-name)
-	       (format t "Source: ~a~%" expr-source)
-	       (if (string/= call-source "")
-		   (when clang-tool:*match-refactoring-tool*
-		     (clang-tool:mtag-replace :CALL "unbox_fixnum(~a)" expr-source))
-		   (format t "!!!!!Skipping replacement due to macro~%")))))))
-     :end-of-translation-unit-code
-     (lambda ()
-       (format t "!!!!!!!! Hit the end-of-translation-unit~%")
-       (format t "*match-refactoring-tool* ~a~%" clang-tool:*match-refactoring-tool*)
-       (format t "*run-and-save* ~a~%" clang-tool:*run-and-save*)
-       (let ((repl (ast-tooling:get-replacements clang-tool:*match-refactoring-tool*)))
-         (format t "replacements: ~a~%" repl))))))
-
-
-
+  )
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -96,10 +125,16 @@
 ;;;
 (defparameter *test-db* (clang-tool:copy-compilation-tool-database *db* :source-pattern "/array.cc"))
 
-(defparameter *asts* (clang-tool:load-asts *test-db*))
 
-(progn
-  (clang-tool:match-run-loaded-asts *asts* *matcher* :callback *refactor-fixnum-get*)
+(defun do-match-test ()
+  (clang-tool:batch-match-run *matcher*
+                              :compilation-tool-database *test-db*
+                              :the-code-match-callback *refactor*))
+
+#+(or)(defparameter *asts* (clang-tool:load-asts *test-db*))
+
+#+(or)(defun do-match-test()
+  (clang-tool:match-run-loaded-asts *asts* *matcher* :callback *refactor*)
   (print "Done"))
 
 
@@ -107,18 +142,18 @@
 ;;;
 ;;; Generate replacements but don't save them
 ;;;
-(batch-match-run *matcher*
-		 :filenames $test-search
-		 :the-code-match-callback *refactor-fixnum-get*
-		 :arguments-adjuster-code *arg-adjuster*)
+(defun do-match-all ()
+  (clang-tool:batch-match-run *matcher*
+                              :compilation-tool-database *db*
+                              :the-code-match-callback *refactor*))
 
 ;;; Production run
 ;;;
 ;;; Generate replacements and write them back to the C++ code
 ;;; WARNING: No backups are kept - use git to rewind changes if they don't work
 ;;;
-(batch-match-run *matcher*
-		 :filenames $*
-		 :the-code-match-callback *refactor-fixnum-get*
-		 :arguments-adjuster-code *arg-adjuster*
-		 :run-and-save t)
+#+(or)(batch-match-run *matcher*
+                 :filenames $*
+                 :the-code-match-callback *refactor-fixnum-get*
+                 :arguments-adjuster-code *arg-adjuster*
+                 :run-and-save t)

@@ -1241,6 +1241,10 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', "-L%s" % UNWINDER_PATH )
             cfg.env.append_value('LINKFLAGS',"--unwindlib=libunwind")
             cfg.env.append_value('LINKFLAGS',"--rtlib=compiler-rt")
+    if (UNWINDER == DEFAULT):
+        if (cfg.env['DEST_OS'] == LINUX_OS ):
+            cfg.env.append_value('LINKFLAGS',"--unwindlib=libgcc")
+            cfg.env.append_value('LINKFLAGS',"--rtlib=libgcc")
     cfg.check_cxx(lib='gmpxx gmp'.split(), cxxflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cxxflags='-Wall', uselib_store='FFI')
     try:
@@ -1248,8 +1252,8 @@ def configure(cfg):
     except ConfigurationError:
         cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
 
-    if (cfg.env.ENABLE_MMTK==True):
-        cfg.check_cxx(lib='mmtk_clasp', cflags='-Wall', linkflags="-L/opt/clasp/lib/", uselib_store='MMTK')
+#    if (cfg.env.ENABLE_MMTK==True):
+#        cfg.check_cxx(lib='mmtk_clasp', cflags='-Wall', linkflags="-L/opt/clasp/lib/", uselib_store='MMTK')
     #libz
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):

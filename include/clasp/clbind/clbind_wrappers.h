@@ -197,7 +197,13 @@ void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_poin
       obj->_setInstanceClassUsingSymbol(classSymbol);
       return obj;
     }
-    SIMPLE_ERROR(BF("In make_wrapper for a class class_id %d - the classSymbol could not be identified - this probably means that you are trying to wrap an unexposed class") % dynamic_id );
+    SIMPLE_ERROR(BF("In make_wrapper for a class class_id %d\n"
+                    "  the classSymbol could not be identified\n"
+                    "  this probably means that you are trying to wrap an unexposed class\n"
+                    "  OR you don't have an appropriate to_object translator for the type\n"
+                    "  that corresponds to this class_id.\n"
+                    "  Connect a debugger and check if:\n"
+                    "  struct to_object<T &, translate::dont_adopt_pointer> is on the stack") % dynamic_id );
   }
 
   static gctools::smart_ptr<WrapperType> make_wrapper(const OT &val, class_id dynamic_id ) {
@@ -677,10 +683,18 @@ struct from_object<const T &> {
 };
 
 template <typename T>
+T& safe_deref(T* ptr) {
+  if (ptr) {
+    return *ptr;
+  }
+  SIMPLE_ERROR(BF("Passing NULL to a from_object that dereferences - this probably means that NIL was passed to a clbind wrapped function that expects a real object"));
+}
+
+template <typename T>
 struct from_object<T &> {
   typedef T &DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(*(from_object<T *>(o)._v)){};
+  from_object(core::T_sp o) : _v(safe_deref<T>((from_object<T *>(o)._v))){};
   ~from_object() {/*non trivial*/};
 };
 
