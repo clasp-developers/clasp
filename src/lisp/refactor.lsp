@@ -21,8 +21,21 @@
   (make-instance
    'clang-tool:code-match-callback
    :match-code
-   (lambda (match-info)
-     (cast:dump (clang-tool:mtag-node match-info :all)))))
+   (lambda (node)
+     (let* ((call (clang-tool:mtag-node node :root))
+            (call-source (clang-tool:mtag-source node :root)))
+       (when (> (length call-source) 0)
+         (let ((fixup (concatenate 'string "nil" (subseq call-source 4))))
+           (clang-tool:mtag-replace node :root
+                                    (lambda (match-info tag)
+                                      fixup))))))
+   :end-of-translation-unit-code
+   (lambda ()
+     (format t "!!!!!!!! Hit the end-of-translation-unit~%")
+     (format t "*match-refactoring-tool* ~a~%" clang-tool:*match-refactoring-tool*)
+     (format t "*run-and-save* ~a~%" clang-tool:*run-and-save*)
+     (let ((repl (ast-tooling:replacements-as-list clang-tool:*match-refactoring-tool*)))
+       (format t "~a~%" repl)))))
 
 #+(or)(defparameter *refactor-method-call*
         (make-instance
@@ -103,12 +116,11 @@ int main(int argc, const char* argv[]) {
 ;;;       but I'll do that checking in the callback
   (defparameter *matcher*
     '(:call-expr
-      (:bind :ALL (:call-expr))
+      (:bind :root (:call-expr))
       (:callee
        (:function-decl
         (:has-name "_Nil")
-        (:is-template-instantiation)
-        (:bind :ID (:function-decl))))))
+        (:is-template-instantiation)))))
 
   #+(or)(defparameter *matcher*
     (ast-tooling:parse-dynamic-matcher "callExpr(callee(functionDecl(hasName(\"_Unbound\"),isTemplateInstantiation()).bind(\"id\")))"))
@@ -159,8 +171,8 @@ int main(int argc, const char* argv[]) {
 ;;; Generate replacements and write them back to the C++ code
 ;;; WARNING: No backups are kept - use git to rewind changes if they don't work
 ;;;
-#+(or)(batch-match-run *matcher*
-                 :filenames $*
-                 :the-code-match-callback *refactor-fixnum-get*
-                 :arguments-adjuster-code *arg-adjuster*
-                 :run-and-save t)
+(defun do-change-all ()
+    (clang-tool:batch-match-run *matcher*
+     :compilation-tool-database *db*
+     :the-code-match-callback *refactor*
+     :run-and-save t))
