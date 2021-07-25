@@ -104,7 +104,14 @@ int main(int argc, const char* argv[]) {
   (defparameter *matcher*
     '(:call-expr
       (:bind :ALL (:call-expr))
-      ))
+      (:callee
+       (:function-decl
+        (:has-name "_Nil")
+        (:is-template-instantiation)
+        (:bind :ID (:function-decl))))))
+
+  #+(or)(defparameter *matcher*
+    (ast-tooling:parse-dynamic-matcher "callExpr(callee(functionDecl(hasName(\"_Unbound\"),isTemplateInstantiation()).bind(\"id\")))"))
 
 ;;;
 ;;; Define the callback that looks for method calls like:

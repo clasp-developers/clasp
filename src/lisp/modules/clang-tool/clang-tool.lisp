@@ -968,22 +968,22 @@ Code for representing ASTMatchers as s-expressions
 |#
 
 
-(defparameter +all-matchers+ (append +node-matcher-rules+ +narrowing-matcher-rules+ +traversal-matcher-rules+))
+(defparameter +all-matchers+ (append *node-matcher-rules* *narrowing-matcher-rules* *traversal-matcher-rules*))
 
 (defparameter +node-matcher-hints+ (make-hash-table :test #'eq))
-(dolist (i +node-matcher-rules+)
+(dolist (i *node-matcher-rules*)
   (setf (gethash (car i) +node-matcher-hints+) (cdr i)))
 
 (defparameter +narrowing-matcher-hints+ (make-hash-table :test #'eq))
-(dolist (i +narrowing-matcher-rules+)
+(dolist (i *narrowing-matcher-rules*)
   (setf (gethash (car i) +narrowing-matcher-hints+) (cdr i)))
 
 (define-condition wrong-matcher (condition)
   ((node-type :initarg :node-type :accessor wrong-matcher-node-type )))
 
 (defun identify-node-type (node)
-  (or (find-if #'(lambda (x) (eq node (second x))) +narrowing-matcher-rules+)
-      (find-if #'(lambda (x) (eq node (second x))) +traversal-matcher-rules+)))
+  (or (find-if #'(lambda (x) (eq node (second x))) *narrowing-matcher-rules*)
+      (find-if #'(lambda (x) (eq node (second x))) *traversal-matcher-rules*)))
 
 (defun applicable-matcher-p (prev-env matcher-env)
   (check-type prev-env list)
@@ -1003,7 +1003,7 @@ Code for representing ASTMatchers as s-expressions
                           (and (eq node (second x))
                                (or (not prev-environment)
                                    (applicable-matcher-p prev-environment (first x)))))
-                        +node-matcher-rules+)))
+                        *node-matcher-rules*)))
     (if node-matchers
         (progn
           (when (> (length node-matchers) 1)
@@ -1024,7 +1024,7 @@ Code for representing ASTMatchers as s-expressions
                             (or (not prev-environment)
                                 (eq (first x) :*)
                                 (applicable-matcher-p prev-environment (first x)))))
-                     +traversal-matcher-rules+)))
+                     *traversal-matcher-rules*)))
       (if matchers
           (progn
             (when (> (length matchers) 1)
@@ -1048,7 +1048,7 @@ Code for representing ASTMatchers as s-expressions
 ;;;                                         (not prev-environment)
                                            (eq (first x) :*)
                                            (applicable-matcher-p prev-environment (first x)))))
-                                   +narrowing-matcher-rules+)))
+                                   *narrowing-matcher-rules*)))
       (when matchers
         (when (> (length matchers) 1)
           (return-from id (map 'list (lambda (x) (third x)) matchers))
@@ -1065,11 +1065,11 @@ Code for representing ASTMatchers as s-expressions
 
 (defun error-unless-valid-predicate (p)
   (block good
-    (when (position-if (lambda (x) (eq p (cadr x))) +node-matcher-rules+)
+    (when (position-if (lambda (x) (eq p (cadr x))) *node-matcher-rules*)
       (return-from good t))
-    (when (position-if (lambda (x) (eq p (cadr x))) +traversal-matcher-rules+)
+    (when (position-if (lambda (x) (eq p (cadr x))) *traversal-matcher-rules*)
       (return-from good t))
-    (when (position-if (lambda (x) (eq p (cadr x))) +narrowing-matcher-rules+)
+    (when (position-if (lambda (x) (eq p (cadr x))) *narrowing-matcher-rules*)
       (return-from good t))
     (error "Invalid predicate ~a" p)))
 
@@ -1104,7 +1104,7 @@ Code for representing ASTMatchers as s-expressions
   (check-type environment list)
   (let ((*print-circle* nil))
     (let* ((super-classes (super-class-matchers environment))
-           (node-matcher-records (remove-if-not (lambda (x) (member (car x) super-classes)) +node-matcher-rules+))
+           (node-matcher-records (remove-if-not (lambda (x) (member (car x) super-classes)) *node-matcher-rules*))
            (node-matchers (mapcar #'second node-matcher-records))
            (short-names (remove-if (lambda (x) (> (length (symbol-name x)) 20)) node-matchers))
            (long-names (remove-if-not (lambda (x) (> (length (symbol-name x)) 20)) node-matchers)))
@@ -1119,8 +1119,8 @@ Code for representing ASTMatchers as s-expressions
 
 
 #+(or)
-(dolist (m +traversal-matcher-rules+)
-  (let ((some (remove-if-not (lambda (x) (eq (cadr m) (cadr x))) +all-matcher-rules+)))
+(dolist (m *traversal-matcher-rules*)
+  (let ((some (remove-if-not (lambda (x) (eq (cadr m) (cadr x))) *all-matcher-rules*)))
     (when (> (length some) 1)
       (format t "matcher: ~a  ~a~%" (cadr m) (map 'list (lambda (x) (caddr x)) some)))))
 
@@ -1158,7 +1158,7 @@ correspond to the environment names superclasses that are also part of the clang
   "For a list of valid environments give a hint for narrowing matchers that could narrow the number of matches"
   (check-type environment list)
   (handler-case (let ((supers (append (super-class-matchers environment) '(:*))))
-                  (dolist (i +narrowing-matcher-rules+)
+                  (dolist (i *narrowing-matcher-rules*)
                     (when (member (car i) supers)
                       (format t "   ~a~%" (cdr i)))))
     (wrong-matcher (exception)
@@ -1168,14 +1168,14 @@ correspond to the environment names superclasses that are also part of the clang
   "For a list of valid environments, give a hint for traversal matchers that will move us from there"
   (check-type environment list)
   (handler-case (let ((supers (append (super-class-matchers environment) '(:*))))
-                  (dolist (i +traversal-matcher-rules+)
+                  (dolist (i *traversal-matcher-rules*)
                     (when (member (car i) supers)
                       (format t "   ~a~%" (cdr i)))))
     (wrong-matcher (exception)
       (format t "Traversal matchers aren't appropriate here - ~a~%" (wrong-matcher-node-type exception)))))
 
 (defun arg-for-cmd (node)
-  (dolist (i (append +node-matcher-rules+ +narrowing-matcher-rules+ +traversal-matcher-rules+))
+  (dolist (i (append *node-matcher-rules* *narrowing-matcher-rules* *traversal-matcher-rules*))
     (when (eq (cadr i) node)
       (format t "~a~%" i))))
 
