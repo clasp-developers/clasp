@@ -40,7 +40,7 @@ namespace core {
 Null_sp Null_O::create_at_boot(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  GC_ALLOCATE(Null_O,nn);
+  auto nn = gctools::GC<Null_O>::allocate_with_default_constructor();
   //T_sp nn = gctools::GC<Null_O>::root_allocate();
   Symbol_sp n = nn;
   n->setf_name(SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str()));

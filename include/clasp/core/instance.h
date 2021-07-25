@@ -316,7 +316,7 @@ class ClassHolder_O : public core::General_O {
   LISP_CLASS(core, CorePkg, ClassHolder_O, "ClassHolder",core::General_O);
 public:
   static ClassHolder_sp create(Instance_sp cl) {
-    GC_ALLOCATE_VARIADIC(ClassHolder_O,ch,cl);
+    auto ch = gctools::GC<ClassHolder_O>::allocate(cl);
     return ch;
   }
   std::atomic<Instance_sp> _Class;

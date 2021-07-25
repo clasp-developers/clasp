@@ -117,7 +117,7 @@ public:
 
 public:
   static ClassRep_sp create(core::Instance_sp class_, type_id const &mtype, core::Symbol_sp name, bool derivable) {
-    GC_ALLOCATE_VARIADIC(ClassRep_O, val, class_, mtype, name, derivable);
+    auto  val = gctools::GC<ClassRep_O>::allocate( class_, mtype, name, derivable);
     return val;
   }
   void add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base);

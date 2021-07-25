@@ -526,7 +526,7 @@ ForeignData_sp PERCENTallocate_foreign_object( core::T_sp kind )
     n_size = unbox_fixnum(gc::As<core::Fixnum_sp>(oCaddr(ckind)));
   }
 
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->allocate( kind, core::DeleteOnDtor, n_size );
 
   return self;
@@ -544,7 +544,7 @@ void ForeignData_O::PERCENTfree_foreign_object( void )
 ForeignData_sp PERCENTallocate_foreign_data( core::Integer_sp size )
 {
   size_t _size = unbox_fixnum( size );
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->allocate( kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, _size );
   return self;
 }
@@ -553,7 +553,7 @@ ForeignData_sp PERCENTallocate_foreign_data( core::Integer_sp size )
 // ---------------------------------------------------------------------------
 ForeignData_sp allocate_foreign_data( uint64_t size )
 {
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->allocate( kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, size );
   return self;
 }
@@ -569,7 +569,7 @@ void ForeignData_O::PERCENTfree_foreign_data( void )
 // ---------------------------------------------------------------------------
 ForeignData_sp ForeignData_O::create( uintptr_t address )
 {
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->m_raw_data = reinterpret_cast< void * >( address );
   self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return self;
@@ -579,7 +579,7 @@ ForeignData_sp ForeignData_O::create( uintptr_t address )
 // ---------------------------------------------------------------------------
 ForeignData_sp ForeignData_O::create( void * p_address, size_t size )
 {
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->m_raw_data = p_address;
   self->m_size = size;
   self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
@@ -850,17 +850,16 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp    lisp_symbol,
 {
   // Pass the constructor arguments directly to the allocator
   //     You probably didn't know about GC_ALLOC_VARIADIC
-  GC_ALLOCATE_VARIADIC(ForeignTypeSpec_O, self,
-                       lisp_symbol,
-                       lisp_name,
-                       size,
-                       alignment,
-                       cxx_name,
-                       llvm_type_symbol_fn,
-                       to_object_fn_name,
-                       from_object_fn_name,
-                       to_object_fn_ptr,
-                       from_object_fn_ptr);
+  auto self = gctools::GC<ForeignTypeSpec_O>::allocate( lisp_symbol,
+                                                        lisp_name,
+                                                        size,
+                                                        alignment,
+                                                        cxx_name,
+                                                        llvm_type_symbol_fn,
+                                                        to_object_fn_name,
+                                                        from_object_fn_name,
+                                                        to_object_fn_ptr,
+                                                        from_object_fn_ptr);
 #if 0
   self->m_lisp_symbol           = lisp_symbol;
   self->m_lisp_name             = lisp_name;

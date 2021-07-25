@@ -700,7 +700,6 @@ void Lisp_O::setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, Exp
 #endif
 
 void Lisp_O::print(boost::format fmt) {
-  _OF();
   TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
   if (cl::_sym_print->fboundp()) {
     eval::funcall(cl::_sym_print, SimpleBaseString_O::make(fmt_str));

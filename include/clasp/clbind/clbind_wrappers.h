@@ -43,7 +43,7 @@ namespace clbind {
 template <class OT, class WT>
 gctools::smart_ptr<OT> RP_Create_wrapper() {
   _G();
-  GC_ALLOCATE(OT, wrapper);
+  auto  wrapper = gctools::GC<OT>::allocate_with_default_constructor();
   return wrapper;
 }
 
@@ -191,7 +191,7 @@ void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_poin
   static gctools::smart_ptr<WrapperType> make_wrapper(OT *naked, class_id dynamic_id) {
 //    printf("%s:%d:%s DEBUG_WRAPPER with OT*\n", __FILE__, __LINE__, __FUNCTION__ );
     void* dynamic_ptr = (void*)naked;
-    GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, dynamic_id, dynamic_ptr );
+    auto  obj = gctools::GC<WrapperType>::allocate( naked, dynamic_id, dynamic_ptr );
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     if (!classSymbol.unboundp()) {
       obj->_setInstanceClassUsingSymbol(classSymbol);
@@ -210,7 +210,7 @@ void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_poin
     printf("%s:%d:%s with OT&\n", __FILE__, __LINE__, __FUNCTION__ );
     OT *naked = new OT(val);
     void* dynamic_ptr = (void*)naked;
-    GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, dynamic_id, dynamic_ptr );
+    auto  obj = gctools::GC<WrapperType>::allocate( naked, dynamic_id, dynamic_ptr );
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
@@ -219,7 +219,7 @@ void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_poin
   static gctools::smart_ptr<WrapperType> make_wrapper(std::unique_ptr<OT> val, class_id dynamic_id) {
 //    printf("%s:%d:%s with unique_ptr\n", __FILE__, __LINE__, __FUNCTION__ );
     void* dynamic_ptr = (void*)val.get();
-    GC_ALLOCATE_VARIADIC(WrapperType, obj, std::move(val), dynamic_id, dynamic_ptr );
+    auto  obj = gctools::GC<WrapperType>::allocate( std::move(val), dynamic_id, dynamic_ptr );
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;

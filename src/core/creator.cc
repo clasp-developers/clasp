@@ -70,7 +70,7 @@ namespace core {
 T_sp StandardClassCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Instance_O>();
   Instance_sp c = lisp_standard_class();
-  GC_ALLOCATE_VARIADIC(Instance_O,class_,c);
+  auto class_ = gctools::GC<Instance_O>::allocate(c);
   return class_;
 };
 
@@ -79,7 +79,7 @@ T_sp StandardClassCreator_O::creator_allocate() {
 namespace core {
 T_sp DerivableCxxClassCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Instance_O>();
-  GC_ALLOCATE_VARIADIC(Instance_O,class_,lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS*/);
+  auto class_ = gctools::GC<Instance_O>::allocate(lisp_standard_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS*/);
   return class_;
 };
 
@@ -88,7 +88,7 @@ T_sp DerivableCxxClassCreator_O::creator_allocate() {
 namespace core {
 T_sp ClassRepCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<Instance_O>();
-  GC_ALLOCATE_VARIADIC(clbind::ClassRep_O,class_,lisp_clbind_cxx_class());
+  auto class_ = gctools::GC<clbind::ClassRep_O>::allocate(lisp_clbind_cxx_class());
   return class_;
 };
 

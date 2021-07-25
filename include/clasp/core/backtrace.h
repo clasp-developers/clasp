@@ -36,8 +36,7 @@ public:
                                T_sp sp, T_sp fd,
                                T_sp closure, T_sp args, bool args_available,
                                T_sp lang, bool is_xep) {
-    GC_ALLOCATE_VARIADIC(DebuggerFrame_O, ret, fname, ra, sp, fd,
-                         closure, args, args_available, lang, is_xep);
+    auto  ret = gctools::GC<DebuggerFrame_O>::allocate( fname, ra, sp, fd, closure, args, args_available, lang, is_xep);
     return ret;
   }
 public:
@@ -66,8 +65,7 @@ public:
   {}
   static DebuggerLocal_sp make(T_sp fname, T_sp name,
                                T_sp declfile, T_sp declline) {
-    GC_ALLOCATE_VARIADIC(DebuggerLocal_O, ret,
-                         fname, name, declfile, declline);
+    auto  ret = gctools::GC<DebuggerLocal_O>::allocate( fname, name, declfile, declline);
     return ret;
   }
 public:

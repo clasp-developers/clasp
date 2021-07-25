@@ -52,7 +52,7 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        List_sp declares,
                                                        gc::Nilable<String_sp> docstr,
                                                        Function_sp body) {
-  GC_ALLOCATE_VARIADIC(SingleDispatchMethod_O, method, name,receiverClass,llh,declares,docstr,body);
+  auto  method = gctools::GC<SingleDispatchMethod_O>::allocate( name,receiverClass,llh,declares,docstr,body);
   //validateFunctionDescription(__FILE__,__LINE__, body);
   // method->_name = name;
   // method->_receiver_class = receiverClass;

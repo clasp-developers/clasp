@@ -461,7 +461,6 @@ public: // Simple default ctor/dtor
   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
 public:
   // Use the cl__make_string_output_stream
-//  static StringOutputStream_sp make() { GC_ALLOCATE(StringOutputStream_O,ss); return ss; }
 public: // instance variables here
   String_sp _Contents;
 

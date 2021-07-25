@@ -832,7 +832,7 @@ HashTable_sp Readtable_O::create_standard_syntax_table() {
 }
 
 Readtable_sp Readtable_O::create_standard_readtable() {
-  GC_ALLOCATE(Readtable_O, rt);
+  auto  rt = gctools::GC<Readtable_O>::allocate_with_default_constructor();
   rt->SyntaxTypes_ = Readtable_O::create_standard_syntax_table();
   ASSERTNOTNULL(_sym_reader_backquoted_expression->symbolFunction());
   ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
@@ -1032,7 +1032,7 @@ Readtable_sp Readtable_O::copyReadtable_(gc::Nilable<Readtable_sp> tdest) {
   //	printf("%s:%d copy-readtable\n", __FILE__, __LINE__ );
   if (tdest.nilp()) {
     //	    printf("%s:%d allocating copy-readtable\n", __FILE__, __LINE__ );
-    GC_ALLOCATE(Readtable_O, temp);
+    auto  temp = gctools::GC<Readtable_O>::allocate_with_default_constructor();
     tdest = temp;
   }
   Readtable_sp dest = gc::As<Readtable_sp>(tdest);

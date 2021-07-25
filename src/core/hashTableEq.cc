@@ -42,7 +42,7 @@ namespace core {
 
 
 HashTableEq_sp HashTableEq_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  GC_ALLOCATE(HashTableEq_O, hashTable);
+  auto  hashTable = gctools::GC<HashTableEq_O>::allocate_with_default_constructor();
   hashTable->setup(sz, rehashSize, rehashThreshold);
   return hashTable;
 }

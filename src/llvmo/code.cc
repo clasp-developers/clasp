@@ -202,7 +202,7 @@ CL_DEFUN core::T_sp code_literals_ref(Code_sp code, size_t idx) {
 namespace llvmo {
 
 Library_sp Library_O::make(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd, const std::string& name) {
-  GC_ALLOCATE_VARIADIC(Library_O, lib, executable, start, end, vtableStart, vtableEnd );
+  auto  lib = gctools::GC<Library_O>::allocate( executable, start, end, vtableStart, vtableEnd );
   lib->_Name = core::SimpleBaseString_O::make(name);
   return lib;
 }

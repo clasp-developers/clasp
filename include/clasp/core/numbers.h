@@ -385,7 +385,7 @@ namespace core {
 
   public:
     static ShortFloat_sp create(float nm) {
-      GC_ALLOCATE(ShortFloat_O, sf);
+      auto  sf = gctools::GC<ShortFloat_O>::allocate_with_default_constructor();
       sf->_Value = nm;
       return sf;
     };
@@ -451,7 +451,7 @@ namespace core {
     double _Value;
   public:
     static DoubleFloat_sp create(double nm) {
-      GC_ALLOCATE(DoubleFloat_O, v);
+      auto  v = gctools::GC<DoubleFloat_O>::allocate_with_default_constructor();
       v->set(nm);
       return v;
     };
@@ -541,11 +541,11 @@ namespace core {
     static Complex_sp create(double r, double i) {
       DoubleFloat_sp dfr = DoubleFloat_O::create(r);
       DoubleFloat_sp dfi = DoubleFloat_O::create(i);
-      GC_ALLOCATE_VARIADIC(Complex_O, v, dfr, dfi );
+      auto  v = gctools::GC<Complex_O>::allocate( dfr, dfi );
       return v;
     };
     static Complex_sp create(Real_sp r, Real_sp i) {
-      GC_ALLOCATE_VARIADIC(Complex_O, v, r, i);
+      auto  v = gctools::GC<Complex_O>::allocate( r, i);
       return v;
     }
 
@@ -609,7 +609,7 @@ namespace core {
     Integer_sp _denominator;
   public:
     static Ratio_sp create(Integer_sp num, Integer_sp denom) {
-      GC_ALLOCATE(Ratio_O, v);
+      auto  v = gctools::GC<Ratio_O>::allocate_with_default_constructor();
       v->setf_numerator_denominator(num,denom);
       return v;
     };
@@ -618,7 +618,7 @@ namespace core {
     }
     // For when it is known that the ratio is reduced already.
     static Ratio_sp create_primitive(Integer_sp num, Integer_sp denom) {
-      GC_ALLOCATE(Ratio_O, v);
+      auto  v = gctools::GC<Ratio_O>::allocate_with_default_constructor();
       v->_numerator = num; v->_denominator = denom;
       return v;
     }

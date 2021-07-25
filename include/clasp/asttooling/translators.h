@@ -156,7 +156,7 @@ struct to_object<clang::QualType,translate::dont_adopt_pointer> {
   typedef clang::QualType HolderType;
   typedef clbind::Wrapper<clang::QualType, HolderType> WrapperType;
   static core::T_sp convert(clang::QualType val) {
-    GC_ALLOCATE_VARIADIC(asttooling::QualType_O,qtval,val);
+    auto qtval = gctools::GC<asttooling::QualType_O>::allocate(val);
 //    printf("%s:%d:%s clang::QualType size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
     return qtval;
   }
@@ -167,7 +167,7 @@ struct to_object<clang::QualType,translate::adopt_pointer> {
   typedef clang::QualType HolderType;
   typedef clbind::Wrapper<clang::QualType, HolderType> WrapperType;
   static core::T_sp convert(clang::QualType val) {
-    GC_ALLOCATE_VARIADIC(asttooling::QualType_O,qtval,val);
+    auto qtval = gctools::GC<asttooling::QualType_O>::allocate(val);
     printf("%s:%d:%s clang::QualType size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
     return qtval;
   }
@@ -199,7 +199,7 @@ struct to_object<clang::PresumedLoc,translate::dont_adopt_pointer> {
   typedef clang::PresumedLoc HolderType;
   typedef clbind::Wrapper<clang::PresumedLoc, HolderType> WrapperType;
   static core::T_sp convert(clang::PresumedLoc val) {
-    GC_ALLOCATE_VARIADIC(asttooling::PresumedLoc_O,ploc,val);
+    auto ploc = gctools::GC<asttooling::PresumedLoc_O>::allocate(val);
 //    printf("%s:%d:%s clang::PresumedLoc size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
     return ploc;
   }
@@ -210,7 +210,7 @@ struct to_object<clang::PresumedLoc,translate::adopt_pointer> {
   typedef clang::PresumedLoc HolderType;
   typedef clbind::Wrapper<clang::PresumedLoc, HolderType> WrapperType;
   static core::T_sp convert(clang::PresumedLoc val) {
-    GC_ALLOCATE_VARIADIC(asttooling::PresumedLoc_O,ploc,val);
+    auto ploc = gctools::GC<asttooling::PresumedLoc_O>::allocate(val);
 //    printf("%s:%d:%s clang::PresumedLoc size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
     return ploc;
   }
@@ -242,7 +242,7 @@ struct to_object<clang::SourceLocation,translate::dont_adopt_pointer> {
   typedef clang::SourceLocation HolderType;
   typedef clbind::Wrapper<clang::SourceLocation, HolderType> WrapperType;
   static core::T_sp convert(clang::SourceLocation val) {
-    GC_ALLOCATE_VARIADIC(asttooling::SourceLocation_O,ploc,val);
+    auto ploc = gctools::GC<asttooling::SourceLocation_O>::allocate(val);
 //    printf("%s:%d:%s clang::SourceLocation size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
     return ploc;
   }
@@ -253,7 +253,7 @@ struct to_object<clang::SourceLocation,translate::adopt_pointer> {
   typedef clang::SourceLocation HolderType;
   typedef clbind::Wrapper<clang::SourceLocation, HolderType> WrapperType;
   static core::T_sp convert(clang::SourceLocation val) {
-    GC_ALLOCATE_VARIADIC(asttooling::SourceLocation_O,ploc,val);
+    auto ploc = gctools::GC<asttooling::SourceLocation_O>::allocate(val);
 //    printf("%s:%d:%s clang::SourceLocation size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
     return ploc;
   }

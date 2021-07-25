@@ -1183,7 +1183,7 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
  */
 
 LambdaListHandler_sp LambdaListHandler_O::createRecursive_(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier) {
-  GC_ALLOCATE(LambdaListHandler_O, llh);
+  auto  llh = gctools::GC<LambdaListHandler_O>::allocate_with_default_constructor();
   llh->parse_lambda_list_declares(lambda_list, declares, context, classifier);
   return llh;
 }
@@ -1203,7 +1203,7 @@ string LambdaListHandler_O::getComment() const { if (this->_Comment) return this
 
 
 LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int> &skipIndices) {
-  GC_ALLOCATE(LambdaListHandler_O, ollh);
+  auto  ollh = gctools::GC<LambdaListHandler_O>::allocate_with_default_constructor();
   ollh->create_required_arguments(numArgs, skipIndices);
   return ollh;
 }

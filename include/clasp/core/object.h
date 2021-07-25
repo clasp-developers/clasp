@@ -522,8 +522,8 @@ namespace core {
 namespace core {
   template <class oclass>
     inline T_sp new_LispObject() {
-    T_sp obj = oclass::staticCreator()->creator_allocate();
-  //	GC_ALLOCATE(oclass,obj );
+//    T_sp obj = oclass::staticCreator()->creator_allocate();
+    auto obj  = gctools::GC<oclass>::allocate_with_default_constructor();
     return obj;
   };
 };

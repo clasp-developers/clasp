@@ -163,7 +163,7 @@ CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
     DILocation_sp temp = gc::As<DILocation_sp>(inlinedAt);
     realInlinedAt = temp->operator llvm::Metadata *();
   }
-  GC_ALLOCATE(DILocation_O, ret);
+  auto  ret = gctools::GC<DILocation_O>::allocate_with_default_constructor();
   ret->set_wrapped(llvm::DILocation::get(context, line, col, realScope, realInlinedAt));
   return ret;
 }
@@ -172,7 +172,7 @@ CL_LAMBDA(module);
 CL_LISPIFY_NAME(make-dibuilder);
 CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
   _G();
-  GC_ALLOCATE(DIBuilder_O, me);
+  auto  me = gctools::GC<DIBuilder_O>::allocate_with_default_constructor();
   me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
   return me;
 };
@@ -369,7 +369,7 @@ CL_DEFMETHOD DINodeArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
   llvm::DINodeArray diarray = this->wrappedPtr()->getOrCreateArray(array);
-  GC_ALLOCATE_VARIADIC(llvmo::DINodeArray_O, obj, diarray);
+  auto  obj = gctools::GC<llvmo::DINodeArray_O>::allocate( diarray);
   return obj;
 }
 
@@ -394,7 +394,7 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
   llvm::DITypeRefArray diarray = this->wrappedPtr()->getOrCreateTypeArray(array);
-  GC_ALLOCATE_VARIADIC(llvmo::DITypeRefArray_O, obj, diarray);
+  auto  obj = gctools::GC<llvmo::DITypeRefArray_O>::allocate( diarray);
   return obj;
 }
 

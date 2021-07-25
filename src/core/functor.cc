@@ -104,7 +104,7 @@ void LocalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fix
 CL_LAMBDA(&key function-description entry-point-functions);
 CL_DEFUN GlobalEntryPointGenerator_sp core__makeGlobalEntryPointGenerator(FunctionDescription_sp fdesc,
                                                                           T_sp entryPointIndices) {
-  GC_ALLOCATE_VARIADIC(GlobalEntryPointGenerator_O,entryPoint,fdesc,entryPointIndices);
+  auto entryPoint = gctools::GC<GlobalEntryPointGenerator_O>::allocate(fdesc,entryPointIndices);
 //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
   return entryPoint;
 }
@@ -112,7 +112,7 @@ CL_DEFUN GlobalEntryPointGenerator_sp core__makeGlobalEntryPointGenerator(Functi
 CL_LAMBDA(&key function-description entry-point-functions);
 CL_DEFUN LocalEntryPointGenerator_sp core__makeLocalEntryPointGenerator(FunctionDescription_sp fdesc,
                                                                         T_sp entryPointIndices) {
-  GC_ALLOCATE_VARIADIC(LocalEntryPointGenerator_O,entryPoint,fdesc,entryPointIndices);
+  auto entryPoint = gctools::GC<LocalEntryPointGenerator_O>::allocate(fdesc,entryPointIndices);
 //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
   return entryPoint;
 }
@@ -165,7 +165,7 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                int lineno,
                                                int column,
                                                int filePos) {
-  GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc);
+  auto fdesc = gctools::GC<FunctionDescription_O>::allocate();
   fdesc->_sourcePathname = sourcePathname;
   fdesc->_functionName = functionName;
   fdesc->_lambdaList = lambda_list;
@@ -174,7 +174,7 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
   fdesc->lineno = lineno;
   fdesc->column = column;
   fdesc->filepos = filePos;
-//  printf("%s:%d:%s @ %p   entry_point %p fdesc->_EntryPoints[0] = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)fdesc.raw_(), (void*)entry_point, (void*)fdesc->_EntryPoints[0]);
+//  printf("%s:%d:%s @ %p   entry_point %p fdesc->_EntryPoints[0] = %p\n" = gctools::GC<"%s:%d:%s @ %p   entry_point %p fdesc->_EntryPoints[0] = %p\n">::allocate( __LINE__, __FUNCTION__, (void*)fdesc.raw_(), (void*)entry_point, (void*)fdesc->_EntryPoints[0]);
   return fdesc;
 }
 
@@ -187,7 +187,7 @@ LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
       maybe_register_symbol_using_dladdr((void*)entry_point);
     }
   }
-  GC_ALLOCATE_VARIADIC(LocalEntryPoint_O, ep, fdesc, (void*)entry_point, code );
+  auto  ep = gctools::GC<LocalEntryPoint_O>::allocate( fdesc, (void*)entry_point, code );
   return ep;
 }
 GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp fdesc,
@@ -199,7 +199,7 @@ GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp fdesc,
       maybe_register_symbol_using_dladdr((void*)entry_point);
     }
   }
-  GC_ALLOCATE_VARIADIC(GlobalEntryPoint_O, ep, fdesc, (void*)entry_point, code );
+  auto  ep = gctools::GC<GlobalEntryPoint_O>::allocate( fdesc, (void*)entry_point, code );
   return ep;
 }
 
@@ -210,7 +210,7 @@ GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp entryPoint,
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }
-  GC_ALLOCATE_VARIADIC(GlobalEntryPoint_O, ep, entryPoint->_FunctionDescription, (void*)entry_point, code );
+  auto  ep = gctools::GC<GlobalEntryPoint_O>::allocate( entryPoint->_FunctionDescription, (void*)entry_point, code );
   return ep;
 }
 
@@ -228,7 +228,7 @@ LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp 
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }
-  GC_ALLOCATE_VARIADIC( LocalEntryPoint_O, entryPoint, original->_FunctionDescription, (void*)entry_point, code);
+  auto  entryPoint = gctools::GC< LocalEntryPoint_O>::allocate( original->_FunctionDescription, (void*)entry_point, code);
   return entryPoint;
 }
 
@@ -247,7 +247,7 @@ GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }
-  GC_ALLOCATE_VARIADIC( GlobalEntryPoint_O, entryPoint, original->_FunctionDescription, (void*)entry_point, code);
+  auto  entryPoint = gctools::GC< GlobalEntryPoint_O>::allocate( original->_FunctionDescription, (void*)entry_point, code);
   return entryPoint;
 }
 

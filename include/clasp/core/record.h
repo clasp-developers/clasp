@@ -48,19 +48,19 @@ public:       // Simple default ctor/dtor
 
 public:
   static Record_sp create_encoder() {
-    GC_ALLOCATE_VARIADIC(Record_O, record, saving, false, _Nil<T_O>());
+    auto  record = gctools::GC<Record_O>::allocate( saving, false, _Nil<T_O>());
     return record;
   }
   static Record_sp create_initializer(List_sp data) {
-    GC_ALLOCATE_VARIADIC( Record_O, record, initializing, false, data);
+    auto  record = gctools::GC< Record_O>::allocate( initializing, false, data);
     return record;
   }
   static Record_sp create_decoder(List_sp data) {
-    GC_ALLOCATE_VARIADIC( Record_O, record, loading, false, data);
+    auto  record = gctools::GC< Record_O>::allocate( loading, false, data);
     return record;
   }
   static Record_sp create_patcher(T_sp patcher_callback) {
-    GC_ALLOCATE_VARIADIC( Record_O, record, patching, patcher_callback);
+    auto  record = gctools::GC< Record_O>::allocate( patching, patcher_callback);
     return record;
   }
 

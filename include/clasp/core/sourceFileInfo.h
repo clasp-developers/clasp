@@ -105,7 +105,7 @@ public:                                                                         
 
 public:
   static SourcePosInfo_sp create(uint spf, size_t filepos, uint spln, uint spcol, T_sp function_scope = _Nil<core::T_O>(), T_sp inlined_at = _Nil<core::T_O>()) {
-    GC_ALLOCATE_VARIADIC(SourcePosInfo_O, me, spf, filepos, spln, spcol, function_scope, inlined_at );
+    auto  me = gctools::GC<SourcePosInfo_O>::allocate( spf, filepos, spln, spcol, function_scope, inlined_at );
     return me;
   }
   string __repr__() const override;

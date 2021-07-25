@@ -46,7 +46,7 @@ HashTableCustom_sp HashTableCustom_O::create(uint sz, Number_sp rehashSize,
                                              double rehashThreshold,
                                              Function_sp comparator,
                                              Function_sp hasher) {
-  GC_ALLOCATE(HashTableCustom_O, hashTable);
+  auto  hashTable = gctools::GC<HashTableCustom_O>::allocate_with_default_constructor();
   hashTable->setup(sz, rehashSize, rehashThreshold);
   hashTable->comparator = comparator;
   hashTable->hasher = hasher;

@@ -1176,7 +1176,7 @@ bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, in
 //
 
 FunctionValueEnvironment_sp FunctionValueEnvironment_O::createEmpty(T_sp parent) {
-  GC_ALLOCATE(FunctionValueEnvironment_O, environ);
+  auto  environ = gctools::GC<FunctionValueEnvironment_O>::allocate_with_default_constructor();
   environ->setupParent(parent);
   return environ;
 }

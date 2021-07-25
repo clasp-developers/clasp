@@ -52,7 +52,7 @@ public:
 
 public:
   static AstVisitor_sp create(core::T_sp target) {
-    GC_ALLOCATE_VARIADIC(AstVisitor_O, obj, target);
+    auto  obj = gctools::GC<AstVisitor_O>::allocate( target);
     return obj;
   };
 

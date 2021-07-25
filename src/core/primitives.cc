@@ -1968,7 +1968,7 @@ namespace core {
 
 CL_DEFUN core::Test_sp core__makeTest() {
   auto tt = new Test();
-  GC_ALLOCATE(Test_O,t);
+  auto t = gctools::GC<Test_O>::allocate_with_default_constructor();
   t->set_wrapped(tt);
   return t;
 }
@@ -2006,7 +2006,6 @@ CL_EXTERN_DEFMETHOD(Test_O,&Test::set3);
 CL_EXTERN_DEFMETHOD(Test_O,&Test::print_numbers);
 
 };
-
 
 
 

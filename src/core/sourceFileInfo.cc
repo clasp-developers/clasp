@@ -197,7 +197,7 @@ void FileScope_O::initialize() {
 }
 
 FileScope_sp FileScope_O::create(Pathname_sp path, int handle) {
-  GC_ALLOCATE(FileScope_O, sfi);
+  auto sfi = gctools::GC<FileScope_O>::allocate_with_default_constructor();
   sfi->_pathname = path;
   sfi->_FileHandle = handle;
   return sfi;
@@ -348,7 +348,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
 
 
 CL_DEFMETHOD SourcePosInfo_sp SourcePosInfo_O::source_pos_info_copy() const {
-  GC_COPY(SourcePosInfo_O, copy, *this);
+  auto  copy = gctools::GC<SourcePosInfo_O>::copy( *this);
   return copy;
 }
 

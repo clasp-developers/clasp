@@ -362,7 +362,7 @@ ALWAYS_INLINE core::T_sp mk_long_double( long double v )
 ALWAYS_INLINE core::T_sp mk_time( time_t v )
 {
   size_t size = sizeof( time_t );
-  GC_ALLOCATE(clasp_ffi::ForeignData_O, self);
+  auto  self = gctools::GC<clasp_ffi::ForeignData_O>::allocate_with_default_constructor();
   self->allocate( kw::_sym_clasp_foreign_data_kind_time, core::DeleteOnDtor, size);
   memmove( self->raw_data(), &v, size );
   return self;

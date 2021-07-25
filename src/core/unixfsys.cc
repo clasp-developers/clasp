@@ -2142,7 +2142,7 @@ CL_DEFUN T_mv core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_
 }
 
 CL_DEFUN FdSet_sp core__make_fd_set() {
-  GC_ALLOCATE(FdSet_O,fdset);
+  auto fdset = gctools::GC<FdSet_O>::allocate_with_default_constructor();
   return fdset;
 }
 #endif // defined(HAVE_SELECT)

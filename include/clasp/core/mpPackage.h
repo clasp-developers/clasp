@@ -112,7 +112,7 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
         all_bindings = core::Cons_O::create(oCar(cur),all_bindings);
       }
       if (stack_size==0) stack_size = DEFAULT_THREAD_STACK_SIZE;
-      GC_ALLOCATE_VARIADIC(Process_O,p,name,function,arguments,all_bindings,stack_size);
+      auto p = gctools::GC<Process_O>::allocate(name,function,arguments,all_bindings,stack_size);
       return p;
     };
   public:
@@ -188,7 +188,7 @@ namespace mp {
     CL_DOCSTRING("Create and return a fresh mutex with the given name.");
     CL_LAMBDA(&key (name "Anonymous Mutex"))
       CL_DEF_CLASS_METHOD static Mutex_sp make_mutex(core::T_sp name) {
-      GC_ALLOCATE_VARIADIC(Mutex_O,l,name,false);
+      auto l = gctools::GC<Mutex_O>::allocate(name,false);
       return l;
     };
   public:
@@ -234,7 +234,7 @@ namespace mp {
     CL_LAMBDA(&optional (name "Anonymous Shared Mutex"));
     CL_DOCSTRING("Create and return a fresh shared mutex with the given name.");
     CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp readName,core::T_sp writeLockName) {
-      GC_ALLOCATE_VARIADIC(SharedMutex_O,l,readName,writeLockName);
+      auto l = gctools::GC<SharedMutex_O>::allocate(readName,writeLockName);
       return l;
     };
   public:
@@ -294,7 +294,7 @@ namespace mp {
     CL_LAMBDA(&optional name);
     CL_DOCSTRING("Create and return a recursive mutex with the given name.");
     CL_DEF_CLASS_METHOD static RecursiveMutex_sp make_recursive_mutex(core::T_sp name) {
-      GC_ALLOCATE_VARIADIC(RecursiveMutex_O,l, name);
+      auto l = gctools::GC<RecursiveMutex_O>::allocate( name);
       return l;
     };
   RecursiveMutex_O(core::T_sp name) :Mutex_O(name,true) {};
@@ -316,7 +316,7 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, ConditionVariable_O, "ConditionVariable",core::CxxObject_O);
   public:
     static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
-      GC_ALLOCATE_VARIADIC(ConditionVariable_O,l,name);
+      auto l = gctools::GC<ConditionVariable_O>::allocate(name);
       return l;
     };
   public:

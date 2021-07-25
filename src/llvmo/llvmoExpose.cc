@@ -324,7 +324,7 @@ CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
 
 
 CL_DEFUN LLVMContext_sp LLVMContext_O::create_llvm_context() {
-  GC_ALLOCATE(LLVMContext_O, context);
+  auto  context = gctools::GC<LLVMContext_O>::allocate_with_default_constructor();
   llvm::LLVMContext* lc = new llvm::LLVMContext();
   context->_ptr = lc;
   return context;
@@ -347,7 +347,7 @@ string LLVMContext_O::__repr__() const {
 namespace llvmo {
 CL_DEFUN ThreadSafeContext_sp ThreadSafeContext_O::create_thread_safe_context() {
   std::unique_ptr<llvm::LLVMContext> lc(new llvm::LLVMContext());
-  GC_ALLOCATE(ThreadSafeContext_O, context);
+  auto  context = gctools::GC<ThreadSafeContext_O>::allocate_with_default_constructor();
   llvm::orc::ThreadSafeContext* tslc = new llvm::orc::ThreadSafeContext(std::move(lc));
   context->_ptr = tslc;
   return context;
@@ -362,7 +362,7 @@ CL_DEFMETHOD LLVMContext* ThreadSafeContext_O::getContext() {
 CL_DEFUN LLVMContext_sp llvm_sys__thread_local_llvm_context() {
   ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
   llvm::LLVMContext* lc = tsc->wrappedPtr()->getContext();
-  GC_ALLOCATE(LLVMContext_O, context);
+  auto  context = gctools::GC<LLVMContext_O>::allocate_with_default_constructor();
   context->_ptr = lc;
   return context;
 }
@@ -374,7 +374,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(make-linker);
 CL_DEFUN Linker_sp Linker_O::make(Module_sp module) {
-  GC_ALLOCATE(Linker_O, self);
+  auto  self = gctools::GC<Linker_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::Linker(*module->wrappedPtr());
   return self;
 };
@@ -704,7 +704,7 @@ CL_DECLARE();
 CL_DOCSTRING("");
 CL_PKG_NAME(LlvmoPkg,"make-triple");
 CL_DEFUN Triple_sp Triple_O::make(const string &triple) {
-  GC_ALLOCATE(Triple_O, self);
+  auto  self = gctools::GC<Triple_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::Triple(triple);
   return self;
 };
@@ -960,7 +960,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(make-target-options);
 CL_DEFUN TargetOptions_sp TargetOptions_O::make() {
-  GC_ALLOCATE(TargetOptions_O, self);
+  auto  self = gctools::GC<TargetOptions_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::TargetOptions();
   return self;
 };
@@ -1327,7 +1327,7 @@ namespace llvmo {
 CL_PKG_NAME(LlvmoPkg,"make-Module");
 CL_LAMBDA(module-name context);
 CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
-  GC_ALLOCATE(Module_O, self);
+  auto  self = gctools::GC<Module_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::Module(module_name, *(context->wrappedPtr()));
   return self;
 };
@@ -1603,7 +1603,7 @@ CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getOrEmitGlobalVa
 namespace llvmo {
 CL_LISPIFY_NAME("DataLayoutCopy");
 CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
-  GC_ALLOCATE_VARIADIC(DataLayout_O, cp, *(this->_DataLayout));
+  auto  cp = gctools::GC<DataLayout_O>::allocate( *(this->_DataLayout));
   return cp;
 };
 
@@ -1612,7 +1612,7 @@ CL_LISPIFY_NAME("data-layout-get-struct-layout");
 CL_DEFMETHOD StructLayout_sp DataLayout_O::getStructLayout(StructType_sp ty) const {
   llvm::StructType* sty = ty->wrapped();
   const llvm::StructLayout* layout = this->_DataLayout->getStructLayout(sty);
-  GC_ALLOCATE_VARIADIC(StructLayout_O,sl,layout);
+  auto sl = gctools::GC<StructLayout_O>::allocate(layout);
   return sl;
 }
 
@@ -1644,7 +1644,7 @@ namespace llvmo {
 CL_LAMBDA(triple);
 CL_PKG_NAME(LlvmoPkg,"makeTargetLibraryInfoWrapperPass");
 CL_DEFUN TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(llvm::Triple *tripleP) {
-  GC_ALLOCATE(TargetLibraryInfoWrapperPass_O, self);
+  auto  self = gctools::GC<TargetLibraryInfoWrapperPass_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::TargetLibraryInfoWrapperPass(*tripleP);
   return self;
 };
@@ -1657,7 +1657,7 @@ namespace llvmo {
 CL_LAMBDA(module);
 CL_PKG_NAME(LlvmoPkg,"makeFunctionPassManager");
 CL_DEFUN FunctionPassManager_sp FunctionPassManager_O::make(llvm::Module *module) {
-  GC_ALLOCATE(FunctionPassManager_O, self);
+  auto  self = gctools::GC<FunctionPassManager_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::legacy::FunctionPassManager(module);
   return self;
 };
@@ -1680,7 +1680,7 @@ namespace llvmo {
 CL_LAMBDA();
 CL_PKG_NAME(LlvmoPkg,"makePassManager");
 CL_DEFUN PassManager_sp PassManager_O::make() {
-  GC_ALLOCATE(PassManager_O, self);
+  auto  self = gctools::GC<PassManager_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::legacy::PassManager();
   return self;
 };
@@ -1707,7 +1707,7 @@ string EngineBuilder_O::__repr__() const {
 CL_LAMBDA(module);
 CL_PKG_NAME(LlvmoPkg,"make-EngineBuilder");
 CL_DEFUN EngineBuilder_sp EngineBuilder_O::make(Module_sp module) {
-  GC_ALLOCATE(EngineBuilder_O, self);
+  auto  self = gctools::GC<EngineBuilder_O>::allocate_with_default_constructor();
   std::unique_ptr<llvm::Module> ownedModule(module->wrappedPtr());
   module->set_wrapped(NULL);
   self->_ptr = new llvm::EngineBuilder(std::move(ownedModule));
@@ -1759,7 +1759,7 @@ namespace llvmo {
 CL_LAMBDA();
 CL_PKG_NAME(LlvmoPkg,"make-PassManagerBuilder");
 CL_DEFUN PassManagerBuilder_sp PassManagerBuilder_O::make() {
-  GC_ALLOCATE(PassManagerBuilder_O, self);
+  auto  self = gctools::GC<PassManagerBuilder_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::PassManagerBuilder();
   return self;
 };
@@ -1866,7 +1866,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(constant-expr-get-in-bounds-get-element-ptr);
 CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList) {
-  GC_ALLOCATE(Constant_O, res);
+  auto  res = gctools::GC<Constant_O>::allocate_with_default_constructor();
   if (element_type==NULL) {
     SIMPLE_ERROR(BF("You must provide a type for ConstantExpr_O::getInBoundsGetElementPtr"));
   }
@@ -1900,7 +1900,7 @@ namespace llvmo {
 CL_LAMBDA("module type is-constant linkage initializer name &optional (insert-before nil) (thread-local-mode 'llvm-sys:not-thread-local)");
 CL_LISPIFY_NAME(make-global-variable);
 CL_DEFUN GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage, /*Constant_sp*/ core::T_sp initializer, core::String_sp name, /*GlobalVariable_sp*/ core::T_sp insertBefore, core::Symbol_sp threadLocalMode) {
-  GC_ALLOCATE(GlobalVariable_O, me);
+  auto  me = gctools::GC<GlobalVariable_O>::allocate_with_default_constructor();
   translate::from_object<llvm::GlobalValue::LinkageTypes> llinkage(linkage);
   llvm::Constant *llvm_initializer = NULL;
   if (initializer.notnilp()) {
@@ -2313,7 +2313,7 @@ namespace llvmo {
 CL_LAMBDA(value);
 CL_LISPIFY_NAME(make-apfloat-float);
 CL_DEFUN APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value) {
-  GC_ALLOCATE(APFloat_O, self);
+  auto  self = gctools::GC<APFloat_O>::allocate_with_default_constructor();
   self->_valueP = new llvm::APFloat(unbox_single_float(value));
   return self;
 };
@@ -2321,7 +2321,7 @@ CL_DEFUN APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value) {
 CL_LAMBDA(value);
 CL_LISPIFY_NAME(makeAPFloatDouble);
 CL_DEFUN APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value) {
-  GC_ALLOCATE(APFloat_O, self);
+  auto  self = gctools::GC<APFloat_O>::allocate_with_default_constructor();
   self->_valueP = new llvm::APFloat(value->get());
   return self;
 };
@@ -2330,7 +2330,7 @@ CL_DEFUN APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value) {
 namespace llvmo {
 
 APInt_sp APInt_O::create(llvm::APInt api) {
-  GC_ALLOCATE(APInt_O, self);
+  auto  self = gctools::GC<APInt_O>::allocate_with_default_constructor();
   self->_value = api;
   return self;
 }
@@ -2339,7 +2339,7 @@ APInt_sp APInt_O::create(llvm::APInt api) {
 
 namespace llvmo {
 CL_DEFUN APInt_sp APInt_O::makeAPInt1(core::T_sp value) {
-  GC_ALLOCATE(APInt_O, self);
+  auto  self = gctools::GC<APInt_O>::allocate_with_default_constructor();
   if (core__fixnump(value)) {
     core::Fixnum_sp fixnum_value = gc::As<core::Fixnum_sp>(value);
     self->_value = llvm::APInt(1, clasp_to_int(fixnum_value) & 1, false);
@@ -2354,7 +2354,7 @@ CL_DEFUN APInt_sp APInt_O::makeAPInt1(core::T_sp value) {
 }
 
 CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bool sign) {
-  GC_ALLOCATE(APInt_O, self);
+  auto  self = gctools::GC<APInt_O>::allocate_with_default_constructor();
   llvm::APInt apint;
   int numbits;
   if (value.fixnump()) {
@@ -2492,7 +2492,7 @@ CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int 
 namespace llvmo {
 CL_LISPIFY_NAME(make-irbuilder);
 CL_DEFUN IRBuilder_sp IRBuilder_O::make(LLVMContext_sp context) {
-  GC_ALLOCATE(IRBuilder_O, self);
+  auto  self = gctools::GC<IRBuilder_O>::allocate_with_default_constructor();
   self->set_wrapped(new llvm::IRBuilder<>(*(context->wrappedPtr())));
   return self;
 };
@@ -4762,7 +4762,7 @@ namespace llvmo {
 CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 {
   printf("%s:%d:%s Creating JIT - we did this already at startup!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
-  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj,false);
+  auto cj = gctools::GC<ClaspJIT_O>::allocate(false);
   return cj;
 }
 
@@ -5009,7 +5009,7 @@ CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
 namespace llvmo { // SectionedAddress_O
 
 SectionedAddress_sp SectionedAddress_O::create(uint64_t SectionIndex, uint64_t Address) {
-  GC_ALLOCATE_VARIADIC(SectionedAddress_O, sa, SectionIndex, Address);
+  auto  sa = gctools::GC<SectionedAddress_O>::allocate( SectionIndex, Address);
   return sa;
 }
 

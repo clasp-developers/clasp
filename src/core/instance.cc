@@ -156,14 +156,14 @@ CL_DEFUN List_sp core__class_slot_sanity_check()
 // FIXME: Exists solely for cases where the list of slotds is hard to get.
 CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_standard_instance(Instance_sp cl, size_t slot_count) {
-  GC_ALLOCATE_VARIADIC(Instance_O, obj, cl);
+  auto  obj = gctools::GC<Instance_O>::allocate( cl);
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
   return obj;
 }
 
 CL_LAMBDA(class rack);
 CL_DEFUN Instance_sp core__allocate_raw_instance(Instance_sp cl, Rack_sp rack) {
-  GC_ALLOCATE_VARIADIC(Instance_O, obj, cl, rack);
+  auto  obj = gctools::GC<Instance_O>::allocate( cl, rack);
   return obj;
 }
 
@@ -383,7 +383,7 @@ Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, In
     printf("       The metaClass was UNBOUND !!!!! I need a stamp for the class slots!!!!!!\n");
   }
 #endif
-  GC_ALLOCATE_VARIADIC(Instance_O, oclass, metaClass /*, number_of_slots*/);
+  auto  oclass = gctools::GC<Instance_O>::allocate( metaClass /*, number_of_slots*/);
   oclass->_Class = metaClass;
   gctools::ShiftedStamp class_stamp = 0;
   T_sp sig = _Unbound<T_O>();

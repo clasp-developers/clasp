@@ -71,7 +71,7 @@ namespace core {
   public:
     size_t templatedSizeof() const { return sizeof(TEMPLATED_FUNCTION_BuiltInObjectCreator<_W_>); };
     virtual core::T_sp creator_allocate() {
-      GC_ALLOCATE(_W_, obj);
+      auto  obj = gctools::GC<_W_>::allocate_with_default_constructor();
       return obj;
     }
     virtual void searcher(){};
