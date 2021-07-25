@@ -86,8 +86,6 @@ namespace translate {
 #define DECL(_T_, _ignore_)                          \
   template <> struct to_object<clang::_T_##Decl *> { \
     static core::T_sp convert(clang::_T_##Decl *p) { \
-      if (!p)                                        \
-        return _Nil<core::T_O>();                    \
       return asttooling::mostDerivedDecl(p);         \
     }                                                \
   };
@@ -166,8 +164,6 @@ DECL(TranslationUnit, Decl);
 #define STMT(_T_)                              \
   template <> struct to_object<clang::_T_ *> { \
     static core::T_sp convert(clang::_T_ *p) { \
-      if (!p)                                  \
-        return _Nil<core::T_O>();              \
       return asttooling::mostDerivedStmt(p);   \
     }                                          \
   };
@@ -326,8 +322,6 @@ STMT(WhileStmt);
 #define TYPE(_T_, _ignore_)                          \
   template <> struct to_object<clang::_T_##Type *> { \
     static core::T_sp convert(clang::_T_##Type *p) { \
-      if (!p)                                        \
-        return _Nil<core::T_O>();                    \
       return asttooling::mostDerivedType(p);         \
     }                                                \
   };
@@ -408,6 +402,7 @@ core::T_sp cast_stmt(clang::Stmt *d) {
 }
 
 core::T_sp mostDerivedDecl(const clang::Decl *cd) {
+  if (!cd) return _Nil<core::T_O>();
   clang::Decl *d = const_cast<clang::Decl *>(cd);
   if (!d) {
     SIMPLE_ERROR(BF("Could not downcast clang::Decl @%p to most derived object") % (void *)(cd));
@@ -497,6 +492,7 @@ core::T_sp mostDerivedDecl(const clang::Decl *cd) {
 };
 
 core::T_sp mostDerivedStmt(const clang::Stmt *x) {
+  if (!x) return _Nil<core::T_O>();
   clang::Stmt *s = const_cast<clang::Stmt *>(x);
   if (!s) {
     SIMPLE_ERROR(BF("Could not downcast clang::Stmt @%p to most derived object") % (void *)(x));
@@ -673,6 +669,7 @@ core::T_sp cast_type(clang::Type *d) {
 }
 
 core::T_sp mostDerivedType(const clang::Type *x) {
+  if (!x) return _Nil<core::T_O>();
   clang::Type *s = const_cast<clang::Type *>(x);
   if (!s) {
     SIMPLE_ERROR(BF("Could not downcast clang::Type @%p to most derived object") % (void *)(x));

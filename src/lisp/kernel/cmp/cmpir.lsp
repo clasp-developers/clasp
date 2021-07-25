@@ -1105,10 +1105,6 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-irbuilder-status (&optional (irbuilder *irbuilder*) (label "current *irbuilder*"))
     (bformat t "%s -> %s%N" label irbuilder))
 
-(defun irc-constant-string-ptr (global-string-var)
-  (let ((ptr (llvm-sys:create-geparray *irbuilder* global-string-var (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 0)) "ptr")))
-    ptr))
-
 (defun irc-dtor (name obj)
   (declare (special *compiler-suppress-dtors*))
   (unless *compiler-suppress-dtors* (irc-intrinsic name obj)))
