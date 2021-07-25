@@ -17,6 +17,8 @@
 ;;; Define the ASTMatcher and the code to carry out the refactoring
 ;;;
 
+(defparameter *bad-matches* nil)
+
 (defparameter *refactor*
   (make-instance
    'clang-tool:code-match-callback
@@ -24,11 +26,13 @@
    (lambda (node)
      (let* ((call (clang-tool:mtag-node node :root))
             (call-source (clang-tool:mtag-source node :root)))
-       (when (> (length call-source) 0)
-         (let ((fixup (concatenate 'string "nil" (subseq call-source 4))))
-           (clang-tool:mtag-replace node :root
-                                    (lambda (match-info tag)
-                                      fixup))))))
+       (if (> (length call-source) 0)
+           (let ((fixup (concatenate 'string "nil" (subseq call-source 4))))
+             (clang-tool:mtag-replace node :root
+                                      (lambda (match-info tag)
+                                        fixup)))
+           (let ((loc (clang-tool:mtag-loc-start node :root)))
+             (push loc *bad-matches*)))))
    :end-of-translation-unit-code
    (lambda ()
      (format t "!!!!!!!! Hit the end-of-translation-unit~%")
