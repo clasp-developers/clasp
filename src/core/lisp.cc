@@ -207,12 +207,12 @@ Lisp_O::GCRoots::GCRoots() :
   _AllObjectFiles(nil<T_O>()),
   _AllLibraries(nil<T_O>()),
 #ifdef CLASP_THREADS
-    _UnboundSymbolFunctionEntryPoint(_Unbound<GlobalEntryPoint_O>()),
-    _UnboundSetfSymbolFunctionEntryPoint(_Unbound<GlobalEntryPoint_O>()),
+    _UnboundSymbolFunctionEntryPoint(unbound<GlobalEntryPoint_O>()),
+    _UnboundSetfSymbolFunctionEntryPoint(unbound<GlobalEntryPoint_O>()),
   _ActiveThreads(nil<T_O>()),
   _DefaultSpecialBindings(nil<T_O>()),
 #endif
-  _SpecialForms(_Unbound<HashTableEq_O>()),
+  _SpecialForms(unbound<HashTableEq_O>()),
   _NullStream(nil<T_O>()),
   _ThePathnameTranslations(nil<T_O>()),
   _UnixSignalHandlers(nil<T_O>()),
@@ -1364,7 +1364,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
                 << gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue())->getName() << "> ";
         clasp_write_string(prompts.str(), stream);
       }
-      T_sp expression = cl__read(stream, nil<T_O>(), _Unbound<T_O>(), nil<T_O>());
+      T_sp expression = cl__read(stream, nil<T_O>(), unbound<T_O>(), nil<T_O>());
       if (expression.unboundp())
         break;
       if (_sym_STARechoReplReadSTAR->symbolValue().isTrue()) {
@@ -1381,7 +1381,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
       if (cl__keywordp(expression)) {
         ql::list tplCmd;
         tplCmd << expression;
-        while (T_sp exp = cl__read(stream, nil<T_O>(), _Unbound<T_O>(), nil<T_O>())) {
+        while (T_sp exp = cl__read(stream, nil<T_O>(), unbound<T_O>(), nil<T_O>())) {
           if (exp.unboundp())
             break;
           tplCmd << exp;
@@ -1704,7 +1704,7 @@ CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
   T_mv mc = classNames->gethash(symbol, nil<T_O>());
   foundp = mc.valueGet_(1).notnilp();
   if (!foundp) {
-    cell = ClassHolder_O::create(_Unbound<Instance_O>());
+    cell = ClassHolder_O::create(unbound<Instance_O>());
     classNames->setf_gethash(symbol,cell);
   } else {
     cell = gc::As_unsafe<ClassHolder_sp>(mc);

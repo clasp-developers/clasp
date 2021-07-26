@@ -761,7 +761,7 @@ extern core::Symbol_sp& _sym_format_arguments;
 // Can I get rid of this?
 #define IS_SYMBOL_DEFINED(x) (x)
 #define IS_SYMBOL_UNDEFINED(x) (!x)
-#define UNDEFINED_SYMBOL (_Unbound<core::Symbol_O>())
+#define UNDEFINED_SYMBOL (unbound<core::Symbol_O>())
 
 
 //

@@ -415,7 +415,7 @@ CL_DEFUN bool cl__remhash(T_sp key, HashTableBase_sp ht) {
 T_sp HashTable_O::clrhash() {
   ASSERT(!clasp_zerop(this->_RehashSize));
   this->_HashTableCount = 0;
-  T_sp no_key = _NoKey<T_O>();
+  T_sp no_key = ::no_key<T_O>();
   this->_Table.resize(0,KeyValuePair(no_key,no_key));
   this->setup(16, this->_RehashSize, this->_RehashThreshold);
   VERIFY_HASH_TABLE(this);
@@ -660,7 +660,7 @@ void HashTable_O::fields(Record_sp node) {
 
 uint HashTable_O::resizeEmptyTable_no_lock(size_t sz) {
   if (sz < 16) sz = 16;
-  T_sp no_key = _NoKey<T_O>();
+  T_sp no_key = ::no_key<T_O>();
   this->_HashTableCount = 0;
   this->_Table.resize(sz,KeyValuePair(no_key,no_key));
   return sz;
@@ -767,7 +767,7 @@ CL_DECLARE();
 CL_DOCSTRING("hashTableForceRehash");
 CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
   HT_WRITE_LOCK(&*ht);
-  ht->rehash_no_lock(false, _NoKey<T_O>());
+  ht->rehash_no_lock(false, no_key<T_O>());
 }
 
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
@@ -820,7 +820,7 @@ bool HashTable_O::remhash(T_sp key) {
   cl_index index = this->sxhashKey(key, this->_Table.size(), hg );
   KeyValuePair* keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/, index, hg );
   if (keyValuePair) {
-    keyValuePair->_Key = _Deleted<T_O>();
+    keyValuePair->_Key = deleted<T_O>();
     this->_HashTableCount--;
     VERIFY_HASH_TABLE(this);
     return true;
@@ -867,7 +867,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
   VERIFY_HASH_TABLE_VA(this,cur,key);
   if (this->_HashTableCount > this->_RehashThreshold * this->_Table.size()) {
     LOG(BF("Expanding hash table"));
-    this->rehash_no_lock(true, _NoKey<T_O>());
+    this->rehash_no_lock(true, no_key<T_O>());
     VERIFY_HASH_TABLE(this);
   }
   return value;
@@ -881,7 +881,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
   printf("%s:%d There is absolutely no room in the hash-table _RehashThreshold = %lf - _HashTableCount -> %lu size -> %lu increasing size\n", __FILE__, __LINE__, this->_RehashThreshold, this->_HashTableCount, this->_Table.size());
   verifyHashTable(true,std::cerr,this,__FILE__, __LINE__);
   printf("%s:%d ---- done verify\n", __FILE__, __LINE__ );
-  this->rehash_no_lock(true, _NoKey<T_O>());
+  this->rehash_no_lock(true, no_key<T_O>());
   VERIFY_HASH_TABLE_VA(this,cur);
   return this->setf_gethash_no_write_lock(key,value);
   // ------------

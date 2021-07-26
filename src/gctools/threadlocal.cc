@@ -91,7 +91,7 @@ uint32_t DynamicBindingStack::ensure_binding_index(const Symbol_O* var) const {
 
 T_sp* DynamicBindingStack::thread_local_reference(const uint32_t index) const {
   unlikely_if (index >= this->_ThreadLocalBindings.size())
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
+    this->_ThreadLocalBindings.resize(index+1,no_thread_local_binding<T_O>());
   return &(this->_ThreadLocalBindings[index]);
 }
 
@@ -232,7 +232,7 @@ void ThreadLocalState::pushObjectFile(llvmo::ObjectFile_sp of) {
 llvmo::ObjectFile_sp ThreadLocalState::topObjectFile() {
   core::T_sp of = this->_ObjectFiles;
   if (of.nilp()) {
-    return _Unbound<llvmo::ObjectFile_O>();
+    return unbound<llvmo::ObjectFile_O>();
   }
   // The following MUST be As_unsafe because we might be loading an image
   // and we can't check headers in that situation

@@ -141,7 +141,7 @@ void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym) {
 core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
   core::Symbol_sp sym = _lisp->classSymbolsHolder()[cid];
   if (sym.nilp()) {
-    return _Unbound<core::Symbol_O>();
+    return unbound<core::Symbol_O>();
   }
   return sym;
 }

@@ -180,7 +180,7 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
 
 LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
                                        claspFunction entry_point) {
-  llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
+  llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
     if (gc::IsA<llvmo::Library_sp>(code)) {
@@ -192,7 +192,7 @@ LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
 }
 GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp fdesc,
                                          claspFunction entry_point) {
-  llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
+  llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
     if (gc::IsA<llvmo::Library_sp>(code)) {
@@ -206,7 +206,7 @@ GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp fdesc,
 
 GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp entryPoint,
                                              claspFunction entry_point) {
-  llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
+  llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }
@@ -224,7 +224,7 @@ LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp 
   }
   size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
   claspFunction entry_point = (claspFunction)(entry_points[entryPointIndex]);
-  llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
+  llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }
@@ -243,7 +243,7 @@ GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_
   }
   size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
   claspFunction entry_point = (claspFunction)(entry_points[entryPointIndex]);
-  llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
+  llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }

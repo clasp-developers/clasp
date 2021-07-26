@@ -379,7 +379,7 @@ bool Environment_O::findValue(T_sp sym, int &depth, int &index, bool& crossesFun
   index = -1;
   crossesFunction = false;
   valueKind = undeterminedValue;
-  env = _Unbound<T_O>();
+  env = unbound<T_O>();
   return this->_findValue(sym, depth, index, crossesFunction, valueKind, value, env);
 }
 
@@ -554,7 +554,7 @@ CL_DEFMETHOD List_sp Environment_O::classifyVariable(T_sp sym) const {
   bool crossesFunction = false;
   ValueKind valueKind = undeterminedValue;
   T_sp value;
-  T_sp result_env = _Unbound<T_O>();;
+  T_sp result_env = unbound<T_O>();;
   if (this->_findValue(sym, depth, index, crossesFunction, valueKind, value, result_env)) {
     switch (valueKind) {
     case lexicalValue:
@@ -1003,7 +1003,7 @@ CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->setupParent(parent);
   env->_Invisible = true; // What do we do with the activation frame?
-  env->_ActivationFrame = _Unbound<ValueFrame_O>();
+  env->_ActivationFrame = unbound<ValueFrame_O>();
   for (auto cur : specials) {
     env->defineSpecialBinding(gc::As<Symbol_sp>(oCar(cur)));
   }

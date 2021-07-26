@@ -785,7 +785,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
     llvmo::Code_sp codeObject;
-    jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string(), _Unbound<core::T_O>(), codeObject);
+    jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string(), unbound<core::T_O>(), codeObject);
   }
   return _lisp->_true();
 }
@@ -1351,7 +1351,7 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
       DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
       return core__progv_function(CONS_CDR(symbols),oCdr(values),func);
     } else {
-      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),_Unbound<core::T_O>());
+      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),unbound<core::T_O>());
       return core__progv_function(CONS_CDR(symbols),nil<core::T_O>(),func);
     }
   } else {

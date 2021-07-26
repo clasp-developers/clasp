@@ -52,7 +52,7 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
   if (obj.nilp()) {
     return LeafSNode_O::create(nil<T_O>());
   } else if (cl__atom(obj)) {
-    SNode_sp node = gc::As<SNode_sp>(objToNode->gethash(obj, _Unbound<T_O>()));
+    SNode_sp node = gc::As<SNode_sp>(objToNode->gethash(obj, unbound<T_O>()));
     if (node.unboundp()) {
       node = LeafSNode_O::create(obj);
       objToNode->hash_table_setf_gethash(obj, node);
@@ -69,7 +69,7 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
 	    }
 #endif
     Cons_sp consObj = obj.asOrNull<Cons_O>();
-    SNode_sp snode = gc::As<SNode_sp>(objToNode->gethash(consObj, _Unbound<T_O>()));
+    SNode_sp snode = gc::As<SNode_sp>(objToNode->gethash(consObj, unbound<T_O>()));
     if (snode.unboundp()) {
       snode = BranchSNode_O::create();
       objToNode->hash_table_setf_gethash(obj, snode);
@@ -124,7 +124,7 @@ CL_DEFMETHOD void SexpLoadArchive_O::parseFromObject(T_sp object) {
 CL_LISPIFY_NAME("parseFromStream");
 CL_DEFMETHOD void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
-  T_sp obj = cl__read(streamDesignator, _lisp->_true(), _Unbound<T_O>());
+  T_sp obj = cl__read(streamDesignator, _lisp->_true(), unbound<T_O>());
   if (obj.unboundp()) {
     SIMPLE_ERROR(BF("Nothing could be read from stream"));
   }

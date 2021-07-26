@@ -1671,25 +1671,25 @@ gctools::smart_ptr<T> nil() {
 }
 
 template <class T>
-gctools::smart_ptr<T> _Unbound() {
+gctools::smart_ptr<T> unbound() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_unbound<T *>());
   return x;
 }
 
 template <class T>
-gctools::smart_ptr<T> _NoKey() {
+gctools::smart_ptr<T> no_key() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_no_key<T *>());
   return x;
 }
 
 template <class T>
-gctools::smart_ptr<T> _NoThreadLocalBinding() {
+gctools::smart_ptr<T> no_thread_local_binding() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_no_thread_local_binding<T *>());
   return x;
 }
 
 template <class T>
-gctools::smart_ptr<T> _Deleted() {
+gctools::smart_ptr<T> deleted() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_deleted<T *>());
   return x;
 }

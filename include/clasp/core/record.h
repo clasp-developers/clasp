@@ -607,7 +607,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        value = _Unbound<OT>();
+        value = unbound<OT>();
       else {
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
         value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
@@ -623,7 +623,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        value = _Unbound<OT>();
+        value = unbound<OT>();
       else {
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
         // When loading the object oCdr(apair) may not be of the

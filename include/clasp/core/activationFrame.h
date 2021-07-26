@@ -162,7 +162,7 @@ public:
   template <typename...ARGS>
     ValueFrame_O(size_t capacity, /*const T_sp& initial_element,*/ T_sp parent, size_t initialContentsSize=0, T_sp* initialContents=NULL)
     : Base(parent)
-    ,_Objects(capacity,_Unbound<T_O>(),true,initialContentsSize,initialContents) /*GCArray_moveable ctor*/ {};
+    ,_Objects(capacity,unbound<T_O>(),true,initialContentsSize,initialContents) /*GCArray_moveable ctor*/ {};
   virtual ~ValueFrame_O(){
       //            printf("%s::%d dtor ValueFrame@%p\n", __FILE__, __LINE__, this);
   };
@@ -254,7 +254,7 @@ public:
   FunctionFrame_O() = delete;
  public:
   template <typename...ARGS>
-    FunctionFrame_O(size_t size, T_sp parent, ARGS && ...args) : Base(parent),_Objects(size,_Unbound<T_O>(),true,std::forward<ARGS>(args)...) {};
+    FunctionFrame_O(size_t size, T_sp parent, ARGS && ...args) : Base(parent),_Objects(size,unbound<T_O>(),true,std::forward<ARGS>(args)...) {};
   /*! FunctionFrames must always be initialized with _Unbound !!!!! */
   virtual ~FunctionFrame_O() {}
 public:

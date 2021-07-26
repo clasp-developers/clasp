@@ -901,7 +901,7 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
       totalSpecials++;
     } else {
       Fixnum idx;
-      T_sp fi = indices->gethash(sym, _Unbound<T_O>());
+      T_sp fi = indices->gethash(sym, unbound<T_O>());
       if (fi.fixnump()) {
         idx = fi.unsafe_fixnum();
       } else {

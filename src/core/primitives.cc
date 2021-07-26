@@ -456,7 +456,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the UNBOUND value");
 CL_DEFUN T_sp core__unbound() {
-  return _Unbound<T_O>();
+  return unbound<T_O>();
 };
 
 CL_LAMBDA();

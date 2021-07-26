@@ -63,7 +63,7 @@ namespace core {
 void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp,
                                             T_sp sig, size_t numberOfSlots) {
   ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
-  this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
+  this->_Rack = Rack_O::make(numberOfSlots,sig,unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(rack());

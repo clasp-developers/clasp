@@ -284,12 +284,12 @@ void initialize_allocate_metaclasses(  core::BootStrapCoreSymbolMap& bootStrapCo
 //  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::Stamp;
 
 
-  _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheBuiltInClass_stamp,cl::_sym_built_in_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStandardClass_stamp,cl::_sym_standard_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheStructureClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStructureClass_stamp,cl::_sym_structure_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheDerivableCxxClass = allocate_one_metaclass<core::DerivableCxxClassCreator_O>(TheDerivableCxxClass_stamp,core::_sym_derivable_cxx_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheClbindCxxClass = allocate_one_metaclass<core::ClassRepCreator_O>(TheClbindCxxClass_stamp,core::_sym_clbind_cxx_class,_Unbound<core::Instance_O>());
+  _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheBuiltInClass_stamp,cl::_sym_built_in_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStandardClass_stamp,cl::_sym_standard_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheStructureClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStructureClass_stamp,cl::_sym_structure_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheDerivableCxxClass = allocate_one_metaclass<core::DerivableCxxClassCreator_O>(TheDerivableCxxClass_stamp,core::_sym_derivable_cxx_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheClbindCxxClass = allocate_one_metaclass<core::ClassRepCreator_O>(TheClbindCxxClass_stamp,core::_sym_clbind_cxx_class,unbound<core::Instance_O>());
   _lisp->_Roots._TheClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheBuiltInClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheStandardClass->_Class = _lisp->_Roots._TheStandardClass;

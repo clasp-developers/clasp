@@ -53,7 +53,7 @@ T_sp load_stream(T_sp strm, bool print) {
     DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR,
                               clasp_simple_input_stream_source_pos_info(strm));
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
-    T_sp x = cl__read(strm, nil<T_O>(), _Unbound<T_O>(), nil<T_O>());
+    T_sp x = cl__read(strm, nil<T_O>(), unbound<T_O>(), nil<T_O>());
     if (x.unboundp())
       break;
     if (echoReplRead) {

@@ -125,10 +125,10 @@ namespace core {
     bool fieldsp() const override;
     void fields(Record_sp node) override;
   public: // ctor/dtor for classes with shared virtual base
-    Instance_O() : _Class(nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
+    Instance_O() : _Class(nil<Instance_O>()), _Rack(unbound<Rack_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
       _Class(metaClass)
-      ,_Rack(_Unbound<Rack_O>())
+      ,_Rack(unbound<Rack_O>())
     {};
     Instance_O(Instance_sp cl, Rack_sp rack) : _Class(cl), _Rack(rack) {};
     virtual ~Instance_O(){};
@@ -210,7 +210,7 @@ namespace core {
     void initializeSlots(gctools::ShiftedStamp is, T_sp sig, size_t numberOfSlots);
     // Used by clbind
     void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots) {
-      initializeSlots(is, _Unbound<T_O>(), numberOfSlots);
+      initializeSlots(is, unbound<T_O>(), numberOfSlots);
     }
     void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
   public:

@@ -406,7 +406,7 @@ class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
 
  ValueEnvironment_O() : Base(),
     _SymbolIndex_alist(nil<T_O>()),
-    _ActivationFrame(_Unbound<ValueFrame_O>()) {};
+    _ActivationFrame(unbound<ValueFrame_O>()) {};
   virtual ~ValueEnvironment_O(){};
 };
 };
@@ -552,9 +552,9 @@ public:
   CL_DEFMETHOD void setf_LocalReturnValue(T_sp returnValue) { this->_LocalReturnValue = returnValue; };
   CL_DEFMETHOD T_sp localReturnValue() const { return this->_LocalReturnValue; };
   
-  BlockEnvironment_O() : _BlockSymbol(_Unbound<Symbol_O>()), _ActivationFrame(_Unbound<ValueFrame_O>()),
-                         _LocalReturnBlock(_Unbound<T_O>()),
-                         _LocalReturnValue(_Unbound<T_O>()) {};
+  BlockEnvironment_O() : _BlockSymbol(unbound<Symbol_O>()), _ActivationFrame(unbound<ValueFrame_O>()),
+                         _LocalReturnBlock(unbound<T_O>()),
+                         _LocalReturnValue(unbound<T_O>()) {};
 };
 };
 template <>
@@ -661,7 +661,7 @@ class TagbodyEnvironment_O : public RuntimeVisibleEnvironment_O {
   LISP_CLASS(core, CorePkg, TagbodyEnvironment_O, "TagbodyEnvironment",RuntimeVisibleEnvironment_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
-  TagbodyEnvironment_O() : _LocalBlocks(_Unbound<T_O>()) {};
+  TagbodyEnvironment_O() : _LocalBlocks(unbound<T_O>()) {};
 
 public: // ctor/dtor for classes with shared virtual base
         //    explicit TagbodyEnvironment_O(core::Instance_sp const& mc) : T_O(mc), Environment(mc) {};

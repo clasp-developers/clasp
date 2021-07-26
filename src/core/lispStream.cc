@@ -6233,9 +6233,9 @@ CL_DEFUN T_mv cl__read_from_string(String_sp content, T_sp eof_error_p, T_sp eof
   LOG(BF("Character at position[%d] is[%c/%d]") % sin->tell() % (char)sin->peek_char() % (int)sin->peek_char());
   T_sp res;
   if ( preserve_whitespace.isTrue() ) {
-     res = cl__read_preserving_whitespace(sin, nil<T_O>(), _Unbound<T_O>(), nil<T_O>());
+     res = cl__read_preserving_whitespace(sin, nil<T_O>(), unbound<T_O>(), nil<T_O>());
   } else {
-     res = cl__read(sin, nil<T_O>(), _Unbound<T_O>(), nil<T_O>());
+     res = cl__read(sin, nil<T_O>(), unbound<T_O>(), nil<T_O>());
   }
   if (res.unboundp()) {
     if (eofErrorP) {

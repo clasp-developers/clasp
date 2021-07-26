@@ -98,7 +98,7 @@ CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
 void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, T_sp sig,
                                  size_t numberOfSlots) {
   ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
-  this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
+  this->_Rack = Rack_O::make(numberOfSlots,sig,unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(rack());
@@ -386,7 +386,7 @@ Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, In
   auto  oclass = gctools::GC<Instance_O>::allocate( metaClass /*, number_of_slots*/);
   oclass->_Class = metaClass;
   gctools::ShiftedStamp class_stamp = 0;
-  T_sp sig = _Unbound<T_O>();
+  T_sp sig = unbound<T_O>();
   if (!metaClass.unboundp()) {
     class_stamp = metaClass->CLASS_stamp_for_instances();
     sig = metaClass->slots();
@@ -743,7 +743,7 @@ CL_DEFMETHOD void ClassHolder_O::class_set(Instance_sp cl) {
   this->_Class.store(cl, std::memory_order_relaxed);
 }
 void ClassHolder_O::class_mkunbound() {
-  this->_Class.store(_Unbound<Instance_O>(), std::memory_order_relaxed);
+  this->_Class.store(unbound<Instance_O>(), std::memory_order_relaxed);
 }
 bool ClassHolder_O::class_unboundp() const {
   return this->_Class.load(std::memory_order_relaxed).unboundp();
