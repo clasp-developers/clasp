@@ -177,7 +177,7 @@ ClassRep_sp ClassRegistry_O::find_class(type_id const &info) const {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
   core::T_sp value = this->m_classes->gethash(key,_Nil<core::T_O>());
   if ( value.nilp() ) {
-    SIMPLE_ERROR(BF("Could not find class for typeid: %s") % _rep_(key));
+    SIMPLE_ERROR(BF("Could not find class for typeid: %s name: %s") % _rep_(key) % info.name());
   }
   return gc::As<ClassRep_sp>(value);
 }
