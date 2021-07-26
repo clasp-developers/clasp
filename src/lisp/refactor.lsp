@@ -8,7 +8,7 @@
 (progn
   (format t "---- 1. Setup and load the compilation database~%")
   (defparameter *db* (clang-tool:load-compilation-tool-database
-                      "/home/meister/Development/clasp/build/mpsprep/compile_commands.json")))
+                      "/home/meister/Development/cando/build/mpsprep/compile_commands.json")))
 
 
 
