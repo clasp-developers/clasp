@@ -56,7 +56,7 @@ bool will_print_as_hash(T_sp x) {
     return !(code.unboundp() || code.nilp());
   } else if (code.unboundp()) {
     /* Was not found before */
-    circle_stack->hash_table_setf_gethash(x, _Nil<T_O>());
+    circle_stack->hash_table_setf_gethash(x, nil<T_O>());
     return 0;
   } else {
     return 1;
@@ -80,7 +80,7 @@ Fixnum search_print_circle(T_sp x) {
     code = circle_stack->gethash(x, _Unbound<T_O>());
     if (code.unboundp()) {
       /* Was not found before */
-      circle_stack->hash_table_setf_gethash(x, _Nil<T_O>());
+      circle_stack->hash_table_setf_gethash(x, nil<T_O>());
       return 0;
     } else if (code.nilp()) {
       /* This object is referenced twice */

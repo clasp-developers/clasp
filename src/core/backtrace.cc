@@ -96,7 +96,7 @@ static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
                                  // but then why go through Integer_O at all?
                                    line.unsafe_fixnum(), true,
                                    column.unsafe_fixnum(), true );
-  } else return _Nil<T_O>();
+  } else return nil<T_O>();
 }
 
 static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
@@ -133,10 +133,10 @@ static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
       }
     }
     // no hits
-    return _Nil<T_O>();
+    return nil<T_O>();
   } else {
     // FIXME: signal error?
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
 }
 
@@ -240,10 +240,10 @@ static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
   T_sp spi = dwarf_spi(dcontext, sa);
   bool XEPp = false;
   T_sp ep = dwarf_ep(ofi, dcontext, sa, XEPp);
-  T_sp fd = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : _Nil<FunctionDescription_O>();
-  T_sp closure = _Nil<T_O>(), args = _Nil<T_O>();
+  T_sp fd = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
+  T_sp closure = nil<T_O>(), args = nil<T_O>();
   bool args_available = args_for_entry_point(ofi, ep, fbp, closure, args);
-  T_sp fname = _Nil<T_O>();
+  T_sp fname = nil<T_O>();
   if (fd.notnilp())
     fname = gc::As_unsafe<FunctionDescription_sp>(fd)->functionName();
   return DebuggerFrame_O::make(fname, Cons_O::create(sa,ofi), spi, fd, closure, args, args_available,
@@ -321,8 +321,8 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
     name = linkname;
   T_sp lname = SimpleBaseString_O::make(name);
   return DebuggerFrame_O::make(lname, Pointer_O::create(ip),
-                               _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
-                               _Nil<T_O>(), false, INTERN_(kw, c_PLUS__PLUS_),
+                               nil<T_O>(), nil<T_O>(), nil<T_O>(),
+                               nil<T_O>(), false, INTERN_(kw, c_PLUS__PLUS_),
                                false);
 }
 

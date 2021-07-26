@@ -41,7 +41,7 @@ namespace core {
 
 
 List_sp SymbolToEnumConverter_O::enumSymbolsAsList() const {
-  List_sp symbols = _Nil<T_O>();
+  List_sp symbols = nil<T_O>();
   this->_SymbolToEnum->maphash([&symbols] (T_sp key, T_sp val) {
       symbols = Cons_O::create(key,symbols);
     });

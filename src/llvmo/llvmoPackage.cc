@@ -95,15 +95,15 @@ CL_LAMBDA(pathname &optional verbose print external_format startup-name);
 CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
   core::Pathname_sp pfilename = core::cl__pathname(filename);
-  core::Pathname_sp bc_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
-                                                             _Nil<core::T_O>(),core::SimpleBaseString_O::make("bc"));
+  core::Pathname_sp bc_file = core::Pathname_O::makePathname(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),
+                                                             nil<core::T_O>(),core::SimpleBaseString_O::make("bc"));
   bc_file = cl__merge_pathnames(bc_file,pfilename);
   T_sp found = cl__probe_file(bc_file);
   if (found.notnilp()) {
     return llvm_sys__load_bitcode(bc_file,verbose,print,externalFormat,startup_name);
   }
-  core::Pathname_sp ll_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
-                                                             _Nil<core::T_O>(),core::SimpleBaseString_O::make("ll"));
+  core::Pathname_sp ll_file = core::Pathname_O::makePathname(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),
+                                                             nil<core::T_O>(),core::SimpleBaseString_O::make("ll"));
   ll_file = cl__merge_pathnames(ll_file,pfilename);
   found = cl__probe_file(ll_file);
   if (found.notnilp()) {
@@ -227,8 +227,8 @@ CL_DEFUN core::T_sp llvm_sys__tag_tests() {
 
 /*! Return an a-list containing lots of values that define C++ objects that Clasp needs to know about */
 CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
-  List_sp list = _Nil<T_O>();
-  list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), _Nil<T_O>());
+  List_sp list = nil<T_O>();
+  list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), nil<T_O>());
   list = Cons_O::create(Cons_O::create(_sym_tmv, make_fixnum((int)sizeof(T_mv))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadLocalState))), list);

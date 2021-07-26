@@ -2012,12 +2012,12 @@ void snapshot_save(const std::string& filename) {
   //
   // Clear out a few things
   //
-  comp::_sym_STARprimitivesSTAR->setf_symbolValue(_Nil<core::T_O>());
+  comp::_sym_STARprimitivesSTAR->setf_symbolValue(nil<core::T_O>());
 
   gctools::gctools__garbage_collect();
   gctools::gctools__garbage_collect();
   gctools::gctools__garbage_collect();
-  gctools::cl__room(_Nil<core::T_O>());
+  gctools::cl__room(nil<core::T_O>());
 
 #if defined(USE_BOEHM)
   Snapshot_save_data data(filename);
@@ -2485,7 +2485,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                                         (void*)allocatedObjectFile.raw_(),
                                         of_start, of_length ));
               jit->addObjectFile(allocatedObjectFile->asSmartPtr(),false);
-              core::T_mv startupName = core::core__startup_linkage_shutdown_names(allocatedObjectFile->_ObjectId,_Nil<core::T_O>());
+              core::T_mv startupName = core::core__startup_linkage_shutdown_names(allocatedObjectFile->_ObjectId,nil<core::T_O>());
               core::String_sp str = gc::As<core::String_sp>(startupName);
               DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s I added the ObjectFile to the LLJIT - startupName: %s  --- what do I do to get the code\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(str).c_str() ));
               void* ptr;
@@ -2834,7 +2834,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   
     _lisp->initializeMainThread();
     comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
-    comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(_Nil<core::T_O>());
+    comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(nil<core::T_O>());
     FILE *null_out = fopen("/dev/null", "w");
     _lisp->_Roots._NullStream = core::IOStreamStream_O::makeIO("/dev/null", null_out);
 
@@ -2876,7 +2876,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // Clear out a few things
   //
-  comp::_sym_STARprimitivesSTAR->setf_symbolValue(_Nil<core::T_O>());
+  comp::_sym_STARprimitivesSTAR->setf_symbolValue(nil<core::T_O>());
 
   return exitCode;
 }

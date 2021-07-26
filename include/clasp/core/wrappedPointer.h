@@ -72,7 +72,7 @@ CL_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
   virtual void pointerDelete() { SUBIMP(); };
 
 public:
-  explicit WrappedPointer_O() : Base(), Class_(_Nil<core::Instance_O>()){};
+  explicit WrappedPointer_O() : Base(), Class_(nil<core::Instance_O>()){};
   virtual ~WrappedPointer_O(){};
 };
 };

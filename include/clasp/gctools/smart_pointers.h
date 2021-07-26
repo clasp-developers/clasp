@@ -1665,7 +1665,7 @@ inline bool operator!=(const core::List_sp::fast_iterator &a, const core::List_s
 
  
 template <class T>
-gctools::smart_ptr<T> _Nil() {
+gctools::smart_ptr<T> nil() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_nil<T *>());
   return x;
 }

@@ -310,9 +310,9 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
   uintptr_t libraryStart;  
   bool foundSymbol = lookup_address_main((uintptr_t)address->ptr(),symbol,start,end,type,libraryFound,sLibraryName,libraryStart);
   if (foundSymbol) {
-    core::T_sp libraryName = _Nil<T_O>();
-    core::T_sp offsetFromStartOfLibraryAddress = _Nil<T_O>();
-    core::T_sp library_origin = _Nil<T_O>();
+    core::T_sp libraryName = nil<T_O>();
+    core::T_sp offsetFromStartOfLibraryAddress = nil<T_O>();
+    core::T_sp library_origin = nil<T_O>();
     if (libraryFound) {
       libraryName = SimpleBaseString_O::make(sLibraryName);
       library_origin = Integer_O::create((uintptr_t)libraryStart);
@@ -326,7 +326,7 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
                   library_origin,
                   offsetFromStartOfLibraryAddress);
   }
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 }
 
 void dbg_VaList_sp_describe(T_sp obj) {
@@ -387,7 +387,7 @@ void dbg_describe_tagged_T_Optr_header(T_O *p) {
 
 extern void dbg_describe(T_sp obj);
 void dbg_describe(T_sp obj) {
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(cl__class_of(obj)->_className()).c_str());
   ss << _rep_(obj);
@@ -396,7 +396,7 @@ void dbg_describe(T_sp obj) {
 }
 
 void dbg_describe_cons(Cons_sp obj) {
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> CONS\n");
   ss << _rep_(obj);
@@ -404,7 +404,7 @@ void dbg_describe_cons(Cons_sp obj) {
 }
 
 void dbg_describe_symbol(Symbol_sp obj) {
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->_className()).c_str());
   ss << _rep_(obj);
@@ -412,7 +412,7 @@ void dbg_describe_symbol(Symbol_sp obj) {
 }
 
 void dbg_describeActivationFrame(ActivationFrame_sp obj) {
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe ActivationFrame class--> %s\n", _rep_(obj->__class()->_className()).c_str());
   ss << _rep_(obj);
@@ -426,7 +426,7 @@ void dbg_describeTPtr(uintptr_t raw) {
   }
   T_sp obj = gctools::smart_ptr<T_O>(raw);
   printf("dbg_describeTPtr Raw pointer value: %p\n", obj.raw_());
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(lisp_instance_class(obj)->_className()).c_str());
   ss << _rep_(obj);
@@ -438,7 +438,7 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   core::T_sp sout = cl::_sym_STARstandard_outputSTAR->symbolValue();
   T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
   clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
   clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(lisp_instance_class(obj)->_className())).str(), sout);
   fflush(stdout);

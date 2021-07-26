@@ -358,7 +358,7 @@ public:
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
   static core::T_sp convert(const std::unique_ptr<T> ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -373,7 +373,7 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     return WrapperType::make_wrapper(std::move(ptr), reg::registered_class<T>::id);
   }
@@ -390,7 +390,7 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     return WrapperType::make_wrapper(std::move(ptr), reg::registered_class<T>::id);
   }
@@ -404,7 +404,7 @@ public:
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
   static core::T_sp convert(const T *ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -418,7 +418,7 @@ public:
   typedef clbind::Wrapper<const T, const T*> WrapperType;
   static core::T_sp convert(const T *ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -433,7 +433,7 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   static core::T_sp convert(T *ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -446,7 +446,7 @@ public:
   typedef clbind::Wrapper<T, T *> WrapperType;
   static core::T_sp convert(T *ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -461,7 +461,7 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   static core::T_sp convert(T *const ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -474,7 +474,7 @@ public:
   typedef clbind::Wrapper<T, T *const> WrapperType;
   static core::T_sp convert(T *const ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;

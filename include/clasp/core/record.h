@@ -41,14 +41,14 @@ public:
   T_sp _patching_callback;
   T_sp _Seen; // Was List_sp
 public:       // Simple default ctor/dtor
-  Record_O() : _stage(saving), _alist(_Nil<T_O>()), _Seen(_Nil<T_O>()){};
+  Record_O() : _stage(saving), _alist(nil<T_O>()), _Seen(nil<T_O>()){};
   Record_O(RecordStage stage, bool dummy, List_sp data);
-  Record_O(RecordStage stage, T_sp callback) : _stage(stage), _patching_callback(callback),  _Seen(_Nil<T_O>()){};
+  Record_O(RecordStage stage, T_sp callback) : _stage(stage), _patching_callback(callback),  _Seen(nil<T_O>()){};
   virtual ~Record_O(){};
 
 public:
   static Record_sp create_encoder() {
-    auto  record = gctools::GC<Record_O>::allocate( saving, false, _Nil<T_O>());
+    auto  record = gctools::GC<Record_O>::allocate( saving, false, nil<T_O>());
     return record;
   }
   static Record_sp create_initializer(List_sp data) {
@@ -561,7 +561,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        value = _Nil<core::T_O>();
+        value = nil<core::T_O>();
       else {
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
         value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
@@ -573,7 +573,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        value = _Nil<core::T_O>();
+        value = nil<core::T_O>();
       else {
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
         // When loading the object oCdr(apair) may not be of the
@@ -658,11 +658,11 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
-        value = _Nil<core::T_O>();
+        value = nil<core::T_O>();
       else {
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
         if (CONS_CDR(apair).nilp()) {
-          value = _Nil<T_O>();
+          value = nil<T_O>();
         } else {
           value = gc::As_unsafe<gc::smart_ptr<OT>>(CONS_CDR(apair));
         }

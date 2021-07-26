@@ -1995,7 +1995,7 @@ struct to_object<llvm::GlobalVariable *> {
   static core::T_sp convert(llvm::GlobalVariable *ptr) {
     if (ptr)
       return ((core::RP_Create_wrapped<llvmo::GlobalVariable_O, llvm::GlobalVariable *>(ptr)));
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
   }
 };
 };
@@ -3987,7 +3987,7 @@ template <>
 struct to_object<llvm::Function *> {
   static core::T_sp convert(llvm::Function *ptr) {
     if (ptr == NULL)
-      return ((_Nil<core::T_O>()));
+      return ((nil<core::T_O>()));
     return ((core::RP_Create_wrapped<llvmo::Function_O, llvm::Function *>(ptr)));
   };
 };
@@ -4061,7 +4061,7 @@ struct to_object<llvm::BasicBlock *> {
     if (ptr != NULL) {
       return ((core::RP_Create_wrapped<llvmo::BasicBlock_O, llvm::BasicBlock *>(ptr)));
     }
-    return ((_Nil<core::T_O>()));
+    return ((nil<core::T_O>()));
   };
 };
 template <>

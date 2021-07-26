@@ -530,9 +530,9 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunc
                                                               entryPoint,
                                                               ClosureWithSlots_O::bclaspClosure);
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
-  closure->setf_sourcePathname(_Nil<T_O>());
+  closure->setf_sourcePathname(nil<T_O>());
   closure->setf_lambdaList(lambda_list);
-  closure->setf_docstring(_Nil<T_O>());
+  closure->setf_docstring(nil<T_O>());
   validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
@@ -547,7 +547,7 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunc
                                                               entryPoint,
                                                               ClosureWithSlots_O::cclaspClosure);
   closure->setf_lambdaList(lambda_list);
-  closure->setf_docstring(_Nil<T_O>());
+  closure->setf_docstring(nil<T_O>());
   validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }

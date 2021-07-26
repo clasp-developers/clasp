@@ -368,7 +368,7 @@ core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
         }
         GCWEAK_LOG(BF("Falling through"));
       }
-      result_mv = Values(defaultValue,_Nil<core::T_O>());
+      result_mv = Values(defaultValue,nil<core::T_O>());
       return;
     });
   return result_mv;
@@ -476,7 +476,7 @@ void WeakKeyHashTable::clrhash() {
 
 CL_DEFUN core::Vector_sp weak_key_hash_table_pairs(const gctools::WeakKeyHashTable& ht) {
   size_t len = (*ht._Keys).length();
-  core::ComplexVector_T_sp keyvalues = core::ComplexVector_T_O::make(len*2,_Nil<core::T_O>(),core::make_fixnum(0));
+  core::ComplexVector_T_sp keyvalues = core::ComplexVector_T_O::make(len*2,nil<core::T_O>(),core::make_fixnum(0));
   size_t idx(0);
   HT_READ_LOCK(&ht);
   for ( size_t i(0); i<len; ++i ) {
@@ -752,7 +752,7 @@ core::T_mv StrongKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue)
     }
     GCWEAK_LOG(BF("Falling through"));
   }
-  result_mv = Values(defaultValue,_Nil<core::T_O>());
+  result_mv = Values(defaultValue,nil<core::T_O>());
   return result_mv;
 }
 

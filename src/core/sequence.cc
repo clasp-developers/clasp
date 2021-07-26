@@ -70,7 +70,7 @@ CL_DEFUN T_sp cl__reverse(T_sp seq) {
   if (seq.consp()) {
     return seq.unsafe_cons()->reverse();
   } else if (seq.nilp()) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   } else if (Array_sp arr = seq.asOrNull<Array_O>()) {
     return arr->reverse();
   }
@@ -84,7 +84,7 @@ CL_DEFUN T_sp cl__nreverse(T_sp seq) {
   if (seq.consp()) {
     return seq.unsafe_cons()->nreverse();
   } else if (seq.nilp()) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   } else if (Array_sp arr = seq.asOrNull<Array_O>()) {
     return arr->nreverse();
   }
@@ -99,7 +99,7 @@ CL_DEFUN T_sp cl__subseq(T_sp seq, size_t start, T_sp end) {
     return seq.unsafe_cons()->subseq(start, end);
   } else if (seq.nilp()) {
     if (start == 0 && (end.nilp() || (end.fixnump() && unbox_fixnum(gc::As<Fixnum_sp>(end)) == 0))) {
-      return _Nil<T_O>();
+      return nil<T_O>();
     }
     SIMPLE_ERROR(BF("Illegal arguments for subseq on NIL - they must be (subseq NIL 0 NIL)"));
   } else if (Vector_sp vseq = seq.asOrNull<Vector_O>()) {
@@ -115,11 +115,11 @@ CL_DECLARE();
 CL_DOCSTRING("copy_seq");
 CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
   if (seq.consp()) {
-    return seq.unsafe_cons()->subseq(0, _Nil<T_O>());
+    return seq.unsafe_cons()->subseq(0, nil<T_O>());
   } else if (seq.nilp()) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   } else if (Vector_sp vseq = seq.asOrNull<Vector_O>()) {
-    return vseq->subseq(0, _Nil<T_O>());
+    return vseq->subseq(0, nil<T_O>());
   }
   else return eval::funcall(seqext::_sym_copy_seq, seq);
 };

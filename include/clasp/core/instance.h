@@ -125,7 +125,7 @@ namespace core {
     bool fieldsp() const override;
     void fields(Record_sp node) override;
   public: // ctor/dtor for classes with shared virtual base
-    Instance_O() : _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
+    Instance_O() : _Class(nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
       _Class(metaClass)
       ,_Rack(_Unbound<Rack_O>())

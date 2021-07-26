@@ -238,18 +238,18 @@ namespace core {
       return s;
     }
     static Str8Ns_sp make(size_t dimension, claspChar initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {
-      return make(dimension,initElement,initialElementSuppliedP,fillPointer,_Nil<T_O>(),false,clasp_make_fixnum(0));
+      return make(dimension,initElement,initialElementSuppliedP,fillPointer,nil<T_O>(),false,clasp_make_fixnum(0));
     }
     static Str8Ns_sp make(const string& nm) {
       auto ss = SimpleBaseString_O::make(nm);
-      auto result = Str8Ns_O::make(nm.size(),'\0',false,_Nil<T_O>(),ss,false,clasp_make_fixnum(0));
+      auto result = Str8Ns_O::make(nm.size(),'\0',false,nil<T_O>(),ss,false,clasp_make_fixnum(0));
       return result;
     }
   public:
     // move all the constructors into here
     static Str8Ns_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
       return Str8Ns_O::make(bufferSize, simple_element_type()/*' '*/, true, clasp_make_fixnum(0),
-                            _Nil<T_O>(),false,clasp_make_fixnum(0));
+                            nil<T_O>(),false,clasp_make_fixnum(0));
     };
   public:
     static Str8Ns_sp create(const string &nm);
@@ -304,15 +304,15 @@ namespace core {
       return s;
     }
     static StrWNs_sp make(size_t dimension, claspCharacter initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {
-      return make(dimension,initElement,initialElementSuppliedP,fillPointer,_Nil<T_O>(),false,clasp_make_fixnum(0));
+      return make(dimension,initElement,initialElementSuppliedP,fillPointer,nil<T_O>(),false,clasp_make_fixnum(0));
     }
     static StrWNs_sp make(const string& nm) {
-      auto result = StrWNs_O::make(nm.size(),'\0',false,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
+      auto result = StrWNs_O::make(nm.size(),'\0',false,nil<T_O>(),nil<T_O>(),false,clasp_make_fixnum(0));
       return result;
     }
     static StrWNs_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
       return StrWNs_O::make(bufferSize, simple_element_type()/*' '*/, true, clasp_make_fixnum(0),
-                            _Nil<T_O>(),false,clasp_make_fixnum(0));
+                            nil<T_O>(),false,clasp_make_fixnum(0));
     };
   public:
   public:
@@ -421,16 +421,16 @@ namespace core {
   String_sp cl__string_left_trim(T_sp charbag, T_sp str);
   String_sp cl__string_right_trim(T_sp charbag, T_sp str);
 
-  T_mv cl__parse_integer(String_sp str, Fixnum start = 0, T_sp end = _Nil<T_O>(), uint radix = 10, T_sp junkAllowed = _Nil<T_O>());
+  T_mv cl__parse_integer(String_sp str, Fixnum start = 0, T_sp end = nil<T_O>(), uint radix = 10, T_sp junkAllowed = nil<T_O>());
 
-  T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = clasp_make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = clasp_make_fixnum(0), T_sp end2 = _Nil<T_O>());
+  T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = clasp_make_fixnum(0), T_sp end1 = nil<T_O>(), Fixnum_sp start2 = clasp_make_fixnum(0), T_sp end2 = nil<T_O>());
 
   /*! Push a c-style string worth of characters into the buffer */
   void StringPushStringCharStar(String_sp buffer, const char* cp);
   void StringPushSubString(String_sp buffer, String_sp other, size_t start, size_t end);
   void StringPushString(String_sp buffer, String_sp other);
 
-  T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1=clasp_make_fixnum(0), T_sp end1=_Nil<T_O>(), Fixnum_sp start2=clasp_make_fixnum(0), T_sp end2=_Nil<T_O>());
+  T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1=clasp_make_fixnum(0), T_sp end1=nil<T_O>(), Fixnum_sp start2=clasp_make_fixnum(0), T_sp end2=nil<T_O>());
 
   T_sp core__search_string(String_sp sub, size_t sub_start, size_t sub_end, String_sp outer, size_t outer_start, size_t outer_end );
   bool core__fits_in_base_string(T_sp str);

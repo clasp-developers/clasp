@@ -147,7 +147,7 @@ core::T_sp cast_stmt(clang::Stmt *d) {
 }
 
 core::T_sp mostDerivedDecl(const clang::Decl *cd) {
-  if (!cd) return _Nil<core::T_O>();
+  if (!cd) return nil<core::T_O>();
   clang::Decl *d = const_cast<clang::Decl *>(cd);
   if (!d) {
     SIMPLE_ERROR(BF("Could not downcast clang::Decl @%p to most derived object") % (void *)(cd));
@@ -170,7 +170,7 @@ core::T_sp mostDerivedDecl(const clang::Decl *cd) {
 };
 
 core::T_sp mostDerivedStmt(const clang::Stmt *x) {
-  if (!x) return _Nil<core::T_O>();
+  if (!x) return nil<core::T_O>();
   clang::Stmt *s = const_cast<clang::Stmt *>(x);
   if (!s) {
     SIMPLE_ERROR(BF("Could not downcast clang::Stmt @%p to most derived object") % (void *)(x));
@@ -201,7 +201,7 @@ core::T_sp cast_type(clang::Type *d) {
 }
 
 core::T_sp mostDerivedType(const clang::Type *x) {
-  if (!x) return _Nil<core::T_O>();
+  if (!x) return nil<core::T_O>();
   clang::Type *s = const_cast<clang::Type *>(x);
   if (!s) {
     SIMPLE_ERROR(BF("Could not downcast clang::Type @%p to most derived object") % (void *)(x));
@@ -246,7 +246,7 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
   if (declp) {
     return mostDerivedDecl(declp);
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 };
 
 CL_LAMBDA(astnode &optional (stream *standard-output*))
@@ -331,7 +331,7 @@ CL_DEFUN core::T_sp cast__getTypePtrOrNull(clang::QualType qt) {
   if (tp) {
     return asttooling::mostDerivedType(tp);
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 };
 
 };

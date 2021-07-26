@@ -405,7 +405,7 @@ class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
 #endif
 
  ValueEnvironment_O() : Base(),
-    _SymbolIndex_alist(_Nil<T_O>()),
+    _SymbolIndex_alist(nil<T_O>()),
     _ActivationFrame(_Unbound<ValueFrame_O>()) {};
   virtual ~ValueEnvironment_O(){};
 };

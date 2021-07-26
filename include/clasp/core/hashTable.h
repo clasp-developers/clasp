@@ -38,7 +38,7 @@ namespace core {
 double maybeFixRehashThreshold(double rt);
 #define DEFAULT_REHASH_THRESHOLD 0.7
 
-T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>(), T_sp thread_safe = _Nil<T_O>(), T_sp hashf = _Nil<T_O>());
+T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = nil<T_O>(), T_sp debug = nil<T_O>(), T_sp thread_safe = nil<T_O>(), T_sp hashf = nil<T_O>());
 
 size_t next_hash_table_id();
 
@@ -69,7 +69,7 @@ struct KeyValuePair {
     _RehashCount(0),
     _InitialSize(0),
 #endif
-    _RehashSize(_Nil<Number_O>()),
+    _RehashSize(nil<Number_O>()),
     _RehashThreshold(maybeFixRehashThreshold(0.7)),
     _HashTableCount(0)
     {};
@@ -120,7 +120,7 @@ struct KeyValuePair {
     CL_LISPIFY_NAME("hash-table-buckets");
 //    CL_DEFMETHOD ComplexVector_T_sp hash_table_buckets() const { return this->_HashTable; };
     CL_LISPIFY_NAME("hash-table-shared-mutex");
-    CL_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return _Nil<T_O>(); };
+    CL_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return nil<T_O>(); };
 //    void set_thread_safe(bool thread_safe);
   public: // Functions here
     virtual bool is_eq_hashtable() const { return false;}
@@ -153,7 +153,7 @@ struct KeyValuePair {
   /*! Return the key/value pair in a CONS if found or NIL if not */
     KeyValuePair* find(T_sp key);
 
-    T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>()) override;
+    T_mv gethash(T_sp key, T_sp defaultValue = nil<T_O>()) override;
     gc::Fixnum hashIndex(T_sp key) const;
 
     T_sp hash_table_setf_gethash(T_sp key, T_sp value) override;
@@ -192,7 +192,7 @@ struct KeyValuePair {
     string keysAsString();
 
   /*! Look like a set */
-    void insert(T_sp obj) { this->setf_gethash(obj, _Nil<T_O>()); };
+    void insert(T_sp obj) { this->setf_gethash(obj, nil<T_O>()); };
   /*! Return a Cons of all keys */
     List_sp keysAsCons();
   };

@@ -124,7 +124,7 @@ CL_DEFUN T_sp core__sbv_position_one(SimpleBitVector_sp v) {
   DO_BIT_ARRAY_WORDS(v, w, i,
                      if (w != 0)
                        return make_fixnum(i*BIT_ARRAY_WORD_BITS + bit_array_word_clz(w)););
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 // The following SimpleBitVector_ functions are used in Cando.

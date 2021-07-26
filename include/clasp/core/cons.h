@@ -141,7 +141,7 @@ namespace core {
   public:
     template <class T>
       static List_sp createFromVec0(const gctools::Vec0<T> &vec) {
-      List_sp res(_Nil<T_O>());
+      List_sp res(nil<T_O>());
       for (cl_index i(vec.size() - 1); i >= 0; --i) {
         res = Cons_O::create(vec[i], res);
       }
@@ -217,7 +217,7 @@ namespace core {
     inline T_sp ocadr() const {
       T_sp cdr = this->cdr();
       if (UNLIKELY(!cdr.consp()))
-        return _Nil<T_O>();
+        return nil<T_O>();
       return cdr.unsafe_cons()->ocar();
     }
 
@@ -318,7 +318,7 @@ namespace core {
     T_sp getf(T_sp key, T_sp defValue) const;
 
     inline static uintptr_t cons_header(uintptr_t val) {return (val & (~gctools::Header_s::mtag_mask)) | gctools::Header_s::cons_mtag;};
-    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) {};
+    explicit Cons_O(): _Car(nil<T_O>()), _Cdr(nil<T_O>()) {};
     explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr) {};
     // These are necessary because atomics are not copyable.
     // More specifically they are necessary if you want to store conses in vectors,
@@ -450,7 +450,7 @@ namespace core {
 
 template <typename T>
 List_sp asCons(const gctools::Vec0<T> &vec) {
-  List_sp res(_Nil<T_O>());
+  List_sp res(nil<T_O>());
   for (cl_index i(vec.size() - 1); i >= 0; --i) {
     res = Cons_O::create(vec[i], res);
   }

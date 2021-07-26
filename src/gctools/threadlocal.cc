@@ -186,9 +186,9 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
 // This is for constructing ThreadLocalState for threads
 ThreadLocalState::ThreadLocalState() :
   _unwinds(0)
-  , _PendingInterrupts(_Nil<core::T_O>())
-  , _CatchTags(_Nil<core::T_O>())
-  , _ObjectFiles(_Nil<core::T_O>())
+  , _PendingInterrupts(nil<core::T_O>())
+  , _CatchTags(nil<core::T_O>())
+  , _ObjectFiles(nil<core::T_O>())
   , _CleanupFunctions(NULL)
 {
   my_thread = this;
@@ -197,7 +197,7 @@ ThreadLocalState::ThreadLocalState() :
 #else
   this->_Tid = 0;
 #endif
-  this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
+  this->_BufferStr8NsPool.reset_(); // Can't use nil<core::T_O>(); - too early
   this->_BufferStrWNsPool.reset_();
   this->_xorshf_x = rand();
   this->_xorshf_y = rand();
@@ -286,9 +286,9 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
 #else
    this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
 #endif
-  this->_PendingInterrupts = _Nil<T_O>();
-  this->_CatchTags = _Nil<T_O>();
-  this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());
+  this->_PendingInterrupts = nil<T_O>();
+  this->_CatchTags = nil<T_O>();
+  this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),nil<T_O>());
 };
 
 // Push a tag onto the list of active catches.

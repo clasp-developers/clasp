@@ -82,7 +82,7 @@ void Pathname_O::__writeReadable__(T_sp strm) const {
     << kw::_sym_name << this->_Name
     << kw::_sym_type << this->_Type
     << kw::_sym_version << this->_Version
-    << kw::_sym_defaults << _Nil<T_O>();
+    << kw::_sym_defaults << nil<T_O>();
   clasp_write_string("#.", strm);
   write_object(l.cons(), strm);
 }
@@ -138,7 +138,7 @@ void Integer_O::__write__(T_sp stream) const {
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
-  cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), nil<T_O>());
 }
 
 void Ratio_O::__write__(T_sp stream) const {  
@@ -153,7 +153,7 @@ void Ratio_O::__write__(T_sp stream) const {
                        make_fixnum(print_base),
                        false,
                        false);
-  cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), nil<T_O>());
 }
 
 void Complex_O::__write__(T_sp stream) const {
@@ -177,7 +177,7 @@ _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
   SafeBufferStr8Ns buffer;
   core__integer_to_string(buffer._Buffer,
                        clasp_make_fixnum(i), clasp_make_fixnum(clasp_print_base()), cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
-  cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), nil<T_O>());
 }
 
 void write_fixnum(T_sp strm, T_sp i) {
@@ -188,7 +188,7 @@ void write_fixnum(T_sp strm, T_sp i) {
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
-  cl__write_sequence(buffer._Buffer, strm, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer._Buffer, strm, make_fixnum(0), nil<T_O>());
 }
 
 void write_single_float(T_sp strm, SingleFloat_sp i) {
@@ -200,7 +200,7 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
 void
 write_float(Float_sp f, T_sp stream) {
   T_sp result = core_float_to_string_free(f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
-  cl__write_sequence(result, stream, clasp_make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(result, stream, clasp_make_fixnum(0), nil<T_O>());
 }
 
 void write_character(T_sp strm, T_sp chr) {

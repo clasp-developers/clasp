@@ -58,18 +58,18 @@ namespace core {
     // entry_point is the LISP_CALLING_CONVENTION() macro
   FuncallableInstance_O(GlobalEntryPoint_sp fdesc) :
       Base(ENSURE_ENTRY_POINT(fdesc,funcallable_entry_point))
-      , _Class(_Nil<Instance_O>())
-    , _CompiledDispatchFunction(_Nil<T_O>()) {}
+      , _Class(nil<Instance_O>())
+    , _CompiledDispatchFunction(nil<T_O>()) {}
     explicit FuncallableInstance_O(GlobalEntryPoint_sp fdesc,Instance_sp metaClass, size_t slots) :
         Base(fdesc)
         , _Class(metaClass)
-        , _CompiledDispatchFunction(_Nil<T_O>())
+        , _CompiledDispatchFunction(nil<T_O>())
     {};
     FuncallableInstance_O(GlobalEntryPoint_sp fdesc, Instance_sp cl, Rack_sp rack)
         : Base(fdesc),
           _Class(cl),
           _Rack(rack),
-          _CompiledDispatchFunction(_Nil<T_O>())
+          _CompiledDispatchFunction(nil<T_O>())
     {};
     virtual ~FuncallableInstance_O(){};
   public:

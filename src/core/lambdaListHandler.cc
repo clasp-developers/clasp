@@ -60,7 +60,7 @@ CL_DEFUN bool core__is_a_type(T_sp form)
     if ( core::_sym__PLUS_known_typep_predicates_PLUS_.notnilp() ) {
       List_sp type_predicates = core::_sym__PLUS_known_typep_predicates_PLUS_->symbolValue();
       if ( type_predicates.notnilp() ) {
-        T_sp predicate = oCdr(gc::As<Cons_sp>(type_predicates)->assoc(form,_Nil<core::T_O>(),cl::_sym_eq,_Nil<core::T_O>()));
+        T_sp predicate = oCdr(gc::As<Cons_sp>(type_predicates)->assoc(form,nil<core::T_O>(),cl::_sym_eq,nil<core::T_O>()));
         if ( predicate.notnilp() ) { return true; };
       }
     }
@@ -68,7 +68,7 @@ CL_DEFUN bool core__is_a_type(T_sp form)
   if ( form.consp() && core__proper_list_p(form) && oCar(form) == cl::_sym_member ) { return true; };
   if ( form.consp() && CONS_CAR(form) == cl::_sym_eql ) { return true; };
   if ( cl__symbolp(form) ) {
-    if ( cl__find_class(form,false,_Nil<core::T_O>()).notnilp() ) return true;
+    if ( cl__find_class(form,false,nil<core::T_O>()).notnilp() ) return true;
   }
   return false;
 }
@@ -114,7 +114,7 @@ And my own special one:    core:_sym_lambda_name
 */
 CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 {
-  List_sp canon = _Nil<T_O>();
+  List_sp canon = nil<T_O>();
   for ( auto decl : decls ) {
     Cons_sp d = gc::As<Cons_sp>(oCar(decl));
     T_sp head = oCar(d);
@@ -240,7 +240,7 @@ T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
 }
 
 TargetClassifier::TargetClassifier(const std::set<int> &skip) : lexicalIndex(-1), skipLexicalIndices(skip) {
-  this->_SpecialSymbols = _Nil<T_O>();
+  this->_SpecialSymbols = nil<T_O>();
   this->_LambdaListSpecials = HashTableEq_O::create_default();
   this->advanceLexicalIndex();
 };
@@ -406,8 +406,8 @@ HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecif
 
 T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, bool allow_first_argument_default_dispatcher) {
   List_sp llprocessed = cl__copy_list(llraw);
-  Symbol_sp sd_symbol = _Nil<Symbol_O>();
-  Symbol_sp sd_class = _Nil<Symbol_O>();
+  Symbol_sp sd_symbol = nil<Symbol_O>();
+  Symbol_sp sd_class = nil<Symbol_O>();
   int dispatchIndex = 0;
   int idx = 0;
   for (auto cur : llprocessed) {
@@ -466,8 +466,8 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
       generate temporary symbols */
 List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
   List_sp new_lambda_list = cl__copy_list(lambda_list);
-  Symbol_sp whole_symbol = _Nil<Symbol_O>();
-  Symbol_sp environment_symbol = _Nil<Symbol_O>();
+  Symbol_sp whole_symbol = nil<Symbol_O>();
+  Symbol_sp environment_symbol = nil<Symbol_O>();
   if (oCar(new_lambda_list) == cl::_sym_AMPwhole) {
     whole_symbol = gc::As<Symbol_sp>(oCadr(new_lambda_list));
     new_lambda_list = oCddr(new_lambda_list);
@@ -517,13 +517,13 @@ CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
 
 void LambdaListHandler_O::initialize() {
   this->_CreatesBindings = true;
-  this->_DeclareSpecifierList = _Nil<T_O>();
+  this->_DeclareSpecifierList = nil<T_O>();
   this->_RequiredArguments.clear();
   this->_OptionalArguments.clear();
   this->_RestArgument.clear();
-  this->_KeyFlag = _Nil<T_O>();
+  this->_KeyFlag = nil<T_O>();
   this->_KeywordArguments.clear();
-  this->_AllowOtherKeys = _Nil<T_O>();
+  this->_AllowOtherKeys = nil<T_O>();
   this->_AuxArguments.clear();
 }
 
@@ -606,7 +606,7 @@ void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, ScopeManager
         T_sp value = evaluate_lambda_list_form(expr, scope.lexenv());
         scope.new_binding(*ci, value);
       } else {
-        scope.new_binding(*ci, _Nil<T_O>());
+        scope.new_binding(*ci, nil<T_O>());
       }
     }
   }
@@ -940,7 +940,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
   reqs.clear();
   optionals.clear();
   keys.clear();
-  key_flag = _Nil<T_O>();
+  key_flag = nil<T_O>();
   auxs.clear();
   allow_other_keys = _lisp->_false();
   if (original_lambda_list.nilp())
@@ -952,7 +952,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     // Could stuff this list somewhere ahead of time to save a little consing,
     // but if we're here we're parsing deftype so whatever.
     defaultDefault = Cons_O::createList(cl::_sym_quote, cl::_sym__TIMES_);
-  else defaultDefault = _Nil<T_O>();
+  else defaultDefault = nil<T_O>();
   List_sp arguments = cl__copy_list(original_lambda_list);
   LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % _rep_(arguments));
   ArgumentMode add_argument_mode = required;
@@ -982,9 +982,9 @@ bool parse_lambda_list(List_sp original_lambda_list,
       break;
     }
     case optional: {
-      T_sp sarg = _Nil<T_O>();
+      T_sp sarg = nil<T_O>();
       T_sp defaultValue = defaultDefault;
-      T_sp supplied = _Nil<T_O>();
+      T_sp supplied = nil<T_O>();
       if ((oarg).consp()) {
         List_sp carg = oarg;
         LOG(BF("Optional argument is a Cons: %s") % _rep_(carg));
@@ -1032,10 +1032,10 @@ bool parse_lambda_list(List_sp original_lambda_list,
       goto DONE;
     }
     case keyword: {
-      Symbol_sp keySymbol = _Nil<Symbol_O>();
-      T_sp localTarget = _Nil<T_O>();
+      Symbol_sp keySymbol = nil<Symbol_O>();
+      T_sp localTarget = nil<T_O>();
       T_sp defaultValue = defaultDefault;
-      T_sp sensorSymbol = _Nil<T_O>();
+      T_sp sensorSymbol = nil<T_O>();
       if (cl__symbolp(oarg)) {
         localTarget = oarg;
         keySymbol = gc::As<Symbol_sp>(localTarget)->asKeywordSymbol();
@@ -1072,8 +1072,8 @@ bool parse_lambda_list(List_sp original_lambda_list,
       SIMPLE_ERROR(BF("&allow-other-keys must be processed just after switch_add_argument_mode"));
       break;
     case aux: {
-      T_sp localSymbol = _Nil<T_O>();
-      T_sp expression = _Nil<T_O>();
+      T_sp localSymbol = nil<T_O>();
+      T_sp expression = nil<T_O>();
       if ((oarg).consp()) {
         List_sp carg = oarg;
         localSymbol = gc::As<Symbol_sp>(oCar(carg));
@@ -1121,7 +1121,7 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   RestArgument restarg;
   T_sp key_flag;
   T_sp allow_other_keys;
-  T_sp decl_dict = _Nil<T_O>();
+  T_sp decl_dict = nil<T_O>();
   parse_lambda_list(lambdaList,
                     context,
                     reqs,
@@ -1251,7 +1251,7 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
     this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
     ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
   } else {
-    this->_ClassifiedSymbolList = _Nil<T_O>();
+    this->_ClassifiedSymbolList = nil<T_O>();
   }
 }
 
@@ -1398,7 +1398,7 @@ bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP_() const {
 
 CL_LISPIFY_NAME("namesOfLexicalVariables");
 CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
-  List_sp namesRev = _Nil<T_O>();
+  List_sp namesRev = nil<T_O>();
   for (auto cur : this->_ClassifiedSymbolList) {
     if (oCar(oCar(cur)) == ext::_sym_lexicalVar) {
       namesRev = Cons_O::create(oCadr(oCar(cur)), namesRev);
@@ -1410,7 +1410,7 @@ CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
 
 CL_LISPIFY_NAME("special-variables");
 CL_DEFMETHOD List_sp LambdaListHandler_O::specialVariables() const {
-  List_sp namesRev = _Nil<T_O>();
+  List_sp namesRev = nil<T_O>();
   for (auto cur : this->_ClassifiedSymbolList) {
     T_sp entry = CONS_CAR(cur);
     if (oCar(entry) == ext::_sym_specialVar) {
@@ -1422,7 +1422,7 @@ CL_DEFMETHOD List_sp LambdaListHandler_O::specialVariables() const {
 
 void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   List_sp names = this->namesOfLexicalVariables();
-  this->_LexicalVariableNamesForDebugging = ComplexVector_T_O::make(cl__length(names),_Nil<T_O>());
+  this->_LexicalVariableNamesForDebugging = ComplexVector_T_O::make(cl__length(names),nil<T_O>());
   gc::As<ComplexVector_T_sp>(this->_LexicalVariableNamesForDebugging)->fillInitialContents(names);
 }
 
@@ -1438,7 +1438,7 @@ CL_DEFMETHOD ComplexVector_T_sp LambdaListHandler_O::namesOfLexicalVariablesForD
 //
 
 
-LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<ComplexVector_T_O>()), _RequiredLexicalArgumentsOnly(false){};
+LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(nil<T_O>()), _LexicalVariableNamesForDebugging(nil<ComplexVector_T_O>()), _RequiredLexicalArgumentsOnly(false){};
 
 
 

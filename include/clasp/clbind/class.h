@@ -174,7 +174,7 @@ public:
     SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", core::_rep_(this->_name).c_str());
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className)  override{
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<T_O>(),DummyCreator_O::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<T_O>(),DummyCreator_O::entry_point);
     maybe_register_symbol_using_dladdr((void*)DummyCreator_O::entry_point);
     return gc::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
@@ -530,7 +530,7 @@ template <class Class, class HoldType, class Policies>
   struct constructor_registration<Class, HoldType, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, HoldType, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, HoldType, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<Class, HoldType>::entry_point);
+    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),DefaultConstructorCreator_O<Class, HoldType>::entry_point);
     maybe_register_symbol_using_dladdr((void*)DefaultConstructorCreator_O<Class, HoldType>::entry_point);
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate(ep));
     return allocator;

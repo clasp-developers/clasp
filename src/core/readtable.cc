@@ -224,12 +224,12 @@ CL_DEFUN T_sp core__reader_double_quote_string(T_sp stream, Character_sp ch) {
   SafeBufferStrWNs buffer;
   bool done = false;
   while (!done) {
-    Character_sp nc = gc::As<Character_sp>(cl__read_char(stream, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+    Character_sp nc = gc::As<Character_sp>(cl__read_char(stream, _lisp->_true(), nil<T_O>(), _lisp->_true()));
     claspCharacter cc = clasp_as_claspCharacter(nc);
     if (cc == delimiter)
       break;
     if (cc == '\\') {
-      nc = gc::As<Character_sp>(cl__read_char(stream, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+      nc = gc::As<Character_sp>(cl__read_char(stream, _lisp->_true(), nil<T_O>(), _lisp->_true()));
       cc = clasp_as_claspCharacter(nc);
       if (cc == 'n')
         cc = '\n';
@@ -248,7 +248,7 @@ CL_DEFUN T_mv core__reader_backquoted_expression(T_sp sin, Character_sp ch) {
   Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level) + 1);
   // DynamicScopeManager will save the dynamic value of the symbol and restore it in dtor
   DynamicScopeManager scope(_sym_STARbackquote_levelSTAR, new_backquote_level);
-  T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+  T_sp quoted_object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   Cons_sp result = Cons_O::createList(_sym_quasiquote, quoted_object);
   return (Values(result));
 };
@@ -262,19 +262,19 @@ CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
   // SIMPLE_ERROR(BF("Comma outside of backquote in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
-      	READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in stream at line: ~a column ~a."),
-    		Cons_O::createList(
-                                   Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
-                                   Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
-    		sin);
+    READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in stream at line: ~a column ~a."),
+                 Cons_O::createList(
+                     Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
+                     Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
+                 sin);
   } else {
-  	  READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in file: ~a line: ~a column ~a."),
-    	Cons_O::createList(SimpleBaseString_O::make(fn),
-                           Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
-                           Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
-    	sin);
+    READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in file: ~a line: ~a column ~a."),
+                 Cons_O::createList(SimpleBaseString_O::make(fn),
+                                    Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
+                                    Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
+                 sin);
   };
-  return (Values(_Nil<T_O>()));
+  return (Values(nil<T_O>()));
 };
 
 CL_LAMBDA(sin ch);
@@ -293,12 +293,12 @@ CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
   Symbol_sp head = _sym_unquote;
   if (nextc == '@') {
     head = _sym_unquote_splice;
-    gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+    gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
   } else if (nextc == '.') {
     head = _sym_unquote_nsplice;
-    gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+    gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
   }
-  T_sp comma_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+  T_sp comma_object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   list << head << comma_object;
   return (list.cons());
 };
@@ -320,17 +320,17 @@ CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character
   if (fn.compare("-no-name-") == 0) {
       	READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
     		Cons_O::createList(
-                                   Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
-                                   Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
+                                   Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
+                                   Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
     		sin);
   } else {
   	  READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in file ~a line: ~a column ~a."),
     	Cons_O::createList(SimpleBaseString_O::make(fn),
-                           Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
-                           Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
+                           Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
+                           Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
     	sin);
   };	
-  return (Values(_Nil<T_O>()));
+  return (Values(nil<T_O>()));
 };
 
 CL_LAMBDA(sin ch);
@@ -339,7 +339,7 @@ CL_DOCSTRING("reader_quote");
 CL_DEFUN T_sp core__reader_quote(T_sp sin, Character_sp ch) {
   //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__file_scope(sin));
   ql::list acc;
-  T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+  T_sp quoted_object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   acc << cl::_sym_quote << quoted_object;
   T_sp result = acc.cons();
   return result;
@@ -353,7 +353,7 @@ CL_DEFUN T_mv core__reader_skip_semicolon_comment(T_sp sin, Character_sp ch) {
   stringstream str;
   bool done = false;
   while (!done) {
-    T_sp tc = cl__read_char(sin, _Nil<core::T_O>(), _sym_eof_value, _lisp->_true());
+    T_sp tc = cl__read_char(sin, nil<core::T_O>(), _sym_eof_value, _lisp->_true());
     if ( tc == _sym_eof_value ) break;
     ASSERT(tc.characterp());
     Character_sp nc = gc::As<Character_sp>(tc);
@@ -381,10 +381,10 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
     numarg += (cget - '0');
     cpeek = clasp_peek_char(sin);
   }
-  T_sp onumarg(_Nil<T_O>());
+  T_sp onumarg(nil<T_O>());
   if (sawnumarg)
     onumarg = make_fixnum(numarg);
-  Character_sp subchar = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+  Character_sp subchar = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
   T_sp macro_func = cl__get_dispatch_macro_character(ch, subchar,_lisp->getCurrentReadTable());
   if (macro_func.nilp()){
     //SIMPLE_ERROR(BF("Undefined reader macro for %s %s") % _rep_(ch) % _rep_(subchar));
@@ -396,8 +396,8 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
     		Cons_O::createList(
     			ch,
     			subchar,
-    			Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
-    			Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
+    			Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
+    			Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
     		sin);
     } else {
   	  READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in file ~a line: ~a column ~a."),
@@ -405,8 +405,8 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
     		ch,
     		subchar,
     		SimpleBaseString_O::make(fn),
-    		Cons_O::create(make_fixnum (clasp_input_lineno(sin)),_Nil<T_O>()),
-    		Cons_O::create(make_fixnum (clasp_input_column(sin)),_Nil<T_O>())),
+    		Cons_O::create(make_fixnum (clasp_input_lineno(sin)),nil<T_O>()),
+    		Cons_O::create(make_fixnum (clasp_input_column(sin)),nil<T_O>())),
     	sin);
     };
   }
@@ -430,30 +430,30 @@ CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
       return Values(gc::As<Character_sp>(tch));
     }
   }
-  return Values(_Nil<T_O>());//(Values0<T_O>());
+  return Values(nil<T_O>());//(Values0<T_O>());
 }
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_dot");
 CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
-  T_sp object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+  T_sp object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     if (!cl::_sym_STARread_evalSTAR->symbolValue().isTrue()) {
       READER_ERROR(SimpleBaseString_O::make("Cannot evaluate the form #.~S"),
-                   Cons_O::create(object,_Nil<T_O>()),
+                   Cons_O::create(object,nil<T_O>()),
                    sin);
     }
     return cl__eval(object);
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_single_quote");
 CL_DEFUN T_sp core__sharp_single_quote(T_sp sin, Character_sp ch, T_sp num) {
-  T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+  T_sp quoted_object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__file_scope(sin));
   ql::list result;
   result << cl::_sym_function << quoted_object;
@@ -484,11 +484,11 @@ CL_DEFUN T_mv core__sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_s
         list = cl__nreverse(reversed);
       }
     }
-    SimpleVector_sp vec = SimpleVector_O::make( cl__length(list),_Nil<T_O>());
+    SimpleVector_sp vec = SimpleVector_O::make( cl__length(list),nil<T_O>());
     vec->fillInitialContents(list);
     return Values(vec);
   }
-  return (Values(_Nil<T_O>()));
+  return (Values(nil<T_O>()));
 };
 
 
@@ -505,10 +505,10 @@ CL_DEFUN T_mv core__sharp_foreign_data_reader(T_sp tsin, Character_sp ch, /*Fixn
     size_t list_length = tnum.unsafe_fixnum();
     for ( size_t i=0; i<list_length; ++i ) {
 //      printf("%s:%d reader: |%s|\n", __FILE__, __LINE__, sin->peer(50).c_str());
-      T_sp object = cl__read(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true());
+      T_sp object = cl__read(sin,_lisp->_true(),nil<T_O>(),_lisp->_true());
       eval::funcall(loader,sin,core::make_fixnum(i),object);
     }
-    return Values(_Nil<T_O>());
+    return Values(nil<T_O>());
   }
   SIMPLE_ERROR(BF("Error in #x{ x is %s") % _rep_(tnum).c_str());
 };
@@ -521,11 +521,11 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
   stringstream pattern;
   T_sp rtbl = _lisp->getCurrentReadTable();
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
-    return Values(_Nil<T_O>());
+    cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
+    return Values(nil<T_O>());
   }
   for (dimcount = 0;; dimcount++) {
-    T_sp tch = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
+    T_sp tch = cl__read_char(sin, nil<T_O>(), nil<T_O>(), _lisp->_true());
     if (tch.nilp())
       break;
     ch = gc::As<Character_sp>(tch);
@@ -537,7 +537,7 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     unlikely_if(syntaxType == kw::_sym_single_escape ||
                 syntaxType == kw::_sym_multiple_escape ||
                 (clasp_as_claspCharacter(ch) != '0' && clasp_as_claspCharacter(ch) != '1')) {
-      READER_ERROR(SimpleBaseString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch,_Nil<T_O>()), sin);
+      READER_ERROR(SimpleBaseString_O::make("Character ~:C is not allowed after #*"), Cons_O::create(ch,nil<T_O>()), sin);
     }
     pattern << (char)(clasp_as_claspCharacter(ch));
   }
@@ -547,12 +547,12 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     dim = unbox_fixnum(gc::As<Fixnum_sp>(num));
     unlikely_if(dim < 0 ||
                 (dim > CLASP_ARRAY_DIMENSION_LIMIT)) {
-      READER_ERROR(SimpleBaseString_O::make("Wrong vector dimension size ~D in #*."), Cons_O::create(num,_Nil<T_O>()), sin);
+      READER_ERROR(SimpleBaseString_O::make("Wrong vector dimension size ~D in #*."), Cons_O::create(num,nil<T_O>()), sin);
     }
     unlikely_if(dimcount > dim)
-      READER_ERROR(SimpleBaseString_O::make("Too many elements in #*."), _Nil<T_O>(), sin);
+      READER_ERROR(SimpleBaseString_O::make("Too many elements in #*."), nil<T_O>(), sin);
     unlikely_if(dim && (dimcount == 0))
-      READER_ERROR(SimpleBaseString_O::make("Cannot fill the bit-vector #*."), _Nil<T_O>(), sin);
+      READER_ERROR(SimpleBaseString_O::make("Cannot fill the bit-vector #*."), nil<T_O>(), sin);
   }
   string bitPattern = pattern.str();
   char last = bitPattern.size() > 0 ? bitPattern[bitPattern.size()-1] : '0';
@@ -577,7 +577,7 @@ CL_DEFUN T_mv core__sharp_colon(T_sp sin, Character_sp ch, T_sp num) {
     Symbol_sp new_symbol = Symbol_O::create(gc::As<SimpleString_sp>(lexeme_str->unsafe_subseq(1,lexeme_str->length())));
     return Values(new_symbol);
   }
-  return Values(_Nil<T_O>());
+  return Values(nil<T_O>());
 }; // core__sharp_colon
 
 CL_LAMBDA(stream subchar radix);
@@ -585,9 +585,9 @@ CL_DECLARE();
 CL_DOCSTRING("sharp_r");
 CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, T_sp nradix) {
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    T_sp object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+    T_sp object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     (void)object; // suppress warning
-    return (Values(_Nil<T_O>()));
+    return (Values(nil<T_O>()));
   } else if (nradix.nilp()) {
     SIMPLE_ERROR(BF("Radix missing in #R reader macro"));
   } else {
@@ -599,7 +599,7 @@ CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, T_sp nradix) {
     {
       Fixnum_sp oradix = make_fixnum(iradix);
       DynamicScopeManager scope(cl::_sym_STARread_baseSTAR, oradix);
-      T_sp val = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+      T_sp val = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
       if (!gc::IsA<Rational_sp>(val)) {
         SIMPLE_ERROR(BF("#%s (base %d) is not a rational: %s") % _rep_(ch) % iradix % _rep_(val));
       }
@@ -633,7 +633,7 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_c");
 CL_DEFUN T_mv core__sharp_c(T_sp sin, Character_sp ch, T_sp num) {
-  T_sp olist = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+  T_sp olist = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   List_sp list = olist;
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     int list_length = cl__length(list);
@@ -644,7 +644,7 @@ CL_DEFUN T_mv core__sharp_c(T_sp sin, Character_sp ch, T_sp num) {
     Real_sp i = gc::As<Real_sp>(oCadr(list));
     return (Values(clasp_make_complex(r, i)));
   }
-  return (Values(_Nil<T_O>()));
+  return (Values(nil<T_O>()));
 
 }; // core__sharp_c
 
@@ -655,9 +655,9 @@ CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
    if (core::_sym_sharp_a_reader->fboundp())
      return eval::funcall(core::_sym_sharp_a_reader, sin, ch, num);
   if (num.nilp()) {
-    T_sp initial_contents = core::eval::funcall(cl::_sym_read,sin,_Nil<T_O>(),_lisp->_true());
+    T_sp initial_contents = core::eval::funcall(cl::_sym_read,sin,nil<T_O>(),_lisp->_true());
     if (cl::_sym_STARread_suppressSTAR->symbolValue().notnilp()) {
-      return Values(_Nil<T_O>());
+      return Values(nil<T_O>());
     } else if (num.nilp()) {
       // readably-pretty-printed array: #A(type dims initial-contents)
       T_sp elt_type = oCar(initial_contents);
@@ -667,7 +667,7 @@ CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
       if (!dims.consp() || cl__length(dims)==1) {
         if (dims.consp()) 
             dims = oCar(dims);
-        Vector_sp vec = core__make_vector(elt_type,dims.unsafe_fixnum(),false,_Nil<T_O>(),_Nil<T_O>(),core::make_fixnum(0),_Nil<T_O>(),true);
+        Vector_sp vec = core__make_vector(elt_type,dims.unsafe_fixnum(),false,nil<T_O>(),nil<T_O>(),core::make_fixnum(0),nil<T_O>(),true);
         size_t idx = 0;
         for ( auto e : linitial_contents ) {
           T_sp val = CONS_CAR(e);
@@ -698,9 +698,9 @@ CL_DEFUN T_mv core__sharp_p(T_sp sin, Character_sp ch, T_sp num) {
   bool suppress = cl::_sym_STARread_suppressSTAR->symbolValue().isTrue();
   if (num.notnilp() && !suppress)
     extra_argument('P', sin, num);
-  T_sp d = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+  T_sp d = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   if (suppress) {
-    d = _Nil<T_O>();
+    d = nil<T_O>();
   } else {
     d = cl__parse_namestring(d);
   }
@@ -713,13 +713,13 @@ CL_DECLARE();
 CL_DOCSTRING("feature_p takes one argument - a feature test");
 CL_DEFUN T_sp core__reader_feature_p(T_sp feature_test) {
   if (feature_test.nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   else if (cl__atom(feature_test)) {
     List_sp features_list = cl::_sym_STARfeaturesSTAR->symbolValue();
     if (features_list.nilp())
-      return _Nil<T_O>();
+      return nil<T_O>();
     return features_list.asCons()->member(gc::As<Symbol_sp>(feature_test),
-                                          _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
+                                          nil<T_O>(), nil<T_O>(), nil<T_O>());
   } else {
     ASSERT(cl__listp(feature_test));
     List_sp features_cons = feature_test;
@@ -734,7 +734,7 @@ CL_DEFUN T_sp core__reader_feature_p(T_sp feature_test) {
         return (eval::funcall(core::_sym_some_list, _sym_reader_feature_p, oCdr(features_cons)));
       }
       // Trivial case of #+(or) returns nil.
-      return _Nil<T_O>();
+      return nil<T_O>();
     }
     SIMPLE_ERROR(BF("Illegal feature test: %s") % _rep_(features_cons));
   }
@@ -744,7 +744,7 @@ CL_DEFUN T_sp core__reader_feature_p(T_sp feature_test) {
 T_sp read_feature_test(T_sp sin) {
   // Read the feature test in the keyword package
   DynamicScopeManager dynamicScopeManager(cl::_sym_STARpackageSTAR, _lisp->keywordPackage());
-  T_sp feature = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+  T_sp feature = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   return feature;
 }
 
@@ -756,13 +756,13 @@ CL_DEFUN T_mv core__sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
   LOG(BF("feature[%s]") % _rep_(feat));
   if (T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
     LOG(BF("The feature test passed - reading lisp object"));
-    T_sp obj = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+    T_sp obj = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     LOG(BF("Read the object[%s]") % _rep_(obj));
     return Values(obj);
   } else {
     _BLOCK_TRACEF(BF("Suppressing read for unsupported feature[%s]") % feat->__repr__());
     DynamicScopeManager dynScopeManager(cl::_sym_STARread_suppressSTAR, _lisp->_true());
-    cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+    cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     return Values0<T_O>();
   }
 }; // core__sharp_plus
@@ -775,13 +775,13 @@ CL_DEFUN T_mv core__sharp_minus(T_sp sin, Character_sp ch, T_sp num) {
   LOG(BF("feature[%s]") % _rep_(feat));
   if (!T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
     LOG(BF("The feature test passed - reading lisp object"));
-    T_sp obj = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+    T_sp obj = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     LOG(BF("Read the object[%s]") % _rep_(obj));
     return Values(obj);
   } else {
     LOG(BF("The feature test failed - returning nil"));
     DynamicScopeManager dynScopeManager(cl::_sym_STARread_suppressSTAR, _lisp->_true());
-    cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+    cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     return Values0<T_O>();
   }
 }; // core__sharp_minus
@@ -793,18 +793,18 @@ CL_DEFUN T_mv core__sharp_vertical_bar(T_sp sin, Character_sp ch, T_sp num) {
   ASSERT(clasp_input_stream_p(sin));
   bool done = false;
   while (!done) {
-    Character_sp nc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+    Character_sp nc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
     claspCharacter cc = clasp_as_claspCharacter(nc);
     if (cc == '#') {
       claspCharacter nextc = clasp_peek_char(sin);
       if (nextc == '|') {
-        Character_sp nextsubc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+        Character_sp nextsubc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
         eval::funcall(_sym_sharp_vertical_bar, sin, nextsubc, num);
       }
     } else if (cc == '|') {
       claspCharacter nextc = clasp_peek_char(sin);
       if (nextc == '#') {
-        Character_sp nextsubc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+        Character_sp nextsubc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
         (void)nextsubc;
         goto DONE;
       }
@@ -838,27 +838,27 @@ Readtable_sp Readtable_O::create_standard_readtable() {
   ASSERT(_sym_reader_backquoted_expression->symbolFunction().notnilp());
   rt->set_macro_character_(clasp_make_standard_character('`'),
                           _sym_reader_backquoted_expression,
-                          _Nil<T_O>());
+                          nil<T_O>());
   rt->set_macro_character_(clasp_make_standard_character(','),
                           _sym_reader_comma_form->symbolFunction(),
-                          _Nil<T_O>());
+                          nil<T_O>());
   SYMBOL_SC_(CorePkg, read_list_allow_consing_dot);
   rt->set_macro_character_(clasp_make_standard_character('('),
                           _sym_reader_list_allow_consing_dot,
-                          _Nil<T_O>());
+                          nil<T_O>());
   rt->set_macro_character_(clasp_make_standard_character(')'),
                           _sym_reader_error_unmatched_close_parenthesis,
-                          _Nil<T_O>());
+                          nil<T_O>());
   rt->set_macro_character_(clasp_make_standard_character('\''),
                           _sym_reader_quote,
-                          _Nil<T_O>());
+                          nil<T_O>());
   rt->set_macro_character_(clasp_make_standard_character(';'),
                           _sym_reader_skip_semicolon_comment,
-                          _Nil<T_O>());
+                          nil<T_O>());
   SYMBOL_SC_(CorePkg, reader_read_double_quote_string);
   rt->set_macro_character_(clasp_make_standard_character('"'),
                           _sym_reader_double_quote_string,
-                          _Nil<T_O>());
+                          nil<T_O>());
   Character_sp sharp = clasp_make_standard_character('#');
   rt->make_dispatch_macro_character_(sharp, _lisp->_true());
   ql::list dispatchers;
@@ -969,14 +969,14 @@ Symbol_sp Readtable_O::syntax_type_(Character_sp ch) const {
 
 T_mv Readtable_O::get_macro_character_(Character_sp ch) {
   _OF();
-  T_sp dispatcher = this->MacroCharacters_->gethash(ch, _Nil<T_O>());
+  T_sp dispatcher = this->MacroCharacters_->gethash(ch, nil<T_O>());
   Symbol_sp syntaxType = this->syntax_type_(ch);
   if (syntaxType == kw::_sym_terminating_macro) {
-    return (Values(dispatcher, _Nil<T_O>()));
+    return (Values(dispatcher, nil<T_O>()));
   } else if (syntaxType == kw::_sym_non_terminating_macro) {
     return (Values(dispatcher, _lisp->_true()));
   }
-  return (Values(_Nil<T_O>(), _Nil<T_O>()));
+  return (Values(nil<T_O>(), nil<T_O>()));
 }
 
 T_sp Readtable_O::make_dispatch_macro_character_(Character_sp ch, T_sp non_terminating_p) {
@@ -1010,7 +1010,7 @@ T_sp Readtable_O::get_dispatch_macro_character_(Character_sp disp_char, Characte
   }
   HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
   Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
-  T_sp func = dispatch_table->gethash(upcase_sub_char, _Nil<T_O>());
+  T_sp func = dispatch_table->gethash(upcase_sub_char, nil<T_O>());
   return func;
 }
 

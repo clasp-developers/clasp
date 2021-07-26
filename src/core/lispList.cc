@@ -179,7 +179,7 @@ CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_
     }
   } //end_loop_for_in;
   close_test(&t);
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_LAMBDA(idx arg);
@@ -196,7 +196,7 @@ CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
       else return arg.unsafe_cons()->onth(n);
     } else { // index is a bignum, i.e. out of range
       if (clasp_plusp (idx))
-        return _Nil<T_O>();
+        return nil<T_O>();
       else TYPE_ERROR(idx, cl::_sym_UnsignedByte);
     }
   } else if (arg.nilp()) {
@@ -217,7 +217,7 @@ CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
       else return arg.unsafe_cons()->onthcdr(n);
     } else { // bignum, out of range
       if (clasp_plusp (idx))
-        return _Nil<T_O>();
+        return nil<T_O>();
       else 
         TYPE_ERROR(idx, cl::_sym_UnsignedByte);
     }
@@ -252,18 +252,18 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
 	  for (r = l; n && (r).consp(); --n, r = oCdr(r))
 		;
 	  if (r.nilp())
-		return _Nil<T_O>();
+		return nil<T_O>();
 	  else if (!cl__listp(r)) {
 		if (r == l) {
 		  TYPE_ERROR_LIST(r);
 		}
-		return _Nil<T_O>();
+		return nil<T_O>();
 	  } else {
 		Cons_sp head;
 		Cons_sp tail;
-		head = tail = Cons_O::create(oCar(l),_Nil<T_O>());
+		head = tail = Cons_O::create(oCar(l),nil<T_O>());
 		while (l = oCdr(l), r = oCdr(r), (r).consp()) {
-		  Cons_sp cons = Cons_O::create(oCar(l),_Nil<T_O>());
+		  Cons_sp cons = Cons_O::create(oCar(l),nil<T_O>());
 		  tail->rplacd(cons);
 		  tail = cons;
 		}
@@ -271,7 +271,7 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
 	  }
    } else { // must be a bignum
      if (clasp_plusp (in))
-      return _Nil<T_O>();
+      return nil<T_O>();
      else 
        TYPE_ERROR(in, cl::_sym_UnsignedByte);
    }
@@ -299,14 +299,14 @@ CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
         tail = gc::As<Cons_sp>(oCdr(tail));
         r = oCdr(r);
       }
-      tail->rplacd(_Nil<T_O>());
+      tail->rplacd(nil<T_O>());
       return l;
     }
-    return _Nil<T_O>();
+    return nil<T_O>();
   } else {
     // if it is a positive bignum, return nil
     if (clasp_plusp (in)) 
-      return _Nil<T_O>();
+      return nil<T_O>();
     else 
     // negative bignum 
       TYPE_ERROR(in, cl::_sym_UnsignedByte);
@@ -324,7 +324,7 @@ CL_DECLARE();
 CL_DOCSTRING("list* see CLHS");
 CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
   size_t nargs = vargs->remaining_nargs();
-  if (nargs == 0 ) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),_Nil<T_O>());
+  if (nargs == 0 ) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),nil<T_O>());
   ql::list result;
   while (nargs > 1) {
     T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
@@ -371,8 +371,8 @@ CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
 CL_LAMBDA(&rest lists);
 CL_DECLARE();
 CL_DEFUN T_sp cl__nconc(List_sp lists) {
-  T_sp head = _Nil<T_O>();
-  T_sp tail = _Nil<T_O>();
+  T_sp head = nil<T_O>();
+  T_sp tail = nil<T_O>();
   for (auto cur : lists) {
     T_sp new_tail;
     T_sp other = oCar(cur);

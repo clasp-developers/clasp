@@ -161,12 +161,12 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
 {
   struct hostent *hostent = gethostbyname(hostName.c_str());
   if (!hostent)
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
   if (tHostEnt.notnilp()) {
     char **aliases;
     char **addrs;
-    core::T_sp aliases_list = _Nil<core::T_O>();
-    core::T_sp addr_list = _Nil<core::T_O>();
+    core::T_sp aliases_list = nil<core::T_O>();
+    core::T_sp addr_list = nil<core::T_O>();
     int length = hostent->h_length;
     core::eval::funcall(setf_host_ent_name, core::SimpleBaseString_O::make(hostent->h_name), tHostEnt);
     core::eval::funcall(/*#4*/ setf_host_ent_address_type, core::Integer_O::create((gc::Fixnum)hostent->h_addrtype), tHostEnt);
@@ -187,8 +187,8 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
     /* @(return) = #1; */
     return tHostEnt;
   } else {
-    /* @(return) = _Nil<core::T_O>(); */
-    return _Nil<core::T_O>();
+    /* @(return) = nil<core::T_O>(); */
+    return nil<core::T_O>();
   }
 }
 
@@ -214,8 +214,8 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
   if (hostent != NULL) {
     char **aliases;
     char **addrs;
-    core::T_sp aliases_list = _Nil<core::T_O>();
-    core::T_sp addr_list = _Nil<core::T_O>();
+    core::T_sp aliases_list = nil<core::T_O>();
+    core::T_sp addr_list = nil<core::T_O>();
     int length = hostent->h_length;
 
     core::eval::funcall(/*#2*/ setf_host_ent_name, core::SimpleBaseString_O::make(hostent->h_name), tHostEnt);
@@ -237,8 +237,8 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
     return tHostEnt;
     /* @(return) = #1; */
   } else {
-    return _Nil<core::T_O>();
-    /* @(return) = _Nil<core::T_O>(); */
+    return nil<core::T_O>();
+    /* @(return) = nil<core::T_O>(); */
   }
 }
 
@@ -308,7 +308,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_inetSocket(int sfd) {
   clasp_enable_interrupts();
 
   int return0 = new_fd;
-  core::T_sp return1 = _Nil<core::T_O>();
+  core::T_sp return1 = nil<core::T_O>();
   int return2 = 0;
   if (new_fd != -1) {
     uint32_t ip = ntohl(sockaddr.sin_addr.s_addr);
@@ -516,7 +516,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_localSocket(int socketFile
   clasp_disable_interrupts();
   new_fd = accept(socketFileDescriptor, (struct sockaddr *)&sockaddr, &addr_len);
   clasp_enable_interrupts();
-  core::T_sp second_ret = _Nil<core::T_O>();
+  core::T_sp second_ret = nil<core::T_O>();
   if (new_fd != -1) {
     second_ret = core::SimpleBaseString_O::make(sockaddr.sun_path);
   }
@@ -558,7 +558,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_socketPeername_localSocket(int fd) {
   if (ret == 0) {
     return core::SimpleBaseString_O::make(name.sun_path);
   } else {
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
   }
 }
 
@@ -653,7 +653,7 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptInt(int fd, int level, 
   ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char *, &sockopt), &socklen);
   clasp_enable_interrupts();
 
-  return (ret == 0) ? core::Integer_O::create((gc::Fixnum)sockopt) : _Nil<core::Integer_O>();
+  return (ret == 0) ? core::Integer_O::create((gc::Fixnum)sockopt) : nil<core::Integer_O>();
 }
 
 CL_LAMBDA(fd level constant);
@@ -666,7 +666,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_getSockoptBool(int fd, int level, int c
   clasp_disable_interrupts();
   ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char *, &sockopt), &socklen);
   clasp_enable_interrupts();
-  return (ret == 0) ? _lisp->_boolean(sockopt) : _Nil<core::T_O>();
+  return (ret == 0) ? _lisp->_boolean(sockopt) : nil<core::T_O>();
 }
 
 CL_LAMBDA(fd level constant);
@@ -679,7 +679,7 @@ CL_DEFUN core::DoubleFloat_sp sockets_internal__ll_getSockoptTimeval(int fd, int
   clasp_disable_interrupts();
   ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char *, &tv), &socklen);
   clasp_enable_interrupts();
-  return (ret == 0) ? core::DoubleFloat_O::create((double)tv.tv_sec + ((double)tv.tv_usec) / 1000000.0) : _Nil<core::DoubleFloat_O>();
+  return (ret == 0) ? core::DoubleFloat_O::create((double)tv.tv_sec + ((double)tv.tv_usec) / 1000000.0) : nil<core::DoubleFloat_O>();
 }
 
 CL_LAMBDA(fd level constant);
@@ -694,7 +694,7 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptLinger(int fd, int leve
   ret = getsockopt(fd, level, constant, REINTERPRET_CAST(char *, &sockopt), &socklen);
   clasp_enable_interrupts();
 
-  return (ret == 0) ? core::Integer_O::create((gc::Fixnum)((sockopt.l_onoff != 0) ? sockopt.l_linger : 0)) : _Nil<core::Integer_O>();
+  return (ret == 0) ? core::Integer_O::create((gc::Fixnum)((sockopt.l_onoff != 0) ? sockopt.l_linger : 0)) : nil<core::Integer_O>();
 }
 
 CL_LAMBDA(fd level constant value);
@@ -814,7 +814,7 @@ CL_DEFUN core::T_sp sockets_internal__get_host_name() {
     return result;
   }
   free(buf);
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 CL_DEFUN int sockets_internal__do_select(core::T_sp to_secs,

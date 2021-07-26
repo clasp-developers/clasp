@@ -119,13 +119,13 @@ void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp 
   SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
   SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
   this->instanceSet(REF_SPECIALIZER_MUTEX, mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw));
-  this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS, _Nil<T_O>());
-  this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
-  this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
-  this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
-  this->instanceSet(REF_CLASS_FINALIZED, _Nil<T_O>());
-  this->instanceSet(REF_CLASS_DEPENDENTS, _Nil<T_O>());
-  this->instanceSet(REF_CLASS_LOCATION_TABLE, _Nil<T_O>());
+  this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS, nil<T_O>());
+  this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, nil<T_O>());
+  this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, nil<T_O>());
+  this->instanceSet(REF_CLASS_DIRECT_DEFAULT_INITARGS, nil<T_O>());
+  this->instanceSet(REF_CLASS_FINALIZED, nil<T_O>());
+  this->instanceSet(REF_CLASS_DEPENDENTS, nil<T_O>());
+  this->instanceSet(REF_CLASS_LOCATION_TABLE, nil<T_O>());
   this->CLASS_set_stamp_for_instances(stamp);
   this->instanceSet(REF_CLASS_CREATOR, creator);
 }
@@ -133,7 +133,7 @@ void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp 
 
 CL_DEFUN List_sp core__class_slot_sanity_check()
 {
-  List_sp sanity = _Nil<T_O>();
+  List_sp sanity = nil<T_O>();
   sanity = Cons_O::create(Cons_O::create(clos::_sym_NUMBER_OF_SLOTS_IN_STANDARD_CLASS, core::clasp_make_fixnum(REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS)),sanity);
   sanity = Cons_O::create(Cons_O::create(clos::_sym_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS, core::clasp_make_fixnum(REF_CLASS_NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS)),sanity);
 #define ADD_SANITY_CHECK_SIMPLE(slot_name,enum_name)   sanity = Cons_O::create(Cons_O::create(clos::_sym_##slot_name, core::clasp_make_fixnum(Instance_O::REF_##enum_name)),sanity);
@@ -432,7 +432,7 @@ void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_s
 void Instance_O::lowLevel_calculateClassPrecedenceList() {
   using namespace boost;
   HashTableEq_sp supers = HashTableEq_O::create_default();
-  ComplexVector_T_sp arrayedSupers(ComplexVector_T_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0)));
+  ComplexVector_T_sp arrayedSupers(ComplexVector_T_O::make(16, nil<T_O>(), clasp_make_fixnum(0)));
   if (!gc::IsA<ComplexVector_T_sp>(arrayedSupers)) {
     printf("%s:%d:%s The object must be a ComplexVector_T_sp but failed gc::IsA<ComplexVector_T_sp>()\n", __FILE__, __LINE__, __FUNCTION__ );
     abort();
@@ -493,7 +493,7 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
     LOG(BF("%s") % ss.str());
   }
 #endif
-  List_sp cpl = _Nil<T_O>();
+  List_sp cpl = nil<T_O>();
   for (deque<int>::const_reverse_iterator it = topo_order.rbegin(); it != topo_order.rend(); it++) {
     Instance_sp mc = gc::As<Instance_sp>(arrayedSupers->operator[](*it));
     LOG(BF("pushing superclass[%s] to front of ClassPrecedenceList") % mc->instanceClassName());
@@ -516,7 +516,7 @@ void Instance_O::setInstanceBaseClasses(List_sp classes) {
 bool Instance_O::isSubClassOf(Instance_sp ancestor) const {
 #if 0
   printf("%s:%d   Checking if this[%s] isSubClassOf[%s]\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str(), _rep_(ancestor).c_str());
-  Instance_sp find_theClass = cl__find_class(cl::_sym_class,true,_Nil<T_O>());
+  Instance_sp find_theClass = cl__find_class(cl::_sym_class,true,nil<T_O>());
   if (_lisp->_Roots._TheClass != find_theClass) {
     printf("%s:%d   Instance_O::isSubClassOf  find_theClass(%p) and _lisp->_Root._TheClass(%p) don't match anymore\n", __FILE__, __LINE__, find_theClass.raw_(), _lisp->_Roots._TheClass.raw_() );
   }
@@ -598,8 +598,8 @@ void Instance_O::addInstanceAsSubClass(Symbol_sp className) {
 void Instance_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp className) {
   this->_setClassName(className);
   // Initialize some of the class slots
-  this->instanceSet(REF_CLASS_DIRECT_SLOTS,_Nil<T_O>());
-  this->instanceSet(REF_CLASS_DEFAULT_INITARGS,_Nil<T_O>());
+  this->instanceSet(REF_CLASS_DIRECT_SLOTS,nil<T_O>());
+  this->instanceSet(REF_CLASS_DEFAULT_INITARGS,nil<T_O>());
   T_sp tmc = this->_instanceClass();
   ASSERTNOTNULL(tmc);
   Instance_sp mc = gc::As<Instance_sp>(tmc);

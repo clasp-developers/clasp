@@ -92,7 +92,7 @@ class SourcePosInfo_O : public General_O {
   bool fieldsp() const override { return true; };
   void fields(Record_sp node) override;
 public:                                                                                    // ctor/dtor for classes with shared virtual base
-  explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(_Nil<T_O>()), _InlinedAt(_Nil<T_O>()){}; //, _Filepos(0) {};
+  explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(nil<T_O>()), _InlinedAt(nil<T_O>()){}; //, _Filepos(0) {};
 public:                                                                                    // instance variables here
   SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc, T_sp function_scope, T_sp inlined_at) 
       : _FileId(spf),
@@ -104,7 +104,7 @@ public:                                                                         
         {};
 
 public:
-  static SourcePosInfo_sp create(uint spf, size_t filepos, uint spln, uint spcol, T_sp function_scope = _Nil<core::T_O>(), T_sp inlined_at = _Nil<core::T_O>()) {
+  static SourcePosInfo_sp create(uint spf, size_t filepos, uint spln, uint spcol, T_sp function_scope = nil<core::T_O>(), T_sp inlined_at = nil<core::T_O>()) {
     auto  me = gctools::GC<SourcePosInfo_O>::allocate( spf, filepos, spln, spcol, function_scope, inlined_at );
     return me;
   }
@@ -135,7 +135,7 @@ public:
   void setf_source_pos_info_extra(T_sp, T_sp);
 };
 
-SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno, bool linenop, size_t column, bool columnp, T_sp function_scope=_Nil<T_O>(), bool function_scope_p=false, T_sp inlined_at = _Nil<T_O>(), bool inlined_at_p=false, T_sp defaults=_Nil<T_O>(), bool defaults_p=false );
+SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno, bool linenop, size_t column, bool columnp, T_sp function_scope=nil<T_O>(), bool function_scope_p=false, T_sp inlined_at = nil<T_O>(), bool inlined_at_p=false, T_sp defaults=nil<T_O>(), bool defaults_p=false );
 
 inline core::Fixnum safe_fileId(T_sp spi) {
   if (spi.nilp())

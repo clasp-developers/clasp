@@ -319,7 +319,7 @@ DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
 	}
 	this->setPath(path);
 	this->first();
-	return _Nil<T_O>();
+	return nil<T_O>();
     }
 #endif
 
@@ -332,7 +332,7 @@ DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path) {
 	DirectoryIterator_sp me(DirectoryIterator_O::create());
 	SYMBOL_SC_(CorePkg,path);
 	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list << _sym_path << path ).cons()));
-	me->make_init(_Nil<core::Function_O>(),env->args(),env);
+	me->make_init(nil<core::Function_O>(),env->args(),env);
 	return(Values(me));
 #endif
 }
@@ -382,7 +382,7 @@ T_sp DirectoryIterator_O::currentObject() {
   ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG(BF("The directory iteratory is done - returning nil"));
-    return _Nil<DirectoryEntry_O>();
+    return nil<DirectoryEntry_O>();
   }
   LOG(BF("Returning the next directory entry"));
   DirectoryEntry_sp de = _lisp->create<DirectoryEntry_O>();
@@ -451,7 +451,7 @@ T_sp RecursiveDirectoryIterator_O::currentObject() {
   ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG(BF("The directory iteratory is done - returning nil"));
-    return _Nil<DirectoryEntry_O>();
+    return nil<DirectoryEntry_O>();
   }
   LOG(BF("Returning the next directory entry"));
   DirectoryEntry_sp de = _lisp->create<DirectoryEntry_O>();
@@ -593,7 +593,7 @@ Pathname_sp homedirPathname(T_sp tuser) {
       i--;
     }
     if (i == 0)
-      return homedirPathname(_Nil<T_O>());
+      return homedirPathname(nil<T_O>());
 #ifdef HAVE_PWD_H
     pwent = getpwnam(p);
     if (pwent == NULL) {

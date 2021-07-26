@@ -349,7 +349,7 @@ namespace core {
     virtual size_t arrayTotalSize() const override { return this->_ArrayTotalSize; };
     virtual T_sp displacedTo() const {
       if (this->_Flags.displacedToP()) return this->_Data;
-      return _Nil<T_O>();
+      return nil<T_O>();
     };
     // like the above but ignores the flag
     virtual T_sp realDisplacedTo() const {
@@ -385,7 +385,7 @@ namespace core {
       }
       return dims;
     }
-    virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) = 0;
+    virtual void internalAdjustSize_(size_t size, T_sp init_element=nil<T_O>(), bool initElementSupplied=false ) = 0;
     virtual void unsafe_fillArrayWithElt(T_sp element, size_t start, size_t end) final
     {
       this->_Data->unsafe_fillArrayWithElt(element,start+this->_DisplacedIndexOffset,end+this->_DisplacedIndexOffset);
@@ -650,23 +650,23 @@ namespace core {
   Vector_sp core__make_vector(T_sp element_type,
                               size_t dimension,
                               bool adjustable = false,
-                              T_sp fill_pointer = _Nil<T_O>(),
-                              T_sp displaced_to = _Nil<T_O>(),
+                              T_sp fill_pointer = nil<T_O>(),
+                              T_sp displaced_to = nil<T_O>(),
                               Fixnum_sp displacedIndexOffset = clasp_make_fixnum(0),
-                              T_sp initial_element = _Nil<T_O>(),
+                              T_sp initial_element = nil<T_O>(),
                               bool initial_element_supplied_p = false);
 
 Vector_sp core__make_static_vector(T_sp element_type,
                               size_t dimension,
-                              T_sp initial_element = _Nil<T_O>(),
+                              T_sp initial_element = nil<T_O>(),
                               bool initial_element_supplied_p = false);
 
 MDArray_sp core__make_mdarray(List_sp dimensions,
                               T_sp element_type,
                               bool adjustable = false,
-                              T_sp displacedTo = _Nil<T_O>(),
+                              T_sp displacedTo = nil<T_O>(),
                               Fixnum_sp displacedIndexOffset = clasp_make_fixnum(0),
-                              T_sp initialElement = _Nil<T_O>(),
+                              T_sp initialElement = nil<T_O>(),
                               bool initialElementSuppliedP = false);
 
 };
@@ -759,7 +759,7 @@ namespace core {
     }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
-    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
+    virtual void internalAdjustSize_(size_t size, T_sp initElement=nil<T_O>(), bool initElementSupplied=false ) final {
       if (size == this->_ArrayTotalSize) return;
       AbstractSimpleVector_sp basesv;
       size_t start, end;
@@ -853,7 +853,7 @@ namespace core {
     }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
-    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
+    virtual void internalAdjustSize_(size_t size, T_sp initElement=nil<T_O>(), bool initElementSupplied=false ) final {
       if (size == this->_ArrayTotalSize) return;
       AbstractSimpleVector_sp basesv;
       size_t start, end;
@@ -951,7 +951,7 @@ namespace core {
   public:
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
-    virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {cannotAdjustSizeOfSimpleArrays(this->asSmartPtr());};
+    virtual void internalAdjustSize_(size_t size, T_sp initElement=nil<T_O>(), bool initElementSupplied=false ) final {cannotAdjustSizeOfSimpleArrays(this->asSmartPtr());};
 public:
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
       ASSERT(gc::IsA<AbstractSimpleVector_sp>(this->_Data));

@@ -53,7 +53,7 @@ CL_DOCSTRING("ensureSingleDispatchGenericFunction");
 CL_DEFUN FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex) {
   T_sp tgfn;
   if (!cl__fboundp(gfname)) {
-    tgfn = _Nil<T_O>();
+    tgfn = nil<T_O>();
   } else {
     tgfn = cl__fdefinition(gfname);
   }
@@ -61,7 +61,7 @@ CL_DEFUN FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_
   if (tgfn.nilp()) {
     // Use CAS to push the new gfname into the list of single dispatch generic functions
     T_sp expected;
-    Cons_sp cell = core::Cons_O::create(gfname,_Nil<T_O>());
+    Cons_sp cell = core::Cons_O::create(gfname,nil<T_O>());
     do {
       expected = _lisp->_Roots._SingleDispatchGenericFunctions.load();
       cell->rplacd(expected);
@@ -153,7 +153,7 @@ ComplexVector_T_sp sortDispatchVectorByClassPrecedence(ComplexVector_T_sp dispat
   }
   OrderByClassPrecedence orderer;
   sort::quickSortVec0(classes,0,classes.size(),orderer);
-  ComplexVector_T_sp sorted = ComplexVector_T_O::make(dispatchVector->length(),_Nil<T_O>(),make_fixnum(0));
+  ComplexVector_T_sp sorted = ComplexVector_T_O::make(dispatchVector->length(),nil<T_O>(),make_fixnum(0));
   for ( size_t ii = 0; ii<classes.size(); ii++ ) {
     for (size_t jj = 0; jj<dispatchVector->length(); jj+=2) {
       if ((*dispatchVector)[jj] == classes[ii]) {
@@ -217,7 +217,7 @@ CL_DEFUN void core__satiateSingleDispatchGenericFunctions()
       for ( size_t ii = 0; ii<sortedDispatchVector->length(); ii+= 2) printf("      %s\n", _rep_((*sortedDispatchVector)[ii]).c_str());
     }
 #endif
-    ComplexVector_T_sp newDispatchVector = ComplexVector_T_O::make(16,_Nil<T_O>(),make_fixnum(0));
+    ComplexVector_T_sp newDispatchVector = ComplexVector_T_O::make(16,nil<T_O>(),make_fixnum(0));
     for (size_t ii = 0; ii<sortedDispatchVector->length(); ii += 2) {
       Instance_sp dispatchClass = gc::As<Instance_sp>((*sortedDispatchVector)[ii]);
       SingleDispatchMethod_sp method = gc::As<SingleDispatchMethod_sp>((*sortedDispatchVector)[ii+1]);

@@ -109,7 +109,7 @@ namespace gctools {
 
 
 // To invoke functions of type InitFnPtr use these
-#define LCC_PASS_ARGS0_VA_LIST_INITFNPTR() _Nil<core::T_O>().raw_(), 0, LCC_UNUSED_rest0
+#define LCC_PASS_ARGS0_VA_LIST_INITFNPTR() nil<core::T_O>().raw_(), 0, LCC_UNUSED_rest0
 
 #define MULTIPLE_VALUES_ARRAY core::lisp_multipleValues()
 

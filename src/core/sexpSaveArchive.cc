@@ -60,7 +60,7 @@ void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stre
   DEPRECATED();
 #if 0
   if (snode->refCount() > 1) {
-    T_sp ref = snodeToRef->gethash(snode, _Nil<T_O>());
+    T_sp ref = snodeToRef->gethash(snode, nil<T_O>());
     if (ref.notnilp()) {
       clasp_write_char('#', stream);
       write_fixnum(stream, ref);

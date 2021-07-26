@@ -199,13 +199,13 @@ T_sp constituentCharAsFixnum(Character_sp ch, trait_chr_type trait = 0 ) {
 
 /*! See SACLA reader.lisp::read-ch */
 T_sp read_ch(T_sp sin) {
-  T_sp nc = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
+  T_sp nc = cl__read_char(sin, nil<T_O>(), nil<T_O>(), _lisp->_true());
   return nc;
 }
 
 /*! See SACLA reader.lisp::read-ch-or-die */
 Character_sp read_ch_or_die(T_sp sin) {
-  Character_sp nc = gc::As_unsafe<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+  Character_sp nc = gc::As_unsafe<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
   return nc;
 }
 
@@ -221,14 +221,14 @@ List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
   if (syntax_type == kw::_sym_invalid) {
     SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
   } else if (syntax_type == kw::_sym_multiple_escape) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   } else if (syntax_type == kw::_sym_single_escape) {
     return Cons_O::create(constituentCharAsFixnum(read_ch_or_die(sin),TRAIT_ESCAPED),
                           collect_escaped_lexemes(read_ch_or_die(sin), sin));
   } else if (syntax_type == kw::_sym_constituent || syntax_type == kw::_sym_whitespace || syntax_type == kw::_sym_terminating_macro || syntax_type == kw::_sym_non_terminating_macro) {
     return Cons_O::create(constituentCharAsFixnum(c,TRAIT_ESCAPED), collect_escaped_lexemes(read_ch_or_die(sin), sin));
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 /*! See SACLA reader.lisp::collect-lexemes.
@@ -250,13 +250,13 @@ List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
       return Cons_O::create(collect_escaped_lexemes(read_ch_or_die(sin), sin),
                             collect_lexemes(read_ch(sin), sin));
     } else if (syntax_type == kw::_sym_single_escape) {
-      return Cons_O::create(Cons_O::create(constituentCharAsFixnum(read_ch_or_die(sin)),_Nil<T_O>()),
+      return Cons_O::create(Cons_O::create(constituentCharAsFixnum(read_ch_or_die(sin)),nil<T_O>()),
                             collect_lexemes(read_ch(sin), sin));
     } else if (syntax_type == kw::_sym_constituent || syntax_type == kw::_sym_non_terminating_macro) {
       return Cons_O::create(constituentCharAsFixnum(c), collect_lexemes(read_ch(sin), sin));
     }
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 
@@ -552,7 +552,7 @@ SimpleString_sp symbolTokenStr(T_sp stream, Token &token, size_t start, size_t e
   for (size_t i=start,iEnd(end); i<iEnd; ++i) {
     if (TRAIT_MATCH_ANY(token[i], TRAIT_INVALID))
          READER_ERROR(SimpleBaseString_O::make("A char with trait invalid was encountered by the reader."),
-                  _Nil<T_O>(), stream);
+                  nil<T_O>(), stream);
     claspCharacter c = CHR(token[i]);
     if (c != '.') only_dots = false;
     buffer.string()->vectorPushExtend(CHR(token[i]));
@@ -561,7 +561,7 @@ SimpleString_sp symbolTokenStr(T_sp stream, Token &token, size_t start, size_t e
     if (only_dots) {
       if (!only_dots_ok) {
         READER_ERROR(SimpleBaseString_O::make("A string of dots was encountered by the reader."),
-                     _Nil<T_O>(), stream);
+                     nil<T_O>(), stream);
       }
     }
   }
@@ -585,7 +585,7 @@ SimpleString_sp tokenStr(T_sp stream, const Token &token, size_t start = 0, size
     if (only_dots) {
       if (!only_dots_ok) {
         READER_ERROR(SimpleBaseString_O::make("A string of dots was encountered by the reader."),
-                     _Nil<T_O>(), stream);
+                     nil<T_O>(), stream);
       }
     }
   }
@@ -733,7 +733,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
   switch (state) {
   case tstart:
     {
-      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
+      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return nil<T_O>();
       SimpleString_sp sym_name = SimpleBaseString_O::make("");
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       return sym;
@@ -750,7 +750,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
   case tsymz:
     // interpret symbols in current package
     {
-      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
+      if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return nil<T_O>();
       SimpleString_sp sym_name = symbolTokenStr(sin,token, name_marker - token.data(),token.size(),only_dots_ok);
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       LOG_READ(BF("sym_name = |%s| sym->symbolNameAsString() = |%s|") % sym_name->get_std_string() % sym->symbolNameAsString());
@@ -760,7 +760,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
   case tsymex:
   case tsympv: {
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
-      return _Nil<T_O>();
+      return nil<T_O>();
     // interpret good package:name symbols
     // Get package part
     SafeBufferStrWNs packageSin;
@@ -798,7 +798,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
   } break;
   case tsymkw: {
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
-      return _Nil<T_O>();
+      return nil<T_O>();
     // interpret good keywords
     LOG_READ(BF("Token[%s] interpreted as keyword") % name_marker);
     // :\. is a valid keyword symbol, so allow only dots here
@@ -806,7 +806,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsymk:{
-    if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return _Nil<T_O>();
+    if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) return nil<T_O>();
     // interpret :|| keyword
     LOG_READ(BF("Token[:||] interpreted as keyword"));
     SimpleBaseString_sp keyword_name = SimpleBaseString_O::make(""); // tokenStr(sin,token, name_marker - token.data());
@@ -816,7 +816,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
   case tsymp:
   case tsymbad:
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
-      return _Nil<T_O>();
+      return nil<T_O>();
     // interpret failed symbols
     SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % symbolTokenStr(sin,token, start - token.data(),token.size())->get_std_string());
     break;
@@ -954,31 +954,31 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
 List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
   core__stack_monitor();
   bool got_dotted = false;
-  T_sp dotted_object = _Nil<T_O>();
-  Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
+  T_sp dotted_object = nil<T_O>();
+  Cons_sp first = Cons_O::create(nil<T_O>(), nil<T_O>());
   List_sp cur = first;
   while (1) {
-    Character_sp cp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), _Nil<Character_O>(), _lisp->_true()));
+    Character_sp cp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), nil<Character_O>(), _lisp->_true()));
     LOG_READ(BF("read_list ---> peeked char[%s]") % _rep_(cp));
     if (clasp_as_claspCharacter(cp) == end_char) {
-      cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+      cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
       if (dotted_object.notnilp()) {
         cur.asCons()->setCdr(dotted_object);
         List_sp result = oCdr(first);
         TRAP_BAD_CONS(result);
         if (result.nilp())
-          return (Values(_Nil<T_O>()));
+          return (Values(nil<T_O>()));
         return (Values(result));
       }
       List_sp otherResult = oCdr(first);
       TRAP_BAD_CONS(otherResult);
       if (otherResult.nilp())
-        return (Values(_Nil<T_O>()));
+        return (Values(nil<T_O>()));
       return (otherResult);
     }
     int ivalues;
     T_sp obj;
-    T_mv mv = lisp_object_query(sin, true, _Nil<T_O>(), true);
+    T_mv mv = lisp_object_query(sin, true, nil<T_O>(), true);
     ivalues = mv.number_of_values();
     if (ivalues > 0) {
       obj = mv;
@@ -987,22 +987,22 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
       if (obj == _sym_dot) {
         if (allow_consing_dot) {
           got_dotted = true;
-          Character_sp cdotp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), _Nil<Character_O>(), _lisp->_true()));
+          Character_sp cdotp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), nil<Character_O>(), _lisp->_true()));
           if (clasp_as_claspCharacter(cdotp) == end_char) {
             READER_ERROR(SimpleBaseString_O::make("Nothing after consing dot"),
-                         _Nil<T_O>(), sin);
+                         nil<T_O>(), sin);
           }
-          dotted_object = read_lisp_object(sin, true, _Nil<T_O>(), true);
+          dotted_object = read_lisp_object(sin, true, nil<T_O>(), true);
         } else {
           READER_ERROR(SimpleBaseString_O::make("An illegal dot was encountered by the reader."),
-                     _Nil<T_O>(), sin);
+                     nil<T_O>(), sin);
         }
       } else {
         if (got_dotted) {
           READER_ERROR(SimpleBaseString_O::make("More than one object after consing dot"),
-                       _Nil<T_O>(), sin);
+                       nil<T_O>(), sin);
         }
-        Cons_sp one = Cons_O::create(obj, _Nil<T_O>());
+        Cons_sp one = Cons_O::create(obj, nil<T_O>());
         LOG_READ(BF("One = %s") % _rep_(one));
 //        LOG_READ(BF("one->sourceFileInfo()=%s") % _rep_(core__file_scope(one)));
 //        LOG_READ(BF("one->sourceFileInfo()->fileName()=%s") % core__file_scope(one)->fileName());
@@ -1020,7 +1020,7 @@ SYMBOL_SC_(CorePkg, STARsharp_equal_final_tableSTAR);
 T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
   LOG_READ_SETUP();
   LOG_READ(BF("Entered read_lisp_object recursiveP=%d") % recursiveP);
-  T_sp result = _Nil<T_O>();
+  T_sp result = nil<T_O>();
   if (recursiveP) {
     while (1) {
       LOG_READ(BF("At top of while loop"));
@@ -1030,17 +1030,17 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
         result = mv;
         if (result==_sym_dot) {
           READER_ERROR(SimpleBaseString_O::make("An illegal dot was encountered by the reader."),
-                     _Nil<T_O>(), sin);
+                     nil<T_O>(), sin);
         }
         if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
           LOG_READ(BF("read_suppress == true"));
-          result = _Nil<T_O>();
+          result = nil<T_O>();
         }
         break;
       }
     }
   } else {
-    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, _Nil<T_O>());
+    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, nil<T_O>());
     LOG_READ(BF("About to call read_lisp_object"));
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
     LOG_READ(BF("Came out of read_lisp_object with: |%s|") % _rep_(result).c_str());
@@ -1057,7 +1057,7 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
 T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
 #if 0
   static int monitorReaderStep = 0;
-  if ((monitorReaderStep % 1000) == 0 && cl__member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), _Nil<T_O>()).notnilp()) {
+  if ((monitorReaderStep % 1000) == 0 && cl__member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), nil<T_O>()).notnilp()) {
     printf("%s:%d:%s stream %s -> pos = %" PRF "\n", __FILE__, __LINE__, __FUNCTION__, _rep_(clasp_filename(sin, false)).c_str(), unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(sin))));
   }
   ++monitorReaderStep;
@@ -1070,7 +1070,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
 step1:
   LOG_READ(BF("step1"));
   SourcePosInfo_sp xxxsp;
-  T_sp tx = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
+  T_sp tx = cl__read_char(sin, nil<T_O>(), nil<T_O>(), _lisp->_true());
   if (tx.nilp()) {
     if (eofErrorP)
       STREAM_ERROR(sin);
@@ -1083,7 +1083,7 @@ step1:
   if (xxx_syntax_type == kw::_sym_invalid) {
     LOG_READ(BF("step2 - invalid-character[%c]") % clasp_as_claspCharacter(xxx));
     READER_ERROR(SimpleBaseString_O::make("A char with syntax type invalid was encountered by the reader."),
-                 _Nil<T_O>(), sin);
+                 nil<T_O>(), sin);
   }
   //    step3:
   if (xxx_syntax_type == kw::_sym_whitespace) {
@@ -1123,7 +1123,7 @@ step1:
   if (xxx_syntax_type == kw::_sym_single_escape) {
     LOG_READ(BF("step5 - single-escape-character char[%c]") % clasp_as_claspCharacter(xxx));
     LOG_READ(BF("Handling single escape"));
-    T_sp ty = cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+    T_sp ty = cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     if ( !ty.characterp() ) {
       SIMPLE_ERROR(BF("Expected character - hit end"));
     }
@@ -1153,7 +1153,7 @@ step1:
 step8:
   LOG_READ(BF("step8"));
   {
-    T_sp ty = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
+    T_sp ty = cl__read_char(sin, nil<T_O>(), nil<T_O>(), _lisp->_true());
     if (ty.nilp()) {
       LOG_READ(BF("Hit eof"));
       goto step10;
@@ -1170,7 +1170,7 @@ step8:
       goto step8;
     }
     if (y8_syntax_type == kw::_sym_single_escape) {
-      z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+      z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
       token.push_back(constituentChar(z, TRAIT_ALPHABETIC|TRAIT_ESCAPED));
       LOG_READ(BF("Single escape read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(sin,token));
       goto step8;
@@ -1203,7 +1203,7 @@ step8:
 step9:
   LOG_READ(BF("step9"));
   {
-    y = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+    y = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
     Symbol_sp y9_syntax_type = core__syntax_type(readTable,y);
     LOG_READ(BF("Step9: Read y[%s] y9_syntax_type[%s]") % clasp_as_claspCharacter(y) % _rep_(y9_syntax_type));
     if ((y9_syntax_type == kw::_sym_constituent) || (y9_syntax_type == kw::_sym_non_terminating_macro) || (y9_syntax_type == kw::_sym_terminating_macro) || (y9_syntax_type == kw::_sym_whitespace)) {
@@ -1214,7 +1214,7 @@ step9:
     LOG_READ(BF("About to test y9_syntax_type[%s] single_escape[%s] are equal? ==> %d") % _rep_(y9_syntax_type) % _rep_(kw::_sym_single_escape) % (y9_syntax_type == kw::_sym_single_escape));
     if (y9_syntax_type == kw::_sym_single_escape) {
       LOG_READ(BF("Handling single_escape_character"));
-      z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+      z = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
       token.push_back(constituentChar(z, TRAIT_ALPHABETIC|TRAIT_ESCAPED));
       LOG_READ(BF("Read z[%s] accumulated token[%s]") % clasp_as_claspCharacter(z) % tokenStr(sin,token));
       goto step9;
@@ -1236,7 +1236,7 @@ step10:
   // Lets just return it as an annotated string
   // Throw a ReaderError if the token is not valid syntax
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
-    return (Values(_Nil<T_O>()));
+    return (Values(nil<T_O>()));
   T_sp object = interpret_token_or_throw_reader_error(sin, token,only_dots_ok);
   TRAP_BAD_CONS(object);
   return (Values(object));

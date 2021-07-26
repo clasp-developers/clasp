@@ -665,7 +665,7 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
 
 extern "C" {
 gctools::return_type fast_apply0(T_O* function_tagged) {
-  return fast_apply_(function_tagged,_Nil<T_O>().raw_());
+  return fast_apply_(function_tagged,nil<T_O>().raw_());
 }
 gctools::return_type fast_apply1(T_O* function_tagged, T_O* rest) {
   return fast_apply_(function_tagged,rest);
@@ -702,9 +702,9 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
       !core::_sym_STAReval_with_env_hookSTAR->boundP() ||
       core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
       ) {
-    return eval::evaluate(form, _Nil<T_O>());
+    return eval::evaluate(form, nil<T_O>());
   } else {
-    return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
+    return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, nil<T_O>());
   }
 };
 
@@ -773,7 +773,7 @@ CL_DECLARE();
 CL_DOCSTRING("Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials");
 CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString) {
   bool b_expect_doc = expectDocString.isTrue();
-  List_sp declares = _Nil<T_O>();
+  List_sp declares = nil<T_O>();
   gc::Nilable<String_sp> docstring;
   List_sp code;
   List_sp specials;
@@ -813,7 +813,7 @@ CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
       }
     }
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_LAMBDA(form &optional default);
@@ -826,7 +826,7 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
   List_sp form;
   eval::parse_lambda_body(body, declares, docstring, form);
   // First check for a (declare (core:function-name XXX))
-  T_sp name = core__extract_lambda_name_from_declares(declares, _Nil<T_O>());
+  T_sp name = core__extract_lambda_name_from_declares(declares, nil<T_O>());
   if (name.notnilp())
     return name;
   // Next check if there is a (lambda (...) (block XXX ...))
@@ -867,7 +867,7 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   }
   // check global environment
   SYMBOL_SC_(ExtPkg, symbolMacro);
-  T_sp fn = _Nil<T_O>();
+  T_sp fn = nil<T_O>();
   T_mv result = core__get_sysprop(sym, ext::_sym_symbolMacro);
   if (gc::As<T_sp>(result.valueGet_(1)).notnilp()) {
     fn = gc::As<Function_sp>(result);
@@ -1036,7 +1036,7 @@ namespace core {
         }
         if (name->fboundp_setf())
             return name->getSetfFdefinition();
-        return _Nil<T_O>();
+        return nil<T_O>();
     };
 
 
@@ -1045,9 +1045,9 @@ namespace core {
 #define DOCS_af_interpreter_lookup_macro "environment_lookup_macro_definition"
     T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env) {
         if (sym.nilp())
-            return _Nil<T_O>();
+            return nil<T_O>();
         if (core__lexical_function(sym, env).notnilp())
-            return _Nil<T_O>();
+            return nil<T_O>();
         int depth = 0;
         int level = 0;
         Function_sp macro;
@@ -1061,7 +1061,7 @@ namespace core {
                 }
             }
         }
-        return _Nil<T_O>();
+        return nil<T_O>();
     };
 
     namespace interpret {
@@ -1078,7 +1078,7 @@ namespace core {
                     return (Values(cond));
                 }
             }
-            return Values(_Nil<T_O>());
+            return Values(nil<T_O>());
         }
 
         SYMBOL_EXPORT_SC_(ClPkg, case);
@@ -1115,7 +1115,7 @@ namespace core {
                     SIMPLE_ERROR(BF("Bad case clause: %s") % _rep_(oclause));
                 }
             }
-            return (Values(_Nil<T_O>()));
+            return (Values(nil<T_O>()));
         }
 
         void setq_symbol_value(Symbol_sp symbol, T_sp value, T_sp environment) {
@@ -1143,19 +1143,19 @@ namespace core {
             T_O* primary = result.raw_(); // save for return
             result.saveToMultipleValue0(); // save to iterate over below
             MultipleValues& values = lisp_multipleValues();
-            Cons_sp skipFirst = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
+            Cons_sp skipFirst = Cons_O::create(nil<T_O>(), nil<T_O>());
             Cons_sp add = skipFirst;
             // Assemble a Cons for sp_setq
             size_t valuesLength = values.getSize();
             int i = 0;
             for (auto cur : lcur) {
                 Symbol_sp symbol = gc::As<Symbol_sp>(oCar(cur));
-                T_sp value = i < valuesLength ? T_sp((gctools::Tagged)values[i]) : _Nil<T_O>();
-                Cons_sp one = Cons_O::create(symbol, _Nil<T_O>());
+                T_sp value = i < valuesLength ? T_sp((gctools::Tagged)values[i]) : nil<T_O>();
+                Cons_sp one = Cons_O::create(symbol, nil<T_O>());
                 add->setCdr(one);
                 add = one;
                 Cons_sp quotedValue = Cons_O::createList(cl::_sym_quote, value);
-                Cons_sp two = Cons_O::create(quotedValue, _Nil<T_O>());
+                Cons_sp two = Cons_O::create(quotedValue, nil<T_O>());
                 add->setCdr(two);
                 add = two;
                 ++i;
@@ -1184,8 +1184,8 @@ namespace core {
           return them in SPECIALS but leave them in the DECLARES list */
         void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<String_sp> &documentation, List_sp &code, List_sp &specials) {
             List_sp body = inputBody;
-            declares = _Nil<T_O>();
-            specials = _Nil<T_O>();
+            declares = nil<T_O>();
+            specials = nil<T_O>();
             for (; body.notnilp(); body = oCdr(body)) {
                 if (!cl__listp(body)) {
                     SIMPLE_ERROR(BF("Bad input to processDeclares: %s") % _rep_(inputBody));
@@ -1252,7 +1252,7 @@ namespace core {
         T_mv sp_loadTimeValue(List_sp args, T_sp environment) {
             ASSERT(environment.generalp());
             T_sp form = oCar(args);
-            return eval::evaluate(form, _Nil<T_O>());
+            return eval::evaluate(form, nil<T_O>());
         }
 
         T_mv do_progv(List_sp symbols, List_sp values, List_sp forms, T_sp environment)
@@ -1280,7 +1280,7 @@ namespace core {
             ASSERT(env.generalp());
             String_sp msg = gc::As<String_sp>(oCar(args));
             printf("+++DEBUG-MESSAGE[%s]\n", msg->get_std_string().c_str());
-            return (Values(_Nil<T_O>()));
+            return (Values(nil<T_O>()));
         }
 
         SYMBOL_EXPORT_SC_(KeywordPkg, execute);
@@ -1290,13 +1290,13 @@ namespace core {
             List_sp situations = oCar(args);
             List_sp body = oCdr(args);
             bool execute = false;
-            if (cl__member(kw::_sym_execute, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue()) {
+            if (cl__member(kw::_sym_execute, situations, nil<T_O>(), nil<T_O>(), nil<T_O>()).isTrue()) {
                 execute = true;
             }
             if (execute) {
                 return sp_progn(body, environment);
             }
-            return (Values(_Nil<T_O>()));
+            return (Values(nil<T_O>()));
         }
 
         T_mv sp_the(List_sp args, T_sp env) {
@@ -1349,11 +1349,11 @@ namespace core {
               }
             }
             List_sp body = oCdr(args);
-            bool execute = cl__member(kw::_sym_execute, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
-            execute |= cl__member(cl::_sym_eval, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
+            bool execute = cl__member(kw::_sym_execute, situations, nil<T_O>(), nil<T_O>(), nil<T_O>()).isTrue();
+            execute |= cl__member(cl::_sym_eval, situations, nil<T_O>(), nil<T_O>(), nil<T_O>()).isTrue();
             if (execute)
                 return eval::sp_progn(body, env);
-            else return Values(_Nil<T_O>());
+            else return Values(nil<T_O>());
         };
 
         T_mv sp_step(List_sp args, T_sp env) {
@@ -1364,7 +1364,7 @@ namespace core {
             ASSERT(env.generalp());
             TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
             ValueFrame_sp vframe = gc::As<ValueFrame_sp>(tagbodyEnv->getActivationFrame());
-            Cons_sp thandle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+            Cons_sp thandle = Cons_O::create(nil<T_O>(),nil<T_O>());
             (*vframe)[0] = thandle;
             T_O* handle = thandle.raw_();
             //
@@ -1546,7 +1546,7 @@ namespace core {
                     return eval::evaluate(oCaddr(args), environment);
                 }
             }
-            return Values(_Nil<T_O>());
+            return Values(nil<T_O>());
         }
 
         T_mv sp_cond(List_sp args, T_sp environment) {
@@ -1566,7 +1566,7 @@ namespace core {
                     return (Values(cond));
                 }
             }
-            return (Values(_Nil<T_O>()));
+            return (Values(nil<T_O>()));
         }
 
         T_mv sp_block(List_sp args, T_sp environment) {
@@ -1574,7 +1574,7 @@ namespace core {
             Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
             BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
             ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-            Cons_sp handle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+            Cons_sp handle = Cons_O::create(nil<T_O>(),nil<T_O>());
             vframe->operator[](0) = handle;
             LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__());
             T_mv result;
@@ -1596,10 +1596,10 @@ namespace core {
             Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
             int depth = 0;
             bool interFunction = false;
-            T_sp tblockEnv = _Nil<T_O>();
+            T_sp tblockEnv = nil<T_O>();
             Environment_O::clasp_findBlock(environment,blockSymbol,depth,interFunction,tblockEnv);
             BlockEnvironment_sp blockEnv = gc::As_unsafe<BlockEnvironment_sp>(tblockEnv);
-            T_mv result = Values(_Nil<T_O>());
+            T_mv result = Values(nil<T_O>());
             if (oCdr(args).notnilp()) result = eval::evaluate(oCadr(args), environment);
             result.saveToMultipleValue0();
             ReturnFrom returnFrom(gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0).raw_());
@@ -1648,7 +1648,7 @@ namespace core {
         T_mv sp_throw(List_sp args, T_sp environment) {
             ASSERT(environment.generalp());
             T_sp throwTag = eval::evaluate(oCar(args), environment);
-            T_mv result = Values(_Nil<T_O>());
+            T_mv result = Values(nil<T_O>());
             result = eval::evaluate(oCadr(args), environment);
             // The first return value needs to be saved in MultipleValues
             result.saveToMultipleValue0();
@@ -1723,7 +1723,7 @@ namespace core {
             LOG(BF("lambda is closing over environment\n%s") % env->__repr__());
             LambdaListHandler_sp llh;
             if (lambda_list.nilp()) {
-                llh = lisp_function_lambda_list_handler(_Nil<List_V>(), declares);
+                llh = lisp_function_lambda_list_handler(nil<List_V>(), declares);
             } else if ((lambda_list).consp()) {
                 llh = lisp_function_lambda_list_handler(lambda_list, declares);
                 LOG(BF("Passed lambdaList: %s") % lambda_list->__repr__());
@@ -1741,10 +1741,10 @@ namespace core {
 
             List_sp code(form);
             if (wrap_block) {
-                code = Cons_O::create(Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code)),_Nil<T_O>());
+                code = Cons_O::create(Cons_O::create(cl::_sym_block, Cons_O::create(core__function_block_name(name), code)),nil<T_O>());
             }
             //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
-            T_sp spi(_Nil<T_O>());
+            T_sp spi(nil<T_O>());
             if (spi.nilp()) {
                 if ( _sym_STARcurrentSourcePosInfoSTAR->symbolValue().notnilp() ) {
                     spi = _sym_STARcurrentSourcePosInfoSTAR->symbolValue();
@@ -1814,7 +1814,7 @@ namespace core {
             ASSERT(environment.generalp());
             ASSERTP(oCdr(args).notnilp(), "You must provide at least 2 arguments");
             List_sp pairs = args;
-            T_sp result = _Nil<T_O>();
+            T_sp result = nil<T_O>();
             while (pairs.notnilp()) {
                 T_sp target = oCar(pairs);
                 if (Symbol_sp symbol = target.asOrNull<Symbol_O>()) {
@@ -1924,7 +1924,7 @@ namespace core {
                 parse_lambda_body(outer_body, declares, docstring, code);
                 LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
                 //    printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
-                ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name, kw::_sym_macro, outer_ll, outer_llh, declares, docstring, code, newEnv, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+                ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name, kw::_sym_macro, outer_ll, outer_llh, declares, docstring, code, newEnv, SOURCE_POS_INFO_FIELDS(nil<T_O>()));
                 outer_func = ic;
                 LOG(BF("func = %s") % ic->__repr__());
                 newEnv->addMacro(name, outer_func);
@@ -1965,12 +1965,12 @@ namespace core {
             while (cur.notnilp()) {
                 List_sp oneDef = oCar(cur);
                 Symbol_sp name = gc::As<Symbol_sp>(oCar(oneDef));
-                List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote, oCadr(oneDef)), _Nil<T_O>());
+                List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote, oCadr(oneDef)), nil<T_O>());
                 LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
                                                                              oCadr(declares),
                                                                              cl::_sym_function);
                 //    printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
-                ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(_sym_symbolMacroletLambda, kw::_sym_macro, outer_ll, outer_llh, declares, _Nil<T_O>(), expansion, newEnv, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+                ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(_sym_symbolMacroletLambda, kw::_sym_macro, outer_ll, outer_llh, declares, nil<T_O>(), expansion, newEnv, SOURCE_POS_INFO_FIELDS(nil<T_O>()));
                 Function_sp outer_func = ic;
                 newEnv->addSymbolMacro(name, outer_func);
                 cur = oCdr(cur);
@@ -2111,7 +2111,7 @@ namespace core {
             if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
                 printf("%s:%d t1Progn args: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
             }
-            T_mv result(_Nil<T_O>());
+            T_mv result(nil<T_O>());
             T_sp localEnv(environment);
             for (auto cur : args) {
                 result = t1Evaluate(oCar(cur), localEnv);
@@ -2125,11 +2125,11 @@ namespace core {
             }
             List_sp situations = oCar(args);
             List_sp body = oCdr(args);
-            bool execute = cl__member(kw::_sym_execute, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
-            execute |= cl__member(cl::_sym_eval, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
+            bool execute = cl__member(kw::_sym_execute, situations, nil<T_O>(), nil<T_O>(), nil<T_O>()).isTrue();
+            execute |= cl__member(cl::_sym_eval, situations, nil<T_O>(), nil<T_O>(), nil<T_O>()).isTrue();
             if (execute)
                 return t1Progn(body, environment);
-            return (Values(_Nil<T_O>()));
+            return (Values(nil<T_O>()));
         }
 
         T_mv t1Locally(List_sp args, T_sp env) {
@@ -2161,7 +2161,7 @@ namespace core {
                     printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str());
                 }
                 // TODO: Deal with Compiler macros here
-                T_sp macroFunction(_Nil<T_O>());
+                T_sp macroFunction(nil<T_O>());
                 if (cl__symbolp(head)) {
                     macroFunction = eval::funcall(cl::_sym_macroFunction, head, environment);
                     if (macroFunction.notnilp()) {
@@ -2384,11 +2384,11 @@ namespace core {
         }
 
         List_sp evaluateList(List_sp args, T_sp environment) {
-            Cons_sp firstCons = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+            Cons_sp firstCons = Cons_O::create(nil<T_O>(),nil<T_O>());
             Cons_sp curCons = firstCons;
             if (args.nilp()) {
                 LOG(BF("Arguments before evaluateList: Nil ---> returning Nil"));
-                return _Nil<T_O>();
+                return nil<T_O>();
             }
             LOG(BF("Arguments before evaluateList: %s") % args->__repr__());
             {
@@ -2401,7 +2401,7 @@ namespace core {
                     T_sp result = eval::evaluate(inObj, environment);
                     ASSERTNOTNULL(result);
                     LOG(BF("After evaluation result = %s @ %X") % result->__repr__() % (void *)(result.get()));
-                    Cons_sp outCons = Cons_O::create(result,_Nil<T_O>());
+                    Cons_sp outCons = Cons_O::create(result,nil<T_O>());
                     curCons->setCdr(outCons);
                     curCons = outCons;
                 }
@@ -2421,7 +2421,7 @@ namespace core {
         T_mv evaluateListReturnLast(List_sp args, T_sp environment) {
             T_sp inObj;
             T_mv outObj;
-            outObj = Values(_Nil<T_O>());
+            outObj = Values(nil<T_O>());
             // Iterate through each car in exp and
             // evaluate it (handling Nil objects and results)
             // and string the results into a linked list

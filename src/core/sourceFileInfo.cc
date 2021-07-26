@@ -325,14 +325,14 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   }
 
 
-  T_sp t_function_scope = _Nil<T_O>();
+  T_sp t_function_scope = nil<T_O>();
   if (function_scope_p) {
     t_function_scope = function_scope;
   } else if (defaults_p) {
     t_function_scope = defaults_spi->function_scope();
   }
 
-  T_sp t_inlined_at = _Nil<T_O>();
+  T_sp t_inlined_at = nil<T_O>();
   if (inlined_at_p) {
     t_inlined_at = inlined_at;
   } else if (defaults_p) {

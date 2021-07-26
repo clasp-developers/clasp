@@ -634,7 +634,7 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
   if (core::StringOutputStream_sp dwo_sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
     dwo_sos->fill(dwo_stringOutput.c_str());
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 CL_LISPIFY_NAME(createDataLayout);
@@ -1948,7 +1948,7 @@ CL_DEFUN core::T_mv llvm_sys__getDebugLocInfo(Instruction_sp instr) {
     size_t column = debugLoc.getCol();
     return Values(_lisp->_true(),core::make_fixnum(lineno),core::make_fixnum(column));
   }
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 }
 CL_DOCSTRING("Erase the instruction from its parent basic block and return the next instruction or NIL");
 CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr)
@@ -1970,7 +1970,7 @@ CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction
   if (next!=NULL) {
     return translate::to_object<llvm::Instruction*>::convert(const_cast<llvm::Instruction*>(next));
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 ;
 
@@ -2459,7 +2459,7 @@ CL_DEFMETHOD core::T_sp IRBuilderBase_O::getInsertPointInstruction() {
     isp->set_wrapped(ins);
     return isp;
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 
@@ -3620,10 +3620,10 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
     string message;
     llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(ArchName, *triple->wrappedPtr(), message));
     if (target == NULL) {
-      return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
+      return Values(nil<core::T_O>(), core::SimpleBaseString_O::make(message));
     }
     Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
-    return Values(targeto, _Nil<core::T_O>());
+    return Values(targeto, nil<core::T_O>());
   }
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
@@ -3632,10 +3632,10 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
     string message;
     llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(Triple,message));
     if (target == NULL) {
-      return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
+      return Values(nil<core::T_O>(), core::SimpleBaseString_O::make(message));
     }
     Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
-    return Values(targeto, _Nil<core::T_O>());
+    return Values(targeto, nil<core::T_O>());
   }
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, verifyFunction);
@@ -4121,7 +4121,7 @@ using namespace llvm;
 CL_DEFUN core::T_sp llvm_sys__vmmap()
 {
   auto task = task_for_pid();
-  return _Nil<core::T_O>();x
+  return nil<core::T_O>();x
 }
 #endif
 
@@ -4501,7 +4501,7 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
   printf("%s:%d:%s ptr = %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
   core::HashTableEqual_sp ht = gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue());
-  core::T_sp result = _Nil<core::T_O>();
+  core::T_sp result = nil<core::T_O>();
   ht->map_while_true([ptr,&result] (core::T_sp key, core::T_sp value) -> bool {
                        if (value.consp()) {
                          core::T_sp address = value.unsafe_cons()->ocadr();
@@ -4688,8 +4688,8 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   core::Function_sp functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
                                                                               lisp_funcPtr,
                                                                               kw::_sym_function,
-                                                                              _Nil<core::T_O>(),
-                                                                              _Nil<core::T_O>() );
+                                                                              nil<core::T_O>(),
+                                                                              nil<core::T_O>() );
 //  printf("%s:%d:%s writing into function-description@%p  functionName: %s codeObject = %s\n", __FILE__, __LINE__, __FUNCTION__, functoid->fdesc().raw_(), _rep_(functoid->fdesc()->_functionName).c_str(), _rep_(codeObject).c_str());
   functoid->_EntryPoint.load()->_Code = codeObject;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -4715,8 +4715,8 @@ CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp d
     functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
                                                               lisp_funcPtr,
                                                               kw::_sym_function,
-                                                              _Nil<core::T_O>(),
-                                                              _Nil<core::T_O>() );
+                                                              nil<core::T_O>(),
+                                                              nil<core::T_O>() );
   } else {
     printf("%s:%d No startup functions were available!!!\n", __FILE__, __LINE__);
     abort();
@@ -4863,7 +4863,7 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
         }
         jcur = CONS_CDR(jcur);
     }
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
 }
             
         
@@ -4953,7 +4953,7 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
   dylib_sp->_name = core::SimpleBaseString_O::make(sname.str());
   dylib_sp->_Id = ++global_JITDylibCounter;
-  core::Cons_sp cell = core::Cons_O::create(dylib_sp,_Nil<core::T_O>());
+  core::Cons_sp cell = core::Cons_O::create(dylib_sp,nil<core::T_O>());
   core::T_sp expected;
   core::T_sp current;
   // Use CAS to push the new JITDylib into the list of JITDylibs.

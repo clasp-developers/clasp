@@ -80,7 +80,7 @@ public:
   void maphashLowLevel(std::function<void(T_sp, T_sp)> const &fn);
   void maphash(T_sp functionDesig) override; 
 
-  T_mv gethash(T_sp key, T_sp defaultValue= _Nil<T_O>()) override;
+  T_mv gethash(T_sp key, T_sp defaultValue= nil<T_O>()) override;
   bool remhash(T_sp key) override;
   T_sp clrhash() override;
   Number_sp rehash_size() override;

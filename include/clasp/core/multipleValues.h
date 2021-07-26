@@ -52,7 +52,7 @@ public: // Functions here
   {
     if (idx < number_of_values)
       return T_sp((gctools::Tagged) this->_Values[idx]);
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
 
 
@@ -308,7 +308,7 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
 
   template <class T0>
     inline static gctools::return_type Values0() {
-    return gctools::return_type(_Nil<T0>().raw_(), 0);
+    return gctools::return_type(nil<T0>().raw_(), 0);
   }
 
 #endif

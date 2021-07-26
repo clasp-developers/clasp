@@ -266,7 +266,7 @@ size_t Array_O::arrayRowMajorIndex(VaList_sp indices) const {
 CL_LISPIFY_NAME("cl:array-dimensions");
 CL_DEFUN List_sp cl__arrayDimensions(Array_sp array)
 {
-  List_sp indices = _Nil<T_O>();
+  List_sp indices = nil<T_O>();
   for (cl_index i = array->rank() - 1; i >= 0; i--) {
     indices = Cons_O::create(make_fixnum(array->arrayDimension(i)), indices);
   }
@@ -423,7 +423,7 @@ T_sp MDArray_O::vectorPush(T_sp newElement) {
   unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(cl::_sym_vectorPush,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   this->_Data->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
   ++this->_FillPointerOrLengthOrDummy;
@@ -566,7 +566,7 @@ CL_DECLARE();
 CL_DOCSTRING("arrayDisplacement");
 CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
   unlikely_if (!gc::IsA<MDArray_sp>(array)) {
-    return Values(_Nil<T_O>(),clasp_make_fixnum(0));
+    return Values(nil<T_O>(),clasp_make_fixnum(0));
   }
   MDArray_O* mdarray = reinterpret_cast<MDArray_O*>(&*array);
   return Values(mdarray->displacedTo(),clasp_make_fixnum(mdarray->displacedIndexOffset()));
@@ -833,7 +833,7 @@ CL_DOCSTRING("Make a (simple-array t) that is not a vector");
 CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
                                                        T_sp initialElement, bool initialElementSuppliedP) {
   (void)initialElementSuppliedP;
-  return SimpleMDArrayT_O::make_multi_dimensional(dimensions,initialElement,_Nil<T_O>());
+  return SimpleMDArrayT_O::make_multi_dimensional(dimensions,initialElement,nil<T_O>());
 }
 
 #define DEFMAKESIMPLEMDARRAY(TYPE, OBJECT, SMART, SIMPLE)\
@@ -842,7 +842,7 @@ CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
   CL_DOCSTRING("Make a (simple-array " #TYPE ") that is not a vector");\
   CL_DEFUN SMART core__make_simple_mdarray_##TYPE(List_sp dimensions, T_sp initialElement, bool initialElementSuppliedP) {\
     SIMPLE::value_type init = initialElementSuppliedP ? SIMPLE::from_object(initialElement) : SIMPLE::default_initial_element();\
-    return OBJECT::make_multi_dimensional(dimensions, init, _Nil<T_O>());\
+    return OBJECT::make_multi_dimensional(dimensions, init, nil<T_O>());\
   }
 
 DEFMAKESIMPLEMDARRAY(bit, SimpleMDArrayBit_O, SimpleMDArrayBit_sp, SimpleBitVector_O);
@@ -956,7 +956,7 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
 #define MAKE(multi, simple)\
   simple::value_type init = initialElementSuppliedP ? simple::from_object(initialElement) : simple::default_initial_element();\
   if (adjustable) return multi::make_multi_dimensional(dimensions,init,displacedTo,displacedTo.notnilp(),displacedIndexOffset);\
-  else return Simple##multi::make_multi_dimensional(dimensions,init,_Nil<T_O>());
+  else return Simple##multi::make_multi_dimensional(dimensions,init,nil<T_O>());
   // macro over
   if (element_type == cl::_sym_T_O) { MAKE(MDArrayT_O, SimpleVector_O) }
   else if (element_type == cl::_sym_double_float) { MAKE(MDArray_double_O, SimpleVector_double_O) }

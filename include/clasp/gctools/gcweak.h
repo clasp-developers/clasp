@@ -624,7 +624,7 @@ struct WeakPointerManager {
                         result_mv = Values(gctools::smart_ptr<core::T_O>(this->pointer->value),core::lisp_true());
                         return;
                     }
-                    result_mv = Values(_Nil<core::T_O>(),_Nil<core::T_O>());
+                    result_mv = Values(nil<core::T_O>(),nil<core::T_O>());
     });
     return result_mv;
   }

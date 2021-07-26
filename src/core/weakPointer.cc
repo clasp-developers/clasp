@@ -63,7 +63,7 @@ CL_DEFMETHOD T_sp WeakPointer_O::value() const {
     T_sp obj((gctools::Tagged)this->_Object);
     return obj;
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 #else
   SIMPLE_ERROR(BF("WeakPointer_O not supported by this GC"));
 #endif

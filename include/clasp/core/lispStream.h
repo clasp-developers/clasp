@@ -175,11 +175,11 @@ T_sp cl__file_position(T_sp stream, T_sp position);
 T_sp cl__stream_element_type(T_sp strm);
 T_sp cl__stream_external_format(T_sp strm);
 
-T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = _Nil<T_O>());
+T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>());
 
-T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = _Nil<T_O>());
+T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>());
 
-T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = _Nil<T_O>());
+T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gctools::Fixnum byte_size = 8, int flags = CLASP_STREAM_DEFAULT_FORMAT, T_sp external_format = nil<T_O>());
 
 T_sp cl__make_synonym_stream(T_sp sym);
 T_sp cl__make_two_way_stream(T_sp in, T_sp out);
@@ -190,7 +190,7 @@ T_sp clasp_make_string_output_stream(cl_index line_length = STRING_OUTPUT_STREAM
 T_sp cl__make_string_output_stream(Symbol_sp elementType);
 T_sp cl__get_output_stream_string(T_sp strm);
 
-T_sp cl__close(T_sp strm, T_sp abort = _Nil<T_O>());
+T_sp cl__close(T_sp strm, T_sp abort = nil<T_O>());
 };
 
 namespace core {
@@ -314,7 +314,7 @@ public:
   StreamCursor _InputCursor;
 
 public:
- Stream_O() : _Closed(0), _Buffer(NULL), _Format(_Nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(_Nil<T_O>()), _Encoder(NULL), _Decoder(NULL), _FormatTable(_Nil<T_O>()), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(_Nil<T_O>()), _OutputColumn(0){};
+ Stream_O() : _Closed(0), _Buffer(NULL), _Format(nil<Symbol_O>()), _ByteSize(8), _Flags(0), _ByteStack(nil<T_O>()), _Encoder(NULL), _Decoder(NULL), _FormatTable(nil<T_O>()), _LastCode{EOF, EOF}, _EofChar(EOF), _ExternalFormat(nil<T_O>()), _OutputColumn(0){};
   virtual ~Stream_O(); // nontrivial
 
 public:
@@ -374,13 +374,13 @@ private: // instance variables here
 
 public: // Functions here
   static T_sp makeInput(const string &name, int fd) {
-    return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+    return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   }
   static T_sp makeOutput(const string &name, int fd) {
-    return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_output_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+    return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_output_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   }
   static T_sp makeIO(const string &name, int fd) {
-    return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_io_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+    return clasp_make_stream_from_fd(str_create(name), fd, clasp_smm_io_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   }
   static T_sp make(const string &name, int fd, enum StreamMode smm, T_sp elementType, T_sp externalFormat);
 
@@ -411,13 +411,13 @@ private: // instance variables here
 
 public: // Functions here
   static T_sp makeInput(const string &name, FILE *f) {
-    return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_input, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+    return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_input, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   }
   static T_sp makeOutput(const string &name, FILE *f) {
-    return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_output, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+    return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_output, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   };
   static T_sp makeIO(const string &name, FILE *f) {
-    return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_io, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+    return clasp_make_stream_from_FILE(str_create(name), f, clasp_smm_io, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
   };
 
 public:
@@ -516,7 +516,7 @@ class SynonymStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, SynonymStream_O, "synonym-stream",AnsiStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
-  SynonymStream_O() : _SynonymSymbol(_Nil<Symbol_O>()){};
+  SynonymStream_O() : _SynonymSymbol(nil<Symbol_O>()){};
 
 GCPROTECTED: // instance variables here
   Symbol_sp _SynonymSymbol;
@@ -549,7 +549,7 @@ class TwoWayStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, TwoWayStream_O, "two-way-stream",AnsiStream_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
-  TwoWayStream_O() : _In(_Nil<T_O>()), _Out(_Nil<T_O>()){};
+  TwoWayStream_O() : _In(nil<T_O>()), _Out(nil<T_O>()){};
 GCPROTECTED: // instance variables here
   T_sp _In;
   T_sp _Out;
@@ -641,7 +641,7 @@ T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
 
 bool cl__streamp(T_sp strm);
 
-String_sp clasp_writeString(String_sp str, T_sp stream, int istart = 0, T_sp end = _Nil<T_O>());
+String_sp clasp_writeString(String_sp str, T_sp stream, int istart = 0, T_sp end = nil<T_O>());
 
 //    int core__stream_linenumber(T_sp strm);
 //    int core__stream_column(T_sp strm);
@@ -659,13 +659,13 @@ claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 T_sp cl__open(T_sp filename,
               T_sp direction = kw::_sym_input,
               T_sp element_type = cl::_sym_base_char,
-              T_sp if_exists = _Nil<core::T_O>(),
+              T_sp if_exists = nil<core::T_O>(),
               bool iesp = false,
-              T_sp if_does_not_exist = _Nil<core::T_O>(),
+              T_sp if_does_not_exist = nil<core::T_O>(),
               bool idnesp = false,
               T_sp external_format = kw::_sym_default,
               T_sp cstream = lisp_true() );
-T_mv cl__read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
+T_mv cl__read_line(T_sp sin, T_sp eof_error_p = cl::_sym_T_O, T_sp eof_value = nil<T_O>(), T_sp recursive_p = nil<T_O>());
 
 T_sp clasp_openRead(T_sp pathDesig);
 T_sp clasp_openWrite(T_sp pathDesig);

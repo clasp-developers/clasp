@@ -188,7 +188,7 @@ void initialize_matchers() {
 #define REGISTER_OVERLOADED_2(name) add_matcher_name(#name,ast_tooling__intern_matcher_keyword(#name))
 #define REGISTER_MATCHER(name) add_matcher_name(#name,ast_tooling__intern_matcher_keyword(#name))
 
-  _sym_STARmatcher_namesSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARmatcher_namesSTAR->defparameter(nil<core::T_O>());
   // These are copied from llvm38/tools/clang/lib/ASTMatchers/Dynamic/Registry.cpp
   // If there are changes to Registry.cpp - copy them here.
   REGISTER_OVERLOADED_2(callee);
@@ -527,7 +527,7 @@ core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
   if (dtm.hasValue()) {
     return clbind::Wrapper<clang::ast_matchers::internal::DynTypedMatcher>::make_wrapper(*dtm, reg::registered_class<clang::ast_matchers::internal::DynTypedMatcher>::id);
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 };
 
 core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
@@ -649,7 +649,7 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
   }
   vector<clang::tooling::Range> vranges;
   clang::tooling::deduplicate(vreps, vranges);
-  core::Cons_sp firstRep = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
+  core::Cons_sp firstRep = core::Cons_O::create(nil<core::T_O>(),nil<core::T_O>());
   core::Cons_sp curRep = firstRep;
   for (auto i : vreps) {
     clang::tooling::Replacement *rp = new clang::tooling::Replacement(i);
@@ -658,7 +658,7 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
     curRep->setCdr(oneRepCons);
     curRep = oneRepCons;
   }
-  core::Cons_sp firstRang = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
+  core::Cons_sp firstRang = core::Cons_O::create(nil<core::T_O>(),nil<core::T_O>());
   core::Cons_sp curRang = firstRang;
   for (auto j : vranges) {
     // Why does Range not have a Copy constructor?????

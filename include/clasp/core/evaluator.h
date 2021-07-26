@@ -89,7 +89,7 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   if (cl__functionp(fn)) {
     func = gc::As_unsafe<Function_sp>(fn);
   } else {
-    func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
+    func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   }
   int numArgsPassed = sizeof...(Args);
   int numArgsPlus = argsPLUS.consp() ? argsPLUS.unsafe_cons()->proper_list_length() : 0;
@@ -126,7 +126,7 @@ inline LCC_RETURN funcall(T_sp fn) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
-  Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
+  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
   return func->entry()(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
 }
@@ -136,7 +136,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
-  Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
+  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
   return func->entry()(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
 }
@@ -146,7 +146,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
-  Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
+  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
   return func->entry()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
 }
@@ -156,7 +156,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
-  Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
+  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
   return func->entry()(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
 }
@@ -166,7 +166,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
-  Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
+  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
   return func->entry()(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
 }
@@ -177,7 +177,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
-  Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
+  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
   size_t vnargs = sizeof...(ARGS);
   size_t nargs = vnargs + LCC_FIXED_NUM;

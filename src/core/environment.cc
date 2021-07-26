@@ -84,11 +84,11 @@ CL_DECLARE();
 CL_DOCSTRING("environmentDebugNames - number of entries in this environment");
 CL_DEFUN T_sp core__environment_debug_names(T_sp frame) {
   if (frame.nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   else if (gc::IsA<ValueFrame_sp>(frame)) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   } else if (gc::IsA<ActivationFrame_sp>(frame)) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   SIMPLE_ERROR(BF("Trying to get environment-debug-names of something not an activation-frame: %s") % _rep_(frame));
 }
@@ -98,10 +98,10 @@ CL_DECLARE();
 CL_DOCSTRING("environmentDebugValues - number of entries in this environment");
 CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
   if (frame.nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
     int iEnd = vf->length();
-    ComplexVector_T_sp vo = ComplexVector_T_O::make(iEnd,_Nil<T_O>());
+    ComplexVector_T_sp vo = ComplexVector_T_O::make(iEnd,nil<T_O>());
     for (int i(0); i < iEnd; ++i) {
       T_sp val = (*vf)[i];
       if (val.unboundp()) {
@@ -111,7 +111,7 @@ CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
     }
     return vo;
   } else if (gc::IsA<ActivationFrame_sp>(frame)) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   SIMPLE_ERROR(BF("Trying to get environment-debug-values of something not an activation-frame: %s") % _rep_(frame));
 }
@@ -123,11 +123,11 @@ CL_DEFUN T_mv core__lexical_function(T_sp name, T_sp env) {
   int depth = 0;
   int index = 0;
   Function_sp func;
-  T_sp functionEnv = _Nil<T_O>();
+  T_sp functionEnv = nil<T_O>();
   if (Environment_O::clasp_findFunction(env, name, depth, index, func, functionEnv)) {
     return Values(_lisp->_true(), func, make_fixnum(depth), make_fixnum(index));
   }
-  return Values(_Nil<T_O>());
+  return Values(nil<T_O>());
 };
 
 CL_LAMBDA(name env);
@@ -140,7 +140,7 @@ CL_DEFUN T_mv core__lexical_macro_function(T_sp name, T_sp env) {
   if (Environment_O::clasp_findMacro(env, name, depth, index, func)) {
     return Values(_lisp->_true(), func, make_fixnum(depth), make_fixnum(index));
   }
-  return Values(_Nil<T_O>());
+  return Values(nil<T_O>());
 };
 
 bool clasp_updateValue(T_sp env, Symbol_sp sym, T_sp val) {
@@ -162,7 +162,7 @@ CL_LAMBDA(env);
 CL_DECLARE();
 CL_DOCSTRING("Return a list of environment parents");
 CL_DEFUN T_sp core__environment_list(T_sp env) {
-  List_sp result = _Nil<T_O>();
+  List_sp result = nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
     result = Cons_O::create(ecur, result);
   }
@@ -173,7 +173,7 @@ CL_LAMBDA(env);
 CL_DECLARE();
 CL_DOCSTRING("Return a list of environment parents");
 CL_DEFUN T_sp core__environment_type_list(T_sp env) {
-  List_sp result = _Nil<T_O>();
+  List_sp result = nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
     result = Cons_O::create(lisp_static_class(ecur), result);
   }
@@ -194,7 +194,7 @@ CL_DECLARE();
 CL_DOCSTRING("Return the RuntimeEnvironment or nil");
 CL_DEFUN T_sp core__runtime_environment(T_sp tenv) {
   if (tenv.nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   if (Environment_sp env = tenv.asOrNull<Environment_O>()) {
     return env->runtimeEnvironment();
   }
@@ -205,7 +205,7 @@ CL_DEFUN T_sp core__runtime_environment(T_sp tenv) {
 CL_DEFUN T_mv core__findValueEnvironmentAtDepth(T_sp env, int searchDepth) {
   int depth = 0;
   bool crossesFunction = false;
-  T_sp found_env = _Nil<T_O>();
+  T_sp found_env = nil<T_O>();
   Environment_O::clasp_findValueEnvironmentAtDepth(env,searchDepth,depth,crossesFunction,found_env);
   return Values(found_env,_lisp->_boolean(crossesFunction));
 }
@@ -242,11 +242,11 @@ T_mv Environment_O::clasp_lookupMetadata(T_sp env, Symbol_sp key) {
 
 T_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {
   if (tenv.nilp())
-    return (_Nil<T_O>());
+    return (nil<T_O>());
   if (Environment_sp env = tenv.asOrNull<Environment_O>()) {
     return (env->getActivationFrame());
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
   //  NOT_ENVIRONMENT_ERROR(tenv);
 };
 
@@ -272,7 +272,7 @@ CL_LAMBDA(env &optional stop_at_function_container_environment);
 CL_NAME(CURRENT-VISIBLE-ENVIRONMENT);
 CL_DEFUN T_sp Environment_O::clasp_currentVisibleEnvironment(T_sp env, bool stopAtFunctionContainerEnvironment) {
   if (env.nilp())
-    return (_Nil<T_O>());
+    return (nil<T_O>());
   if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return (eenv->currentVisibleEnvironment(stopAtFunctionContainerEnvironment));
   }
@@ -333,7 +333,7 @@ CL_DEFUN void core__environment_dump(T_sp env)
 
 List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key) {
   if (env.nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->gather_metadata(key);
   }
@@ -343,14 +343,14 @@ List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key) {
 CL_LISPIFY_NAME("gather_metadata");
 CL_DEFMETHOD List_sp Environment_O::gather_metadata(Symbol_sp key) const {
   if (this->getParentEnvironment().nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   return clasp_gather_metadata(this->getParentEnvironment(), key);
 }
 
 CL_LISPIFY_NAME("lookupMetadata");
 CL_DEFMETHOD T_mv Environment_O::lookupMetadata(Symbol_sp key) const {
   if (this->getParentEnvironment().nilp()) {
-    return (Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()));
+    return (Values(nil<T_O>(), nil<T_O>(), nil<T_O>()));
   }
   return Environment_O::clasp_lookupMetadata(this->getParentEnvironment(), key);
 }
@@ -429,7 +429,7 @@ bool Environment_O::_findFunction(T_sp functionName, int &depth, int &index, Fun
 bool Environment_O::findFunction(T_sp functionName, int &depth, int &index, Function_sp &value, T_sp& functionEnv) const {
   depth = 0;
   index = -1;
-  functionEnv = _Nil<T_O>();
+  functionEnv = nil<T_O>();
   return this->_findFunction(functionName, depth, index, value,functionEnv);
 }
 
@@ -469,7 +469,7 @@ T_sp Environment_O::clasp_find_current_code_environment(T_sp env) {
   
 T_mv Environment_O::clasp_recognizesBlockSymbol(T_sp env, Symbol_sp sym, bool &interFunction) {
   if (env.nilp()) {
-    return Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
+    return Values(nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>());
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->recognizesBlockSymbol(sym, interFunction);
   }
@@ -569,7 +569,7 @@ CL_DEFMETHOD List_sp Environment_O::classifyVariable(T_sp sym) const {
     }
   }
   // Lexical variable was not found - return nil
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_LISPIFY_NAME("classifyTag");
@@ -577,7 +577,7 @@ CL_DEFMETHOD List_sp Environment_O::classifyTag(Symbol_sp tag) {
   int depth = 0;
   int index = 0;
   bool interFunction = false;
-  T_sp tagbodyEnv = _Nil<T_O>();
+  T_sp tagbodyEnv = nil<T_O>();
   if (this->_findTag(tag, depth, index, interFunction, tagbodyEnv)) {
     if (interFunction) {
       return Cons_O::createList(_sym_dynamicGo, make_fixnum(depth), make_fixnum(index), tagbodyEnv);
@@ -593,7 +593,7 @@ CL_DEFMETHOD List_sp Environment_O::classifyFunctionLookup(T_sp functionName) co
   int depth;
   int index;
   Function_sp value;
-  T_sp functionEnv = _Nil<T_O>();
+  T_sp functionEnv = nil<T_O>();
   if (this->findFunction(functionName, depth, index, value,functionEnv)) {
     return Cons_O::createList(_sym_lexicalFunction, functionName, make_fixnum(depth), make_fixnum(index), functionEnv);
   }
@@ -611,7 +611,7 @@ T_sp Environment_O::find_current_code_environment() const {
 
 T_mv Environment_O::recognizesBlockSymbol(Symbol_sp sym, bool &interFunction) const {
   if (this->getParentEnvironment().nilp())
-    return Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
+    return Values(nil<T_O>(), nil<T_O>(), nil<T_O>());
   return Environment_O::clasp_recognizesBlockSymbol(this->getParentEnvironment(), sym, interFunction);
 }
 
@@ -756,7 +756,7 @@ string LexicalEnvironment_O::summaryOfContents() const {
 }
 
 List_sp LexicalEnvironment_O::gather_metadata(Symbol_sp key) const {
-  List_sp parentGathered = _Nil<List_V>();
+  List_sp parentGathered = nil<List_V>();
   if (this->getParentEnvironment().notnilp()) {
     parentGathered = clasp_gather_metadata(this->getParentEnvironment(), key);
   }
@@ -776,7 +776,7 @@ List_sp LexicalEnvironment_O::push_metadata(Symbol_sp key, T_sp val) {
 T_mv LexicalEnvironment_O::localMetadata(Symbol_sp key) const {
   T_mv it = this->_Metadata->gethash(key);
   if (it.second().nilp()) {
-    return (Values(_Nil<T_O>(), _Nil<T_O>()));
+    return (Values(nil<T_O>(), nil<T_O>()));
   }
   return (Values(it, _lisp->_true()));
 }
@@ -785,7 +785,7 @@ T_mv LexicalEnvironment_O::lookupMetadata(Symbol_sp key) const {
   T_mv it = this->_Metadata->gethash(key);
   if (it.second().nilp()) {
     if (this->_ParentEnvironment.nilp()) {
-      return (Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()));
+      return (Values(nil<T_O>(), nil<T_O>(), nil<T_O>()));
     }
     return gc::As<Environment_sp>(this->_ParentEnvironment)->lookupMetadata(key);
   }
@@ -865,7 +865,7 @@ List_sp ValueEnvironment_O::find(Symbol_sp sym) const {
       }
     }
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 void ValueEnvironment_O::augment(Symbol_sp sym, T_sp value) {
@@ -1073,7 +1073,7 @@ string ValueEnvironment_O::summaryOfContents() const {
 
 
 List_sp ValueEnvironment_O::allLocalNamesAsCons() const {
-  List_sp result = _Nil<T_O>();
+  List_sp result = nil<T_O>();
   for ( auto cur : this->_SymbolIndex_alist ) {
     T_sp entry = CONS_CAR(cur);
     if (entry.consp()) {
@@ -1157,7 +1157,7 @@ T_sp FunctionValueEnvironment_O::getActivationFrame() const {
 bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &value, T_sp& functionEnv) const {
   LOG(BF("Looking for binding for function name[%s]") % _rep_(functionName));
   //    LOG(BF("The frame stack is %d deep") % this->depth() );
-  T_mv mv = this->_FunctionIndices->gethash(functionName, _Nil<T_O>());
+  T_mv mv = this->_FunctionIndices->gethash(functionName, nil<T_O>());
   T_sp val = mv;
   bool foundp = mv.valueGet_(1).isTrue();
   if (!foundp)
@@ -1257,7 +1257,7 @@ T_sp CompileTimeEnvironment_O::getActivationFrame() const {
 
 T_sp CompileTimeEnvironment_O::currentVisibleEnvironment(bool stopAtFunctionContainerEnvironment) const {
   T_sp parent = this->getParentEnvironment();
-  if (parent.nilp()) return _Nil<T_O>();
+  if (parent.nilp()) return nil<T_O>();
   return clasp_currentVisibleEnvironment(parent,stopAtFunctionContainerEnvironment);
 }
 
@@ -1410,7 +1410,7 @@ FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::create(T_sp pare
 T_sp FunctionContainerEnvironment_O::currentVisibleEnvironment(bool stopAtFunctionContainerEnvironment) const {
   if (stopAtFunctionContainerEnvironment) return this->asSmartPtr();
   T_sp parent = this->getParentEnvironment();
-  if (parent.nilp()) return _Nil<T_O>();
+  if (parent.nilp()) return nil<T_O>();
   return clasp_currentVisibleEnvironment(parent,stopAtFunctionContainerEnvironment);
 }
 
