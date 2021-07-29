@@ -128,7 +128,8 @@
    #:fixup-ctype-offset-type-key #:fixup-ctype-key
    #:layout-offset-field-names #:variable-field-only #:fixup-type
    #:variable-field #:fixed-field #:offset-ctype #:offset-base-ctype
-   #:class-kind #:stamp-name #:stamp-key #:parent-class #:root-class
+   #:class-kind #:stamp-name #:stamp-key
+   #:parent-class #:lisp-class-base #:root-class
    #:stamp-wtag #:definition-data
    #:container-kind
    #:bitunit-container-kind #:bitwidth
