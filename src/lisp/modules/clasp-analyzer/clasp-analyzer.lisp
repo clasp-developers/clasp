@@ -79,6 +79,7 @@
   template-specializer
   location
   definition-data ; Store info about class extracted from class definition like isPolymorphic (list of symbols)
+  lisp-base
   bases
   vbases
   fields
@@ -953,6 +954,7 @@ to expose."
             (list (format nil "(TAGS:STAMP-NAME . ~s)" (get-stamp-name stamp))
                   (format nil "(TAGS:STAMP-KEY . ~s)" key)
                   (format nil "(TAGS:PARENT-CLASS . ~s)" (first (cclass-bases (stamp-cclass stamp))))
+                  (format nil "(TAGS:LISP-CLASS-BASE . ~s)" (cclass-lisp-base (stamp-cclass stamp)))
                   (format nil "(TAGS:ROOT-CLASS . ~s)" (stamp-root-cclass stamp))
                   (format nil "(TAGS:STAMP-WTAG . ~a)" (stamp-wtag stamp))
                   (format nil "(TAGS:DEFINITION-DATA . ~s)" (definition-data-as-string definition-data))))
@@ -965,6 +967,7 @@ to expose."
             (list (format nil "(TAGS:STAMP-NAME . ~s)" (get-stamp-name stamp))
                   (format nil "(TAGS:STAMP-KEY . ~s)" key)
                   (format nil "(TAGS:PARENT-CLASS . ~s)" (first (cclass-bases (stamp-cclass stamp))))
+                  (format nil "(TAGS:LISP-CLASS-BASE . ~s)" (cclass-lisp-base (stamp-cclass stamp)))
                   (format nil "(TAGS:ROOT-CLASS . ~s)" (stamp-root-cclass stamp))
                   (format nil "(TAGS:STAMP-WTAG . ~a)" (stamp-wtag stamp))
                   (format nil "(TAGS:DEFINITION-DATA . ~s)" (definition-data-as-string definition-data))))
@@ -977,6 +980,7 @@ to expose."
             (list (format nil "(TAGS:STAMP-NAME . ~s)" (get-stamp-name stamp))
                   (format nil "(TAGS:STAMP-KEY . ~s)" key)
                   (format nil "(TAGS:PARENT-CLASS . ~s)" (first (cclass-bases (stamp-cclass stamp))))
+                  (format nil "(TAGS:LISP-CLASS-BASE . ~s)" (cclass-lisp-base (stamp-cclass stamp)))
                   (format nil "(TAGS:ROOT-CLASS . ~s)" (stamp-root-cclass stamp))
                   (format nil "(TAGS:STAMP-WTAG . ~a)" (stamp-wtag stamp))
                   (format nil "(TAGS:BITWIDTH . ~a)" (species-bitwidth (stamp-species stamp)))
@@ -992,6 +996,7 @@ to expose."
             (list (format nil "(TAGS:STAMP-NAME . ~s)" (get-stamp-name stamp))
                   (format nil "(TAGS:STAMP-KEY . ~s)" key)
                   (format nil "(TAGS:PARENT-CLASS . ~s)" (first (cclass-bases (stamp-cclass stamp))))
+                  (format nil "(TAGS:LISP-CLASS-BASE . ~s)" (cclass-lisp-base (stamp-cclass stamp)))
                   (format nil "(TAGS:ROOT-CLASS . ~s)" (stamp-root-cclass stamp))
                   (format nil "(TAGS:STAMP-WTAG . ~a)" (stamp-wtag stamp))
                   (format nil "(TAGS:DEFINITION-DATA . ~s)" (definition-data-as-string definition-data))))
@@ -1631,6 +1636,21 @@ can be saved and reloaded within the project for later analysis"
      (:is-definition))))
 (clang-tool:compile-matcher *class-matcher*)
 
+;;
+;; The lispified version of this matcher: cxxRecordDecl(forEach(typedefNameDecl(hasName("Base")).bind("ClaspBase")))
+(defparameter *clasp-base-submatcher-sexp*
+  '(:cxxrecord-decl
+    (:matches-name ".*_O"
+     (:for-each
+      (:typedef-name-decl
+       (:has-name "Base")
+       (:bind "ClaspBase" (:typedef-name-decl)))))))
+
+(defparameter *clasp-base-submatcher* (ast-tooling:parse-dynamic-matcher "cxxRecordDecl(matchesName(\".*_O\"),forEach(typedefDecl(hasName(\"Base\"),hasType(type().bind(\"BaseType\"))).bind(\"ClaspBase\")))"))
+
+#+(or)
+(defparameter *clasp-base-submatcher* (ast-tooling:parse-dynamic-matcher "cxxRecordDecl(matchesName(\".*_O\"),forEach(typedefNameDecl(hasName(\"Base\"),hasType(builtinType().bind(\"BaseType\"))).bind(\"ClaspBase\")))"))
+#+(or)(defparameter *clasp-base-submatcher* (clang-tool:compile-matcher *clasp-base-submatcher-sexp*))
 
 (defparameter *base-class-submatcher*
   (clang-tool:compile-matcher '(:cxxrecord-decl
@@ -1731,71 +1751,100 @@ can be saved and reloaded within the project for later analysis"
                      (when base-decl
                        (push (record-key base-decl) vbases))))
                  ;;
-                 ;; Run a matcher to find the GC-scannable fields of this class
+                 ;; Run a matcher to find the "Base" class as specified in the LISP_CLASS macro
                  ;;
-                 (clang-tool:sub-match-run
-                  *field-submatcher*
-                  *field-submatcher-sexp*
-                  (clang-tool:mtag-node match-info :whole)
-                  (clang-tool:ast-context match-info)
-                  (lambda (minfo)
-                    (declare (core:lambda-name %%new-class-callback.lambda))
-                    (let* ((field-node (clang-tool:mtag-node minfo :field))
-                           (type (progn
-                                   (or field-node (error "field-node is nil"))
-                                   (to-canonical-type (cast:get-type field-node)))))
-                      (gclog "      >> Field: ~30a~%" field-node)
-                      (handler-case
-                          (let ((loc (clang-tool:mtag-loc-start minfo :field)))
-                            (push (make-instance-variable
-                                   :location loc
-                                   :field-name (clang-tool:mtag-name minfo :field)
-                                   :access (clang-ast:get-access (clang-tool:mtag-node minfo :field))
-                                   :ctype (let ((*debug-info* (make-debug-info :name (clang-tool:mtag-name minfo :field)
-                                                                               :location loc)))
-                                            (classify-ctype (to-canonical-type type))))
-                                  fields))
-                        (unsupported-type (err)
-                          (error "Add support for classifying type: ~a (type-of type): ~a  source: ~a"
-                                 type (type-of type) (clang-tool:mtag-source minfo :field)))))))
-                 ;;
-                 ;; Run a matcher to find the scanGCRoot functions
-                 ;;
-                 (clang-tool:sub-match-run
-                  *method-submatcher*
-                  *method-submatcher-sexp*
-                  (clang-tool:mtag-node match-info :whole)
-                  (clang-tool:ast-context match-info)
-                  (lambda (minfo)
-                    (declare (core:lambda-name %%new-class-callback-*method-submatcher*.lambda))
-                    (let ((method-name (clang-tool:mtag-name minfo :method)))
-                      (gclog "      >> Method: ~30a~%" (clang-tool:mtag-source minfo :method))
-                      (push method-name method-names))))
-                 (clang-tool:sub-match-run
-                  *metadata-submatcher*
-                  *metadata-submatcher-sexp*
-                  class-node
-                  (clang-tool:ast-context match-info)
-                  (lambda (minfo)
-                    (declare (core:lambda-name %%new-class-callback-*metadata-submatcher*.lambda))
-                    (let* ((metadata-node (clang-tool:mtag-node minfo :metadata))
-                           (metadata-name (string-upcase (clang-tool:mtag-name minfo :metadata))))
-                      (push (intern metadata-name :keyword) metadata))))
-                 (setf (gethash record-key results)
-                       (make-cclass :key record-key
-                                    :template-specializer template-specializer
-                                    :location (clang-tool:mtag-loc-start match-info :whole)
-                                    ;; 
-                                    :definition-data (let ((definitions nil))
-                                                       (when (cast:is-polymorphic class-node)
-                                                         (push :is-polymorphic definitions))
-                                                       ;; There may be more in the future
-                                                       definitions)
-                                    :bases bases
-                                    :vbases vbases
-                                    :method-names method-names
-                                    :metadata metadata
-                                    :fields fields))))
+                 (let ((lisp-base "NoLispBase"))
+                   (clang-tool:sub-match-run
+                    *clasp-base-submatcher*
+                    *clasp-base-submatcher-sexp*
+                    (clang-tool:mtag-node match-info :whole)
+                    (clang-tool:ast-context match-info)
+                    (lambda (minfo)
+                      (declare (core:lambda-name %%class-base-callback.lambda))
+                      (format t "In clasp-base-submatcher callback~%")
+                      (let* ((typedef-node (clang-tool:mtag-node minfo :ClaspBase))
+                             (base-type (clang-tool:mtag-node minfo :BaseType)))
+                        (format t "Clasp Base class for ~s is ~s  ->" record-key base-type)
+                        (let ((name (cond
+                                      ((typep base-type 'cast:record-type)
+                                       (let* ((decl (cast:get-decl base-type))
+                                              (decl-name (decl-name decl)))
+                                         decl-name))
+                                      ((typep base-type 'cast:elaborated-type)
+                                       (let* ((qual-type (cast:get-named-type base-type))
+                                              (as-string (cast:get-as-string qual-type))
+                                              (space-pos (position #\space as-string))
+                                              (base-only (subseq as-string (1+ space-pos))))
+                                         base-only))
+                                      (t (format t "Unknown type ~a~%" base-type)))))
+                          (setf lisp-base name)))))
+                   ;;
+                   ;; Run a matcher to find the GC-scannable fields of this class
+                   ;;
+                   (clang-tool:sub-match-run
+                    *field-submatcher*
+                    *field-submatcher-sexp*
+                    (clang-tool:mtag-node match-info :whole)
+                    (clang-tool:ast-context match-info)
+                    (lambda (minfo)
+                      (declare (core:lambda-name %%new-class-callback.lambda))
+                      (let* ((field-node (clang-tool:mtag-node minfo :field))
+                             (type (progn
+                                     (or field-node (error "field-node is nil"))
+                                     (to-canonical-type (cast:get-type field-node)))))
+                        (gclog "      >> Field: ~30a~%" field-node)
+                        (handler-case
+                            (let ((loc (clang-tool:mtag-loc-start minfo :field)))
+                              (push (make-instance-variable
+                                     :location loc
+                                     :field-name (clang-tool:mtag-name minfo :field)
+                                     :access (clang-ast:get-access (clang-tool:mtag-node minfo :field))
+                                     :ctype (let ((*debug-info* (make-debug-info :name (clang-tool:mtag-name minfo :field)
+                                                                                 :location loc)))
+                                              (classify-ctype (to-canonical-type type))))
+                                    fields))
+                          (unsupported-type (err)
+                            (error "Add support for classifying type: ~a (type-of type): ~a  source: ~a"
+                                   type (type-of type) (clang-tool:mtag-source minfo :field)))))))
+                   ;;
+                   ;; Run a matcher to find the scanGCRoot functions
+                   ;;
+                   (clang-tool:sub-match-run
+                    *method-submatcher*
+                    *method-submatcher-sexp*
+                    (clang-tool:mtag-node match-info :whole)
+                    (clang-tool:ast-context match-info)
+                    (lambda (minfo)
+                      (declare (core:lambda-name %%new-class-callback-*method-submatcher*.lambda))
+                      (let ((method-name (clang-tool:mtag-name minfo :method)))
+                        (gclog "      >> Method: ~30a~%" (clang-tool:mtag-source minfo :method))
+                        (push method-name method-names))))
+                   (clang-tool:sub-match-run
+                    *metadata-submatcher*
+                    *metadata-submatcher-sexp*
+                    class-node
+                    (clang-tool:ast-context match-info)
+                    (lambda (minfo)
+                      (declare (core:lambda-name %%new-class-callback-*metadata-submatcher*.lambda))
+                      (let* ((metadata-node (clang-tool:mtag-node minfo :metadata))
+                             (metadata-name (string-upcase (clang-tool:mtag-name minfo :metadata))))
+                        (push (intern metadata-name :keyword) metadata))))
+                   (setf (gethash record-key results)
+                         (make-cclass :key record-key
+                                      :template-specializer template-specializer
+                                      :location (clang-tool:mtag-loc-start match-info :whole)
+                                      ;; 
+                                      :definition-data (let ((definitions nil))
+                                                         (when (cast:is-polymorphic class-node)
+                                                           (push :is-polymorphic definitions))
+                                                         ;; There may be more in the future
+                                                         definitions)
+                                      :lisp-base lisp-base
+                                      :bases bases
+                                      :vbases vbases
+                                      :method-names method-names
+                                      :metadata metadata
+                                      :fields fields)))))
              (%%class-callback (match-info)
                (declare (core:lambda-name %%class-callback))
                (gclog "MATCH: ------------------~%")
