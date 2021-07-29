@@ -64,7 +64,7 @@ redirect its virtual functions to the Derivable<T> functions. */
   public:
     template <typename... Args>
       static gctools::smart_ptr<DerivableType> create(Args &&... args) {
-      GC_ALLOCATE_VARIADIC(DerivableType, obj, std::forward<Args>(args)...);
+      auto  obj = gctools::GC<DerivableType>::allocate( std::forward<Args>(args)...);
       return obj;
     }
     explicit Derivable(){};

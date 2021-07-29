@@ -30,7 +30,7 @@ check:
 	./waf test
 
 TAGS:
-	rm TAGS
+	rm -f TAGS
 	find src/ -type f -iname "*.cc" | etags --append -
 	find include/ -type f -iname "*.h" | etags --append -
 #build time configs

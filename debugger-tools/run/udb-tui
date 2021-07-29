@@ -4,4 +4,4 @@ export CLASP_HOME=${PWD%/*/*}
 
 echo CLASP_HOME = $CLASP_HOME
 
-udb --tui -p `cat /tmp/clasp_pid` --init-eval-command="set dir $CLASP_HOME/debugger-tools"
+udb --tui -p `cat /tmp/clasp_pid_$USER` --init-eval-command="set dir $CLASP_HOME/debugger-tools"

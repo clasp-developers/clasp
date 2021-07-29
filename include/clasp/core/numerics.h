@@ -62,9 +62,7 @@ extern vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int
 
 extern Bignum numberOfIndicesForMixedBase(const vector<int> &bases);
 
-void seedRandomNumberGenerators(uint i);
-void seedRandomNumberGeneratorsUsingTime();
-
+// declared here for cando compatibility; defined in random.cc
 double randomNumber01();
 double randomNumberNormal01();
 

@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/bundle.h>
+#include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/wrappers.h>
 
@@ -196,7 +197,7 @@ void FileScope_O::initialize() {
 }
 
 FileScope_sp FileScope_O::create(Pathname_sp path, int handle) {
-  GC_ALLOCATE(FileScope_O, sfi);
+  auto sfi = gctools::GC<FileScope_O>::allocate_with_default_constructor();
   sfi->_pathname = path;
   sfi->_FileHandle = handle;
   return sfi;
@@ -268,23 +269,86 @@ const char *FileScope_O::permanentFileName() {
 }
 
 
+SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
 
-  SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
-
-
-
-
-SourcePosInfo_sp SourcePosInfo_O::make(const string& filename, size_t filepos, size_t lineno, size_t column)
+CL_DOCSTRING(R"doc(Like make-pathname lets you build a source-pos-info object from scratch or by referencing a defaults source-pos-info that provides default information)doc");
+CL_LAMBDA(&key (filename "-nofile-" filenamep) (filepos 0 fileposp) (lineno 0 linenop) (column 0 columnp) (function-scope nil function_scope_p) (inlined-at nil inlined_at_p) (defaults nil defaults_p));
+CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno, bool linenop, size_t column, bool columnp, T_sp function_scope, bool function_scope_p, T_sp inlined_at, bool inlined_at_p, T_sp defaults, bool defaults_p )
 {
-  FileScope_mv sfi = _lisp->getOrRegisterFileScope(filename);
-  uint sfi_handle = sfi->fileHandle();
-  SourcePosInfo_sp res = SourcePosInfo_O::create(sfi_handle,filepos,lineno,column);
-  return res;
+  SourcePosInfo_sp defaults_spi; 
+  if (defaults_p) {
+    if (defaults.notnilp()) {
+      if (!gc::IsA<SourcePosInfo_sp>(defaults)) {
+        TYPE_ERROR(defaults,core::_sym_SourcePosInfo_O);
+      }
+      defaults_spi = gc::As_unsafe<SourcePosInfo_sp>(defaults);
+    }
+  }
+
+  uint t_sfi_handle;
+  if (filenamep) {
+    FileScope_mv sfi = _lisp->getOrRegisterFileScope(filename);
+    t_sfi_handle = sfi->fileHandle();
+  } else if (defaults_p) {
+    t_sfi_handle = defaults_spi->fileHandle();
+  } else {
+    FileScope_mv sfi = _lisp->getOrRegisterFileScope(filename);
+    t_sfi_handle = sfi->fileHandle();
+  }
+
+
+  uint t_filepos = 0;
+  if (fileposp) {
+    t_filepos = filepos;
+  } else if (defaults_p) {
+    t_filepos = defaults_spi->filepos();
+  } else {
+    t_filepos = filepos;
+  }
+
+  uint t_lineno;
+  if (linenop) {
+    t_lineno = lineno;
+  } else if (defaults_p) {
+    t_lineno = defaults_spi->lineno();
+  } else {
+    t_lineno = lineno;
+  }
+
+  uint t_column;
+  if (columnp) {
+    t_column = column;
+  } else if (defaults_p) {
+    t_column = defaults_spi->column();
+  } else {
+    t_column = column;
+  }
+
+
+  T_sp t_function_scope = nil<T_O>();
+  if (function_scope_p) {
+    t_function_scope = function_scope;
+  } else if (defaults_p) {
+    t_function_scope = defaults_spi->function_scope();
+  }
+
+  T_sp t_inlined_at = nil<T_O>();
+  if (inlined_at_p) {
+    t_inlined_at = inlined_at;
+  } else if (defaults_p) {
+    t_inlined_at = defaults_spi->inlined_at();
+  }
+  
+  SourcePosInfo_sp spi = SourcePosInfo_O::create( t_sfi_handle, t_filepos, t_lineno, t_column, t_function_scope, t_inlined_at );
+  if (!spi) {
+    SIMPLE_ERROR(BF("Malformed source-pos-into"));
+  }
+  return spi;
 }
 
 
 CL_DEFMETHOD SourcePosInfo_sp SourcePosInfo_O::source_pos_info_copy() const {
-  GC_COPY(SourcePosInfo_O, copy, *this);
+  auto  copy = gctools::GC<SourcePosInfo_O>::copy( *this);
   return copy;
 }
 
@@ -303,6 +367,19 @@ CL_DEFMETHOD T_sp SourcePosInfo_O::source_pos_info_function_scope() const {
 
 CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_function_scope(T_sp function_scope) {
   this->_FunctionScope = function_scope;
+#if 0
+  if (_sym_STARdebugSourcePosInfoSTAR.boundp() && _sym_STARdebugSourcePosInfoSTAR->boundP() && _sym_STARdebugSourcePosInfoSTAR->symbolValue().notnilp()) {
+    std::string subprog;
+    if (function_scope.consp()) {
+      subprog = gc::As<String_sp>(CONS_CAR(function_scope))->get_std_string();
+    } else if (gc::IsA<llvmo::DISubprogram_sp>(function_scope)) {
+      subprog = gc::As<llvmo::DISubprogram_sp>(function_scope)->getSubprogram();
+    }
+    if (subprog[subprog.size()-1] == '^') {
+      SIMPLE_ERROR(BF("Caught function scope %s ending with ^") % subprog);
+    }
+  }
+#endif
   return function_scope;
 }
 
@@ -310,7 +387,7 @@ CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_function_scope(T_sp func
 CL_DEFMETHOD void SourcePosInfo_O::setf_source_pos_info_extra(T_sp inlinedAt,
                                                               T_sp functionScope) {
   this->_InlinedAt = inlinedAt;
-  this->_FunctionScope = functionScope;
+  this->setf_source_pos_info_function_scope(functionScope);
 }
 
 void SourcePosInfo_O::fields(Record_sp node)
@@ -350,6 +427,9 @@ string SourcePosInfo_O::__repr__() const {
   ss << " :filepos " << this->_Filepos;
   ss << " :lineno " << this->_Lineno;
   ss << " :column " << this->_Column;
+  ss << " :function-scope " << _rep_(this->_FunctionScope);
+  ss << " :inlined_at " << _rep_(this->_InlinedAt);
+  ss << " @" << (void*)this;
   ss << ">";
   return ss.str();
 }

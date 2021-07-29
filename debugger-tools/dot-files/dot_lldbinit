@@ -2,9 +2,11 @@
 #
 #
 
+script print("Starting .lldbinit")
+
 break set -n dbg_hook
 break set -n core::lisp_error_simple
-
+break set -n core::lisp_error
 
 
 # set the arguments for running the executable
@@ -43,6 +45,10 @@ command alias lprint-frame expr af_printCurrentIhsFrame()
 command alias lprint-frame-env expr af_printCurrentIhsFrameEnvironment()
 command regex lgoto-frame 's/lgoto-frame ([0-9]+)/expr af_gotoIhsFrame(%1)/'
 
-process handle SIGUSR1 -p true -n false -s false
 
-command script import lldb_loader.py
+command alias loader command script import lldb_loader.py
+
+command alias signal-setup  process handle -p true -n false -s false SIGSEGV SIGUSR1 SIGXCPU SIGPWR
+
+loader
+

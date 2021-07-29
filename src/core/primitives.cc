@@ -28,6 +28,8 @@ THE SOFTWARE.
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -119,7 +121,7 @@ CL_DEFUN T_sp cl__sleep(Real_sp oseconds) {
     TYPE_ERROR(oseconds,Cons_O::createList(cl::_sym_float,clasp_make_single_float(0.0)));
   }
   int retval = clasp_musleep(dsec,false);
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 
@@ -127,7 +129,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("A list of all symbols defined in C++");
 CL_DEFUN T_sp core__interpreter_symbols() {
-  List_sp ls = _Nil<T_O>();
+  List_sp ls = nil<T_O>();
 
 #ifndef SCRAPING
 #define DO_SYMBOL(package, name, _a, _b, _c, _d) ls = Cons_O::create(package::name, ls);
@@ -213,15 +215,20 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   }
   ss << program_name();
   ss << "-";
-#ifdef USE_MPS
+#if defined(USE_MPS)
   ss << "mps-";
-#endif
-#ifdef USE_BOEHM
-  #ifdef USE_PRECISE_GC
+#elif defined(USE_BOEHM)
+# ifdef USE_PRECISE_GC
   ss << "boehmprecise-";
-  #else
+# else
   ss << "boehm-";
-  #endif
+# endif
+#elif defined(USE_MMTK)
+# ifdef USE_PRECISE_GC
+  ss << "mmtkprecise-";
+# else
+  ss << "mmtk-";
+# endif
 #endif
 #ifdef USE_MPSPREP
   ss << "mpsprep-";
@@ -257,7 +264,7 @@ CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   if (object.fixnump() || object.characterp() || object.single_floatp()) {
     return Integer_O::create((Fixnum)object.raw_());
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 };
 
 CL_LAMBDA(obj);
@@ -281,7 +288,7 @@ CL_DOCSTRING("softwareType");
 CL_DEFUN T_sp cl__software_type() {
   struct utsname aux;
   if (uname(&aux) < 0)
-    return _Nil<T_O>();
+    return nil<T_O>();
   else
     return SimpleBaseString_O::make(aux.sysname);
 };
@@ -300,7 +307,7 @@ CL_DOCSTRING("machineType");
 CL_DEFUN T_sp cl__machine_type() {
   struct utsname aux;
   if (uname(&aux) < 0)
-    return _Nil<T_O>();
+    return nil<T_O>();
   else
     return SimpleBaseString_O::make(aux.machine);
 };
@@ -311,7 +318,7 @@ CL_DOCSTRING("machineVersion");
 CL_DEFUN T_sp cl__machine_version() {
   struct utsname aux;
   if (uname(&aux) < 0)
-    return _Nil<T_O>();
+    return nil<T_O>();
   else
     return SimpleBaseString_O::make(aux.version);
 };
@@ -322,7 +329,7 @@ CL_DOCSTRING("machineInstance");
 CL_DEFUN T_sp cl__machine_instance() {
   struct utsname aux;
    if (uname(&aux) < 0)
-     return _Nil<T_O>();
+     return nil<T_O>();
    else
      return SimpleBaseString_O::make(aux.nodename);
 };
@@ -381,7 +388,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("allRegisteredClassNames");
 CL_DEFUN Vector_sp core__all_registered_class_names() {
-  ComplexVector_T_sp vo = ComplexVector_T_O::make( _lisp->classSymbolsHolder().size(), _Nil<T_O>());
+  ComplexVector_T_sp vo = ComplexVector_T_O::make( _lisp->classSymbolsHolder().size(), nil<T_O>());
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
     vo->rowMajorAset(i, _lisp->classSymbolsHolder()[i]);
   }
@@ -449,7 +456,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the UNBOUND value");
 CL_DEFUN T_sp core__unbound() {
-  return _Unbound<T_O>();
+  return unbound<T_O>();
 };
 
 CL_LAMBDA();
@@ -495,7 +502,7 @@ CL_DEFUN T_mv cl__values(VaList_sp vargs) {
 #endif
   core::MultipleValues &me = (core::lisp_multipleValues());
   me.setSize(0);
-  core::T_sp first(_Nil<core::T_O>());
+  core::T_sp first(nil<core::T_O>());
   if (nargs > 0) {
     first = vargs->next_arg();
     for (size_t i(1); i< nargs; ++i ) {
@@ -530,7 +537,7 @@ Symbol_sp functionBlockName(T_sp functionName, bool * correctp) {
     }
   }
   *correctp = false;
-  return _Nil<Symbol_O>();
+  return nil<Symbol_O>();
 }
 
 CL_LAMBDA(functionName);
@@ -552,7 +559,7 @@ CL_DEFUN T_sp core__valid_function_name_p(T_sp arg) {
   bool correct;
   Symbol_sp name = functionBlockName(arg, &correct);
   if (!correct)
-    return _Nil<T_O>();
+    return nil<T_O>();
   return _lisp->_true();
 };
 
@@ -566,7 +573,7 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
     T_sp element = oCar(cur);
     if (cl__atom(element)) {
       firsts << element;
-      seconds << _Nil<T_O>();
+      seconds << nil<T_O>();
     } else if (element.consp()) {
       List_sp pair = element;
       size_t pairlen = cl__length(pair);
@@ -624,7 +631,7 @@ CL_DEFUN bool core__operator_shadowed_p(T_sp name, T_sp env) {
     int depth;
     int index;
     Function_sp value;
-    T_sp functionEnv = _Nil<T_O>();
+    T_sp functionEnv = nil<T_O>();
     if (eenv->findFunction(name, depth, index, value, functionEnv))
       return true;
     // No local function, check for local macro instead.
@@ -641,7 +648,7 @@ CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: macro-function");
 CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
-  T_sp func = _Nil<T_O>();
+  T_sp func = nil<T_O>();
   if (env.nilp()) {
     func = af_interpreter_lookup_macro(symbol, env);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
@@ -660,7 +667,7 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
       func = eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);
     } else {
       printf("%s:%d Unexpected environment for MACRO-FUNCTION before Cleavir is available - using toplevel environment\n", __FILE__, __LINE__);
-      func = af_interpreter_lookup_macro(symbol, _Nil<T_O>());
+      func = af_interpreter_lookup_macro(symbol, nil<T_O>());
     }
   }
   return func;
@@ -770,7 +777,7 @@ CL_DEFUN void core__break_low_level(T_sp fmt, List_sp args) {
     cl__format(_lisp->_true(), gc::As<String_sp>(fmt), args);
   }
   dbg_hook("built in break");
-  core__invoke_internal_debugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(nil<core::T_O>());
 };
 
 CL_LAMBDA(&optional msg);
@@ -783,7 +790,7 @@ NEVER_OPTIMIZE CL_DEFUN void core__gdb(T_sp msg) {
     smsg = _rep_(obj);
   }
   dbg_hook(smsg.c_str());
-//  core__invoke_internal_debugger(_Nil<core::T_O>());
+//  core__invoke_internal_debugger(nil<core::T_O>());
 };
 
 
@@ -807,7 +814,7 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   ASSERT(cl__stringp(msg));
   printf("gdbInspect object: %s\n", _rep_(o).c_str());
   dbg_hook(msg->get_std_string().c_str());
-  core__invoke_internal_debugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(nil<core::T_O>());
 };
 
 CL_LISPIFY_NAME("EXT:specialp");
@@ -867,7 +874,7 @@ CL_DOCSTRING("null test - return true if the object is the empty list otherwise 
 CL_DEFUN T_sp cl__null(T_sp obj) {
   if (obj.nilp())
     return _lisp->_true();
-  return _Nil<T_O>();
+  return nil<T_O>();
 };
 
 CL_LAMBDA(obj);
@@ -1043,7 +1050,7 @@ CL_DEFUN List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_des
 #endif
   List_sp result = read_list(sin, clasp_as_claspCharacter(chr), true);
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   return result;
 }
@@ -1157,7 +1164,7 @@ CL_DEFUN T_sp core__some_list(T_sp predicate, List_sp sequences) {
   bool result = test_every_some_notevery_notany(op, sequences, true, true, false, retVal);
   if (result)
     return retVal;
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_LAMBDA(predicate &rest sequences);
@@ -1335,7 +1342,7 @@ CL_DEFUN T_sp cl__append(VaList_sp args) {
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   size_t lenArgs = args->total_nargs();
-  unlikely_if (lenArgs==0) return _Nil<T_O>();
+  unlikely_if (lenArgs==0) return nil<T_O>();
   T_O* lastArg = args->relative_indexed_arg(lenArgs-1);
   for ( int i(0),iEnd(lenArgs-1);i<iEnd; ++i ) {
     T_sp curit = args->next_arg();
@@ -1412,7 +1419,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
       cl::_sym_STARgensym_counterSTAR->setf_symbolValue(counter);
     }
     Symbol_sp sym = Symbol_O::create(ss->asMinimalSimpleString());
-    sym->setPackage(_Nil<T_O>());
+    sym->setPackage(nil<T_O>());
     return sym;
   }
   if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(clasp_minusp(gc::As_unsafe<Integer_sp>(x))))) {
@@ -1420,7 +1427,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
     ss.string()->vectorPushExtend('G');
     core__integer_to_string(ss.string(),gc::As_unsafe<Integer_sp>(x),clasp_make_fixnum(10));
     Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
-    sym->setPackage(_Nil<T_O>());
+    sym->setPackage(nil<T_O>());
     return sym;
   } else {
     TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_UnsignedByte));
@@ -1483,7 +1490,7 @@ T_sp type_of_decide_class(T_sp cl) {
   T_sp type = mcl->_className();
   Symbol_sp st = gc::As<Symbol_sp>(type);
   // Only use the class-name as a type if it's the proper name of the class.
-  if (type.nilp() || cl != T_sp(eval::funcall(cl::_sym_findClass, st, _Nil<T_O>()))) {
+  if (type.nilp() || cl != T_sp(eval::funcall(cl::_sym_findClass, st, nil<T_O>()))) {
     type = cl;
   }
   return type;
@@ -1613,17 +1620,17 @@ CL_DOCSTRING("Return the lambda-list of a function designator. Note that "
              "functions will have the defmacro/deftype lambda list.");
 CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
-    return Values(_Nil<T_O>(),_Nil<T_O>());
+    return Values(nil<T_O>(),nil<T_O>());
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     if (!sym->fboundp()) {
-      return Values(_Nil<T_O>(),_Nil<T_O>());
+      return Values(nil<T_O>(),nil<T_O>());
     }
     Function_sp fn = sym->symbolFunction();
     return Values(ext__function_lambda_list(fn),_lisp->_true());
   } else if (Function_sp func = obj.asOrNull<Function_O>()) {
     return Values(func->lambdaList(), _lisp->_true());
   }
-  return Values(_Nil<T_O>(),_Nil<T_O>());
+  return Values(nil<T_O>(),nil<T_O>());
 }
 
 CL_LAMBDA(function);
@@ -1742,6 +1749,51 @@ CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string
     return result;
   }
   SIMPLE_ERROR(BF("Handle Don't get here"));
+}
+
+
+CL_LAMBDA(filename &optional (max-lines 0));
+CL_DOCSTRING(R"doc(Count number of lines in text file up to max-lines if max-lines is not 0. 
+             Return (valus number-of-lines file-position size-of-file).)doc");
+CL_DEFUN T_mv core__countLinesInFile(const std::string& filename, size_t maxLines, bool approach) {
+  int numberOfLines = 0;
+  int charsSinceLastEol = 0;
+  std::string line;
+    // Use get() - character at a time
+  std::ifstream myfile(filename);
+  char c;
+  if (myfile.is_open()) {
+    do {
+      c = myfile.get();
+      if (c == EOF) {
+        numberOfLines += ((charsSinceLastEol>0) ? 1 : 0);
+        break;
+      }
+      if (maxLines && (numberOfLines>=maxLines)) break;
+      if (c == '\n') {
+        ++numberOfLines;
+        charsSinceLastEol = 0;
+      } else {
+        ++charsSinceLastEol;
+      }
+      if ((numberOfLines & 0xffff) == 0) {
+        gctools::handle_all_queued_interrupts();
+      }
+    } while (true);
+    size_t currentFilePos;
+    size_t sizeOfFile;
+  // Get current position in file
+    struct stat stat_buf;
+    int rc = stat(filename.c_str(), &stat_buf);
+    sizeOfFile = rc == 0 ? stat_buf.st_size : -1;
+    if (c != EOF) {
+      currentFilePos = myfile.tellg();
+    } else {
+      currentFilePos = sizeOfFile;
+    }
+    return Values(make_fixnum(numberOfLines),make_fixnum(currentFilePos),make_fixnum(sizeOfFile));
+  }
+  SIMPLE_ERROR(BF("Could not open file %s") % filename);
 }
 };
 
@@ -1916,7 +1968,7 @@ namespace core {
 
 CL_DEFUN core::Test_sp core__makeTest() {
   auto tt = new Test();
-  GC_ALLOCATE(Test_O,t);
+  auto t = gctools::GC<Test_O>::allocate_with_default_constructor();
   t->set_wrapped(tt);
   return t;
 }
@@ -1954,7 +2006,6 @@ CL_EXTERN_DEFMETHOD(Test_O,&Test::set3);
 CL_EXTERN_DEFMETHOD(Test_O,&Test::print_numbers);
 
 };
-
 
 
 

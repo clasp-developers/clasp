@@ -252,7 +252,7 @@ T_sp template_string_EQ_(const T1& string1, const T2& string2, size_t start1, si
   goto RETURN_FALSE;
  END_STRING2:
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
  RETURN_TRUE:
   return _lisp->_true();
 }
@@ -285,7 +285,7 @@ T_sp template_string_NE_(const T1& string1, const T2& string2, size_t start1, si
  RETURN_TRUE: // strings are not equal
   return make_fixnum((int)(cp1.offset() + start1));
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 /*! bounding index designator range from 0 to the end of each string */
@@ -317,7 +317,7 @@ T_sp template_string_LT_(const T1& string1, const T2& string2, size_t start1, si
   return make_fixnum((int)(cp1.offset() + start1));
  END_STRING2:
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 /*! bounding index designator range from 0 to the end of each string */
@@ -344,7 +344,7 @@ T_sp template_string_GT_(const T1& string1, const T2& string2, size_t start1, si
   }
  END_STRING1:
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
  END_STRING2:
  RETURN_TRUE:
   return make_fixnum((int)(cp1.offset() + start1));
@@ -378,7 +378,7 @@ T_sp template_string_LE_(const T1& string1, const T2& string2, size_t start1, si
     goto RETURN_TRUE;
  END_STRING2:
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
  RETURN_TRUE:
   return make_fixnum((int)(cp1.offset() + start1));
 }
@@ -415,7 +415,7 @@ T_sp template_string_GE_(const T1& string1, const T2& string2, size_t start1, si
   // String1 still has chars, string2 not
   goto RETURN_TRUE;
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
  RETURN_TRUE:
   return make_fixnum((int)(cp1.offset() + start1));
 }
@@ -445,7 +445,7 @@ T_sp template_string_equal(const T1& string1, const T2& string2, size_t start1, 
   goto RETURN_FALSE;
  END_STRING2:
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
  RETURN_TRUE:
   return _lisp->_true();
 }
@@ -477,7 +477,7 @@ T_sp template_string_not_equal(const T1& string1, const T2& string2, size_t star
  RETURN_TRUE: // strings are not equal
   return make_fixnum((int)(cp1.offset() + start1)); //_lisp->_true();
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 /*! bounding index designator range from 0 to the end of each string */
@@ -511,7 +511,7 @@ T_sp template_string_lessp(const T1& string1, const T2& string2, size_t start1, 
   return make_fixnum((int)(cp1.offset() + start1));
  END_STRING2:
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 /*! bounding index designator range from 0 to the end of each string */
@@ -540,7 +540,7 @@ T_sp template_string_greaterp(const T1& string1, const T2& string2, size_t start
   }
  END_STRING1:
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
  END_STRING2:
  RETURN_TRUE:
   return make_fixnum((int)(cp1.offset() + start1));
@@ -576,7 +576,7 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
     goto RETURN_TRUE;
  END_STRING2:
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
  RETURN_TRUE:
   return make_fixnum((int)(cp1.offset() + start1));
 }
@@ -616,7 +616,7 @@ T_sp template_string_not_lessp(const T1& string1, const T2& string2, size_t star
   //String2 is consumed, String1 not yet
   goto RETURN_TRUE;
  RETURN_FALSE:
-  return _Nil<T_O>();
+  return nil<T_O>();
  RETURN_TRUE:
   return make_fixnum((int)(cp1.offset() + start1));
 }
@@ -1152,11 +1152,11 @@ CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radi
       // of a signed integer, possibly surrounded on either side by whitespace[1] characters.
       // The first value returned is either the integer that was parsed, or else nil if no syntactically correct integer was seen but junk-allowed was true.
       if (junkAllowed.notnilp())
-        return (Values(_Nil<T_O>(), make_fixnum(cur)));
-      else PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,_Nil<T_O>()));
+        return (Values(nil<T_O>(), make_fixnum(cur)));
+      else PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,nil<T_O>()));
     }
   }
-  PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,_Nil<T_O>()));
+  PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,nil<T_O>()));
   UNREACHABLE();
 };
 
@@ -1301,12 +1301,12 @@ bool Str8Ns_O::equalp(T_sp other) const {
 // Creators - depreciate these once the new array stuff is working better
 Str8Ns_sp Str8Ns_O::create(const string& nm) {
   auto ss = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
-  return Str8Ns_O::make(nm.size(),'\0',false,_Nil<T_O>(),ss,false,0);
+  return Str8Ns_O::make(nm.size(),'\0',false,nil<T_O>(),ss,false,0);
 }
 
 Str8Ns_sp Str8Ns_O::create(const char* nm,size_t len) {
   SimpleBaseString_sp ss = SimpleBaseString_O::make(len,'\0',true,len,(const claspChar*)nm);
-  return Str8Ns_O::make(len,'\0',false,_Nil<T_O>(),ss,false,0);
+  return Str8Ns_O::make(len,'\0',false,nil<T_O>(),ss,false,0);
 }
 
 Str8Ns_sp Str8Ns_O::create(const char* nm) {
@@ -1315,13 +1315,13 @@ Str8Ns_sp Str8Ns_O::create(const char* nm) {
 }
 
 Str8Ns_sp Str8Ns_O::create(size_t len) {
-  return Str8Ns_O::make(len,'\0',true,_Nil<T_O>(),_Nil<T_O>(),false,0);
+  return Str8Ns_O::make(len,'\0',true,nil<T_O>(),nil<T_O>(),false,0);
 }
 
 Str8Ns_sp Str8Ns_O::create(Str8Ns_sp other) {
   size_t len = other->length();
   SimpleBaseString_sp ss = SimpleBaseString_O::make(len,'\0',true,len,&(*other)[0]);
-  return Str8Ns_O::make(len,'\0',false,_Nil<T_O>(),ss,false,0);
+  return Str8Ns_O::make(len,'\0',false,nil<T_O>(),ss,false,0);
 }
 
 SimpleString_sp Str8Ns_O::asMinimalSimpleString() const {
@@ -1456,7 +1456,7 @@ T_sp template_search_string(const T1& sub, const T2& outer, size_t sub_start, si
   const typename T1::simple_element_type* s_cps = (const typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(sub_start); //&sub[sub_start];
   const typename T1::simple_element_type* s_cpe = (const typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(sub_end);
   const typename T2::simple_element_type* pos = std::search(cps,cpe,s_cps,s_cpe);
-  if (pos == cpe ) return _Nil<T_O>();
+  if (pos == cpe ) return nil<T_O>();
   // this should return the absolute position starting from 0, not relative to outer_start
   //now that I understood this in pointer arithmethic, compare to the beginning of the string, e.g. index 0
   return clasp_make_fixnum(pos-startp);

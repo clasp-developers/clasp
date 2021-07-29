@@ -16,6 +16,7 @@
                       (pathname *compile-commands*)
                       :selection-pattern "bignum.cc"
                       ))
+  (time (clasp-analyzer:serial-search/generate-code *db*))
 )
 
   

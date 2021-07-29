@@ -36,9 +36,6 @@ THE SOFTWARE.
 
 // To debug memory usage turn this on and then you can mark
 // objects as they are allocated with an integer using gctools::MARKER
-#ifdef USE_BOEHM
-//#define USE_BOEHM_MEMORY_MARKER
-#endif
 #ifndef APPLICATION_CONFIG
 //#error "You must define the APPLICATION_CONFIG as something like <clasp/main/application.config>"
 #define APPLICATION_CONFIG <clasp/main/application.config>
@@ -54,6 +51,7 @@ THE SOFTWARE.
 // Turn on USE_MPS and turn off USE_BOEHM
 #ifdef RUNNING_MPSPREP
 #undef USE_BOEHM
+#undef USE_MMTK
 #define USE_MPS
 #endif
 /*! Configure the application Clasp or Cando currently */
@@ -763,7 +761,7 @@ extern core::Symbol_sp& _sym_format_arguments;
 // Can I get rid of this?
 #define IS_SYMBOL_DEFINED(x) (x)
 #define IS_SYMBOL_UNDEFINED(x) (!x)
-#define UNDEFINED_SYMBOL (_Unbound<core::Symbol_O>())
+#define UNDEFINED_SYMBOL (unbound<core::Symbol_O>())
 
 
 //
@@ -815,16 +813,15 @@ namespace gctools {
   extern Layout_code* get_stamp_layout_codes();
 };
 
-#if defined(USE_BOEHM)
-#define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-#endif
-#if defined(USE_MPS)
-#ifdef RUNNING_MPSPREP
-#define FRIEND_GC_SCANNER(nscl)
-#else
+#if defined(USE_BOEHM) || defined(USE_MMTK)
+# define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
+#elif defined(USE_MPS)
+# ifdef RUNNING_MPSPREP
+#  define FRIEND_GC_SCANNER(nscl)
+# else
 //#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
-#define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
-#endif
+#  define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
+# endif
 #endif
 
 
@@ -1026,19 +1023,6 @@ size_t lisp_badge(T_sp obj);
 
 #include <clasp/gctools/interrupt.h>
 #include <clasp/gctools/threadlocal.h>
-
-
-namespace core {
-  class InvocationHistoryStack;
-  class InvocationHistoryFrame;
-  InvocationHistoryStack* thread_local_invocation_history_stack();
-  InvocationHistoryFrame* thread_local_invocation_history_stack_top_frame();
-  void thread_local_invocation_history_stack_push_frame(InvocationHistoryFrame* frame);
-  int thread_local_invocation_bindings_size();
-};
-
-
-
 #include <clasp/core/exceptions.h>
 
 
@@ -1135,7 +1119,6 @@ List_sp clasp_grab_rest_args(va_list args, int nargs);
 
 
 namespace core {
-  extern size_t debug_InvocationHistoryFrame;
   void core__mangledSymbols(T_sp stream_designator);
 };
 

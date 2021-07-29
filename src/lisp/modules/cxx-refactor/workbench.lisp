@@ -1,11 +1,12 @@
 (load "sys:modules;clang-tool;clang-tool.lisp")
 
 (progn
-  (defun translate-include (args)
+  (defun translate-include (args filename)
     "* Arguments
 - args :: A vector of strings (compilation arguments)
 * Description
 Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable *main-directory-namestring*."
+    (declare (ignore filename))
     (let ((main-directory-namestring (namestring (make-pathname :name nil :type nil :defaults (clang-tool:main-pathname)))))
       (dotimes (i (length args))
         (when (string= (elt args i) "-Iinclude")
@@ -13,33 +14,40 @@ Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable
       args))
 
   (defun setup-db ()
-    (let ((db (clang-tool:load-compilation-tool-database "app-resources:build-databases;clasp_compile_commands.json" )))
+    (let ((db (clang-tool:load-compilation-tool-database "source-dir:build;mpsprep;compile_commands.json" )))
       (setf (clang-tool:source-namestrings db) (list (find-if (lambda (x) (search "cons" x)) (clang-tool:source-namestrings db))))
       (push #'translate-include (clang-tool:arguments-adjuster-list db))
       db))
   (defparameter *db* (setup-db))
   (clang-tool:load-asts *db*))
 
+(defparameter *matcher*    '(:call-expr 
+                             (:bind :whole (:call-expr))
+                             (:callee
+                              (:function-decl
+                               (:has-name "consp")))))
 
-(clang-tool:with-compilation-tool-database *db*
-  (clang-tool:match-run-loaded-asts
-   '(:method-decl
-     (:bind :whole (:method-decl))
-     (:is-definition)
-     (:has-name "setCdr"))
-   :limit 10
-   :callback
-   (make-instance
-    'clang-tool:code-match-callback
-    :match-code (lambda (match-info)
-                  (let* ((node (clang-tool:mtag-node match-info :whole))
-                         (name (cast:get-qualified-name-as-string node))
-                         (source-pos (clang-tool:mtag-loc-start match-info :whole)))
-                    (cast:dump node)
-                    (format t "Name: ~a~%" name)
-                    (format t "Source: ~a~%" source-pos))))))
+(defun dosearch()
+  (clang-tool:with-compilation-tool-database *db*
+    (clang-tool:match-run-loaded-asts
+     *matcher*
+     :limit 10
+     :callback
+     (make-instance
+      'clang-tool:code-match-callback
+      :match-code (lambda (match-info)
+                    (let* ((node (clang-tool:mtag-node match-info :whole))
+                           #+(or)(name (cast:get-qualified-name-as-string node))
+                           (source-pos (clang-tool:mtag-loc-start match-info :whole))
+                           (source-pos-end (clang-tool:mtag-loc-end match-info :whole)) )
+                      (cast:dump node)
+                      #+(or)(format t "Name: ~a~%" name)
+                      (format t "Source: ~a ~a~%" source-pos source-pos-end )))))))
 
 
+;;(dosearch)
+
+#|
 (defconstant +source-path+ "/Users/meister/Development/clasp/src/core/cons.cc")
 (defconstant +source-path-length+ (length +source-path+))
 
@@ -74,3 +82,4 @@ Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable
                       (format t "String: ~a~%" (cast:get-string string-node))
                       (format t "Node name ~a~%" (clang-tool:mtag-name match-info :the-callee))
                       (format t "Source: ~a~%" source-pos)))))))
+|#

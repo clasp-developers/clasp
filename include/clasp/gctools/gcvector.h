@@ -27,6 +27,9 @@ THE SOFTWARE.
 #ifndef gc_gcvector_H
 #define gc_gcvector_H
 
+namespace core {
+bool maybe_demangle(const std::string& fnName, std::string& output);
+};
 namespace gctools {
 
 template <class T>
@@ -126,6 +129,7 @@ public:
       ++this->_Index;
       return *this;
     }
+    
     GCVector_moveable_iterator<Uty> operator++(int) const {
       GCVector_moveable_iterator<Uty> clone(*this);
       ++this->_Index;
@@ -144,6 +148,11 @@ public:
       --this->_Index;
       return clone;
     }
+    GCVector_moveable_iterator<Uty>& operator+=(const difference_type& n) {
+      this->_Index += n;
+      return *this;
+    }
+
   };
 
 public:
@@ -261,7 +270,12 @@ private:
   };
 
 public:
-  GCVector() : _Contents(){};
+  GCVector(bool dummy) : _Contents(){
+    // Don't GC allocate using this ctor
+  };
+  GCVector() : _Contents(){
+    this->reserve(8); // GC allocate 8 entries
+  };
   ~GCVector() {
     if (this->_Contents) {
       Allocator alloc;
@@ -365,7 +379,15 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCVectorPad : n * GCVectorGrow);
-      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make_Value<impl_type>(),newCapacity);
+      uintptr_t header = Header_s::StampWtagMtag::make_Value<impl_type>();
+#ifdef DEBUG_SLOW
+      if (header==0) {
+        std::string demangled;
+        core::maybe_demangle(typeid(impl_type).name(),demangled);
+        printf("%s:%d:%s You are trying to allocate a specialized container %s and it doesn't have a stamp yet - you need to add GC_MANAGED_TYPE(%s) macro to memoryManagement.cc and for precise GC run the static analyzer\n", __FILE__, __LINE__, __FUNCTION__, demangled.c_str(), demangled.c_str() );
+      }
+#endif
+      vec = alloc.allocate_kind(header,newCapacity);
       new (&*vec) GCVector_moveable<T>(newCapacity);
       // the array at newAddress is undefined - placement new to copy
       for (size_t i(0); i < n; ++i)
@@ -436,10 +458,7 @@ public:
   template <typename... ARGS>
     iterator emplace(iterator position, ARGS &&... args) {
     Allocator alloc;
-#ifdef DEBUG_ASSERT
-    if (!this->_Contents)
-      this->errorEmpty();
-#endif
+    if (!this->_Contents) this->resize(16, value_type());
     if (this->_Contents->_End == this->_Contents->_Capacity) {
       // Must grow the container
       // Save the insertion position relative to the start
@@ -506,7 +525,6 @@ public:
     return (iterator)(position);
   }
 
-  /*! Resize the vector so that it contains AT LEAST n elements */
   void clear() {
     if (!this->_Contents)
       return;

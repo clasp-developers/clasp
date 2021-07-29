@@ -18,7 +18,7 @@ namespace core {
   public:
     typedef specialized_SimpleVector TemplatedBase;
   public:
-    static value_type default_initial_element(void) {return _Nil<T_O>();}
+    static value_type default_initial_element(void) {return nil<T_O>();}
     static value_type from_object(T_sp obj) {return obj; };
     static T_sp to_object(const value_type& v) { return v; };
   public:
@@ -26,7 +26,7 @@ namespace core {
     // Therefore we always pass initialElementSupplied=true.
     SimpleVector_O() {};
   SimpleVector_O(size_t length, value_type initialElement=default_initial_element(), bool initialElementSupplied=true, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
-    static SimpleVector_sp make(size_t length, T_sp initialElement=_Nil<T_O>(), bool initialElementSupplied=true, size_t initialContentsSize=0, const T_sp* initialContents=NULL,
+    static SimpleVector_sp make(size_t length, T_sp initialElement=nil<T_O>(), bool initialElementSupplied=true, size_t initialContentsSize=0, const T_sp* initialContents=NULL,
                                 bool static_vector_p = false) {
       auto bs = gctools::GC<SimpleVector_O>::allocate_container(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
@@ -35,7 +35,7 @@ namespace core {
     static SimpleVector_sp make(const gc::Vec0<T_sp>& objs) {
       size_t len = objs.size();
       if (len == 0) return make(0);
-      else return make(len, _Nil<T_O>(), true, len, &(objs[0]));
+      else return make(len, nil<T_O>(), true, len, &(objs[0]));
     }
   public:
     virtual T_sp type_of() const final {return Cons_O::createList(cl::_sym_simple_vector,clasp_make_fixnum(this->length()));};
@@ -116,10 +116,10 @@ public: // make vector
     return make(dimension, initialElement, fillPointer, dataOrDisplacedTo, displacedToP, displacedIndexOffset);
   }
   static ComplexVector_T_sp make(size_t dimension, T_sp initialElement) {
-    return make(dimension,initialElement,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
+    return make(dimension,initialElement,nil<T_O>(),nil<T_O>(),false,clasp_make_fixnum(0));
   }
   static ComplexVector_T_sp make(size_t dimension, T_sp initialElement, T_sp fillPointer ) {
-    return make(dimension,initialElement,fillPointer,_Nil<T_O>(),false,clasp_make_fixnum(0));
+    return make(dimension,initialElement,fillPointer,nil<T_O>(),false,clasp_make_fixnum(0));
   }
  };
 }; // namespace core

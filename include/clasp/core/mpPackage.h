@@ -68,11 +68,11 @@ namespace mp {
   inline core::T_sp atomic_get_and_set_to_Nil(mp::SpinLock& spinlock, core::T_sp& slot) noexcept {
     mp::SafeSpinLock l(spinlock);
     core::T_sp old = slot;
-    slot = _Nil<core::T_O>();
+    slot = nil<core::T_O>();
     return old;
   }
   inline void atomic_push(mp::SpinLock& spinlock, core::T_sp& slot, core::T_sp object) {
-    core::Cons_sp cons = core::Cons_O::create(object,_Nil<core::T_O>());
+    core::Cons_sp cons = core::Cons_O::create(object,nil<core::T_O>());
     mp::SafeSpinLock l(spinlock);
     core::T_sp car = slot;
     cons->rplacd(car);
@@ -112,7 +112,7 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
         all_bindings = core::Cons_O::create(oCar(cur),all_bindings);
       }
       if (stack_size==0) stack_size = DEFAULT_THREAD_STACK_SIZE;
-      GC_ALLOCATE_VARIADIC(Process_O,p,name,function,arguments,all_bindings,stack_size);
+      auto p = gctools::GC<Process_O>::allocate(name,function,arguments,all_bindings,stack_size);
       return p;
     };
   public:
@@ -131,22 +131,21 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
     size_t _StackSize;
     dont_expose<pthread_t> _TheThread;
     // Need to match fields in the two GC's
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM) || defined(USE_MMTK)
     dont_expose<void*> thr_o;
     dont_expose<void*> root;
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
     dont_expose<mps_thr_t> thr_o;
     dont_expose<mps_root_t> root;
 #endif
   public:
     Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments,
-              core::List_sp initialSpecialBindings=_Nil<core::T_O>(),
+              core::List_sp initialSpecialBindings=nil<core::T_O>(),
               size_t stack_size=8*1024*1024)
       : _UniqueID(global_process_UniqueID++), _Name(name), _Function(function), _Arguments(arguments),
         _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL),
-        _ReturnValuesList(_Nil<core::T_O>()), _Aborted(false),
-        _AbortCondition(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Nascent),
+        _ReturnValuesList(nil<core::T_O>()), _Aborted(false),
+        _AbortCondition(nil<core::T_O>()), _StackSize(stack_size), _Phase(Nascent),
         _SuspensionMutex(SUSPBARR_NAMEWORD) {
       if (!function) {
         printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__ );
@@ -189,14 +188,14 @@ namespace mp {
     CL_DOCSTRING("Create and return a fresh mutex with the given name.");
     CL_LAMBDA(&key (name "Anonymous Mutex"))
       CL_DEF_CLASS_METHOD static Mutex_sp make_mutex(core::T_sp name) {
-      GC_ALLOCATE_VARIADIC(Mutex_O,l,name,false);
+      auto l = gctools::GC<Mutex_O>::allocate(name,false);
       return l;
     };
   public:
     core::T_sp  _Name;
     core::T_sp  _Owner;
     dont_expose<Mutex> _Mutex;
-    Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(_Nil<T_O>()), _Mutex(Mutex(lisp_nameword(name),recursive)) {};
+    Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(nil<T_O>()), _Mutex(Mutex(lisp_nameword(name),recursive)) {};
     bool lock(bool waitp) {
       bool locked = this->_Mutex._value.lock(waitp);
       if (locked) this->_Owner = my_thread->_Process;
@@ -204,7 +203,7 @@ namespace mp {
     };
     void unlock() {
       if (this->_Mutex._value.counter()==1) {
-        this->_Owner = _Nil<T_O>();
+        this->_Owner = nil<T_O>();
       }
       this->_Mutex._value.unlock();
     };
@@ -235,14 +234,14 @@ namespace mp {
     CL_LAMBDA(&optional (name "Anonymous Shared Mutex"));
     CL_DOCSTRING("Create and return a fresh shared mutex with the given name.");
     CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp readName,core::T_sp writeLockName) {
-      GC_ALLOCATE_VARIADIC(SharedMutex_O,l,readName,writeLockName);
+      auto l = gctools::GC<SharedMutex_O>::allocate(readName,writeLockName);
       return l;
     };
   public:
     core::T_sp  _Name;
     core::T_sp  _Owner;
     UpgradableSharedMutex _SharedMutex;
-    SharedMutex_O(core::T_sp readName, core::T_sp writeName=_Nil<core::T_O>()) : _Name(readName), _Owner(_Nil<T_O>()),_SharedMutex(lisp_nameword(readName), 256, writeName.nilp() ? lisp_nameword(readName) : lisp_nameword(writeName)) {};
+    SharedMutex_O(core::T_sp readName, core::T_sp writeName=nil<core::T_O>()) : _Name(readName), _Owner(nil<T_O>()),_SharedMutex(lisp_nameword(readName), 256, writeName.nilp() ? lisp_nameword(readName) : lisp_nameword(writeName)) {};
     void write_lock(bool upgrade=false) {
       this->_SharedMutex.writeLock(upgrade);
     };
@@ -268,8 +267,8 @@ namespace mp {
     void setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName);
     string __repr__() const override;
 
-    virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
-      if (imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+      if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
 //        printf("%s:%d:%s About to initialize an mp::SharedMutex for a Package_O object\n", __FILE__, __LINE__, __FUNCTION__ );
         new (&this->_SharedMutex) mp::UpgradableSharedMutex(core::lisp_nameword(this->_Name));
       }
@@ -295,7 +294,7 @@ namespace mp {
     CL_LAMBDA(&optional name);
     CL_DOCSTRING("Create and return a recursive mutex with the given name.");
     CL_DEF_CLASS_METHOD static RecursiveMutex_sp make_recursive_mutex(core::T_sp name) {
-      GC_ALLOCATE_VARIADIC(RecursiveMutex_O,l, name);
+      auto l = gctools::GC<RecursiveMutex_O>::allocate( name);
       return l;
     };
   RecursiveMutex_O(core::T_sp name) :Mutex_O(name,true) {};
@@ -317,7 +316,7 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, ConditionVariable_O, "ConditionVariable",core::CxxObject_O);
   public:
     static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
-      GC_ALLOCATE_VARIADIC(ConditionVariable_O,l,name);
+      auto l = gctools::GC<ConditionVariable_O>::allocate(name);
       return l;
     };
   public:

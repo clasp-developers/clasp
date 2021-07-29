@@ -113,6 +113,7 @@ void dump_class_ids() {
 }
 
 class_id allocate_class_id(type_id const &cls) {
+//  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   if ( global_registered_ids_ptr == NULL ) {
     global_registered_ids_ptr = new map_type();
   }
@@ -140,7 +141,7 @@ void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym) {
 core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
   core::Symbol_sp sym = _lisp->classSymbolsHolder()[cid];
   if (sym.nilp()) {
-    return _Unbound<core::Symbol_O>();
+    return unbound<core::Symbol_O>();
   }
   return sym;
 }
@@ -187,11 +188,11 @@ uint64_t lisp_nameword(core::T_sp name)
 
 Instance_sp lisp_built_in_class() {
   return _lisp->_Roots._TheBuiltInClass;
-//  return cl__find_class(clbind::_sym_built_in_class,false,_Nil<T_O>());
+//  return cl__find_class(clbind::_sym_built_in_class,false,nil<T_O>());
 }
 Instance_sp lisp_standard_class() {
   return _lisp->_Roots._TheStandardClass;
-  // return cl__find_class(cl::_sym_standard_class,false,_Nil<T_O>());
+  // return cl__find_class(cl::_sym_standard_class,false,nil<T_O>());
 }
 
 Instance_sp lisp_derivable_cxx_class() {
@@ -301,7 +302,7 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedNil(class_id expectedTyp) {
   if (expectedSym.nilp()) {
     core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %" PRu " symbol was not defined") % expectedTyp);
   }
-  TYPE_ERROR(_Nil<core::T_O>(), expectedSym);
+  TYPE_ERROR(nil<core::T_O>(), expectedSym);
 }
 
 };
@@ -325,7 +326,7 @@ NOINLINE void dbg_hook(const char *error) {
   fflush(stdout);
   //	asm("int $3");
 
-  //	core__invoke_internal_debugger(_Nil<core::T_O>());
+  //	core__invoke_internal_debugger(nil<core::T_O>());
 }
 
 namespace core {
@@ -363,7 +364,7 @@ void lisp_write(const boost::format &fmt, T_sp strm) {
 }
 
 Symbol_sp lisp_symbolNil() {
-  return _Nil<Symbol_O>();
+  return nil<Symbol_O>();
 }
 
 bool lisp_boundp(Symbol_sp s) {
@@ -494,17 +495,17 @@ MultipleValues &lisp_multipleValues() {
 [[noreturn]]void errorFormatted(boost::format fmt) {
   TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
   dbg_hook(fmt_str.c_str());
-  core__invoke_internal_debugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(nil<core::T_O>());
 }
 
 [[noreturn]]void errorFormatted(const string &msg) {
   dbg_hook(msg.c_str());
-  core__invoke_internal_debugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(nil<core::T_O>());
 }
 
 [[noreturn]]void errorFormatted(const char *msg) {
   dbg_hook(msg);
-  core__invoke_internal_debugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(nil<core::T_O>());
 }
 
 string lisp_currentPackageName() {
@@ -884,16 +885,16 @@ void lisp_addClass(Symbol_sp classSymbol) {
 
 List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   if (args == "")
-    return _Nil<T_O>();
+    return nil<T_O>();
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(args);
-  Stream_sp str = gc::As_unsafe<Stream_sp>(cl__make_string_input_stream(ss, 0, _Nil<T_O>()));
+  Stream_sp str = gc::As_unsafe<Stream_sp>(cl__make_string_input_stream(ss, 0, nil<T_O>()));
 #if 0  
   Reader_sp reader = Reader_O::create(str);
-  T_sp osscons = reader->primitive_read(true, _Nil<T_O>(), false);
+  T_sp osscons = reader->primitive_read(true, nil<T_O>(), false);
 #else
-  T_sp osscons = read_lisp_object(str,true,_Nil<T_O>(), false);
+  T_sp osscons = read_lisp_object(str,true,nil<T_O>(), false);
 #endif
   List_sp sscons = osscons;
   return sscons;
@@ -901,16 +902,16 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
 
 List_sp lisp_parse_declares(const string &packageName, const string &declarestring) {
   if (declarestring == "")
-    return _Nil<T_O>();
+    return nil<T_O>();
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(declarestring);
-  Stream_sp str = gc::As_unsafe<Stream_sp>(cl__make_string_input_stream(ss, 0, _Nil<T_O>()));
+  Stream_sp str = gc::As_unsafe<Stream_sp>(cl__make_string_input_stream(ss, 0, nil<T_O>()));
 #if 0
   Reader_sp reader = Reader_O::create(str);
-  List_sp sscons = reader->primitive_read(true, _Nil<T_O>(), false);
+  List_sp sscons = reader->primitive_read(true, nil<T_O>(), false);
 #else
-  List_sp sscons = read_lisp_object(str,true,_Nil<T_O>(), false);
+  List_sp sscons = read_lisp_object(str,true,nil<T_O>(), false);
 #endif
   return sscons;
 }
@@ -1002,12 +1003,12 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   }
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
   
-  T_sp docStr = _Nil<T_O>();
+  T_sp docStr = nil<T_O>();
   if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
   FuncallableInstance_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   method_body->finishSetup(llhandler);
-  method_body->setf_sourcePathname(_Nil<T_O>());
+  method_body->setf_sourcePathname(nil<T_O>());
   method_body->setf_lambdaList(llhandler->lambdaList());
   method_body->setf_docstring(docStr);
   ASSERT(llhandler || llhandler.notnilp());
@@ -1058,14 +1059,14 @@ void lisp_defun(Symbol_sp sym,
     llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
   } else {
     List_sp ll = lisp_parse_arguments(packageName, arguments);
-    llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
+    llh = lisp_function_lambda_list_handler(ll, nil<T_O>(), skipIndices);
   }
   fc->finishSetup(llh);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   Function_sp func = fc;
   sym->setf_symbolFunction(func);
   sym->exportYourself();
-  T_sp tdocstring = _Nil<T_O>();
+  T_sp tdocstring = nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   fc->setf_lambdaList(llh->lambdaList());
   fc->setf_docstring(tdocstring);
@@ -1091,13 +1092,13 @@ void lisp_defun_setf(Symbol_sp sym,
     llh = LambdaListHandler_O::create(number_of_required_arguments, skipIndices);
   } else {
     List_sp ll = lisp_parse_arguments(packageName, arguments);
-    llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
+    llh = lisp_function_lambda_list_handler(ll, nil<T_O>(), skipIndices);
   }
   fc->finishSetup(llh);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
-  T_sp tdocstring = _Nil<T_O>();
+  T_sp tdocstring = nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
-  fc->setf_sourcePathname(_Nil<T_O>());
+  fc->setf_sourcePathname(nil<T_O>());
   fc->setf_lambdaList(llh->lambdaList());
   fc->setf_docstring(tdocstring);
   Function_sp func = fc;
@@ -1117,12 +1118,12 @@ void lisp_defmacro(Symbol_sp sym,
   List_sp ll = lisp_parse_arguments(packageName, arguments);
   List_sp ldeclares = lisp_parse_declares(packageName, declarestring);
   (void)ldeclares;
-  LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>());
+  LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, nil<T_O>());
   f->finishSetup(llh);
   sym->setf_macroP(true);
-  f->setf_sourcePathname(_Nil<T_O>());
+  f->setf_sourcePathname(nil<T_O>());
   f->setf_lambdaList(llh->lambdaList());
-  T_sp tdocstring = _Nil<T_O>();
+  T_sp tdocstring = nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   f->setf_docstring(tdocstring);
   Function_sp func = f;
@@ -1135,19 +1136,19 @@ void lisp_defmacro(Symbol_sp sym,
 
 Symbol_sp lisp_internKeyword(const string &name) {
   if (name == "")
-    return _Nil<Symbol_O>();
+    return nil<Symbol_O>();
   return _lisp->internKeyword(name);
 }
 
 Symbol_sp lisp_intern(const string &name) {
   if (name == "")
-    return _Nil<Symbol_O>();
+    return nil<Symbol_O>();
   return _lisp->intern(name);
 }
 
 Symbol_sp lisp_intern(const string &name, const string &pkg) {
   if (name == "")
-    return _Nil<Symbol_O>();
+    return nil<Symbol_O>();
   return _lisp->internWithPackageName(pkg, name);
 }
 
@@ -1329,7 +1330,7 @@ SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos
   return SourcePosInfo_O::create(sfindex, filePos, lineno, 0);
 }
 
-T_sp lisp_createList(T_sp a1) { return Cons_O::create(a1, _Nil<T_O>()); }
+T_sp lisp_createList(T_sp a1) { return Cons_O::create(a1, nil<T_O>()); }
 T_sp lisp_createList(T_sp a1, T_sp a2) { return Cons_O::createList(a1, a2); };
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3) { return Cons_O::createList(a1, a2, a3); };
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4) { return Cons_O::createList(a1, a2, a3, a4); };
@@ -1386,22 +1387,20 @@ struct ErrorSimpleDepthCounter {
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
-    if (my_thread->_InvocationHistoryStackTop == NULL) {
-      throw(HardError("System starting up - debugger not available yet: "+ ss.str()));
-    }
-    early_debug(_Nil<T_O>(), false);
+    early_debug(nil<T_O>(), false);
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
   eval::funcall(_sym_signalSimpleError,
                 core::_sym_simpleProgramError,    //arg0
-                _Nil<T_O>(),              // arg1
+                nil<T_O>(),              // arg1
                 SimpleBaseString_O::make(buffer), // arg2
-                _Nil<T_O>());
+                nil<T_O>());
   UNREACHABLE();
 }
 
 
 
+DONT_OPTIMIZE_ALWAYS
 NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
@@ -1414,15 +1413,12 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
-    if (my_thread->_InvocationHistoryStackTop == NULL) {
-      throw(HardError("System starting up - debugger not available yet: "+ ss.str()));
-    }
-    early_debug(_Nil<T_O>(), false);
+    early_debug(nil<T_O>(), false);
   }
   SYMBOL_EXPORT_SC_(ClPkg, programError);
   eval::funcall(_sym_signalSimpleError,
                 core::_sym_simpleProgramError,    //arg0
-                _Nil<T_O>(),              // arg1
+                nil<T_O>(),              // arg1
                 SimpleBaseString_O::make("~a"),
                 core::Cons_O::createList(SimpleBaseString_O::make(fmt.str())));
   UNREACHABLE();
@@ -1433,7 +1429,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
     stringstream ss;
     ss << "Error " << _rep_(datum) << " initializers: " << _rep_(arguments) << std::endl;
     printf("%s:%d lisp_error ->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
-    early_debug(_Nil<T_O>(), false);
+    early_debug(nil<T_O>(), false);
   }
   eval::applyLastArgsPLUSFirst(cl::_sym_error, arguments, datum);
   UNREACHABLE();
@@ -1605,32 +1601,6 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 };
 
 namespace core {
-size_t  debug_InvocationHistoryFrame = 0;
-const char* debug_InvocationHistoryFrame_name = "";
-
-CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
-  debug_InvocationHistoryFrame = v;
-  const char* ihf = getenv("IHS");
-  if (ihf==NULL) {
-    ihf = "ESTIMATE-CODE-SIZE-1";
-  }
-  debug_InvocationHistoryFrame_name = ihf;
-  printf("%s:%d     Will trap InvocationHistoryFrame at |%s|\n",__FILE__,__LINE__,debug_InvocationHistoryFrame_name); 
-  printf("   ---------------   InvocationHistoryStack:\n");
-  const InvocationHistoryFrame* cur = my_thread->_InvocationHistoryStackTop;
-  size_t count= 0;
-  while (cur!=NULL) {
-    T_sp tfun = cur->function();
-    if (gc::IsA<Function_sp>(tfun)) {
-      Function_sp fun = gc::As_unsafe<Function_sp>(tfun);
-      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(fun->functionName()).c_str());
-    } else {
-      printf("    frame[%lu] @%p  function: %s\n", count, cur, _rep_(tfun).c_str());
-    }
-    cur = cur->previous();
-    ++count;
-  }
-}
 
 size_t lisp_general_badge(General_sp object) {
   const gctools::Header_s* header = gctools::header_pointer(object.unsafe_general());
@@ -1671,6 +1641,7 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 
 uint32_t lisp_random()
 {
+  if (!my_thread) return 123456;
   return my_thread->random();
 }
 
@@ -1706,8 +1677,7 @@ void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size, cons
         return;
       }
       if (dlsym( RTLD_DEFAULT, info.dli_sname ) == 0 ) {
-        printf("%s:%d %lu/%lu FAIL dlsym could not find name %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
-        return;
+        printf("%s:%d %lu/%lu WARNING dlsym could not find name %s - I'm going to add it anyway - if this works - remove this message\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
       }
       global_mangledSymbols.insert(info.dli_sname);
       global_goodPointerCount++;

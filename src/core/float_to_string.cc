@@ -99,7 +99,7 @@ T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max
   } else if (clasp_float_infinity_p(number)) {
     return eval::funcall(ext::_sym_float_infinity_string, number);
   }
-  T_mv mv_exp = core__float_to_digits(_Nil<T_O>(), number, _Nil<T_O>(), _Nil<T_O>());
+  T_mv mv_exp = core__float_to_digits(nil<T_O>(), number, nil<T_O>(), nil<T_O>());
   Fixnum_sp exp = gc::As_unsafe<Fixnum_sp>(mv_exp);
   StrNs_sp buffer = gc::As<StrNs_sp>(mv_exp.second());
   e = exp.unsafe_fixnum();

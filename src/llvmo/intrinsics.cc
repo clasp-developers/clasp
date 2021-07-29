@@ -60,8 +60,6 @@ extern "C" {
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/stacks.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/debugger.h>
@@ -74,12 +72,6 @@ using namespace core;
 
 #pragma GCC visibility push(default)
 
-
-namespace core {
-extern const char* debug_InvocationHistoryFrame_name;
-};
-
-
 extern "C" {
 void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis)
 {
@@ -90,10 +82,6 @@ void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis
 };
 
 extern "C" {
-
-extern void dump_backtrace(core::InvocationHistoryFrame* frame);
-
-
 
 ALWAYS_INLINE core::T_O* makeFunctionFrame( int numargs, core::T_O *parentP)
 // was ActivationFrame_sp
@@ -163,27 +151,12 @@ ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nar
 
 ALWAYS_INLINE core::T_O *cc_makeCell()
 {
-  core::Cons_sp res = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
+  core::Cons_sp res = core::Cons_O::create(nil<core::T_O>(),nil<core::T_O>());
 #ifdef DEBUG_CC
   printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
 #endif
   return res.raw_();
 }
-
-ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
-{NO_UNWIND_BEGIN();
-  core::core__stack_monitor(_Nil<core::T_O>());
-  new (frame) InvocationHistoryFrame(va_args, nargs);
-  core::push_InvocationHistoryStack(frame);
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame)
-{NO_UNWIND_BEGIN();
-  core::pop_InvocationHistoryStack(frame);
-  NO_UNWIND_END();
-}
-
 
 ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
 {NO_UNWIND_BEGIN();
@@ -207,7 +180,7 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, cor
 //    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
     parentP =  activationFrame.raw_();
   } else {
-    parentP = _Nil<core::T_O>().raw_();
+    parentP = nil<core::T_O>().raw_();
   }
   ActivationFrame_sp af((gctools::Tagged)resultP);
   af->setParentFrame(parentP);
@@ -218,7 +191,7 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, cor
 ALWAYS_INLINE core::T_O* makeValueFrameSetParent(size_t numargs, core::T_O *parentP)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, nil<core::T_O>()));
   valueFrame->setParentFrame(parentP);
   return valueFrame.raw_();
   NO_UNWIND_END();
@@ -227,7 +200,7 @@ ALWAYS_INLINE core::T_O* makeValueFrameSetParent(size_t numargs, core::T_O *pare
 ALWAYS_INLINE core::T_O* makeBlockFrameSetParent(core::T_O *parentP)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, _Nil<core::T_O>()));
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, nil<core::T_O>()));
   valueFrame->setParentFrame(parentP);
   return valueFrame.raw_();
   NO_UNWIND_END();
@@ -236,7 +209,7 @@ ALWAYS_INLINE core::T_O* makeBlockFrameSetParent(core::T_O *parentP)
 ALWAYS_INLINE core::T_O* makeTagbodyFrameSetParent(core::T_O *parentP)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, _Nil<core::T_O>()));
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, nil<core::T_O>()));
   valueFrame->setParentFrame(parentP);
   return valueFrame.raw_();
   NO_UNWIND_END();
@@ -389,7 +362,7 @@ ALWAYS_INLINE core::T_sp mk_long_double( long double v )
 ALWAYS_INLINE core::T_sp mk_time( time_t v )
 {
   size_t size = sizeof( time_t );
-  GC_ALLOCATE(clasp_ffi::ForeignData_O, self);
+  auto  self = gctools::GC<clasp_ffi::ForeignData_O>::allocate_with_default_constructor();
   self->allocate( kw::_sym_clasp_foreign_data_kind_time, core::DeleteOnDtor, size);
   memmove( self->raw_data(), &v, size );
   return self;
@@ -853,7 +826,7 @@ ALWAYS_INLINE core::T_O* to_object_long_double( long double x )
 
 ALWAYS_INLINE core::T_O* to_object_void( void )
 {
-  return _Nil<core::T_O>().raw_();
+  return nil<core::T_O>().raw_();
 }
 
 // ----------------------------------------------------------------------------

@@ -106,7 +106,6 @@ typedef bool _Bool;
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/null.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/debugger.h> // Frame_O
 #include <clasp/core/backtrace.h>

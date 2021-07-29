@@ -58,11 +58,9 @@ THE SOFTWARE.
 #include <clasp/core/functor.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/pointer.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/environment.h>
@@ -105,22 +103,22 @@ MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_
   if (n) this->name = n;
   this->start_jit_compile_counter = global_jit_compile_counter;
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    this->start = PosixTime_O::createNow();
+    this->started = true;
+    this->start = std::chrono::steady_clock::now();
     if (clos::_sym_dispatcher_count->fboundp()) {
       core::T_sp nu = core::eval::funcall(clos::_sym_dispatcher_count);
       this->start_dispatcher_count = nu.unsafe_fixnum();
     } else {
       this->start_dispatcher_count = 0;
     }
-  }
+  } else this->started = false;
 };
 
 NEVER_OPTIMIZE MaybeDebugStartup::~MaybeDebugStartup() {
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()
-      && this->start) {
-    PosixTime_sp end = PosixTime_O::createNow();
-    PosixTimeDuration_sp diff = end->sub(this->start);
-    mpz_class ms = diff->totalMicroseconds();
+      && this->started) {
+    auto end = std::chrono::steady_clock::now();
+    auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - this->start);
     size_t end_dispatcher_count = 0;
     
     if (clos::_sym_dispatcher_count->fboundp()) {
@@ -138,7 +136,7 @@ NEVER_OPTIMIZE MaybeDebugStartup::~MaybeDebugStartup() {
       name_ << "NONAME";
     }
     if (name_.str() == "") name_ << (void*)this->fptr;
-    printf("%s us %zu gfds %zu jits: %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, (global_jit_compile_counter-this->start_jit_compile_counter),name_.str().c_str());
+    printf("%s us %zu gfds %zu jits: %s\n", _rep_(Integer_O::create(us.count())).c_str(), dispatcher_delta, (global_jit_compile_counter-this->start_jit_compile_counter),name_.str().c_str());
   }
 }
 
@@ -352,7 +350,7 @@ NOINLINE CL_DEFUN T_mv core__trigger_dtrace_start(T_sp closure)
 NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
 {
   stop_dtrace();
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
   
@@ -432,14 +430,44 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
       ss << "SYM(" << sym->symbolName()->get_std_string() << ")";
       name = SimpleBaseString_O::make(ss.str());
     }
-    return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+    return Values(nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
   if (gc::IsA<BuiltinClosure_sp>(fsym)) {
     return Values(_lisp->_true(), SimpleBaseString_O::make("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
-  return Values(_Nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+  return Values(nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
+
+/*! Return the default snapshot name
+ */
+std::string startup_snapshot_name(Bundle& bundle) {
+  stringstream ss;
+  std::string executablePath;
+  core::executablePath(executablePath);
+  std::string name;
+  size_t pos = executablePath.find_last_of('/');
+  if (pos == std::string::npos) {
+    name = executablePath;
+  } else {
+    name = executablePath.substr(pos+1);
+  }
+  ss << bundle._Directories->_FaslDir.string() << "/" << name << ".snapshot";
+  return ss.str();
+};
+
+
+bool startup_snapshot_is_stale(const std::string& snapshotFileName) {
+  stringstream ss;
+  std::string executablePath;
+  core::executablePath(executablePath);
+  std::filesystem::path executable(executablePath);
+  std::filesystem::path snapshot(snapshotFileName);
+  if (!std::filesystem::exists(snapshot)) return true;
+  return (std::filesystem::last_write_time(executable)
+          > std::filesystem::last_write_time(snapshot));
+};
+
 
 CL_LAMBDA("&optional (stage #\\c)");
 CL_DECLARE();
@@ -471,7 +499,7 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
 struct FasoHeader;
 
 struct ObjectFileInfo {
-  size_t    _ObjectID;
+  size_t    _ObjectId;
   size_t    _StartPage;
   size_t    _NumberOfPages;
   size_t    _ObjectFileSize;
@@ -515,7 +543,7 @@ void setup_FasoHeader(FasoHeader* header)
 
 CL_LAMBDA(path-desig object-files &key (start-object-id 0));
 CL_DOCSTRING(R"doc(Concatenate object files in OBJECT-FILES into a faso file and write it out to PATH-DESIG.
-You can set the starting objectID using the keyword START-OBJECT-ID argument.)doc");
+You can set the starting ObjectId using the keyword START-OBJECT-ID argument.)doc");
 CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_object_id)
 {
   //  write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(pathDesig) % cl__length(objectFiles));
@@ -538,7 +566,7 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
   List_sp cur = objectFiles;
   size_t nextPage = header->_HeaderPageCount;
   for ( size_t ii=0; ii<cl__length(objectFiles); ++ii ) {
-    header->_ObjectFiles[ii]._ObjectID = ii+start_object_id;
+    header->_ObjectFiles[ii]._ObjectId = ii+start_object_id;
     header->_ObjectFiles[ii]._StartPage = nextPage;
     Array_sp of = gc::As<Array_sp>(oCar(cur));
     cur = oCdr(cur);
@@ -596,9 +624,9 @@ struct MmapInfo {
 
 
 struct FasoObjectFileInfo {
-  size_t _ObjectID;
+  size_t _ObjectId;
   size_t _ObjectFileSize;
-  FasoObjectFileInfo(size_t oid, size_t ofs) : _ObjectID(oid), _ObjectFileSize(ofs) {};
+  FasoObjectFileInfo(size_t oid, size_t ofs) : _ObjectId(oid), _ObjectFileSize(ofs) {};
 };
   
 CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))
@@ -627,8 +655,8 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
       mmaps.emplace_back(MmapInfo(fd,memory,object0_offset,(size_t)fsize-object0_offset));
       for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
         size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-        if (verbose) write_bf_stream(BF("%s:%d object file %lu id: %lu  length: %lu\n") % __FILE__ % __LINE__ % ofi % header->_ObjectFiles[ofi]._ObjectID % of_length);
-        FasoObjectFileInfo fofi(header->_ObjectFiles[ofi]._ObjectID,of_length);
+        if (verbose) write_bf_stream(BF("%s:%d object file %lu id: %lu  length: %lu\n") % __FILE__ % __LINE__ % ofi % header->_ObjectFiles[ofi]._ObjectId % of_length);
+        FasoObjectFileInfo fofi(header->_ObjectFiles[ofi]._ObjectId,of_length);
         allObjectFiles.emplace_back(fofi);
         if (verbose) write_bf_stream(BF("allObjectFiles.size() = %lu\n") % allObjectFiles.size());
       }
@@ -643,7 +671,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
   if (verbose) write_bf_stream(BF("Writing out all object files %lu\n") % allObjectFiles.size());
   size_t nextPage = header->_HeaderPageCount;
   for (size_t ofi=0; ofi<allObjectFiles.size(); ofi++ ) {
-    header->_ObjectFiles[ofi]._ObjectID = allObjectFiles[ofi]._ObjectID;
+    header->_ObjectFiles[ofi]._ObjectId = allObjectFiles[ofi]._ObjectId;
     header->_ObjectFiles[ofi]._StartPage = nextPage;
     size_t num_pages = header->calculateObjectFileNumberOfPages(allObjectFiles[ofi]._ObjectFileSize);
     header->_ObjectFiles[ofi]._NumberOfPages = num_pages;
@@ -707,7 +735,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bitcode_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,_Nil<core::T_O>());
+  llvmo::llvm_sys__load_bitcode_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
   return _lisp->_true();
 }
 
@@ -715,7 +743,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bitcode(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,_Nil<core::T_O>());
+  llvmo::llvm_sys__load_bitcode(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
   return _lisp->_true();
 }
 
@@ -740,24 +768,24 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
   FasoHeader* header = (FasoHeader*)memory;
   llvmo::JITDylib_sp jitDylib;
-  for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
-    if (!jitDylib || header->_ObjectFiles[ofi]._ObjectID==0) {
+  for (size_t fasoIndex = 0; fasoIndex<header->_NumberOfObjectFiles; ++fasoIndex) {
+    if (!jitDylib || header->_ObjectFiles[fasoIndex]._ObjectId==0) {
       jitDylib = jit->createAndRegisterJITDylib(filename);
     }
-    void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
-    size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % ofi);
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage*header->_PageSize);
+    size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
+    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % fasoIndex);
     llvm::StringRef sbuffer((const char*)of_start, of_length);
-    std::string uniqueName = llvmo::uniqueMemoryBufferName("buffer",header->_ObjectFiles[ofi]._ObjectID, ofi);
+    std::string uniqueName = llvmo::uniqueMemoryBufferName("buffer",header->_ObjectFiles[fasoIndex]._ObjectId, fasoIndex);
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
-    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[ofi]._ObjectID,jitDylib,filename,ofi);
+    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[fasoIndex]._ObjectId,jitDylib,filename,fasoIndex);
     jit->addObjectFile(of,print.notnilp());
-    T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[ofi]._ObjectID,_Nil<core::T_O>());
+    T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId,nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
     llvmo::Code_sp codeObject;
-    jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string(), _Unbound<core::T_O>(), codeObject);
+    jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string(), unbound<core::T_O>(), codeObject);
   }
   return _lisp->_true();
 }
@@ -776,16 +804,16 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
   llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
   FasoHeader* header = (FasoHeader*)memory;
   write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
-  for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
-    size_t ofId =  header->_ObjectFiles[ofi]._ObjectID;
-    void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
-    size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-    //    write_bf_stream(BF("Adding faso %s object file %d to jit\n") % _rep_(filename) % ofi);
-    write_bf_stream(BF("Object file %d  ObjectID: %lu start-page: %lu  bytes: %lu pages: %lu\n")
-                    % ofi
-                    % header->_ObjectFiles[ofi]._ObjectID
-                    % header->_ObjectFiles[ofi]._StartPage
-                    % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
+  for (size_t fasoIndex = 0; fasoIndex<header->_NumberOfObjectFiles; ++fasoIndex) {
+    size_t fasoIndexd =  header->_ObjectFiles[fasoIndex]._ObjectId;
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage*header->_PageSize);
+    size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
+    //    write_bf_stream(BF("Adding faso %s object file %d to jit\n") % _rep_(filename) % fasoIndex);
+    write_bf_stream(BF("Object file %d  ObjectId: %lu start-page: %lu  bytes: %lu pages: %lu\n")
+                    % fasoIndex
+                    % header->_ObjectFiles[fasoIndex]._ObjectId
+                    % header->_ObjectFiles[fasoIndex]._StartPage
+                    % header->_ObjectFiles[fasoIndex]._ObjectFileSize % header->_ObjectFiles[fasoIndex]._NumberOfPages );
   }
   return _lisp->_true();
 }
@@ -806,15 +834,15 @@ void clasp_unpack_faso(const std::string& path_designator) {
   }
   FasoHeader* header = (FasoHeader*)memory;
   printf("NumberOfObjectFiles %lu\n", header->_NumberOfObjectFiles);
-  for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
-    void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
-    size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
+  for (size_t fasoIndex = 0; fasoIndex<header->_NumberOfObjectFiles; ++fasoIndex) {
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage*header->_PageSize);
+    size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
     stringstream sfilename;
-    sfilename << prefix << "-" << ofi << "-" << header->_ObjectFiles[ofi]._ObjectID << ".o";
+    sfilename << prefix << "-" << fasoIndex << "-" << header->_ObjectFiles[fasoIndex]._ObjectId << ".o";
     FILE* fout = fopen(sfilename.str().c_str(),"w");
     fwrite(of_start,of_length,1,fout);
     fclose(fout);
-    printf("Object file[%lu] ObjectID: %lu  start-page: %lu  bytes: %lu pages: %lu\n", ofi , header->_ObjectFiles[ofi]._ObjectID , header->_ObjectFiles[ofi]._StartPage , header->_ObjectFiles[ofi]._ObjectFileSize , header->_ObjectFiles[ofi]._NumberOfPages );
+    printf("Object file[%lu] ObjectId: %lu  start-page: %lu  bytes: %lu pages: %lu\n", fasoIndex , header->_ObjectFiles[fasoIndex]._ObjectId , header->_ObjectFiles[fasoIndex]._StartPage , header->_ObjectFiles[fasoIndex]._ObjectFileSize , header->_ObjectFiles[fasoIndex]._NumberOfPages );
   }
 }
     
@@ -933,7 +961,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   if (handle == NULL) {
     string error = dlerror();
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
-    //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
+    //    return (Values(nil<T_O>(), SimpleBaseString_O::make(error)));
   }
   // Static constructors must be available and they were run by dlopen
   //   and they registered startup_functions that we will now invoke
@@ -955,7 +983,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
     SIMPLE_ERROR(BF("This is not a proper FASL file - there are no startup functions waiting to be invoked"));
   }
   T_mv result;
-  return (Values(Pointer_O::create(handle), _Nil<T_O>()));
+  return (Values(Pointer_O::create(handle), nil<T_O>()));
 #endif
 };
 
@@ -1019,9 +1047,9 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   void * handle = std::get<0>( result );
 
   if( handle == nullptr ) {
-    return (Values(_Nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))));
+    return (Values(nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))));
   }
-  return (Values(Pointer_O::create(handle), _Nil<T_O>()));
+  return (Values(Pointer_O::create(handle), nil<T_O>()));
 }
 
 // -----------------------------------------------------------------------------
@@ -1081,9 +1109,9 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   auto result = do_dlsym(handle, ts.c_str());
   void * p_sym = std::get<0>( result );
   if( p_sym == nullptr ) {
-    return ( Values(_Nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))) );
+    return ( Values(nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))) );
   }
-  return ( Values(Pointer_O::create( p_sym ), _Nil<T_O>()) );
+  return ( Values(Pointer_O::create( p_sym ), nil<T_O>()) );
 }
 
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
@@ -1099,7 +1127,7 @@ CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
   Dl_info info;
   int ret = dladdr(ptr, &info);
   if (!ret) {
-    return Values(_Nil<T_O>());
+    return Values(nil<T_O>());
   } else {
     return Values(SimpleBaseString_O::make(info.dli_fname),
                   Pointer_O::create(info.dli_fbase),
@@ -1112,17 +1140,17 @@ CL_LAMBDA(form &optional env);
 CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   // Convert the form into a thunk and return like COMPILE does
   LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
-  Cons_sp code = Cons_O::create(form, _Nil<T_O>());
-  T_sp sourcePosInfo = _Nil<T_O>();
+  Cons_sp code = Cons_O::create(form, nil<T_O>());
+  T_sp sourcePosInfo = nil<T_O>();
   stringstream ss;
   ss << "THE-IMPLICIT-COMPILE-REPL"; // << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
   ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name,
                                                                         kw::_sym_function,
-                                                                        _Nil<T_O>(),
+                                                                        nil<T_O>(),
                                                                         llh,
-                                                                        _Nil<T_O>(),
-                                                                        _Nil<T_O>(),
+                                                                        nil<T_O>(),
+                                                                        nil<T_O>(),
                                                                         code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
   return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
@@ -1186,7 +1214,7 @@ void dynamicCastArg(T_sp a) {
 
 T_sp bitOLogicWithObjects() {
   T_sp val = _lisp->_true();
-  T_sp val2 = _Nil<T_O>();
+  T_sp val2 = nil<T_O>();
   if (val2.nilp()) {
     return val;
   }
@@ -1194,7 +1222,7 @@ T_sp bitOLogicWithObjects() {
 };
 
 T_sp allocCons() {
-  Cons_sp fn = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+  Cons_sp fn = Cons_O::create(nil<T_O>(),nil<T_O>());
   return fn;
 }
 
@@ -1323,8 +1351,8 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
       DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
       return core__progv_function(CONS_CDR(symbols),oCdr(values),func);
     } else {
-      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),_Unbound<core::T_O>());
-      return core__progv_function(CONS_CDR(symbols),_Nil<core::T_O>(),func);
+      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),unbound<core::T_O>());
+      return core__progv_function(CONS_CDR(symbols),nil<core::T_O>(),func);
     }
   } else {
     T_mv result = (func->entry())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
@@ -1358,12 +1386,12 @@ CL_DEFUN T_sp core__run_function( T_sp object ) {
   MaybeDebugStartup startup((void*)func);
 #endif
   if( func != nullptr ) {
-    LCC_RETURN ret = func(LCC_PASS_ARGS0_VA_LIST(_Nil<T_O>().raw_()));
+    LCC_RETURN ret = func(LCC_PASS_ARGS0_VA_LIST(nil<T_O>().raw_()));
     core::T_sp res((gctools::Tagged)ret.ret0[0]);
     core::T_sp val = res;
     return val;
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_DEFUN T_sp core__run_make_mlf( T_sp object ) {

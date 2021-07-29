@@ -19,6 +19,7 @@ Find directories that look like them and replace the ones defined in the constan
    #:match-in-compilation-tool-database-source-tree
    #:main-pathname
    #:clang-database
+   #:copy-compilation-tool-database
    #:multitool-compilation-tool-database
    #:source-namestrings
    #:main-source-filename
@@ -31,14 +32,20 @@ Find directories that look like them and replace the ones defined in the constan
    #:ast-context
    #:source-manager
    #:batch-run-multitool
+   #:batch-match-run
    #:make-multitool
    #:multitool-add-matcher
    #:multitool-results
    #:code-match-callback
    #:code-match-timer
+   #:*match-refactoring-tool*
+   #:*run-and-save*
+   #:lsel
    #:mtag-node
    #:mtag-loc-start
+   #:mtag-loc-end
    #:mtag-source
+   #:mtag-source-impl
    #:mtag-name
    #:mtag-replace
    #:mtag-result
@@ -65,344 +72,6 @@ Find directories that look like them and replace the ones defined in the constan
   "Keep track of the current multitool")
 
 
-;;; Load the lists that describe each matcher.
-;;; They describe the VariadicDynCastAllOfMatcher<SourceT,TargetT> matcher
-;;; where each entry is (SourceT matcher TargetT)
-;;; The way they work is the second entry cooresponds to a C++ matcher with the
-;;; C++ name eg: :class-template-decl -> classTemplateDecl(...)
-;;; The third entry and further correspond to the types of the arguments of
-;;; the matcher.
-;;; The first entry cooresponds to the type that the matcher matches.
-;;; The first entry cooresponds to the type of the matcher and any other matcher
-;;; that has that type as an argument can contain this matcher.
-
-;;(load "sys:modules;clang-tool;rules.lisp")
-(defvar +node-matcher-rules+ 
-'((:CXXCTOR-INITIALIZER :CXXCTOR-INITIALIZER :CXXCTOR-INITIALIZER)
-  (:DECL :ACCESS-SPEC-DECL :ACCESS-SPEC-DECL)
-  (:DECL :CLASS-TEMPLATE-DECL :CLASS-TEMPLATE-DECL)
-  (:DECL :CLASS-TEMPLATE-SPECIALIZATION-DECL
-   :CLASS-TEMPLATE-SPECIALIZATION-DECL)
-  (:DECL :CXXCONSTRUCTOR-DECL :CXXCONSTRUCTOR-DECL)
-  (:DECL :CXXCONVERSION-DECL :CXXCONVERSION-DECL)
-  (:DECL :CXXDESTRUCTOR-DECL :CXXDESTRUCTOR-DECL)
-  (:DECL :CXXMETHOD-DECL :CXXMETHOD-DECL)
-  (:DECL :CXXRECORD-DECL :CXXRECORD-DECL) (:DECL :DECL :DECL)
-  (:DECL :DECLARATOR-DECL :DECLARATOR-DECL)
-  (:DECL :ENUM-CONSTANT-DECL :ENUM-CONSTANT-DECL) (:DECL :ENUM-DECL :ENUM-DECL)
-  (:DECL :FIELD-DECL :FIELD-DECL) (:DECL :FRIEND-DECL :FRIEND-DECL)
-  (:DECL :FUNCTION-DECL :FUNCTION-DECL)
-  (:DECL :FUNCTION-TEMPLATE-DECL :FUNCTION-TEMPLATE-DECL)
-  (:DECL :LABEL-DECL :LABEL-DECL) (:DECL :LINKAGE-SPEC-DECL :LINKAGE-SPEC-DECL)
-  (:DECL :NAMED-DECL :NAMED-DECL)
-  (:DECL :NAMESPACE-ALIAS-DECL :NAMESPACE-ALIAS-DECL)
-  (:DECL :NAMESPACE-DECL :NAMESPACE-DECL)
-  (:DECL :NON-TYPE-TEMPLATE-PARM-DECL :NON-TYPE-TEMPLATE-PARM-DECL)
-  (:DECL :OBJC-INTERFACE-DECL :OBJ-CINTERFACE-DECL)
-  (:DECL :PARM-VAR-DECL :PARM-VAR-DECL) (:DECL :RECORD-DECL :RECORD-DECL)
-  (:DECL :STATIC-ASSERT-DECL :STATIC-ASSERT-DECL)
-  (:DECL :TEMPLATE-TYPE-PARM-DECL :TEMPLATE-TYPE-PARM-DECL)
-  (:DECL :TRANSLATION-UNIT-DECL :TRANSLATION-UNIT-DECL)
-  (:DECL :TYPE-ALIAS-DECL :TYPE-ALIAS-DECL) (:DECL :TYPEDEF-DECL :TYPEDEF-DECL)
-  (:DECL :TYPEDEF-NAME-DECL :TYPEDEF-NAME-DECL)
-  (:DECL :UNRESOLVED-USING-TYPENAME-DECL :UNRESOLVED-USING-TYPENAME-DECL)
-  (:DECL :UNRESOLVED-USING-VALUE-DECL :UNRESOLVED-USING-VALUE-DECL)
-  (:DECL :USING-DECL :USING-DECL)
-  (:DECL :USING-DIRECTIVE-DECL :USING-DIRECTIVE-DECL)
-  (:DECL :VALUE-DECL :VALUE-DECL) (:DECL :VAR-DECL :VAR-DECL)
-  (:NESTED-NAME-SPECIFIER-LOC :NESTED-NAME-SPECIFIER-LOC
-   :NESTED-NAME-SPECIFIER-LOC)
-  (:NESTED-NAME-SPECIFIER :NESTED-NAME-SPECIFIER :NESTED-NAME-SPECIFIER)
-  (:QUAL-TYPE :QUAL-TYPE :QUAL-TYPE) (:STMT :ADDR-LABEL-EXPR :ADDR-LABEL-EXPR)
-  (:STMT :ARRAY-SUBSCRIPT-EXPR :ARRAY-SUBSCRIPT-EXPR)
-  (:STMT :ASM-STMT :ASM-STMT) (:STMT :ATOMIC-EXPR :ATOMIC-EXPR)
-  (:STMT :BINARY-CONDITIONAL-OPERATOR :BINARY-CONDITIONAL-OPERATOR)
-  (:STMT :BINARY-OPERATOR :BINARY-OPERATOR) (:STMT :BREAK-STMT :BREAK-STMT)
-  (:STMT :C-STYLE-CAST-EXPR :CSTYLE-CAST-EXPR) (:STMT :CALL-EXPR :CALL-EXPR)
-  (:STMT :CASE-STMT :CASE-STMT) (:STMT :CAST-EXPR :CAST-EXPR)
-  (:STMT :CHARACTER-LITERAL :CHARACTER-LITERAL)
-  (:STMT :COMPOUND-LITERAL-EXPR :COMPOUND-LITERAL-EXPR)
-  (:STMT :COMPOUND-STMT :COMPOUND-STMT)
-  (:STMT :CONDITIONAL-OPERATOR :CONDITIONAL-OPERATOR)
-  (:STMT :CONTINUE-STMT :CONTINUE-STMT)
-  (:STMT :CUDAKERNEL-CALL-EXPR :CUDAKERNEL-CALL-EXPR)
-  (:STMT :CXXBIND-TEMPORARY-EXPR :CXXBIND-TEMPORARY-EXPR)
-  (:STMT :CXXBOOL-LITERAL :CXXBOOL-LITERAL-EXPR)
-  (:STMT :CXXCATCH-STMT :CXXCATCH-STMT)
-  (:STMT :CXXCONST-CAST-EXPR :CXXCONST-CAST-EXPR)
-  (:STMT :CXXCONSTRUCT-EXPR :CXXCONSTRUCT-EXPR)
-  (:STMT :CXXDEFAULT-ARG-EXPR :CXXDEFAULT-ARG-EXPR)
-  (:STMT :CXXDELETE-EXPR :CXXDELETE-EXPR)
-  (:STMT :CXXDYNAMIC-CAST-EXPR :CXXDYNAMIC-CAST-EXPR)
-  (:STMT :CXXFOR-RANGE-STMT :CXXFOR-RANGE-STMT)
-  (:STMT :CXXFUNCTIONAL-CAST-EXPR :CXXFUNCTIONAL-CAST-EXPR)
-  (:STMT :CXXMEMBER-CALL-EXPR :CXXMEMBER-CALL-EXPR)
-  (:STMT :CXXNEW-EXPR :CXXNEW-EXPR)
-  (:STMT :CXXNULL-PTR-LITERAL-EXPR :CXXNULL-PTR-LITERAL-EXPR)
-  (:STMT :CXXOPERATOR-CALL-EXPR :CXXOPERATOR-CALL-EXPR)
-  (:STMT :CXXREINTERPRET-CAST-EXPR :CXXREINTERPRET-CAST-EXPR)
-  (:STMT :CXXSTATIC-CAST-EXPR :CXXSTATIC-CAST-EXPR)
-  (:STMT :CXXTEMPORARY-OBJECT-EXPR :CXXTEMPORARY-OBJECT-EXPR)
-  (:STMT :CXXTHIS-EXPR :CXXTHIS-EXPR) (:STMT :CXXTHROW-EXPR :CXXTHROW-EXPR)
-  (:STMT :CXXTRY-STMT :CXXTRY-STMT)
-  (:STMT :CXXUNRESOLVED-CONSTRUCT-EXPR :CXXUNRESOLVED-CONSTRUCT-EXPR)
-  (:STMT :DECL-REF-EXPR :DECL-REF-EXPR) (:STMT :DECL-STMT :DECL-STMT)
-  (:STMT :DEFAULT-STMT :DEFAULT-STMT)
-  (:STMT :DESIGNATED-INIT-EXPR :DESIGNATED-INIT-EXPR) (:STMT :DO-STMT :DO-STMT)
-  (:STMT :EXPLICIT-CAST-EXPR :EXPLICIT-CAST-EXPR) (:STMT :EXPR :EXPR)
-  (:STMT :EXPR-WITH-CLEANUPS :EXPR-WITH-CLEANUPS)
-  (:STMT :FLOAT-LITERAL :FLOATING-LITERAL) (:STMT :FOR-STMT :FOR-STMT)
-  (:STMT :GNU-NULL-EXPR :GNUNULL-EXPR) (:STMT :GOTO-STMT :GOTO-STMT)
-  (:STMT :IF-STMT :IF-STMT) (:STMT :IMPLICIT-CAST-EXPR :IMPLICIT-CAST-EXPR)
-  (:STMT :IMPLICIT-VALUE-INIT-EXPR :IMPLICIT-VALUE-INIT-EXPR)
-  (:STMT :INIT-LIST-EXPR :INIT-LIST-EXPR)
-  (:STMT :INTEGER-LITERAL :INTEGER-LITERAL) (:STMT :LABEL-STMT :LABEL-STMT)
-  (:STMT :LAMBDA-EXPR :LAMBDA-EXPR)
-  (:STMT :MATERIALIZE-TEMPORARY-EXPR :MATERIALIZE-TEMPORARY-EXPR)
-  (:STMT :MEMBER-EXPR :MEMBER-EXPR) (:STMT :NULL-STMT :NULL-STMT)
-  (:STMT :OBJC-MESSAGE-EXPR :OBJ-CMESSAGE-EXPR)
-  (:STMT :OPAQUE-VALUE-EXPR :OPAQUE-VALUE-EXPR) (:STMT :PAREN-EXPR :PAREN-EXPR)
-  (:STMT :PAREN-LIST-EXPR :PAREN-LIST-EXPR)
-  (:STMT :PREDEFINED-EXPR :PREDEFINED-EXPR) (:STMT :RETURN-STMT :RETURN-STMT)
-  (:STMT :STMT :STMT) (:STMT :STMT-EXPR :STMT-EXPR)
-  (:STMT :STRING-LITERAL :STRING-LITERAL)
-  (:STMT :SUBST-NON-TYPE-TEMPLATE-PARM-EXPR :SUBST-NON-TYPE-TEMPLATE-PARM-EXPR)
-  (:STMT :SWITCH-CASE :SWITCH-CASE) (:STMT :SWITCH-STMT :SWITCH-STMT)
-  (:STMT :UNARY-EXPR-OR-TYPE-TRAIT-EXPR :UNARY-EXPR-OR-TYPE-TRAIT-EXPR)
-  (:STMT :UNARY-OPERATOR :UNARY-OPERATOR)
-  (:STMT :USER-DEFINED-LITERAL :USER-DEFINED-LITERAL)
-  (:STMT :WHILE-STMT :WHILE-STMT)
-  (:TEMPLATE-ARGUMENT :TEMPLATE-ARGUMENT :TEMPLATE-ARGUMENT)
-  (:TYPE-LOC :TYPE-LOC :TYPE-LOC) (:TYPE :ARRAY-TYPE :ARRAY-TYPE)
-  (:TYPE :ATOMIC-TYPE :ATOMIC-TYPE) (:TYPE :AUTO-TYPE :AUTO-TYPE)
-  (:TYPE :BLOCK-POINTER-TYPE :BLOCK-POINTER-TYPE)
-  (:TYPE :BUILTIN-TYPE :BUILTIN-TYPE) (:TYPE :COMPLEX-TYPE :COMPLEX-TYPE)
-  (:TYPE :CONSTANT-ARRAY-TYPE :CONSTANT-ARRAY-TYPE)
-  (:TYPE :DECAYED-TYPE :DECAYED-TYPE)
-  (:TYPE :DEPENDENT-SIZED-ARRAY-TYPE :DEPENDENT-SIZED-ARRAY-TYPE)
-  (:TYPE :ELABORATED-TYPE :ELABORATED-TYPE)
-  (:TYPE :FUNCTION-PROTO-TYPE :FUNCTION-PROTO-TYPE)
-  (:TYPE :FUNCTION-TYPE :FUNCTION-TYPE)
-  (:TYPE :INCOMPLETE-ARRAY-TYPE :INCOMPLETE-ARRAY-TYPE)
-  (:TYPE :INJECTED-CLASS-NAME-TYPE :INJECTED-CLASS-NAME-TYPE)
-  (:TYPE :L-VALUE-REFERENCE-TYPE :LVALUE-REFERENCE-TYPE)
-  (:TYPE :MEMBER-POINTER-TYPE :MEMBER-POINTER-TYPE)
-  (:TYPE :OBJC-OBJECT-POINTER-TYPE :OBJ-COBJECT-POINTER-TYPE)
-  (:TYPE :PAREN-TYPE :PAREN-TYPE) (:TYPE :POINTER-TYPE :POINTER-TYPE)
-  (:TYPE :RVALUE-REFERENCE-TYPE :RVALUE-REFERENCE-TYPE)
-  (:TYPE :RECORD-TYPE :RECORD-TYPE) (:TYPE :REFERENCE-TYPE :REFERENCE-TYPE)
-  (:TYPE :SUBST-TEMPLATE-TYPE-PARM-TYPE :SUBST-TEMPLATE-TYPE-PARM-TYPE)
-  (:TYPE :TEMPLATE-SPECIALIZATION-TYPE :TEMPLATE-SPECIALIZATION-TYPE)
-  (:TYPE :TEMPLATE-TYPE-PARM-TYPE :TEMPLATE-TYPE-PARM-TYPE) (:TYPE :TYPE :TYPE)
-  (:TYPE :TYPEDEF-TYPE :TYPEDEF-TYPE)
-  (:TYPE :UNARY-TRANSFORM-TYPE :UNARY-TRANSFORM-TYPE)
-  (:TYPE :VARIABLE-ARRAY-TYPE :VARIABLE-ARRAY-TYPE)))
-(defvar +narrowing-matcher-rules+ 
-'((:* :ALL-OF :* :|...| :*) (:* :ANY-OF :* :|...| :*) (:* :ANYTHING)
-  (:* :UNLESS :*) (:BINARY-OPERATOR :HAS-OPERATOR-NAME :STRING-NAME)
-  (:CXXBOOL-LITERAL :EQUALS :VALUET-VALUE) (:CXXCATCH-STMT :IS-CATCH-ALL)
-  (:CXXCONSTRUCT-EXPR :ARGUMENT-COUNT-IS :UNSIGNED-N)
-  (:CXXCONSTRUCT-EXPR :IS-LIST-INITIALIZATION)
-  (:CXXCONSTRUCT-EXPR :REQUIRES-ZERO-INITIALIZATION)
-  (:CXXCONSTRUCTOR-DECL :IS-COPY-CONSTRUCTOR)
-  (:CXXCONSTRUCTOR-DECL :IS-DEFAULT-CONSTRUCTOR)
-  (:CXXCONSTRUCTOR-DECL :IS-DELEGATING-CONSTRUCTOR)
-  (:CXXCONSTRUCTOR-DECL :IS-EXPLICIT)
-  (:CXXCONSTRUCTOR-DECL :IS-MOVE-CONSTRUCTOR)
-  (:CXXCONVERSION-DECL :IS-EXPLICIT)
-  (:CXXCTOR-INITIALIZER :IS-BASE-INITIALIZER)
-  (:CXXCTOR-INITIALIZER :IS-MEMBER-INITIALIZER)
-  (:CXXCTOR-INITIALIZER :IS-WRITTEN) (:CXXMETHOD-DECL :IS-CONST)
-  (:CXXMETHOD-DECL :IS-COPY-ASSIGNMENT-OPERATOR) (:CXXMETHOD-DECL :IS-FINAL)
-  (:CXXMETHOD-DECL :IS-MOVE-ASSIGNMENT-OPERATOR) (:CXXMETHOD-DECL :IS-OVERRIDE)
-  (:CXXMETHOD-DECL :IS-PURE) (:CXXMETHOD-DECL :IS-USER-PROVIDED)
-  (:CXXMETHOD-DECL :IS-VIRTUAL) (:CXXMETHOD-DECL :IS-VIRTUAL-AS-WRITTEN)
-  (:CXXOPERATOR-CALL-EXPR :HAS-OVERLOADED-OPERATOR-NAME :STRINGREF-NAME)
-  (:CXXRECORD-DECL :IS-DERIVED-FROM :STRING-BASENAME)
-  (:CXXRECORD-DECL :IS-EXPLICIT-TEMPLATE-SPECIALIZATION)
-  (:CXXRECORD-DECL :IS-FINAL)
-  (:CXXRECORD-DECL :IS-SAME-OR-DERIVED-FROM :STRING-BASENAME)
-  (:CXXRECORD-DECL :IS-TEMPLATE-INSTANTIATION)
-  (:CALL-EXPR :ARGUMENT-COUNT-IS :UNSIGNED-N)
-  (:CHARACTER-LITERAL :EQUALS :VALUET-VALUE)
-  (:CLASS-TEMPLATE-SPECIALIZATION-DECL :TEMPLATE-ARGUMENT-COUNT-IS :UNSIGNED-N)
-  (:COMPOUND-STMT :STATEMENT-COUNT-IS :UNSIGNED-N)
-  (:CONSTANT-ARRAY-TYPE :HAS-SIZE :UNSIGNED-N)
-  (:DECL-STMT :DECL-COUNT-IS :UNSIGNED-N) (:DECL :EQUALS-BOUND-NODE :STRING-ID)
-  (:DECL :HAS-ATTR :KIND-ATTRKIND)
-  (:DECL :IS-EXPANSION-IN-FILE-MATCHING :STRING-REGEXP)
-  (:DECL :IS-EXPANSION-IN-MAIN-FILE) (:DECL :IS-EXPANSION-IN-SYSTEM-HEADER)
-  (:DECL :IS-IMPLICIT) (:DECL :IS-PRIVATE) (:DECL :IS-PROTECTED)
-  (:DECL :IS-PUBLIC) (:DESIGNATED-INIT-EXPR :DESIGNATOR-COUNT-IS :UNSIGNED-N)
-  (:FLOATING-LITERAL :EQUALS :VALUET-VALUE)
-  (:FUNCTION-DECL :HAS-OVERLOADED-OPERATOR-NAME :STRINGREF-NAME)
-  (:FUNCTION-DECL :IS-CONSTEXPR) (:FUNCTION-DECL :IS-DEFAULTED)
-  (:FUNCTION-DECL :IS-DEFINITION) (:FUNCTION-DECL :IS-DELETED)
-  (:FUNCTION-DECL :IS-EXPLICIT-TEMPLATE-SPECIALIZATION)
-  (:FUNCTION-DECL :IS-EXTERN-C) (:FUNCTION-DECL :IS-INLINE)
-  (:FUNCTION-DECL :IS-NO-THROW) (:FUNCTION-DECL :IS-TEMPLATE-INSTANTIATION)
-  (:FUNCTION-DECL :IS-VARIADIC)
-  (:FUNCTION-DECL :PARAMETER-COUNT-IS :UNSIGNED-N)
-  (:FUNCTION-PROTO-TYPE :PARAMETER-COUNT-IS :UNSIGNED-N)
-  (:INTEGER-LITERAL :EQUALS :VALUET-VALUE) (:MEMBER-EXPR :IS-ARROW)
-  (:NAMED-DECL :HAS-NAME :STRING-NAME)
-  (:NAMED-DECL :MATCHES-NAME :STRING-REGEXP) (:NAMESPACE-DECL :IS-ANONYMOUS)
-  (:NAMESPACE-DECL :IS-INLINE)
-  (:OBJ-CMESSAGE-EXPR :ARGUMENT-COUNT-IS :UNSIGNED-N)
-  (:OBJ-CMESSAGE-EXPR :HAS-KEYWORD-SELECTOR)
-  (:OBJ-CMESSAGE-EXPR :HAS-NULL-SELECTOR)
-  (:OBJ-CMESSAGE-EXPR :HAS-SELECTOR :STRING-BASENAME)
-  (:OBJ-CMESSAGE-EXPR :HAS-UNARY-SELECTOR)
-  (:OBJ-CMESSAGE-EXPR :MATCHES-SELECTOR :STRING-REGEXP)
-  (:OBJ-CMESSAGE-EXPR :NUM-SELECTOR-ARGS :UNSIGNED-N)
-  (:QUAL-TYPE :AS-STRING :STRING-NAME)
-  (:QUAL-TYPE :EQUALS-BOUND-NODE :STRING-ID) (:QUAL-TYPE :HAS-LOCAL-QUALIFIERS)
-  (:QUAL-TYPE :IS-ANY-CHARACTER) (:QUAL-TYPE :IS-ANY-POINTER)
-  (:QUAL-TYPE :IS-CONST-QUALIFIED) (:QUAL-TYPE :IS-INTEGER)
-  (:QUAL-TYPE :IS-VOLATILE-QUALIFIED) (:RECORD-DECL :IS-CLASS)
-  (:RECORD-DECL :IS-STRUCT) (:RECORD-DECL :IS-UNION)
-  (:STMT :EQUALS-BOUND-NODE :STRING-ID)
-  (:STMT :IS-EXPANSION-IN-FILE-MATCHING :STRING-REGEXP)
-  (:STMT :IS-EXPANSION-IN-MAIN-FILE) (:STMT :IS-EXPANSION-IN-SYSTEM-HEADER)
-  (:TAG-DECL :IS-DEFINITION)
-  (:TEMPLATE-ARGUMENT :EQUALS-INTEGRAL-VALUE :STRING-VALUE)
-  (:TEMPLATE-ARGUMENT :IS-INTEGRAL)
-  (:TEMPLATE-SPECIALIZATION-TYPE :TEMPLATE-ARGUMENT-COUNT-IS :UNSIGNED-N)
-  (:TYPE-LOC :IS-EXPANSION-IN-FILE-MATCHING :STRING-REGEXP)
-  (:TYPE-LOC :IS-EXPANSION-IN-MAIN-FILE)
-  (:TYPE-LOC :IS-EXPANSION-IN-SYSTEM-HEADER) (:TYPE :BOOLEAN-TYPE)
-  (:TYPE :EQUALS-BOUND-NODE :STRING-ID) (:TYPE :REAL-FLOATING-POINT-TYPE)
-  (:TYPE :VOID-TYPE)
-  (:UNARY-EXPR-OR-TYPE-TRAIT-EXPR :OF-KIND :UNARY-EXPR-OR-TYPE-TRAIT-KIND)
-  (:UNARY-OPERATOR :HAS-OPERATOR-NAME :STRING-NAME)
-  (:VAR-DECL :HAS-AUTOMATIC-STORAGE-DURATION) (:VAR-DECL :HAS-GLOBAL-STORAGE)
-  (:VAR-DECL :HAS-LOCAL-STORAGE) (:VAR-DECL :HAS-STATIC-STORAGE-DURATION)
-  (:VAR-DECL :HAS-THREAD-STORAGE-DURATION) (:VAR-DECL :IS-CONSTEXPR)
-  (:VAR-DECL :IS-DEFINITION) (:VAR-DECL :IS-EXCEPTION-VARIABLE)
-  (:VAR-DECL :IS-EXPLICIT-TEMPLATE-SPECIALIZATION)
-  (:VAR-DECL :IS-TEMPLATE-INSTANTIATION)
-  (:INTERNAL--MATCHER<DECL :IS-INSTANTIATED)
-  (:INTERNAL--MATCHER<EXPR :NULL-POINTER-CONSTANT)
-  (:INTERNAL--MATCHER<STMT :IS-IN-TEMPLATE-INSTANTIATION)))
-(defvar +traversal-matcher-rules+ 
-'((:* :EACH-OF :* :|...| :*) (:* :FOR-EACH-DESCENDANT :*) (:* :FOR-EACH :*)
-  (:* :HAS-ANCESTOR :*) (:* :HAS-DESCENDANT :*) (:* :HAS :*)
-  (:* :HAS-PARENT :*) (:ABSTRACT-CONDITIONAL-OPERATOR :HAS-CONDITION :EXPR)
-  (:ABSTRACT-CONDITIONAL-OPERATOR :HAS-FALSE-EXPRESSION :EXPR)
-  (:ABSTRACT-CONDITIONAL-OPERATOR :HAS-TRUE-EXPRESSION :EXPR)
-  (:ADDR-LABEL-EXPR :HAS-DECLARATION :DECL)
-  (:ARRAY-SUBSCRIPT-EXPR :HAS-BASE :EXPR)
-  (:ARRAY-SUBSCRIPT-EXPR :HAS-INDEX :EXPR)
-  (:ARRAY-SUBSCRIPT-EXPR :HAS-LHS :EXPR) (:ARRAY-SUBSCRIPT-EXPR :HAS-RHS :EXPR)
-  (:ARRAY-TYPE-LOC :HAS-ELEMENT-TYPE-LOC :TYPE-LOC)
-  (:ARRAY-TYPE :HAS-ELEMENT-TYPE :TYPE)
-  (:ATOMIC-TYPE-LOC :HAS-VALUE-TYPE-LOC :TYPE-LOC)
-  (:ATOMIC-TYPE :HAS-VALUE-TYPE :TYPE) (:AUTO-TYPE :HAS-DEDUCED-TYPE :TYPE)
-  (:BINARY-OPERATOR :HAS-EITHER-OPERAND :EXPR)
-  (:BINARY-OPERATOR :HAS-LHS :EXPR) (:BINARY-OPERATOR :HAS-RHS :EXPR)
-  (:BLOCK-POINTER-TYPE-LOC :POINTEE-LOC :TYPE-LOC)
-  (:BLOCK-POINTER-TYPE :POINTEE :TYPE)
-  (:CXXCONSTRUCT-EXPR :FOR-EACH-ARGUMENT-WITH-PARAM :EXPR :PARM-VAR-DECL)
-  (:CXXCONSTRUCT-EXPR :HAS-ANY-ARGUMENT :EXPR)
-  (:CXXCONSTRUCT-EXPR :HAS-ARGUMENT :UNSIGNED-N :EXPR)
-  (:CXXCONSTRUCT-EXPR :HAS-DECLARATION :DECL)
-  (:CXXCONSTRUCTOR-DECL :FOR-EACH-CONSTRUCTOR-INITIALIZER :CXXCTOR-INITIALIZER)
-  (:CXXCONSTRUCTOR-DECL :HAS-ANY-CONSTRUCTOR-INITIALIZER :CXXCTOR-INITIALIZER)
-  (:CXXCTOR-INITIALIZER :FOR-FIELD :FIELD-DECL)
-  (:CXXCTOR-INITIALIZER :WITH-INITIALIZER :EXPR)
-  (:CXXFOR-RANGE-STMT :HAS-BODY :STMT)
-  (:CXXFOR-RANGE-STMT :HAS-LOOP-VARIABLE :VAR-DECL)
-  (:CXXFOR-RANGE-STMT :HAS-RANGE-INIT :EXPR)
-  (:CXXMEMBER-CALL-EXPR :ON-IMPLICIT-OBJECT-ARGUMENT :EXPR)
-  (:CXXMEMBER-CALL-EXPR :ON :EXPR)
-  (:CXXMEMBER-CALL-EXPR :THIS-POINTER-TYPE :DECL)
-  (:CXXMEMBER-CALL-EXPR :THIS-POINTER-TYPE :QUAL-TYPE)
-  (:CXXMETHOD-DECL :OF-CLASS :CXXRECORD-DECL)
-  (:CXXRECORD-DECL :HAS-METHOD :CXXMETHOD-DECL)
-  (:CXXRECORD-DECL :IS-DERIVED-FROM :NAMED-DECL)
-  (:CXXRECORD-DECL :IS-SAME-OR-DERIVED-FROM :NAMED-DECL)
-  (:CALL-EXPR :CALLEE :DECL) (:CALL-EXPR :CALLEE :STMT)
-  (:CALL-EXPR :FOR-EACH-ARGUMENT-WITH-PARAM :EXPR :PARM-VAR-DECL)
-  (:CALL-EXPR :HAS-ANY-ARGUMENT :EXPR)
-  (:CALL-EXPR :HAS-ARGUMENT :UNSIGNED-N :EXPR)
-  (:CALL-EXPR :HAS-DECLARATION :DECL) (:CASE-STMT :HAS-CASE-CONSTANT :EXPR)
-  (:CAST-EXPR :HAS-SOURCE-EXPRESSION :EXPR)
-  (:CLASS-TEMPLATE-SPECIALIZATION-DECL :HAS-ANY-TEMPLATE-ARGUMENT
-   :TEMPLATE-ARGUMENT)
-  (:CLASS-TEMPLATE-SPECIALIZATION-DECL :HAS-TEMPLATE-ARGUMENT :UNSIGNED-N
-   :TEMPLATE-ARGUMENT)
-  (:COMPLEX-TYPE-LOC :HAS-ELEMENT-TYPE-LOC :TYPE-LOC)
-  (:COMPLEX-TYPE :HAS-ELEMENT-TYPE :TYPE)
-  (:COMPOUND-STMT :HAS-ANY-SUBSTATEMENT :STMT)
-  (:DECAYED-TYPE :HAS-DECAYED-TYPE :QUAL-TYPE)
-  (:DECL-REF-EXPR :HAS-DECLARATION :DECL)
-  (:DECL-REF-EXPR :THROUGH-USING-DECL :USING-SHADOW-DECL)
-  (:DECL-REF-EXPR :TO :DECL)
-  (:DECL-STMT :CONTAINS-DECLARATION :UNSIGNED-N :DECL)
-  (:DECL-STMT :HAS-SINGLE-DECL :DECL)
-  (:DECLARATOR-DECL :HAS-TYPE-LOC :TYPE-LOC) (:DECL :HAS-DECL-CONTEXT :DECL)
-  (:DO-STMT :HAS-BODY :STMT) (:DO-STMT :HAS-CONDITION :EXPR)
-  (:ELABORATED-TYPE :HAS-QUALIFIER :NESTED-NAME-SPECIFIER)
-  (:ELABORATED-TYPE :NAMES-TYPE :QUAL-TYPE) (:ENUM-TYPE :HAS-DECLARATION :DECL)
-  (:EXPLICIT-CAST-EXPR :HAS-DESTINATION-TYPE :QUAL-TYPE)
-  (:EXPR :HAS-TYPE :DECL) (:EXPR :HAS-TYPE :QUAL-TYPE)
-  (:EXPR :IGNORING-IMP-CASTS :EXPR) (:EXPR :IGNORING-PAREN-CASTS :EXPR)
-  (:EXPR :IGNORING-PAREN-IMP-CASTS :EXPR) (:FOR-STMT :HAS-BODY :STMT)
-  (:FOR-STMT :HAS-CONDITION :EXPR) (:FOR-STMT :HAS-INCREMENT :STMT)
-  (:FOR-STMT :HAS-LOOP-INIT :STMT)
-  (:FUNCTION-DECL :HAS-ANY-PARAMETER :PARM-VAR-DECL)
-  (:FUNCTION-DECL :HAS-BODY :STMT)
-  (:FUNCTION-DECL :HAS-PARAMETER :UNSIGNED-N :PARM-VAR-DECL)
-  (:FUNCTION-DECL :RETURNS :QUAL-TYPE) (:IF-STMT :HAS-CONDITION :EXPR)
-  (:IF-STMT :HAS-CONDITION-VARIABLE-STATEMENT :DECL-STMT)
-  (:IF-STMT :HAS-ELSE :STMT) (:IF-STMT :HAS-THEN :STMT)
-  (:IMPLICIT-CAST-EXPR :HAS-IMPLICIT-DESTINATION-TYPE :QUAL-TYPE)
-  (:INIT-LIST-EXPR :HAS-SYNTACTIC-FORM :EXPR)
-  (:INJECTED-CLASS-NAME-TYPE :HAS-DECLARATION :DECL)
-  (:LABEL-STMT :HAS-DECLARATION :DECL) (:MEMBER-EXPR :HAS-DECLARATION :DECL)
-  (:MEMBER-EXPR :HAS-OBJECT-EXPRESSION :EXPR)
-  (:MEMBER-EXPR :MEMBER :VALUE-DECL)
-  (:MEMBER-POINTER-TYPE-LOC :POINTEE-LOC :TYPE-LOC)
-  (:MEMBER-POINTER-TYPE :POINTEE :TYPE)
-  (:NESTED-NAME-SPECIFIER-LOC :HAS-PREFIX :NESTED-NAME-SPECIFIER-LOC)
-  (:NESTED-NAME-SPECIFIER-LOC :SPECIFIES-TYPE-LOC :TYPE-LOC)
-  (:NESTED-NAME-SPECIFIER :HAS-PREFIX :NESTED-NAME-SPECIFIER)
-  (:NESTED-NAME-SPECIFIER :SPECIFIES-NAMESPACE :NAMESPACE-DECL)
-  (:NESTED-NAME-SPECIFIER :SPECIFIES-TYPE :QUAL-TYPE)
-  (:OBJ-CMESSAGE-EXPR :HAS-ARGUMENT :UNSIGNED-N :EXPR)
-  (:OBJ-CMESSAGE-EXPR :HAS-RECEIVER-TYPE :QUAL-TYPE)
-  (:OPAQUE-VALUE-EXPR :HAS-SOURCE-EXPRESSION :EXPR)
-  (:PAREN-TYPE :INNER-TYPE :TYPE) (:POINTER-TYPE-LOC :POINTEE-LOC :TYPE-LOC)
-  (:POINTER-TYPE :POINTEE :TYPE) (:QUAL-TYPE :HAS-CANONICAL-TYPE :QUAL-TYPE)
-  (:QUAL-TYPE :HAS-DECLARATION :DECL) (:QUAL-TYPE :POINTS-TO :DECL)
-  (:QUAL-TYPE :POINTS-TO :QUAL-TYPE) (:QUAL-TYPE :REFERENCES :DECL)
-  (:QUAL-TYPE :REFERENCES :QUAL-TYPE) (:RECORD-TYPE :HAS-DECLARATION :DECL)
-  (:REFERENCE-TYPE-LOC :POINTEE-LOC :TYPE-LOC) (:REFERENCE-TYPE :POINTEE :TYPE)
-  (:RETURN-STMT :HAS-RETURN-VALUE :EXPR)
-  (:STMT-EXPR :HAS-ANY-SUBSTATEMENT :STMT)
-  (:STMT :ALIGN-OF-EXPR :UNARY-EXPR-OR-TYPE-TRAIT-EXPR)
-  (:STMT :SIZE-OF-EXPR :UNARY-EXPR-OR-TYPE-TRAIT-EXPR)
-  (:SWITCH-STMT :FOR-EACH-SWITCH-CASE :SWITCH-CASE)
-  (:TAG-TYPE :HAS-DECLARATION :DECL) (:TEMPLATE-ARGUMENT :IS-EXPR :EXPR)
-  (:TEMPLATE-ARGUMENT :REFERS-TO-DECLARATION :DECL)
-  (:TEMPLATE-ARGUMENT :REFERS-TO-INTEGRAL-TYPE :QUAL-TYPE)
-  (:TEMPLATE-ARGUMENT :REFERS-TO-TYPE :QUAL-TYPE)
-  (:TEMPLATE-SPECIALIZATION-TYPE :HAS-ANY-TEMPLATE-ARGUMENT :TEMPLATE-ARGUMENT)
-  (:TEMPLATE-SPECIALIZATION-TYPE :HAS-DECLARATION :DECL)
-  (:TEMPLATE-SPECIALIZATION-TYPE :HAS-TEMPLATE-ARGUMENT :UNSIGNED-N
-   :TEMPLATE-ARGUMENT)
-  (:TEMPLATE-TYPE-PARM-TYPE :HAS-DECLARATION :DECL) (:T :FIND-ALL :T)
-  (:TYPEDEF-NAME-DECL :HAS-TYPE :QUAL-TYPE)
-  (:TYPEDEF-TYPE :HAS-DECLARATION :DECL)
-  (:UNARY-EXPR-OR-TYPE-TRAIT-EXPR :HAS-ARGUMENT-OF-TYPE :QUAL-TYPE)
-  (:UNARY-OPERATOR :HAS-UNARY-OPERAND :EXPR)
-  (:UNRESOLVED-USING-TYPE :HAS-DECLARATION :DECL)
-  (:USING-DECL :HAS-ANY-USING-SHADOW-DECL :USING-SHADOW-DECL)
-  (:USING-SHADOW-DECL :HAS-TARGET-DECL :NAMED-DECL)
-  (:VALUE-DECL :HAS-TYPE :DECL) (:VALUE-DECL :HAS-TYPE :QUAL-TYPE)
-  (:VAR-DECL :HAS-INITIALIZER :EXPR)
-  (:VARIABLE-ARRAY-TYPE :HAS-SIZE-EXPR :EXPR) (:WHILE-STMT :HAS-BODY :STMT)
-  (:WHILE-STMT :HAS-CONDITION :EXPR)))
 
 
 (defvar +isysroot+ 
@@ -449,10 +118,25 @@ Sets up a dynamic environment where clang-tooling:*compilation-tool-database* is
    (source-namestrings :initarg :source-namestrings :accessor source-namestrings)
    (arguments-adjuster-list :initform nil :initarg :arguments-adjuster-list :accessor arguments-adjuster-list)))
 
+
+(defun copy-compilation-tool-database (defaults &key source-pattern)
+  (let ((copy (make-instance 'compilation-tool-database
+                             :clang-database (clang-database defaults)
+                             :source-path-identifier (source-path-identifier defaults)
+                             :main-source-filename (main-source-filename defaults)
+                             :source-namestrings (source-namestrings defaults)
+                             :arguments-adjuster-list (arguments-adjuster-list defaults)
+                             )))
+    (if source-pattern
+      (setf (source-namestrings copy) (select-source-namestrings defaults source-pattern)))
+    copy))
+
+
 (defmethod initialize-instance :after ((obj compilation-tool-database) &rest args)
   (declare (ignore args))
   "* Description
 Initialize the source-namestrings using all filenames in the database if they haven't already been set."
+  (declare (ignore args))
   (unless (slot-boundp obj 'source-namestrings)
     (setf (source-namestrings obj) (select-source-namestrings obj))))
 
@@ -579,7 +263,8 @@ it contains the string source-path-identifier.  So /a/b/c/d.cc will match /b/"
 A pathname.
 * Description
 Return the pathname of the directory that contains the main source file. This is where the project.dat and clasp_gc.cc file will be written."
-  (translate-logical-pathname #P"source-dir:src/main/"))
+  (declare (ignore compilation-tool-database))
+  (translate-logical-pathname #P"source-dir:src;main;"))
 
 
 (defun select-source-namestrings (compilation-tool-database &optional (pattern nil))
@@ -592,6 +277,7 @@ Select a subset (or all) source file names from the compilation database and ret
     (if pattern
         (remove-if-not #'(lambda (x) (search pattern x)) list-names)
         list-names)))
+
 
 
 (defparameter *match-refactoring-tool* nil)
@@ -671,6 +357,7 @@ Select a subset (or all) source file names from the compilation database and ret
 (defclass good-dump-match-callback (ast-tooling:match-callback) ()
   (:metaclass core:derivable-cxx-class))
 (core:defvirtual ast-tooling:run ((self good-dump-match-callback) match)
+  (declare (ignore self))
   (let* ((nodes (ast-tooling:nodes match))
          (id-to-node-map (ast-tooling:idto-node-map nodes))
          (node (gethash *match-dump-tag* id-to-node-map))
@@ -827,8 +514,19 @@ This can only be run in the context set up by the code-match-callback::run metho
          (_end (get-end-loc node))
          (end (lexer-get-loc-for-end-of-token _end 0 (source-manager match-info) lang-options))
          (token-range (new-char-source-range-get-char-range begin end)))
-    (values (lexer-get-source-text
-             token-range (source-manager match-info) lang-options))))
+    #+(or)(format t "mtag-source-decl-stmt-impl:: begin: ~s  end: ~s  isTokenRange: ~a (class-of begin) ~s~%"
+                  (ast-tooling:print-to-string begin (source-manager match-info))
+                  (ast-tooling:print-to-string end (source-manager match-info))
+                  (ast-tooling:is-token-range token-range)
+                  (class-of begin))
+    (multiple-value-bind (source invalid)
+        (lexer-get-source-text token-range (source-manager match-info) lang-options)
+      (when invalid
+        (error "The source range ~a ~a was invalid"
+            (ast-tooling:print-to-string begin (source-manager match-info))
+            (ast-tooling:print-to-string end (source-manager match-info))))
+      #+(or)(format t "mtag-source-decl-stmt-impl:: size of source: ~a~%" (length source))
+      source)))
 
 
 (defgeneric mtag-name (match-info tag-node)
@@ -888,20 +586,26 @@ Return the source code for the node that has been associated with the tag."
     (if lookup
         lookup
         (setf (gethash pathname *probed-files*) (probe-file pathname)))))
-  
-(defun ploc-as-string (ploc)
+
+(defun ploc-parts (ploc)
   (declare (special *compilation-tool-database*))
   (when (ast-tooling:is-invalid ploc)
-    (return-from ploc-as-string "<invalid source-location>"))
+    (error "invalid source-location"))
   (let* ((relative (pathname (ast-tooling:presumed-loc-get-filename ploc)))
          (absolute (make-pathname :name nil :type nil :defaults (main-pathname *compilation-tool-database*)))
          (pathname (merge-pathnames (make-pathname :host (pathname-host absolute)
                                                    :device (pathname-device absolute)
                                                    :defaults relative) absolute))
          (probed-file (memoized-probe-file pathname)))
+    (values probed-file (ast-tooling:get-line ploc) (ast-tooling:get-column ploc))))
+
+(defun ploc-as-string (ploc)
+  (multiple-value-bind (probed-file line column)
+      (ploc-parts ploc)
     (if (null probed-file)
-        (format nil "[ploc-as-string could not locate ~a --> result after merging ~a]" relative pathname)
-        (format nil "~a:~a:~a" (namestring probed-file) (ast-tooling:get-line ploc) (ast-tooling:get-column ploc)))))
+        (progn
+          (format nil "[ploc-as-string could not locate ~a]" ploc))
+        (format nil "~a:~a:~a" (namestring probed-file) line column))))
 
 
 (defun source-loc-as-string (match-info sloc)
@@ -927,6 +631,16 @@ Return a string that describes the start of a source location for the node indic
   (let* ((node (mtag-node match-info tag))
          (begin-sloc (get-begin-loc node)))
     (source-loc-as-string match-info begin-sloc)))
+
+(defun mtag-loc-end (match-info tag)
+  "* Arguments
+- match-info :: The match-info.
+- tag :: The tag of the node.
+* Description 
+Return a string that describes the end of a source location for the node indicated by the tag."
+  (let* ((node (mtag-node match-info tag))
+         (end-sloc (get-end-loc node)))
+    (source-loc-as-string match-info end-sloc)))
 
 
 
@@ -957,7 +671,7 @@ Return the type of the node that corresponds to tag."
   (let* ((node (mtag-node match-info tag)))
     (type-of node)))
 
-(defmacro mtag-replace (match-info tag replace-callback)
+(defun mtag-replace (match-info tag replace-callback)
   "* Arguments
 - match-info :: A match-info.
 - tag :: A tag that is associated with a node in match-info.
@@ -965,24 +679,15 @@ Return the type of the node that corresponds to tag."
 * Description
 Calls the replace-callback function (funcall replace-callback match-info tag) and generates a replacement
 for the node corresponding to tag in match-info."
-  (let ((rep-src-gs (gensym))
-        (node-gs (gensym))
-        (begin-gs (gensym))
-        (end-gs (gensym))
-        (rep-range-gs (gensym))
-        (rep-gs (gensym))
-        (replacements-gs (gensym)))
-    `(let* ((,rep-src-gs (funcall ,replace-callback ,match-info ,tag))
-	    (,node-gs (mtag-node ,match-info ,tag)) ;; (id-to-node-map match-info)))
-	    (,begin-gs (get-begin-loc ,node-gs))
-	    (,end-gs (get-end-loc ,node-gs))
-	    (,rep-range-gs (new-char-source-range-get-token-range ,begin-gs ,end-gs))
-	    (,rep-gs (new-replacement (source-manager ,match-info) ,rep-range-gs ,rep-src-gs)))
-       (if *match-refactoring-tool*
-           (let ((,replacements-gs (ast-tooling:get-replacements *match-refactoring-tool*)))
-             (ast-tooling:replacements-add ,replacements-gs ,rep-gs))
-           (format t "Replacing: ~a~%     with: ~a~%" (clang-tool:mtag-source ,match-info ,tag) ,rep-src-gs)))))
-
+  (let* ((rep-src (funcall replace-callback match-info tag))
+         (node (mtag-node match-info tag)) ;; (id-to-node-map match-info)))
+         (begin (get-begin-loc node))
+         (end (get-end-loc node))
+         (rep-range (new-char-source-range-get-token-range begin end))
+         (rep (new-replacement (source-manager match-info) rep-range rep-src)))
+    (if *match-refactoring-tool*
+        (ast-tooling:refactoring-tool-replacements-add *match-refactoring-tool* rep)
+        (format t "NOT Replacing: ~a~%     with: ~a~%" (clang-tool:mtag-source match-info tag) rep-src))))
 
 (defparameter *match-results* nil)
 (defmacro mtag-result (match-info tag fmt &rest fmt-args)
@@ -1007,8 +712,9 @@ Generates a string using fmt/fmt-args and accumulates internally so that they ca
      (push ,rep-gs *match-results*))))
 
 
-(defvar *asts* nil)
-
+(defun lsel (list-name search-str)
+  "Select file names from the list and return them"
+  (remove-if-not #'(lambda (x) (search search-str x)) list-name))
 
 
 (defun load-asts (compilation-tool-database)
@@ -1025,16 +731,15 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
       (apply-arguments-adjusters compilation-tool-database tool)
       ;;    (ast-tooling:run tool factory)
       (format t "Loading ASTs for the files: ~a~%" files)
-      (multiple-value-bind (num asts)
-          (ast-tooling:build-asts tool)
-        (if (> num 0)
+      (format t "Tool -> ~a~%" tool)
+      (let ((asts (ast-tooling:build-asts tool)))
+        (if (> (length asts) 0)
             (progn
-              (format t "build-asts result: ~s ~s~%" num asts)
-              (setq *asts* asts))
+              (format t "build-asts result: ~s ~s~%" (length asts) asts))
             (progn
-              (setq *asts* nil)
               (format t "NO ASTS WERE LOADED!!!!~%")))
-        (format t "Built asts: ~a~%" asts)))))
+        (format t "Built asts: ~a~%" asts)
+        asts))))
 
 (defun safe-add-dynamic-matcher (match-finder compiled-matcher callback &key matcher-sexp)
   (or (ast-tooling:add-dynamic-matcher match-finder compiled-matcher callback)
@@ -1043,21 +748,22 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
 (defun batch-run-matcher (match-sexp &key compilation-tool-database callback run-and-save)
   (declare (type list match-sexp)
            (type ast-tooling:match-callback callback))
-  (format t "About to start batch-run-matcher~%")
-  (let* ((*match-refactoring-tool* (ast-tooling:new-refactoring-tool
-                                    (clang-database compilation-tool-database)
-                                    (source-namestrings compilation-tool-database))))
-    (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
-    (let* ((*run-and-save* run-and-save)
-           (matcher (compile-matcher match-sexp))
-           (match-finder (let ((mf (ast-tooling:new-match-finder)))
-                           (safe-add-dynamic-matcher mf matcher callback :matcher-sexp match-sexp)
-                           mf))
-           (factory (ast-tooling:new-frontend-action-factory match-finder)))
-      (if (not run-and-save)
-          (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
-          (ast-tooling:run-and-save *match-refactoring-tool* factory))
-      (format t "Number of matches ~a~%" *match-counter*))))
+  (with-compilation-tool-database compilation-tool-database
+    (format t "About to start batch-run-matcher~%")
+    (let* ((*match-refactoring-tool* (ast-tooling:new-refactoring-tool
+                                      (clang-database compilation-tool-database)
+                                      (source-namestrings compilation-tool-database))))
+      (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
+      (let* ((*run-and-save* run-and-save)
+             (matcher (compile-matcher match-sexp))
+             (match-finder (let ((mf (ast-tooling:new-match-finder)))
+                             (safe-add-dynamic-matcher mf matcher callback :matcher-sexp match-sexp)
+                             mf))
+             (factory (ast-tooling:new-frontend-action-factory match-finder)))
+        (if (not run-and-save)
+            (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
+            (ast-tooling:run-and-save *match-refactoring-tool* factory))
+        (format t "Number of matches ~a~%" *match-counter*)))))
 
 (defstruct multitool
   "Store multiple tools to run in one go across a bunch of source files."
@@ -1159,7 +865,7 @@ Run a matcher on a node and everything underneath it."
       (safe-add-dynamic-matcher sub-match-finder compiled-matcher callback :matcher-sexp matcher-sexp)
       (match sub-match-finder node ast-context))))
 
-(defun run-matcher-on-loaded-asts (match-sexp &key callback counter-limit)
+(defun run-matcher-on-loaded-asts (asts match-sexp &key callback counter-limit)
   "* Arguments
 - match-sexp :: A matcher in s-expression form.
 - callback :: A callback that is evaluated on matches.
@@ -1174,9 +880,9 @@ Limit the number of times you call the callback with counter-limit."
            (matcher (compile-matcher whole-matcher-sexp))
            (match-finder (ast-tooling:new-match-finder)))
       (safe-add-dynamic-matcher match-finder matcher callback :matcher-sexp match-sexp)
-      (format t "About to start matching asts -> ~a~%" *asts*)
+      (format t "About to start matching asts -> ~a~%" asts)
       (catch 'match-counter-reached-limit
-        (map 'list #'(lambda (x) (match-ast match-finder (get-astcontext x))) *asts*))
+        (map 'list #'(lambda (x) (match-ast match-finder (get-astcontext x))) asts))
       (format t "Number of matches ~a~%" *match-counter*))))
 
 (defun match-count-loaded-asts (match-sexp &key limit &allow-other-keys)
@@ -1226,7 +932,7 @@ and match them to the match-comments regex.  If they match, run the code."
       (format t "Matched the desired location: ~a~%" *match-source-location*))))
 
 
-(defun match-run-loaded-asts (match-sexp &key limit callback)
+(defun match-run-loaded-asts (asts match-sexp &key limit callback)
   "* Arguments
 - match-sexp :: A matcher in s-expression form.
 - limit :: Limit the number of callback calls.
@@ -1235,9 +941,9 @@ and match them to the match-comments regex.  If they match, run the code."
 I'm guessing at what this function does!!!!!
 Run the-code-match-callback (a functionRun the match-sexp on the loaded ASTs and for each match, extract the associated comments
 and match them to the match-comments regex.  If they match, run the code."
-  (run-matcher-on-loaded-asts match-sexp
-                     :callback callback
-                     :counter-limit limit))
+  (run-matcher-on-loaded-asts asts match-sexp
+                              :callback callback
+                              :counter-limit limit))
 
 (defun batch-match-run (match-sexp &key compilation-tool-database the-code-match-callback run-and-save)
   "* Arguments
@@ -1263,22 +969,22 @@ Code for representing ASTMatchers as s-expressions
 |#
 
 
-(defparameter +all-matchers+ (append +node-matcher-rules+ +narrowing-matcher-rules+ +traversal-matcher-rules+))
+(defparameter +all-matchers+ (append *node-matcher-rules* *narrowing-matcher-rules* *traversal-matcher-rules*))
 
 (defparameter +node-matcher-hints+ (make-hash-table :test #'eq))
-(dolist (i +node-matcher-rules+)
+(dolist (i *node-matcher-rules*)
   (setf (gethash (car i) +node-matcher-hints+) (cdr i)))
 
 (defparameter +narrowing-matcher-hints+ (make-hash-table :test #'eq))
-(dolist (i +narrowing-matcher-rules+)
+(dolist (i *narrowing-matcher-rules*)
   (setf (gethash (car i) +narrowing-matcher-hints+) (cdr i)))
 
 (define-condition wrong-matcher (condition)
   ((node-type :initarg :node-type :accessor wrong-matcher-node-type )))
 
 (defun identify-node-type (node)
-  (or (find-if #'(lambda (x) (eq node (second x))) +narrowing-matcher-rules+)
-      (find-if #'(lambda (x) (eq node (second x))) +traversal-matcher-rules+)))
+  (or (find-if #'(lambda (x) (eq node (second x))) *narrowing-matcher-rules*)
+      (find-if #'(lambda (x) (eq node (second x))) *traversal-matcher-rules*)))
 
 (defun applicable-matcher-p (prev-env matcher-env)
   (check-type prev-env list)
@@ -1298,7 +1004,7 @@ Code for representing ASTMatchers as s-expressions
                           (and (eq node (second x))
                                (or (not prev-environment)
                                    (applicable-matcher-p prev-environment (first x)))))
-                        +node-matcher-rules+)))
+                        *node-matcher-rules*)))
     (if node-matchers
         (progn
           (when (> (length node-matchers) 1)
@@ -1319,7 +1025,7 @@ Code for representing ASTMatchers as s-expressions
                             (or (not prev-environment)
                                 (eq (first x) :*)
                                 (applicable-matcher-p prev-environment (first x)))))
-                     +traversal-matcher-rules+)))
+                     *traversal-matcher-rules*)))
       (if matchers
           (progn
             (when (> (length matchers) 1)
@@ -1343,7 +1049,7 @@ Code for representing ASTMatchers as s-expressions
 ;;;                                         (not prev-environment)
                                            (eq (first x) :*)
                                            (applicable-matcher-p prev-environment (first x)))))
-                                   +narrowing-matcher-rules+)))
+                                   *narrowing-matcher-rules*)))
       (when matchers
         (when (> (length matchers) 1)
           (return-from id (map 'list (lambda (x) (third x)) matchers))
@@ -1360,11 +1066,11 @@ Code for representing ASTMatchers as s-expressions
 
 (defun error-unless-valid-predicate (p)
   (block good
-    (when (position-if (lambda (x) (eq p (cadr x))) +node-matcher-rules+)
+    (when (position-if (lambda (x) (eq p (cadr x))) *node-matcher-rules*)
       (return-from good t))
-    (when (position-if (lambda (x) (eq p (cadr x))) +traversal-matcher-rules+)
+    (when (position-if (lambda (x) (eq p (cadr x))) *traversal-matcher-rules*)
       (return-from good t))
-    (when (position-if (lambda (x) (eq p (cadr x))) +narrowing-matcher-rules+)
+    (when (position-if (lambda (x) (eq p (cadr x))) *narrowing-matcher-rules*)
       (return-from good t))
     (error "Invalid predicate ~a" p)))
 
@@ -1399,7 +1105,7 @@ Code for representing ASTMatchers as s-expressions
   (check-type environment list)
   (let ((*print-circle* nil))
     (let* ((super-classes (super-class-matchers environment))
-           (node-matcher-records (remove-if-not (lambda (x) (member (car x) super-classes)) +node-matcher-rules+))
+           (node-matcher-records (remove-if-not (lambda (x) (member (car x) super-classes)) *node-matcher-rules*))
            (node-matchers (mapcar #'second node-matcher-records))
            (short-names (remove-if (lambda (x) (> (length (symbol-name x)) 20)) node-matchers))
            (long-names (remove-if-not (lambda (x) (> (length (symbol-name x)) 20)) node-matchers)))
@@ -1414,8 +1120,8 @@ Code for representing ASTMatchers as s-expressions
 
 
 #+(or)
-(dolist (m +traversal-matcher-rules+)
-  (let ((some (remove-if-not (lambda (x) (eq (cadr m) (cadr x))) +all-matcher-rules+)))
+(dolist (m *traversal-matcher-rules*)
+  (let ((some (remove-if-not (lambda (x) (eq (cadr m) (cadr x))) *all-matcher-rules*)))
     (when (> (length some) 1)
       (format t "matcher: ~a  ~a~%" (cadr m) (map 'list (lambda (x) (caddr x)) some)))))
 
@@ -1453,7 +1159,7 @@ correspond to the environment names superclasses that are also part of the clang
   "For a list of valid environments give a hint for narrowing matchers that could narrow the number of matches"
   (check-type environment list)
   (handler-case (let ((supers (append (super-class-matchers environment) '(:*))))
-                  (dolist (i +narrowing-matcher-rules+)
+                  (dolist (i *narrowing-matcher-rules*)
                     (when (member (car i) supers)
                       (format t "   ~a~%" (cdr i)))))
     (wrong-matcher (exception)
@@ -1463,14 +1169,14 @@ correspond to the environment names superclasses that are also part of the clang
   "For a list of valid environments, give a hint for traversal matchers that will move us from there"
   (check-type environment list)
   (handler-case (let ((supers (append (super-class-matchers environment) '(:*))))
-                  (dolist (i +traversal-matcher-rules+)
+                  (dolist (i *traversal-matcher-rules*)
                     (when (member (car i) supers)
                       (format t "   ~a~%" (cdr i)))))
     (wrong-matcher (exception)
       (format t "Traversal matchers aren't appropriate here - ~a~%" (wrong-matcher-node-type exception)))))
 
 (defun arg-for-cmd (node)
-  (dolist (i (append +node-matcher-rules+ +narrowing-matcher-rules+ +traversal-matcher-rules+))
+  (dolist (i (append *node-matcher-rules* *narrowing-matcher-rules* *traversal-matcher-rules*))
     (when (eq (cadr i) node)
       (format t "~a~%" i))))
 

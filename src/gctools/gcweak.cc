@@ -154,7 +154,7 @@ size_t WeakKeyHashTable::find_no_lock(gctools::tagged_pointer<KeyBucketsType> ke
 #endif
       return 1;
     }
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     // Handle splatting
     if (!k.raw_()) {
       auto deleted = value_type(gctools::make_tagged_deleted<core::T_O*>());
@@ -162,6 +162,8 @@ size_t WeakKeyHashTable::find_no_lock(gctools::tagged_pointer<KeyBucketsType> ke
       ValueBucketsType *values = dynamic_cast<ValueBucketsType *>(&*keys->dependent);
       (*values)[i] = value_type(gctools::make_tagged_unbound<core::T_O*>());
     }
+#else
+    MISSING_GC_SUPPORT();
 #endif
     if (result == 0 && (k.deletedp())) {
       b = i;
@@ -366,7 +368,7 @@ core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
         }
         GCWEAK_LOG(BF("Falling through"));
       }
-      result_mv = Values(defaultValue,_Nil<core::T_O>());
+      result_mv = Values(defaultValue,nil<core::T_O>());
       return;
     });
   return result_mv;
@@ -474,7 +476,7 @@ void WeakKeyHashTable::clrhash() {
 
 CL_DEFUN core::Vector_sp weak_key_hash_table_pairs(const gctools::WeakKeyHashTable& ht) {
   size_t len = (*ht._Keys).length();
-  core::ComplexVector_T_sp keyvalues = core::ComplexVector_T_O::make(len*2,_Nil<core::T_O>(),core::make_fixnum(0));
+  core::ComplexVector_T_sp keyvalues = core::ComplexVector_T_O::make(len*2,nil<core::T_O>(),core::make_fixnum(0));
   size_t idx(0);
   HT_READ_LOCK(&ht);
   for ( size_t i(0); i<len; ++i ) {
@@ -554,7 +556,7 @@ size_t StrongKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, co
 #endif
       return 1;
     }
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
     // Handle splatting
     if (!k.raw_()) {
       auto deleted = value_type(gctools::make_tagged_deleted<core::T_O*>());
@@ -562,6 +564,8 @@ size_t StrongKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, co
       ValueBucketsType *values = dynamic_cast<ValueBucketsType *>(&*keys->dependent);
       (*values)[i] = value_type(gctools::make_tagged_unbound<core::T_O*>());
     }
+#else
+    MISSING_GC_SUPPORT();
 #endif
     if (result == 0 && (k.deletedp())) {
       b = i;
@@ -748,7 +752,7 @@ core::T_mv StrongKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue)
     }
     GCWEAK_LOG(BF("Falling through"));
   }
-  result_mv = Values(defaultValue,_Nil<core::T_O>());
+  result_mv = Values(defaultValue,nil<core::T_O>());
   return result_mv;
 }
 

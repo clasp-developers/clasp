@@ -242,7 +242,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (cmp-log "entered codegen-special-operator head: %s rest: %s%N" head rest)
   (assert-result-isa-llvm-value result)
   (cmp-log "About to set source pos%N")
-  (dbg-set-current-source-pos rest)
   (cmp-log "About to do case on head: %s%N" head)
   (let ((function (gethash head *special-operator-dispatch* 'nil)))
     (if function
@@ -341,7 +340,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun codegen (result form env)
 ;;;  (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result)
-  (dbg-set-current-source-pos form)
   (cmp-log "codegen stack-used[%d bytes]%N" (stack-used))
   (cmp-log "codegen evaluate-depth[%d]  %s%N" (evaluate-depth) form)
   ;;

@@ -107,5 +107,50 @@ extern "C" {
 // Do the same thing that mps_park and mps_release do
 void boehm_park();
 void boehm_release();
+
+
+void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *client_data);
+void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *client_data);
+
+
 };
+
+namespace gctools {
+// ------------
+struct ReachableClass {
+  ReachableClass() : _Kind(gctools::STAMPWTAG_null){};
+  ReachableClass(gctools::GCStampEnum tn) : _Kind(tn), instances(0), totalSize(0) {}
+  void update(size_t sz) {
+    ++this->instances;
+    this->totalSize += sz;
+  };
+  gctools::GCStampEnum _Kind;
+  size_t instances;
+  size_t totalSize;
+  size_t print(const std::string &shortName);
+};
+
+
+typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
+
+
+struct FindStamp {
+  gctools::GCStampEnum _stamp;
+  std::vector<void*> _addresses;
+  FindStamp(gctools::GCStampEnum stamp) : _stamp(stamp) {};
+};
+
+struct FindOwner {
+  void*  _pointer;
+  std::vector<void*> _addresses;
+  FindOwner(void* pointer) : _pointer(pointer) {};
+};
+
+/*!
+ * claspgc_room - the GC specific implementation of ROOM
+ */
+void clasp_gc_room(std::ostringstream& OutputStream);
+
+};
+
 #endif // _clasp_boehmGarbageCollection_H

@@ -70,6 +70,12 @@ class HardError {
     dbg_hook(str.c_str());                                   \
     ::core::errorFormatted(str);                                     \
   }
+#define MISSING_GC_SUPPORT()                                     \
+  {                                                                  \
+    std::string str = "Missing GC support";                   \
+    dbg_hook(str.c_str());                                   \
+    ::core::errorFormatted(str);                                     \
+  }
 #define HARD_UNREACHABLE() {printf("%s:%d HARD_UNREACHABLE\n", __FILE__, __LINE__); throw_hard_error("Unreachable");}
 #define HARD_SUBCLASS_MUST_IMPLEMENT() throw_hard_error("Subclass must implement");
 #ifdef DEBUG_ASSERT

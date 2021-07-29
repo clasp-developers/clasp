@@ -1,13 +1,13 @@
 /*
-    File: imageSaveLoad.h
+    File: snapshotSaveLoad.h
 */
 
 
-#ifndef imageSaveLoad_fwd_H //[
-#define imageSaveLoad_fwd_H
+#ifndef snapshotSaveLoad_fwd_H //[
+#define snapshotSaveLoad_fwd_H
 
 
-namespace imageSaveLoad {
+namespace snapshotSaveLoad {
 
 
 typedef enum { SaveOp, LoadOp } FixupOperation_;
@@ -16,11 +16,11 @@ struct Fixup;
 
 FixupOperation_ operation(Fixup* fixup);
 
-struct image_save_load_init_s {
+struct snapshot_save_load_init_s {
   gctools::Header_s*                  _headStart;
   gctools::clasp_ptr_t                _clientStart; // include vtable
   gctools::clasp_ptr_t                _clientEnd; // after client
-  image_save_load_init_s(gctools::Header_s* head, gctools::clasp_ptr_t clientStart, gctools::clasp_ptr_t clientEnd) :
+  snapshot_save_load_init_s(gctools::Header_s* head, gctools::clasp_ptr_t clientStart, gctools::clasp_ptr_t clientEnd) :
     _headStart(head),
     _clientStart(clientStart),
     _clientEnd(clientEnd) {};
@@ -35,4 +35,4 @@ struct image_save_load_init_s {
 };
 
 
-#endif // imageSaveLoad_fwd_H
+#endif // snapshotSaveLoad_fwd_H

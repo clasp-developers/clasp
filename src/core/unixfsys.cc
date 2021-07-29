@@ -222,7 +222,7 @@ safe_chdir(const char *path, T_sp tprefix) {
     String_sp prefix = gc::As_unsafe<String_sp>(tprefix);
     stringstream ss;
     ss << prefix->get_std_string() << path;
-    return safe_chdir(ss.str().c_str(), _Nil<T_O>());
+    return safe_chdir(ss.str().c_str(), nil<T_O>());
   } else {
     int output;
     clasp_disable_interrupts();
@@ -254,20 +254,20 @@ CL_DEFUN T_mv core__fork(bool bReturnStream) {
         int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
         fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
       }
-      return Values(_Nil<T_O>(),make_fixnum(child_PID),_Nil<T_O>());
+      return Values(nil<T_O>(),make_fixnum(child_PID),nil<T_O>());
     } else {
       // Parent
       if ( bReturnStream ) {
         close(filedes[1]);
         int flags = fcntl(filedes[0],F_GETFL,0);
         fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
-        T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
-        return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
+        T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
+        return Values(nil<T_O>(), clasp_make_fixnum(child_PID),stream);
       }
-      return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
+      return Values(nil<T_O>(),clasp_make_fixnum(child_PID),nil<T_O>());
     }
   }
-  return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
+  return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),nil<T_O>());
 };
 
 
@@ -291,10 +291,10 @@ CL_DEFUN T_mv core__fork_redirect(int stdout_fd, int stderr_fd) {
       fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
       flags = fcntl(STDERR_FILENO,F_GETFL,0);
       fcntl(STDERR_FILENO,F_SETFL,flags|FD_CLOEXEC);
-      return Values(_Nil<T_O>(),make_fixnum(child_PID));
+      return Values(nil<T_O>(),make_fixnum(child_PID));
     } else {
       // Parent
-      return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID));
+      return Values(nil<T_O>(),clasp_make_fixnum(child_PID));
     }
   }
   return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)));
@@ -417,7 +417,7 @@ CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set)
   }
   int result = sigthreadmask(ihow,&set->_sigset._value,old_setp);
   if (result == 0) {
-    return Values(_Nil<T_O>(),_Nil<T_O>());
+    return Values(nil<T_O>(),nil<T_O>());
   } else {
     return Values(_lisp->_true(),make_fixnum(errno));
   }
@@ -491,7 +491,7 @@ CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
       printf("%s:%d:%s set break-point here\n", __FILE__, __LINE__, __FUNCTION__ );
     }
 #endif
-    Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), _Nil<T_O>()));
+    Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), nil<T_O>()));
 //    printf("%s:%d:%s  After safe_chdir\n", __FILE__, __LINE__, __FUNCTION__ );
     if (change_default_pathname_defaults.notnilp()) {
       write_bf_stream(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
@@ -628,7 +628,7 @@ file_kind(const char *filename, bool follow_links) {
   if (safe_stat(filename, &buf) < 0)
 #endif
   {
-    output = _Nil<Symbol_O>();
+    output = nil<Symbol_O>();
   }
 #ifdef HAVE_LSTAT
   else if (S_ISLNK(buf.st_mode)) {
@@ -670,7 +670,7 @@ static Symbol_sp smart_file_kind(String_sp sfilename, bool follow_links) {
       // If its a broken link return _sym_file
       Symbol_sp kind_no_follow_links = file_kind((char *)(sfilename->get_std_string().c_str()), false);
       if (kind_no_follow_links.nilp())
-        return _Nil<T_O>();
+        return nil<T_O>();
       return kw::_sym_broken_link;
     }
   } else {
@@ -758,7 +758,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   kind = file_kind((const char *)aux->rowMajorAddressOfElement_(0), false);
   if (kind.nilp()) {
     if (ignore_if_failure)
-      return _Nil<Pathname_O>();
+      return nil<Pathname_O>();
     CANNOT_OPEN_FILE_ERROR(aux);
 //	FEcannot_open(aux);
 #ifdef HAVE_LSTAT
@@ -773,7 +773,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   } else if (kind != kw::_sym_directory) {
   WRONG_DIR:
     if (ignore_if_failure)
-      return _Nil<Pathname_O>();
+      return nil<Pathname_O>();
     SIMPLE_ERROR(BF("The directory %s in pathname %s actually points to a file or special device.") % _rep_(subdir) % _rep_(base_dir));
   }
   if (subdir == kw::_sym_up) {
@@ -781,7 +781,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
     newdir = cl__nbutlast(newdir, make_fixnum(2));
     if (newdir.nilp()) {
       if (ignore_if_failure)
-        return _Nil<Pathname_O>();
+        return nil<Pathname_O>();
       SIMPLE_ERROR(BF("Pathname contained an :UP component  "
                       "that goes above the base directory:"
                       "%s") %
@@ -808,9 +808,9 @@ make_base_pathname(Pathname_sp pathname) {
   return Pathname_O::makePathname(pathname->_Host,                       // host
                                   pathname->_Device,                     // device
                                   Cons_O::createList(kw::_sym_absolute), // dir
-                                  _Nil<T_O>(),                           // name
-                                  _Nil<T_O>(),                           // type
-                                  _Nil<T_O>(),                           // version
+                                  nil<T_O>(),                           // name
+                                  nil<T_O>(),                           // type
+                                  nil<T_O>(),                           // version
                                   kw::_sym_local);
 }
 
@@ -858,9 +858,9 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
     pathname = Pathname_O::makePathname(pn->_Host,
                                         pn->_Device,
                                         pn->_Directory,
-                                        _Nil<T_O>(),
-                                        _Nil<T_O>(),
-                                        _Nil<T_O>(),
+                                        nil<T_O>(),
+                                        nil<T_O>(),
+                                        nil<T_O>(),
                                         kw::_sym_local);
     pathname = clasp_mergePathnames(filename, pathname, kw::_sym_default);
     if (pathname.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
@@ -890,7 +890,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
 	 * merge_pathnames will not do it. It is
 	 * safe because coerce_to_file_pathname
 	 * created a copy. */
-    gc::As<Pathname_sp>(pathname)->_Version = _Nil<T_O>();
+    gc::As<Pathname_sp>(pathname)->_Version = nil<T_O>();
   } else {
     gc::As<Pathname_sp>(pathname)->_Version = kw::_sym_newest;
   }
@@ -932,7 +932,7 @@ CL_DEFUN Pathname_sp cl__truename(T_sp orig_pathname) {
 #ifdef DEBUG_FILE_KIND
   printf("%s:%d cl__truename pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str());
 #endif
-  Pathname_mv truename = file_truename(pathname, _Nil<T_O>(), FOLLOW_SYMLINKS);
+  Pathname_mv truename = file_truename(pathname, nil<T_O>(), FOLLOW_SYMLINKS);
   return truename;
 }
 
@@ -1003,7 +1003,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
         if_exists = kw::_sym_error;
     }
     if (if_exists.nilp()) {
-      return Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
+      return Values(nil<T_O>(), nil<T_O>(), nil<T_O>());
     }
   }
   if (UNLIKELY(if_exists != kw::_sym_supersede && if_exists != _lisp->_true())) {
@@ -1030,7 +1030,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
     std::string msg = "Unable to rename file ~S to ~S.~%C library error: ~S";
     eval::funcall(_sym_signalSimpleError,
                   core::_sym_simpleFileError,                      /* condition */
-                  _Nil<T_O>(),                             /* continuable */
+                  nil<T_O>(),                             /* continuable */
                   SimpleBaseString_O::make(msg),                      /* format */
                   Cons_O::createList(oldn, newn, c_error), /* format args */
                   kw::_sym_pathname,                       /* file-error options */
@@ -1086,7 +1086,7 @@ CL_DEFUN T_sp cl__probe_file(T_sp filespec) {
   if (filespec.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pfile = cl__pathname(filespec);
   /* INV: Both SI:FILE-KIND and TRUENAME complain if "file" has wildcards */
-  return (core__file_kind(pfile, true).notnilp() ? cl__truename(pfile) : _Nil<Pathname_O>());
+  return (core__file_kind(pfile, true).notnilp() ? cl__truename(pfile) : nil<Pathname_O>());
 }
 
 CL_LAMBDA(pathspec);
@@ -1098,7 +1098,7 @@ CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   Pathname_sp pathname = cl__pathname(pathspec);
   String_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
-  time = _Nil<Number_O>();
+  time = nil<Number_O>();
   if (safe_stat((char *)filename->get_std_string().c_str(), &filestatus) >= 0) {
     Number_sp accJan1st1970UT(Integer_O::create((gc::Fixnum)(24 * 60 * 60)));
     accJan1st1970UT = contagion_mul(accJan1st1970UT, Integer_O::create((gc::Fixnum)(17 + 365 * 70)));
@@ -1167,7 +1167,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
       i--;
     }
     if (i == 0)
-      return clasp_homedir_pathname(_Nil<T_O>());
+      return clasp_homedir_pathname(nil<T_O>());
 #ifdef HAVE_PWD_H
     pwent = getpwnam(p);
     if (pwent == NULL) {
@@ -1202,7 +1202,7 @@ CL_DECLARE();
 CL_DOCSTRING("userHomedirPathname");
 CL_DEFUN Pathname_sp cl__user_homedir_pathname(T_sp host) {
   /* Ignore optional host argument. */
-  return clasp_homedir_pathname(_Nil<T_O>());
+  return clasp_homedir_pathname(nil<T_O>());
 }
 
 static bool
@@ -1225,67 +1225,23 @@ string_match(const char *s, T_sp pattern) {
  */
 static T_sp
 list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
-  T_sp out = _Nil<T_O>();
+  T_sp out = nil<T_O>();
   if (base_dir.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
   T_sp prefix = clasp_namestring(base_dir, CLASP_NAMESTRING_FORCE_BASE_STRING);
   T_sp component, component_path, kind;
   char *text;
-#if defined(HAVE_DIRENT_H)
   DIR *dir;
   struct dirent *entry;
 
   clasp_disable_interrupts();
   dir = opendir((char *)gc::As<String_sp>(prefix)->get_std_string().c_str());
   if (dir == NULL) {
-    out = _Nil<T_O>();
+    out = nil<T_O>();
     goto OUTPUT;
   }
 
   while ((entry = readdir(dir))) {
     text = entry->d_name;
-#else
-#ifdef CLASP_MS_WINDOWS_HOST
-  WIN32_FIND_DATA fd;
-  HANDLE hFind = NULL;
-  BOOL found = false;
-
-  clasp_disable_interrupts();
-  for (;;) {
-    if (hFind == NULL) {
-      T_sp aux = make_constant_base_string(".\\*");
-      T_sp mask = base_string_concatenate(2, prefix, aux);
-      hFind = FindFirstFile((char *)mask->c_str(), &fd);
-      if (hFind == INVALID_HANDLE_VALUE) {
-        out = _Nil<T_O>();
-        goto OUTPUT;
-      }
-      found = true;
-    } else {
-      found = FindNextFile(hFind, &fd);
-    }
-    if (!found)
-      break;
-    text = fd.cFileName;
-#else  /* sys/dir.h as in SYSV */
-  FILE *fp;
-  char iobuffer[BUFSIZ];
-  DIRECTORY dir;
-
-  clasp_disable_interrupts();
-  fp = fopen((char *)prefix->c_str(), OPEN_R);
-  if (fp == NULL) {
-    out = _Nil<T_O>();
-    goto OUTPUT;
-  }
-  setbuf(fp, iobuffer);
-  for (;;) {
-    if (fread(&dir, sizeof(DIRECTORY), 1, fp) <= 0)
-      break;
-    if (dir.d_ino == 0)
-      continue;
-    text = dir.d_name;
-#endif /* !CLASP_MS_WINDOWS_HOST */
-#endif /* !HAVE_DIRENT_H */
     if (text[0] == '.' &&
         (text[1] == '\0' ||
          (text[1] == '.' && text[2] == '\0')))
@@ -1293,7 +1249,6 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     if (!string_match(text, text_mask))
       continue;
     component = SimpleBaseString_O::make(std::string(text));
-#if 1
     stringstream concat;
     String_sp str_prefix = coerce::stringDesignator(prefix);
     concat << str_prefix->get_std_string();
@@ -1301,9 +1256,6 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     concat << str_component->get_std_string();
     // TODO Support proper strings
     component = SimpleBaseString_O::make(concat.str());
-#else
-    component = base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
-#endif
     if (component.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
     component_path = cl__pathname(component);
     if (!pathname_mask.nilp()) {
@@ -1315,15 +1267,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     kind = component_path_mv.valueGet_(1);
     out = Cons_O::create(Cons_O::create(component_path, kind), out);
   }
-#ifdef HAVE_DIRENT_H
   closedir(dir);
-#else
-#ifdef CLASP_MS_WINDOWS_HOST
-  FindClose(hFind);
-#else
-  fclose(fp);
-#endif /* !CLASP_MS_WINDOWS_HOST */
-#endif /* !HAVE_DIRENT_H */
   clasp_enable_interrupts();
 OUTPUT:
   return cl__nreverse(out);
@@ -1350,7 +1294,7 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   clasp_enable_interrupts();
   T_sp output;
   if (fd < 0) {
-    output = _Nil<T_O>();
+    output = nil<T_O>();
   } else {
     close(fd);
     output = cl__truename(SimpleBaseString_O::make(outname));
@@ -1379,7 +1323,7 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
   clasp_enable_interrupts();
   T_sp output;
   if (fd < 0) {
-    output = _Nil<T_O>();
+    output = nil<T_O>();
   }
   unlink(outname.c_str());
   return make_fixnum(fd);
@@ -1428,7 +1372,7 @@ CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
 @(defun ext::getcwd (&optional (change_d_p_d ECL_NIL))
 	T_sp output;
 @
-	output = cl_parse_namestring(3, current_dir(), _Nil<T_O>(), _Nil<T_O>());
+	output = cl_parse_namestring(3, current_dir(), nil<T_O>(), nil<T_O>());
 	if (!Null(change_d_p_d)) {
 		ECL_SETQ(the_env, @'*default-pathname-defaults*', output);
 	}
@@ -1465,8 +1409,8 @@ si_get_library_pathname(void)
 	s->base_string.fillp = len;
         /* GetModuleFileName returns a file name. We have to strip
          * the directory component. */
-        s = cl__make_pathname(8, kw::_sym_name, _Nil<T_O>(), kw::_sym_type, _Nil<T_O>(),
-			     kw::_sym_version, _Nil<T_O>(),
+        s = cl__make_pathname(8, kw::_sym_name, nil<T_O>(), kw::_sym_type, nil<T_O>(),
+			     kw::_sym_version, nil<T_O>(),
                              kw::_sym_defaults, s);
         s = ecl__namestring(s, CLASP_NAMESTRING_FORCE_BASE_STRING);
 	}
@@ -1499,7 +1443,7 @@ si_get_library_pathname(void)
 	namestring = ecl__namestring(directory,
                                     CLASP_NAMESTRING_TRUNCATE_IF_ERROR |
                                     CLASP_NAMESTRING_FORCE_BASE_STRING);
-	if (safe_chdir((char*)namestring->c_str(), _Nil<T_O>()) < 0) {
+	if (safe_chdir((char*)namestring->c_str(), nil<T_O>()) < 0) {
 		T_sp c_error = clasp_strerror(errno);
                 std::string msg = "Can't change the current directory to ~A."
                   "~%C library error: ~S";
@@ -1529,9 +1473,9 @@ T_sp core__mkstemp(T_sp template)
     int ok;
     phys = cl_translate_logical_pathname(1, template);
     dir = cl__make_pathname(8,
-			   kw::_sym_type, _Nil<T_O>(),
-			   kw::_sym_name, _Nil<T_O>(),
-			   kw::_sym_version, _Nil<T_O>(),
+			   kw::_sym_type, nil<T_O>(),
+			   kw::_sym_name, nil<T_O>(),
+			   kw::_sym_version, nil<T_O>(),
 			   kw::_sym_defaults, phys);
     if (dir.nilp()) SIMPLE_ERROR(BF("In %s the dir is NIL") % __FUNCTION__);
     dir = core__coerce_to_filename(dir);
@@ -1547,7 +1491,7 @@ T_sp core__mkstemp(T_sp template)
 			 strTempFileName);
     clasp_enable_interrupts();
     if (!ok) {
-	output = _Nil<T_O>();
+	output = nil<T_O>();
     } else {
 	l = strlen(strTempFileName);
 	output = ecl_alloc_simple_base_string(l);
@@ -1572,7 +1516,7 @@ T_sp core__mkstemp(T_sp template)
 #endif
     clasp_enable_interrupts();
     if (fd < 0) {
-	output = _Nil<T_O>();
+	output = nil<T_O>();
     } else {
 	close(fd);
     }
@@ -1586,9 +1530,9 @@ CL_DECLARE();
 CL_DOCSTRING("Like unix rmdir");
 CL_DEFUN T_sp core__rmdir(T_sp directory) {
   return cl__delete_file(eval::funcall(cl::_sym_makePathname,
-                                     kw::_sym_name, _Nil<T_O>(),
-                                     kw::_sym_type, _Nil<T_O>(),
-                                     kw::_sym_defaults, directory));
+                                       kw::_sym_name, nil<T_O>(),
+                                       kw::_sym_type, nil<T_O>(),
+                                       kw::_sym_defaults, directory));
 }
 
 CL_LAMBDA(file mode);
@@ -1642,7 +1586,7 @@ CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   clasp_enable_interrupts();
   if (ok)
     return _lisp->_true();
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 /*
@@ -1654,22 +1598,22 @@ CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
  */
 static T_sp
 dir_files(T_sp base_dir, T_sp tpathname, int flags) {
-  T_sp all_files, output = _Nil<T_O>();
+  T_sp all_files, output = nil<T_O>();
   T_sp mask;
   Pathname_sp pathname = gc::As<Pathname_sp>(tpathname);
   T_sp name = pathname->_Name;
   T_sp type = pathname->_Type;
   if (name.nilp() && type.nilp()) {
-    return Cons_O::create(base_dir,_Nil<T_O>());
+    return Cons_O::create(base_dir,nil<T_O>());
   }
-  mask = cl__make_pathname(_Nil<T_O>(), false,
-                         _Nil<T_O>(), false,
-                         _Nil<T_O>(), false,
+  mask = cl__make_pathname(nil<T_O>(), false,
+                         nil<T_O>(), false,
+                         nil<T_O>(), false,
                          name, true,
                          type, true,
                          pathname->_Version, true,
                          kw::_sym_local);
-  for (all_files = list_directory(base_dir, _Nil<T_O>(), mask, flags);
+  for (all_files = list_directory(base_dir, nil<T_O>(), mask, flags);
        !all_files.nilp();
        all_files = oCdr(all_files)) {
     T_sp record = oCar(all_files);
@@ -1690,7 +1634,7 @@ dir_files(T_sp base_dir, T_sp tpathname, int flags) {
  */
 static T_sp
 dir_recursive(T_sp base_dir, T_sp directory, T_sp filemask, int flags) {
-  T_sp item, output = _Nil<T_O>();
+  T_sp item, output = nil<T_O>();
 AGAIN:
   /* There are several possibilities here:
      *
@@ -1714,7 +1658,7 @@ AGAIN:
          * 2.1) If CAR(DIRECTORY) is a string or :WILD, we have to
          * enter & scan all subdirectories in our curent directory.
          */
-    T_sp next_dir = list_directory(base_dir, item, _Nil<T_O>(), flags);
+    T_sp next_dir = list_directory(base_dir, item, nil<T_O>(), flags);
     for (; !next_dir.nilp(); next_dir = oCdr(next_dir)) {
       T_sp record = oCar(next_dir);
       T_sp component = oCar(record);
@@ -1733,7 +1677,7 @@ AGAIN:
          * scan all subdirectories from _all_ levels, looking for a
          * tree that matches the remaining part of DIRECTORY.
          */
-    T_sp next_dir = list_directory(base_dir, _Nil<T_O>(), _Nil<T_O>(), flags);
+    T_sp next_dir = list_directory(base_dir, nil<T_O>(), nil<T_O>(), flags);
     for (; !next_dir.nilp(); next_dir = oCdr(next_dir)) {
       T_sp record = oCar(next_dir);
       T_sp component = oCar(record);
@@ -1759,7 +1703,7 @@ AGAIN:
          * for the file part.
          */
     if (base_dir.nilp())
-      return _Nil<T_O>();
+      return nil<T_O>();
     directory = oCdr(directory);
     goto AGAIN;
   }
@@ -2047,7 +1991,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
         {
           int flags = fcntl(filedes[0],F_GETFL,0);
           fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
-          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
 
           DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %p )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % stream );
 
@@ -2057,13 +2001,13 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
 
           DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % 0 % child_PID % 0 );
 
-          return Values( clasp_make_fixnum( 0 ), clasp_make_fixnum( child_PID ), _Nil<T_O>() );
+          return Values( clasp_make_fixnum( 0 ), clasp_make_fixnum( child_PID ), nil<T_O>() );
       }
 
       // error
       DEBUG_PRINT(BF("%s (%s:%d) | Values( %d %d %d )\n.") % __FUNCTION__ % __FILE__ % __LINE__ % errno % strerror( errno ) % 0 );
 
-      return Values( clasp_make_fixnum( errno ), SimpleBaseString_O::make( std::strerror( errno )), _Nil<T_O>() );
+      return Values( clasp_make_fixnum( errno ), SimpleBaseString_O::make( std::strerror( errno )), nil<T_O>() );
     }
   }
   else
@@ -2077,7 +2021,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
       execvp_args[ i ] = nullptr;
     }
 
-    return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
+    return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),nil<T_O>());
   }
 }
 
@@ -2142,19 +2086,19 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
         if ( bReturnStream ) {
           int flags = fcntl(filedes[0],F_GETFL,0);
           fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
-          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
-          return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
+          T_sp stream = clasp_make_file_stream_from_fd(SimpleBaseString_O::make("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, nil<T_O>());
+          return Values(nil<T_O>(), clasp_make_fixnum(child_PID),stream);
         }
-        return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
+        return Values(nil<T_O>(),clasp_make_fixnum(child_PID),nil<T_O>());
       }
       // error
-      return Values(clasp_make_fixnum(errno), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
+      return Values(clasp_make_fixnum(errno), SimpleBaseString_O::make(std::strerror(errno)),nil<T_O>());
     }
   } else {
     // Clean up args
     for (int i(0); i < execvp_args.size() - 1; ++i)
       free((void *)execvp_args[i]);
-    return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),_Nil<T_O>());
+    return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)),nil<T_O>());
   }
 }
 
@@ -2165,7 +2109,7 @@ CL_DEFUN T_sp ext__getenv(String_sp arg) {
   ASSERT(cl__stringp(arg));
   char *sres = getenv(arg->get_std_string().c_str());
   if (sres == NULL) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   return SimpleBaseString_O::make(sres);
 };
@@ -2194,11 +2138,11 @@ CL_DEFUN T_mv core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_
   if (num<0) {
     return Values(make_fixnum(num), make_fixnum(errno));
   }
-  return Values(make_fixnum(num), _Nil<T_O>());
+  return Values(make_fixnum(num), nil<T_O>());
 }
 
 CL_DEFUN FdSet_sp core__make_fd_set() {
-  GC_ALLOCATE(FdSet_O,fdset);
+  auto fdset = gctools::GC<FdSet_O>::allocate_with_default_constructor();
   return fdset;
 }
 #endif // defined(HAVE_SELECT)
@@ -2215,7 +2159,7 @@ CL_DOCSTRING("Returns data of the posix fstat() function for file-descriptor"
 CL_DEFUN T_mv ext__fstat(int filedescriptor) {
   struct stat sb;
   if (fstat(filedescriptor, &sb) == -1)
-    return Values(_Nil<T_O>());
+    return Values(nil<T_O>());
   else
     return Values (Integer_O::create(sb.st_size),
                    Integer_O::create((gctools::Fixnum) sb.st_mtime),
@@ -2246,7 +2190,7 @@ CL_DEFUN T_mv ext__stat (T_sp pathname) {
   struct stat sb;
   String_sp filename = gc::As<String_sp>(cl__namestring(cl__translate_logical_pathname (pathname)));
   if (stat(filename->get_std_string().c_str(), &sb) == -1)
-    return Values (_Nil<T_O>());
+    return Values (nil<T_O>());
   else
     return Values(Integer_O::create(sb.st_size),
                   Integer_O::create((gctools::Fixnum) sb.st_mtime),

@@ -40,14 +40,14 @@ class Argument {
 public:
   T_sp _ArgTarget;
   int _ArgTargetFrameIndex;
-  explicit Argument() : _ArgTarget(_Nil<T_O>()), _ArgTargetFrameIndex(UNDEFINED_TARGET) {}
+  explicit Argument() : _ArgTarget(nil<T_O>()), _ArgTargetFrameIndex(UNDEFINED_TARGET) {}
   explicit Argument(T_sp target) : _ArgTarget(target), _ArgTargetFrameIndex(UNDEFINED_TARGET){};
   int targetFrameIndex() const {
     return this->_ArgTargetFrameIndex;
   }
   void clear() {
     _G();
-    this->_ArgTarget = _Nil<T_O>();
+    this->_ArgTarget = nil<T_O>();
     this->_ArgTargetFrameIndex = UNDEFINED_TARGET;
   }
   List_sp classified() const;
@@ -66,7 +66,7 @@ class ArgumentWithDefault : public Argument {
 public:
   typedef Argument Base;
   T_sp _Default;
-  ArgumentWithDefault() : _Default(_Nil<T_O>()){};
+  ArgumentWithDefault() : _Default(nil<T_O>()){};
   ArgumentWithDefault(T_sp target, T_sp def) : Argument(target), _Default(def){};
   string asString() const;
 };
@@ -104,7 +104,7 @@ public:
   typedef ArgumentWithDefault Base;
   T_sp _Keyword;
   Argument _Sensor;
-  KeywordArgument() : ArgumentWithDefault(), _Keyword(_Nil<T_O>()), _Sensor(){};
+  KeywordArgument() : ArgumentWithDefault(), _Keyword(nil<T_O>()), _Sensor(){};
   KeywordArgument(T_sp keyword, T_sp target, T_sp def, T_sp sensor) : ArgumentWithDefault(target, def), _Keyword(keyword), _Sensor(sensor){};
   string asString() const;
 };
@@ -113,7 +113,7 @@ class AuxArgument : public Argument {
 public:
   typedef Argument Base;
   T_sp _Expression;
-  AuxArgument() : Argument(_Nil<T_O>()), _Expression(_Nil<T_O>()){};
+  AuxArgument() : Argument(nil<T_O>()), _Expression(nil<T_O>()){};
   AuxArgument(T_sp target, T_sp exp) : Argument(target), _Expression(exp){};
   string asString() const;
 };

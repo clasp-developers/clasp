@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <clasp/gctools/boehmGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/compiler.h>
 
 #ifdef USE_PRECISE_GC
@@ -53,6 +54,128 @@ void boehm_release() {
   GC_enable();
 }
 };
+
+
+static gctools::ReachableClassMap *static_ReachableClassKinds;
+static size_t invalidHeaderTotalSize = 0;
+
+extern "C" {
+void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
+  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
+  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
+  if (!valid_stamp(stamp)) {
+    if (sz==sizeof(core::Cons_O)) {
+      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
+//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
+    } else {
+      stamp = (gctools::GCStampEnum)0; // unknown uses 0
+    }
+  }
+  gctools::ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
+  if (it == static_ReachableClassKinds->end()) {
+    gctools::ReachableClass reachableClass(stamp);
+    reachableClass.update(sz);
+    (*static_ReachableClassKinds)[stamp] = reachableClass;
+  } else {
+    it->second.update(sz);
+  }
+#if 0
+  if (stamp==(gctools::GCStampEnum)(gctools::STAMPWTAG_core__Symbol_O>>gctools::Header_s::wtag_width)) {
+    core::Symbol_O* sym = (core::Symbol_O*)ptr;
+    printf("%s:%d symbol %s\n", __FILE__, __LINE__, sym->formattedName(true).c_str());
+  }
+#endif
+}
+
+void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *client_data) {
+  gctools::FindStamp* findStamp = (gctools::FindStamp*)client_data;
+  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
+  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
+  if (!valid_stamp(stamp)) {
+    if (sz==32) {
+      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
+//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
+    } else {
+      stamp = (gctools::GCStampEnum)0; // unknown uses 0
+    }
+  }
+  if (stamp == findStamp->_stamp) {
+    findStamp->_addresses.push_back(ptr);
+  }
+}
+
+
+
+void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *client_data) {
+  gctools::FindOwner* findOwner = (gctools::FindOwner*)client_data;
+  for ( void** cur = (void**)ptr ; cur < (void**)((void**)ptr+(sz/8)); cur += 1 ) {
+    void* tp = *cur;
+    uintptr_t tag = (uintptr_t)tp&0xf;
+    if (GC_is_heap_ptr(tp) && (tag == GENERAL_TAG || tag == CONS_TAG)) {
+      void* obj = gctools::untag_object(tp);
+      uintptr_t addr = (uintptr_t)obj;
+      void* base = gctools::GeneralPtrToHeaderPtr(obj);
+#if 0
+      printf("%s:%d Looking at cur->%p\n", __FILE__, __LINE__, cur);
+      printf("%s:%d             tp->%p\n", __FILE__, __LINE__, tp);
+      printf("%s:%d           base->%p\n", __FILE__, __LINE__, base);
+      printf("%s:%d        pointer->%p\n", __FILE__, __LINE__, findOwner->_pointer);
+#endif
+      if (base == findOwner->_pointer ) {
+        uintptr_t* uptr = (uintptr_t*)ptr;
+#ifdef USE_BOEHM
+        printf("%p  %s\n", ptr, obj_name((*uptr)>>4));
+#endif
+        findOwner->_addresses.push_back((void*)uptr);
+        }
+      }
+    }
+  }
+}
+
+
+template <typename T>
+size_t dumpResults(const std::string &name, const std::string &shortName, T *data) {
+  typedef typename T::value_type::second_type value_type;
+  vector<value_type> values;
+  for (auto it : *data) {
+    values.push_back(it.second);
+  }
+  size_t totalSize(0);
+  sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
+                                       return (x.totalSize > y.totalSize);
+                                     });
+  size_t idx = 0;
+  size_t totalCons = 0;
+  size_t numCons = 0;
+  for (auto it : values) {
+    // Does that print? If so should go to the OutputStream
+    size_t sz = it.print(shortName);
+    totalSize += sz;
+    if (sz < 1) break;
+    idx += 1;
+#if 0
+    if ( idx % 100 == 0 ) {
+      gctools::poll_signals();
+    }
+#endif
+  }
+  return totalSize;
+}
+
+
+
+void* walk_garbage_collected_objects_with_alloc_lock(void* client_data) {
+  GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, client_data );
+  return NULL;
+}
+
+
+// ------------
+
+
+
+
 
 
 namespace gctools {
@@ -100,7 +223,7 @@ void run_finalizers(core::T_sp obj, void* data)
 void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* data)
 {
   gctools::Header_s* header = (gctools::Header_s*)((char*)client - sizeof(gctools::Header_s));
-//  printf("%s:%d general_finalizer for client: %p stamp: %lu\n", __FILE__, __LINE__, (void*)client, header->_stamp_wtag_mtag.stamp());
+//  printf("%s:%d:%s for client: %p stamp: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)client, header->_stamp_wtag_mtag.stamp());
   if ((uintptr_t)client&gctools::ptag_mask) {
     printf("%s:%d The client pointer %p must NOT BE TAGGED at this point\n", __FILE__, __LINE__, client);
     abort();
@@ -113,7 +236,7 @@ void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* data)
 
 void boehm_general_finalizer(void* base, void* data)
 {
-//  printf("%s:%d general_finalizer for %p\n", __FILE__, __LINE__, (void*)base);
+//  printf("%s:%d:%s general_finalizer for %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)base);
   void* client = HeaderPtrToGeneralPtr<core::T_O>(base);
   if ((uintptr_t)client&gctools::ptag_mask) {
     printf("%s:%d The client pointer %p must NOT BE TAGGED at this point\n", __FILE__, __LINE__, client);
@@ -131,12 +254,12 @@ void boehm_cons_finalizer(void* base, void* data)
 {
   ASSERT(CONS_HEADER_SIZE==0);
   if (data!=NULL) {
-    void* client = base; // no header on Cons_O
+    void* client = gctools::HeaderPtrToConsPtr(base);
     core::Cons_sp obj((core::Cons_O*)client);
 //    printf("%s:%d boehm_cons_finalizer for tagged Cons -> %p  client -> %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), client );
     run_finalizers(obj,data);
   } else {
-//    printf("%s:%d:%s  data was NULL and so could not run finalizers\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s  data was NULL and so could not run finalizers\n", __FILE__, __LINE__, __FUNCTION__ );
   }
 }
 
@@ -151,8 +274,7 @@ void boehm_set_finalizer_list(gctools::Tagged object_tagged, gctools::Tagged fin
   core::List_sp finalizers = core::T_sp(finalizers_tagged);
   // First check if there is already a finalizer and data.
   // The data may be NULL  - that means we need to allocate a pointer in the UNCOLLECTABLE memory to keep a
-  // linked list of Common Lisp finalizers alive (the weak-key-hash-table above won't keep anything
-  // alive because Boehm wipes out the weak-key-hash-table entry before the finalizers get called).
+  // linked list of Common Lisp finalizers alive.
   //    The finalizers tagged pointer is written into the UNCOLLECTABLE memory.
   // There may be a non-NULL old_finalizer - that means the gcalloc.h code installed a finalizer that
   // will invoke the objects C++ destructor.  We can continue to use the gcalloc.h installed finalizer
@@ -168,7 +290,7 @@ void boehm_set_finalizer_list(gctools::Tagged object_tagged, gctools::Tagged fin
 //    printf("%s:%d base = %p orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, base, (void*)orig_finalizer, (void*)data);
     if (data==NULL) {
       gctools::Tagged* new_data = reinterpret_cast<gctools::Tagged*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::Cons_O*)));
-      printf("%s:%d:%s  finalizers1 allocate: %p\n", __FILE__, __LINE__, __FUNCTION__, new_data );
+//      printf("%s:%d:%s  finalizers1 allocate: %p\n", __FILE__, __LINE__, __FUNCTION__, new_data );
       data = (void*)new_data;
 //      printf("%s:%d allocated uncollectable data=%p\n", __FILE__, __LINE__, (void*)data);
     }
@@ -189,12 +311,12 @@ void boehm_set_finalizer_list(gctools::Tagged object_tagged, gctools::Tagged fin
     void* data;
     void* dummy_data;
     ASSERT(CONS_HEADER_SIZE==0);
-    void* base = (void*)&*object; // CONS objects have no header currently
+    void* base = (void*)gctools::ConsPtrToHeaderPtr(&*object); 
     GC_register_finalizer_no_order(base,(GC_finalization_proc)0, 0,&orig_finalizer,&data);
 //    printf("%s:%d object -> %p base = %p orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, object.raw_(), base, (void*)orig_finalizer, (void*)data);
     if (data==NULL) {
       gctools::Tagged* new_data = reinterpret_cast<gctools::Tagged*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::Cons_O*)));
-      printf("%s:%d:%s  finalizers2 allocate: %p\n", __FILE__, __LINE__, __FUNCTION__, new_data );
+//      printf("%s:%d:%s  finalizers2 allocate: %p\n", __FILE__, __LINE__, __FUNCTION__, new_data );
       data = (void*)new_data;
 //      printf("%s:%d allocated uncollectable data=%p\n", __FILE__, __LINE__, (void*)data);
     }
@@ -235,10 +357,10 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
     void* data;
     void* base = (void*)(&*object);
     GC_register_finalizer_no_order(base,NULL,NULL,&orig_finalizer,&data);
-//    printf("%s:%d orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, (void*)orig_finalizer, (void*)data);
+    printf("%s:%d orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, (void*)orig_finalizer, (void*)data);
     if ( data != NULL ) {
       gctools::Tagged list_tagged = *reinterpret_cast<gctools::Tagged*>(data);
-//      printf("%s:%d definalize - wiping out the finalizer list in the UNCOLLECTABLE memory -> %p\n", __FILE__, __LINE__, (void*)list_tagged);
+      printf("%s:%d definalize - wiping out the finalizer list in the UNCOLLECTABLE memory -> %p\n", __FILE__, __LINE__, (void*)list_tagged);
       GC_free(data);
       data = NULL;
     }
@@ -315,6 +437,54 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   return exitCode;
 }
 
+
+
+
+size_t ReachableClass::print(const std::string& shortName) {
+  Fixnum k = this->_Kind;
+  stringstream className;
+  if (k <= gctools::STAMPWTAG_max) {
+//      printf("%s:%d searching for name for this->_Kind: %u\n", __FILE__, __LINE__, this->_Kind);
+    const char* nm = obj_name(k);
+    if (!nm) {
+      className << "NULL-NAME";
+    } else {
+      className << nm;
+    }
+    clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                        % shortName % this->totalSize % this->instances
+                        % (this->totalSize / this->instances) % className.str().c_str() % k).str()
+                       , cl::_sym_STARstandard_outputSTAR->symbolValue());
+    core::clasp_finish_output_t();
+    return this->totalSize;
+  } else {
+    clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                        % shortName % this->totalSize % this->instances
+                        % (this->totalSize / this->instances) % "UNKNOWN" % k).str()
+                       ,cl::_sym_STARstandard_outputSTAR->symbolValue());
+    core::clasp_finish_output_t();
+    return this->totalSize;
+  }
+}
+
+void clasp_gc_room(std::ostringstream& OutputStream) {
+  static_ReachableClassKinds = new (ReachableClassMap);
+  invalidHeaderTotalSize = 0;
+  GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
+  OutputStream << "Walked LispKinds\n" ;
+  size_t totalSize(0);
+  OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
+  totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
+  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
+  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
+  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
+
+  delete static_ReachableClassKinds;
+}
 
 
 };

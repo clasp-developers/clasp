@@ -39,50 +39,34 @@ namespace core {
 CL_LISPIFY_NAME(make-weak-pointer);
 CL_DEFUN WeakPointer_sp WeakPointer_O::make(T_sp obj) {
   if (obj.objectp()) {
-    GC_ALLOCATE_VARIADIC(WeakPointer_O, me, obj);
-    me->_WeakObject.pointer = gctools::WeakPointerManager::AllocatorType::allocate(gctools::Header_s::StampWtagMtag(gctools::Header_s::WeakPointerKind),obj);
-#ifdef USE_BOEHM
-    GCTOOLS_ASSERT(me->_WeakObject.pointer->value.objectp());
-    if (!unboundOrDeletedOrSplatted(me->_WeakObject.pointer->value)) {
-      GC_general_register_disappearing_link(reinterpret_cast<void **>(&me->_WeakObject.pointer->value.rawRef_()), reinterpret_cast<void *>(me->_WeakObject.pointer->value.rawRef_()));
-    } else {
-      GCTOOLS_ASSERT(false); // ERROR("value can never contain anything but a pointer - if it does then when it gets set to NULL by the BoehmGC it will be interpreted as a Fixnum 0!!!!!");
-    }
-#endif
+    auto  me = gctools::GC<WeakPointer_O>::allocate( obj);
     return me;
   }
-  SIMPLE_ERROR(BF("You cannot create a weak-pointer for an immediate value like %s") % _rep_(obj));
+  SIMPLE_ERROR(BF("You cannot make a weak pointer to an immediate"));
 };
 
 
-
-
-
-
-#if defined(OLD_SERIALIZE)
-void WeakPointer_O::serialize(serialize::SNode snode) {
-  CR_HINT(snode, false);
-  snode->archiveWeakPointer("weakObject", this->_WeakObject);
-  CR_HINT(snode, false);
-}
-#endif // defined(OLD_SERIALIZE)
-
-#if defined(XML_ARCHIVE)
-void WeakPointer_O::archiveBase(ArchiveP node) {
-  this->Base::archiveBase(node);
-  node->archiveWeakPointer("weakObject", this->_WeakObject);
-}
-#endif // defined(XML_ARCHIVE)
-
 CL_LISPIFY_NAME("weakPointerValid");
 CL_DEFMETHOD bool WeakPointer_O::valid() const {
-  return this->_WeakObject.valid();
+#if defined(USE_BOEHM)
+  return this->_Link!=NULL;
+#else
+  SIMPLE_ERROR(BF("WeakPointer_O not supported in this GC"));
+#endif
 }
 
 /*! Return (values value t) or (values nil nil) */
 CL_LISPIFY_NAME("weakPointerValue");
-CL_DEFMETHOD T_mv WeakPointer_O::value() const {
-  return this->_WeakObject.value();
+CL_DEFMETHOD T_sp WeakPointer_O::value() const {
+#if defined(USE_BOEHM)
+  if (this->_Link!=NULL) {
+    T_sp obj((gctools::Tagged)this->_Object);
+    return obj;
+  }
+  return nil<core::T_O>();
+#else
+  SIMPLE_ERROR(BF("WeakPointer_O not supported by this GC"));
+#endif
 }
 
 }; /* core */

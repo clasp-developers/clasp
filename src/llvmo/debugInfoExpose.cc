@@ -115,6 +115,42 @@ THE SOFTWARE.
 
 namespace llvmo {
 
+std::string DISubprogram_O::__repr__() const {
+  stringstream ss;
+  ss << "#<DISubprogram " << this->wrappedPtr()->getName().str() << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+std::string DILocalVariable_O::__repr__() const {
+  stringstream ss;
+  ss << "#<DILOCAL-VARIABLE " << this->wrappedPtr()->getName().str() << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+CL_DEFMETHOD std::string DILocalVariable_O::getVariableName() const {
+  return this->wrappedPtr()->getName().str();
+}
+
+CL_DEFMETHOD std::string DISubprogram_O::getSubprogram() const {
+  return this->wrappedPtr()->getName().str();
+}
+
+
+CL_DEFMETHOD std::string DIFile_O::getPath() const {
+  stringstream ss;
+  std::string filename = this->wrappedPtr()->getFilename().str();
+  std::string directory = this->wrappedPtr()->getDirectory().str();
+  ss << directory << "/" << filename;
+  return ss.str();
+}
+
+std::string DIFile_O::__repr__() const {
+  stringstream ss;
+  std::string path = this->getPath();
+  ss << "#<DIFile " << path << " @" << (void*)this << ">";
+  return ss.str();
+}
+
 CL_LAMBDA(llvm-context line col scope &optional inlined-at);
 CL_LISPIFY_NAME(get-dilocation);
 CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
@@ -127,7 +163,7 @@ CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
     DILocation_sp temp = gc::As<DILocation_sp>(inlinedAt);
     realInlinedAt = temp->operator llvm::Metadata *();
   }
-  GC_ALLOCATE(DILocation_O, ret);
+  auto  ret = gctools::GC<DILocation_O>::allocate_with_default_constructor();
   ret->set_wrapped(llvm::DILocation::get(context, line, col, realScope, realInlinedAt));
   return ret;
 }
@@ -136,7 +172,7 @@ CL_LAMBDA(module);
 CL_LISPIFY_NAME(make-dibuilder);
 CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
   _G();
-  GC_ALLOCATE(DIBuilder_O, me);
+  auto  me = gctools::GC<DIBuilder_O>::allocate_with_default_constructor();
   me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
   return me;
 };
@@ -333,7 +369,7 @@ CL_DEFMETHOD DINodeArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
   llvm::DINodeArray diarray = this->wrappedPtr()->getOrCreateArray(array);
-  GC_ALLOCATE_VARIADIC(llvmo::DINodeArray_O, obj, diarray);
+  auto  obj = gctools::GC<llvmo::DINodeArray_O>::allocate( diarray);
   return obj;
 }
 
@@ -358,7 +394,7 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
   llvm::DITypeRefArray diarray = this->wrappedPtr()->getOrCreateTypeArray(array);
-  GC_ALLOCATE_VARIADIC(llvmo::DITypeRefArray_O, obj, diarray);
+  auto  obj = gctools::GC<llvmo::DITypeRefArray_O>::allocate( diarray);
   return obj;
 }
 
@@ -368,17 +404,38 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
 
 namespace llvmo { // DIContext_O
 
-core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::SectionedAddress addr) {
+core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::SectionedAddress addr, bool verbose) {
   core::T_sp source;
 
   llvm::DILineInfoSpecifier lispec;
   lispec.FNKind = llvm::DILineInfoSpecifier::FunctionNameKind::LinkageName;
   lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
-  
+
+  if (verbose) {
+    core::write_bf_stream(BF("Entered %s %s %s\n") % __FILE__ % __LINE__ % __FUNCTION__ );
+    core::write_bf_stream(BF("  DIContext* %p  SectionedAddress: %p %p\n") % (void*)dicontext % (void*)addr.SectionIndex % (void*)addr.Address );
+  }
   llvm::DILineInfo info = dicontext->getLineInfoForAddress(addr, lispec);
+  if (info.FileName == info.BadString) {
+  if (verbose) {
+    core::write_bf_stream(BF("info.Filename is info.BadString:  %s\n") % info.FileName );
+    core::write_bf_stream(BF("Source %s\n") % _rep_(source) );
+    core::write_bf_stream(BF("info.Line %lu\n") % info.Line );
+    core::write_bf_stream(BF("info.Column %lu\n") % info.Column );
+    core::write_bf_stream(BF("info.StartLine %lu\n") % info.StartLine );
+  }
+    return nil<core::T_O>();
+  }
   if (info.Source.hasValue())
     source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
-  else source = _Nil<core::T_O>();
+  else source = nil<core::T_O>();
+  if (verbose) {
+    core::write_bf_stream(BF("info.Filename %s\n") % info.FileName );
+    core::write_bf_stream(BF("Source %s\n") % _rep_(source) );
+    core::write_bf_stream(BF("info.Line %lu\n") % info.Line );
+    core::write_bf_stream(BF("info.Column %lu\n") % info.Column );
+    core::write_bf_stream(BF("info.StartLine %lu\n") % info.StartLine );
+  }
   
   return Values(core::SimpleBaseString_O::make(info.FileName),
                 core::SimpleBaseString_O::make(info.FunctionName),
@@ -391,10 +448,10 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
 
 // We can't translate a DWARFContext_sp into a DIContext* directly, apparently.
 // The SectionedAddress translation is also a bust.
-CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LAMBDA(dwarfcontext sectioned-address &key verbose);
 CL_LISPIFY_NAME(getLineInfoForAddress);
-CL_DEFUN core::T_mv getLineInfoForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
-  return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value);
+CL_DEFUN core::T_mv getLineInfoForAddress(DWARFContext_sp dc, SectionedAddress_sp addr, bool verbose) {
+  return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value,verbose);
 }
 
 CL_LAMBDA(dwarfcontext sectioned-address);
@@ -437,7 +494,7 @@ CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddr
                                   core::Integer_O::create(range.HighPC));
     return res.cons();
   } else // TODO: signal error?
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
 }
 
 }; // llvmo, DIContext_O
@@ -452,14 +509,19 @@ CL_DEFUN DWARFContext_sp DWARFContext_O::createDwarfContext(ObjectFile_sp ofi) {
   llvm::StringRef sbuffer((const char*)ofi->_MemoryBuffer->getBufferStart(), ofi->_MemoryBuffer->getBufferSize());
   stringstream ss;
   ss << "DWARFContext/" << ofi->_FasoName;
-  std::string uniqueName = uniqueMemoryBufferName(ss.str(),ofi->_StartupID, ofi->_FasoIndex);
+  std::string uniqueName = uniqueMemoryBufferName(ss.str(),ofi->_ObjectId, ofi->_FasoIndex);
   llvm::StringRef name(uniqueName);
 //  printf("%s:%d uniqueName = %s\n", __FILE__, __LINE__, uniqueName.c_str());
   std::unique_ptr<llvm::MemoryBuffer> mbuf = llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false);
   llvm::MemoryBufferRef mbuf_ref(*mbuf);
-  auto eom = llvm::object::ObjectFile::createObjectFile(mbuf_ref);
-  std::unique_ptr<llvm::DWARFContext> uptr = llvm::DWARFContext::create(*eom->release());
-  return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
+  if (auto errOrObj = llvm::object::ObjectFile::createObjectFile(mbuf_ref)) {
+    auto& obj = *errOrObj;
+//    auto name = obj->getFileName();
+//    printf("%s:%d:%s filename: %s\n", __FILE__, __LINE__, __FUNCTION__, name.str().c_str());
+    std::unique_ptr<llvm::DWARFContext> uptr = llvm::DWARFContext::create(*obj.release());
+    return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
+  }
+  SIMPLE_ERROR(BF("Could not get ObjectFile"));
 }
 
 
@@ -471,9 +533,20 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
     SectionedAddress_sp sectioned_address = gc::As<SectionedAddress_sp>(object_info);
     ObjectFile_sp object_file = gc::As<ObjectFile_sp>(object_info.second());
     DWARFContext_sp context = DWARFContext_O::createDwarfContext(object_file);
-    return getLineInfoForAddress(context,sectioned_address);
+    if (verbose){
+      core::write_bf_stream(BF("Address: %p\n") % address );
+      core::write_bf_stream(BF("ObjectFile: %s SectionedAddress: %s DWARFContext: %s\n") % _rep_(object_file) % _rep_(sectioned_address) % _rep_(context));
+      Code_sp code = object_file->_Code;
+      core::write_bf_stream(BF("Code object: %s\n") % _rep_(code));
+      core::write_bf_stream(BF("Code _text start: %p   end: %p\n") % code->_TextSectionStart % code->_TextSectionEnd );
+      core::write_bf_stream(BF("address (%p) - _TextSectionStart(%p) -> %ld\n") % (void*)address % (void*)code->_TextSectionStart % (intptr_t)((uintptr_t)address - (uintptr_t)code->_TextSectionStart ));
+    }
+    return getLineInfoForAddress(context,sectioned_address, verbose);
   }
-  return Values(_Nil<core::T_O>());
+  if (verbose){
+    core::write_bf_stream(BF("Could not find ObjectFile\n"));
+  }
+  return Values(nil<core::T_O>());
 }
   
 }; // llvmo, DWARFContext_O

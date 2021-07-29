@@ -62,7 +62,7 @@
                 (cond ((consp orig) (car orig))
                       ((null orig)
                        ;; KLUDGE: If no source info, make one up
-                       (core:make-source-pos-info "no-source-info-available" 0 0 0))
+                       (core:make-source-pos-info))
                       (t orig)))))
     ;; See usage in cmp/debuginfo.lsp
     (list (cmp:jit-function-name (cleavir-ast:name ast))
@@ -92,10 +92,31 @@
   (check-type ast cleavir-ast:function-ast)
   (let ((fsi (compute-fsi ast)))
     (unless (null fsi)
+      (insert-function-scope-info-into-ast ast fsi)
+      (labels ((aux (ast)
+                 (typecase ast
+                   (cleavir-ast:function-ast (fix-inline-ast ast))
+                   (t (insert-function-scope-info-into-ast ast fsi)
+                    (cleavir-ast:map-children #'aux ast)))))
+        (cleavir-ast:map-children #'aux ast))))
+  #+(or)
+  (let ((fsi (compute-fsi ast)))
+    (unless (null fsi)
       (cleavir-ast:map-ast-depth-first-preorder
        (lambda (ast)
          (insert-function-scope-info-into-ast ast fsi))
        ast)))
+  #+(or)
+  (let ((fsi (compute-fsi ast)))
+    (unless (null fsi)
+      (insert-function-scope-info-into-ast ast fsi)
+      (dolist (child-ast (cleavir-ast:children ast))
+        (cleavir-ast:map-ast-depth-first-preorder
+         (lambda (ast)
+           (if (typep ast 'cleavir-ast:function-ast)
+               (fix-inline-ast ast)
+               (insert-function-scope-info-into-ast ast fsi)))
+         child-ast))))
   ast)
 
 ;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lsp)
@@ -187,10 +208,10 @@
           (track-inline-counts cmp:*track-inlinee-name* (cleavir-environment:name info)))
         (return-from cleavir-cst-to-ast:convert-called-function-reference
           (eval-load-time-value-asts
-            (fix-inline-source-positions
-             (cleavir-ast-transformations:clone-ast ast)
-             (let ((source (cst:source cst)))
-               (cond ((consp source) (car source))
-                     ((null source) core:*current-source-pos-info*)
-                     (t source)))))))))
+           (fix-inline-source-positions
+            (cleavir-ast-transformations:clone-ast ast)
+            (let ((source (cst:source cst)))
+              (cond ((consp source) (car source))
+                    ((null source) core:*current-source-pos-info*)
+                    (t source)))))))))
   (call-next-method))

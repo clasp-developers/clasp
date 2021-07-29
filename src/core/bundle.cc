@@ -52,24 +52,6 @@ THE SOFTWARE.
 namespace core {
 
 
-struct BundleDirectories {
-  std::filesystem::path _StartupWorkingDir;
-  std::filesystem::path _InstallDir;
-  std::filesystem::path _ExecutableDir;
-  std::filesystem::path _ContentsDir;
-  std::filesystem::path _ResourcesDir;
-  std::filesystem::path _LispSourceDir;
-  std::filesystem::path _GeneratedDir;
-  std::filesystem::path _SourceDir;
-  std::filesystem::path _IncludeDir;
-  std::filesystem::path _LibDir;
-  std::filesystem::path _DatabasesDir;
-  std::filesystem::path _FaslDir;
-  std::filesystem::path _BitcodeDir;
-  std::filesystem::path _QuicklispDir;
-};
-
-
 bool safe_is_directory(const std::filesystem::path& path) {
   try {
     return std::filesystem::is_directory(path);
@@ -247,8 +229,14 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   #else
     std::string target = "mps";
   #endif
+#elif defined(USE_MMTK)
+  #if defined(_DEBUG_BUILD)
+    std::string target = "mmtk_d";
+  #else
+    std::string target = "mmtk";
+  #endif
 #else
-#error "There must be a target - only boehm and mps are supported"
+#error "There must be a target - only (boehm | mmtk ) are supported"
 #endif
 #ifdef USE_MPI
     target = target + "_mpi";

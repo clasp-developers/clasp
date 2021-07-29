@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/readtable.fwd.h>
+#include <clasp/clbind/inheritance.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 
 namespace cl {
@@ -91,11 +92,11 @@ SMART(SpecialForm);
 SMART(Hierarchy);
 SMART(Environment);
 
- void core__stack_monitor(T_sp fn=_Nil<T_O>());
+ void core__stack_monitor(T_sp fn=nil<T_O>());
 void af_stackSizeWarning(size_t size);
- T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=_Nil<core::T_O>() );
+ T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=nil<core::T_O>() );
  
-List_sp cl__member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+List_sp cl__member(T_sp item, T_sp list, T_sp key = nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = nil<T_O>());
 [[noreturn]]void core__invoke_internal_debugger(T_sp condition);
 
 class SymbolClassHolderPair {
@@ -338,6 +339,7 @@ class Lisp_O {
     gctools::Vec0<Symbol_sp>    staticClassSymbolsUnshiftedNowhere;
     gctools::Vec0<Creator_sp>   staticInstanceCreatorsUnshiftedNowhere;
     gctools::Vec0<FileScope_sp> _SourceFiles;
+    gctools::Vec0<clbind::detail::vertex> _CastGraph;
     gctools::Vec0<SymbolClassHolderPair> bootClassTable; // Map class symbols to classes
     mpip::Mpi_sp                _MpiWorld;
     //! Class_map
@@ -603,8 +605,6 @@ public:
 
   void dump_apropos(const char *part) const;
 
-  void dump_backtrace(int numcol = 50);
-
 public:
   DoubleFloat_sp rehashSize() const { return this->_Roots._RehashSize; };
   DoubleFloat_sp rehashThreshold() const { return this->_Roots._RehashThreshold; };
@@ -630,7 +630,7 @@ public:
   //        ActivationFrame_sp& activationFrameNil() { return this->_Roots._ActivationFrameNil; };
   T_sp _true() const { return this->_Roots._TrueObject; };
   T_sp _not(T_sp x) const { return this->_boolean(!x.isTrue()); };
-  T_sp _false() const { return _Nil<T_O>(); };
+  T_sp _false() const { return nil<T_O>(); };
   T_sp _boolean(bool b) const {
     if (b)
       return this->_true();
@@ -962,9 +962,9 @@ namespace core {
   T_mv cl__macroexpand_1(T_sp form, T_sp env);
   T_mv cl__macroexpand(T_sp form, T_sp env);
 
-  List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+  List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = nil<T_O>());
 
-  T_sp cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
+  T_sp cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = nil<T_O>());
   T_sp core__setf_find_class(T_sp newValue, Symbol_sp name);
 
   void cl__error(T_sp err, List_sp initializers);
@@ -989,7 +989,7 @@ FILE* monitor_file(const std::string& filename_prefix);
 #endif
 extern bool global_Started;
 
-void dumpDebuggingLayouts(const std::string& filename = "/tmp/clasp_layout.py");
+void dumpDebuggingLayouts(const std::string& filename);
 T_mv cl__intern(String_sp symbol_name, T_sp package_desig);
 };
 

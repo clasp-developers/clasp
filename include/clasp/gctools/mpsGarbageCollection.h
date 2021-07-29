@@ -292,4 +292,20 @@ struct ThreadLocalAllocationPoints {
  extern THREAD_LOCAL ThreadLocalAllocationPoints my_thread_allocation_points;
 
 };
+
+namespace gctools {
+
+struct ReachableMPSObject {
+  ReachableMPSObject(int k) : stamp(k) {};
+  size_t stamp = 0;
+  size_t instances = 0;
+  size_t totalMemory = 0;
+  size_t largest = 0;
+  size_t print(const std::string &shortName,const vector<std::string> stampNames);
+};
+
+
+void clasp_gc_room(std::ostringstream& OutputStream);
+};
+
 #endif // _clasp_memoryPoolSystem_H

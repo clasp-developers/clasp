@@ -113,7 +113,7 @@ core::T_sp packageDesignatorInternal(core::T_sp obj, bool errorp){
   }
   if (errorp)
     PACKAGE_ERROR(packageName);
-  else return _Nil<T_O>();
+  else return nil<T_O>();
 }
 
 core::T_sp packageDesignatorNoError(core::T_sp obj) {
@@ -144,7 +144,7 @@ string packageNameDesignator(T_sp obj) {
 
 List_sp listOfPackageDesignators(T_sp obj) {
   if (obj.nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   if (obj.consp()) {
     ql::list res;
     List_sp lobj = obj;
@@ -155,15 +155,15 @@ List_sp listOfPackageDesignators(T_sp obj) {
     return res.cons();
   }
   Package_sp onePackage = packageDesignator(obj);
-  return Cons_O::create(onePackage,_Nil<T_O>());
+  return Cons_O::create(onePackage,nil<T_O>());
 }
 
 List_sp listOfSymbols(T_sp syms) {
   if (syms.nilp())
-    return _Nil<List_V>();
+    return nil<List_V>();
   List_sp symbols;
   if (cl__symbolp(syms)) {
-    symbols = Cons_O::create(syms,_Nil<T_O>());
+    symbols = Cons_O::create(syms,nil<T_O>());
   } else {
     symbols = syms;
   }
@@ -215,18 +215,18 @@ String_sp stringDesignator(T_sp obj) {
 List_sp listOfStringDesignators(T_sp obj) {
   if (obj.consp()) {
     List_sp lobj = gc::As_unsafe<Cons_sp>(obj);
-    Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+    Cons_sp first = Cons_O::create(nil<T_O>(),nil<T_O>());
     Cons_sp cur = first;
     for (auto ic : lobj) {
-      Cons_sp one = Cons_O::create(stringDesignator(oCar(ic)),_Nil<T_O>());
+      Cons_sp one = Cons_O::create(stringDesignator(oCar(ic)),nil<T_O>());
       cur->setCdr(one);
       cur = one;
     }
     return oCdr(first);
   } else if (obj.nilp()) {
-    return _Nil<List_V>();
+    return nil<List_V>();
   } else {
-    return Cons_O::create(stringDesignator(obj),_Nil<T_O>());
+    return Cons_O::create(stringDesignator(obj),nil<T_O>());
   }
   SIMPLE_ERROR(BF("Illegal list of string designators[%s]") % _rep_(obj));
 }

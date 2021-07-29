@@ -236,8 +236,8 @@ and the pathname of the source file - this will also be used as the module initi
 - type :: :kernel or :user (I'm not sure this is useful anymore)
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
-  ;; TODO: Save read-table and package with unwind-protect
   (let* ((*package* *package*)
+         (*readtable* *readtable*)
          (input-pathname (or (probe-file given-input-pathname)
 			     (error 'core:simple-file-error
 				    :pathname given-input-pathname

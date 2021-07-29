@@ -29,9 +29,6 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/stacks.h>
-
-
 
 namespace core {
 
@@ -180,31 +177,14 @@ struct SymbolCallback {
 
 void walk_loaded_objects_symbol_table( SymbolCallback* symbolCallback );
 
-struct StackMapRange {
-  uintptr_t _StartAddress;
-  uintptr_t _EndAddress;
-  size_t _Number;
-  StackMapRange(uintptr_t s, uintptr_t e, size_t number) : _StartAddress(s), _EndAddress(e), _Number(number) {};
-  StackMapRange() : _StartAddress(0), _EndAddress(0), _Number(0) {};
-};
-
 struct DebugInfo {
 #ifdef CLASP_THREADS
   mutable mp::SharedMutex _OpenDynamicLibraryMutex;
 #endif
   map<std::string, OpenDynamicLibraryInfo> _OpenDynamicLibraryHandles;
-  mp::SharedMutex                   _StackMapsLock;
-  std::map<uintptr_t,StackMapRange> _StackMaps;
-  DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD),
-                _StackMapsLock(STCKMAPS_NAMEWORD)
+  DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD)
   {};
 };
-
-void core__start_debugger_with_backtrace(T_sp backtrace);
-T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointers);
-
-
-
 
 void startup_register_loaded_objects(add_dynamic_library* addlib);
 
@@ -218,6 +198,8 @@ DebugInfo& debugInfo();
 
 
 
+void executablePath( std::string& name);
+void executableTextSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 
 

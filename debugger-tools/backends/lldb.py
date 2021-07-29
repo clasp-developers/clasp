@@ -15,12 +15,18 @@ def read_memory(address,len=8):
 def test_debugger(arg):
     print("In udb test_debugger arg: %s" % arg)
 
-def dump_memory(address):
+def dump_memory(address,bytes=False):
     global debugger
-    cmd0 = "x/8xg 0x%x" % (address-64)
+    if (bytes):
+        cmd0 = "x -c 64 0x%x" % (address-64)
+    else:
+        cmd0 = "x/8xg 0x%x" % (address-64)
     print("======dump before header: %s" % cmd0)
     debugger.HandleCommand(cmd0)
-    cmd = "x/16xg 0x%x" % address
+    if (bytes):
+        cmd = "x -c 128 0x%x" % address
+    else:
+        cmd = "x/16xg 0x%x" % address
     print("------Dump from header: %s" % cmd )
     debugger.HandleCommand(cmd)
     

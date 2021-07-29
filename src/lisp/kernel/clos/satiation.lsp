@@ -251,7 +251,6 @@
 
 (defun compile-time-call-history (generic-function &rest lists-of-specializer-names)
   (loop with mc = (generic-function-method-combination generic-function)
-        with all-methods = nil
         for list-of-specializer-names in lists-of-specializer-names
         for list-of-specializers
           = (coerce-to-list-of-specializers list-of-specializer-names)
@@ -263,10 +262,12 @@
                           (compute-outcome generic-function mc am list-of-specializers))
         when (not cached-outcome)
           collect outcome into outcome-cache
-        do (setf all-methods (union all-methods am))
         collect (cons (coerce list-of-specializers 'vector) outcome)
           into entries
-        finally (return (values entries all-methods))))
+        nconc (remove-if-not (lambda (sp) (typep sp 'class))
+                             list-of-specializers)
+          into all-classes
+        finally (return (values entries all-classes))))
 
 ;;; Given an outcome, return a form that, when evaluated, returns an outcome
 ;;; similar to it.
@@ -397,15 +398,34 @@ a list (EQL object) - just like DEFMETHOD."
                  ,@(mapcar (lambda (form) (ext:constant-form-value form env)) lists))
       form))
 
+;;; This function checks that stamps at satiation time match stamps at load
+;;; time. If this is not true, objects will end up in methods for other
+;;; classes, which can cause very strange problems; verifying will check for
+;;; this ahead of time, when the precompiled discriminating function is loaded.
+(defun verify-stamp-consistency (alist)
+  (let ((inconsistent
+          (loop for (class . compile-stamp) in alist
+                unless (= (core:class-stamp-for-instances class)
+                          compile-stamp)
+                  collect class)))
+    (unless (null inconsistent)
+      (error "Stamps for the following classes changed between build and load time: ~a"
+             inconsistent))))
+
 ;;; Macro version of SATIATE, that the exported function sometimes expands into.
 (defmacro %satiate (generic-function-name &rest lists-of-specializer-names)
   (let ((generic-function (fdefinition generic-function-name)))
-    (multiple-value-bind (call-history all-methods)
-        (apply #'compile-time-call-history generic-function lists-of-specializer-names)
-      (declare (ignore all-methods))
+    (multiple-value-bind (call-history classes)
+        (apply #'compile-time-call-history
+               generic-function lists-of-specializer-names)
       `(let* ((gf (fdefinition ',generic-function-name)))
+         (verify-stamp-consistency
+          '(,@(loop for class in classes
+                    collect (cons class
+                                  (core:class-stamp-for-instances class)))))
          (append-generic-function-call-history
-          gf ,(call-history-producer call-history (gf-arg-info generic-function)))
+          gf
+          ,(call-history-producer call-history (gf-arg-info generic-function)))
          (set-funcallable-instance-function
           gf ,(compile-time-discriminator generic-function call-history))))))
 

@@ -11,7 +11,7 @@
 #include <string>
 #include <clasp/core/foundation.h>
 #include <clasp/llvmo/code.h>
-#include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 //
 // The include for Debug.h must be first so we can force NDEBUG undefined
 // otherwise setCurrentDebugTypes will be an empty macro
@@ -107,10 +107,6 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <llvm-c/Disassembler.h>
 //#include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
-
-#if defined(USE_LIBUNWIND) && defined(_TARGET_OS_LINUX)
-#include <libunwind.h>
-#endif
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -328,7 +324,7 @@ CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
 
 
 CL_DEFUN LLVMContext_sp LLVMContext_O::create_llvm_context() {
-  GC_ALLOCATE(LLVMContext_O, context);
+  auto  context = gctools::GC<LLVMContext_O>::allocate_with_default_constructor();
   llvm::LLVMContext* lc = new llvm::LLVMContext();
   context->_ptr = lc;
   return context;
@@ -351,7 +347,7 @@ string LLVMContext_O::__repr__() const {
 namespace llvmo {
 CL_DEFUN ThreadSafeContext_sp ThreadSafeContext_O::create_thread_safe_context() {
   std::unique_ptr<llvm::LLVMContext> lc(new llvm::LLVMContext());
-  GC_ALLOCATE(ThreadSafeContext_O, context);
+  auto  context = gctools::GC<ThreadSafeContext_O>::allocate_with_default_constructor();
   llvm::orc::ThreadSafeContext* tslc = new llvm::orc::ThreadSafeContext(std::move(lc));
   context->_ptr = tslc;
   return context;
@@ -366,7 +362,7 @@ CL_DEFMETHOD LLVMContext* ThreadSafeContext_O::getContext() {
 CL_DEFUN LLVMContext_sp llvm_sys__thread_local_llvm_context() {
   ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
   llvm::LLVMContext* lc = tsc->wrappedPtr()->getContext();
-  GC_ALLOCATE(LLVMContext_O, context);
+  auto  context = gctools::GC<LLVMContext_O>::allocate_with_default_constructor();
   context->_ptr = lc;
   return context;
 }
@@ -378,7 +374,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(make-linker);
 CL_DEFUN Linker_sp Linker_O::make(Module_sp module) {
-  GC_ALLOCATE(Linker_O, self);
+  auto  self = gctools::GC<Linker_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::Linker(*module->wrappedPtr());
   return self;
 };
@@ -638,7 +634,7 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
   if (core::StringOutputStream_sp dwo_sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
     dwo_sos->fill(dwo_stringOutput.c_str());
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 CL_LISPIFY_NAME(createDataLayout);
@@ -708,7 +704,7 @@ CL_DECLARE();
 CL_DOCSTRING("");
 CL_PKG_NAME(LlvmoPkg,"make-triple");
 CL_DEFUN Triple_sp Triple_O::make(const string &triple) {
-  GC_ALLOCATE(Triple_O, self);
+  auto  self = gctools::GC<Triple_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::Triple(triple);
   return self;
 };
@@ -964,7 +960,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(make-target-options);
 CL_DEFUN TargetOptions_sp TargetOptions_O::make() {
-  GC_ALLOCATE(TargetOptions_O, self);
+  auto  self = gctools::GC<TargetOptions_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::TargetOptions();
   return self;
 };
@@ -1331,7 +1327,7 @@ namespace llvmo {
 CL_PKG_NAME(LlvmoPkg,"make-Module");
 CL_LAMBDA(module-name context);
 CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
-  GC_ALLOCATE(Module_O, self);
+  auto  self = gctools::GC<Module_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::Module(module_name, *(context->wrappedPtr()));
   return self;
 };
@@ -1607,7 +1603,7 @@ CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getOrEmitGlobalVa
 namespace llvmo {
 CL_LISPIFY_NAME("DataLayoutCopy");
 CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
-  GC_ALLOCATE_VARIADIC(DataLayout_O, cp, *(this->_DataLayout));
+  auto  cp = gctools::GC<DataLayout_O>::allocate( *(this->_DataLayout));
   return cp;
 };
 
@@ -1616,7 +1612,7 @@ CL_LISPIFY_NAME("data-layout-get-struct-layout");
 CL_DEFMETHOD StructLayout_sp DataLayout_O::getStructLayout(StructType_sp ty) const {
   llvm::StructType* sty = ty->wrapped();
   const llvm::StructLayout* layout = this->_DataLayout->getStructLayout(sty);
-  GC_ALLOCATE_VARIADIC(StructLayout_O,sl,layout);
+  auto sl = gctools::GC<StructLayout_O>::allocate(layout);
   return sl;
 }
 
@@ -1648,7 +1644,7 @@ namespace llvmo {
 CL_LAMBDA(triple);
 CL_PKG_NAME(LlvmoPkg,"makeTargetLibraryInfoWrapperPass");
 CL_DEFUN TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(llvm::Triple *tripleP) {
-  GC_ALLOCATE(TargetLibraryInfoWrapperPass_O, self);
+  auto  self = gctools::GC<TargetLibraryInfoWrapperPass_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::TargetLibraryInfoWrapperPass(*tripleP);
   return self;
 };
@@ -1661,7 +1657,7 @@ namespace llvmo {
 CL_LAMBDA(module);
 CL_PKG_NAME(LlvmoPkg,"makeFunctionPassManager");
 CL_DEFUN FunctionPassManager_sp FunctionPassManager_O::make(llvm::Module *module) {
-  GC_ALLOCATE(FunctionPassManager_O, self);
+  auto  self = gctools::GC<FunctionPassManager_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::legacy::FunctionPassManager(module);
   return self;
 };
@@ -1684,7 +1680,7 @@ namespace llvmo {
 CL_LAMBDA();
 CL_PKG_NAME(LlvmoPkg,"makePassManager");
 CL_DEFUN PassManager_sp PassManager_O::make() {
-  GC_ALLOCATE(PassManager_O, self);
+  auto  self = gctools::GC<PassManager_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::legacy::PassManager();
   return self;
 };
@@ -1711,7 +1707,7 @@ string EngineBuilder_O::__repr__() const {
 CL_LAMBDA(module);
 CL_PKG_NAME(LlvmoPkg,"make-EngineBuilder");
 CL_DEFUN EngineBuilder_sp EngineBuilder_O::make(Module_sp module) {
-  GC_ALLOCATE(EngineBuilder_O, self);
+  auto  self = gctools::GC<EngineBuilder_O>::allocate_with_default_constructor();
   std::unique_ptr<llvm::Module> ownedModule(module->wrappedPtr());
   module->set_wrapped(NULL);
   self->_ptr = new llvm::EngineBuilder(std::move(ownedModule));
@@ -1763,7 +1759,7 @@ namespace llvmo {
 CL_LAMBDA();
 CL_PKG_NAME(LlvmoPkg,"make-PassManagerBuilder");
 CL_DEFUN PassManagerBuilder_sp PassManagerBuilder_O::make() {
-  GC_ALLOCATE(PassManagerBuilder_O, self);
+  auto  self = gctools::GC<PassManagerBuilder_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::PassManagerBuilder();
   return self;
 };
@@ -1870,7 +1866,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(constant-expr-get-in-bounds-get-element-ptr);
 CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList) {
-  GC_ALLOCATE(Constant_O, res);
+  auto  res = gctools::GC<Constant_O>::allocate_with_default_constructor();
   if (element_type==NULL) {
     SIMPLE_ERROR(BF("You must provide a type for ConstantExpr_O::getInBoundsGetElementPtr"));
   }
@@ -1904,7 +1900,7 @@ namespace llvmo {
 CL_LAMBDA("module type is-constant linkage initializer name &optional (insert-before nil) (thread-local-mode 'llvm-sys:not-thread-local)");
 CL_LISPIFY_NAME(make-global-variable);
 CL_DEFUN GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage, /*Constant_sp*/ core::T_sp initializer, core::String_sp name, /*GlobalVariable_sp*/ core::T_sp insertBefore, core::Symbol_sp threadLocalMode) {
-  GC_ALLOCATE(GlobalVariable_O, me);
+  auto  me = gctools::GC<GlobalVariable_O>::allocate_with_default_constructor();
   translate::from_object<llvm::GlobalValue::LinkageTypes> llinkage(linkage);
   llvm::Constant *llvm_initializer = NULL;
   if (initializer.notnilp()) {
@@ -1952,7 +1948,7 @@ CL_DEFUN core::T_mv llvm_sys__getDebugLocInfo(Instruction_sp instr) {
     size_t column = debugLoc.getCol();
     return Values(_lisp->_true(),core::make_fixnum(lineno),core::make_fixnum(column));
   }
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 }
 CL_DOCSTRING("Erase the instruction from its parent basic block and return the next instruction or NIL");
 CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr)
@@ -1974,7 +1970,7 @@ CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction
   if (next!=NULL) {
     return translate::to_object<llvm::Instruction*>::convert(const_cast<llvm::Instruction*>(next));
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 ;
 
@@ -2317,7 +2313,7 @@ namespace llvmo {
 CL_LAMBDA(value);
 CL_LISPIFY_NAME(make-apfloat-float);
 CL_DEFUN APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value) {
-  GC_ALLOCATE(APFloat_O, self);
+  auto  self = gctools::GC<APFloat_O>::allocate_with_default_constructor();
   self->_valueP = new llvm::APFloat(unbox_single_float(value));
   return self;
 };
@@ -2325,7 +2321,7 @@ CL_DEFUN APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value) {
 CL_LAMBDA(value);
 CL_LISPIFY_NAME(makeAPFloatDouble);
 CL_DEFUN APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value) {
-  GC_ALLOCATE(APFloat_O, self);
+  auto  self = gctools::GC<APFloat_O>::allocate_with_default_constructor();
   self->_valueP = new llvm::APFloat(value->get());
   return self;
 };
@@ -2334,7 +2330,7 @@ CL_DEFUN APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value) {
 namespace llvmo {
 
 APInt_sp APInt_O::create(llvm::APInt api) {
-  GC_ALLOCATE(APInt_O, self);
+  auto  self = gctools::GC<APInt_O>::allocate_with_default_constructor();
   self->_value = api;
   return self;
 }
@@ -2343,7 +2339,7 @@ APInt_sp APInt_O::create(llvm::APInt api) {
 
 namespace llvmo {
 CL_DEFUN APInt_sp APInt_O::makeAPInt1(core::T_sp value) {
-  GC_ALLOCATE(APInt_O, self);
+  auto  self = gctools::GC<APInt_O>::allocate_with_default_constructor();
   if (core__fixnump(value)) {
     core::Fixnum_sp fixnum_value = gc::As<core::Fixnum_sp>(value);
     self->_value = llvm::APInt(1, clasp_to_int(fixnum_value) & 1, false);
@@ -2358,7 +2354,7 @@ CL_DEFUN APInt_sp APInt_O::makeAPInt1(core::T_sp value) {
 }
 
 CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bool sign) {
-  GC_ALLOCATE(APInt_O, self);
+  auto  self = gctools::GC<APInt_O>::allocate_with_default_constructor();
   llvm::APInt apint;
   int numbits;
   if (value.fixnump()) {
@@ -2463,7 +2459,7 @@ CL_DEFMETHOD core::T_sp IRBuilderBase_O::getInsertPointInstruction() {
     isp->set_wrapped(ins);
     return isp;
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 
@@ -2496,7 +2492,7 @@ CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int 
 namespace llvmo {
 CL_LISPIFY_NAME(make-irbuilder);
 CL_DEFUN IRBuilder_sp IRBuilder_O::make(LLVMContext_sp context) {
-  GC_ALLOCATE(IRBuilder_O, self);
+  auto  self = gctools::GC<IRBuilder_O>::allocate_with_default_constructor();
   self->set_wrapped(new llvm::IRBuilder<>(*(context->wrappedPtr())));
   return self;
 };
@@ -2576,7 +2572,7 @@ string IRBuilder_O::__repr__() const {
   } else {
     ss << " :insert-block-name UNDEFINED-BASIC_BLOCK! ";
   }
-#ifdef USE_BOEHM
+#ifdef NON_MOVING_GC
   ss << "@" << (void*)this->_ptr;
 #endif
   ss << " >";
@@ -3624,10 +3620,10 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
     string message;
     llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(ArchName, *triple->wrappedPtr(), message));
     if (target == NULL) {
-      return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
+      return Values(nil<core::T_O>(), core::SimpleBaseString_O::make(message));
     }
     Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
-    return Values(targeto, _Nil<core::T_O>());
+    return Values(targeto, nil<core::T_O>());
   }
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
@@ -3636,10 +3632,10 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
     string message;
     llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(Triple,message));
     if (target == NULL) {
-      return Values(_Nil<core::T_O>(), core::SimpleBaseString_O::make(message));
+      return Values(nil<core::T_O>(), core::SimpleBaseString_O::make(message));
     }
     Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
-    return Values(targeto, _Nil<core::T_O>());
+    return Values(targeto, nil<core::T_O>());
   }
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, verifyFunction);
@@ -4125,7 +4121,7 @@ using namespace llvm;
 CL_DEFUN core::T_sp llvm_sys__vmmap()
 {
   auto task = task_for_pid();
-  return _Nil<core::T_O>();x
+  return nil<core::T_O>();x
 }
 #endif
 
@@ -4216,11 +4212,20 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                       for (auto ssym : G.defined_symbols()) {
                                         std::string sname = ssym->getName().str();
                                         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
+                                        bool keptAlive = false;
                                         if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
-                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
-                                          ssym->setLive(true);
+                                          keptAlive = true;
                                         } else if ( sname.find(literals_name) != std::string::npos ) {
-                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
+                                          keptAlive = true;
+#if 0
+                                          // I'd like to do this on linux because jit symbols need to be exposed but it slows down startup enormously
+                                        } else if ( sname.find("^^") != std::string::npos ) {
+                                          // Keep alive mangled symbols that we care about
+//                                          keptAlive = true;
+#endif
+                                        } 
+                                        if (keptAlive) {
+//                                          printf("%s:%d:%s preprune symbol: %s  alive: %d\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str(), keptAlive );
                                           ssym->setLive(true);
                                         }
                                       }
@@ -4297,23 +4302,17 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       } else if (S.getName().str() == TEXT_NAME) {
         llvm::jitlink::SectionRange range(S);
         Code_sp currentCode = my_thread->topObjectFile()->_Code;
-        my_thread->_text_segment_start = (void*)range.getStart();
-        my_thread->_text_segment_size = range.getSize();
-        currentCode->_TextSegmentStart = (void*)range.getStart();
-        currentCode->_TextSegmentEnd = (void*)((char*)range.getStart()+range.getSize());
-        if (imageSaveLoad::global_debugSnapshot) {
+        currentCode->_TextSectionStart = (void*)range.getStart();
+        currentCode->_TextSectionEnd = (void*)((char*)range.getStart()+range.getSize());
+        if (snapshotSaveLoad::global_debugSnapshot) {
           printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
                  __FILE__, __LINE__, __FUNCTION__,
                  my_thread->topObjectFile().raw_(),
                  currentCode.raw_(),
-                 currentCode->_TextSegmentStart,
-                 currentCode->_TextSegmentEnd );
+                 currentCode->_TextSectionStart,
+                 currentCode->_TextSectionEnd );
         }
-        
-        currentCode->_TextSegmentSectionId = 0;
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Setting text_segment start %p  size %lu\n", __FILE__, __LINE__, __FUNCTION__, my_thread->_text_segment_start, my_thread->_text_segment_size ));
-        my_thread->_text_segment_SectionID = 0;
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   text section segment_start = %p  segment_size = %llu\n", __FILE__, __LINE__, __FUNCTION__, (void*)range.getStart(), (unsigned long long)range.getSize()));
+
         for ( auto& sym : S.symbols() ) {
           if (sym->isCallable()&&sym->hasName()) {
             std::string name = sym->getName().str();
@@ -4321,7 +4320,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             size_t size = sym->getSize();
 #ifdef DEBUG_JIT_LOG_SYMBOLS
             core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)address));
-            //register_symbol_with_libunwind(name,section_address+address,size);
             if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
               DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Registering jit symbol %s address: %p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)address, size ));
               core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
@@ -4460,6 +4458,17 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 std::atomic<size_t> global_object_file_number;
 
 
+uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf) {
+  for (llvm::object::SectionRef Sec : objf.sections()) {
+    if (!Sec.isText() || Sec.isVirtual()) continue;
+    if (Sec.getName()->str() == TEXT_NAME) {
+      return Sec.getIndex();
+    }
+  }
+  return llvm::object::SectionedAddress::UndefSection;
+}
+
+
 void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s You now OWN MemoryBuffer @%p  size: %lu\n",
                       __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() ));
@@ -4473,39 +4482,26 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 #endif
   // Grab the buffer and put it in the current ObjectFile
   my_thread->topObjectFile()->_MemoryBuffer = std::move(buffer);
-  if (imageSaveLoad::global_debugSnapshot) {
+  if (snapshotSaveLoad::global_debugSnapshot) {
     printf("%s:%d:%s   ObjectFile_sp %p start %p size %lu\n",
            __FILE__, __LINE__, __FUNCTION__,
            my_thread->topObjectFile().raw_(),
            my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferStart(),
            my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferSize() );
   }
+  auto objf = my_thread->topObjectFile()->getObjectFile();
+  llvm::object::ObjectFile& of = *objf->release();
+  uint64_t secId = getModuleSectionIndexForText( of );
+  Code_sp code = my_thread->topObjectFile()->_Code;
+  code->_TextSectionId = secId;
   save_object_file_and_code_info(my_thread->topObjectFile());
   buffer.reset();
-}
-
-void register_symbol_with_libunwind(const std::string& name, uint64_t start, size_t size) {
-#if defined(USE_LIBUNWIND) && (defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD))
-  unw_dyn_info_t info;
-  info.start_ip = start;
-  info.end_ip = start+size;
-  info.gp = 0;
-  info.format = UNW_INFO_FORMAT_DYNAMIC;
-  char* saved_name = (char*)malloc(name.size()+1);
-  strncpy( saved_name, name.c_str(), name.size());
-  saved_name[name.size()] = '\0';
-  info.u.pi.name_ptr = saved_name;
-  info.u.pi.segbase = 0;
-  info.u.pi.table_len = 0;
-  info.u.pi.table_data = 0;
-  dyn_register(&info);
-#endif
 }
 
 CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
   printf("%s:%d:%s ptr = %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
   core::HashTableEqual_sp ht = gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue());
-  core::T_sp result = _Nil<core::T_O>();
+  core::T_sp result = nil<core::T_O>();
   ht->map_while_true([ptr,&result] (core::T_sp key, core::T_sp value) -> bool {
                        if (value.consp()) {
                          core::T_sp address = value.unsafe_cons()->ocadr();
@@ -4692,8 +4688,8 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   core::Function_sp functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
                                                                               lisp_funcPtr,
                                                                               kw::_sym_function,
-                                                                              _Nil<core::T_O>(),
-                                                                              _Nil<core::T_O>() );
+                                                                              nil<core::T_O>(),
+                                                                              nil<core::T_O>() );
 //  printf("%s:%d:%s writing into function-description@%p  functionName: %s codeObject = %s\n", __FILE__, __LINE__, __FUNCTION__, functoid->fdesc().raw_(), _rep_(functoid->fdesc()->_functionName).c_str(), _rep_(codeObject).c_str());
   functoid->_EntryPoint.load()->_Code = codeObject;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -4719,8 +4715,8 @@ CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp d
     functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
                                                               lisp_funcPtr,
                                                               kw::_sym_function,
-                                                              _Nil<core::T_O>(),
-                                                              _Nil<core::T_O>() );
+                                                              nil<core::T_O>(),
+                                                              nil<core::T_O>() );
   } else {
     printf("%s:%d No startup functions were available!!!\n", __FILE__, __LINE__);
     abort();
@@ -4766,7 +4762,7 @@ namespace llvmo {
 CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 {
   printf("%s:%d:%s Creating JIT - we did this already at startup!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
-  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj,false);
+  auto cj = gctools::GC<ClaspJIT_O>::allocate(false);
   return cj;
 }
 
@@ -4789,8 +4785,9 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
                        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
                        ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
                        // GDB registrar isn't working at the moment
-                       if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-                         ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*this->_TPC))));
+                       if (!getenv("CLASP_NO_JIT_GDB")) {
+                           printf("%s:%d:%s Adding ObjLinkingLayer plugin for orc::createJITLoaderGDBRegistrar\n", __FILE__, __LINE__, __FUNCTION__ );
+                           ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*this->_TPC))));
                        }
                        ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
                        return ObjLinkingLayer;
@@ -4866,7 +4863,7 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
         }
         jcur = CONS_CDR(jcur);
     }
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
 }
             
         
@@ -4956,7 +4953,7 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
   dylib_sp->_name = core::SimpleBaseString_O::make(sname.str());
   dylib_sp->_Id = ++global_JITDylibCounter;
-  core::Cons_sp cell = core::Cons_O::create(dylib_sp,_Nil<core::T_O>());
+  core::Cons_sp cell = core::Cons_O::create(dylib_sp,nil<core::T_O>());
   core::T_sp expected;
   core::T_sp current;
   // Use CAS to push the new JITDylib into the list of JITDylibs.
@@ -5012,10 +5009,17 @@ CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
 namespace llvmo { // SectionedAddress_O
 
 SectionedAddress_sp SectionedAddress_O::create(uint64_t SectionIndex, uint64_t Address) {
-  GC_ALLOCATE_VARIADIC(SectionedAddress_O, sa, SectionIndex, Address);
+  auto  sa = gctools::GC<SectionedAddress_O>::allocate( SectionIndex, Address);
   return sa;
 }
 
+std::string SectionedAddress_O::__repr__() const {
+  stringstream ss;
+  ss << "#<SECTIONED-ADDRESS ";
+  ss << ":section-index " << this->_value.SectionIndex << " ";
+  ss << ":address " << this->_value.Address << ">";
+  return ss.str();
+}
 
 void python_dump_field(FILE* fout, const char* name, bool comma, gctools::Data_types dt, size_t offset, size_t sz=0)
 {
@@ -5048,9 +5052,6 @@ void dump_objects_for_lldb(FILE* fout,std::string indent)
   python_dump_field(fout,"_objectID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_objectID));
   python_dump_field(fout,"_object_file_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_object_file_start));
   python_dump_field(fout,"_object_file_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_object_file_size));
-  python_dump_field(fout,"_text_segment_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_text_segment_start));
-  python_dump_field(fout,"_text_segment_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_text_segment_size));
-  python_dump_field(fout,"_text_segment_SectionID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_text_segment_SectionID));
   python_dump_field(fout,"_stackmap_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_stackmap_start));
   python_dump_field(fout,"_stackmap_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_stackmap_size));
   python_dump_field(fout,"_next",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_next));

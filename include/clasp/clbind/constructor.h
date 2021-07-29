@@ -90,7 +90,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %lu\n", __FILE__, __LINE__, _rep_(className).c_str(), (uintptr_t)this->_HeaderValue._value);
-    core::GlobalEntryPoint_sp fdesc = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<T, Pointer>::entry_point);
+    core::GlobalEntryPoint_sp fdesc = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),DefaultConstructorCreator_O<T, Pointer>::entry_point);
     maybe_register_symbol_using_dladdr((void*)DefaultConstructorCreator_O<T, Pointer>::entry_point);
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(fdesc,className, this->_HeaderValue, this->_duplicationLevel + 1));
     return allocator;
@@ -125,12 +125,12 @@ public:
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
   core::T_sp creator_allocate() {
-    GC_ALLOCATE(T, obj);
+    auto  obj = gctools::GC<T>::allocate_with_default_constructor();
     return obj;
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
 //    printf("%s:%d DerivableDefaultConstructorCreator_O  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_Kind);
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DerivableDefaultConstructorCreator_O<T>::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),DerivableDefaultConstructorCreator_O<T>::entry_point);
     maybe_register_symbol_using_dladdr((void*)DerivableDefaultConstructorCreator_O<T>::entry_point);
     return gc::As_unsafe<core::Creator_sp>(gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(entryPoint,className, this->_Header, this->_duplicationLevel + 1));
   }
@@ -182,7 +182,7 @@ public:
   enum { NumParams = sizeof...(ARGS) };
   VariadicConstructorFunction_O(core::GlobalEntryPoint_sp ep) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     // nothing to do - no wrapped functions
   }
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -190,7 +190,6 @@ public:
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     INITIALIZE_VA_LIST();
-    INVOCATION_HISTORY_FRAME();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
@@ -198,6 +197,7 @@ public:
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::go(frame->arguments());
+//    int*** iii = WrapperType(); // Check the wrapper type
     return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(returnValues,std::move(all_args));
   }
 };

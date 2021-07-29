@@ -84,8 +84,24 @@ This function ignores visibility and may not halt at delimiters. DOWN is the low
 Note that this function may be less reliable than the FRAME-FUNCTION-etc functions."
   (core:debugger-frame-closure frame))
 (defun frame-arguments (frame)
-  "Return the list of arguments to the call for this frame."
-  (core:debugger-frame-args frame))
+  "Return the list of arguments to the call for this frame, and T.
+If the arguments are not available, returns NIL NIL."
+  (cond ((core:debugger-frame-args-available-p frame)
+         ;; If there are args, use em
+         (values (core:debugger-frame-args frame) t))
+        ((and (eq (core:debugger-frame-lang frame) :lisp)
+              (not (core:debugger-frame-xep-p frame))
+              (core:debugger-frame-xep-p (core:debugger-frame-up frame))
+              (equal (core:debugger-frame-fname frame)
+                     (core:debugger-frame-fname
+                      (core:debugger-frame-up frame))))
+         ;; If this is a local function called from its XEP, grab the XEP's
+         ;; arguments
+         (let ((xep (core:debugger-frame-up frame)))
+           (values (core:debugger-frame-args xep)
+                   (core:debugger-frame-args-available-p xep))))
+        (t ; nothin
+         (values nil nil))))
 (defun frame-locals (frame)
     "Return an alist of local lexical variables and their values at the continuation the frame represents. The CARs are variable names and CDRs their values.
 Multiple bindings with the same name may be returned, as there is no notion of lexical scope in this interface."
@@ -211,6 +227,7 @@ The delimiters and visibility may be ignored by using the lower level FRAME-UP, 
                     ,@kwargs))
 
 (defparameter *frame-filters* (list 'non-lisp-frame-p
+                                    'redundant-xep-p
                                     'package-hider
                                     'fname-hider)
   "A list of function designators. Any CLASP-DEBUG:FRAME for which any of the functions returns true will be considered invisible by the mid level CLASP-DEBUG interface (e.g. UP, DOWN)")
@@ -320,6 +337,26 @@ Note that as such, the frame returned may not be visible."
 
 (defun non-lisp-frame-p (frame)
   (not (eq (frame-language frame) :lisp)))
+
+;;; With how Clasp works at this time, any given Lisp function has two "real"
+;;; functions - an eXternal Entry Point (XEP), and a "local function". The XEP
+;;; takes a standard calling convention and does nothing but parse arguments and
+;;; call the local function, which has the actual body of code.
+;;; The XEP should do a tail call, but usually doesn't for whatever reason,
+;;; so we have a XEP and local function on the stack for essentially every Lisp
+;;; function call.
+;;; We hide XEPs that have a local function call with the same name in the next
+;;; frame down, to avoid redundancy; but the local inherits the arguments from
+;;; the XEP - see frame-arguments above.
+(defun redundant-xep-p (frame)
+  (and (eq (frame-language frame) :lisp)
+       (core:debugger-frame-xep-p frame)
+       (let ((down (core:debugger-frame-down frame)))
+         (and down
+              (eq (frame-language down) :lisp)
+              (not (core:debugger-frame-xep-p down))
+              (equal (core:debugger-frame-fname down)
+                     (core:debugger-frame-fname frame))))))
 
 (defparameter *hidden-packages* nil)
 

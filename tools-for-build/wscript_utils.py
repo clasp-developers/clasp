@@ -172,6 +172,7 @@ class clasp_task(Task.Task):
 
         cmd = [ clasp_exe_path,
                 "--norc",
+                "--type", "image",
                 "--disable-mpi",
         ]
 
@@ -360,6 +361,7 @@ class embed_command_line_cxxprogram(cxx.cxxprogram):
     def exec_command(self,cmd,**kw):
         link_filename = "%s/link_command_%s" % (tempfile.gettempdir(), os.getpid())
         object_filename = "%s.o" % link_filename
+        print("Writing link command to: %s" % link_filename)
         text_file = open(link_filename, "w")
         for line in cmd:
             text_file.write(line)
@@ -379,12 +381,12 @@ def embed_snapshot(bld,snapshot_file,input_executable,output_executable,install_
     if (bld.env["DEST_OS"] == DARWIN_OS):
         log.info("dtarget -> %s" % output_executable )
         env2 = bld.env.derive()
-        env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
         env2.append_value("LINKFLAGS",["-sectcreate", "__CLASP", "__clasp", snapshot_file.abspath()])
         link2 = embed_command_line_cxxprogram(env=env2)
         link2.name = "final_build"
         link2.set_inputs( bld.iclasp_link_task.inputs) # snapshot_file
         link2.set_outputs( [ output_executable ] )
+        log.info("final_build -> %s" % link2)
         bld.add_to_group(link2)
     else:
         snapshot_object_file = bld.path.find_or_declare("generated/%s_snapshot.o" % install_name)
@@ -407,3 +409,9 @@ class linux_snapshot_to_object(waflib.Task.Task):
         log.info("linux_snapshot_to_object cmd = %s" % cmd )
         return self.exec_command(cmd)
     
+def fetch_git_revision(path, url, revision = "", label = "master"):
+    log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
+    ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
+    if ( ret != 0 ):
+        raise Exception("Failed to fetch git url %s" % url)
+

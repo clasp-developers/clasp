@@ -39,7 +39,6 @@ THE SOFTWARE.
 #include <time.h>
 #endif
 #include <clasp/core/bignum.h>
-#include <boost/random.hpp>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
@@ -108,46 +107,6 @@ CL_DEFUN Integer_sp cl__get_universal_time() {
   Integer_sp unix_time = Integer_O::create(static_cast<Fixnum>(current_time));
   Integer_sp utime = gc::As_unsafe<Integer_sp>(contagion_add(unix_time, offset));
   return utime;
-}
-
-boost::mt11213b globalRealRandom01Producer;
-boost::uniform_real<> globalRealRandom01Distribution(0, 1);
-boost::variate_generator<boost::mt11213b &, boost::uniform_real<>>
-    globalRandomReal01Generator(globalRealRandom01Producer,
-                                globalRealRandom01Distribution);
-boost::mt11213b globalRealRandomNormal01Producer;
-boost::normal_distribution<double> globalNormal01Distribution(0, 1);
-boost::variate_generator<boost::mt11213b &, boost::normal_distribution<double>>
-    globalRandomRealNormal01Generator(globalRealRandomNormal01Producer, globalNormal01Distribution);
-
-CL_LISPIFY_NAME(seedRandomNumberGenerators);
-CL_DEFUN void seedRandomNumberGenerators(uint i) {
-  globalRealRandom01Producer.seed(static_cast<uint>(i));
-  globalRealRandomNormal01Producer.seed(static_cast<uint>(i));
-}
-
-CL_LISPIFY_NAME(seedRandomNumberGeneratorsUsingTime);
-CL_DEFUN void seedRandomNumberGeneratorsUsingTime() {
-  clock_t currentTime;
-  int tt;
-#ifdef darwin
-  currentTime = mach_absolute_time();
-#else
-  currentTime = clock();
-#endif
-  tt = currentTime % 32768;
-  LOG(BF("seedRandomNumberGeneratorsUsingTime using value(%d)") % tt);
-  seedRandomNumberGenerators(tt);
-}
-
-CL_LISPIFY_NAME(randomNumber01);
-CL_DEFUN double randomNumber01() {
-  return globalRandomReal01Generator();
-}
-
-CL_LISPIFY_NAME(randomNumberNormal01);
-CL_DEFUN double randomNumberNormal01() {
-  return globalRandomRealNormal01Generator();
 }
 
 bool almostEqualAbsoluteOrRelative(double va, double vb,

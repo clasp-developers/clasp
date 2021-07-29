@@ -95,15 +95,15 @@ CL_LAMBDA(pathname &optional verbose print external_format startup-name);
 CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
   core::Pathname_sp pfilename = core::cl__pathname(filename);
-  core::Pathname_sp bc_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
-                                                             _Nil<core::T_O>(),core::SimpleBaseString_O::make("bc"));
+  core::Pathname_sp bc_file = core::Pathname_O::makePathname(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),
+                                                             nil<core::T_O>(),core::SimpleBaseString_O::make("bc"));
   bc_file = cl__merge_pathnames(bc_file,pfilename);
   T_sp found = cl__probe_file(bc_file);
   if (found.notnilp()) {
     return llvm_sys__load_bitcode(bc_file,verbose,print,externalFormat,startup_name);
   }
-  core::Pathname_sp ll_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
-                                                             _Nil<core::T_O>(),core::SimpleBaseString_O::make("ll"));
+  core::Pathname_sp ll_file = core::Pathname_O::makePathname(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),
+                                                             nil<core::T_O>(),core::SimpleBaseString_O::make("ll"));
   ll_file = cl__merge_pathnames(ll_file,pfilename);
   found = cl__probe_file(ll_file);
   if (found.notnilp()) {
@@ -227,10 +227,9 @@ CL_DEFUN core::T_sp llvm_sys__tag_tests() {
 
 /*! Return an a-list containing lots of values that define C++ objects that Clasp needs to know about */
 CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
-  List_sp list = _Nil<T_O>();
-  list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), _Nil<T_O>());
+  List_sp list = nil<T_O>();
+  list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), nil<T_O>());
   list = Cons_O::create(Cons_O::create(_sym_tmv, make_fixnum((int)sizeof(T_mv))), list);
-  list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame, make_fixnum((int)sizeof(InvocationHistoryFrame))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadLocalState))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"), make_fixnum((int)gctools::Alignment())),list);
@@ -326,12 +325,11 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset ihf gcroots-in-module valist register-save-area function-description);
+CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset gcroots-in-module valist register-save-area function-description);
 CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize,
                                                         core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset, core::Fixnum_sp symbol_setf_function_offset,
                                                         core::Fixnum_sp functionSize,
                                                         core::Fixnum_sp function_description_offset,
-                                                        gc::Nilable<core::Fixnum_sp> givenIhfSize,
                                                         core::T_sp gcRootsInModuleSize,
                                                         core::T_sp tvalistsize,
                                                         core::T_sp tRegisterSaveAreaSize,
@@ -361,12 +359,6 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   }
   if (function_description_offset.unsafe_fixnum()!=offsetof(core::Function_O,_EntryPoint)) {
     SIMPLE_ERROR(BF("Mismatch between function entry offset[%d] and core::Function_O.entry offset[%d]") % function_description_offset.unsafe_fixnum() % offsetof(core::Function_O,_EntryPoint));
-  }
-  int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
-  if (givenIhfSize.notnilp() && unbox_fixnum(givenIhfSize) != InvocationHistoryFrame_size) {
-    SIMPLE_ERROR(BF("Mismatch between IR lisp-compiled-function-ihf size[%d]"
-                    " and sizeof(InvocationHistoryFrame)=[%d]") %
-                 _rep_(givenIhfSize) % InvocationHistoryFrame_size);
   }
   if ( gcRootsInModuleSize.notnilp() ) {
     int gcRootsInModule_size = sizeof(gctools::GCRootsInModule);
@@ -573,7 +565,7 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
     #endif
 #endif
-    GC_ALLOCATE_VARIADIC(ClaspJIT_O,jit_engine,false);
+    auto jit_engine = gctools::GC<ClaspJIT_O>::allocate(false);
     _lisp->_Roots._ClaspJIT = jit_engine;
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_dumpObjectFiles));

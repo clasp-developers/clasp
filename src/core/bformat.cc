@@ -112,7 +112,7 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, Li
       String_sp result = sout->getAndReset();
       return result;
     }
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   catch (boost::io::bad_format_string &err) {
     SIMPLE_ERROR(BF("bformat command error: bad format string: \"%s\"") % control);

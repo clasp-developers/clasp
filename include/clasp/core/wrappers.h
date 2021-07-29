@@ -54,7 +54,7 @@ namespace core {
   public:
     typedef BuiltinClosure_O TemplatedBase;
     virtual size_t templatedSizeof() const override { return sizeof(TranslationFunctor_O); };
-    virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
       this->fixupOneCodePointer( fixup, (void**)&this->fptr, sizeof(this->fptr) );
     }
     static inline LCC_RETURN LISP_CALLING_CONVENTION() {
@@ -96,7 +96,7 @@ public:
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->fixupOneCodePointer( fixup, (void**)&this->mptr, sizeof(this->mptr) );
   }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -104,7 +104,6 @@ public:
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     COPY_VA_LIST();
-    INVOCATION_HISTORY_FRAME();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
@@ -134,7 +133,7 @@ public:
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+  virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->fixupOneCodePointer(fixup,(void**)&this->mptr,sizeof(this->mptr));
   }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
@@ -142,7 +141,6 @@ public:
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     COPY_VA_LIST();
-    INVOCATION_HISTORY_FRAME();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));

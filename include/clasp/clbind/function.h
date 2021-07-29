@@ -121,7 +121,7 @@ public:
     this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup) {
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
     this->fixupOneCodePointer(fixup,(void**)&this->fptr,sizeof(this->fptr));
   }
   static inline LCC_RETURN entry_point(LCC_ARGS_ELLIPSIS)
@@ -129,7 +129,6 @@ public:
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     INITIALIZE_VA_LIST();
-    INVOCATION_HISTORY_FRAME();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
@@ -165,7 +164,7 @@ public:
         this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
     };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-    virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup ) {
+    virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup ) {
     this->fixupOneCodePointer( fixup, (void**)&this->fptr, sizeof(this->fptr) );
   }
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -174,7 +173,6 @@ public:
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     INITIALIZE_VA_LIST();
-    INVOCATION_HISTORY_FRAME();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
@@ -222,7 +220,7 @@ struct CountFunctionArguments<RT (*)(ARGS...)> {
 
 template <class FunctionPointerType, class Policies=policies<>, class PureOutsPack=clbind::pureOutsPack<>>
 struct function_registration : registration {
-  function_registration(char const *name, FunctionPointerType f, Policies const &policies) // , string const &lambdalist, string const &declares, string const &docstring)
+  function_registration(const std::string& name, FunctionPointerType f, Policies const &policies) // , string const &lambdalist, string const &declares, string const &docstring)
     : m_name(name), functionPtr(f), m_policies(policies) {
     this->m_lambdalist = policies.lambdaList();
     this->m_docstring = policies.docstring();
@@ -231,7 +229,7 @@ struct function_registration : registration {
 
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
-    core::Symbol_sp symbol = core::lispify_intern(m_name, core::lisp_currentPackageName());
+    core::Symbol_sp symbol = core::lisp_intern(m_name, core::lisp_currentPackageName());
     using inValuePack = clbind::inValueTrueFalseMaskPack<FunctionArgCount<FunctionPointerType>::value,Policies>;
     using VariadicType = TEMPLATED_FUNCTION_VariadicFunctor<FunctionPointerType, Policies, typename inValuePack::type >;
     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::entry_point);
@@ -244,7 +242,7 @@ struct function_registration : registration {
   virtual std::string name() const { return this->m_name;}
   virtual std::string kind() const { return "function_registration"; };
   
-  char const *m_name;
+  std::string m_name;
   FunctionPointerType functionPtr;
   Policies m_policies;
   string m_lambdalist;
@@ -254,19 +252,6 @@ struct function_registration : registration {
 
 } // namespace detail
 
-#if 0
-template <typename F, class Policies>
-scope_* fndef(char const *name, F f, Policies const &policies, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
-  return scope(std::unique_ptr<detail::registration>(
-                                                     new detail::function_registration<F, Policies>(name, f, policies, lambdalist, declares, docstring)));
-}
-
-template <class F>
-scope_* fndef(char const *name, F f, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
-  maybe_register_symbol_using_dladdr((void*)f,sizeof(f),name);
-  return fndef(name, f, policies<>(), lambdalist, declares, docstring);
-}
-#endif
 } // namespace clbind
 
 #endif // CLBIND_FUNCTION2_081014_HPP

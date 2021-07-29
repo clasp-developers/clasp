@@ -127,12 +127,12 @@ void PASS_FUNCTION_REST(core::T_sp closure,
     scope.valist().set_from_other_Vaslist(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
     scope.va_rest_binding(restarg);
   } else if (arg_idx == PASS_ARGS_NUM) {
-    scope.new_binding(restarg, _Nil<T_O>());
+    scope.new_binding(restarg, nil<T_O>());
   } else {
-    T_sp rest = Cons_O::create(PASS_NEXT_ARG(arg_idx), _Nil<T_O>());
+    T_sp rest = Cons_O::create(PASS_NEXT_ARG(arg_idx), nil<T_O>());
     T_sp cur = rest;
     for (int i(arg_idx+1), iEnd(PASS_ARGS_NUM); i < iEnd; ++i) {
-      T_sp one = Cons_O::create(PASS_NEXT_ARG(i), _Nil<T_O>());
+      T_sp one = Cons_O::create(PASS_NEXT_ARG(i), nil<T_O>());
       gc::As_unsafe<Cons_sp>(cur)->rplacd(one);
       cur = one;
     }
@@ -145,7 +145,7 @@ void PASS_FUNCTION_VA_REST(RestArgument const &va_restarg,
                            PASS_ARGS,
                            int arg_idx,
                            ScopeManager &scope) {
-  Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
+  Cons_O::CdrType_sp rest = nil<Cons_O::CdrType_O>();
   Cons_O::CdrType_sp *curP = &rest;
   scope.valist().set(&*arglist, n_args - arg_idx);
   scope.va_rest_binding(va_restarg);
@@ -165,7 +165,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
   //  bool sawkeys[num_keyed_arguments];// CALL_ARGUMENTS_LIMIT];
   memset(sawkeys, 0, num_keyed_arguments);
   LOG(BF(":allow-other-keywords --> %d") % passed_allow_other_keys);
-  T_sp first_illegal_keyword(_Nil<T_O>());
+  T_sp first_illegal_keyword(nil<T_O>());
   {
     _BLOCK_TRACEF(BF("Copy passed keyword values to environment"));
     for (int i(arg_idx), iEnd(num_args); i < iEnd; i += 2) {

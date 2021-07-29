@@ -80,9 +80,11 @@ THE SOFTWARE.
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/asttooling/asttoolingPackage.h>
-#include <clasp/gctools/imageSaveLoad.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/gctools/interrupt.h>
 #include <clasp/core/pathname.h>
+#include <clasp/clbind/open.h>
+#include <clasp/core/compiler.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #ifdef USE_MPI
 #include <clasp/mpip/mpiPackage.h>
@@ -292,7 +294,7 @@ void handle_unhandled_exception( void )
 {
   // This is a trick to get info about the last thrown exception.
   // This was advertized on Stackoverflow.
-
+  
   try
   {
     throw;
@@ -311,7 +313,7 @@ void handle_unhandled_exception( void )
 
 static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize)
 {
-
+  
   // Register builtin function names
   define_builtin_cxx_class_names();
   
@@ -335,7 +337,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
       my_thread_low_level->_Allocations._AllocationSizeThreshold = values[0];
     }
   }
-
+  
   
   //
   // Walk all of the loaded dynamic libraries
@@ -347,13 +349,20 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     initialize_clasp_Kinds();
     core::global_initialize_builtin_classes = false;
   }
-
-
+  
+  
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
     printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
-    core::dumpDebuggingLayouts();
+    stringstream ss;
+    char* username = getenv("USER");
+    if (!username) {
+      printf("Could not get USER environment variable\n");
+      exit(1);
+    }
+    ss << "/tmp/clasp_layout_" << getenv("USER") << ".py";
+    core::dumpDebuggingLayouts(ss.str());
   }
-
+  
     // Create the one global CommandLineOptions object and do some minimal argument processing
   core::global_options = new core::CommandLineOptions(argc, argv);
   (core::global_options->_ProcessArguments)(core::global_options);
@@ -363,56 +372,88 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   globals_->_DebugStream = new core::DebugStream(mpiRank);
 #ifdef USE_PRECISE_GC
 #  ifdef _TARGET_OS_DARWIN
-    const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
-    size_t size;
-    void* start_of_snapshot = getsectiondata(exec_header,
-                                             "__CLASP",
-                                             "__clasp",
-                                             &size);
-    void* end_of_snapshot = NULL;
-    if (start_of_snapshot) {
-      end_of_snapshot = (void*)((char*)start_of_snapshot + size);
-    }
+  const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
+  size_t size;
+  void* start_of_snapshot = getsectiondata(exec_header,
+                                           "__CLASP",
+                                           "__clasp",
+                                           &size);
+  void* end_of_snapshot = NULL;
+  if (start_of_snapshot) {
+    end_of_snapshot = (void*)((char*)start_of_snapshot + size);
+  }
 #  endif
 #  ifdef _TARGET_OS_LINUX
-    void* start_of_snapshot = NULL;
-    void* end_of_snapshot = NULL;
-    extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_start;
-    extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_end;
-    start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
-    end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
-    if (start_of_snapshot) {
-      printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
-    } else {
+  void* start_of_snapshot = NULL;
+  void* end_of_snapshot = NULL;
+  extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_start;
+  extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_end;
+  start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
+  end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
+  if (start_of_snapshot) {
+      //printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
+  } else {
 //      printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
-    }
+  }
 #  endif
 #else
-    void* start_of_snapshot = NULL;
-    void* end_of_snapshot = NULL;
+  void* start_of_snapshot = NULL;
+  void* end_of_snapshot = NULL;
 #endif
-  if (!core::global_options->_DontLoadImage && // YES load the image
-      ( core::global_options->_ImageType == core::cloSnapshot // YES its a snapshot
-        || start_of_snapshot != NULL) // We found an embedded snapshot
-        ) {
-#ifdef USE_PRECISE_GC
-    llvmo::initialize_llvm();
-
     //
     // Set up the arguments
     //
-    const char *argv0 = "./";
-    if (argc > 0) argv0 = argv[0];
-    globals_->_Argc = argc;
-    for (int i = 0; i < argc; ++i) {
-      globals_->_Argv.push_back(string(argv[i]));
-    }
+  const char *argv0 = "./";
+  if (argc > 0) argv0 = argv[0];
+  globals_->_Argc = argc;
+  for (int i = 0; i < argc; ++i) {
+    globals_->_Argv.push_back(string(argv[i]));
+  }
     //
     // Look around the local directories for source and fasl files.
     //
-    core::Bundle *bundle = new core::Bundle(argv0,core::global_options->_ResourceDir);
-    globals_->_Bundle = bundle;
-    exit_code = imageSaveLoad::image_load( (void*)start_of_snapshot, (void*)end_of_snapshot, core::global_options->_ImageFile );
+  core::Bundle *bundle = new core::Bundle(argv0,core::global_options->_ResourceDir);
+  globals_->_Bundle = bundle;
+
+  //
+  // Figure out if we are starting up with a snapshot or an image
+  //
+  bool loadSnapshotFile = false;
+#ifdef USE_PRECISE_GC  
+  std::string snapshotFileName = "";
+  if (!start_of_snapshot) {
+    if (core::global_options->_StartupFileP &&
+        core::global_options->_StartupFileType == core::cloSnapshot) {
+      snapshotFileName = core::global_options->_StartupFile;
+      loadSnapshotFile = true;
+    } else if (core::global_options->_DefaultStartupType == core::cloDefault) {
+      snapshotFileName = core::startup_snapshot_name(*bundle);
+      if (std::filesystem::exists(std::filesystem::path(snapshotFileName))) {
+        loadSnapshotFile = true;
+      }
+    } else if (core::global_options->_DefaultStartupType == core::cloSnapshot) {
+      snapshotFileName = core::startup_snapshot_name(*bundle);
+      if (std::filesystem::exists(std::filesystem::path(snapshotFileName))) {
+        loadSnapshotFile = true;
+      } else {
+        printf("Could not find snapshot file %s - exiting.\n", snapshotFileName.c_str());
+        exit(1);
+      }
+    }
+  }
+#endif
+  if ( loadSnapshotFile ||          // We want to load a snapshot
+       (start_of_snapshot != NULL) // We found an embedded snapshot
+      ) {
+#ifdef USE_PRECISE_GC
+    if (loadSnapshotFile && core::startup_snapshot_is_stale(snapshotFileName)) {
+      printf("The startup snapshot file \"%s\" is stale - remove it or create a new one\n", snapshotFileName.c_str() );
+      std::exit(1);
+    }
+    llvmo::initialize_llvm();
+
+    clbind::initializeCastGraph();
+    exit_code = snapshotSaveLoad::snapshot_load( (void*)start_of_snapshot, (void*)end_of_snapshot, snapshotFileName );
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");
 #endif
@@ -479,11 +520,6 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
-#if 0
-  const char* bogus_args[3] = {"clasp","--debug-only", "jitlink"};
-  llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
-#endif
-
   const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
   if (dof) {
     if (strcmp(dof,"save")==0) {
@@ -564,7 +600,18 @@ int main( int argc, char *argv[] )
 
     if (getenv("CLASP_DEBUGGER_SUPPORT")) {
       printf("%s:%d:%s  Setting up clasp for debugging - writing PID to /tmp/clasp_pid\n", __FILE__, __LINE__, __FUNCTION__);
-      FILE* fout = fopen("/tmp/clasp_pid","w");
+      stringstream ss;
+      char* username = getenv("USER");
+      if (!username) {
+        printf("%s:%d:%s Could not get USER environment variable\n", __FILE__, __LINE__, __FUNCTION__ );
+        exit(1);
+      }
+      ss << "/tmp/clasp_pid_" << getenv("USER");
+      FILE* fout = fopen(ss.str().c_str(),"w");
+      if (!fout) {
+        printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
+        exit(1);
+      }
       fprintf(fout,"%d",getpid());
       fclose(fout);
     }

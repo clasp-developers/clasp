@@ -5,7 +5,7 @@
 #include <clasp/core/lisp.h>
 #include <clasp/core/package.h>
 #include <clasp/core/numbers.h>
-
+#include <clasp/core/funcallableInstance.h>
 #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
 #include <gc/gc.h>
 #include <gc/gc_mark.h>
@@ -20,9 +20,9 @@
 extern "C" {
 void* obj_skip(void*);
 };
-#define GC_LISP_OBJECT_MARK
-#include "obj_scan.cc"
-#undef GC_LISP_OBJECT_MARK
+# define GC_LISP_OBJECT_MARK
+# include "obj_scan.cc"
+# undef GC_LISP_OBJECT_MARK
 #endif
 
 
@@ -115,6 +115,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
     //    fprintf(fout,"import clasp\n");
     //    fprintf(fout,"from clasp import inspect\n");
     dump_data_types(fout,indent);
+    core::registerOrDumpDtreeInfo(fout);
   }
   // First pass through the global_stamp_layout_codes_table
   // to count the number of stamps and the number of fields
@@ -228,7 +229,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
              data_type == CXX_FIXUP_OFFSET ||
              data_type == ctype_opaque_ptr
              ) {
-          local_stamp_layout[cur_stamp].image_save_load_poison++;
+          local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
         }
         if ( (data_type == SMART_PTR_OFFSET
               || data_type == ATOMIC_SMART_PTR_OFFSET
@@ -367,7 +368,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         if ( data_type == CXX_SHARED_MUTEX_OFFSET ||
              data_type == CXX_FIXUP_OFFSET ||
              data_type == ctype_opaque_ptr ) {
-          local_stamp_layout[cur_stamp].image_save_load_poison++;
+          local_stamp_layout[cur_stamp].snapshot_save_load_poison++;
         }
         if ( ((data_type) == SMART_PTR_OFFSET
               || (data_type) == ATOMIC_SMART_PTR_OFFSET

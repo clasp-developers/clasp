@@ -282,7 +282,7 @@ CL_DEFMETHOD core::T_sp Mpi_O::prim_Send(int dest, int tag, core::T_sp obj) {
   this->_Communicator.send(dest, tag, sos->str());
 #endif
 #endif
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 /*
@@ -312,7 +312,7 @@ CL_DEFMETHOD core::T_mv Mpi_O::prim_Recv(int source, int tag) {
   return Values(obj, core::make_fixnum(this->_Source), core::make_fixnum(this->_Tag));
 #endif
 #else
-  return _Nil<T_O>();
+  return nil<T_O>();
 #endif
 }
 

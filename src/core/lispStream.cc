@@ -487,13 +487,13 @@ not_output_finish_output(T_sp strm) {
 static T_sp
 not_implemented_get_position(T_sp strm) {
   FEerror("file-position not implemented for stream ~S", 1, strm.raw_());
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 static T_sp
 not_implemented_set_position(T_sp strm, T_sp pos) {
   FEerror("file-position not implemented for stream ~S", 1, strm.raw_());
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 #endif
 
@@ -570,7 +570,7 @@ static T_sp
 generic_read_byte_unsigned8(T_sp strm) {
   unsigned char c;
   if (StreamOps(strm).read_byte8(strm, &c, 1) < 1) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   return make_fixnum(c);
 }
@@ -585,7 +585,7 @@ static T_sp
 generic_read_byte_signed8(T_sp strm) {
   signed char c;
   if (StreamOps(strm).read_byte8(strm, (unsigned char *)&c, 1) < 1)
-    return _Nil<T_O>();
+    return nil<T_O>();
   return make_fixnum(c);
 }
 
@@ -606,7 +606,7 @@ generic_read_byte_le(T_sp strm) {
   for (nb = 0; bs >= 8; bs -= 8, nb += 8) {
     Fixnum_sp aux;
     if (read_byte8(strm, &c, 1) < 1)
-      return _Nil<T_O>();
+      return nil<T_O>();
     if (bs <= 8 && (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES))
       aux = make_fixnum((signed char)c);
     else
@@ -643,7 +643,7 @@ generic_read_byte(T_sp strm) {
   bs = StreamByteSize(strm);
   for (; bs >= 8; bs -= 8) {
     if (read_byte8(strm, &c, 1) < 1)
-      return _Nil<T_O>();
+      return nil<T_O>();
     if (output.notnilp()) {
       output = cl__logior(Cons_O::createList(make_fixnum(c),
                                              clasp_ash(gc::As<Integer_sp>(output), 8)));
@@ -697,7 +697,7 @@ generic_always_false(T_sp strm) {
 
 static T_sp
 generic_always_nil(T_sp strm) {
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 static int
@@ -707,7 +707,7 @@ generic_column(T_sp strm) {
 
 static T_sp
 generic_set_position(T_sp strm, T_sp pos) {
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 static T_sp
@@ -833,8 +833,7 @@ eformat_read_char_no_cursor(T_sp tstrm) {
     buffer_end += byte_size;
     c = strm->_Decoder(strm, &buffer_pos, buffer_end);
   } while(c == EOF && (buffer_end - buffer) < ENCODING_BUFFER_MAX_SIZE);
-  unlikely_if (c == strm->_EofChar)
-    return EOF;
+  unlikely_if (c == strm->_EofChar) return EOF;
   if (c != EOF) {
     strm->_LastChar = c;
     strm->_LastCode[0] = c;
@@ -1198,7 +1197,7 @@ user_decoder(T_sp tstream, unsigned char **buffer, unsigned char *buffer_end) {
   if (*buffer >= buffer_end) {
     return EOF;
   }
-  character = clasp_gethash_safe(clasp_make_fixnum((*buffer)[0]), table, _Nil<T_O>());
+  character = clasp_gethash_safe(clasp_make_fixnum((*buffer)[0]), table, nil<T_O>());
   unlikely_if(character.nilp()) {
     return decoding_error(stream, buffer, 1,buffer_end);
   }
@@ -1207,7 +1206,7 @@ user_decoder(T_sp tstream, unsigned char **buffer, unsigned char *buffer_end) {
       return EOF;
     } else {
       gctools::Fixnum byte = ((*buffer)[0] << 8) + (*buffer)[1];
-      character = clasp_gethash_safe(clasp_make_fixnum(byte), table, _Nil<T_O>());
+      character = clasp_gethash_safe(clasp_make_fixnum(byte), table, nil<T_O>());
       unlikely_if(character.nilp()) {
         return decoding_error(stream, buffer, 2,buffer_end);
       }
@@ -1219,7 +1218,7 @@ user_decoder(T_sp tstream, unsigned char **buffer, unsigned char *buffer_end) {
 static int
 user_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
   Stream_sp stream = gc::As_unsafe<Stream_sp>(tstream);
-  T_sp byte = clasp_gethash_safe(clasp_make_character(c), stream->_FormatTable, _Nil<T_O>());
+  T_sp byte = clasp_gethash_safe(clasp_make_character(c), stream->_FormatTable, nil<T_O>());
   if (byte.nilp()) {
     return encoding_error(stream, buffer, c);
   } else {
@@ -1252,7 +1251,7 @@ user_multistate_decoder(T_sp tstream, unsigned char **buffer, unsigned char *buf
       return EOF;
     }
     j = (j << 8) | (*buffer)[i];
-    character = clasp_gethash_safe(clasp_make_fixnum(j), table, _Nil<T_O>());
+    character = clasp_gethash_safe(clasp_make_fixnum(j), table, nil<T_O>());
     if (character.characterp()) {
       return character.unsafe_character();
     }
@@ -1284,13 +1283,13 @@ user_multistate_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
   T_sp p = table_list;
   do {
     T_sp table = oCar(p);
-    T_sp byte = clasp_gethash_safe(clasp_make_character(c), table, _Nil<T_O>());
+    T_sp byte = clasp_gethash_safe(clasp_make_character(c), table, nil<T_O>());
     if (!byte.nilp()) {
       gctools::Fixnum code = byte.unsafe_fixnum();
       claspCharacter n = 0;
       if (p != table_list) {
         /* Must output a escape sequence */
-        T_sp x = clasp_gethash_safe(_lisp->_true(), table, _Nil<T_O>());
+        T_sp x = clasp_gethash_safe(_lisp->_true(), table, nil<T_O>());
         while (!x.nilp()) {
           buffer[0] = (oCar(x)).unsafe_fixnum();
           buffer++;
@@ -1440,7 +1439,7 @@ static T_sp
 clos_stream_read_byte(T_sp strm) {
   T_sp b = eval::funcall(gray::_sym_stream_read_byte, strm);
   if (b == kw::_sym_eof)
-    b = _Nil<T_O>();
+    b = nil<T_O>();
   return b;
 }
 
@@ -1457,7 +1456,7 @@ clos_stream_read_char(T_sp strm) {
     value = output.unsafe_character();
   else if (core__fixnump(output))
     value = (output).unsafe_fixnum();
-  else if (output == _Nil<T_O>() || output == kw::_sym_eof)
+  else if (output == nil<T_O>() || output == kw::_sym_eof)
     return EOF;
   else
     value = -1;
@@ -1858,10 +1857,8 @@ CL_DECLARE();
 CL_DOCSTRING("get_output_stream_string");
 CL_DEFUN T_sp cl__get_output_stream_string(T_sp strm) {
   T_sp strng;
-  unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_string_output)) {
-    printf("%s:%d:%s AnsiStreamTypeP failed expected %d got %d\n", __FILE__, __LINE__, __FUNCTION__, clasp_smm_string_output, StreamMode(strm));
-    af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, strm, _sym_StringOutputStream_O);
-  }
+  unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_string_output))
+    af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, strm, cl::_sym_StringStream_O);
   String_sp buffer = StringOutputStreamOutputString(strm);
   //        printf("%s:%d StringOutputStreamOutputString = %s\n", __FILE__, __LINE__, buffer->get().c_str());
   strng = cl__copy_seq(buffer);
@@ -2282,7 +2279,7 @@ static T_sp
 broadcast_set_position(T_sp strm, T_sp pos) {
   T_sp l = BroadcastStreamList(strm);
   if (l.nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   return clasp_file_position_set(oCar(l), pos);
 }
 
@@ -2568,10 +2565,10 @@ concatenated_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
 static T_sp
 concatenated_read_byte(T_sp strm) {
   T_sp l = ConcatenatedStreamList(strm);
-  T_sp c = _Nil<T_O>();
+  T_sp c = nil<T_O>();
   while (!l.nilp()) {
     c = clasp_read_byte(oCar(l));
-    if (c != _Nil<T_O>())
+    if (c != nil<T_O>())
       break;
     ConcatenatedStreamList(strm) = l = oCdr(l);
   }
@@ -2950,10 +2947,9 @@ consume_byte_stack(T_sp strm, unsigned char *c, cl_index n) {
 
 static cl_index
 io_file_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
-  unlikely_if(StreamByteStack(strm).notnilp()) { // != _Nil<T_O>()) {
+  if(StreamByteStack(strm).notnilp()) { // != nil<T_O>()) {
     return consume_byte_stack(strm, c, n);
-  }
-  else {
+  } else {
     int f = IOFileStreamDescriptor(strm);
     gctools::Fixnum out = 0;
     clasp_disable_interrupts();
@@ -2979,19 +2975,19 @@ output_file_write_byte8(T_sp strm, unsigned char *c, cl_index n) {
 
 static cl_index
 io_file_write_byte8(T_sp strm, unsigned char *c, cl_index n) {
-  unlikely_if(StreamByteStack(strm).notnilp()) { // != _Nil<T_O>()) {
+  unlikely_if(StreamByteStack(strm).notnilp()) { // != nil<T_O>()) {
     /* Try to move to the beginning of the unread characters */
     T_sp aux = clasp_file_position(strm);
     if (!aux.nilp())
       clasp_file_position_set(strm, aux);
-    StreamByteStack(strm) = _Nil<T_O>();
+    StreamByteStack(strm) = nil<T_O>();
   }
   return output_file_write_byte8(strm, c, n);
 }
 
 static int
 io_file_listen(T_sp strm) {
-  if (StreamByteStack(strm).notnilp()) // != _Nil<T_O>())
+  if (StreamByteStack(strm).notnilp()) // != nil<T_O>())
     return CLASP_LISTEN_AVAILABLE;
   if (StreamFlags(strm) & CLASP_STREAM_MIGHT_SEEK) {
     cl_env_ptr the_env = clasp_process_env();
@@ -3123,7 +3119,7 @@ io_file_set_position(T_sp strm, T_sp large_disp) {
     mode = SEEK_SET;
   }
   disp = lseek(f, disp, mode);
-  return (disp == (clasp_off_t)-1) ? _Nil<T_O>() : _lisp->_true();
+  return (disp == (clasp_off_t)-1) ? nil<T_O>() : _lisp->_true();
 }
 
 static int
@@ -3521,7 +3517,7 @@ parse_external_format(T_sp tstream, T_sp format, int flags) {
     return (flags & ~CLASP_STREAM_FORMAT) | CLASP_STREAM_DEFAULT_FORMAT;
 #endif
   }
-  if (format == _Nil<T_O>()) {
+  if (format == nil<T_O>()) {
     return flags;
   }
   if (format == kw::_sym_cr) {
@@ -3825,7 +3821,7 @@ T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm,
 
 static cl_index
 input_stream_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
-  unlikely_if(StreamByteStack(strm).notnilp()) { //  != _Nil<T_O>()) {
+  unlikely_if(StreamByteStack(strm).notnilp()) { //  != nil<T_O>()) {
     return consume_byte_stack(strm, c, n);
   }
   else {
@@ -3859,7 +3855,7 @@ io_stream_write_byte8(T_sp strm, unsigned char *c, cl_index n) {
 	 * there were unread octets, we have to move to the position at the
 	 * begining of them.
 	 */
-  if (StreamByteStack(strm).notnilp()) { //  != _Nil<T_O>()) {
+  if (StreamByteStack(strm).notnilp()) { //  != nil<T_O>()) {
     T_sp aux = clasp_file_position(strm);
     if (!aux.nilp())
       clasp_file_position_set(strm, aux);
@@ -3886,7 +3882,7 @@ io_stream_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
 
 static int
 io_stream_listen(T_sp strm) {
-  if (StreamByteStack(strm).notnilp()) // != _Nil<T_O>())
+  if (StreamByteStack(strm).notnilp()) // != nil<T_O>())
     return CLASP_LISTEN_AVAILABLE;
   return flisten(strm, IOStreamStreamFile(strm));
 }
@@ -4000,7 +3996,7 @@ io_stream_set_position(T_sp strm, T_sp large_disp) {
   clasp_disable_interrupts();
   mode = clasp_fseeko(f, disp, mode);
   clasp_enable_interrupts();
-  return mode ? _Nil<T_O>() : _lisp->_true();
+  return mode ? nil<T_O>() : _lisp->_true();
 }
 
 static int
@@ -4145,7 +4141,7 @@ static cl_index
 winsock_stream_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
   cl_index len = 0;
 
-  unlikely_if(StreamByteStack(strm).notnilp()) { //  != _Nil<T_O>()) {
+  unlikely_if(StreamByteStack(strm).notnilp()) { //  != nil<T_O>()) {
     return consume_byte_stack(strm, c, n);
   }
   if (n > 0) {
@@ -4198,7 +4194,7 @@ winsock_stream_write_byte8(T_sp strm, unsigned char *c, cl_index n) {
 static int
 winsock_stream_listen(T_sp strm) {
   SOCKET s;
-  unlikely_if(StreamByteStack(strm).notnilp()) { // != _Nil<T_O>()) {
+  unlikely_if(StreamByteStack(strm).notnilp()) { // != nil<T_O>()) {
     return CLASP_LISTEN_AVAILABLE;
   }
   s = (SOCKET)IOFileStreamDescriptor(strm);
@@ -4355,7 +4351,7 @@ const FileOps winsock_stream_input_ops = {
 
 static cl_index
 wcon_stream_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
-  unlikely_if(StreamByteStack(strm).notnilp()) { // != _Nil<T_O>()) {
+  unlikely_if(StreamByteStack(strm).notnilp()) { // != nil<T_O>()) {
     return consume_byte_stack(strm, c, n);
   }
   else {
@@ -4709,7 +4705,7 @@ CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
   return ext__file_stream_file_descriptor(s);
 }
 
-       /**********************************************************************
+    /**********************************************************************
      * MEDIUM LEVEL INTERFACE
      */
 
@@ -4899,7 +4895,7 @@ CL_DEFUN T_sp cl__file_string_length(T_sp stream, T_sp tstring) {
 	 */
 BEGIN:
   if (gc::IsA<Instance_sp>(stream)) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   unlikely_if(!AnsiStreamP(stream)) {
     ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_file_string_length, stream, cl::_sym_Stream_O);
@@ -4944,7 +4940,7 @@ CL_DEFUN T_sp core__do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
 
   /* Since we have called clasp_length(), we know that SEQ is a valid
 	   sequence. Therefore, we only need to check the type of the
-	   object, and seq == _Nil<T_O>() i.f.f. t = t_symbol */
+	   object, and seq == nil<T_O>() i.f.f. t = t_symbol */
   limit = cl__length(seq);
   if (!core__fixnump(s)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_start, s,
@@ -4999,7 +4995,7 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
   gctools::Fixnum start, limit, end(0);
   /* Since we have called clasp_length(), we know that SEQ is a valid
 	   sequence. Therefore, we only need to check the type of the
-	   object, and seq == _Nil<T_O>() i.f.f. t = t_symbol */
+	   object, and seq == nil<T_O>() i.f.f. t = t_symbol */
   limit = cl__length(seq);
   if (!core__fixnump(s)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_start, s,
@@ -5106,7 +5102,7 @@ CL_DEFUN T_sp cl__file_position(T_sp stream, T_sp position) {
     if (position == kw::_sym_start) {
       position = make_fixnum(0);
     } else if (position == kw::_sym_end) {
-      position = _Nil<T_O>();
+      position = nil<T_O>();
     }
     output = clasp_file_position_set(stream, position);
   }
@@ -5116,7 +5112,7 @@ CL_DEFUN T_sp cl__file_position(T_sp stream, T_sp position) {
 CL_LAMBDA(strm);
 CL_DEFUN T_sp core__input_stream_pSTAR(T_sp strm) {
   ASSERT(strm);
-  return (clasp_input_stream_p(strm) ? _lisp->_true() : _Nil<T_O>());
+  return (clasp_input_stream_p(strm) ? _lisp->_true() : nil<T_O>());
 }
 
 CL_LAMBDA(strm);
@@ -5127,7 +5123,7 @@ CL_DEFUN T_sp cl__input_stream_p(T_sp strm) {
 CL_LAMBDA(arg);
 CL_DEFUN T_sp core__output_stream_pSTAR(T_sp strm) {
   ASSERT(strm);
-  return (clasp_output_stream_p(strm) ? _lisp->_true() : _Nil<T_O>());
+  return (clasp_output_stream_p(strm) ? _lisp->_true() : nil<T_O>());
 }
 
 CL_LAMBDA(arg);
@@ -5140,7 +5136,7 @@ CL_DECLARE();
 CL_DOCSTRING("interactive_stream_p");
 CL_DEFUN T_sp cl__interactive_stream_p(T_sp strm) {
   ASSERT(strm);
-  return (stream_dispatch_table(strm).interactive_p(strm) ? _lisp->_true() : _Nil<T_O>());
+  return (stream_dispatch_table(strm).interactive_p(strm) ? _lisp->_true() : nil<T_O>());
 }
 
 
@@ -5153,7 +5149,7 @@ CL_DEFUN T_sp core__open_stream_pSTAR(T_sp strm) {
   }
   unlikely_if(!AnsiStreamP(strm))
       ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_open_stream_p, strm, cl::_sym_Stream_O);
-  return (StreamClosed(strm) ? _Nil<T_O>() : _lisp->_true());
+  return (StreamClosed(strm) ? nil<T_O>() : _lisp->_true());
 }
 
 CL_DEFUN T_sp cl__open_stream_p(T_sp strm) {
@@ -5273,7 +5269,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
         unlikely_if(f < 0) FEcannot_open(fn);
         safe_close(f);
       } else if (if_does_not_exist.nilp()) {
-        return _Nil<T_O>();
+        return nil<T_O>();
       } else {
         FEinvalid_option(kw::_sym_if_does_not_exist,
                          if_does_not_exist);
@@ -5304,7 +5300,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
         unlikely_if(f < 0) FEcannot_open(fn);
         appending = (if_exists == kw::_sym_append);
       } else if (if_exists.nilp()) {
-        return _Nil<T_O>();
+        return nil<T_O>();
       } else {
         FEinvalid_option(kw::_sym_if_exists, if_exists);
       }
@@ -5315,7 +5311,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
         f = safe_open(fname.c_str(), base | O_CREAT | O_TRUNC, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
       } else if (if_does_not_exist.nilp()) {
-        return _Nil<T_O>();
+        return nil<T_O>();
       } else {
         FEinvalid_option(kw::_sym_if_does_not_exist,
                          if_does_not_exist);
@@ -5359,7 +5355,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
     //            si_set_finalizer(output, _lisp->_true());
     /* Set file pointer to the correct position */
     if (appending) {
-      clasp_file_position_set(output, _Nil<T_O>());
+      clasp_file_position_set(output, nil<T_O>());
     } else {
       clasp_file_position_set(output, make_fixnum(0));
     }
@@ -5414,7 +5410,7 @@ CL_DEFUN T_sp cl__open(T_sp filename,
   } else if (direction == kw::_sym_probe) {
     smm = clasp_smm_probe;
     if (!idnesp)
-      if_does_not_exist = _Nil<T_O>();
+      if_does_not_exist = nil<T_O>();
   } else {
     FEerror("~S is an illegal DIRECTION for OPEN.",
             1, direction.raw_());
@@ -5422,7 +5418,7 @@ CL_DEFUN T_sp cl__open(T_sp filename,
   }
   byte_size = clasp_normalize_stream_element_type(element_type);
   if (byte_size != 0) {
-    external_format = _Nil<T_O>();
+    external_format = nil<T_O>();
   }
   if (!cstream.nilp()) {
     flags |= CLASP_STREAM_C_STREAM;
@@ -5688,7 +5684,7 @@ file_libc_error(T_sp error_type, T_sp stream,
   clasp_va_end(args);
 
   eval::funcall(core::_sym_signalSimpleError,
-                error_type, _Nil<T_O>(),
+                error_type, nil<T_O>(),
                 SimpleBaseString_O::make("~?~%C library explanation: ~A."),
                 Cons_O::createList(SimpleBaseString_O::make(std::string(msg)), rest,
                                    error));
@@ -5764,7 +5760,7 @@ cl_index encoding_error(T_sp stream, unsigned char *buffer, claspCharacter c) {
 
 SYMBOL_EXPORT_SC_(ExtPkg,decoding_error);
 claspCharacter decoding_error(T_sp stream, unsigned char **buffer, int length, unsigned char *buffer_end) {
-  T_sp octets = _Nil<T_O>(), code;
+  T_sp octets = nil<T_O>(), code;
   for (; length>0; length-- ) {
     octets = Cons_O::create(make_fixnum(*((*buffer)++)), octets);
   }
@@ -5833,7 +5829,7 @@ void clasp_writeln_string(const string &str, T_sp strm) {
 }
 
 T_sp clasp_filename(T_sp strm, bool errorp) {
-  T_sp fn = _Nil<T_O>();
+  T_sp fn = nil<T_O>();
   if (AnsiStreamP(strm)) {
     Stream_sp ss = gc::As<Stream_sp>(strm);
     fn = ss->filename();
@@ -5926,15 +5922,15 @@ IOStreamStream_O::~IOStreamStream_O() {
 IOFileStream_O::~IOFileStream_O() {
   stream_dispatch_table(this->asSmartPtr()).close(this->asSmartPtr());
 }
-void IOFileStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup) {
-  if (imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+void IOFileStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) {
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     std::string name = gc::As<String_sp>(this->_Filename)->get_std_string();
     printf("%s:%d:%s What do we do with IOFileStream_O  %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
   }
 }
 
-void IOStreamStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+void IOStreamStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     std::string name = gc::As<String_sp>(this->_Filename)->get_std_string();
     T_sp stream = this->asSmartPtr();
 //    printf("%s:%d:%s Opening %s stream = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)stream.raw_());
@@ -5956,7 +5952,7 @@ void IOStreamStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fix
 }
 
 T_sp Stream_O::filename() const {
-  return _Nil<T_O>();
+  return nil<T_O>();
 };
 
 int Stream_O::lineno() const {
@@ -5967,16 +5963,16 @@ int Stream_O::column() const {
   return 0;
 };
 
-void SynonymStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+void SynonymStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
   T_sp stream = this->asSmartPtr();
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     StreamOps(stream) = duplicate_dispatch_table(synonym_ops);
   }
 };
 
-void TwoWayStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+void TwoWayStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
   T_sp stream = this->asSmartPtr();
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     StreamOps(stream) = duplicate_dispatch_table(two_way_ops);
   }
 };
@@ -6044,19 +6040,19 @@ string SynonymStream_O::__repr__() const {
 
 T_sp StringInputStream_O::make(const string &str) {
   String_sp s = str_create(str);
-  return cl__make_string_input_stream(s, make_fixnum(0), _Nil<T_O>());
+  return cl__make_string_input_stream(s, make_fixnum(0), nil<T_O>());
 }
 
-void StringInputStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+void StringInputStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
   T_sp stream = this->asSmartPtr();
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     StreamOps(stream) = duplicate_dispatch_table(str_in_ops);
   }
 };
 
-void StringOutputStream_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+void StringOutputStream_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
   T_sp stream = this->asSmartPtr();
-  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     StreamOps(stream) = duplicate_dispatch_table(str_out_ops);
   }
 };
@@ -6104,7 +6100,7 @@ CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
      // if the return value is :eof, return nil
     T_sp byte_or_eof = eval::funcall(gray::_sym_stream_read_byte, strm);
     if (byte_or_eof == kw::_sym_eof)
-      return _Nil<T_O>();
+      return nil<T_O>();
     else return byte_or_eof;
   }
   // as a side effect verifies that strm is really a stream.
@@ -6204,7 +6200,7 @@ CL_DEFUN T_sp cl__read_char_no_hang(T_sp strm, T_sp eof_error_p, T_sp eof_value,
       if (c != EOF)
         return clasp_make_standard_character(c);
     } else if (f == CLASP_LISTEN_NO_CHAR) {
-      return _Nil<T_O>();
+      return nil<T_O>();
     }
   }
 END_OF_FILE:
@@ -6237,9 +6233,9 @@ CL_DEFUN T_mv cl__read_from_string(String_sp content, T_sp eof_error_p, T_sp eof
   LOG(BF("Character at position[%d] is[%c/%d]") % sin->tell() % (char)sin->peek_char() % (int)sin->peek_char());
   T_sp res;
   if ( preserve_whitespace.isTrue() ) {
-     res = cl__read_preserving_whitespace(sin, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
+     res = cl__read_preserving_whitespace(sin, nil<T_O>(), unbound<T_O>(), nil<T_O>());
   } else {
-     res = cl__read(sin, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
+     res = cl__read(sin, nil<T_O>(), unbound<T_O>(), nil<T_O>());
   }
   if (res.unboundp()) {
     if (eofErrorP) {
@@ -6273,7 +6269,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
   claspCharacter (*read_char)(T_sp) = ops.read_char;
   claspCharacter (*peek_char)(T_sp) = ops.peek_char;
   // This is the second return value.
-  T_sp missing_newline_p = _Nil<T_O>();
+  T_sp missing_newline_p = nil<T_O>();
   // We set things up so that we accumulate a bytestring when possible, and revert to a real
   // character string if we hit multibyte characters.
   bool small = true;
@@ -6354,7 +6350,7 @@ CL_DOCSTRING("Send a newline to the output stream");
 CL_DEFUN T_sp cl__terpri(T_sp outputStreamDesig) {
   // outputStreamDesign in clasp_terpri
   clasp_terpri(outputStreamDesig);
-  return _Nil<T_O>();
+  return nil<T_O>();
 };
 
 bool clasp_freshLine(T_sp s) {
@@ -6439,7 +6435,7 @@ CL_DOCSTRING("clearInput");
 CL_DEFUN T_sp cl__clear_input(T_sp dstrm) {
   dstrm = coerce::inputStreamDesignator(dstrm);
   clasp_clear_input(dstrm);
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_LAMBDA(&optional dstrm);
@@ -6448,7 +6444,7 @@ CL_DOCSTRING("clearOutput");
 CL_DEFUN T_sp cl__clear_output(T_sp dstrm) {
   dstrm = coerce::outputStreamDesignator(dstrm);
   clasp_clear_output(dstrm);
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_LAMBDA(&optional dstrm);
@@ -6468,7 +6464,7 @@ CL_DOCSTRING("force_output");
 CL_DEFUN T_sp cl__force_output(T_sp ostrm) {
   ostrm = coerce::outputStreamDesignator(ostrm);
   clasp_force_output(ostrm);
-  return _Nil<T_O>();
+  return nil<T_O>();
 };
 
 CL_LAMBDA(&optional strm);
@@ -6477,7 +6473,7 @@ CL_DOCSTRING("finish_output");
 CL_DEFUN T_sp cl__finish_output(T_sp ostrm) {
   ostrm = coerce::outputStreamDesignator(ostrm);
   clasp_finish_output(ostrm);
-  return _Nil<T_O>();
+  return nil<T_O>();
 };
 
 CL_LAMBDA(char &optional strm);
@@ -6486,7 +6482,7 @@ CL_DOCSTRING("unread_char");
 CL_DEFUN T_sp cl__unread_char(Character_sp ch, T_sp dstrm) {
   dstrm = coerce::inputStreamDesignator(dstrm);
   clasp_unread_char(clasp_as_claspCharacter(ch), dstrm);
-  return _Nil<T_O>();
+  return nil<T_O>();
 };
 
 CL_LAMBDA(arg);
@@ -6560,11 +6556,11 @@ OUTPUT:
 T_sp clasp_openRead(T_sp sin) {
   String_sp filename = gc::As<String_sp>(cl__namestring(sin));
   enum StreamMode smm = clasp_smm_input;
-  T_sp if_exists = _Nil<T_O>();
-  T_sp if_does_not_exist = _Nil<T_O>();
+  T_sp if_exists = nil<T_O>();
+  T_sp if_does_not_exist = nil<T_O>();
   gctools::Fixnum byte_size = 8;
   int flags = CLASP_STREAM_DEFAULT_FORMAT;
-  T_sp external_format = _Nil<T_O>();
+  T_sp external_format = nil<T_O>();
   if (filename.nilp()) {
     SIMPLE_ERROR(BF("%s was called with NIL as the argument") % __FUNCTION__);
   }
@@ -6629,7 +6625,7 @@ CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
       if (num<0) {
         return Values(make_fixnum(num),make_fixnum(errno));
       }
-      return Values(make_fixnum(num),_Nil<T_O>());
+      return Values(make_fixnum(num),nil<T_O>());
     }
   }
 };

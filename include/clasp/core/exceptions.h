@@ -40,7 +40,6 @@ THE SOFTWARE.
 
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/symbol.fwd.h>
-#include <clasp/core/stacks.h>
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/lispStream.fwd.h>
 #include <clasp/core/primitives.fwd.h>
@@ -63,7 +62,7 @@ extern core::Symbol_sp& _sym_name;
 #define TESTINGF(fmt) printf("%s:%d:%s Testing: %s\n", __FILE__, __LINE__, __FUNCTION__, (fmt).str().c_str());
 #define NO_INITIALIZERS_ERROR(_type_)                                                     \
   {                                                                                       \
-    lisp_error( _type_, _Nil<core::Cons_O>()); \
+    lisp_error( _type_, nil<core::Cons_O>()); \
     THROW_NEVER_REACH();                                                                  \
   }
 #define FUNCTION_DESCRIPTION_ERROR() SIMPLE_ERROR(BF("Do something about function-description"));
@@ -123,7 +122,7 @@ extern core::Symbol_sp& _sym_name;
                               kw::_sym_datum, _lst_));
 
 #define TYPE_ERROR(_datum_, _expectedType_) ERROR(::cl::_sym_type_error, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expected_type, _expectedType_))
-#define PROGRAM_ERROR() ERROR(cl::_sym_programError, (_Nil<T_O>()))
+#define PROGRAM_ERROR() ERROR(cl::_sym_programError, (nil<T_O>()))
 #define SIMPLE_PROGRAM_ERROR(message, datum)                                                     \
         ERROR(core::_sym_simpleProgramError,                                                     \
               core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),kw::_sym_format_arguments, core::lisp_createList(datum)))
@@ -175,7 +174,7 @@ extern core::Symbol_sp& _sym_name;
 #define CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream, core::lisp_createList(kw::_sym_stream, st))
 
 #define READER_ERROR(_fmt_, _fmtArgs_, _stream_) core__reader_error_internal(__FILE__, __LINE__, _fmt_, _fmtArgs_, _stream_)
-#define PARSE_ERROR(_fmt_, _fmtArgs_) core__reader_error_internal(__FILE__, __LINE__, _fmt_, _fmtArgs_, _Nil<Stream_O>())
+#define PARSE_ERROR(_fmt_, _fmtArgs_) core__reader_error_internal(__FILE__, __LINE__, _fmt_, _fmtArgs_, nil<Stream_O>())
 
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
@@ -674,7 +673,7 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function
 void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
 
 void core__reader_error_internal(const string &sourceFile, uint lineno,
-                    String_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
+                    String_sp fmt, List_sp fmtargs, T_sp stream = nil<T_O>());
 
 T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
 

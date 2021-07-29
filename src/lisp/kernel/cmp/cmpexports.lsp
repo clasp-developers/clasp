@@ -288,7 +288,6 @@
             with-new-function
             with-dbg-function
             with-dbg-lexical-block
-            dbg-set-current-source-pos
             dbg-variable-alloca
             dbg-variable-value
             compile-file-source-pos-info
@@ -313,14 +312,12 @@
             %uintptr_t%
             %return-type%
             %vaslist%
-            %InvocationHistoryFrame%
             %register-save-area%
             null-t-ptr
             compile-error-if-wrong-number-of-arguments
             compile-error-if-too-many-arguments
             compile-throw-if-excess-keyword-arguments
             *irbuilder-function-alloca*
-            irc-constant-string-ptr
             irc-get-terminate-landing-pad-block
             irc-function-cleanup-and-return
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%

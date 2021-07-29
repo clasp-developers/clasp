@@ -59,20 +59,22 @@ THE SOFTWARE.
 
 extern "C" {
 void gc_park() {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   boehm_park();
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   mps_park();
+#elif defined(USE_MMTK)
+  
 #endif
 };
 
 void gc_release() {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   boehm_release();
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   mps_release();
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 };
 
@@ -112,6 +114,7 @@ GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned short>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1, false>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<2, false>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<4, false>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<clbind::detail::edge>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::KeyValuePair>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::AuxArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::CacheRecord>);
@@ -191,25 +194,27 @@ AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size
 namespace gctools {
 
 void register_thread(mp::Process_sp process, void* stack_base) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   // ----   Boehm stuff needs to be done in the thread function
   GC_stack_base gc_stack_base;
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   my_mps_thread_reg(&process->thr_o._value);
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 };
 
 void unregister_thread(mp::Process_sp process) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   // ----   Boehm stuff needs to be done in the thread function
   GC_unregister_my_thread();
-#endif
-#ifdef USE_MPS
+#elif defined(USE_MPS)
   my_mps_thread_deref(process->thr_o._value);
 //  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 };
 
@@ -370,13 +375,13 @@ void Header_s::validate() const {
 #endif
   if ( this->_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
   if ( this->_stamp_wtag_mtag.stampP() ) {
-#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
+#if defined(USE_PRECISE_GC)
     uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
     if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }
-#endif // USE_BOEHM
+#endif // USE_PRECISE_GC
 #ifdef DEBUG_GUARD    
     if ( this->_guard != GUARD1) signal_invalid_object(this,"normal object bad header guard");
     if ( this->_guard2!= GUARD2) signal_invalid_object(this,"normal object bad header guard2");
@@ -459,12 +464,33 @@ namespace gctools {
   global_NextBuiltInStamp starts at STAMP_max+1
   so that it doesn't use any stamps that correspond to KIND values
    assigned by the static analyzer. */
-std::atomic<UnshiftedStamp>   global_NextUnshiftedStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(STAMPWTAG_max+1));
+std::atomic<UnshiftedStamp>   global_NextUnshiftedStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(Header_s::max_clbind_stamp+1));
+std::atomic<UnshiftedStamp>   global_NextUnshiftedClbindStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(Header_s::max_builtin_stamp+1));
 
 void OutOfStamps() {
   printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %lu are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, (uintptr_t)Header_s::largest_possible_stamp );
     abort();
 }
+
+
+void OutOfClbindStamps() {
+  printf("%s:%d Hello future entity!  Congratulations! - you have added enough external libraries so that clasp has run out of clbind STAMPs - %lu are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, (uintptr_t)Header_s::max_clbind_stamp );
+    abort();
+}
+
+
+void FinishAssingingBuiltinStamps() {
+  DEPRECATED();
+  size_t stamp = global_NextUnshiftedStamp.load();
+  size_t nextGeneralStamp = Header_s::max_clbind_stamp+1;
+  printf("%s:%d:%s End of builtin stamps: %lu\n", __FILE__, __LINE__, __FUNCTION__, stamp );
+  printf("%s:%d:%s First clbind stamp: %lu \n",__FILE__, __LINE__, __FUNCTION__,  stamp+1 );
+  printf("%s:%d:%s First general stamp: %lu\n",__FILE__, __LINE__, __FUNCTION__,  nextGeneralStamp );
+  global_NextUnshiftedClbindStamp.store(stamp+1);
+  global_NextUnshiftedStamp.store(nextGeneralStamp);
+}
+
+
 
 //GCStack _ThreadLocalStack;
 const char *_global_stack_marker;
@@ -477,16 +503,6 @@ stamp_t global_next_header_stamp = (stamp_t)STAMPWTAG_max+1;
     StackRoot* 	rooted_StackRoots = NULL;
 #endif
 };
-
-#if 0
-#ifdef USE_BOEHM
-#include "boehmGarbageCollection.cc"
-#endif
-
-#if defined(USE_MPS)
-#include "mpsGarbageCollection.cc"
-#endif
-#endif
 
 namespace gctools {
 
@@ -642,6 +658,9 @@ void shutdown_gcroots_in_module(GCRootsInModule* roots) {
 CL_DEFUN Fixnum gctools__nextStampValue() {
   return Header_s::StampWtagMtag::shift_unshifted_stamp(global_NextUnshiftedStamp);
 }
+CL_DEFUN Fixnum gctools__NextUnshiftedStampValue() {
+  return global_NextUnshiftedStamp;
+}
 
 CL_LAMBDA(address args);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
@@ -695,9 +714,10 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
-#endif
-#if defined(USE_BOEHM)
+#elif defined(USE_BOEHM)
   int exitCode = gctools::initializeBoehm(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
+#elif defined(USE_MMTK)
+  int exitCode = gctools::initializeMmtk(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize );
 #endif
   mp::ClaspThreads_exit(); // run pthreads_exit
   return exitCode;

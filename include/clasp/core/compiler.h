@@ -28,6 +28,8 @@ THE SOFTWARE.
 #define _core_compiler_H_
 
 #include <clasp/core/object.h>
+#include <clasp/core/bundle.h>
+#include <chrono> // for MaybeDebugStartup timing
 
 namespace llvmo {
 FORWARD(ClaspJIT);
@@ -35,9 +37,11 @@ FORWARD(ClaspJIT);
 
 namespace core {
 
+std::string startup_snapshot_name(Bundle& bundle);
+bool startup_snapshot_is_stale(const std::string& snapshotFileName);
 T_sp core__startup_image_pathname(char stage);
-T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
-T_mv core__load_binary(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
+T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose = nil<T_O>(), T_sp print = nil<T_O>(), T_sp external_format = kw::_sym_default);
+T_mv core__load_binary(T_sp pathDesig, T_sp verbose = nil<T_O>(), T_sp print = nil<T_O>(), T_sp external_format = kw::_sym_default);
 
 T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
 llvmo::ClaspJIT_sp compiler__jit_engine();
@@ -72,9 +76,9 @@ core::T_O* startup_functions_invoke(T_O* literals_or_null);
 
 
 namespace core {
-FORWARD(PosixTime);
 struct MaybeDebugStartup {
-  PosixTime_sp start;
+  bool started;
+  std::chrono::time_point<std::chrono::steady_clock> start;
   std::string  name;
   size_t start_jit_compile_counter;
   void* fptr;
@@ -100,7 +104,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp byte_code_strea
 void core__throw_function(T_sp tag, T_sp result_form);
 void register_startup_function(const StartUp& startup);
 void transfer_StartupInfo_to_my_thread();
-T_mv core__startup_linkage_shutdown_names(size_t id=0, core::T_sp prefix=_Nil<core::T_O>());
+T_mv core__startup_linkage_shutdown_names(size_t id=0, core::T_sp prefix=nil<core::T_O>());
 void clasp_unpack_faso(const std::string& path_designator);
 }
 

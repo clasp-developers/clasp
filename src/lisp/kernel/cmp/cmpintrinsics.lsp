@@ -427,6 +427,7 @@ Boehm and MPS use a single pointer"
    (%size_t%  :number-of-functions)))
 
 (defun gcroots-in-module-initial-value (&optional literals size)
+  (declare (ignore literals))
   (llvm-sys:constant-struct-get %gcroots-in-module%
                                 (list
                                  (jit-constant-size_t 0)
@@ -593,7 +594,6 @@ Boehm and MPS use a single pointer"
                                       :rest-alloc rest-alloc)
         ;; The register arguments need to be spilled to the register-save-area
         ;;    and the va_list needs to be initialized.
-        ;;    If a InvocationHistoryFrame is available, then initialize it.
         (let* ((use-only-registers (calling-convention-configuration-use-only-registers setup))
                (create-a-va-list (null use-only-registers)))
           (maybe-spill-to-register-save-area arguments register-save-area*)
@@ -626,9 +626,6 @@ eg:  (f closure-ptr nargs a b c d ...)
       (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
       (when rewind (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
 
-
-(defparameter *debug-register-parameter* nil)
-
 #+x86-64
 (progn
 ;;; X86_64 calling convention The general function prototypes pass the following pass:
@@ -656,28 +653,29 @@ eg:  (f closure-ptr nargs a b c d ...)
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
   (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
-  ;; (Maybe) generate code to store registers in memory. Return value unspecified.
 
-  (defun dbg-register-parameter (register name argno &optional (type-name "T_O*") (type llvm-sys:+dw-ate-address+))
-    (let* ((dbg-arg0 (dbg-create-parameter-variable :name name
-                                                    :argno argno
-                                                    :lineno *dbg-current-function-lineno*
-                                                    :type (llvm-sys:create-basic-type *the-module-dibuilder* type-name 64 type 0)
-                                                    :always-preserve t))
-           (diexpression (llvm-sys:create-expression-none *the-module-dibuilder*))
-           (dbg-arg0-value (llvm-sys:metadata-as-value-get (thread-local-llvm-context) dbg-arg0))
-           (diexpr-value (llvm-sys:metadata-as-value-get (thread-local-llvm-context) diexpression)))
-      (if *debug-register-parameter*
-          (irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get (thread-local-llvm-context) (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value))))
-  
+  (defun dbg-parameter-var (name argno &optional (type-name "T_O*")
+                                         (type llvm-sys:+dw-ate-address+))
+    (dbg-create-parameter-variable :name name :argno argno
+                                   :lineno *dbg-current-function-lineno*
+                                   :type (llvm-sys:create-basic-type
+                                          *the-module-dibuilder*
+                                          type-name 64 type 0)
+                                   :always-preserve t))
+
+  ;; (Maybe) generate code to store registers in memory. Return value unspecified.  
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
     (cond
       (registers
-       (labels ((spill-reg (idx reg addr-name)
-                  (let ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
-                        (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*")))
-                    (irc-store reg-i8* addr t)
-                    addr)))
+       (flet ((spill-reg (idx reg addr-name)
+                (let ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
+                      (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*")))
+                  (irc-store reg-i8* addr t)
+                  (when (llvm-sys:current-debug-location *irbuilder*)
+                    (let ((var (dbg-parameter-var addr-name (1+ idx))))
+                      (%dbg-variable-value reg-i8* var)
+                      (%dbg-variable-addr addr var)))
+                  addr)))
          (spill-reg 0 (elt registers 0) "closure0")
          (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1")
          ;; this is the first fixed arg currently.
@@ -685,12 +683,17 @@ eg:  (f closure-ptr nargs a b c d ...)
          (spill-reg 3 (elt registers 3) "arg1")
          (spill-reg 4 (elt registers 4) "arg2")
          (spill-reg 5 (elt registers 5) "arg3"))
-       (dbg-register-parameter (elt registers 0) "closure" 1) ; start at 1
-       (dbg-register-parameter (elt registers 1) "nargs" 2 "int" llvm-sys:+dw-ate-signed-fixed+)
-       (dbg-register-parameter (elt registers 2) "farg0" 3)
-       (dbg-register-parameter (elt registers 3) "farg1" 4)
-       (dbg-register-parameter (elt registers 4) "farg2" 5)
-       (dbg-register-parameter (elt registers 5) "farg3" 6))
+       ;; Spill the register-save-area as a whole, because LLVM deletes a whole
+       ;; lot of debug information for no obvious reason
+       (when (llvm-sys:current-debug-location *irbuilder*)
+         (let ((rsa-var (dbg-create-auto-variable
+                         :name "register-save-area"
+                         :lineno *dbg-current-function-lineno*
+                         :type (llvm-sys:create-basic-type
+                                *the-module-dibuilder*
+                                "T_O**" 64 llvm-sys:+dw-ate-address+ 0)
+                         :always-preserve t)))
+           (%dbg-variable-value register-save-area* rsa-var))))
       (register-save-area*
        (error "If registers is NIL then register-save-area* also must be NIL"))))
 
@@ -705,6 +708,18 @@ eg:  (f closure-ptr nargs a b c d ...)
 #-(and x86-64)
 (error "Define calling convention for system")
 
+(defun %dbg-variable-addr (addr var)
+  (let* ((addrmd (llvm-sys:metadata-as-value-get
+                  (thread-local-llvm-context)
+                  (llvm-sys:value-as-metadata-get addr)))
+         (varmd (llvm-sys:metadata-as-value-get
+                 (thread-local-llvm-context)
+                 var))
+         (diexpr (llvm-sys:metadata-as-value-get
+                  (thread-local-llvm-context)
+                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
+    (irc-intrinsic "llvm.dbg.addr" addrmd varmd diexpr)))
+
 ;;; Put in debug information for a variable corresponding to an alloca.
 (defun dbg-variable-alloca (alloca name spi
                                    &optional (type-name "T_O*")
@@ -712,9 +727,6 @@ eg:  (f closure-ptr nargs a b c d ...)
   (when spi ; don't bother if there's no info.
     (let* ((type (llvm-sys:create-basic-type
                   *the-module-dibuilder* type-name 64 type 0))
-           (allocamd (llvm-sys:metadata-as-value-get
-                      (thread-local-llvm-context)
-                      (llvm-sys:value-as-metadata-get alloca)))
            (inlined-at (core:source-pos-info-inlined-at spi))
            (scope (if inlined-at
                       (cached-function-scope
@@ -724,14 +736,20 @@ eg:  (f closure-ptr nargs a b c d ...)
                            :name name
                            :lineno (core:source-pos-info-lineno spi)
                            :scope scope
-                           :type type))
-           (auto-variable-md (llvm-sys:metadata-as-value-get
-                              (thread-local-llvm-context)
-                              auto-variable))
+                           :type type)))
+      (%dbg-variable-addr alloca auto-variable))))
+
+(defun %dbg-variable-value (value var)
+    (let* ((valuemd (llvm-sys:metadata-as-value-get
+                     (thread-local-llvm-context)
+                     (llvm-sys:value-as-metadata-get value)))
+           (varmd (llvm-sys:metadata-as-value-get
+                   (thread-local-llvm-context)
+                   var))
            (diexpr (llvm-sys:metadata-as-value-get
                     (thread-local-llvm-context)
                     (llvm-sys:create-expression-none *the-module-dibuilder*))))
-      (irc-intrinsic "llvm.dbg.addr" allocamd auto-variable-md diexpr))))
+      (irc-intrinsic "llvm.dbg.value" valuemd varmd diexpr)))
 
 ;;; Put in debug information for a variable corresponding to an llvm Value.
 (defun dbg-variable-value (value name spi
@@ -740,9 +758,6 @@ eg:  (f closure-ptr nargs a b c d ...)
   (when spi
     (let* ((type (llvm-sys:create-basic-type
                   *the-module-dibuilder* type-name 64 type 0))
-           (valuemd (llvm-sys:metadata-as-value-get
-                     (thread-local-llvm-context)
-                     (llvm-sys:value-as-metadata-get value)))
            (inlined-at (core:source-pos-info-inlined-at spi))
            (scope (if inlined-at
                       (cached-function-scope
@@ -752,14 +767,8 @@ eg:  (f closure-ptr nargs a b c d ...)
                            :name name
                            :lineno (core:source-pos-info-lineno spi)
                            :scope scope
-                           :type type))
-           (auto-variable-md (llvm-sys:metadata-as-value-get
-                              (thread-local-llvm-context)
-                              auto-variable))
-           (diexpr (llvm-sys:metadata-as-value-get
-                    (thread-local-llvm-context)
-                    (llvm-sys:create-expression-none *the-module-dibuilder*))))
-      (irc-intrinsic "llvm.dbg.value" valuemd auto-variable-md diexpr))))
+                           :type type)))
+      (%dbg-variable-value value auto-variable))))
 
 ;;; This is the normal C-style prototype for a function
 (define-symbol-macro %opaque-fn-prototype*% %i8*%)
@@ -806,8 +815,8 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get (thread-local-llvm-context)
                               (list %i8*%                  ;  1 vtable
-                                    %t*%                   ;  2 source-info
-                                    %t*%                   ;  3 function-name
+                                    %t*%                   ;  2 function-name
+                                    %t*%                   ;  3 source-info
                                     %t*%                   ;  4 lambda-list
                                     %t*%                   ;  5 docstring
                                     %t*%                   ;  6 declares
@@ -816,7 +825,6 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %i32%                  ;  9 filepos
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
-
 
 (define-c++-struct %global-entry-point% +general-tag+
     ((%i8*% vtable)
@@ -843,19 +851,6 @@ eg:  (f closure-ptr nargs a b c d ...)
   (let* ((offset-of-data (cdr (assoc 'data0 (c++-struct-field-offsets info.%closure-with-slots%))))
          (sizeof-element (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) %tsp%)))
     (+ (* sizeof-element index) offset-of-data)))
-
-;;
-;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
-;;
-;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
-;;"Make this a generic pointer"
-(define-symbol-macro %InvocationHistoryStack*% %i8*%)
-(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %va_list% %size_t% #| %size_t% #|Removed BDS|# |#) "InvocationHistoryFrame"))
-(define-symbol-macro %InvocationHistoryFrame*% (llvm-sys:type-get-pointer-to %InvocationHistoryFrame%))
-;;  (llvm-sys:set-body %InvocationHistoryFrame% (list %i32**% %i32% #|%InvocationHistoryStack*% %InvocationHistoryFrame*%|# %i8*% %i8*% %i8% %i32%) nil)
-;(define-symbol-macro %LispFunctionIHF% (llvm-sys:struct-type-create (thread-local-llvm-context) :elements (list %InvocationHistoryFrame% %tsp% %tsp% %tsp% %i32% %i32%) :name "LispFunctionIHF"))
-;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
-;(define-symbol-macro %LispCompiledFunctionIHF% (llvm-sys:struct-type-create (thread-local-llvm-context) :elements (list %LispFunctionIHF%) :name "LispCompiledFunctionIHF"))
 
 #|
   (defun make-gv-file-scope-handle (module &optional handle)
@@ -1006,7 +1001,7 @@ and initialize it with an array consisting of one function pointer."
                        func-designator)
                       (t (error "~a must be a function name or llvm-sys:function" func-designator)))))
     (unless startup-fn
-      (error "Could not find ~a in module" startup-name))
+      (error "Could not find ~a in module" func-designator))
     #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
             (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
     (let* ((global-ctor (add-global-ctor-function module startup-fn
@@ -1040,7 +1035,6 @@ and initialize it with an array consisting of one function pointer."
          (function-description-offset (llvm-sys:struct-layout-get-element-offset function-layout +function.function-description-index+))
          (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
          (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
-         (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
          (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%))
          (function-description-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
@@ -1052,7 +1046,6 @@ and initialize it with an array consisting of one function pointer."
                                                   :function-description-offset function-description-offset
                                                   :gcroots-in-module gcroots-in-module-size
                                                   :valist vaslist-size
-                                                  :ihf invocation-history-frame-size
                                                   :register-save-area register-save-area-size
                                                   :function-description function-description-size)
 

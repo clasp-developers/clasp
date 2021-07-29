@@ -51,18 +51,18 @@ namespace clbind {
   class ConstructorCreator_O;
 };
 
-#if (defined(USE_BOEHM) && !defined(USE_PRECISE_GC)) || defined(RUNNING_MPSPREP)
+#if ((defined(USE_MMTK)||defined(USE_BOEHM)) && !defined(USE_PRECISE_GC)) || defined(RUNNING_MPSPREP)
 //----------------------------------------------------------------------
-#ifndef SCRAPING
- #define DECLARE_FORWARDS
-  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
- #undef DECLARE_FORWARDS
-#endif
+# ifndef SCRAPING
+#  define DECLARE_FORWARDS
+#  include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+#  undef DECLARE_FORWARDS
+# endif
 namespace cast {
 #ifndef SCRAPING
- #define GC_DYNAMIC_CAST
-  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
- #undef GC_DYNAMIC_CAST
+# define GC_DYNAMIC_CAST
+# include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
+# undef GC_DYNAMIC_CAST
 #endif
 };
 //----------------------------------------------------------------------

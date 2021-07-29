@@ -234,7 +234,7 @@ template <class Class, class Policies>
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring), mm_name(name){};
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DerivableDefaultConstructorCreator_O<Class>::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),DerivableDefaultConstructorCreator_O<Class>::entry_point);
     maybe_register_symbol_using_dladdr((void*)DerivableDefaultConstructorCreator_O<Class>::entry_point);
     return gc::As_unsafe<core::Creator_sp>(gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate(entryPoint));
   }
@@ -275,8 +275,8 @@ public:
     parameters_type, boost::mpl::not_<
                        boost::mpl::or_<
                          detail::is_bases<boost::mpl::_>, boost::is_base_and_derived<boost::mpl::_, T>, boost::is_base_and_derived<T, boost::mpl::_>>>,
-    T * // Default is to put the pointer into a T*
-    >::type HeldType;
+    std::unique_ptr<T>  // Default is to put the pointer into a std::unique_ptr<T>
+    >::type HoldType;
 
   template <class Src, class Target>
   void add_downcast(Src *, Target *, boost::mpl::true_) {
@@ -369,7 +369,7 @@ public:
     Policies curPolicies;
     maybe_register_symbol_using_dladdr(*(void**)&f,sizeof(f),name);
     walk_policy(curPolicies,pols...);
-    return this->virtual_def(name, f, curPolicies,reg::null_type());
+    return this->virtual_def(PrepareName(name), f, curPolicies,reg::null_type());
   }
 
   template <class Getter>
@@ -571,55 +571,9 @@ private:
     generate_baseclass_list(detail::type_<Base>());
   }
 
-#if 0 // begin_meister_disabled
-  template<class Getter, class GetPolicies>
-  class_& property_impl(const char* name,
-                        Getter g,
-                        GetPolicies policies,
-                        boost::mpl::bool_<true>)
-  {
-    this->add_member(
-                     new detail::property_registration<T, Getter, GetPolicies>(
-                                                                               name, g, policies));
-    return *this;
-  }
-
-  template<class Getter, class Setter>
-  derivable_class_& property_impl(const char* name,
-                                  Getter g,
-                                  Setter s,
-                                  boost::mpl::bool_<false>)
-  {
-    typedef detail::property_registration<
-      T, Getter, null_type, Setter, null_type
-      > registration_type;
-
-    this->add_member(
-                     new registration_type(name, g, null_type(), s));
-    return *this;
-  }
-
-  template<class F, class Default, class Policies>
-  derivable_class_& virtual_def(char const* name, F const& fn
-                                , Default const& default_, Policies const&, boost::mpl::false_)
-  {
-    maybe_register_symbol_using_dladdr((void*)fn,sizeof(fn),name);
-    this->add_member(
-                     new detail::memfun_registration<T, F, Policies>(
-                                                                     name, fn, Policies()));
-
-    this->add_default_member(
-                             new detail::memfun_registration<T, Default, Policies>(
-                                                                                   name, default_, Policies()));
-
-    return *this;
-  }
-
-#endif // end_meister_disabled
-
   // these handle default implementation of virtual functions
   template <class F, class Policies>
-  derivable_class_ &virtual_def(char const *name, F const &fn,
+  derivable_class_ &virtual_def(const std::string& name, F const &fn,
                                 Policies const &policies, reg::null_type) {
     maybe_register_symbol_using_dladdr(*(void**)&fn,sizeof(fn),name);
     this->add_member( new detail::memfun_registration<T, F, Policies>(name, fn, policies));
@@ -651,13 +605,13 @@ private:
 
     this->add_member(
                      new detail::constructor_registration<
-                     construct_type, HeldType, signature, Policies, detail::construct_derivable_class>(
+                     construct_type, HoldType, signature, Policies, detail::construct_derivable_class>(
                                                                                                        Policies(), name, arguments, declares, docstring));
 
 #if 0
     this->add_default_member(
                              new detail::constructor_registration<
-                             construct_type, HeldType, signature, Policies>(
+                             construct_type, HoldType, signature, Policies>(
                                                                             Policies(),name,arguments,declares,docstring));
 #endif
     return *this;

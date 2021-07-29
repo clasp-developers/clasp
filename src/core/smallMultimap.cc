@@ -47,7 +47,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("makeSmallMultimap");
 CL_DEFUN SmallMultimap_sp core__make_small_multimap() {
-  GC_ALLOCATE(SmallMultimap_O, sm);
+  auto  sm = gctools::GC<SmallMultimap_O>::allocate_with_default_constructor();
   return sm;
 };
 

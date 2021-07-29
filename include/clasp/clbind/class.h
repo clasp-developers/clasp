@@ -119,6 +119,7 @@ THE SOFTWARE.
 
 
 #include <clasp/clbind/config.h>
+#include <clasp/clbind/names.h>
 #include <clasp/clbind/scope.h>
 // #include <clasp/clbind/back_reference.hpp>
 // #include <clasp/clbind/function.hpp>
@@ -173,7 +174,7 @@ public:
     SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", core::_rep_(this->_name).c_str());
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className)  override{
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<T_O>(),DummyCreator_O::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<T_O>(),DummyCreator_O::entry_point);
     maybe_register_symbol_using_dladdr((void*)DummyCreator_O::entry_point);
     return gc::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
@@ -196,7 +197,7 @@ struct class_;
 // TODO: this function will only be invoked if the user hasn't defined a correct overload
 // maybe we should have a static assert in here?
 inline detail::you_need_to_define_a_get_const_holder_function_for_your_smart_ptr *
-    get_const_holder(...) {
+get_const_holder(...) {
   return 0;
 }
 
@@ -216,25 +217,25 @@ namespace mpl = boost::mpl;
 
 template <class T>
 struct is_bases
-    : mpl::false_ {};
+  : mpl::false_ {};
 
 template <typename Base0, typename... Bases>
 struct is_bases<bases<Base0, Bases...>>
-    : mpl::true_ {};
+  : mpl::true_ {};
 
 template <class T, class P>
 struct is_unspecified
-    : mpl::apply1<P, T> {};
+  : mpl::apply1<P, T> {};
 
 template <class P>
 struct is_unspecified<unspecified, P>
-    : mpl::true_ {};
+  : mpl::true_ {};
 
 template <class P>
 struct is_unspecified_mfn {
   template <class T>
   struct apply
-      : is_unspecified<T, P> {};
+    : is_unspecified<T, P> {};
 };
 
 template <class Predicate>
@@ -257,16 +258,19 @@ struct extract_parameter {
   typedef typename get_predicate<Predicate>::type pred;
   typedef typename boost::mpl::find_if<Parameters, pred>::type iterator;
   typedef typename result_or_default<
-      typename iterator::type, DefaultValue>::type type;
+    typename iterator::type, DefaultValue>::type type;
 };
 
 struct CLBIND_API create_class {
-  static int stage1();
-  static int stage2();
+    static int stage1();
+    static int stage2();
 };
 
 } // detail
 
+};
+
+namespace clbind {
 namespace detail {
 
 template <class T>
@@ -328,10 +332,13 @@ struct class_registration : registration {
   bool m_derivable;
 };
 
+
+
 struct CLBIND_API class_base : scope_ {
 public:
   class_base(const string &name);
-
+  class_base(const RawName& name);
+  
   struct base_desc {
     type_id type;
     int ptr_offset;
@@ -396,7 +403,7 @@ struct memfun_registration : registration {
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-    core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
+    core::Symbol_sp sym = core::lisp_intern(m_name, symbol_packageName(classSymbol));
     using VariadicType = TEMPLATED_FUNCTION_IndirectVariadicMethoid<Policies, Class, MethodPointerType>;
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::method_entry_point);
     maybe_register_symbol_using_dladdr((void*)VariadicType::method_entry_point);
@@ -485,10 +492,10 @@ struct constructor_registration_base : public registration {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     string tname = m_name;
     if (m_name == "") {
-      tname = "default-ctor";
+      tname = "DEFAULT-CTOR";
     };
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
-    core::Symbol_sp sym = core::lispify_intern(tname, core::lisp_currentPackageName());
+    core::Symbol_sp sym = core::lisp_intern(tname, core::lisp_currentPackageName());
     using VariadicType = VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>;
     core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
     maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
@@ -512,20 +519,20 @@ struct constructor_registration_base : public registration {
  class construct_non_derivable_class {};
  class construct_derivable_class {};
  
- template <class Class, class Pointer, class Signature, class Policies, class DerivableType>
-struct constructor_registration : public constructor_registration_base<Class, Pointer, Signature, Policies> {
-   typedef constructor_registration_base<Class, Pointer, Signature, Policies> Base;
-  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, Signature, Policies>(policies, name, arguments, declares, docstring){};
+ template <class Class, class HoldType, class Signature, class Policies, class DerivableType>
+struct constructor_registration : public constructor_registration_base<Class, HoldType, Signature, Policies> {
+   typedef constructor_registration_base<Class, HoldType, Signature, Policies> Base;
+  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, HoldType, Signature, Policies>(policies, name, arguments, declares, docstring){};
 };
 
 /*! This is the constructor registration for default constructors */
-template <class Class, class Pointer, class Policies>
-  struct constructor_registration<Class, Pointer, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
-  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
+template <class Class, class HoldType, class Policies>
+  struct constructor_registration<Class, HoldType, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, HoldType, default_constructor, Policies> {
+  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, HoldType, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<Class, Pointer>::entry_point);
-    maybe_register_symbol_using_dladdr((void*)DefaultConstructorCreator_O<Class, Pointer>::entry_point);
-    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, Pointer>>::allocate(ep));
+    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),DefaultConstructorCreator_O<Class, HoldType>::entry_point);
+    maybe_register_symbol_using_dladdr((void*)DefaultConstructorCreator_O<Class, HoldType>::entry_point);
+    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate(ep));
     return allocator;
   }
 };
@@ -680,8 +687,8 @@ public:
     parameters_type, boost::mpl::not_<
                        boost::mpl::or_<
                          detail::is_bases<boost::mpl::_>, boost::is_base_and_derived<boost::mpl::_, T>, boost::is_base_and_derived<T, boost::mpl::_>>>,
-    T * // Default is to put the pointer into a T*
-    >::type HeldType;
+    std::unique_ptr<T> // Was default to put the pointer into a T*
+    >::type HoldType;
 
   template <class Src, class Target>
   void add_downcast(Src *, Target *, boost::mpl::true_) {
@@ -726,38 +733,43 @@ public:
 #ifndef NDEBUG
     detail::check_link_compatibility();
 #endif
-    LOG_SCOPE(("%s:%d Registing class_ %s\n", __FILE__, __LINE__, name));
-    
     init();
     this->_outer_scope->operator,(*this);
   }
 
+  class_(scope_& outer_scope, const RawName& rawName, const std::string& docstring="") : class_base(rawName), _outer_scope(&outer_scope), scope(*this) {
+#ifndef NDEBUG
+    detail::check_link_compatibility();
+#endif
+    init();
+    this->_outer_scope->operator,(*this);
+  }
+  
   template <typename... Types>
   class_ &def_constructor(const string &name,
                           constructor<Types...> sig,
                           string const &arguments = "",
                           string const &declares = "",
                           string const &docstring = "") {
-    return this->def_constructor_(name, &sig, policies<>(), arguments, declares, docstring);
+    return this->def_constructor_(core::lispify_symbol_name(name), &sig, policies<adopt<result>>(), arguments, declares, docstring);
   }
 
-  template <typename... Types, class Policies>
-  class_ &def_constructor(const string &name,
+  template <typename... Types>
+  class_ &def_constructor(const RawName &name,
                           constructor<Types...> sig,
-                          const Policies &policies,
                           string const &arguments = "",
                           string const &declares = "",
                           string const &docstring = "") {
-    return this->def_constructor_(name, &sig, policies, arguments, declares, docstring);
+    return this->def_constructor_(name._raw_name, &sig, policies<adopt<result>>(), arguments, declares, docstring);
   }
 
-  template <class F, class... PTypes>
-  class_ &def(const std::string &name, F f, PTypes... pols)
+  template <typename NameType, class F, class... PTypes>
+  class_ &def(const NameType& name, F f, PTypes... pols)
   {
     typedef policies<PTypes...> Policies;
     Policies curPolicies;
     walk_policy(curPolicies,pols...);
-    return this->virtual_def(name, f,
+    return this->virtual_def(PrepareName(name), f,
                              curPolicies,
                              reg::null_type());
   }
@@ -931,12 +943,11 @@ private:
 
     typedef typename boost::mpl::if_<detail::is_bases<bases_t>, bases_t, bases<bases_t>>::type Base;
 
-    class_base::init(
-                     typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id, isDerivableCxxClass<T>(0));
+    class_base::init(typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id, isDerivableCxxClass<T>(0));
 
     add_wrapper_cast((WrappedType *)0);
 #if 0
-    int*** a = HeldType();
+    int*** a = HoldType();
     int*** b = WrappedType();
     int*** i = Base();
     int*** j = parameters_type();
@@ -1003,8 +1014,7 @@ private:
 
     this->set_default_constructor(
                                   new detail::constructor_registration<
-                                  construct_type, HeldType, Signature, Policies,detail::construct_non_derivable_class>(
-                                                                                                                       Policies(), name, arguments, declares, docstring));
+                                  construct_type, HoldType, Signature, Policies,detail::construct_non_derivable_class>(Policies(), name, arguments, declares, docstring));
     return *this;
   }
 
@@ -1014,11 +1024,9 @@ private:
 
     typedef typename boost::mpl::if_<
       boost::is_same<WrappedType, reg::null_type>, T, WrappedType>::type construct_type;
-
     this->add_member(
                      new detail::constructor_registration<
-                     construct_type, HeldType, signature, Policies,detail::construct_non_derivable_class>(
-                                                                                                          Policies(), name, arguments, declares, docstring));
+                     construct_type, HoldType, signature, Policies,detail::construct_non_derivable_class>(Policies(), name, arguments, declares, docstring));
 
     return *this;
   }
@@ -1037,5 +1045,8 @@ public:
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+
+
+
 
 #endif // CLBIND_CLASS_HPP_INCLUDED

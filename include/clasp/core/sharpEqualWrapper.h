@@ -63,7 +63,7 @@ class SharpEqualWrapper_O : public General_O {
 
  inline CL_DEFUN SharpEqualWrapper_sp make_sharp_equal_wrapper(T_sp label)
 {
-  GC_ALLOCATE_VARIADIC(SharpEqualWrapper_O,sew,label);
+  auto sew = gctools::GC<SharpEqualWrapper_O>::allocate(label);
   return sew;
 }
 

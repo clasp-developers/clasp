@@ -51,7 +51,7 @@ CL_DECLARE();
 CL_DOCSTRING("calculateMissingCommonLispSymbols");
 CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
   Package_sp commonLispPackage = _lisp->commonLispPackage();
-  List_sp missing = _Nil<T_O>();
+  List_sp missing = nil<T_O>();
   for (auto it : globalAllClSymbols) {
     T_mv sym = commonLispPackage->findSymbol(it.first);
     T_sp found = sym.valueGet_(1);

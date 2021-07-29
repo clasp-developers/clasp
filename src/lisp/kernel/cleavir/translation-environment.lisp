@@ -18,7 +18,7 @@
 
 (defun ensure-origin (origin &optional (num 999905))
   (or origin
-      (core:make-source-pos-info "no-source-info-available" num num num)))
+      (core:make-source-pos-info :filepos num :lineno num :column num)))
 
 (defun delay-initializer (initializer-thunk)
   (push initializer-thunk *enclose-initializers*))
@@ -64,7 +64,8 @@
                       (alloca (cmp:alloca-t* name))
                       (spi (origin-spi (bir:origin var))))
                  ;; set up debug info
-                 (cmp:dbg-variable-alloca alloca fname spi)
+                 ;; Disable for now - FIXME and get it working
+                 #+(or)(cmp:dbg-variable-alloca alloca fname spi)
                  ;; return
                  alloca))
               ((:indefinite)
@@ -130,9 +131,10 @@
   (check-type variable bir:variable)
   (if (bir:immutablep variable)
       (prog1 (setf (gethash variable *datum-values*) value)
-        (cmp:dbg-variable-value
-         value (full-datum-name-as-string variable)
-         (origin-spi (bir:origin variable))))
+        ;; FIXME - this doesn't work yet
+        #+(or)(cmp:dbg-variable-value
+               value (full-datum-name-as-string variable)
+               (origin-spi (bir:origin variable))))
       (ecase (bir:extent variable)
         (:local
          (let ((alloca (or (gethash variable *datum-values*)

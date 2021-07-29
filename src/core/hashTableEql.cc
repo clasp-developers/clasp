@@ -45,7 +45,7 @@ namespace core {
 HashTableEql_sp HashTableEql_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
   if (sz == 0)
     sz = 16;
-  GC_ALLOCATE(HashTableEql_O, hashTable);
+  auto  hashTable = gctools::GC<HashTableEql_O>::allocate_with_default_constructor();
   hashTable->setup(sz, rehashSize, rehashThreshold);
   return hashTable;
 }

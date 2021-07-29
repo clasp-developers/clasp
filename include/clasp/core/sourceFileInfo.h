@@ -92,29 +92,29 @@ class SourcePosInfo_O : public General_O {
   bool fieldsp() const override { return true; };
   void fields(Record_sp node) override;
 public:                                                                                    // ctor/dtor for classes with shared virtual base
-  explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(_Nil<T_O>()), _InlinedAt(_Nil<T_O>()){}; //, _Filepos(0) {};
+  explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(nil<T_O>()), _InlinedAt(nil<T_O>()){}; //, _Filepos(0) {};
 public:                                                                                    // instance variables here
-  SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc)                           // , Function_sp expander=_Nil<Function_O>())
+  SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc, T_sp function_scope, T_sp inlined_at) 
       : _FileId(spf),
         _Filepos(filepos),
         _Lineno(spln),
         _Column(spc), //, _Expander(expander) {}
-        _FunctionScope(_Nil<T_O>()), 
-        _InlinedAt(_Nil<T_O>())
+        _FunctionScope(function_scope),
+        _InlinedAt(inlined_at)
         {};
 
 public:
-  static SourcePosInfo_sp create(uint spf, size_t filepos, uint spln, uint spcol) {
-    GC_ALLOCATE_VARIADIC(SourcePosInfo_O, me, spf, filepos, spln, spcol); // ,filepos,fn);
+  static SourcePosInfo_sp create(uint spf, size_t filepos, uint spln, uint spcol, T_sp function_scope = nil<core::T_O>(), T_sp inlined_at = nil<core::T_O>()) {
+    auto  me = gctools::GC<SourcePosInfo_O>::allocate( spf, filepos, spln, spcol, function_scope, inlined_at );
     return me;
   }
-  CL_LISPIFY_NAME(make_source_pos_info);
-  CL_DEF_CLASS_METHOD static SourcePosInfo_sp make(const string& filename, size_t filepos, size_t lineno, size_t column);
   string __repr__() const override;
   int fileHandle() const { return this->_FileId; };
   size_t filepos() const { return this->_Filepos; };
   uint lineno() const { return this->_Lineno; };
   int column() const { return this->_Column; };
+  T_sp function_scope() const { return this->_FunctionScope; };
+  T_sp inlined_at() const { return this->_InlinedAt; };
 //  bool equalp(T_sp obj) const;
 public:
   uint _FileId;
@@ -134,6 +134,9 @@ public:
   T_sp source_pos_info_function_scope() const;
   void setf_source_pos_info_extra(T_sp, T_sp);
 };
+
+SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno, bool linenop, size_t column, bool columnp, T_sp function_scope=nil<T_O>(), bool function_scope_p=false, T_sp inlined_at = nil<T_O>(), bool inlined_at_p=false, T_sp defaults=nil<T_O>(), bool defaults_p=false );
+
 inline core::Fixnum safe_fileId(T_sp spi) {
   if (spi.nilp())
     return 0;

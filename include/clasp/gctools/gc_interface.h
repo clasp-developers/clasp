@@ -27,8 +27,8 @@ THE SOFTWARE.
 #ifndef GC_INTERFACE_H
 #define GC_INTERFACE_H
 
-#include <clasp/gctools/imageSaveLoad.fwd.h>
-
+#include <clasp/gctools/snapshotSaveLoad.fwd.h>
+#include <clasp/clbind/inheritance.fwd.h>
 
 //
 // All class forward declarations

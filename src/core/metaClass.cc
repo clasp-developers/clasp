@@ -77,7 +77,7 @@ gc::Nilable<Instance_sp> identifyCxxDerivableAncestorClass(Instance_sp aClass) {
     if (taPossibleCxxDerivableAncestorClass.notnilp())
       return taPossibleCxxDerivableAncestorClass;
   }
-  return _Nil<Instance_O>();
+  return nil<Instance_O>();
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg,creator);

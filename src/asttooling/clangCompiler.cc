@@ -72,7 +72,7 @@ namespace clang_compile {
 class DerivableFoo : public clbind::Derivable<Foo> {
 public:
   typedef Foo Base;
-  static gctools::smart_ptr<DerivableFoo> CreateFoo() { GC_ALLOCATE(DerivableFoo,f); return f;};
+  auto f = gctools::GC<) { GC_ALLOCATE(DerivableFoo>::allocate_with_default_constructor();
 
 };
 };

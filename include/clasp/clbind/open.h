@@ -63,6 +63,7 @@ extern detail::cast_graph *globalCastGraph;
 //! Take the place of __clbind_class_id_map
 extern detail::class_id_map *globalClassIdMap;
 
+void initializeCastGraph();
 CLBIND_API void initialize_clbind();
 }
 

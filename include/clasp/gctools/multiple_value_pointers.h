@@ -48,7 +48,7 @@ public:
 
   static multiple_values<T> createFromValues() {
     core::MultipleValues &mv = core::lisp_multipleValues();
-    multiple_values<T> result(mv.getSize() == 0 ? _Nil<core::T_O>() : mv.valueGet(0, mv.getSize()), mv.getSize());
+    multiple_values<T> result(mv.getSize() == 0 ? nil<core::T_O>() : mv.valueGet(0, mv.getSize()), mv.getSize());
     return result;
   }
 
@@ -153,7 +153,7 @@ namespace core {
    for (size_t i = 1; i < nvals; ++i) {
      mv._Values[i] = temp[i];
    }
-   return gctools::return_type(nvals == 0 ? _Nil<core::T_O>().raw_() : temp[0], nvals);
+   return gctools::return_type(nvals == 0 ? nil<core::T_O>().raw_() : temp[0], nvals);
  }
 
  // Similar to returnTypeSaveToTemp, but saves only from lisp_multipleValues.

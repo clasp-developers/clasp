@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "clasp/core/compiler.h"
 #include "clasp/core/ql.h"
 #include "clasp/core/lisp.h"
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/commandLineOptions.h>
 
 namespace core {
@@ -68,8 +69,9 @@ void process_clasp_arguments(CommandLineOptions* options)
     if (arg == "-h" || arg == "--help") {
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
-             "-i/--image file      - Use the file as the boot image\n"
-             "-T/--type (snapshot|image) - Set the type of the image file. (image == default for now)\n"             
+             "-i/--image file      - Use the file as the boot image. If file ends in .snapshot then treat as a snapshot.\n"
+             "-T/--type (default|snapshot|image) - Set the type of the default startup file to use (default means snapshot->image).\n"
+             "-L/--llvm-debug (options) - Pass arg to llvm::cl::ParseCommandLineOptions --debug-only. Lets you debug llvm with LLVM_DEBUG(...).\n"
              "-g/--debug           - Describe the clasp data structures for lldb Python API to /tmp/clasp.py\n"
              "-d/--describe [file] - Describe the clasp data structures for lldb Python API [file] default is /tmp/clasp.py\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
@@ -78,6 +80,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "--noprint            - Don't prompt or print in read-eval loop\n"
              "-D/--disable-debugger - If the default debugger would be entered, Clasp instead quits\n"
              "--quit               - Don't start a REPL\n"
+             "-a/--addresses [file]- Dump all symbol addresses in executable to file\n"
              "-N/--non-interactive - Short for --disable-debugger --quit\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
@@ -118,10 +121,12 @@ void process_clasp_arguments(CommandLineOptions* options)
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
              "export CLASP_DEBUGGER_SUPPORT=1 Generate files that lldb/gdb/udb can use to debug clasp.\n"
+             "export CLASP_NO_JIT_GDB=1 Don't register object files with gdb/lldb for source level debugging.\n"
              "export CLASP_SNAPSHOT=1  Debug snapshot generation.\n"
              "export CLASP_DONT_HANDLE_CRASH_SIGNALS=1  Don't insert signal handlers for crash signals.\n"
              "export CLASP_GC_MESSAGES=1 Print a message when garbage collection takes place.\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
+             "export CLASP_TIME_SNAPSHOT=1   Turn on timing of snapshot load\n"
              "export CLASP_OPTIMIZATION_LEVEL=0|1|2|3 Set the llvm optimization level for compiled code\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
@@ -162,17 +167,30 @@ void process_clasp_arguments(CommandLineOptions* options)
 #ifdef USE_MPS
       std::cout << "-mps-";
 #endif
-#ifdef USE_BOEHM
-#ifdef USE_PRECISE_GC 
+#if defined(USE_BOEHM)
+# ifdef USE_PRECISE_GC 
       std::cout << "-boehmprecise-";
-#else
+# else
       std::cout << "-boehm-";
-#endif
+# endif
+#elif defined(USE_MMTK)
+# ifdef USE_PRECISE_GC 
+      std::cout << "-mmtkprecise-";
+# else
+      std::cout << "-mmtk-";
+# endif
 #endif
       std::cout << CLASP_VERSION << std::endl;
       exit(0);
     }
-    else if (arg == "-I" || arg == "--ignore-image") {
+    else if (arg == "-a" || arg == "--addresses") {
+      string filename = options->_RawArguments[iarg+1];
+      iarg++;
+      FILE* fout = fopen(filename.c_str(),"w");
+      snapshotSaveLoad::SymbolLookup lookup;
+      snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
+      fclose(fout);
+    } else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;
     } else if (arg == "--noinform") {
       options->_NoInform = true;
@@ -190,13 +208,14 @@ void process_clasp_arguments(CommandLineOptions* options)
       iarg++;
     } else if (arg == "-T" || arg == "--type") {
       std::string type = options->_RawArguments[iarg+1];
-      if (type == "snapshot" || type == "SNAPSHOT" || type == "Snapshot" ) {
-        options->_ImageType = cloSnapshot;
+      if (type == "default" || type == "DEFAULT" || type == "Default" ) {
+        options->_DefaultStartupType = cloDefault;
+      } else if (type == "snapshot" || type == "SNAPSHOT" || type == "Snapshot" ) {
+        options->_DefaultStartupType = cloSnapshot;
       } else if (type == "image" || type == "IMAGE" || type == "Image" ) {
-        options->_ImageType = cloImage;
+        options->_DefaultStartupType = cloImage;
       } else {
-        printf("Illegal argument for --type, legal values (snapshot|image)\n");
-        std::exit(1);
+        options->_DefaultStartupType = cloDefault;
       }
       iarg++;
     } else if (arg == "--rc") {
@@ -224,8 +243,26 @@ void process_clasp_arguments(CommandLineOptions* options)
       iarg++;
     } else if (arg == "-i" || arg == "--image") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --image,-i"));
-      options->_HasImageFile = true;
-      options->_ImageFile = options->_RawArguments[iarg + 1];
+      options->_StartupFileP = true;
+      std::string startupFile = options->_RawArguments[iarg + 1];
+      iarg++;
+      options->_StartupFile = startupFile;
+      if (startupFile.compare(startupFile.length()-9,9,".snapshot")==0) {
+        options->_StartupFileType = cloSnapshot;
+      } else {
+        options->_StartupFileType = cloImage;
+      }
+    } else if (arg == "-L" || arg == "--llvm-debug") {
+      ASSERTF(iarg < (endArg + 1), BF("Missing argument for --eval,-e"));
+      std::string args = options->_RawArguments[iarg+1];
+      const char* bogus_args[3];
+      bogus_args[0] = "clasp";
+      bogus_args[1] = "--debug-only";
+      char* opt = (char*)malloc(args.size()+1);
+      strcpy(opt,args.c_str());
+      bogus_args[2] = opt;
+      printf("%s:%d:%s Passing arguments: <%s>\n", __FILE__, __LINE__, __FUNCTION__, bogus_args[2] );
+      llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
       iarg++;
     } else if (arg == "-g" || arg == "--debug") {
       options->_HasDescribeFile = true;
@@ -264,13 +301,13 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _DontLoadImage(false),
     _DontLoadInitLsp(false),
     _DisableMpi(false),
-    _HasImageFile(false),
+    _StartupFileP(false),
+    _StartupFileType(cloDefault),
     _HasDescribeFile(false),
     _Stage('c'),
-    _ImageFile(""),
-    _ImageType(cloImage),
+    _StartupFile(""),
+    _DefaultStartupType(cloDefault),
     _ExportedSymbolsAccumulate(false),
-    _GotRandomNumberSeed(false),
     _RandomNumberSeed(0),
     _NoInform(false),
     _NoPrint(false),
@@ -311,7 +348,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
 
 
 CL_DEFUN List_sp core__command_line_load_eval_sequence() {
-  List_sp loadEvals = _Nil<T_O>();
+  List_sp loadEvals = nil<T_O>();
   for (auto it : global_options->_LoadEvalList) {
     Cons_sp one;
     if (it.first == cloEval) {

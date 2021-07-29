@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <iomanip>
 #include <clasp/core/foundation.h>
 #ifdef USE_LIBUNWIND
+#define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #endif
 #ifdef _TARGET_OS_DARWIN
@@ -86,12 +87,6 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/core/stackmap.h>
 
-#ifdef _TARGET_OS_DARWIN
-namespace core {
-core::SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header);
-};
-#endif
-
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 namespace core {
 void* find_base_of_loaded_object(const char* name);
@@ -100,63 +95,6 @@ core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start,
 #endif
 
 namespace core {
-
-CL_DEFUN int core__ihs_bounded(int idx)
-{
-  Fixnum base = _sym_STARihs_baseSTAR->symbolValue().unsafe_fixnum();
-  Fixnum top = _sym_STARihs_topSTAR->symbolValue().unsafe_fixnum();
-  if (idx < base) idx = base;
-  if (idx >= top) idx = top-1;
-  return idx;
-}
-
-std::string thing_as_string(T_sp obj)
-{
-    if (gc::IsA<SimpleBaseString_sp>(obj)) {
-        return gc::As_unsafe<SimpleBaseString_sp>(obj)->get_std_string();
-    } else if (gc::IsA<SimpleCharacterString_sp>(obj)) {
-        return gc::As_unsafe<SimpleBaseString_sp>(obj)->get_std_string();
-    } else if (gc::IsA<Str8Ns_sp>(obj)) {
-        return gc::As_unsafe<Str8Ns_sp>(obj)->get_std_string();
-    } else if (gc::IsA<StrWNs_sp>(obj)) {
-        return gc::As_unsafe<StrWNs_sp>(obj)->get_std_string();
-    }
-    return _rep_(obj);
-}
-
-CL_DEFUN int core__ihs_top() {
-  return _sym_STARihs_topSTAR->symbolValue().unsafe_fixnum();
-};
-
-CL_LAMBDA(cur);
-CL_DECLARE();
-CL_DOCSTRING("ihsEnv");
-CL_DEFUN T_sp core__ihs_env(int idx) {
-  return _Nil<core::T_O>();
-};
-
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("ihs_currentFrame");
-CL_DEFUN int core__ihs_current_frame() {
-  T_sp cf = _sym_STARihs_currentSTAR->symbolValue();
-  if (!cf.fixnump()) {
-    ASSERT(_sym_STARihs_baseSTAR.fixnump());
-    int icf = _sym_STARihs_baseSTAR->symbolValue().unsafe_fixnum();
-    return core__set_ihs_current_frame(icf);
-  }
-  int icf = cf.unsafe_fixnum();
-  icf = core__ihs_bounded(icf);
-  return icf;
-}
-
-CL_DEFUN int core__set_ihs_current_frame(int icf) {
-  icf = core__ihs_bounded(icf);
-  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(icf));
-  return icf;
-}
-
 
 CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
 {
@@ -214,14 +152,6 @@ DebugInfo& debugInfo() {
   return *global_DebugInfo;
 }
 
-#if 0
-void add_dynamic_library_using_handle(add_dynamic_library* adder, const std::string& libraryName, void* handle) {
-  printf("%s:%d:%s libraryName: %s need text_start, text_end\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str() );
-  add_dynamic_library_impl(adder, false,libraryName, false, 0, handle, NULL, NULL, false, NULL, NULL );
-}
-#endif
-
-
 void add_dynamic_library_using_origin(add_dynamic_library* adder, bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end, bool hasDataConst, gctools::clasp_ptr_t dataConstStart, gctools::clasp_ptr_t dataConstEnd  ) {
   add_dynamic_library_impl(adder,is_executable,libraryName, true, origin, NULL, text_start, text_end,
                            hasDataConst, dataConstStart, dataConstEnd );
@@ -246,6 +176,17 @@ bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
   return exists;
 }
 
+void executablePath(std::string& name) {
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  size_t index;
+  for ( auto& entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    if (entry.second._IsExecutable) {
+      name = entry.second._Filename;
+      return;
+    }
+  }
+  SIMPLE_ERROR(BF("Could not find the executablePath"));
+}  
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   size_t index;
@@ -253,6 +194,19 @@ void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_p
     if (entry.second._IsExecutable) {
       start = entry.second._VtableSectionStart;
       end = entry.second._VtableSectionEnd;
+      return;
+    }
+  }
+  SIMPLE_ERROR(BF("Could not find the executableVtableSectionRange"));
+}
+
+void executableTextSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  size_t index;
+  for ( auto& entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    if (entry.second._IsExecutable) {
+      start = entry.second._TextStart;
+      end = entry.second._TextEnd;
       return;
     }
   }
@@ -356,9 +310,9 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
   uintptr_t libraryStart;  
   bool foundSymbol = lookup_address_main((uintptr_t)address->ptr(),symbol,start,end,type,libraryFound,sLibraryName,libraryStart);
   if (foundSymbol) {
-    core::T_sp libraryName = _Nil<T_O>();
-    core::T_sp offsetFromStartOfLibraryAddress = _Nil<T_O>();
-    core::T_sp library_origin = _Nil<T_O>();
+    core::T_sp libraryName = nil<T_O>();
+    core::T_sp offsetFromStartOfLibraryAddress = nil<T_O>();
+    core::T_sp library_origin = nil<T_O>();
     if (libraryFound) {
       libraryName = SimpleBaseString_O::make(sLibraryName);
       library_origin = Integer_O::create((uintptr_t)libraryStart);
@@ -372,7 +326,7 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
                   library_origin,
                   offsetFromStartOfLibraryAddress);
   }
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 }
 
 void dbg_VaList_sp_describe(T_sp obj) {
@@ -433,7 +387,7 @@ void dbg_describe_tagged_T_Optr_header(T_O *p) {
 
 extern void dbg_describe(T_sp obj);
 void dbg_describe(T_sp obj) {
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(cl__class_of(obj)->_className()).c_str());
   ss << _rep_(obj);
@@ -442,7 +396,7 @@ void dbg_describe(T_sp obj) {
 }
 
 void dbg_describe_cons(Cons_sp obj) {
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> CONS\n");
   ss << _rep_(obj);
@@ -450,7 +404,7 @@ void dbg_describe_cons(Cons_sp obj) {
 }
 
 void dbg_describe_symbol(Symbol_sp obj) {
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->_className()).c_str());
   ss << _rep_(obj);
@@ -458,7 +412,7 @@ void dbg_describe_symbol(Symbol_sp obj) {
 }
 
 void dbg_describeActivationFrame(ActivationFrame_sp obj) {
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe ActivationFrame class--> %s\n", _rep_(obj->__class()->_className()).c_str());
   ss << _rep_(obj);
@@ -472,7 +426,7 @@ void dbg_describeTPtr(uintptr_t raw) {
   }
   T_sp obj = gctools::smart_ptr<T_O>(raw);
   printf("dbg_describeTPtr Raw pointer value: %p\n", obj.raw_());
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(lisp_instance_class(obj)->_className()).c_str());
   ss << _rep_(obj);
@@ -484,7 +438,7 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   core::T_sp sout = cl::_sym_STARstandard_outputSTAR->symbolValue();
   T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
   clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);
-  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
   clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(lisp_instance_class(obj)->_className())).str(), sout);
   fflush(stdout);

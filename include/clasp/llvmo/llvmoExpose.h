@@ -221,7 +221,7 @@ namespace translate {
 template <>
 struct to_object<llvm::FunctionCallee> {
   static core::T_sp convert(llvm::FunctionCallee fc) {
-    GC_ALLOCATE_VARIADIC(llvmo::FunctionCallee_O,ofc,fc.getFunctionType(),fc.getCallee());
+    auto ofc = gctools::GC<llvmo::FunctionCallee_O>::allocate(fc.getFunctionType(),fc.getCallee());
     return ofc;
   }
 };
@@ -426,7 +426,7 @@ struct from_object<llvm::AttributeSet> {
 template <>
 struct to_object<llvm::AttributeSet> {
   static core::T_sp convert(llvm::AttributeSet val) {
-    GC_ALLOCATE_VARIADIC(llvmo::AttributeSet_O, obj, val);
+    auto  obj = gctools::GC<llvmo::AttributeSet_O>::allocate( val);
     return obj;
   };
 };
@@ -1517,7 +1517,7 @@ namespace translate {
 template <>
 struct to_object<llvm::MetadataAsValue*> {
   static core::T_sp convert(llvm::MetadataAsValue* mav) {
-    GC_ALLOCATE(llvmo::MetadataAsValue_O, oattr);
+    auto  oattr = gctools::GC<llvmo::MetadataAsValue_O>::allocate_with_default_constructor();
     oattr->set_wrapped(mav);
     return oattr;
   }
@@ -1576,7 +1576,7 @@ namespace translate {
 template <>
 struct to_object<llvm::Attribute> {
   static core::T_sp convert(llvm::Attribute attr) {
-    GC_ALLOCATE(llvmo::Attribute_O, oattr);
+    auto  oattr = gctools::GC<llvmo::Attribute_O>::allocate_with_default_constructor();
     oattr->setAttribute(attr);
     return ((oattr));
   }
@@ -1652,7 +1652,7 @@ namespace translate {
     struct to_object<const llvm::DataLayout &> {
     static core::T_sp convert(const llvm::DataLayout & ref) {
       // Use the copy constructor to create a DataLayout_O
-      GC_ALLOCATE_VARIADIC(llvmo::DataLayout_O,val,ref);
+      auto val = gctools::GC<llvmo::DataLayout_O>::allocate(ref);
       return val;
     }
   };
@@ -1662,7 +1662,7 @@ namespace translate {
     struct to_object<llvm::DataLayout const, translate::dont_adopt_pointer> {
     static core::T_sp convert(llvm::DataLayout orig) {
       // Use the copy constructor to create a DataLayout_O
-      GC_ALLOCATE_VARIADIC(llvmo::DataLayout_O,val,orig);
+      auto val = gctools::GC<llvmo::DataLayout_O>::allocate(orig);
       return val;
     }
   };
@@ -1671,7 +1671,7 @@ namespace translate {
     struct to_object<llvm::DataLayout, translate::dont_adopt_pointer> {
     static core::T_sp convert(llvm::DataLayout orig) {
       // Use the copy constructor to create a DataLayout_O
-      GC_ALLOCATE_VARIADIC(llvmo::DataLayout_O,val,orig);
+      auto val = gctools::GC<llvmo::DataLayout_O>::allocate(orig);
       return val;
     }
   };
@@ -1722,7 +1722,7 @@ namespace translate {
     struct to_object<const llvm::StructLayout &> {
     static core::T_sp convert(const llvm::StructLayout & ref) {
       // Use the copy constructor to create a StructLayout_O
-      GC_ALLOCATE_VARIADIC(llvmo::StructLayout_O,val,ref);
+      auto val = gctools::GC<llvmo::StructLayout_O>::allocate(ref);
       return val;
     }
   };
@@ -1732,7 +1732,7 @@ namespace translate {
     struct to_object<llvm::StructLayout const, translate::dont_adopt_pointer> {
     static core::T_sp convert(llvm::StructLayout orig) {
       // Use the copy constructor to create a StructLayout_O
-      GC_ALLOCATE_VARIADIC(llvmo::StructLayout_O,val,orig);
+      auto val = gctools::GC<llvmo::StructLayout_O>::allocate(orig);
       return val;
     }
   };
@@ -1995,7 +1995,7 @@ struct to_object<llvm::GlobalVariable *> {
   static core::T_sp convert(llvm::GlobalVariable *ptr) {
     if (ptr)
       return ((core::RP_Create_wrapped<llvmo::GlobalVariable_O, llvm::GlobalVariable *>(ptr)));
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
   }
 };
 };
@@ -3987,7 +3987,7 @@ template <>
 struct to_object<llvm::Function *> {
   static core::T_sp convert(llvm::Function *ptr) {
     if (ptr == NULL)
-      return ((_Nil<core::T_O>()));
+      return ((nil<core::T_O>()));
     return ((core::RP_Create_wrapped<llvmo::Function_O, llvm::Function *>(ptr)));
   };
 };
@@ -4061,7 +4061,7 @@ struct to_object<llvm::BasicBlock *> {
     if (ptr != NULL) {
       return ((core::RP_Create_wrapped<llvmo::BasicBlock_O, llvm::BasicBlock *>(ptr)));
     }
-    return ((_Nil<core::T_O>()));
+    return ((nil<core::T_O>()));
   };
 };
 template <>
@@ -4652,7 +4652,7 @@ public:
   CL_LISPIFY_NAME(make_mdbuilder);
   CL_DEF_CLASS_METHOD
   static MDBuilder_sp make(LLVMContext_sp context) {
-    GC_ALLOCATE_VARIADIC(MDBuilder_O,mdb,*context->wrappedPtr());
+    auto mdb = gctools::GC<MDBuilder_O>::allocate(*context->wrappedPtr());
     return mdb;
   };
 public:
@@ -4691,6 +4691,8 @@ public:
     _value.Address = Address;
   }
   ~SectionedAddress_O(){};
+  std::string __repr__() const;
+  
 }; // SectionedAddress_O
 }; // llvmo
 namespace translate {
@@ -4734,6 +4736,8 @@ void dump_objects_for_lldb(FILE* fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 
 std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size);
+llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream,llvm::SmallString<1024>& stringOutput,bool& stringOutputStream);
+
  
 typedef enum {DebugObjectFilesOff, DebugObjectFilesPrint, DebugObjectFilesPrintSave } DebugObjectFilesEnum;
 extern DebugObjectFilesEnum globalDebugObjectFiles;

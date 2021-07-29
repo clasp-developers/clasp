@@ -870,3 +870,19 @@ Return true iff a new entry was added; so for example it will return false if an
     (error 'core:wrong-number-of-arguments
            :called-function generic-function :given-nargs given-nargs
            :min-nargs min :max-nargs max)))
+
+
+;;; Implemented by Bike June 22, 2021
+
+(defun maybe-compile-named-gf (name)
+  (when (fboundp name)
+    (let ((f (fdefinition name)))
+      (when (typep f 'standard-generic-function)
+        (clos:compile-discriminating-function f)))))
+
+(defun compile-all-generic-functions ()
+  (do-all-symbols (s)
+    (maybe-compile-named-gf s)
+    (maybe-compile-named-gf `(setf ,s))))
+
+(export 'compile-all-generic-functions)

@@ -63,7 +63,7 @@ void dump_values_pos(T_sp v, const char* name, int n)
 core::T_mv ValuesFromCons(core::List_sp vals) {
   size_t len = cl__length(vals);
   if (len == 0) {
-    return core::T_mv(_Nil<core::T_O>(), 0);
+    return core::T_mv(nil<core::T_O>(), 0);
   }
   core::MultipleValues &me = (core::lisp_multipleValues());
   int i = 1;

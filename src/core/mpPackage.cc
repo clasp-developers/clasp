@@ -149,7 +149,7 @@ struct SafeRegisterDeregisterProcessWithLisp {
 void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
   if (bindings.consp()) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(CONS_CAR(bindings));
-    core::DynamicScopeManager scope(pair->ocar(),core::eval::evaluate(pair->cdr(),_Nil<core::T_O>()));
+    core::DynamicScopeManager scope(pair->ocar(),core::eval::evaluate(pair->cdr(),nil<core::T_O>()));
     do_start_thread_inner(process,CONS_CDR(bindings));
   } else {
     core::List_sp args = process->_Arguments;
@@ -285,7 +285,7 @@ string Mutex_O::__repr__() const {
   ss << "#<MUTEX ";
   ss << _rep_(this->_Name);
   ss << " :owner " << _rep_(this->_Owner) << " :counter " << this->counter();
-#ifdef USE_BOEHM // things don't move in boehm
+#ifdef NON_MOVING_GC // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
   ss << ">";
@@ -334,7 +334,7 @@ string SharedMutex_O::__repr__() const {
   stringstream ss;
   ss << "#<SHARED-MUTEX ";
   ss << _rep_(this->_Name);
-#ifdef USE_BOEHM // things don't move in boehm
+#ifdef NON_MOVING_GC // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
   ss << ">";
@@ -363,7 +363,7 @@ string Process_O::__repr__() const {
   stringstream ss;
   ss << "#<PROCESS ";
   ss << _rep_(this->_Name);
-#ifdef USE_BOEHM // things don't move in boehm
+#ifdef NON_MOVING_GC // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
   ss << " " << this->phase_as_string();
@@ -399,11 +399,11 @@ CL_DOCSTRING("Convenience function that creates a process and then immediately s
 CL_LAMBDA(name function &optional special_bindings);
 CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp function, core::List_sp special_bindings) {
 #ifdef DEBUG_FASTGF
-  core::Cons_sp fastgf = core::Cons_O::create(core::_sym_STARdebug_fastgfSTAR,_Nil<core::T_O>());
+  core::Cons_sp fastgf = core::Cons_O::create(core::_sym_STARdebug_fastgfSTAR,nil<core::T_O>());
   special_bindings = core::Cons_O::create(fastgf,special_bindings);
 #endif
   if (cl__functionp(function)) {
-    Process_sp process = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
+    Process_sp process = Process_O::make_process(name,function,nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
     // The process needs to be added to the list of processes before process->start() is called.
     // The child process code needs this to find the process in the list
     _lisp->add_process(process);

@@ -63,7 +63,7 @@ namespace core {
 void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp,
                                             T_sp sig, size_t numberOfSlots) {
   ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
-  this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
+  this->_Rack = Rack_O::make(numberOfSlots,sig,unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(rack());
@@ -80,7 +80,7 @@ CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
                                                            size_t slot_count) {
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
-  GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, entryPoint);
+  auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint);
   obj->_Class = cl;
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
   return obj;
@@ -89,12 +89,12 @@ CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl,
                                                                         Rack_sp rack) {
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
-  GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, entryPoint, cl, rack);
+  auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint, cl, rack);
   return obj;
 }
 
 size_t FuncallableInstance_O::rack_stamp_offset() {
-  SimpleVector_O dummy_rack(0,_Nil<T_O>(),false);
+  SimpleVector_O dummy_rack(0,nil<T_O>(),false);
   return (char*)&(dummy_rack.operator[](0))-(char*)&dummy_rack;
 }
 
@@ -257,15 +257,15 @@ void FuncallableInstance_O::describe(T_sp stream) {
 FuncallableInstance_sp FuncallableInstance_O::create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex)
 {
   size_t number_of_required_arguments = llhandler->numberOfRequiredArguments();
-  Rack_sp rack = Rack_O::make(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS,_Nil<T_O>(),_Nil<T_O>());
-  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,_Nil<T_O>());
+  Rack_sp rack = Rack_O::make(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS,nil<T_O>(),nil<T_O>());
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,nil<T_O>());
   rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER,llhandler);
   rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX,
                           make_fixnum(singleDispatchArgumentIndex));
-  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,_Nil<T_O>());
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,nil<T_O>());
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(gfname,FuncallableInstance_O::single_dispatch_funcallable_entry_point,llhandler->lambdaList());
   Instance_sp class_ = gc::As<Instance_sp>(cl__find_class(_sym_SingleDispatchGenericFunctionClosure_O));
-  GC_ALLOCATE_VARIADIC(FuncallableInstance_O,gfun,entryPoint,class_,rack);
+  auto gfun = gctools::GC<FuncallableInstance_O>::allocate(entryPoint,class_,rack);
 //  gfun->entry = single_dispatch_funcallable_entry_point;
   return gfun;
 }
@@ -336,7 +336,7 @@ LCC_RETURN FuncallableInstance_O::single_dispatch_funcallable_entry_point(LCC_AR
         // Update the call-history using CAS
         T_sp expected;
         Cons_sp entry = Cons_O::create(dispatchArgClass,method);
-        Cons_sp callHistoryEntry = Cons_O::create(entry,_Nil<T_O>());
+        Cons_sp callHistoryEntry = Cons_O::create(entry,nil<T_O>());
         do {
           expected = closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY);
           callHistoryEntry->rplacd(expected);
@@ -397,7 +397,7 @@ void FuncallableInstance_O::addSingleDispatchMethod(SingleDispatchMethod_sp meth
 //    printf("%s:%d      receiver_class->%s\n", __FILE__, __LINE__, _rep_(receiverClass).c_str());
         // Update the methods using CAS
     T_sp expected;
-    Cons_sp entry = Cons_O::create(method,_Nil<T_O>());
+    Cons_sp entry = Cons_O::create(method,nil<T_O>());
     do {
       expected = this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS);
       entry->rplacd(expected);
@@ -412,7 +412,7 @@ void FuncallableInstance_O::addSingleDispatchMethod(SingleDispatchMethod_sp meth
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry()));
-  } else return Values(_Nil<T_O>(),_Nil<T_O>());
+  } else return Values(nil<T_O>(),nil<T_O>());
 };
 
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
@@ -465,37 +465,117 @@ namespace core {
 #define DTREE_OP_RPLACA 11
 #define DTREE_OP_EFFECTIVE_METHOD 12
 
+#define DTREE_OP_MISS_LENGTH 1
+
 #define DTREE_FIXNUM_TAG_OFFSET 1
 #define DTREE_SINGLE_FLOAT_TAG_OFFSET 2
 #define DTREE_CHARACTER_TAG_OFFSET 3
 #define DTREE_CONS_TAG_OFFSET 4
 #define DTREE_GENERAL_TAG_OFFSET 5
+#define DTREE_OP_TAG_TEST_LENGTH 6
 
 #define DTREE_READ_HEADER_OFFSET 1
 #define DTREE_READ_OTHER_OFFSET 2
+#define DTREE_OP_STAMP_READ_LENGTH 3
 
 #define DTREE_LT_PIVOT_OFFSET 1
 #define DTREE_LT_LEFT_OFFSET 2
 #define DTREE_LT_RIGHT_OFFSET 3
+#define DTREE_OP_LT_BRANCH_LENGTH 4
 
 #define DTREE_EQ_PIVOT_OFFSET 1
 #define DTREE_EQ_NEXT_OFFSET 2
+#define DTREE_OP_EQ_CHECK_LENGTH 3
 
 #define DTREE_RANGE_MIN_OFFSET 1
 #define DTREE_RANGE_MAX_OFFSET 2
 #define DTREE_RANGE_NEXT_OFFSET 3
+#define DTREE_OP_RANGE_CHECK_LENGTH 4
 
 #define DTREE_EQL_OBJECT_OFFSET 1
 #define DTREE_EQL_BRANCH_OFFSET 2
 #define DTREE_EQL_NEXT_OFFSET 3
+#define DTREE_OP_EQL_LENGTH 4
 
 #define DTREE_SLOT_READER_INDEX_OFFSET 1
 #define DTREE_SLOT_READER_SLOT_NAME_OFFSET 2
+#define DTREE_OP_SLOT_READ_LENGTH 3
+#define DTREE_OP_CAR_LENGTH 3
 
 #define DTREE_SLOT_WRITER_INDEX_OFFSET 1
+#define DTREE_OP_SLOT_WRITE_LENGTH 2
+#define DTREE_OP_RPLACA_LENGTH 2
 
 #define DTREE_EFFECTIVE_METHOD_OFFSET 1
+#define DTREE_OP_EFFECTIVE_METHOD_LENGTH 2
 
+SYMBOL_EXPORT_SC_(CorePkg,STARdtreeSymbolsSTAR);
+
+
+void registerOneDtreeInfo(const std::string& name, int val ) {
+  printf("%s:%d:%s  name: %s   val: %d\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), val );
+  if (_sym_STARdtreeSymbolsSTAR->symbolValue().nilp()) {
+    _sym_STARdtreeSymbolsSTAR->defparameter(HashTableEq_O::create_default());
+  }
+  HashTableEq_sp ht = gc::As<HashTableEq_sp>(_sym_STARdtreeSymbolsSTAR->symbolValue());
+  Symbol_sp key = lisp_upcase_intern(name,"KEYWORD");
+  ht->setf_gethash(key,make_fixnum(val));
+}
+
+void registerOrDumpDtreeInfo(FILE* fout) {
+#define DTREE_EXPOSE(_name_) if (fout) fprintf(fout,"Init_global_ints(name=\"%s\",value=%d);\n", #_name_, _name_); else registerOneDtreeInfo(#_name_,_name_);
+   DTREE_EXPOSE(DTREE_OP_MISS);
+   DTREE_EXPOSE(DTREE_OP_ADVANCE);
+   DTREE_EXPOSE(DTREE_OP_TAG_TEST);
+   DTREE_EXPOSE(DTREE_OP_STAMP_READ);
+   DTREE_EXPOSE(DTREE_OP_LT_BRANCH);
+   DTREE_EXPOSE(DTREE_OP_EQ_CHECK);
+   DTREE_EXPOSE(DTREE_OP_RANGE_CHECK);
+   DTREE_EXPOSE(DTREE_OP_EQL);
+   DTREE_EXPOSE(DTREE_OP_SLOT_READ);
+   DTREE_EXPOSE(DTREE_OP_SLOT_WRITE);
+   DTREE_EXPOSE(DTREE_OP_CAR);
+   DTREE_EXPOSE(DTREE_OP_RPLACA);
+   DTREE_EXPOSE(DTREE_OP_EFFECTIVE_METHOD);
+   DTREE_EXPOSE(DTREE_OP_MISS_LENGTH);
+   DTREE_EXPOSE(DTREE_FIXNUM_TAG_OFFSET);
+   DTREE_EXPOSE(DTREE_SINGLE_FLOAT_TAG_OFFSET);
+   DTREE_EXPOSE(DTREE_CHARACTER_TAG_OFFSET);
+   DTREE_EXPOSE(DTREE_CONS_TAG_OFFSET);
+   DTREE_EXPOSE(DTREE_GENERAL_TAG_OFFSET);
+   DTREE_EXPOSE(DTREE_OP_TAG_TEST_LENGTH);
+   DTREE_EXPOSE(DTREE_READ_HEADER_OFFSET);
+   DTREE_EXPOSE(DTREE_READ_OTHER_OFFSET);
+   DTREE_EXPOSE(DTREE_OP_STAMP_READ_LENGTH);
+   DTREE_EXPOSE(DTREE_LT_PIVOT_OFFSET);
+   DTREE_EXPOSE(DTREE_LT_LEFT_OFFSET);
+   DTREE_EXPOSE(DTREE_LT_RIGHT_OFFSET);
+   DTREE_EXPOSE(DTREE_OP_LT_BRANCH_LENGTH);
+   DTREE_EXPOSE(DTREE_EQ_PIVOT_OFFSET);
+   DTREE_EXPOSE(DTREE_EQ_NEXT_OFFSET);
+   DTREE_EXPOSE(DTREE_OP_EQ_CHECK_LENGTH);
+   DTREE_EXPOSE(DTREE_RANGE_MIN_OFFSET);
+   DTREE_EXPOSE(DTREE_RANGE_MAX_OFFSET);
+   DTREE_EXPOSE(DTREE_RANGE_NEXT_OFFSET);
+   DTREE_EXPOSE(DTREE_OP_RANGE_CHECK_LENGTH);
+   DTREE_EXPOSE(DTREE_EQL_OBJECT_OFFSET);
+   DTREE_EXPOSE(DTREE_EQL_BRANCH_OFFSET);
+   DTREE_EXPOSE(DTREE_EQL_NEXT_OFFSET);
+   DTREE_EXPOSE(DTREE_OP_EQL_LENGTH);
+   DTREE_EXPOSE(DTREE_SLOT_READER_INDEX_OFFSET);
+   DTREE_EXPOSE(DTREE_SLOT_READER_SLOT_NAME_OFFSET);
+   DTREE_EXPOSE(DTREE_OP_SLOT_READ_LENGTH);
+   DTREE_EXPOSE(DTREE_OP_CAR_LENGTH);
+   DTREE_EXPOSE(DTREE_SLOT_WRITER_INDEX_OFFSET);
+   DTREE_EXPOSE(DTREE_OP_SLOT_WRITE_LENGTH);
+   DTREE_EXPOSE(DTREE_OP_RPLACA_LENGTH);
+   DTREE_EXPOSE(DTREE_EFFECTIVE_METHOD_OFFSET);
+   DTREE_EXPOSE(DTREE_OP_EFFECTIVE_METHOD_LENGTH);
+ }
+
+
+
+  
 #define CASE_OP_NAME(op) case op: return #op;
 std::string dtree_op_name(int dtree_op) {
   switch (dtree_op) {

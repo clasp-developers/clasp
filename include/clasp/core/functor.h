@@ -92,8 +92,8 @@ fields at the same offset as Instance_O.
    LISP_CLASS(core,CorePkg,FunctionDescription_O,"FunctionDescription",General_O);
  public:
   /* vtable */                                 //  1 vtable from General_O
-   T_sp _sourcePathname;                       //  2 source-info
-   T_sp _functionName;                         //  3 function-name
+   T_sp _functionName;                         //  2 function-name
+   T_sp _sourcePathname;                       //  3 source-info
    T_sp _lambdaList;                           //  4 lambda-list 
    T_sp _docstring;                            //  5 docstring
    T_sp _declares;                             //  6 declares
@@ -132,6 +132,7 @@ fields at the same offset as Instance_O.
   // Accessors
    EntryPointBase_O(FunctionDescription_sp fdesc) : _FunctionDescription(fdesc) {  };
    CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
+   virtual Pointer_sp defaultEntryAddress() const;
  };
 
  FORWARD(CodeEntryPoint);
@@ -145,8 +146,8 @@ fields at the same offset as Instance_O.
   // Accessors
    CodeEntryPoint_O(FunctionDescription_sp fdesc, llvmo::CodeBase_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
  public:
-   virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup) { SIMPLE_ERROR(BF("Subclass must implement")); };
-   void fixupOneCodePointer(imageSaveLoad::Fixup* fixup, void** ptr);
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(BF("Subclass must implement")); };
+   void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
    CL_DEFMETHOD llvmo::CodeBase_sp EntryPoint_code() const { return this->_Code; };
  };
 
@@ -159,7 +160,8 @@ fields at the same offset as Instance_O.
   // Accessors
    LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {};
  public:
-   virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
+   virtual Pointer_sp defaultEntryAddress() const;
 };
 
 FORWARD(LocalEntryPointGenerator);
@@ -181,7 +183,8 @@ FORWARD(GlobalEntryPoint);
   // Accessors
    GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : CodeEntryPoint_O(fdesc, code), _EntryPoints{entry_point} {};
  public:
-   virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup );
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
+   virtual Pointer_sp defaultEntryAddress() const;
  };
 
 FORWARD(GlobalEntryPointGenerator);
@@ -197,20 +200,20 @@ class GlobalEntryPointGenerator_O : public EntryPointBase_O {
 
 GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName,
                                                                claspFunction entryPoint,
-                                                               T_sp lambda_list=_Unbound<T_O>(),
-                                                               T_sp docstring=_Nil<T_O>(),
-                                                               T_sp declares=_Nil<T_O>(),
-                                                               T_sp sourcePathname=_Nil<T_O>(),
+                                                               T_sp lambda_list=unbound<T_O>(),
+                                                               T_sp docstring=nil<T_O>(),
+                                                               T_sp declares=nil<T_O>(),
+                                                               T_sp sourcePathname=nil<T_O>(),
                                                                int lineno=-1,
                                                                int column=-1,
                                                                int filePos=-1);
 
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
-                                                T_sp lambda_list=_Unbound<T_O>(),
-                                                T_sp docstring=_Nil<T_O>(),
-                                                T_sp declares=_Nil<T_O>(),
-                                                T_sp sourcePathname=_Nil<T_O>(),
+                                                T_sp lambda_list=unbound<T_O>(),
+                                                T_sp docstring=nil<T_O>(),
+                                                T_sp declares=nil<T_O>(),
+                                                T_sp sourcePathname=nil<T_O>(),
                                                 int lineno=-1,
                                                 int column=-1,
                                                 int filePos=-1);
@@ -320,7 +323,7 @@ namespace core {
     virtual bool compiledP() const { return false; };
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
-    virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
+    virtual T_sp sourcePosInfo() const { return nil<T_O>(); };
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
     }
@@ -380,17 +383,17 @@ namespace core {
     LambdaListHandler_sp _lambdaListHandler;
   public:
   BuiltinClosure_O(GlobalEntryPoint_sp ep)
-    : Closure_O(ep), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
+    : Closure_O(ep), _lambdaListHandler(unbound<LambdaListHandler_O>())  {};
   BuiltinClosure_O(GlobalEntryPoint_sp ep, LambdaListHandler_sp llh)
     : Closure_O(ep), _lambdaListHandler(llh)  {};
     void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
     }
-    T_sp closedEnvironment() const override { return _Nil<T_O>(); };
+    T_sp closedEnvironment() const override { return nil<T_O>(); };
     virtual size_t templatedSizeof() const override { return sizeof(*this); };
     // Fixup the code pointers
-    virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) { SIMPLE_ERROR(BF("Subclass must implement")); };
-    void fixupOneCodePointer( imageSaveLoad::Fixup* fixup, void** address, size_t size );
+    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) { SIMPLE_ERROR(BF("Subclass must implement")); };
+    void fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** address, size_t size );
     virtual const char *describe() const override { return "BuiltinClosure"; };
     bool builtinP() const override { return true; };
     T_sp lambdaListHandler() const override { return this->_lambdaListHandler; };
@@ -437,16 +440,16 @@ namespace core {
                      ClosureType nclosureType)
       : Base(ENSURE_ENTRY_POINT(ep,functionPtr)),
         closureType(nclosureType),
-        _Slots(capacity,_Unbound<T_O>(),true) {};
+        _Slots(capacity,unbound<T_O>(),true) {};
     virtual string __repr__() const override;
     core::T_sp lambdaListHandler() const override {
       switch (this->closureType) {
       case interpretedClosure:
           return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
       case bclaspClosure:
-          return _Nil<T_O>();
+          return nil<T_O>();
       case cclaspClosure:
-          return _Nil<T_O>();
+          return nil<T_O>();
       };
     }
     CL_DEFMETHOD T_sp interpretedSourceCode();

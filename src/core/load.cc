@@ -49,11 +49,11 @@ namespace core {
 T_sp load_stream(T_sp strm, bool print) {
   while (true) {
     // Required to get source position correct. FIXME
-    cl__peek_char(_lisp->_true(), strm, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
+    cl__peek_char(_lisp->_true(), strm, nil<T_O>(), nil<T_O>(), nil<T_O>());
     DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR,
                               clasp_simple_input_stream_source_pos_info(strm));
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
-    T_sp x = cl__read(strm, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
+    T_sp x = cl__read(strm, nil<T_O>(), unbound<T_O>(), nil<T_O>());
     if (x.unboundp())
       break;
     if (echoReplRead) {
@@ -62,7 +62,7 @@ T_sp load_stream(T_sp strm, bool print) {
     if (x.number_of_values() > 0) {
       if (print)
         write_bf_stream(BF(";; -read- %s\n") % _rep_(x));
-      eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, _Nil<T_O>());
+      eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, nil<T_O>());
     }
   }
   cl__close(strm);
@@ -85,12 +85,12 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   strm = cl__open(source,
                   kw::_sym_input,
                   cl::_sym_character,
-                  _Nil<T_O>(), false,
-                  _Nil<T_O>(), false,
+                  nil<T_O>(), false,
+                  nil<T_O>(), false,
                    final_format,
-                  _Nil<T_O>());
+                  nil<T_O>());
   if (strm.nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   
   if (source.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pathname = cl__pathname(source);
@@ -107,7 +107,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   T_sp pntype;
   T_sp hooks;
   T_sp filename;
-  T_sp function = _Nil<T_O>();
+  T_sp function = nil<T_O>();
   T_sp ok;
   T_sp msource = lsource;
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
@@ -132,7 +132,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   
   pntype = pathname->_Type;
 
-  filename = _Nil<T_O>();
+  filename = nil<T_O>();
   hooks = cl__symbol_value(core::_sym_STARloadHooksSTAR);
   if (pathname->_Directory.nilp() &&
       pathname->_Host.nilp() &&
@@ -141,7 +141,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
     for (; search_list.notnilp(); search_list = oCdr(search_list)) {
       T_sp d = oCar(search_list);
       T_sp f = cl__merge_pathnames(pathname, d);
-      T_sp ok = cl__load(f, verbose, print, _Nil<T_O>(), external_format, _Nil<T_O>());
+      T_sp ok = cl__load(f, verbose, print, nil<T_O>(), external_format, nil<T_O>());
       if (!ok.nilp()) {
         return ok;
       }
@@ -165,14 +165,14 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
     }
     filename = core__coerce_to_file_pathname(pathname);
     if (kind != kw::_sym_file && kind != kw::_sym_special) {
-      filename = _Nil<T_O>();
+      filename = nil<T_O>();
     } else {
-      function = _Nil<T_O>();
+      function = nil<T_O>();
       if ((hooks).consp()) {
         function = oCdr(gc::As<Cons_sp>(hooks)->assoc(pathname->_Type,
-                                                      _Nil<T_O>(),
+                                                      nil<T_O>(),
                                                       cl::_sym_string_EQ_,
-                                                      _Nil<T_O>()));
+                                                      nil<T_O>()));
       }
     }
   } else {
@@ -187,12 +187,12 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
       if (kind == kw::_sym_file || kind == kw::_sym_special)
         break;
       else
-        filename = _Nil<T_O>();
+        filename = nil<T_O>();
     }
   };
   if (filename.nilp()) {
     if (if_does_not_exist.nilp())
-      return _Nil<T_O>();
+      return nil<T_O>();
     else {
       CANNOT_OPEN_FILE_ERROR(lsource);
     }

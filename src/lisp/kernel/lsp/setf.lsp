@@ -199,7 +199,7 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
                                  `(funcall #'(setf ,operator) ,store ,@temps)
                                  `(,operator ,@temps)))))))))
         (t
-         (error "Invalid syntax: ~s is not a place." place))))
+         (simple-program-error "Invalid syntax: ~s is not a place." place))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -296,7 +296,7 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
                (eq (first fn) 'function)
                (symbolp (second fn))
                (null (cddr fn)))
-    (error "(apply ~s ...) is not a valid place." fn))
+    (simple-program-error "(apply ~s ...) is not a valid place." fn))
   (let ((name (second fn))
         (temps (mapcar (lambda (f) (declare (ignore f)) (gensym "TEMP")) rest))
         (store (gensym "STORE")))
@@ -445,7 +445,7 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 
 (defun setf-expand (l env)
   (cond ((endp l) nil)
-        ((endp (cdr l)) (error "~S is an illegal SETF form." l))
+        ((endp (cdr l)) (simple-program-error "~S is an illegal SETF form." l))
         (t
          (cons (setf-expand-1 (car l) (cadr l) env)
                (setf-expand (cddr l) env)))))
@@ -475,7 +475,8 @@ Each PLACE may be any one of the following:
   * any form for which a DEFSETF or DEFINE-SETF-EXPANDER declaration has been
     made."
   (cond ((endp rest) nil)
-        ((endp (cdr rest)) (error "~S is an illegal SETF form." rest))
+        ((endp (cdr rest))
+         (simple-program-error "~S is an illegal SETF form." rest))
         ((endp (cddr rest)) (setf-expand-1 (car rest) (cadr rest) env))
         (t (cons 'progn (setf-expand rest env)))))
 
@@ -511,13 +512,14 @@ Each PLACE may be any one of the following:
                 (build (nreverse temp-groups) (nreverse value-groups)
                        store-forms))
              (when (endp (cdr r))
-               (error "~S is an illegal ~s form" `(,operator ,@rest) operator))
+               (simple-program-error "~S is an illegal ~s form"
+                                     `(,operator ,@rest) operator))
              (let ((place (car r)) (subform (cadr r)))
                (ext:with-current-source-form (place)
                  (when (and (eq operator 'psetq)
                             (not (symbolp place)))
-                   (error "~s is an illegal ~s form"
-                          `(,operator ,@rest) operator))
+                   (simple-program-error "~s is an illegal ~s form"
+                                         `(,operator ,@rest) operator))
                  (multiple-value-bind
                        (temps values stores store-form access-form)
                      (get-setf-expansion place env)
@@ -560,21 +562,20 @@ retrieved by (DOCUMENTATION 'SYMBOL 'FUNCTION)."
             ((eq next '&REST)
              (if (symbolp (second lambdalistr))
                  (setq restvar (second lambdalistr))
-                 (error "In the definition of ~S: &REST variable ~S should be a symbol."
-                        name (second lambdalistr)))
+                 (simple-program-error "In the definition of ~S: &REST variable ~S should be a symbol."
+                                       name (second lambdalistr)))
              (if (null (cddr lambdalistr))
                  (return)
-                 (error "Only one variable is allowed after &REST, not ~S"
-                        lambdalistr)))
+                 (simple-program-error "Only one variable is allowed after &REST, not ~S"
+                                       lambdalistr)))
             ((or (eq next '&KEY) (eq next '&ALLOW-OTHER-KEYS) (eq next '&AUX))
-             (error "Illegal in a DEFINE-MODIFY-MACRO lambda list: ~S"
-                    next
-            ))
+             (simple-program-error "Illegal in a DEFINE-MODIFY-MACRO lambda list: ~S"
+                                   next))
             ((symbolp next) (push next varlist))
             ((and (listp next) (symbolp (first next)))
              (push (first next) varlist))
-            (t (error "lambda list may only contain symbols and lists, not ~S"
-                      next))))
+            (t (simple-program-error "lambda list may only contain symbols and lists, not ~S"
+                                     next))))
     (setq varlist (nreverse varlist))
     `(DEFMACRO ,name (&ENVIRONMENT ENV %REFERENCE ,@lambdalist)
        ,@(and docstring (list docstring))

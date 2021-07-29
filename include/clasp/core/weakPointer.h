@@ -30,6 +30,13 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/corePackage.fwd.h>
 
+template <>
+struct gctools::GCInfo<core::WeakPointer_O> {
+  static bool const NeedsInitialization = false;
+  static bool const NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+
 namespace core {
 FORWARD(WeakPointer);
 class WeakPointer_O : public General_O {
@@ -40,24 +47,33 @@ class WeakPointer_O : public General_O {
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
-  WeakPointer_O() : _WeakObject(_Nil<T_O>()){};
-  WeakPointer_O(T_sp ptr) : _WeakObject(ptr){};
+  WeakPointer_O() : _Link(NULL), _Object(NULL) {};
+  WeakPointer_O(T_sp ptr) : _Link(ptr.raw_()), _Object(ptr.raw_()) {
+#ifdef USE_BOEHM
+    GC_general_register_disappearing_link((void**)&this->_Link, &*ptr);
+#else
+    SIMPLE_ERROR(BF("WeakPointer_O not supported"));
+#endif
+  };
+  ~WeakPointer_O() {
+#ifdef USE_BOEHM
+    GC_unregister_disappearing_link((void**)&this->_Link);
+#else
+    SIMPLE_ERROR(BF("WeakPointer_O not supported"));
+#endif
+  }
+  
 
 public:
   static WeakPointer_sp make(T_sp obj);
-
 public:
-GCPRIVATE: // instance variables here
-  typedef typename gctools::WeakPointerManager::value_type value_type;
-  gctools::WeakPointerManager _WeakObject;
-
+  void*    _Link; // Use a boehm disappearing link
+  void*    _Object;
 public: // Functions here
-  /*! Value the reference to the object.
-	  If the object was destroyed then return nil. */
-  T_mv value() const;
+  /*! Value of the reference to the object. If the object was destroyed then return nil. */
+  T_sp value() const;
 
-  /*! Return true if the object referenced by _WeakObject still exists, otherwise return false
-	 */
+  /*! Return true if the object referenced by this still exists, otherwise return false */
   bool valid() const;
 };
 

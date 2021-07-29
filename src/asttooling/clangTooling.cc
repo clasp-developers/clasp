@@ -188,7 +188,7 @@ void initialize_matchers() {
 #define REGISTER_OVERLOADED_2(name) add_matcher_name(#name,ast_tooling__intern_matcher_keyword(#name))
 #define REGISTER_MATCHER(name) add_matcher_name(#name,ast_tooling__intern_matcher_keyword(#name))
 
-  _sym_STARmatcher_namesSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARmatcher_namesSTAR->defparameter(nil<core::T_O>());
   // These are copied from llvm38/tools/clang/lib/ASTMatchers/Dynamic/Registry.cpp
   // If there are changes to Registry.cpp - copy them here.
   REGISTER_OVERLOADED_2(callee);
@@ -527,7 +527,7 @@ core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
   if (dtm.hasValue()) {
     return clbind::Wrapper<clang::ast_matchers::internal::DynTypedMatcher>::make_wrapper(*dtm, reg::registered_class<clang::ast_matchers::internal::DynTypedMatcher>::id);
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 };
 
 core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
@@ -596,12 +596,43 @@ core::T_sp ast_tooling__newFrontendActionFactory(core::T_sp consumerFactory) {
   SIMPLE_ERROR(BF("Implement newFrontendActionFactory for %s") % _rep_(consumerFactory));
 };
 
-bool ast_tooling__Replacements_add(clang::tooling::Replacements &replacements, const clang::tooling::Replacement &one) {
+core::List_sp ast_tooling__ReplacementsAsList(clang::tooling::RefactoringTool& refactoringTool ) {
+  map<std::string,clang::tooling::Replacements>& mapReplacements = refactoringTool.getReplacements();
+  ql::list ll;
+  for ( auto pair : mapReplacements ) {
+    for ( auto rep : pair.second ) {
+      ll << core::SimpleBaseString_O::make(rep.toString());
+    }
+  }
+  return ll.result();
+}
+
+void ast_tooling__RefactoringToolReplacementsAdd(clang::tooling::RefactoringTool& refactoringTool, const clang::tooling::Replacement& replacement) {
+  auto filePath = replacement.getFilePath();
+//  printf("%s:%d:%s filePath = %s\n", __FILE__, __LINE__, __FUNCTION__, filePath.str().c_str() );
+  map<std::string,clang::tooling::Replacements>& mapReplacements = refactoringTool.getReplacements();
+//  printf("%s:%d:%s map size = %lu\n", __FILE__, __LINE__, __FUNCTION__, mapReplacements.size() );
+  auto ii = mapReplacements.find(filePath.str());
+  if ( ii == mapReplacements.end() ) {
+    clang::tooling::Replacements repls;
+    auto res = repls.add(replacement);
+    if (res) {
+      SIMPLE_ERROR(BF("Error adding replacement"));
+    }
+    mapReplacements[filePath.str()] =repls;
+  } else {
+    auto res = ii->second.add(replacement);
+    if (res) {
+      SIMPLE_ERROR(BF("Error adding replacement to existing replacements"));
+    }
+  }
+#if 0  
   llvm::Error err = replacements.add(one);
   if (err) {
     return false;
   }
   return true;
+#endif
 }
 #if 0
 
@@ -618,7 +649,7 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
   }
   vector<clang::tooling::Range> vranges;
   clang::tooling::deduplicate(vreps, vranges);
-  core::Cons_sp firstRep = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
+  core::Cons_sp firstRep = core::Cons_O::create(nil<core::T_O>(),nil<core::T_O>());
   core::Cons_sp curRep = firstRep;
   for (auto i : vreps) {
     clang::tooling::Replacement *rp = new clang::tooling::Replacement(i);
@@ -627,7 +658,7 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
     curRep->setCdr(oneRepCons);
     curRep = oneRepCons;
   }
-  core::Cons_sp firstRang = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
+  core::Cons_sp firstRang = core::Cons_O::create(nil<core::T_O>(),nil<core::T_O>());
   core::Cons_sp curRang = firstRang;
   for (auto j : vranges) {
     // Why does Range not have a Copy constructor?????
@@ -828,6 +859,8 @@ void initialize_clangTooling() {
     cl_ai.def("getBegin", &clang::SourceRange::getBegin)
         .def("getEnd", &clang::SourceRange::getEnd);
     class_<clang::CharSourceRange> cl_aj(m,"CharSourceRange");
+    cl_aj.def("isTokenRange",&clang::CharSourceRange::isTokenRange);
+    cl_aj.def("isCharRange",&clang::CharSourceRange::isTokenRange);
     // Create a CharSourceRange from a pair of begin/end SourceLocations that contains a TokenRange
     m.def("newCharSourceRange-getTokenRange",
           (clang::CharSourceRange (*)(clang::SourceLocation, clang::SourceLocation)) & clang::CharSourceRange::getTokenRange);
@@ -853,23 +886,33 @@ void initialize_clangTooling() {
         .def("clearArgumentsAdjusters", &clang::tooling::ClangTool::clearArgumentsAdjusters)
         //            .  def("addArgumentsAdjuster",&clang::tooling::ClangTool::addArgumentsAdjuster)
         .def("appendArgumentsAdjuster", &clang::tooling::ClangTool::appendArgumentsAdjuster)
-        .def("clangToolRun", &clang::tooling::ClangTool::run)
-        .def("buildASTs", &clang::tooling::ClangTool::buildASTs, pureOutValue<1>());
+        .def("clangToolRun", &clang::tooling::ClangTool::run);
+    m.def("buildASTs", +[](clang::tooling::ClangTool& tool ){
+          std::vector<std::unique_ptr<clang::ASTUnit>> ASTs;
+          tool.buildASTs(ASTs);
+          ql::list ll;
+          for (int i(0), iEnd(ASTs.size()); i < iEnd; ++i) {
+            ll << clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::make_wrapper(std::move(ASTs[i]), reg::registered_class<clang::ASTUnit>::id);
+          }
+          return ll.result();
+        });
     class_<clang::tooling::Replacement>(m,"Replacement")
         .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, llvm::StringRef>())
         .def("toString", &clang::tooling::Replacement::toString)
+        .def("getFilePath", &clang::tooling::Replacement::getFilePath)
         .def("replacement-apply", &clang::tooling::Replacement::apply);
     class_<clang::tooling::Range> cl_an(m,"Range");
 
+    m.def("refactoring-tool-replacements-add", &ast_tooling__RefactoringToolReplacementsAdd);
     class_<clang::tooling::Replacements> cl_ao(m,"Replacements");
-    m.def("Replacements-add", &ast_tooling__Replacements_add); // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
+    m.def("replacements-as-list", &ast_tooling__ReplacementsAsList);
     class_<clang::tooling::RefactoringTool, clang::tooling::ClangTool> cl_ap(m,"RefactoringTool");
     cl_ap.def_constructor("newRefactoringTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
-        .def("getReplacements", &clang::tooling::RefactoringTool::getReplacements)
+//        .def("getReplacements", &clang::tooling::RefactoringTool::getReplacements)
         .def("applyAllReplacements", &clang::tooling::RefactoringTool::applyAllReplacements)
         .def("runAndSave", &clang::tooling::RefactoringTool::runAndSave);
     class_<clang::Rewriter> cl_aq(m,"Rewriter");
-    cl_aq.def_constructor("newRewriter", constructor<clang::SourceManager &, const clang::LangOptions &>());
+    cl_aq.def_constructor("makeRewriter", constructor<clang::SourceManager &, const clang::LangOptions &>());
     class_<clang::ASTUnit> cl_ar(m,"ASTUnit");
     cl_ar.def("getASTContext", clang_ASTUnit_getASTContext); // (clang::ASTContext&(*)())&clang::ASTUnit::getASTContext)
     derivable_class_<DerivableSyntaxOnlyAction, clang::SyntaxOnlyAction> cl_as(m,"SyntaxOnlyAction",create_default_constructor);
@@ -908,7 +951,7 @@ void initialize_clangTooling() {
 //    m.def("runToolOnCode", &clang::tooling::runToolOnCode);
     class_<clang::ast_matchers::MatchFinder::MatchCallback> cl_bb(m,"MatchCallback-abstract");
     derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback> cl_bc(m,"MatchCallback",create_default_constructor);
-    cl_bc.def("run", &DerivableMatchCallback::default_run)
+    cl_bc.def("RUN", &DerivableMatchCallback::default_run)
         .def("onStartOfTranslationUnit", &DerivableMatchCallback::default_onStartOfTranslationUnit)
         .def("onEndOfTranslationUnit", &DerivableMatchCallback::default_onEndOfTranslationUnit);
     class_<clang::ast_matchers::MatchFinderMatchResult> cl_bd(m,"MatchResult");

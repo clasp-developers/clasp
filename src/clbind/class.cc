@@ -55,6 +55,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
 #include <clasp/clbind/config.h>
+#include <clasp/clbind/names.h>
 #include <clasp/clbind/function.h>
 #include <clasp/clbind/scope.h>
 #include <clasp/clbind/clbind_wrappers.h>
@@ -90,7 +91,7 @@ void class_registration::register_() const {
   }
 #endif
   std::string classNameString(this->m_name);
-  core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
+  core::Symbol_sp className = core::lisp_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   if (!this->m_derivable) {
     crep = clbind::ClassRep_O::create(core::lisp_clbind_cxx_class(), this->m_type, className, this->m_derivable);
     where = gctools::Header_s::wrapped_wtag;
@@ -105,11 +106,11 @@ void class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(::nil<core::T_O>(),DummyCreator_O::entry_point);
     creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
   //  printf("%s:%d:%s  classNameString->%s  where -> 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, classNameString.c_str(), where);
-  crep->initializeClassSlots(creator,gctools::NextStampWtag(where));
+  crep->initializeClassSlots(creator,gctools::NextClbindStampWtag(where));
   className->exportYourself();
   crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????
@@ -166,13 +167,17 @@ void class_registration::register_() const {
 // -- interface ---------------------------------------------------------
 
 class_base::class_base(const string &name)
-    : scope_(std::unique_ptr<registration>(
-          m_registration = new class_registration(name)))
-    , m_init_counter(0) {
+  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(core::lispify_symbol_name(name))))
+  , m_init_counter(0) {
 }
 
-void class_base::init(
-    type_id const &type_id_, class_id id, type_id const &wrapper_type, class_id wrapper_id, bool derivable) {
+class_base::class_base(const RawName &name)
+  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name._raw_name)))
+  , m_init_counter(0) {
+}
+
+void class_base::init(type_id const &type_id_, class_id id, type_id const &wrapper_type, class_id wrapper_id, bool derivable) {
+//  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   m_registration->m_type = type_id_;
   m_registration->m_id = id;
   m_registration->m_wrapper_type = wrapper_type;
@@ -211,9 +216,8 @@ void class_base::add_inner_scope(scope_ &s) {
   m_registration->m_scope.operator, (s);
 }
 
-void class_base::add_cast(
-    class_id src, class_id target, cast_function cast) {
-  //            printf("%s:%d:%s   src[%" PRu "] target[%lu]\n", __FILE__,__LINE__,__FUNCTION__,src,target);
+void class_base::add_cast(class_id src, class_id target, cast_function cast) {
+//  printf("%s:%d:%s   src[%lu] target[%lu] cast=%p\n", __FILE__,__LINE__,__FUNCTION__,src,target,(void*)cast);
   m_registration->m_casts.push_back(cast_entry(src, target, cast));
 }
 

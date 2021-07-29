@@ -14,6 +14,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/pointer.h>
 #include <clasp/llvmo/code.h>
 
 
@@ -39,10 +40,15 @@ ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, s
   return of;
 }
 
+CL_LISPIFY_NAME(code);
+CL_DEFMETHOD
+Code_sp ObjectFile_O::code() const {
+  return this->_Code;
+};
 
 ObjectFile_O::~ObjectFile_O() {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this ));
-  this->_Code = _Unbound<Code_O>();
+  this->_Code = unbound<Code_O>();
 }
 
 llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> ObjectFile_O::getObjectFile() {
@@ -59,7 +65,7 @@ size_t Code_O::sizeofInState(Code_O* code, CodeState_t state ) {
 
 std::string Code_O::filename() const {
   stringstream ss;
-  ss << this->_ObjectFile->_FasoName->get_std_string() << ":" << this->_ObjectFile->_StartupID;
+  ss << this->_ObjectFile->_FasoName->get_std_string() << ":" << this->_ObjectFile->_ObjectId;
   return ss.str();
 }
 
@@ -94,7 +100,12 @@ void* Code_O::literalsStart() const {
     
 std::string ObjectFile_O::__repr__() const {
   stringstream ss;
-  ss << "#<OBJECT-FILE " << this->_FasoName << " @" << (void*)this << ">";
+  ss << "#<OBJECT-FILE " << this->_FasoName;
+  ss << " :faso-index " << this->_FasoIndex << " ";
+  ss << " :code @" << (void*)this->_Code.raw_() << " ";
+  ss << " :object-file @" << (void*)this->_MemoryBuffer->getBufferStart() << " ";
+  ss << " :object-file-size " << (size_t)this->_MemoryBuffer->getBufferSize() << " ";
+  ss << " @" << (void*)this << ">";
   return ss.str();
 };
 
@@ -191,7 +202,7 @@ CL_DEFUN core::T_sp code_literals_ref(Code_sp code, size_t idx) {
 namespace llvmo {
 
 Library_sp Library_O::make(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd, const std::string& name) {
-  GC_ALLOCATE_VARIADIC(Library_O, lib, executable, start, end, vtableStart, vtableEnd );
+  auto  lib = gctools::GC<Library_O>::allocate( executable, start, end, vtableStart, vtableEnd );
   lib->_Name = core::SimpleBaseString_O::make(name);
   return lib;
 }
@@ -252,7 +263,7 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
     // printf("%s:%d:%s For entry_point @%p found new library start: %p   end: %p  name: %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, (void*)start, (void*)end, libraryName.c_str());
     Library_sp newlib = Library_O::make(isExecutable, reinterpret_cast<gctools::clasp_ptr_t>(start),reinterpret_cast<gctools::clasp_ptr_t>(end), vtableStart, vtableEnd, libraryName);
     core::T_sp expected;
-    core::Cons_sp entry = core::Cons_O::create(newlib,_Nil<core::T_O>());
+    core::Cons_sp entry = core::Cons_O::create(newlib,nil<core::T_O>());
     do {
       expected = _lisp->_Roots._AllLibraries.load();
       entry->rplacd(expected);
@@ -303,7 +314,7 @@ void save_object_file_and_code_info(ObjectFile_sp ofi)
 //  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Adding to _lisp->_Roots._AllObjectFiles  %p \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (void*)ofi.raw_(), core::_rep_(ofi->_FasoName).c_str()));
   core::T_sp expected;
-  core::Cons_sp entry = core::Cons_O::create(ofi,_Nil<core::T_O>());
+  core::Cons_sp entry = core::Cons_O::create(ofi,nil<core::T_O>());
   do {
     expected = _lisp->_Roots._AllObjectFiles.load();
     entry->rplacd(expected);
@@ -318,12 +329,12 @@ CL_DOCSTRING("For an instruction pointer inside of code generated from an object
 CL_LISPIFY_NAME(object_file_sectioned_address);
 CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_pointer, ObjectFile_sp ofi, bool verbose) {
         // Here is the info for the SectionedAddress
-  uintptr_t sectionID = ofi->_Code->_TextSegmentSectionId;
-  uintptr_t offset = ((char*)instruction_pointer - (char*)ofi->_Code->_TextSegmentStart);
+  uintptr_t sectionID = ofi->_Code->_TextSectionId;
+  uintptr_t offset = ((char*)instruction_pointer - (char*)ofi->_Code->_TextSectionStart);
   SectionedAddress_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
       // now the object file
   if (verbose) {
-    core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % ofi->_FasoName % ofi->_FasoIndex % ofi->_StartupID);
+    core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % ofi->_FasoName % ofi->_FasoIndex % ofi->_ObjectId);
     core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % ofi->_FasoIndex % offset );
   }
   return sectioned_address;
@@ -344,15 +355,15 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
   while (cur.consp()) {
     core::T_sp car = CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur));
     ObjectFile_sp ofi = gc::As<ObjectFile_sp>(car);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Looking at object file _text %p to %p\n", __FILE__, __LINE__, __FUNCTION__, ofi->_Code->_TextSegmentStart, ofi->_Code->_TextSegmentEnd));
-    if ((char*)instruction_pointer>=(char*)ofi->_Code->_TextSegmentStart&&(char*)instruction_pointer<((char*)ofi->_Code->_TextSegmentEnd)) {
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Looking at object file _text %p to %p\n", __FILE__, __LINE__, __FUNCTION__, ofi->_Code->_TextSectionStart, ofi->_Code->_TextSectionEnd));
+    if ((char*)instruction_pointer>=(char*)ofi->_Code->_TextSectionStart&&(char*)instruction_pointer<((char*)ofi->_Code->_TextSectionEnd)) {
       core::T_sp sectionedAddress = object_file_sectioned_address(instruction_pointer,ofi,verbose);
       return Values(sectionedAddress,ofi);
     }
     cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
     count++;
   }
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 }
 
 // FIXME: name sucks
@@ -360,17 +371,17 @@ core::T_sp only_object_file_for_instruction_pointer(void* ip) {
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   while (cur.consp()) {
     ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur)));
-    if (((char*)ip >= (char*)ofi->_Code->_TextSegmentStart) &&
-        ((char*)ip <  (char*)ofi->_Code->_TextSegmentEnd))
+    if (((char*)ip >= (char*)ofi->_Code->_TextSectionStart) &&
+        ((char*)ip <  (char*)ofi->_Code->_TextSectionEnd))
       return ofi;
     cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 CL_LISPIFY_NAME(release_object_files);
 CL_DEFUN void release_object_files() {
-  _lisp->_Roots._AllObjectFiles.store(_Nil<core::T_O>());
+  _lisp->_Roots._AllObjectFiles.store(nil<core::T_O>());
   core::write_bf_stream(BF("ObjectFiles have been released\n"));
 }
 
@@ -404,6 +415,79 @@ struct StackmapHeader {
   uint8_t _reserved0;
   uint16_t _reserved1;
 };
+
+CL_LISPIFY_NAME(all_object_files);
+CL_DEFUN core::T_sp all_object_files() {
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+  return cur;
+}
+
+extern "C" {
+struct jit_code_entry
+{
+  struct jit_code_entry *next_entry;
+  struct jit_code_entry *prev_entry;
+  const char *symfile_addr;
+  uint64_t symfile_size;
+};
+
+struct jit_descriptor
+{
+  uint32_t version;
+  /* This type should be jit_actions_t, but we use uint32_t
+     to be explicit about the bitwidth.  */
+  uint32_t action_flag;
+  struct jit_code_entry *relevant_entry;
+  struct jit_code_entry *first_entry;
+};
+
+extern struct jit_descriptor __jit_debug_descriptor;
+
+};
+
+CL_DOCSTRING("Generate a list of jit_code_entry objects");
+CL_LISPIFY_NAME(jit_code_entries)
+CL_DEFUN core::T_sp jit_code_entries() {
+  jit_code_entry* jce = __jit_debug_descriptor.first_entry;
+  ql::list ll;
+  while (jce) {
+    core::T_sp obj = core::Cons_O::create(core::Pointer_O::create((void*)jce->symfile_addr),core::Integer_O::create(jce->symfile_size));
+    ll << obj;
+    jce = jce->next_entry;
+  }
+  return ll.result();
+}
+
+
+CL_DOCSTRING("Generate a list of JITted symbols to /tmp/perf-<pid>.map");
+CL_DEFUN void ext__generate_perf_map() {
+  stringstream ss;
+  ss << "/tmp/perf-" << getpid() << ".map";
+  core::write_bf_stream(BF("Writing to %s\n") % ss.str());
+  FILE* fout = fopen(ss.str().c_str(),"w");
+  jit_code_entry* jce = __jit_debug_descriptor.first_entry;
+  ql::list ll;
+  size_t idx;
+  while (jce) {
+    const char* of_start = jce->symfile_addr;
+    size_t of_length = jce->symfile_size;
+    llvm::StringRef sbuffer((const char*)of_start, of_length);
+    stringstream ss;
+    ss << "buffer" << (void*)of_start;
+    std::string mem = ss.str();
+    llvm::StringRef name(mem);
+    std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
+    llvm::MemoryBufferRef memr = *(memoryBuffer);
+    llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> obj = llvm::object::ObjectFile::createObjectFile(memr);
+    for ( auto sym : (*obj)->symbols() ) {
+      if ((*sym.getAddress())!=0)
+        fprintf(fout,"%lX %lX %s\n", (uintptr_t)(*sym.getAddress()), (size_t)sym.getCommonSize(), (sym).getName()->str().c_str() );
+    }
+    jce = jce->next_entry;
+  }
+  fclose(fout);
+}
+
 
 CL_LISPIFY_NAME(describe_code);
 CL_DEFUN void describe_code() {

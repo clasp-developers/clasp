@@ -438,7 +438,7 @@ struct prepare_argument<Val<32767>,Type> {
   using type = translate::from_object<Type,std::false_type>;
   static translate::from_object<Type,std::false_type> go(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
-    return translate::from_object<Type,std::false_type>(_Nil<core::T_O>());
+    return translate::from_object<Type,std::false_type>(nil<core::T_O>());
   }
 };
 

@@ -54,7 +54,9 @@ THE SOFTWARE.
 
 
 
-#define BF boost::format
+inline boost::format BF(const std::string& fmt) {
+  return boost::format(fmt);
+}
 
 
 

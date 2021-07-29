@@ -1,4 +1,4 @@
-import os
+import os, logging
 
 def subdirectories():
     dir = os.listdir("./extensions")
@@ -11,31 +11,53 @@ def subdirectories():
     return subdirs
 
 def build_extension(bld):
-    bld.recurse(" ".join(subdirectories()))
+    print("recurse into seqan-clasp")
+    bld.recurse("seqan-clasp")
+    for subdir in subdirectories():
+        print("recurse into %s" % subdir)
+        bld.recurse(subdir,name="build_extension")
 
 def grovel(bld):
-    bld.recurse(" ".join(subdirectories()))
+    for subdir in subdirectories():
+        print("recurse into %s" % subdir)
+        bld.recurse(subdir,name="grovel")
 
 def configure(cfg):
     subdirs = subdirectories()
     cfg.extensions_names = cfg.extensions_names + subdirs
     print("cfg.extensions_names = %s" % cfg.extensions_names)
-    subdirs_str = " ".join(subdirs)
-    print("About to recurse into %s" % subdirs_str)
-    cfg.recurse(subdirs_str)
+    for subdir in subdirectories():
+        print("recurse into %s" % subdir)
+        cfg.recurse(subdir,name="configure")
     print("After recurse cfg.extensions_names = %s" % cfg.extensions_names)
 
+def update_dependencies(cfg):
+    print("In extensions update_dependencies - about to recurse into: %s" % (" ".join(subdirectories())))
+    for subdir in subdirectories():
+        print("recurse into %s" % subdir)
+        cfg.recurse(subdir,name="update_dependencies")
+    
 def options(bld):
-    bld.recurse(" ".join(subdirectories()))
+    for subdir in subdirectories():
+        print("recurse into %s" % subdir)
+        bld.recurse(subdir,name="options")
 
 def build(bld):
-    bld.recurse(" ".join(subdirectories()))
+    for subdir in subdirectories():
+        print("recurse into %s" % subdir)
+        bld.recurse(subdir,name="build")
 
 def build3(bld):
-    bld.recurse(" ".join(subdirectories()),name="build3")
+    for subdir in subdirectories():
+        print("recurse into %s" % subdir)
+        bld.recurse(subdir,name="build3")
     
 def build4(bld):
-    bld.recurse(" ".join(subdirectories()),name="build4")
+    for subdir in subdirectories():
+        print("recurse into %s" % subdir)
+        bld.recurse(subdir,name="build4")
 
 def analyze_clasp(bld):
-    bld.recurse(" ".join(subdirectories()))
+    for subdir in subdirectories():
+        print("recurse into %s" % subdir)
+        bld.recurse(subdir,name="analyze_clasp")

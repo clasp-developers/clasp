@@ -9,6 +9,7 @@
 #+(or)(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read*
+          ihs-top ; for asdf compatibility only; remove soon
           cons-car
           cons-cdr
           debug-break))
@@ -233,6 +234,7 @@
           with-float-traps-masked
           enable-interrupt default-interrupt ignore-interrupt
           get-signal-handler set-signal-handler
+          *ed-functions*
           ;;; for asdf and slime and trivial-garbage to use ext:
           getpid argc argv rmdir mkstemp weak-pointer-value make-weak-pointer weak-pointer-valid hash-table-weakness))
 (core:*make-special '*module-provider-functions*)
@@ -534,6 +536,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun build-configuration ()
   (let ((gc (cond
               ((member :use-mps *features*) "mps")
+              ((member :use-mmtk *features*)
+               (if (member :use-precise-gc *features*)
+                   "mmtkprecise"
+                   "mmtk"))
               ((member :use-boehm *features*)
                (if (member :use-precise-gc *features*)
                    "boehmprecise"
@@ -735,12 +741,16 @@ the stage, the +application-name+ and the +bitcode-name+"
 (export 'process-extension-loads)
 (defun process-extension-loads ()
   (if (not (member :ignore-extensions *features*))
-      (mapcar #'(lambda (entry)
-                  (if (eq (car entry) 'cl:load)
-                      (load (cadr entry))
-                      (let ((cmd (read-from-string (cdr entry))))
-                        (apply (car cmd) (cdr cmd)))))
-              core:*extension-startup-loads*)))
+      (progn
+        (mapcar #'(lambda (entry)
+                    (if (eq (car entry) 'cl:load)
+                        (load (cadr entry))
+                        (let ((cmd (read-from-string (cdr entry))))
+                          (apply (car cmd) (cdr cmd)))))
+                core:*extension-startup-loads*)
+        (mapcar #'(lambda (entry)
+                    (funcall entry))
+                core:*extension-startup-evals*))))
 
 (export 'process-command-line-load-eval-sequence)
 (defun process-command-line-load-eval-sequence ()

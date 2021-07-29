@@ -1172,7 +1172,7 @@ CL_DEFUN T_sp cl___NE_(VaList_sp args) {
      * I don't think the compiler takes the order in a switch
      * very seriously, though, so it's just in order. */
   case 0:
-      SIMPLE_PROGRAM_ERROR("/= needs at least 1 argument",_Nil<T_O>());
+      SIMPLE_PROGRAM_ERROR("/= needs at least 1 argument",nil<T_O>());
   case 1: {
     // the first arg needs to be a number - check that
     gc::As<Number_sp>(args->next_arg());
@@ -1181,16 +1181,16 @@ CL_DEFUN T_sp cl___NE_(VaList_sp args) {
   case 2: {
     Number_sp a = gc::As<Number_sp>(args->next_arg());
     Number_sp b = gc::As<Number_sp>(args->next_arg());
-    if (basic_equalp(a, b)) return _Nil<T_O>();
+    if (basic_equalp(a, b)) return nil<T_O>();
     else return _lisp->_true();
   }
   case 3: {
     Number_sp a = gc::As<Number_sp>(args->next_arg());
     Number_sp b = gc::As<Number_sp>(args->next_arg());
     Number_sp c = gc::As<Number_sp>(args->next_arg());
-    if (basic_equalp(a, b)) return _Nil<T_O>();
-    if (basic_equalp(a, c)) return _Nil<T_O>();
-    if (basic_equalp(b, c)) return _Nil<T_O>();
+    if (basic_equalp(a, b)) return nil<T_O>();
+    if (basic_equalp(a, c)) return nil<T_O>();
+    if (basic_equalp(b, c)) return nil<T_O>();
     return _lisp->_true();
   }
   default: {
@@ -1202,7 +1202,7 @@ CL_DEFUN T_sp cl___NE_(VaList_sp args) {
       Number_sp n1 = gc::As<Number_sp>(oCar(largs));
       for (List_sp cur = oCdr(largs); cur.notnilp(); cur = oCdr(cur)) {
         Number_sp n2 = gc::As<Number_sp>(oCar(cur));
-        if (basic_equalp(n1, n2)) return _Nil<T_O>();
+        if (basic_equalp(n1, n2)) return nil<T_O>();
       }
       largs = oCdr(largs);
     }
@@ -1216,13 +1216,13 @@ CL_DECLARE();
 CL_DOCSTRING("_EQ_");
 CL_DEFUN T_sp cl___EQ_(List_sp args) {
   if (args.nilp())
-    SIMPLE_PROGRAM_ERROR("= needs at least 1 argument",_Nil<T_O>());
+    SIMPLE_PROGRAM_ERROR("= needs at least 1 argument",nil<T_O>());
   Number_sp a = gc::As<Number_sp>(oCar(args));
   Number_sp b;
   for (auto cur : (List_sp)oCdr(args)) {
     b = gc::As<Number_sp>(oCar(cur));
     if (!basic_equalp(a, b))
-      return _Nil<T_O>();
+      return nil<T_O>();
   }
   return _lisp->_true();
 };

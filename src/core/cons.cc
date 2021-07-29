@@ -141,7 +141,7 @@ CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   if (size < 0)
     TYPE_ERROR(osize, cl::_sym_UnsignedByte);
   else {
-    T_sp result = _Nil<T_O>();
+    T_sp result = nil<T_O>();
     for (size_t i = 0; i < size; i++) {
       result = gctools::ConsAllocator<Cons_O,gctools::DontRegister>::allocate(initial_element,result);
     }
@@ -156,11 +156,11 @@ CL_DEFUN size_t core__cons_size() {
 }
 
 Cons_sp Cons_O::createList(T_sp o1) {
-  return (Cons_O::create(o1, _Nil<T_O>()));
+  return (Cons_O::create(o1, nil<T_O>()));
 }
 
 Cons_sp Cons_O::createList(T_sp o1, T_sp o2) {
-  return (Cons_O::create(o1, Cons_O::create(o2,_Nil<T_O>())));
+  return (Cons_O::create(o1, Cons_O::create(o2,nil<T_O>())));
 }
 
 Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3) {
@@ -257,7 +257,7 @@ List_sp Cons_O::memberEq(T_sp item) const {
       return cur;
     }
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 List_sp Cons_O::memberEql(T_sp item) const {
@@ -265,7 +265,7 @@ List_sp Cons_O::memberEql(T_sp item) const {
     if (cl__eql(CONS_CAR(cur), item))
       return cur;
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 List_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
@@ -275,7 +275,7 @@ List_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
     T_sp obj = CONS_CAR(cur);
     if (t.test(obj)) return ((cur));
   }
-  return ((_Nil<T_O>()));
+  return ((nil<T_O>()));
 }
 
 /*! Just like member except if there is a key function then apply it to the item
@@ -288,7 +288,7 @@ List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
     T_sp obj = CONS_CAR(cur);
     if (t.test(obj)) return ((cur));
   }
-  return ((_Nil<T_O>()));
+  return ((nil<T_O>()));
 }
 
 List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
@@ -308,7 +308,7 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
       }
     }
   }
-  return coerce_to_list(_Nil<T_O>());
+  return coerce_to_list(nil<T_O>());
 }
 
 List_sp Cons_O::subseq(cl_index start, T_sp end) const {
@@ -368,7 +368,7 @@ bool Cons_O::equalp(T_sp obj) const {
 }
 
 List_sp Cons_O::reverse() {
-  List_sp reversed = _Nil<T_O>();
+  List_sp reversed = nil<T_O>();
   List_sp cur = this->asSmartPtr();
   while (cur.notnilp()) {
     reversed = Cons_O::create(oCar(cur), reversed);
@@ -379,9 +379,9 @@ List_sp Cons_O::reverse() {
 
 List_sp Cons_O::nreverse() {
   _OF();
-  List_sp reversed = _Nil<T_O>();
+  List_sp reversed = nil<T_O>();
   List_sp cur = this->asSmartPtr();
-  List_sp hold = _Nil<T_O>();
+  List_sp hold = nil<T_O>();
   while (cur.consp()) {
     hold = oCdr(cur);
     cur.asCons()->setCdr(reversed);
@@ -392,7 +392,7 @@ List_sp Cons_O::nreverse() {
 }
 
 List_sp Cons_O::revappend(T_sp tail) {
-  List_sp reversed = _Nil<T_O>();
+  List_sp reversed = nil<T_O>();
   List_sp cur = this->asSmartPtr();
   List_sp first_reversed;
   while (cur.notnilp()) {
@@ -409,10 +409,10 @@ List_sp Cons_O::revappend(T_sp tail) {
 
 List_sp Cons_O::nreconc(T_sp tail) {
   _OF();
-  List_sp reversed = _Nil<T_O>();
+  List_sp reversed = nil<T_O>();
   Cons_sp original_first = this->asSmartPtr();
   List_sp cur = original_first;
-  List_sp hold = _Nil<T_O>();
+  List_sp hold = nil<T_O>();
   while (cur.notnilp()) {
     hold = oCdr(cur);
     cur.asCons()->setCdr(reversed);
@@ -529,12 +529,12 @@ List_sp Cons_O::copyList() const {
   List_sp first, cur;
   List_sp p = this->asSmartPtr();
   T_sp cdr;
-  first = Cons_O::create(oCar(p), _Nil<T_O>());
+  first = Cons_O::create(oCar(p), nil<T_O>());
   cur = first;
   cdr = oCdr(p);
   while (cdr.consp()) {
     p = cdr;
-    List_sp newCar = Cons_O::create(oCar(p), _Nil<T_O>());
+    List_sp newCar = Cons_O::create(oCar(p), nil<T_O>());
     cur.asCons()->setCdr(newCar);
     cur = newCar;
     cdr = oCdr(p);
@@ -546,7 +546,7 @@ List_sp Cons_O::copyList() const {
 List_sp Cons_O::copyTree() const {
   _OF();
   List_sp first, cur;
-  first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
+  first = Cons_O::create(nil<T_O>(), nil<T_O>());
   cur = first;
   List_sp p = this->asSmartPtr();
   T_sp op;
@@ -569,7 +569,7 @@ List_sp Cons_O::copyTreeCar() const {
   _OF();
   T_sp obj = this->ocar();
   ASSERTNOTNULL(obj);
-  Cons_sp rootCopy = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
+  Cons_sp rootCopy = Cons_O::create(nil<T_O>(), nil<T_O>());
   List_sp cobj;
   if (Cons_sp ccobj = obj.asOrNull<Cons_O>()) {
     List_sp cobj = ccobj;
@@ -642,7 +642,7 @@ CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
       }
     }
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
@@ -656,7 +656,7 @@ CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
       }
     }
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 

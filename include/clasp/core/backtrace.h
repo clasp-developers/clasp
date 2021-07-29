@@ -12,7 +12,6 @@
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/myReadLine.h>
 #include <clasp/core/symbol.h>
-#include <clasp/core/stacks.h>
 
 namespace core {
 
@@ -22,27 +21,36 @@ class DebuggerFrame_O : public General_O {
   LISP_CLASS(core, CorePkg, DebuggerFrame_O, "DebuggerFrame", General_O);
   virtual ~DebuggerFrame_O() {};
 public:
-  DebuggerFrame_O(T_sp a_fname, T_sp a_sp, T_sp a_fd,
-                  T_sp a_closure, T_sp a_args, T_sp a_lang)
-    : fname(a_fname), source_position(a_sp), function_description(a_fd),
-      closure(a_closure), args(a_args),
-      lang(a_lang), up(_Nil<T_O>()), down(_Nil<T_O>())
+  bool fieldsp() const override { return true; };
+  void fields(Record_sp node) override;
+  std::string __repr__() const;
+  DebuggerFrame_O(T_sp a_fname, T_sp a_return_address, T_sp a_sp, T_sp a_fd,
+                  T_sp a_closure, T_sp a_args, bool a_av, T_sp a_lang,
+                  bool a_is_xep)
+      : fname(a_fname), return_address(a_return_address),
+      source_position(a_sp), function_description(a_fd),
+      closure(a_closure), args(a_args), args_available(a_av), is_xep(a_is_xep),
+      lang(a_lang), up(nil<T_O>()), down(nil<T_O>())
   {}
-  static DebuggerFrame_sp make(T_sp fname, T_sp sp, T_sp fd,
-                               T_sp closure, T_sp args, T_sp lang) {
-    GC_ALLOCATE_VARIADIC(DebuggerFrame_O, ret, fname, sp, fd,
-                         closure, args, lang);
+  static DebuggerFrame_sp make(T_sp fname, T_sp ra,
+                               T_sp sp, T_sp fd,
+                               T_sp closure, T_sp args, bool args_available,
+                               T_sp lang, bool is_xep) {
+    auto  ret = gctools::GC<DebuggerFrame_O>::allocate( fname, ra, sp, fd, closure, args, args_available, lang, is_xep);
     return ret;
   }
 public:
   T_sp fname;
+  T_sp return_address;
   T_sp source_position;
   T_sp function_description;
   T_sp closure;
   T_sp args;
+  bool args_available;
   T_sp lang;
   T_sp up;
   T_sp down;
+  bool is_xep;
 };
 
 T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)>);
@@ -57,8 +65,7 @@ public:
   {}
   static DebuggerLocal_sp make(T_sp fname, T_sp name,
                                T_sp declfile, T_sp declline) {
-    GC_ALLOCATE_VARIADIC(DebuggerLocal_O, ret,
-                         fname, name, declfile, declline);
+    auto  ret = gctools::GC<DebuggerLocal_O>::allocate( fname, name, declfile, declline);
     return ret;
   }
 public:

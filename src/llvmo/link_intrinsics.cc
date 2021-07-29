@@ -57,12 +57,10 @@ extern "C" {
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
-#include <clasp/core/stacks.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/random.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/symbolTable.h>
@@ -88,7 +86,7 @@ namespace llvmo {
 core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription_sp functionDescription)
 {
   if (functionDescription.fixnump() && functionDescription.unsafe_fixnum()==0) {
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
   }
   return functionDescription->_functionName;
 }
@@ -209,7 +207,7 @@ LtvcReturn ltvc_make_closurette_no_function_info(gctools::GCRootsInModule* holde
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index)
 {
   NO_UNWIND_BEGIN();
-  core::T_sp val = _Nil<core::T_O>();
+  core::T_sp val = nil<core::T_O>();
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -253,7 +251,7 @@ LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, char tag, size_t 
 
 LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index)
 {NO_UNWIND_BEGIN();
-  core::T_sp val = core::Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>());
+  core::T_sp val = core::Cons_O::create(nil<core::T_O>(), nil<core::T_O>());
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -279,7 +277,7 @@ LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t ind
   // Makes a list of length LEN where all elements are NIL.
   // (ltvc_fill_list will be immediately after, so they could be undefined just as well.)
   ql::list result;
-  for (; len != 0; --len) result << _Nil<core::T_O>();
+  for (; len != 0; --len) result << nil<core::T_O>();
   LTVCRETURN holder->setTaggedIndex(tag, index, result.result().tagged_());
   NO_UNWIND_END();
 }
@@ -511,9 +509,9 @@ gctools::Tagged ltvc_lookup_literal( gctools::GCRootsInModule* holder, size_t in
 
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) {
   fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(),  _Nil<core::T_O>() );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, nil<core::T_O>(),  nil<core::T_O>() );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
@@ -522,9 +520,9 @@ LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char t
 
 LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name) {
   fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>());
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
@@ -532,9 +530,9 @@ LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t fptr_i
 // Similar to the above, but puts value in the table.
 LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) {\
   fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>());
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
@@ -546,9 +544,9 @@ LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t fptr_i
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)fptr,name);
 #endif
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>());
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
@@ -695,12 +693,12 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArgu
       cur = next;
     }
     core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
-    new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),_Nil<T_O>());
+    new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),nil<T_O>());
     va_end(rargs);
     return result.raw_();
   }
   va_end(rargs);
-  return _Nil<T_O>().raw_();
+  return nil<T_O>().raw_();
   NO_UNWIND_END();
 }
 
@@ -768,7 +766,7 @@ __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
 void cc_invoke_byte_code_interpreter(gctools::GCRootsInModule* roots, char* byte_code, size_t bytes) {
 //  printf("%s:%d byte_code: %p\n", __FILE__, __LINE__, byte_code);
   core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(bytes,'\0',false,bytes,(const unsigned char*)byte_code);
-  core::T_sp fin = core::cl__make_string_input_stream(str,0,_Nil<core::T_O>());
+  core::T_sp fin = core::cl__make_string_input_stream(str,0,nil<core::T_O>());
   bool log = false;
   if (core::global_debug_byte_code) {
     log = true;
@@ -996,9 +994,9 @@ core::T_O* initializeBlockClosure(core::T_O** afP)
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
 #ifdef DEBUG_FLOW_TRACKER
   Fixnum counter = next_flow_tracker_counter();
-  Cons_sp unique = Cons_O::create(make_fixnum(counter),_Nil<T_O>());
+  Cons_sp unique = Cons_O::create(make_fixnum(counter),nil<T_O>());
 #else
-  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+  Cons_sp unique = Cons_O::create(nil<T_O>(),nil<T_O>());
 #endif
   vf->operator[](0) = unique;
   return unique.raw_();
@@ -1011,9 +1009,9 @@ core::T_O* initializeTagbodyClosure(core::T_O *afP)
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
 #ifdef DEBUG_FLOW_TRACKER
   Fixnum counter = next_flow_tracker_counter();
-  Cons_sp unique = Cons_O::create(make_fixnum(counter),_Nil<T_O>());
+  Cons_sp unique = Cons_O::create(make_fixnum(counter),nil<T_O>());
 #else
-  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+  Cons_sp unique = Cons_O::create(nil<T_O>(),nil<T_O>());
 #endif
   vf->operator[](0) = unique;
   return unique.raw_();
@@ -1262,7 +1260,7 @@ T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
   MultipleValues &mv = core::lisp_multipleValues();
   ql::list result;
   if (nret == 0)
-    return _Nil<T_O>().raw_();
+    return nil<T_O>().raw_();
   else {
     if (nstart == 0) {
       result << gc::smart_ptr<T_O>((gc::Tagged)ret0);
@@ -1302,7 +1300,7 @@ gctools::return_type cc_restoreMultipleValue0()
 {NO_UNWIND_BEGIN();
   MultipleValues &mv = lisp_multipleValues();
   size_t nret = mv.getSize();
-  return gctools::return_type((nret == 0) ? _Nil<T_O>().raw_() : mv[0], nret);
+  return gctools::return_type((nret == 0) ? nil<T_O>().raw_() : mv[0], nret);
   NO_UNWIND_END();
 }
 

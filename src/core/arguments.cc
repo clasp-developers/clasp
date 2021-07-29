@@ -47,7 +47,7 @@ List_sp Argument::classified() const {
   } else if (this->_ArgTargetFrameIndex >= 0) {
     return coerce_to_list(Cons_O::create(ext::_sym_lexicalVar, Cons_O::create(this->_ArgTarget, make_fixnum(this->_ArgTargetFrameIndex))));
   } else if (this->_ArgTargetFrameIndex == UNDEFINED_TARGET) {
-    return ((_Nil<List_V>()));
+    return ((nil<List_V>()));
   }
   SIMPLE_ERROR(BF("Illegal target"));
 }
@@ -226,6 +226,6 @@ bool StackFrameDynamicScopeManager::lexicalElementBoundP(const Argument &argumen
 
 T_sp StackFrameDynamicScopeManager::lexenv() const {
   //  printf("%s:%d Returning nil as the lexical environment for a StackFrameDynamicScopeManager\n", __FILE__, __LINE__);
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 };

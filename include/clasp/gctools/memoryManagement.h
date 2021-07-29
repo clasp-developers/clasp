@@ -32,19 +32,21 @@
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
-#if  defined(USE_BOEHM)
+#if defined(USE_BOEHM)
 # ifdef CLASP_THREADS
 #  define GC_THREADS
 # endif
 # include <gc/gc.h>
 # include <gc/gc_mark.h>
-# include <gc/gc_inline.h>
-#endif // USE_BOEHM
-
-#ifdef USE_MPS
 extern "C" {
-#include <clasp/mps/code/mps.h>
-#include <clasp/mps/code/mpsavm.h>
+# include <gc/gc_inline.h>
+};
+#elif defined(USE_MMTK)
+# include <mmtk/api/mmtk.h>
+#elif defined(USE_MPS) 
+extern "C" {
+# include <clasp/mps/code/mps.h>
+# include <clasp/mps/code/mpsavm.h>
 };
 #endif
 
@@ -344,6 +346,14 @@ namespace gctools {
     // stamp_tag MUST be 00 so that stamps look like FIXNUMs
 //    static const int stamp_shift = general_mtag_shift;
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>mtag_shift;
+
+    //
+    // Restrict stamps to specific ranges
+    // Builtin classes are between 0...65536
+    // clbind classes are between 65537...131072
+    // Lisp classes are 131073 and higher
+    static const size_t max_builtin_stamp = 65536;
+    static const size_t max_clbind_stamp = 65536 + max_builtin_stamp;
   public:
     //
     // Type of badge
@@ -730,6 +740,7 @@ namespace gctools {
       See definition in memoryManagement.cc
       This is so that it doesn't use any stamps that were set by the static analyzer. */
   extern std::atomic<UnshiftedStamp> global_NextUnshiftedStamp;
+  extern std::atomic<UnshiftedStamp> global_NextUnshiftedClbindStamp;
   /*! Return a new stamp for BuiltIn classes.
       If given != STAMPWTAG_null then simply return give as the stamp.
       Otherwise return the global_NextBuiltInStamp and advance it
@@ -751,8 +762,31 @@ inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STA
     OutOfStamps();
     abort();
   }
-};
+void OutOfClbindStamps();
+inline ShiftedStamp NextClbindStampWtag(ShiftedStamp where, UnshiftedStamp given = STAMPWTAG_null) {
+    if ( given != STAMPWTAG_null ) {
+      return Header_s::StampWtagMtag::shift_unshifted_stamp(given)|where;
+    }
+    UnshiftedStamp stamp = global_NextUnshiftedClbindStamp.fetch_add(1<<Header_s::wtag_width);
+    if (stamp < Header_s::max_clbind_stamp) {
+#ifdef DEBUG_ASSERT
+      if (!(Header_s::StampWtagMtag::is_unshifted_stamp(stamp)) && (stamp&Header_s::where_mask)!=0) {
+        printf("%s:%d NextStampWtag is about to return a stamp that is illegal: stamp: %lu\n", __FILE__, __LINE__, stamp);
+      }
+#endif
+//      printf("%s:%d:%s assigned clbind stamp: %lu\n", __FILE__, __LINE__, __FUNCTION__ , stamp);
+      return Header_s::StampWtagMtag::shift_unshifted_stamp(stamp)|where;
+    }
+    OutOfClbindStamps();
+    abort();
+  }
+/*! 
+ * All builtin stamps have been assigned 
+ * prepare the system to assign Clbind stamps and lisp stamps.
+ */
+void FinishAssigningBuiltinStamps();
 
+};
 
 
 
@@ -936,12 +970,13 @@ inline void* HeaderPtrToConsPtr(void *header) {
 };
 
 
-#if  defined(USE_BOEHM)
-#include <clasp/gctools/boehmGarbageCollection.h>
-#endif
-
-#ifdef USE_MPS
-#include <clasp/gctools/mpsGarbageCollection.h>
+#if defined(USE_BOEHM)
+# define NON_MOVING_GC 1
+# include <clasp/gctools/boehmGarbageCollection.h>
+#elif defined(USE_MMTK)
+# include <clasp/gctools/mmtkGarbageCollection.h>
+#elif defined(USE_MPS)
+# include <clasp/gctools/mpsGarbageCollection.h>
 #endif
 
 
@@ -1010,13 +1045,6 @@ void *SmartPtrToBasePtr(smart_ptr<T> obj) {
 
 #include <clasp/gctools/gcStack.h>
 //#include <clasp/gctools/gcalloc.h>
-
-#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_with_default_constructor()
-#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate(__VA_ARGS__)
-#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate(__VA_ARGS__)
-
-#define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
-#define GC_NON_RECURSIVE_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
 
 /*! These don't do anything at the moment
   but may be used in the future to create unsafe-gc points
@@ -1183,18 +1211,13 @@ struct SafeGCPark {
  * This is a template type that indicates that we do not want
  * to expose a variable of this type by the static analyzer.
  *
- * See PosixTime_O for example - it declares the field
- * dont_expose<boost::posix_time::ptime> _Time;
- *
- *  This indicates to the static analyzer that the _Time field
+ *  This indicates to the static analyzer that the field
  *   shouldn't be recursively introspected further by the static
  *   analyzer and that it
  *   shouldn't be saved or loaded in image save/load.
  *   There can be many reasons for this:
- *     1. The type boost::posix_time::ptime may contain private
- *         fields that we can't access.
- *     2. The type boost::posix_time::ptime may contain pointers to
- *         C++ memory that we can't save/load.
+ *     1. The type may contain private fields that we can't access.
+ *     2. The type may contain pointers to C++ memory that we can't save/load.
  *
  *  The static analyzer will generate an entry in the clasp_gc_xxx.cc file
  *  for this that looks like...

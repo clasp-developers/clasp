@@ -78,7 +78,7 @@ namespace core {
     virtual core::T_sp creator_allocate() {
       // TEMPLATED_FUNCTION_BuiltInObjectCreator<Instance_O> uses a different allocation method
       // that assigns the next Clos Stamp to the new Class
-      GC_ALLOCATE_VARIADIC(Instance_O, obj, lisp_standard_class() /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS */);
+      auto  obj = gctools::GC<Instance_O>::allocate( lisp_standard_class() /*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS */);
 //      printf("%s:%d  creating class\n", __FILE__, __LINE__ );
       return obj;
     }

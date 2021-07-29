@@ -79,7 +79,7 @@ core::T_sp support_instanceSigSet(typename T::enable_slots adapter) {
 template <class T>
 core::T_sp support_instanceSigSet(...) {
   throwSlotsNotSupported();
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 template <class T>
@@ -90,7 +90,7 @@ core::T_sp support_instanceSig(typename T::enable_slots adapter) {
 template <class T>
 core::T_sp support_instanceSig(...) {
   throwSlotsNotSupported();
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 template <class T>
@@ -101,7 +101,7 @@ core::T_sp support_instanceRef(size_t idx, typename T::enable_slots adapter) {
 template <class T>
 core::T_sp support_instanceRef(size_t idx, ...) {
   throwSlotsNotSupported();
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 template <class T>
@@ -112,7 +112,7 @@ core::T_sp support_instanceSet(int idx, core::T_sp val, typename T::enable_slots
 template <class T>
 core::T_sp support_instanceSet(int idx, core::T_sp val, ...) {
   throwSlotsNotSupported();
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 };
 #endif

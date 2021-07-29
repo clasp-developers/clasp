@@ -106,10 +106,10 @@ void derivable_class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(::nil<core::T_O>(),DummyCreator_O::entry_point);
     creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
-  crep->initializeClassSlots(creator,gctools::NextStampWtag(gctools::Header_s::derivable_wtag));
+  crep->initializeClassSlots(creator,gctools::NextClbindStampWtag(gctools::Header_s::derivable_wtag));
   className->exportYourself();
   crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????

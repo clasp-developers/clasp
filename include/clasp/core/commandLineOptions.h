@@ -38,8 +38,7 @@ extern bool global_debug_byte_code;
 typedef enum { cloLoad,
                cloEval } LoadEvalEnum;
 
-typedef enum { cloImage,
-    cloSnapshot } ImageTypeEnum;
+typedef enum { cloDefault, cloImage, cloSnapshot } ImageTypeEnum;
 
 struct CommandLineOptions {
   CommandLineOptions(int argc, char *argv[]);
@@ -52,13 +51,13 @@ struct CommandLineOptions {
   std::vector<std::string> _RawArguments;
   std::vector<std::string> _Features;
   std::vector<pair<LoadEvalEnum, std::string>> _LoadEvalList;
-  bool _HasImageFile;
+  bool          _StartupFileP;
+  ImageTypeEnum _StartupFileType;
+  std::string   _StartupFile;
+  ImageTypeEnum _DefaultStartupType;
   bool _HasDescribeFile;
   std::string _DescribeFile;
   char _Stage;
-  std::string _ImageFile;
-  ImageTypeEnum _ImageType;
-  bool _GotRandomNumberSeed;
   long _RandomNumberSeed;
   bool _ExportedSymbolsAccumulate;
   std::string _ExportedSymbolsFilename;

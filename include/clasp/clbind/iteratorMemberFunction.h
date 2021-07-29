@@ -57,7 +57,7 @@ private:
 
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup ) {
+  virtual void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup ) {
   }
 
 public:
@@ -69,8 +69,8 @@ public:
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
     IteratorType itBegin = ((*objPtr).*(closure->_begin))();
     IteratorType itEnd = ((*objPtr).*(closure->_end))();
-    GC_ALLOCATE_VARIADIC(WrappedIteratorType, smart_itBegin, itBegin);
-    GC_ALLOCATE_VARIADIC(WrappedIteratorType, smart_itEnd, itEnd);
+    auto  smart_itBegin = gctools::GC<WrappedIteratorType>::allocate( itBegin);
+    auto  smart_itEnd = gctools::GC<WrappedIteratorType>::allocate( itEnd);
     return Values(smart_itBegin, smart_itEnd);
   }
 };

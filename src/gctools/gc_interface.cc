@@ -41,9 +41,14 @@ Layout_code* get_stamp_layout_codes() {
   static Layout_code codes[] = {
 #if defined(USE_PRECISE_GC)
 #ifndef RUNNING_MPSPREP
+      // sometimes we get sizeof(NIL) - this will quiet those errors
+      // This may be a terrible idea because it may hide deeper problems
+#define NIL uintptr_t 
+      
 #define GC_OBJ_SCAN_HELPERS
 #include CLASP_GC_FILENAME
 #undef GC_OBJ_SCAN_HELPERS
+#undef NIL
 #endif // #ifndef RUNNING_MPSPREP
 #endif // #if defined(USE_PRECISE_GC)
       {layout_end, 0, 0, 0, 0, "" }
@@ -119,20 +124,21 @@ const char *obj_kind_name(core::T_O *tagged_ptr) {
 }
 
 bool valid_stamp(gctools::stamp_t stamp) {
-#ifdef USE_MPS
+#if defined(USE_MPS)
   size_t stamp_index = (size_t)stamp;
   if (stamp_index<global_stamp_max) return true;
   return false;
-#endif
-#ifdef USE_BOEHM
+#elif defined(USE_BOEHM)
   if (stamp<=global_unshifted_nowhere_stamp_names.size()) {
     return true;
   }
   return false;
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
 }
 const char *obj_name(gctools::stamp_t stamp) {
-#ifdef USE_MPS
+#if defined(USE_MPS)
   if (stamp == (gctools::stamp_t)STAMPWTAG_null) {
     return "UNDEFINED";
   }
@@ -141,14 +147,15 @@ const char *obj_name(gctools::stamp_t stamp) {
   ASSERT(stamp_index<=global_stamp_max);
 //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
   return global_stamp_info[stamp_index].name;
-  #endif
-#ifdef USE_BOEHM
+#elif defined(USE_BOEHM)
   if (stamp<=global_unshifted_nowhere_stamp_names.size()) {
 //    printf("%s:%d obj_name stamp= %lu\n", __FILE__, __LINE__, stamp);
     return global_unshifted_nowhere_stamp_names[stamp].c_str();
   }
   printf("%s:%d obj_name stamp = %lu is out of bounds - max is %lu\n", __FILE__, __LINE__, (uintptr_t)stamp, global_unshifted_nowhere_stamp_names.size());
   return "BoehmNoClass";
+#elif defined(USE_MMTK)
+  MISSING_GC_SUPPORT();
 #endif
   
 }
@@ -529,14 +536,14 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(UnshiftedStamp 
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),core::BuiltInObjectCreator<TheClass>::entry_point);
+  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),core::BuiltInObjectCreator<TheClass>::entry_point);
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_StampWtagMtag.shifted_stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::setStaticClass(class_val);
-//  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>()
+//  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,nil<core::T_O>()
   _lisp->boot_setf_findClass(TheClass::static_classSymbol(),class_val);
   return class_val;
 }
@@ -726,6 +733,7 @@ void initialize_classes_and_methods()
 
 
 void dumpBoehmLayoutTables(FILE* fout) {
+  fprintf(fout, "# dumpBoehmLayoutTables when static analyzer output is not available\n" );
 #define Init_class_kind(_class_) \
   fprintf(fout, "Init_class_kind( stamp=%d, name=\"%s\", size=%lu)\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
 #define Init_templated_kind(_class_) \
@@ -741,6 +749,7 @@ void dumpBoehmLayoutTables(FILE* fout) {
 #define Init_global_ints(_name_,_value_) fprintf(fout,"Init_global_ints(name=\"%s\",value=%d)\n", _name_,_value_);
   printf("Dumping interface\n");
   gctools::dump_data_types(fout,"");
+  core::registerOrDumpDtreeInfo(fout);
   Init_class_kind(core::T_O);
   Init_class_kind(core::General_O);
   Init_class_kind(core::Cons_O);
@@ -810,7 +819,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::ClassHolder_O);
      Init_class_kind(core::SymbolToEnumConverter_O);
      Init_class_kind(llvmo::Attribute_O);
-     Init_class_kind(core::LambdaListHandler_O);
      Init_class_kind(llvmo::AttributeSet_O);
      Init_class_kind(core::ClassRepCreator_O);
      Init_class_kind(core::DerivableCxxClassCreator_O);
@@ -909,7 +917,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::AbstractSimpleVector_O);
      Init_class_kind(core::SimpleString_O);
      Init_class_kind(core::SimpleCharacterString_O);
-     Init_class_kind(core::SimpleBaseString_O);
      Init_class_kind(core::SimpleVector_int16_t_O);
      Init_class_kind(core::SimpleVector_byte16_t_O);
      Init_class_kind(core::SimpleBitVector_O);
@@ -935,12 +942,10 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::SharpEqualWrapper_O);
      Init_class_kind(llvmo::ClaspJIT_O);
      Init_class_kind(core::Readtable_O);
-     Init_class_kind(core::PosixTime_O);
      Init_class_kind(core::Exposer_O);
      Init_class_kind(core::CoreExposer_O);
      Init_class_kind(asttooling::AsttoolingExposer_O);
      Init_class_kind(llvmo::StructLayout_O);
-     Init_class_kind(core::PosixTimeDuration_O);
      Init_class_kind(clasp_ffi::ForeignTypeSpec_O);
      Init_class_kind(core::Instance_O);
      Init_class_kind(core::DerivableCxxObject_O);

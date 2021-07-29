@@ -243,7 +243,7 @@ namespace translate {
 template <>
 struct to_object<llvm::DINodeArray> {
   static core::T_sp convert(const llvm::DINodeArray &val) {
-    GC_ALLOCATE_VARIADIC(llvmo::DINodeArray_O, obj, val);
+    auto  obj = gctools::GC<llvmo::DINodeArray_O>::allocate( val);
     return ((obj));
   };
 };
@@ -275,7 +275,7 @@ namespace translate {
 template <>
 struct to_object<llvm::DITypeRefArray> {
   static core::T_sp convert(const llvm::DITypeRefArray &val) {
-    GC_ALLOCATE_VARIADIC(llvmo::DITypeRefArray_O, obj, val);
+    auto  obj = gctools::GC<llvmo::DITypeRefArray_O>::allocate( val);
     return ((obj));
   };
 };
@@ -302,6 +302,8 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  std::string __repr__() const;
+  std::string getPath() const;
   DIFile_O(){};
   virtual ~DIFile_O() {}
 };
@@ -374,6 +376,8 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  std::string __repr__() const;
+  std::string getSubprogram() const;
   DISubprogram_O(){};
   virtual ~DISubprogram_O() {}
 };
@@ -799,6 +803,8 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  std::string __repr__() const;
+  std::string getVariableName() const;
   DILocalVariable_O(){};
   virtual ~DILocalVariable_O() {}
 };
@@ -963,7 +969,7 @@ public:
   }
 }; // DWARFContext_O class def
 // FIXME: move?
-core::T_mv getLineInfoForAddress(DWARFContext_sp, SectionedAddress_sp);
+core::T_mv getLineInfoForAddress( DWARFContext_sp, SectionedAddress_sp, bool verbose );
 llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressInner(DWARFContext_sp, SectionedAddress_sp);
 }; // llvmo
 /* from_object translators */

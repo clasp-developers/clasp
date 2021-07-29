@@ -78,6 +78,8 @@ def options(ctx):
                    help = '? Probably some debugging helper to start a REPL with cclasp loaded...')
     ctx.add_option('--enable-mpi', action = 'store_true', dest = 'enable_mpi',
                    help = 'Build OpenMPI version of iclasp and cclasp')
+    ctx.add_option('--enable-mmtk', action = 'store_true', dest = 'enable_mmtk',
+                   help = 'Build mmtk version of iclasp and cclasp')
     ctx.add_option('--mpi-path', action = 'store', dest = 'mpi_path',
                    help = 'Build OpenMPI version of iclasp and cclasp, provide the path to mpicc and mpic++')
     ctx.add_option('--enable-mpi', action = 'store_true', dest = 'enable_mpi',
@@ -90,11 +92,18 @@ top = '.'
 out = 'build'
 APP_NAME = 'clasp'
 LLVM_VERSION = 13
-SBCL_VERSION = (2, 1)
+SBCL_VERSION = (2, 0)
 SBCL_VERSION_STRING = "2.1"
 CLANG_SPECIFIC_VERSION = "13.0.0git"
 LLVM_HASH = "972b6a3a3471c2a742c5c5d8ec004ff640d544c4"
 XCODE_SDK = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk"
+
+# valid values "libgcc_s", "gnu/libunwind", "llvm/libunwind"
+DEFAULT = "default"
+GNU_LIBUNWIND = "gnu_libunwind"
+LLVM_LIBUNWIND = "llvm_libunwind"
+UNWINDER = DEFAULT
+UNWINDER_PATH = "/opt/clasp/lib"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -102,6 +111,8 @@ STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 LTO_OPTION = "-flto=thin"
 GCS_NAMES = [ 'boehm',
               'boehmprecise',
+              'mmtk',
+              'mmtkprecise',
               'mpsprep',
               'mps' ]
 
@@ -277,12 +288,6 @@ def build_extension(bld):
 def grovel(bld):
     bld.recurse("extensions")
 
-def fetch_git_revision(path, url, revision = "", label = "master"):
-    log.info("Git repository %s  url: %s\n     revision: %s  label: %s\n" % (path, url, revision, label))
-    ret = os.system("./tools-for-build/fetch-git-revision.sh '%s' '%s' '%s' '%s'" % (path, url, revision, label))
-    if ( ret != 0 ):
-        raise Exception("Failed to fetch git url %s" % url)
-
 def generate_output_filename(names):
     if (names==[]):
         return "source-dir:src;main;clasp_gc.cc"
@@ -329,7 +334,10 @@ def update_dependencies(cfg):
 #                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
                         label = "master", revision = "3.3.3.5")
     os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
-
+    log.pprint('BLUE', "About to recurse into extensions update_dependencies ()")
+    cfg.recurse("extensions",name="update_dependencies")
+    log.pprint('BLUE', "Returned from recursing into extensions")
+    
 # run this from a completely cold system with:
 # ./waf distclean configure
 # ./waf build_impsprep
@@ -342,13 +350,12 @@ def analyze_clasp(cfg):
     print("In analyze_clasp cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
     log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
     output_file = generate_output_filename(cfg.extensions_clasp_gc_names)
-    run_search = '(run-search "%s")' % output_file
     run_program_echo("build/boehm/iclasp-boehm",
                      "-N", "-D",
                      "--feature", "ignore-extensions",
-                     "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
-                     "--eval", run_search,
-                     "--eval",    "(core:quit)")
+                     "--load",   "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
+                     "--eval",   '(run-search "%s")' % (output_file),
+                     "--eval",   "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 def analyze_test(cfg):
@@ -357,13 +364,12 @@ def analyze_test(cfg):
     print("In analyze_test cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
     log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
     output_file = "source-dir:build;clasp_gc_test.cc"
-    run_search = '(run-search "%s")' % output_file
+    selection_pattern = "unixfsys.cc"
     run_program_echo("build/boehm/iclasp-boehm",
                      "--feature", "ignore-extensions",
-                     "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer-test.lisp",
-                     "--eval", "(defparameter *pattern* \"unixfsys.cc\")",
-                     "--eval", run_search,
-                     "--eval",    "(core:quit)")
+                     "--load",   "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
+                     "--eval",   '(run-search "%s" :selection-pattern "%s")' % (output_file, selection_pattern),
+                     "--eval",   "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 def test(cfg):
@@ -616,6 +622,52 @@ class boehmprecise_d(boehm_base):
         cfg.setenv("boehmprecise_d", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
         super(boehmprecise_d,self).configure_variant(cfg,env_copy)
+
+class mmtk_base(variant):
+    enable_mpi = False
+    def configure_variant(self,cfg,env_copy):
+        cfg.define("USE_MMTK",1)
+        setup_clang_compiler(cfg,self)
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            log.debug("mmtk_base cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
+            if (cfg.env.LTO_FLAG):
+                cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
+        log.info("Setting up mmtk library cfg.env.STLIB_MMTK = %s ", cfg.env.STLIB_MMTK)
+        log.info("Setting up mmtk library cfg.env.LIB_MMTK = %s", cfg.env.LIB_MMTK)
+        if (cfg.env.LIB_MMTK == [] ):
+            cfg.env.append_value('STLIB',cfg.env.STLIB_MMTK)
+        else:
+            cfg.env.append_value('LIB',cfg.env.LIB_MMTK)
+        self.common_setup(cfg)
+
+class mmtk(mmtk_base):
+    gc_name = 'mmtk'
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv(self.variant_dir(), env=env_copy.derive())
+        super(mmtk,self).configure_variant(cfg,env_copy)
+
+class mmtk_d(mmtk_base):
+    gc_name = 'mmtk'
+    build_with_debug_info = True
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mmtk_d", env=env_copy.derive())
+        super(mmtk_d,self).configure_variant(cfg,env_copy)
+
+class mmtkprecise(mmtk_base):
+    gc_name = 'mmtkprecise'
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mmtkprecise", env=env_copy.derive())
+        cfg.define("USE_PRECISE_GC",1)
+        super(mmtkprecise,self).configure_variant(cfg,env_copy)
+
+class mmtkprecise_d(mmtk_base):
+    gc_name = 'mmtkprecise'
+    build_with_debug_info = True
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mmtkprecise_d", env=env_copy.derive())
+        cfg.define("USE_PRECISE_GC",1)
+        super(mmtkprecise_d,self).configure_variant(cfg,env_copy)
+        
         
 class mps_base(variant):
     enable_mpi = False
@@ -693,6 +745,43 @@ class bboehmprecise_d(boehmprecise_d):
     stage_char = 'b'
 class cboehmprecise_d(boehmprecise_d):
     stage_char = 'c'
+
+class immtk(mmtk):
+    stage_char = 'i'
+class ammtk(mmtk):
+    stage_char = 'a'
+class bmmtk(mmtk):
+    stage_char = 'b'
+class cmmtk(mmtk):
+    stage_char = 'c'
+
+class immtk_d(mmtk_d):
+    stage_char = 'i'
+class ammtk_d(mmtk_d):
+    stage_char = 'a'
+class bmmtk_d(mmtk_d):
+    stage_char = 'b'
+class cmmtk_d(mmtk_d):
+    stage_char = 'c'
+
+class immtkprecise(mmtkprecise):
+    stage_char = 'i'
+class ammtkprecise(mmtkprecise):
+    stage_char = 'a'
+class bmmtkprecise(mmtkprecise):
+    stage_char = 'b'
+class cmmtkprecise(mmtkprecise):
+    stage_char = 'c'
+
+class immtkprecise_d(mmtkprecise_d):
+    stage_char = 'i'
+class ammtkprecise_d(mmtkprecise_d):
+    stage_char = 'a'
+class bmmtkprecise_d(mmtkprecise_d):
+    stage_char = 'b'
+class cmmtkprecise_d(mmtkprecise_d):
+    stage_char = 'c'
+
     
 class imps(mps):
     stage_char = 'i'
@@ -762,6 +851,37 @@ class boehm_mpi_d(boehm_mpi_base):
         cfg.setenv("boehm_mpi_d", env=env_copy.derive())
         super(boehm_mpi_d,self).configure_variant(cfg,env_copy)
 
+class mmtk_mpi_base(variant):
+    gc_name = 'mmtk'
+    enable_mpi = True
+    def configure_variant(self,cfg,env_copy):
+        cfg.define("USE_MMTK",1)
+        cfg.define("USE_MPI",1)
+        setup_mpi_compiler(cfg,self)
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            log.debug("mmtk_mpi_base cfg.env.LTO_FLAG = %s", cfg.env.LTO_FLAG)
+            if (cfg.env.LTO_FLAG):
+                cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
+        log.info("Setting up mmtk library cfg.env.STLIB_MMTK = %s ", cfg.env.STLIB_MMTK)
+        log.info("Setting up mmtk library cfg.env.LIB_MMTK = %s", cfg.env.LIB_MMTK)
+        if (cfg.env.LIB_MMTK == [] ):
+            cfg.env.append_value('STLIB',cfg.env.STLIB_MMTK)
+        else:
+            cfg.env.append_value('LIB',cfg.env.LIB_MMTK)
+        self.common_setup(cfg)
+
+class mmtk_mpi(mmtk_mpi_base):
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv(self.variant_dir(), env=env_copy.derive())
+        super(mmtk_mpi,self).configure_variant(cfg,env_copy)
+
+class mmtk_mpi_d(mmtk_mpi_base):
+    build_with_debug_info = True
+
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("mmtk_mpi_d", env=env_copy.derive())
+        super(mmtk_mpi_d,self).configure_variant(cfg,env_copy)
+
 class mps_mpi_base(variant):
     enable_mpi = True
     def configure_variant(self,cfg,env_copy):
@@ -822,6 +942,24 @@ class aboehm_mpi_d(boehm_mpi_d):
 class bboehm_mpi_d(boehm_mpi_d):
     stage_char = 'b'
 class cboehm_mpi_d(boehm_mpi_d):
+    stage_char = 'c'
+
+class immtk_mpi(mmtk_mpi):
+    stage_char = 'i'
+class ammtk_mpi(mmtk_mpi):
+    stage_char = 'a'
+class bmmtk_mpi(mmtk_mpi):
+    stage_char = 'b'
+class cmmtk_mpi(mmtk_mpi):
+    stage_char = 'c'
+
+class immtk_mpi_d(mmtk_mpi_d):
+    stage_char = 'i'
+class ammtk_mpi_d(mmtk_mpi_d):
+    stage_char = 'a'
+class bmmtk_mpi_d(mmtk_mpi_d):
+    stage_char = 'b'
+class cmmtk_mpi_d(mmtk_mpi_d):
     stage_char = 'c'
 
 class imps_mpi(mps_mpi):
@@ -952,7 +1090,8 @@ def configure(cfg):
     log.pprint('BLUE', 'configure()')
 
     linker_in_use = "not specifically specified"
-
+    cfg.env.ENABLE_MMTK = cfg.options.enable_mmtk
+    print("cfg.env.ENABLE_MMTK = %s" % cfg.env.ENABLE_MMTK)
     cfg.env["BUILD_ROOT"] = os.path.abspath(top) # KLUDGE there should be a better way than this
     load_local_config(cfg)
     
@@ -1093,19 +1232,28 @@ def configure(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
 ### Without these checks the following error happens: AttributeError: 'BuildContext' object has no attribute 'variant_obj'
-    cfg.env.append_value('LINKFLAGS', "-L/opt/clasp-support/lib")
-    cfg.env.append_value('INCLUDES', "/opt/clasp-support/include")
+#    cfg.env.append_value('INCLUDES', "/opt/clasp-support/include")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
         cfg.env.append_value('INCLUDES', "/usr/local/include" )
-    if (cfg.env['DEST_OS'] == LINUX_OS ):
-        cfg.env.append_value('LINKFLAGS',"--unwindlib=libgcc")
+    if (UNWINDER == LLVM_LIBUNWIND):
+        if (cfg.env['DEST_OS'] == LINUX_OS ):
+            cfg.env.append_value('LINKFLAGS', "-L%s" % UNWINDER_PATH )
+            cfg.env.append_value('LINKFLAGS',"--unwindlib=libunwind")
+            cfg.env.append_value('LINKFLAGS',"--rtlib=compiler-rt")
+    if (UNWINDER == DEFAULT):
+        if (cfg.env['DEST_OS'] == LINUX_OS ):
+            cfg.env.append_value('LINKFLAGS',"--unwindlib=libgcc")
+            cfg.env.append_value('LINKFLAGS',"--rtlib=libgcc")
     cfg.check_cxx(lib='gmpxx gmp'.split(), cxxflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cxxflags='-Wall', uselib_store='FFI')
     try:
-        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
-    except ConfigurationError:
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    except ConfigurationError:
+        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
+
+#    if (cfg.env.ENABLE_MMTK==True):
+#        cfg.check_cxx(lib='mmtk_clasp', cflags='-Wall', linkflags="-L/opt/clasp/lib/", uselib_store='MMTK')
     #libz
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):
@@ -1120,12 +1268,22 @@ def configure(cfg):
         cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store="FFI")
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='bsd', cflags='-Wall', uselib_store='BSD')
-#        cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
-#        cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
-#        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
+    if (UNWINDER == DEFAULT):
+        if (cfg.env['DEST_OS'] == DARWIN_OS):
+            pass
+        else:
+            cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
+    elif (UNWINDER == GNU_LIBUNWIND):
+        if (cfg.env['DEST_OS'] == DARWIN_OS):
+            raise Exception("You cannot use GNU_LIBUNWIND on MacOS")
+        cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
+        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
+    elif (UNWINDER == LLVM_LIBUNWIND):
+        if (cfg.env['DEST_OS'] == DARWIN_OS):
+            pass
+        else:
+            cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
 #        cfg.check_cxx(lib='lzma', cflags='-Wall', uselib_store='LZMA')
-    else:
-        pass
     # Check the boost libraries one at a time and then all together to put them in uselib_store
     boost_libs = BOOST_LIBRARIES
     if (cfg.options.enable_mpi):
@@ -1146,6 +1304,7 @@ def configure(cfg):
     cfg.extensions_lib = []
     cfg.extensions_names = []
     cfg.extensions_clasp_gc_names = []
+    cfg.extension_startup_loads = []
     cfg.recurse('extensions')
     log.debug("cfg.extensions_names before sort = %s", cfg.extensions_names)
     cfg.extensions_names = sorted(cfg.extensions_names)
@@ -1155,6 +1314,8 @@ def configure(cfg):
         clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.extensions_names))
     log.debug("clasp_gc_filename = %s", clasp_gc_filename)
     cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
+    log.debug("cfg.extension_startup_loads = %s", cfg.extension_startup_loads)
+    cfg.define("CLASP_EXTENSION_STARTUP_LOADS",cfg.extension_startup_loads)
     llvm_liblto_dir = run_llvm_config(cfg, "--libdir")
     llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
@@ -1185,22 +1346,23 @@ def configure(cfg):
 # Check if GC_enumerate_reachable_objects_inner is available
 # If so define  BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
 #
-    if (cfg.env["BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE"] == False):
-        cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",0)
-    else:
-        cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",1)
+    cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",1)
     cfg.define("USE_CLASP_DYNAMIC_CAST",1)
     cfg.define("BUILDING_CLASP",1)
+    if (UNWINDER != DEFAULT):
+        cfg.define("USE_LIBUNWIND",1) # use LIBUNWIND
     log.debug("cfg.env['DEST_OS'] == %s", cfg.env['DEST_OS'])
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.define("_TARGET_OS_DARWIN",1)
-        cfg.define("USE_LIBUNWIND",1) # use LIBUNWIND
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.define("_TARGET_OS_LINUX",1);
     elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
         cfg.define("_TARGET_OS_FREEBSD",1);
     else:
         raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
+    if (cfg.env["ENABLE_MMTK"] == True):
+        mmtk_path = cfg.path.find_node("src/mmtk-clasp/")
+        cfg.env.append_value('INCLUDES',[mmtk_path.abspath()])
     cfg.define("PROGRAM_CLASP",1)
     cfg.define("CLASP_THREADS",1)
     cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
@@ -1233,7 +1395,7 @@ def configure(cfg):
 #    cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
 #    cfg.env.append_value('CFLAGS', includes_from_build_dir )
 #    log.debug("DEBUG includes_from_build_dir = %s", includes_from_build_dir)
-    cfg.env.append_value('CXXFLAGS', [ '-std=c++17'])
+    cfg.env.append_value('CXXFLAGS', [ '-std=c++20'])
 
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     if (cfg.env.LTO_FLAG):
@@ -1243,6 +1405,8 @@ def configure(cfg):
     if (not cfg.env['USE_LLD']):
         cfg.env['USE_LLD'] = False
     if (cfg.env['DEST_OS'] == LINUX_OS ):
+        if (UNWINDER == LLVM_LIBUNWIND):
+            cfg.env.append_value('INCLUDES', ['/opt/clasp/include/libunwind/'] )
         if ( (cfg.env['USE_LLD'] == True) and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
             # Only use lld if USE_LLD is set and CLASP_BUILD_MODE is bitcode
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % LLVM_VERSION)
@@ -1285,7 +1449,6 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS',["-Wl,-lto_library,%s" % lto_library])
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
-        cfg.env.append_value('INCLUDES', '/usr/local/Cellar/libunwind-headers/35.3/include')  # brew install libunwind-headers
 # Add macOS SDK paths
 #        cfg.env.append_value('INCLUDES', [ ''.join( [ macosx_sdk_path(cfg), '/usr/include' ] ) ] ) 
 #        cfg.env.append_value('LINKFLAGS', ''.join( [ '-L', macosx_sdk_path(cfg), '/usr/lib' ] ) ) 
@@ -1345,7 +1508,9 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-error=c++11-narrowing'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-c++11-narrowing'] )
-
+    cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-enum-enum-conversion'])
+    cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-anon-enum-enum-conversion'])
+    
     cfg.env.append_value('LIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('STLIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])
@@ -1369,11 +1534,18 @@ def configure(cfg):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
         cfg.env.append_value('LIB', cfg.env.LIB_ELF)
         cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)
-        cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
-        cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)
         cfg.env.append_value('LIB', cfg.env.LIB_LZMA)
     if (cfg.env['DEST_OS'] == LINUX_OS):
         cfg.env.append_value('LIB', cfg.env.LIB_BSD)
+    if (UNWINDER == GNU_LIBUNWIND):
+        cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
+    if (UNWINDER == GNU_LIBUNWIND or UNWINDER == LLVM_LIBUNWIND):
+        cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)
+        if ( (UNWINDER == LLVM_LIBUNWIND) and (cfg.env['DEST_OS'] == LINUX_OS)):
+            #
+            # This is terrible to hardcode where llvm libunwind lives on linux FIXME!!!!!
+            #
+            cfg.env.append_value('RPATH',"%s/lib" % cfg.env.PREFIX)
     cfg.env.append_value('LIB', cfg.env.LIB_CLANG)
     cfg.env.append_value('LIB', cfg.env.LIB_LLVM)
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)
@@ -1383,6 +1555,9 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.env.LIB_Z)
     log.debug("cfg.env.STLIB = %s", cfg.env.STLIB)
     log.debug("cfg.env.LIB = %s", cfg.env.LIB)
+#    if (cfg.env['DEST_OS'] == LINUX_OS):
+#        cfg.env.append_value('LINKFLAGS',["-Bstatic","-lunwind","-Bdynamic"])
+
 ####### Setup the variants
     env_copy = cfg.env.derive()
     log.info("About to setup variants - cfg.options.enabl_empi = %s" % cfg.options.enable_mpi)
@@ -1512,18 +1687,14 @@ def build(bld):
     bld.extensions_source_files = []
     bld.extensions_gcinterface_include_files = []
     bld.extensions_builders = []
-
+    bld.extension_startup_load_output_nodes = []
     bld.iclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='i'))
-    bld.bclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='b'))
-    bld.cclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='c'))
 
     bld.cclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'c')
     bld.cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % bld.variant_obj.fasl_dir(stage='c')))
 
     bld.set_group('compiling/c++')
-
     bld.recurse('extensions',name='build')
-    
     log.info("There are %d extensions_builders", len(bld.extensions_builders))
     for x in bld.extensions_builders:
         x.run()
@@ -1587,10 +1758,10 @@ def build(bld):
     out_dir_node = bld.path.find_dir(out)
     bclasp_symlink_node = out_dir_node.make_node("bclasp")
     bld.clasp_taskgen = bld.program(source = clasp_c_source_files,
-                              features='cxx cxxprogram c cprogram increase_weight',
-                              includes = include_dirs,
-                              target = [bld.iclasp_executable],
-                              install_path = '${PREFIX}/bin')
+                                    features='cxx cxxprogram c cprogram increase_weight',
+                                    includes = include_dirs,
+                                    target = [bld.iclasp_executable],
+                                    install_path = '${PREFIX}/bin')
 
     bld.clasp_taskgen.post()
     idx = 0
@@ -1719,35 +1890,10 @@ def build(bld):
                 cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl.dwarf" % bld.variant_obj.fasl_dir(stage = 'c'))
                 install('lib/clasp/', cclasp_asdf_dwarf_file)
             clasp_symlink_node = out_dir_node.make_node("clasp")
-            log.debug("clasp_symlink_node =  %s", clasp_symlink_node)
+            log.info("clasp_symlink_node =  %s", clasp_symlink_node)
             if (os.path.islink(clasp_symlink_node.abspath())):
                 os.unlink(clasp_symlink_node.abspath())
-                
-        print("Building exported symbols")
-        bld.exported_symbols_file = bld.path.find_or_declare("generated/exported_symbols_list")
-        if (bld.env["DEST_OS"] == DARWIN_OS):
-            export_symbols_list_task = export_symbols_list(env=bld.env)
-            export_symbols_list_task.set_inputs([bld.iclasp_executable, bld.cclasp_link_product] + bld.iclasp_link_task.inputs)
-            export_symbols_list_task.set_outputs([bld.exported_symbols_file])
-            bld.add_to_group(export_symbols_list_task)
-            print("Done adding task for export_symbols_list")
-            bld.add_group()
-            env2 = bld.env.derive()
-            env2.append_value("LINKFLAGS",["-Wl,-exported_symbols_list",bld.exported_symbols_file.abspath()])
-            link2 = cxx.cxxprogram(env=env2)
-            link2.name = "foo"
-            link2.run_after = [export_symbols_list_task]
-            link2.set_inputs( [bld.exported_symbols_file] + bld.iclasp_link_task.inputs)
-            link2.set_outputs( [ bld.cclasp_executable ] )
-            bld.add_to_group(link2)
-        elif (bld.env["DEST_OS"] == LINUX_OS ):
-            task = symlink_executable(env=bld.env)
-            task.set_inputs(bld.iclasp_executable)
-            task.set_outputs(bld.cclasp_executable)
-            bld.add_to_group(task)
-        else:
-            print("What do you do with other OSs?")
-            exit(1)
+            os.symlink(bld.iclasp_executable.abspath(),clasp_symlink_node.abspath());
         #
         # Now build stage 3 is done in the main wscript - recurse into the extensions
         #
@@ -1758,13 +1904,15 @@ def build(bld):
         bld_extensions = build_clasp_extension(env=bld.env)
         snapshot_file = bld.path.find_or_declare("generated/%s.snapshot" % "clasp")
         log.info("snapshot_file -> %s" % snapshot_file.abspath())
-        bld_extensions.set_inputs([bld.cclasp_executable,
-                                   bld.cclasp_link_product])
+        bld_extensions.set_inputs([bld.iclasp_executable,
+                                   bld.cclasp_link_product,
+                                   bld.cclasp_asdf_fasl] +
+                                  bld.extension_startup_load_output_nodes)
         bld_extensions.set_outputs([snapshot_file])
         bld.add_to_group(bld_extensions)
         bld.add_group()
         bld.dclasp_executable = bld.path.find_or_declare("clasp")
-        embed_snapshot(bld,snapshot_file,bld.cclasp_executable,bld.dclasp_executable,"clasp")
+        embed_snapshot(bld,snapshot_file,bld.iclasp_executable,bld.dclasp_executable,"clasp")
         bld.recurse('extensions',name='build4')
 
 def init(ctx):
@@ -2357,37 +2505,37 @@ def runCmdLargeOutput(cmd):
         print("%s" % strerr )
     return outf.getvalue()
 
-class export_symbols_list(Task.Task):
-    def run(self):
-        # Get everything already external
-        cando_sym_name = "%s_cando" % self.outputs[0].abspath()
-        cmd = [ self.inputs[0].abspath(), "-y", cando_sym_name, "-N" ]
-        result = runCmdLargeOutput(cmd);
-        cando_sym_file = open(cando_sym_name,"r")
-        externals = cando_sym_file.read().splitlines()
-        cando_sym_file.close();
-        # Get the vtables
-        for obj in self.inputs[2:]:
-            if (self.bld.env["DEST_OS"] == DARWIN_OS):
-                cmd = self.bld.env.LLVM_NM + [ "-Ugj", "--quiet", obj.abspath() ]
-            else:
-                cmd = [ 'nm', '--defined-only', obj.abspath() ]
-            result = runCmdLargeOutput(cmd);
-            nm_lines = result.splitlines()
-            for line in nm_lines:
-                symbol = line.split()[-1]
-                if ( symbol.find("__ZTV")>=0 ):
-                    externals.append(symbol)
-                elif (symbol.find("_wrapped_") >= 0):
-                    externals.append(symbol)
-        externals_set = set(externals)
-        text_file = open(self.outputs[0].abspath(),"w+")
-        for entry in sorted(externals_set):
-            text_file.write(entry)
-            text_file.write('\n')
-        text_file.close()
-        cmd = [ "echo", "Ignore \"no symbols\" above" ]
-        return self.exec_command(cmd)
+# class export_symbols_list(Task.Task):
+#     def run(self):
+#         # Get everything already external
+#         cando_sym_name = "%s_cando" % self.outputs[0].abspath()
+#         cmd = [ self.inputs[0].abspath(), "-y", cando_sym_name, "-N" ]
+#         result = runCmdLargeOutput(cmd);
+#         cando_sym_file = open(cando_sym_name,"r")
+#         externals = cando_sym_file.read().splitlines()
+#         cando_sym_file.close();
+#         # Get the vtables
+#         for obj in self.inputs[2:]:
+#             if (self.bld.env["DEST_OS"] == DARWIN_OS):
+#                 cmd = self.bld.env.LLVM_NM + [ "-Ugj", "--quiet", obj.abspath() ]
+#             else:
+#                 cmd = [ 'nm', '--defined-only', obj.abspath() ]
+#             result = runCmdLargeOutput(cmd);
+#             nm_lines = result.splitlines()
+#             for line in nm_lines:
+#                 symbol = line.split()[-1]
+#                 if ( symbol.find("__ZTV")>=0 ):
+#                     externals.append(symbol)
+#                 elif (symbol.find("_wrapped_") >= 0):
+#                     externals.append(symbol)
+#         externals_set = set(externals)
+#         text_file = open(self.outputs[0].abspath(),"w+")
+#         for entry in sorted(externals_set):
+#             text_file.write(entry)
+#             text_file.write('\n')
+#         text_file.close()
+#         cmd = [ "echo", "Ignore \"no symbols\" above" ]
+#         return self.exec_command(cmd)
 
 class build_clasp_extension(waflib.Task.Task):
     def run(self):
