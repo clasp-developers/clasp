@@ -282,8 +282,8 @@
     class ResidueTest_O;
     class EnergySketchStretch;
     class FFParameterBaseDb_O;
-    class StereoConfiguration_O;
     class Command_O;
+    class StereoConfiguration_O;
     class FFNonbondCrossTermTable_O;
     class Plug_O;
     class EnergyDihedralRestraint;
@@ -854,8 +854,8 @@ STAMPWTAG_chem__ProperTorsion_O = ADJUST_STAMP(687), // Stamp(171)  wtag(3)
 STAMPWTAG_chem__ResidueList_O = ADJUST_STAMP(691), // Stamp(172)  wtag(3)
 STAMPWTAG_chem__SuperposeEngine_O = ADJUST_STAMP(695), // Stamp(173)  wtag(3)
 STAMPWTAG_chem__SuperposeSelectedAtoms_O = ADJUST_STAMP(699), // Stamp(174)  wtag(3)
-STAMPWTAG_chem__StereoConfiguration_O = ADJUST_STAMP(703), // Stamp(175)  wtag(3)
-STAMPWTAG_chem__Command_O = ADJUST_STAMP(707), // Stamp(176)  wtag(3)
+STAMPWTAG_chem__Command_O = ADJUST_STAMP(703), // Stamp(175)  wtag(3)
+STAMPWTAG_chem__StereoConfiguration_O = ADJUST_STAMP(707), // Stamp(176)  wtag(3)
 STAMPWTAG_kinematics__MonomerBaseNode_O = ADJUST_STAMP(711), // Stamp(177)  wtag(3)
 STAMPWTAG_kinematics__AggregateNode_O = ADJUST_STAMP(715), // Stamp(178)  wtag(3)
 STAMPWTAG_kinematics__ChainNode_O = ADJUST_STAMP(719), // Stamp(179)  wtag(3)
@@ -2655,8 +2655,8 @@ register_stamp_name("STAMPWTAG_chem__ProperTorsion_O", ADJUST_STAMP(687));
 register_stamp_name("STAMPWTAG_chem__ResidueList_O", ADJUST_STAMP(691));
 register_stamp_name("STAMPWTAG_chem__SuperposeEngine_O", ADJUST_STAMP(695));
 register_stamp_name("STAMPWTAG_chem__SuperposeSelectedAtoms_O", ADJUST_STAMP(699));
-register_stamp_name("STAMPWTAG_chem__StereoConfiguration_O", ADJUST_STAMP(703));
-register_stamp_name("STAMPWTAG_chem__Command_O", ADJUST_STAMP(707));
+register_stamp_name("STAMPWTAG_chem__Command_O", ADJUST_STAMP(703));
+register_stamp_name("STAMPWTAG_chem__StereoConfiguration_O", ADJUST_STAMP(707));
 register_stamp_name("STAMPWTAG_kinematics__MonomerBaseNode_O", ADJUST_STAMP(711));
 register_stamp_name("STAMPWTAG_kinematics__AggregateNode_O", ADJUST_STAMP(715));
 register_stamp_name("STAMPWTAG_kinematics__ChainNode_O", ADJUST_STAMP(719));
@@ -5919,21 +5919,21 @@ template <typename FP> struct Cast<llvmo::Type_O*,FP> {
       return ((ISA_ADJUST_STAMP(2487) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(2511)));
   };
 };
-// STAMPWTAG_chem__Command_O
-template <typename FP> struct Cast<chem::Command_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range chem::Command_O val -> 707
-      return (kindVal == ISA_ADJUST_STAMP(707));
-  };
-};
 // STAMPWTAG_chem__StereoConfiguration_O
 template <typename FP> struct Cast<chem::StereoConfiguration_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range chem::StereoConfiguration_O val -> 703
+    // IsA-stamp-range chem::StereoConfiguration_O val -> 707
+      return (kindVal == ISA_ADJUST_STAMP(707));
+  };
+};
+// STAMPWTAG_chem__Command_O
+template <typename FP> struct Cast<chem::Command_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range chem::Command_O val -> 703
       return (kindVal == ISA_ADJUST_STAMP(703));
   };
 };
@@ -6000,15 +6000,6 @@ template <typename FP> struct Cast<chem::EntityNameSet_O*,FP> {
       return ((ISA_ADJUST_STAMP(519) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(527)));
   };
 };
-// STAMPWTAG_chem__ResidueList_O
-template <typename FP> struct Cast<chem::ResidueList_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range chem::ResidueList_O val -> 691
-      return (kindVal == ISA_ADJUST_STAMP(691));
-  };
-};
 // STAMPWTAG_llvmo__DebugLoc_O
 template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
   inline static bool isA(FP client) {
@@ -6016,6 +6007,15 @@ template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
       int kindVal = header->shifted_stamp();
     // IsA-stamp-range llvmo::DebugLoc_O val -> 1503
       return (kindVal == ISA_ADJUST_STAMP(1503));
+  };
+};
+// STAMPWTAG_chem__ResidueList_O
+template <typename FP> struct Cast<chem::ResidueList_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range chem::ResidueList_O val -> 691
+      return (kindVal == ISA_ADJUST_STAMP(691));
   };
 };
 // STAMPWTAG_core__WeakPointer_O
@@ -7539,15 +7539,6 @@ template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
       return ((ISA_ADJUST_STAMP(2235) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(2243)));
   };
 };
-// STAMPWTAG_chem__DirectionalCoupling_O
-template <typename FP> struct Cast<chem::DirectionalCoupling_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range chem::DirectionalCoupling_O val -> 651
-      return (kindVal == ISA_ADJUST_STAMP(651));
-  };
-};
 // STAMPWTAG_llvmo__DILocalVariable_O
 template <typename FP> struct Cast<llvmo::DILocalVariable_O*,FP> {
   inline static bool isA(FP client) {
@@ -7555,6 +7546,15 @@ template <typename FP> struct Cast<llvmo::DILocalVariable_O*,FP> {
       int kindVal = header->shifted_stamp();
     // IsA-stamp-range llvmo::DILocalVariable_O val -> 2543
       return (kindVal == ISA_ADJUST_STAMP(2543));
+  };
+};
+// STAMPWTAG_chem__DirectionalCoupling_O
+template <typename FP> struct Cast<chem::DirectionalCoupling_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range chem::DirectionalCoupling_O val -> 651
+      return (kindVal == ISA_ADJUST_STAMP(651));
   };
 };
 // STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O
@@ -9331,13 +9331,13 @@ template <typename FP> struct Cast<chem::RestraintDistance_O*,FP> {
       return (kindVal == ISA_ADJUST_STAMP(279));
   };
 };
-// STAMPWTAG_chem__SmartsRoot_O
-template <typename FP> struct Cast<chem::SmartsRoot_O*,FP> {
+// STAMPWTAG_llvmo__DIDerivedType_O
+template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range chem::SmartsRoot_O val -> 1011
-      return (kindVal == ISA_ADJUST_STAMP(1011));
+    // IsA-stamp-range llvmo::DIDerivedType_O val -> 2583
+      return (kindVal == ISA_ADJUST_STAMP(2583));
   };
 };
 // STAMPWTAG_clbind__ConstructorCreator_O
@@ -9349,13 +9349,13 @@ template <typename FP> struct Cast<clbind::ConstructorCreator_O*,FP> {
       return (kindVal == ISA_ADJUST_STAMP(1447));
   };
 };
-// STAMPWTAG_llvmo__DIDerivedType_O
-template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
+// STAMPWTAG_chem__SmartsRoot_O
+template <typename FP> struct Cast<chem::SmartsRoot_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIDerivedType_O val -> 2583
-      return (kindVal == ISA_ADJUST_STAMP(2583));
+    // IsA-stamp-range chem::SmartsRoot_O val -> 1011
+      return (kindVal == ISA_ADJUST_STAMP(1011));
   };
 };
 // STAMPWTAG_chem__TwisterDriver_O
@@ -10327,16 +10327,16 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(chem::FFNonbondCrossTermTable_O,TYPEQ_ADJUST_STAMP(731));
       ADD_RANGE_TYPEQ_TEST(kinematics::MonomerBaseNode_O,kinematics::RingClosingMonomerNode_O,TYPEQ_ADJUST_STAMP(711),TYPEQ_ADJUST_STAMP(727));
       ADD_RANGE_TYPEQ_TEST(llvmo::Type_O,llvmo::StructType_O,TYPEQ_ADJUST_STAMP(2487),TYPEQ_ADJUST_STAMP(2511));
-      ADD_SINGLE_TYPEQ_TEST(chem::Command_O,TYPEQ_ADJUST_STAMP(707));
-      ADD_SINGLE_TYPEQ_TEST(chem::StereoConfiguration_O,TYPEQ_ADJUST_STAMP(703));
+      ADD_SINGLE_TYPEQ_TEST(chem::StereoConfiguration_O,TYPEQ_ADJUST_STAMP(707));
+      ADD_SINGLE_TYPEQ_TEST(chem::Command_O,TYPEQ_ADJUST_STAMP(703));
       ADD_SINGLE_TYPEQ_TEST(core::FileScope_O,TYPEQ_ADJUST_STAMP(2655));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte4_t_O,TYPEQ_ADJUST_STAMP(1651));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int64_t_O,TYPEQ_ADJUST_STAMP(2071));
       ADD_RANGE_TYPEQ_TEST(llvmo::ConstantDataSequential_O,llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(2427),TYPEQ_ADJUST_STAMP(2431));
       ADD_RANGE_TYPEQ_TEST(chem::SuperposeEngine_O,chem::SuperposeSelectedAtoms_O,TYPEQ_ADJUST_STAMP(695),TYPEQ_ADJUST_STAMP(699));
       ADD_RANGE_TYPEQ_TEST(chem::EntityNameSet_O,chem::MonomerPack_O,TYPEQ_ADJUST_STAMP(519),TYPEQ_ADJUST_STAMP(527));
-      ADD_SINGLE_TYPEQ_TEST(chem::ResidueList_O,TYPEQ_ADJUST_STAMP(691));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DebugLoc_O,TYPEQ_ADJUST_STAMP(1503));
+      ADD_SINGLE_TYPEQ_TEST(chem::ResidueList_O,TYPEQ_ADJUST_STAMP(691));
       ADD_SINGLE_TYPEQ_TEST(core::WeakPointer_O,TYPEQ_ADJUST_STAMP(1499));
       ADD_SINGLE_TYPEQ_TEST(core::IOFileStream_O,TYPEQ_ADJUST_STAMP(2711));
       ADD_SINGLE_TYPEQ_TEST(chem::ConstitutionVirtualAtom_O,TYPEQ_ADJUST_STAMP(479));
@@ -10472,8 +10472,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(chem::RestraintAnchor_O,TYPEQ_ADJUST_STAMP(287));
       ADD_SINGLE_TYPEQ_TEST(chem::InPlug_O,TYPEQ_ADJUST_STAMP(747));
       ADD_RANGE_TYPEQ_TEST(llvmo::ModulePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(2235),TYPEQ_ADJUST_STAMP(2243));
-      ADD_SINGLE_TYPEQ_TEST(chem::DirectionalCoupling_O,TYPEQ_ADJUST_STAMP(651));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(2543));
+      ADD_SINGLE_TYPEQ_TEST(chem::DirectionalCoupling_O,TYPEQ_ADJUST_STAMP(651));
       ADD_SINGLE_TYPEQ_TEST(llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(2243));
       ADD_SINGLE_TYPEQ_TEST(asttooling::QualType_O,TYPEQ_ADJUST_STAMP(443));
       ADD_RANGE_TYPEQ_TEST(llvmo::User_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(2307),TYPEQ_ADJUST_STAMP(2443));
@@ -10629,9 +10629,9 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_RANGE_TYPEQ_TEST(core::Float_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1379),TYPEQ_ADJUST_STAMP(1395));
       ADD_SINGLE_TYPEQ_TEST(chem::ResidueTest_O,TYPEQ_ADJUST_STAMP(1019));
       ADD_SINGLE_TYPEQ_TEST(chem::RestraintDistance_O,TYPEQ_ADJUST_STAMP(279));
-      ADD_SINGLE_TYPEQ_TEST(chem::SmartsRoot_O,TYPEQ_ADJUST_STAMP(1011));
-      ADD_SINGLE_TYPEQ_TEST(clbind::ConstructorCreator_O,TYPEQ_ADJUST_STAMP(1447));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DIDerivedType_O,TYPEQ_ADJUST_STAMP(2583));
+      ADD_SINGLE_TYPEQ_TEST(clbind::ConstructorCreator_O,TYPEQ_ADJUST_STAMP(1447));
+      ADD_SINGLE_TYPEQ_TEST(chem::SmartsRoot_O,TYPEQ_ADJUST_STAMP(1011));
       ADD_SINGLE_TYPEQ_TEST(chem::TwisterDriver_O,TYPEQ_ADJUST_STAMP(191));
       ADD_SINGLE_TYPEQ_TEST(core::TranslationFunctor_O,TYPEQ_ADJUST_STAMP(1483));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Code_O,TYPEQ_ADJUST_STAMP(787));
@@ -10931,16 +10931,16 @@ DO_CLASS(SAFE_TYPE_MACRO(chem::Plug_O),STAMPWTAG_chem__Plug_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::FFNonbondCrossTermTable_O),STAMPWTAG_chem__FFNonbondCrossTermTable_O);
 DO_CLASS(SAFE_TYPE_MACRO(kinematics::MonomerBaseNode_O),STAMPWTAG_kinematics__MonomerBaseNode_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::Type_O),STAMPWTAG_llvmo__Type_O);
-DO_CLASS(SAFE_TYPE_MACRO(chem::Command_O),STAMPWTAG_chem__Command_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::StereoConfiguration_O),STAMPWTAG_chem__StereoConfiguration_O);
+DO_CLASS(SAFE_TYPE_MACRO(chem::Command_O),STAMPWTAG_chem__Command_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::FileScope_O),STAMPWTAG_core__FileScope_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_byte4_t_O),STAMPWTAG_core__SimpleMDArray_byte4_t_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),STAMPWTAG_core__SimpleVector_int64_t_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::ConstantDataSequential_O),STAMPWTAG_llvmo__ConstantDataSequential_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::SuperposeEngine_O),STAMPWTAG_chem__SuperposeEngine_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::EntityNameSet_O),STAMPWTAG_chem__EntityNameSet_O);
-DO_CLASS(SAFE_TYPE_MACRO(chem::ResidueList_O),STAMPWTAG_chem__ResidueList_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::DebugLoc_O),STAMPWTAG_llvmo__DebugLoc_O);
+DO_CLASS(SAFE_TYPE_MACRO(chem::ResidueList_O),STAMPWTAG_chem__ResidueList_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::WeakPointer_O),STAMPWTAG_core__WeakPointer_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::IOFileStream_O),STAMPWTAG_core__IOFileStream_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::ConstitutionVirtualAtom_O),STAMPWTAG_chem__ConstitutionVirtualAtom_O);
@@ -11076,8 +11076,8 @@ DO_CLASS(SAFE_TYPE_MACRO(llvmo::DITypeRefArray_O),STAMPWTAG_llvmo__DITypeRefArra
 DO_CLASS(SAFE_TYPE_MACRO(chem::RestraintAnchor_O),STAMPWTAG_chem__RestraintAnchor_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::InPlug_O),STAMPWTAG_chem__InPlug_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::ModulePass_O),STAMPWTAG_llvmo__ModulePass_O);
-DO_CLASS(SAFE_TYPE_MACRO(chem::DirectionalCoupling_O),STAMPWTAG_chem__DirectionalCoupling_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::DILocalVariable_O),STAMPWTAG_llvmo__DILocalVariable_O);
+DO_CLASS(SAFE_TYPE_MACRO(chem::DirectionalCoupling_O),STAMPWTAG_chem__DirectionalCoupling_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::TargetLibraryInfoWrapperPass_O),STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O);
 DO_CLASS(SAFE_TYPE_MACRO(asttooling::QualType_O),STAMPWTAG_asttooling__QualType_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::User_O),STAMPWTAG_llvmo__User_O);
@@ -11233,9 +11233,9 @@ DO_CLASS(SAFE_TYPE_MACRO(chem::FFParameterBaseDb_O),STAMPWTAG_chem__FFParameterB
 DO_CLASS(SAFE_TYPE_MACRO(core::Float_O),STAMPWTAG_core__Float_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::ResidueTest_O),STAMPWTAG_chem__ResidueTest_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::RestraintDistance_O),STAMPWTAG_chem__RestraintDistance_O);
-DO_CLASS(SAFE_TYPE_MACRO(chem::SmartsRoot_O),STAMPWTAG_chem__SmartsRoot_O);
-DO_CLASS(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),STAMPWTAG_clbind__ConstructorCreator_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIDerivedType_O),STAMPWTAG_llvmo__DIDerivedType_O);
+DO_CLASS(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),STAMPWTAG_clbind__ConstructorCreator_O);
+DO_CLASS(SAFE_TYPE_MACRO(chem::SmartsRoot_O),STAMPWTAG_chem__SmartsRoot_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::TwisterDriver_O),STAMPWTAG_chem__TwisterDriver_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::TranslationFunctor_O),STAMPWTAG_core__TranslationFunctor_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::Code_O),STAMPWTAG_llvmo__Code_O);
@@ -12458,13 +12458,13 @@ template <> class gctools::GCStamp<llvmo::Type_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Type_O ;
 };
-template <> class gctools::GCStamp<chem::Command_O> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__Command_O ;
-};
 template <> class gctools::GCStamp<chem::StereoConfiguration_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__StereoConfiguration_O ;
+};
+template <> class gctools::GCStamp<chem::Command_O> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__Command_O ;
 };
 template <> class gctools::GCStamp<core::FileScope_O> {
 public:
@@ -12494,13 +12494,13 @@ template <> class gctools::GCStamp<chem::EntityNameSet_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__EntityNameSet_O ;
 };
-template <> class gctools::GCStamp<chem::ResidueList_O> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__ResidueList_O ;
-};
 template <> class gctools::GCStamp<llvmo::DebugLoc_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DebugLoc_O ;
+};
+template <> class gctools::GCStamp<chem::ResidueList_O> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__ResidueList_O ;
 };
 template <> class gctools::GCStamp<core::WeakPointer_O> {
 public:
@@ -13178,13 +13178,13 @@ template <> class gctools::GCStamp<llvmo::ModulePass_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ModulePass_O ;
 };
-template <> class gctools::GCStamp<chem::DirectionalCoupling_O> {
-public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__DirectionalCoupling_O ;
-};
 template <> class gctools::GCStamp<llvmo::DILocalVariable_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DILocalVariable_O ;
+};
+template <> class gctools::GCStamp<chem::DirectionalCoupling_O> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__DirectionalCoupling_O ;
 };
 template <> class gctools::GCStamp<llvmo::TargetLibraryInfoWrapperPass_O> {
 public:
@@ -13974,17 +13974,17 @@ template <> class gctools::GCStamp<chem::RestraintDistance_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__RestraintDistance_O ;
 };
-template <> class gctools::GCStamp<chem::SmartsRoot_O> {
+template <> class gctools::GCStamp<llvmo::DIDerivedType_O> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__SmartsRoot_O ;
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIDerivedType_O ;
 };
 template <> class gctools::GCStamp<clbind::ConstructorCreator_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_clbind__ConstructorCreator_O ;
 };
-template <> class gctools::GCStamp<llvmo::DIDerivedType_O> {
+template <> class gctools::GCStamp<chem::SmartsRoot_O> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIDerivedType_O ;
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_chem__SmartsRoot_O ;
 };
 template <> class gctools::GCStamp<chem::TwisterDriver_O> {
 public:
@@ -17033,14 +17033,14 @@ public:
 //      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<gctools::smart_ptr<chem::Atom_O>,gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<chem::Atom_O>" :SPECIALIZER "class chem::Atom_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>" :SPECIALIZER "class gctools::GCVector_moveable<class gctools::smart_ptr<class chem::Atom_O> >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::SuperposeSelectedAtoms_O),_SuperposeAtoms._Vector._Contents), 0, "_SuperposeAtoms._Vector._Contents" }, // atomic: NIL public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
-// StampWtag = chem::StereoConfiguration_O/703
+// StampWtag = chem::Command_O/703
+{ class_kind, STAMPWTAG_chem__Command_O, sizeof(chem::Command_O), 0, IS_POLYMORPHIC, "chem::Command_O" },
+// StampWtag = chem::StereoConfiguration_O/707
 { class_kind, STAMPWTAG_chem__StereoConfiguration_O, sizeof(chem::StereoConfiguration_O), 0, IS_POLYMORPHIC, "chem::StereoConfiguration_O" },
 //      field: "_AtomName" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::StereoConfiguration_O),_AtomName), 0, "_AtomName" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Configuration" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(chem::StereoConfiguration_O),_Configuration), 0, "_Configuration" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// StampWtag = chem::Command_O/707
-{ class_kind, STAMPWTAG_chem__Command_O, sizeof(chem::Command_O), 0, IS_POLYMORPHIC, "chem::Command_O" },
 // StampWtag = kinematics::MonomerBaseNode_O/711
 { class_kind, STAMPWTAG_kinematics__MonomerBaseNode_O, sizeof(kinematics::MonomerBaseNode_O), 0, IS_POLYMORPHIC, "kinematics::MonomerBaseNode_O" },
 // StampWtag = kinematics::AggregateNode_O/715
@@ -29032,23 +29032,23 @@ obj_finalize_STAMPWTAG_chem__SuperposeSelectedAtoms_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMPWTAG_chem__StereoConfiguration_O:
-{
-     // stamp value 703
-    chem::StereoConfiguration_O* obj_gc_safe = reinterpret_cast<chem::StereoConfiguration_O*>(client);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~StereoConfiguration_O();
-#pragma clang diagnostic pop
-    goto finalize_done;
-}
 obj_finalize_STAMPWTAG_chem__Command_O:
 {
-     // stamp value 707
+     // stamp value 703
     chem::Command_O* obj_gc_safe = reinterpret_cast<chem::Command_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
     obj_gc_safe->~Command_O();
+#pragma clang diagnostic pop
+    goto finalize_done;
+}
+obj_finalize_STAMPWTAG_chem__StereoConfiguration_O:
+{
+     // stamp value 707
+    chem::StereoConfiguration_O* obj_gc_safe = reinterpret_cast<chem::StereoConfiguration_O*>(client);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
+    obj_gc_safe->~StereoConfiguration_O();
 #pragma clang diagnostic pop
     goto finalize_done;
 }
@@ -34535,8 +34535,8 @@ static void* OBJ_FINALIZE_table[] = {
   /* 691 */ &&obj_finalize_STAMPWTAG_chem__ResidueList_O,
   /* 695 */ &&obj_finalize_STAMPWTAG_chem__SuperposeEngine_O,
   /* 699 */ &&obj_finalize_STAMPWTAG_chem__SuperposeSelectedAtoms_O,
-  /* 703 */ &&obj_finalize_STAMPWTAG_chem__StereoConfiguration_O,
-  /* 707 */ &&obj_finalize_STAMPWTAG_chem__Command_O,
+  /* 703 */ &&obj_finalize_STAMPWTAG_chem__Command_O,
+  /* 707 */ &&obj_finalize_STAMPWTAG_chem__StereoConfiguration_O,
   /* 711 */ &&obj_finalize_STAMPWTAG_kinematics__MonomerBaseNode_O,
   /* 715 */ &&obj_finalize_STAMPWTAG_kinematics__AggregateNode_O,
   /* 719 */ &&obj_finalize_STAMPWTAG_kinematics__ChainNode_O,
@@ -36426,18 +36426,18 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_chem__SuperposeSelectedAtoms_O:
     GC<chem::SuperposeSelectedAtoms_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMPWTAG_chem__StereoConfiguration_O:
-{
-     // stamp value 703
-    chem::StereoConfiguration_O* obj_gc_safe = reinterpret_cast<chem::StereoConfiguration_O*>(client);
-    GC<chem::StereoConfiguration_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
 obj_deallocate_unmanaged_instance_STAMPWTAG_chem__Command_O:
 {
-     // stamp value 707
+     // stamp value 703
     chem::Command_O* obj_gc_safe = reinterpret_cast<chem::Command_O*>(client);
     GC<chem::Command_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_STAMPWTAG_chem__StereoConfiguration_O:
+{
+     // stamp value 707
+    chem::StereoConfiguration_O* obj_gc_safe = reinterpret_cast<chem::StereoConfiguration_O*>(client);
+    GC<chem::StereoConfiguration_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_kinematics__MonomerBaseNode_O:
@@ -40655,8 +40655,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 691 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__ResidueList_O,
   /* 695 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__SuperposeEngine_O,
   /* 699 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__SuperposeSelectedAtoms_O,
-  /* 703 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__StereoConfiguration_O,
-  /* 707 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__Command_O,
+  /* 703 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__Command_O,
+  /* 707 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_chem__StereoConfiguration_O,
   /* 711 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_kinematics__MonomerBaseNode_O,
   /* 715 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_kinematics__AggregateNode_O,
   /* 719 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_kinematics__ChainNode_O,
