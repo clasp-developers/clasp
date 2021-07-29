@@ -1162,9 +1162,14 @@ void ~a::expose_to_clasp() {
 (defun generate-finalize-table (stream classes gc-managed-types)
   (format stream "#if defined(GC_OBJ_FINALIZE_TABLE)
 static void* OBJ_FINALIZE_table[] = {~%")
-  (loop for k in classes do (generate-finalizer-table-entry stream k))
-  (loop for k being the hash-values of gc-managed-types
-        do (generate-finalizer-table-entry stream k))
+  (let ((sorted (sort (copy-list classes) #'< :key #'stamp-value)))
+    ;; Insert entries from gc-managed-types
+    (maphash (lambda (key kind)
+               (declare (ignore key))
+               (setf sorted (merge 'list sorted (list kind) #'<
+                                   :key #'stamp-value)))
+             gc-managed-types)
+    (loop for k in sorted do (generate-finalizer-table-entry stream k)))
   (format stream "   NULL
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)~%"))
@@ -1222,9 +1227,13 @@ static void* OBJ_FINALIZE_table[] = {~%")
 (defun generate-deallocator-table (stream classes gc-managed-types)
   (format stream "#if defined(GC_OBJ_DEALLOCATOR_TABLE)
 static void* OBJ_DEALLOCATOR_table[] = {~%")
-  (loop for k in classes do (generate-deallocator-table-entry stream k))
-  (loop for k being the hash-values of gc-managed-types
-        do (generate-deallocator-table-entry stream k))
+  (let ((sorted (sort (copy-list classes) #'< :key #'stamp-value)))
+    (maphash (lambda (name kind)
+               (declare (ignore name))
+               (setf sorted (merge 'list sorted (list kind) #'<
+                                   :key #'stamp-value)))
+             gc-managed-types)
+    (loop for k in sorted do (generate-deallocator-table-entry stream k)))
   (format stream "   NULL
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)~%"))
