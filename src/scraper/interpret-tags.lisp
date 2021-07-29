@@ -154,7 +154,11 @@
 (defmethod class-key% ((object kind))
   (tags:stamp-key (tag% object)))
 (defmethod base% ((object kind))
-  (tags:parent-class (tag% object)))
+  (let* ((tag (tag% object))
+         (lisp-class-base (tags:lisp-class-base tag)))
+    (if (string= lisp-class-base "NoLispBase") ; magic string gen. by analyzer
+        (tags:parent-class (tag% object))
+        lisp-class-base)))
 (defmethod c++type% ((object kind))
   (class-key% object))
 (defmethod tags:stamp-wtag ((object kind))

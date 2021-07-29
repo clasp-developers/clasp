@@ -563,7 +563,8 @@ STAMPWTAG_null = ADJUST_STAMP(0),~%")
                        (build-enum-name (c++type% type)) (stamp-value type))
                (setf stamp-max (max stamp-max (stamp-value type))))
              gc-managed-types)
-    (format stream "STAMPWTAG_max = ADJUST_STAMP(~a),~%" stamp-max))
+    (format stream "STAMPWTAG_max = ADJUST_STAMP(~a),~%"
+            (logior stamp-max +max-wtag+)))
   (format stream "#endif // GC_ENUM~%"))
 
 (defun generate-gc-enum-names (stream sorted-classes gc-managed-types)
