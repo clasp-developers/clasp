@@ -494,7 +494,8 @@ void initialize_astExpose() {
   scope_Type_Record.def("getDecl", &clang::RecordType::getDecl);
   scope_Type_Record.def("desugar", &clang::RecordType::desugar);
   scope_Type_Enum.def("desugar", &clang::EnumType::desugar);
-  scope_Type_Elaborated.def("getNamedType", &clang::ElaboratedType::getNamedType);
+  scope_Type_Elaborated.def("desugar", &clang::ElaboratedType::desugar );
+  scope_Type_Elaborated.def("getNamedType", &clang::ElaboratedType::getNamedType );
   scope_Type_TemplateTypeParm.def("desugar", &clang::TemplateTypeParmType::desugar);
   scope_Type_SubstTemplateTypeParm.def("desugar", &clang::SubstTemplateTypeParmType::desugar);
   scope_Type_TemplateSpecialization.def("getTemplateName", &clang::TemplateSpecializationType::getTemplateName);
