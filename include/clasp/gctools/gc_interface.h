@@ -99,7 +99,7 @@ namespace asttooling {
   #undef DECLARE_FORWARDS
 #endif
 #endif
-#if defined(USE_PRECISE_GC)
+#if defined(USE_PRECISE_GC) && !defined(SCRAPING)
  #ifndef RUNNING_MPSPREP
   #define DECLARE_FORWARDS
   #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
@@ -118,7 +118,7 @@ namespace gctools {
   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_STAMP_SELECTORS
  #endif
-#else
+#elif !defined(SCRAPING)
  #ifndef RUNNING_MPSPREP
   #define GC_STAMP_SELECTORS
   #include CLASP_GC_FILENAME // "main/clasp_gc.cc"

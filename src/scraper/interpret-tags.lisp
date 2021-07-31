@@ -105,6 +105,13 @@
    (stamp% :initform nil :accessor stamp%)
    (flags% :initform nil :accessor flags%)))
 
+(defun is-exposed-class (object)
+  (slot-boundp object 'class-tag%))
+
+(defmethod print-object ((object exposed-class) stream)
+  (print-unreadable-object (object stream :type t)
+    (format stream "~a" (class-key% object))))
+
 (defclass exposed-internal-class (exposed-class) ())
 (defclass exposed-external-class (exposed-class) ())
 
@@ -150,6 +157,9 @@
    (stamp% :initarg :stamp% :accessor stamp%)
    (flags% :initform nil :accessor flags%)
    (direct-subclasses% :initform nil :accessor direct-subclasses%)))
+
+(defclass exposed-internal-class-kind (kind exposed-internal-class) ())
+(defclass exposed-external-class-kind (kind exposed-external-class) ())
 
 (defmethod class-key% ((object kind))
   (tags:stamp-key (tag% object)))
@@ -624,24 +634,42 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                    (tags:namespace% tag))
     (error 'namespace-mismatch :tag tag))
   (setf (state-cur-class state) tag)
-  (let ((class-key
-          (make-class-key (state-cur-namespace-tag state) (tags:name% tag))))
-    (unless (gethash class-key (state-classes state))
-      (setf (gethash class-key (state-classes state))
-            (make-instance 'exposed-internal-class
-              :file% (tags:file% tag)
-              :line% (tags:line% tag)
-              :package% (tags:package% tag)
-              :character-offset% (tags:character-offset% tag)
-              :meta-class% (tags:maybe-meta-class
-                            (state-cur-namespace-tag state)
-                            (state-cur-meta-class state))
-              :docstring% (tags:maybe-docstring (state-cur-docstring state))
-              :base% (make-class-key (state-cur-namespace-tag state)
-                                     (tags:base% tag))
-              :class-key% class-key
-              :lisp-name% (lispify-class-name tag (state-packages state))
-              :class-tag% tag))))
+  (let* ((class-key
+           (make-class-key (state-cur-namespace-tag state) (tags:name% tag)))
+         (class-kind (gethash class-key (state-classes state)))
+         (meta-class (tags:maybe-meta-class
+                      (state-cur-namespace-tag state)
+                      (state-cur-meta-class state)))
+         (docstring (tags:maybe-docstring (state-cur-docstring state)))
+         (base (make-class-key (state-cur-namespace-tag state) (tags:base% tag)))
+         (lisp-name (lispify-class-name tag (state-packages state))))
+    (if class-kind
+        (progn
+          ;; add more info to the class definition
+          (setf class-kind (change-class class-kind
+                                         'exposed-internal-class-kind
+                                         :file% (tags:file% tag)
+                                         :line% (tags:line% tag)
+                                         :package% (tags:package% tag)
+                                         :character-offset% (tags:character-offset% tag)
+                                         :meta-class% meta-class
+                                         :docstring% docstring
+                                         :base% base
+                                         :class-key% class-key
+                                         :lisp-name% lisp-name
+                                         :class-tag% tag)))
+        (setf (gethash class-key (state-classes state))
+              (make-instance 'exposed-internal-class
+                             :file% (tags:file% tag)
+                             :line% (tags:line% tag)
+                             :package% (tags:package% tag)
+                             :character-offset% (tags:character-offset% tag)
+                             :meta-class% meta-class
+                             :docstring% docstring
+                             :base% base
+                             :class-key% class-key
+                             :lisp-name% lisp-name
+                             :class-tag% tag))))
   (setf (state-cur-docstring state) nil
         (state-cur-priority state) nil
         (state-cur-meta-class state) nil))
@@ -654,24 +682,42 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                    (tags:namespace% tag))
     (error 'namespace-mismatch :tag tag))
   (setf (state-cur-class state) tag)
-  (let ((class-key
-          (make-class-key (state-cur-namespace-tag state) (tags:name% tag))))
-    (unless (gethash class-key (state-classes state))
-      (setf (gethash class-key (state-classes state))
-            (make-instance 'exposed-external-class
-              :file% (tags:file% tag)
-              :line% (tags:line% tag)
-              :package% (tags:package% tag)
-              :character-offset% (tags:character-offset% tag)
-              :meta-class% (tags:maybe-meta-class
-                            (state-cur-namespace-tag state)
-                            (state-cur-meta-class state))
-              :docstring% (tags:maybe-docstring (state-cur-docstring state))
-              :class-key% class-key
-              :base% (make-class-key (state-cur-namespace-tag state)
-                                     (tags:base% tag))
-              :lisp-name% (lispify-class-name tag (state-packages state))
-              :class-tag% tag))))
+  (let* ((class-key
+           (make-class-key (state-cur-namespace-tag state) (tags:name% tag)))
+         (class-kind (gethash class-key (state-classes state)))
+         (meta-class (tags:maybe-meta-class
+                      (state-cur-namespace-tag state)
+                      (state-cur-meta-class state)))
+         (docstring (tags:maybe-docstring (state-cur-docstring state)))
+         (base (make-class-key (state-cur-namespace-tag state) (tags:base% tag)))
+         (lisp-name (lispify-class-name tag (state-packages state))))
+    (if class-kind
+        (progn
+          ;; add more info to the class definition
+          (setf class-kind (change-class class-kind
+                                         'exposed-external-class-kind
+                                         :file% (tags:file% tag)
+                                         :line% (tags:line% tag)
+                                         :package% (tags:package% tag)
+                                         :character-offset% (tags:character-offset% tag)
+                                         :meta-class% meta-class
+                                         :docstring% docstring
+                                         :base% base
+                                         :class-key% class-key
+                                         :lisp-name% lisp-name
+                                         :class-tag% tag)))
+        (setf (gethash class-key (state-classes state))
+              (make-instance 'exposed-external-class
+                             :file% (tags:file% tag)
+                             :line% (tags:line% tag)
+                             :package% (tags:package% tag)
+                             :character-offset% (tags:character-offset% tag)
+                             :meta-class% meta-class
+                             :docstring% docstring
+                             :class-key% class-key
+                             :base% base
+                             :lisp-name% lisp-name
+                             :class-tag% tag))))
   (setf (state-cur-docstring state) nil
         (state-cur-priority state) nil
         (state-cur-meta-class state) nil))
@@ -821,20 +867,20 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                :test #'string=
                :key #'function-name%))))
 
-(defun interpret-kind-tag (tag state table)
-  (let ((kind (make-instance 'kind :tag% tag))
+(defun interpret-kind-tag (tag state table &optional (instance-kind 'kind))
+  (let ((kind (make-instance instance-kind :tag% tag))
         (key (tags:stamp-key tag)))
     (unless (gethash key table)
       (setf (gethash key table) kind))
     (setf (state-cur-kind state) kind)))
 (defmethod interpret-tag ((tag tags:class-kind) state)
-  (interpret-kind-tag tag state (state-classes state)))
+  (interpret-kind-tag tag state (state-classes state) 'exposed-internal-class-kind))
+(defmethod interpret-tag ((tag tags:templated-kind) state)
+  (interpret-kind-tag tag state (state-classes state) 'exposed-internal-class-kind))
 (defmethod interpret-tag ((tag tags:container-kind) state)
   (interpret-kind-tag tag state (state-gc-managed-types state)))
 (defmethod interpret-tag ((tag tags:bitunit-container-kind) state)
   (interpret-kind-tag tag state (state-gc-managed-types state)))
-(defmethod interpret-tag ((tag tags:templated-kind) state)
-  (interpret-kind-tag tag state (state-classes state)))
 
 (defmethod interpret-tag ((tag tags:fixed-field) state)
   (let ((kind (state-cur-kind state)))
@@ -884,13 +930,18 @@ This interprets the tags and generates objects that are used to generate code."
     (calculate-character-offsets source-info))
   (let ((state (make-tag-interpreter-state)))
     (dolist (tag tags)
-      (handler-case (interpret-tag tag state)
-        (error (e)
-          (error "While parsing tag from ~a:~d~%ERROR ~a~%TAG: ~s~%"
-                 (tags:file% tag)
-                 (tags:line% tag)
-                 e
-                 tag))))
+      (progn
+        (interpret-tag tag state))
+      #+(or)(handler-case (progn
+                            (format t "interpret-tag: ~a~%" (class-of tag))
+                            (format t "  details : ~s~%" tag)
+                            (interpret-tag tag state))
+              (error (e)
+                (error "While parsing tag from ~a:~d~%ERROR ~a~%TAG: ~s~%"
+                       (tags:file% tag)
+                       (tags:line% tag)
+                       e
+                       tag))))
     (calculate-class-stamps-and-flags
      (state-classes state) (state-gc-managed-types state))
     (values (order-packages-by-use (state-packages-to-create state))

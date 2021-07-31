@@ -288,11 +288,13 @@ def build_extension(bld):
 def grovel(bld):
     bld.recurse("extensions")
 
-def generate_output_filename(names):
-    if (names==[]):
-        return "source-dir:src;main;clasp_gc.cc"
-    else:
-        return "source-dir:src;main;clasp_gc_cando.cc"
+def initialize_extension_sif_nodes(cfg):
+    return [ cfg.path.find_node("src/clasp_gc.sif")]
+
+def generate_output_filename(nodes):
+    if (len(nodes)<1):
+        raise( "There must be at least one sif file" )
+    return nodes[-1].abspath()
 
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
@@ -344,12 +346,14 @@ def update_dependencies(cfg):
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
-    cfg.extensions_clasp_gc_names = []
+    cfg.extensions_sif_nodes = initialize_extension_sif_nodes(cfg)
     log.debug("analyze_clasp about to recurse\n")
     cfg.recurse('extensions')
-    print("In analyze_clasp cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
-    log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
-    output_file = generate_output_filename(cfg.extensions_clasp_gc_names)
+    print("In analyze_clasp cfg.extensions_sif_nodes = %s" % cfg.extensions_sif_nodes)
+    log.debug("cfg.extensions_sif_nodes = %s\n", cfg.extensions_sif_nodes)
+    if (len(cfg.extensions_sif_nodes)>2):
+        raise( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extensions_sif_nodes )
+    output_file = generate_output_filename(cfg.extensions_sif_nodes)
     run_program_echo("build/boehm/iclasp-boehm",
                      "-N", "-D",
                      "--feature", "ignore-extensions",
@@ -359,10 +363,12 @@ def analyze_clasp(cfg):
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 def analyze_test(cfg):
-    cfg.extensions_clasp_gc_names = []
+    cfg.extensions_sif_nodes = initialize_extension_sif_nodes(cfg)
     log.debug("analyze_test about to recurse\n")
-    print("In analyze_test cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
-    log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
+    print("In analyze_test cfg.extensions_sif_nodes = %s" % cfg.extensions_sif_nodes)
+    log.debug("cfg.extensions_sif_nodes = %s\n", cfg.extensions_sif_nodes)
+    if (len(cfg.extensions_sif_nodes)>2):
+        raise( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extensions_sif_nodes )
     output_file = "source-dir:build;clasp_gc_test.cc"
     selection_pattern = "unixfsys.cc"
     run_program_echo("build/boehm/iclasp-boehm",
@@ -576,6 +582,7 @@ class variant(object):
         else:
             self.configure_for_release(cfg)
         configure_common(cfg, self)
+        print("Writing the config.h header")
         cfg.write_config_header("%s/config.h"%self.variant_dir(),remove=True)
 
 class boehm_base(variant):
@@ -1303,8 +1310,9 @@ def configure(cfg):
     cfg.extensions_stlib = []
     cfg.extensions_lib = []
     cfg.extensions_names = []
-    cfg.extensions_clasp_gc_names = []
     cfg.extension_startup_loads = []
+    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
+    print("before extension_sif_nodes = %s" % cfg.extension_sif_nodes )
     cfg.recurse('extensions')
     log.debug("cfg.extensions_names before sort = %s", cfg.extensions_names)
     cfg.extensions_names = sorted(cfg.extensions_names)
@@ -1316,6 +1324,10 @@ def configure(cfg):
     cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
     log.debug("cfg.extension_startup_loads = %s", cfg.extension_startup_loads)
     cfg.define("CLASP_EXTENSION_STARTUP_LOADS",cfg.extension_startup_loads)
+    sif_files = [x.abspath() for x in cfg.extension_sif_nodes ]
+    print("CLASP_GC_FILENAME: %s" % cfg.env["CLASP_GC_FILENAME"])
+    cfg.env["CLASP_SIF_FILES"] = sif_files
+    print("Created CLASP_SIF_FILES = %s" % cfg.env["CLASP_SIF_FILES"] )
     llvm_liblto_dir = run_llvm_config(cfg, "--libdir")
     llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
@@ -2285,8 +2297,11 @@ class generate_headers_from_all_sifs(scraper_task):
         cmd = self.scraper_command_line(["--eval", "(cscrape:generate-headers-from-all-sifs)"],
                                         [os.path.join(bld.path.abspath(), out, bld.variant_obj.variant_dir() + "/"),
                                          env.BUILD_ROOT + "/"])
+        for f in self.env["CLASP_SIF_FILES"]:
+            cmd.append(f)
         for f in self.inputs:
             cmd.append(f.abspath())
+        print("CLASP_SIF_FILES: %s" % self.env["CLASP_SIF_FILES"])
         return self.exec_command(cmd)
 
     def display(self):
@@ -2392,15 +2407,16 @@ def postprocess_all_c_tasks(self):
         all_sif_nodes += sif_nodes
         self.create_task('generate_sif_files', cxx_nodes, sif_nodes)
 
-    scraper_output_nodes = [self.path.find_or_declare('generated/' + i) for i in
-                            ['c-wrappers.h',
-                             'cl-wrappers.lisp',
-                             'enum_inc.h',
-                             'initClassesAndMethods_inc.h',
-                             'initFunctions_inc.h',
-                             'initializers_inc.h',
-                             'sourceInfo_inc.h',
-                             'symbols_scraped_inc.h']]
+    scraper_generated_files = ['c-wrappers.h',
+                               'cl-wrappers.lisp',
+                               'enum_inc.h',
+                               'initClassesAndMethods_inc.h',
+                               'initFunctions_inc.h',
+                               'initializers_inc.h',
+                               'sourceInfo_inc.h',
+                               'symbols_scraped_inc.h',
+                               'clasp_gc.cc' ] 
+    scraper_output_nodes = [self.path.find_or_declare('generated/' + i) for i in scraper_generated_files ]
 
     self.create_task('generate_headers_from_all_sifs', all_sif_nodes, scraper_output_nodes)
     # TODO FIXME this includes cl-wrappers.lisp

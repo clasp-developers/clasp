@@ -2,9 +2,14 @@
 
 (defun process-all-sif-files (clasp-home-path build-path sif-files)
   (declare (optimize debug))
+  (format t "process-all-sif-files: ~s~%" sif-files)
   (let* ((tags (loop for sif-file in sif-files
-                  for sif-tags = (read-sif-file sif-file)
-                  nconc sif-tags))
+                     if (probe-file sif-file)
+                       nconc (progn
+                               (format t "Processing sif file: ~s~%" sif-file)
+                               (read-sif-file sif-file))
+                     else
+                       do (format t "There was no file: ~s~%" sif-file)))
          (app-config-path (merge-pathnames #P"include/clasp/main/application.config" (pathname clasp-home-path))))
     (format t "app-config-path    -> ~a~%" app-config-path)
     (let ((app-config (read-application-config app-config-path)))

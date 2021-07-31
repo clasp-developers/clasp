@@ -602,7 +602,9 @@ void initialize_llvm(int argc, char **argv) {
 //
 #ifndef RUNNING_MPSPREP
 #define NAMESPACE_llvmo
-#include "clasp_gc.cc"
+#ifndef SCRAPING
+#include CLASP_GC_FILENAME
+#endif
 #undef NAMESPACE_llvmo
 #endif
 #endif
