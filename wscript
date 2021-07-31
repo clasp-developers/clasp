@@ -2287,6 +2287,7 @@ class generate_headers_from_all_sifs(scraper_task):
                                          env.BUILD_ROOT + "/"])
         for f in self.inputs:
             cmd.append(f.abspath())
+        print("generate_headers cmd: %s" % cmd )
         return self.exec_command(cmd)
 
     def display(self):
