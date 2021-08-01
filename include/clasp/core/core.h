@@ -726,9 +726,13 @@ typedef gctools::smart_ptr<ActivationFrame_O> ActivationFrame_sp;
 typedef core::T_O **ArgArray;
 
 namespace core {
+
+class Lisp;
+typedef Lisp* LispPtr;
+
 typedef T_mv (*SpecialFormCallback)(List_sp, T_sp);
-typedef void (*MakePackageCallback)(string const &packageName, Lisp_sp);
-typedef void (*ExportSymbolCallback)(Symbol_sp symbol, Lisp_sp);
+typedef void (*MakePackageCallback)(string const &packageName, LispPtr);
+typedef void (*ExportSymbolCallback)(Symbol_sp symbol, LispPtr);
 
  typedef void (*module_startup_function_type)(gctools::Tagged);
  typedef void (*module_shutdown_function_type)();
@@ -743,7 +747,7 @@ extern Symbol_sp& _sym_simpleError;
  * \param search The string to search for
  * \param replace The string to replace with
  */
-string searchAndReplaceString(const string &str, const string &search, const string &replace, Lisp_sp lisp);
+string searchAndReplaceString(const string &str, const string &search, const string &replace, LispPtr lisp);
 
 /* The CallingConvention for Common Lisp functions is a pointer to where the multiple value result
    should be written, the closed over environment for the function, the number of args, three explicit args that will pass in registers (or be NULL)
@@ -781,7 +785,7 @@ extern void registerAllClasses();
 
 /*! Expose c++ to CandoScript
  */
-extern void exposeClassesAndDefineNils(Lisp_sp);
+extern void exposeClassesAndDefineNils(LispPtr);
 
 /*! Expose c++ to Python
  */
@@ -833,15 +837,19 @@ namespace core {
 
 /* Callbacks that initialize the Lisp environment have this structure*/
 
-  typedef void (*InitializationCallback)(Lisp_sp);
+  typedef void (*InitializationCallback)(LispPtr);
 
   [[noreturn]]void errorFormatted(const char *errorString);
   [[noreturn]]void errorFormatted(const string &msg);
 
 //
 //  Lisp class access functions for when we only have a forward
-//  definition for the Lisp_O class and for any other object
+//  definition for the Lisp class and for any other object
 //
+
+class Lisp;
+typedef Lisp* LispPtr;
+
 //extern "C" string _safe_rep_(core::T_sp obj);
   string _rep_(T_sp obj);
 /*! Convert underscores to "-" and "STAR" to "*" and "AMP" to "&"
@@ -867,7 +875,7 @@ uint64_t lisp_nameword(T_sp name);
   gc::GCStack &lisp_threadLocalStack();
 #endif
 
-  Lisp_sp lisp_fromObject(T_sp obj);
+  LispPtr lisp_fromObject(T_sp obj);
   string lisp_currentPackageName();
   string lisp_packageName(T_sp package);
   string lisp_classNameAsString(Instance_sp c);
@@ -955,7 +963,7 @@ size_t lisp_lambda_list_handler_number_of_specials(LambdaListHandler_sp lambda_l
                        const std::set<int> &skipIndices = std::set<int>());
   void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);
 
-  void lisp_defsetfSingleDispatchMethod(Lisp_sp lisp, const string &name, Symbol_sp classSymbol,
+  void lisp_defsetfSingleDispatchMethod(LispPtr lisp, const string &name, Symbol_sp classSymbol,
                                         Function_sp, const string &arguments = "", const string &declares = "", const string &docstring = "", bool autoExport = true);
 
   void lisp_defsetf(const string &name, Symbol_sp classSymbol,
@@ -1037,13 +1045,13 @@ namespace core {
 typedef unsigned char ubyte;
 
 /* Callbacks that return a boolean value have this structure */
-typedef bool (*BoolReturnCallback)(Lisp_sp);
+typedef bool (*BoolReturnCallback)(LispPtr);
 
 /* Callbacks that return an integer value have this structure */
-typedef int (*IntReturnCallback)(Lisp_sp);
+typedef int (*IntReturnCallback)(LispPtr);
 
 /* Callbacks that return an object have this structure */
-typedef T_sp (*ObjectReturnCallback)(Lisp_sp);
+typedef T_sp (*ObjectReturnCallback)(LispPtr);
 
 /*
  * These callback types are used to redirect screen output depending if we are
@@ -1123,7 +1131,7 @@ namespace core {
 };
 
 
-extern void* _ZTVN4core6Lisp_OE;
+extern void* _ZTVN4core6LispE;
 
 #define CLASP_DEFAULT_CTOR
 

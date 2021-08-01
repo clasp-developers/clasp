@@ -9,8 +9,8 @@
  * The following are garbage collector roots
  *
  * DEFINED in gctools/memoryManagement.h
- *   Lisp_O* ::_lisp
- *  This is a tagged pointer to a Lisp_O object
+ *   Lisp* ::_lisp
+ *  This is a tagged pointer to a Lisp object
  *
  * DEFINED in include/clasp/gctools/globals.h
  *    extern core::Symbol_O* gctools::global_core_symbols[NUMBER_OF_CORE_SYMBOLS]

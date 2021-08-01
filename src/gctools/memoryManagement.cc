@@ -99,7 +99,7 @@ __attribute__((noinline)) void HitAllocationNumberThreshold() {
 //
 // Objects that are managed by the GC and need a stamp
 //   but are not directly accessible to Common Lisp
-GC_MANAGED_TYPE(core::Lisp_O);
+//GC_MANAGED_TYPE(core::Lisp);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<double>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<float>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>);

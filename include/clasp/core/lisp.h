@@ -172,7 +172,7 @@ public:
 
   /*! CTor that looks up a Package with packageName and if it
 	  doesn't exist it makes it - no nicknames allowed */
-  Exposer_O(Lisp_sp lisp, const string &packageName);
+  Exposer_O(LispPtr lisp, const string &packageName);
 
   virtual ~Exposer_O();
 
@@ -184,7 +184,7 @@ public:
 
   /* Evaluate the code that exposes the package Classes/Functions/Globals
 	 to Cando-lisp or to Python depending on the value of (what) */
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const = 0;
+  virtual void expose(core::LispPtr lisp, WhatToExpose what) const = 0;
 };
 
 template <typename oclass>
@@ -193,7 +193,7 @@ class class_;
 };
 
 template <>
-struct gctools::GCInfo<core::Lisp_O> {
+struct gctools::GCInfo<core::Lisp> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = unmanaged;
@@ -313,7 +313,7 @@ extern core::globals_t* globals_;
 
 namespace core {
 
-class Lisp_O {
+class Lisp {
   friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
@@ -403,12 +403,11 @@ class Lisp_O {
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
   friend void core__clear_gfun_hash(T_sp what);
-  //	/* disable scrape */ LISP_CLASS(core,CorePkg,Lisp_O,"Lisp",T_O);
 public:
-  static void initializeGlobals(Lisp_sp lisp);
+  static void initializeGlobals(LispPtr lisp);
   
 public:
-  static void lisp_initSymbols(Lisp_sp lisp);
+  static void lisp_initSymbols(LispPtr lisp);
 public:
   static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 public:
@@ -654,7 +653,7 @@ public:
 
 public:
   /*! Pass the mpi process rank in (rank) */
-  static Lisp_sp createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize);
+  static LispPtr createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize);
 
     void initializeMainThread();
 
@@ -901,8 +900,8 @@ public:
 	  if the names string is empty then untrace all functions. */
   void gdb_untrace_by_name(const char *name);
 
-  explicit Lisp_O();
-  virtual ~Lisp_O();
+  explicit Lisp();
+  virtual ~Lisp();
 } ;
 
  /*! Use RAII to safely allocate a buffer */
@@ -934,7 +933,7 @@ void initializeLisp();
 class LispHolder //: public gctools::StackRoot
     {
 private:
-  Lisp_sp _Lisp;
+  LispPtr _Lisp;
 
 public:
   /*! Pass the mpiProcess rank in (rank) or set to 0 if there is only one process */
@@ -970,12 +969,10 @@ namespace core {
   void cl__error(T_sp err, List_sp initializers);
 };
 
-//TRANSLATE(core::Lisp_O);
-
 #define INTERN(x) _lisp->internWithPackageName(x, CurrentPkg)
 
 namespace core {
-  void initialize_Lisp_O();
+  void initialize_Lisp();
 #ifdef DEBUG_MONITOR_SUPPORT
 std::string core__monitor_directory();
 FILE* monitor_file(const std::string& filename_prefix);

@@ -35,6 +35,6 @@ extern "C" {
 /*
  * Store the global lisp object
  */
-core::Lisp_sp _lisp;
+core::LispPtr _lisp;
 
 };

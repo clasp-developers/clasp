@@ -1802,7 +1802,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
   return;
 }
 
-void initialize_compiler_primitives(Lisp_sp lisp) {
+void initialize_compiler_primitives(LispPtr lisp) {
 
   // Initialize raw object translators needed for Foreign Language Interface support 
   llvmo::initialize_raw_translators(); // See file intrinsics.cc!

@@ -1213,8 +1213,8 @@ struct copy_objects_t : public walker_callback_t {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_stamp_wtag_mtag.stampP()) {
-      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp_O)) {
-//        printf("%s:%d:%s About to save Lisp_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp)) {
+//        printf("%s:%d:%s About to save Lisp object\n", __FILE__, __LINE__, __FUNCTION__ );
       }
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O)) {
@@ -2342,27 +2342,27 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       ISLHeader_s* cur_header;
 
 
-      core::Lisp_O* theLoadedLisp = (core::Lisp_O*)gc::untag_general<core::T_O*>((core::T_O*)*lispRoot);
+      core::Lisp* theLoadedLisp = (core::Lisp*)gc::untag_general<core::T_O*>((core::T_O*)*lispRoot);
 
     ///////////////////////////////////////////////////////////////
     //
-    // Now we have the Lisp_O
+    // Now we have the Lisp
     //
-    // Move the Lisp_O object into GC managed memory 
+    // Move the Lisp object into GC managed memory 
       gctools::Header_s* lisp_source_header = NULL;
       {
         lisp_source_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(theLoadedLisp);
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(theLoadedLisp);
-        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Lisp_O);
+        gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Lisp);
         snapshot_save_load_init_s init(lisp_source_header,clientStart,clientEnd);
         core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
         gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-        DBG_SL_ALLOCATE(BF("allocated Lisp_O general %p fwd: %p\n")
+        DBG_SL_ALLOCATE(BF("allocated Lisp general %p fwd: %p\n")
                         % (void*) obj.raw_()
                         % (void*)fwd);
         set_forwarding_pointer( lisp_source_header, (char*)fwd, &islInfo );
         root_holder.add((void*)obj.raw_());
-        ::_lisp.thePointer = (core::Lisp_O*)obj.theObject;
+        ::_lisp = (core::Lisp*)obj.theObject;
       // Now the global _lisp is defined - don't change it below when we look at roots
       }
 //    printf("%s:%d:%s the ::_lisp object is at %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)_lisp.rawRef_());
@@ -2564,7 +2564,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                             % generalHeader->_Size
                             % source_header->description().c_str());
             if (source_header == lisp_source_header) {
-//          printf("%s:%d:%s About to skip allocation of the Lisp_O object - this is just for information - delete this message\n", __FILE__, __LINE__, __FUNCTION__ );
+//          printf("%s:%d:%s About to skip allocation of the Lisp object - this is just for information - delete this message\n", __FILE__, __LINE__, __FUNCTION__ );
             } else if (source_header == nil_source_header) {
           // Skip the NIL object we handled above
               countNullObjects++; // It's a Null_O object but its header has been obliterated by a fwd
@@ -2578,7 +2578,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
             } else if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Null_O) ) {
           // Don't do anything with the only Null_O object - it was allocated above when we fished it out
-          // of the Lisp_O object and allocated it.
+          // of the Lisp object and allocated it.
               DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Null_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
               countNullObjects++;
             } else {

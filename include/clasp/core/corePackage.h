@@ -38,15 +38,15 @@ extern const char *CorePkg_nicknames[];
 class CoreExposer_O : public core::Exposer_O {
   LISP_CLASS(core,CorePkg,CoreExposer_O,"CoreExposer",core::Exposer_O);
 public:
-  CoreExposer_O(Lisp_sp lisp);
+  CoreExposer_O(LispPtr lisp);
  public:
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
+  virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
 public:
-  /*! Lisp_O::startupLispEnvironment calls this to create the core classes */
+  /*! Lisp::startupLispEnvironment calls this to create the core classes */
   static CoreExposer_sp create_core_packages_and_classes();
 
 public:
-  void define_essential_globals(Lisp_sp lisp);
+  void define_essential_globals(LispPtr lisp);
 };
 
 void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn);

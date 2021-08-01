@@ -38,8 +38,8 @@ extern bool _GlobalDebugAllocations;
 class GcToolsExposer_O : public core::Exposer_O {
 private:
 public:
-  GcToolsExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, GcToolsPkg){};
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
+  GcToolsExposer_O(core::LispPtr lisp) : Exposer_O(lisp, GcToolsPkg){};
+  virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
 };
 
 class TestingClass {

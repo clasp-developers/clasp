@@ -38,8 +38,8 @@ namespace serveEvent {
 class ServeEventExposer_O : public core::Exposer_O {
 private:
 public:
-  ServeEventExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, ServeEventPkg){};
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
+  ServeEventExposer_O(core::LispPtr lisp) : Exposer_O(lisp, ServeEventPkg){};
+  virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
 };
 };
 #endif
