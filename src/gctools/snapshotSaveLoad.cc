@@ -2037,13 +2037,13 @@ struct temporary_root_holder_t {
       printf("The number of objects being loaded is zero!!! That cannot be!!!\n");
       exit(1);
     }
-    this->_buffer = (void**)gctools::RootClassAllocator<void*>::allocateRootsAndZero(num+Overflow);
+    this->_buffer = (void**)gctools::RootClassAllocator<void>::allocateRootsAndZero(num+Overflow);
     memset(this->_buffer,'\0',(num+Overflow)*sizeof(void*));
     this->_Cur = this->_buffer;
   }
 
   void release() {
-    gctools::RootClassAllocator<void*>::freeRoots(this->_buffer);
+    gctools::RootClassAllocator<void>::freeRoots(this->_buffer);
   }
 
   //

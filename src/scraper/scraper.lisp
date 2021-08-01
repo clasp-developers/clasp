@@ -1,6 +1,6 @@
 (in-package :cscrape)
 
-(defun process-all-sif-files (clasp-home-path build-path sif-files)
+(defun process-all-sif-files (clasp-home-path build-path sif-files &key use-precise)
   (declare (optimize debug))
   (format t "process-all-sif-files: ~s~%" sif-files)
   (let* ((tags (loop for sif-file in sif-files
@@ -16,8 +16,7 @@
       (format t "Interpreting tags~%")
       (multiple-value-bind (packages-to-create functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators)
           (interpret-tags tags)
-        (format t "Generating code~%")
-        (generate-code packages-to-create functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators build-path app-config))
+        (generate-code packages-to-create functions symbols classes gc-managed-types enums pregcstartups initializers exposes terminators build-path app-config :use-precise use-precise))
       (format t "Done scraping code~%"))))
 (export 'process-all-sif-files)
 
@@ -64,7 +63,7 @@
             (with-open-file (fout sif-file :direction :output :if-exists :supersede :external-format :utf-8)
               (prin1 tags fout))))))))
 
-(defun generate-headers-from-all-sifs ()
+(defun generate-headers-from-all-sifs (&optional use-precise)
   (destructuring-bind
         (build-path clasp-home-path &rest sif-files)
       (uiop:command-line-arguments)
@@ -74,6 +73,6 @@
       (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
       (assert (every 'uiop:directory-pathname-p (list clasp-home-path build-path)))
       (assert sif-files)
-      (process-all-sif-files clasp-home-path build-path sif-files))))
+      (process-all-sif-files clasp-home-path build-path sif-files :use-precise use-precise))))
 
 (export '(generate-sif-files generate-headers-from-all-sifs))

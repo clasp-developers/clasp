@@ -3,7 +3,7 @@
 (define-constant *batch-classes* 3)
 (defparameter *function-partitions* 3)
 
-(define-constant +root-dummy-class+ "::_RootDummyClass" :test 'equal)
+(define-constant +root-dummy-class+ "_RootDummyClass" :test 'equal)
 
 (define-condition bad-c++-name (error)
   ((name :initarg :name :accessor name))
@@ -358,8 +358,8 @@ Convert colons to underscores"
         ancestor
         (entry-x-name x-name))
     (loop
-       (setf ancestor (gethash x-name inheritance))
-       (when (string= ancestor +root-dummy-class+)
+      (setf ancestor (gethash x-name inheritance))
+      (when (search +root-dummy-class+ ancestor)
          (return-from inherits-from* nil))
       (unless ancestor
         (return-from inherits-from* nil)
@@ -656,7 +656,7 @@ public:
   (format stream "#ifdef SET_BASES_ALL_CLASSES~%")
   (dolist (exposed-class sorted-classes)
     (when (is-exposed-class exposed-class)
-      (unless (string= (base% exposed-class) +root-dummy-class+)
+      (unless (search +root-dummy-class+ (base% exposed-class) )
         (format stream "~a->addInstanceBaseClassDoNotCalculateClassPrecedenceList(~a::static_classSymbol());~%"
                 (as-var-name (tags:namespace% (class-tag% exposed-class))
                              (tags:name% (class-tag% exposed-class)))
@@ -671,7 +671,7 @@ public:
   (format stream "#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%")
   (dolist (exposed-class sorted-classes)
     (when (is-exposed-class exposed-class)
-      (unless (string= (base% exposed-class) +root-dummy-class+)
+      (unless (search +root-dummy-class+ (base% exposed-class))
         (format stream "~a->__setupStage3NameAndCalculateClassPrecedenceList(~a::~a::static_classSymbol());~%"
                 (as-var-name (tags:namespace% (class-tag% exposed-class))
                              (tags:name% (class-tag% exposed-class)))
@@ -687,8 +687,8 @@ public:
         (format stream "namespace ~a {
   gctools::Header_s::StampWtagMtag::Value ~a::static_ValueStampWtagMtag;
 };~%"
-                (tags:namespace% class-tag) (tags:name% class-tag))))
-    (format stream "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%")))
+                (tags:namespace% class-tag) (tags:name% class-tag)))))
+  (format stream "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
 
 (defun generate-expose-instance-method (stream method class-tag)
   (format stream "// ~a~%" (file-line method))
@@ -1101,7 +1101,8 @@ void ~a::expose_to_clasp() {
 #if defined(GC_OBJ_SCAN_HELPERS)~%")
   (loop for kind in classes do (generate-kind-code kind stream))
   (loop for kind being the hash-values of gc-managed-types
-        do (generate-kind-code kind stream))
+        when (typep kind 'kind)
+          do (generate-kind-code kind stream))
   (format stream "#endif // defined(GC_OBJ_SCAN_HELPERS)~%"))
 
 (defconstant +ptr-name+
@@ -1159,7 +1160,8 @@ void ~a::expose_to_clasp() {
   (format stream "#if defined(GC_OBJ_FINALIZE)~%")
   (loop for k in classes do (generate-finalizer stream k))
   (loop for k being the hash-values of gc-managed-types
-        do (generate-finalizer stream k))
+        when (typep k 'kind)
+          do (generate-finalizer stream k))
   (format stream "#endif // defined(GC_OBJ_FINALIZE)
 #if defined(GC_OBJ_FINALIZE_HELPERS)
 #endif // defined(GC_OBJ_FINALIZE_HELPERS)~%"))
@@ -1178,7 +1180,9 @@ static void* OBJ_FINALIZE_table[] = {~%")
                (setf sorted (merge 'list sorted (list kind) #'<
                                    :key #'stamp-value)))
              gc-managed-types)
-    (loop for k in sorted do (generate-finalizer-table-entry stream k)))
+    (loop for k in sorted
+          when (typep k 'kind)
+            do (generate-finalizer-table-entry stream k)))
   (format stream "   NULL
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)~%"))
@@ -1223,7 +1227,8 @@ static void* OBJ_FINALIZE_table[] = {~%")
   (format stream "#if defined(GC_OBJ_DEALLOCATOR)~%")
   (loop for k in classes do (generate-deallocator stream k))
   (loop for k being the hash-values of gc-managed-types
-        do (generate-deallocator stream k))
+        when (typep k 'kind)
+          do (generate-deallocator stream k))
   (format stream "#endif // defined(GC_OBJ_DEALLOCATOR)
 #if defined(GC_OBJ_DEALLOCATOR_HELPERS)
 #endif // defined(GC_OBJ_DEALLOCATOR_HELPERS)~%"))
@@ -1242,7 +1247,9 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
                (setf sorted (merge 'list sorted (list kind) #'<
                                    :key #'stamp-value)))
              gc-managed-types)
-    (loop for k in sorted do (generate-deallocator-table-entry stream k)))
+    (loop for k in sorted
+          when (typep k 'kind)
+            do (generate-deallocator-table-entry stream k)))
   (format stream "   NULL
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)~%"))
@@ -1306,7 +1313,7 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
       (generate-deallocator-table s sorted-classes gc-managed-types)
       (generate-gc-globals s))))
 
-(defun generate-code (packages-to-create functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config)
+(defun generate-code (packages-to-create functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config &key use-precise)
   (let ((init-functions (generate-code-for-init-functions functions))
         (init-classes-and-methods (generate-code-for-init-classes-and-methods classes gc-managed-types))
         (source-info (generate-code-for-source-info functions classes))
@@ -1316,7 +1323,7 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
         (initializers-info (generate-code-for-initializers initializers))
         (exposes-info (generate-code-for-exposes exposes))
         (terminators-info (generate-code-for-terminators terminators))
-        (gc-code-info (generate-gc-code classes gc-managed-types)))
+        (gc-code-info (when use-precise (generate-gc-code classes gc-managed-types))))
     (write-if-changed init-functions build-path (safe-app-config :init_functions_inc_h app-config))
     (write-if-changed init-classes-and-methods build-path (safe-app-config :init_classes_inc_h app-config))
     (write-if-changed source-info build-path (safe-app-config :source_info_inc_h app-config))
@@ -1326,7 +1333,8 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
     (write-if-changed initializers-info build-path (safe-app-config :initializers_inc_h app-config))
     (write-if-changed exposes-info build-path (safe-app-config :expose_inc_h app-config))
     (write-if-changed terminators-info build-path (safe-app-config :terminators_inc_h app-config))
-    (write-if-changed gc-code-info build-path (safe-app-config :scraped_clasp_gc_file app-config))
+    (when use-precise
+      (write-if-changed gc-code-info build-path (safe-app-config :clasp_gc_filename app-config)))
     (multiple-value-bind (direct-call-c-code direct-call-cl-code c-code-info cl-code-info)
         (generate-code-for-direct-call-functions functions)
       (write-if-changed direct-call-c-code build-path (safe-app-config :c_wrappers app-config))

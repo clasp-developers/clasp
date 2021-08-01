@@ -106,7 +106,11 @@
    (flags% :initform nil :accessor flags%)))
 
 (defun is-exposed-class (object)
-  (slot-boundp object 'class-tag%))
+  (let ((is-exposed (if (typep object 'exposed-class)
+                        (slot-boundp object 'class-tag%)
+                        nil)))
+    is-exposed))
+    
 
 (defmethod print-object ((object exposed-class) stream)
   (print-unreadable-object (object stream :type t)
@@ -149,7 +153,7 @@
    (values% :initarg :values% :accessor values%)))
 
 (defclass kind ()
-  ((tag% :initarg :tag% :accessor tag%)
+  ((tag% :initform nil :initarg :tag% :accessor tag%)
    (fixed-fields% :initform nil :accessor fixed-fields%)
    (variable-info% :initform nil :accessor variable-info%)
    (variable-capacity% :initform nil :accessor variable-capacity%)
@@ -161,11 +165,16 @@
 (defclass exposed-internal-class-kind (kind exposed-internal-class) ())
 (defclass exposed-external-class-kind (kind exposed-external-class) ())
 
+(defmethod print-object ((object exposed-internal-class-kind) stream)
+  (print-unreadable-object (object stream :type t)
+    (when (slot-boundp object 'class-key%)
+      (format stream "~a" (class-key% object)))))
+
 (defmethod class-key% ((object kind))
   (tags:stamp-key (tag% object)))
 (defmethod base% ((object kind))
   (let* ((tag (tag% object))
-         (lisp-class-base (tags:lisp-class-base tag)))
+         (lisp-class-base (when tag (tags:lisp-class-base tag))))
     (if (string= lisp-class-base "NoLispBase") ; magic string gen. by analyzer
         (tags:parent-class (tag% object))
         lisp-class-base)))
@@ -255,6 +264,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
   (let ((cur-unshifted-stamp 0) ; start at 1
         top-classes)
     (labels ((traverse-assign-stamps (class flags)
+               (declare (optimize (debug 3)))
                (setf (stamp% class) (shift-stamp (incf cur-unshifted-stamp)))
                (cond
                  ((string= "core::WrappedPointer_O" (class-key% class))
@@ -646,18 +656,19 @@ Compare the symbol against previous definitions of symbols - if there is a misma
     (if class-kind
         (progn
           ;; add more info to the class definition
-          (setf class-kind (change-class class-kind
-                                         'exposed-internal-class-kind
-                                         :file% (tags:file% tag)
-                                         :line% (tags:line% tag)
-                                         :package% (tags:package% tag)
-                                         :character-offset% (tags:character-offset% tag)
-                                         :meta-class% meta-class
-                                         :docstring% docstring
-                                         :base% base
-                                         :class-key% class-key
-                                         :lisp-name% lisp-name
-                                         :class-tag% tag)))
+          (when (typep class-kind 'kind)
+            (setf class-kind (change-class class-kind
+                                           'exposed-internal-class-kind
+                                           :file% (tags:file% tag)
+                                           :line% (tags:line% tag)
+                                           :package% (tags:package% tag)
+                                           :character-offset% (tags:character-offset% tag)
+                                           :meta-class% meta-class
+                                           :docstring% docstring
+                                           :base% base
+                                           :class-key% class-key
+                                           :lisp-name% lisp-name
+                                           :class-tag% tag))))
         (setf (gethash class-key (state-classes state))
               (make-instance 'exposed-internal-class
                              :file% (tags:file% tag)
@@ -694,18 +705,19 @@ Compare the symbol against previous definitions of symbols - if there is a misma
     (if class-kind
         (progn
           ;; add more info to the class definition
-          (setf class-kind (change-class class-kind
-                                         'exposed-external-class-kind
-                                         :file% (tags:file% tag)
-                                         :line% (tags:line% tag)
-                                         :package% (tags:package% tag)
-                                         :character-offset% (tags:character-offset% tag)
-                                         :meta-class% meta-class
-                                         :docstring% docstring
-                                         :base% base
-                                         :class-key% class-key
-                                         :lisp-name% lisp-name
-                                         :class-tag% tag)))
+          (when (typep class-kind 'kind)
+            (setf class-kind (change-class class-kind
+                                           'exposed-external-class-kind
+                                           :file% (tags:file% tag)
+                                           :line% (tags:line% tag)
+                                           :package% (tags:package% tag)
+                                           :character-offset% (tags:character-offset% tag)
+                                           :meta-class% meta-class
+                                           :docstring% docstring
+                                           :base% base
+                                           :class-key% class-key
+                                           :lisp-name% lisp-name
+                                           :class-tag% tag))))
         (setf (gethash class-key (state-classes state))
               (make-instance 'exposed-external-class
                              :file% (tags:file% tag)
@@ -867,16 +879,16 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                :test #'string=
                :key #'function-name%))))
 
-(defun interpret-kind-tag (tag state table &optional (instance-kind 'kind))
-  (let ((kind (make-instance instance-kind :tag% tag))
+(defun interpret-kind-tag (tag state table)
+  (let ((kind (make-instance 'kind :tag% tag))
         (key (tags:stamp-key tag)))
     (unless (gethash key table)
       (setf (gethash key table) kind))
     (setf (state-cur-kind state) kind)))
 (defmethod interpret-tag ((tag tags:class-kind) state)
-  (interpret-kind-tag tag state (state-classes state) 'exposed-internal-class-kind))
+  (interpret-kind-tag tag state (state-classes state)))
 (defmethod interpret-tag ((tag tags:templated-kind) state)
-  (interpret-kind-tag tag state (state-classes state) 'exposed-internal-class-kind))
+  (interpret-kind-tag tag state (state-classes state)))
 (defmethod interpret-tag ((tag tags:container-kind) state)
   (interpret-kind-tag tag state (state-gc-managed-types state)))
 (defmethod interpret-tag ((tag tags:bitunit-container-kind) state)
