@@ -26,8 +26,7 @@
                       nil)
                  (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
                                                               (core:make-lambda-list-handler
-                                                               lambda-list nil 'function))))
-               #+(or)(core:set-function-description-address (fdefinition ',lisp-name) ,source-info)))
+                                                               lambda-list nil 'function))))))
           `(unless core:*silent-startup*
              (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))
 
@@ -53,7 +52,6 @@
                       nil)
                  (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
                                                               (core:make-lambda-list-handler
-                                                               lambda-list nil 'function))))
-               #+(or)(core:set-function-description-address (fdefinition ',lisp-name) ,source-info)))
+                                                               lambda-list nil 'function))))))
           `(unless core:*silent-startup*
              (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))
