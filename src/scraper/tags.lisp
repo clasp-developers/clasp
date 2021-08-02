@@ -41,6 +41,8 @@
   ((character-offset% :initform nil :initarg :character-offset% :accessor tags:character-offset%)
    (signature-text% :initform nil :initarg :signature-text% :accessor signature-text%)))
 
+(defclass tags:forwards-tag (tag)
+  ((forwards% :initarg :forwards% :accessor forwards%)))
 
 (defclass tags:gc-managed-type-tag (tag)
   ((c++type% :initform nil :initarg :c++type% :accessor c++type%)))
@@ -171,6 +173,66 @@
    (package% :initarg :package% :reader tags:package%)
    (package-str% :initarg :package-str% :reader tags:package-str%)))
 
+;;; static analyzer tags
+
+(defclass tags:variable-bit-array0 (tag)
+  ((integral-value :initarg :integral-value :reader integral-value)
+   (offset-base-ctype :initarg :offset-base-ctype :reader offset-base-ctype)
+   (field-names :initarg :field-names :reader field-names)))
+
+(defclass tags:variable-array0 (tag)
+  ((offset-base-ctype :initarg :offset-base-ctype :reader offset-base-ctype)
+   (field-names :initarg :field-names :reader field-names)))
+
+(defclass tags:variable-capacity (tag)
+  ((ctype :initarg :ctype :reader ctype)
+   (offset-base-ctype :initarg :offset-base-ctype :reader offset-base-ctype)
+   (length-field-names :initarg :length-field-names :reader length-field-names)
+   (end-field-names :initarg :end-field-names :reader end-field-names)))
+
+(defclass tags:variable-field (tag)
+  ((offset-type-cxx-identifier :initarg :offset-type-cxx-identifier
+                               :reader offset-type-cxx-identifier)
+   #+(or)(ctype-key :initarg :ctype-key :reader ctype-key)
+   (fixup-ctype-offset-type-key :initarg :fixup-ctype-offset-type-key
+                                :reader fixup-ctype-offset-type-key)
+   (fixup-ctype-key :initarg :fixup-ctype-key :reader fixup-ctype-key)
+   (layout-offset-field-names :initarg :layout-offset-field-names
+                              :reader layout-offset-field-names)))
+
+(defclass tags:variable-field-only (tag)
+  ((offset-type-cxx-identifier :initarg :offset-type-cxx-identifier
+                               :reader offset-type-cxx-identifier)
+   (fixup-type :initarg :fixup-type :reader fixup-type)))
+
+(defclass tags:fixed-field (tag)
+  ((offset-type-cxx-identifier :initarg :offset-type-cxx-identifier
+                               :reader offset-type-cxx-identifier)
+   (offset-ctype :initarg :offset-ctype :reader offset-ctype)
+   (offset-base-ctype :initarg :offset-base-ctype :reader offset-base-ctype)
+   (layout-offset-field-names :initarg :layout-offset-field-names
+                              :reader layout-offset-field-names)))
+
+(defclass kind-tag (tag)
+  ((stamp-name :initarg :stamp-name :reader stamp-name)
+   (stamp-key :initarg :stamp-key :reader stamp-key)
+   (parent-class :initarg :parent-class :reader parent-class)
+   (lisp-class-base :initarg :lisp-class-base :reader lisp-class-base)
+   (root-class :initarg :root-class :reader root-class)
+   (stamp-wtag :initarg :stamp-wtag :reader stamp-wtag)
+   (definition-data :initarg :definition-data :reader definition-data)))
+
+(defclass tags:class-kind (kind-tag) ())
+
+(defclass tags:container-kind (kind-tag) ())
+
+(defclass tags:bitunit-container-kind (kind-tag)
+  ((bitwidth :initarg :bitwidth :reader bitwidth)))
+
+(defclass tags:templated-kind (kind-tag) ())
+
+;;;
+
 (defun maybe-unquote (str)
   (string-trim '(#\") str))
 
@@ -205,7 +267,7 @@
           (handler-bind
               ((SB-INT:SIMPLE-READER-PACKAGE-ERROR
                  (lambda (err) 
-                   (invoke-restart 'use-value (find-package :keyword)))))
+                   (use-value (find-package :keyword) err))))
             (read-delimited-list #\) sis))
         (end-of-file (err)
           (declare (ignore err))

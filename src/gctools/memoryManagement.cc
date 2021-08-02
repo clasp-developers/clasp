@@ -99,7 +99,7 @@ __attribute__((noinline)) void HitAllocationNumberThreshold() {
 //
 // Objects that are managed by the GC and need a stamp
 //   but are not directly accessible to Common Lisp
-GC_MANAGED_TYPE(core::Lisp_O);
+//GC_MANAGED_TYPE(core::Lisp);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<double>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<float>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>);
@@ -111,9 +111,9 @@ GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned char>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned int>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned long>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned short>);
-GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1, false>);
-GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<2, false>);
-GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<4, false>);
+GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1,0>);
+GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<2,0>);
+GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<4,0>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<clbind::detail::edge>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::KeyValuePair>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::AuxArgument>);

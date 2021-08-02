@@ -42,7 +42,7 @@ namespace core {
 
 
 HashTableEq_sp HashTableEq_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  GC_ALLOCATE(HashTableEq_O, hashTable);
+  auto  hashTable = gctools::GC<HashTableEq_O>::allocate_with_default_constructor();
   hashTable->setup(sz, rehashSize, rehashThreshold);
   return hashTable;
 }
@@ -93,7 +93,7 @@ List_sp HashTableEq_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
     if (entry._Key.no_keyp()) goto NOT_FOUND;
   }
  NOT_FOUND:
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {

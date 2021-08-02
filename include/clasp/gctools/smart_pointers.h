@@ -410,9 +410,9 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
 #ifndef SCRAPING
  #ifdef USE_PRECISE_GC
-  #define GC_DECLARE_FORWARDS
+  #define DECLARE_FORWARDS
   #include CLASP_GC_FILENAME
-  #undef GC_DECLARE_FORWARDS
+  #undef DECLARE_FORWARDS
  #else
   #define DECLARE_FORWARDS
   #include INIT_CLASSES_INC_H
@@ -1665,31 +1665,31 @@ inline bool operator!=(const core::List_sp::fast_iterator &a, const core::List_s
 
  
 template <class T>
-gctools::smart_ptr<T> _Nil() {
+gctools::smart_ptr<T> nil() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_nil<T *>());
   return x;
 }
 
 template <class T>
-gctools::smart_ptr<T> _Unbound() {
+gctools::smart_ptr<T> unbound() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_unbound<T *>());
   return x;
 }
 
 template <class T>
-gctools::smart_ptr<T> _NoKey() {
+gctools::smart_ptr<T> no_key() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_no_key<T *>());
   return x;
 }
 
 template <class T>
-gctools::smart_ptr<T> _NoThreadLocalBinding() {
+gctools::smart_ptr<T> no_thread_local_binding() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_no_thread_local_binding<T *>());
   return x;
 }
 
 template <class T>
-gctools::smart_ptr<T> _Deleted() {
+gctools::smart_ptr<T> deleted() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_deleted<T *>());
   return x;
 }

@@ -37,8 +37,8 @@ namespace mpip {
 class MpiExposer_O : public core::Exposer_O {
 private:
 public:
-  MpiExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, MpiPkg){};
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const {};
+  MpiExposer_O(core::LispPtr lisp) : Exposer_O(lisp, MpiPkg){};
+  virtual void expose(core::LispPtr lisp, WhatToExpose what) const {};
 };
 };
 

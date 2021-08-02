@@ -50,7 +50,7 @@ CL_DEFUN T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
     T_sp obj = oCar(i);
     if (cl__equalp(obj, cons)) return i;
   }
-  return (_Nil<T_O>());
+  return (nil<T_O>());
 }
 
 CL_LAMBDA(record key sub-key);
@@ -82,7 +82,7 @@ CL_DOCSTRING("rem_record_field");
 CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
   List_sp x = core__record_cons(record, key, sub_key);
   if (x.notnilp()) {
-    List_sp output = _Nil<T_O>();
+    List_sp output = nil<T_O>();
     for (auto cur : record) {
       List_sp i = oCar(cur);
       if (i != x) {
@@ -99,7 +99,7 @@ CL_DECLARE();
 CL_DOCSTRING("annotate - see ecl>>helpfile.lsp>>annotate; **key** is either 'documentation or 'setf-documentation **object** must be a symbol");
 CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value) {
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
-  List_sp record = coerce_to_list(dict->gethash(object, _Nil<T_O>()));
+  List_sp record = coerce_to_list(dict->gethash(object, nil<T_O>()));
   record = coerce_to_list(core__set_record_field(record, key, sub_key, value));
   T_sp result = dict->hash_table_setf_gethash(object, record);
   return result;
@@ -148,7 +148,7 @@ CL_DEFUN T_sp core__set_documentation(T_sp object, T_sp doc_type, T_sp string) {
   return string;
 }
 
-void initialize_documentation_primitives(Lisp_sp lisp) {
+void initialize_documentation_primitives(LispPtr lisp) {
   SYMBOL_SC_(CorePkg, record_cons);
   SYMBOL_SC_(CorePkg, record_field);
   SYMBOL_SC_(CorePkg, set_record_field);

@@ -1105,6 +1105,7 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-irbuilder-status (&optional (irbuilder *irbuilder*) (label "current *irbuilder*"))
     (bformat t "%s -> %s%N" label irbuilder))
 
+#+(or)
 (defun irc-constant-string-ptr (global-string-var)
   (let* ((type (llvm-sys:get-pointer-element-type
                                       (llvm-sys:get-scalar-type

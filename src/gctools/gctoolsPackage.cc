@@ -56,7 +56,7 @@ bool _GlobalDebugAllocations = false;
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 
-void GcToolsExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
+void GcToolsExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
 

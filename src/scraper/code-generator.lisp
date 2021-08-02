@@ -3,7 +3,7 @@
 (define-constant *batch-classes* 3)
 (defparameter *function-partitions* 3)
 
-(define-constant +root-dummy-class+ "::_RootDummyClass" :test 'equal)
+(define-constant +root-dummy-class+ "_RootDummyClass" :test 'equal)
 
 (define-condition bad-c++-name (error)
   ((name :initarg :name :accessor name))
@@ -169,11 +169,13 @@
     (dolist (f functions)
       (push (generate-expose-one-source-info-helper sout f (incf index)) helpers))
     (maphash (lambda (k class)
-               (push (generate-expose-one-source-info-helper sout class (incf index)) helpers)
-               (dolist (method (methods% class))
-                 (push (generate-expose-one-source-info-helper sout method (incf index)) helpers))
-               (dolist (class-method (class-methods% class))
-                 (push (generate-expose-one-source-info-helper sout class-method (incf index)) helpers)))
+               (declare (ignore k))
+               (when (is-exposed-class class)
+                 (push (generate-expose-one-source-info-helper sout class (incf index)) helpers)
+                 (dolist (method (methods% class))
+                   (push (generate-expose-one-source-info-helper sout method (incf index)) helpers))
+                 (dolist (class-method (class-methods% class))
+                   (push (generate-expose-one-source-info-helper sout class-method (incf index)) helpers))))
            classes)
     (format sout "#endif // SOURCE_INFO_HELPERS~%")
     (format sout "#ifdef SOURCE_INFO~%")
@@ -316,7 +318,7 @@ Convert colons to underscores"
         (validate-va-rest (lambda-list% func) wrapped-name)
         (format cl-code "(wrap-c++-function-setf ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name )))))
 
-(defun generate-code-for-direct-call-functions (functions classes)
+(defun generate-code-for-direct-call-functions (functions)
   (let ((c-code (make-string-output-stream))
         (c-code-info (make-string-output-stream))
         (cl-code (make-string-output-stream))
@@ -354,14 +356,14 @@ Convert colons to underscores"
 (defun inherits-from* (x-name y-name inheritance)
   (let ((depth 0)
         ancestor
-        (entry-x-name x-name)
-        prev-ancestor)
+        (entry-x-name x-name))
     (loop
-       (setf prev-ancestor ancestor
-             ancestor (gethash x-name inheritance))
-       (when (string= ancestor +root-dummy-class+)
+      (setf ancestor (gethash x-name inheritance))
+      (when (search +root-dummy-class+ ancestor)
          (return-from inherits-from* nil))
-       (unless ancestor
+      (unless ancestor
+        (return-from inherits-from* nil)
+        #+(or)
          (error 'broken-inheritance
                 :class-with-missing-parent x-name
                 :starting-possible-child-class entry-x-name
@@ -379,7 +381,6 @@ Convert colons to underscores"
         (y-name (class-key% y)))
     (inherits-from* x-name y-name inheritance)))
 
-(defparameter *inheritance* nil)
 (defun sort-classes-by-inheritance (exposed-classes)
   (declare (optimize debug))
   (let ((inheritance (make-hash-table :test #'equal))
@@ -389,12 +390,11 @@ Convert colons to underscores"
                  (when base (setf (gethash k inheritance) base))
                  (push v classes)))
              exposed-classes)
-    (setf *inheritance* inheritance)
     (handler-case
         (setf classes (sort classes (lambda (x y)
                                       (not (inherits-from x y inheritance)))))
+      #+(or)
       (broken-inheritance (e)
-        (print-object e t)
         (let ((x (starting-possible-child-class e)))
           (error "~a~%    The info for ~a is ~a"
                  (with-output-to-string (sout) (print-object e sout))
@@ -404,26 +404,25 @@ Convert colons to underscores"
 
 (defun generate-code-for-init-class-kinds (exposed-classes sout)
   (declare (optimize (speed 3)))
-  (multiple-value-bind (sorted-classes inheritance)
-      (sort-classes-by-inheritance exposed-classes)
-    (let (cur-package)
+  (let ((sorted-classes (sort-classes-by-inheritance exposed-classes)))
     (format sout "#ifdef SET_CLASS_KINDS~%")
     (dolist (exposed-class sorted-classes)
-      (format sout "set_one_static_class_Header<~a::~a>();~%"
-              (tags:namespace% (class-tag% exposed-class))
-              (tags:name% (class-tag% exposed-class))))
-    (format sout "#endif // SET_CLASS_KINDS~%"))))
+      (when (is-exposed-class exposed-class)
+        (format sout "set_one_static_class_Header<~a::~a>();~%"
+                (tags:namespace% (class-tag% exposed-class))
+                (tags:name% (class-tag% exposed-class)))))
+    (format sout "#endif // SET_CLASS_KINDS~%")))
 
 (defun generate-code-for-init-classes-class-symbols (exposed-classes sout)
   (declare (optimize (speed 3)))
-  (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
-        cur-package)
+  (let ((sorted-classes (sort-classes-by-inheritance exposed-classes)))
     (format sout "#ifdef SET_CLASS_SYMBOLS~%")
     (dolist (exposed-class sorted-classes)
-      (format sout "set_one_static_class_symbol<~a::~a>(bootStrapSymbolMap,~a);~%"
-              (tags:namespace% (class-tag% exposed-class))
-              (tags:name% (class-tag% exposed-class))
-              (lisp-name% exposed-class)))
+      (when (is-exposed-class exposed-class)
+        (format sout "set_one_static_class_symbol<~a::~a>(bootStrapSymbolMap,~a);~%"
+                (tags:namespace% (class-tag% exposed-class))
+                (tags:name% (class-tag% exposed-class))
+                (lisp-name% exposed-class))))
     (format sout "#endif // SET_CLASS_SYMBOLS~%")))
 
 (defun as-var-name (ns name)
@@ -435,6 +434,9 @@ Convert colons to underscores"
           if (alphanumericp c) do (princ c sout)
             else do (princ #\_ sout))))
 
+;;; This is used to determine stamp ranges. Since subclasses always have a
+;;; higher stamp value than their superclasses, the low end of the range for
+;;; any class is just that class itself.
 (defun highest-stamp-class (c)
   (if (direct-subclasses% c)
       (let ((high-stamp 0)
@@ -448,30 +450,20 @@ Convert colons to underscores"
         (values high-stamp high-class))
       (values (stamp% c) c)))
 
-(defun split-class-key (key)
-  (let ((pos (search "::" key)))
-    (values (subseq key 0 pos) (subseq key (+ 2 pos)))))
-
-(defun extract-forwards (classes)
-  (let ((namespaces (make-hash-table :test #'equal)))
-    (maphash (lambda (key class)
-               (multiple-value-bind (namespace class-name)
-                   (split-class-key key)
-                 (push class-name (gethash namespace namespaces nil))))
-             classes)
-    namespaces))
-
 (defun generate-mps-poison (sout)
   "Sections that are only applicable to Boehm builds include this to prevent them from compiling in MPS builds"
+  (declare (ignorable sout))
+  #+(or)
+  (progn
   (format sout " #if defined(USE_ANALYSIS)~%")
   (format sout "  #error \"Do not include this section when USE_ANALYSIS is defined - use the section from clasp_gc_xxx.cc\"~%")
-  (format sout " #endif // USE_ANALYSIS~%"))
+  (format sout " #endif // USE_ANALYSIS~%")))
 
 (defun gather-all-subclasses-for (class-key inheritance)
   (loop for x in (gethash class-key inheritance)
         append (cons x
                      (gather-all-subclasses-for x inheritance))))
-(defparameter *deep-inheritance* nil)
+
 (defun gather-all-subclasses (inheritance)
   (let ((reverse-inheritance (make-hash-table :test #'equal))
         (deep-inheritance (make-hash-table :test #'equal)))
@@ -483,10 +475,9 @@ Convert colons to underscores"
                      do (loop for sub in (gather-all-subclasses-for key reverse-inheritance)
                               do (pushnew sub (gethash key deep-inheritance) :test #'string=))))
              reverse-inheritance)
-    (setf *deep-inheritance* deep-inheritance)
     deep-inheritance))
 
-(defgeneric stamp-value (class &optional stamp))
+(defgeneric stamp-value (class))
 
 
 (defconstant +stamp-shift+    2)
@@ -496,260 +487,431 @@ Convert colons to underscores"
 (defconstant +header-wtag+    #B11)
 (defconstant +max-wtag+       #B11)
 
-(defmethod stamp-value ((class gc-managed-type) &optional stamp)
-  (if stamp
-      (logior (ash stamp +stamp-shift+) +max-wtag+)
-      (logior (ash (stamp% class) +stamp-shift+) +header-wtag+)))
+(defun adjust-stamp (stamp &optional (wtag +max-wtag+))
+  (logior (ash stamp +stamp-shift+) wtag))
 
+(defmethod stamp-value ((class gc-managed-type))
+  (adjust-stamp (stamp% class) +header-wtag+))
 
-(defmethod stamp-value ((class t) &optional stamp)
+(defun class-wtag (class)
+  (let ((ckey (class-key% class)))
+    (cond ((member ckey '("core::Instance_O" "core::FuncallableInstance_O"
+                          "clbind::ClassRep_O")
+                   :test #'string=)
+           +rack-wtag+)
+          ((member ckey '("core::WrappedPointer_O") :test #'string=)
+           +wrapped-wtag+)
+          ((member ckey '("core::DerivableCxxObject_O") :test #'string=)
+           +derivable-wtag+)
+          (t +header-wtag+))))
+
+(defmethod stamp-value ((class kind))
+  (adjust-stamp (stamp% class) (tags:stamp-wtag class)))
+
+(defmethod stamp-value ((class t))
   "This could change the value of stamps for specific classes - but that would break quick typechecks like (typeq x Number)"
-;;;  (format t "Assigning stamp-value for class ~s~%" (class-key% class))
-  (if stamp
-      (logior (ash stamp +stamp-shift+) +max-wtag+) ;; Cover the entire range
-      (cond ((member (class-key% class) '("core::Instance_O" "core::FuncallableInstance_O" "clbind::ClassRep_O") :test #'string=)
-;;;         (format t "---> stamp in rack~%")
-             (logior (ash (stamp% class) +stamp-shift+) +rack-wtag+))
-            ((member (class-key% class) '("core::WrappedPointer_O") :test #'string=)
-;;;         (format t "---> stamp in wrapped~%")
-             (logior (ash (stamp% class) +stamp-shift+) +wrapped-wtag+))
-            ((member (class-key% class) '("core::DerivableCxxObject_O") :test #'string=)
-;;;         (format t "---> stamp in derivable~%")
-             (logior (ash (stamp% class) +stamp-shift+) +derivable-wtag+))
-            (t
-;;;         (format t "---> stamp in header~%")
-             (logior (ash (stamp% class) +stamp-shift+) +header-wtag+)))))
+  (adjust-stamp (stamp% class) (class-wtag class)))
 
+(defun separate-namespace-name (name)
+  "Separate a X::Y::Z name into (list X Y Z) - strip any preceeding 'class '"
+  (let* ((class-noise "class ")
+         (full-name (if (and (> (length name) (length class-noise)) (string= (subseq name 0 (length class-noise)) class-noise))
+                        (subseq name (length class-noise) (length name))
+                        name))
+         (colon-pos (search "::" full-name)))
+    (if colon-pos
+        (let ((namespace (subseq full-name 0 colon-pos))
+              (name (subseq full-name (+ colon-pos 2) (length full-name))))
+          (list* namespace (separate-namespace-name name)))
+        (list name))))
 
+(defstruct namespace
+  (submap (make-hash-table :test #'equal)) ;; map namespaces to names
+  names)
 
+(defun namespace-add-name (ns name)
+#|  (when (and (eql (length name) 1) (string= "ddddDiagnostics" (car name)))
+    (break "Check name - about to add to namespace"))
+|#
+  (if (eql (length name) 1)
+      (push (car name) (namespace-names ns))
+      (let ((subnamespace (gethash (car name) (namespace-submap ns) (make-namespace))))
+        (setf (gethash (car name) (namespace-submap ns)) subnamespace)
+        (namespace-add-name subnamespace (cdr name)))))
 
+(defun code-for-nested-class-names (stream ns ns-name &optional (indent 0))
+  (dolist (name (namespace-names ns))
+    (format stream "~vt// NESTED    class ~a::~a; // YOU ARE GOING TO HAVE TO INCLUDE THE DEFINITION OF THIS CLASS!!!~%" (+ indent 4) ns-name name))
+  (maphash (lambda (ns-name subnamespace)
+             (progn
+               (format stream "~vt// nested classes within ~a START~%" indent ns-name)
+               (code-for-nested-class-names stream  subnamespace ns-name)
+               (format stream "~vt// nested classes END~%" indent)))
+           (namespace-submap ns)))
 
+(defun merge-forward-names-by-namespace (forwards)
+  (let ((top-namespace (make-namespace)))
+    (maphash (lambda (name value)
+               (declare (ignorable value))
+               (let ((split-name (separate-namespace-name name)))
+                 (namespace-add-name top-namespace split-name)))
+             forwards)
+    top-namespace))
 
-(defparameter *all-subclasses* nil)
-(defun generate-code-for-init-classes-and-methods (exposed-classes gc-managed-types)
+(defun code-for-namespace-names (stream ns &optional (indent 0))
+  (let ((classes (make-hash-table :test #'equal)))
+    (dolist (name (namespace-names ns))
+      (setf (gethash name classes) t)
+      (format stream "~vtclass ~a;~%" indent name))
+    (maphash (lambda (ns-name subnamespace)
+               (if (gethash ns-name classes)
+                   (progn
+                     (format stream "~vt// nested classes within ~a START~%" indent ns-name)
+                     (code-for-nested-class-names stream subnamespace ns-name)
+                     (format stream "~vt// nested classes END~%" indent))
+                   (progn
+                     (format stream "~vtnamespace ~a {~%" indent ns-name)
+                     (code-for-namespace-names stream subnamespace (+ 4 indent))
+                     (format stream "~vt};~%" indent))))
+             (namespace-submap ns))))
+
+(defun generate-declare-forwards (stream exposed-classes forwards)
+  (format stream "#ifdef DECLARE_FORWARDS~%")
+  (let ((fw-ht (make-hash-table :test 'equal)))
+    (loop for fwds in forwards
+          do (loop for name in (tags:forwards% fwds)
+                   do (setf (gethash name fw-ht) t)))
+    (maphash (lambda (key class)
+               (declare (ignore class))
+               (setf (gethash key fw-ht) t))
+             exposed-classes)
+    ;;
+    ;; Now fw-ht has all of the namespace qualified class names as keys
+    ;;
+    (generate-mps-poison stream)
+    (code-for-namespace-names stream (merge-forward-names-by-namespace fw-ht))
+    #+(or)(let ((forwards (extract-forwards fw-ht)))
+      (maphash (lambda (namespace classes)
+                 (format stream "namespace ~a {~%~{  class ~a;~%~}~%};~%"
+                         namespace classes))
+               forwards))
+    (format stream "#endif // DECLARE_FORWARDS~%")))
+
+(defun generate-declare-inheritance (stream sorted-classes inheritance)
+  (format stream "#ifdef DECLARE_INHERITANCE~%")
+  (let ((reverse-classes (reverse sorted-classes))
+        (all-subclasses (gather-all-subclasses inheritance)))
+    (format t "all-subclasses = ~a~%" all-subclasses)
+    (loop for class in reverse-classes
+          for subclasses = (gethash (class-key% class) all-subclasses)
+          until (string= (class-key% class) "core::T_O")
+          do (format stream "// ~a~%" (class-key% class))
+             (loop for subclass in subclasses
+                   do (format stream " template <> struct Inherits<::~a,::~a> : public std::true_type  {};~%"
+                              (class-key% class) subclass))))
+  (format stream "#endif // DECLARE_INHERITANCE~%"))
+
+(defun generate-gc-enum (stream sorted-classes gc-managed-types)
+  (format stream "#ifdef GC_ENUM
+STAMPWTAG_null = ADJUST_STAMP(0),~%")
+  (let ((stamp-max 0))
+    (dolist (c sorted-classes)
+      (format stream "STAMPWTAG_~a = ADJUST_STAMP(~a), // stamp ~d unshifted 0x~x  shifted 0x~x~%"
+              (build-enum-name (class-key% c)) (stamp-value c)
+              (ash (stamp-value c) (- +stamp-shift+)) (stamp-value c)
+              (ash (stamp-value c) +stamp-shift+))
+      (setf stamp-max (max stamp-max (stamp-value c))))
+    (maphash (lambda (key type)
+               (declare (ignore key))
+               (format stream "STAMPWTAG_~a = ADJUST_STAMP(~a),~%"
+                       (build-enum-name (c++type% type)) (stamp-value type))
+               (setf stamp-max (max stamp-max (stamp-value type))))
+             gc-managed-types)
+    (format stream "STAMPWTAG_max = ADJUST_STAMP(~a),~%"
+            (logior stamp-max +max-wtag+)))
+  (format stream "#endif // GC_ENUM~%"))
+
+(defun generate-gc-enum-names (stream sorted-classes gc-managed-types)
+  (format stream "#ifdef GC_ENUM_NAMES
+register_stamp_name(\"STAMPWTAG_null\",0);~%")
+  (dolist (c sorted-classes)
+    (format stream "register_stamp_name(\"STAMPWTAG_~a\",ADJUST_STAMP(~a));~%" (build-enum-name (class-key% c)) (stamp-value c)))
+  (maphash (lambda (key type)
+             (declare (ignore key))
+             (format stream "register_stamp_name(\"STAMPWTAG_~a\",ADJUST_STAMP(~a));~%"
+                     (build-enum-name (c++type% type))
+                     (stamp-value type)))
+           gc-managed-types)
+  (format stream "#endif // GC_ENUM_NAMES~%"))
+
+(defun generate-gc-stamp-selectors (stream sorted-classes gc-managed-types)
+  (format stream "#ifdef GC_STAMP_SELECTORS~%")
+  (flet ((write-one-gcstamp (type mangled-key &key key)
+           (when key
+             (format stream "// ~a~%" key))
+           (format stream "template <> class gctools::GCStamp<~a> {
+public:
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_~a;
+};~%"
+                   type mangled-key)))
+    (generate-mps-poison stream)
+    (dolist (c sorted-classes)
+      (write-one-gcstamp (class-key% c) (build-enum-name (class-key% c))))
+    (maphash (lambda (key type)
+               (write-one-gcstamp (c++type% type)
+                                  (build-enum-name (c++type% type))
+                                  :key key))
+             gc-managed-types))
+  (format stream "#endif // GC_STAMP_SELECTORS~%"))
+
+(defun generate-gc-dynamic-cast (stream sorted-classes)
+  (format stream "#ifdef GC_DYNAMIC_CAST~%")
+  (generate-mps-poison stream)
+  (dolist (c sorted-classes)
+    (format stream "template <typename FP> struct Cast<~a*,FP> {
+  inline static bool isA(FP client) {
+    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
+    size_t kindVal = header->shifted_stamp();~%"
+            (class-key% c))
+    (let ((high-stamp (highest-stamp-class c)))
+      (if (eq (stamp% c) high-stamp)
+          (format stream "    // IsA-stamp-range ~a val -> ADJUST_STAMP(~a)
+    return (kindVal == ISA_ADJUST_STAMP(~a));~%"
+                  (class-key% c) (stamp-value c) (stamp-value c))
+          (format stream "    // IsA-stamp-range ~a low high -> ISA_ADJUST_STAMP(~a) ISA_ADJUST_STAMP(~a)
+    return ((ISA_ADJUST_STAMP(~a) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~a)));~%"
+                  (class-key% c)
+                  (stamp-value c) (adjust-stamp high-stamp)
+                  (stamp-value c) (adjust-stamp high-stamp))))
+    (format stream "  };~%};~%"))
+  (format stream "#endif // GC_DYNAMIC_CAST~%"))
+
+(defun generate-gc-typeq (stream sorted-classes)
+  (format stream "#ifdef GC_TYPEQ~%")
+  (dolist (c sorted-classes)
+    (when (or (not (typep c 'kind))
+              (let ((root (tags:root-class (tag% c))))
+                (or (string= root "core::T_O")
+                    (string= root "clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"))))
+      (multiple-value-bind (high-stamp high-class)
+          (highest-stamp-class c)
+        (if (eq (stamp% c) high-stamp)
+            (format stream "    ADD_SINGLE_TYPEQ_TEST(~a,TYPEQ_ADJUST_STAMP(~a)); ~%"
+                    (class-key% c) (stamp-value c))
+            (format stream "    ADD_RANGE_TYPEQ_TEST(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%"
+                    (class-key% c) (class-key% high-class)
+                    (stamp-value c) (adjust-stamp high-stamp))))))
+  (format stream "#endif // GC_TYPEQ~%"))
+
+(defun generate-allocate-all-classes (stream sorted-classes)
+  (format stream "#ifdef ALLOCATE_ALL_CLASSES~%")
+  (dolist (exposed-class sorted-classes)
+    (when (is-exposed-class exposed-class)
+      (format stream "gctools::smart_ptr<core::Instance_O> ~a = allocate_one_class<~a::~a>(~a);~%"
+              (as-var-name (tags:namespace% (class-tag% exposed-class))
+                           (tags:name% (class-tag% exposed-class)))
+              (tags:namespace% (class-tag% exposed-class))
+              (tags:name% (class-tag% exposed-class))
+              (meta-class% exposed-class))))
+  (format stream "#endif // ALLOCATE_ALL_CLASSES~%"))
+
+(defun generate-set-bases-all-classes (stream sorted-classes)
+  (format stream "#ifdef SET_BASES_ALL_CLASSES~%")
+  (dolist (exposed-class sorted-classes)
+    (when (is-exposed-class exposed-class)
+      (unless (search +root-dummy-class+ (base% exposed-class) )
+        (format stream "~a->addInstanceBaseClassDoNotCalculateClassPrecedenceList(~a::static_classSymbol());~%"
+                (as-var-name (tags:namespace% (class-tag% exposed-class))
+                             (tags:name% (class-tag% exposed-class)))
+                (base% exposed-class))
+        (format stream "~a->addInstanceAsSubClass(~a::static_classSymbol());~%"
+                (as-var-name (tags:namespace% (class-tag% exposed-class))
+                             (tags:name% (class-tag% exposed-class)))
+                (base% exposed-class)))))
+  (format stream "#endif // SET_BASES_ALL_CLASSES~%"))
+
+(defun generate-calculate-class-precedence-all-classes (stream sorted-classes)
+  (format stream "#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%")
+  (dolist (exposed-class sorted-classes)
+    (when (is-exposed-class exposed-class)
+      (unless (search +root-dummy-class+ (base% exposed-class))
+        (format stream "~a->__setupStage3NameAndCalculateClassPrecedenceList(~a::~a::static_classSymbol());~%"
+                (as-var-name (tags:namespace% (class-tag% exposed-class))
+                             (tags:name% (class-tag% exposed-class)))
+                (tags:namespace% (class-tag% exposed-class))
+                (tags:name% (class-tag% exposed-class))))))
+  (format stream "#endif //#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%"))
+
+(defun generate-expose-static-class-variables (stream sorted-classes)
+  (format stream "#ifdef EXPOSE_STATIC_CLASS_VARIABLES~%")
+  (dolist (exposed-class sorted-classes)
+    (when (is-exposed-class exposed-class)
+      (let ((class-tag (class-tag% exposed-class)))
+        (format stream "namespace ~a {
+  gctools::Header_s::StampWtagMtag::Value ~a::static_ValueStampWtagMtag;
+};~%"
+                (tags:namespace% class-tag) (tags:name% class-tag)))))
+  (format stream "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
+
+(defun generate-expose-instance-method (stream method class-tag)
+  (format stream "// ~a~%" (file-line method))
+  (let* ((lisp-name (lisp-name% method))
+         (lambda-list (lambda-list% method))
+         (declare-form (declare% method)))
+    (format stream "        .def(~a,~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
+            lisp-name
+            (if (typep method 'expose-defmethod)
+                (format nil "&~a::~a"
+                        (tags:name% class-tag) (method-name% method))
+                (pointer% method))
+            (if (string/= lambda-list "")
+                (format nil "(~a)" lambda-list)
+                lambda-list)
+            declare-form)))
+
+(defun generate-expose-class-method (stream class-method class-tag)
+  (if (typep class-method 'expose-def-class-method)
+      (let* ((lisp-name (lisp-name% class-method))
+             (class-name (tags:name% class-tag))
+             (method-name (method-name% class-method))
+             (lambda-list (lambda-list% class-method))
+             (declare-form (declare% class-method)))
+        (declare (ignore declare-form))
+        (format stream " expose_function(~a,&~a::~a,R\"lambda(~a)lambda\");~%"
+                lisp-name
+                class-name
+                method-name
+                (maybe-wrap-lambda-list lambda-list)))))
+
+(defun generate-expose-methods-batch (stream partition batch-num)
+  (format stream "#ifdef BATCH~a~%" batch-num)
+  (format stream "#ifdef EXPOSE_METHODS~%")
+  (dolist (exposed-class partition)
+    (when (is-exposed-class exposed-class)
+      (let ((class-tag (class-tag% exposed-class)))
+        (format stream "namespace ~a {
+void ~a::expose_to_clasp() {
+// ~a
+    core::~:[class~;externalClass~]_<~a>()~%"
+                (tags:namespace% class-tag) (tags:name% class-tag)
+                (file-line exposed-class)
+                (typep exposed-class 'exposed-external-class)
+                (tags:name% class-tag))
+        (dolist (method (methods% exposed-class))
+          (generate-expose-instance-method stream method class-tag))
+        (format stream "     ;~%")
+        (dolist (class-method (class-methods% exposed-class))
+          (generate-expose-class-method stream class-method class-tag))
+        (format stream "}~%")
+        (format stream "};~%"))))
+  (format stream "#endif // EXPOSE_METHODS~%")
+  (format stream "#ifdef EXPOSE_CLASSES_AND_METHODS~%")
+  (dolist (exposed-class partition)
+    (when (is-exposed-class exposed-class)
+      (format stream "~a::~a::expose_to_clasp();~%"
+              (tags:namespace% (class-tag% exposed-class))
+              (tags:name% (class-tag% exposed-class)))))
+  (format stream "#endif //#ifdef EXPOSE_CLASSES_AND_METHODS~%")
+  (format stream "#endif // BATCH~a~%" batch-num))
+
+(defun generate-expose-methods (stream sorted-classes)
+  (let ((partitions (partition-list sorted-classes *batch-classes*)))
+    (loop for partition in partitions
+          for batch-num from 1
+          do (generate-expose-methods-batch stream partition batch-num))))
+
+(defun generate-code-for-init-classes-and-methods
+    (exposed-classes gc-managed-types)
   (declare (optimize (speed 0) (debug 3)))
   (with-output-to-string (sout)
     (multiple-value-bind (sorted-classes inheritance)
         (sort-classes-by-inheritance exposed-classes)
       (let (cur-package)
-        (format sout "#ifdef DECLARE_FORWARDS~%")
-        (generate-mps-poison sout)
-        (let ((forwards (extract-forwards exposed-classes)))
-          (maphash (lambda (namespace classes)
-                     (format sout "namespace ~a {~%" namespace)
-                     (dolist (cl classes)
-                       (format sout "  class ~a;~%" cl))
-                     (format sout "};~%"))
-                   forwards))
-        (format sout "#endif // DECLARE_FORWARDS~%")
-        (format sout "#ifdef DECLARE_INHERITANCE~%")
-        (let ((reverse-inheritance (make-hash-table :test #'equal))
-              (reverse-classes (reverse sorted-classes))
-              (all-subclasses (gather-all-subclasses inheritance)))
-          (format t "all-subclasses = ~a~%" all-subclasses)
-          (setf *all-subclasses* all-subclasses)
-          (loop for class in reverse-classes
-                for subclasses = (gethash (class-key% class) all-subclasses)
-                until (string= (class-key% class) "core::T_O")
-                do (format sout "// ~a~%" (class-key% class))
-                   (loop for subclass in subclasses
-                         do (format sout " template <> struct Inherits<::~a,::~a> : public std::true_type  {};~%" (class-key% class) subclass))))
-        (format sout "#endif // DECLARE_INHERITANCE~%")
-        (let ((stamp-max 0)
-              (sorted-classes (let (sc)
+        (declare (ignorable cur-package))
+        (generate-declare-forwards sout exposed-classes nil)
+        (generate-declare-inheritance sout sorted-classes inheritance)
+        (let ((sorted-classes (let (sc)
                                 (maphash (lambda (key class)
+                                           (declare (ignore key))
                                            (push class sc))
                                          exposed-classes)
                                 (sort sc #'< :key #'stamp%))))
-          (format sout "#ifdef GC_ENUM~%")
-          (dolist (c sorted-classes)
-            (format sout "STAMPWTAG_~a = ADJUST_STAMP(~a), // stamp ~d unshifted 0x~x  shifted 0x~x~%" (build-enum-name (class-key% c)) (stamp-value c) (ash (stamp-value c) -2) (stamp-value c) (* 4 (stamp-value c)))
-            (setf stamp-max (max stamp-max (stamp-value c))))
-          (maphash (lambda (key type)
-                     (format sout "STAMPWTAG_~a = ADJUST_STAMP(~a),~%" (build-enum-name (c++type% type)) (stamp-value type))
-                     (setf stamp-max (max stamp-max (stamp-value type))))
-                   gc-managed-types)
-          (format sout "STAMPWTAG_max = ADJUST_STAMP(~a),~%" stamp-max)
-          (format sout "#endif // GC_ENUM~%")
-          (format sout "#ifdef GC_ENUM_NAMES~%")
-          (dolist (c sorted-classes)
-            (format sout "register_stamp_name(\"STAMPWTAG_~a\",ADJUST_STAMP(~a));~%" (build-enum-name (class-key% c)) (stamp-value c)))
-          (maphash (lambda (key type)
-                     (format sout "register_stamp_name(\"STAMPWTAG_~a\",ADJUST_STAMP(~a));~%" (build-enum-name (c++type% type)) (stamp-value type)))
-                   gc-managed-types)
-          (format sout "#endif // GC_ENUM_NAMES~%"))
-        (flet ((write-one-gcstamp (type mangled-key flags)
-                 (format sout "template <> class gctools::GCStamp<~a> {~%" type)
-                 (format sout "public:~%")
-                 (format sout "  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_~a;~%" mangled-key)
-                 (format sout "};~%")))
-          (format sout "#ifdef GC_STAMP_SELECTORS~%")
-          (generate-mps-poison sout)
-          (dolist (c sorted-classes)
-            (write-one-gcstamp (class-key% c) (build-enum-name (class-key% c)) (string (flags% c))))
-          (maphash (lambda (key type)
-                     (write-one-gcstamp (c++type% type) (build-enum-name (c++type% type)) "FLAGS_STAMP_IN_HEADER"))
-                   gc-managed-types))
-        (format sout "#endif // GC_STAMP_SELECTORS~%")
-        (format sout "#ifdef GC_DYNAMIC_CAST~%")
-        (generate-mps-poison sout)
-        (dolist (c sorted-classes)
-          (format sout "template <typename FP> struct Cast<~a*,FP> {~%" (class-key% c))
-          (format sout "  inline static bool isA(FP client) {~%")
-          (format sout "    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));~%")
-          (format sout "    size_t kindVal = header->shifted_stamp();~%")
-          (multiple-value-bind (high-stamp high-class)
-              (highest-stamp-class c)
-            (if (eq (stamp% c) high-stamp)
-                (progn
-                  (format sout "    // IsA-stamp-range ~a val -> ADJUST_STAMP(~a)~%" (class-key% c) (stamp-value c))
-                  (format sout "    return (kindVal == ISA_ADJUST_STAMP(~a));~%" (stamp-value c)))
-                (progn
-                  (format sout "    // IsA-stamp-range ~a low high -> ISA_ADJUST_STAMP(~a) ISA_ADJUST_STAMP(~a)~%" (class-key% c) (stamp-value c) (stamp-value c high-stamp))
-                  (format sout "    return ((ISA_ADJUST_STAMP(~a) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~a)));~%" (stamp-value c) (stamp-value c high-stamp)))))
-          (format sout "  };~%")
-          (format sout "};~%"))
-        (format sout "#endif // GC_DYNAMIC_CAST~%")
-        (format sout "#ifdef GC_TYPEQ~%")
-        (dolist (c sorted-classes)
-          (multiple-value-bind (high-stamp high-class)
-              (highest-stamp-class c)
-            (if (eq (stamp% c) high-stamp)
-                (format sout "    ADD_SINGLE_TYPEQ_TEST(~a,TYPEQ_ADJUST_STAMP(~a)); ~%" (class-key% c) (stamp-value c))
-                (format sout "    ADD_RANGE_TYPEQ_TEST(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%" (class-key% c) (class-key% high-class) (stamp-value c) (stamp-value high-class (stamp% c))))))
-        (format sout "#endif // GC_TYPEQ~%")
+          (generate-gc-enum sout sorted-classes gc-managed-types)
+          (generate-gc-enum-names sout sorted-classes gc-managed-types))
+        (generate-gc-stamp-selectors sout sorted-classes gc-managed-types)
+        (generate-gc-dynamic-cast sout sorted-classes)
+        (generate-gc-typeq sout sorted-classes)
         (generate-code-for-init-class-kinds exposed-classes sout)
         (generate-code-for-init-classes-class-symbols exposed-classes sout)
-        (progn
-          (format sout "#ifdef ALLOCATE_ALL_CLASSES~%")
-          (dolist (exposed-class sorted-classes)
-            (format sout "gctools::smart_ptr<core::Instance_O> ~a = allocate_one_class<~a::~a>(~a);~%"
-                    (as-var-name (tags:namespace% (class-tag% exposed-class))
-                                 (tags:name% (class-tag% exposed-class)))
-                    (tags:namespace% (class-tag% exposed-class))
-                    (tags:name% (class-tag% exposed-class))
-                    (meta-class% exposed-class)))
-          (format sout "#endif // ALLOCATE_ALL_CLASSES~%"))
-        (progn
-          (format sout "#ifdef SET_BASES_ALL_CLASSES~%")
-          (dolist (exposed-class sorted-classes)
-            (unless (string= (base% exposed-class) +root-dummy-class+)
-              (format sout "~a->addInstanceBaseClassDoNotCalculateClassPrecedenceList(~a::static_classSymbol());~%"
-                      (as-var-name (tags:namespace% (class-tag% exposed-class))
-                                   (tags:name% (class-tag% exposed-class)))
-                      (base% exposed-class))
-              (format sout "~a->addInstanceAsSubClass(~a::static_classSymbol());~%"
-                      (as-var-name (tags:namespace% (class-tag% exposed-class))
-                                   (tags:name% (class-tag% exposed-class)))
-                      (base% exposed-class))))
-          (format sout "#endif // SET_BASES_ALL_CLASSES~%"))
-        (progn
-          (format sout "#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%")
-          (dolist (exposed-class sorted-classes)
-            (unless (string= (base% exposed-class) +root-dummy-class+)
-              (format sout "~a->__setupStage3NameAndCalculateClassPrecedenceList(~a::~a::static_classSymbol());~%"
-                      (as-var-name (tags:namespace% (class-tag% exposed-class))
-                                   (tags:name% (class-tag% exposed-class)))
-                      (tags:namespace% (class-tag% exposed-class))
-                      (tags:name% (class-tag% exposed-class)))))
-          (format sout "#endif //#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%"))
-        #+(or)(progn
-                (format sout "#ifdef EXPOSE_CLASSES~%")
-                (dolist (exposed-class sorted-classes)
-                  (when (string/= cur-package (package% exposed-class))
-                    (when cur-package (format sout "#endif~%"))
-                    (setf cur-package (package% exposed-class))
-                    (format sout "#ifdef Use_~a~%" cur-package))
-                  (format sout "DO_CLASS(~a,~a,~a,~a,~a,~a);~%"
-                          (tags:namespace% (class-tag% exposed-class))
-                          (subseq (class-key% exposed-class) (+ 2 (search "::" (class-key% exposed-class))))
-                          (package% exposed-class)
-                          (lisp-name% exposed-class)
-                          (base% exposed-class)
-                          (meta-class% exposed-class)))
-                (format sout "#endif~%")
-                (format sout "#endif // EXPOSE_CLASSES~%"))
-        (progn
-          (format sout "#ifdef EXPOSE_STATIC_CLASS_VARIABLES~%")
-          (dolist (exposed-class sorted-classes)
-            (let ((class-tag (class-tag% exposed-class)))
-              (format sout "namespace ~a { ~%" (tags:namespace% class-tag))
-              (format sout "  gctools::Header_s::StampWtagMtag::Value ~a::static_ValueStampWtagMtag;~%" (tags:name% class-tag))
-              (format sout "};~%")))
-          (format sout "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
-        (let ((partitions (partition-list sorted-classes *batch-classes*)))
-          (loop for partition in partitions
-                for batch-num from 1
-                do (format sout "#ifdef BATCH~a~%" batch-num)
-                   (progn
-                     (format sout "#ifdef EXPOSE_METHODS~%")
-                     (dolist (exposed-class partition)
-                       (let ((class-tag (class-tag% exposed-class)))
-                         (format sout "namespace ~a {~%" (tags:namespace% class-tag))
-                         (format sout "void ~a::expose_to_clasp() {~%" (tags:name% class-tag))
-                         (format sout "// ~a~%" (file-line exposed-class))
-                         (format sout "    ~a<~a>()~%"
-                                 (if (typep exposed-class 'exposed-external-class)
-                                     "core::externalClass_"
-                                     "core::class_")
-                                 (tags:name% class-tag))
-                         (dolist (method (methods% exposed-class))
-                           (if (typep method 'expose-defmethod)
-                               (let* ((lisp-name (lisp-name% method))
-                                      (class-name (tags:name% class-tag))
-                                      (method-name (method-name% method))
-                                      (lambda-list (lambda-list% method))
-                                      (declare-form (declare% method)))
-                                 (format sout "// ~a~%" (file-line method))
-                                 (format sout "        .def(~a,&~a::~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
-                                         lisp-name
-                                         class-name
-                                         method-name
-                                         (if (string/= lambda-list "")
-                                             (format nil "(~a)" lambda-list)
-                                             lambda-list)
-                                         declare-form))
-                               (let* ((lisp-name (lisp-name% method))
-                                      (pointer (pointer% method))
-                                      (lambda-list (lambda-list% method))
-                                      (declare-form (declare% method)))
-                                 (format sout "// ~a~%" (file-line method))
-                                 (format sout "        .def(~a,~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
-                                         lisp-name
-                                         pointer
-                                         (if (string/= lambda-list "")
-                                             (format nil "(~a)" lambda-list)
-                                             lambda-list)
-                                         declare-form))))
-                         (format sout "     ;~%")
-                         (dolist (class-method (class-methods% exposed-class))
-                           (if (typep class-method 'expose-def-class-method)
-                               (let* ((lisp-name (lisp-name% class-method))
-                                      (class-name (tags:name% class-tag))
-                                      (method-name (method-name% class-method))
-                                      (lambda-list (lambda-list% class-method))
-                                      (declare-form (declare% class-method)))
-                                 (declare (ignore declare-form))
-                                 (format sout " expose_function(~a,&~a::~a,R\"lambda(~a)lambda\");~%"
-                                         lisp-name
-                                         class-name
-                                         method-name
-                                         (maybe-wrap-lambda-list lambda-list)))))
-                         (format sout "}~%")
-                         (format sout "};~%")))
-                     (format sout "#endif // EXPOSE_METHODS~%"))
-                do (progn
-                     (format sout "#ifdef EXPOSE_CLASSES_AND_METHODS~%")
-                     (dolist (exposed-class partition)
-                       (format sout "~a::~a::expose_to_clasp();~%"
-                               (tags:namespace% (class-tag% exposed-class))
-                               (tags:name% (class-tag% exposed-class))))
-                     (format sout "#endif //#ifdef EXPOSE_CLASSES_AND_METHODS~%"))
-                do (format sout "#endif // BATCH~a~%" batch-num)))
-        ))))
+        (generate-allocate-all-classes sout sorted-classes)
+        (generate-set-bases-all-classes sout sorted-classes)
+        (generate-calculate-class-precedence-all-classes sout sorted-classes)
+        (generate-expose-static-class-variables sout sorted-classes)
+        (generate-expose-methods sout sorted-classes)))))
 
-(defparameter *symbols-by-package* nil)
-(defparameter *symbols-by-namespace* nil)
+(defun generate-bootstrap-packages (stream packages-to-create)
+  (format stream "#if defined(BOOTSTRAP_PACKAGES)~%")
+  (mapc (lambda (pkg)
+          (format stream "{
+  std::list<std::string> use_packages = {};
+  bootStrapSymbolMap->add_package_info(~s,use_packages);
+}~%"
+                  (name% pkg)))
+        packages-to-create)
+  (format stream "#endif // #if defined(BOOTSTRAP_PACKAGES)~%"))
+
+(defun generate-create-all-packages (stream packages-to-create)
+  (format stream "#if defined(CREATE_ALL_PACKAGES)~%")
+  (mapc (lambda (pkg)
+          (format stream "{
+  std::list<std::string> nicknames = {~{ ~s~^, ~}};
+  std::list<std::string> use_packages = {~{ ~s~^, ~}};
+  std::list<std::string> shadow = {~{ ~s~^, ~}};
+  _lisp->finishPackageSetup(~s,nicknames,use_packages,shadow);
+}~%"
+                  (nicknames% pkg) (packages-to-use% pkg)
+                  (shadow% pkg) (name% pkg)))
+        packages-to-create)
+  #+(or)
+  (mapc (lambda (pkg)
+          (when (packages-to-use% pkg)
+            (mapc (lambda (use)
+                    (format stream "  gc::As<core::Package_sp>(_lisp->findPackage(~s))->usePackage(gc::As<core::Package_sp>(_lisp->findPackage(~s)));~%" (name% pkg) use))
+                  (packages-to-use% pkg))))
+        packages-to-create)
+  (format stream "#endif // CREATE_ALL_PACKAGES~%"))
+
+(defun generate-declare-all-symbols (stream symbols-by-package
+                                     symbols-by-namespace)
+  (let ((symbol-count 0) (symbol-index 0))
+    (maphash (lambda (key symbols)
+               (declare (ignore key))
+               (setf symbol-count (+ symbol-count (length symbols))))
+             symbols-by-package)
+    (format stream "#if defined(DECLARE_ALL_SYMBOLS)~%")
+    (format stream "int global_symbol_count = ~d;~%" symbol-count)
+    (format stream "core::Symbol_sp global_symbols[~d];~%" symbol-count)
+    (maphash (lambda (namespace namespace-symbols)
+               (format stream "namespace ~a {~%" namespace)
+               (dolist (symbol namespace-symbols)
+                 (format stream "core::Symbol_sp& _sym_~a = global_symbols[~d];~%"
+                         (c++-name% symbol)
+                         (1- (incf symbol-index))))
+               (format stream "} // namespace ~a~%" namespace))
+             symbols-by-namespace)
+    (format stream "#endif // DECLARE_ALL_SYMBOLS~%")))
+
+(defun generate-extern-all-symbols (stream symbols-by-namespace)
+  (format stream "#if defined(EXTERN_ALL_SYMBOLS)~%")
+  (maphash (lambda (namespace namespace-symbols)
+             (format stream "namespace ~a {~%" namespace)
+             (dolist (symbol namespace-symbols)
+               (format stream "extern core::Symbol_sp& _sym_~a;~%"
+                       (c++-name% symbol)))
+             (format stream "} // namespace ~a~%" namespace))
+           symbols-by-namespace)
+  (format stream "#endif // EXTERN_ALL_SYMBOLS~%"))
+
 (defun generate-code-for-symbols (packages-to-create symbols)
   (declare (optimize (speed 3)))
   ;; Uniqify the symbols
@@ -757,8 +919,6 @@ Convert colons to underscores"
     (let ((symbols-by-package (make-hash-table :test #'equal))
           (symbols-by-namespace (make-hash-table :test #'equal))
           (index 0))
-      (setq *symbols-by-package* symbols-by-package)
-      (setq *symbols-by-namespace* symbols-by-namespace)
       ;; Organize symbols by package
       (dolist (symbol symbols)
         (pushnew symbol
@@ -771,112 +931,62 @@ Convert colons to underscores"
                  :test #'string=
                  :key (lambda (x)
                         (c++-name% x))))
-      (progn
-        (format sout "#if defined(BOOTSTRAP_PACKAGES)~%")
-        (mapc (lambda (pkg)
-                (format sout "{~%")
-                (format sout "  std::list<std::string> use_packages = {};~%")
-                (format sout "  bootStrapSymbolMap->add_package_info(~s,use_packages);~%" (name% pkg))
-                (format sout "}~%"))
-              packages-to-create)
-        (format sout "#endif // #if defined(BOOTSTRAP_PACKAGES)~%"))
-      (progn
-        (format sout "#if defined(CREATE_ALL_PACKAGES)~%")
-        (mapc (lambda (pkg)
-                (format sout "{~%")
-                (format sout "  std::list<std::string> nicknames = {~{ ~s~^, ~}};~%" (nicknames% pkg))
-                (format sout "  std::list<std::string> use_packages = {~{ ~s~^, ~}};~%" (packages-to-use% pkg))
-                (format sout "  std::list<std::string> shadow = {~{ ~s~^, ~}};~%" (shadow% pkg))
-                (format sout "  _lisp->finishPackageSetup(~s,nicknames,use_packages,shadow);~%" (name% pkg))
-                (format sout "}~%"))
-              packages-to-create)
-        #+(or)
-        (mapc (lambda (pkg)
-                (when (packages-to-use% pkg)
-                  (mapc (lambda (use)
-                          (format sout "  gc::As<core::Package_sp>(_lisp->findPackage(~s))->usePackage(gc::As<core::Package_sp>(_lisp->findPackage(~s)));~%" (name% pkg) use))
-                        (packages-to-use% pkg))))
-              packages-to-create)
-        (format sout "#endif~%"))
-      (let ((symbol-count 0)
-            (symbol-index 0))
-        (maphash (lambda (key symbols)
-                   (setf symbol-count (+ symbol-count (length symbols))))
-                 symbols-by-package)
-        (progn
-          (format sout "#if defined(DECLARE_ALL_SYMBOLS)~%")
-          (format sout "int global_symbol_count = ~d;~%" symbol-count)
-          (format sout "core::Symbol_sp global_symbols[~d];~%" symbol-count)
+      (generate-bootstrap-packages sout packages-to-create)
+      (generate-create-all-packages sout packages-to-create)
+      (generate-declare-all-symbols sout symbols-by-package
+                                    symbols-by-namespace)
+      (generate-extern-all-symbols sout symbols-by-namespace)
+      (let ((helpers (make-hash-table :test #'equal))
+            (index 0))
+        (format sout "#if defined(ALLOCATE_ALL_SYMBOLS_HELPERS)~%")
+        (dolist (p packages-to-create)
           (maphash (lambda (namespace namespace-symbols)
-                     (format sout "namespace ~a {~%" namespace)
                      (dolist (symbol namespace-symbols)
-                       (format sout "core::Symbol_sp& _sym_~a = global_symbols[~d];~%"
-                               (c++-name% symbol)
-                               (1- (incf symbol-index))))
-                     (format sout "} // namespace ~a~%" namespace))
-                   symbols-by-namespace)
-          (format sout "#endif~%"))
-        (progn
-          (format sout "#if defined(EXTERN_ALL_SYMBOLS)~%")
-          (maphash (lambda (namespace namespace-symbols)
-                     (format sout "namespace ~a {~%" namespace)
-                     (dolist (symbol namespace-symbols)
-                       (format sout "extern core::Symbol_sp& _sym_~a;~%"
-                               (c++-name% symbol)))
-                     (format sout "} // namespace ~a~%" namespace))
-                   symbols-by-namespace)
-          (format sout "#endif // EXTERN_ALL_SYMBOLS~%"))
-        (let ((helpers (make-hash-table :test #'equal))
-              (index 0))
-          (format sout "#if defined(ALLOCATE_ALL_SYMBOLS_HELPERS)~%")
-          (dolist (p packages-to-create)
-            (maphash (lambda (namespace namespace-symbols)
-                       (dolist (symbol namespace-symbols)
-                         (when (string= (name% p) (package-str% symbol))
-                           (let ((helper-name (format nil "maybe_allocate_one_symbol_~d_helper" (incf index)))
-                                 (symbol-name (format nil "~a::_sym_~a" namespace (c++-name% symbol))))
-                             (setf (gethash symbol-name helpers) helper-name)
-                             (format sout "NOINLINE void ~a(core::BootStrapCoreSymbolMap* symbols) {~%" helper-name)
-                             (format sout " ~a = symbols->maybe_allocate_unique_symbol(\"~a\",core::lispify_symbol_name(~s), ~a,~a);~%"
-                                     symbol-name
-                                     (package-str% symbol)
-                                     (lisp-name% symbol)
-                                     (if (exported% symbol) "true" "false")
-                                     (if (shadow% symbol) "true" "false"))
-                             (format sout "}~%")))))
-                     symbols-by-namespace))
-          (format sout "#endif // ALLOCATE_ALL_SYMBOLS_HELPERS~%")
-          (format sout "#if defined(ALLOCATE_ALL_SYMBOLS)~%")
-          (maphash (lambda (symbol-name helper-name)
-                     (declare (ignore symbol-name))
-                     (format sout " ~a(symbols);~%" helper-name))
-                   helpers)
-          (format sout "#endif // ALLOCATE_ALL_SYMBOLS~%"))
-        #+(or)(progn
-                (format sout "#if defined(GARBAGE_COLLECT_ALL_SYMBOLS)~%")
-                (maphash (lambda (namespace namespace-symbols)
-                           (dolist (symbol namespace-symbols)
-                             (format sout "SMART_PTR_FIX(~a::_sym_~a);~%"
-                                     namespace
-                                     (c++-name% symbol))))
-                         symbols-by-namespace)
-                (format sout "#endif~% // defined(GARBAGE_COLLECT_ALL_SYMBOLS~%"))
-        (progn
-          (maphash (lambda (package package-symbols)
-                     (format sout "#if defined(~a_SYMBOLS)~%" package)
-                     (dolist (symbol package-symbols)
-                       (format sout "DO_SYMBOL(~a,_sym_~a,~d,~a,~s,~a);~%"
-                               (namespace% symbol)
-                               (c++-name% symbol)
-                               index
-                               (package% symbol)
-                               (lisp-name% symbol)
-                               (if (typep symbol 'expose-internal-symbol)
-                                   "false"
-                                   "true"))
-                       (incf index))
-                     (format sout "#endif // ~a_SYMBOLS~%" package))
-                   symbols-by-package))))))
+                       (when (string= (name% p) (package-str% symbol))
+                         (let ((helper-name (format nil "maybe_allocate_one_symbol_~d_helper" (incf index)))
+                               (symbol-name (format nil "~a::_sym_~a" namespace (c++-name% symbol))))
+                           (setf (gethash symbol-name helpers) helper-name)
+                           (format sout "NOINLINE void ~a(core::BootStrapCoreSymbolMap* symbols) {~%" helper-name)
+                           (format sout " ~a = symbols->maybe_allocate_unique_symbol(\"~a\",core::lispify_symbol_name(~s), ~a,~a);~%"
+                                   symbol-name
+                                   (package-str% symbol)
+                                   (lisp-name% symbol)
+                                   (if (exported% symbol) "true" "false")
+                                   (if (shadow% symbol) "true" "false"))
+                           (format sout "}~%")))))
+                   symbols-by-namespace))
+        (format sout "#endif // ALLOCATE_ALL_SYMBOLS_HELPERS~%")
+        (format sout "#if defined(ALLOCATE_ALL_SYMBOLS)~%")
+        (maphash (lambda (symbol-name helper-name)
+                   (declare (ignore symbol-name))
+                   (format sout " ~a(symbols);~%" helper-name))
+                 helpers)
+        (format sout "#endif // ALLOCATE_ALL_SYMBOLS~%"))
+      #+(or)(progn
+              (format sout "#if defined(GARBAGE_COLLECT_ALL_SYMBOLS)~%")
+              (maphash (lambda (namespace namespace-symbols)
+                         (dolist (symbol namespace-symbols)
+                           (format sout "SMART_PTR_FIX(~a::_sym_~a);~%"
+                                   namespace
+                                   (c++-name% symbol))))
+                       symbols-by-namespace)
+              (format sout "#endif~% // defined(GARBAGE_COLLECT_ALL_SYMBOLS~%"))
+      (progn
+        (maphash (lambda (package package-symbols)
+                   (format sout "#if defined(~a_SYMBOLS)~%" package)
+                   (dolist (symbol package-symbols)
+                     (format sout "DO_SYMBOL(~a,_sym_~a,~d,~a,~s,~a);~%"
+                             (namespace% symbol)
+                             (c++-name% symbol)
+                             index
+                             (package% symbol)
+                             (lisp-name% symbol)
+                             (if (typep symbol 'expose-internal-symbol)
+                                 "false"
+                                 "true"))
+                     (incf index))
+                   (format sout "#endif // ~a_SYMBOLS~%" package))
+                 symbols-by-package)))))
 
 (defun generate-code-for-enums (enums)
   (declare (optimize (speed 3)))
@@ -911,6 +1021,7 @@ Convert colons to underscores"
       (format sout "#endif // ALL_STARTUPS_EXTERN~%")
       (format sout "#ifdef ALL_STARTUPS_CALLS~%")
       (maphash (lambda (ns init-list)
+                 (declare (ignore ns))
                  (dolist (ii init-list)
                    (format sout "    ~a::~a();~%" (namespace% ii) (function-name% ii))))
                startups-by-namespace)
@@ -932,6 +1043,7 @@ Convert colons to underscores"
       (format sout "#endif // ALL_INITIALIZERS_EXTERN~%")
       (format sout "#ifdef ALL_INITIALIZERS_CALLS~%")
       (maphash (lambda (ns init-list)
+                 (declare (ignore ns))
                  (dolist (ii init-list)
                    (format sout "    ~a::~a();~%" (namespace% ii) (function-name% ii))))
                initializers-by-namespace)
@@ -953,6 +1065,7 @@ Convert colons to underscores"
       (format sout "#endif // ALL_EXPOSES_EXTERN~%")
       (format sout "#ifdef ALL_EXPOSES_CALLS~%")
       (maphash (lambda (ns init-list)
+                 (declare (ignore ns))
                  (dolist (ii init-list)
                    (format sout "    ~a::~a();~%" (namespace% ii) (function-name% ii))))
                exposes-by-namespace)
@@ -974,10 +1087,240 @@ Convert colons to underscores"
       (format sout "#endif // ALL_TERMINATORS_EXTERN~%")
       (format sout "#ifdef ALL_TERMINATORS_CALLS~%")
       (maphash (lambda (ns init-list)
+                 (declare (ignore ns))
                  (dolist (ii init-list)
                    (format sout "    ~a::~a();~%" (namespace% ii) (function-name% ii))))
                terminators-by-namespace)
       (format sout "#endif // ALL_TERMINATORS_CALL~%"))))
+
+(defun generate-layout-code (kind stream)
+  (dolist (field (fixed-fields% kind))
+    (format stream " {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~a), 0, \"~a\" },~%"
+            (tags:offset-type-cxx-identifier field)
+            (tags:offset-ctype field)
+            (tags:offset-base-ctype field)
+            (tags:layout-offset-field-names field)
+            (tags:layout-offset-field-names field)))
+  (let ((vinfo (variable-info% kind))
+        (vcapacity (variable-capacity% kind))
+        (vfields (variable-fields% kind)))
+    (when vinfo
+      (etypecase vinfo
+        (tags:variable-bit-array0
+         (format stream " {  variable_bit_array0, ~a, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
+                 (tags:integral-value vinfo)
+                 (tags:offset-base-ctype vinfo)
+                 (tags:field-names vinfo) (tags:field-names vinfo)))
+        (tags:variable-array0
+         (format stream " {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, \"~{~a~}\" },~%"
+                 (tags:offset-base-ctype vinfo)
+                 (tags:field-names vinfo) (tags:field-names vinfo))))
+      (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), 0, NULL },~%"
+              (tags:ctype vcapacity)
+              (tags:offset-base-ctype vcapacity)
+              (tags:end-field-names vcapacity)
+              (tags:offset-base-ctype vcapacity)
+              (tags:length-field-names vcapacity))
+      (etypecase vfields
+        (tags:variable-field-only
+         (format stream "{    variable_field, ~a, sizeof(~a), 0, 0, \"only\" },~%"
+                 (tags:offset-type-cxx-identifier vfields)
+                 (tags:fixup-type vfields)))
+        (list
+         (dolist (vfield vfields)
+           (format stream "    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~a), 0, \"~a\" },~%"
+                   (tags:offset-type-cxx-identifier vfield)
+                   (tags:fixup-ctype-offset-type-key vfield)
+                   (tags:fixup-ctype-key vfield)
+                   (tags:layout-offset-field-names vfield)
+                   (tags:layout-offset-field-names vfield))))))))
+
+(defgeneric generate-kind-tag-code (kind stream))
+(defmethod generate-kind-tag-code ((kind tags:class-kind) stream)
+  (format stream "{ class_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%"
+          (tags:stamp-name kind) (tags:stamp-key kind)
+          (tags:definition-data kind) (tags:stamp-key kind)))
+(defmethod generate-kind-tag-code ((kind tags:container-kind) stream)
+  (format stream "{ container_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%"
+          (tags:stamp-name kind) (tags:stamp-key kind)
+          (tags:definition-data kind) (tags:stamp-key kind)))
+(defmethod generate-kind-tag-code ((kind tags:bitunit-container-kind) stream)
+  (format stream "{ bitunit_container_kind, ~a, sizeof(~a), ~a, ~a, \"~a\" },~%"
+          (tags:stamp-name kind) (tags:stamp-key kind)
+          (tags:bitwidth kind) (tags:definition-data kind)
+          (tags:stamp-key kind)))
+(defmethod generate-kind-tag-code ((kind tags:templated-kind) stream)
+  (format stream "{ templated_kind, ~a, sizeof(~a), 0, ~a, \"~a\" },~%"
+          (tags:stamp-name kind) (tags:stamp-key kind)
+          (tags:definition-data kind) (tags:stamp-key kind)))
+
+(defun generate-kind-code (kind stream)
+  (generate-kind-tag-code (tag% kind) stream)
+  (generate-layout-code kind stream))
+
+(defun generate-gc-obj-scan (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_SCAN)
+#endif // defined(GC_OBJ_SCAN)
+#if defined(GC_OBJ_SCAN_HELPERS)~%")
+  (loop for kind in classes do (generate-kind-code kind stream))
+  (loop for kind being the hash-values of gc-managed-types
+        when (typep kind 'kind)
+          do (generate-kind-code kind stream))
+  (format stream "#endif // defined(GC_OBJ_SCAN_HELPERS)~%"))
+
+(defconstant +ptr-name+
+  (if (boundp '+ptr-name+) ; avoid redefinition warnings
+      (symbol-value '+ptr-name+)
+      "obj_gc_safe")
+  "This variable is used to temporarily hold a pointer to a Wrapper<...> object - we want the GC to ignore it")
+
+(defgeneric %generate-finalizer (stream kind tag)
+  (:argument-precedence-order tag kind stream))
+(defun generate-finalizer (stream kind)
+  (%generate-finalizer stream kind (tag% kind)))
+
+(defun strip-all-namespaces-from-name (name)
+  (let ((pos (search "::" name :from-end t)))
+    (if pos
+        (subseq name (+ 2 pos)) ; +2 for the :: itself
+        name)))
+
+(defun generate-finalizer-for-lispalloc (stream kind)
+  (format stream "obj_finalize_STAMPWTAG_~a:
+{
+    // stamp value ~a
+    ~a* ~a = reinterpret_cast<~a*>(client);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored \"-Wignored-qualifiers\"
+    ~a->~~~a();
+#pragma clang diagnostic pop
+    goto finalize_done;
+}~%"
+          (build-enum-name (class-key% kind)) (stamp-value kind)
+          (class-key% kind) +ptr-name+ (class-key% kind)
+          +ptr-name+ (strip-all-namespaces-from-name (class-key% kind))))
+
+(defmethod %generate-finalizer (stream kind (tag tags:class-kind))
+  (generate-finalizer-for-lispalloc stream kind))
+(defmethod %generate-finalizer (stream kind (tag tags:templated-kind))
+  (generate-finalizer-for-lispalloc stream kind))
+
+(defun generate-error-finalizer (stream kind)
+  (format stream "obj_finalize_STAMPWTAG_~a:
+{
+    // stamp value ~a
+    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));
+}~%"
+          (build-enum-name (class-key% kind)) (stamp-value kind)
+          (class-key% kind)))
+
+(defmethod %generate-finalizer (stream kind (tag tags:container-kind))
+  (generate-error-finalizer stream kind))
+(defmethod %generate-finalizer (stream kind (tag tags:bitunit-container-kind))
+  (generate-error-finalizer stream kind))
+
+(defun generate-obj-finalize (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_FINALIZE)~%")
+  (loop for k in classes do (generate-finalizer stream k))
+  (loop for k being the hash-values of gc-managed-types
+        when (typep k 'kind)
+          do (generate-finalizer stream k))
+  (format stream "#endif // defined(GC_OBJ_FINALIZE)
+#if defined(GC_OBJ_FINALIZE_HELPERS)
+#endif // defined(GC_OBJ_FINALIZE_HELPERS)~%"))
+
+(defun generate-finalizer-table-entry (stream kind)
+  (format stream "  /* ~d */ &&obj_finalize_STAMPWTAG_~a,~%"
+          (stamp-value kind) (build-enum-name (class-key% kind))))
+
+(defun generate-finalize-table (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_FINALIZE_TABLE)
+static void* OBJ_FINALIZE_table[] = {~%")
+  (let ((sorted (sort (copy-list classes) #'< :key #'stamp-value)))
+    ;; Insert entries from gc-managed-types
+    (maphash (lambda (key kind)
+               (declare (ignore key))
+               (setf sorted (merge 'list sorted (list kind) #'<
+                                   :key #'stamp-value)))
+             gc-managed-types)
+    (loop for k in sorted
+          when (typep k 'kind)
+            do (generate-finalizer-table-entry stream k)))
+  (format stream "   NULL
+};
+#endif // defined(GC_OBJ_FINALIZE_TABLE)~%"))
+
+(defgeneric %generate-deallocator (stream kind tag)
+  (:argument-precedence-order tag kind stream))
+(defun generate-deallocator (stream kind)
+  (%generate-deallocator stream kind (tag% kind)))
+
+(defun generate-deallocator-for-lispalloc (stream kind)
+  (format stream "obj_deallocate_unmanaged_instance_STAMPWTAG_~a:
+{
+    // stamp value ~a
+    ~a* ~a = reinterpret_cast<~a*>(client);
+    GC<~a>::deallocate_unmanaged_instance(~a);
+    return;
+}~%"
+          (build-enum-name (class-key% kind)) (stamp-value kind)
+          (class-key% kind) +ptr-name+ (class-key% kind)
+          (class-key% kind) +ptr-name+))
+
+(defmethod %generate-deallocator (stream kind (tag tags:class-kind))
+  (generate-deallocator-for-lispalloc stream kind))
+(defmethod %generate-deallocator (stream kind (tag tags:templated-kind))
+  (generate-deallocator-for-lispalloc stream kind))
+
+(defun generate-error-deallocator (stream kind)
+  (format stream "obj_deallocate_unmanaged_instance_STAMPWTAG_~a:
+{
+    // do nothing stamp value ~a
+    THROW_HARD_ERROR(BF(\"Should never deallocate object ~a\"));
+}~%"
+          (build-enum-name (class-key% kind)) (stamp-value kind)
+          (class-key% kind)))
+
+(defmethod %generate-deallocator (stream kind (tag tags:container-kind))
+  (generate-error-deallocator stream kind))
+(defmethod %generate-deallocator (stream kind (tag tags:bitunit-container-kind))
+  (generate-error-deallocator stream kind))
+
+(defun generate-obj-deallocator (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_DEALLOCATOR)~%")
+  (loop for k in classes do (generate-deallocator stream k))
+  (loop for k being the hash-values of gc-managed-types
+        when (typep k 'kind)
+          do (generate-deallocator stream k))
+  (format stream "#endif // defined(GC_OBJ_DEALLOCATOR)
+#if defined(GC_OBJ_DEALLOCATOR_HELPERS)
+#endif // defined(GC_OBJ_DEALLOCATOR_HELPERS)~%"))
+
+(defun generate-deallocator-table-entry (stream kind)
+  (format stream
+          "  /* ~d */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_~a,~%"
+          (stamp-value kind) (build-enum-name (class-key% kind))))
+
+(defun generate-deallocator-table (stream classes gc-managed-types)
+  (format stream "#if defined(GC_OBJ_DEALLOCATOR_TABLE)
+static void* OBJ_DEALLOCATOR_table[] = {~%")
+  (let ((sorted (sort (copy-list classes) #'< :key #'stamp-value)))
+    (maphash (lambda (name kind)
+               (declare (ignore name))
+               (setf sorted (merge 'list sorted (list kind) #'<
+                                   :key #'stamp-value)))
+             gc-managed-types)
+    (loop for k in sorted
+          when (typep k 'kind)
+            do (generate-deallocator-table-entry stream k)))
+  (format stream "   NULL
+};
+#endif // defined(GC_OBJ_DEALLOCATOR_TABLE)~%"))
+
+(defun generate-gc-globals (stream)
+  (format stream "#if defined(GC_GLOBALS)
+ TAGGED_POINTER_FIX(_lisp);
+#endif // defined(GC_GLOBALS)~%"))
 
 (defun maybe-relative (dir)
   (cond
@@ -1015,7 +1358,25 @@ Convert colons to underscores"
       (error "Could not get key: ~s from app-config" key))
     value))
 
-(defun generate-code (packages-to-create functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config)
+(defun generate-gc-code  (classes gc-managed-types forwards)
+  (with-output-to-string (s)
+    (generate-declare-forwards s classes forwards)
+    (multiple-value-bind (sorted-classes inheritance)
+        (sort-classes-by-inheritance classes)
+      (declare (ignore inheritance))
+      (generate-gc-enum s sorted-classes gc-managed-types)
+      (generate-gc-enum-names s sorted-classes gc-managed-types)
+      (generate-gc-dynamic-cast s sorted-classes)
+      (generate-gc-typeq s sorted-classes)
+      (generate-gc-stamp-selectors s sorted-classes gc-managed-types)
+      (generate-gc-obj-scan s sorted-classes gc-managed-types)
+      (generate-obj-finalize s sorted-classes gc-managed-types)
+      (generate-finalize-table s sorted-classes gc-managed-types)
+      (generate-obj-deallocator s sorted-classes gc-managed-types)
+      (generate-deallocator-table s sorted-classes gc-managed-types)
+      (generate-gc-globals s))))
+
+(defun generate-code (packages-to-create functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config forwards &key use-precise)
   (let ((init-functions (generate-code-for-init-functions functions))
         (init-classes-and-methods (generate-code-for-init-classes-and-methods classes gc-managed-types))
         (source-info (generate-code-for-source-info functions classes))
@@ -1024,7 +1385,8 @@ Convert colons to underscores"
         (startups-info (generate-code-for-startups startups))
         (initializers-info (generate-code-for-initializers initializers))
         (exposes-info (generate-code-for-exposes exposes))
-        (terminators-info (generate-code-for-terminators terminators))        )
+        (terminators-info (generate-code-for-terminators terminators))
+        (gc-code-info (when use-precise (generate-gc-code classes gc-managed-types forwards))))
     (write-if-changed init-functions build-path (safe-app-config :init_functions_inc_h app-config))
     (write-if-changed init-classes-and-methods build-path (safe-app-config :init_classes_inc_h app-config))
     (write-if-changed source-info build-path (safe-app-config :source_info_inc_h app-config))
@@ -1034,8 +1396,10 @@ Convert colons to underscores"
     (write-if-changed initializers-info build-path (safe-app-config :initializers_inc_h app-config))
     (write-if-changed exposes-info build-path (safe-app-config :expose_inc_h app-config))
     (write-if-changed terminators-info build-path (safe-app-config :terminators_inc_h app-config))
+    (when use-precise
+      (write-if-changed gc-code-info build-path (safe-app-config :clasp_gc_filename app-config)))
     (multiple-value-bind (direct-call-c-code direct-call-cl-code c-code-info cl-code-info)
-        (generate-code-for-direct-call-functions functions classes)
+        (generate-code-for-direct-call-functions functions)
       (write-if-changed direct-call-c-code build-path (safe-app-config :c_wrappers app-config))
       (write-if-changed direct-call-cl-code build-path (safe-app-config :lisp_wrappers app-config))
       (write-if-changed c-code-info build-path (merge-pathnames (make-pathname :type "txt") (safe-app-config :c_wrappers app-config)))

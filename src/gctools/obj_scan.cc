@@ -68,8 +68,9 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           size = stamp_layout.size;
         }
         if ( stamp_layout.field_layout_start ) {
-          // Handle Lisp_O object specially because it's bitmask will be too large
-          if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__Lisp_O) ) {
+          // Handle Lisp object specially because it's bitmask will be too large
+#ifdef USE_PRECISE_GC
+          if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__Lisp) ) {
             int num_fields = stamp_layout.number_of_fields;
             const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
             for ( int i=0; i<num_fields; ++i ) {
@@ -78,27 +79,27 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
               ++field_layout_cur;
             }
           } else {
-#if 1
+ #if 1
             // Use pointer bitmaps
             int idx = 0;
             uintptr_t pointer_bitmap = stamp_layout.class_field_pointer_bitmap;
-#ifdef DEBUG_POINTER_BITMAPS
+  #ifdef DEBUG_POINTER_BITMAPS
             const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
-#endif
+  #endif
             for (uintptr_t* addr = (uintptr_t*)client; pointer_bitmap; addr++, pointer_bitmap<<=1) {
               if ((intptr_t)pointer_bitmap < 0) {
-#ifdef DEBUG_POINTER_BITMAPS
+  #ifdef DEBUG_POINTER_BITMAPS
             
                 core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
                 if (addr != (uintptr_t*)field) {
                   printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] address mismatch!!!! field_offset=%lu\n", __FILE__, __LINE__, stamp_index, client, addr, field, field_layout_cur->field_offset);
                 }
                 ++field_layout_cur;
-#endif
+  #endif
                 POINTER_FIX((core::T_O**)addr);
               }
             }
-#else          
+ #else          
             int num_fields = stamp_layout.number_of_fields;
             const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
             for ( int i=0; i<num_fields; ++i ) {
@@ -106,8 +107,9 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
               POINTER_FIX(field);
               ++field_layout_cur;
             }
-#endif
+ #endif
           }
+#endif
         }
         if ( stamp_layout.container_layout ) {
           const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
@@ -432,7 +434,7 @@ GC_ms_entry * GC_signal_mark_stack_overflow(GC_ms_entry *msp);
 extern "C" {
 int global_scan_stamp = -1;
 NEVER_OPTIMIZE
-struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
+struct GC_ms_entry* Lisp_object_mark(GC_word addr,
                                        struct GC_ms_entry* msp,
                                        struct GC_ms_entry* msl,
                                        GC_word env)

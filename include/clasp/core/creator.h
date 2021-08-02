@@ -41,11 +41,11 @@ namespace core {
   // classes that don't have default allocators
     virtual bool allocates() const { return true; };
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
-    T_sp functionName() const override { return _Nil<T_O>(); };
-    T_sp closedEnvironment() const override { return _Nil<T_O>(); };
-    T_sp lambdaListHandler() const override { return _Nil<T_O>(); };
-    T_sp lambda_list() const { return _Nil<T_O>(); };
-    T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column ) {return _Nil<T_O>();};
+    T_sp functionName() const override { return nil<T_O>(); };
+    T_sp closedEnvironment() const override { return nil<T_O>(); };
+    T_sp lambdaListHandler() const override { return nil<T_O>(); };
+    T_sp lambda_list() const { return nil<T_O>(); };
+    T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column ) {return nil<T_O>();};
     virtual int duplicationLevel() const { return 0; };
     virtual bool creates_classes() const { return false; };
     CL_NAME("CORE:CREATOR-TEMPLATED-SIZE");
@@ -71,7 +71,7 @@ namespace core {
   public:
     size_t templatedSizeof() const { return sizeof(TEMPLATED_FUNCTION_BuiltInObjectCreator<_W_>); };
     virtual core::T_sp creator_allocate() {
-      GC_ALLOCATE(_W_, obj);
+      auto  obj = gctools::GC<_W_>::allocate_with_default_constructor();
       return obj;
     }
     virtual void searcher(){};

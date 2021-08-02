@@ -33,7 +33,7 @@ extern T_mv evaluate(T_sp exp, T_sp environment);
 /*! See the CLHS for "apply" - all arguments are in args 
   (functionDesignator) can be a Symbol or an Function
 */
-//extern T_sp apply(T_sp functionDesignator, List_sp args, Lisp_sp lisp);
+//extern T_sp apply(T_sp functionDesignator, List_sp args, LispPtr lisp);
 
 extern T_mv sp_trace(List_sp args, T_sp env);
 extern T_mv sp_untrace(List_sp args, T_sp env);

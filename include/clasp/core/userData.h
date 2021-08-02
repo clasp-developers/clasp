@@ -43,7 +43,7 @@ public:
 
 public:
   static LightUserData_sp create(void *ptr) {
-    GC_ALLOCATE(LightUserData_O, v);
+    auto  v = gctools::GC<LightUserData_O>::allocate_with_default_constructor();
     v->_ptr = ptr;
     return v;
   }
@@ -73,7 +73,7 @@ private:
 
 public:
   static UserData_sp create(size_t size, DestructUserDataFn dtor) {
-    GC_ALLOCATE(UserData_O, v);
+    auto  v = gctools::GC<UserData_O>::allocate_with_default_constructor();
     v->_ptr = (void *)malloc(size);
     v->_Dtor = dtor;
     return v;

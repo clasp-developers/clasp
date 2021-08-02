@@ -66,7 +66,7 @@ cl_index clasp_print_level(void) {
       {
         // Bind *print-level* to something valid so that we don't get
         // recursive errors while printing error messages.
-        DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, _Nil<T_O>());
+        DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, nil<T_O>());
         SIMPLE_ERROR(BF("The value of *PRINT-LEVEL*\n %s\n"
                         "is not of the expected type (OR NULL (INTEGER 0))")
                      % _rep_(object));
@@ -97,7 +97,7 @@ cl_index clasp_print_length(void) {
     if (length < 0) {
     ERROR:
       {
-        DynamicScopeManager scope(cl::_sym_STARprint_lengthSTAR, _Nil<T_O>());
+        DynamicScopeManager scope(cl::_sym_STARprint_lengthSTAR, nil<T_O>());
         SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
                         "is not of the expected type (OR NULL (INTEGER 0))")
                      % _rep_(object));
@@ -210,7 +210,7 @@ CL_DEFUN T_sp core__print_unreadable_object_function(T_sp object, T_sp output_st
     stail << ">";
     clasp_write_string(stail.str(), ostream);
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 };
 
 CL_LAMBDA(obj &optional stream);
@@ -228,8 +228,8 @@ CL_LAMBDA(obj &optional output-stream-desig);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: princ");
 CL_DEFUN T_sp cl__princ(T_sp obj, T_sp output_stream_desig) {
-  DynamicScopeManager scope1(cl::_sym_STARprint_escapeSTAR, _Nil<T_O>());
-  DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, _Nil<T_O>());
+  DynamicScopeManager scope1(cl::_sym_STARprint_escapeSTAR, nil<T_O>());
+  DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, nil<T_O>());
   eval::funcall(cl::_sym_write, obj, kw::_sym_stream, output_stream_desig);
   return obj;
 }

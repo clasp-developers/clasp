@@ -57,13 +57,13 @@ namespace core {
     };
 
   public:
-    explicit ExternalObject_O() : Base(), _Class(_Nil<Instance_O>()){};
+    explicit ExternalObject_O() : Base(), _Class(nil<Instance_O>()){};
     virtual ~ExternalObject_O(){};
   };
 
   template <class Type, class WrapperType>
     gctools::smart_ptr<Type> RP_Create_wrapped(WrapperType ptr) {
-    GC_ALLOCATE(Type, wrapper);
+    auto  wrapper = gctools::GC<Type>::allocate_with_default_constructor();
     wrapper->set_wrapped(ptr);
     return wrapper;
   };
@@ -118,8 +118,8 @@ They can be passed to C++ functions and and then passed back to clasp code and u
   public:
 
     CL_LAMBDA(head &optional tail);
-    CL_DEF_CLASS_METHOD static ImmobileObject_sp make_immobile_object(core::T_sp head, core::T_sp tail=_Nil<core::T_O>()) {
-      GC_ALLOCATE_VARIADIC(ImmobileObject_O,p,head,tail);
+    CL_DEF_CLASS_METHOD static ImmobileObject_sp make_immobile_object(core::T_sp head, core::T_sp tail=nil<core::T_O>()) {
+      auto p = gctools::GC<ImmobileObject_O>::allocate(head,tail);
       return p;
     };
 

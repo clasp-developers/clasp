@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/asttooling/asttoolingPackage.h>
 #include <clasp/asttooling/astExpose.h>
-#include <clasp/asttooling/astVisitor.h>
 #include <clasp/asttooling/clangTooling.h>
 #include <clasp/asttooling/tools.h>
 #include <clasp/core/array.h>
@@ -41,7 +40,7 @@ using namespace core;
 
 namespace asttooling {
 
-void AsttoolingExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
+void AsttoolingExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
   } break;
@@ -49,7 +48,6 @@ void AsttoolingExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpo
     initialize_astExpose();
     //	    initialize_tools();
     initialize_clangTooling();
-    initialize_astVisitor();
 //    initialize_Registry();
   };
       break;

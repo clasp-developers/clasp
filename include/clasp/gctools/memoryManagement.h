@@ -9,8 +9,8 @@
  * The following are garbage collector roots
  *
  * DEFINED in gctools/memoryManagement.h
- *   Lisp_O* ::_lisp
- *  This is a tagged pointer to a Lisp_O object
+ *   Lisp* ::_lisp
+ *  This is a tagged pointer to a Lisp object
  *
  * DEFINED in include/clasp/gctools/globals.h
  *    extern core::Symbol_O* gctools::global_core_symbols[NUMBER_OF_CORE_SYMBOLS]
@@ -167,13 +167,12 @@ namespace gctools {
 #if !defined(SCRAPING)
  #if !defined(USE_PRECISE_GC)
   #define GC_ENUM
-        STAMPWTAG_null = 0,
    #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_ENUM
  #else
-  #define GC_STAMP
+  #define GC_ENUM
    #include CLASP_GC_FILENAME
-  #undef GC_STAMP
+  #undef GC_ENUM
  #endif
 #endif
         STAMPWTAG_VA_LIST_S = STAMPWTAG_core__VaList_dummy_O, 
@@ -1046,13 +1045,6 @@ void *SmartPtrToBasePtr(smart_ptr<T> obj) {
 
 #include <clasp/gctools/gcStack.h>
 //#include <clasp/gctools/gcalloc.h>
-
-#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_with_default_constructor()
-#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate(__VA_ARGS__)
-#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate(__VA_ARGS__)
-
-#define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
-#define GC_NON_RECURSIVE_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
 
 /*! These don't do anything at the moment
   but may be used in the future to create unsafe-gc points

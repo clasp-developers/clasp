@@ -106,7 +106,7 @@ void class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(::nil<core::T_O>(),DummyCreator_O::entry_point);
     creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
   //  printf("%s:%d:%s  classNameString->%s  where -> 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, classNameString.c_str(), where);
@@ -227,7 +227,7 @@ void add_custom_name(type_id const &i, std::string &s) {
   s += "]";
 }
 
-std::string get_class_name(core::Lisp_sp L, type_id const &i) {
+std::string get_class_name(core::LispPtr L, type_id const &i) {
   IMPLEMENT_MEF("get_class_name");
 #if 0  // start_meister_disabled
             std::string ret;

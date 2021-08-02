@@ -64,14 +64,14 @@ CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
   if (sysprops.notnilp()) {
-    T_mv values = sysprops->gethash(area, _Nil<T_O>());
+    T_mv values = sysprops->gethash(area, nil<T_O>());
     T_sp hashTable = values;
     bool foundHashTable = gc::As<T_sp>(values.valueGet_(1)).isTrue();
     if (foundHashTable) {
-      return gc::As<HashTableEql_sp>(hashTable)->gethash(key, _Nil<T_O>());
+      return gc::As<HashTableEql_sp>(hashTable)->gethash(key, nil<T_O>());
     }
   }
-  return (Values(_Nil<T_O>(), _Nil<T_O>()));
+  return (Values(nil<T_O>(), nil<T_O>()));
 }
 
 CL_LAMBDA(key area);
@@ -80,14 +80,14 @@ CL_DOCSTRING("rem_sysprop");
 CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
-  T_mv mv_values = sysprops->gethash(area, _Nil<T_O>());
+  T_mv mv_values = sysprops->gethash(area, nil<T_O>());
   HashTableEql_sp hashTable = gc::As<HashTableEql_sp>(mv_values);
   bool foundHashTable = gc::As<T_sp>(mv_values.valueGet_(1)).isTrue();
   if (foundHashTable) {
     bool found = hashTable->remhash(key);
     return _lisp->_boolean(found);
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
   SYMBOL_SC_(CorePkg, put_sysprop);

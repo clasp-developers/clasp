@@ -47,7 +47,7 @@ THE SOFTWARE.
 
 namespace core {
 
-//    Symbol_sp 	_sym_nil;	// equivalent to _Nil<T_O>()
+//    Symbol_sp 	_sym_nil;	// equivalent to nil<T_O>()
 //    Symbol_sp 	_sym_t;		// equivalent to _lisp->_true()
 
 CL_LAMBDA(sym);
@@ -223,21 +223,21 @@ ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
-Symbol_O::Symbol_O(const only_at_startup& dummy) : _HomePackage(_Nil<T_O>()),
+Symbol_O::Symbol_O(const only_at_startup& dummy) : _HomePackage(nil<T_O>()),
 #ifdef SYMBOL_CLASS
-                                                   _Class(_Nil<T_O>()),
+                                                   _Class(nil<T_O>()),
 #endif
-                                                   _GlobalValue(_Unbound<T_O>()),
-                                                   _Function(_Unbound<Function_O>()),
-                                                   _SetfFunction(_Unbound<Function_O>()),
+                                                   _GlobalValue(unbound<T_O>()),
+                                                   _Function(unbound<Function_O>()),
+                                                   _SetfFunction(unbound<Function_O>()),
                                                    _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
                                                    _Flags(0),
-                                                   _PropertyList(_Nil<List_V>()) {};
+                                                   _PropertyList(nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
                        _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
                        _Flags(0),
-                       _PropertyList(_Nil<List_V>()) {};
+                       _PropertyList(nil<List_V>()) {};
 
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
@@ -246,12 +246,12 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   if (pkg->actsLikeKeywordPackage())
     this->set_globalValue(this->asSmartPtr());
   else
-    this->set_globalValue(_Unbound<T_O>());
+    this->set_globalValue(unbound<T_O>());
   this->fmakunbound();
   this->fmakunbound_setf();
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get_std_string().c_str(),
                                        this->sharedThis<Symbol_O>(), exportp, shadowp);
-  this->setf_plist(_Nil<T_O>());
+  this->setf_plist(nil<T_O>());
 }
 
 Symbol_sp Symbol_O::create_from_string(const string &nm) {
@@ -272,7 +272,7 @@ Symbol_sp Symbol_O::makunbound() {
   if (this->getReadOnly())
     // would be a nice extension to make this a continuable error
     SIMPLE_ERROR(BF("Cannot make constant %s unbound") % this->__repr__());
-  setf_symbolValue(_Unbound<T_O>());
+  setf_symbolValue(unbound<T_O>());
   return this->asSmartPtr();
 }
 
@@ -391,7 +391,7 @@ T_sp Symbol_O::find_class() {
   T_sp tholder = this->_Class.load();
   if (tholder.nilp()) return tholder;
   if (gc::As_unsafe<ClassHolder_sp>(tholder)->class_unboundp()) {
-    return _Unbound<T_O>();
+    return unbound<T_O>();
   }
   return gc::As_unsafe<ClassHolder_sp>(tholder)->class_();
 }
@@ -545,7 +545,7 @@ CL_DEFUN string core__fullname(Symbol_sp symbol){
 
 T_sp Symbol_O::getPackage() const {
   T_sp pkg = this->_HomePackage.load(std::memory_order_relaxed);
-  if (!pkg) return _Nil<T_O>();
+  if (!pkg) return nil<T_O>();
   return pkg;
 }
 
@@ -612,7 +612,7 @@ void Symbol_O::remove_package(Package_sp pkg)
     if ((home_package == pkg) &&
         !home_package->getSystemLockedP() &&
         !home_package->getUserLockedP()) {
-      this->setPackage(_Nil<T_O>());
+      this->setPackage(nil<T_O>());
     }
   }
 };

@@ -76,7 +76,7 @@ size_t next_hash_table_id() {
 }
 
 
-void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* filename, size_t line, size_t index=0, T_sp key=_Nil<core::T_O>() )
+void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* filename, size_t line, size_t index=0, T_sp key=nil<core::T_O>() )
 {
   size_t cnt = 0;
   Vector_sp keys = core__make_vector(_lisp->_true(),ht->_HashTableCount+16, true, make_fixnum(0));
@@ -94,7 +94,7 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
   gctools::gctools__garbage_collect();
   for (size_t it(0), itEnd(cl__length(keys)); it<itEnd; ++it ) {
     T_sp key = keys->rowMajorAref(it);
-    T_mv lookup = ht->gethash(key,_Nil<core::T_O>());
+    T_mv lookup = ht->gethash(key,nil<core::T_O>());
     if (lookup.second().nilp()) {
       if (print) {
         ss << filename << ":" << line << " Could not find key " << _rep_(key) << "\n";
@@ -250,7 +250,7 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size,
     SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
   }
   double rehash_threshold = maybeFixRehashThreshold(clasp_to_double(orehash_threshold));
-  HashTable_sp table = _Nil<HashTable_O>();
+  HashTable_sp table = nil<HashTable_O>();
   size_t isize = clasp_to_int(size);
   if (isize==0) isize = 16;
 #ifdef DEBUG_REHASH_COUNT
@@ -292,7 +292,7 @@ CL_DEFUN Symbol_sp core__hash_table_weakness(T_sp ht) {
   if (gc::IsA<WeakKeyHashTable_sp>(ht)) {
     return kw::_sym_key;
   }
-  return _Nil<Symbol_O>();
+  return nil<Symbol_O>();
 }
 
 HashTable_sp HashTable_O::create(T_sp test) {
@@ -347,7 +347,7 @@ CL_DEFUN T_sp cl__maphash(T_sp function_desig, HashTableBase_sp hash_table) {
     SIMPLE_ERROR(BF("maphash called with nil hash-table"));
   }
   hash_table->maphash(function_desig);
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_LAMBDA(hash-table);
@@ -415,7 +415,7 @@ CL_DEFUN bool cl__remhash(T_sp key, HashTableBase_sp ht) {
 T_sp HashTable_O::clrhash() {
   ASSERT(!clasp_zerop(this->_RehashSize));
   this->_HashTableCount = 0;
-  T_sp no_key = _NoKey<T_O>();
+  T_sp no_key = ::no_key<T_O>();
   this->_Table.resize(0,KeyValuePair(no_key,no_key));
   this->setup(16, this->_RehashSize, this->_RehashThreshold);
   VERIFY_HASH_TABLE(this);
@@ -618,7 +618,7 @@ bool HashTable_O::equalp(T_sp other) const {
 
 List_sp HashTable_O::keysAsCons() {
   HT_READ_LOCK(this);
-  List_sp res = _Nil<T_O>();
+  List_sp res = nil<T_O>();
   this->mapHash([&res](T_sp key, T_sp val) {
                   res = Cons_O::create(key,res);
                 });
@@ -660,7 +660,7 @@ void HashTable_O::fields(Record_sp node) {
 
 uint HashTable_O::resizeEmptyTable_no_lock(size_t sz) {
   if (sz < 16) sz = 16;
-  T_sp no_key = _NoKey<T_O>();
+  T_sp no_key = ::no_key<T_O>();
   this->_HashTableCount = 0;
   this->_Table.resize(sz,KeyValuePair(no_key,no_key));
   return sz;
@@ -767,7 +767,7 @@ CL_DECLARE();
 CL_DOCSTRING("hashTableForceRehash");
 CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
   HT_WRITE_LOCK(&*ht);
-  ht->rehash_no_lock(false, _NoKey<T_O>());
+  ht->rehash_no_lock(false, no_key<T_O>());
 }
 
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
@@ -783,12 +783,12 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
     T_sp value = keyValuePair->_Value;
     if (value.no_keyp()) {
       LOG(BF("valueOrUnbound is unbound - returning default"));
-      return (Values(default_value, _Nil<T_O>()));
+      return (Values(default_value, nil<T_O>()));
     }
     LOG(BF("Found assoc - returning")); // : %s") % res->__repr__() );  INFINITE-LOOP
     return Values(value, _lisp->_true());
   }      
-  return Values(default_value, _Nil<T_O>());
+  return Values(default_value, nil<T_O>());
 }
 
 CL_LISPIFY_NAME("core:hashIndex");
@@ -820,7 +820,7 @@ bool HashTable_O::remhash(T_sp key) {
   cl_index index = this->sxhashKey(key, this->_Table.size(), hg );
   KeyValuePair* keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/, index, hg );
   if (keyValuePair) {
-    keyValuePair->_Key = _Deleted<T_O>();
+    keyValuePair->_Key = deleted<T_O>();
     this->_HashTableCount--;
     VERIFY_HASH_TABLE(this);
     return true;
@@ -867,7 +867,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
   VERIFY_HASH_TABLE_VA(this,cur,key);
   if (this->_HashTableCount > this->_RehashThreshold * this->_Table.size()) {
     LOG(BF("Expanding hash table"));
-    this->rehash_no_lock(true, _NoKey<T_O>());
+    this->rehash_no_lock(true, no_key<T_O>());
     VERIFY_HASH_TABLE(this);
   }
   return value;
@@ -881,7 +881,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
   printf("%s:%d There is absolutely no room in the hash-table _RehashThreshold = %lf - _HashTableCount -> %lu size -> %lu increasing size\n", __FILE__, __LINE__, this->_RehashThreshold, this->_HashTableCount, this->_Table.size());
   verifyHashTable(true,std::cerr,this,__FILE__, __LINE__);
   printf("%s:%d ---- done verify\n", __FILE__, __LINE__ );
-  this->rehash_no_lock(true, _NoKey<T_O>());
+  this->rehash_no_lock(true, no_key<T_O>());
   VERIFY_HASH_TABLE_VA(this,cur);
   return this->setf_gethash_no_write_lock(key,value);
   // ------------
@@ -1041,7 +1041,7 @@ CL_DEFMETHOD List_sp HashTable_O::hash_table_bucket(size_t index)
     T_sp result = Cons_O::create(entry._Key, entry._Value);
     return result;
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 
@@ -1070,7 +1070,7 @@ CL_DEFMETHOD T_sp HashTable_O::hash_table_average_search_length()
   if (count>0) {
     return core::clasp_make_double_float(sum / count);
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }  
 
 CL_DEFMETHOD string HashTable_O::hash_table_dump() {

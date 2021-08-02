@@ -296,7 +296,7 @@ CL_DEFUN T_sp cl__char_NE_(VaList_sp args) {
      * I don't think the compiler takes the order in a switch
      * very seriously, though, so it's just in order. */
   case 0:
-      SIMPLE_PROGRAM_ERROR("CHAR/= needs at least 1 argument",_Nil<T_O>());
+      SIMPLE_PROGRAM_ERROR("CHAR/= needs at least 1 argument",nil<T_O>());
   case 1: {
     // the first arg needs to be a character - check that
     gc::As<Character_sp>(args->next_arg());
@@ -305,14 +305,14 @@ CL_DEFUN T_sp cl__char_NE_(VaList_sp args) {
   case 2: {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
     claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
-    if (a == b) return _Nil<T_O>();
+    if (a == b) return nil<T_O>();
     else return _lisp->_true();
   }
   case 3: {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
     claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
     claspCharacter c = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
-    if ((a == b) || (a == c) || (b == c)) return _Nil<T_O>();
+    if ((a == b) || (a == c) || (b == c)) return nil<T_O>();
     else return _lisp->_true();
   }
   default: {
@@ -324,7 +324,7 @@ CL_DEFUN T_sp cl__char_NE_(VaList_sp args) {
       claspCharacter c1 = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(largs)));
       for (List_sp cur = oCdr(largs); cur.notnilp(); cur = oCdr(cur)) {
         claspCharacter c2 = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(cur)));
-        if (c1 == c2) return _Nil<T_O>();
+        if (c1 == c2) return nil<T_O>();
       }
       largs = oCdr(largs);
     }
@@ -348,14 +348,14 @@ CL_DEFUN T_sp cl__char_EQ_(VaList_sp args) {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
     claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
     if (a == b) return _lisp->_true();
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   default: {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
     while (args->remaining_nargs()) {
       claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
       if (a!=b) {
-        return ((_Nil<T_O>()));
+        return ((nil<T_O>()));
       }
     }
     return _lisp->_true();
@@ -375,7 +375,7 @@ CL_DEFUN T_mv cl__char_not_equal(List_sp args) {
     for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
       claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(cur)));
       b = claspCharacter_upcase(b);
-      if (a == b) return (Values(_Nil<T_O>()));
+      if (a == b) return (Values(nil<T_O>()));
     }
     args = oCdr(args);
   }
@@ -418,7 +418,7 @@ CL_DEFUN T_sp cl__char_equal(VaList_sp chars) {
     claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
     b = claspCharacter_upcase(b);
     if (a == b) return _lisp->_true();
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   default: {
     claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
@@ -427,7 +427,7 @@ CL_DEFUN T_sp cl__char_equal(VaList_sp chars) {
       claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
       b = claspCharacter_upcase(b);
       if (a!=b) {
-        return ((_Nil<T_O>()));
+        return ((nil<T_O>()));
       }
     }
     return _lisp->_true();
@@ -607,8 +607,8 @@ const char* OrderedCharacterNames[] = {
 void CharacterInfo::initialize() {
   int num_chars = sizeof(OrderedCharacterNames)/sizeof(OrderedCharacterNames[0]);
   this->_NamesToCharacterIndex = HashTableEqual_O::create_default();
-  this->gCharacterNames.resize(num_chars, _Nil<T_O>());
-  this->gIndexedCharacters.resize(num_chars, _Nil<T_O>());
+  this->gCharacterNames.resize(num_chars, nil<T_O>());
+  this->gIndexedCharacters.resize(num_chars, nil<T_O>());
   for (size_t fci=0; fci<num_chars; ++fci) {
     const char* name = OrderedCharacterNames[fci];
     
@@ -3424,7 +3424,7 @@ CL_DEFUN T_sp cl__digit_char_p(Character_sp c, Fixnum_sp radix) {
     QERROR_WRONG_TYPE_NTH_ARG(2, radix, Integer_O::makeIntegerType(2, 36));
   }
   Fixnum value = clasp_digitp(clasp_as_claspCharacter(c), basis);
-  if (value < 0) return _Nil<T_O>();
+  if (value < 0) return nil<T_O>();
   return make_fixnum(value);
 };
 
@@ -3462,7 +3462,7 @@ CL_DEFUN T_sp cl__name_char(T_sp sname) {
   claspCharacter conversion = unicodeHex2int(upname->get_std_string());
   if ((conversion >= 0) && (conversion < CHAR_CODE_LIMIT))
     return (Values (clasp_make_standard_character(conversion)));
-    else return _Nil<T_O>();
+    else return nil<T_O>();
 };
 
 CL_LAMBDA(och);
@@ -3508,7 +3508,7 @@ CL_DEFUN Character_sp cl__code_char(Integer_sp ich) {
   if (ii >= 0 && ii < CHAR_CODE_LIMIT) {
     return clasp_make_character(ii);
   }
-  return _Nil<Character_O>();
+  return nil<Character_O>();
 };
 
 

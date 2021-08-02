@@ -234,7 +234,7 @@ template <class Class, class Policies>
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring), mm_name(name){};
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DerivableDefaultConstructorCreator_O<Class>::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),DerivableDefaultConstructorCreator_O<Class>::entry_point);
     maybe_register_symbol_using_dladdr((void*)DerivableDefaultConstructorCreator_O<Class>::entry_point);
     return gc::As_unsafe<core::Creator_sp>(gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate(entryPoint));
   }

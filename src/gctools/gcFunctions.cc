@@ -175,7 +175,7 @@ CL_DEFUN void gctools__flow_tracker_off() {
 #endif
 
 CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
-  core::Cons_sp list(_Nil<core::Cons_O>());
+  core::Cons_sp list(nil<core::Cons_O>());
   for (int i(gctools__max_bootstrap_kinds() - 1); i > 0; --i) {
     string name = global_HardcodedKinds[i];
     list = core::Cons_O::create(core::SimpleBaseString_O::make(name), list);
@@ -190,7 +190,7 @@ CL_DEFUN core::T_sp gctools__bootstrap_kind_p(const string &name) {
       return core::make_fixnum(i);
     }
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 CL_DEFUN size_t gctools__thread_local_unwind_counter() {
@@ -339,9 +339,9 @@ namespace gctools {
 CL_LAMBDA(&optional x (marker 0));
 CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 #if defined(USE_MPS)
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 #elif defined(USE_BOEHM)
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 #elif defined(USE_MMTK)
   MISSING_GC_SUPPORT();
 #endif
@@ -409,11 +409,11 @@ CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 };
 
 CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
-  core::Symbol_sp pattern(_Nil<core::Symbol_O>());
+  core::Symbol_sp pattern(nil<core::Symbol_O>());
 #if defined(USE_MPS)
   core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
   if (patternStack.nilp())
-    return _Nil<core::Symbol_O>();
+    return nil<core::Symbol_O>();
   pattern = gc::As<core::Symbol_sp>(oCar(patternStack));
   gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(oCdr(patternStack));
   mps_alloc_pattern_t mps_pat;
@@ -548,7 +548,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   MISSING_GC_SUPPORT();
 #endif
   clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 };
 };
 
@@ -571,7 +571,7 @@ CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename) {
 }
 
 CL_DEFUN void gctools__slad() {
-  gctools__save_lisp_and_die(_Nil<core::T_O>());
+  gctools__save_lisp_and_die(nil<core::T_O>());
 }
 
 void save_lisp_and_die(const std::string& filename)
@@ -640,7 +640,7 @@ CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
 # else
     SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
 # endif
-    core::List_sp result = _Nil<core::T_O>();
+    core::List_sp result = nil<core::T_O>();
     for ( size_t ii=0; ii<findStamp._addresses.size(); ii++ ) {
       core::Pointer_sp ptr = core::Pointer_O::create((void*)findStamp._addresses[ii]);
       result = core::Cons_O::create(ptr,result);
@@ -669,7 +669,7 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 # else
     SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
 # endif
-    core::List_sp result = _Nil<core::T_O>();
+    core::List_sp result = nil<core::T_O>();
     for ( size_t ii=0; ii<findOwner._addresses.size(); ii++ ) {
       result = core::Cons_O::create(core::Pointer_O::create(findOwner._addresses[ii]),result);
     }
@@ -749,7 +749,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
       func_counters_end->setf_gethash(f,core::clasp_make_fixnum(diff));
     } );
 
-  core::List_sp results = _Nil<core::T_O>();
+  core::List_sp results = nil<core::T_O>();
   func_counters_end->mapHash([func_counters_end,&results](core::T_sp f, core::T_sp value) {
       ASSERT(value.fixnump());
       Fixnum diff = value.unsafe_fixnum();
@@ -777,7 +777,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
   //printf("%s:%d making a finalizer for %p calling %p\n", __FILE__, __LINE__, (void*)object.tagged_(), (void*)finalizer_callback.tagged_());
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
   core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
-  core::List_sp orig_finalizers = ht->gethash(object,_Nil<core::T_O>());
+  core::List_sp orig_finalizers = ht->gethash(object,nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback,orig_finalizers);
 //  printf("%s:%d      Adding finalizer to list new length --> %lu   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
   ht->hash_table_setf_gethash(object,finalizers);
@@ -864,7 +864,7 @@ CL_DEFUN void gctools__register_stamp_name(const std::string& name,size_t stamp_
 }
 
 CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
-  core::List_sp l = _Nil<core::T_O>();
+  core::List_sp l = nil<core::T_O>();
   for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
     l = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(it.first),core::make_fixnum(it.second)),l);
   }
@@ -1278,7 +1278,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   bool use_compile_file_parallel = true;
 #if USE_COMPILE_FILE_PARALLEL == 0
   use_compile_file_parallel = false;
-  INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_Nil<core::T_O>());
+  INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(nil<core::T_O>());
   printf("%s:%d You have turned off compile-file-parallel\n   - you can enable it by setting USE_COMPILE_FILE_PARALLEL in the wscript.config\n   - compile-file-parallel should be enabled by default\n", __FILE__, __LINE__ );
 #else
   INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
@@ -1288,7 +1288,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   bool force_startup_external_linkage = true;
 #if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
   force_startup_external_linkage = false;
-  INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_Nil<core::T_O>());
+  INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(nil<core::T_O>());
 #else
   INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
 #endif
@@ -1394,7 +1394,7 @@ CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
 }
 
 void initialize_gc_functions() {
-  _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARallocPatternStackSTAR->defparameter(nil<core::T_O>());
 #ifdef USE_MPS
 //  core::af_def(GcToolsPkg, "mpsTelemetrySet", &gctools__mpsTelemetrySet);
 //  core::af_def(GcToolsPkg, "mpsTelemetryReset", &gctools__mpsTelemetryReset);

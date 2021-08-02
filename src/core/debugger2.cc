@@ -154,11 +154,11 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
         throw(DebuggerSaysAbortToRepl());
     case 'c': // continue with given result
         if (can_continue)
-          return _lisp->readEvalPrintString(eline, _Nil<T_O>(), true);
+          return _lisp->readEvalPrintString(eline, nil<T_O>(), true);
         else write_bf_stream(BF("Cannot continue from this error\n"));
         break;
     case 'e': // evaluate
-        try { _lisp->readEvalPrintString(eline, _Nil<T_O>(), true); }
+        try { _lisp->readEvalPrintString(eline, nil<T_O>(), true); }
         // If the debugger is entered recursively and aborted out of,
         // return here.
         catch (DebuggerSaysAbortToRepl &err) {}

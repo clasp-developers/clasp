@@ -56,7 +56,7 @@ public:
   std::pair<void *, int> cast(
       void *p, class_id src, class_id target, class_id dynamic_id, void const *dynamic_ptr) const;
   void insert(class_id src, class_id target, cast_function cast);
-  void dump();
+  void dump(FILE* fout);
 private:
   class impl;
   boost::scoped_ptr<impl> m_impl;
@@ -122,7 +122,7 @@ inline void class_id_map::put(class_id id, type_id type) {
 inline ClassRep_sp class_map_get(class_id id)  {
 //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   if (id >= _lisp->_Roots._ClassMap.size())
-    return _Nil<ClassRep_O>();
+    return nil<ClassRep_O>();
   return _lisp->_Roots._ClassMap[id];
 }
 

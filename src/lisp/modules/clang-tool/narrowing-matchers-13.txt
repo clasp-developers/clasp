@@ -1,0 +1,206 @@
+Matcher<*>	allOf	Matcher<*>, ..., Matcher<*>
+Matcher<*>	anyOf	Matcher<*>, ..., Matcher<*>
+Matcher<*>	anything	
+unspecified	mapAnyOf	nodeMatcherFunction...
+Matcher<*>	unless	Matcher<*>
+Matcher<BinaryOperator>	hasAnyOperatorName	StringRef, ..., StringRef
+Matcher<BinaryOperator>	hasOperatorName	std::string Name
+Matcher<BinaryOperator>	isAssignmentOperator	
+Matcher<BinaryOperator>	isComparisonOperator	
+Matcher<CXXBaseSpecifier>	isPrivate	
+Matcher<CXXBaseSpecifier>	isProtected	
+Matcher<CXXBaseSpecifier>	isPublic	
+Matcher<CXXBaseSpecifier>	isVirtual	
+Matcher<CXXBoolLiteralExpr>	equals	bool Value
+Matcher<CXXBoolLiteralExpr>	equals	const ValueT Value
+Matcher<CXXBoolLiteralExpr>	equals	double Value
+Matcher<CXXBoolLiteralExpr>	equals	unsigned Value
+Matcher<CXXCatchStmt>	isCatchAll	
+Matcher<CXXConstructExpr>	argumentCountIs	unsigned N
+Matcher<CXXConstructExpr>	isListInitialization	
+Matcher<CXXConstructExpr>	requiresZeroInitialization	
+Matcher<CXXConstructorDecl>	isCopyConstructor	
+Matcher<CXXConstructorDecl>	isDefaultConstructor	
+Matcher<CXXConstructorDecl>	isDelegatingConstructor	
+Matcher<CXXConstructorDecl>	isExplicit	
+Matcher<CXXConstructorDecl>	isMoveConstructor	
+Matcher<CXXConversionDecl>	isExplicit	
+Matcher<CXXCtorInitializer>	isBaseInitializer	
+Matcher<CXXCtorInitializer>	isMemberInitializer	
+Matcher<CXXCtorInitializer>	isWritten	
+Matcher<CXXDeductionGuideDecl>	isExplicit	
+Matcher<CXXDependentScopeMemberExpr>	hasMemberName	std::string N
+Matcher<CXXDependentScopeMemberExpr>	isArrow	
+Matcher<CXXDependentScopeMemberExpr>	memberHasSameNameAsBoundNode	std::string BindingID
+Matcher<CXXMethodDecl>	isConst	
+Matcher<CXXMethodDecl>	isCopyAssignmentOperator	
+Matcher<CXXMethodDecl>	isFinal	
+Matcher<CXXMethodDecl>	isMoveAssignmentOperator	
+Matcher<CXXMethodDecl>	isOverride	
+Matcher<CXXMethodDecl>	isPure	
+Matcher<CXXMethodDecl>	isUserProvided	
+Matcher<CXXMethodDecl>	isVirtual	
+Matcher<CXXMethodDecl>	isVirtualAsWritten	
+Matcher<CXXNewExpr>	isArray	
+Matcher<CXXOperatorCallExpr>	hasAnyOperatorName	StringRef, ..., StringRef
+Matcher<CXXOperatorCallExpr>	hasAnyOverloadedOperatorName	StringRef, ..., StringRef
+Matcher<CXXOperatorCallExpr>	hasOperatorName	std::string Name
+Matcher<CXXOperatorCallExpr>	hasOverloadedOperatorName	StringRef Name
+Matcher<CXXOperatorCallExpr>	isAssignmentOperator	
+Matcher<CXXOperatorCallExpr>	isComparisonOperator	
+Matcher<CXXRecordDecl>	hasDefinition	
+Matcher<CXXRecordDecl>	isDerivedFrom	std::string BaseName
+Matcher<CXXRecordDecl>	isDirectlyDerivedFrom	std::string BaseName
+Matcher<CXXRecordDecl>	isExplicitTemplateSpecialization	
+Matcher<CXXRecordDecl>	isFinal	
+Matcher<CXXRecordDecl>	isLambda	
+Matcher<CXXRecordDecl>	isSameOrDerivedFrom	std::string BaseName
+Matcher<CXXRecordDecl>	isTemplateInstantiation	
+Matcher<CXXRewrittenBinaryOperator>	hasAnyOperatorName	StringRef, ..., StringRef
+Matcher<CXXRewrittenBinaryOperator>	hasOperatorName	std::string Name
+Matcher<CXXRewrittenBinaryOperator>	isAssignmentOperator	
+Matcher<CXXRewrittenBinaryOperator>	isComparisonOperator	
+Matcher<CXXUnresolvedConstructExpr>	argumentCountIs	unsigned N
+Matcher<CallExpr>	argumentCountIs	unsigned N
+Matcher<CallExpr>	usesADL	
+Matcher<CastExpr>	hasCastKind	CastKind Kind
+Matcher<CharacterLiteral>	equals	bool Value
+Matcher<CharacterLiteral>	equals	const ValueT Value
+Matcher<CharacterLiteral>	equals	double Value
+Matcher<CharacterLiteral>	equals	unsigned Value
+Matcher<ClassTemplateSpecializationDecl>	templateArgumentCountIs	unsigned N
+Matcher<CompoundStmt>	statementCountIs	unsigned N
+Matcher<ConstantArrayType>	hasSize	unsigned N
+Matcher<DeclStmt>	declCountIs	unsigned N
+Matcher<Decl>	equalsBoundNode	std::string ID
+Matcher<Decl>	equalsNode	const Decl* Other
+Matcher<Decl>	hasAttr	attr::Kind AttrKind
+Matcher<Decl>	isExpandedFromMacro	std::string MacroName
+Matcher<Decl>	isExpansionInFileMatching	StringRef RegExp, Regex::RegexFlags Flags = NoFlags
+Matcher<Decl>	isExpansionInMainFile	
+Matcher<Decl>	isExpansionInSystemHeader	
+Matcher<Decl>	isImplicit	
+Matcher<Decl>	isInStdNamespace	
+Matcher<Decl>	isInstantiated	
+Matcher<Decl>	isPrivate	
+Matcher<Decl>	isProtected	
+Matcher<Decl>	isPublic	
+Matcher<DesignatedInitExpr>	designatorCountIs	unsigned N
+Matcher<EnumDecl>	isScoped	
+Matcher<Expr>	isInstantiationDependent	
+Matcher<Expr>	isTypeDependent	
+Matcher<Expr>	isValueDependent	
+Matcher<Expr>	nullPointerConstant	
+Matcher<FieldDecl>	hasBitWidth	unsigned Width
+Matcher<FieldDecl>	isBitField	
+Matcher<FloatingLiteral>	equals	const ValueT Value
+Matcher<FloatingLiteral>	equals	double Value
+Matcher<FunctionDecl>	hasAnyOverloadedOperatorName	StringRef, ..., StringRef
+Matcher<FunctionDecl>	hasDynamicExceptionSpec	
+Matcher<FunctionDecl>	hasOverloadedOperatorName	StringRef Name
+Matcher<FunctionDecl>	hasTrailingReturn	
+Matcher<FunctionDecl>	isConstexpr	
+Matcher<FunctionDecl>	isDefaulted	
+Matcher<FunctionDecl>	isDefinition	
+Matcher<FunctionDecl>	isDeleted	
+Matcher<FunctionDecl>	isExplicitTemplateSpecialization	
+Matcher<FunctionDecl>	isExternC	
+Matcher<FunctionDecl>	isInline	
+Matcher<FunctionDecl>	isMain	
+Matcher<FunctionDecl>	isNoReturn	
+Matcher<FunctionDecl>	isNoThrow	
+Matcher<FunctionDecl>	isStaticStorageClass	
+Matcher<FunctionDecl>	isTemplateInstantiation	
+Matcher<FunctionDecl>	isVariadic	
+Matcher<FunctionDecl>	isWeak	
+Matcher<FunctionDecl>	parameterCountIs	unsigned N
+Matcher<FunctionProtoType>	hasDynamicExceptionSpec	
+Matcher<FunctionProtoType>	isNoThrow	
+Matcher<FunctionProtoType>	parameterCountIs	unsigned N
+Matcher<IfStmt>	isConstexpr	
+Matcher<IntegerLiteral>	equals	bool Value
+Matcher<IntegerLiteral>	equals	const ValueT Value
+Matcher<IntegerLiteral>	equals	double Value
+Matcher<IntegerLiteral>	equals	unsigned Value
+Matcher<MemberExpr>	isArrow	
+Matcher<NamedDecl>	hasAnyName	StringRef, ..., StringRef
+Matcher<NamedDecl>	hasExternalFormalLinkage	
+Matcher<NamedDecl>	hasName	StringRef Name
+Matcher<NamedDecl>	matchesName	StringRef RegExp, Regex::RegexFlags Flags = NoFlags
+Matcher<NamespaceDecl>	isAnonymous	
+Matcher<NamespaceDecl>	isInline	
+Matcher<OMPDefaultClause>	isFirstPrivateKind	
+Matcher<OMPDefaultClause>	isNoneKind	
+Matcher<OMPDefaultClause>	isSharedKind	
+Matcher<OMPExecutableDirective>	isAllowedToContainClauseKind	OpenMPClauseKind CKind
+Matcher<OMPExecutableDirective>	isStandaloneDirective	
+Matcher<ObjCInterfaceDecl>	isDerivedFrom	std::string BaseName
+Matcher<ObjCInterfaceDecl>	isDirectlyDerivedFrom	std::string BaseName
+Matcher<ObjCInterfaceDecl>	isSameOrDerivedFrom	std::string BaseName
+Matcher<ObjCMessageExpr>	argumentCountIs	unsigned N
+Matcher<ObjCMessageExpr>	hasAnySelector	StringRef, ..., StringRef
+Matcher<ObjCMessageExpr>	hasKeywordSelector	
+Matcher<ObjCMessageExpr>	hasNullSelector	
+Matcher<ObjCMessageExpr>	hasSelector	std::string BaseName
+Matcher<ObjCMessageExpr>	hasUnarySelector	
+Matcher<ObjCMessageExpr>	isClassMessage	
+Matcher<ObjCMessageExpr>	isInstanceMessage	
+Matcher<ObjCMessageExpr>	matchesSelector	StringRef RegExp, Regex::RegexFlags Flags = NoFlags
+Matcher<ObjCMessageExpr>	numSelectorArgs	unsigned N
+Matcher<ObjCMethodDecl>	isClassMethod	
+Matcher<ObjCMethodDecl>	isDefinition	
+Matcher<ObjCMethodDecl>	isInstanceMethod	
+Matcher<ParmVarDecl>	hasDefaultArgument	
+Matcher<ParmVarDecl>	isAtPosition	unsigned N
+Matcher<QualType>	asString	std::string Name
+Matcher<QualType>	equalsBoundNode	std::string ID
+Matcher<QualType>	hasLocalQualifiers	
+Matcher<QualType>	isAnyCharacter	
+Matcher<QualType>	isAnyPointer	
+Matcher<QualType>	isConstQualified	
+Matcher<QualType>	isInteger	
+Matcher<QualType>	isSignedInteger	
+Matcher<QualType>	isUnsignedInteger	
+Matcher<QualType>	isVolatileQualified	
+Matcher<Stmt>	equalsBoundNode	std::string ID
+Matcher<Stmt>	equalsNode	const Stmt* Other
+Matcher<Stmt>	isExpandedFromMacro	std::string MacroName
+Matcher<Stmt>	isExpansionInFileMatching	StringRef RegExp, Regex::RegexFlags Flags = NoFlags
+Matcher<Stmt>	isExpansionInMainFile	
+Matcher<Stmt>	isExpansionInSystemHeader	
+Matcher<Stmt>	isInTemplateInstantiation	
+Matcher<StringLiteral>	hasSize	unsigned N
+Matcher<TagDecl>	isClass	
+Matcher<TagDecl>	isDefinition	
+Matcher<TagDecl>	isEnum	
+Matcher<TagDecl>	isStruct	
+Matcher<TagDecl>	isUnion	
+Matcher<TemplateArgument>	equalsIntegralValue	std::string Value
+Matcher<TemplateArgument>	isIntegral	
+Matcher<TemplateSpecializationType>	templateArgumentCountIs	unsigned N
+Matcher<TypeLoc>	isExpandedFromMacro	std::string MacroName
+Matcher<TypeLoc>	isExpansionInFileMatching	StringRef RegExp, Regex::RegexFlags Flags = NoFlags
+Matcher<TypeLoc>	isExpansionInMainFile	
+Matcher<TypeLoc>	isExpansionInSystemHeader	
+Matcher<Type>	booleanType	
+Matcher<Type>	equalsBoundNode	std::string ID
+Matcher<Type>	equalsNode	const Type* Other
+Matcher<Type>	realFloatingPointType	
+Matcher<Type>	voidType	
+Matcher<UnaryExprOrTypeTraitExpr>	ofKind	UnaryExprOrTypeTrait Kind
+Matcher<UnaryOperator>	hasAnyOperatorName	StringRef, ..., StringRef
+Matcher<UnaryOperator>	hasOperatorName	std::string Name
+Matcher<UnresolvedMemberExpr>	isArrow	
+Matcher<VarDecl>	hasAutomaticStorageDuration	
+Matcher<VarDecl>	hasGlobalStorage	
+Matcher<VarDecl>	hasLocalStorage	
+Matcher<VarDecl>	hasStaticStorageDuration	
+Matcher<VarDecl>	hasThreadStorageDuration	
+Matcher<VarDecl>	isConstexpr	
+Matcher<VarDecl>	isDefinition	
+Matcher<VarDecl>	isExceptionVariable	
+Matcher<VarDecl>	isExplicitTemplateSpecialization	
+Matcher<VarDecl>	isExternC	
+Matcher<VarDecl>	isStaticLocal	
+Matcher<VarDecl>	isStaticStorageClass	
+Matcher<VarDecl>	isTemplateInstantiation

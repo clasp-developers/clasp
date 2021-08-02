@@ -36,7 +36,7 @@ THE SOFTWARE.
 namespace llvmo {
 
 InsertPoint_sp InsertPoint_O::create(llvm::IRBuilderBase::InsertPoint &ip) {
-  GC_ALLOCATE(InsertPoint_O, oip);
+  auto  oip = gctools::GC<InsertPoint_O>::allocate_with_default_constructor();
   oip->_InsertPoint._value = ip;
   return oip;
 }

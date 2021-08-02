@@ -829,7 +829,7 @@ CL_LAMBDA(x);
 CL_DECLARE();
 CL_DOCSTRING("floatDigits");
 CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
-  Integer_sp ix(_Nil<Integer_O>());
+  Integer_sp ix(nil<Integer_O>());
   switch (clasp_t_of(x)) {
   case number_SingleFloat:
     ix = clasp_make_fixnum(FLT_MANT_DIG);
@@ -912,7 +912,7 @@ CL_DECLARE();
 CL_DOCSTRING("integer_decode_float");
 CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
   int e = 0, s = 1;
-  Real_sp rx(_Nil<Real_O>());
+  Real_sp rx(nil<Real_O>());
   switch (clasp_t_of(x)) {
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {

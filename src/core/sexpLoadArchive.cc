@@ -50,9 +50,9 @@ namespace core {
 /*! Convert S-expressions into SNode's */
 SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
   if (obj.nilp()) {
-    return LeafSNode_O::create(_Nil<T_O>());
+    return LeafSNode_O::create(nil<T_O>());
   } else if (cl__atom(obj)) {
-    SNode_sp node = gc::As<SNode_sp>(objToNode->gethash(obj, _Unbound<T_O>()));
+    SNode_sp node = gc::As<SNode_sp>(objToNode->gethash(obj, unbound<T_O>()));
     if (node.unboundp()) {
       node = LeafSNode_O::create(obj);
       objToNode->hash_table_setf_gethash(obj, node);
@@ -69,28 +69,28 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
 	    }
 #endif
     Cons_sp consObj = obj.asOrNull<Cons_O>();
-    SNode_sp snode = gc::As<SNode_sp>(objToNode->gethash(consObj, _Unbound<T_O>()));
+    SNode_sp snode = gc::As<SNode_sp>(objToNode->gethash(consObj, unbound<T_O>()));
     if (snode.unboundp()) {
       snode = BranchSNode_O::create();
       objToNode->hash_table_setf_gethash(obj, snode);
       Symbol_sp head = gc::As<Symbol_sp>(oFirst(consObj));
-      Cons_sp dummyCons = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+      Cons_sp dummyCons = Cons_O::create(nil<T_O>(),nil<T_O>());
       Cons_sp result = dummyCons;
       for (List_sp cur = oSecond(consObj); cur.consp(); cur = oCddr(cur)) {
         Symbol_sp propertyName = gc::As<Symbol_sp>(oCar(cur));
         T_sp rawData = oCadr(cur);
         SNode_sp propertyData = parseNode(objToNode, rawData);
-        Cons_sp one = Cons_O::create(propertyName,_Nil<T_O>());
+        Cons_sp one = Cons_O::create(propertyName,nil<T_O>());
         result->setCdr(one);
         result = one;
-        one = Cons_O::create(propertyData,_Nil<T_O>());
+        one = Cons_O::create(propertyData,nil<T_O>());
         result->setCdr(one);
         result = one;
       }
-      ComplexVector_T_sp vresult(_Nil<ComplexVector_T_O>());
+      ComplexVector_T_sp vresult(nil<ComplexVector_T_O>());
       if (oCddr(consObj).notnilp()) {
         Vector_sp vdata = gc::As<Vector_sp>(oThird(consObj));
-        vresult = ComplexVector_T_O::make(vdata->length(),_Nil<T_O>());
+        vresult = ComplexVector_T_O::make(vdata->length(),nil<T_O>());
         for (int i = 0, iEnd(vdata->length()); i < iEnd; ++i) {
           SNode_sp data = parseNode(objToNode, vdata->rowMajorAref(i));
           vresult->rowMajorAset(i, data);
@@ -124,7 +124,7 @@ CL_DEFMETHOD void SexpLoadArchive_O::parseFromObject(T_sp object) {
 CL_LISPIFY_NAME("parseFromStream");
 CL_DEFMETHOD void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
-  T_sp obj = cl__read(streamDesignator, _lisp->_true(), _Unbound<T_O>());
+  T_sp obj = cl__read(streamDesignator, _lisp->_true(), unbound<T_O>());
   if (obj.unboundp()) {
     SIMPLE_ERROR(BF("Nothing could be read from stream"));
   }

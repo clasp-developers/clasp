@@ -536,14 +536,14 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(UnshiftedStamp 
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),core::BuiltInObjectCreator<TheClass>::entry_point);
+  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),core::BuiltInObjectCreator<TheClass>::entry_point);
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_StampWtagMtag.shifted_stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::setStaticClass(class_val);
-//  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>()
+//  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,nil<core::T_O>()
   _lisp->boot_setf_findClass(TheClass::static_classSymbol(),class_val);
   return class_val;
 }
@@ -653,16 +653,6 @@ void initialize_typeq_map() {
     theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type>())); \
   }
 #define ADD_RANGE_TYPEQ_TEST(type_low,type_high,stamp_low,stamp_high) { \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_classSymbol()); \
-    theTypeqMap->setf_gethash(type_low::static_classSymbol(), \
-                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_low>()), \
-                                                   core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_high>()))); \
-  }
-#define ADD_SINGLE_TYPEQ_TEST_INSTANCE(type,stamp) { \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_classSymbol()); \
-    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type>())); \
-  }
-#define ADD_RANGE_TYPEQ_TEST_INSTANCE(type_low,type_high,stamp_low,stamp_high) { \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_classSymbol()); \
     theTypeqMap->setf_gethash(type_low::static_classSymbol(), \
                               core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_low>()), \
@@ -1131,7 +1121,7 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::UserData_O);
      Init_class_kind(core::Record_O);
      Init_class_kind(clbind::ClassRegistry_O);
-     Init_class_kind(asttooling::AstVisitor_O);
+     Init_class_kind(core::Cons_O);
 
      Init_templated_kind(core::WrappedPointer_O);
      Init_templated_kind(core::Creator_O);

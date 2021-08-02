@@ -874,7 +874,7 @@ void formatted_objects_stepper(mps_addr_t addr, mps_fmt_t fmt, mps_pool_t pool, 
 
 void run_quick_tests()
 {
-  core::List_sp l1 = core::Cons_O::create(core::clasp_make_fixnum(1),_Nil<core::T_O>());
+  core::List_sp l1 = core::Cons_O::create(core::clasp_make_fixnum(1),nil<core::T_O>());
   core::List_sp l2 = core::Cons_O::create(core::clasp_make_fixnum(1),l1);
   core::List_sp l3 = core::Cons_O::create(core::clasp_make_fixnum(1),l2);
   core::List_sp l4 = core::Cons_O::create(core::clasp_make_fixnum(1),l3);

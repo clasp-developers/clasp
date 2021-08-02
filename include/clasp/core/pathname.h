@@ -54,10 +54,10 @@ Pathname_sp cl__pathname(T_sp x);
  Pathname_sp cl__merge_pathnames(T_sp arg, T_sp defaultPathname = core__safe_default_pathname_defaults(), T_sp defaultVersion = kw::_sym_newest);
 
 T_mv cl__parse_namestring(T_sp thing,
-                          T_sp host = _Nil<T_O>(),
+                          T_sp host = nil<T_O>(),
                           T_sp defaultPathname = core__safe_default_pathname_defaults(),
                           Fixnum_sp start = make_fixnum(0),
-                          T_sp end = _Nil<T_O>(),
+                          T_sp end = nil<T_O>(),
                           bool junkAllowed = false);
 
 T_sp cl__pathname_host(T_sp pathname, Symbol_sp acase);
@@ -115,7 +115,7 @@ public:
 public:
   /*! Returns either a Pathname_sp or LogicalPathname_sp depending on host */
   static Pathname_sp makePathname(T_sp host, T_sp device, T_sp directory,
-                                  T_sp name, T_sp type, T_sp version=_Nil<core::T_O>(),
+                                  T_sp name, T_sp type, T_sp version=nil<core::T_O>(),
                                   T_sp fromcase=kw::_sym_local, bool logical = false);
 
 public:
@@ -126,9 +126,9 @@ public:
 
   Pathname_O() : _Host(kw::_sym_unspecific),
                  _Device(kw::_sym_unspecific),
-                 _Directory(_Nil<T_O>()),
-                 _Name(_Nil<T_O>()),
-                 _Type(_Nil<T_O>()),
+                 _Directory(nil<T_O>()),
+                 _Name(nil<T_O>()),
+                 _Type(nil<T_O>()),
                  _Version(kw::_sym_unspecific){};
 
   virtual ~Pathname_O(){};

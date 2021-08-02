@@ -347,7 +347,7 @@ public:
 };
 
 template <typename oclass>
-void defaultExposeCando(Lisp_sp lisp) {
+void defaultExposeCando(LispPtr lisp) {
   _G();
   // Only expose the class, don't create any methods
   // By default put class in the Cl package

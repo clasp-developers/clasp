@@ -200,20 +200,20 @@ class GlobalEntryPointGenerator_O : public EntryPointBase_O {
 
 GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName,
                                                                claspFunction entryPoint,
-                                                               T_sp lambda_list=_Unbound<T_O>(),
-                                                               T_sp docstring=_Nil<T_O>(),
-                                                               T_sp declares=_Nil<T_O>(),
-                                                               T_sp sourcePathname=_Nil<T_O>(),
+                                                               T_sp lambda_list=unbound<T_O>(),
+                                                               T_sp docstring=nil<T_O>(),
+                                                               T_sp declares=nil<T_O>(),
+                                                               T_sp sourcePathname=nil<T_O>(),
                                                                int lineno=-1,
                                                                int column=-1,
                                                                int filePos=-1);
 
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
-                                                T_sp lambda_list=_Unbound<T_O>(),
-                                                T_sp docstring=_Nil<T_O>(),
-                                                T_sp declares=_Nil<T_O>(),
-                                                T_sp sourcePathname=_Nil<T_O>(),
+                                                T_sp lambda_list=unbound<T_O>(),
+                                                T_sp docstring=nil<T_O>(),
+                                                T_sp declares=nil<T_O>(),
+                                                T_sp sourcePathname=nil<T_O>(),
                                                 int lineno=-1,
                                                 int column=-1,
                                                 int filePos=-1);
@@ -323,7 +323,7 @@ namespace core {
     virtual bool compiledP() const { return false; };
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
-    virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
+    virtual T_sp sourcePosInfo() const { return nil<T_O>(); };
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
     }
@@ -383,13 +383,13 @@ namespace core {
     LambdaListHandler_sp _lambdaListHandler;
   public:
   BuiltinClosure_O(GlobalEntryPoint_sp ep)
-    : Closure_O(ep), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
+    : Closure_O(ep), _lambdaListHandler(unbound<LambdaListHandler_O>())  {};
   BuiltinClosure_O(GlobalEntryPoint_sp ep, LambdaListHandler_sp llh)
     : Closure_O(ep), _lambdaListHandler(llh)  {};
     void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
     }
-    T_sp closedEnvironment() const override { return _Nil<T_O>(); };
+    T_sp closedEnvironment() const override { return nil<T_O>(); };
     virtual size_t templatedSizeof() const override { return sizeof(*this); };
     // Fixup the code pointers
     virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) { SIMPLE_ERROR(BF("Subclass must implement")); };
@@ -440,16 +440,16 @@ namespace core {
                      ClosureType nclosureType)
       : Base(ENSURE_ENTRY_POINT(ep,functionPtr)),
         closureType(nclosureType),
-        _Slots(capacity,_Unbound<T_O>(),true) {};
+        _Slots(capacity,unbound<T_O>(),true) {};
     virtual string __repr__() const override;
     core::T_sp lambdaListHandler() const override {
       switch (this->closureType) {
       case interpretedClosure:
           return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
       case bclaspClosure:
-          return _Nil<T_O>();
+          return nil<T_O>();
       case cclaspClosure:
-          return _Nil<T_O>();
+          return nil<T_O>();
       };
     }
     CL_DEFMETHOD T_sp interpretedSourceCode();

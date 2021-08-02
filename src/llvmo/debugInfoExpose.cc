@@ -163,7 +163,7 @@ CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
     DILocation_sp temp = gc::As<DILocation_sp>(inlinedAt);
     realInlinedAt = temp->operator llvm::Metadata *();
   }
-  GC_ALLOCATE(DILocation_O, ret);
+  auto  ret = gctools::GC<DILocation_O>::allocate_with_default_constructor();
   ret->set_wrapped(llvm::DILocation::get(context, line, col, realScope, realInlinedAt));
   return ret;
 }
@@ -172,7 +172,7 @@ CL_LAMBDA(module);
 CL_LISPIFY_NAME(make-dibuilder);
 CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
   _G();
-  GC_ALLOCATE(DIBuilder_O, me);
+  auto  me = gctools::GC<DIBuilder_O>::allocate_with_default_constructor();
   me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
   return me;
 };
@@ -369,7 +369,7 @@ CL_DEFMETHOD DINodeArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
   llvm::DINodeArray diarray = this->wrappedPtr()->getOrCreateArray(array);
-  GC_ALLOCATE_VARIADIC(llvmo::DINodeArray_O, obj, diarray);
+  auto  obj = gctools::GC<llvmo::DINodeArray_O>::allocate( diarray);
   return obj;
 }
 
@@ -394,7 +394,7 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
   llvm::DITypeRefArray diarray = this->wrappedPtr()->getOrCreateTypeArray(array);
-  GC_ALLOCATE_VARIADIC(llvmo::DITypeRefArray_O, obj, diarray);
+  auto  obj = gctools::GC<llvmo::DITypeRefArray_O>::allocate( diarray);
   return obj;
 }
 
@@ -424,11 +424,11 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
     core::write_bf_stream(BF("info.Column %lu\n") % info.Column );
     core::write_bf_stream(BF("info.StartLine %lu\n") % info.StartLine );
   }
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
   }
   if (info.Source.hasValue())
     source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
-  else source = _Nil<core::T_O>();
+  else source = nil<core::T_O>();
   if (verbose) {
     core::write_bf_stream(BF("info.Filename %s\n") % info.FileName );
     core::write_bf_stream(BF("Source %s\n") % _rep_(source) );
@@ -494,7 +494,7 @@ CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddr
                                   core::Integer_O::create(range.HighPC));
     return res.cons();
   } else // TODO: signal error?
-    return _Nil<core::T_O>();
+    return nil<core::T_O>();
 }
 
 }; // llvmo, DIContext_O
@@ -546,7 +546,7 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
   if (verbose){
     core::write_bf_stream(BF("Could not find ObjectFile\n"));
   }
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 }
   
 }; // llvmo, DWARFContext_O

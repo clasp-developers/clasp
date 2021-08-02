@@ -92,11 +92,11 @@ SMART(SpecialForm);
 SMART(Hierarchy);
 SMART(Environment);
 
- void core__stack_monitor(T_sp fn=_Nil<T_O>());
+ void core__stack_monitor(T_sp fn=nil<T_O>());
 void af_stackSizeWarning(size_t size);
- T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=_Nil<core::T_O>() );
+ T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key=nil<core::T_O>() );
  
-List_sp cl__member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+List_sp cl__member(T_sp item, T_sp list, T_sp key = nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = nil<T_O>());
 [[noreturn]]void core__invoke_internal_debugger(T_sp condition);
 
 class SymbolClassHolderPair {
@@ -172,7 +172,7 @@ public:
 
   /*! CTor that looks up a Package with packageName and if it
 	  doesn't exist it makes it - no nicknames allowed */
-  Exposer_O(Lisp_sp lisp, const string &packageName);
+  Exposer_O(LispPtr lisp, const string &packageName);
 
   virtual ~Exposer_O();
 
@@ -184,7 +184,7 @@ public:
 
   /* Evaluate the code that exposes the package Classes/Functions/Globals
 	 to Cando-lisp or to Python depending on the value of (what) */
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const = 0;
+  virtual void expose(core::LispPtr lisp, WhatToExpose what) const = 0;
 };
 
 template <typename oclass>
@@ -193,7 +193,7 @@ class class_;
 };
 
 template <>
-struct gctools::GCInfo<core::Lisp_O> {
+struct gctools::GCInfo<core::Lisp> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = unmanaged;
@@ -313,7 +313,7 @@ extern core::globals_t* globals_;
 
 namespace core {
 
-class Lisp_O {
+class Lisp {
   friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
@@ -403,12 +403,11 @@ class Lisp_O {
   friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
   friend void core__clear_gfun_hash(T_sp what);
-  //	/* disable scrape */ LISP_CLASS(core,CorePkg,Lisp_O,"Lisp",T_O);
 public:
-  static void initializeGlobals(Lisp_sp lisp);
+  static void initializeGlobals(LispPtr lisp);
   
 public:
-  static void lisp_initSymbols(Lisp_sp lisp);
+  static void lisp_initSymbols(LispPtr lisp);
 public:
   static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 public:
@@ -630,7 +629,7 @@ public:
   //        ActivationFrame_sp& activationFrameNil() { return this->_Roots._ActivationFrameNil; };
   T_sp _true() const { return this->_Roots._TrueObject; };
   T_sp _not(T_sp x) const { return this->_boolean(!x.isTrue()); };
-  T_sp _false() const { return _Nil<T_O>(); };
+  T_sp _false() const { return nil<T_O>(); };
   T_sp _boolean(bool b) const {
     if (b)
       return this->_true();
@@ -654,7 +653,7 @@ public:
 
 public:
   /*! Pass the mpi process rank in (rank) */
-  static Lisp_sp createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize);
+  static LispPtr createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize);
 
     void initializeMainThread();
 
@@ -901,8 +900,8 @@ public:
 	  if the names string is empty then untrace all functions. */
   void gdb_untrace_by_name(const char *name);
 
-  explicit Lisp_O();
-  virtual ~Lisp_O();
+  explicit Lisp();
+  virtual ~Lisp();
 } ;
 
  /*! Use RAII to safely allocate a buffer */
@@ -934,7 +933,7 @@ void initializeLisp();
 class LispHolder //: public gctools::StackRoot
     {
 private:
-  Lisp_sp _Lisp;
+  LispPtr _Lisp;
 
 public:
   /*! Pass the mpiProcess rank in (rank) or set to 0 if there is only one process */
@@ -962,20 +961,18 @@ namespace core {
   T_mv cl__macroexpand_1(T_sp form, T_sp env);
   T_mv cl__macroexpand(T_sp form, T_sp env);
 
-  List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+  List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = nil<T_O>());
 
-  T_sp cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
+  T_sp cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = nil<T_O>());
   T_sp core__setf_find_class(T_sp newValue, Symbol_sp name);
 
   void cl__error(T_sp err, List_sp initializers);
 };
 
-//TRANSLATE(core::Lisp_O);
-
 #define INTERN(x) _lisp->internWithPackageName(x, CurrentPkg)
 
 namespace core {
-  void initialize_Lisp_O();
+  void initialize_Lisp();
 #ifdef DEBUG_MONITOR_SUPPORT
 std::string core__monitor_directory();
 FILE* monitor_file(const std::string& filename_prefix);

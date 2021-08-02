@@ -90,7 +90,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %lu\n", __FILE__, __LINE__, _rep_(className).c_str(), (uintptr_t)this->_HeaderValue._value);
-    core::GlobalEntryPoint_sp fdesc = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<T, Pointer>::entry_point);
+    core::GlobalEntryPoint_sp fdesc = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),DefaultConstructorCreator_O<T, Pointer>::entry_point);
     maybe_register_symbol_using_dladdr((void*)DefaultConstructorCreator_O<T, Pointer>::entry_point);
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(fdesc,className, this->_HeaderValue, this->_duplicationLevel + 1));
     return allocator;
@@ -125,12 +125,12 @@ public:
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
   core::T_sp creator_allocate() {
-    GC_ALLOCATE(T, obj);
+    auto  obj = gctools::GC<T>::allocate_with_default_constructor();
     return obj;
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
 //    printf("%s:%d DerivableDefaultConstructorCreator_O  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_Kind);
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DerivableDefaultConstructorCreator_O<T>::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),DerivableDefaultConstructorCreator_O<T>::entry_point);
     maybe_register_symbol_using_dladdr((void*)DerivableDefaultConstructorCreator_O<T>::entry_point);
     return gc::As_unsafe<core::Creator_sp>(gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(entryPoint,className, this->_Header, this->_duplicationLevel + 1));
   }

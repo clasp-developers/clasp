@@ -94,7 +94,7 @@ std::ostream &operator<<(std::ostream &out, T_sp obj) {
 T_sp core_initialize(T_sp obj, core::List_sp arg);
 
 T_sp alist_from_plist(List_sp plist) {
-  T_sp alist(_Nil<T_O>());
+  T_sp alist(nil<T_O>());
   while (plist.notnilp()) {
     T_sp key = oCar(plist);
     plist = oCdr(plist);
@@ -115,7 +115,7 @@ CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
   } else if (Symbol_sp name = class_or_name.asOrNull<Symbol_O>()) {
-    theClass = gc::As_unsafe<Instance_sp>(cl__find_class(name, true, _Nil<T_O>()));
+    theClass = gc::As_unsafe<Instance_sp>(cl__find_class(name, true, nil<T_O>()));
   } else {
     goto BAD_ARG0;
   }
@@ -149,7 +149,7 @@ CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
   } else if (Symbol_sp name = class_or_name.asOrNull<Symbol_O>()) {
-    theClass = gc::As_unsafe<Instance_sp>(cl__find_class(name, true, _Nil<T_O>()));
+    theClass = gc::As_unsafe<Instance_sp>(cl__find_class(name, true, nil<T_O>()));
   } else {
     goto BAD_ARG0;
   }
@@ -253,7 +253,7 @@ CL_DECLARE();
 CL_DOCSTRING("copyTree");
 CL_DEFUN T_sp cl__copy_tree(T_sp arg) {
   if (arg.nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   if (Cons_sp c = arg.asOrNull<Cons_O>()) {
     return c->copyTree();
   }
@@ -350,7 +350,7 @@ List_sp General_O::encode() {
     this->fields(record);
     return record->data();
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 void General_O::decode(core::List_sp alist) {

@@ -53,7 +53,7 @@ typedef enum { SaveState, RunState } CodeState_t;
     Code_sp        _Code;
   public:
     static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
-    ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId, JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _ObjectId(objectId), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {
+    ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t objectId, JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _ObjectId(objectId), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(unbound<Code_O>()) {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId));
     };
     ~ObjectFile_O();
@@ -190,7 +190,7 @@ public:
  Code_O(uintptr_t totalSize ) :
    _State(RunState)
    , _TailOffset(totalSize)
-   , _ObjectFile(_Unbound<ObjectFile_O>())
+   , _ObjectFile(unbound<ObjectFile_O>())
    , _gcroots(NULL)
    , _LiteralVectorStart(0)
    , _LiteralVectorSizeBytes(0)
@@ -353,7 +353,7 @@ public:
       totalSize += gctools::AlignUp(Seg.getContentSize()+Seg.getZeroFillSize(),Seg.getAlignment())+Seg.getAlignment();
     }
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocation scanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize));
-    Code_sp codeObject(_Unbound<llvmo::Code_O>());
+    Code_sp codeObject(unbound<llvmo::Code_O>());
     bool allocatingCodeObject = (Request.size()>1);
     if (allocatingCodeObject) { // It's the allocation that creates a Code object
     // Associate the Code object with the current ObjectFile

@@ -293,11 +293,11 @@ void register_foreign_type_spec( core::ComplexVector_T_sp sp_tst,
                                core::make_fixnum(size),
                                core::make_fixnum(alignment),
                                core::Str_O::create( cxx_name ),
-                               _Nil<core::Function_O>(),
+                               nil<core::Function_O>(),
                                core::Str_O::create( to_object_fn_name ),
                                core::Str_O::create( from_object_fn_name ),
-                               _Nil<clasp_ffi::ForeignData_O>(),
-                               _Nil<clasp_ffi::ForeignData_O>() );
+                               nil<clasp_ffi::ForeignData_O>(),
+                               nil<clasp_ffi::ForeignData_O>() );
 
   sp_tst->rowMajorAset( n_index, sp_fts->asSmartPtr() );
 
@@ -319,7 +319,7 @@ inline void register_foreign_types( void )
   // STEP 1 : REGISTER FOREIGN TYPES
 
   core::ComplexVector_T_sp sp_tst =
-    core::ComplexVector_T_O::make( 64, _Nil<core::T_O>() );
+    core::ComplexVector_T_O::make( 64, nil<core::T_O>() );
 
   //  - 1.1 : CREATE FOREIGN TYPE SPECS
 
@@ -390,7 +390,7 @@ CL_INITIALIZER void clasp_fli_initialization( void )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_O::ForeignData_O() : m_kind( _Nil<T_O>() ),
+ForeignData_O::ForeignData_O() : m_kind( nil<T_O>() ),
                                  m_ownership_flags( core::ForeignDataFlagEnum::None ),
                                  m_size( 0 ),
                                  m_orig_data_ptr( nullptr )
@@ -526,7 +526,7 @@ ForeignData_sp PERCENTallocate_foreign_object( core::T_sp kind )
     n_size = unbox_fixnum(gc::As<core::Fixnum_sp>(oCaddr(ckind)));
   }
 
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->allocate( kind, core::DeleteOnDtor, n_size );
 
   return self;
@@ -544,7 +544,7 @@ void ForeignData_O::PERCENTfree_foreign_object( void )
 ForeignData_sp PERCENTallocate_foreign_data( core::Integer_sp size )
 {
   size_t _size = unbox_fixnum( size );
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->allocate( kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, _size );
   return self;
 }
@@ -553,7 +553,7 @@ ForeignData_sp PERCENTallocate_foreign_data( core::Integer_sp size )
 // ---------------------------------------------------------------------------
 ForeignData_sp allocate_foreign_data( uint64_t size )
 {
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->allocate( kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, size );
   return self;
 }
@@ -569,7 +569,7 @@ void ForeignData_O::PERCENTfree_foreign_data( void )
 // ---------------------------------------------------------------------------
 ForeignData_sp ForeignData_O::create( uintptr_t address )
 {
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->m_raw_data = reinterpret_cast< void * >( address );
   self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return self;
@@ -579,7 +579,7 @@ ForeignData_sp ForeignData_O::create( uintptr_t address )
 // ---------------------------------------------------------------------------
 ForeignData_sp ForeignData_O::create( void * p_address, size_t size )
 {
-  GC_ALLOCATE(ForeignData_O, self);
+  auto  self = gctools::GC<ForeignData_O>::allocate_with_default_constructor();
   self->m_raw_data = p_address;
   self->m_size = size;
   self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
@@ -627,7 +627,7 @@ core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj )
   {
     if( sp_foreign_data.nilp() )
     {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     else
     {
@@ -658,7 +658,7 @@ core::T_sp PERCENTnull_pointer_p( core::T_sp obj )
     }
     else
     {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
   }
 
@@ -740,13 +740,13 @@ core::T_sp PERCENTdlopen( core::T_sp path_designator )
   void * p_handle = std::get< 0 >( result );
 
   if( p_handle == nullptr ) {
-    return ( Values(_Nil<core::T_O>(), core::Str_O::create( get< 1 >( result ))) );
+    return ( Values(nil<core::T_O>(), core::Str_O::create( get< 1 >( result ))) );
   }
 
   sp_handle = ForeignData_O::create( p_handle );
   sp_handle->set_kind( kw::_sym_clasp_foreign_data_kind_dynamic_library );
 
-  return ( Values( sp_handle, _Nil<core::T_O>()) );
+  return ( Values( sp_handle, nil<core::T_O>()) );
 }
 
 // ---------------------------------------------------------------------------
@@ -758,10 +758,10 @@ core::T_sp PERCENTdlclose( ForeignData_sp handle )
 
   if( n_rc != 0 )
   {
-    return ( Values(_Nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
+    return ( Values(nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
   }
   // else
-  return ( Values( _lisp->_true(), _Nil<core::T_O>()) );
+  return ( Values( _lisp->_true(), nil<core::T_O>()) );
 }
 
 // ---------------------------------------------------------------------------
@@ -774,13 +774,13 @@ core::T_sp PERCENTdlsym( core::String_sp name ) {
 
   if( ! p_sym )
   {
-    return ( Values(_Nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
+    return ( Values(nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
   }
 
   sp_sym = ForeignData_O::create( p_sym );
   sp_sym->set_kind( kw::_sym_clasp_foreign_data_kind_symbol_pointer );
 
-  return ( Values( sp_sym, _Nil<core::T_O>()) );
+  return ( Values( sp_sym, nil<core::T_O>()) );
 }
 
 // ---------------------------------------------------------------------------
@@ -792,16 +792,16 @@ core::T_sp PERCENTdlsym( core::String_sp name ) {
 // ---------------------------------------------------------------------------
 #if 0
 // See the ForeignTypeSpec_sp ForeignTypeSpec_O::create method below
-ForeignTypeSpec_O::ForeignTypeSpec_O() : m_lisp_symbol( _Nil<T_O>() ),
-                                         m_lisp_name( _Nil<T_O>() ),
+ForeignTypeSpec_O::ForeignTypeSpec_O() : m_lisp_symbol( nil<T_O>() ),
+                                         m_lisp_name( nil<T_O>() ),
                                          m_size( (gc::Fixnum) 0 ),
                                          m_alignment( (gc::Fixnum) 0 ),
-                                         m_cxx_name( _Nil<T_O>() ),
-                                         m_llvm_type_symbol_fn( _Nil<T_O>() ),
-                                         m_to_object_fn_name( _Nil<T_O>() ),
-                                         m_from_object_fn_name( _Nil<T_O>() ),
-                                         m_to_object_fn_ptr( _Nil<T_O>() ),
-                                         m_from_object_fn_ptr( _Nil<T_O>() )
+                                         m_cxx_name( nil<T_O>() ),
+                                         m_llvm_type_symbol_fn( nil<T_O>() ),
+                                         m_to_object_fn_name( nil<T_O>() ),
+                                         m_from_object_fn_name( nil<T_O>() ),
+                                         m_to_object_fn_ptr( nil<T_O>() ),
+                                         m_from_object_fn_ptr( nil<T_O>() )
 {
   // NOTHIHG TO DO
 }
@@ -850,17 +850,16 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp    lisp_symbol,
 {
   // Pass the constructor arguments directly to the allocator
   //     You probably didn't know about GC_ALLOC_VARIADIC
-  GC_ALLOCATE_VARIADIC(ForeignTypeSpec_O, self,
-                       lisp_symbol,
-                       lisp_name,
-                       size,
-                       alignment,
-                       cxx_name,
-                       llvm_type_symbol_fn,
-                       to_object_fn_name,
-                       from_object_fn_name,
-                       to_object_fn_ptr,
-                       from_object_fn_ptr);
+  auto self = gctools::GC<ForeignTypeSpec_O>::allocate( lisp_symbol,
+                                                        lisp_name,
+                                                        size,
+                                                        alignment,
+                                                        cxx_name,
+                                                        llvm_type_symbol_fn,
+                                                        to_object_fn_name,
+                                                        from_object_fn_name,
+                                                        to_object_fn_ptr,
+                                                        from_object_fn_ptr);
 #if 0
   self->m_lisp_symbol           = lisp_symbol;
   self->m_lisp_name             = lisp_name;
@@ -1433,12 +1432,12 @@ core::T_mv PERCENTget_section_data( core::String_sp sp_segment_name,
   }
   else
   {
-    return Values( _Nil<core::T_O>(), _lisp->_true());
+    return Values( nil<core::T_O>(), _lisp->_true());
   }
 
 #else
 
-  return Values( _Nil<core::T_O>(), _Nil<core::T_O>() );
+  return Values( nil<core::T_O>(), nil<core::T_O>() );
 
 #endif
 

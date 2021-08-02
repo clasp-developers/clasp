@@ -54,7 +54,7 @@ namespace core {
 
 CL_DEFUN T_sp core__package_lock(T_sp x, T_sp y) {
 //  printf("%s:%d  package-lock doesn't do anything currently\n", __FILE__, __LINE__);
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_LAMBDA(package new-name &optional nick-names);
@@ -119,7 +119,7 @@ CL_DOCSTRING("Removes the nickname <nickname> from package."
 CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
   unlikely_if (package->getNicknames().nilp())
-    return _Nil<T_O>();
+    return nil<T_O>();
   String_sp nickname  = coerce::stringDesignator(nick);
   // verify if nickname is really nicknames of this package
   if (_lisp->findPackage(nickname->get_std_string()) == package) {
@@ -127,7 +127,7 @@ CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
     package->setNicknames(remove_equal(nickname, package->getNicknames()));
     return package->getNicknames();
   }
-  else return _Nil<T_O>();
+  else return nil<T_O>();
 };
 
 CL_LAMBDA(pkg);
@@ -260,15 +260,15 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
   T_sp potentialPkg = coerce::packageDesignatorNoError(pobj);
   unlikely_if (potentialPkg.nilp()) {
     CEpackage_error("Package with designator ~S not found. Cannot delete it.",
-                    "Ignore error and continue.", _Nil<T_O>(), 1, pobj);
-    return _Nil<T_O>();
+                    "Ignore error and continue.", nil<T_O>(), 1, pobj);
+    return nil<T_O>();
   }
   Package_sp pkg = gc::As<Package_sp>(potentialPkg);
   if ((pkg->getSystemLockedP()) || (pkg->getUserLockedP())) {
     FEpackage_error("Cannot delete the locked package ~S", pkg, 0);
   }
   if (pkg->packageName() == "") { // already deleted
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
 
   // If package is used by other packages, a correctable error of type package-error is signaled.
@@ -289,7 +289,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
   for (auto cur : pkg->getNicknames()) {
     _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string());
   }
-  pkg->setNicknames(_Nil<T_O>());
+  pkg->setNicknames(nil<T_O>());
 
   // need to grab before the readwriteLock
   List_sp usedList = pkg->packageUseList();
@@ -440,7 +440,7 @@ CL_DEFUN T_sp cl__package_name(T_sp pkgDesig) {
   Package_sp pkg = coerce::packageDesignator(pkgDesig);
   string name = pkg->packageName();
   if (name == "") {
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   // TODO support package names with wide character strings
   return SimpleBaseString_O::make(name);
@@ -501,7 +501,7 @@ void Package_O::setName(const string &n) {
 CL_LISPIFY_NAME("core:PackageHashTables");
 CL_DEFMETHOD T_mv Package_O::hashTables() const {
   WITH_PACKAGE_READ_LOCK(this);
-  List_sp useList = _Nil<List_V>();
+  List_sp useList = nil<List_V>();
   for (auto ci = this->_UsingPackages.begin();
        ci != this->_UsingPackages.end(); ci++) {
     useList = Cons_O::create(*ci, useList);
@@ -550,7 +550,7 @@ string Package_O::allSymbols() {
 
 Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) const {
 //  client_validate(nameKey);
-  T_mv ei = this->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
+  T_mv ei = this->_ExternalSymbols->gethash(nameKey, nil<T_O>());
 //  client_validate(nameKey);
   Symbol_sp val = gc::As<Symbol_sp>(ei);
   bool foundp = ei.second().isTrue();
@@ -561,8 +561,8 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
   }
   // There is no need to look further if this is the keyword package
   if (this->isKeywordPackage())
-    return Values(_Nil<T_O>(), _Nil<T_O>());
-  T_mv ej = this->_InternalSymbols->gethash(nameKey, _Nil<T_O>());
+    return Values(nil<T_O>(), nil<T_O>());
+  T_mv ej = this->_InternalSymbols->gethash(nameKey, nil<T_O>());
   val = gc::As<Symbol_sp>(ej);
   foundp = ej.second().isTrue();
   if (foundp) {
@@ -575,7 +575,7 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
          it != this->_UsingPackages.end(); it++) {
       Package_sp upkg = *it;
       LOG(BF("Looking in package[%s]") % _rep_(upkg));
-      T_mv eu = upkg->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
+      T_mv eu = upkg->_ExternalSymbols->gethash(nameKey, nil<T_O>());
       val = gc::As<Symbol_sp>(eu);
       foundp = ei.second().isTrue();
       if (foundp) {
@@ -584,7 +584,7 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
       }
     }
   }
-  return Values(_Nil<Symbol_O>(), _Nil<Symbol_O>());
+  return Values(nil<Symbol_O>(), nil<Symbol_O>());
 }
 
 Symbol_mv Package_O::findSymbol_SimpleString(SimpleString_sp nameKey) const {
@@ -604,7 +604,7 @@ Symbol_mv Package_O::findSymbol(String_sp s) const {
 
 List_sp Package_O::packageUseList() {
   WITH_PACKAGE_READ_LOCK(this);
-  List_sp res = _Nil<List_V>();
+  List_sp res = nil<List_V>();
   for (auto si = this->_UsingPackages.begin();
        si != this->_UsingPackages.end(); si++) {
     res = Cons_O::create(*si, res);
@@ -614,7 +614,7 @@ List_sp Package_O::packageUseList() {
 
 List_sp Package_O::packageUsedByList() {
   WITH_PACKAGE_READ_LOCK(this);
-  List_sp res = _Nil<List_V>();
+  List_sp res = nil<List_V>();
   for (auto si = this->_PackagesUsedBy.begin();
        si != this->_PackagesUsedBy.end(); si++) {
     res = Cons_O::create(*si, res);
@@ -624,7 +624,7 @@ List_sp Package_O::packageUsedByList() {
 
 T_mv Package_O::packageHashTables() const {
   WITH_PACKAGE_READ_LOCK(this);
-  List_sp usingPackages = _Nil<List_V>();
+  List_sp usingPackages = nil<List_V>();
   for (auto si = this->_UsingPackages.begin();
        si != this->_UsingPackages.end(); si++) {
     usingPackages = Cons_O::create(*si, usingPackages);
@@ -653,7 +653,7 @@ T_sp Package_O::findPackageByLocalNickname(String_sp name) {
   // This is used by findPackage, which happens pretty early,
   // so we use underlying stuff instead of cl:assoc.
   if (nicks.notnilp()) {
-    T_sp pair = nicks.asCons()->assoc(name, _Nil<T_O>(), cl::_sym_string_EQ_, _Nil<T_O>());
+    T_sp pair = nicks.asCons()->assoc(name, nil<T_O>(), cl::_sym_string_EQ_, nil<T_O>());
     if (pair.nilp())
       return pair; // no result
     else return oCdr(pair);
@@ -669,7 +669,7 @@ public:
   Package_sp _me;
   FindConflicts(Package_sp me) {
     this->_me = me;
-    this->_conflicts = _Nil<List_V>();
+    this->_conflicts = nil<List_V>();
   }
 
   virtual bool mapKeyValue(T_sp key, T_sp value);
@@ -766,7 +766,7 @@ bool Package_O::unusePackage(Package_sp usePackage) {
 // Return a list of packages that will have a conflict if this package
 // starts exporting this new symbol. Lock needs to be held around this.
 List_sp Package_O::export_conflicts(SimpleString_sp nameKey, Symbol_sp sym) {
-  List_sp conflicts = _Nil<List_V>();
+  List_sp conflicts = nil<List_V>();
   for (auto use_pkg : this->_PackagesUsedBy) {
     ASSERT(use_pkg.generalp());
     Symbol_mv x = use_pkg->findSymbol_SimpleString_no_lock(nameKey);
@@ -926,7 +926,7 @@ T_mv Package_O::intern(SimpleString_sp name) {
     sym = Symbol_O::create(name);
     client_validate(name);
     sym->makunbound();
-    status = _Nil<Symbol_O>();
+    status = nil<Symbol_O>();
     sym->setPackage(this->sharedThis<Package_O>());
     LOG(BF("Created symbol<%s>") % _rep_(sym));
     this->add_symbol_to_package_no_lock(sym->symbolName(), sym, false);
@@ -959,12 +959,12 @@ bool Package_O::unintern_unsafe(Symbol_sp sym) {
   if (status == kw::_sym_internal) {
     this->_InternalSymbols->remhash(nameKey);
     if (sym->getPackage().get() == this)
-      sym->setPackage(_Nil<Package_O>());
+      sym->setPackage(nil<Package_O>());
     return true;
   } else if (status == kw::_sym_external) {
     this->_ExternalSymbols->remhash(nameKey);
     if (sym->getPackage().get() == this)
-      sym->setPackage(_Nil<Package_O>());
+      sym->setPackage(nil<Package_O>());
     return true;
   }
   // symbol is accessible but inherited, i.e. not in the package.
@@ -972,7 +972,7 @@ bool Package_O::unintern_unsafe(Symbol_sp sym) {
 }
 
 bool Package_O::unintern(Symbol_sp sym) {
-  List_sp candidates = _Nil<List_V>(); // conflict resolution candidates
+  List_sp candidates = nil<List_V>(); // conflict resolution candidates
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     // Don't allow uninterning from locked packages (e.g. CL)
@@ -1028,7 +1028,7 @@ bool Package_O::unintern(Symbol_sp sym) {
 bool Package_O::isExported(Symbol_sp sym) {
   WITH_PACKAGE_READ_LOCK(this);
   SimpleString_sp nameKey = sym->_Name;
-  T_mv values = this->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
+  T_mv values = this->_ExternalSymbols->gethash(nameKey, nil<T_O>());
   T_sp presentp = values.valueGet_(1);
   LOG(BF("isExported test of symbol[%s] isExported[%d]") % sym->symbolNameAsString() % presentp.isTrue());
   return (presentp.isTrue());
@@ -1081,7 +1081,7 @@ void Package_O::shadowingImport(List_sp symbols) {
 
 List_sp Package_O::shadowingSymbols() const {
   WITH_PACKAGE_READ_LOCK(this);
-  List_sp cur = _Nil<List_V>();
+  List_sp cur = nil<List_V>();
   this->_Shadowing->mapHash([&cur](T_sp symbol, T_sp dummy) {
 	    cur = Cons_O::create(symbol,cur);
   });

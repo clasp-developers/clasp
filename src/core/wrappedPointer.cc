@@ -35,7 +35,7 @@ CL_DECLARE();
 CL_DOCSTRING("pointerRelease");
 CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   if (ptr.nilp()) {
-    return _Nil<Pointer_O>();
+    return nil<Pointer_O>();
   };
   if (WrappedPointer_sp wp = ptr.asOrNull<WrappedPointer_O>()) {
     return Pointer_O::create(wp->pointerRelease());
@@ -91,7 +91,7 @@ CL_DECLARE();
 CL_DOCSTRING("pointerAddress");
 CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   if (ptr.nilp()) {
-    return _Nil<Pointer_O>();
+    return nil<Pointer_O>();
   };
   if (WrappedPointer_sp wp = ptr.asOrNull<WrappedPointer_O>()) {
     return wp->address();

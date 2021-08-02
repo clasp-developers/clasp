@@ -52,7 +52,7 @@ private:
   boost::mpi::communicator _Communicator;
 #endif
 public:
-  static void initializeGlobals(core::Lisp_sp lisp);
+  static void initializeGlobals(core::LispPtr lisp);
 
 public:
   void initialize();

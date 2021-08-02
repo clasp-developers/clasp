@@ -249,7 +249,7 @@ namespace llvmo {
 
   core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription_sp functionDescription);
 
-  [[noreturn]]extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
+  [[noreturn]]extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = nil<core::T_O>(), core::T_sp arg1 = nil<core::T_O>(), core::T_sp arg2 = nil<core::T_O>());
 
   [[noreturn]] void not_function_designator_error(core::T_sp datum);
   void initialize_raw_translators( void );

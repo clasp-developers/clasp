@@ -321,7 +321,7 @@ template <>
       {
         return core::lisp_true();
       };
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
   };
 
@@ -335,7 +335,7 @@ template <>
       {
         return core::lisp_true();
       };
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
   };
 
@@ -357,7 +357,7 @@ template <>
     {
       if ( v )
         return core::lisp_true();
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
   };
 

@@ -63,7 +63,7 @@ namespace core {
 void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp,
                                             T_sp sig, size_t numberOfSlots) {
   ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
-  this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
+  this->_Rack = Rack_O::make(numberOfSlots,sig,unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(rack());
@@ -80,7 +80,7 @@ CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
                                                            size_t slot_count) {
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
-  GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, entryPoint);
+  auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint);
   obj->_Class = cl;
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
   return obj;
@@ -89,12 +89,12 @@ CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl,
                                                                         Rack_sp rack) {
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
-  GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, entryPoint, cl, rack);
+  auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint, cl, rack);
   return obj;
 }
 
 size_t FuncallableInstance_O::rack_stamp_offset() {
-  SimpleVector_O dummy_rack(0,_Nil<T_O>(),false);
+  SimpleVector_O dummy_rack(0,nil<T_O>(),false);
   return (char*)&(dummy_rack.operator[](0))-(char*)&dummy_rack;
 }
 
@@ -257,15 +257,15 @@ void FuncallableInstance_O::describe(T_sp stream) {
 FuncallableInstance_sp FuncallableInstance_O::create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex)
 {
   size_t number_of_required_arguments = llhandler->numberOfRequiredArguments();
-  Rack_sp rack = Rack_O::make(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS,_Nil<T_O>(),_Nil<T_O>());
-  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,_Nil<T_O>());
+  Rack_sp rack = Rack_O::make(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS,nil<T_O>(),nil<T_O>());
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,nil<T_O>());
   rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER,llhandler);
   rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX,
                           make_fixnum(singleDispatchArgumentIndex));
-  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,_Nil<T_O>());
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,nil<T_O>());
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(gfname,FuncallableInstance_O::single_dispatch_funcallable_entry_point,llhandler->lambdaList());
   Instance_sp class_ = gc::As<Instance_sp>(cl__find_class(_sym_SingleDispatchGenericFunctionClosure_O));
-  GC_ALLOCATE_VARIADIC(FuncallableInstance_O,gfun,entryPoint,class_,rack);
+  auto gfun = gctools::GC<FuncallableInstance_O>::allocate(entryPoint,class_,rack);
 //  gfun->entry = single_dispatch_funcallable_entry_point;
   return gfun;
 }
@@ -336,7 +336,7 @@ LCC_RETURN FuncallableInstance_O::single_dispatch_funcallable_entry_point(LCC_AR
         // Update the call-history using CAS
         T_sp expected;
         Cons_sp entry = Cons_O::create(dispatchArgClass,method);
-        Cons_sp callHistoryEntry = Cons_O::create(entry,_Nil<T_O>());
+        Cons_sp callHistoryEntry = Cons_O::create(entry,nil<T_O>());
         do {
           expected = closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY);
           callHistoryEntry->rplacd(expected);
@@ -397,7 +397,7 @@ void FuncallableInstance_O::addSingleDispatchMethod(SingleDispatchMethod_sp meth
 //    printf("%s:%d      receiver_class->%s\n", __FILE__, __LINE__, _rep_(receiverClass).c_str());
         // Update the methods using CAS
     T_sp expected;
-    Cons_sp entry = Cons_O::create(method,_Nil<T_O>());
+    Cons_sp entry = Cons_O::create(method,nil<T_O>());
     do {
       expected = this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS);
       entry->rplacd(expected);
@@ -412,7 +412,7 @@ void FuncallableInstance_O::addSingleDispatchMethod(SingleDispatchMethod_sp meth
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry()));
-  } else return Values(_Nil<T_O>(),_Nil<T_O>());
+  } else return Values(nil<T_O>(),nil<T_O>());
 };
 
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {

@@ -51,12 +51,12 @@ namespace core {
 bool will_print_as_hash(T_sp x) {
   T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
   HashTable_sp circle_stack = gc::As<HashTable_sp>(_sym_STARcircle_stackSTAR->symbolValue());
-  T_sp code = circle_stack->gethash(x, _Unbound<T_O>());
+  T_sp code = circle_stack->gethash(x, unbound<T_O>());
   if (circle_counter.fixnump()) {
     return !(code.unboundp() || code.nilp());
   } else if (code.unboundp()) {
     /* Was not found before */
-    circle_stack->hash_table_setf_gethash(x, _Nil<T_O>());
+    circle_stack->hash_table_setf_gethash(x, nil<T_O>());
     return 0;
   } else {
     return 1;
@@ -77,10 +77,10 @@ Fixnum search_print_circle(T_sp x) {
   HashTable_sp circle_stack = gc::As<HashTable_sp>(_sym_STARcircle_stackSTAR->symbolValue());
   T_sp code;
   if (!circle_counter.fixnump()) {
-    code = circle_stack->gethash(x, _Unbound<T_O>());
+    code = circle_stack->gethash(x, unbound<T_O>());
     if (code.unboundp()) {
       /* Was not found before */
-      circle_stack->hash_table_setf_gethash(x, _Nil<T_O>());
+      circle_stack->hash_table_setf_gethash(x, nil<T_O>());
       return 0;
     } else if (code.nilp()) {
       /* This object is referenced twice */
@@ -90,7 +90,7 @@ Fixnum search_print_circle(T_sp x) {
       return 2;
     }
   } else {
-    code = circle_stack->gethash(x, _Unbound<T_O>());
+    code = circle_stack->gethash(x, unbound<T_O>());
     if (code.unboundp() || code.nilp()) {
       /* Is not referenced or was not found before */
       /* _ecl__sethash(x, circle_stack, ECL_NIL); */

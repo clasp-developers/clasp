@@ -200,7 +200,6 @@ def collect_clasp_c_source_files(bld):
                  'claspMpi'
              ]) + \
              collect_c_source_files(bld, 'src/asttooling/', [
-                 'astVisitor',
                  'astExpose0',
                  'astExpose1',
                  'clangTooling',

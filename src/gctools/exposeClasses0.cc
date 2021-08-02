@@ -90,14 +90,14 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(gctools::Unshif
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>::entry_point);
+  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>::entry_point);
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_ValueStampWtagMtag,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::setStaticClass(class_val);
-//  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>()
+//  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,nil<core::T_O>()
   _lisp->boot_setf_findClass(TheClass::static_classSymbol(),class_val);
   return class_val;
 }
@@ -212,16 +212,6 @@ void initialize_typeq_map() {
                               core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_low>()), \
                                                    core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_high>()))); \
   }
-#define ADD_SINGLE_TYPEQ_TEST_INSTANCE(type,stamp) { \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_classSymbol()); \
-    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type>())); \
-  }
-#define ADD_RANGE_TYPEQ_TEST_INSTANCE(type_low,type_high,stamp_low,stamp_high) { \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_classSymbol()); \
-    theTypeqMap->setf_gethash(type_low::static_classSymbol(), \
-                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_low>()), \
-                                                   core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_high>()))); \
-  }
 #ifndef SCRAPING
  #if !defined(USE_PRECISE_GC)
   #define GC_TYPEQ
@@ -284,12 +274,12 @@ void initialize_allocate_metaclasses(  core::BootStrapCoreSymbolMap& bootStrapCo
 //  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::Stamp;
 
 
-  _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheBuiltInClass_stamp,cl::_sym_built_in_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStandardClass_stamp,cl::_sym_standard_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheStructureClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStructureClass_stamp,cl::_sym_structure_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheDerivableCxxClass = allocate_one_metaclass<core::DerivableCxxClassCreator_O>(TheDerivableCxxClass_stamp,core::_sym_derivable_cxx_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheClbindCxxClass = allocate_one_metaclass<core::ClassRepCreator_O>(TheClbindCxxClass_stamp,core::_sym_clbind_cxx_class,_Unbound<core::Instance_O>());
+  _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheBuiltInClass_stamp,cl::_sym_built_in_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStandardClass_stamp,cl::_sym_standard_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheStructureClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStructureClass_stamp,cl::_sym_structure_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheDerivableCxxClass = allocate_one_metaclass<core::DerivableCxxClassCreator_O>(TheDerivableCxxClass_stamp,core::_sym_derivable_cxx_class,unbound<core::Instance_O>());
+  _lisp->_Roots._TheClbindCxxClass = allocate_one_metaclass<core::ClassRepCreator_O>(TheClbindCxxClass_stamp,core::_sym_clbind_cxx_class,unbound<core::Instance_O>());
   _lisp->_Roots._TheClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheBuiltInClass->_Class = _lisp->_Roots._TheStandardClass;
   _lisp->_Roots._TheStandardClass->_Class = _lisp->_Roots._TheStandardClass;
@@ -302,7 +292,7 @@ void initialize_allocate_metaclasses(  core::BootStrapCoreSymbolMap& bootStrapCo
 #include INIT_CLASSES_INC_H
 #undef ALLOCATE_ALL_CLASSES
 #endif
-  core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
+  core_T_O_var->setInstanceBaseClasses(nil<core::T_O>());
   // ClassRep_O is initialized like other class objects - but we need to save it in a special system-wide variable
 //  _lisp->_Roots._TheClassRep = clbind_ClassRep_O_var;
 
@@ -335,29 +325,29 @@ void initialize_allocate_metaclasses(  core::BootStrapCoreSymbolMap& bootStrapCo
   #endif
 
   _lisp->_Roots._TheClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,nil<core::T_O>());
   _lisp->_Roots._TheBuiltInClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,nil<core::T_O>());
   _lisp->_Roots._TheStandardClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheStandardClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStandardClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStandardClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStandardClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheStandardClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheStandardClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,nil<core::T_O>());
   _lisp->_Roots._TheStructureClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheStructureClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStructureClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStructureClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheStructureClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheStructureClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheStructureClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,nil<core::T_O>());
   _lisp->_Roots._TheDerivableCxxClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,nil<core::T_O>());
   _lisp->_Roots._TheClbindCxxClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheClbindCxxClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheClbindCxxClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheClbindCxxClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
+  _lisp->_Roots._TheClbindCxxClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheClbindCxxClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,nil<core::T_O>());
+  _lisp->_Roots._TheClbindCxxClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,nil<core::T_O>());
 
   _lisp->_Roots._TheBuiltInClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
   _lisp->_Roots._TheStandardClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));

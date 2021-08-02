@@ -197,7 +197,7 @@ void FileScope_O::initialize() {
 }
 
 FileScope_sp FileScope_O::create(Pathname_sp path, int handle) {
-  GC_ALLOCATE(FileScope_O, sfi);
+  auto sfi = gctools::GC<FileScope_O>::allocate_with_default_constructor();
   sfi->_pathname = path;
   sfi->_FileHandle = handle;
   return sfi;
@@ -325,14 +325,14 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   }
 
 
-  T_sp t_function_scope = _Nil<T_O>();
+  T_sp t_function_scope = nil<T_O>();
   if (function_scope_p) {
     t_function_scope = function_scope;
   } else if (defaults_p) {
     t_function_scope = defaults_spi->function_scope();
   }
 
-  T_sp t_inlined_at = _Nil<T_O>();
+  T_sp t_inlined_at = nil<T_O>();
   if (inlined_at_p) {
     t_inlined_at = inlined_at;
   } else if (defaults_p) {
@@ -348,7 +348,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
 
 
 CL_DEFMETHOD SourcePosInfo_sp SourcePosInfo_O::source_pos_info_copy() const {
-  GC_COPY(SourcePosInfo_O, copy, *this);
+  auto  copy = gctools::GC<SourcePosInfo_O>::copy( *this);
   return copy;
 }
 

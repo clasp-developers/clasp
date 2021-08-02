@@ -9,5 +9,6 @@
   :serial t
   :components
   ((:file "packages")
+   (:file "rules-13")
    (:file "clang-tool")
    ))

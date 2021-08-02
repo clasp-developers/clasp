@@ -67,7 +67,3 @@ THE SOFTWARE.
 #define GC_RESERVE(_class_, _obj_) GC_RESERVE_BEGIN(_class_, _obj_) GC_RESERVE_GET(_class_, _obj_) GC_RESERVE_END(_class_, _obj_)
 #define GC_RESERVE_VARIADIC(_class_, _obj_, ...) GC_RESERVE_BEGIN(_class_, _obj_) GC_RESERVE_GET_VARIADIC(_class_, _obj_, __VA_ARGS__) GC_RESERVE_END(_class_, _obj_)
 
-#define GC_COPY_BEGIN(_class_, _obj_) _GC_RESERVE_BEGIN_BASE(_class_, _obj_)
-#define GC_COPY_GET(_class_, _obj_, _orig_) _GC_RESERVE_GET_VARIADIC(_class_, _obj_, _orig_)
-#define GC_COPY_END(_class_, _obj_) _GC_RESERVE_END_FINALyes_INITno(_class_, _obj_)
-#define GC_COPY(_class_, _obj_, _orig_) GC_COPY_BEGIN(_class_, _obj_) GC_COPY_GET(_class_, _obj_, _orig_) GC_COPY_END(_class_, _obj_)

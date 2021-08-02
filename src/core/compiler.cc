@@ -350,7 +350,7 @@ NOINLINE CL_DEFUN T_mv core__trigger_dtrace_start(T_sp closure)
 NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
 {
   stop_dtrace();
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
   
@@ -430,13 +430,13 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
       ss << "SYM(" << sym->symbolName()->get_std_string() << ")";
       name = SimpleBaseString_O::make(ss.str());
     }
-    return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+    return Values(nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
   if (gc::IsA<BuiltinClosure_sp>(fsym)) {
     return Values(_lisp->_true(), SimpleBaseString_O::make("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
-  return Values(_Nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
+  return Values(nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
 /*! Return the default snapshot name
@@ -735,7 +735,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bitcode_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,_Nil<core::T_O>());
+  llvmo::llvm_sys__load_bitcode_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
   return _lisp->_true();
 }
 
@@ -743,7 +743,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bitcode(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,_Nil<core::T_O>());
+  llvmo::llvm_sys__load_bitcode(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
   return _lisp->_true();
 }
 
@@ -781,11 +781,11 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
     llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[fasoIndex]._ObjectId,jitDylib,filename,fasoIndex);
     jit->addObjectFile(of,print.notnilp());
-    T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId,_Nil<core::T_O>());
+    T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId,nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
     llvmo::Code_sp codeObject;
-    jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string(), _Unbound<core::T_O>(), codeObject);
+    jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string(), unbound<core::T_O>(), codeObject);
   }
   return _lisp->_true();
 }
@@ -961,7 +961,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   if (handle == NULL) {
     string error = dlerror();
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
-    //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
+    //    return (Values(nil<T_O>(), SimpleBaseString_O::make(error)));
   }
   // Static constructors must be available and they were run by dlopen
   //   and they registered startup_functions that we will now invoke
@@ -983,7 +983,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
     SIMPLE_ERROR(BF("This is not a proper FASL file - there are no startup functions waiting to be invoked"));
   }
   T_mv result;
-  return (Values(Pointer_O::create(handle), _Nil<T_O>()));
+  return (Values(Pointer_O::create(handle), nil<T_O>()));
 #endif
 };
 
@@ -1047,9 +1047,9 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   void * handle = std::get<0>( result );
 
   if( handle == nullptr ) {
-    return (Values(_Nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))));
+    return (Values(nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))));
   }
-  return (Values(Pointer_O::create(handle), _Nil<T_O>()));
+  return (Values(Pointer_O::create(handle), nil<T_O>()));
 }
 
 // -----------------------------------------------------------------------------
@@ -1109,9 +1109,9 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   auto result = do_dlsym(handle, ts.c_str());
   void * p_sym = std::get<0>( result );
   if( p_sym == nullptr ) {
-    return ( Values(_Nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))) );
+    return ( Values(nil<T_O>(), SimpleBaseString_O::make( get<1>( result ))) );
   }
-  return ( Values(Pointer_O::create( p_sym ), _Nil<T_O>()) );
+  return ( Values(Pointer_O::create( p_sym ), nil<T_O>()) );
 }
 
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
@@ -1127,7 +1127,7 @@ CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
   Dl_info info;
   int ret = dladdr(ptr, &info);
   if (!ret) {
-    return Values(_Nil<T_O>());
+    return Values(nil<T_O>());
   } else {
     return Values(SimpleBaseString_O::make(info.dli_fname),
                   Pointer_O::create(info.dli_fbase),
@@ -1140,17 +1140,17 @@ CL_LAMBDA(form &optional env);
 CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   // Convert the form into a thunk and return like COMPILE does
   LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
-  Cons_sp code = Cons_O::create(form, _Nil<T_O>());
-  T_sp sourcePosInfo = _Nil<T_O>();
+  Cons_sp code = Cons_O::create(form, nil<T_O>());
+  T_sp sourcePosInfo = nil<T_O>();
   stringstream ss;
   ss << "THE-IMPLICIT-COMPILE-REPL"; // << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
   ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name,
                                                                         kw::_sym_function,
-                                                                        _Nil<T_O>(),
+                                                                        nil<T_O>(),
                                                                         llh,
-                                                                        _Nil<T_O>(),
-                                                                        _Nil<T_O>(),
+                                                                        nil<T_O>(),
+                                                                        nil<T_O>(),
                                                                         code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
   return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
@@ -1214,7 +1214,7 @@ void dynamicCastArg(T_sp a) {
 
 T_sp bitOLogicWithObjects() {
   T_sp val = _lisp->_true();
-  T_sp val2 = _Nil<T_O>();
+  T_sp val2 = nil<T_O>();
   if (val2.nilp()) {
     return val;
   }
@@ -1222,7 +1222,7 @@ T_sp bitOLogicWithObjects() {
 };
 
 T_sp allocCons() {
-  Cons_sp fn = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
+  Cons_sp fn = Cons_O::create(nil<T_O>(),nil<T_O>());
   return fn;
 }
 
@@ -1351,8 +1351,8 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
       DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
       return core__progv_function(CONS_CDR(symbols),oCdr(values),func);
     } else {
-      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),_Unbound<core::T_O>());
-      return core__progv_function(CONS_CDR(symbols),_Nil<core::T_O>(),func);
+      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),unbound<core::T_O>());
+      return core__progv_function(CONS_CDR(symbols),nil<core::T_O>(),func);
     }
   } else {
     T_mv result = (func->entry())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
@@ -1386,12 +1386,12 @@ CL_DEFUN T_sp core__run_function( T_sp object ) {
   MaybeDebugStartup startup((void*)func);
 #endif
   if( func != nullptr ) {
-    LCC_RETURN ret = func(LCC_PASS_ARGS0_VA_LIST(_Nil<T_O>().raw_()));
+    LCC_RETURN ret = func(LCC_PASS_ARGS0_VA_LIST(nil<T_O>().raw_()));
     core::T_sp res((gctools::Tagged)ret.ret0[0]);
     core::T_sp val = res;
     return val;
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 }
 
 CL_DEFUN T_sp core__run_make_mlf( T_sp object ) {
@@ -1802,7 +1802,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
   return;
 }
 
-void initialize_compiler_primitives(Lisp_sp lisp) {
+void initialize_compiler_primitives(LispPtr lisp) {
 
   // Initialize raw object translators needed for Foreign Language Interface support 
   llvmo::initialize_raw_translators(); // See file intrinsics.cc!

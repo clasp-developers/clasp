@@ -45,8 +45,8 @@ extern Symbol_sp core__function_block_name(T_sp functionName);
 
 extern List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
 
-T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
-T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
+T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p = nil<T_O>(), T_sp eof_value = nil<T_O>(), T_sp recursive_p = nil<T_O>());
+T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p = nil<T_O>(), T_sp eof_value = nil<T_O>(), T_sp recursive_p = nil<T_O>());
 
 #if 0
     EXTERN_FN(read);
@@ -69,7 +69,7 @@ T_sp cl__append(VaList_sp lists);
 
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
 
- Symbol_sp cl__gensym(T_sp x = _Nil<T_O>());
+ Symbol_sp cl__gensym(T_sp x = nil<T_O>());
 
 };
 
@@ -86,7 +86,7 @@ namespace core {
 /*! Expose the primitives to cando */
 void initialize_primitives();
 /*! Expose the primitives to python */
-void initializePythonPrimitives(Lisp_sp lisp);
+void initializePythonPrimitives(LispPtr lisp);
 };
 
 namespace core {
@@ -96,7 +96,7 @@ namespace core {
 T_sp core__valid_function_name_p(T_sp arg);
   void core__exception_stack_dump();
   T_sp core__create_tagged_immediate_value_or_nil(T_sp object);
-  bool cl__constantp(T_sp obj, T_sp env = _Nil<T_O>());
+  bool cl__constantp(T_sp obj, T_sp env = nil<T_O>());
   T_mv cl__values_list(List_sp list);
   T_sp cl__compiler_macro_function(core::T_sp name, core::T_sp env);
   bool cl__fboundp(T_sp functionName);

@@ -318,7 +318,6 @@
             compile-error-if-too-many-arguments
             compile-throw-if-excess-keyword-arguments
             *irbuilder-function-alloca*
-            irc-constant-string-ptr
             irc-get-terminate-landing-pad-block
             irc-function-cleanup-and-return
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%

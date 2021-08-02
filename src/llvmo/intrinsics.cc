@@ -151,7 +151,7 @@ ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nar
 
 ALWAYS_INLINE core::T_O *cc_makeCell()
 {
-  core::Cons_sp res = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
+  core::Cons_sp res = core::Cons_O::create(nil<core::T_O>(),nil<core::T_O>());
 #ifdef DEBUG_CC
   printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
 #endif
@@ -180,7 +180,7 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, cor
 //    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
     parentP =  activationFrame.raw_();
   } else {
-    parentP = _Nil<core::T_O>().raw_();
+    parentP = nil<core::T_O>().raw_();
   }
   ActivationFrame_sp af((gctools::Tagged)resultP);
   af->setParentFrame(parentP);
@@ -191,7 +191,7 @@ ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_O *resultP, cor
 ALWAYS_INLINE core::T_O* makeValueFrameSetParent(size_t numargs, core::T_O *parentP)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, nil<core::T_O>()));
   valueFrame->setParentFrame(parentP);
   return valueFrame.raw_();
   NO_UNWIND_END();
@@ -200,7 +200,7 @@ ALWAYS_INLINE core::T_O* makeValueFrameSetParent(size_t numargs, core::T_O *pare
 ALWAYS_INLINE core::T_O* makeBlockFrameSetParent(core::T_O *parentP)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, _Nil<core::T_O>()));
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, nil<core::T_O>()));
   valueFrame->setParentFrame(parentP);
   return valueFrame.raw_();
   NO_UNWIND_END();
@@ -209,7 +209,7 @@ ALWAYS_INLINE core::T_O* makeBlockFrameSetParent(core::T_O *parentP)
 ALWAYS_INLINE core::T_O* makeTagbodyFrameSetParent(core::T_O *parentP)
 {NO_UNWIND_BEGIN();
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, _Nil<core::T_O>()));
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(1, nil<core::T_O>()));
   valueFrame->setParentFrame(parentP);
   return valueFrame.raw_();
   NO_UNWIND_END();
@@ -362,7 +362,7 @@ ALWAYS_INLINE core::T_sp mk_long_double( long double v )
 ALWAYS_INLINE core::T_sp mk_time( time_t v )
 {
   size_t size = sizeof( time_t );
-  GC_ALLOCATE(clasp_ffi::ForeignData_O, self);
+  auto  self = gctools::GC<clasp_ffi::ForeignData_O>::allocate_with_default_constructor();
   self->allocate( kw::_sym_clasp_foreign_data_kind_time, core::DeleteOnDtor, size);
   memmove( self->raw_data(), &v, size );
   return self;
@@ -826,7 +826,7 @@ ALWAYS_INLINE core::T_O* to_object_long_double( long double x )
 
 ALWAYS_INLINE core::T_O* to_object_void( void )
 {
-  return _Nil<core::T_O>().raw_();
+  return nil<core::T_O>().raw_();
 }
 
 // ----------------------------------------------------------------------------

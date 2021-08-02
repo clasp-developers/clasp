@@ -48,7 +48,7 @@ Code_sp ObjectFile_O::code() const {
 
 ObjectFile_O::~ObjectFile_O() {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this ));
-  this->_Code = _Unbound<Code_O>();
+  this->_Code = unbound<Code_O>();
 }
 
 llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> ObjectFile_O::getObjectFile() {
@@ -202,7 +202,7 @@ CL_DEFUN core::T_sp code_literals_ref(Code_sp code, size_t idx) {
 namespace llvmo {
 
 Library_sp Library_O::make(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd, const std::string& name) {
-  GC_ALLOCATE_VARIADIC(Library_O, lib, executable, start, end, vtableStart, vtableEnd );
+  auto  lib = gctools::GC<Library_O>::allocate( executable, start, end, vtableStart, vtableEnd );
   lib->_Name = core::SimpleBaseString_O::make(name);
   return lib;
 }
@@ -263,7 +263,7 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
     // printf("%s:%d:%s For entry_point @%p found new library start: %p   end: %p  name: %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, (void*)start, (void*)end, libraryName.c_str());
     Library_sp newlib = Library_O::make(isExecutable, reinterpret_cast<gctools::clasp_ptr_t>(start),reinterpret_cast<gctools::clasp_ptr_t>(end), vtableStart, vtableEnd, libraryName);
     core::T_sp expected;
-    core::Cons_sp entry = core::Cons_O::create(newlib,_Nil<core::T_O>());
+    core::Cons_sp entry = core::Cons_O::create(newlib,nil<core::T_O>());
     do {
       expected = _lisp->_Roots._AllLibraries.load();
       entry->rplacd(expected);
@@ -314,7 +314,7 @@ void save_object_file_and_code_info(ObjectFile_sp ofi)
 //  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Adding to _lisp->_Roots._AllObjectFiles  %p \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (void*)ofi.raw_(), core::_rep_(ofi->_FasoName).c_str()));
   core::T_sp expected;
-  core::Cons_sp entry = core::Cons_O::create(ofi,_Nil<core::T_O>());
+  core::Cons_sp entry = core::Cons_O::create(ofi,nil<core::T_O>());
   do {
     expected = _lisp->_Roots._AllObjectFiles.load();
     entry->rplacd(expected);
@@ -363,7 +363,7 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
     cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
     count++;
   }
-  return Values(_Nil<core::T_O>());
+  return Values(nil<core::T_O>());
 }
 
 // FIXME: name sucks
@@ -376,12 +376,12 @@ core::T_sp only_object_file_for_instruction_pointer(void* ip) {
       return ofi;
     cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
   }
-  return _Nil<core::T_O>();
+  return nil<core::T_O>();
 }
 
 CL_LISPIFY_NAME(release_object_files);
 CL_DEFUN void release_object_files() {
-  _lisp->_Roots._AllObjectFiles.store(_Nil<core::T_O>());
+  _lisp->_Roots._AllObjectFiles.store(nil<core::T_O>());
   core::write_bf_stream(BF("ObjectFiles have been released\n"));
 }
 

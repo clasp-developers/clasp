@@ -43,7 +43,7 @@ namespace clbind {
 template <class OT, class WT>
 gctools::smart_ptr<OT> RP_Create_wrapper() {
   _G();
-  GC_ALLOCATE(OT, wrapper);
+  auto  wrapper = gctools::GC<OT>::allocate_with_default_constructor();
   return wrapper;
 }
 
@@ -113,8 +113,10 @@ public:
   typedef OT ExternalType;
 
 public: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
-  HolderType externalPtr_gc_ignore;
-  class_id _classId;
+  HolderType p_gc_ignore;
+  void*      weak;
+  class_id   dynamic_id;
+  void*      dynamic_ptr;
 
  public:
 //
@@ -122,75 +124,109 @@ public: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
 //
 template <typename HType>
 struct RawGetter {
-  static HType get(HType& ptr) { return ptr; };
-  static const HType get(const HType& ptr) { return ptr; };
+  static HType get_pointer(HType& ptr) { return ptr; };
+  static const HType get_pointer(const HType& ptr) { return ptr; };
 };
 
 template <typename PtrType>
 struct RawGetter<std::unique_ptr<PtrType>> {
-  static PtrType* get(std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
-  static const PtrType* get(const std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
+  static PtrType* get_pointer(std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
+  static const PtrType* get_pointer(const std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
  };
 
 template <typename PtrType>
 struct RawGetter<std::shared_ptr<PtrType>> {
-  static PtrType* get(std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
-  static const PtrType* get(const std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
+  static PtrType* get_pointer(std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
+  static const PtrType* get_pointer(const std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
  };
 
 public:
-  Wrapper(OT *naked, class_id cid) : externalPtr_gc_ignore(naked), _classId(cid){
-//    printf("%s:%d:%s DEBUG_WRAPPER ctor OT naked\n", __FILE__, __LINE__, __FUNCTION__ );
+  void do_checks() {
+#if 0
+    OT* rawPtr = RawGetter<HolderType>::get_pointer(this->p_gc_ignore);
+    void* basePtr = dynamic_cast<void*>(rawPtr);
+    if (basePtr==NULL) {
+      printf("%s:%d:%s The basePtr from dynamic_cast<void*>(%p) was NULL!\n", __FILE__, __LINE__, __FUNCTION__, rawPtr );
+    }
+    if (basePtr!=(void*)rawPtr) {
+      printf("%s:%d:%s The basePtr %p from dynamic_cast<void*>(%p) was different!\n", __FILE__, __LINE__, __FUNCTION__, basePtr, rawPtr );
+    }
+#endif
+  }
+      
+  Wrapper(OT *naked, class_id dynamic_id, void* dynamic_ptr)
+      : p_gc_ignore(naked)
+      , weak(0)
+      , dynamic_id(dynamic_id)
+      , dynamic_ptr(dynamic_ptr)
+  {
+//    printf("%s:%d:%s naked ctor OT\n", __FILE__, __LINE__, __FUNCTION__ );
+    this->do_checks();
   };
 
   // ctor that takes a unique_ptr
-  Wrapper(std::unique_ptr<OT> naked, class_id cid) : externalPtr_gc_ignore(std::move(naked)), _classId(cid) {
-    printf("%s:%d:%s ctor OT naked\n", __FILE__, __LINE__, __FUNCTION__ );
+  Wrapper(std::unique_ptr<OT> naked, class_id dynamic_id, void* dynamic_ptr)
+      : p_gc_ignore(std::move(naked))
+      , weak(0)
+      , dynamic_id(dynamic_id)
+      , dynamic_ptr(dynamic_ptr)
+  {
+//    printf("%s:%d:%s unique_ptr ctor OT\n", __FILE__, __LINE__, __FUNCTION__ );
+    this->do_checks();
   };
 
 size_t templatedSizeof() const { return sizeof(*this); };
-void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get(this->externalPtr_gc_ignore); };
+void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_pointer(this->p_gc_ignore); };
 
-  virtual class_id classId() const { return this->_classId; };
+  virtual class_id classId() const { return this->dynamic_id; };
 
   /*! Release the pointer - invalidate the wrapper and return the pointer */
   virtual void pointerDelete() {
-    if (RawGetter<HolderType>::get(this->externalPtr_gc_ignore) != NULL) {
-      maybe_delete<OT, is_deletable<OT>::value>::doit(RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
-      maybe_release<HolderType>::call(this->externalPtr_gc_ignore);
+    if (RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL) {
+      maybe_delete<OT, is_deletable<OT>::value>::doit(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+      maybe_release<HolderType>::call(this->p_gc_ignore);
     }
   }
 
-  static gctools::smart_ptr<WrapperType> make_wrapper(OT *naked, class_id classId) {
+  static gctools::smart_ptr<WrapperType> make_wrapper(OT *naked, class_id dynamic_id) {
 //    printf("%s:%d:%s DEBUG_WRAPPER with OT*\n", __FILE__, __LINE__, __FUNCTION__ );
-    GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
+    void* dynamic_ptr = (void*)naked;
+    auto  obj = gctools::GC<WrapperType>::allocate( naked, dynamic_id, dynamic_ptr );
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     if (!classSymbol.unboundp()) {
       obj->_setInstanceClassUsingSymbol(classSymbol);
       return obj;
     }
-    SIMPLE_ERROR(BF("In make_wrapper for a class class_id %d - the classSymbol could not be identified - this probably means that you are trying to wrap an unexposed class") % classId );
+    SIMPLE_ERROR(BF("In make_wrapper for a class class_id %d\n"
+                    "  the classSymbol could not be identified\n"
+                    "  this probably means that you are trying to wrap an unexposed class\n"
+                    "  OR you don't have an appropriate to_object translator for the type\n"
+                    "  that corresponds to this class_id.\n"
+                    "  Connect a debugger and check if:\n"
+                    "  struct to_object<T &, translate::dont_adopt_pointer> is on the stack") % dynamic_id );
   }
 
-  static gctools::smart_ptr<WrapperType> make_wrapper(const OT &val, class_id classId) {
+  static gctools::smart_ptr<WrapperType> make_wrapper(const OT &val, class_id dynamic_id ) {
     printf("%s:%d:%s with OT&\n", __FILE__, __LINE__, __FUNCTION__ );
     OT *naked = new OT(val);
-    GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
+    void* dynamic_ptr = (void*)naked;
+    auto  obj = gctools::GC<WrapperType>::allocate( naked, dynamic_id, dynamic_ptr );
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
   }
 
-  static gctools::smart_ptr<WrapperType> make_wrapper(std::unique_ptr<OT> val, class_id classId) {
-    printf("%s:%d:%s with unique_ptr\n", __FILE__, __LINE__, __FUNCTION__ );
-    GC_ALLOCATE_VARIADIC(WrapperType, obj, std::move(val), classId);
+  static gctools::smart_ptr<WrapperType> make_wrapper(std::unique_ptr<OT> val, class_id dynamic_id) {
+//    printf("%s:%d:%s with unique_ptr\n", __FILE__, __LINE__, __FUNCTION__ );
+    void* dynamic_ptr = (void*)val.get();
+    auto  obj = gctools::GC<WrapperType>::allocate( std::move(val), dynamic_id, dynamic_ptr );
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
     obj->_setInstanceClassUsingSymbol(classSymbol);
     return obj;
   }
 
 public:
-bool validp() const { return RawGetter<HolderType>::get(this->externalPtr_gc_ignore) != NULL; };
+bool validp() const { return RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL; };
   void throwIfInvalid() const {
     if (!this->validp()) {
       SIMPLE_ERROR_SPRINTF("The wrapper is invalid");
@@ -199,9 +235,9 @@ bool validp() const { return RawGetter<HolderType>::get(this->externalPtr_gc_ign
 
   /*! Release the pointer - invalidate the wrapper and return the pointer */
   virtual void *pointerRelease() {
-    if (RawGetter<HolderType>::get(this->externalPtr_gc_ignore) != NULL) {
-      void *ptr = const_cast<typename std::remove_const<OT>::type *>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
-      maybe_release<HolderType>::call(this->externalPtr_gc_ignore);
+    if (RawGetter<HolderType>::get_pointer(this->p_gc_ignore) != NULL) {
+      void *ptr = const_cast<typename std::remove_const<OT>::type *>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
+      maybe_release<HolderType>::call(this->p_gc_ignore);
       return ptr;
     }
     return NULL;
@@ -209,40 +245,37 @@ bool validp() const { return RawGetter<HolderType>::get(this->externalPtr_gc_ign
 
   void initializeSlots(int numberOfSlots) {
     this->throwIfInvalid();
-    clbind::support_initializeSlots<ExternalType>(numberOfSlots, RawGetter<HolderType>::get(this->externalPtr_gc_ignore)); 
+    clbind::support_initializeSlots<ExternalType>(numberOfSlots, RawGetter<HolderType>::get_pointer(this->p_gc_ignore)); 
   }
 
   core::T_sp instanceSigSet() {
     this->throwIfInvalid();
-    return clbind::support_instanceSigSet<ExternalType>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
+    return clbind::support_instanceSigSet<ExternalType>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
   }
 
   core::T_sp instanceSig() const {
     this->throwIfInvalid();
-    return clbind::support_instanceSig<ExternalType>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
+    return clbind::support_instanceSig<ExternalType>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
   }
 
   core::T_sp instanceRef(size_t idx) const {
     this->throwIfInvalid();
-    return clbind::support_instanceRef<ExternalType>(idx, RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
+    return clbind::support_instanceRef<ExternalType>(idx, RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
   }
 
   core::T_sp instanceSet(size_t idx, core::T_sp val) {
     this->throwIfInvalid();
-    return clbind::support_instanceSet<ExternalType>(idx, val, RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
+    return clbind::support_instanceSet<ExternalType>(idx, val, RawGetter<HolderType>::get_pointer(this->p_gc_ignore));
   }
 
   virtual void *castTo(class_id cid) const {
     this->throwIfInvalid();
-    std::pair<void *, int> res = globalCastGraph->cast(const_cast<typename std::remove_const<OT>::type *>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore)) // ptr
-                                                       ,
-                                                       this->_classId // src
-                                                       ,
-                                                       cid // target
-                                                       ,
-                                                       this->_classId // dynamic_id
-                                                       ,
-                                                       RawGetter<HolderType>::get(this->externalPtr_gc_ignore) // dynamic_ptr
+    std::pair<void *, int> res = globalCastGraph->cast(const_cast<typename std::remove_const<OT>::type *>(RawGetter<HolderType>::get_pointer(
+                                                                                                              this->p_gc_ignore)) // ptr
+                                                       , reg::registered_class<OT>::id // src
+                                                       , cid // target
+                                                       , this->dynamic_id
+                                                       , this->dynamic_ptr
                                                        );
     return res.first;
   }
@@ -256,8 +289,8 @@ bool validp() const { return RawGetter<HolderType>::get(this->externalPtr_gc_ign
     printf("\n%s:%d - DEBUG_WRAPPER dtor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__,
            this,
            typeid(HolderType).name(),
-           RawGetter<HolderType>::get(this->externalPtr_gc_ignore),
-           clbind::support_adapterAddress<ExternalType>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore)),
+           RawGetter<HolderType>::get_pointer(this->p_gc_ignore),
+           clbind::support_adapterAddress<ExternalType>(RawGetter<HolderType>::get_pointer(this->p_gc_ignore)),
            this->classId(),
            _rep_(reg::lisp_classSymbolFromClassId(this->classId())).c_str() );
 #endif
@@ -325,7 +358,7 @@ public:
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
   static core::T_sp convert(const std::unique_ptr<T> ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -340,7 +373,7 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     return WrapperType::make_wrapper(std::move(ptr), reg::registered_class<T>::id);
   }
@@ -357,7 +390,7 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     return WrapperType::make_wrapper(std::move(ptr), reg::registered_class<T>::id);
   }
@@ -371,7 +404,7 @@ public:
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
   static core::T_sp convert(const T *ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -385,7 +418,7 @@ public:
   typedef clbind::Wrapper<const T, const T*> WrapperType;
   static core::T_sp convert(const T *ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -400,7 +433,7 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   static core::T_sp convert(T *ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -413,7 +446,7 @@ public:
   typedef clbind::Wrapper<T, T *> WrapperType;
   static core::T_sp convert(T *ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -428,7 +461,7 @@ public:
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   static core::T_sp convert(T *const ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -441,7 +474,7 @@ public:
   typedef clbind::Wrapper<T, T *const> WrapperType;
   static core::T_sp convert(T *const ptr) {
     if (ptr == NULL) {
-      return _Nil<core::T_O>();
+      return nil<core::T_O>();
     }
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -650,10 +683,18 @@ struct from_object<const T &> {
 };
 
 template <typename T>
+T& safe_deref(T* ptr) {
+  if (ptr) {
+    return *ptr;
+  }
+  SIMPLE_ERROR(BF("Passing NULL to a from_object that dereferences - this probably means that NIL was passed to a clbind wrapped function that expects a real object"));
+}
+
+template <typename T>
 struct from_object<T &> {
   typedef T &DeclareType;
   DeclareType _v;
-  from_object(core::T_sp o) : _v(*(from_object<T *>(o)._v)){};
+  from_object(core::T_sp o) : _v(safe_deref<T>((from_object<T *>(o)._v))){};
   ~from_object() {/*non trivial*/};
 };
 

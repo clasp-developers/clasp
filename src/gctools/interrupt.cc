@@ -159,7 +159,7 @@ static void queue_signal_or_interrupt(core::ThreadLocalState* thread, core::T_sp
   mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
   core::T_sp record;
   if (allocate) {
-    record = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
+    record = core::Cons_O::create(nil<core::T_O>(),nil<core::T_O>());
   } else {
     record = thread->_SparePendingInterruptRecords;
     if (record.consp()) {
@@ -168,7 +168,7 @@ static void queue_signal_or_interrupt(core::ThreadLocalState* thread, core::T_sp
   }
   if (record.consp()) {
     record.unsafe_cons()->rplaca(thing);
-    record.unsafe_cons()->rplacd(_Nil<core::T_O>());
+    record.unsafe_cons()->rplacd(nil<core::T_O>());
     thread->_PendingInterrupts = clasp_nconc(thread->_PendingInterrupts,record);
   }
 }
@@ -483,7 +483,7 @@ CL_DEFUN void core__push_unix_signal_handler(int signal, core::Symbol_sp name, c
 CL_LAMBDA();
 CL_DOCSTRING("Get alist of Signal-name . Signal-code alist of known signal (Posix + extra)");
 CL_DEFUN core::List_sp core__signal_code_alist() {
-  core::List_sp alist = _Nil<core::T_O>();
+  core::List_sp alist = nil<core::T_O>();
 /* these are all posix signals */
 #ifdef SIGHUP
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGHUP",KeywordPkg), core::clasp_make_fixnum(SIGHUP)), alist);
@@ -602,34 +602,34 @@ CL_DEFUN core::List_sp core__signal_code_alist() {
 
 void initialize_unix_signal_handlers() {
 #ifdef SIGHUP
-        ADD_SIGNAL( SIGHUP, "SIGHUP", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGHUP, "SIGHUP", nil<core::T_O>());
 #endif
 #ifdef SIGINT
         ADD_SIGNAL( SIGINT, "SIGINT", core::_sym_terminal_interrupt);
 #endif
 #ifdef SIGQUIT
-        ADD_SIGNAL( SIGQUIT, "SIGQUIT", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGQUIT, "SIGQUIT", nil<core::T_O>());
 #endif
 #ifdef SIGILL
         ADD_SIGNAL( SIGILL, "SIGILL", ext::_sym_illegal_instruction);
 #endif
 #ifdef SIGTRAP
-        ADD_SIGNAL( SIGTRAP, "SIGTRAP", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTRAP, "SIGTRAP", nil<core::T_O>());
 #endif
 #ifdef SIGABRT
-        ADD_SIGNAL( SIGABRT, "SIGABRT", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGABRT, "SIGABRT", nil<core::T_O>());
 #endif
 #ifdef SIGEMT
-        ADD_SIGNAL( SIGEMT, "SIGEMT", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGEMT, "SIGEMT", nil<core::T_O>());
 #endif
 /*
 // We do install a sigfpe handler in initialize_signals
 #ifdef SIGFPE
-        ADD_SIGNAL( SIGFPE, "SIGFPE", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGFPE, "SIGFPE", nil<core::T_O>());
 #endif
 */
 #ifdef SIGKILL
-        ADD_SIGNAL( SIGKILL, "SIGKILL", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGKILL, "SIGKILL", nil<core::T_O>());
 #endif
 /*
 // These take a parameter, so will fail if called here, since handle_signal_now call with no parameters
@@ -642,30 +642,30 @@ void initialize_unix_signal_handlers() {
 #endif
 */
 #ifdef SIGSYS
-        ADD_SIGNAL( SIGSYS, "SIGSYS", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGSYS, "SIGSYS", nil<core::T_O>());
 #endif
 #ifdef SIGPIPE
-        ADD_SIGNAL( SIGPIPE, "SIGPIPE", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGPIPE, "SIGPIPE", nil<core::T_O>());
 #endif
 #ifdef SIGALRM
-        ADD_SIGNAL( SIGALRM, "SIGALRM", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGALRM, "SIGALRM", nil<core::T_O>());
 #endif
 #ifdef SIGTERM
-        ADD_SIGNAL( SIGTERM, "SIGTERM", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTERM, "SIGTERM", nil<core::T_O>());
 #endif
 #ifdef SIGURG
-        ADD_SIGNAL( SIGURG, "SIGURG", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGURG, "SIGURG", nil<core::T_O>());
 #endif
 #ifdef SIGSTOP
-        ADD_SIGNAL( SIGSTOP, "SIGSTOP", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGSTOP, "SIGSTOP", nil<core::T_O>());
 #endif
 
 
 #ifdef SIGTSTP
-        ADD_SIGNAL( SIGTSTP, "SIGTSTP", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTSTP, "SIGTSTP", nil<core::T_O>());
 #endif
 #ifdef SIGCONT
-        ADD_SIGNAL( SIGCONT, "SIGCONT", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGCONT, "SIGCONT", nil<core::T_O>());
 #endif
 /*
 // core::_sym_wait_for_all_processes is undefined
@@ -674,50 +674,50 @@ void initialize_unix_signal_handlers() {
 #endif
 */
 #ifdef SIGTTIN
-        ADD_SIGNAL( SIGTTIN, "SIGTTIN", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTTIN, "SIGTTIN", nil<core::T_O>());
 #endif
 #ifdef SIGTTOU
-        ADD_SIGNAL( SIGTTOU, "SIGTTOU", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTTOU, "SIGTTOU", nil<core::T_O>());
 #endif
 #ifdef SIGIO
-        ADD_SIGNAL( SIGIO, "SIGIO", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGIO, "SIGIO", nil<core::T_O>());
 #endif
 #ifdef SIGXCPU
   // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
 # if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
-        ADD_SIGNAL( SIGXCPU, "SIGXCPU", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGXCPU, "SIGXCPU", nil<core::T_O>());
 # endif
 #endif
 #ifdef SIGXFSZ
-        ADD_SIGNAL( SIGXFSZ, "SIGXFSZ", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGXFSZ, "SIGXFSZ", nil<core::T_O>());
 #endif
 #ifdef SIGVTALRM
-        ADD_SIGNAL( SIGVTALRM, "SIGVTALRM", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGVTALRM, "SIGVTALRM", nil<core::T_O>());
 #endif
 #ifdef SIGPROF
-        ADD_SIGNAL( SIGPROF, "SIGPROF", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGPROF, "SIGPROF", nil<core::T_O>());
 #endif
 #ifdef SIGWINCH
-        ADD_SIGNAL( SIGWINCH, "SIGWINCH", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGWINCH, "SIGWINCH", nil<core::T_O>());
 #endif
 #ifdef SIGINFO
         ADD_SIGNAL( SIGINFO, "SIGINFO", ext::_sym_information_interrupt);
 #endif
 #if 0
 #ifdef SIGUSR1
-        ADD_SIGNAL( SIGUSR1, "SIGUSR1", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGUSR1, "SIGUSR1", nil<core::T_O>());
 #endif
 #endif
 #ifdef SIGUSR2
 #ifdef _TARGET_OS_DARWIN
-        ADD_SIGNAL( SIGUSR2, "SIGUSR2", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGUSR2, "SIGUSR2", nil<core::T_O>());
 #endif
 #ifdef _TARGET_OS_LINUX
         ADD_SIGNAL( SIGUSR2, "SIGUSR2", ext::_sym_information_interrupt);
 #endif
 #endif
 #ifdef SIGTHR
-        ADD_SIGNAL( SIGTHR, "SIGTHR", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTHR, "SIGTHR", nil<core::T_O>());
 #endif
 };
   

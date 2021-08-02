@@ -152,7 +152,7 @@ CL_DECLARE();
 CL_DOCSTRING("bq_process");
 CL_DEFUN T_sp core__backquote_process(T_sp ox) {
   // C-version if 0    Lisp-version if 1
-  T_sp result = _Nil<T_O>();
+  T_sp result = nil<T_O>();
   T_sp p;
   T_sp q;
   int step;
@@ -180,14 +180,14 @@ CL_DEFUN T_sp core__backquote_process(T_sp ox) {
     SIMPLE_ERROR(BF(",.%s after `") % _rep_(oCadr(x)));
   }
   p = x;
-  q = _Nil<T_O>();
+  q = nil<T_O>();
   step = 0;
   while (!cl__atom(p)) {
     cp = p;
     T_sp head = oCar(cp);
     if (oCar(cp) == _sym_unquote) {
       ASSERT(oCddr(cp).nilp());
-      nreconc = cl__nreconc(q, Cons_O::create(oCadr(cp),_Nil<T_O>()));
+      nreconc = cl__nreconc(q, Cons_O::create(oCadr(cp),nil<T_O>()));
       result = Cons_O::create(_sym_STARbq_appendSTAR, nreconc);
       goto DONE;
     } else if (head == _sym_unquote_splice) {
@@ -204,7 +204,7 @@ CL_DEFUN T_sp core__backquote_process(T_sp ox) {
     q = next_q;
     step++;
   }
-  nr = cl__nreconc(q, Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p),_Nil<T_O>()));
+  nr = cl__nreconc(q, Cons_O::create(Cons_O::createList(_sym_STARbq_quoteSTAR, p),nil<T_O>()));
   result = Cons_O::create(_sym_STARbq_appendSTAR, nr);
 DONE:
   return result;
@@ -299,7 +299,7 @@ CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
   ASSERT(x.consp());
   Cons_sp cx((gctools::Tagged)x.raw_());
   List_sp args = gc::As<Cons_sp>(CONS_CDR(cx))->reverse();
-  T_sp result = _Nil<T_O>();
+  T_sp result = nil<T_O>();
   while (args.consp()) {
     // Advance args
     args = CONS_CDR(args);
@@ -310,10 +310,10 @@ CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
     } else {
       T_sp caar = CONS_CAR(head);
       if (caar == _sym_STARbq_listSTAR &&
-          core__notany_list(_sym_backquote_splicing_frob, Cons_O::create(oCdar(args),_Nil<T_O>())).isTrue()) {
+          core__notany_list(_sym_backquote_splicing_frob, Cons_O::create(oCdar(args),nil<T_O>())).isTrue()) {
         result = core__backquote_attach_conses(oCdar(args), result);
       } else if ((caar == _sym_STARbq_listSTARSTAR) &&
-                 core__notany_list(_sym_backquote_splicing_frob, Cons_O::create(oCdar(args),_Nil<T_O>())).isTrue()) {
+                 core__notany_list(_sym_backquote_splicing_frob, Cons_O::create(oCdar(args),nil<T_O>())).isTrue()) {
         List_sp rev1 = cl__reverse(oCdar(args));
         List_sp rev2 = cl__reverse(oCdr(rev1));
         List_sp car_last_car_args = oCar(cl__last(head, make_fixnum(1)));
@@ -326,7 +326,7 @@ CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
                  (!core__backquote_frob(oCadar(args))) &&
                  (oCddar(args).nilp())) {
         Cons_sp tl = Cons_O::createList(_sym_STARbq_quoteSTAR, oCaadar(args));
-        Cons_sp tc = Cons_O::create(tl,_Nil<T_O>());
+        Cons_sp tc = Cons_O::create(tl,nil<T_O>());
         result = core__backquote_attach_conses(tc, result);
       } else if (caar == _sym_STARbq_clobberableSTAR) {
         result = core__backquote_attach_append(_sym_STARbq_nconcSTAR, oCadar(args), result);
@@ -349,7 +349,7 @@ CL_DEFUN T_sp core__backquote_null_or_quoted(T_sp x) {
     if (CONS_CAR(cx) == _sym_STARbq_quoteSTAR)
       return (_lisp->_true());
   }
-  return _Nil<T_O>();
+  return nil<T_O>();
 };
 
 CL_LAMBDA(op item result);
@@ -375,8 +375,8 @@ CL_LAMBDA(items result);
 CL_DECLARE();
 CL_DOCSTRING("backquote_attach_conses");
 CL_DEFUN List_sp core__backquote_attach_conses(T_sp items, T_sp result) {
-  if (core__every_list(_sym_backquote_null_or_quoted, Cons_O::create(items,_Nil<T_O>())).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
-    Cons_sp ti = Cons_O::create(items,_Nil<T_O>());
+  if (core__every_list(_sym_backquote_null_or_quoted, Cons_O::create(items,nil<T_O>())).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
+    Cons_sp ti = Cons_O::create(items,nil<T_O>());
     Cons_sp tl = Cons_O::createList(cl__mapcar(cl::_sym_cadr, ti), oCadr(result));
     return Cons_O::createList(_sym_STARbq_quoteSTAR, core__backquote_append_list(tl));
   } else if (cl__equal(result, _sym_STARbq_quote_nilSTAR->symbolValue())) {
@@ -385,7 +385,7 @@ CL_DEFUN List_sp core__backquote_attach_conses(T_sp items, T_sp result) {
     List_sp tl = Cons_O::createList(items, oCdr(result));
     return Cons_O::create(oCar(result), core__backquote_append_list(tl));
   }
-  Cons_sp ta = Cons_O::create(result,_Nil<T_O>());
+  Cons_sp ta = Cons_O::create(result,nil<T_O>());
   Cons_sp tr = Cons_O::createList(items, ta);
   return Cons_O::create(_sym_STARbq_listSTARSTAR, core__backquote_append_list(tr));
 }
@@ -435,6 +435,6 @@ void initialize_backquote() {
   _sym_STARbq_nconcSTAR->defconstant(_sym_STARbq_nconcSTAR);
   _sym_STARbq_clobberableSTAR->defconstant(_sym_STARbq_clobberableSTAR);
   _sym_STARbq_quoteSTAR->defconstant(_sym_STARbq_quoteSTAR);
-  _sym_STARbq_quote_nilSTAR->defconstant(Cons_O::createList(_sym_STARbq_quoteSTAR, _Nil<T_O>()));
+  _sym_STARbq_quote_nilSTAR->defconstant(Cons_O::createList(_sym_STARbq_quoteSTAR, nil<T_O>()));
 }
 };

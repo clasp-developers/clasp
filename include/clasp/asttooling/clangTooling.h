@@ -180,6 +180,7 @@ class DerivableMatchCallback
 public:
   virtual void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
     const clang::ast_matchers::MatchFinderMatchResult conv(Result); //  = static_cast<const clang::ast_matchers::MatchFinderMatchResult&>(Result);
+//    printf("%s:%d:%s Found a MatchResult context: %p sourceManger %p\n", __FILE__, __LINE__, __FUNCTION__, conv.getContext(), conv.getSourceManager() );
     core::T_sp val =  translate::to_object<const clang::ast_matchers::MatchFinderMatchResult &>::convert(conv);
     core::eval::funcall(asttooling::_sym_run, this->asSmartPtr(), val);
   }
@@ -189,19 +190,19 @@ public:
   };
 
   virtual void onStartOfTranslationUnit() {
-    printf("%s:%d entered onStartOfTranslationUnit funcalling\n", __FILE__, __LINE__);
+//    printf("%s:%d entered onStartOfTranslationUnit funcalling\n", __FILE__, __LINE__);
     core::eval::funcall(_sym_onStartOfTranslationUnit, this->asSmartPtr());
   }
   void default_onStartOfTranslationUnit() {
-    printf("%s:%d entered default_onStartOfTranslationUnit\n", __FILE__, __LINE__);
+//    printf("%s:%d entered default_onStartOfTranslationUnit\n", __FILE__, __LINE__);
     this->AlienBase::onStartOfTranslationUnit();
   }
   virtual void onEndOfTranslationUnit() {
-    printf("%s:%d entered onEndOfTranslationUnit funcalling\n", __FILE__, __LINE__);
+//    printf("%s:%d entered onEndOfTranslationUnit funcalling\n", __FILE__, __LINE__);
     core::eval::funcall(_sym_onEndOfTranslationUnit, this->asSmartPtr());
   }
   void default_onEndOfTranslationUnit() {
-    printf("%s:%d entered default_onEndOfTranslationUnit\n", __FILE__, __LINE__);
+//    printf("%s:%d entered default_onEndOfTranslationUnit\n", __FILE__, __LINE__);
     this->AlienBase::onEndOfTranslationUnit();
   }
 

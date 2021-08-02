@@ -91,11 +91,11 @@ public: // ctor/dtor for classes with shared virtual base
  public: // Functions here
   static RandomState_sp make(T_sp state);
   static RandomState_sp create(RandomState_sp other) {
-    GC_ALLOCATE_VARIADIC(RandomState_O, b, *other);
+    auto  b = gctools::GC<RandomState_O>::allocate( *other);
     return b;
   };
   static RandomState_sp create_random() {
-    GC_ALLOCATE_VARIADIC(RandomState_O, b, true );
+    auto  b = gctools::GC<RandomState_O>::allocate( true );
     return b;
   }
 

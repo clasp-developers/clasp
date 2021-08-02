@@ -121,13 +121,13 @@ void Path_O::initialize() {
 }
 
 Path_sp Path_O::create(const string &path) {
-  GC_ALLOCATE(Path_O, op);
+  auto  op = gctools::GC<Path_O>::allocate_with_default_constructor();
   op->setPathFromString(path);
   return op;
 }
 
 Path_sp Path_O::create(std::filesystem::path p) {
-  GC_ALLOCATE(Path_O, op);
+  auto  op = gctools::GC<Path_O>::allocate_with_default_constructor();
   op->setPath(p);
   return op;
 }
@@ -208,7 +208,7 @@ CL_LISPIFY_NAME("path-absolute");
 CL_DEFMETHOD Path_sp Path_O::absolute() const {
   if (this->_Path._value.is_absolute())
     return this->copyPath();
-  GC_ALLOCATE(Path_O, abs);
+  auto  abs = gctools::GC<Path_O>::allocate_with_default_constructor();
   abs->_Path = std::filesystem::absolute(this->_Path._value);
   return abs;
 }
@@ -216,7 +216,7 @@ CL_DEFMETHOD Path_sp Path_O::absolute() const {
 CL_LISPIFY_NAME("copyPath");
 CL_DEFMETHOD Path_sp Path_O::copyPath() const {
   _OF();
-  GC_COPY(Path_O, copy, *this);
+  auto  copy = gctools::GC<Path_O>::copy( *this);
   return copy;
 }
 
@@ -299,7 +299,7 @@ CL_DEFMETHOD bool Path_O::exists() {
 
 
 DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
-  GC_ALLOCATE(DirectoryIterator_O, di);
+  auto  di = gctools::GC<DirectoryIterator_O>::allocate_with_default_constructor();
   di->setPath(path);
   return di;
 }
@@ -319,7 +319,7 @@ DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
 	}
 	this->setPath(path);
 	this->first();
-	return _Nil<T_O>();
+	return nil<T_O>();
     }
 #endif
 
@@ -332,7 +332,7 @@ DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path) {
 	DirectoryIterator_sp me(DirectoryIterator_O::create());
 	SYMBOL_SC_(CorePkg,path);
 	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list << _sym_path << path ).cons()));
-	me->make_init(_Nil<core::Function_O>(),env->args(),env);
+	me->make_init(nil<core::Function_O>(),env->args(),env);
 	return(Values(me));
 #endif
 }
@@ -382,7 +382,7 @@ T_sp DirectoryIterator_O::currentObject() {
   ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG(BF("The directory iteratory is done - returning nil"));
-    return _Nil<DirectoryEntry_O>();
+    return nil<DirectoryEntry_O>();
   }
   LOG(BF("Returning the next directory entry"));
   DirectoryEntry_sp de = _lisp->create<DirectoryEntry_O>();
@@ -395,7 +395,7 @@ DirectoryIterator_O::~DirectoryIterator_O() {
 }
 
 RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path) {
-  GC_ALLOCATE(RecursiveDirectoryIterator_O, di);
+  auto  di = gctools::GC<RecursiveDirectoryIterator_O>::allocate_with_default_constructor();
   di->setPath(path);
   return di;
 }
@@ -451,7 +451,7 @@ T_sp RecursiveDirectoryIterator_O::currentObject() {
   ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG(BF("The directory iteratory is done - returning nil"));
-    return _Nil<DirectoryEntry_O>();
+    return nil<DirectoryEntry_O>();
   }
   LOG(BF("Returning the next directory entry"));
   DirectoryEntry_sp de = _lisp->create<DirectoryEntry_O>();
@@ -593,7 +593,7 @@ Pathname_sp homedirPathname(T_sp tuser) {
       i--;
     }
     if (i == 0)
-      return homedirPathname(_Nil<T_O>());
+      return homedirPathname(nil<T_O>());
 #ifdef HAVE_PWD_H
     pwent = getpwnam(p);
     if (pwent == NULL) {

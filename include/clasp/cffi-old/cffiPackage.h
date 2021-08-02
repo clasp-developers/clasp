@@ -39,8 +39,8 @@ namespace cffi {
 class CffiExposer_O : public core::Exposer_O {
 private:
 public:
-  CffiExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, CffiPkg){};
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
+  CffiExposer_O(core::LispPtr lisp) : Exposer_O(lisp, CffiPkg){};
+  virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
 };
 };
 #endif

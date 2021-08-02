@@ -585,13 +585,13 @@ parse_word(T_sp st, delim_fn delim, int flags, size_t start,
 	       the proper delimiter */
     if (flags & WORD_INCLUDE_DELIM) {
       *end_of_word = start;
-      return _Nil<T_O>();
+      return nil<T_O>();
     }
   }
   switch (i - j) {
   case 0:
     if (flags & WORD_EMPTY_IS_NIL)
-      return _Nil<T_O>();
+      return nil<T_O>();
     return SimpleBaseString_O::make(""); // cl_core.null_string;
   case 1:
       if (cl__char(ss, j).unsafe_character() == '*')
@@ -626,7 +626,7 @@ static T_sp
 parse_directories(T_sp s, int flags, size_t start, size_t end,
                   size_t *end_of_dir) {
   size_t i, j;
-  List_sp path = _Nil<T_O>();
+  List_sp path = nil<T_O>();
   delim_fn delim = (flags & WORD_LOGICAL) ? is_semicolon : is_slash;
 
   flags |= WORD_INCLUDE_DELIM | WORD_ALLOW_ASTERISK;
@@ -685,13 +685,13 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
     } else {
     // If called before _sym_assoc is setup then invoke assoc directly */
       if (_lisp->pathnameTranslations_().notnilp()) {
-        pair = _lisp->pathnameTranslations_().asCons()->assoc(host, _Nil<T_O>(), cl::_sym_string_equal, _Nil<T_O>());
+        pair = _lisp->pathnameTranslations_().asCons()->assoc(host, nil<T_O>(), cl::_sym_string_equal, nil<T_O>());
       } else {
-        pair = _Nil<T_O>();
+        pair = nil<T_O>();
       }
     }
     if (set.nilp()) {
-      return (pair.nilp()) ? _Nil<T_O>() : oCadr(pair);
+      return (pair.nilp()) ? nil<T_O>() : oCadr(pair);
     }
   /* Set the new translation list */
     if (clasp_unlikely(!cl__listp(set))) {
@@ -701,20 +701,20 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
   {
 //    printf("%s:%d WITH_READ_WRITE_LOCK\n", __FILE__, __LINE__ );
     if (pair.nilp()) {
-      pair = Cons_O::create(host, Cons_O::create(_Nil<T_O>(), _Nil<T_O>()));
+      pair = Cons_O::create(host, Cons_O::create(nil<T_O>(), nil<T_O>()));
       WITH_READ_WRITE_LOCK(globals_->_ThePathnameTranslationsMutex);
       _lisp->setPathnameTranslations_(Cons_O::create(pair, _lisp->pathnameTranslations_()));
     }
     {
       WITH_READ_LOCK(globals_->_ThePathnameTranslationsMutex);
-      for (l = set, set = _Nil<T_O>(); !cl__endp(l); l = CDR(l)) {
+      for (l = set, set = nil<T_O>(); !cl__endp(l); l = CDR(l)) {
         T_sp item = CAR(l);
         T_sp from = coerce_to_from_pathname(oCar(item), host);
         T_sp pn = oCadr(item);
         if (pn.nilp())
           TYPE_ERROR(pn, Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Pathname_O));
         T_sp to = cl__pathname(oCadr(item));
-        set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, _Nil<T_O>())), set);
+        set = Cons_O::create(Cons_O::create(from, Cons_O::create(to, nil<T_O>())), set);
       }
       set = cl__nreverse(set);
       T_sp savedSet = set;
@@ -736,7 +736,7 @@ bool clasp_logical_hostname_p(T_sp host) {
     return T_sp(eval::funcall(cl::_sym_assoc, host, _lisp->pathnameTranslations_(), kw::_sym_test, cl::_sym_string_equal)).notnilp();
   } else {
     if (_lisp->pathnameTranslations_().notnilp()) {
-      return _lisp->pathnameTranslations_().asCons()->assoc(host, _Nil<T_O>(), cl::_sym_string_equal, _Nil<T_O>()).notnilp();
+      return _lisp->pathnameTranslations_().asCons()->assoc(host, nil<T_O>(), cl::_sym_string_equal, nil<T_O>()).notnilp();
     }
   }
   return false;
@@ -776,7 +776,7 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
   bool logical = false;
   
   if (start == end) {
-    host = device = path = name = type = aux = version = _Nil<T_O>();
+    host = device = path = name = type = aux = version = nil<T_O>();
     logical = false;
     goto make_it;
   }
@@ -810,32 +810,32 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
     path = Cons_O::create(kw::_sym_absolute, path);
   }
   if (path == kw::_sym_error)
-    return _Nil<Pathname_O>();
+    return nil<Pathname_O>();
   name = parse_word(s, is_dot, WORD_LOGICAL | WORD_ALLOW_ASTERISK |
                                    WORD_EMPTY_IS_NIL,
                     *ep, end, ep);
   if (name == kw::_sym_error)
-    return _Nil<Pathname_O>();
-  type = _Nil<T_O>();
-  version = _Nil<T_O>();
+    return nil<Pathname_O>();
+  type = nil<T_O>();
+  version = nil<T_O>();
   if (*ep == start || cl__char(gc::As<String_sp>(s), *ep - 1).unsafe_character() != '.')
     goto make_it;
   type = parse_word(s, is_dot, WORD_LOGICAL | WORD_ALLOW_ASTERISK |
                                    WORD_EMPTY_IS_NIL,
                     *ep, end, ep);
   if (type == kw::_sym_error)
-    return _Nil<Pathname_O>();
+    return nil<Pathname_O>();
   if (*ep == start || cl__char(gc::As<String_sp>(s), *ep - 1).unsafe_character() != '.')
     goto make_it;
   aux = parse_word(s, is_null, WORD_LOGICAL | WORD_ALLOW_ASTERISK |
                                    WORD_EMPTY_IS_NIL,
                    *ep, end, ep);
   if (aux == kw::_sym_error) {
-    return _Nil<Pathname_O>();
+    return nil<Pathname_O>();
   } else if (cl__symbolp(aux)) {
     version = aux;
   } else {
-    T_mv version_mv = cl__parse_integer(gc::As<String_sp>(aux), 0, _Nil<T_O>(), 10, _lisp->_true());
+    T_mv version_mv = cl__parse_integer(gc::As<String_sp>(aux), 0, nil<T_O>(), 10, _lisp->_true());
     T_sp tversion = version_mv;
     Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet_(1));
     if (unbox_fixnum(parsed_length) == cl__length(aux) &&
@@ -844,7 +844,7 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
     } else if (cl__string_equal(aux, kw::_sym_newest).notnilp()) {
       version = kw::_sym_newest;
     } else {
-      return _Nil<Pathname_O>();
+      return nil<Pathname_O>();
     }
   }
   goto make_it;
@@ -862,7 +862,7 @@ physical:
 	 */
 #if defined(CLASP_MS_WINDOWS_HOST)
   if ((start + 1 <= end) && is_slash(cl__char(s, start))) {
-    device = _Nil<T_O>();
+    device = nil<T_O>();
     goto maybe_parse_host;
   }
 #endif
@@ -870,37 +870,37 @@ physical:
                                        WORD_DISALLOW_SLASH,
                       start, end, ep);
   if (device == kw::_sym_error || device.nilp()) {
-    device = _Nil<T_O>();
-    host = _Nil<T_O>();
+    device = nil<T_O>();
+    host = nil<T_O>();
     goto done_device_and_host;
   }
   if (!cl__stringp(device)) {
-    return _Nil<Pathname_O>();
+    return nil<Pathname_O>();
   }
 #if defined(CLASP_MS_WINDOWS_HOST)
 maybe_parse_host:
 #endif
   /* Files have no effective device. */
   if (cl__string_equal(device, kw::_sym_file).notnilp())
-    device = _Nil<T_O>();
+    device = nil<T_O>();
   start = *ep;
-  host = _Nil<T_O>();
+  host = nil<T_O>();
   if ((start + 2) <= end && is_slash(cl__char(gc::As<String_sp>(s), start).unsafe_character()) &&
       is_slash(cl__char(gc::As<String_sp>(s), start + 1).unsafe_character())) {
     host = parse_word(s, is_slash, WORD_EMPTY_IS_NIL,
                       start + 2, end, ep);
     if (host == kw::_sym_error) {
-      host = _Nil<T_O>();
+      host = nil<T_O>();
     } else if (host.notnilp()) {
       if (!cl__stringp(host))
-        return _Nil<Pathname_O>();
+        return nil<Pathname_O>();
       start = *ep;
       if (is_slash(cl__char(gc::As<String_sp>(s), --start).unsafe_character()))
         *ep = start;
     }
   }
   if (cl__length(device) == 0)
-    device = _Nil<T_O>();
+    device = nil<T_O>();
 done_device_and_host:
   path = parse_directories(s, 0, *ep, end, ep);
   if ((path).consp()) {
@@ -910,22 +910,22 @@ done_device_and_host:
     path = destructively_check_directory(path, false, false);
   }
   if (path == kw::_sym_error)
-    return _Nil<Pathname_O>();
+    return nil<Pathname_O>();
   start = *ep;
   name = parse_word(s, is_dot,
                     WORD_ALLOW_LEADING_DOT | WORD_SEARCH_LAST_DOT |
                         WORD_ALLOW_ASTERISK | WORD_EMPTY_IS_NIL,
                     start, end, ep);
   if (name == kw::_sym_error)
-    return _Nil<Pathname_O>();
+    return nil<Pathname_O>();
   if ((*ep - start) <= 1 || cl__char(gc::As<String_sp>(s), *ep - 1).unsafe_character() != '.') {
-    type = _Nil<T_O>();
+    type = nil<T_O>();
   } else {
     type = parse_word(s, is_null, WORD_ALLOW_ASTERISK, *ep, end, ep);
     if (type == kw::_sym_error)
-      return _Nil<Pathname_O>();
+      return nil<Pathname_O>();
   }
-  version = (name.notnilp() || type.notnilp()) ? kw::_sym_newest : _Nil<Symbol_O>();
+  version = (name.notnilp() || type.notnilp()) ? kw::_sym_newest : nil<Symbol_O>();
 make_it:
   if (*ep >= end)
     *ep = end;
@@ -956,11 +956,11 @@ CL_DEFUN Pathname_sp core__safe_default_pathname_defaults_host_only(void) {
   /* This routine returns a pathname that has value of only the host part of *default-pathname-defaults* */
   Pathname_sp def = core__safe_default_pathname_defaults();
   Pathname_sp res = Pathname_O::makePathname(cl__pathname_host(def,kw::_sym_local)
-                                             , _Nil<core::T_O>() // device
-                                             , _Nil<core::T_O>() // dir
-                                             , _Nil<core::T_O>() // name
-                                             , _Nil<core::T_O>() // type
-                                             , _Nil<core::T_O>() // version
+                                             , nil<core::T_O>() // device
+                                             , nil<core::T_O>() // dir
+                                             , nil<core::T_O>() // name
+                                             , nil<core::T_O>() // type
+                                             , nil<core::T_O>() // version
                                              , kw::_sym_local // fromcase
                                              , false );
   return res;
@@ -1015,8 +1015,6 @@ CL_DEFUN T_sp cl__logical_pathname(T_sp x) {
   return x;
 }
 
-#define default_device(host) _Nil<T_O>()
-
 Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion) {
   T_sp host, device, directory, name, type, version;
   Symbol_sp tocase;
@@ -1024,7 +1022,7 @@ Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion
   if (tdefaults.nilp())
     TYPE_ERROR(tdefaults, Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Pathname_O));
   Pathname_sp defaults = cl__pathname(tdefaults);
-  Pathname_sp path = gc::As<Pathname_sp>(cl__parse_namestring(tpath, _Nil<T_O>(), defaults));
+  Pathname_sp path = gc::As<Pathname_sp>(cl__parse_namestring(tpath, nil<T_O>(), defaults));
   host = path->_Host;
   if (host.nilp())
     host = defaults->_Host;
@@ -1035,7 +1033,7 @@ Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion
     else if (path->_Host == defaults->_Host)
       device = defaults->_Device;
     else
-      device = default_device(path->_Host);
+      device = nil<T_O>(); //default_device(path->_Host);
   } else {
     device = path->_Device;
   }
@@ -1069,7 +1067,7 @@ Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion
   }
   if (defaultVersion == kw::_sym_default) {
     if (name.nilp() && type.nilp()) {
-      version = _Nil<T_O>();
+      version = nil<T_O>();
     } else {
       version = kw::_sym_newest;
     }
@@ -1221,7 +1219,7 @@ CL_DEFUN String_sp core__coerce_to_filename(T_sp pathname_orig) {
     SIMPLE_ERROR(BF("About to pass nil to core__coerce_to_file_pathname"));
   }
   pathname = core__coerce_to_file_pathname(pathname_orig);
-  if (cl__wild_pathname_p(pathname, _Nil<T_O>())) {
+  if (cl__wild_pathname_p(pathname, nil<T_O>())) {
     ERROR(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, pathname_orig));
   }
   if (pathname.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
@@ -1271,14 +1269,14 @@ T_sp clasp_namestring(T_sp tx, int flags) {
   if (logical) {
     if ((y = x->_Device) != kw::_sym_unspecific &&
         truncate_if_unreadable)
-      return _Nil<T_O>();
+      return nil<T_O>();
     if (host.notnilp()) {
-      cl__write_sequence(gc::As<String_sp>(host), buffer, make_fixnum(0), _Nil<T_O>());
+      cl__write_sequence(gc::As<String_sp>(host), buffer, make_fixnum(0), nil<T_O>());
       clasp_write_string(":", buffer);
     }
   } else {
     if ((y = x->_Device).notnilp()) {
-      cl__write_sequence(gc::As<String_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
+      cl__write_sequence(gc::As<String_sp>(y), buffer, make_fixnum(0), nil<T_O>());
       clasp_write_string(":", buffer);
     }
     if (host.notnilp()) {
@@ -1288,7 +1286,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
       }
 #endif
       clasp_write_string("//", buffer);
-      cl__write_sequence(gc::As<String_sp>(host), buffer, make_fixnum(0), _Nil<T_O>());
+      cl__write_sequence(gc::As<String_sp>(host), buffer, make_fixnum(0), nil<T_O>());
     }
   }
   l = x->_Directory;
@@ -1312,10 +1310,10 @@ T_sp clasp_namestring(T_sp tx, int flags) {
     } else if (y == kw::_sym_wild_inferiors) {
       clasp_write_string("**", buffer);
     } else if (y != kw::_sym_back) {
-      cl__write_sequence(gc::As<String_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
+      cl__write_sequence(gc::As<String_sp>(y), buffer, make_fixnum(0), nil<T_O>());
     } else {
       /* Directory :back has no namestring representation */
-      return _Nil<T_O>();
+      return nil<T_O>();
     }
     clasp_write_char(logical ? ';' : DIR_SEPARATOR_CHAR, buffer);
   }
@@ -1333,23 +1331,23 @@ NO_DIRECTORY:
     if (y == kw::_sym_wild) {
       clasp_write_string("*", buffer);
     } else {
-      cl__write_sequence(gc::As<String_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
+      cl__write_sequence(gc::As<String_sp>(y), buffer, make_fixnum(0), nil<T_O>());
     }
   } else if (!logical && !x->_Type.nilp()) {
     /* #P".txt" is :NAME = ".txt" :TYPE = NIL and
 	       hence :NAME = NIL and :TYPE != NIL does not have
 	       a printed representation */
-    return _Nil<T_O>();
+    return nil<T_O>();
   }
   y = x->_Type;
   if (y == kw::_sym_unspecific) {
-    return _Nil<T_O>();
+    return nil<T_O>();
   } else if (y.notnilp()) {
     if (y == kw::_sym_wild) {
       clasp_write_string(".*", buffer);
     } else {
       clasp_write_string(".", buffer);
-      cl__write_sequence(gc::As<String_sp>(y), buffer, make_fixnum(0), _Nil<T_O>());
+      cl__write_sequence(gc::As<String_sp>(y), buffer, make_fixnum(0), nil<T_O>());
     }
   }
   y = x->_Version;
@@ -1360,7 +1358,7 @@ NO_DIRECTORY:
         clasp_write_string("*", buffer);
       } else if (y == kw::_sym_newest) {
         cl__write_sequence(cl__symbol_name(gc::As<Symbol_sp>(y)), buffer,
-                          make_fixnum(0), _Nil<T_O>());
+                          make_fixnum(0), nil<T_O>());
       } else {
         /* Since the printer is not reentrant,
 		     * we cannot use cl__write and friends.
@@ -1384,10 +1382,10 @@ NO_DIRECTORY:
     if (x->_Name.nilp() && x->_Type.nilp()) {
       /* Directories cannot have a version number */
       if (y.notnilp())
-        return _Nil<T_O>();
+        return nil<T_O>();
     } else if (y != kw::_sym_newest) {
       /* Filenames have an implicit version :newest */
-      return _Nil<T_O>();
+      return nil<T_O>();
     }
   }
   String_sp sbuffer = gc::As<String_sp>(cl__get_output_stream_string(buffer));
@@ -1468,7 +1466,7 @@ CL_DEFUN Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool 
   if (odefaults.nilp()) {
     defaults = core__safe_default_pathname_defaults();
     defaults = Pathname_O::makePathname(defaults->_Host,
-                                        _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
+                                        nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>(),
                                         kw::_sym_local);
   } else {
     if (odefaults.nilp())
@@ -1576,7 +1574,7 @@ CL_DEFUN T_sp cl__file_namestring(T_sp tpname) {
   if (tpname.nilp())
     TYPE_ERROR(tpname, Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Pathname_O));
   Pathname_sp pname = cl__pathname(tpname);
-  return clasp_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
+  return clasp_namestring(Pathname_O::makePathname(nil<T_O>(), nil<T_O>(), nil<T_O>(),
                                                    pname->_Name,
                                                    pname->_Type,
                                                    pname->_Version,
@@ -1591,9 +1589,9 @@ CL_DEFUN T_sp cl__directory_namestring(T_sp tpname) {
   if (tpname.nilp())
     TYPE_ERROR(tpname, Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Pathname_O));
   Pathname_sp pname = cl__pathname(tpname);
-  return clasp_namestring(Pathname_O::makePathname(_Nil<T_O>(), _Nil<T_O>(),
+  return clasp_namestring(Pathname_O::makePathname(nil<T_O>(), nil<T_O>(),
                                                    pname->_Directory,
-                                                   _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
+                                                   nil<T_O>(), nil<T_O>(), nil<T_O>(),
                                                    kw::_sym_local),
                           CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 }
@@ -1609,7 +1607,7 @@ CL_DEFUN T_sp cl__host_namestring(T_sp tpname) {
   return host;
 }
 
-#define EN_MATCH(p1, p2, el) (cl__equalp(p1->el, p2->el) ? _Nil<T_O>() : p1->el)
+#define EN_MATCH(p1, p2, el) (cl__equalp(p1->el, p2->el) ? nil<T_O>() : p1->el)
 
 CL_LAMBDA(tpath &optional (defaults (core::safe-default-pathname-defaults)));
 CL_DECLARE();
@@ -1625,7 +1623,7 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
   T_sp pathdir = path->_Directory;
   T_sp defaultdir = defaults->_Directory;
   if (pathdir.nilp()) {
-    pathdir = Cons_O::create(kw::_sym_relative,_Nil<T_O>());
+    pathdir = Cons_O::create(kw::_sym_relative,nil<T_O>());
   } else if (defaultdir.nilp()) {
     /* The defaults pathname does not have a directory. */
   } else if (cons_car(pathdir) == kw::_sym_relative) {
@@ -1636,7 +1634,7 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
 	   and if they have some common elements, we just output the remaining ones. */
 #if 1
     // Implement MISMATCH for this special case
-    T_sp tdir_begin = _Nil<T_O>();
+    T_sp tdir_begin = nil<T_O>();
     int mismatch = 0;
     List_sp lpathdir = gc::As<List_sp>(pathdir);
     List_sp ldefaultdir = gc::As<List_sp>(defaultdir);
@@ -1659,7 +1657,7 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
                                                    kw::_sym_test, cl::_sym_equal);
 #endif
     if (tdir_begin.nilp()) {
-      pathdir = _Nil<T_O>();
+      pathdir = nil<T_O>();
     } else {
       Integer_sp dir_begin = gc::As<Integer_sp>(tdir_begin);
       if (clasp_to_int(dir_begin) == cl__length(defaultdir)) {
@@ -1863,7 +1861,7 @@ find_wilds(T_sp l, T_sp source, T_sp match) {
   size_t i, j, k, ls, lm;
 
   if (match == kw::_sym_wild)
-    return Cons_O::create(source,_Nil<T_O>());
+    return Cons_O::create(source,nil<T_O>());
   if (!cl__stringp(match) || !cl__stringp(source)) {
     if (match != source)
       return kw::_sym_error;
@@ -1893,13 +1891,13 @@ find_wilds(T_sp l, T_sp source, T_sp match) {
 
 static T_sp
 find_list_wilds(T_sp a, T_sp mask) {
-  T_sp l = _Nil<T_O>(), l2;
+  T_sp l = nil<T_O>(), l2;
 
   while (!cl__endp(mask)) {
     T_sp item_mask = CAR(mask);
     mask = CDR(mask);
     if (item_mask == kw::_sym_wild_inferiors) {
-      l2 = _Nil<T_O>();
+      l2 = nil<T_O>();
       while (!path_list_match(a, mask)) {
         if (cl__endp(a))
           return kw::_sym_error;
@@ -1974,7 +1972,7 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
 
 static T_sp
 copy_list_wildcards(T_sp *wilds, T_sp to) {
-  T_sp l = _Nil<T_O>();
+  T_sp l = nil<T_O>();
 
   while (!cl__endp(to)) {
     T_sp d, mask = CAR(to);
@@ -2055,7 +2053,7 @@ CL_DEFUN Pathname_sp cl__translate_pathname(T_sp tsource, T_sp tfrom, T_sp tto, 
   directory = d;
 
   /* Match name */
-  wilds = find_wilds(_Nil<T_O>(), source->_Name, from->_Name);
+  wilds = find_wilds(nil<T_O>(), source->_Name, from->_Name);
   if (wilds == kw::_sym_error)
     goto error2;
   if ((to->_Name.nilp())) {
@@ -2071,7 +2069,7 @@ CL_DEFUN Pathname_sp cl__translate_pathname(T_sp tsource, T_sp tfrom, T_sp tto, 
   name = d;
 
   /* Match type */
-  wilds = find_wilds(_Nil<T_O>(), source->_Type, from->_Type);
+  wilds = find_wilds(nil<T_O>(), source->_Type, from->_Type);
   if (wilds == kw::_sym_error)
     goto error2;
   if ((to->_Type).nilp()) {

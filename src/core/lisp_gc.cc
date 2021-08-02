@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #if defined(USE_MPS)
-mps_res_t mps_scan_LispRoots(mps_ss_t ss, mps_thr_t thr, void *p, size_t s, Lisp_O::GCRoots &lispRoots) {
+mps_res_t mps_scan_LispRoots(mps_ss_t ss, mps_thr_t thr, void *p, size_t s, Lisp::GCRoots &lispRoots) {
   mps_scan_MultipleValues(ss, thr, p, s, this->_MultipleValues);
   mps_scan_DynamicBindingStack(ss, thr, p, s, this->_Bindings);
   // this->_SourceFiles is a Vec0
