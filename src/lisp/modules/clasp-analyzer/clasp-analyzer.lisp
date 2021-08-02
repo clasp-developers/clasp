@@ -3484,12 +3484,12 @@ Recursively analyze x and return T if x contains fixable pointers."
 
 
 (defun sif-code-for-namespace-names (fdesc forwards)
-  (format fdesc "{ TAG:FORWARDS (~%")
+  (format fdesc "{ TAGS:FORWARDS-TAG ( ( TAGS:FORWARDS% ~%")
   (maphash (lambda (key value)
              (declare (ignore value))
              (format fdesc " ~s~%" key))
            forwards)
-  (format fdesc ") }~%"))
+  (format fdesc ") ) }~%"))
 
 (defun merge-forward-names-by-namespace (analysis)
   (let ((forwards (analysis-forwards analysis))
