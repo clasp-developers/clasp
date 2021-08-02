@@ -4788,8 +4788,8 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
         this->_TPC = ExitOnErr(orc::SelfExecutorProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
         auto J = ExitOnErr(
                            LLJITBuilder()
+                           .setExecutionSession(std::make_unique<ExecutionSession>(std::move(this->_TPC)))
                            .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
-                           .setExecutionSession(std::make_unique<ExecutionSession>(this->_TPC->getSymbolStringPool()))
                            .setJITTargetMachineBuilder(std::move(JTMB))
 //                           .setPlatformSetUp(orc::setUpMachOPlatform)
                            .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
@@ -4800,7 +4800,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
                        // GDB registrar isn't working at the moment
                        if (!getenv("CLASP_NO_JIT_GDB")) {
                            printf("%s:%d:%s Adding ObjLinkingLayer plugin for orc::createJITLoaderGDBRegistrar\n", __FILE__, __LINE__, __FUNCTION__ );
-                           ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*this->_TPC))));
+                           ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
                        }
                        ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
                        return ObjLinkingLayer;
