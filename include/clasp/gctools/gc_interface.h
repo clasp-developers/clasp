@@ -106,6 +106,8 @@ namespace asttooling {
   #undef DECLARE_FORWARDS
  #endif
 #endif
+
+
 namespace gctools {
 
 

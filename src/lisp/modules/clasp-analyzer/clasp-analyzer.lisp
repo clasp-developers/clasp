@@ -3459,7 +3459,7 @@ Recursively analyze x and return T if x contains fixable pointers."
   (maphash (lambda (ns-name subnamespace)
              (progn
                (format stream "~vt// nested classes within ~a START~%" indent ns-name)
-               (code-for-nested-class-names stream subnamespace ns-name)
+               (code-for-nested-class-names stream  subnamespace ns-name)
                (format stream "~vt// nested classes END~%" indent)))
            (namespace-submap ns)))
 
@@ -3479,15 +3479,23 @@ Recursively analyze x and return T if x contains fixable pointers."
                      (format stream "~vtnamespace ~a {~%" indent ns-name)
                      (code-for-namespace-names stream subnamespace (+ 4 indent))
                      (format stream "~vt};~%" indent))))
-             (namespace-submap ns))))
+             (namespace-submap ns))
+    ))
 
 
+(defun sif-code-for-namespace-names (fdesc forwards)
+  (format fdesc "{ TAG:FORWARDS (~%")
+  (maphash (lambda (key value)
+             (declare (ignore value))
+             (format fdesc " ~s~%" key))
+           forwards)
+  (format fdesc ") }~%"))
 
 (defun merge-forward-names-by-namespace (analysis)
   (let ((forwards (analysis-forwards analysis))
         (top-namespace (make-namespace)))
     (maphash (lambda (name value)
-               (declare (ignore value))
+               (declare (ignorable value))
                (let ((split-name (separate-namespace-name name)))
                  (namespace-add-name top-namespace split-name)))
              forwards)
@@ -3727,6 +3735,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
       (format fdesc "(~%")
       (with-open-file (stream output-file :direction :output :if-exists :supersede)
         (format stream "#ifdef DECLARE_FORWARDS~%")
+        (sif-code-for-namespace-names fdesc (analysis-forwards analysis))
         (code-for-namespace-names stream (merge-forward-names-by-namespace analysis))
         (format stream "#endif // DECLARE_FORWARDS~%")
         (format stream "#if defined(GC_ENUM)~%")

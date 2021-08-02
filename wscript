@@ -291,12 +291,14 @@ def grovel(bld):
 def initialize_extension_sif_nodes(cfg):
     print("initialize_extension_sif_nodes cfg.path: %s" % cfg.path )
     nodes = cfg.path.ant_glob("src/clasp_gc.sif")
+    if (len(nodes)==0):
+        raise Exception("Could not find %s/src/clasp_gc.sif" % cfg.path)
     print("     found nodes: %s" % nodes )
     return nodes
 
 def generate_output_filename(nodes):
     if (len(nodes)<1):
-        raise( "There must be at least one sif file" )
+        raise Exception( "There must be at least one sif file" )
     return nodes[-1].abspath()
 
 def update_dependencies(cfg):
@@ -355,7 +357,7 @@ def analyze_clasp(cfg):
     print("In analyze_clasp cfg.extension_sif_nodes = %s" % cfg.extension_sif_nodes)
     log.debug("cfg.extension_sif_nodes = %s\n", cfg.extension_sif_nodes)
     if (len(cfg.extension_sif_nodes)>2):
-        raise( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
+        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
     output_file = generate_output_filename(cfg.extension_sif_nodes)
     run_program_echo("build/boehm/iclasp-boehm",
                      "-N", "-D",
@@ -371,7 +373,7 @@ def analyze_test(cfg):
     print("In analyze_test cfg.extension_sif_nodes = %s" % cfg.extension_sif_nodes)
     log.debug("cfg.extension_sif_nodes = %s\n", cfg.extension_sif_nodes)
     if (len(cfg.extension_sif_nodes)>2):
-        raise( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
+        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
     output_file = "source-dir:build;clasp_gc_test.cc"
     selection_pattern = "unixfsys.cc"
     run_program_echo("build/boehm/iclasp-boehm",

@@ -585,7 +585,9 @@ register_stamp_name(\"STAMPWTAG_null\",0);~%")
 
 (defun generate-gc-stamp-selectors (stream sorted-classes gc-managed-types)
   (format stream "#ifdef GC_STAMP_SELECTORS~%")
-  (flet ((write-one-gcstamp (type mangled-key)
+  (flet ((write-one-gcstamp (type mangled-key &key key)
+           (when key
+             (format stream "// ~a~%" key))
            (format stream "template <> class gctools::GCStamp<~a> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_~a;
@@ -595,9 +597,9 @@ public:
     (dolist (c sorted-classes)
       (write-one-gcstamp (class-key% c) (build-enum-name (class-key% c))))
     (maphash (lambda (key type)
-               (declare (ignore key))
                (write-one-gcstamp (c++type% type)
-                                  (build-enum-name (c++type% type))))
+                                  (build-enum-name (c++type% type))
+                                  :key key))
              gc-managed-types))
   (format stream "#endif // GC_STAMP_SELECTORS~%"))
 
