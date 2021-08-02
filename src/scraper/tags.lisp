@@ -41,6 +41,8 @@
   ((character-offset% :initform nil :initarg :character-offset% :accessor tags:character-offset%)
    (signature-text% :initform nil :initarg :signature-text% :accessor signature-text%)))
 
+(defclass tags:forwards-tag (tag)
+  ((forwards% :initarg :forwards% :accessor forwards%)))
 
 (defclass tags:gc-managed-type-tag (tag)
   ((c++type% :initform nil :initarg :c++type% :accessor c++type%)))

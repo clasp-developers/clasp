@@ -296,8 +296,14 @@ Compare the symbol against previous definitions of symbols - if there is a misma
              gc-managed-types)))
 
 (defstruct (tag-interpreter-state (:conc-name "STATE-"))
-  (cur-lambda nil) (cur-priority nil) (cur-name nil) (cur-docstring nil)
-  (cur-declare nil) (cur-package-nickname-tags nil) (cur-package-use-tags nil)
+  (cur-lambda nil)
+  (cur-priority nil)
+  (cur-name nil)
+  (cur-docstring nil)
+  (cur-declare nil)
+  (cur-package-nickname-tags nil)
+  (cur-package-use-tags nil)
+  (forwards nil)
   (cur-package-shadow-tags nil) (cur-namespace-tag nil) (cur-class nil)
   (cur-meta-class nil) (cur-begin-enum nil) (cur-values nil) (cur-kind nil)
   (enums nil) (initializers nil) (exposes nil)
@@ -338,6 +344,8 @@ Compare the symbol against previous definitions of symbols - if there is a misma
         (state-cur-package-shadow-tags state) nil
         (state-cur-package-nickname-tags state) nil))
 
+(defmethod interpret-tag ((tag tags:forwards-tag) state)
+  (push tag (state-forwards state)))
 (defmethod interpret-tag ((tag tags:namespace-tag) state)
   (setf (state-cur-namespace-tag state) tag))
 (defmethod interpret-tag ((tag tags:cl-name-tag) state)
@@ -965,4 +973,5 @@ This interprets the tags and generates objects that are used to generate code."
             (state-pregcstartups state)
             (state-initializers state)
             (state-exposes state)
-            (state-terminators state))))
+            (state-terminators state)
+            (state-forwards state))))

@@ -450,20 +450,6 @@ Convert colons to underscores"
         (values high-stamp high-class))
       (values (stamp% c) c)))
 
-(defun split-class-key (key)
-  (let ((pos (search "::" key)))
-    (values (subseq key 0 pos) (subseq key (+ 2 pos)))))
-
-(defun extract-forwards (classes)
-  (let ((namespaces (make-hash-table :test #'equal)))
-    (maphash (lambda (key class)
-               (declare (ignore class))
-               (multiple-value-bind (namespace class-name)
-                   (split-class-key key)
-                 (push class-name (gethash namespace namespaces nil))))
-             classes)
-    namespaces))
-
 (defun generate-mps-poison (sout)
   "Sections that are only applicable to Boehm builds include this to prevent them from compiling in MPS builds"
   (declare (ignorable sout))
@@ -526,15 +512,90 @@ Convert colons to underscores"
   "This could change the value of stamps for specific classes - but that would break quick typechecks like (typeq x Number)"
   (adjust-stamp (stamp% class) (class-wtag class)))
 
-(defun generate-declare-forwards (stream exposed-classes)
+(defun separate-namespace-name (name)
+  "Separate a X::Y::Z name into (list X Y Z) - strip any preceeding 'class '"
+  (let* ((class-noise "class ")
+         (full-name (if (and (> (length name) (length class-noise)) (string= (subseq name 0 (length class-noise)) class-noise))
+                        (subseq name (length class-noise) (length name))
+                        name))
+         (colon-pos (search "::" full-name)))
+    (if colon-pos
+        (let ((namespace (subseq full-name 0 colon-pos))
+              (name (subseq full-name (+ colon-pos 2) (length full-name))))
+          (list* namespace (separate-namespace-name name)))
+        (list name))))
+
+(defstruct namespace
+  (submap (make-hash-table :test #'equal)) ;; map namespaces to names
+  names)
+
+(defun namespace-add-name (ns name)
+#|  (when (and (eql (length name) 1) (string= "ddddDiagnostics" (car name)))
+    (break "Check name - about to add to namespace"))
+|#
+  (if (eql (length name) 1)
+      (push (car name) (namespace-names ns))
+      (let ((subnamespace (gethash (car name) (namespace-submap ns) (make-namespace))))
+        (setf (gethash (car name) (namespace-submap ns)) subnamespace)
+        (namespace-add-name subnamespace (cdr name)))))
+
+(defun code-for-nested-class-names (stream ns ns-name &optional (indent 0))
+  (dolist (name (namespace-names ns))
+    (format stream "~vt// NESTED    class ~a::~a; // YOU ARE GOING TO HAVE TO INCLUDE THE DEFINITION OF THIS CLASS!!!~%" (+ indent 4) ns-name name))
+  (maphash (lambda (ns-name subnamespace)
+             (progn
+               (format stream "~vt// nested classes within ~a START~%" indent ns-name)
+               (code-for-nested-class-names stream  subnamespace ns-name)
+               (format stream "~vt// nested classes END~%" indent)))
+           (namespace-submap ns)))
+
+(defun merge-forward-names-by-namespace (forwards)
+  (let ((top-namespace (make-namespace)))
+    (maphash (lambda (name value)
+               (declare (ignorable value))
+               (let ((split-name (separate-namespace-name name)))
+                 (namespace-add-name top-namespace split-name)))
+             forwards)
+    top-namespace))
+
+(defun code-for-namespace-names (stream ns &optional (indent 0))
+  (let ((classes (make-hash-table :test #'equal)))
+    (dolist (name (namespace-names ns))
+      (setf (gethash name classes) t)
+      (format stream "~vtclass ~a;~%" indent name))
+    (maphash (lambda (ns-name subnamespace)
+               (if (gethash ns-name classes)
+                   (progn
+                     (format stream "~vt// nested classes within ~a START~%" indent ns-name)
+                     (code-for-nested-class-names stream subnamespace ns-name)
+                     (format stream "~vt// nested classes END~%" indent))
+                   (progn
+                     (format stream "~vtnamespace ~a {~%" indent ns-name)
+                     (code-for-namespace-names stream subnamespace (+ 4 indent))
+                     (format stream "~vt};~%" indent))))
+             (namespace-submap ns))))
+
+(defun generate-declare-forwards (stream exposed-classes forwards)
   (format stream "#ifdef DECLARE_FORWARDS~%")
-  (generate-mps-poison stream)
-  (let ((forwards (extract-forwards exposed-classes)))
-    (maphash (lambda (namespace classes)
-               (format stream "namespace ~a {~%~{  class ~a;~%~}~%};~%"
-                       namespace classes))
-             forwards))
-  (format stream "#endif // DECLARE_FORWARDS~%"))
+  (let ((fw-ht (make-hash-table :test 'equal)))
+    (loop for fwds in forwards
+          do (loop for name in (tags:forwards% fwds)
+                   do (setf (gethash name fw-ht) t)))
+    (maphash (lambda (key class)
+               (declare (ignore class))
+               (setf (gethash key fw-ht) t))
+             exposed-classes)
+    ;;
+    ;; Now fw-ht has all of the namespace qualified class names as keys
+    ;;
+    (generate-mps-poison stream)
+    (code-for-namespace-names stream (merge-forward-names-by-namespace fw-ht))
+    #+(or)(let ((forwards (extract-forwards fw-ht)))
+      (maphash (lambda (namespace classes)
+                 (format stream "namespace ~a {~%~{  class ~a;~%~}~%};~%"
+                         namespace classes))
+               forwards))
+    (format stream "#endif // DECLARE_FORWARDS~%")))
 
 (defun generate-declare-inheritance (stream sorted-classes inheritance)
   (format stream "#ifdef DECLARE_INHERITANCE~%")
@@ -767,7 +828,7 @@ void ~a::expose_to_clasp() {
         (sort-classes-by-inheritance exposed-classes)
       (let (cur-package)
         (declare (ignorable cur-package))
-        (generate-declare-forwards sout exposed-classes)
+        (generate-declare-forwards sout exposed-classes nil)
         (generate-declare-inheritance sout sorted-classes inheritance)
         (let ((sorted-classes (let (sc)
                                 (maphash (lambda (key class)
@@ -1297,9 +1358,9 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
       (error "Could not get key: ~s from app-config" key))
     value))
 
-(defun generate-gc-code  (classes gc-managed-types)
+(defun generate-gc-code  (classes gc-managed-types forwards)
   (with-output-to-string (s)
-    (generate-declare-forwards s classes)
+    (generate-declare-forwards s classes forwards)
     (multiple-value-bind (sorted-classes inheritance)
         (sort-classes-by-inheritance classes)
       (declare (ignore inheritance))
@@ -1315,7 +1376,7 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
       (generate-deallocator-table s sorted-classes gc-managed-types)
       (generate-gc-globals s))))
 
-(defun generate-code (packages-to-create functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config &key use-precise)
+(defun generate-code (packages-to-create functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config forwards &key use-precise)
   (let ((init-functions (generate-code-for-init-functions functions))
         (init-classes-and-methods (generate-code-for-init-classes-and-methods classes gc-managed-types))
         (source-info (generate-code-for-source-info functions classes))
@@ -1325,7 +1386,7 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
         (initializers-info (generate-code-for-initializers initializers))
         (exposes-info (generate-code-for-exposes exposes))
         (terminators-info (generate-code-for-terminators terminators))
-        (gc-code-info (when use-precise (generate-gc-code classes gc-managed-types))))
+        (gc-code-info (when use-precise (generate-gc-code classes gc-managed-types forwards))))
     (write-if-changed init-functions build-path (safe-app-config :init_functions_inc_h app-config))
     (write-if-changed init-classes-and-methods build-path (safe-app-config :init_classes_inc_h app-config))
     (write-if-changed source-info build-path (safe-app-config :source_info_inc_h app-config))

@@ -35,6 +35,8 @@
    #:source-pos
    #:unknown-tag
    #:handler-code
+   #:forwards-tag
+   #:forwards%
    #:cl-initializer-tag
    #:cl-expose-tag
    #:cl-terminator-tag
