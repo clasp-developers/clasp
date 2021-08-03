@@ -40,7 +40,7 @@ using namespace core;
 
 namespace asttooling {
 
-void AsttoolingExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
+void AsttoolingExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
   } break;

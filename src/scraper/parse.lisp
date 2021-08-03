@@ -73,6 +73,7 @@ and not a simple-function so return (values name class::name nil)"
 (defun extract-class-method-name-from-signature (sig)
   (multiple-value-bind (return-type class-method-name)
       (type-and-name-from-signature sig)
+    (declare (ignore return-type))
     (let ((colon-colon-pos (search "::" class-method-name)))
       (if colon-colon-pos
           (values (subseq class-method-name 0 colon-colon-pos)
@@ -162,6 +163,7 @@ into two lists (int int string) and (a b c) and return as two values"
                             (dolist (type-arg split-args)
                               (multiple-value-bind (type argname)
                                   (split-type-name type-arg)
+                                (declare (ignore type))
                                 (when (string= argname "t")
                                   (error "An argument list ~a had the name T - Common Lisp won't like that - change it to something else" typed-arguments))
                                 (format sout "~a " argname))))))
@@ -405,8 +407,7 @@ CL call to (core:magic-name ...)"
            (colon (position #\: name :from-end t))
            (namespace (subseq name 0 (- colon 1)))
            (nameonly (subseq name (1+ colon) (length name))))
-    (make-function-ptr :type (first list)
-                       :name (fifth list)
+    (make-function-ptr :type type :name name
                        :namespace namespace
                        :nameonly nameonly))))
 

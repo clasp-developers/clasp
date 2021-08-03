@@ -38,8 +38,8 @@ namespace clbind {
 class ClbindExposer_O : public core::Exposer_O {
 private:
 public:
-  ClbindExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, ClbindPkg){};
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
+  ClbindExposer_O(core::LispPtr lisp) : Exposer_O(lisp, ClbindPkg){};
+  virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
 };
 };
 #endif

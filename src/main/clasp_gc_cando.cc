@@ -235,6 +235,11 @@
     class TwoWayStream_O;
  };
  namespace chem {
+ class AtomicInfo;
+ class FFNonbondCrossTerm;
+ class HybridizationInfo;
+ class RotamerAtom;
+ class RigidBodyNonbondCrossTerm;
     class SketchFunction_O;
     class Root_O;
     class FFVdw_O;

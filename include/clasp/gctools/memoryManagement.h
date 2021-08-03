@@ -9,8 +9,8 @@
  * The following are garbage collector roots
  *
  * DEFINED in gctools/memoryManagement.h
- *   Lisp_O* ::_lisp
- *  This is a tagged pointer to a Lisp_O object
+ *   Lisp* ::_lisp
+ *  This is a tagged pointer to a Lisp object
  *
  * DEFINED in include/clasp/gctools/globals.h
  *    extern core::Symbol_O* gctools::global_core_symbols[NUMBER_OF_CORE_SYMBOLS]
@@ -167,13 +167,12 @@ namespace gctools {
 #if !defined(SCRAPING)
  #if !defined(USE_PRECISE_GC)
   #define GC_ENUM
-        STAMPWTAG_null = 0,
    #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_ENUM
  #else
-  #define GC_STAMP
+  #define GC_ENUM
    #include CLASP_GC_FILENAME
-  #undef GC_STAMP
+  #undef GC_ENUM
  #endif
 #endif
         STAMPWTAG_VA_LIST_S = STAMPWTAG_core__VaList_dummy_O, 

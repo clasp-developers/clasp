@@ -952,13 +952,13 @@ List_sp generateStartupLoads(std::string str) {
   return result.result();
 }
 
-CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg) {
+CoreExposer_O::CoreExposer_O(LispPtr lisp) : Exposer_O(lisp, CorePkg) {
 };
 
 
 
 __attribute((optnone))
-void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
+void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpose what) const {
   switch (what) {
   case candoClasses:
     break;
@@ -990,7 +990,7 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
   }
 }
 
-void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
+void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   {
     this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
     _BLOCK_TRACEF(BF("Exporting symbols in lisp"));
@@ -1096,7 +1096,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym__PLUS_run_all_function_name_PLUS_->defconstant(SimpleBaseString_O::make(RUN_ALL_FUNCTION_NAME));
   _sym__PLUS_clasp_ctor_function_name_PLUS_->defconstant(SimpleBaseString_O::make(CLASP_CTOR_FUNCTION_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
-  _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp_O::MaxFunctionArguments));
+  _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(nil<T_O>());
   _lisp->_Roots._ClassTable = HashTable_O::create_thread_safe(cl::_sym_eq,SimpleBaseString_O::make("CLTBLRD"),SimpleBaseString_O::make("CLTBLWR"));
   _sym_STARcodeWalkerSTAR->defparameter(nil<T_O>());

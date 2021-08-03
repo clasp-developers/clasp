@@ -410,9 +410,9 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
 #ifndef SCRAPING
  #ifdef USE_PRECISE_GC
-  #define GC_DECLARE_FORWARDS
+  #define DECLARE_FORWARDS
   #include CLASP_GC_FILENAME
-  #undef GC_DECLARE_FORWARDS
+  #undef DECLARE_FORWARDS
  #else
   #define DECLARE_FORWARDS
   #include INIT_CLASSES_INC_H

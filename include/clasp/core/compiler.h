@@ -46,7 +46,7 @@ T_mv core__load_binary(T_sp pathDesig, T_sp verbose = nil<T_O>(), T_sp print = n
 T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
 llvmo::ClaspJIT_sp compiler__jit_engine();
 
-void initialize_compiler_primitives(Lisp_sp lisp);
+void initialize_compiler_primitives(LispPtr lisp);
 };
 
 namespace core {

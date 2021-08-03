@@ -338,7 +338,7 @@ CL_DEFMETHOD int Mpi_O::Get_tag() {
   return this->_Tag;
 }
 
-void Mpi_O::initializeGlobals(core::Lisp_sp lisp) {
+void Mpi_O::initializeGlobals(core::LispPtr lisp) {
 #ifdef USE_MPI
   SYMBOL_EXPORT_SC_(MpiPkg, _PLUS_anySource_PLUS_);
   SYMBOL_EXPORT_SC_(MpiPkg, _PLUS_anyTag_PLUS_);
@@ -351,7 +351,7 @@ void Mpi_O::initializeGlobals(core::Lisp_sp lisp) {
 #endif
 }
 #if 0
-void Mpi_O::exposeCando(core::Lisp_sp lisp) {
+void Mpi_O::exposeCando(core::LispPtr lisp) {
   _G();
   LOG(BF("Exposing Mpi_O")); // vp0(("Exposing Mpi_O"));
   core::af_def(MpiPkg, "world", &Mpi_O::mpiCommWorld);
@@ -364,7 +364,7 @@ void Mpi_O::exposeCando(core::Lisp_sp lisp) {
       .def("recv", &Mpi_O::prim_Recv);
 }
 
-void Mpi_O::exposePython(core::Lisp_sp lisp) {
+void Mpi_O::exposePython(core::LispPtr lisp) {
 #ifdef USEBOOSTPYTHON //[
   boost::python::class_<Mpi_O,
                         boost::shared_ptr<Mpi_O>,

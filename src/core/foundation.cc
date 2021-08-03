@@ -864,7 +864,7 @@ T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
   return mc;
 }
 
-// void lisp_defineInitializationArgumentsForClassSymbol(Lisp_sp lisp, const string& argumentString, uint classSymbol)
+// void lisp_defineInitializationArgumentsForClassSymbol(LispPtr lisp, const string& argumentString, uint classSymbol)
 // {
 //     Instance_sp mc = lisp->classFromClassSymbol(classSymbol);
 //     mc->__setLambdaListHandlerString(argumentString);
@@ -1481,7 +1481,7 @@ void tokenize(const string &str,
   }
 }
 
-string searchAndReplaceString(const string &str, const string &search, const string &replace, Lisp_sp lisp) {
+string searchAndReplaceString(const string &str, const string &search, const string &replace, LispPtr lisp) {
   string result;
   string::size_type pos = 0;
   result = str;
@@ -1585,7 +1585,7 @@ const char *trimSourceFilePathName(const char *longName) {
 
 bool _ClassesAreInitialized = false;
 
-void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
+void throwIfClassesNotInitialized(const LispPtr &lisp) {
   if (!_ClassesAreInitialized) {
     lisp->print(BF("Debug information was being written when classes have not yet been initialized"));
     lisp->print(BF("This should never happen."));

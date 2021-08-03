@@ -23,4 +23,6 @@
 (defmethod print-object ((object tags:tag) stream)
   (format stream "{ ~s ~s}~%" (type-of object)
           (loop for name in (get-slots object)
-                collect (cons name (slot-value object name)))))
+                collect (cons name (if (slot-boundp object name)
+                                       (slot-value object name)
+                                       "!!!!UNBOUND!!!!")))))

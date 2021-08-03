@@ -524,7 +524,7 @@ void initialize_llvm() {
   llvm::InitializeAllDisassemblers();
 }
 
-void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
+void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose what) const {
   //
   // Initialize the intrinsic functions in intrinsics.cc
   //
@@ -602,7 +602,9 @@ void initialize_llvm(int argc, char **argv) {
 //
 #ifndef RUNNING_MPSPREP
 #define NAMESPACE_llvmo
-#include "clasp_gc.cc"
+#ifndef SCRAPING
+#include CLASP_GC_FILENAME
+#endif
 #undef NAMESPACE_llvmo
 #endif
 #endif

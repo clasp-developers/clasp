@@ -133,6 +133,7 @@ Sets up a dynamic environment where clang-tooling:*compilation-tool-database* is
 
 
 (defmethod initialize-instance :after ((obj compilation-tool-database) &rest args)
+  (declare (ignore args))
   "* Description
 Initialize the source-namestrings using all filenames in the database if they haven't already been set."
   (declare (ignore args))
@@ -255,6 +256,7 @@ it contains the string source-path-identifier.  So /a/b/c/d.cc will match /b/"
     ctd))
 
 (defun main-pathname (&optional (compilation-tool-database *compilation-tool-database*))
+  (declare (ignore compilation-tool-database))
   "* Arguments
 - compilation-tool-database :: The compilation database.
 * Return Value
@@ -391,10 +393,8 @@ Select a subset (or all) source file names from the compilation database and ret
 (defclass count-match-callback (ast-tooling:match-callback) ()
   (:metaclass core:derivable-cxx-class))
 (core:defvirtual ast-tooling:run ((self count-match-callback) match)
-  (let* ((nodes (ast-tooling:nodes match))
-         (id-to-node-map (ast-tooling:idto-node-map nodes))
-         (node (gethash :whole id-to-node-map)))
-    (advance-match-counter)))
+  (declare (ignore match))
+  (advance-match-counter))
 
 
 
@@ -482,7 +482,7 @@ Return true if the node describes source code that matches source-loc-match-call
          (match-info (make-instance 'match-info
                                     :id-to-node-map id-to-node-map
                                     :ast-context (match-result-context match)
-                                    :source-manager (ast-tooling:source-manager match))))
+                                    :source-manager source-manager)))
     (when (source-loc-equal match-info self node)
       (when (match-code self)
         (funcall (match-code self) match-info))
@@ -529,7 +529,6 @@ This can only be run in the context set up by the code-match-callback::run metho
       source)))
 
 
-
 (defgeneric mtag-name (match-info tag-node)
   (:documentation
    "* Arguments
@@ -546,6 +545,7 @@ Return the name of the node that has been associated with a tag."))
 
 
 (defmethod mtag-name (match-info (node clang-ast:decl))
+  (declare (ignore match-info))
   (if (cast:get-identifier node)
       (cast:get-name node)
       "NO-NAME"))
@@ -559,6 +559,7 @@ Return the name of the node that has been associated with a tag."))
   (mtag-source-decl-stmt-impl match-info node))
 
 (defmethod mtag-source-impl (match-info (node clang-ast:qual-type))
+  (declare (ignore match-info))
   (get-as-string node))
 
 (defmethod mtag-source-impl (match-info (node clang-ast:type-loc))
@@ -944,7 +945,7 @@ and match them to the match-comments regex.  If they match, run the code."
                               :callback callback
                               :counter-limit limit))
 
-(defun batch-match-run (match-sexp &key compilation-tool-database limit the-code-match-callback run-and-save)
+(defun batch-match-run (match-sexp &key compilation-tool-database the-code-match-callback run-and-save)
   "* Arguments
 - match-sexp :: A matcher in s-expression form.
 - compilation-tool-database :: The compilation-tool-database.
@@ -1095,7 +1096,7 @@ Code for representing ASTMatchers as s-expressions
                    "ANYTHING"
                    (super-class-matchers prev-environment))
                prev-environment node sexp))
-    (node-matcher-ambiguous-error (err)
+    (node-matcher-ambiguous-error ()
       (error "Hint node environment is ambiguous prev-environment is ~a; node is ~a; sexp is ~a~%"
              prev-environment (car sexp)  sexp))))
 

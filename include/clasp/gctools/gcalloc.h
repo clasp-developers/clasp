@@ -172,19 +172,18 @@ namespace gctools {
 template <class T>
 struct RootClassAllocator {
   template <class... ARGS>
-  static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
+  static T* allocate( ARGS &&... args) {
     return allocate_kind(Header_s::StampWtagMtag::make_Value<T>(),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
   };
 
   template <class... ARGS>
-  static gctools::tagged_pointer<T> allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+  static T* allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
     Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
     T *obj = HeaderPtrToGeneralPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
     handle_all_queued_interrupts();
-    gctools::tagged_pointer<T> tagged_obj(obj);
-    return tagged_obj;
+    return obj;
 #elif defined(USE_MMTK)
     Header_s* base = do_mmtk_uncollectable_allocation(the_header,size);
     T *obj = HeaderPtrToGeneralPtr<T>(base);
@@ -199,14 +198,13 @@ struct RootClassAllocator {
                                                   size,
                                                   my_thread_allocation_points._non_moving_allocation_point,
                                                   std::forward<ARGS>(args)...);
-    return tagged_obj;
+    return tagged_obj.raw_();
 #endif
   }
 
   template <class... ARGS>
-  static T *untagged_allocate(ARGS &&... args) {
-    gctools::tagged_pointer<T> tagged_obj = allocate(args...);
-    return &*tagged_obj;
+  static T* untagged_allocate(ARGS &&... args) {
+    return allocate(args...);
   }
 
   static void deallocate(gctools::tagged_pointer<T> memory) {

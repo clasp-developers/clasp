@@ -42,8 +42,8 @@ FORWARD(ClaspJIT);
 class LlvmoExposer_O : public core::Exposer_O {
 private:
 public:
- LlvmoExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp,LlvmoPkg) {};
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
+ LlvmoExposer_O(core::LispPtr lisp) : Exposer_O(lisp,LlvmoPkg) {};
+  virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
 };
 
 FORWARD(ExecutionEngine);

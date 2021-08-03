@@ -543,7 +543,7 @@ void DebugStream::setSuppressMessages(bool s) {
   this->_SuppressMessages = s;
 }
 
-char *internalPrintf(const Lisp_sp &lisp, const char *fmt, va_list arg_ptr) {
+char *internalPrintf(const LispPtr &lisp, const char *fmt, va_list arg_ptr) {
   char *outBuffer;
   int n;
   n = vasprintf(&outBuffer, fmt, arg_ptr);

@@ -236,25 +236,27 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
               || data_type == TAGGED_POINTER_OFFSET
               || data_type == POINTER_OFFSET )) {
           GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
-        // Handle Lisp_O object specially
+        // Handle Lisp object specially
         // There is a corresponding change to obj_scan.cc
+#ifdef USE_PRECISE_GC
           int bit_index;
           uintptr_t field_bitmap;
-          if (cur_stamp != STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__Lisp_O)) {
+          if (cur_stamp != STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__Lisp)) {
             bit_index = bitmap_field_index(63,field_offset);
             field_bitmap = bitmap_field_bitmap(bit_index);
             local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
           } else {
-          // Do the same for STAMPWTAG_core__Lisp_O - but if it doesn't fit in a 64bit word then we will skip this.
+          // Do the same for STAMPWTAG_core__Lisp - but if it doesn't fit in a 64bit word then we will skip this.
             bit_index = bitmap_field_index(63,field_offset);
             field_bitmap = bitmap_field_bitmap(bit_index);
             local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
           }
           if ( local_stamp_layout[cur_stamp].field_layout_start == NULL )
             local_stamp_layout[cur_stamp].field_layout_start = cur_field_layout;
-#ifdef DUMP_GC_BOOT
+ #ifdef DUMP_GC_BOOT
           printf("%s:%d   fixed_field %s : cur_stamp = %d  field_offset = %lu bit_index =%d bitmap = 0x%lX\n", __FILE__, __LINE__, field_name, cur_stamp, field_offset, bit_index, field_bitmap);
           printf("       class_field_pointer_bitmap = 0x%lX\n", local_stamp_layout[cur_stamp].class_field_pointer_bitmap);
+ #endif
 #endif
           cur_field_layout->field_offset = field_offset;
           GCTOOLS_ASSERT(cur_field_info<max_field_info);
@@ -450,7 +452,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
 //  global_container_proc_index = GC_new_proc_inner((GC_mark_proc)class_container_mark);
     global_lisp_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1 );
     global_cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
-    global_class_kind = GC_new_kind(GC_new_free_list(),GC_DS_LENGTH, 1, 1 ); //  GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
+    global_class_kind = GC_new_kind(GC_new_free_list(),GC_DS_LENGTH, 1, 1 ); //  GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
     global_container_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1); // */  GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(global_container_proc_index,0),0,1); // GC_DS_LENGTH, 1, 1);
     global_code_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
     global_atomic_kind = GC_I_PTRFREE; // GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1);
@@ -461,7 +463,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         printf("%s:%d --------------------------------------\n", __FILE__, __LINE__ );
         printf("%s:%d calculate boehm header cur_stamp = %d  layout_op %d  %s  \n", __FILE__, __LINE__, cur_stamp, local_stamp_layout[cur_stamp].layout_op, local_stamp_info[cur_stamp].name);
 #endif
-        if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_core__Lisp_O) ) {
+        if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_core__Lisp) ) {
           local_stamp_layout[cur_stamp].boehm._kind = global_lisp_kind;
           local_stamp_layout[cur_stamp].boehm._kind_defined = true;
         } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_llvmo__Code_O) ) {

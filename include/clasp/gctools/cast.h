@@ -71,9 +71,9 @@ namespace cast {
 #if !defined(SCRAPING)
  #if defined(USE_PRECISE_GC)
 //----------------------------------------------------------------------
-  #define GC_DECLARE_FORWARDS
+  #define DECLARE_FORWARDS
    #include CLASP_GC_FILENAME
-  #undef GC_DECLARE_FORWARDS
+  #undef DECLARE_FORWARDS
 namespace cast {
   #define GC_DYNAMIC_CAST
    #include CLASP_GC_FILENAME

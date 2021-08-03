@@ -288,11 +288,18 @@ def build_extension(bld):
 def grovel(bld):
     bld.recurse("extensions")
 
-def generate_output_filename(names):
-    if (names==[]):
-        return "source-dir:src;main;clasp_gc.cc"
-    else:
-        return "source-dir:src;main;clasp_gc_cando.cc"
+def initialize_extension_sif_nodes(cfg):
+    print("initialize_extension_sif_nodes cfg.path: %s" % cfg.path )
+    nodes = cfg.path.ant_glob("src/clasp_gc.sif")
+    if (len(nodes)==0):
+        raise Exception("Could not find %s/src/clasp_gc.sif" % cfg.path)
+    print("     found nodes: %s" % nodes )
+    return nodes
+
+def generate_output_filename(nodes):
+    if (len(nodes)<1):
+        raise Exception( "There must be at least one sif file" )
+    return nodes[-1].abspath()
 
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
@@ -344,12 +351,14 @@ def update_dependencies(cfg):
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
-    cfg.extensions_clasp_gc_names = []
+    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
     log.debug("analyze_clasp about to recurse\n")
     cfg.recurse('extensions')
-    print("In analyze_clasp cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
-    log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
-    output_file = generate_output_filename(cfg.extensions_clasp_gc_names)
+    print("In analyze_clasp cfg.extension_sif_nodes = %s" % cfg.extension_sif_nodes)
+    log.debug("cfg.extension_sif_nodes = %s\n", cfg.extension_sif_nodes)
+    if (len(cfg.extension_sif_nodes)>2):
+        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
+    output_file = generate_output_filename(cfg.extension_sif_nodes)
     run_program_echo("build/boehm/iclasp-boehm",
                      "-N", "-D",
                      "--feature", "ignore-extensions",
@@ -359,10 +368,12 @@ def analyze_clasp(cfg):
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 def analyze_test(cfg):
-    cfg.extensions_clasp_gc_names = []
+    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
     log.debug("analyze_test about to recurse\n")
-    print("In analyze_test cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
-    log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
+    print("In analyze_test cfg.extension_sif_nodes = %s" % cfg.extension_sif_nodes)
+    log.debug("cfg.extension_sif_nodes = %s\n", cfg.extension_sif_nodes)
+    if (len(cfg.extension_sif_nodes)>2):
+        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
     output_file = "source-dir:build;clasp_gc_test.cc"
     selection_pattern = "unixfsys.cc"
     run_program_echo("build/boehm/iclasp-boehm",
@@ -576,6 +587,7 @@ class variant(object):
         else:
             self.configure_for_release(cfg)
         configure_common(cfg, self)
+        print("Writing the config.h header")
         cfg.write_config_header("%s/config.h"%self.variant_dir(),remove=True)
 
 class boehm_base(variant):
@@ -599,6 +611,7 @@ class boehm(boehm_base):
     gc_name = 'boehm'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv(self.variant_dir(), env=env_copy.derive())
+        cfg.env["PRECISE"] = 0
         super(boehm,self).configure_variant(cfg,env_copy)
 
 class boehm_d(boehm_base):
@@ -606,6 +619,7 @@ class boehm_d(boehm_base):
     build_with_debug_info = True
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehm_d", env=env_copy.derive())
+        cfg.env["PRECISE"] = 0
         super(boehm_d,self).configure_variant(cfg,env_copy)
 
 class boehmprecise(boehm_base):
@@ -613,6 +627,7 @@ class boehmprecise(boehm_base):
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehmprecise", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
+        cfg.env["PRECISE"] = 1
         super(boehmprecise,self).configure_variant(cfg,env_copy)
 
 class boehmprecise_d(boehm_base):
@@ -621,6 +636,7 @@ class boehmprecise_d(boehm_base):
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehmprecise_d", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
+        cfg.env["PRECISE"] = 1
         super(boehmprecise_d,self).configure_variant(cfg,env_copy)
 
 class mmtk_base(variant):
@@ -644,6 +660,7 @@ class mmtk(mmtk_base):
     gc_name = 'mmtk'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv(self.variant_dir(), env=env_copy.derive())
+        cfg.env["PRECISE"] = 0
         super(mmtk,self).configure_variant(cfg,env_copy)
 
 class mmtk_d(mmtk_base):
@@ -651,6 +668,7 @@ class mmtk_d(mmtk_base):
     build_with_debug_info = True
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mmtk_d", env=env_copy.derive())
+        cfg.env["PRECISE"] = 0
         super(mmtk_d,self).configure_variant(cfg,env_copy)
 
 class mmtkprecise(mmtk_base):
@@ -658,6 +676,7 @@ class mmtkprecise(mmtk_base):
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mmtkprecise", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
+        cfg.env["PRECISE"] = 1
         super(mmtkprecise,self).configure_variant(cfg,env_copy)
 
 class mmtkprecise_d(mmtk_base):
@@ -666,6 +685,7 @@ class mmtkprecise_d(mmtk_base):
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mmtkprecise_d", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
+        cfg.env["PRECISE"] = 1
         super(mmtkprecise_d,self).configure_variant(cfg,env_copy)
         
         
@@ -684,6 +704,7 @@ class mpsprep(mps_base):
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep", env=env_copy.derive())
         cfg.define("RUNNING_MPSPREP",1)
+        cfg.env["PRECISE"] = 0
         super(mpsprep,self).configure_variant(cfg,env_copy)
 
 class mpsprep_d(mps_base):
@@ -692,6 +713,7 @@ class mpsprep_d(mps_base):
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep_d", env=env_copy.derive())
         cfg.define("RUNNING_MPSPREP",1)
+        cfg.env["PRECISE"] = 0
         super(mpsprep_d,self).configure_variant(cfg,env_copy)
 
 class mps(mps_base):
@@ -699,6 +721,7 @@ class mps(mps_base):
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
+        cfg.env["PRECISE"] = 1
         super(mps,self).configure_variant(cfg,env_copy)
 
 class mps_d(mps_base):
@@ -708,6 +731,7 @@ class mps_d(mps_base):
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_d", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
+        cfg.env["PRECISE"] = 1
         super(mps_d,self).configure_variant(cfg,env_copy)
 
 class iboehm(boehm):
@@ -1303,19 +1327,18 @@ def configure(cfg):
     cfg.extensions_stlib = []
     cfg.extensions_lib = []
     cfg.extensions_names = []
-    cfg.extensions_clasp_gc_names = []
     cfg.extension_startup_loads = []
+    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
+    print("before extension_sif_nodes = %s" % cfg.extension_sif_nodes )
     cfg.recurse('extensions')
     log.debug("cfg.extensions_names before sort = %s", cfg.extensions_names)
     cfg.extensions_names = sorted(cfg.extensions_names)
     log.debug("cfg.extensions_names after sort = %s", cfg.extensions_names)
-    clasp_gc_filename = "clasp_gc.cc"
-    if (len(cfg.extensions_names) > 0):
-        clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.extensions_names))
-    log.debug("clasp_gc_filename = %s", clasp_gc_filename)
-    cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
     log.debug("cfg.extension_startup_loads = %s", cfg.extension_startup_loads)
     cfg.define("CLASP_EXTENSION_STARTUP_LOADS",cfg.extension_startup_loads)
+    sif_files = [x.abspath() for x in cfg.extension_sif_nodes ]
+    cfg.env["CLASP_SIF_FILES"] = sif_files
+    print("Created CLASP_SIF_FILES = %s" % cfg.env["CLASP_SIF_FILES"] )
     llvm_liblto_dir = run_llvm_config(cfg, "--libdir")
     llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
@@ -1584,6 +1607,7 @@ def configure(cfg):
                 variant_instance = eval("i" + variant_name + "()")
                 log.pprint("Blue","Setting up variant: %s" % variant_instance.variant_dir())
                 log.pprint("BLUE","variant_name = %s    variant_instance = %s" % (variant_name, variant_instance) )
+                
                 variant_instance.configure_variant(cfg, env_copy)
 ###### Final stuff
     if os.getenv("CLASP_SRC_DONTTOUCH") == None:
@@ -2282,12 +2306,19 @@ class generate_headers_from_all_sifs(scraper_task):
     def run(self):
         env = self.env
         bld = self.generator.bld
-        cmd = self.scraper_command_line(["--eval", "(cscrape:generate-headers-from-all-sifs)"],
+        if (env["PRECISE"] == 1):
+            generate = "(cscrape:generate-headers-from-all-sifs t)"
+        else:
+            generate = "(cscrape:generate-headers-from-all-sifs)"
+        cmd = self.scraper_command_line(["--eval", generate ],
                                         [os.path.join(bld.path.abspath(), out, bld.variant_obj.variant_dir() + "/"),
                                          env.BUILD_ROOT + "/"])
+        if (env["PRECISE"] == 1):
+            for f in self.env["CLASP_SIF_FILES"]:
+                cmd.append(f)
         for f in self.inputs:
             cmd.append(f.abspath())
-        print("generate_headers cmd: %s" % cmd )
+        print("CLASP_SIF_FILES: %s" % self.env["CLASP_SIF_FILES"])
         return self.exec_command(cmd)
 
     def display(self):
@@ -2393,15 +2424,20 @@ def postprocess_all_c_tasks(self):
         all_sif_nodes += sif_nodes
         self.create_task('generate_sif_files', cxx_nodes, sif_nodes)
 
-    scraper_output_nodes = [self.path.find_or_declare('generated/' + i) for i in
-                            ['c-wrappers.h',
-                             'cl-wrappers.lisp',
-                             'enum_inc.h',
-                             'initClassesAndMethods_inc.h',
-                             'initFunctions_inc.h',
-                             'initializers_inc.h',
-                             'sourceInfo_inc.h',
-                             'symbols_scraped_inc.h']]
+    scraper_generated_files = ['c-wrappers.h',
+                               'cl-wrappers.lisp',
+                               'enum_inc.h',
+                               'initClassesAndMethods_inc.h',
+                               'initFunctions_inc.h',
+                               'initializers_inc.h',
+                               'sourceInfo_inc.h',
+                               'symbols_scraped_inc.h' ]
+    if (self.env["PRECISE"] == 1):
+        print("Appending clasp_gc.cc because this is PRECISE")
+        scraper_generated_files.append("clasp_gc.cc")
+    
+        
+    scraper_output_nodes = [self.path.find_or_declare('generated/' + i) for i in scraper_generated_files ]
 
     self.create_task('generate_headers_from_all_sifs', all_sif_nodes, scraper_output_nodes)
     # TODO FIXME this includes cl-wrappers.lisp

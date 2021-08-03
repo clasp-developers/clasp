@@ -295,8 +295,8 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
   }
 #elif defined(_TARGET_OS_LINUX)
     /* Some examples of what backtrace_symbols(...) returns on Linux...
-"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d(_ZN4core6Lisp_O24readEvalPrintInteractiveEv+0x5b) [0x4989f2b]"
-"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d(_ZN4core6Lisp_O3runEv+0xb85) [0x498e5c5]"
+"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d(_ZN4core6Lisp24readEvalPrintInteractiveEv+0x5b) [0x4989f2b]"
+"/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d(_ZN4core6Lisp3runEv+0xb85) [0x498e5c5]"
 "/home/meister/Development/cando-main/build/boehm_d/iclasp-boehm-d() [0x47235db]"
 */
   size_t nameStart = str.find('(');

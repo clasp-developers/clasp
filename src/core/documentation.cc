@@ -148,7 +148,7 @@ CL_DEFUN T_sp core__set_documentation(T_sp object, T_sp doc_type, T_sp string) {
   return string;
 }
 
-void initialize_documentation_primitives(Lisp_sp lisp) {
+void initialize_documentation_primitives(LispPtr lisp) {
   SYMBOL_SC_(CorePkg, record_cons);
   SYMBOL_SC_(CorePkg, record_field);
   SYMBOL_SC_(CorePkg, set_record_field);

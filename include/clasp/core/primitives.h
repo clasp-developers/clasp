@@ -86,7 +86,7 @@ namespace core {
 /*! Expose the primitives to cando */
 void initialize_primitives();
 /*! Expose the primitives to python */
-void initializePythonPrimitives(Lisp_sp lisp);
+void initializePythonPrimitives(LispPtr lisp);
 };
 
 namespace core {

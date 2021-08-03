@@ -84,7 +84,7 @@ struct gctools::GCInfo<clbind::ClassRep_O> {
 };
 namespace clbind {
 
-CLBIND_API std::string stack_content_by_name(core::Lisp_sp L, int start_index);
+CLBIND_API std::string stack_content_by_name(core::LispPtr L, int start_index);
 
 struct class_registration;
 
@@ -159,7 +159,7 @@ public:
   bool m_derivable;
 };
 
-bool is_class_rep(core::Lisp_sp L, int index);
+bool is_class_rep(core::LispPtr L, int index);
 }
 
 //#include <clasp/clbind/detail/overload_rep_impl.hpp>
