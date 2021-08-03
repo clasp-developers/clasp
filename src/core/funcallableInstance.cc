@@ -362,36 +362,22 @@ LCC_RETURN FuncallableInstance_O::single_dispatch_funcallable_entry_point(LCC_AR
 
 T_sp FuncallableInstance_O::lambdaListHandler() const
 {
-#if 0
-  FUNCTION_DESCRIPTION_ERROR();
-  SIMPLE_ERROR(BF("What do we do with entry"));
-#else
   if (this->entry() == single_dispatch_funcallable_entry_point) {
     return this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER);
   }
-#endif
   SIMPLE_ERROR(BF("Implement lambdaListHandler"));
 }
 
 T_sp FuncallableInstance_O::callHistory() const
 {
-#if 1
-  FUNCTION_DESCRIPTION_ERROR();
-  SIMPLE_ERROR(BF("What do we do with entry"));
-#else
-  if (this->entry == FuncallableInstance_O::single_dispatch_funcallable_entry_point) {
+  if (this->entry() == single_dispatch_funcallable_entry_point) {
     return this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY);
   }
-#endif
   SIMPLE_ERROR(BF("Implement me callHistory"));
 }
 
 void FuncallableInstance_O::addSingleDispatchMethod(SingleDispatchMethod_sp method)
 {
-#if 0
-  FUNCTION_DESCRIPTION_ERROR();
-  SIMPLE_ERROR(BF("What do we do with entry"));
-#else
   if (this->entry() == single_dispatch_funcallable_entry_point) {
 //    printf("%s:%d Adding method to single dispatch method for function %s receiver-class %s\n", __FILE__, __LINE__, _rep_(method->singleDispatchMethodName()).c_str(), _rep_(receiverClass).c_str());
 //    printf("%s:%d      receiver_class->%s\n", __FILE__, __LINE__, _rep_(receiverClass).c_str());
@@ -404,7 +390,6 @@ void FuncallableInstance_O::addSingleDispatchMethod(SingleDispatchMethod_sp meth
     } while (!this->_Rack->low_level_rack_compare_exchange_weak(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,expected,entry));
     return;
   }
-#endif
   SIMPLE_ERROR(BF("Implement me addSingleDispatchMethod"));
 }
 
