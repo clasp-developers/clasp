@@ -728,7 +728,7 @@ typedef core::T_O **ArgArray;
 namespace core {
 
 class Lisp;
-typedef Lisp* LispPtr;
+typedef gctools::tagged_pointer<Lisp> LispPtr;
 
 typedef T_mv (*SpecialFormCallback)(List_sp, T_sp);
 typedef void (*MakePackageCallback)(string const &packageName, LispPtr);
@@ -846,9 +846,6 @@ namespace core {
 //  Lisp class access functions for when we only have a forward
 //  definition for the Lisp class and for any other object
 //
-
-class Lisp;
-typedef Lisp* LispPtr;
 
 //extern "C" string _safe_rep_(core::T_sp obj);
   string _rep_(T_sp obj);

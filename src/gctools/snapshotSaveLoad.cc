@@ -2353,6 +2353,10 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       {
         lisp_source_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(theLoadedLisp);
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(theLoadedLisp);
+        if (((uintptr_t)clientStart&0x7) != 0) {
+          printf("%s:%d:%s The Lisp pointer %p must be word aligned\n", __FILE__, __LINE__, __FUNCTION__, clientStart );
+          abort();
+        }
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Lisp);
         snapshot_save_load_init_s init(lisp_source_header,clientStart,clientEnd);
         core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
@@ -2362,7 +2366,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                         % (void*)fwd);
         set_forwarding_pointer( lisp_source_header, (char*)fwd, &islInfo );
         root_holder.add((void*)obj.raw_());
-        ::_lisp = (core::Lisp*)obj.theObject;
+        ::_lisp.thePointer = (core::Lisp*)obj.theObject;
       // Now the global _lisp is defined - don't change it below when we look at roots
       }
 //    printf("%s:%d:%s the ::_lisp object is at %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)_lisp.rawRef_());

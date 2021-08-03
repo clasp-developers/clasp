@@ -29,7 +29,7 @@ THE SOFTWARE.
 #define globals_H
 
 extern "C" {
-DLL_PUBLIC extern core::LispPtr _lisp;
+extern core::LispPtr _lisp;
 };
 
 #endif

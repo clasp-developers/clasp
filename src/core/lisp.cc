@@ -328,7 +328,7 @@ LispPtr Lisp::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
   Lisp::setupSpecialSymbols();
   // Now NIL is defined so we can finish initializing the main thread ThreadLocalState
   my_thread->finish_initialization_main_thread(nil<core::T_O>());
-  ::_lisp = gctools::RootClassAllocator<Lisp>::allocate();
+  ::_lisp.thePointer = gctools::RootClassAllocator<Lisp>::allocate().thePointer;
   _lisp->initialize();
   _lisp->setupMpi(mpiEnabled, mpiRank, mpiSize);
   LOG(BF("The lisp environment DebugStream has been created"));
@@ -475,7 +475,7 @@ void Lisp::startupLispEnvironment() {
   //
   // Define the _lisp global
   //
-  ::_lisp = reinterpret_cast<LispPtr>(this); // this->sharedThis<Lisp>();
+  ::_lisp = gctools::tagged_pointer<Lisp>(this); // this->sharedThis<Lisp_O>();
   //	initializeProfiler(this->profiler(),_lisp);
   this->_CoreBuiltInClassesInitialized = false;
   this->_PackagesInitialized = false;
@@ -2467,12 +2467,12 @@ void Lisp::initializeGlobals(LispPtr lisp) {
 
 
 LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
-  this->_Lisp = Lisp::createLispEnvironment(mpiEnabled, mpiRank, mpiSize);
+  this->lisp_ = Lisp::createLispEnvironment(mpiEnabled, mpiRank, mpiSize);
 }
 
 void LispHolder::startup(CommandLineOptions* global_options,
                          int argc, char *argv[], const string &appPathEnvironmentVariable) {
-  ::_lisp = this->_Lisp;
+  ::_lisp = this->lisp_;
 
   const char *argv0 = "./";
   if (argc > 0)
@@ -2485,7 +2485,7 @@ void LispHolder::startup(CommandLineOptions* global_options,
   Bundle *bundle = new Bundle(argv0,global_options->_ResourceDir);
   globals_->_Bundle = bundle;
   // Start up lisp
-  this->_Lisp->startupLispEnvironment();
+  this->lisp_->startupLispEnvironment();
 
   // Run the initializers
 #ifndef SCRAPING
@@ -2504,7 +2504,7 @@ LispHolder::~LispHolder() {
 #include TERMINATORS_INC_H
 #undef ALL_TERMINATORS_CALLS
 #endif
-  this->_Lisp->shutdownLispEnvironment();
+  this->lisp_->shutdownLispEnvironment();
 }
 
 Exposer_O::Exposer_O(LispPtr lisp, const string &packageName) {

@@ -599,11 +599,7 @@ CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile,
 }
 
 CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const {
-#if 1
-  FUNCTION_DESCRIPTION_ERROR();
-#else
   return Pointer_O::create((void*)this->entry());
-#endif
 };
 
 string Function_O::__repr__() const {
@@ -625,32 +621,15 @@ string Function_O::__repr__() const {
   ss << ">";
   return ss.str();
 }
-
-CL_DEFMETHOD Pointer_sp Function_O::function_description_address() const {
-#if 1
-  FUNCTION_DESCRIPTION_ERROR();
-#else
-  return Pointer_O::create(this->fdesc());
-#endif
-}
-
-CL_DEFUN void core__set_function_description_address(Function_sp func, Pointer_sp address) {
-  SIMPLE_ERROR(BF("Implement me properly"));
-  // func->set_fdesc((FunctionDescription*)(address->ptr()));
-}
 };
 
 
 namespace core {
 char* global_dump_functions = NULL;
 void Closure_O::describeFunction() const {
-#if 1
-  FUNCTION_DESCRIPTION_ERROR();
-#else
   if (global_dump_functions) {
-    printf("%s:%d  Closure_O %s entry@%p fdesc@%p\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), (void*)this->entry(),(void*)this->fdesc());
+    printf("%s:%d  Closure_O %s entry@%p\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), (void*)this->entry());
   }
-#endif
 }
 
 CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
