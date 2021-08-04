@@ -1,7 +1,6 @@
 (
-{ TAGS:FORWARDS-TAG (
-( TAGS:FORWARDS%
-"llvmo::NamedMDNode_O"
+{ TAGS:FORWARDS-TAG ( ( TAGS:FORWARDS% 
+ "llvmo::NamedMDNode_O"
  "core::MDArray_size_t_O"
  "core::SimpleVector_byte16_t_O"
  "core::SimpleVector_byte2_t_O"
