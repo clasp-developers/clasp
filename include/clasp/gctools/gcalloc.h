@@ -199,7 +199,7 @@ struct RootClassAllocator {
                                                   size,
                                                   my_thread_allocation_points._non_moving_allocation_point,
                                                   std::forward<ARGS>(args)...);
-    return tagged_obj.raw_();
+    return tagged_obj;
 #endif
   }
 
