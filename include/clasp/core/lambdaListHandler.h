@@ -269,7 +269,7 @@ public:
 	  * VALUES(3) = key-flag				; T if &key was supplied
 	  * VALUES(4) = (N key1 target-var1 init1 target-flag1 ... )	; keyword arguments
 	  * VALUES(5) = allow-other-keys			; flag &allow-other-keys
-	  * VALUES(6) = (N target-aux1 init1 ... )		; auxiliary variables
+	  * VALUES(6) = (target-aux1 init1 ... )		; auxiliary variables
 	  *
 	  * 1°) The prefix "N" is an integer value denoting the number of
 	  * variables which are declared within this section of the lambda
