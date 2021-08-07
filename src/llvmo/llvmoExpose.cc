@@ -4143,17 +4143,20 @@ SYMBOL_EXPORT_SC_(LlvmoPkg,library);
 };
 
 #ifdef _TARGET_OS_DARWIN    
-#define TEXT_NAME "__text"
-#define DATA_NAME "__data"
-#define BSS_NAME  "__bss"
-#define STACKMAPS_NAME "__llvm_stackmaps"
+#define TEXT_NAME "__TEXT,__text"
+#define DATA_NAME "__DATA,__data"
+#define EH_FRAME_NAME "__TEXT,__eh_frame"
+#define BSS_NAME  "__DATA,__bss"
+#define STACKMAPS_NAME "__LLVM_STACKMAPS,__llvm_stackmaps"
 #elif defined(_TARGET_OS_LINUX)
 #define TEXT_NAME ".text"
+#define EH_FRAME_NAME ".eh_frame"
 #define DATA_NAME ".data"
 #define BSS_NAME  ".bss"
 #define STACKMAPS_NAME ".llvm_stackmaps"
 #elif defined(_TARGET_OS_FREEBSD)
 #define TEXT_NAME ".text"
+#define EH_FRAME_NAME ".eh_frame"
 #define DATA_NAME ".data"
 #define BSS_NAME  ".bss"
 #define STACKMAPS_NAME ".llvm_stackmaps"
@@ -4163,21 +4166,6 @@ SYMBOL_EXPORT_SC_(LlvmoPkg,library);
 
 namespace llvmo {
 
-#ifdef _TARGET_OS_DARWIN    
-#define TEXT_NAME "__text"
-#define EH_FRAME_NAME "__eh_frame"
-#define STACKMAPS_NAME "__llvm_stackmaps"
-#elif defined(_TARGET_OS_LINUX)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#elif defined(_TARGET_OS_FREEBSD)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#else
-#error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
-#endif
 #if defined(_TARGET_OS_DARWIN)
   std::string gcroots_in_module_name = "_" GCROOTS_IN_MODULE_NAME;
   std::string literals_name = "_" LITERALS_NAME;
@@ -4295,8 +4283,10 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
     bool gotGcroots = false;
     for (auto &S : G.sections()) {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
-      if (S.getName().str() == BSS_NAME || S.getName().str() == DATA_NAME) {
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  section: %s getOrdinal->%u \n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
+      std::string sectionName = S.getName().str();
+    if ( (sectionName.find(BSS_NAME)!=string::npos) ||
+         (sectionName.find(DATA_NAME)!=string::npos) ) {
         llvm::jitlink::SectionRange range(S);
         for ( auto& sym : S.symbols() ) {
           std::string name = sym->getName().str();
@@ -4304,19 +4294,22 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           size_t size = sym->getSize();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
         }
-      } else if (S.getName().str() == DATA_NAME) {
+    }
 #if 0
+    else if (sectionName.find(DATA_NAME)!=string::npos) {
         // If we want to handle the .data section differently than .bss then add more code here
-        llvm::jitlink::SectionRange range(S);
-        for ( auto& sym : S.symbols() ) {
+      llvm::jitlink::SectionRange range(S);
+      for ( auto& sym : S.symbols() ) {
           // If we need to grab symbols from DATA_NAME segment do it here
-        }
-#endif
-      } else if (S.getName().str() == TEXT_NAME) {
+      }
+    }
+#endif    
+    else if (sectionName.find(TEXT_NAME)!=string::npos) {
         llvm::jitlink::SectionRange range(S);
         Code_sp currentCode = my_thread->topObjectFile()->_Code;
         currentCode->_TextSectionStart = (void*)range.getStart();
         currentCode->_TextSectionEnd = (void*)((char*)range.getStart()+range.getSize());
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart/TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
         if (snapshotSaveLoad::global_debugSnapshot) {
           printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
                  __FILE__, __LINE__, __FUNCTION__,
@@ -4325,7 +4318,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                  currentCode->_TextSectionStart,
                  currentCode->_TextSectionEnd );
         }
-
         for ( auto& sym : S.symbols() ) {
           if (sym->isCallable()&&sym->hasName()) {
             std::string name = sym->getName().str();
@@ -4340,12 +4332,12 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 #endif
           }
         }
-      } else if (S.getName().str() == EH_FRAME_NAME) {
+      } else if (sectionName.find(EH_FRAME_NAME)!=string::npos) {
         llvm::jitlink::SectionRange range(S);
         void* start = (void*)range.getStart();
         uintptr_t size = range.getSize();
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
-      } else if (S.getName().str() == STACKMAPS_NAME) {
+      } else if (sectionName.find(STACKMAPS_NAME)!=string::npos) {
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range in thread local storage\n", __FILE__, __LINE__, __FUNCTION__ ));
         llvm::jitlink::SectionRange range(S);
         my_thread->topObjectFile()->_Code->_StackmapStart = (void*)range.getStart();
