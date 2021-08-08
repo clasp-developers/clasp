@@ -102,32 +102,68 @@ If the arguments are not available, returns NIL NIL."
                    (core:debugger-frame-args-available-p xep))))
         (t ; nothin
          (values nil nil))))
-(defun frame-locals (frame)
-    "Return an alist of local lexical variables and their values at the continuation the frame represents. The CARs are variable names and CDRs their values.
-Multiple bindings with the same name may be returned, as there is no notion of lexical scope in this interface."
-  ;; TODO: This is not a real solution, at all.
-  ;; At minimum, we should use the lambda list's parameter names when available
-  (let* ((fname (frame-function-name frame))
-         (args (frame-arguments frame)))
-    ;; KLUDGE (on top of a kludge) to do better with method arguments
-    ;; We have two kinds of method functions - fast and not - but we
-    ;; name them the same. The former we can treat normally, but the
-    ;; latter have a vaslist of the real arguments as their first, and
-    ;; the next method list as the second.
-    (if (and (consp fname)
-             (eq (first fname) 'cl:method)
-             (= (length args) 2)
-             (core:vaslistp (first args)))
+
+(defun lambda-list-alist (lambda-list arguments eval &aux bindings)
+  (flet ((bind-var (var init-form &optional supplied-p test-form value)
+           (cond
+             (test-form ; the value is valid so use it
+               (push (cons var value) bindings))
+             (eval ; no value passed but we have an eval function
+               (push (cons var (funcall eval init-form bindings)) bindings))
+             ((constantp init-form) ; no eval function but init-form is constant
+               (push (cons var (ext:constant-form-value init-form)) bindings)))
+           (when supplied-p ; bind supplied-p if requested
+             (push (cons supplied-p (and test-form t)) bindings))))
+    (multiple-value-bind (required optional rest key-flag keys allow-other-keys aux)
+                         (core:process-lambda-list lambda-list 'function)
+      (declare (ignore key-flag allow-other-keys))
+      (dolist (var (cdr required))
+        (push (cons var (pop arguments)) bindings))
+      (loop for (var init-form supplied-p) on (cdr optional) by #'cdddr
+            do (bind-var var init-form supplied-p arguments (pop arguments)))
+      (when rest
+        (push (cons rest (copy-list arguments)) bindings))
+      (loop for (key var init-form supplied-p) on (cdr keys) by #'cddddr
+            for (indicator value nil) = (multiple-value-list (get-properties arguments (list key)))
+            do (bind-var var init-form supplied-p indicator value))
+      (loop for (var init-form) on aux by #'cddr
+            do (bind-var var init-form))
+      (nreverse bindings))))
+
+(defun frame-locals (frame &key eval
+                           &aux (args (frame-arguments frame))
+                                (fname (frame-function-name frame)))
+  "Return an alist of local lexical/special variables and their values at the continuation the frame
+  represents. The CARs are variable names and CDRs their values. Multiple bindings with the same
+  name may be returned, as there is no notion of lexical scope in this interface. By default
+  init-forms in the frame's lambda list that require evaluation and are not constant will not be
+  returned. Passing a function (lambda (form locals) ...) via the eval key will result in init-forms
+  being evaluated with this function along with the current locals passed as the second argument."
+  (multiple-value-bind (lambda-list lambda-list-available)
+                       (frame-function-lambda-list frame)
+    (cond
+      (lambda-list-available
+        (lambda-list-alist lambda-list args eval))
+      ;; The frame is missing a lambda list so fallback to just naming the arguments sequentially.
+      ((and (consp fname)
+            (eq (first fname) 'cl:method)
+            (= (length args) 2)
+            (core:vaslistp (first args)))
+        ;; This is non-fast method. The real arguments are a vaslist in
+        ;; the first element and the method list is in the second element.
         (let ((method-args (core:list-from-va-list (first args)))
               (next-methods (second args)))
           (append
-           (loop for arg in method-args for i from 0
-                 collect (cons (intern (format nil "ARG~d" i) :cl-user)
-                               arg))
-           (list (cons 'cl-user::next-methods next-methods))))
+            (loop for arg in method-args for i from 0
+                  collect (cons (intern (format nil "ARG~d" i) :cl-user)
+                                arg))
+            (list (cons 'cl-user::next-methods next-methods)))))
+      (t
+        ;; This is a fast method. Just treat it normally.
         (loop for arg in args for i from 0
               collect (cons (intern (format nil "ARG~d" i) :cl-user)
-                            arg)))))
+                            arg))))))
+
 (defun frame-function-lambda-list (frame)
   "Return the lambda list of the function being called in this frame, and a second value indicating success. This function may fail, in which case the first value is undefined and the second is NIL. In success the first value is the lambda list and the second value is true."
   (let ((fd (frame-function-description frame)))
