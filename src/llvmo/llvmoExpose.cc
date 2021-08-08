@@ -23,6 +23,7 @@
 #include "llvm/Support/Debug.h"
 #endif
 
+#include <llvm/ADT/SmallString.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 //#include <llvm/ExecutionEngine/Orc/MachOPlatform.h>
@@ -2408,7 +2409,8 @@ namespace llvmo {
 
 CL_LISPIFY_NAME("toString");
 CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
-  llvm::SmallString<40> istr;
+  llvm::SmallString<256> istr;
+  printf("%s:%d:%s converting %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(this->asSmartPtr()).c_str() );
   this->_value._value.toString(istr,radix, isigned);
   return istr.str().str();
 }
@@ -2416,7 +2418,7 @@ CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
 CL_LAMBDA(api &optional (issigned t))
 CL_LISPIFY_NAME("toInteger");
 CL_DEFUN core::Integer_sp toInteger(APInt_sp api, bool issigned) {
-  llvm::SmallString<40> istr;
+  llvm::SmallString<256> istr;
   api->_value._value.toString( istr, 10, issigned);
   return core::Integer_O::create(istr.str().str());
 }
@@ -2424,7 +2426,7 @@ CL_DEFUN core::Integer_sp toInteger(APInt_sp api, bool issigned) {
 string APInt_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
-  llvm::SmallString<40> istr;
+  llvm::SmallString<256> istr;
   this->_value._value.toString(istr,10,true);
   ss << istr.str().str();
   ss << ">";
