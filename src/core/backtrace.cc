@@ -327,10 +327,7 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
 }
 
 __attribute__((optnone))
-static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp, bool firstFrame) {
-  if (!firstFrame) {
-    ip = (void*)((uintptr_t)ip-1); // For everything but the first frame subtract 1
-  }
+static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp) {
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp()) return make_cxx_frame(ip, string);
   else return make_lisp_frame(ip, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
@@ -405,7 +402,7 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   // only to get a C string from it, but writing it to use stack allocation
   // is a pain in the ass for very little gain.
   std::string sstring = lu_procname(&cursor)->get_std_string();
-  DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp, true );
+  DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
   DebuggerFrame_sp prev = bot;
   while (unw_step(&cursor) > 0) {
     resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
@@ -413,6 +410,9 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
     if (resip || resbp) {
       printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
     }
+    // Subtract 1 from IPs in case they are just beyond the end of the function
+    // as happens with return instructions sometimes.
+    --ip;
     std::string sstring = lu_procname(&cursor)->get_std_string();
     DebuggerFrame_sp frame = make_frame((void*)ip, sstring.c_str(), (void*)fbp, false );
     frame->down = prev;
@@ -459,7 +459,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
       void* fbp = __builtin_frame_address(0); // TODO later
       uintptr_t bplow = (uintptr_t)&fbp;
       uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
-      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp, true);
+      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp);
       DebuggerFrame_sp prev = bot;
       void* newfbp;
       for (size_t j = 1; j < returned; ++j) {
@@ -474,7 +474,10 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
           newfbp = NULL;
         }
         fbp = newfbp;
-        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j], fbp, false);
+        // Subtract one from IPs in case they are just beyond the end of the
+        // function, as happens with return instructions at times.
+        void* ip = (void*)((uintptr_t)buffer[j] - 1);
+        DebuggerFrame_sp frame = make_frame(ip, strings[j], fbp);
         frame->down = prev;
         prev->up = frame;
         prev = frame;
