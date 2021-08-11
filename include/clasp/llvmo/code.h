@@ -198,7 +198,7 @@ public:
 
   ~Code_O();
   uintptr_t codeStart() const { return (uintptr_t)this->_TextSectionStart; };
-
+  void* absoluteAddress(SectionedAddress_sp sa);
   size_t frontSize() const { return sizeof(*this); };
   size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };
   // The location of the literals vector in memory
@@ -206,6 +206,7 @@ public:
   core::T_O** TOLiteralsStart() const { return (core::T_O**)literalsStart(); }
   size_t TOLiteralsSize() const { return literalsSize()/sizeof(core::T_O*); }
   virtual std::string filename() const;
+  core::T_sp codeLineTable() const;
 };
 
 };

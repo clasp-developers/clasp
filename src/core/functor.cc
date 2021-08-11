@@ -48,6 +48,7 @@ THE SOFTWARE.
 // to avoid Generic to_object include headers here
 #include <clasp/core/wrappers.h>
 #include <clasp/llvmo/code.h>
+#include <clasp/llvmo/debugInfoExpose.h>
 
 
 
@@ -86,6 +87,51 @@ CL_DEFMETHOD Pointer_sp EntryPointBase_O::defaultEntryAddress() const {
 Pointer_sp GlobalEntryPoint_O::defaultEntryAddress() const {
   return Pointer_O::create(this->_EntryPoints[0]);
 };
+
+CL_LISPIFY_NAME("global-entry-point-code");
+CL_DEFMETHOD
+llvmo::Code_sp GlobalEntryPoint_O::code() const {
+  llvmo::Code_sp code = gc::As<llvmo::Code_sp>(this->_Code);
+  return code;
+}
+
+CL_DEFMETHOD
+T_mv GlobalEntryPoint_O::sectionedEntryInfo() const {
+  char* address = (char*)this->_EntryPoints[0];
+  llvmo::Code_sp code = gc::As<llvmo::Code_sp>(this->_Code);
+  char* textStart = (char*)code->_TextSectionStart;
+  uintptr_t sectionId = code->_TextSectionId;
+  uintptr_t sectionAddress = (uintptr_t)(address-textStart);
+  llvmo::SectionedAddress_sp sa = llvmo::SectionedAddress_O::create(sectionId, sectionAddress );
+  return Values( sa, code );
+}
+
+CL_DEFMETHOD
+T_sp GlobalEntryPoint_O::lineTable() const {
+  T_mv saCode = this->sectionedEntryInfo();
+  llvmo::SectionedAddress_sp sa = gc::As<llvmo::SectionedAddress_sp>(saCode);
+  llvmo::Code_sp code = gc::As<llvmo::Code_sp>(saCode.second());
+  llvmo::ObjectFile_sp of = code->_ObjectFile;
+  llvmo::DWARFContext_sp dwarfContext = llvmo::DWARFContext_O::createDWARFContext(of);
+  auto addressRanges = getAddressRangesForAddressInner(dwarfContext, sa );
+  if (addressRanges) {
+    for ( auto range : addressRanges.get () ) {
+      printf("%s:%d:%s Got address range %p %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)range.LowPC, (void*)range.HighPC );
+      llvm::object::SectionedAddress sa;
+      sa.Address = range.LowPC;
+      sa.SectionIndex = code->_TextSectionId;
+      uintptr_t size = (uintptr_t)range.HighPC - (uintptr_t)range.LowPC;
+      auto lineTable = (*dwarfContext).wrappedPtr()->getLineInfoForAddressRange(sa, size );
+      printf("%s:%d:%s Number of entries: %lu\n", __FILE__, __LINE__, __FUNCTION__, lineTable.size());
+      for ( auto ii : lineTable ) {
+        printf("%s:%d:%s    first %p  second %u\n", __FILE__, __LINE__, __FUNCTION__, (void*)ii.first, ii.second.Line );
+      }
+    }
+  }
+  return nil<T_O>();
+}
+
+
 Pointer_sp LocalEntryPoint_O::defaultEntryAddress() const {
   return Pointer_O::create(this->_EntryPoint);
 };

@@ -36,6 +36,10 @@
 
 namespace core {
 
+CL_DEFMETHOD T_sp DebuggerFrame_O::returnAddress() const {
+  return this->return_address;
+}
+
 void DebuggerFrame_O::fields(Record_sp node) {
   node->field(INTERN_(kw,function_name),this->fname);
   node->field(INTERN_(kw,return_address),this->return_address);
@@ -85,7 +89,7 @@ static SimpleBaseString_sp lu_procname(unw_cursor_t* cursorp) {
 static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
                       llvmo::SectionedAddress_sp sa) {
     // FIXME: Might be better to just use the llvm::DILineInfo directly.
-  T_mv lineinfo = llvmo::getLineInfoForAddress( dcontext, sa, false );
+  T_mv lineinfo = llvmo::getLineInfoForAddress_( dcontext, sa, false );
   if (lineinfo.notnilp()) {
     SimpleBaseString_sp filename = gc::As<SimpleBaseString_sp>(lineinfo);
     Integer_sp line = gc::As<Integer_sp>(lineinfo.valueGet_(3));
@@ -236,7 +240,7 @@ __attribute__((optnone))
 static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
                                         void* fbp) {
   llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
-  llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDwarfContext(ofi);
+  llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
   T_sp spi = dwarf_spi(dcontext, sa);
   bool XEPp = false;
   T_sp ep = dwarf_ep(ofi, dcontext, sa, XEPp);
@@ -342,7 +346,7 @@ static bool sanity_check_frame(void* ip, void* fbp) {
   else if (gc::IsA<llvmo::ObjectFile_sp>(of)) {
     llvmo::ObjectFile_sp ofi = gc::As_unsafe<llvmo::ObjectFile_sp>(of);
     llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
-    llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDwarfContext(ofi);
+    llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
     bool XEPp = false;
     T_sp ep = dwarf_ep(ofi, dcontext, sa, XEPp);
     uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);

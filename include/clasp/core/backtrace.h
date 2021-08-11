@@ -39,6 +39,7 @@ public:
     auto  ret = gctools::GC<DebuggerFrame_O>::allocate( fname, ra, sp, fd, closure, args, args_available, lang, is_xep);
     return ret;
   }
+  T_sp returnAddress() const;
 public:
   T_sp fname;
   T_sp return_address;

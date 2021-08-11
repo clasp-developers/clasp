@@ -16,6 +16,7 @@
 #include <clasp/core/debugger.h>
 #include <clasp/core/pointer.h>
 #include <clasp/llvmo/code.h>
+#include <clasp/llvmo/debugInfoExpose.h>
 
 
 namespace llvmo { // ObjectFile_O
@@ -31,7 +32,9 @@ LibraryFile_sp LibraryFile_O::createLibrary(const std::string& slibraryName)
 #endif
 
 
-ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& sFasoName, size_t fasoIndex)
+ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& sFasoName, size_t
+
+                                   fasoIndex)
 {
 //  printf("%s:%d:%s Creating ObjectFile faso: %s index: %lu\n", __FILE__, __LINE__, __FUNCTION__, sFasoName.c_str(), fasoIndex);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer ? buffer->getBufferStart() : NULL, buffer ? buffer->getBufferSize() : 0));
@@ -56,11 +59,32 @@ llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> ObjectFile_O::getObjec
   return llvm::object::ObjectFile::createObjectFile(mem);
 }
 
+CL_DEFMETHOD
+void* Code_O::absoluteAddress(SectionedAddress_sp sa) {
+  if (sa->_value.SectionIndex != this->_TextSectionId) {
+    SIMPLE_ERROR(BF("The sectioned-address section-index %lu does not match the code section-index %lu") % sa->_value.SectionIndex % this->_TextSectionId);
+  }
+  return (void*)((char*)this->_TextSectionStart + sa->_value.Address);
+}
+
+
 size_t Code_O::sizeofInState(Code_O* code, CodeState_t state ) {
   if (state == SaveState) {
     return sizeof(Code_O)+code->_LiteralVectorSizeBytes;
   }
   return gctools::sizeof_container<Code_O>(code->_DataCode.size());
+}
+
+CL_DEFMETHOD core::T_sp Code_O::codeLineTable() const {
+  llvmo::ObjectFile_sp of = this->_ObjectFile;
+  llvmo::DWARFContext_sp dwarfContext = llvmo::DWARFContext_O::createDWARFContext(of);
+  llvm::object::SectionedAddress sa;
+  sa.Address = 0;
+  sa.SectionIndex = this->_TextSectionId;
+  uintptr_t size = (uintptr_t)this->_TextSectionEnd - (uintptr_t)this->_TextSectionStart;
+  auto lineTable = (*dwarfContext).wrappedPtr()->getLineInfoForAddressRange(sa, size );
+  printf("%s:%d:%s Number of entries: %lu\n", __FILE__, __LINE__, __FUNCTION__, lineTable.size());
+  return nil<T_O>();
 }
 
 std::string Code_O::filename() const {
