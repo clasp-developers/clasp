@@ -20,6 +20,7 @@
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/listify"
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/cstify"
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/cst-from-expression"
+ "src/lisp/kernel/contrib/Concrete-Syntax-Tree/quasiquotation"
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/reconstruct"
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/declarations"
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/body"
