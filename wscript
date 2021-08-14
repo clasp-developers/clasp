@@ -288,8 +288,8 @@ def build_extension(bld):
 def grovel(bld):
     bld.recurse("extensions")
 
-def initialize_extension_sif_nodes(cfg):
-    print("initialize_extension_sif_nodes cfg.path: %s" % cfg.path )
+def initialize_extensions_sif_nodes(cfg):
+    print("initialize_extensions_sif_nodes cfg.path: %s" % cfg.path )
     nodes = cfg.path.ant_glob("src/clasp_gc.sif")
     if (len(nodes)==0):
         raise Exception("Could not find %s/src/clasp_gc.sif" % cfg.path)
@@ -351,14 +351,13 @@ def update_dependencies(cfg):
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
-    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
+    cfg.extensions_sif_nodes = initialize_extensions_sif_nodes(cfg)
     log.debug("analyze_clasp about to recurse\n")
     cfg.recurse('extensions')
-    print("In analyze_clasp cfg.extension_sif_nodes = %s" % cfg.extension_sif_nodes)
-    log.debug("cfg.extension_sif_nodes = %s\n", cfg.extension_sif_nodes)
-    if (len(cfg.extension_sif_nodes)>2):
-        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
-    output_file = generate_output_filename(cfg.extension_sif_nodes)
+    print("In analyze_clasp cfg.extensions_sif_nodes = %s" % cfg.extensions_sif_nodes)
+    if (len(cfg.extensions_sif_nodes)>2):
+        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extensions_sif_nodes )
+    output_file = generate_output_filename(cfg.extensions_sif_nodes)
     run_program_echo("build/boehm/iclasp-boehm",
                      "-N", "-D",
                      "--feature", "ignore-extensions",
@@ -368,12 +367,12 @@ def analyze_clasp(cfg):
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 def analyze_test(cfg):
-    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
+    cfg.extensions_sif_nodes = initialize_extensions_sif_nodes(cfg)
     log.debug("analyze_test about to recurse\n")
-    print("In analyze_test cfg.extension_sif_nodes = %s" % cfg.extension_sif_nodes)
-    log.debug("cfg.extension_sif_nodes = %s\n", cfg.extension_sif_nodes)
-    if (len(cfg.extension_sif_nodes)>2):
-        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
+    print("In analyze_test cfg.extensions_sif_nodes = %s" % cfg.extensions_sif_nodes)
+    log.debug("cfg.extensions_sif_nodes = %s\n", cfg.extensions_sif_nodes)
+    if (len(cfg.extensions_sif_nodes)>2):
+        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extensions_sif_nodes )
     output_file = "source-dir:build;clasp_gc_test.cc"
     selection_pattern = "unixfsys.cc"
     run_program_echo("build/boehm/iclasp-boehm",
@@ -1326,17 +1325,19 @@ def configure(cfg):
     cfg.extensions_gcinterface_include_files = []
     cfg.extensions_stlib = []
     cfg.extensions_lib = []
+    cfg.extensions_libpath = []
+    cfg.extensions_linkflags = []
     cfg.extensions_names = []
-    cfg.extension_startup_loads = []
-    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
-    print("before extension_sif_nodes = %s" % cfg.extension_sif_nodes )
+    cfg.extensions_startup_loads = []
+    cfg.extensions_sif_nodes = initialize_extensions_sif_nodes(cfg)
+    print("before extensions_sif_nodes = %s" % cfg.extensions_sif_nodes )
     cfg.recurse('extensions')
     log.debug("cfg.extensions_names before sort = %s", cfg.extensions_names)
     cfg.extensions_names = sorted(cfg.extensions_names)
     log.debug("cfg.extensions_names after sort = %s", cfg.extensions_names)
-    log.debug("cfg.extension_startup_loads = %s", cfg.extension_startup_loads)
-    cfg.define("CLASP_EXTENSION_STARTUP_LOADS",cfg.extension_startup_loads)
-    sif_files = [x.abspath() for x in cfg.extension_sif_nodes ]
+    log.debug("cfg.extension_startup_loads = %s", cfg.extensions_startup_loads)
+    cfg.define("CLASP_EXTENSION_STARTUP_LOADS",cfg.extensions_startup_loads)
+    sif_files = [x.abspath() for x in cfg.extensions_sif_nodes ]
     cfg.env["CLASP_SIF_FILES"] = sif_files
     print("Created CLASP_SIF_FILES = %s" % cfg.env["CLASP_SIF_FILES"] )
     llvm_liblto_dir = run_llvm_config(cfg, "--libdir")
@@ -1541,6 +1542,9 @@ def configure(cfg):
     sep = " "
     cfg.env.append_value('STLIB', cfg.extensions_stlib)
     cfg.env.append_value('LIB', cfg.extensions_lib)
+    print("cfg.extensions_libpath = %s" % cfg.extensions_libpath)
+    cfg.env.append_value('LIBPATH', cfg.extensions_libpath)
+    cfg.env.append_value('LINKFLAGS', cfg.extensions_linkflags)
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
@@ -1711,7 +1715,7 @@ def build(bld):
     bld.extensions_source_files = []
     bld.extensions_gcinterface_include_files = []
     bld.extensions_builders = []
-    bld.extension_startup_load_output_nodes = []
+    bld.extensions_startup_load_output_nodes = []
     bld.iclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='i'))
 
     bld.cclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'c')
@@ -1931,7 +1935,7 @@ def build(bld):
         bld_extensions.set_inputs([bld.iclasp_executable,
                                    bld.cclasp_link_product,
                                    bld.cclasp_asdf_fasl] +
-                                  bld.extension_startup_load_output_nodes)
+                                  bld.extensions_startup_load_output_nodes)
         bld_extensions.set_outputs([snapshot_file])
         bld.add_to_group(bld_extensions)
         bld.add_group()
