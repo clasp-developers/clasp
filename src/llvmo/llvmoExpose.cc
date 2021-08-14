@@ -4830,8 +4830,8 @@ bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr)
 #endif
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->_LLJIT->lookup(dylib,mangledName);
   if (!symbol) {
-    printf("%s:%d could not find external linkage symbol named: %s\n", __FILE__, __LINE__, mangledName.c_str() );
-    dylib.dump(llvm::errs());
+    // printf("%s:%d could not find external linkage symbol named: %s\n", __FILE__, __LINE__, mangledName.c_str() );
+    // dylib.dump(llvm::errs());
     return false;
   }
 //  printf("%s:%d:%s !!symbol -> %d  symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, !!symbol, (void*)symbol->getAddress());
