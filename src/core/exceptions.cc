@@ -748,8 +748,8 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
 NEVER_OPTIMIZE
 void core__reader_error_internal(const string &sourceFile, uint lineno,
                     String_sp fmt, List_sp fmtargs, T_sp stream) {
-  printf("%s:%d:%s  sourceFile: %s lineno: %u fmt: %s  fmtargs: %s\n",
-         __FILE__, __LINE__, __FUNCTION__, sourceFile.c_str(), lineno, _rep_(fmt).c_str(), _rep_(fmtargs).c_str() );
+  // printf("%s:%d:%s  sourceFile: %s lineno: %u fmt: %s  fmtargs: %s\n",
+  //       __FILE__, __LINE__, __FUNCTION__, sourceFile.c_str(), lineno, _rep_(fmt).c_str(), _rep_(fmtargs).c_str() );
   ASSERT(cl__stringp(fmt));
   if (stream.nilp()) {
     eval::funcall(_sym_signalSimpleError,
