@@ -66,6 +66,7 @@
  "core::Package_O"
  "core::SimpleMDArrayBaseChar_O"
  "llvmo::DILocation_O"
+ "llvmo::DWARFUnit_O"
  "core::SimpleVector_byte8_t_O"
  "llvmo::DILexicalBlockBase_O"
  "core::SimpleMDArray_O"
@@ -94,9 +95,10 @@
  "llvmo::FunctionPass_O"
  "core::SimpleVector_byte4_t_O"
  "llvmo::UndefValue_O"
- "llvmo::CodeBase_O"
+ "llvmo::LineTable_O"
  "llvmo::DataLayout_O"
  "llvmo::BasicBlock_O"
+ "llvmo::CodeBase_O"
  "core::SimpleMDArray_int8_t_O"
  "llvmo::EngineBuilder_O"
  "core::ComplexVector_byte64_t_O"
@@ -1439,6 +1441,9 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Instance_O>")( TAGS:OFFSET-BASE-CTYPE . "llvmo::EngineBuilder_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Class")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "llvmo::EngineBuilder_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_ptr")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "CXX_FIXUP_OFFSET")( TAGS:OFFSET-CTYPE . "std::basic_string<char,std::char_traits<char>,std::allocator<char>>")( TAGS:OFFSET-BASE-CTYPE . "llvmo::EngineBuilder_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_ErrorStr")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_llvmo__LineTable_O")(TAGS:STAMP-KEY . "llvmo::LineTable_O")(TAGS:PARENT-CLASS . "core::ExternalObject_O")(TAGS:LISP-CLASS-BASE . "core::ExternalObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Instance_O>")( TAGS:OFFSET-BASE-CTYPE . "llvmo::LineTable_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Class")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "llvmo::LineTable_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_ptr")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_llvmo__PassManagerBase_O")(TAGS:STAMP-KEY . "llvmo::PassManagerBase_O")(TAGS:PARENT-CLASS . "core::ExternalObject_O")(TAGS:LISP-CLASS-BASE . "core::ExternalObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Instance_O>")( TAGS:OFFSET-BASE-CTYPE . "llvmo::PassManagerBase_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Class")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "llvmo::PassManagerBase_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_ptr")) }
@@ -1670,6 +1675,9 @@
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_llvmo__Target_O")(TAGS:STAMP-KEY . "llvmo::Target_O")(TAGS:PARENT-CLASS . "core::ExternalObject_O")(TAGS:LISP-CLASS-BASE . "core::ExternalObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Instance_O>")( TAGS:OFFSET-BASE-CTYPE . "llvmo::Target_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Class")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "llvmo::Target_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_ptr")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_llvmo__DWARFUnit_O")(TAGS:STAMP-KEY . "llvmo::DWARFUnit_O")(TAGS:PARENT-CLASS . "core::ExternalObject_O")(TAGS:LISP-CLASS-BASE . "core::ExternalObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Instance_O>")( TAGS:OFFSET-BASE-CTYPE . "llvmo::DWARFUnit_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Class")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "llvmo::DWARFUnit_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_ptr")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_llvmo__Linker_O")(TAGS:STAMP-KEY . "llvmo::Linker_O")(TAGS:PARENT-CLASS . "core::ExternalObject_O")(TAGS:LISP-CLASS-BASE . "core::ExternalObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Instance_O>")( TAGS:OFFSET-BASE-CTYPE . "llvmo::Linker_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Class")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "llvmo::Linker_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_ptr")) }
