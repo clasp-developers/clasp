@@ -4498,9 +4498,15 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
   }
   auto objf = my_thread->topObjectFile()->getObjectFile();
   llvm::object::ObjectFile& of = *objf->release();
-  uint64_t secId = getModuleSectionIndexForText( of );
   Code_sp code = my_thread->topObjectFile()->_Code;
+#if defined(_TARGET_OS_LINUX)
+  uint64_t secId = getModuleSectionIndexForText( of );
   code->_TextSectionId = secId;
+#elif defined(_TARGET_OS_DARWIN)
+  code->_TextSectionId = 0;
+#else
+  printf("%s:%d:%s Add support to set _TextSectionID for this os\n", __FILE__, __LINE__, __FUNCTION__);
+#endif
   save_object_file_and_code_info(my_thread->topObjectFile());
   buffer.reset();
 }
