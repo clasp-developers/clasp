@@ -1608,7 +1608,7 @@ size_t lisp_general_badge(General_sp object) {
 }
 
 size_t lisp_cons_badge(Cons_sp object) {
-  const gctools::Header_s* header = (gctools::Header_s*)ConsPtrToHeaderPtr(object.unsafe_cons());
+  const gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(object.unsafe_cons());
   return header->_stamp_wtag_mtag._header_badge;
 }
 

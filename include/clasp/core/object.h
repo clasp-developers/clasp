@@ -97,15 +97,13 @@ namespace core {
 //
 //
 
-class _RootDummyClass : public gctools::GCObject {
-private:
+class RootClass {
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
   static void set_static_creator(gc::smart_ptr<core::Creator_O> cb){};
-
-public:
-  explicit _RootDummyClass() {};
+  explicit RootClass() {};
 };
+
 template <class T_Base>
 struct LispBases1 {
   typedef T_Base Base1;
@@ -399,10 +397,10 @@ struct gctools::GCInfo<core::T_O> {
 };
 
 namespace core {
-  class T_O : public _RootDummyClass {
+  class T_O : public RootClass {
   private:
     friend class CoreExposer;
-    LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
+    LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T",::RootClass);
     T_O() {};
   };
 

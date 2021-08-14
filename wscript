@@ -344,6 +344,12 @@ def update_dependencies(cfg):
     log.pprint('BLUE', "About to recurse into extensions update_dependencies ()")
     cfg.recurse("extensions",name="update_dependencies")
     log.pprint('BLUE', "Returned from recursing into extensions")
+
+def doxygen(cfg):
+    clasp_c_source_files = collect_clasp_c_source_files(cfg)
+    print("clasp_c_source_files = %s" % clasp_c_source_files )
+    print("cfg.extensions_source_files = %s" % cfg.extensions_source_files )
+    
     
 # run this from a completely cold system with:
 # ./waf distclean configure
@@ -1673,7 +1679,6 @@ def build(bld):
     bld.use_human_readable_bitcode = "USE_HUMAN_READABLE_BITCODE" in bld.env
     log.info("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
-
     bld.clasp_aclasp = collect_aclasp_lisp_files(wrappers = False)
     bld.clasp_bclasp = collect_bclasp_lisp_files()
     bld.clasp_cclasp = collect_cclasp_lisp_files()
@@ -1722,6 +1727,8 @@ def build(bld):
     bld.cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % bld.variant_obj.fasl_dir(stage='c')))
 
     bld.set_group('compiling/c++')
+    bld.clasp_include_files = []
+    bld.recurse('include')
     bld.recurse('extensions',name='build')
     log.info("There are %d extensions_builders", len(bld.extensions_builders))
     for x in bld.extensions_builders:
@@ -1732,7 +1739,10 @@ def build(bld):
     #
     # Installing the sources
     #
+    clasp_header_files = bld.clasp_include_files + bld.extensions_include_files
     clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
+    source_files = clasp_header_files + clasp_c_source_files
+    write_source_file_list_for_doxygen(source_files)
     install('lib/clasp/', clasp_c_source_files)
     install('lib/clasp/', collect_waf_nodes(bld, 'include/clasp/', suffix = ".h"))
     # Gather lisp source files - but don't only use files with these extensions or we will miss lisp assets
@@ -2204,6 +2214,12 @@ class generate_extension_headers_h(clasp_task):
             fout.close()
         else:
             log.debug("NOT writing to %s - it is unchanged", output_file)
+
+def write_source_file_list_for_doxygen(source_files):
+    fout = open("build/doxygen-source-files.list","w")
+    for x in source_files:
+        fout.write("INPUT += %s\n" % x)
+    fout.close()
 
 class link_bitcode(clasp_task):
     ext_out = ['.a']    # this affects the task execution order

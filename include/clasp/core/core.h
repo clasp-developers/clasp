@@ -621,7 +621,7 @@ uint lisp_hash(uintptr_t v);
 #include <clasp/gctools/gc_interface.h>
 
 
-class _RootDummyClass;
+class RootClass;
 
 
 #define EXTERN_SYMBOL(sym) extern core::Symbol_sp& _sym_##sym;

@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = brcl
+PROJECT_NAME           = clasp
 PROJECT_NUMBER         = 
 OUTPUT_DIRECTORY       = ../build/
 CREATE_SUBDIRS         = YES
@@ -25,7 +25,7 @@ ABBREVIATE_BRIEF       = "The $name class" \
 ALWAYS_DETAILED_SEC    = NO
 INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = NO
-STRIP_FROM_PATH        = "$(BRCL_HOME)"
+STRIP_FROM_PATH        = "$(CLASP_HOME)"
 STRIP_FROM_INC_PATH    = 
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = NO
@@ -88,17 +88,8 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT         = \
-	      ../src/asttooling \
-              ../src/clbind \
-              ../src/core \
-              ../src/gctools \
-              ../src/llvmo \
-              ../src/main \
-              ../src/mpip \
-              ../src/mps \
-              ../src/serveEvent \
-              ../src/sockets 
+INPUT         = .
+@INCLUDE = ../build/doxygen-source-files.list
               
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
@@ -132,7 +123,7 @@ RECURSIVE              = NO
 EXCLUDE                =
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = *.tab.cc _*.cc
-EXCLUDE_SYMBOLS        = 
+EXCLUDE_SYMBOLS        = CL_LAMBDA
 EXAMPLE_PATH           = 
 EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
@@ -231,11 +222,11 @@ PERLMOD_MAKEVAR_PREFIX =
 #---------------------------------------------------------------------------
 # Configuration options related to the preprocessor   
 #---------------------------------------------------------------------------
-ENABLE_PREPROCESSING   = NO
-MACRO_EXPANSION        = NO
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = NO
 SEARCH_INCLUDES        = YES
-INCLUDE_PATH           = ../include/
+INCLUDE_PATH           = ../include/ ../build/boehm/
 INCLUDE_FILE_PATTERNS  = 
 PREDEFINED             = 
 EXPAND_AS_DEFINED      = 

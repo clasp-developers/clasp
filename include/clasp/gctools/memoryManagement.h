@@ -795,6 +795,82 @@ namespace core {
   class BuiltinClosure_O;
 };
 
+namespace gctools {
+#ifdef DEBUG_GUARD_VALIDATE
+#define EXHAUSTIVE_VALIDATE(ptr) (ptr)->quick_validate();
+#else
+#define EXHAUSTIVE_VALIDATE(ptr)
+#endif
+
+  inline const void *GeneralPtrToHeaderPtr(const void *mostDerived) {
+    const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
+    return ptr;
+  }
+
+  inline constexpr size_t SizeofGeneralHeader() { return sizeof(Header_s); };
+
+  inline void *GeneralPtrToHeaderPtr(void *mostDerived) {
+    void *ptr = reinterpret_cast<char *>(mostDerived) - SizeofGeneralHeader();
+    return ptr;
+  }
+
+  inline const Header_s* header_pointer(const void* client_pointer)
+  {
+    const Header_s* header = reinterpret_cast<const Header_s*>(reinterpret_cast<const char*>(client_pointer) - sizeof(Header_s));
+    return header;
+  }
+
+  inline void throwIfInvalidClient(core::T_O *client) {
+    Header_s *header = (Header_s *)GeneralPtrToHeaderPtr(client);
+    if (header->_stamp_wtag_mtag.invalidP()) {
+      throw_hard_error_bad_client((void*)client);
+    }
+  }
+
+  template <typename T>
+    inline T *HeaderPtrToGeneralPtr(void *base) {
+    T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + SizeofGeneralHeader());
+    return ptr;
+  }
+
+/*
+ * This must ALWAYS be the same as SizeofGeneralHeader    
+ */
+  inline constexpr size_t SizeofWeakHeader() { return SizeofGeneralHeader(); };
+
+  inline const void *WeakPtrToHeaderPtr(const void *client) {
+    const void *ptr = reinterpret_cast<const char *>(client) - SizeofWeakHeader();
+    return ptr;
+  }
+
+  inline void *WeakPtrToHeaderPtr(void *client) {
+    void *ptr = reinterpret_cast<char *>(client) - SizeofWeakHeader();
+    return ptr;
+  }
+
+  inline void*HeaderPtrToWeakPtr(void *header) {
+    void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofWeakHeader());
+    return ptr;
+  }
+
+  inline constexpr size_t SizeofConsHeader() { return sizeof(gctools::Header_s::StampWtagMtag); };
+
+  inline const void *ConsPtrToHeaderPtr(const void *client) {
+    const void *ptr = reinterpret_cast<const char *>(client) - SizeofConsHeader();
+    return ptr;
+  }
+
+  inline void *ConsPtrToHeaderPtr(void *client) {
+    void *ptr = reinterpret_cast<char *>(client) - SizeofConsHeader();
+    return ptr;
+  }
+
+  inline void* HeaderPtrToConsPtr(void *header) {
+    void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofConsHeader());
+    return ptr;
+  }
+
+};
 
 #include <clasp/gctools/cast.h>
 #include <clasp/gctools/tagged_cast.h>
@@ -891,83 +967,6 @@ inline size_t sizeof_container_with_header(size_t num) {
 };
 
 
-
-namespace gctools {
-#ifdef DEBUG_GUARD_VALIDATE
-#define EXHAUSTIVE_VALIDATE(ptr) (ptr)->quick_validate();
-#else
-#define EXHAUSTIVE_VALIDATE(ptr)
-#endif
-
-inline const void *GeneralPtrToHeaderPtr(const void *mostDerived) {
-  const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
-  return ptr;
-}
-
-inline constexpr size_t SizeofGeneralHeader() { return sizeof(Header_s); };
-
-inline void *GeneralPtrToHeaderPtr(void *mostDerived) {
-  void *ptr = reinterpret_cast<char *>(mostDerived) - SizeofGeneralHeader();
-  return ptr;
-}
-
-inline const Header_s* header_pointer(const void* client_pointer)
-{
-  const Header_s* header = reinterpret_cast<const Header_s*>(reinterpret_cast<const char*>(client_pointer) - sizeof(Header_s));
-  return header;
-}
-
-inline void throwIfInvalidClient(core::T_O *client) {
-  Header_s *header = (Header_s *)GeneralPtrToHeaderPtr(client);
-  if (header->_stamp_wtag_mtag.invalidP()) {
-    throw_hard_error_bad_client((void*)client);
-  }
-}
-
-template <typename T>
-inline T *HeaderPtrToGeneralPtr(void *base) {
-  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + SizeofGeneralHeader());
-  return ptr;
-}
-
-/*
- * This must ALWAYS be the same as SizeofGeneralHeader    
- */
-inline constexpr size_t SizeofWeakHeader() { return SizeofGeneralHeader(); };
-
-inline const void *WeakPtrToHeaderPtr(const void *client) {
-  const void *ptr = reinterpret_cast<const char *>(client) - SizeofWeakHeader();
-  return ptr;
-}
-
-inline void *WeakPtrToHeaderPtr(void *client) {
-  void *ptr = reinterpret_cast<char *>(client) - SizeofWeakHeader();
-  return ptr;
-}
-
-inline void*HeaderPtrToWeakPtr(void *header) {
-  void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofWeakHeader());
-  return ptr;
-}
-
-inline constexpr size_t SizeofConsHeader() { return sizeof(gctools::Header_s::StampWtagMtag); };
-
-inline const void *ConsPtrToHeaderPtr(const void *client) {
-  const void *ptr = reinterpret_cast<const char *>(client) - SizeofConsHeader();
-  return ptr;
-}
-
-inline void *ConsPtrToHeaderPtr(void *client) {
-  void *ptr = reinterpret_cast<char *>(client) - SizeofConsHeader();
-  return ptr;
-}
-
-inline void* HeaderPtrToConsPtr(void *header) {
-  void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofConsHeader());
-  return ptr;
-}
-
-};
 
 
 #if defined(USE_BOEHM)

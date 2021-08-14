@@ -15,7 +15,7 @@ core::T_O* template_read_stamp(TTT* obj)
   case GENERAL_TAG: {
   // do more stuff to get the stamp
     core::General_O* client_ptr = reinterpret_cast<core::General_O*>(gctools::untag_general<TTT*>(obj));
-    const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(GeneralPtrToHeaderPtr(client_ptr));
+    const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(client_ptr));
     uint64_t stamp = header.shifted_stamp();
     ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
     ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Instance_O)));
@@ -63,7 +63,7 @@ core::T_O* template_read_stamp(TTT* obj)
 
   // do more stuff to get the stamp
 inline core::T_O* template_read_general_stamp(core::General_O* client_ptr) {
-  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(GeneralPtrToHeaderPtr(client_ptr));
+  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(client_ptr));
   uint64_t stamp = header.shifted_stamp();
   return (core::T_O*)stamp;
 }
