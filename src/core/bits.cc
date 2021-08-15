@@ -780,7 +780,7 @@ CL_DEFUN bool cl__logbitp(Integer_sp index, Integer_sp i) {
 
 CL_LAMBDA(op arg1 arg2);
 CL_DECLARE();
-CL_DOCSTRING("boole");
+CL_DOCSTRING(R"doc(boole)doc")
 CL_DEFUN T_sp cl__boole(Fixnum op, Integer_sp arg1, Integer_sp arg2) {
   if ((op < 0) || (op >= boolOpsMax))
     TYPE_ERROR(clasp_make_fixnum(op),
@@ -831,35 +831,35 @@ void initialize_bits() {
 
 CL_LAMBDA(first second);
 CL_DECLARE();
-CL_DOCSTRING("logand_2op");
+CL_DOCSTRING(R"doc(logand_2op)doc")
 CL_DEFUN Integer_sp core__logand_2op(Integer_sp first, Integer_sp second) {
   return clasp_boole(boole_and, first, second);
 }
 
 CL_LAMBDA(first second);
 CL_DECLARE();
-CL_DOCSTRING("logxor_2op");
+CL_DOCSTRING(R"doc(logxor_2op)doc")
 CL_DEFUN Integer_sp core__logxor_2op(Integer_sp first, Integer_sp second) {
   return clasp_boole(boole_xor, first, second);
 }
 
 CL_LAMBDA(first second);
 CL_DECLARE();
-CL_DOCSTRING("logior_2op");
+CL_DOCSTRING(R"doc(logior_2op)doc")
 CL_DEFUN Integer_sp core__logior_2op(Integer_sp first, Integer_sp second) {
   return clasp_boole(boole_ior, first, second);
 }
 
 CL_LAMBDA(first second);
 CL_DECLARE();
-CL_DOCSTRING("logeqv_2op");
+CL_DOCSTRING(R"doc(logeqv_2op)doc")
 CL_DEFUN Integer_sp core__logeqv_2op(Integer_sp first, Integer_sp second) {
   return clasp_boole(boole_eqv, first, second);
 }
 
 CL_LAMBDA(&rest integers);
 CL_DECLARE();
-CL_DOCSTRING("logand");
+CL_DOCSTRING(R"doc(logand)doc")
 CL_DEFUN Integer_sp cl__logand(List_sp integers) {
   // if the arguments are all fixnum, don't convert everything to mpz, but stay in fixnums
   if (integers.nilp())
@@ -870,7 +870,7 @@ CL_DEFUN Integer_sp cl__logand(List_sp integers) {
 
 CL_LAMBDA(&rest integers);
 CL_DECLARE();
-CL_DOCSTRING("logior");
+CL_DOCSTRING(R"doc(logior)doc")
 CL_DEFUN Integer_sp cl__logior(List_sp integers) {
   if (integers.nilp())
     return clasp_make_fixnum(0);
@@ -880,7 +880,7 @@ CL_DEFUN Integer_sp cl__logior(List_sp integers) {
 
 CL_LAMBDA(&rest integers);
 CL_DECLARE();
-CL_DOCSTRING("logxor");
+CL_DOCSTRING(R"doc(logxor)doc")
 CL_DEFUN Integer_sp cl__logxor(List_sp integers) {
   if (integers.nilp())
     return clasp_make_fixnum(0);
@@ -890,7 +890,7 @@ CL_DEFUN Integer_sp cl__logxor(List_sp integers) {
 
 CL_LAMBDA(&rest integers);
 CL_DECLARE();
-CL_DOCSTRING("logeqv");
+CL_DOCSTRING(R"doc(logeqv)doc")
 CL_DEFUN Integer_sp cl__logeqv(List_sp integers) {
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum) - 1);
@@ -900,35 +900,35 @@ CL_DEFUN Integer_sp cl__logeqv(List_sp integers) {
 
 CL_LAMBDA(a b);
 CL_DECLARE();
-CL_DOCSTRING("logandc1");
+CL_DOCSTRING(R"doc(logandc1)doc")
 CL_DEFUN Integer_sp cl__logandc1(Integer_sp a, Integer_sp b) {
   return clasp_boole(boole_andc1, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
-CL_DOCSTRING("logandc2");
+CL_DOCSTRING(R"doc(logandc2)doc")
 CL_DEFUN Integer_sp cl__logandc2(Integer_sp a, Integer_sp b) {
   return clasp_boole(boole_andc2, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
-CL_DOCSTRING("logorc1");
+CL_DOCSTRING(R"doc(logorc1)doc")
 CL_DEFUN Integer_sp cl__logorc1(Integer_sp a, Integer_sp b) {
   return clasp_boole(boole_orc1, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
-CL_DOCSTRING("logorc2");
+CL_DOCSTRING(R"doc(logorc2)doc")
 CL_DEFUN Integer_sp cl__logorc2(Integer_sp a, Integer_sp b) {
   return clasp_boole(boole_orc2, a, b);
 };
 
 CL_LAMBDA(a);
 CL_DECLARE();
-CL_DOCSTRING("lognot");
+CL_DOCSTRING(R"doc(lognot)doc")
 CL_DEFUN Integer_sp cl__lognot(Integer_sp a) {
   // KLUDGE
   if (a.fixnump())
@@ -946,14 +946,14 @@ CL_DEFUN Integer_sp cl__lognot(Integer_sp a) {
 
 CL_LAMBDA(a b);
 CL_DECLARE();
-CL_DOCSTRING("lognand");
+CL_DOCSTRING(R"doc(lognand)doc")
 CL_DEFUN Integer_sp cl__lognand(Integer_sp a, Integer_sp b) {
   return clasp_boole(boole_nand, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
-CL_DOCSTRING("lognor");
+CL_DOCSTRING(R"doc(lognor)doc")
 CL_DEFUN Integer_sp cl__lognor(Integer_sp a, Integer_sp b) {
   return clasp_boole(boole_nor, a, b);
 };

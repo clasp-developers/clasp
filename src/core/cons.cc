@@ -56,7 +56,7 @@ List_sp coerce_to_list(T_sp o) {
 
 CL_LAMBDA(plist value indicator);
 CL_DECLARE();
-CL_DOCSTRING("putF");
+CL_DOCSTRING(R"doc(putF)doc")
 CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
   auto it = place.begin();
   auto end = place.end();
@@ -81,7 +81,7 @@ CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
 
 CL_LAMBDA(plist indicator &optional default-value);
 CL_DECLARE();
-CL_DOCSTRING("getf");
+CL_DOCSTRING(R"doc(getf)doc")
 CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
   if (plist.nilp())
     return (default_value);
@@ -90,7 +90,7 @@ CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
 
 CL_LAMBDA(plist indicator);
 CL_DECLARE();
-CL_DOCSTRING("Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found");
+CL_DOCSTRING(R"doc(Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found)doc")
 CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
   if (oCar(plist) == indicator) {
     plist = oCddr(plist);
@@ -112,28 +112,28 @@ CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
 
 CL_LAMBDA(object1 object2);
 CL_DECLARE();
-CL_DOCSTRING("cons");
+CL_DOCSTRING(R"doc(cons)doc")
 CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
   return Cons_O::create(obj1, obj2);
 };
 
 CL_LAMBDA(c o);
 CL_DECLARE();
-CL_DOCSTRING("");
+CL_DOCSTRING(R"doc()doc")
 CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
   return c->rplaca(o);
 };
 
 CL_LAMBDA(c o);
 CL_DECLARE();
-CL_DOCSTRING("");
+CL_DOCSTRING(R"doc()doc")
 CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
 
 CL_LAMBDA(osize &key initial-element);
 CL_DECLARE();
-CL_DOCSTRING("make_list");
+CL_DOCSTRING(R"doc(make_list)doc")
 CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   // Might be a negative Fixnum, take the right type, size_t is unsigned
   gc::Fixnum size = osize.unsafe_fixnum();
@@ -194,7 +194,7 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
 
 CL_LAMBDA(l1 l2);
 CL_DECLARE();
-CL_DOCSTRING("append2 - append l2 to l1 by copying l1 and pointing the end of it to l2");
+CL_DOCSTRING(R"doc(append2 - append l2 to l1 by copying l1 and pointing the end of it to l2)doc")
 CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
   return Cons_O::append(x, y);
 };

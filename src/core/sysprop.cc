@@ -38,7 +38,7 @@ namespace core {
 
 CL_LAMBDA(key area value);
 CL_DECLARE();
-CL_DOCSTRING("put_sysprop - returns value");
+CL_DOCSTRING(R"doc(put_sysprop - returns value)doc")
 CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
@@ -59,7 +59,7 @@ CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
 
 CL_LAMBDA(key area);
 CL_DECLARE();
-CL_DOCSTRING("get_sysprop - returns (values val foundp)");
+CL_DOCSTRING(R"doc(get_sysprop - returns (values val foundp))doc")
 CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
@@ -76,7 +76,7 @@ CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
 
 CL_LAMBDA(key area);
 CL_DECLARE();
-CL_DOCSTRING("rem_sysprop");
+CL_DOCSTRING(R"doc(rem_sysprop)doc")
 CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);

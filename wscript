@@ -346,10 +346,8 @@ def update_dependencies(cfg):
     log.pprint('BLUE', "Returned from recursing into extensions")
 
 def doxygen(cfg):
-    clasp_c_source_files = collect_clasp_c_source_files(cfg)
-    print("clasp_c_source_files = %s" % clasp_c_source_files )
-    print("cfg.extensions_source_files = %s" % cfg.extensions_source_files )
-    
+    os.system("(cd docs; doxygen)")
+    print("Documentation index is in build/html/index.html")
     
 # run this from a completely cold system with:
 # ./waf distclean configure

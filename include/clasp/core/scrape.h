@@ -1,4 +1,16 @@
 
+/**
+ * \defgroup DEFUN Functions that are exposed to Clasp Common Lisp
+ */
+
+/**
+ * \defgroup DEFUN-SETF Setf functions that are exposed to Clasp Common Lisp
+ */
+
+/**
+ * \defgroup DEFMETHOD C++ methods that are exposed to Clasp Common Lisp
+ */
+
 #ifdef SCRAPING
 #define BEGIN_TAG BEGIN_TAG_bfc54f90bafadf5
 #define END_TAG END_TAG_bfc54f90bafadf5
@@ -44,9 +56,9 @@
        DETAILED_SYMBOL_EXPORT_SC_(p,c,s)
 #else
 #define CL_INITIALIZE
-#define CL_DEFUN
-#define CL_DEFUN_SETF
-#define CL_DEFMETHOD
+#define CL_DEFUN /** @ingroup DEFUN */
+#define CL_DEFUN_SETF /** @ingroup DEFUN-SETF */
+#define CL_DEFMETHOD /** @ingroup DEFMETHOD */
 #define CL_METHOD_OVERLOAD 
 #define CL_DEF_CLASS_METHOD
 #define CL_BEGIN_ENUM(type,symbol,desc)

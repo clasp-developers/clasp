@@ -32,7 +32,7 @@ namespace core {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("pointerRelease");
+CL_DOCSTRING(R"doc(pointerRelease)doc")
 CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   if (ptr.nilp()) {
     return nil<Pointer_O>();
@@ -45,7 +45,7 @@ CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("pointerDelete");
+CL_DOCSTRING(R"doc(pointerDelete)doc")
 CL_DEFUN void core__pointer_delete(T_sp ptr) {
   if (ptr.nilp()) {
     return;
@@ -88,7 +88,7 @@ Pointer_sp WrappedPointer_O::address() const {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("pointerAddress");
+CL_DOCSTRING(R"doc(pointerAddress)doc")
 CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   if (ptr.nilp()) {
     return nil<Pointer_O>();

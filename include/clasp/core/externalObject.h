@@ -109,7 +109,7 @@ namespace core {
   class ImmobileObject_O : public General_O {
 #if 0
     CL_DOCSTRING(R"doc(Immobile-object is allocated in the collectable_immobile pool and guaranteed not to move.
-They can be passed to C++ functions and and then passed back to clasp code and used to locate a moveable object by one level of indirection.)doc");
+They can be passed to C++ functions and and then passed back to clasp code and used to locate a moveable object by one level of indirection.)doc")
 #endif
     LISP_CLASS(core,CorePkg,ImmobileObject_O,"ImmobileObject",General_O);
   public:

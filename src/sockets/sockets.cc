@@ -100,35 +100,35 @@ static void fill_inet_sockaddr(struct sockaddr_in *sockaddr, int port,
 
 CL_LAMBDA(domain type protocol);
 CL_DECLARE();
-CL_DOCSTRING("ff_socket");
+CL_DOCSTRING(R"doc(ff_socket)doc")
 CL_DEFUN int sockets_internal__ff_socket(int domain, int type, int protocol) {
   return ::socket(domain, type, protocol);
 };
 
 CL_LAMBDA(sockfd backlog);
 CL_DECLARE();
-CL_DOCSTRING("ff_listen");
+CL_DOCSTRING(R"doc(ff_listen)doc")
 CL_DEFUN int sockets_internal__ff_listen(int sockfd, int backlog) {
   return ::listen(sockfd, backlog);
 };
 
 CL_LAMBDA(filedes);
 CL_DECLARE();
-CL_DOCSTRING("ff_close");
+CL_DOCSTRING(R"doc(ff_close)doc")
 CL_DEFUN int sockets_internal__ff_close(int filedes) {
   return ::close(filedes);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("funcName");
+CL_DOCSTRING(R"doc(funcName)doc")
 CL_DEFUN core::T_mv sockets_internal__funcName() {
   IMPLEMENT_MEF("Implement funcName");
 };
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("ll_socket_errno");
+CL_DOCSTRING(R"doc(ll_socket_errno)doc")
 CL_DEFUN int sockets_internal__ll_socket_errno() {
   /* Return the value of global variable errno */
   return errno;
@@ -136,7 +136,7 @@ CL_DEFUN int sockets_internal__ll_socket_errno() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("ll_get_name_service_h_errno");
+CL_DOCSTRING(R"doc(ll_get_name_service_h_errno)doc")
 CL_DEFUN int sockets_internal__ll_get_name_service_h_errno() {
   /* Return the value of global variable h_errno */
   return h_errno;
@@ -144,14 +144,14 @@ CL_DEFUN int sockets_internal__ll_get_name_service_h_errno() {
 
 CL_LAMBDA(num);
 CL_DECLARE();
-CL_DOCSTRING("ll_getNameServiceErrorMessage");
+CL_DOCSTRING(R"doc(ll_getNameServiceErrorMessage)doc")
 CL_DEFUN core::String_sp sockets_internal__ll_getNameServiceErrorMessage(int num) {
   return core::SimpleBaseString_O::make(strerror(num));
 };
 
 CL_LAMBDA(host-name host-ent setf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses);
 CL_DECLARE();
-CL_DOCSTRING("ll_getHostByName");
+CL_DOCSTRING(R"doc(ll_getHostByName)doc")
 CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,                 // #0
                                              core::T_sp tHostEnt,                          // #1
                                              core::Function_sp setf_host_ent_name,         // #2
@@ -194,7 +194,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
 
 CL_LAMBDA(address host-ent stf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses);
 CL_DECLARE();
-CL_DOCSTRING("ll_getHostByAddress");
+CL_DOCSTRING(R"doc(ll_getHostByAddress)doc")
 CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp address,               //#0
                             core::T_sp tHostEnt,                   //#1
                             core::T_sp setf_host_ent_name,         //#2
@@ -244,7 +244,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
 
 CL_LAMBDA(fd buffer length oob peek waitall);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketReceive");
+CL_DOCSTRING(R"doc(ll_socketReceive)doc")
 CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
                          core::T_sp buffer,                          // #1
                          int length,                                 // #2
@@ -277,14 +277,14 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
 
 CL_LAMBDA(name);
 CL_DECLARE();
-CL_DOCSTRING("ll_getProtocolByName");
+CL_DOCSTRING(R"doc(ll_getProtocolByName)doc")
 CL_DEFUN int sockets_internal__ll_getProtocolByName(const string &name) {
   return getprotobyname(name.c_str())->p_proto;
 }
 
 CL_LAMBDA(port ip0 ip1 ip2 ip3 socketFileDescriptor);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketBind - returns output");
+CL_DOCSTRING(R"doc(ll_socketBind - returns output)doc")
 CL_DEFUN int sockets_internal__ll_socketBind_inetSocket(int port, int ip0, int ip1, int ip2, int ip3, int socketFileDescriptor) {
   struct sockaddr_in sockaddr;
   int output;
@@ -297,7 +297,7 @@ CL_DEFUN int sockets_internal__ll_socketBind_inetSocket(int port, int ip0, int i
 
 CL_LAMBDA(sfd);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketAccept_inetSocket");
+CL_DOCSTRING(R"doc(ll_socketAccept_inetSocket)doc")
 CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_inetSocket(int sfd) {
   struct sockaddr_in sockaddr;
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_in);
@@ -326,7 +326,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_inetSocket(int sfd) {
 
 CL_LAMBDA(port ip0 ip1 ip2 ip3 socket-file-descriptor);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketConnect_inetSocket");
+CL_DOCSTRING(R"doc(ll_socketConnect_inetSocket)doc")
 CL_DEFUN int sockets_internal__ll_socketConnect_inetSocket(int port, int ip0, int ip1, int ip2, int ip3, int socket_file_descriptor) {
   struct sockaddr_in sockaddr;
   int output;
@@ -339,7 +339,7 @@ CL_DEFUN int sockets_internal__ll_socketConnect_inetSocket(int port, int ip0, in
 
 CL_LAMBDA(fd vector);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketPeername_inetSocket");
+CL_DOCSTRING(R"doc(ll_socketPeername_inetSocket)doc")
 CL_DEFUN int sockets_internal__ll_socketPeername_inetSocket(int fd, core::Vector_sp vector) {
   /* @01; */
   struct sockaddr_in name;
@@ -365,7 +365,7 @@ CL_DEFUN int sockets_internal__ll_socketPeername_inetSocket(int fd, core::Vector
 
 CL_LAMBDA(fd vector);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketName");
+CL_DOCSTRING(R"doc(ll_socketName)doc")
 CL_DEFUN int sockets_internal__ll_socketName(int fd, core::Vector_sp vector) {
   /* @01 */
   struct sockaddr_in name;
@@ -393,7 +393,7 @@ CL_DEFUN int sockets_internal__ll_socketName(int fd, core::Vector_sp vector) {
 
 CL_LAMBDA(fd vbuffer length secondAddress ip0 ip1 ip2 ip3 oob eor dontroute dontwait nosignal confirm);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketSendAddress");
+CL_DOCSTRING(R"doc(ll_socketSendAddress)doc")
 CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,            //#0
                                    core::Vector_sp vbuffer, //#1
                                    int length,        //#2
@@ -452,7 +452,7 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,        
 
 CL_LAMBDA(fb buffer length oob eor dontroute dontwait nosignal confirm);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketSendNoAddress");
+CL_DOCSTRING(R"doc(ll_socketSendNoAddress)doc")
 CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendNoAddress(int fb,            //#0
                                   core::Vector_sp vbuffer, //#1
                                   int length,        //#2
@@ -488,7 +488,7 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendNoAddress(int fb,      
 
 CL_LAMBDA(fd name family);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketBind_localSocket");
+CL_DOCSTRING(R"doc(ll_socketBind_localSocket)doc")
 CL_DEFUN int sockets_internal__ll_socketBind_localSocket(int fd, const string &name, int family) {
   struct sockaddr_un sockaddr;
   //	size_t size;
@@ -508,7 +508,7 @@ CL_DEFUN int sockets_internal__ll_socketBind_localSocket(int fd, const string &n
 
 CL_LAMBDA(socket-file-descriptor);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketAccept_localSocket");
+CL_DOCSTRING(R"doc(ll_socketAccept_localSocket)doc")
 CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_localSocket(int socketFileDescriptor) {
   struct sockaddr_un sockaddr;
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_un);
@@ -525,7 +525,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_localSocket(int socketFile
 
 CL_LAMBDA(fd family path);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketConnect_localSocket");
+CL_DOCSTRING(R"doc(ll_socketConnect_localSocket)doc")
 CL_DEFUN int sockets_internal__ll_socketConnect_localSocket(int fd, int family, const string &path) {
   struct sockaddr_un sockaddr;
   int output;
@@ -545,7 +545,7 @@ CL_DEFUN int sockets_internal__ll_socketConnect_localSocket(int fd, int family, 
 
 CL_LAMBDA(fd);
 CL_DECLARE();
-CL_DOCSTRING("ll_socketPeername_localSocket");
+CL_DOCSTRING(R"doc(ll_socketPeername_localSocket)doc")
 CL_DEFUN core::T_sp sockets_internal__ll_socketPeername_localSocket(int fd) {
   struct sockaddr_un name;
   socklen_t len = sizeof(struct sockaddr_un);
@@ -564,14 +564,14 @@ CL_DEFUN core::T_sp sockets_internal__ll_socketPeername_localSocket(int fd) {
 
 CL_LAMBDA(fd);
 CL_DECLARE();
-CL_DOCSTRING("ll_nonBlockingMode");
+CL_DOCSTRING(R"doc(ll_nonBlockingMode)doc")
 CL_DEFUN int sockets_internal__ll_nonBlockingMode(int fd) {
   return fcntl(fd, F_GETFL, NULL) & O_NONBLOCK;
 }
 
 CL_LAMBDA(fd nblock);
 CL_DECLARE();
-CL_DOCSTRING("ll_setfNonBlockingMode");
+CL_DOCSTRING(R"doc(ll_setfNonBlockingMode)doc")
 CL_DEFUN int sockets_internal__ll_setfNonBlockingMode(int fd, int nblock) {
   int oldflags = fcntl(fd, F_GETFL, NULL);
   int newflags = (oldflags & ~O_NONBLOCK) |
@@ -584,14 +584,14 @@ CL_DEFUN int sockets_internal__ll_setfNonBlockingMode(int fd, int nblock) {
 
 CL_LAMBDA(fd);
 CL_DECLARE();
-CL_DOCSTRING("ll_dup");
+CL_DOCSTRING(R"doc(ll_dup)doc")
 CL_DEFUN int sockets_internal__ll_dup(int fd) {
   return dup(fd);
 }
 
 CL_LAMBDA(name fd stream-mode element-type external-format);
 CL_DECLARE();
-CL_DOCSTRING("ll_makeStreamFromFd");
+CL_DOCSTRING(R"doc(ll_makeStreamFromFd)doc")
 CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string &name,  //#0
                             int fd,              //#1
                             int streamMode,      //#2
@@ -619,7 +619,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string &name,  /
 
 CL_LAMBDA(stream);
 CL_DECLARE();
-CL_DOCSTRING("ll_autoCloseTwoWayStream");
+CL_DOCSTRING(R"doc(ll_autoCloseTwoWayStream)doc")
 CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::Stream_sp stream) {
 #if 0
 	IMPLEMENT_MEF("Handle ECL_STREAM_CLOSE_COMPONENTS");
@@ -629,21 +629,21 @@ CL_DEFUN void sockets_internal__ll_autoCloseTwoWayStream(core::Stream_sp stream)
 
 CL_LAMBDA(num);
 CL_DECLARE();
-CL_DOCSTRING("ll_strerror");
+CL_DOCSTRING(R"doc(ll_strerror)doc")
 CL_DEFUN core::String_sp sockets_internal__ll_strerror(int num) {
   return core::SimpleBaseString_O::make(strerror(num));
 }
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("ll_strerror_errno");
+CL_DOCSTRING(R"doc(ll_strerror_errno)doc")
 CL_DEFUN core::String_sp sockets_internal__ll_strerror_errno() {
   return core::SimpleBaseString_O::make(strerror(errno));
 }
 
 CL_LAMBDA(fd level constant);
 CL_DECLARE();
-CL_DOCSTRING("ll_getSockoptInt");
+CL_DOCSTRING(R"doc(ll_getSockoptInt)doc")
 CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptInt(int fd, int level, int constant) {
   /* (c-inline (fd level const) (:int :int :int) t   ) */
   int sockopt, ret;
@@ -658,7 +658,7 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptInt(int fd, int level, 
 
 CL_LAMBDA(fd level constant);
 CL_DECLARE();
-CL_DOCSTRING("ll_getSockoptBool");
+CL_DOCSTRING(R"doc(ll_getSockoptBool)doc")
 CL_DEFUN core::T_sp sockets_internal__ll_getSockoptBool(int fd, int level, int constant) {
   int sockopt, ret;
   socklen_t socklen = sizeof(int);
@@ -671,7 +671,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_getSockoptBool(int fd, int level, int c
 
 CL_LAMBDA(fd level constant);
 CL_DECLARE();
-CL_DOCSTRING("ll_getSockoptTimeval");
+CL_DOCSTRING(R"doc(ll_getSockoptTimeval)doc")
 CL_DEFUN core::DoubleFloat_sp sockets_internal__ll_getSockoptTimeval(int fd, int level, int constant) {
   struct timeval tv;
   socklen_t socklen = sizeof(struct timeval);
@@ -684,7 +684,7 @@ CL_DEFUN core::DoubleFloat_sp sockets_internal__ll_getSockoptTimeval(int fd, int
 
 CL_LAMBDA(fd level constant);
 CL_DECLARE();
-CL_DOCSTRING("ll_getSockoptLinger");
+CL_DOCSTRING(R"doc(ll_getSockoptLinger)doc")
 CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptLinger(int fd, int level, int constant) {
   struct linger sockopt;
   socklen_t socklen = sizeof(struct linger);
@@ -699,7 +699,7 @@ CL_DEFUN core::Integer_sp sockets_internal__ll_getSockoptLinger(int fd, int leve
 
 CL_LAMBDA(fd level constant value);
 CL_DECLARE();
-CL_DOCSTRING("ll_setSockoptInt");
+CL_DOCSTRING(R"doc(ll_setSockoptInt)doc")
 CL_DEFUN bool sockets_internal__ll_setSockoptInt(int fd, int level, int constant, int value) {
   int sockopt = value;
   int ret;
@@ -713,7 +713,7 @@ CL_DEFUN bool sockets_internal__ll_setSockoptInt(int fd, int level, int constant
 
 CL_LAMBDA(fd level constant value);
 CL_DECLARE();
-CL_DOCSTRING("ll_setSockoptBool");
+CL_DOCSTRING(R"doc(ll_setSockoptBool)doc")
 CL_DEFUN bool sockets_internal__ll_setSockoptBool(int fd, int level, int constant, bool value) {
   int sockopt = value ? 1 : 0;
   int ret;
@@ -727,7 +727,7 @@ CL_DEFUN bool sockets_internal__ll_setSockoptBool(int fd, int level, int constan
 
 CL_LAMBDA(fd level constant value);
 CL_DECLARE();
-CL_DOCSTRING("ll_setSockoptTimeval");
+CL_DOCSTRING(R"doc(ll_setSockoptTimeval)doc")
 CL_DEFUN bool sockets_internal__ll_setSockoptTimeval(int fd, int level, int constant, double value) {
   struct timeval tv;
   double tmp = value;
@@ -744,7 +744,7 @@ CL_DEFUN bool sockets_internal__ll_setSockoptTimeval(int fd, int level, int cons
 
 CL_LAMBDA(fd level constant value);
 CL_DECLARE();
-CL_DOCSTRING("ll_setSockoptLinger");
+CL_DOCSTRING(R"doc(ll_setSockoptLinger)doc")
 CL_DEFUN bool sockets_internal__ll_setSockoptLinger(int fd, int level, int constant, int value) {
   struct linger sockopt = {0, 0};
   int ret;

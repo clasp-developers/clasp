@@ -1004,7 +1004,7 @@ namespace core {
 
 CL_LAMBDA(dest destStart orig origStart len);
 CL_DECLARE();
-CL_DOCSTRING("copy_subarray");
+CL_DOCSTRING("copy_subarray")
  CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len);  
 }; // namespace core
 

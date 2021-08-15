@@ -72,28 +72,28 @@ static String_sp string_trim0(bool left_trim, bool right_trim, T_sp char_bag, T_
 
 CL_LAMBDA(charbag str);
 CL_DECLARE();
-CL_DOCSTRING("string_trim");
+CL_DOCSTRING(R"doc(string_trim)doc")
 CL_DEFUN String_sp cl__string_trim(T_sp charbag, T_sp str) {
   return string_trim0(true, true, charbag, str);
 };
 
 CL_LAMBDA(charbag str);
 CL_DECLARE();
-CL_DOCSTRING("string_left_trim");
+CL_DOCSTRING(R"doc(string_left_trim)doc")
 CL_DEFUN String_sp cl__string_left_trim(T_sp charbag, T_sp str) {
   return string_trim0(true, false, charbag, str);
 };
 
 CL_LAMBDA(charbag str);
 CL_DECLARE();
-CL_DOCSTRING("string_right_trim");
+CL_DOCSTRING(R"doc(string_right_trim)doc")
 CL_DEFUN String_sp cl__string_right_trim(T_sp charbag, T_sp str) {
   return string_trim0(false, true, charbag, str);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("string");
+CL_DOCSTRING(R"doc(string)doc")
 CL_DEFUN String_sp cl__string(T_sp arg) {
   String_sp result = coerce::stringDesignator(arg);
   return (result);
@@ -101,7 +101,7 @@ CL_DEFUN String_sp cl__string(T_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("string_upcase");
+CL_DOCSTRING(R"doc(string_upcase)doc")
 CL_DEFUN SimpleString_sp cl__string_upcase(T_sp arg) {
   String_sp str = coerce::stringDesignator(arg);
   SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->element_type(),str->length(),false));
@@ -118,7 +118,7 @@ CL_DEFUN SimpleString_sp cl__string_upcase(T_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("string_downcase");
+CL_DOCSTRING(R"doc(string_downcase)doc")
 CL_DEFUN SimpleString_sp cl__string_downcase(T_sp arg) {
   String_sp str = coerce::stringDesignator(arg);
   SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->element_type(),str->length(),false));
@@ -133,7 +133,7 @@ CL_DEFUN SimpleString_sp cl__string_downcase(T_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("nstring_upcase");
+CL_DOCSTRING(R"doc(nstring_upcase)doc")
 CL_DEFUN String_sp cl__nstring_upcase(String_sp arg) {
   for ( cl_index i(0), iEnd(arg->length()); i<iEnd; ++i ) {
     arg->rowMajorAset(i,clasp_make_character(claspCharacter_upcase(arg->rowMajorAref(i).unsafe_character())));
@@ -143,7 +143,7 @@ CL_DEFUN String_sp cl__nstring_upcase(String_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("nstring_downcase");
+CL_DOCSTRING(R"doc(nstring_downcase)doc")
 CL_DEFUN String_sp cl__nstring_downcase(String_sp arg) {
   for ( cl_index i(0), iEnd(arg->length()); i<iEnd; ++i ) {
     arg->rowMajorAset(i,clasp_make_character(claspCharacter_downcase(arg->rowMajorAref(i).unsafe_character())));
@@ -782,7 +782,7 @@ if (gc::IsA<SimpleString_sp>(_string1_) ) {			    \
 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_EQ_");
+CL_DOCSTRING(R"doc(string_EQ_)doc")
 CL_DEFUN T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -793,7 +793,7 @@ CL_DEFUN T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_NE_");
+CL_DOCSTRING(R"doc(string_NE_)doc")
 CL_DEFUN T_sp cl__string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -804,7 +804,7 @@ CL_DEFUN T_sp cl__string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_LT_");
+CL_DOCSTRING(R"doc(string_LT_)doc")
 CL_DEFUN T_sp cl__string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -815,7 +815,7 @@ CL_DEFUN T_sp cl__string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_GT_");
+CL_DOCSTRING(R"doc(string_GT_)doc")
 CL_DEFUN T_sp cl__string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -826,7 +826,7 @@ CL_DEFUN T_sp cl__string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_LE_");
+CL_DOCSTRING(R"doc(string_LE_)doc")
 CL_DEFUN T_sp cl__string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -837,7 +837,7 @@ CL_DEFUN T_sp cl__string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_GE_");
+CL_DOCSTRING(R"doc(string_GE_)doc")
 CL_DEFUN T_sp cl__string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -848,7 +848,7 @@ CL_DEFUN T_sp cl__string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_equal");
+CL_DOCSTRING(R"doc(string_equal)doc")
 CL_DEFUN T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -859,7 +859,7 @@ CL_DEFUN T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_s
 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_not_equal");
+CL_DOCSTRING(R"doc(string_not_equal)doc")
 CL_DEFUN T_sp cl__string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -869,7 +869,7 @@ CL_DEFUN T_sp cl__string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1,
 }
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_lessp");
+CL_DOCSTRING(R"doc(string_lessp)doc")
 CL_DEFUN T_sp cl__string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -879,7 +879,7 @@ CL_DEFUN T_sp cl__string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_s
 }
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_greaterp");
+CL_DOCSTRING(R"doc(string_greaterp)doc")
 CL_DEFUN T_sp cl__string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -889,7 +889,7 @@ CL_DEFUN T_sp cl__string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, 
 }
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_not_greaterp");
+CL_DOCSTRING(R"doc(string_not_greaterp)doc")
 CL_DEFUN T_sp cl__string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -899,7 +899,7 @@ CL_DEFUN T_sp cl__string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp star
 }
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
-CL_DOCSTRING("string_not_lessp");
+CL_DOCSTRING(R"doc(string_not_lessp)doc")
 CL_DEFUN T_sp cl__string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
@@ -917,7 +917,7 @@ CL_DEFUN T_sp cl__string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1,
 
 CL_LAMBDA("size &key initial-element (element-type 'character)");
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: make_string");
+CL_DOCSTRING(R"doc(See CLHS: make_string)doc")
 CL_DEFUN T_sp cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element_type) {
   if (initial_element.nilp()) {
     initial_element = clasp_make_character(' ');
@@ -948,7 +948,7 @@ SYMBOL_EXPORT_SC_(ClPkg,simple_string);
 
 CL_LAMBDA(str index);
 CL_DECLARE();
-CL_DOCSTRING("CLHS schar");
+CL_DOCSTRING(R"doc(CLHS schar)doc")
 CL_DEFUN Character_sp cl__schar(AbstractSimpleVector_sp str, size_t idx) {
   if (SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>()) {
     return clasp_make_character((*sb)[idx]);
@@ -960,7 +960,7 @@ CL_DEFUN Character_sp cl__schar(AbstractSimpleVector_sp str, size_t idx) {
 
 
 CL_LAMBDA(str idx);
-CL_DOCSTRING("Common lisp char");
+CL_DOCSTRING(R"doc(Common lisp char)doc")
 CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
 /* Return the character at idx - ignore fill pointers */
   if ( SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>() ) {
@@ -978,7 +978,7 @@ CL_DEFUN Character_sp cl__char(String_sp str, size_t idx) {
 CL_LISPIFY_NAME("cl:char")
 CL_LAMBDA(c str index);
 CL_DECLARE();
-CL_DOCSTRING("CLHS (setf char)");
+CL_DOCSTRING(R"doc(CLHS (setf char))doc")
 CL_DEFUN_SETF Character_sp core__char_set(Character_sp c, String_sp str, size_t idx) {
   if ( SimpleBaseString_sp sb = str.asOrNull<SimpleBaseString_O>() ) {
     (*sb)[idx] = c.unsafe_character();
@@ -997,7 +997,7 @@ CL_DEFUN_SETF Character_sp core__char_set(Character_sp c, String_sp str, size_t 
 CL_LISPIFY_NAME("cl:schar");
 CL_LAMBDA(str index c);
 CL_DECLARE();
-CL_DOCSTRING("CLHS (setf schar)");
+CL_DOCSTRING(R"doc(CLHS (setf schar))doc")
 CL_DEFUN_SETF Character_sp core__schar_set(Character_sp c, String_sp str, size_t idx) {
   str->rowMajorAset(idx,c);
   return c;
@@ -1127,7 +1127,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
 
 CL_LAMBDA(string &key (start 0) end (radix 10) junk-allowed);
 CL_DECLARE();
-CL_DOCSTRING("parseInteger");
+CL_DOCSTRING(R"doc(parseInteger)doc")
 CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radix, T_sp junkAllowed) {
   Fixnum istart = std::max((Fixnum)0, start);
   Fixnum iend = cl__length(str);
@@ -1464,7 +1464,7 @@ T_sp template_search_string(const T1& sub, const T2& outer, size_t sub_start, si
 
 SYMBOL_EXPORT_SC_(CorePkg,search_string);
 CL_LAMBDA(sub sub_start sub_end outer outer_start outer_end);
-CL_DOCSTRING("search for the first occurance of sub in outer");
+CL_DOCSTRING(R"doc(search for the first occurance of sub in outer)doc")
 CL_DEFUN T_sp core__search_string(String_sp sub, size_t sub_start, size_t sub_end, String_sp outer, size_t outer_start, size_t outer_end) {
   TEMPLATE_STRING_DISPATCHER(sub,outer,template_search_string,sub_start,sub_end,outer_start,outer_end);
 };

@@ -563,7 +563,7 @@ CL_DEFUN  size_t cl__array_rank(Array_sp array)
 
 CL_LAMBDA(core::array);
 CL_DECLARE();
-CL_DOCSTRING("arrayDisplacement");
+CL_DOCSTRING(R"doc(arrayDisplacement)doc")
 CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
   unlikely_if (!gc::IsA<MDArray_sp>(array)) {
     return Values(nil<T_O>(),clasp_make_fixnum(0));
@@ -614,7 +614,7 @@ void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixn
 CL_LISPIFY_NAME("CL:aref");
 CL_LAMBDA(value array core:&va-rest indices);
 CL_DECLARE();
-CL_DOCSTRING("aset");
+CL_DOCSTRING(R"doc(aset)doc")
 CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
   cl_index rowMajorIndex = array->arrayRowMajorIndex(indices);
   array->rowMajorAset(rowMajorIndex,value);
@@ -783,7 +783,7 @@ size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& r
 namespace core {
 CL_LAMBDA(&rest args);
 CL_DECLARE();
-CL_DOCSTRING("vector");
+CL_DOCSTRING(R"doc(vector)doc")
 CL_DEFUN Vector_sp cl__vector(List_sp args) {
   SimpleVector_sp vec = SimpleVector_O::make(cl__length(args));
   vec->fillInitialContents(args);
@@ -792,7 +792,7 @@ CL_DEFUN Vector_sp cl__vector(List_sp args) {
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 CL_LAMBDA(dimension initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING("Make a (simple-vector t)");
+CL_DOCSTRING(R"doc(Make a (simple-vector t))doc")
 CL_DEFUN SimpleVector_sp core__make_simple_vector_t(size_t dimension,
                                                     T_sp initialElement, bool initialElementSuppliedP) {
   (void)initialElementSuppliedP; // ignore
@@ -802,7 +802,7 @@ CL_DEFUN SimpleVector_sp core__make_simple_vector_t(size_t dimension,
 #define DEFMAKESIMPLEVECTOR(TYPE, OBJECT, SMART)\
   CL_LAMBDA(dimension initial_element initial_element_supplied_p);\
   CL_DECLARE();\
-  CL_DOCSTRING("Make a (simple-vector " #TYPE ")");\
+  CL_DOCSTRING(R"doc(Make a (simple-vector " #TYPE "))doc")\
   CL_DEFUN SMART core__make_simple_vector_##TYPE(size_t dimension, T_sp initialElement, bool initialElementSuppliedP) {\
     OBJECT::value_type init = initialElementSuppliedP ? OBJECT::from_object(initialElement) : OBJECT::default_initial_element();\
     return OBJECT::make(dimension, init, initialElementSuppliedP);\
@@ -829,7 +829,7 @@ DEFMAKESIMPLEVECTOR(size_t, SimpleVector_size_t_O, SimpleVector_size_t_sp);
 
 CL_LAMBDA(dimensions initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING("Make a (simple-array t) that is not a vector");
+CL_DOCSTRING(R"doc(Make a (simple-array t) that is not a vector)doc")
 CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
                                                        T_sp initialElement, bool initialElementSuppliedP) {
   (void)initialElementSuppliedP;
@@ -839,7 +839,7 @@ CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
 #define DEFMAKESIMPLEMDARRAY(TYPE, OBJECT, SMART, SIMPLE)\
   CL_LAMBDA(dimension initial_element initial_element_supplied_p);\
   CL_DECLARE();\
-  CL_DOCSTRING("Make a (simple-array " #TYPE ") that is not a vector");\
+  CL_DOCSTRING(R"doc(Make a (simple-array " #TYPE ") that is not a vector)doc")\
   CL_DEFUN SMART core__make_simple_mdarray_##TYPE(List_sp dimensions, T_sp initialElement, bool initialElementSuppliedP) {\
     SIMPLE::value_type init = initialElementSuppliedP ? SIMPLE::from_object(initialElement) : SIMPLE::default_initial_element();\
     return OBJECT::make_multi_dimensional(dimensions, init, nil<T_O>());\
@@ -867,7 +867,7 @@ DEFMAKESIMPLEMDARRAY(size_t, SimpleMDArray_size_t_O, SimpleMDArray_size_t_sp, Si
 
 CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to (displaced_index_offset 0) initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING("Makes a vector based on the arguments. See si_make_vector in ecl>>array.d");
+CL_DOCSTRING(R"doc(Makes a vector based on the arguments. See si_make_vector in ecl>>array.d)doc")
 CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                                      size_t dimension,
                                      bool adjustable,
@@ -910,7 +910,7 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
 
 CL_LAMBDA(element_type dimension &optional initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING("Makes a static vector based on the arguments. See si_make_vector in ecl>>array.d");
+CL_DOCSTRING(R"doc(Makes a static vector based on the arguments. See si_make_vector in ecl>>array.d)doc")
 CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type,
                                             size_t dimension,
                                             T_sp initialElement,
@@ -944,7 +944,7 @@ CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type,
 
 CL_LAMBDA(dimensions element_type adjustable displaced_to displaced_index_offset initial_element initial_element_supplied_p);
 CL_DECLARE();
-CL_DOCSTRING("Makes a multidimensional array based on the arguments.");
+CL_DOCSTRING(R"doc(Makes a multidimensional array based on the arguments.)doc")
 CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
                                        T_sp element_type,
                                        bool adjustable,
@@ -987,14 +987,14 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
 
 CL_LAMBDA(newElement vector);
 CL_DECLARE();
-CL_DOCSTRING("vectorPush");
+CL_DOCSTRING(R"doc(vectorPush)doc")
 CL_DEFUN T_sp cl__vector_push(T_sp newElement, Vector_sp vec) {
   return vec->vectorPush(newElement);
 };
 
 CL_LAMBDA(newElement vector &optional (exension 0));
 CL_DECLARE();
-CL_DOCSTRING("vectorPushExtend");
+CL_DOCSTRING(R"doc(vectorPushExtend)doc")
 CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, size_t extension) {
   return vec->vectorPushExtend(newElement, extension);
 }
@@ -1094,7 +1094,7 @@ CL_DEFUN clasp_ffi::ForeignData_sp core__static_vector_pointer(Array_sp source, 
   return clasp_ffi::ForeignData_O::create((char*)source->rowMajorAddressOfElement_(0)+offset);
 }
 
-CL_DOCSTRING("Return the simple-vector that stores the data for this array - this is like sbcl sb-ext:array-storage-vector");
+CL_DOCSTRING(R"doc(Return the simple-vector that stores the data for this array - this is like sbcl sb-ext:array-storage-vector)doc")
 CL_DEFUN Array_sp ext__array_storage_vector(Array_sp source )
 {
   if (source->displacedToP()) {
@@ -1107,13 +1107,13 @@ CL_DEFUN Array_sp ext__array_storage_vector(Array_sp source )
   return bsv;
 }
 
-CL_DOCSTRING("Return a pointer to the data in the array source");
+CL_DOCSTRING(R"doc(Return a pointer to the data in the array source)doc")
 CL_DEFUN clasp_ffi::ForeignData_sp ext__array_pointer(Array_sp source )
 {
   return clasp_ffi::ForeignData_O::create(source->rowMajorAddressOfElement_(0));
 }
 
-CL_DOCSTRING("Pin the objects in the list in memory and then call the thunk");
+CL_DOCSTRING(R"doc(Pin the objects in the list in memory and then call the thunk)doc")
 CL_DEFUN T_mv ext__pinned_objects_funcall(List_sp objects, T_sp thunk)
 {
   size_t num = cl__length(objects);

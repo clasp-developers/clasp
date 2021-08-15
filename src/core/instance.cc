@@ -87,7 +87,7 @@ CL_DEFUN void core__rack_set(Rack_sp rack, size_t i, T_sp val) {
 
 CL_LAMBDA(instance class);
 CL_DECLARE();
-CL_DOCSTRING("instanceClassSet");
+CL_DOCSTRING(R"doc(instanceClassSet)doc")
 CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);

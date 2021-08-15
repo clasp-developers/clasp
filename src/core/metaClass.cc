@@ -159,7 +159,7 @@ bool subsetp(List_sp subset, List_sp superset) {
   
 CL_LAMBDA(low high);
 CL_DECLARE();
-CL_DOCSTRING("subclassp");
+CL_DOCSTRING(R"doc(subclassp)doc")
 CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
   ASSERT(clos__classp(low));
   ASSERT(clos__classp(high));

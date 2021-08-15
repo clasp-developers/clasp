@@ -42,7 +42,7 @@ CL_DEFUN inline bool cl__symbolp(T_sp obj) {
  
  CL_LAMBDA(arg);
  CL_DECLARE();
- CL_DOCSTRING("endp");
+ CL_DOCSTRING("endp")
 CL_DEFUN inline bool cl__endp(T_sp arg) {
   if (arg.consp())
     return false;
@@ -53,7 +53,7 @@ CL_DEFUN inline bool cl__endp(T_sp arg) {
 
  CL_LAMBDA(arg);
  CL_DECLARE();
- CL_DOCSTRING("atom");
+ CL_DOCSTRING("atom")
 inline CL_DEFUN bool cl__atom(T_sp obj) {
   return !obj.consp();
 }

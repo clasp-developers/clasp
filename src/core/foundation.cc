@@ -382,7 +382,7 @@ List_sp lisp_copy_default_special_bindings() {
 
 CL_LAMBDA(name);
 CL_DECLARE();
-CL_DOCSTRING("lispifyName");
+CL_DOCSTRING(R"doc(lispifyName)doc")
 CL_DEFUN String_sp core__lispify_name(String_sp name) {
   ASSERT(name.notnilp());
   string lispified = lispify_symbol_name(name->get_std_string());
@@ -409,7 +409,7 @@ void colon_split(const string& name, string& package_str, string& symbol_str)
 }
 
 CL_LAMBDA("name &optional (package \"\")");
-CL_DOCSTRING(R"(Intern the package:name or name/package combination)");
+CL_DOCSTRING(R"(Intern the package:name or name/package combination)")
 CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
 {
   std::string pkg_sym = magic_name(name,package);
@@ -477,7 +477,7 @@ CL_DOCSTRING(R"doc(* Arguments
 * Description
 Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, 
 run them through lispify_symbol_name and then recombine them as pkg:name.
-Then split them again (sorry) and return (values pkg:sym pkg sym).)doc");
+Then split them again (sorry) and return (values pkg:sym pkg sym).)doc")
 CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& package) {
   std::string pkg_sym = magic_name(name,package);
   std::string sym;

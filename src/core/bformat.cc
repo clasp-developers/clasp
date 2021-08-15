@@ -43,7 +43,7 @@ namespace core {
  */
 CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
-CL_DOCSTRING("Like CL format but uses C/boost format strings");
+CL_DOCSTRING(R"doc(Like CL format but uses C/boost format strings)doc")
 CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, List_sp args) {
   T_sp output;
   if (destination.nilp()) {
@@ -137,7 +137,7 @@ CL_DEFUN void core__fflush() {
 
 CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
-CL_DOCSTRING("Subset of CL format - this does the job until the real format is installed");
+CL_DOCSTRING(R"doc(Subset of CL format - this does the job until the real format is installed)doc")
 CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
   stringstream tf;
   if (cl__functionp(control)) {

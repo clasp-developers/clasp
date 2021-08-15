@@ -40,7 +40,7 @@ THE SOFTWARE.
 namespace llvmo {
 
 CL_LAMBDA(tagsym &optional (debug-version (quote llvm-sys:llvmdebug-version8)));
-CL_DOCSTRING("Convert a DW_TAG and version to an integer");
+CL_DOCSTRING(R"doc(Convert a DW_TAG and version to an integer)doc")
 CL_NAME(dw-tag);
 CL_DEFUN uint llvm_sys__dwTag(core::Symbol_sp tagsym, uint debugVersion) {
   core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(_sym_STARdwarfConstantsSTAR->symbolValue());

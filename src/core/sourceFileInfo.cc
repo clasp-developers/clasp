@@ -47,7 +47,7 @@ namespace core {
 
 CL_LAMBDA(name);
 CL_DECLARE();
-CL_DOCSTRING("sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index");
+CL_DOCSTRING(R"doc(sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index)doc")
 CL_DEFUN T_mv core__file_scope(T_sp sourceFile) {
   if (sourceFile.nilp()) {
     return core__file_scope(make_fixnum(0));
@@ -112,7 +112,7 @@ CL_DEFUN Integer_sp core__source_pos_info_file_handle(T_sp info) {
 
 CL_LAMBDA(source-pos-info);
 CL_DECLARE();
-CL_DOCSTRING("sourcePosInfoFilepos");
+CL_DOCSTRING(R"doc(sourcePosInfoFilepos)doc")
 CL_DEFUN Integer_sp core__source_pos_info_filepos(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {
@@ -127,7 +127,7 @@ uint clasp_sourcePosInfo_lineno(SourcePosInfo_sp info) {
 
 CL_LAMBDA(source-pos-info);
 CL_DECLARE();
-CL_DOCSTRING("sourcePosInfoLineno");
+CL_DOCSTRING(R"doc(sourcePosInfoLineno)doc")
 CL_DEFUN Fixnum_sp core__source_pos_info_lineno(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {
@@ -142,7 +142,7 @@ uint clasp_sourcePosInfo_column(SourcePosInfo_sp info) {
 
 CL_LAMBDA(source-pos-info);
 CL_DECLARE();
-CL_DOCSTRING("sourcePosInfoColumn");
+CL_DOCSTRING(R"doc(sourcePosInfoColumn)doc")
 CL_DEFUN Fixnum_sp core__source_pos_info_column(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {
@@ -271,7 +271,7 @@ const char *FileScope_O::permanentFileName() {
 
 SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
 
-CL_DOCSTRING(R"doc(Like make-pathname lets you build a source-pos-info object from scratch or by referencing a defaults source-pos-info that provides default information)doc");
+CL_DOCSTRING(R"doc(Like make-pathname lets you build a source-pos-info object from scratch or by referencing a defaults source-pos-info that provides default information)doc")
 CL_LAMBDA(&key (filename "-nofile-" filenamep) (filepos 0 fileposp) (lineno 0 linenop) (column 0 columnp) (function-scope nil function_scope_p) (inlined-at nil inlined_at_p) (defaults nil defaults_p));
 CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno, bool linenop, size_t column, bool columnp, T_sp function_scope, bool function_scope_p, T_sp inlined_at, bool inlined_at_p, T_sp defaults, bool defaults_p )
 {

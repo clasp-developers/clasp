@@ -42,7 +42,7 @@ namespace core {
 
 CL_LAMBDA(record key sub-key);
 CL_DECLARE();
-CL_DOCSTRING("record_cons - see ECL helpfile.lsp>>record-cons");
+CL_DOCSTRING(R"doc(record_cons - see ECL helpfile.lsp>>record-cons)doc")
 CL_DEFUN T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
   Cons_sp cons = Cons_O::create(key, sub_key);
   for (auto cur : coerce_to_list(record)) {
@@ -55,7 +55,7 @@ CL_DEFUN T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
 
 CL_LAMBDA(record key sub-key);
 CL_DECLARE();
-CL_DOCSTRING("record_field see ecl>>helpfile.lsp>>record-field");
+CL_DOCSTRING(R"doc(record_field see ecl>>helpfile.lsp>>record-field)doc")
 CL_DEFUN T_sp core__record_field(List_sp record, T_sp key, T_sp sub_key) {
   List_sp cons = core__record_cons(record, key, sub_key);
   return oCdr(cons);
@@ -63,7 +63,7 @@ CL_DEFUN T_sp core__record_field(List_sp record, T_sp key, T_sp sub_key) {
 
 CL_LAMBDA(record key sub-key value);
 CL_DECLARE();
-CL_DOCSTRING("set_record_field");
+CL_DOCSTRING(R"doc(set_record_field)doc")
 CL_DEFUN T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, T_sp value) {
   List_sp field = gc::As<List_sp>(core__record_cons(record, key, sub_key));
   if (field.notnilp()) {
@@ -78,7 +78,7 @@ CL_DEFUN T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, T_s
 
 CL_LAMBDA(record key sub-key);
 CL_DECLARE();
-CL_DOCSTRING("rem_record_field");
+CL_DOCSTRING(R"doc(rem_record_field)doc")
 CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
   List_sp x = core__record_cons(record, key, sub_key);
   if (x.notnilp()) {
@@ -96,7 +96,7 @@ CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
 
 CL_LAMBDA(object key sub-key value);
 CL_DECLARE();
-CL_DOCSTRING("annotate - see ecl>>helpfile.lsp>>annotate; **key** is either 'documentation or 'setf-documentation **object** must be a symbol");
+CL_DOCSTRING(R"doc(annotate - see ecl>>helpfile.lsp>>annotate; **key** is either 'documentation or 'setf-documentation **object** must be a symbol)doc")
 CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value) {
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
   List_sp record = coerce_to_list(dict->gethash(object, nil<T_O>()));
@@ -107,7 +107,7 @@ CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value) {
 
 
 CL_LAMBDA(object key sub-key);
-CL_DOCSTRING(R"(Remove an annotation)");
+CL_DOCSTRING(R"(Remove an annotation)")
 CL_DEFUN void ext__remove_annotation(T_sp object, T_sp key, T_sp sub_key) {
   T_sp tdict = oCar(core::_sym_STARdocumentation_poolSTAR->symbolValue());
   if (tdict.notnilp()) {
@@ -124,13 +124,13 @@ CL_DEFUN void ext__remove_annotation(T_sp object, T_sp key, T_sp sub_key) {
 
 CL_LAMBDA(sub-key symbol value);
 CL_DECLARE();
-CL_DOCSTRING("ensure_documentation");
+CL_DOCSTRING(R"doc(ensure_documentation)doc")
 CL_DEFUN void core__ensure_documentation(T_sp sub_key, Symbol_sp symbol, String_sp value) {
   ext__annotate(symbol, cl::_sym_documentation, sub_key, value);
 };
 
 CL_LAMBDA(object doc-type string);
-CL_DOCSTRING("Set the documentation of an object");
+CL_DOCSTRING(R"doc(Set the documentation of an object)doc")
 CL_DEFUN T_sp core__set_documentation(T_sp object, T_sp doc_type, T_sp string) {
   if ( !(cl__stringp(string) || string.nilp()) ) {
     SIMPLE_ERROR(BF("%s is not a valid documentation string") % _rep_(string));

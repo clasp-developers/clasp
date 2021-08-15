@@ -57,7 +57,7 @@ void extra_argument(char macro, T_sp sin, T_sp arg) {
 
 CL_LAMBDA(tochar fromchar &optional (toreadtable *readtable*) (fromreadtable nil fromreadtablep));
 CL_DECLARE();
-CL_DOCSTRING("setSyntaxFromChar");
+CL_DOCSTRING(R"doc(setSyntaxFromChar)doc")
 CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromChar, T_sp ttoReadTable, T_sp tfromReadTable, T_sp fromReadTableP) {
   if (gc::IsA<Readtable_sp>(ttoReadTable)) {
     Readtable_sp toReadTable = gc::As_unsafe<Readtable_sp>(ttoReadTable);
@@ -96,7 +96,7 @@ CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromCha
 
 CL_LAMBDA(char &optional non-terminating-p (readtable *readtable*));
 CL_DECLARE();
-CL_DOCSTRING("makeDispatchMacroCharacter");
+CL_DOCSTRING(R"doc(makeDispatchMacroCharacter)doc")
 CL_DEFUN T_sp cl__make_dispatch_macro_character(Character_sp ch, T_sp nonTerminatingP, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) {
     gc::As_unsafe<Readtable_sp>(readtable)->make_dispatch_macro_character_(ch, nonTerminatingP);
@@ -107,7 +107,7 @@ CL_DEFUN T_sp cl__make_dispatch_macro_character(Character_sp ch, T_sp nonTermina
 
 CL_LAMBDA(char &optional (readtable *readtable*));
 CL_DECLARE();
-CL_DOCSTRING("getMacroCharacter");
+CL_DOCSTRING(R"doc(getMacroCharacter)doc")
 CL_DEFUN T_mv cl__get_macro_character(Character_sp chr, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) {
     return gc::As_unsafe<Readtable_sp>(readtable)->get_macro_character_(chr);
@@ -117,7 +117,7 @@ CL_DEFUN T_mv cl__get_macro_character(Character_sp chr, T_sp readtable) {
 
 CL_LAMBDA(&optional (from-readtable cl:*readtable*) to-readtable);
 CL_DECLARE();
-CL_DOCSTRING("clhs: copy-readtable");
+CL_DOCSTRING(R"doc(clhs: copy-readtable)doc")
 CL_DEFUN T_sp cl__copy_readtable(T_sp fromReadTable, T_sp toReadTable) {
   if (fromReadTable.nilp()) {
     return Readtable_O::create_standard_readtable();
@@ -136,7 +136,7 @@ CL_DEFUN T_sp cl__copy_readtable(T_sp fromReadTable, T_sp toReadTable) {
 
 CL_LAMBDA(readtable);
 CL_DECLARE();
-CL_DOCSTRING("clhs: readtable-case");
+CL_DOCSTRING(R"doc(clhs: readtable-case)doc")
 CL_DEFUN T_sp cl__readtable_case(T_sp readtable) {
   // FIXME: Should be possible to declare readtable Readtable_sp, but isn't
   if (gc::IsA<Readtable_sp>(readtable))
@@ -147,7 +147,7 @@ CL_DEFUN T_sp cl__readtable_case(T_sp readtable) {
 CL_LISPIFY_NAME("cl:readtable-case")
 CL_LAMBDA(mode readtable);
 CL_DECLARE();
-CL_DOCSTRING("clhs: (setf readtable-case)");
+CL_DOCSTRING(R"doc(clhs: (setf readtable-case))doc")
 CL_DEFUN_SETF T_sp core__readtable_case_set(T_sp mode, T_sp readTable) {
   if (gc::IsA<Readtable_sp>(readTable)) 
     return gc::As_unsafe<Readtable_sp>(readTable)->setf_readtable_case_(gc::As<Symbol_sp>(mode));
@@ -156,7 +156,7 @@ CL_DEFUN_SETF T_sp core__readtable_case_set(T_sp mode, T_sp readTable) {
 
 CL_LAMBDA(dispChar subChar newFunction &optional (readtable *readtable*));
 CL_DECLARE();
-CL_DOCSTRING("setDispatchMacroCharacter");
+CL_DOCSTRING(R"doc(setDispatchMacroCharacter)doc")
 CL_DEFUN T_sp cl__set_dispatch_macro_character(Character_sp dispChar, Character_sp subChar, T_sp newFunctionDesig, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) {
     return gc::As_unsafe<Readtable_sp>(readtable)->set_dispatch_macro_character_(dispChar, subChar, newFunctionDesig);
@@ -166,7 +166,7 @@ CL_DEFUN T_sp cl__set_dispatch_macro_character(Character_sp dispChar, Character_
 
 CL_LAMBDA(dispChar subChar &optional (readtable *readtable*));
 CL_DECLARE();
-CL_DOCSTRING("getDispatchMacroCharacter");
+CL_DOCSTRING(R"doc(getDispatchMacroCharacter)doc")
 CL_DEFUN T_sp cl__get_dispatch_macro_character(Character_sp dispChar, Character_sp subChar, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) 
     return gc::As_unsafe<Readtable_sp>(readtable)->get_dispatch_macro_character_(dispChar, subChar);
@@ -175,7 +175,7 @@ CL_DEFUN T_sp cl__get_dispatch_macro_character(Character_sp dispChar, Character_
 
 CL_LAMBDA(ch func-desig &optional non-terminating-p (readtable *readtable*));
 CL_DECLARE();
-CL_DOCSTRING("setMacroCharacter");
+CL_DOCSTRING(R"doc(setMacroCharacter)doc")
 CL_DEFUN T_sp cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non_terminating_p, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) 
     return gc::As_unsafe<Readtable_sp>(readtable)->set_macro_character_(ch,func_desig,non_terminating_p);
@@ -184,7 +184,7 @@ CL_DEFUN T_sp cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non
 
 CL_LAMBDA(readtable chr);
 CL_DECLARE();
-CL_DOCSTRING("Return the syntax type of chr. Either :whitespace, :terminating-macro, :non-terminating-macro, :constituent, :single-escape, :multiple-escape, or :invalid.");
+CL_DOCSTRING(R"doc(Return the syntax type of chr. Either :whitespace, :terminating-macro, :non-terminating-macro, :constituent, :single-escape, :multiple-escape, or :invalid.)doc")
 CL_DEFUN T_sp core__syntax_type(T_sp readtable, Character_sp chr) {
   if (gc::IsA<Readtable_sp>(readtable))
     return gc::As_unsafe<Readtable_sp>(readtable)->syntax_type_(chr);
@@ -193,7 +193,7 @@ CL_DEFUN T_sp core__syntax_type(T_sp readtable, Character_sp chr) {
 
 CL_LAMBDA(syntax-type readtable chr);
 CL_DECLARE();
-CL_DOCSTRING("Return the syntax type of chr. Either :whitespace, :terminating-macro, :non-terminating-macro, :constituent, :single-escape, :multiple-escape, or :invalid.");
+CL_DOCSTRING(R"doc(Return the syntax type of chr. Either :whitespace, :terminating-macro, :non-terminating-macro, :constituent, :single-escape, :multiple-escape, or :invalid.)doc")
  CL_DEFUN T_sp core__setf_syntax_type(T_sp syntax_type, T_sp readtable, Character_sp chr) {
   if (gc::IsA<Readtable_sp>(readtable))
     return gc::As_unsafe<Readtable_sp>(readtable)->set_syntax_type_(chr,syntax_type);
@@ -217,7 +217,7 @@ SYMBOL_SC_(CorePkg, STARstandard_readtableSTAR);
 
 CL_LAMBDA(stream chr);
 CL_DECLARE();
-CL_DOCSTRING("reader_double_quote_string");
+CL_DOCSTRING(R"doc(reader_double_quote_string)doc")
 CL_DEFUN T_sp core__reader_double_quote_string(T_sp stream, Character_sp ch) {
   claspCharacter delimiter = clasp_as_claspCharacter(ch);
   // Create a wide character string buffer
@@ -242,7 +242,7 @@ CL_DEFUN T_sp core__reader_double_quote_string(T_sp stream, Character_sp ch) {
 
 CL_LAMBDA(sin ch);
 CL_DECLARE();
-CL_DOCSTRING("reader_backquoted_expression");
+CL_DOCSTRING(R"doc(reader_backquoted_expression)doc")
 CL_DEFUN T_mv core__reader_backquoted_expression(T_sp sin, Character_sp ch) {
   Fixnum_sp backquote_level = gc::As<Fixnum_sp>(_sym_STARbackquote_levelSTAR->symbolValue());
   Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level) + 1);
@@ -255,7 +255,7 @@ CL_DEFUN T_mv core__reader_backquoted_expression(T_sp sin, Character_sp ch) {
 
 CL_LAMBDA(sin ch);
 CL_DECLARE();
-CL_DOCSTRING("Error signaler for when a comma (or splice) is outside a backquote.");
+CL_DOCSTRING(R"doc(Error signaler for when a comma (or splice) is outside a backquote.)doc")
 CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
   FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
   // FIXME: Use a real condition class.
@@ -279,7 +279,7 @@ CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
 
 CL_LAMBDA(sin ch);
 CL_DECLARE();
-CL_DOCSTRING("reader_comma_form");
+CL_DOCSTRING(R"doc(reader_comma_form)doc")
 CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
   Fixnum_sp backquote_level = gc::As<Fixnum_sp>(_sym_STARbackquote_levelSTAR->symbolValue());
   // Note that backquote_level is a fixnum, i.e. shifted, so comparisons could be dangerous.
@@ -305,7 +305,7 @@ CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
 
 CL_PRIORITY(1);
 CL_DECLARE();
-CL_DOCSTRING("reader_list_allow_consing_dot");
+CL_DOCSTRING(R"doc(reader_list_allow_consing_dot)doc")
 CL_DEFUN T_sp core__reader_list_allow_consing_dot(T_sp sin, Character_sp ch) {
   List_sp list = read_list(sin, ')', true);
   return list;
@@ -313,7 +313,7 @@ CL_DEFUN T_sp core__reader_list_allow_consing_dot(T_sp sin, Character_sp ch) {
 
 CL_LAMBDA(sin ch);
 CL_DECLARE();
-CL_DOCSTRING("reader_error_unmatched_close_parenthesis");
+CL_DOCSTRING(R"doc(reader_error_unmatched_close_parenthesis)doc")
 CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch) {
   FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
   string fn = info->fileName();
@@ -335,7 +335,7 @@ CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character
 
 CL_LAMBDA(sin ch);
 CL_DECLARE();
-CL_DOCSTRING("reader_quote");
+CL_DOCSTRING(R"doc(reader_quote)doc")
 CL_DEFUN T_sp core__reader_quote(T_sp sin, Character_sp ch) {
   //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__file_scope(sin));
   ql::list acc;
@@ -347,7 +347,7 @@ CL_DEFUN T_sp core__reader_quote(T_sp sin, Character_sp ch) {
 
 CL_LAMBDA(sin ch);
 CL_DECLARE();
-CL_DOCSTRING("reader_skip_semicolon_comment");
+CL_DOCSTRING(R"doc(reader_skip_semicolon_comment)doc")
 CL_DEFUN T_mv core__reader_skip_semicolon_comment(T_sp sin, Character_sp ch) {
   ASSERT(clasp_input_stream_p(sin));
   stringstream str;
@@ -366,7 +366,7 @@ CL_DEFUN T_mv core__reader_skip_semicolon_comment(T_sp sin, Character_sp ch) {
 
 CL_LAMBDA(sin ch);
 CL_DECLARE();
-CL_DOCSTRING("dispatch_macro_character");
+CL_DOCSTRING(R"doc(dispatch_macro_character)doc")
 CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
   char cpeek = clasp_peek_char(sin);
   bool sawnumarg = false;
@@ -415,7 +415,7 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_backslash");
+CL_DOCSTRING(R"doc(sharp_backslash)doc")
 CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
   SafeBufferStr8Ns sslexemes;
   List_sp lexemes = collect_lexemes(ch, sin);
@@ -435,7 +435,7 @@ CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_dot");
+CL_DOCSTRING(R"doc(sharp_dot)doc")
 CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
   T_sp object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
@@ -451,7 +451,7 @@ CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_single_quote");
+CL_DOCSTRING(R"doc(sharp_single_quote)doc")
 CL_DEFUN T_sp core__sharp_single_quote(T_sp sin, Character_sp ch, T_sp num) {
   T_sp quoted_object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__file_scope(sin));
@@ -463,7 +463,7 @@ CL_DEFUN T_sp core__sharp_single_quote(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_left_parenthesis");
+CL_DOCSTRING(R"doc(sharp_left_parenthesis)doc")
 CL_DEFUN T_mv core__sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_sp*/ T_sp tnum) {
   Character_sp right_paren = clasp_make_character(')');
   T_sp olist = cl__read_delimited_list(right_paren, sin, _lisp->_true());
@@ -515,7 +515,7 @@ CL_DEFUN T_mv core__sharp_foreign_data_reader(T_sp tsin, Character_sp ch, /*Fixn
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_asterisk");
+CL_DOCSTRING(R"doc(sharp_asterisk)doc")
 CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
   int dimcount, dim = 0;
   stringstream pattern;
@@ -566,7 +566,7 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_colon");
+CL_DOCSTRING(R"doc(sharp_colon)doc")
 CL_DEFUN T_mv core__sharp_colon(T_sp sin, Character_sp ch, T_sp num) {
   // CHECKME
   List_sp lexemes = collect_lexemes(ch, sin);
@@ -582,7 +582,7 @@ CL_DEFUN T_mv core__sharp_colon(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream subchar radix);
 CL_DECLARE();
-CL_DOCSTRING("sharp_r");
+CL_DOCSTRING(R"doc(sharp_r)doc")
 CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, T_sp nradix) {
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     T_sp object = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
@@ -610,28 +610,28 @@ CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, T_sp nradix) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_b");
+CL_DOCSTRING(R"doc(sharp_b)doc")
 CL_DEFUN T_mv core__sharp_b(T_sp sin, Character_sp ch, T_sp num) {
   return core__sharp_r(sin, ch, make_fixnum(2));
 };
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_o");
+CL_DOCSTRING(R"doc(sharp_o)doc")
 CL_DEFUN T_mv core__sharp_o(T_sp sin, Character_sp ch, T_sp num) {
   return core__sharp_r(sin, ch, make_fixnum(8));
 };
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_x");
+CL_DOCSTRING(R"doc(sharp_x)doc")
 CL_DEFUN T_mv core__sharp_x(T_sp sin, Character_sp ch, T_sp num) {
   return core__sharp_r(sin, ch, make_fixnum(16));
 };
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_c");
+CL_DOCSTRING(R"doc(sharp_c)doc")
 CL_DEFUN T_mv core__sharp_c(T_sp sin, Character_sp ch, T_sp num) {
   T_sp olist = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
   List_sp list = olist;
@@ -650,7 +650,7 @@ CL_DEFUN T_mv core__sharp_c(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_a");
+CL_DOCSTRING(R"doc(sharp_a)doc")
 CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
    if (core::_sym_sharp_a_reader->fboundp())
      return eval::funcall(core::_sym_sharp_a_reader, sin, ch, num);
@@ -684,7 +684,7 @@ CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_s");
+CL_DOCSTRING(R"doc(sharp_s)doc")
 CL_DEFUN T_mv core__sharp_s(T_sp sin, Character_sp ch, T_sp num) {
    if (core::_sym_sharp_s_reader->fboundp())
      return eval::funcall(core::_sym_sharp_s_reader, sin, ch, num);
@@ -693,7 +693,7 @@ CL_DEFUN T_mv core__sharp_s(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_p");
+CL_DOCSTRING(R"doc(sharp_p)doc")
 CL_DEFUN T_mv core__sharp_p(T_sp sin, Character_sp ch, T_sp num) {
   bool suppress = cl::_sym_STARread_suppressSTAR->symbolValue().isTrue();
   if (num.notnilp() && !suppress)
@@ -710,7 +710,7 @@ CL_DEFUN T_mv core__sharp_p(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(feature-test);
 CL_DECLARE();
-CL_DOCSTRING("feature_p takes one argument - a feature test");
+CL_DOCSTRING(R"doc(feature_p takes one argument - a feature test)doc")
 CL_DEFUN T_sp core__reader_feature_p(T_sp feature_test) {
   if (feature_test.nilp())
     return nil<T_O>();
@@ -750,7 +750,7 @@ T_sp read_feature_test(T_sp sin) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_plus");
+CL_DOCSTRING(R"doc(sharp_plus)doc")
 CL_DEFUN T_mv core__sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
   T_sp feat = read_feature_test(sin);
   LOG(BF("feature[%s]") % _rep_(feat));
@@ -769,7 +769,7 @@ CL_DEFUN T_mv core__sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_minus");
+CL_DOCSTRING(R"doc(sharp_minus)doc")
 CL_DEFUN T_mv core__sharp_minus(T_sp sin, Character_sp ch, T_sp num) {
   T_sp feat = read_feature_test(sin);
   LOG(BF("feature[%s]") % _rep_(feat));
@@ -788,7 +788,7 @@ CL_DEFUN T_mv core__sharp_minus(T_sp sin, Character_sp ch, T_sp num) {
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
-CL_DOCSTRING("sharp_vertical_bar");
+CL_DOCSTRING(R"doc(sharp_vertical_bar)doc")
 CL_DEFUN T_mv core__sharp_vertical_bar(T_sp sin, Character_sp ch, T_sp num) {
   ASSERT(clasp_input_stream_p(sin));
   bool done = false;

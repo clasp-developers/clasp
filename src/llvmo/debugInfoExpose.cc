@@ -483,7 +483,7 @@ llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressI
 
 CL_LAMBDA(dwarfcontext sectioned-address);
 CL_LISPIFY_NAME(getAddressRangesForAddress);
-CL_DOCSTRING("Return the DWARF address ranges for the function DIE containing this address.");
+CL_DOCSTRING(R"doc(Return the DWARF address ranges for the function DIE containing this address.)doc")
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddress_sp sa) {
   auto eranges = getAddressRangesForAddressInner(dc, sa);

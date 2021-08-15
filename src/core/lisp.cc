@@ -1428,7 +1428,7 @@ T_mv Lisp::readEvalPrintString(const string &code, T_sp environ, bool printResul
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("lowLevelRepl - this is a built in repl for when the top-level repl isn't available");
+CL_DOCSTRING(R"doc(lowLevelRepl - this is a built in repl for when the top-level repl isn't available)doc")
 CL_DEFUN void core__low_level_repl() {
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   if ( features.notnilp() ) {
@@ -1438,7 +1438,7 @@ CL_DEFUN void core__low_level_repl() {
   }
 };
 
-CL_DOCSTRING("Return a list of all single dispatch generic functions.");
+CL_DOCSTRING(R"doc(Return a list of all single dispatch generic functions.)doc")
 CL_DEFUN List_sp core__singleDispatchGenericFunctions()
 {
   List_sp result = _lisp->_Roots._SingleDispatchGenericFunctions.load();
@@ -1453,12 +1453,12 @@ CL_DEFUN bool core__noprint_p() {
   return globals_->_NoPrint;
 }
 
-CL_DOCSTRING("Enable the system debugger if it has been disabled by disable-debugger.");
+CL_DOCSTRING(R"doc(Enable the system debugger if it has been disabled by disable-debugger.)doc")
 CL_DEFUN void ext__enable_debugger() {
   globals_->_DebuggerDisabled = false;
 }
 
-CL_DOCSTRING("Disable the system debugger. If the debugger is disabled, then if invoke-debugger is called, *invoke-debugger-hook* and/or *debugger-hook* are called as normal. However, if the default debugger would be entered, Clasp will instead dump a backtrace and exit with a non-zero code.");
+CL_DOCSTRING(R"doc(Disable the system debugger. If the debugger is disabled, then if invoke-debugger is called, *invoke-debugger-hook* and/or *debugger-hook* are called as normal. However, if the default debugger would be entered, Clasp will instead dump a backtrace and exit with a non-zero code.)doc")
 CL_DEFUN void ext__disable_debugger() {
   globals_->_DebuggerDisabled = true;
 }
@@ -1489,7 +1489,7 @@ void Lisp::readEvalPrintInteractive() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("stackUsed");
+CL_DOCSTRING(R"doc(stackUsed)doc")
 CL_DEFUN size_t core__stack_used() {
   int x;
   char *xaddr = (char *)(&x);
@@ -1527,7 +1527,7 @@ void stackSizeWarning(size_t stackUsed) {
 
 CL_LAMBDA(&optional fn);
 CL_DECLARE();
-CL_DOCSTRING("monitor stack for problems - warn if getting too large");
+CL_DOCSTRING(R"doc(monitor stack for problems - warn if getting too large)doc")
 CL_DEFUN void core__stack_monitor(T_sp fn) {
   uint stackUsed = core__stack_used();
   if (stackUsed > globals_->_StackSampleMax)
@@ -1553,14 +1553,14 @@ CL_DEFUN void core__stack_monitor(T_sp fn) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("Return the stack warn size");
+CL_DOCSTRING(R"doc(Return the stack warn size)doc")
 CL_DEFUN T_sp core__stack_limit() {
   return clasp_make_fixnum(globals_->_StackWarnSize);
 };
 
 CL_LAMBDA(&key warn-size sample-size);
 CL_DECLARE();
-CL_DOCSTRING("setupStackMonitor");
+CL_DOCSTRING(R"doc(setupStackMonitor)doc")
 CL_DEFUN void core__setup_stack_monitor(T_sp warnSize, T_sp sampleSize) {
   if (!warnSize.nilp()) {
     globals_->_StackWarnSize = unbox_fixnum(gc::As<Fixnum_sp>(warnSize));
@@ -1574,7 +1574,7 @@ CL_DEFUN void core__setup_stack_monitor(T_sp warnSize, T_sp sampleSize) {
 
 CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
-CL_DOCSTRING("exit");
+CL_DOCSTRING(R"doc(exit)doc")
 CL_DEFUN void core__exit(int exitValue) {
   gctools::global_debuggerOnSIGABRT = false;
   if (exitValue != 0) {
@@ -1587,33 +1587,33 @@ CL_DEFUN void core__exit(int exitValue) {
 
 CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
-CL_DOCSTRING("C exit");
+CL_DOCSTRING(R"doc(C exit)doc")
 CL_DEFUN void core__cexit(int exitValue) {
   exit(exitValue);
 };
 
 CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
-CL_DOCSTRING("C exit");
+CL_DOCSTRING(R"doc(C exit)doc")
 CL_DEFUN void core__c_UNDERSCORE_exit(int exitValue) {
   _exit(exitValue);
 };
 
 CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
-CL_DOCSTRING("quit");
+CL_DOCSTRING(R"doc(quit)doc")
 CL_DEFUN void core__quit(int exitValue) {
   core__exit(exitValue);
 };
 
-CL_DOCSTRING("abort");
+CL_DOCSTRING(R"doc(abort)doc")
 CL_DEFUN void core__cabort() {
   abort();
 };
 
 CL_LAMBDA(key datum alist);
 CL_DECLARE();
-CL_DOCSTRING("acons");
+CL_DOCSTRING(R"doc(acons)doc")
 CL_DEFUN List_sp cl__acons(T_sp key, T_sp val, T_sp alist) {
   Cons_sp acons = Cons_O::create(key, val);
   return Cons_O::create(acons, alist);
@@ -1621,7 +1621,7 @@ CL_DEFUN List_sp cl__acons(T_sp key, T_sp val, T_sp alist) {
 
 CL_LAMBDA(item alist &key key test test-not);
 CL_DECLARE();
-CL_DOCSTRING("assoc");
+CL_DOCSTRING(R"doc(assoc)doc")
 CL_DEFUN List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test, T_sp test_not) {
   if (alist.nilp())
     return alist;
@@ -1630,7 +1630,7 @@ CL_DEFUN List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test, T_sp t
 
 CL_LAMBDA(item list &key key test test-not);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS member");
+CL_DOCSTRING(R"doc(See CLHS member)doc")
 CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not)
 {
   if (tlist.consp()) {
@@ -1644,7 +1644,7 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
 
 CL_LAMBDA(item list test test-not key);
 CL_DECLARE();
-CL_DOCSTRING("Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1");
+CL_DOCSTRING(R"doc(Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1)doc")
 CL_DEFUN List_sp core__member1(T_sp item, List_sp list, T_sp test, T_sp test_not, T_sp key) {
   if (list.nilp())
     return list;
@@ -1661,7 +1661,7 @@ CL_DEFUN List_sp core__member1(T_sp item, List_sp list, T_sp test, T_sp test_not
 
 CL_LAMBDA("&optional (prompt \"\")");
 CL_DECLARE();
-CL_DOCSTRING("getline");
+CL_DOCSTRING(R"doc(getline)doc")
 CL_DEFUN T_sp core__getline(String_sp prompt) {
   ASSERT(cl__stringp(prompt));
   string res;
@@ -1672,7 +1672,7 @@ CL_DEFUN T_sp core__getline(String_sp prompt) {
   return result;
 }
 
-CL_DOCSTRING("lookup-class-with-stamp");
+CL_DOCSTRING(R"doc(lookup-class-with-stamp)doc")
 CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
   HashTable_sp classNames = _lisp->_Roots._ClassTable;
   T_sp foundClass = nil<T_O>();
@@ -1687,7 +1687,7 @@ CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
 
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
-CL_DOCSTRING("Return the class holder that contains the class.");
+CL_DOCSTRING(R"doc(Return the class holder that contains the class.)doc")
 CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
 #ifdef SYMBOL_CLASS
   return symbol->find_class_holder();
@@ -1715,7 +1715,7 @@ CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
 
 CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
-CL_DOCSTRING("find-class");
+CL_DOCSTRING(R"doc(find-class)doc")
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   //ASSERTF(env.nilp(), BF("Handle non nil environment"));
 //  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
@@ -1736,7 +1736,7 @@ CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
 
 CL_LAMBDA(new-value name);
 CL_DECLARE();
-CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
+CL_DOCSTRING(R"doc(setf_find_class, set value to NIL to remove the class name )doc")
 CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
 #ifdef SYMBOL_CLASS
   name->setf_find_class(newValue);
@@ -1776,7 +1776,7 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
 
 CL_LAMBDA(partialPath);
 CL_DECLARE();
-CL_DOCSTRING("findFileInLispPath");
+CL_DOCSTRING(R"doc(findFileInLispPath)doc")
 CL_DEFUN T_sp core__find_file_in_lisp_path(String_sp partialPath) {
   ASSERT(cl__stringp(partialPath));
   LOG(BF("PartialPath=[%s]") % partialPath->get());
@@ -1787,7 +1787,7 @@ CL_DEFUN T_sp core__find_file_in_lisp_path(String_sp partialPath) {
 
 CL_LAMBDA(name-desig);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: find-package");
+CL_DOCSTRING(R"doc(See CLHS: find-package)doc")
 CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
   if (Package_sp pkg = name_desig.asOrNull<Package_O>())
     return pkg;
@@ -1798,7 +1798,7 @@ CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
 
 CL_LAMBDA(package-designator);
 CL_DECLARE();
-CL_DOCSTRING("selectPackage");
+CL_DOCSTRING(R"doc(selectPackage)doc")
 CL_DEFUN void core__select_package(T_sp package_designator) {
   Package_sp pkg = coerce::packageDesignator(package_designator);
   _lisp->selectPackage(pkg);
@@ -1814,7 +1814,7 @@ CL_DEFUN void core__select_package(T_sp package_designator) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("mpi_enabled");
+CL_DOCSTRING(R"doc(mpi_enabled)doc")
 CL_DEFUN T_sp core__mpi_enabled() {
   return _lisp->_boolean(_lisp->mpiEnabled());
 }
@@ -1828,7 +1828,7 @@ CL_DEFUN T_sp core__mpi_enabled() {
 */
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("Return the mpi_rank or 0 if mpi is disabled");
+CL_DOCSTRING(R"doc(Return the mpi_rank or 0 if mpi is disabled)doc")
 CL_DEFUN T_sp core__mpi_rank() {
   return make_fixnum(_lisp->mpiRank());
 }
@@ -1843,14 +1843,14 @@ CL_DEFUN T_sp core__mpi_rank() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("Return mpi_size or 0 if mpi is not enabled");
+CL_DOCSTRING(R"doc(Return mpi_size or 0 if mpi is not enabled)doc")
 CL_DEFUN T_sp core__mpi_size() {
   return make_fixnum(_lisp->mpiSize());
 }
 
 CL_LAMBDA(form &optional env);
 CL_DECLARE();
-CL_DOCSTRING("macroexpand_1");
+CL_DOCSTRING(R"doc(macroexpand_1)doc")
 CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
   T_sp expansionFunction = nil<T_O>();
   if (form.consp()) {
@@ -1873,7 +1873,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
 
 CL_LAMBDA(form &optional env);
 CL_DECLARE();
-CL_DOCSTRING("macroexpand");
+CL_DOCSTRING(R"doc(macroexpand)doc")
 CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
   ASSERT(env.generalp());
   bool sawAMacro = false;
@@ -1950,7 +1950,7 @@ void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_
 
 CL_LAMBDA(string-desig &optional package-desig);
 CL_DECLARE();
-CL_DOCSTRING("apropos");
+CL_DOCSTRING(R"doc(apropos)doc")
 CL_DEFUN T_sp cl__apropos(T_sp string_desig, T_sp package_desig) {
   ASSERT(cl__stringp(string_desig));
   // TODO: Switch to proper common lisp strings
@@ -1993,7 +1993,7 @@ public:
 
 CL_LAMBDA(sequence predicate &key key);
 CL_DECLARE();
-CL_DOCSTRING("Like CLHS: sort but does not support key");
+CL_DOCSTRING(R"doc(Like CLHS: sort but does not support key)doc")
 CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
   gctools::Vec0<T_sp> sorted;
   Function_sp sortProc = coerce::functionDesignator(predicate);
@@ -2011,7 +2011,7 @@ CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("debugLogOn");
+CL_DOCSTRING(R"doc(debugLogOn)doc")
 CL_DEFUN void core__debug_log_on() {
   _lisp->debugLog().setSuppressMessages(false);
   LOG(BF("Turning debugLogOn"));
@@ -2019,14 +2019,14 @@ CL_DEFUN void core__debug_log_on() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("debugLogOff");
+CL_DOCSTRING(R"doc(debugLogOff)doc")
 CL_DEFUN void core__debug_log_off() {
   _lisp->debugLog().setSuppressMessages(true);
 }
 
 CL_LAMBDA(symDes &optional (packageDes *package*));
 CL_DECLARE();
-CL_DOCSTRING("CLHS: export");
+CL_DOCSTRING(R"doc(CLHS: export)doc")
 CL_DEFUN T_sp cl__export(T_sp symDes, T_sp packageDes) {
   List_sp symbols = coerce::listOfSymbols(symDes);
   Package_sp package = coerce::packageDesignator(packageDes);
@@ -2038,7 +2038,7 @@ CL_DEFUN T_sp cl__export(T_sp symDes, T_sp packageDes) {
 
 CL_LAMBDA(symbols &optional package);
 CL_DECLARE();
-CL_DOCSTRING("Unexport the symbols from the package. See CLHS.");
+CL_DOCSTRING(R"doc(Unexport the symbols from the package. See CLHS.)doc")
 CL_DEFUN T_sp cl__unexport(T_sp symbolsDes, T_sp packageDes) {
   List_sp symbols = coerce::listOfSymbols(symbolsDes);
   Package_sp package = coerce::packageDesignator(packageDes);
@@ -2050,7 +2050,7 @@ CL_DEFUN T_sp cl__unexport(T_sp symbolsDes, T_sp packageDes) {
 
 CL_LAMBDA(symbol-name &optional (package-desig *package*));
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: intern");
+CL_DOCSTRING(R"doc(See CLHS: intern)doc")
 CL_DEFUN T_mv cl__intern(String_sp symbol_name, T_sp package_desig) {
   Package_sp package = coerce::packageDesignator(package_desig);
   if (gc::IsA<StrNs_sp>(symbol_name)) {
@@ -2063,7 +2063,7 @@ CL_DEFUN T_mv cl__intern(String_sp symbol_name, T_sp package_desig) {
 
 CL_LAMBDA(continue-string datum initializers);
 CL_DECLARE();
-CL_DOCSTRING("universalErrorHandler");
+CL_DOCSTRING(R"doc(universalErrorHandler)doc")
 CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, List_sp initializers) {
   if (cl__stringp(datum)) {
     cl__format(_lisp->_true(), datum, initializers);
@@ -2083,7 +2083,7 @@ CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, Lis
 
 CL_LAMBDA(&optional condition);
 CL_DECLARE();
-CL_DOCSTRING("invokeInternalDebugger");
+CL_DOCSTRING(R"doc(invokeInternalDebugger)doc")
 [[noreturn]] CL_DEFUN void core__invoke_internal_debugger(T_sp condition) {
   write_bf_stream(BF("%s:%d core__invoke_internal_debugger --> %s\n") % __FILE__ % __LINE__ % _rep_(condition).c_str());
   early_debug(condition, false);
@@ -2092,7 +2092,7 @@ CL_DOCSTRING("invokeInternalDebugger");
 };
 
 CL_LAMBDA();
-CL_DOCSTRING("invokeInternalDebuggerFromGdb");
+CL_DOCSTRING(R"doc(invokeInternalDebuggerFromGdb)doc")
 CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
   eval::funcall(_sym_invokeInternalDebugger);
   SIMPLE_ERROR(BF("This should never happen"));
@@ -2129,7 +2129,7 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
 
 CL_LAMBDA(cformat eformat &rest arguments);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS cerror");
+CL_DOCSTRING(R"doc(See CLHS cerror)doc")
 CL_DEFUN T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   eval::funcall(_sym_universalErrorHandler, cformat, eformat, arguments);
   return nil<T_O>();
@@ -2137,7 +2137,7 @@ CL_DEFUN T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("Return a string representation of the object");
+CL_DOCSTRING(R"doc(Return a string representation of the object)doc")
 CL_DEFUN T_sp core__repr(T_sp obj) {
   SimpleBaseString_sp res = SimpleBaseString_O::make(_rep_(obj));
   return res;
@@ -2145,7 +2145,7 @@ CL_DEFUN T_sp core__repr(T_sp obj) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("not");
+CL_DOCSTRING(R"doc(not)doc")
 CL_DEFUN T_sp cl__not(T_sp x) {
   return _lisp->_boolean(!x.isTrue());
 };
@@ -2437,7 +2437,7 @@ FileScope_mv Lisp::getOrRegisterFileScope(const string &fileName) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("List all of the source files");
+CL_DOCSTRING(R"doc(List all of the source files)doc")
 CL_DEFUN List_sp core__all_source_files() {
   WITH_READ_LOCK(globals_->_SourceFilesMutex);
   return _lisp->_Roots._SourceFileIndices->keysAsCons();

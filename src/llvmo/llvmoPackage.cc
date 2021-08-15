@@ -90,7 +90,7 @@ void redirect_llvm_interface_addSymbol() {
 }
 
 
-CL_DOCSTRING("Load an llvm-ir file with either a bc extension or ll extension.");
+CL_DOCSTRING(R"doc(Load an llvm-ir file with either a bc extension or ll extension.)doc")
 CL_LAMBDA(pathname &optional verbose print external_format startup-name);
 CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
@@ -189,7 +189,7 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   return true;
 }
 
-CL_DOCSTRING("Load a module into the Common Lisp environment as if it were loaded from a bitcode file");
+CL_DOCSTRING(R"doc(Load a module into the Common Lisp environment as if it were loaded from a bitcode file)doc")
 
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));

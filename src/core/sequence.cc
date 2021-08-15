@@ -44,7 +44,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, end);
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS length - works with SEQUENCES and ACTIVATION_FRAMEs");
+CL_DOCSTRING(R"doc(See CLHS length - works with SEQUENCES and ACTIVATION_FRAMEs)doc")
 CL_DEFUN size_t cl__length(T_sp arg) {
   if (arg.consp()) {
     return arg.unsafe_cons()->length();
@@ -65,7 +65,7 @@ CL_DEFUN size_t cl__length(T_sp arg) {
 
 CL_LAMBDA(seq);
 CL_DECLARE();
-CL_DOCSTRING("reverse");
+CL_DOCSTRING(R"doc(reverse)doc")
 CL_DEFUN T_sp cl__reverse(T_sp seq) {
   if (seq.consp()) {
     return seq.unsafe_cons()->reverse();
@@ -79,7 +79,7 @@ CL_DEFUN T_sp cl__reverse(T_sp seq) {
 
 CL_LAMBDA(seq);
 CL_DECLARE();
-CL_DOCSTRING("nreverse");
+CL_DOCSTRING(R"doc(nreverse)doc")
 CL_DEFUN T_sp cl__nreverse(T_sp seq) {
   if (seq.consp()) {
     return seq.unsafe_cons()->nreverse();
@@ -93,7 +93,7 @@ CL_DEFUN T_sp cl__nreverse(T_sp seq) {
 
 CL_LAMBDA(sequence start &optional end);
 CL_DECLARE();
-CL_DOCSTRING("subseq");
+CL_DOCSTRING(R"doc(subseq)doc")
 CL_DEFUN T_sp cl__subseq(T_sp seq, size_t start, T_sp end) {
   if (seq.consp()) {
     return seq.unsafe_cons()->subseq(start, end);
@@ -112,7 +112,7 @@ CL_DEFUN T_sp cl__subseq(T_sp seq, size_t start, T_sp end) {
 
 CL_LAMBDA(seq);
 CL_DECLARE();
-CL_DOCSTRING("copy_seq");
+CL_DOCSTRING(R"doc(copy_seq)doc")
 CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
   if (seq.consp()) {
     return seq.unsafe_cons()->subseq(0, nil<T_O>());
@@ -126,7 +126,7 @@ CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
 
 CL_LAMBDA(sequence index);
 CL_DECLARE();
-CL_DOCSTRING("elt");
+CL_DOCSTRING(R"doc(elt)doc")
 CL_DEFUN T_sp cl__elt(T_sp sequence, size_t index) {
   if (sequence.consp()) {
     return sequence.unsafe_cons()->elt(index);
@@ -159,7 +159,7 @@ CL_DEFUN T_sp cl__elt(T_sp sequence, size_t index) {
 
 CL_LAMBDA(sequence index value);
 CL_DECLARE();
-CL_DOCSTRING("setfElt");
+CL_DOCSTRING(R"doc(setfElt)doc")
 CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
   if (sequence.consp()) {
     sequence.unsafe_cons()->setf_elt(index, value);

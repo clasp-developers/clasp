@@ -701,7 +701,7 @@ namespace llvmo {
 
 CL_LAMBDA(triple-str);
 CL_DECLARE();
-CL_DOCSTRING("");
+CL_DOCSTRING(R"doc()doc")
 CL_PKG_NAME(LlvmoPkg,"make-triple");
 CL_DEFUN Triple_sp Triple_O::make(const string &triple) {
   auto  self = gctools::GC<Triple_O>::allocate_with_default_constructor();
@@ -1950,13 +1950,13 @@ CL_DEFUN core::T_mv llvm_sys__getDebugLocInfo(Instruction_sp instr) {
   }
   return Values(nil<core::T_O>());
 }
-CL_DOCSTRING("Erase the instruction from its parent basic block and return the next instruction or NIL");
+CL_DOCSTRING(R"doc(Erase the instruction from its parent basic block and return the next instruction or NIL)doc")
 CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr)
 {
   llvm::SymbolTableList<llvm::Instruction>::iterator next = instr->wrappedPtr()->eraseFromParent();
 }
 
-CL_DOCSTRING("Return the next non-debug instruction or NIL if there is none");
+CL_DOCSTRING(R"doc(Return the next non-debug instruction or NIL if there is none)doc")
 CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction_sp instr)
 {
 #if (LLVM_VERSION_X100<900)  
@@ -3383,7 +3383,7 @@ string Type_O::__repr__() const {
 }
 
 CL_LAMBDA((self llvm-sys::type) &optional (addressSpace 0));
-CL_DOCSTRING("Return a PointerType to the llvm Type");
+CL_DOCSTRING(R"doc(Return a PointerType to the llvm Type)doc")
 CL_LISPIFY_NAME("type-get-pointer-to");
 CL_DEFMETHOD PointerType_sp Type_O::getPointerTo(int addressSpace) {
   llvm::PointerType *ptrType = this->wrappedPtr()->getPointerTo();
@@ -4980,7 +4980,7 @@ void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
 
 
 CL_DOCSTRING(R"doc(Tell LLVM what LLVM_DEBUG messages to turn on. Pass a list of strings like \"dyld\" - which
-turns on messages from RuntimeDyld.cpp if NDEBUG is NOT defined for the llvm build.)doc");
+turns on messages from RuntimeDyld.cpp if NDEBUG is NOT defined for the llvm build.)doc")
 CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
 {
   using namespace llvm;

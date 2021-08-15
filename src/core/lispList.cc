@@ -157,7 +157,7 @@ setup_test(struct cl_test *t, T_sp item, T_sp test,
 /*! Duplicated from ECL rassoc */
 CL_LAMBDA(item a-list &key test test-not key);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS rassoc");
+CL_DOCSTRING(R"doc(See CLHS rassoc)doc")
 CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key) {
   struct cl_test t;
   if (test.notnilp())
@@ -184,7 +184,7 @@ CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_
 
 CL_LAMBDA(idx arg);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS nth");
+CL_DOCSTRING(R"doc(See CLHS nth)doc")
 CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
   // should error on negative number
   // should return nil on positive bignums
@@ -207,7 +207,7 @@ CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
 
 CL_LAMBDA(idx arg);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS nthcdr");
+CL_DOCSTRING(R"doc(See CLHS nthcdr)doc")
 CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
   LIKELY_if (arg.consp()) {
     if (idx.fixnump()) {
@@ -229,7 +229,7 @@ CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("copyList");
+CL_DOCSTRING(R"doc(copyList)doc")
 CL_DEFUN T_sp cl__copy_list(List_sp arg) {
   if (arg.consp()) return arg.unsafe_cons()->copyList();
   if (arg.nilp()) return arg;
@@ -238,7 +238,7 @@ CL_DEFUN T_sp cl__copy_list(List_sp arg) {
 /*! Code translated from ecl_butlast */
 CL_LAMBDA(list &optional (n 1));
 CL_DECLARE();
-CL_DOCSTRING("butlast");
+CL_DOCSTRING(R"doc(butlast)doc")
 CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
    if (ll.nilp())
     return ll;
@@ -279,7 +279,7 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
 
 CL_LAMBDA(list &optional (n 1));
 CL_DECLARE();
-CL_DOCSTRING("nbutlast");
+CL_DOCSTRING(R"doc(nbutlast)doc")
 CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
   if (l.nilp()) return l;
   if (in.fixnump()) {
@@ -314,14 +314,14 @@ CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
 }
 
 CL_LAMBDA(&rest objects);
-CL_DOCSTRING("See CLHS: list");
+CL_DOCSTRING(R"doc(See CLHS: list)doc")
 CL_DEFUN T_sp cl__list(T_sp objects) {
   return objects;
 };
 
 CL_LAMBDA(core:&va-rest objects);
 CL_DECLARE();
-CL_DOCSTRING("list* see CLHS");
+CL_DOCSTRING(R"doc(list* see CLHS)doc")
 CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
   size_t nargs = vargs->remaining_nargs();
   if (nargs == 0 ) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),nil<T_O>());
@@ -347,7 +347,7 @@ CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
 
 CL_LAMBDA(list &optional (on 1));
 CL_DECLARE();
-CL_DOCSTRING("last - see CLHS");
+CL_DOCSTRING(R"doc(last - see CLHS)doc")
 CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
   if (list.nilp())
     return list;
@@ -410,7 +410,7 @@ T_sp clasp_nconc(T_sp l, T_sp y) {
 
 CL_LAMBDA(list tail);
 CL_DECLARE();
-CL_DOCSTRING("revappend");
+CL_DOCSTRING(R"doc(revappend)doc")
 CL_DEFUN T_sp cl__revappend(List_sp list, T_sp tail) {
   if (list.nilp())
     return (tail);
@@ -419,7 +419,7 @@ CL_DEFUN T_sp cl__revappend(List_sp list, T_sp tail) {
 
 CL_LAMBDA(list tail);
 CL_DECLARE();
-CL_DOCSTRING("nreconc");
+CL_DOCSTRING(R"doc(nreconc)doc")
 CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
   if (list.nilp())
     return (tail);

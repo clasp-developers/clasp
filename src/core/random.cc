@@ -62,7 +62,7 @@ CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
 
 CL_LAMBDA(olimit &optional (random-state cl:*random-state*));
 CL_DECLARE();
-CL_DOCSTRING("random");
+CL_DOCSTRING(R"doc(random)doc")
 CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
   // olimit---a positive integer, or a positive float.
   // Fixing #292

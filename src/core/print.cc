@@ -151,7 +151,7 @@ bool clasp_print_circle(void) {
 
 CL_LAMBDA(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (circle *print-circle*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser-width *print-miser-width*) (pprint-dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right-margin *print-right-margin*));
 CL_DECLARE();
-CL_DOCSTRING("write");
+CL_DOCSTRING(R"doc(write)doc")
 CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
               T_sp cas, T_sp circle, T_sp escape, T_sp gensym, T_sp length,
               T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
@@ -179,7 +179,7 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
 
 CL_LAMBDA(o stream type id function);
 CL_DECLARE();
-CL_DOCSTRING("print-unreadable-object-function: What CL:PRINT-UNREADABLE-OBJECT expands into.");
+CL_DOCSTRING(R"doc(print-unreadable-object-function: What CL:PRINT-UNREADABLE-OBJECT expands into.)doc")
 CL_DEFUN T_sp core__print_unreadable_object_function(T_sp object, T_sp output_stream_desig, T_sp type, T_sp id, T_sp function) {
   if (clasp_print_readably()) {
     PRINT_NOT_READABLE_ERROR(object);
@@ -215,7 +215,7 @@ CL_DEFUN T_sp core__print_unreadable_object_function(T_sp object, T_sp output_st
 
 CL_LAMBDA(obj &optional stream);
 CL_DECLARE();
-CL_DOCSTRING("pprint");
+CL_DOCSTRING(R"doc(pprint)doc")
 CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   DynamicScopeManager scope1(cl::_sym_STARprint_prettySTAR, _lisp->_true());
@@ -226,7 +226,7 @@ CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
 
 CL_LAMBDA(obj &optional output-stream-desig);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: princ");
+CL_DOCSTRING(R"doc(See CLHS: princ)doc")
 CL_DEFUN T_sp cl__princ(T_sp obj, T_sp output_stream_desig) {
   DynamicScopeManager scope1(cl::_sym_STARprint_escapeSTAR, nil<T_O>());
   DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, nil<T_O>());
@@ -236,7 +236,7 @@ CL_DEFUN T_sp cl__princ(T_sp obj, T_sp output_stream_desig) {
 
 CL_LAMBDA(obj &optional output-stream-desig);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: prin1");
+CL_DOCSTRING(R"doc(See CLHS: prin1)doc")
 CL_DEFUN T_sp cl__prin1(T_sp obj, T_sp output_stream_desig) {
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   //  T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
@@ -247,7 +247,7 @@ CL_DEFUN T_sp cl__prin1(T_sp obj, T_sp output_stream_desig) {
 
 CL_LAMBDA(obj &optional output-stream-desig);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: print");
+CL_DOCSTRING(R"doc(See CLHS: print)doc")
 CL_DEFUN T_sp cl__print(T_sp obj, T_sp output_stream_desig) {
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   T_sp sout = coerce::outputStreamDesignator(output_stream_desig);

@@ -82,7 +82,7 @@ void Unwind::keyFunctionForVtable(){};
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("Returns the list of active CL:CATCH tags. Strictly for debugging.");
+CL_DOCSTRING(R"doc(Returns the list of active CL:CATCH tags. Strictly for debugging.)doc")
 CL_DEFUN List_sp core__active_catch_tags() {
   return my_thread->catchTags();
 }
@@ -160,7 +160,7 @@ struct SignalSimpleErrorTrap {
 
 CL_LAMBDA(base-condition continue-message format-control format-args &rest args);
 CL_DECLARE();
-CL_DOCSTRING("signalSimpleError");
+CL_DOCSTRING(R"doc(signalSimpleError)doc")
 CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args) {
   SignalSimpleErrorTrap depth;
   printf("%s:%d core__signal_simple_error  caught because signal-simple-error is not installed yet\n", __FILE__, __LINE__);
@@ -607,7 +607,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
   UNREACHABLE();
 };
 
-CL_DOCSTRING("functionWrongTypeArgument");
+CL_DOCSTRING(R"doc(functionWrongTypeArgument)doc")
 [[noreturn]] CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
@@ -638,7 +638,7 @@ CL_DOCSTRING("functionWrongTypeArgument");
 
 CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
-CL_DOCSTRING("wrongTypeArgument");
+CL_DOCSTRING(R"doc(wrongTypeArgument)doc")
 [[noreturn]] CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
@@ -669,7 +669,7 @@ CL_DOCSTRING("wrongTypeArgument");
 
 CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
-CL_DOCSTRING("wrongTypeNthArg");
+CL_DOCSTRING(R"doc(wrongTypeNthArg)doc")
 [[noreturn]] CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
   if (function.nilp()) {
     stringstream message;
@@ -701,7 +701,7 @@ CL_DOCSTRING("wrongTypeNthArg");
 
 CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
-CL_DOCSTRING("wrongIndex");
+CL_DOCSTRING(R"doc(wrongIndex)doc")
 CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int nonincl_limit) {
   if (function.nilp()) {
     const char *message1 =

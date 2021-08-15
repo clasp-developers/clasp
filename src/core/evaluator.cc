@@ -84,7 +84,7 @@ void errorApplyLastArgumentNotList(T_sp lastArg ) {
 namespace core {
 CL_LAMBDA(form &optional env stepping compiler-env-p (execute t));
 CL_DECLARE();
-CL_DOCSTRING("compileFormAndEvalWithEnv");
+CL_DOCSTRING(R"doc(compileFormAndEvalWithEnv)doc")
 CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp stepping, T_sp compiler_env_p, T_sp execute) {
   T_mv result = eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), form, env);
   return result;
@@ -488,7 +488,7 @@ T_mv apply_inner_list(Function_sp func, size_t lenFixed, VaList_sp fixed, T_sp v
 
 CL_LAMBDA(head core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING("apply");
+CL_DOCSTRING(R"doc(apply)doc")
 CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   Function_sp func = coerce::functionDesignator( head );
   if (args->total_nargs() == 0) eval::errorApplyZeroArguments();
@@ -511,7 +511,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
 
 CL_LAMBDA(func args);
 CL_DECLARE();
-CL_DOCSTRING("(apply f m) = (apply0 (coerce-fdesignator f) m)");
+CL_DOCSTRING(R"doc((apply f m) = (apply0 (coerce-fdesignator f) m))doc")
 CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
   if (lastArg.valistp())
     return apply0_inner_valist(func, gc::As_unsafe<VaList_sp>(lastArg));
@@ -523,7 +523,7 @@ CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
 
 CL_LAMBDA(func args arg0);
 CL_DECLARE();
-CL_DOCSTRING("(apply f a m) = (apply1 (coerce-fdesignator f) m a)");
+CL_DOCSTRING(R"doc((apply f a m) = (apply1 (coerce-fdesignator f) m a))doc")
 CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg,
                            T_sp arg0) {
   if (lastArg.valistp())
@@ -538,7 +538,7 @@ CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg,
 
 CL_LAMBDA(func args arg0 arg1);
 CL_DECLARE();
-CL_DOCSTRING("(apply f a b m) = (apply2 (coerce-fdesignator f) m a b)");
+CL_DOCSTRING(R"doc((apply f a b m) = (apply2 (coerce-fdesignator f) m a b))doc")
 CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1) {
   if (lastArg.valistp())
@@ -553,7 +553,7 @@ CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
 
 CL_LAMBDA(func args arg0 arg1 arg2);
 CL_DECLARE();
-CL_DOCSTRING("(apply f a b c m) = (apply3 (coerce-fdesignator f) m a b c)");
+CL_DOCSTRING(R"doc((apply f a b c m) = (apply3 (coerce-fdesignator f) m a b c))doc")
 CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1, T_sp arg2) {
   if (lastArg.valistp())
@@ -568,7 +568,7 @@ CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
 
 CL_LAMBDA(func args arg0 arg1 arg2 arg3 core:&va-rest more);
 CL_DECLARE();
-CL_DOCSTRING("(apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...)");
+CL_DOCSTRING(R"doc((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...))doc")
 CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3,
                            VaList_sp more) {
@@ -696,7 +696,7 @@ gctools::return_type fast_apply8(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O
 
 CL_LAMBDA(form);
 CL_DECLARE();
-CL_DOCSTRING("eval");
+CL_DOCSTRING(R"doc(eval)doc")
 CL_DEFUN T_mv cl__eval(T_sp form) {
   if (core::_sym_STAReval_with_env_hookSTAR.unboundp() ||
       !core::_sym_STAReval_with_env_hookSTAR->boundP() ||
@@ -709,7 +709,7 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
 };
 
 CL_DECLARE();
-CL_DOCSTRING("Interpret FORM in the interpreter environment ENV.");
+CL_DOCSTRING(R"doc(Interpret FORM in the interpreter environment ENV.)doc")
 CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
   return eval::evaluate(form, env);
 }
@@ -718,7 +718,7 @@ CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
 // fast funcall
 CL_LAMBDA(function-desig core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: funcall");
+CL_DOCSTRING(R"doc(See CLHS: funcall)doc")
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   //    printf("%s:%d cl__funcall should be inlined after the compiler starts up\n", __FILE__, __LINE__ );
   Function_sp func = coerce::functionDesignator(function_desig);
@@ -741,7 +741,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("coerce_to_function");
+CL_DOCSTRING(R"doc(coerce_to_function)doc")
 CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
   if (Function_sp fnobj = arg.asOrNull<Function_O>()) {
     return fnobj;
@@ -770,7 +770,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
 
 CL_LAMBDA(body &optional expectDocString);
 CL_DECLARE();
-CL_DOCSTRING("Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials");
+CL_DOCSTRING(R"doc(Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials)doc")
 CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString) {
   bool b_expect_doc = expectDocString.isTrue();
   List_sp declares = nil<T_O>();
@@ -785,7 +785,7 @@ CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString
 
 CL_LAMBDA(declare-list &optional default);
 CL_DECLARE();
-CL_DOCSTRING("If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX");
+CL_DOCSTRING(R"doc(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)doc")
 CL_DEFUN T_sp core__extract_lambda_name_from_declares(List_sp declares, T_sp defaultValue) {
   // First check for a (declare (core:function-name XXX))
   for (; declares.consp(); declares = oCdr(declares)) {
@@ -800,7 +800,7 @@ CL_DEFUN T_sp core__extract_lambda_name_from_declares(List_sp declares, T_sp def
 
 CL_LAMBDA(declare-list);
 CL_DECLARE();
-CL_DOCSTRING("If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX");
+CL_DOCSTRING(R"doc(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)doc")
 CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
   // First check for a (declare (core:function-name XXX))
   for ( auto cur : declares ) {
@@ -818,7 +818,7 @@ CL_DEFUN T_sp core__extract_dump_module_from_declares(List_sp declares) {
 
 CL_LAMBDA(form &optional default);
 CL_DECLARE();
-CL_DOCSTRING("If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX");
+CL_DOCSTRING(R"doc(If form has is a list of declares ((function-name xxx) ...) or else looks like `(lambda lambda-list [[declaration* | documentation]] (block xxx form*) ) then return XXX)doc")
 CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultValue) {
   List_sp body = oCddr(lambdaExpression);
   List_sp declares;
@@ -850,7 +850,7 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
 CL_LISPIFY_NAME("ext:symbol-macro");
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
-CL_DOCSTRING("Returns the macro expansion function for a symbol if it exists, or else NIL.");
+CL_DOCSTRING(R"doc(Returns the macro expansion function for a symbol if it exists, or else NIL.)doc")
 CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
   if (env.nilp()) { // nothing
   } else if (gc::IsA<Environment_sp>(env)) {
@@ -876,7 +876,7 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
 };
 CL_LAMBDA(variables declared-specials);
 CL_DECLARE();
-CL_DOCSTRING("classifyLetVariablesAndDeclares - return (values classified-variables num-lexicals) - For each variable name in variables and declared-specials classify each as special-var, lexical-var or declared-special using the declared-specials list");
+CL_DOCSTRING(R"doc(classifyLetVariablesAndDeclares - return (values classified-variables num-lexicals) - For each variable name in variables and declared-specials classify each as special-var, lexical-var or declared-special using the declared-specials list)doc")
 CL_DEFUN
 T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declaredSpecials) {
   HashTableEq_sp specialsSet = HashTableEq_O::create_default();
@@ -925,21 +925,21 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("evaluateDepth");
+CL_DOCSTRING(R"doc(evaluateDepth)doc")
 CL_DEFUN int core__evaluate_depth() {
   return eval::_evaluateDepth;
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("evaluateVerbosity");
+CL_DOCSTRING(R"doc(evaluateVerbosity)doc")
 CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) {
   eval::_evaluateVerbosity = unbox_fixnum(level);
 };
 
 CL_LAMBDA(form &optional env);
 CL_DECLARE();
-CL_DOCSTRING("Evaluate the form in the environment using the interpreter");
+CL_DOCSTRING(R"doc(Evaluate the form in the environment using the interpreter)doc")
 CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) {
   return eval::t1Evaluate(form, environment);
 }
@@ -2485,7 +2485,7 @@ namespace core {
 namespace core {
 
 
-CL_DOCSTRING("Return a list of all special operators as defined in aclasp");
+CL_DOCSTRING(R"doc(Return a list of all special operators as defined in aclasp)doc")
 CL_DEFUN core::List_sp core__aclasp_list_of_all_special_operators() {
   ql::list l;
   l << cl::_sym_progn;

@@ -107,7 +107,7 @@ T_sp alist_from_plist(List_sp plist) {
 
 CL_LAMBDA(class-name &rest args);
 CL_DECLARE();
-CL_DOCSTRING("make-cxx-object makes a C++ object using the encode/decode/fields functions");
+CL_DOCSTRING(R"doc(make-cxx-object makes a C++ object using the encode/decode/fields functions)doc")
 CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
   Instance_sp theClass;
   if (Instance_sp argClass = class_or_name.asOrNull<Instance_O>()) {
@@ -141,7 +141,7 @@ BAD_ARG0:
 
 CL_LAMBDA(class-name &rest args);
 CL_DECLARE();
-CL_DOCSTRING("load-cxx-object makes a C++ object using the encode/decode/fields functions using decoder/loader(s) - they support patching of objects");
+CL_DOCSTRING(R"doc(load-cxx-object makes a C++ object using the encode/decode/fields functions using decoder/loader(s) - they support patching of objects)doc")
 CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   Instance_sp theClass;
   if (Instance_sp argClass = class_or_name.asOrNull<Instance_O>()) {
@@ -174,7 +174,7 @@ BAD_ARG0:
 
 CL_LAMBDA(obj);
 CL_DECLARE();
-CL_DOCSTRING("fieldsp returns true if obj has a fields function");
+CL_DOCSTRING(R"doc(fieldsp returns true if obj has a fields function)doc")
 CL_DEFUN bool core__fieldsp(T_sp obj) {
   if ( obj.generalp() ) {
     return obj.unsafe_general()->fieldsp();
@@ -183,7 +183,7 @@ CL_DEFUN bool core__fieldsp(T_sp obj) {
 }
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("encode object as an a-list");
+CL_DOCSTRING(R"doc(encode object as an a-list)doc")
 CL_DEFUN core::List_sp core__encode(T_sp arg) {
   if (arg.generalp()) return arg.unsafe_general()->encode();
   IMPLEMENT_MEF("Implement for non-general objects");
@@ -191,7 +191,7 @@ CL_DEFUN core::List_sp core__encode(T_sp arg) {
 
 CL_LAMBDA(obj arg);
 CL_DECLARE();
-CL_DOCSTRING("decode object from a-list");
+CL_DOCSTRING(R"doc(decode object from a-list)doc")
 CL_DEFUN T_sp core__decode(T_sp obj, core::List_sp arg) {
   if (obj.generalp()) obj.unsafe_general()->decode(arg);
   return obj;
@@ -200,7 +200,7 @@ CL_DEFUN T_sp core__decode(T_sp obj, core::List_sp arg) {
 
 CL_LAMBDA(obj stream);
 CL_DECLARE();
-CL_DOCSTRING("printCxxObject");
+CL_DOCSTRING(R"doc(printCxxObject)doc")
 CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
   if (core__fieldsp(obj)) {
     clasp_write_char('#', stream);
@@ -232,7 +232,7 @@ CL_DEFUN T_sp core__print_cxx_object(T_sp obj, T_sp stream) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("lowLevelDescribe");
+CL_DOCSTRING(R"doc(lowLevelDescribe)doc")
 CL_DEFUN void core__low_level_describe(T_sp obj) {
   if ( obj.generalp() ) {
     General_sp gobj(obj.unsafe_general());
@@ -250,7 +250,7 @@ CL_DEFUN void core__low_level_describe(T_sp obj) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("copyTree");
+CL_DOCSTRING(R"doc(copyTree)doc")
 CL_DEFUN T_sp cl__copy_tree(T_sp arg) {
   if (arg.nilp())
     return nil<T_O>();
@@ -262,21 +262,21 @@ CL_DEFUN T_sp cl__copy_tree(T_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("implementationClass");
+CL_DOCSTRING(R"doc(implementationClass)doc")
 CL_DEFUN T_sp core__implementation_class(T_sp arg) {
   return lisp_static_class(arg);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("instanceClass");
+CL_DOCSTRING(R"doc(instanceClass)doc")
 CL_DEFUN Instance_sp core__instance_class(T_sp arg) {
   return lisp_instance_class(arg);
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("classNameAsString");
+CL_DOCSTRING(R"doc(classNameAsString)doc")
 CL_DEFUN string core__class_name_as_string(T_sp arg) {
   Instance_sp c = core__instance_class(arg);
   return c->_className()->fullName();
@@ -284,7 +284,7 @@ CL_DEFUN string core__class_name_as_string(T_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("instanceSig");
+CL_DOCSTRING(R"doc(instanceSig)doc")
 CL_DEFUN T_sp core__instance_sig(T_sp obj) {
   if ( obj.generalp() ) {
     return obj.unsafe_general()->instanceSig();
@@ -294,7 +294,7 @@ CL_DEFUN T_sp core__instance_sig(T_sp obj) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("instanceSigSet");
+CL_DOCSTRING(R"doc(instanceSigSet)doc")
 CL_DEFUN T_sp core__instance_sig_set(T_sp arg) {
   if ( arg.generalp() ) {
     return arg.unsafe_general()->instanceSigSet();
@@ -304,7 +304,7 @@ CL_DEFUN T_sp core__instance_sig_set(T_sp arg) {
 
 CL_LAMBDA(obj idx val);
 CL_DECLARE();
-CL_DOCSTRING("instanceSet - set the (idx) slot of (obj) to (val)");
+CL_DOCSTRING(R"doc(instanceSet - set the (idx) slot of (obj) to (val))doc")
 CL_DEFUN T_sp core__instance_set(T_sp obj, int idx, T_sp val) {
   if ( obj.generalp() ) {
     return obj.unsafe_general()->instanceSet(idx, val);
@@ -314,7 +314,7 @@ CL_DEFUN T_sp core__instance_set(T_sp obj, int idx, T_sp val) {
 
 CL_LAMBDA(obj idx);
 CL_DECLARE();
-CL_DOCSTRING("instanceRef - return the (idx) slot value of (obj)");
+CL_DOCSTRING(R"doc(instanceRef - return the (idx) slot value of (obj))doc")
 CL_DEFUN T_sp core__instance_ref(T_sp obj, int idx) {
   if (obj.generalp())return obj.unsafe_general()->instanceRef(idx);
   IMPLEMENT_MEF("Implement for non-general objects");
@@ -478,7 +478,7 @@ bool HashGenerator::addValue(const mpz_class &bignum) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("Return t if obj is equal to T_O::_class->unboundValue()");
+CL_DOCSTRING(R"doc(Return t if obj is equal to T_O::_class->unboundValue())doc")
 CL_DEFUN bool core__sl_boundp(T_sp obj) {
   //    bool boundp = (obj.get() != T_O::___staticClass->unboundValue().get());
   bool boundp = !obj.unboundp();
@@ -640,7 +640,7 @@ namespace core {
 
 CL_LAMBDA(x y);
 CL_DECLARE();
-CL_DOCSTRING("equalp");
+CL_DOCSTRING(R"doc(equalp)doc")
 CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
     if (x.fixnump()) {
       if (y.fixnump()) {

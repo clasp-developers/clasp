@@ -558,7 +558,7 @@ core::Fixnum ensure_fixnum(stamp_t val)
 }
 
 CL_LAMBDA();
-CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_stamp)doc");
+CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_stamp)doc")
 CL_DEFUN core::Fixnum gctools__next_header_kind()
 {
   stamp_t next = global_next_header_stamp;

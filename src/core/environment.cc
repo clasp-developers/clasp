@@ -69,7 +69,7 @@ CL_DEFUN T_mv core__classify_return_from_symbol(T_sp env, Symbol_sp sym) {
 
 CL_LAMBDA(frame);
 CL_DECLARE();
-CL_DOCSTRING("environmentLength - number of entries in this environment");
+CL_DOCSTRING(R"doc(environmentLength - number of entries in this environment)doc")
 CL_DEFUN int core__environment_length(T_sp frame) {
   if (frame.nilp())
     return 0;
@@ -81,7 +81,7 @@ CL_DEFUN int core__environment_length(T_sp frame) {
 
 CL_LAMBDA(frame);
 CL_DECLARE();
-CL_DOCSTRING("environmentDebugNames - number of entries in this environment");
+CL_DOCSTRING(R"doc(environmentDebugNames - number of entries in this environment)doc")
 CL_DEFUN T_sp core__environment_debug_names(T_sp frame) {
   if (frame.nilp())
     return nil<T_O>();
@@ -95,7 +95,7 @@ CL_DEFUN T_sp core__environment_debug_names(T_sp frame) {
 
 CL_LAMBDA(frame);
 CL_DECLARE();
-CL_DOCSTRING("environmentDebugValues - number of entries in this environment");
+CL_DOCSTRING(R"doc(environmentDebugValues - number of entries in this environment)doc")
 CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
   if (frame.nilp())
     return nil<T_O>();
@@ -118,7 +118,7 @@ CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
 
 CL_LAMBDA(name env);
 CL_DECLARE();
-CL_DOCSTRING("lexicalFunction - If found return (values T fn depth index) otherwise nil");
+CL_DOCSTRING(R"doc(lexicalFunction - If found return (values T fn depth index) otherwise nil)doc")
 CL_DEFUN T_mv core__lexical_function(T_sp name, T_sp env) {
   int depth = 0;
   int index = 0;
@@ -132,7 +132,7 @@ CL_DEFUN T_mv core__lexical_function(T_sp name, T_sp env) {
 
 CL_LAMBDA(name env);
 CL_DECLARE();
-CL_DOCSTRING("lexicalMacroFunction - If found return (values T fn depth index) otherwise nil");
+CL_DOCSTRING(R"doc(lexicalMacroFunction - If found return (values T fn depth index) otherwise nil)doc")
 CL_DEFUN T_mv core__lexical_macro_function(T_sp name, T_sp env) {
   int depth = 0;
   int index = 0;
@@ -151,7 +151,7 @@ bool clasp_updateValue(T_sp env, Symbol_sp sym, T_sp val) {
 
 CL_LAMBDA(env);
 CL_DECLARE();
-CL_DOCSTRING("environmentActivationFrame");
+CL_DOCSTRING(R"doc(environmentActivationFrame)doc")
 CL_DEFUN T_sp core__environment_activation_frame(T_sp env) {
   if (env.nilp())
     return env;
@@ -160,7 +160,7 @@ CL_DEFUN T_sp core__environment_activation_frame(T_sp env) {
 
 CL_LAMBDA(env);
 CL_DECLARE();
-CL_DOCSTRING("Return a list of environment parents");
+CL_DOCSTRING(R"doc(Return a list of environment parents)doc")
 CL_DEFUN T_sp core__environment_list(T_sp env) {
   List_sp result = nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
@@ -171,7 +171,7 @@ CL_DEFUN T_sp core__environment_list(T_sp env) {
 
 CL_LAMBDA(env);
 CL_DECLARE();
-CL_DOCSTRING("Return a list of environment parents");
+CL_DOCSTRING(R"doc(Return a list of environment parents)doc")
 CL_DEFUN T_sp core__environment_type_list(T_sp env) {
   List_sp result = nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
@@ -191,7 +191,7 @@ int Environment_O::clasp_countFunctionContainerEnvironments(T_sp env) {
 
 CL_LAMBDA(env);
 CL_DECLARE();
-CL_DOCSTRING("Return the RuntimeEnvironment or nil");
+CL_DOCSTRING(R"doc(Return the RuntimeEnvironment or nil)doc")
 CL_DEFUN T_sp core__runtime_environment(T_sp tenv) {
   if (tenv.nilp())
     return nil<T_O>();

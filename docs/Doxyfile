@@ -128,7 +128,7 @@ EXAMPLE_PATH           =
 EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
 IMAGE_PATH             = 
-INPUT_FILTER           = 
+INPUT_FILTER           = "m4 ../tools-for-build/doxygen.m4"
 FILTER_PATTERNS        = *.yy=../docs/bisonDocs *.h=../docs/filterSrc
 FILTER_SOURCE_FILES    = YES
 #---------------------------------------------------------------------------
@@ -228,7 +228,9 @@ EXPAND_ONLY_PREDEF     = NO
 SEARCH_INCLUDES        = YES
 INCLUDE_PATH           = ../include/ ../build/boehm/
 INCLUDE_FILE_PATTERNS  = 
-PREDEFINED             = 
+PREDEFINED             = "__attribute__((optnone))="
+PREDEFINED            += "__attribute__((noinline))="
+PREDEFINED            += "__attribute__((always_inline))="
 EXPAND_AS_DEFINED      = 
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------

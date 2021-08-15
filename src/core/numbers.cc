@@ -146,14 +146,14 @@ Number_sp clasp_make_complex (Real_sp r, Real_sp i) {
 
 CL_LAMBDA(num);
 CL_DECLARE();
-CL_DOCSTRING("zerop");
+CL_DOCSTRING(R"doc(zerop)doc")
 CL_DEFUN bool cl__zerop(Number_sp num) {
   return clasp_zerop(num);
 }
 
 CL_LAMBDA(z);
 CL_DECLARE();
-CL_DOCSTRING("convert_overflow_result_to_bignum");
+CL_DOCSTRING(R"doc(convert_overflow_result_to_bignum)doc")
 CL_DEFUN Integer_sp core__convert_overflow_result_to_bignum(Fixnum_sp z) {
   if ((Fixnum)z.raw_() > 0) {
     return gc::As<Integer_sp>(contagion_sub(z, _lisp->_Roots._IntegerOverflowAdjust));
@@ -164,7 +164,7 @@ CL_DEFUN Integer_sp core__convert_overflow_result_to_bignum(Fixnum_sp z) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("fixnum_number_of_bits");
+CL_DOCSTRING(R"doc(fixnum_number_of_bits)doc")
 CL_DEFUN Fixnum_sp core__fixnum_number_of_bits() {
   int num = gc::fixnum_bits;
   return make_fixnum(num);
@@ -186,7 +186,7 @@ Real_sp clasp_min2(Real_sp x, Real_sp y) {
 
 CL_LAMBDA(min &rest nums);
 CL_DECLARE();
-CL_DOCSTRING("min");
+CL_DOCSTRING(R"doc(min)doc")
 CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
   /* INV: type check occurs in clasp_number_compare() for the rest of
 	   numbers, but for the first argument it's due to the Real_sp decl
@@ -200,7 +200,7 @@ CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
 
 CL_LAMBDA(max &rest nums);
 CL_DECLARE();
-CL_DOCSTRING("max");
+CL_DOCSTRING(R"doc(max)doc")
 CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
   /* INV: type checks the same as cl__min. */
   for (auto cur : nums) {
@@ -701,7 +701,7 @@ CL_DEFUN Number_sp cl___PLUS_(List_sp numbers) {
 
 CL_LAMBDA(&rest numbers);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: *");
+CL_DOCSTRING(R"doc(See CLHS: *)doc")
 CL_DEFUN Number_sp cl___TIMES_(List_sp numbers) {
   if (!numbers.consp())
     return make_fixnum(1);
@@ -714,7 +714,7 @@ CL_DEFUN Number_sp cl___TIMES_(List_sp numbers) {
 
 CL_LAMBDA(num &rest numbers);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: +");
+CL_DOCSTRING(R"doc(See CLHS: +)doc")
 CL_DEFUN Number_sp cl___MINUS_(Number_sp num, List_sp numbers) {
   if (!numbers.consp()) {
     return clasp_negate(num);
@@ -1163,7 +1163,7 @@ CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
 
 CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING("NE");
+CL_DOCSTRING(R"doc(NE)doc")
 CL_DEFUN T_sp cl___NE_(VaList_sp args) {
   /* Unlike variable-argument =, this takes a quadratic number of
    * comparisons, as every pair must be unequal. */
@@ -1213,7 +1213,7 @@ CL_DEFUN T_sp cl___NE_(VaList_sp args) {
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
-CL_DOCSTRING("_EQ_");
+CL_DOCSTRING(R"doc(_EQ_)doc")
 CL_DEFUN T_sp cl___EQ_(List_sp args) {
   if (args.nilp())
     SIMPLE_PROGRAM_ERROR("= needs at least 1 argument",nil<T_O>());
@@ -1311,7 +1311,7 @@ Rational_sp Rational_O::create(Integer_sp num, Integer_sp denom) {
   } else return num->ratdivide(denom);
 }
 
-CL_DOCSTRING("Return a number that is NAN");
+CL_DOCSTRING(R"doc(Return a number that is NAN)doc")
 CL_DEFUN DoubleFloat_sp core__nan() {
   DoubleFloat_sp rnan = DoubleFloat_O::create(NAN);
   return (rnan);
@@ -1927,7 +1927,7 @@ Number_sp Bignum_O::reciprocal_() const {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("sqrt");
+CL_DOCSTRING(R"doc(sqrt)doc")
 CL_DEFUN Number_sp cl__sqrt(Number_sp x) {
   return clasp_sqrt(x);
 };
@@ -1985,7 +1985,7 @@ Number_sp Complex_O::sin_() const {
 
 CL_LAMBDA(x);
 CL_DECLARE();
-CL_DOCSTRING("sin");
+CL_DOCSTRING(R"doc(sin)doc")
 CL_DEFUN Number_sp cl__sin(Number_sp x) {
   return clasp_sin(x);
 }
@@ -2040,7 +2040,7 @@ Number_sp Complex_O::cos_() const {
 
 CL_LAMBDA(x);
 CL_DECLARE();
-CL_DOCSTRING("cos");
+CL_DOCSTRING(R"doc(cos)doc")
 CL_DEFUN Number_sp cl__cos(Number_sp x) {
   return clasp_cos(x);
 }
@@ -2101,7 +2101,7 @@ Number_sp Complex_O::tan_() const {
 
 CL_LAMBDA(x);
 CL_DECLARE();
-CL_DOCSTRING("tan");
+CL_DOCSTRING(R"doc(tan)doc")
 CL_DEFUN Number_sp cl__tan(Number_sp x) {
   return clasp_tan(x);
 }
@@ -2157,7 +2157,7 @@ Number_sp Complex_O::sinh_() const {
 
 CL_LAMBDA(x);
 CL_DECLARE();
-CL_DOCSTRING("sinh");
+CL_DOCSTRING(R"doc(sinh)doc")
 CL_DEFUN Number_sp cl__sinh(Number_sp x) {
   return clasp_sinh(x);
 }
@@ -2213,7 +2213,7 @@ Number_sp Complex_O::cosh_() const {
 
 CL_LAMBDA(x);
 CL_DECLARE();
-CL_DOCSTRING("cosh");
+CL_DOCSTRING(R"doc(cosh)doc")
 CL_DEFUN Number_sp cl__cosh(Number_sp x) {
   return clasp_cosh(x);
 }
@@ -2262,7 +2262,7 @@ Number_sp Complex_O::tanh_() const {
 
 CL_LAMBDA(x);
 CL_DECLARE();
-CL_DOCSTRING("tanh");
+CL_DOCSTRING(R"doc(tanh)doc")
 CL_DEFUN Number_sp cl__tanh(Number_sp x) {
   return clasp_tanh(x);
 }
@@ -2295,7 +2295,7 @@ Complex_sp Complex_O::conjugate() const {
 
 CL_LAMBDA(x);
 CL_DECLARE();
-CL_DOCSTRING("conjugate");
+CL_DOCSTRING(R"doc(conjugate)doc")
 CL_DEFUN Number_sp cl__conjugate(Number_sp x) {
   return clasp_conjugate(x);
 }
@@ -2351,7 +2351,7 @@ Number_sp Complex_O::exp_() const {
 
 CL_LAMBDA(x);
 CL_DECLARE();
-CL_DOCSTRING("exp");
+CL_DOCSTRING(R"doc(exp)doc")
 CL_DEFUN Number_sp cl__exp(Number_sp x) {
   return clasp_exp(x);
 }
@@ -2475,7 +2475,7 @@ clasp_expt(Number_sp x, Number_sp y) {
 
 CL_LAMBDA(x y);
 CL_DECLARE();
-CL_DOCSTRING("expt");
+CL_DOCSTRING(R"doc(expt)doc")
 CL_DEFUN Number_sp cl__expt(Number_sp x, Number_sp y) {
   return clasp_expt(x, y);
 }
@@ -2622,7 +2622,7 @@ Number_sp clasp_atan1(Number_sp y) {
 
 CL_LAMBDA(x &optional y);
 CL_DECLARE();
-CL_DOCSTRING("atan");
+CL_DOCSTRING(R"doc(atan)doc")
 CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y) {
   /* INV: type check in clasp_atan() & clasp_atan2() */
   /* FIXME clasp_atan() and clasp_atan2() produce generic errors
@@ -2800,7 +2800,7 @@ Number_sp Complex_O::log1p_() const {
 
 CL_LAMBDA(number &optional base);
 CL_DECLARE();
-CL_DOCSTRING("Calculate the log of (number) to base (base).");
+CL_DOCSTRING(R"doc(Calculate the log of (number) to base (base).)doc")
 CL_DEFUN Number_sp cl__log(Number_sp number, T_sp base) {
   if (base.nilp())
     return clasp_log1(number);
@@ -2809,7 +2809,7 @@ CL_DEFUN Number_sp cl__log(Number_sp number, T_sp base) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("log1p");
+CL_DOCSTRING(R"doc(log1p)doc")
 CL_DEFUN Number_sp core__log1p(Number_sp arg) {
   return clasp_log1p(arg);
 };
@@ -2820,15 +2820,15 @@ Integer_sp clasp_ash(Integer_sp x, int bits) {
 
 CL_LAMBDA(i);
 CL_DECLARE();
-CL_DOCSTRING("integerLength");
+CL_DOCSTRING(R"doc(integerLength)doc")
 CL_DEFUN gc::Fixnum cl__integer_length(Integer_sp i) {
   return clasp_integer_length(i);
 };
 
 CL_LAMBDA(i);
 CL_DECLARE();
-CL_DOCSTRING("Return the number of bits in the 2's complement representation"
-             "of I that are 'on', i.e. distinct from the sign bit.");
+CL_DOCSTRING(R"doc(Return the number of bits in the 2's complement representation"
+             "of I that are 'on', i.e. distinct from the sign bit.)doc")
 CL_DEFUN gc::Fixnum cl__logcount(Integer_sp i) {
   // Builtins aren't very helpful for negative numbers, so we use the
   // (logcount x) = (logcount (lognot x)) identity.
@@ -2843,14 +2843,14 @@ CL_DEFUN gc::Fixnum cl__logcount(Integer_sp i) {
 
 CL_LAMBDA(i);
 CL_DECLARE();
-CL_DOCSTRING("float-nan-p");
+CL_DOCSTRING(R"doc(doc(float-nan-p)doc")
 CL_DEFUN bool ext__float_nan_p(Float_sp i) {
   return clasp_float_nan_p(i);
 };
 
 CL_LAMBDA(i);
 CL_DECLARE();
-CL_DOCSTRING("float-infinity-p");
+CL_DOCSTRING(R"doc(float-infinity-p)doc")
 CL_DEFUN bool ext__float_infinity_p(Float_sp i) {
   return clasp_float_infinity_p(i);
 };
@@ -2997,7 +2997,7 @@ LongFloat clasp_to_long_double(Number_sp x)
 
 CL_LAMBDA(singleFloat);
 CL_DECLARE();
-CL_DOCSTRING("Return the IEEE754 binary32 (single) representation of a single float, as an integer.");
+CL_DOCSTRING(R"doc(Return the IEEE754 binary32 (single) representation of a single float, as an integer.)doc")
 CL_DEFUN Integer_sp ext__single_float_to_bits(SingleFloat_sp singleFloat) {
   // NOTE: This and the later ones are probably undefined behavior,
   // though Clang seems to support them fine.
@@ -3013,7 +3013,7 @@ CL_DEFUN Integer_sp ext__single_float_to_bits(SingleFloat_sp singleFloat) {
 
 CL_LAMBDA(bit-representation);
 CL_DECLARE();
-CL_DOCSTRING("Convert an IEEE754 binary32 (single) representation, an integer, to a single float.");
+CL_DOCSTRING(R"doc(Convert an IEEE754 binary32 (single) representation, an integer, to a single float.)doc")
 CL_DEFUN SingleFloat_sp ext__bits_to_single_float(Fixnum_sp fixnum) {
   union {
     float     f;
@@ -3025,7 +3025,7 @@ CL_DEFUN SingleFloat_sp ext__bits_to_single_float(Fixnum_sp fixnum) {
 
 CL_LAMBDA(doubleFloat);
 CL_DECLARE();
-CL_DOCSTRING("Return the IEEE754 binary64 (double) bit representation of a double float as an integer.");
+CL_DOCSTRING(R"doc(Return the IEEE754 binary64 (double) bit representation of a double float as an integer.)doc")
 CL_DEFUN Integer_sp ext__double_float_to_bits(DoubleFloat_sp doubleFloat) {
   union {
     double     d;
@@ -3037,7 +3037,7 @@ CL_DEFUN Integer_sp ext__double_float_to_bits(DoubleFloat_sp doubleFloat) {
 
 CL_LAMBDA(bit-representation);
 CL_DECLARE();
-CL_DOCSTRING("Convert an IEEE754 binary64 (double) representation, an integer, to a double float.");
+CL_DOCSTRING(R"doc(Convert an IEEE754 binary64 (double) representation, an integer, to a double float.)doc")
 CL_DEFUN DoubleFloat_sp ext__bits_to_double_float(Integer_sp integer) {
   union {
     double     d;

@@ -259,7 +259,7 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
 
 CL_LAMBDA(obj &optional strm);
 CL_DECLARE();
-CL_DOCSTRING("writeUglyObject");
+CL_DOCSTRING(R"doc(writeUglyObject)doc")
 CL_DEFUN T_sp core__write_ugly_object(T_sp obj, T_sp ostrm) {
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_ugly_object(obj, strm);

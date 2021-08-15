@@ -112,7 +112,7 @@ int clasp_musleep(double dsec, bool alertable) {
 
 CL_LAMBDA(seconds);
 CL_DECLARE();
-CL_DOCSTRING("sleep");
+CL_DOCSTRING(R"doc(sleep)doc")
 CL_DEFUN T_sp cl__sleep(Real_sp oseconds) {
   // seconds - a non-negative real.
   SYMBOL_EXPORT_SC_(ClPkg, sleep);
@@ -127,7 +127,7 @@ CL_DEFUN T_sp cl__sleep(Real_sp oseconds) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("A list of all symbols defined in C++");
+CL_DOCSTRING(R"doc(A list of all symbols defined in C++)doc")
 CL_DEFUN T_sp core__interpreter_symbols() {
   List_sp ls = nil<T_O>();
 
@@ -183,7 +183,7 @@ std::atomic<int64_t> global_next_number;
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("Return the next number.  An internal counter is incremented every time this function is called.");
+CL_DOCSTRING(R"doc(Return the next number.  An internal counter is incremented every time this function is called.)doc")
 CL_DEFUN T_sp core__next_number() {
   int64_t num, next_num;
   do {
@@ -198,14 +198,14 @@ CL_DEFUN T_sp core__next_number() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("lispImplementationType");
+CL_DOCSTRING(R"doc(lispImplementationType)doc")
 CL_DEFUN T_sp cl__lisp_implementation_type() {
   return SimpleBaseString_O::make(program_name());
 };
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("lisp-implementation-version");
+CL_DOCSTRING(R"doc(lisp-implementation-version)doc")
 CL_DEFUN T_sp cl__lisp_implementation_version() {
   stringstream ss;
   List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
@@ -244,7 +244,7 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("lispImplementationId - the git commit sha1 code");
+CL_DOCSTRING(R"doc(lispImplementationId - the git commit sha1 code)doc")
 CL_DEFUN T_sp core__lisp_implementation_id() {
   string all = CLASP_GIT_COMMIT;
 #define RIGHT_CHARS 8
@@ -259,7 +259,7 @@ CL_DEFUN T_sp core__lisp_implementation_id() {
 
 CL_LAMBDA(obj);
 CL_DECLARE();
-CL_DOCSTRING("Convert an object, either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL");
+CL_DOCSTRING(R"doc(Convert an object, either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL)doc")
 CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   if (object.fixnump() || object.characterp() || object.single_floatp()) {
     return Integer_O::create((Fixnum)object.raw_());
@@ -269,7 +269,7 @@ CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
 
 CL_LAMBDA(obj);
 CL_DECLARE();
-CL_DOCSTRING("Convert a fixnum value that represents an immediate back into an immediate value either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL");
+CL_DOCSTRING(R"doc(Convert a fixnum value that represents an immediate back into an immediate value either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL)doc")
 CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
   if (object.fixnump()) {
     T_sp value((gctools::Tagged)object.unsafe_fixnum());
@@ -284,7 +284,7 @@ CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("softwareType");
+CL_DOCSTRING(R"doc(softwareType)doc")
 CL_DEFUN T_sp cl__software_type() {
   struct utsname aux;
   if (uname(&aux) < 0)
@@ -295,7 +295,7 @@ CL_DEFUN T_sp cl__software_type() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("softwareVersion");
+CL_DOCSTRING(R"doc(softwareVersion)doc")
 CL_DEFUN T_sp cl__software_version() {
   string all = CLASP_VERSION;
   return SimpleBaseString_O::make(all);
@@ -303,7 +303,7 @@ CL_DEFUN T_sp cl__software_version() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("machineType");
+CL_DOCSTRING(R"doc(machineType)doc")
 CL_DEFUN T_sp cl__machine_type() {
   struct utsname aux;
   if (uname(&aux) < 0)
@@ -314,7 +314,7 @@ CL_DEFUN T_sp cl__machine_type() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("machineVersion");
+CL_DOCSTRING(R"doc(machineVersion)doc")
 CL_DEFUN T_sp cl__machine_version() {
   struct utsname aux;
   if (uname(&aux) < 0)
@@ -325,7 +325,7 @@ CL_DEFUN T_sp cl__machine_version() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("machineInstance");
+CL_DOCSTRING(R"doc(machineInstance)doc")
 CL_DEFUN T_sp cl__machine_instance() {
   struct utsname aux;
    if (uname(&aux) < 0)
@@ -336,14 +336,14 @@ CL_DEFUN T_sp cl__machine_instance() {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("argc");
+CL_DOCSTRING(R"doc(argc)doc")
 CL_DEFUN int core__argc() {
   return globals_->_Argc;
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
-CL_DOCSTRING("argv");
+CL_DOCSTRING(R"doc(argv)doc")
 CL_DEFUN SimpleBaseString_sp core__argv(int idx) {
   if ( idx < globals_->_Argc ) return SimpleBaseString_O::make(globals_->_Argv[idx]);
   return SimpleBaseString_O::make("");
@@ -351,7 +351,7 @@ CL_DEFUN SimpleBaseString_sp core__argv(int idx) {
 
 CL_LAMBDA(sym value);
 CL_DECLARE();
-CL_DOCSTRING("set");
+CL_DOCSTRING(R"doc(set)doc")
 CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   if (sym->getReadOnly())
     SIMPLE_ERROR(BF("Cannot modify value of constant %s") % _rep_(sym));
@@ -361,7 +361,7 @@ CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
 
 CL_LAMBDA(sym value cell);
 CL_DECLARE();
-CL_DOCSTRING("Set TLS symbol value, or if unbound there, the cell");
+CL_DOCSTRING(R"doc(Set TLS symbol value, or if unbound there, the cell)doc")
 CL_DEFUN T_sp core__setf_symbol_value_from_cell(Symbol_sp sym, T_sp val, Cons_sp cell) {
   sym->setf_symbolValueFromCell(val, cell);
   return val;
@@ -378,7 +378,7 @@ CL_DEFUN T_sp core__print_address_of(T_sp arg, T_sp msg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing");
+CL_DOCSTRING(R"doc(incompleteNextHigherPowerOf_2 - see the incompleteNextHigherPowerOf_2 builtin - only works for Fixnums and not the full range; just for testing)doc")
 CL_DEFUN int core__incomplete_next_higher_power_of_2(Fixnum_sp fn) {
   unsigned int f = unbox_fixnum(fn);
   return 1 << ((sizeof(f) * 8) - __builtin_clz(f));
@@ -386,7 +386,7 @@ CL_DEFUN int core__incomplete_next_higher_power_of_2(Fixnum_sp fn) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("allRegisteredClassNames");
+CL_DOCSTRING(R"doc(allRegisteredClassNames)doc")
 CL_DEFUN Vector_sp core__all_registered_class_names() {
   ComplexVector_T_sp vo = ComplexVector_T_O::make( _lisp->classSymbolsHolder().size(), nil<T_O>());
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
@@ -397,14 +397,14 @@ CL_DEFUN Vector_sp core__all_registered_class_names() {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("toTaggedFixnum");
+CL_DOCSTRING(R"doc(toTaggedFixnum)doc")
 CL_DEFUN T_sp core__to_tagged_fixnum(int val) {
   return gctools::smart_ptr<T_O>(val);
 };
 
 CL_LAMBDA(val);
 CL_DECLARE();
-CL_DOCSTRING("fromTaggedFixnum");
+CL_DOCSTRING(R"doc(fromTaggedFixnum)doc")
 CL_DEFUN gctools::Fixnum core__from_tagged_fixnum(T_sp val) {
   if (val.fixnump()) {
     return val.unsafe_fixnum();
@@ -414,7 +414,7 @@ CL_DEFUN gctools::Fixnum core__from_tagged_fixnum(T_sp val) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("dumpTaggedFixnum");
+CL_DOCSTRING(R"doc(dumpTaggedFixnum)doc")
 CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
   if (val.fixnump()) {
     printf("%s:%d Raw TaggedFixnum %p   Untagged %" PFixnum "\n",
@@ -423,7 +423,7 @@ CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
     printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__);
 }
 
-CL_DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc");
+CL_DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc")
 CL_DEFUN T_mv ext__llvm_version() {
 #define CXX_MACRO_STRING(var) #var
   return Values(core::SimpleBaseString_O::make(CXX_MACRO_STRING(LLVM_VERSION)),clasp_make_single_float(LLVM_VERSION));
@@ -434,7 +434,7 @@ CL_LAMBDA(name &optional stream);
 CL_DECLARE();
 CL_DOCSTRING(R"doc(Describe a
 C++ object
-like CL:DESCRIBE)doc");
+like CL:DESCRIBE)doc")
 CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
 {
   if (obj.generalp()) {
@@ -447,21 +447,21 @@ CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("isTrue");
+CL_DOCSTRING(R"doc(isTrue)doc")
 CL_DEFUN bool core__is_true(T_sp arg) {
   return arg.isTrue();
 };
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("Return the UNBOUND value");
+CL_DOCSTRING(R"doc(Return the UNBOUND value)doc")
 CL_DEFUN T_sp core__unbound() {
   return unbound<T_O>();
 };
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("smartPointerDetails - returns (values ptr-type px-offset px-size). The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer");
+CL_DOCSTRING(R"doc(smartPointerDetails - returns (values ptr-type px-offset px-size). The ptr-type is the type of pointer used to pass objects - either MPS-GARBAGE-COLLECTION or INTRUSIVE-REFERENCE-COUNTED-POINTER. The px-offset is the number of bytes offset of the smart_ptr data pointer from the start of the smart_ptr and px-size is the size of the data pointer)doc")
 CL_DEFUN T_mv core__smart_pointer_details() {
   SYMBOL_SC_(CorePkg, intrusiveReferenceCountedPointer);
   SYMBOL_SC_(CorePkg, sharedReferenceCountedPointer);
@@ -479,7 +479,7 @@ CL_DEFUN T_mv core__smart_pointer_details() {
 
 CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING("values");
+CL_DOCSTRING(R"doc(values)doc")
 CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   // returns multiple values
   size_t nargs = vargs->remaining_nargs();
@@ -519,7 +519,7 @@ CL_DEFUN T_mv cl__values(VaList_sp vargs) {
 
 CL_LAMBDA(list);
 CL_DECLARE();
-CL_DOCSTRING("values_list");
+CL_DOCSTRING(R"doc(values_list)doc")
 CL_DEFUN T_mv cl__values_list(List_sp list) {
   return ValuesFromCons(list);
 }
@@ -542,7 +542,7 @@ Symbol_sp functionBlockName(T_sp functionName, bool * correctp) {
 
 CL_LAMBDA(functionName);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx");
+CL_DOCSTRING(R"doc(See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx)doc")
 CL_DEFUN Symbol_sp core__function_block_name(T_sp functionName) {
   bool correct;
   Symbol_sp output = functionBlockName(functionName, &correct);
@@ -554,7 +554,7 @@ CL_DEFUN Symbol_sp core__function_block_name(T_sp functionName) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("validFunctionNameP");
+CL_DOCSTRING(R"doc(validFunctionNameP)doc")
 CL_DEFUN T_sp core__valid_function_name_p(T_sp arg) {
   bool correct;
   Symbol_sp name = functionBlockName(arg, &correct);
@@ -565,7 +565,7 @@ CL_DEFUN T_sp core__valid_function_name_p(T_sp arg) {
 
 CL_LAMBDA(listOfPairs);
 CL_DECLARE();
-CL_DOCSTRING("Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element");
+CL_DOCSTRING(R"doc(Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element)doc")
 CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
   ql::list firsts;
   ql::list seconds;
@@ -646,7 +646,7 @@ CL_DEFUN bool core__operator_shadowed_p(T_sp name, T_sp env) {
 
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: macro-function");
+CL_DOCSTRING(R"doc(See CLHS: macro-function)doc")
 CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
   T_sp func = nil<T_O>();
   if (env.nilp()) {
@@ -676,7 +676,7 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
 CL_LISPIFY_NAME("cl:macro-function");
 CL_LAMBDA(function symbol &optional env);
 CL_DECLARE();
-CL_DOCSTRING("(setf macro-function)");
+CL_DOCSTRING(R"doc((setf macro-function))doc")
 CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T_sp env) {
   Function_sp namedFunction;
   (void)env; // ignore
@@ -687,7 +687,7 @@ CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T
 
 CL_LAMBDA(symbol);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS: special-operator-p");
+CL_DOCSTRING(R"doc(See CLHS: special-operator-p)doc")
 CL_DEFUN T_sp cl__special_operator_p(Symbol_sp sym) {
   // should signal type-error if its argument is not a symbol.
   SYMBOL_EXPORT_SC_(ClPkg, let);
@@ -747,7 +747,7 @@ CL_DEFUN T_sp cl__special_operator_p(Symbol_sp sym) {
 
 
 CL_DECLARE();
-CL_DOCSTRING("CLHS: ash");
+CL_DOCSTRING(R"doc(CLHS: ash)doc")
 CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
   if (count.fixnump())
     return clasp_shift(integer, count.unsafe_fixnum());
@@ -771,7 +771,7 @@ CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
 
 CL_LAMBDA(&optional fmt-control &rest args);
 CL_DECLARE();
-CL_DOCSTRING("Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version");
+CL_DOCSTRING(R"doc(Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version)doc")
 CL_DEFUN void core__break_low_level(T_sp fmt, List_sp args) {
   if (fmt.notnilp()) {
     cl__format(_lisp->_true(), gc::As<String_sp>(fmt), args);
@@ -782,7 +782,7 @@ CL_DEFUN void core__break_low_level(T_sp fmt, List_sp args) {
 
 CL_LAMBDA(&optional msg);
 CL_DECLARE();
-CL_DOCSTRING("hook to invoke gdb");
+CL_DOCSTRING(R"doc(hook to invoke gdb)doc")
 NEVER_OPTIMIZE CL_DEFUN void core__gdb(T_sp msg) {
   T_sp obj = msg;
   string smsg = "No msg";
@@ -796,7 +796,7 @@ NEVER_OPTIMIZE CL_DEFUN void core__gdb(T_sp msg) {
 
 CL_LAMBDA(&optional msg);
 CL_DECLARE();
-CL_DOCSTRING("hook to invoke gdb");
+CL_DOCSTRING(R"doc(hook to invoke gdb)doc")
 CL_DEFUN void core__trap_execution(T_sp msg) {
   T_sp obj = msg;
   string smsg = "No msg";
@@ -809,7 +809,7 @@ CL_DEFUN void core__trap_execution(T_sp msg) {
 
 CL_LAMBDA(msg o);
 CL_DECLARE();
-CL_DOCSTRING("hook to invoke gdb");
+CL_DOCSTRING(R"doc(hook to invoke gdb)doc")
 CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   ASSERT(cl__stringp(msg));
   printf("gdbInspect object: %s\n", _rep_(o).c_str());
@@ -820,7 +820,7 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
 CL_LISPIFY_NAME("EXT:specialp");
 CL_LAMBDA(specialp symbol);
 CL_DECLARE();
-CL_DOCSTRING("Set whether SYMBOL is globally known to be special. Use cautiously.");
+CL_DOCSTRING(R"doc(Set whether SYMBOL is globally known to be special. Use cautiously.)doc")
 CL_DEFUN_SETF bool setf_symbol_specialp(bool specialp, Symbol_sp symbol) {
   symbol->setf_specialP(specialp);
   return specialp;
@@ -828,7 +828,7 @@ CL_DEFUN_SETF bool setf_symbol_specialp(bool specialp, Symbol_sp symbol) {
 
 CL_LAMBDA(symbol);
 CL_DECLARE();
-CL_DOCSTRING("Returns whether SYMBOL is known to be a constant (i.e. from DEFCONSTANT).");
+CL_DOCSTRING(R"doc(Returns whether SYMBOL is known to be a constant (i.e. from DEFCONSTANT).)doc")
 CL_DEFUN bool core__symbol_constantp(Symbol_sp symbol) {
   return symbol->getReadOnly();
 }
@@ -836,7 +836,7 @@ CL_DEFUN bool core__symbol_constantp(Symbol_sp symbol) {
 CL_LISPIFY_NAME("core:symbol-constantp");
 CL_LAMBDA(value symbol);
 CL_DECLARE();
-CL_DOCSTRING("Set whether SYMBOL is known to be a constant. Use cautiously.");
+CL_DOCSTRING(R"doc(Set whether SYMBOL is known to be a constant. Use cautiously.)doc")
 CL_DEFUN_SETF T_sp setf_symboL_constantp(T_sp value, Symbol_sp symbol) {
   symbol->setReadOnly(value.notnilp());
   return value;
@@ -845,7 +845,7 @@ CL_DEFUN_SETF T_sp setf_symboL_constantp(T_sp value, Symbol_sp symbol) {
 // Must be synced with constant-form-value in source-transformations.lsp
 CL_LAMBDA(obj &optional env);
 CL_DECLARE();
-CL_DOCSTRING("constantp");
+CL_DOCSTRING(R"doc(constantp)doc")
 CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
   // ignore env
   if (cl__symbolp(obj)) {
@@ -863,14 +863,14 @@ CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("identity");
+CL_DOCSTRING(R"doc(identity)doc")
 CL_DEFUN T_sp cl__identity(T_sp arg) {
   return arg;
 };
 
 CL_LAMBDA(obj);
 CL_DECLARE();
-CL_DOCSTRING("null test - return true if the object is the empty list otherwise return nil");
+CL_DOCSTRING(R"doc(null test - return true if the object is the empty list otherwise return nil)doc")
 CL_DEFUN T_sp cl__null(T_sp obj) {
   if (obj.nilp())
     return _lisp->_true();
@@ -879,7 +879,7 @@ CL_DEFUN T_sp cl__null(T_sp obj) {
 
 CL_LAMBDA(obj);
 CL_DECLARE();
-CL_DOCSTRING("return class of object - see CLHS");
+CL_DOCSTRING(R"doc(return class of object - see CLHS)doc")
 CL_DEFUN Instance_sp cl__class_of(T_sp obj) {
   Instance_sp result = lisp_instance_class(obj);
   return (result);
@@ -898,7 +898,7 @@ CL_DOCSTRING(R"doc(* Arguments
 Bind a function to the function slot of a symbol
 - handles symbol function-name and (SETF XXXX) names.
 IS-MACRO defines if the function is a macro or not.
-LAMBDA-LIST passes the lambda-list.)doc");
+LAMBDA-LIST passes the lambda-list.)doc")
 CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp lambda_list, T_sp lambda_list_p) {
   if ( Function_sp functionObject = functor.asOrNull<Function_O>() ) {
     if ( lambda_list_p.notnilp() ) {
@@ -924,7 +924,7 @@ CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, 
 
 CL_LAMBDA(function-name);
 CL_DECLARE();
-CL_DOCSTRING("fdefinition");
+CL_DOCSTRING(R"doc(fdefinition)doc")
 CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
   if (functionName.consp()) {
     List_sp cname = functionName;
@@ -952,7 +952,7 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
 CL_LISPIFY_NAME("cl:fdefinition")
 CL_LAMBDA(function name);
 CL_DECLARE();
-CL_DOCSTRING("(setf fdefinition)");
+CL_DOCSTRING(R"doc((setf fdefinition))doc")
 CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
   Symbol_sp symbol;
   Function_sp functionObject;
@@ -980,7 +980,7 @@ CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
 CL_LISPIFY_NAME("cl:symbol-function")
 CL_LAMBDA(function symbol);
 CL_DECLARE();
-CL_DOCSTRING("(setf symbol-function)");
+CL_DOCSTRING(R"doc((setf symbol-function))doc")
 CL_DEFUN_SETF T_sp setf_symbol_function(Function_sp function, Symbol_sp name) {
   Function_sp functionObject;
   name->setf_macroP(false);
@@ -990,7 +990,7 @@ CL_DEFUN_SETF T_sp setf_symbol_function(Function_sp function, Symbol_sp name) {
 
 CL_LAMBDA(function-name);
 CL_DECLARE();
-CL_DOCSTRING("fboundp");
+CL_DOCSTRING(R"doc(fboundp)doc")
 CL_DEFUN bool cl__fboundp(T_sp functionName) {
   if (functionName.consp()) {
     List_sp cname = functionName;
@@ -1015,7 +1015,7 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
 
 CL_LAMBDA(function-name);
 CL_DECLARE();
-CL_DOCSTRING("fmakunbound");
+CL_DOCSTRING(R"doc(fmakunbound)doc")
 CL_DEFUN T_sp cl__fmakunbound(T_sp functionName) {
   if (functionName.consp()) {
     List_sp cname = functionName;
@@ -1038,7 +1038,7 @@ CL_DEFUN T_sp cl__fmakunbound(T_sp functionName) {
 
 CL_LAMBDA(char &optional input-stream-designator recursive-p);
 CL_DECLARE();
-CL_DOCSTRING("read a list up to a specific character - see CLHS");
+CL_DOCSTRING(R"doc(read a list up to a specific character - see CLHS)doc")
 CL_DEFUN List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 #if 0
@@ -1059,7 +1059,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARread_hookSTAR);
 
 CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
-CL_DOCSTRING("read an object from a stream - see CLHS");
+CL_DOCSTRING(R"doc(read an object from a stream - see CLHS)doc")
 CL_DEFUN T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   bool preserve_whitespace = true;
   if ( recursive_p.isTrue() ) {
@@ -1079,7 +1079,7 @@ CL_DEFUN T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_
 
 CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
-CL_DOCSTRING("read an object from a stream - see CLHS");
+CL_DOCSTRING(R"doc(read an object from a stream - see CLHS)doc")
 CL_DEFUN T_sp core__fast_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   bool preserve_whitespace = true;
   if ( recursive_p.isTrue() ) {
@@ -1095,7 +1095,7 @@ CL_DEFUN T_sp core__fast_read(T_sp input_stream_designator, T_sp eof_error_p, T_
 SYMBOL_EXPORT_SC_(CorePkg, STARread_preserving_whitespace_hookSTAR);
 CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
-CL_DOCSTRING("read an object from a stream while preserving whitespace - see CLHS");
+CL_DOCSTRING(R"doc(read an object from a stream while preserving whitespace - see CLHS)doc")
 CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   bool preserve_whitespace = true;
   if ( recursive_p.isTrue() ) {
@@ -1147,7 +1147,7 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
 
 CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS for every");
+CL_DOCSTRING(R"doc(See CLHS for every)doc")
 CL_DEFUN T_sp core__every_list(T_sp predicate, List_sp sequences) {
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
@@ -1157,7 +1157,7 @@ CL_DEFUN T_sp core__every_list(T_sp predicate, List_sp sequences) {
 
 CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS for some");
+CL_DOCSTRING(R"doc(See CLHS for some)doc")
 CL_DEFUN T_sp core__some_list(T_sp predicate, List_sp sequences) {
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp retVal;
@@ -1169,7 +1169,7 @@ CL_DEFUN T_sp core__some_list(T_sp predicate, List_sp sequences) {
 
 CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS for notany");
+CL_DOCSTRING(R"doc(See CLHS for notany)doc")
 CL_DEFUN T_sp core__notany_list(T_sp predicate, List_sp sequences) {
   Function_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
@@ -1185,7 +1185,7 @@ SYMBOL_EXPORT_SC_(ClPkg, mapcar);
 
 CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS for mapcar");
+CL_DOCSTRING(R"doc(See CLHS for mapcar)doc")
 CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
@@ -1219,7 +1219,7 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
 */
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS mapc");
+CL_DOCSTRING(R"doc(See CLHS mapc)doc")
 CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
   // mapc function &rest lists+    list-1
   Function_sp func = coerce::functionDesignator(func_desig);
@@ -1250,7 +1250,7 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
 
 CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS maplist");
+CL_DOCSTRING(R"doc(See CLHS maplist)doc")
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
@@ -1280,7 +1280,7 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
 
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
-CL_DOCSTRING("See CLHS maplist");
+CL_DOCSTRING(R"doc(See CLHS maplist)doc")
 CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
@@ -1310,7 +1310,7 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
 
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
-CL_DOCSTRING("mapcon");
+CL_DOCSTRING(R"doc(mapcon)doc")
 CL_DEFUN T_sp cl__mapcon(T_sp op, List_sp lists) {
   List_sp parts = cl__maplist(op, lists);
   T_sp result = cl__nconc(parts);
@@ -1319,7 +1319,7 @@ CL_DEFUN T_sp cl__mapcon(T_sp op, List_sp lists) {
 
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
-CL_DOCSTRING("mapcan");
+CL_DOCSTRING(R"doc(mapcan)doc")
 CL_DEFUN T_sp cl__mapcan(T_sp op, List_sp lists) {
   List_sp parts = cl__mapcar(op, lists);
   T_sp result = cl__nconc(parts);
@@ -1337,7 +1337,7 @@ CL_DEFUN T_sp cl__mapcan(T_sp op, List_sp lists) {
 */
 CL_LAMBDA(core:&va-rest lists);
 CL_DECLARE();
-CL_DOCSTRING("append as in clhs");
+CL_DOCSTRING(R"doc(append as in clhs)doc")
 CL_DEFUN T_sp cl__append(VaList_sp args) {
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
@@ -1364,7 +1364,7 @@ CL_DEFUN T_sp cl__append(VaList_sp args) {
 
 CL_LAMBDA(sequence start end);
 CL_DECLARE();
-CL_DOCSTRING("Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence. I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length).");
+CL_DOCSTRING(R"doc(Copied from ecl::sequence.d::sequence_start_end - throws errors if start/end are out of range for the sequence. I'm not sure what the func argument is for. If end is nil then it is set to the end of the sequence.  Return MultipleValues(start,end,length).)doc")
 CL_DEFUN T_mv core__sequence_start_end(T_sp sequence, Fixnum_sp start, T_sp end) {
   // the func argument is useless, drop it here and in the caller with-start-end
   uint len = cl__length(sequence);
@@ -1392,7 +1392,7 @@ CL_DEFUN T_mv core__sequence_start_end(T_sp sequence, Fixnum_sp start, T_sp end)
 
 CL_LAMBDA(&optional (x "G"));
 CL_DECLARE();
-CL_DOCSTRING("See CLHS gensym");
+CL_DOCSTRING(R"doc(See CLHS gensym)doc")
 CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
   // Should signal an error of type type-error if x is not a string or a non-negative integer.
   if (x.nilp())
@@ -1436,7 +1436,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
 
 CL_LAMBDA(x);
 CL_DECLARE();
-CL_DOCSTRING("type_to_symbol");
+CL_DOCSTRING(R"doc(type_to_symbol)doc")
 CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -1567,14 +1567,14 @@ T_sp type_of(T_sp x) {
 
 CL_LAMBDA(obj);
 CL_DECLARE();
-CL_DOCSTRING("type_of");
+CL_DOCSTRING(R"doc(type_of)doc")
 CL_DEFUN T_sp cl__type_of(T_sp x) {
   return type_of(x);
 }
 
 CL_LAMBDA(obj);
 CL_DECLARE();
-CL_DOCSTRING("sxhash");
+CL_DOCSTRING(R"doc(sxhash)doc")
 CL_DEFUN Fixnum_sp cl__sxhash(T_sp obj) {
   if (obj.nilp())
     return make_fixnum(1);
@@ -1614,10 +1614,10 @@ SYMBOL_EXPORT_SC_(CorePkg,generic_function_lambda_lists);
 CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function);
 CL_DECLARE();
-CL_DOCSTRING("Return the lambda-list of a function designator. Note that "
+CL_DOCSTRING(R"doc(Return the lambda-list of a function designator. Note that "
              "this is intended for human consumption and so may not "
              "literally describe the function; e.g. macro and type expander "
-             "functions will have the defmacro/deftype lambda list.");
+             "functions will have the defmacro/deftype lambda list.)doc")
 CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(nil<T_O>(),nil<T_O>());
@@ -1635,7 +1635,7 @@ CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
 
 CL_LAMBDA(function);
 CL_DECLARE();
-CL_DOCSTRING("functionSourcePosInfo");
+CL_DOCSTRING(R"doc(functionSourcePosInfo)doc")
 CL_DEFUN T_sp core__function_source_pos_info(T_sp functionDesignator) {
   Closure_sp closure = coerce::closureDesignator(functionDesignator);
   return closure->sourcePosInfo();
@@ -1754,7 +1754,7 @@ CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string
 
 CL_LAMBDA(filename &optional (max-lines 0));
 CL_DOCSTRING(R"doc(Count number of lines in text file up to max-lines if max-lines is not 0. 
-             Return (valus number-of-lines file-position size-of-file).)doc");
+             Return (valus number-of-lines file-position size-of-file).)doc")
 CL_DEFUN T_mv core__countLinesInFile(const std::string& filename, size_t maxLines, bool approach) {
   int numberOfLines = 0;
   int charsSinceLastEol = 0;
@@ -1946,14 +1946,14 @@ int ctak(int x, int y, int z, bool allocate,int times) {
 }
 
 
-CL_DOCSTRING("Run the ctak test function (google 'tak function' - this is a try/catch/throw version)");
+CL_DOCSTRING(R"doc(Run the ctak test function (google 'tak function' - this is a try/catch/throw version))doc")
 CL_LAMBDA(x y z &key allocate (times 1));
 CL_DEFUN void core__ctak(int x, int y, int z, bool allocate, int times)
 {
   ctak(x,y,z,allocate,times);
 }
 
-CL_DOCSTRING("Run the tak test function (google 'tak function')");
+CL_DOCSTRING(R"doc(Run the tak test function (google 'tak function'))doc")
 CL_LAMBDA(x y z &key allocate (times 1));
 CL_DEFUN void core__tak(int x, int y, int z, bool allocate,int times)
 {

@@ -352,7 +352,7 @@ CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
 
 
 CL_LISPIFY_NAME("add-missing-sensors");
-CL_DOCSTRING(R"doc(Any optional or keyword parameters that are missing their sensors have them set to gensyms)doc");
+CL_DOCSTRING(R"doc(Any optional or keyword parameters that are missing their sensors have them set to gensyms)doc")
 CL_DEFMETHOD void LambdaListHandler_O::add_missing_sensors() {
   if (this->_OptionalArguments.size() > 0) {
     for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
@@ -502,7 +502,7 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
 
 CL_LAMBDA(lambda-list);
 CL_DECLARE();
-CL_DOCSTRING("process_macro_lambda_list");
+CL_DOCSTRING(R"doc(process_macro_lambda_list)doc")
 CL_DEFUN T_sp core__process_macro_lambda_list(List_sp lambda_list) {
   List_sp new_ll = LambdaListHandler_O::process_macro_lambda_list(lambda_list);
   return new_ll;
@@ -510,7 +510,7 @@ CL_DEFUN T_sp core__process_macro_lambda_list(List_sp lambda_list) {
 
 CL_LAMBDA(lambda-list);
 CL_DECLARE();
-CL_DOCSTRING("process_single_dispatch_lambda_list");
+CL_DOCSTRING(R"doc(process_single_dispatch_lambda_list)doc")
 CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
   return LambdaListHandler_O::process_single_dispatch_lambda_list(lambda_list);
 }
@@ -1111,7 +1111,7 @@ DONE:
   
 CL_LAMBDA(vl context);
 CL_DECLARE();
-CL_DOCSTRING("processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!");
+CL_DOCSTRING(R"doc(processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!)doc")
 CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   _OF();
   gctools::Vec0<RequiredArgument> reqs;
