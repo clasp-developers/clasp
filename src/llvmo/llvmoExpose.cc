@@ -281,8 +281,7 @@ const char* my_LLVMSymbolLookupCallback (void *DisInfo, uint64_t ReferenceValue,
 TODO: See the link below to make the disassbmely more informative by emitting comments, symbols and latency
    http://llvm.org/doxygen/Disassembler_8cpp_source.html#l00248
 */
-CL_LAMBDA(target-triple start-address end-address)
-CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
+CL_LAMBDA(target-triple start-address end-address)CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
                                                  core::Pointer_sp start_address,
                                                  core::Pointer_sp end_address)
 {
@@ -699,9 +698,9 @@ namespace llvmo {
 
 
 
-CL_LAMBDA(triple-str);
+CL_LAMBDA(triple-str)
 CL_DECLARE();
-CL_DOCSTRING(R"doc()doc")
+CL_DOCSTRING(R"dx()dx")
 CL_PKG_NAME(LlvmoPkg,"make-triple");
 CL_DEFUN Triple_sp Triple_O::make(const string &triple) {
   auto  self = gctools::GC<Triple_O>::allocate_with_default_constructor();
@@ -1072,7 +1071,7 @@ CL_DEFUN void llvm_sys__writeIrToFile(Module_sp module, core::String_sp path) {
   delete aaw;
 }
 
-CL_LAMBDA(module pathname &optional (use-thin-lto t));
+CL_LAMBDA(module pathname &optional (use-thin-lto t))
 CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pathname, bool useThinLTO) {
   string pn = pathname->get_std_string();
   std::error_code errcode;
@@ -1127,7 +1126,7 @@ CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp co
   return omodule;
 };
 
-CL_LAMBDA("filename context");
+CL_LAMBDA("filename context")
 CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::T_sp tfilename, LLVMContext_sp context) {
   if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
@@ -1248,7 +1247,7 @@ CL_VALUE_ENUM(_sym_AttributeNonLazyBind, llvm::Attribute::NonLazyBind);
   CL_VALUE_ENUM(_sym_fastcc, llvmo::ClaspCallingConv::Fast);
   CL_END_ENUM(_sym_CallingConv)
 
-CL_LAMBDA(module value &optional label);
+CL_LAMBDA(module value &optional label)
 CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::String_sp svalue, core::T_sp label) {
   llvm::Module &M = *(module->wrappedPtr());
   llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(M.getContext(), svalue->get_std_string());
@@ -1325,7 +1324,7 @@ void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type *> 
 
 namespace llvmo {
 CL_PKG_NAME(LlvmoPkg,"make-Module");
-CL_LAMBDA(module-name context);
+CL_LAMBDA(module-name context)
 CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
   auto  self = gctools::GC<Module_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::Module(module_name, *(context->wrappedPtr()));
@@ -1641,7 +1640,7 @@ CL_DEFMETHOD size_t StructLayout_O::getElementOffset(size_t idx) const
 namespace llvmo {
 
 
-CL_LAMBDA(triple);
+CL_LAMBDA(triple)
 CL_PKG_NAME(LlvmoPkg,"makeTargetLibraryInfoWrapperPass");
 CL_DEFUN TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(llvm::Triple *tripleP) {
   auto  self = gctools::GC<TargetLibraryInfoWrapperPass_O>::allocate_with_default_constructor();
@@ -1654,7 +1653,7 @@ CL_DEFUN TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(ll
 }; // llvmo
 
 namespace llvmo {
-CL_LAMBDA(module);
+CL_LAMBDA(module)
 CL_PKG_NAME(LlvmoPkg,"makeFunctionPassManager");
 CL_DEFUN FunctionPassManager_sp FunctionPassManager_O::make(llvm::Module *module) {
   auto  self = gctools::GC<FunctionPassManager_O>::allocate_with_default_constructor();
@@ -1677,7 +1676,7 @@ CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::r
 }; // llvmo
 
 namespace llvmo {
-CL_LAMBDA();
+CL_LAMBDA()
 CL_PKG_NAME(LlvmoPkg,"makePassManager");
 CL_DEFUN PassManager_sp PassManager_O::make() {
   auto  self = gctools::GC<PassManager_O>::allocate_with_default_constructor();
@@ -1704,7 +1703,7 @@ string EngineBuilder_O::__repr__() const {
   return ss.str();
 }
 
-CL_LAMBDA(module);
+CL_LAMBDA(module)
 CL_PKG_NAME(LlvmoPkg,"make-EngineBuilder");
 CL_DEFUN EngineBuilder_sp EngineBuilder_O::make(Module_sp module) {
   auto  self = gctools::GC<EngineBuilder_O>::allocate_with_default_constructor();
@@ -1756,7 +1755,7 @@ CL_DEFMETHOD ExecutionEngine_sp EngineBuilder_O::createExecutionEngine() {
 }; // llvmo
 
 namespace llvmo {
-CL_LAMBDA();
+CL_LAMBDA()
 CL_PKG_NAME(LlvmoPkg,"make-PassManagerBuilder");
 CL_DEFUN PassManagerBuilder_sp PassManagerBuilder_O::make() {
   auto  self = gctools::GC<PassManagerBuilder_O>::allocate_with_default_constructor();
@@ -1798,7 +1797,7 @@ Constant_sp Constant_O::create(llvm::Constant *ptr) {
 }
 
 namespace llvmo {
-CL_LAMBDA(type values);
+CL_LAMBDA(type values)
 CL_LISPIFY_NAME(constant-data-array-get-uint32);
 CL_DEFUN Constant_sp ConstantDataArray_O::getUInt32(LLVMContext_sp context, core::T_sp ovalues) {
   Constant_sp ca = ConstantDataArray_O::create();
@@ -1826,7 +1825,7 @@ CL_DEFUN Constant_sp ConstantDataArray_O::getUInt32(LLVMContext_sp context, core
 }; // llvmo
 
 namespace llvmo {
-CL_LAMBDA(type values);
+CL_LAMBDA(type values)
 CL_LISPIFY_NAME(constant-array-get);
 CL_DEFUN Constant_sp ConstantArray_O::get(ArrayType_sp type, core::List_sp values) {
   Constant_sp ca = ConstantArray_O::create();
@@ -1847,7 +1846,7 @@ CL_DEFUN Constant_sp ConstantArray_O::get(ArrayType_sp type, core::List_sp value
 }; // llvmo
 
 namespace llvmo {
-CL_LAMBDA(function basic-block);
+CL_LAMBDA(function basic-block)
 CL_LISPIFY_NAME(block-address-get);
 CL_DEFUN BlockAddress_sp BlockAddress_O::get(Function_sp func, BasicBlock_sp bb) {
   BlockAddress_sp basp = BlockAddress_O::create();
@@ -1897,7 +1896,7 @@ CL_DEFMETHOD llvm::GlobalValue::UnnamedAddr GlobalValue_O::getUnnamedAddr() {
 };
 namespace llvmo {
 
-CL_LAMBDA("module type is-constant linkage initializer name &optional (insert-before nil) (thread-local-mode 'llvm-sys:not-thread-local)");
+CL_LAMBDA("module type is-constant linkage initializer name &optional (insert-before nil) (thread-local-mode 'llvm-sys:not-thread-local)")
 CL_LISPIFY_NAME(make-global-variable);
 CL_DEFUN GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, bool isConstant, core::Symbol_sp linkage, /*Constant_sp*/ core::T_sp initializer, core::String_sp name, /*GlobalVariable_sp*/ core::T_sp insertBefore, core::Symbol_sp threadLocalMode) {
   auto  me = gctools::GC<GlobalVariable_O>::allocate_with_default_constructor();
@@ -1950,13 +1949,13 @@ CL_DEFUN core::T_mv llvm_sys__getDebugLocInfo(Instruction_sp instr) {
   }
   return Values(nil<core::T_O>());
 }
-CL_DOCSTRING(R"doc(Erase the instruction from its parent basic block and return the next instruction or NIL)doc")
+CL_DOCSTRING(R"dx(Erase the instruction from its parent basic block and return the next instruction or NIL)dx")
 CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr)
 {
   llvm::SymbolTableList<llvm::Instruction>::iterator next = instr->wrappedPtr()->eraseFromParent();
 }
 
-CL_DOCSTRING(R"doc(Return the next non-debug instruction or NIL if there is none)doc")
+CL_DOCSTRING(R"dx(Return the next non-debug instruction or NIL if there is none)dx")
 CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction_sp instr)
 {
 #if (LLVM_VERSION_X100<900)  
@@ -2310,7 +2309,7 @@ string ConstantPointerNull_O::__repr__() const {
 
 namespace llvmo {
 
-CL_LAMBDA(value);
+CL_LAMBDA(value)
 CL_LISPIFY_NAME(make-apfloat-float);
 CL_DEFUN APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value) {
   auto  self = gctools::GC<APFloat_O>::allocate_with_default_constructor();
@@ -2318,7 +2317,7 @@ CL_DEFUN APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value) {
   return self;
 };
 
-CL_LAMBDA(value);
+CL_LAMBDA(value)
 CL_LISPIFY_NAME(makeAPFloatDouble);
 CL_DEFUN APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value) {
   auto  self = gctools::GC<APFloat_O>::allocate_with_default_constructor();
@@ -2409,8 +2408,7 @@ CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
   return this->_value._value.toString(radix, isigned);
 }
 
-CL_LAMBDA(api &optional (issigned t))
-CL_LISPIFY_NAME("toInteger");
+CL_LAMBDA(api &optional (issigned t))CL_LISPIFY_NAME("toInteger");
 CL_DEFUN core::Integer_sp toInteger(APInt_sp api, bool issigned) {
   string s = api->toString(10,issigned);
   return core::Integer_O::create(s);
@@ -2625,7 +2623,7 @@ CL_DEFUN llvm::Value* CreateExtractElement(llvmo::IRBuilderBase_O::ExternalType*
 }
 
 CL_LISPIFY_NAME(CreateCallFunctionPointer);
-CL_LAMBDA(irbuilder function_type callee args name &optional (fpmathtag nil));
+CL_LAMBDA(irbuilder function_type callee args name &optional (fpmathtag nil))
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::CallInst *(IRBuilderBase_O::ExternalType::*)(llvm::FunctionType *FTy, llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilderBase_O::ExternalType::CreateCall);
 CL_DEFUN llvm::CallInst* CreateCall(llvmo::IRBuilderBase_O::ExternalType* object, llvm::FunctionType *FTy, llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name , llvm::MDNode *FPMathTag ) {
   return object->CreateCall(FTy,Callee,Args,Name,FPMathTag);
@@ -2801,7 +2799,7 @@ CL_DEFUN llvm::ReturnInst* CreateRet(llvmo::IRBuilderBase_O::ExternalType* objec
 }
 
 CL_LISPIFY_NAME(CreateAdd);
-CL_LAMBDA("irbuilder lhs rhs &optional (name \"\") has-nuw has-nsw");
+CL_LAMBDA("irbuilder lhs rhs &optional (name \"\") has-nuw has-nsw")
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateAdd);
 CL_DEFUN llvm::Value* CreateAdd(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Value *LHS, llvm::Value *RHS, const llvm::Twine &Name , bool HasNUW , bool HasNSW ) {
   return object->CreateAdd(LHS,RHS,Name,HasNUW,HasNSW);
@@ -3308,7 +3306,7 @@ CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::Function *(llvm::BasicBlock::*)())&llvm:
 CL_LISPIFY_NAME(getTerminator);
 CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::Instruction *(llvm::BasicBlock::*)())&llvm::BasicBlock::getTerminator);
 
-CL_LAMBDA("context &optional (name \"\") parent basic-block");
+CL_LAMBDA("context &optional (name \"\") parent basic-block")
 CL_LISPIFY_NAME(basic-block-create);
 //CL_EXTERN_DEFUN((llvm::BasicBlock * (*)(llvm::LLVMContext &Context, const llvm::Twine &Name, llvm::Function *Parent, llvm::BasicBlock *InsertBefore)) &llvm::BasicBlock::Create );
 // llvm::BasicBlock::Create(llvm::LLVMContext& , llvm::Twine const& , llvm::Function*, llvm::BasicBlock*)
@@ -3382,8 +3380,8 @@ string Type_O::__repr__() const {
   return ss.str();
 }
 
-CL_LAMBDA((self llvm-sys::type) &optional (addressSpace 0));
-CL_DOCSTRING(R"doc(Return a PointerType to the llvm Type)doc")
+CL_LAMBDA((self llvm-sys::type) &optional (addressSpace 0))
+CL_DOCSTRING(R"dx(Return a PointerType to the llvm Type)dx")
 CL_LISPIFY_NAME("type-get-pointer-to");
 CL_DEFMETHOD PointerType_sp Type_O::getPointerTo(int addressSpace) {
   llvm::PointerType *ptrType = this->wrappedPtr()->getPointerTo();
@@ -3455,7 +3453,7 @@ namespace llvmo {
 //CL_EXTERN_DEFMETHOD(FunctionType_O, &llvm::FunctionType::getReturnType);
 
 
-CL_LAMBDA(result &optional params is-var-arg);
+CL_LAMBDA(result &optional params is-var-arg)
 CL_LISPIFY_NAME(function-type-get);
 CL_DEFUN core::T_sp FunctionType_O::get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg) {
   translate::from_object<llvm::Type *> r(result_type);
@@ -3479,7 +3477,7 @@ CL_DEFUN core::T_sp FunctionType_O::get(core::T_sp result_type, core::T_sp param
 namespace llvmo {
 
 
-CL_LAMBDA(context &key elements name is-packed);
+CL_LAMBDA(context &key elements name is-packed)
 CL_LISPIFY_NAME(struct-type-create);
 CL_DEFUN StructType_sp StructType_O::make(LLVMContext_sp context, core::T_sp elements, core::String_sp name, core::T_sp isPacked) {
   llvm::StructType *result = NULL;
@@ -3526,7 +3524,7 @@ CL_DEFMETHOD void StructType_O::setBody(core::T_sp elements, core::T_sp isPacked
 
 namespace llvmo {
 
-CL_LAMBDA(element-type num-elements);
+CL_LAMBDA(element-type num-elements)
 CL_LISPIFY_NAME(array-type-get);
 CL_DEFUN ArrayType_sp ArrayType_O::get(Type_sp elementType, uint64_t numElements) {
   ArrayType_sp at = ArrayType_O::create();
@@ -3544,7 +3542,7 @@ CL_DEFUN ArrayType_sp ArrayType_O::get(Type_sp elementType, uint64_t numElements
 namespace llvmo {
 
 
-CL_LAMBDA(element-type &optional (address-space 0));
+CL_LAMBDA(element-type &optional (address-space 0))
 CL_LISPIFY_NAME(pointer-type-get);
 CL_DEFUN PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpace) {
   PointerType_sp at = PointerType_O::create();
@@ -3560,8 +3558,7 @@ CL_DEFUN PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpac
 
 namespace llvmo {
 
-CL_LAMBDA(time)
-CL_DEFUN void llvm_sys__accumulate_llvm_usage_seconds(double time)
+CL_LAMBDA(time)CL_DEFUN void llvm_sys__accumulate_llvm_usage_seconds(double time)
 {
   core::DoubleFloat_sp df = core::DoubleFloat_O::create(time);
   _sym_STARmostRecentLlvmFinalizationTimeSTAR->setf_symbolValue(df);
@@ -4979,8 +4976,9 @@ void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
 }
 
 
-CL_DOCSTRING(R"doc(Tell LLVM what LLVM_DEBUG messages to turn on. Pass a list of strings like \"dyld\" - which
-turns on messages from RuntimeDyld.cpp if NDEBUG is NOT defined for the llvm build.)doc")
+CL_DOCSTRING(R"dx(Tell LLVM what LLVM_DEBUG messages to turn on.)dx")
+CL_DOCSTRING_LONG(R"dx(Pass a list of strings like \"dyld\" - which
+turns on messages from RuntimeDyld.cpp if NDEBUG is NOT defined for the llvm build.)dx")
 CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
 {
   using namespace llvm;

@@ -27,6 +27,7 @@
    (lambda-list% :initform nil :initarg :lambda-list% :accessor lambda-list%)
    (declare% :initform nil :initarg :declare% :accessor declare%)
    (docstring% :initform nil :initarg :docstring% :accessor docstring%)
+   (docstring-long% :initform nil :initarg :docstring-long% :accessor docstring-long%)
    (priority% :initform tags::*default-priority* :initarg :priority% :accessor priority%)))
 
 (defclass package-to-create ()
@@ -94,6 +95,7 @@
    (character-offset% :initarg :character-offset% :accessor character-offset%)
    (meta-class% :initarg :meta-class% :accessor meta-class%)
    (docstring% :initarg :docstring% :accessor docstring%)
+   (docstring-long% :initarg :docstring-long% :accessor docstring-long%)
    (package% :initarg :package% :accessor package%)
    (class-tag% :initarg :class-tag% :accessor class-tag%)
    (class-key% :initarg :class-key% :accessor class-key%)
@@ -300,6 +302,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
   (cur-priority nil)
   (cur-name nil)
   (cur-docstring nil)
+  (cur-docstring-long nil)
   (cur-declare nil)
   (cur-package-nickname-tags nil)
   (cur-package-use-tags nil)
@@ -362,6 +365,8 @@ Compare the symbol against previous definitions of symbols - if there is a misma
   (setf (state-cur-declare state) tag))
 (defmethod interpret-tag ((tag tags:cl-docstring-tag) state)
   (setf (state-cur-docstring state) tag))
+(defmethod interpret-tag ((tag tags:cl-docstring-long-tag) state)
+  (setf (state-cur-docstring-long state) tag))
 (defmethod interpret-tag ((tag tags:cl-priority-tag) state)
   (setf (state-cur-priority state) tag))
 (defmethod interpret-tag ((tag tags:package-nickname-tag) state)
@@ -377,6 +382,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                                   (state-cur-lambda state)
                                   (state-cur-declare state)
                                   (state-cur-docstring state)
+                                  (state-cur-docstring-long state)
                                   (state-cur-priority state))
   (let* ((packaged-function-name
            (maybe-override-name (state-cur-namespace-tag state)
@@ -391,6 +397,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                             (parse-lambda-list-from-signature signature-text)))
            (declare-form (tags:maybe-declare (state-cur-declare state)))
            (docstring (tags:maybe-docstring (state-cur-docstring state)))
+           (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))
            (priority (tags:maybe-priority (state-cur-priority state))))
       (multiple-value-bind (function-name full-function-name simple-function)
           (extract-function-name-from-signature signature-text tag)
@@ -405,6 +412,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                    :lambda-list% lambda-list
                    :declare% declare-form
                    :docstring% docstring
+                   :docstring-long% docstring-long
                    :priority% priority
                    :provide-declaration% simple-function
                    :signature% signature)
@@ -414,6 +422,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
       (setf (state-cur-lambda state) nil
             (state-cur-declare state) nil
             (state-cur-docstring state) nil
+            (state-cur-docstring-long state) nil
             (state-cur-priority state) nil
             (state-cur-name state) nil))))
 
@@ -424,6 +433,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                                   (state-cur-lambda state)
                                   (state-cur-declare state)
                                   (state-cur-docstring state)
+                                  (state-cur-docstring-long state)
                                   (state-cur-priority state))
   (let* ((packaged-function-name
            (maybe-override-name (state-cur-namespace-tag state)
@@ -438,6 +448,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                             (parse-lambda-list-from-signature signature-text)))
            (declare-form (tags:maybe-declare (state-cur-declare state)))
            (docstring (tags:maybe-docstring (state-cur-docstring state)))
+           (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))
            (priority (tags:maybe-priority (state-cur-priority state))))
       (multiple-value-bind (function-name full-function-name simple-function)
           (extract-function-name-from-signature signature-text tag)
@@ -452,6 +463,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                    :lambda-list% lambda-list
                    :declare% declare-form
                    :docstring% docstring
+                   :docstring-long% docstring-long
                    :priority% priority
                    :provide-declaration% simple-function
                    :signature% signature)
@@ -461,13 +473,17 @@ Compare the symbol against previous definitions of symbols - if there is a misma
       (setf (state-cur-lambda state) nil
             (state-cur-declare state) nil
             (state-cur-docstring state) nil
+            (state-cur-docstring-long state) nil
             (state-cur-priority state) nil
             (state-cur-name state) nil))))
 
 (defmethod interpret-tag ((tag tags:cl-extern-defun-tag) state)
-  (error-if-bad-expose-info-setup
-   tag (state-cur-name state) (state-cur-lambda state)
-   (state-cur-declare state) (state-cur-docstring state))
+  (error-if-bad-expose-info-setup tag
+                                  (state-cur-name state)
+                                  (state-cur-lambda state)
+                                  (state-cur-declare state)
+                                  (state-cur-docstring state)
+                                  (state-cur-docstring-long state))
   (let* ((packaged-function-name
            (maybe-override-name
             (state-cur-namespace-tag state)
@@ -484,7 +500,9 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                                (convert-function-ptr-to-lambda-list
                                 function-ptr))))
          (declare-form (tags:maybe-declare (state-cur-declare state)))
-         (docstring (tags:maybe-docstring (state-cur-docstring state))))
+         (docstring (tags:maybe-docstring (state-cur-docstring state)))
+         (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))
+         )
     (pushnew (make-instance 'expose-extern-defun
                :namespace% namespace
                :lisp-name% packaged-function-name
@@ -495,6 +513,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                :lambda-list% lambda-list
                :declare% declare-form
                :docstring% docstring
+               :docstring-long% docstring-long
                :pointer% pointer
                :function-ptr% function-ptr)
              (state-functions state)
@@ -503,13 +522,17 @@ Compare the symbol against previous definitions of symbols - if there is a misma
     (setf (state-cur-lambda state) nil
           (state-cur-declare state) nil
           (state-cur-docstring state) nil
+          (state-cur-docstring-long state) nil          
           (state-cur-priority state) nil
           (state-cur-name state) nil)))
 
 (defmethod interpret-tag ((tag tags:cl-defmethod-tag) state)
-  (error-if-bad-expose-info-setup
-   tag (state-cur-name state) (state-cur-lambda state)
-   (state-cur-declare state) (state-cur-docstring state))
+  (error-if-bad-expose-info-setup tag
+                                  (state-cur-name state)
+                                  (state-cur-lambda state)
+                                  (state-cur-declare state)
+                                  (state-cur-docstring state)
+                                  (state-cur-docstring-long state))
   (multiple-value-bind (tag-class-name method-name)
       (cscrape:extract-method-name-from-signature (tags:signature-text% tag))
     (let* ((class-name (or tag-class-name (tags:name% (state-cur-class state))))
@@ -528,7 +551,9 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                             (parse-lambda-list-from-signature signature-text
                                                               :class class)))
            (declare-form (tags:maybe-declare (state-cur-declare state)))
-           (docstring (tags:maybe-docstring (state-cur-docstring state))))
+           (docstring (tags:maybe-docstring (state-cur-docstring state)))
+           (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))           
+           )
       (unless class (error "For cl-defmethod-tag couldn't find class ~a"
                            class-key))
       (pushnew (make-instance 'expose-defmethod
@@ -540,20 +565,26 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                  :character-offset% (tags:character-offset% tag)
                  :lambda-list% lambda-list
                  :declare% declare-form
-                 :docstring% docstring)
+                 :docstring% docstring
+                 :docstring-long% docstring-long                 
+                 )
                (methods% class)
                :test #'string=
                :key #'lisp-name%)))
   (setf (state-cur-lambda state) nil
         (state-cur-declare state) nil
         (state-cur-docstring state) nil
+        (state-cur-docstring-long state) nil        
         (state-cur-priority state) nil
         (state-cur-name state) nil))
 
 (defmethod interpret-tag ((tag tags:cl-def-class-method-tag) state)
-  (error-if-bad-expose-info-setup
-   tag (state-cur-name state) (state-cur-lambda state)
-   (state-cur-declare state) (state-cur-docstring state))
+  (error-if-bad-expose-info-setup tag
+                                  (state-cur-name state)
+                                  (state-cur-lambda state)
+                                  (state-cur-declare state)
+                                  (state-cur-docstring state)
+                                  (state-cur-docstring-long state))
  (multiple-value-bind (tag-class-name method-name)
      (cscrape:extract-class-method-name-from-signature
       (tags:signature-text% tag))
@@ -572,7 +603,9 @@ Compare the symbol against previous definitions of symbols - if there is a misma
           (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state))
                            (parse-lambda-list-from-signature signature-text)))
           (declare-form (tags:maybe-declare (state-cur-declare state)))
-          (docstring (tags:maybe-docstring (state-cur-docstring state))))
+          (docstring (tags:maybe-docstring (state-cur-docstring state)))
+          (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))          
+          )
      (unless class (error "For cl-def-class-method-tag couldn't find class ~a"
                           class-key))
      (pushnew (make-instance 'expose-def-class-method
@@ -584,20 +617,26 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                 :character-offset% (tags:character-offset% tag)
                 :lambda-list% lambda-list
                 :declare% declare-form
-                :docstring% docstring)
+                :docstring% docstring
+                :docstring-long% docstring-long                
+                )
               (class-methods% class)
               :test #'string=
               :key #'lisp-name%)))
  (setf (state-cur-lambda state) nil
        (state-cur-declare state) nil
        (state-cur-docstring state) nil
+       (state-cur-docstring-long state) nil       
        (state-cur-priority state) nil
        (state-cur-name state) nil))
 
 (defmethod interpret-tag ((tag tags:cl-extern-defmethod-tag) state)
-  (error-if-bad-expose-info-setup
-   tag (state-cur-name state) (state-cur-lambda state)
-   (state-cur-declare state) (state-cur-docstring state))
+  (error-if-bad-expose-info-setup tag
+                                  (state-cur-name state)
+                                  (state-cur-lambda state)
+                                  (state-cur-declare state)
+                                  (state-cur-docstring state)
+                                  (state-cur-docstring-long state))
   (let* ((method-name
            (extract-method-name-from-pointer (tags:pointer% tag) tag))
          (class-name (tags:class-name% tag))
@@ -613,6 +652,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
          (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state)) ""))
         (declare-form (tags:maybe-declare (state-cur-declare state)))
          (docstring (tags:maybe-docstring (state-cur-docstring state)))
+         (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))         
          (pointer (tags:pointer% tag)))
     (unless class (error "Couldn't find class ~a" class-key))
     (pushnew (make-instance 'expose-extern-defmethod
@@ -625,6 +665,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                :lambda-list% lambda-list
                :declare% declare-form
                :docstring% docstring
+               :docstring-long% docstring-long               
                :pointer% pointer)
              (methods% class)
              :test #'string=
@@ -632,6 +673,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
    (setf (state-cur-lambda state) nil
          (state-cur-declare state) nil
          (state-cur-docstring state) nil
+         (state-cur-docstring-long state) nil         
          (state-cur-priority state) nil
          (state-cur-name state) nil)))
 
@@ -645,8 +687,8 @@ Compare the symbol against previous definitions of symbols - if there is a misma
               :c++type% type-key)))))
 
 (defmethod interpret-tag ((tag tags:lisp-internal-class-tag) state)
-  (when (state-cur-docstring state)
-    (error-if-bad-expose-info-setup* tag (state-cur-docstring state)))
+  (when (state-cur-docstring state) (error-if-bad-expose-info-setup* tag (state-cur-docstring state)))
+  (when (state-cur-docstring-long state) (error-if-bad-expose-info-setup* tag (state-cur-docstring-long state)))
   (unless (state-cur-namespace-tag state) (error 'missing-namespace :tag tag))
   (unless (string= (tags:namespace% (state-cur-namespace-tag state))
                    (tags:namespace% tag))
@@ -659,6 +701,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                       (state-cur-namespace-tag state)
                       (state-cur-meta-class state)))
          (docstring (tags:maybe-docstring (state-cur-docstring state)))
+         (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))         
          (base (make-class-key (state-cur-namespace-tag state) (tags:base% tag)))
          (lisp-name (lispify-class-name tag (state-packages state))))
     (if class-kind
@@ -673,6 +716,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                                            :character-offset% (tags:character-offset% tag)
                                            :meta-class% meta-class
                                            :docstring% docstring
+                                           :docstring-long% docstring-long                                           
                                            :base% base
                                            :class-key% class-key
                                            :lisp-name% lisp-name
@@ -685,17 +729,22 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                              :character-offset% (tags:character-offset% tag)
                              :meta-class% meta-class
                              :docstring% docstring
+                             :docstring-long% docstring-long                             
                              :base% base
                              :class-key% class-key
                              :lisp-name% lisp-name
                              :class-tag% tag))))
-  (setf (state-cur-docstring state) nil
+  (setf
+   (state-cur-docstring state) nil
+   (state-cur-docstring-long state) nil   
         (state-cur-priority state) nil
         (state-cur-meta-class state) nil))
 
 (defmethod interpret-tag ((tag tags:lisp-external-class-tag) state)
   (when (state-cur-docstring state)
     (error-if-bad-expose-info-setup* tag (state-cur-docstring state)))
+  (when (state-cur-docstring-long state)
+    (error-if-bad-expose-info-setup* tag (state-cur-docstring-long state)))  
   (unless (state-cur-namespace-tag state) (error 'missing-namespace :tag tag))
   (unless (string= (tags:namespace% (state-cur-namespace-tag state))
                    (tags:namespace% tag))
@@ -708,6 +757,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                       (state-cur-namespace-tag state)
                       (state-cur-meta-class state)))
          (docstring (tags:maybe-docstring (state-cur-docstring state)))
+         (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))         
          (base (make-class-key (state-cur-namespace-tag state) (tags:base% tag)))
          (lisp-name (lispify-class-name tag (state-packages state))))
     (if class-kind
@@ -722,6 +772,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                                            :character-offset% (tags:character-offset% tag)
                                            :meta-class% meta-class
                                            :docstring% docstring
+                                           :docstring-long% docstring-long                                           
                                            :base% base
                                            :class-key% class-key
                                            :lisp-name% lisp-name
@@ -734,11 +785,13 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                              :character-offset% (tags:character-offset% tag)
                              :meta-class% meta-class
                              :docstring% docstring
+                             :docstring-long% docstring-long                             
                              :class-key% class-key
                              :base% base
                              :lisp-name% lisp-name
                              :class-tag% tag))))
   (setf (state-cur-docstring state) nil
+        (state-cur-docstring-long state) nil   
         (state-cur-priority state) nil
         (state-cur-meta-class state) nil))
 

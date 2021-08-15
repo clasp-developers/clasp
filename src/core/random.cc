@@ -38,7 +38,7 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(&optional state);
+CL_LAMBDA(&optional state)
 CL_PKG_NAME(ClPkg,make-random-state);
 CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
   if (RandomState_sp rs = state.asOrNull<RandomState_O>()) {
@@ -60,9 +60,9 @@ CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
                                          Cons_O::createList(cl::_sym_Integer_O, make_fixnum(1)),                   \
                                          Cons_O::createList(cl::_sym_float, Cons_O::createList(clasp_make_single_float(0.0)))))
 
-CL_LAMBDA(olimit &optional (random-state cl:*random-state*));
+CL_LAMBDA(olimit &optional (random-state cl:*random-state*))
 CL_DECLARE();
-CL_DOCSTRING(R"doc(random)doc")
+CL_DOCSTRING(R"dx(random)dx")
 CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
   // olimit---a positive integer, or a positive float.
   // Fixing #292

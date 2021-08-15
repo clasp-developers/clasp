@@ -213,7 +213,7 @@ CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
 }
 
-CL_DOCSTRING(R"doc(Return bytes allocated (values clasp-calculated-bytes))doc")
+CL_DOCSTRING(R"dx(Return bytes allocated (values clasp-calculated-bytes))dx")
 CL_DEFUN core::T_sp gctools__bytes_allocated() {
   size_t my_bytes = my_thread_low_level->_Allocations._BytesAllocated;
   ASSERT(my_bytes < gc::most_positive_fixnum);
@@ -222,7 +222,7 @@ CL_DEFUN core::T_sp gctools__bytes_allocated() {
 
 
 
-CL_DOCSTRING(R"doc(Return the next unused kind)doc")
+CL_DOCSTRING(R"dx(Return the next unused kind)dx")
 CL_DEFUN size_t core__next_unused_kind() {
   size_t next = global_next_unused_kind;
   ++global_next_unused_kind;
@@ -234,7 +234,7 @@ CL_DEFUN size_t core__next_unused_kind() {
 
 namespace gctools {
 
-CL_DOCSTRING(R"doc(Return the header value for the object)doc")
+CL_DOCSTRING(R"dx(Return the header value for the object)dx")
 CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
@@ -245,7 +245,7 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
 }
 
 
-CL_DOCSTRING(R"doc(Return the header value for the object)doc")
+CL_DOCSTRING(R"dx(Return the header value for the object)dx")
 CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
   if (value.fixnump()) {
     Fixnum fvalue = value.unsafe_fixnum();
@@ -261,7 +261,7 @@ CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test()
 }
 
 
-CL_DOCSTRING(R"doc(Return the header kind for the object)doc")
+CL_DOCSTRING(R"dx(Return the header kind for the object)dx")
 CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {
     return gctools::STAMPWTAG_CONS;
@@ -283,20 +283,20 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   SIMPLE_ERROR(BF("The object %s doesn't have a stamp") % _rep_(obj));
 }
 
-CL_DOCSTRING(R"doc(Return the index part of the stamp.  Stamp indices are adjacent to each other.)doc")
+CL_DOCSTRING(R"dx(Return the index part of the stamp.  Stamp indices are adjacent to each other.)dx")
 CL_DEFUN size_t core__stamp_index(size_t stamp)
 {
   return stamp>>(gctools::Header_s::wtag_width+gctools::Header_s::mtag_width);
 }
 
-CL_DOCSTRING(R"doc(Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting)doc")
+CL_DOCSTRING(R"dx(Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting)dx")
 CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t unshifted_stamp)
 {
   return core::make_fixnum((unshifted_stamp << gctools::Header_s::general_mtag_shift)
                            | gctools::Header_s::general_mtag);
 }
 
-CL_DOCSTRING(R"doc(Return the stamp for the object, the flags and the header stamp)doc")
+CL_DOCSTRING(R"dx(Return the stamp for the object, the flags and the header stamp)dx")
 CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
 {
   core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(),0));
@@ -304,13 +304,13 @@ CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
   SIMPLE_ERROR(BF("core:instance-stamp was about to return a non-fixnum %p") % (void*)stamp.raw_());
 }
 
-CL_DOCSTRING(R"doc(Determine if stamp A is immediately less than stamp B, so that they can be merged into a range.)doc")
+CL_DOCSTRING(R"dx(Determine if stamp A is immediately less than stamp B, so that they can be merged into a range.)dx")
 CL_DEFUN bool core__stamps_adjacent_p(size_t stamp_a, size_t stamp_b) {
   return (((stamp_a >> gctools::Header_s::general_mtag_shift) + 1)
           == (stamp_b >> gctools::Header_s::general_mtag_shift));
 }
 
-CL_DOCSTRING(R"doc(Set the header stamp for the object)doc")
+CL_DOCSTRING(R"dx(Set the header stamp for the object)dx")
 CL_DEFUN void core__instance_stamp_set(core::T_sp obj, core::T_sp stamp)
 {
   ASSERT(stamp.fixnump());
@@ -325,8 +325,8 @@ CL_DEFUN void core__instance_stamp_set(core::T_sp obj, core::T_sp stamp)
 }
 
 
-CL_LAMBDA(obj);
-CL_DOCSTRING(R"doc(Return true if the object inherits from core:instance based on its header value)doc")
+CL_LAMBDA(obj)
+CL_DOCSTRING(R"dx(Return true if the object inherits from core:instance based on its header value)dx")
 CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 {
   return (gc::IsA<core::Instance_sp>(obj));
@@ -336,7 +336,7 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 
 namespace gctools {
 
-CL_LAMBDA(&optional x (marker 0));
+CL_LAMBDA(&optional x (marker 0))
 CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 #if defined(USE_MPS)
   return Values(nil<core::T_O>());
@@ -347,7 +347,7 @@ CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 #endif
 };
 
-CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6));
+CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6))
 CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount, core::Fixnum_sp backtraceDepth) {
 #ifdef DEBUG_MONITOR_ALLOCATIONS
   global_monitorAllocations.on = on;
@@ -364,7 +364,7 @@ CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceSta
 #endif
 };
 
-CL_LAMBDA(&optional marker);
+CL_LAMBDA(&optional marker)
 CL_DEFUN Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
 #if defined(USE_BOEHM)
 # ifdef USE_BOEHM_MEMORY_MARKER
@@ -535,9 +535,9 @@ CL_DEFUN void gctools__copy_memory() {
 }
 #endif // USE_MPS
 
-CL_LAMBDA(&optional x);
+CL_LAMBDA(&optional x)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(room - Return info about the reachable objects in memory. x can be T, nil, :default.)doc")
+CL_DOCSTRING(R"dx(room - Return info about the reachable objects in memory. x can be T, nil, :default.)dx")
 CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
   gctools__garbage_collect();
@@ -554,7 +554,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 
 namespace gctools {
 
-CL_LAMBDA(&optional filename);
+CL_LAMBDA(&optional filename)
 CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename) {
 #ifdef USE_PRECISE_GC
   std::string sFilename = "";
@@ -626,9 +626,9 @@ void save_lisp_and_die(const std::string& filename)
   
 
 
-CL_LAMBDA(stamp);
+CL_LAMBDA(stamp)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Return a list of addresses of objects with the given stamp)doc")
+CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx")
 CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
 #if defined(USE_MPS)
   SIMPLE_ERROR(BF("Add support for MPS"));
@@ -654,9 +654,9 @@ CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
 }
 
 
-CL_LAMBDA(address);
+CL_LAMBDA(address)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Return a list of addresses of objects with the given stamp)doc")
+CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx")
 CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 #if defined(USE_MPS)
   SIMPLE_ERROR(BF("Add support for MPS"));
@@ -719,9 +719,9 @@ void boehm_callback_function_call_counter(void* header, size_t size, void* hash_
 };
 #endif
 
-CL_LAMBDA(func);
+CL_LAMBDA(func)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(function-call-count-profiler - Evaluate a function, count every function call made during the evaluation.)doc")
+CL_DOCSTRING(R"dx(function-call-count-profiler - Evaluate a function, count every function call made during the evaluation.)dx")
 CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   core::HashTable_sp func_counters_start = core::HashTableEq_O::create_default();
   core::HashTable_sp func_counters_end = core::HashTableEq_O::create_default();
@@ -871,9 +871,8 @@ CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
   return l;
 }
 
-CL_DOCSTRING(R"doc(Process finalizers)doc")
-CL_LAMBDA(&optional verbose)
-CL_DEFUN void gctools__cleanup(bool verbose) {
+CL_DOCSTRING(R"dx(Process finalizers)dx")
+CL_LAMBDA(&optional verbose)CL_DEFUN void gctools__cleanup(bool verbose) {
 #ifdef USE_MPS
   size_t finalizations;
   size_t messages = processMpsMessages(finalizations);
@@ -883,8 +882,8 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
 #endif
 }
 
-CL_DOCSTRING(R"doc(Set the number of signal polling ticks per GC cleanup and message processing.)doc")
-CL_LAMBDA(&optional verbose);
+CL_DOCSTRING(R"dx(Set the number of signal polling ticks per GC cleanup and message processing.)dx")
+CL_LAMBDA(&optional verbose)
 CL_DEFUN void gctools__poll_ticks_per_cleanup(int ticks) {
 #ifdef USE_MPS
   global_pollTicksPerCleanup = ticks;

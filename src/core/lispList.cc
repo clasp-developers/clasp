@@ -155,9 +155,9 @@ setup_test(struct cl_test *t, T_sp item, T_sp test,
 //
 
 /*! Duplicated from ECL rassoc */
-CL_LAMBDA(item a-list &key test test-not key);
+CL_LAMBDA(item a-list &key test test-not key)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(See CLHS rassoc)doc")
+CL_DOCSTRING(R"dx(See CLHS rassoc)dx")
 CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key) {
   struct cl_test t;
   if (test.notnilp())
@@ -182,9 +182,9 @@ CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_
   return nil<T_O>();
 }
 
-CL_LAMBDA(idx arg);
+CL_LAMBDA(idx arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(See CLHS nth)doc")
+CL_DOCSTRING(R"dx(See CLHS nth)dx")
 CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
   // should error on negative number
   // should return nil on positive bignums
@@ -205,9 +205,9 @@ CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
   TYPE_ERROR(arg, cl::_sym_list);
 };
 
-CL_LAMBDA(idx arg);
+CL_LAMBDA(idx arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(See CLHS nthcdr)doc")
+CL_DOCSTRING(R"dx(See CLHS nthcdr)dx")
 CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
   LIKELY_if (arg.consp()) {
     if (idx.fixnump()) {
@@ -227,18 +227,18 @@ CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
   TYPE_ERROR(arg, cl::_sym_list);
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(copyList)doc")
+CL_DOCSTRING(R"dx(copyList)dx")
 CL_DEFUN T_sp cl__copy_list(List_sp arg) {
   if (arg.consp()) return arg.unsafe_cons()->copyList();
   if (arg.nilp()) return arg;
   TYPE_ERROR(arg, cl::_sym_list);
 };
 /*! Code translated from ecl_butlast */
-CL_LAMBDA(list &optional (n 1));
+CL_LAMBDA(list &optional (n 1))
 CL_DECLARE();
-CL_DOCSTRING(R"doc(butlast)doc")
+CL_DOCSTRING(R"dx(butlast)dx")
 CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
    if (ll.nilp())
     return ll;
@@ -277,9 +277,9 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
    }
 }
 
-CL_LAMBDA(list &optional (n 1));
+CL_LAMBDA(list &optional (n 1))
 CL_DECLARE();
-CL_DOCSTRING(R"doc(nbutlast)doc")
+CL_DOCSTRING(R"dx(nbutlast)dx")
 CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
   if (l.nilp()) return l;
   if (in.fixnump()) {
@@ -313,15 +313,15 @@ CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
   }
 }
 
-CL_LAMBDA(&rest objects);
-CL_DOCSTRING(R"doc(See CLHS: list)doc")
+CL_LAMBDA(&rest objects)
+CL_DOCSTRING(R"dx(See CLHS: list)dx")
 CL_DEFUN T_sp cl__list(T_sp objects) {
   return objects;
 };
 
-CL_LAMBDA(core:&va-rest objects);
+CL_LAMBDA(core:&va-rest objects)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(list* see CLHS)doc")
+CL_DOCSTRING(R"dx(list* see CLHS)dx")
 CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
   size_t nargs = vargs->remaining_nargs();
   if (nargs == 0 ) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),nil<T_O>());
@@ -345,9 +345,9 @@ CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
 // and for a Bignum we test if it is positive and than return the list
 // last does not necessarily return a list, see (last '(a . b) 0) -> B
 
-CL_LAMBDA(list &optional (on 1));
+CL_LAMBDA(list &optional (on 1))
 CL_DECLARE();
-CL_DOCSTRING(R"doc(last - see CLHS)doc")
+CL_DOCSTRING(R"dx(last - see CLHS)dx")
 CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
   if (list.nilp())
     return list;
@@ -368,7 +368,7 @@ CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
 
 /* Adapted from ECL list.d nconc function */
 
-CL_LAMBDA(&rest lists);
+CL_LAMBDA(&rest lists)
 CL_DECLARE();
 CL_DEFUN T_sp cl__nconc(List_sp lists) {
   T_sp head = nil<T_O>();
@@ -408,18 +408,18 @@ T_sp clasp_nconc(T_sp l, T_sp y) {
   TYPE_ERROR(l, cl::_sym_list);
 }
 
-CL_LAMBDA(list tail);
+CL_LAMBDA(list tail)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(revappend)doc")
+CL_DOCSTRING(R"dx(revappend)dx")
 CL_DEFUN T_sp cl__revappend(List_sp list, T_sp tail) {
   if (list.nilp())
     return (tail);
   return list.asCons()->revappend(tail);
 };
 
-CL_LAMBDA(list tail);
+CL_LAMBDA(list tail)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(nreconc)doc")
+CL_DOCSTRING(R"dx(nreconc)dx")
 CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
   if (list.nilp())
     return (tail);

@@ -90,8 +90,8 @@ void redirect_llvm_interface_addSymbol() {
 }
 
 
-CL_DOCSTRING(R"doc(Load an llvm-ir file with either a bc extension or ll extension.)doc")
-CL_LAMBDA(pathname &optional verbose print external_format startup-name);
+CL_DOCSTRING(R"dx(Load an llvm-ir file with either a bc extension or ll extension.)dx")
+CL_LAMBDA(pathname &optional verbose print external_format startup-name)
 CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
   core::Pathname_sp pfilename = core::cl__pathname(filename);
@@ -150,7 +150,7 @@ void loadModule(llvmo::Module_sp module, size_t startupID, const std::string& li
 #endif
 }
   
-CL_LAMBDA(filename &optional verbose print external_format startup-id);
+CL_LAMBDA(filename &optional verbose print external_format startup-id)
 CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
@@ -170,7 +170,7 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 }
 
 
-CL_LAMBDA(filename &optional verbose print external_format startup-id);
+CL_LAMBDA(filename &optional verbose print external_format startup-id)
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
@@ -189,7 +189,7 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   return true;
 }
 
-CL_DOCSTRING(R"doc(Load a module into the Common Lisp environment as if it were loaded from a bitcode file)doc")
+CL_DOCSTRING(R"dx(Load a module into the Common Lisp environment as if it were loaded from a bitcode file)dx")
 
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
@@ -325,7 +325,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset gcroots-in-module valist register-save-area function-description);
+CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset gcroots-in-module valist register-save-area function-description)
 CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize,
                                                         core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset, core::Fixnum_sp symbol_setf_function_offset,
                                                         core::Fixnum_sp functionSize,
@@ -474,7 +474,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
 }
 #endif
 
-CL_LAMBDA(module &optional (stream t));
+CL_LAMBDA(module &optional (stream t))
 CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;
@@ -483,7 +483,7 @@ CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::clasp_write_string(sout.str(),stream);
 }
 
-CL_LAMBDA(func &optional (stream t));
+CL_LAMBDA(func &optional (stream t))
 CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;
@@ -492,7 +492,7 @@ CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
   core::clasp_write_string(outstr,stream);
 }
 
-CL_LAMBDA(fn &optional only);
+CL_LAMBDA(fn &optional only)
 CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcs, core::T_sp only) {
   core::List_sp cfuncs = funcs;
   for (auto cur : cfuncs) {

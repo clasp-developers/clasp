@@ -147,7 +147,7 @@ void LocalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fix
 
 
 
-CL_LAMBDA(&key function-description entry-point-functions);
+CL_LAMBDA(&key function-description entry-point-functions)
 CL_DEFUN GlobalEntryPointGenerator_sp core__makeGlobalEntryPointGenerator(FunctionDescription_sp fdesc,
                                                                           T_sp entryPointIndices) {
   auto entryPoint = gctools::GC<GlobalEntryPointGenerator_O>::allocate(fdesc,entryPointIndices);
@@ -155,7 +155,7 @@ CL_DEFUN GlobalEntryPointGenerator_sp core__makeGlobalEntryPointGenerator(Functi
   return entryPoint;
 }
 
-CL_LAMBDA(&key function-description entry-point-functions);
+CL_LAMBDA(&key function-description entry-point-functions)
 CL_DEFUN LocalEntryPointGenerator_sp core__makeLocalEntryPointGenerator(FunctionDescription_sp fdesc,
                                                                         T_sp entryPointIndices) {
   auto entryPoint = gctools::GC<LocalEntryPointGenerator_O>::allocate(fdesc,entryPointIndices);
@@ -164,7 +164,7 @@ CL_DEFUN LocalEntryPointGenerator_sp core__makeLocalEntryPointGenerator(Function
 }
 
 
-CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname (lineno 0) (column 0) (filepos 0));
+CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname (lineno 0) (column 0) (filepos 0))
 CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
                                                               T_sp lambdaList,
                                                               T_sp docstring,

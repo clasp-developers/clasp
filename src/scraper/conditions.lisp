@@ -48,9 +48,10 @@
                (< (- (tags:line% tag) (tags:line% other-tag)) 20))
     (error 'bad-cl-defun/defmethod :tag tag :other-tag other-tag)))
 
-(defun error-if-bad-expose-info-setup (tag cur-name cur-lambda cur-declare cur-docstring &optional cur-priority)
+(defun error-if-bad-expose-info-setup (tag cur-name cur-lambda cur-declare cur-docstring cur-docstring-long &optional cur-priority)
   (when cur-name (error-if-bad-expose-info-setup* tag cur-name))
   (when cur-lambda (error-if-bad-expose-info-setup* tag cur-lambda))
   (when cur-declare (error-if-bad-expose-info-setup* tag cur-declare))
   (when cur-docstring (error-if-bad-expose-info-setup* tag cur-docstring))
+  (when cur-docstring-long (error-if-bad-expose-info-setup* tag cur-docstring-long))
   (when cur-priority (error-if-bad-expose-info-setup* tag cur-priority))  )

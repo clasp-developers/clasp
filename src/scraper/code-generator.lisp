@@ -148,6 +148,13 @@
          (line (line% obj))
          (char-offset (character-offset% obj))
          (docstring (docstring% obj))
+         (docstring-long (docstring-long% obj))
+         (all-docstring (if (string= "\"\"" docstring-long)
+                            docstring
+                            (with-output-to-string (sout)
+                              (princ docstring sout)
+                              (terpri sout)
+                              (princ docstring-long sout))))
          (kind (cond
                  ((typep obj 'function-mixin) "code_kind")
                  ((typep obj 'class-method-mixin) "code_kind")
@@ -157,7 +164,7 @@
          (helper-name (format nil "source_info_~d_helper" idx)))
     (format sout "NOINLINE void source_info_~d_helper() {~%" idx)
     (format sout " define_source_info( ~a, ~a, ~s, ~d, ~d, ~a );~%"
-            kind lisp-name file char-offset line docstring )
+            kind lisp-name file char-offset line all-docstring)
     (format sout "}~%")
     helper-name))
 

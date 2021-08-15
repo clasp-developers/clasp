@@ -136,18 +136,18 @@ string WeakKeyHashTable_O::__repr__() const {
   return ss.str();
 }
 
-CL_LAMBDA(&optional (size 16));
+CL_LAMBDA(&optional (size 16))
 CL_DECLARE();
-CL_DOCSTRING(R"doc(makeWeakKeyHashTable)doc")
+CL_DOCSTRING(R"dx(makeWeakKeyHashTable)dx")
 CL_DEFUN WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size) {
   int sz = unbox_fixnum(size);
   WeakKeyHashTable_sp ht = gctools::GC<WeakKeyHashTable_O>::allocate(sz,DoubleFloat_O::create(2.0),0.5);
   return ht;
 }
 
-CL_LAMBDA(key hash-table &optional default-value);
+CL_LAMBDA(key hash-table &optional default-value)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(weakGethash)doc")
+CL_DOCSTRING(R"dx(weakGethash)dx")
 CL_DEFUN T_mv core__weak_gethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp defaultValue) {
   return ht->gethash(tkey, defaultValue);
 };
@@ -157,40 +157,40 @@ T_sp WeakKeyHashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   return value;
 }
 
-CL_LAMBDA(ht key value);
+CL_LAMBDA(ht key value)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(weakSetfGethash)doc")
+CL_DOCSTRING(R"dx(weakSetfGethash)dx")
 CL_DEFUN void core__weak_setf_gethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val) {
   ht->hash_table_setf_gethash(key, val);
 };
 
-CL_LAMBDA(ht key);
+CL_LAMBDA(ht key)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(weakRemhash)doc")
+CL_DOCSTRING(R"dx(weakRemhash)dx")
 CL_DEFUN void core__weak_remhash(WeakKeyHashTable_sp ht, T_sp key) {
   ht->remhash(key);
 };
 
 
-CL_LAMBDA(ht);
+CL_LAMBDA(ht)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(weakClrhash)doc")
+CL_DOCSTRING(R"dx(weakClrhash)dx")
 CL_DEFUN void core__weak_clrhash(WeakKeyHashTable_sp ht) {
   ht->clrhash();
 };
 
-CL_LAMBDA(ht idx);
+CL_LAMBDA(ht idx)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(weakSplat)doc")
+CL_DOCSTRING(R"dx(weakSplat)dx")
 CL_DEFUN void core__weak_splat(WeakKeyHashTable_sp ht, Fixnum_sp idx) {
   T_sp splatted;     // This will be NULL
   splatted.reset_(); // This will force it to be NULL
   TESTING();         // Test the NULL value
   (*ht->_HashTable._Keys).set(unbox_fixnum(idx), WeakKeyHashTable_O::value_type(splatted));
 };
-CL_LAMBDA(ht &optional sz);
+CL_LAMBDA(ht &optional sz)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(weakRehash)doc")
+CL_DOCSTRING(R"dx(weakRehash)dx")
 CL_DEFUN void core__weak_rehash(WeakKeyHashTable_sp ht, T_sp sz) {
   size_t newLength;
   if (sz.nilp()) {

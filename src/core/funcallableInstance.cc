@@ -76,7 +76,7 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::Sh
 }
 
 // FIXME: Exists solely for cases where the list of slotds is hard to get.
-CL_LAMBDA(class slot-count);
+CL_LAMBDA(class slot-count)
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
                                                            size_t slot_count) {
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
@@ -586,7 +586,7 @@ SYMBOL_EXPORT_SC_(ClosPkg, compile_discriminating_function);
 
 #define COMPILE_TRIGGER 1024 // completely arbitrary
 
-CL_LAMBDA(program gf args);
+CL_LAMBDA(program gf args)
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
                                             VaList_sp args) {
   DTILOG(BF("=============================== Entered clos__interpret_dtree_program\n"));

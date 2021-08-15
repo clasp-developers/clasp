@@ -78,7 +78,9 @@
    #:cl-lambda-tag
    #:lambda-list%
    #:cl-docstring-tag
+   #:cl-docstring-long-tag
    #:docstring%
+   #:docstring-long%
    #:cl-priority-tag
    #:priority%
    #:maybe-priority
@@ -120,6 +122,7 @@
    #:package-str%
    #:maybe-lambda-list
    #:maybe-docstring
+   #:maybe-docstring-long
    #:maybe-declare)
   ;; Static analyzer tags
   (:export

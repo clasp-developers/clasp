@@ -80,9 +80,9 @@ void ReturnFrom::keyFunctionForVtable(){};
 void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
-CL_LAMBDA();
+CL_LAMBDA()
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Returns the list of active CL:CATCH tags. Strictly for debugging.)doc")
+CL_DOCSTRING(R"dx(Returns the list of active CL:CATCH tags. Strictly for debugging.)dx")
 CL_DEFUN List_sp core__active_catch_tags() {
   return my_thread->catchTags();
 }
@@ -158,9 +158,9 @@ struct SignalSimpleErrorTrap {
 };
     
 
-CL_LAMBDA(base-condition continue-message format-control format-args &rest args);
+CL_LAMBDA(base-condition continue-message format-control format-args &rest args)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(signalSimpleError)doc")
+CL_DOCSTRING(R"dx(signalSimpleError)dx")
 CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args) {
   SignalSimpleErrorTrap depth;
   printf("%s:%d core__signal_simple_error  caught because signal-simple-error is not installed yet\n", __FILE__, __LINE__);
@@ -607,7 +607,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
   UNREACHABLE();
 };
 
-CL_DOCSTRING(R"doc(functionWrongTypeArgument)doc")
+CL_DOCSTRING(R"dx(functionWrongTypeArgument)dx")
 [[noreturn]] CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
@@ -636,9 +636,9 @@ CL_DOCSTRING(R"doc(functionWrongTypeArgument)doc")
   UNREACHABLE();
 };
 
-CL_LAMBDA(source-file lineno function narg value type);
+CL_LAMBDA(source-file lineno function narg value type)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(wrongTypeArgument)doc")
+CL_DOCSTRING(R"dx(wrongTypeArgument)dx")
 [[noreturn]] CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
@@ -667,9 +667,9 @@ CL_DOCSTRING(R"doc(wrongTypeArgument)doc")
   UNREACHABLE();
 };
 
-CL_LAMBDA(source-file lineno function narg value type);
+CL_LAMBDA(source-file lineno function narg value type)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(wrongTypeNthArg)doc")
+CL_DOCSTRING(R"dx(wrongTypeNthArg)dx")
 [[noreturn]] CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
   if (function.nilp()) {
     stringstream message;
@@ -699,9 +699,9 @@ CL_DOCSTRING(R"doc(wrongTypeNthArg)doc")
   UNREACHABLE();
 };
 
-CL_LAMBDA(source-file lineno function narg value type);
+CL_LAMBDA(source-file lineno function narg value type)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(wrongIndex)doc")
+CL_DOCSTRING(R"dx(wrongIndex)dx")
 CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int nonincl_limit) {
   if (function.nilp()) {
     const char *message1 =

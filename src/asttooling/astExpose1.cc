@@ -249,8 +249,7 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
   return nil<core::T_O>();
 };
 
-CL_LAMBDA(astnode &optional (stream *standard-output*))
-__attribute__((optnone))
+CL_LAMBDA(astnode &optional (stream *standard-output*))__attribute__((optnone))
 CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp stream) {
 //    .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
 //    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)

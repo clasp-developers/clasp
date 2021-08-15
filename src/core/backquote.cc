@@ -84,9 +84,9 @@ T_mv macro_core__quasiquote(List_sp whole, T_sp env) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-CL_LAMBDA(core:&va-rest lists);
+CL_LAMBDA(core:&va-rest lists)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(append as in clhs)doc")
+CL_DOCSTRING(R"dx(append as in clhs)dx")
 CL_DEFUN T_sp core__backquote_append(VaList_sp lists) {
   ql::list list; // (lists);
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
@@ -110,9 +110,9 @@ CL_DEFUN T_sp core__backquote_append(VaList_sp lists) {
 }
 
 
-CL_LAMBDA(&rest lists);
+CL_LAMBDA(&rest lists)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(append as in clhs)doc")
+CL_DOCSTRING(R"dx(append as in clhs)dx")
 CL_DEFUN T_sp core__backquote_append_list(List_sp lists) {
   ql::list list; // (lists);
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
@@ -133,9 +133,9 @@ CL_DEFUN T_sp core__backquote_append_list(List_sp lists) {
   return result;
 }
 
-CL_LAMBDA(x);
+CL_LAMBDA(x)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(backquote_completely_process)doc")
+CL_DOCSTRING(R"dx(backquote_completely_process)dx")
 CL_DEFUN T_mv core__backquote_completely_process(T_sp x) {
   T_sp raw_result = core__backquote_process(x);
   if (_sym_STARbq_simplifySTAR->symbolValue().isTrue()) {
@@ -147,9 +147,9 @@ CL_DEFUN T_mv core__backquote_completely_process(T_sp x) {
   return Values(result);
 }
 
-CL_LAMBDA(ox);
+CL_LAMBDA(ox)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(bq_process)doc")
+CL_DOCSTRING(R"dx(bq_process)dx")
 CL_DEFUN T_sp core__backquote_process(T_sp ox) {
   // C-version if 0    Lisp-version if 1
   T_sp result = nil<T_O>();
@@ -210,7 +210,7 @@ DONE:
   return result;
 }
 
-CL_DOCSTRING(R"doc(bracket)doc")
+CL_DOCSTRING(R"dx(bracket)dx")
 CL_DEFUN T_sp core__backquote_bracket(T_sp x) {
   if (!x.consp()) {
     //	    return Cons_O::createList(_sym_STARbq_listSTAR,eval::funcall(_sym_backquote_process,x));
@@ -229,9 +229,9 @@ CL_DEFUN T_sp core__backquote_bracket(T_sp x) {
   return Cons_O::createList(_sym_STARbq_listSTAR, core__backquote_process(x));
 };
 
-CL_LAMBDA(x);
+CL_LAMBDA(x)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(backquote_splicing_frob is true if a form that when read looked like ,@foo or ,.foo)doc")
+CL_DOCSTRING(R"dx(backquote_splicing_frob is true if a form that when read looked like ,@foo or ,.foo)dx")
 CL_DEFUN bool core__backquote_splicing_frob(T_sp x) {
   if (x.consp()) {
     Cons_sp cx((gctools::Tagged)x.raw_());
@@ -241,9 +241,9 @@ CL_DEFUN bool core__backquote_splicing_frob(T_sp x) {
   return false;
 };
 
-CL_LAMBDA(x);
+CL_LAMBDA(x)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(backquote_frob is true if a form that when read looked like ,foo or ,@foo or ,.foo)doc")
+CL_DOCSTRING(R"dx(backquote_frob is true if a form that when read looked like ,foo or ,@foo or ,.foo)dx")
 CL_DEFUN bool core__backquote_frob(T_sp x) {
   if (x.consp()) {
     Cons_sp cx((gctools::Tagged)x.raw_());
@@ -255,9 +255,9 @@ CL_DEFUN bool core__backquote_frob(T_sp x) {
 
 SYMBOL_SC_(CorePkg, backquote_maptree);
 
-CL_LAMBDA(op x);
+CL_LAMBDA(op x)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(backquote_maptree)doc")
+CL_DOCSTRING(R"dx(backquote_maptree)dx")
 CL_DEFUN T_sp core__backquote_maptree(Function_sp op, T_sp x) {
   if (!x.consp()) {
     T_sp result = eval::funcall(op, x);
@@ -271,9 +271,9 @@ CL_DEFUN T_sp core__backquote_maptree(Function_sp op, T_sp x) {
 };
 
 
-CL_LAMBDA(x);
+CL_LAMBDA(x)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(temp_backquote_simplify)doc")
+CL_DOCSTRING(R"dx(temp_backquote_simplify)dx")
 CL_DEFUN T_sp core__backquote_simplify(T_sp x) {
   if (!x.consp()) return x;
   Cons_sp cx((gctools::Tagged)x.raw_());
@@ -292,9 +292,9 @@ CL_DEFUN T_sp core__backquote_simplify(T_sp x) {
   return (s);
 };
 
-CL_LAMBDA(x);
+CL_LAMBDA(x)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(backquote_simplify_args)doc")
+CL_DOCSTRING(R"dx(backquote_simplify_args)dx")
 CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
   ASSERT(x.consp());
   Cons_sp cx((gctools::Tagged)x.raw_());
@@ -338,9 +338,9 @@ CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
   return result;
 };
 
-CL_LAMBDA(x);
+CL_LAMBDA(x)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(backquote_null_or_quoted)doc")
+CL_DOCSTRING(R"dx(backquote_null_or_quoted)dx")
 CL_DEFUN T_sp core__backquote_null_or_quoted(T_sp x) {
   if (x.nilp())
     return (Values(_lisp->_true()));
@@ -352,9 +352,9 @@ CL_DEFUN T_sp core__backquote_null_or_quoted(T_sp x) {
   return nil<T_O>();
 };
 
-CL_LAMBDA(op item result);
+CL_LAMBDA(op item result)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(backquote_attach_append)doc")
+CL_DOCSTRING(R"dx(backquote_attach_append)dx")
 CL_DEFUN T_sp core__backquote_attach_append(T_sp op, T_sp item, T_sp result) {
   if (core__backquote_null_or_quoted(item).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
     List_sp tl = Cons_O::createList(oCadr(item), oCadr(result));
@@ -371,9 +371,9 @@ CL_DEFUN T_sp core__backquote_attach_append(T_sp op, T_sp item, T_sp result) {
 }
 
 
-CL_LAMBDA(items result);
+CL_LAMBDA(items result)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(backquote_attach_conses)doc")
+CL_DOCSTRING(R"dx(backquote_attach_conses)dx")
 CL_DEFUN List_sp core__backquote_attach_conses(T_sp items, T_sp result) {
   if (core__every_list(_sym_backquote_null_or_quoted, Cons_O::create(items,nil<T_O>())).isTrue() && core__backquote_null_or_quoted(result).isTrue()) {
     Cons_sp ti = Cons_O::create(items,nil<T_O>());
@@ -390,9 +390,9 @@ CL_DEFUN List_sp core__backquote_attach_conses(T_sp items, T_sp result) {
   return Cons_O::create(_sym_STARbq_listSTARSTAR, core__backquote_append_list(tr));
 }
 
-CL_LAMBDA(x);
+CL_LAMBDA(x)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(backquote_remove_tokens)doc")
+CL_DOCSTRING(R"dx(backquote_remove_tokens)dx")
 CL_DEFUN T_sp core__backquote_remove_tokens(T_sp x) {
   if (x == _sym_STARbq_listSTAR) return cl::_sym_list;
   if (x == _sym_STARbq_appendSTAR) return _sym_backquote_append;

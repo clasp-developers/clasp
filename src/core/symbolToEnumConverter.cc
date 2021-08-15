@@ -147,7 +147,7 @@ string SymbolToEnumConverter_O::__repr__() const {
   return ss.str();
 }
 
-CL_LAMBDA("converter symbols");
+CL_LAMBDA("converter symbols")
 CL_DEFUN Fixnum core__enum_logical_or(SymbolToEnumConverter_sp converter, List_sp symbols) {
   Fixnum flags = 0;
   for ( auto cur : symbols ) {

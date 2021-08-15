@@ -291,7 +291,7 @@ CL_DEFUN void clbind__dump_class_id_map() {
 };
 
 
-CL_LAMBDA(&optional filename);
+CL_LAMBDA(&optional filename)
 CL_DEFUN void clbind__dump_cast_graph(core::T_sp filename) {
   printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
   printf("Dump of castGraph\n");

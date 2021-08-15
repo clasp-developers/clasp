@@ -43,9 +43,9 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA();
+CL_LAMBDA()
 CL_DECLARE();
-CL_DOCSTRING(R"doc(makeSmallMultimap)doc")
+CL_DOCSTRING(R"dx(makeSmallMultimap)dx")
 CL_DEFUN SmallMultimap_sp core__make_small_multimap() {
   auto  sm = gctools::GC<SmallMultimap_O>::allocate_with_default_constructor();
   return sm;

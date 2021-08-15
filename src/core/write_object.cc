@@ -176,9 +176,9 @@ OUTPUT:
   return x;
 }
 
-CL_LAMBDA(obj &optional strm);
+CL_LAMBDA(obj &optional strm)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Identical to WRITE, but doesn't bind printer control variables.)doc")
+CL_DOCSTRING(R"dx(Identical to WRITE, but doesn't bind printer control variables.)dx")
 CL_DEFUN T_sp core__write_object(T_sp obj, T_sp ostrm) {
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_object(obj, strm);

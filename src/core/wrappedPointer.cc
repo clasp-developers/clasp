@@ -30,9 +30,9 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(pointerRelease)doc")
+CL_DOCSTRING(R"dx(pointerRelease)dx")
 CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   if (ptr.nilp()) {
     return nil<Pointer_O>();
@@ -43,9 +43,9 @@ CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not release pointer for %s") % _rep_(ptr));
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(pointerDelete)doc")
+CL_DOCSTRING(R"dx(pointerDelete)dx")
 CL_DEFUN void core__pointer_delete(T_sp ptr) {
   if (ptr.nilp()) {
     return;
@@ -86,9 +86,9 @@ Pointer_sp WrappedPointer_O::address() const {
   return Pointer_O::create(addr);
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(pointerAddress)doc")
+CL_DOCSTRING(R"dx(pointerAddress)dx")
 CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   if (ptr.nilp()) {
     return nil<Pointer_O>();

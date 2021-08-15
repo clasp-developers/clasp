@@ -804,7 +804,7 @@ GCPROTECTED:
 
 public:
   /*! Create an environment that extends a parent environment,
-	 Pass a Cons of 2-element conses that contain either `(lexical ,symbol-name) or `(special ,symbol-name) 
+	 Pass a Cons of 2-element conses that contain either (backquote (lexical ,symbol-name)) or (backquote (special ,symbol-name))
 	that distinguish if the symbol-name is a lexical one or a special one */
   static GlueEnvironment_sp create(List_sp parts);
 

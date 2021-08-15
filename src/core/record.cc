@@ -93,7 +93,7 @@ void Record_O::errorIfInvalidArguments() {
   }
 }
 
-CL_LAMBDA(&optional patcher-callback);
+CL_LAMBDA(&optional patcher-callback)
 CL_DEFUN Record_sp core__make_record_patcher(T_sp patcher_callback)
 {
   return Record_O::create_patcher(patcher_callback);

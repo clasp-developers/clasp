@@ -99,9 +99,17 @@
 (defclass tags:cl-docstring-tag (tag)
   ((docstring% :initarg :docstring% :reader tags:docstring%)))
 
+(defclass tags:cl-docstring-long-tag (tag)
+  ((docstring-long% :initarg :docstring-long% :reader tags:docstring-long%)))
+
 (defun maybe-docstring (tag)
   (if tag
       (docstring% tag)
+      "\"\""))
+
+(defun maybe-docstring-long (tag)
+  (if tag
+      (docstring-long% tag)
       "\"\""))
 
 (defclass tags:cl-priority-tag (tag)
@@ -319,6 +327,8 @@
                     lambda-list))
   (define-tag-handler cl-docstring-tag "CL_DOCSTRING_TAG" tags:cl-docstring-tag
     :docstring% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
+  (define-tag-handler cl-docstring-long-tag "CL_DOCSTRING_LONG_TAG" tags:cl-docstring-long-tag
+    :docstring-long% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
   (define-tag-handler cl-priority-tag "CL_PRIORITY_TAG" tags:cl-priority-tag
     :priority% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
   (define-tag-handler cl-declare-tag "CL_DECLARE_TAG" tags:cl-declare-tag

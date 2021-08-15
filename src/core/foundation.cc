@@ -380,9 +380,9 @@ List_sp lisp_copy_default_special_bindings() {
   return _lisp->copy_default_special_bindings();
 }
 
-CL_LAMBDA(name);
+CL_LAMBDA(name)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(lispifyName)doc")
+CL_DOCSTRING(R"dx(lispifyName)dx")
 CL_DEFUN String_sp core__lispify_name(String_sp name) {
   ASSERT(name.notnilp());
   string lispified = lispify_symbol_name(name->get_std_string());
@@ -408,7 +408,7 @@ void colon_split(const string& name, string& package_str, string& symbol_str)
   SIMPLE_ERROR(BF("Could not convert %s into package:symbol_name") % name);
 }
 
-CL_LAMBDA("name &optional (package \"\")");
+CL_LAMBDA("name &optional (package \"\")")
 CL_DOCSTRING(R"(Intern the package:name or name/package combination)")
 CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
 {
@@ -469,15 +469,15 @@ std::string magic_name(const std::string& name,const std::string& package_name)
 }
 
 
-CL_LAMBDA("name &optional (package \"\")");
+CL_LAMBDA("name &optional (package \"\")")
 CL_DECLARE();
-CL_DOCSTRING(R"doc(* Arguments
+CL_DOCSTRING(R"dx(* Arguments
 - name :: A string.
 - package :: A string
 * Description
 Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, 
 run them through lispify_symbol_name and then recombine them as pkg:name.
-Then split them again (sorry) and return (values pkg:sym pkg sym).)doc")
+Then split them again (sorry) and return (values pkg:sym pkg sym).)dx")
 CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& package) {
   std::string pkg_sym = magic_name(name,package);
   std::string sym;
@@ -1688,7 +1688,7 @@ void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size, cons
 
 
 namespace core {
-CL_LAMBDA(&optional (stream-designator t));
+CL_LAMBDA(&optional (stream-designator t))
 CL_DEFUN void core__mangledSymbols(T_sp stream_designator) {
   T_sp stream = coerce::outputStreamDesignator(stream_designator);
   write_bf_stream(BF("# Dumping %lu mangled function names\n" ) % global_mangledSymbols.size(), stream);

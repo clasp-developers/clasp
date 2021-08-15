@@ -50,79 +50,79 @@ namespace core {
 //    Symbol_sp 	_sym_nil;	// equivalent to nil<T_O>()
 //    Symbol_sp 	_sym_t;		// equivalent to _lisp->_true()
 
-CL_LAMBDA(sym);
+CL_LAMBDA(sym)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Return the symbol plist)doc")
+CL_DOCSTRING(R"dx(Return the symbol plist)dx")
 CL_DEFUN List_sp cl__symbol_plist(Symbol_sp sym) {
   return sym->plist();
 }
 
 CL_LISPIFY_NAME("cl:symbol-plist");
-CL_LAMBDA(plist sym);
+CL_LAMBDA(plist sym)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Set the symbol plist)doc")
+CL_DOCSTRING(R"dx(Set the symbol plist)dx")
 CL_DEFUN_SETF List_sp core__set_symbol_plist(List_sp plist, Symbol_sp sym) {
   sym->setf_plist(plist);
   return plist;
 }
 
-CL_LAMBDA(sym);
+CL_LAMBDA(sym)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Sequentially consistent atomic load of the symbol-plist)doc")
+CL_DOCSTRING(R"dx(Sequentially consistent atomic load of the symbol-plist)dx")
 CL_DEFUN List_sp core__atomic_symbol_plist(Symbol_sp sym) {
   return sym->atomic_plist();
 }
 
-CL_LAMBDA(nv symbol);
+CL_LAMBDA(nv symbol)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Sequentially consistent atomic store of the symbol-plist)doc")
+CL_DOCSTRING(R"dx(Sequentially consistent atomic store of the symbol-plist)dx")
 CL_DEFUN void core__atomic_set_symbol_plist(List_sp nv, Symbol_sp symbol) {
   symbol->atomic_setf_plist(nv);
 }
 
-CL_LAMBDA(cmp newv sym);
+CL_LAMBDA(cmp newv sym)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Compare-and-swap the symbol-plist)doc")
+CL_DOCSTRING(R"dx(Compare-and-swap the symbol-plist)dx")
 CL_DEFUN List_sp core__cas_symbol_plist(List_sp cmp, List_sp newv, Symbol_sp sym) {
   return sym->cas_plist(cmp, newv);
 }
 
-CL_LAMBDA(sym indicator &optional default);
+CL_LAMBDA(sym indicator &optional default)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Return the value of a plist property)doc")
+CL_DOCSTRING(R"dx(Return the value of a plist property)dx")
 CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
   return cl__getf(sym->plist(), indicator, defval);
 }
 
 CL_LISPIFY_NAME("cl:get")
-CL_LAMBDA(val sym indicator &optional default);
+CL_LAMBDA(val sym indicator &optional default)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Set the value of a plist property)doc")
+CL_DOCSTRING(R"dx(Set the value of a plist property)dx")
 CL_DEFUN_SETF T_sp core__putprop(T_sp val, Symbol_sp sym, T_sp indicator, T_sp defval) {
   (void)(defval); // unused
   sym->setf_plist(core__put_f(sym->plist(), val, indicator));
   return val;
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(boundp)doc")
+CL_DOCSTRING(R"dx(boundp)dx")
 CL_DEFUN bool cl__boundp(Symbol_sp arg) {
   if (arg.nilp())
     return true;
   return arg->boundP();
 };
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(symbolPackage)doc")
+CL_DOCSTRING(R"dx(symbolPackage)dx")
 CL_DEFUN T_sp cl__symbol_package(Symbol_sp arg) {
   return arg->homePackage();
 };
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(symbolFunction)doc")
+CL_DOCSTRING(R"dx(symbolFunction)dx")
 CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
   if (!sym->fboundp()) {
     ERROR_UNDEFINED_FUNCTION(sym);
@@ -131,58 +131,58 @@ CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
 };
 
 
-CL_LAMBDA(sym);
+CL_LAMBDA(sym)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Return true if the symbol is dynamic/special)doc")
+CL_DOCSTRING(R"dx(Return true if the symbol is dynamic/special)dx")
 CL_DEFUN bool ext__specialp(Symbol_sp sym) {
   return sym->specialP();
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(symbolName)doc")
+CL_DOCSTRING(R"dx(symbolName)dx")
 CL_DEFUN SimpleString_sp cl__symbol_name(Symbol_sp arg) {
   return arg->symbolName();
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(symbolValue)doc")
+CL_DOCSTRING(R"dx(symbolValue)dx")
 CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
   return arg->symbolValue();
 };
 
-CL_LAMBDA(symbol);
+CL_LAMBDA(symbol)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Sequentially-consistent atomic read of SYMBOL-VALUE.)doc")
+CL_DOCSTRING(R"dx(Sequentially-consistent atomic read of SYMBOL-VALUE.)dx")
 CL_DEFUN T_sp core__atomic_symbol_value(Symbol_sp arg) {
   return arg->atomicSymbolValue();
 }
 
-CL_LAMBDA(nv symbol);
+CL_LAMBDA(nv symbol)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Sequentially-consistent atomic write of SYMBOL-VALUE.)doc")
+CL_DOCSTRING(R"dx(Sequentially-consistent atomic write of SYMBOL-VALUE.)dx")
 CL_DEFUN void core__atomic_set_symbol_value(T_sp nv, Symbol_sp arg) {
   arg->set_atomicSymbolValue(nv);
 }
 
-CL_LAMBDA(cmp new-value symbol);
+CL_LAMBDA(cmp new-value symbol)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Compare-and-swap of SYMBOL-VALUE.)doc")
+CL_DOCSTRING(R"dx(Compare-and-swap of SYMBOL-VALUE.)dx")
 CL_DEFUN T_sp core__cas_symbol_value(T_sp cmp, T_sp new_value, Symbol_sp sym) {
   return sym->casSymbolValue(cmp, new_value);
 }
 
-CL_LAMBDA(symbol cell unbound);
+CL_LAMBDA(symbol cell unbound)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Get the value of a symbol from TLS or from the given CELL)doc")
+CL_DOCSTRING(R"dx(Get the value of a symbol from TLS or from the given CELL)dx")
 CL_DEFUN T_sp core__symbol_value_from_cell(Symbol_sp symbol, Cons_sp cell, T_sp unbound_marker) {
   return symbol->symbolValueFromCell(cell, unbound_marker);
 }
 
-CL_LAMBDA(name);
+CL_LAMBDA(name)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(make_symbol)doc")
+CL_DOCSTRING(R"dx(make_symbol)dx")
 CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
   SimpleString_sp name = coerce::simple_string(tstrng);
   Symbol_sp sym = Symbol_O::create(name);
@@ -276,9 +276,9 @@ Symbol_sp Symbol_O::makunbound() {
   return this->asSmartPtr();
 }
 
-CL_LAMBDA(function-name);
+CL_LAMBDA(function-name)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(makunbound)doc")
+CL_DOCSTRING(R"dx(makunbound)dx")
 CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
   return functionName->makunbound();
 }
@@ -335,7 +335,7 @@ Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
 
 
 CL_LISPIFY_NAME("cl:copy_symbol");
-CL_LAMBDA(symbol &optional copy-properties);
+CL_LAMBDA(symbol &optional copy-properties)
 CL_DEFUN Symbol_sp cl__copy_symbol(Symbol_sp symbol, T_sp copy_properties)
 {
   return symbol->copy_symbol(copy_properties);
@@ -381,7 +381,7 @@ Symbol_sp Symbol_O::asKeywordSymbol() {
 };
 
 CL_LISPIFY_NAME("core:asKeywordSymbol");
-CL_LAMBDA(symbol);
+CL_LAMBDA(symbol)
 CL_DEFUN Symbol_sp core__asKeywordSymbol(Symbol_sp symbol) {
   return symbol->asKeywordSymbol();
 }
@@ -423,7 +423,7 @@ void Symbol_O::makeSpecial() {
 }
 
 CL_LISPIFY_NAME("core:STARmakeSpecial");
-CL_LAMBDA(symbol);
+CL_LAMBDA(symbol)
 CL_DEFUN void core__STARmakeSpecial(Symbol_sp symbol) {
   symbol->makeSpecial();
 }
@@ -448,7 +448,7 @@ void Symbol_O::setf_symbolFunction(Function_sp exec) {
 }
 
 CL_LISPIFY_NAME("core:setf_symbolFunction");
-CL_LAMBDA(function symbol);
+CL_LAMBDA(function symbol)
 CL_DEFUN void core__setf_symbolFunction(Function_sp exec, Symbol_sp symbol){
   symbol->setf_symbolFunction(exec);
 }
@@ -538,7 +538,7 @@ string Symbol_O::fullName() const {
 }
 
 CL_LISPIFY_NAME("core:fullName");
-CL_LAMBDA(symbol);
+CL_LAMBDA(symbol)
 CL_DEFUN string core__fullname(Symbol_sp symbol){
   return symbol->fullName();
 }

@@ -45,6 +45,7 @@ SIP_SUPPORT            = NO
 DISTRIBUTE_GROUP_DOC   = NO
 SUBGROUPING            = YES
 TYPEDEF_HIDES_STRUCT   = NO
+LOOKUP_CACHE_SIZE      = 1
 #---------------------------------------------------------------------------
 # Build related configuration options
 #---------------------------------------------------------------------------
@@ -231,6 +232,8 @@ INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = "__attribute__((optnone))="
 PREDEFINED            += "__attribute__((noinline))="
 PREDEFINED            += "__attribute__((always_inline))="
+PREDEFINED            += "BOOST_PP_ITERATE()="
+PREDEFINED            += "INIT_CLASSES_INC_H="
 EXPAND_AS_DEFINED      = 
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------

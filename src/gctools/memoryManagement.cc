@@ -557,8 +557,8 @@ core::Fixnum ensure_fixnum(stamp_t val)
   return (core::Fixnum)val;
 }
 
-CL_LAMBDA();
-CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_stamp)doc")
+CL_LAMBDA()
+CL_DOCSTRING(R"dx(Return the next available header KIND value and increment the global variable global_next_header_stamp)dx")
 CL_DEFUN core::Fixnum gctools__next_header_kind()
 {
   stamp_t next = global_next_header_stamp;
@@ -662,7 +662,7 @@ CL_DEFUN Fixnum gctools__NextUnshiftedStampValue() {
   return global_NextUnshiftedStamp;
 }
 
-CL_LAMBDA(address args);
+CL_LAMBDA(address args)
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
   size_t nargs = core::cl__length(args);
   // Get the address of the memory space in the llvm::Module

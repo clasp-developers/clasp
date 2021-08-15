@@ -292,32 +292,32 @@ string Mutex_O::__repr__() const {
   return ss.str();
 }
 
-CL_LAMBDA(mutex &optional (upgrade nil));
-CL_DOCSTRING(R"doc(Obtain the write lock for this mutex. upgradep should be true if and only if this thread currently holds the shared lock for the same mutex.)doc")
+CL_LAMBDA(mutex &optional (upgrade nil))
+CL_DOCSTRING(R"dx(Obtain the write lock for this mutex. upgradep should be true if and only if this thread currently holds the shared lock for the same mutex.)dx")
 CL_DEFUN void mp__write_lock(SharedMutex_sp m, bool upgrade) {
   m->write_lock(upgrade);
 }
 
-CL_LAMBDA(mutex &optional (upgrade nil));
-CL_DOCSTRING(R"doc(Try to obtain the write lock for this mutex. If it cannot be obtained immediately, return false. Otherwise, return true.)doc")
+CL_LAMBDA(mutex &optional (upgrade nil))
+CL_DOCSTRING(R"dx(Try to obtain the write lock for this mutex. If it cannot be obtained immediately, return false. Otherwise, return true.)dx")
 CL_DEFUN bool mp__write_try_lock(SharedMutex_sp m, bool upgrade) {
   return m->write_try_lock(upgrade);
 }
 
-CL_LAMBDA(mutex &optional (release_read_lock nil));
-CL_DOCSTRING(R"doc(Release the write lock. If releasep is true and the current thread holds the shared lock, it is released as well.)doc")
+CL_LAMBDA(mutex &optional (release_read_lock nil))
+CL_DOCSTRING(R"dx(Release the write lock. If releasep is true and the current thread holds the shared lock, it is released as well.)dx")
 CL_DEFUN void mp__write_unlock(SharedMutex_sp m, bool release_read_lock) {
   m->write_unlock(release_read_lock);
 }
 
-CL_LAMBDA(mutex);
-CL_DOCSTRING(R"doc(Obtain the shared lock for this mutex.)doc")
+CL_LAMBDA(mutex)
+CL_DOCSTRING(R"dx(Obtain the shared lock for this mutex.)dx")
 CL_DEFUN void mp__shared_lock(SharedMutex_sp m) {
   m->read_lock();
 }
 
-CL_LAMBDA(mutex);
-CL_DOCSTRING(R"doc(Release the shared lock for this mutex.)doc")
+CL_LAMBDA(mutex)
+CL_DOCSTRING(R"dx(Release the shared lock for this mutex.)dx")
 CL_DEFUN void mp__shared_unlock(SharedMutex_sp m) {
   m->read_unlock();
 }
@@ -371,22 +371,22 @@ string Process_O::__repr__() const {
   return ss.str();
 }
 
-CL_DOCSTRING(R"doc(Current Phase of the process as String (Not yet started, Running, Suspended, Aborted, Completed))doc")
+CL_DOCSTRING(R"dx(Current Phase of the process as String (Not yet started, Running, Suspended, Aborted, Completed))dx")
 CL_DEFUN core::SimpleBaseString_sp mp__process_phase_string(Process_sp process) {
    return core::SimpleBaseString_O::make(process->phase_as_string());
 };
  
-CL_DOCSTRING(R"doc(Current Phase of the process. Nascent = 0, Active = 1, Suspended = 2, Exited = 3)doc")
+CL_DOCSTRING(R"dx(Current Phase of the process. Nascent = 0, Active = 1, Suspended = 2, Exited = 3)dx")
 CL_DEFUN int mp__process_phase(Process_sp process) {
   return process->_Phase;
 };
 
-CL_DOCSTRING(R"doc(Return the owner of the lock - this may be NIL if it's not locked.)doc")
+CL_DOCSTRING(R"dx(Return the owner of the lock - this may be NIL if it's not locked.)dx")
 CL_DEFUN core::T_sp mp__lock_owner(Mutex_sp m) {
   return m->_Owner;
 }
 
-CL_DOCSTRING(R"doc(Start execution of a nascent process. Return no values.)doc")
+CL_DOCSTRING(R"dx(Start execution of a nascent process. Return no values.)dx")
 CL_DEFUN void mp__process_start(Process_sp process)
 {
   if (process->_Phase == Nascent) {
@@ -395,8 +395,8 @@ CL_DEFUN void mp__process_start(Process_sp process)
   } else SIMPLE_ERROR(BF("The process %s has already started.") % process);
 };
 
-CL_DOCSTRING(R"doc(Convenience function that creates a process and then immediately starts it. Arguments are as in MAKE-PROCESS; the ARGUMENTS parameter is always NIL.)doc")
-CL_LAMBDA(name function &optional special_bindings);
+CL_DOCSTRING(R"dx(Convenience function that creates a process and then immediately starts it. Arguments are as in MAKE-PROCESS; the ARGUMENTS parameter is always NIL.)dx")
+CL_LAMBDA(name function &optional special_bindings)
 CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp function, core::List_sp special_bindings) {
 #ifdef DEBUG_FASTGF
   core::Cons_sp fastgf = core::Cons_O::create(core::_sym_STARdebug_fastgfSTAR,nil<core::T_O>());
@@ -413,23 +413,23 @@ CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp functio
   SIMPLE_ERROR(BF("%s is not a function - you must provide a function to run in a separate process") % _rep_(function));
 };
 
-CL_DOCSTRING(R"doc(Return a list of all processes that have been enabled and have not yet exited, i.e. all active and suspended processes.)doc")
+CL_DOCSTRING(R"dx(Return a list of all processes that have been enabled and have not yet exited, i.e. all active and suspended processes.)dx")
 CL_DEFUN core::List_sp mp__all_processes() {
   return _lisp->processes();
 }
 
-CL_DOCSTRING(R"doc(Return the name of a process, as provided at its creation.)doc")
+CL_DOCSTRING(R"dx(Return the name of a process, as provided at its creation.)dx")
 CL_DEFUN core::T_sp mp__process_name(Process_sp p) {
   return p->_Name;
 }
 
-CL_LAMBDA(&optional (process mp:*current-process*));
+CL_LAMBDA(&optional (process mp:*current-process*))
 CL_DEFUN core::T_sp mp__thread_id(Process_sp p) {
   auto tid = p->_ThreadInfo->_Tid;
   return core::Integer_O::create((uintptr_t)tid);
 }
 
-CL_DOCSTRING(R"doc(Return true iff the process is active, i.e. is currently executed. More specifically, this means it has been started and is not currently suspended.)doc")
+CL_DOCSTRING(R"dx(Return true iff the process is active, i.e. is currently executed. More specifically, this means it has been started and is not currently suspended.)dx")
 CL_DEFUN bool mp__process_active_p(Process_sp p) {
   return (p->_Phase == Active);
 }
@@ -447,7 +447,7 @@ CL_DEFUN void mp__suspend_loop() {
   }
 };
 
-CL_DOCSTRING(R"doc(Stop a process from executing temporarily. Execution may be restarted with PROCESS-RESUME.)doc")
+CL_DOCSTRING(R"dx(Stop a process from executing temporarily. Execution may be restarted with PROCESS-RESUME.)dx")
 CL_DEFUN void mp__process_suspend(Process_sp process) {
   if (process->_Phase == Active)
     mp__interrupt_process(process,_sym_suspend_loop);
@@ -455,7 +455,7 @@ CL_DEFUN void mp__process_suspend(Process_sp process) {
     SIMPLE_ERROR(BF("Cannot suspend inactive process %s") % process);
 };
 
-CL_DOCSTRING(R"doc(Restart execution in a suspended process.)doc")
+CL_DOCSTRING(R"dx(Restart execution in a suspended process.)dx")
 CL_DEFUN void mp__process_resume(Process_sp process) {
   if (process->_Phase == Suspended) {
     RAIILock<Mutex> lock(process->_SuspensionMutex._value);
@@ -466,7 +466,7 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
     SIMPLE_ERROR(BF("Cannot resume a process (%s) that has not been suspended") % process);
 };
 
-CL_DOCSTRING(R"doc(Inform the scheduler that the current process doesn't need control for the moment. It may or may not use this information. Returns no values.)doc")
+CL_DOCSTRING(R"dx(Inform the scheduler that the current process doesn't need control for the moment. It may or may not use this information. Returns no values.)dx")
 CL_DEFUN void mp__process_yield() {
   // On success, sched_yield() returns 0.
   // On error, -1 is returned, and errno is set appropriately.
@@ -483,7 +483,7 @@ SYMBOL_EXPORT_SC_(MpPkg,process_join_error);
 SYMBOL_EXPORT_SC_(MpPkg,process_join_error_original_condition);
 SYMBOL_EXPORT_SC_(KeywordPkg,original_condition);
 
-CL_DOCSTRING(R"doc(Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. If the process was aborted by ABORT-PROCESS or a control transfer, an error of type PROCESS-JOIN-ERROR is signaled.)doc")
+CL_DOCSTRING(R"dx(Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. If the process was aborted by ABORT-PROCESS or a control transfer, an error of type PROCESS-JOIN-ERROR is signaled.)dx")
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
   if (process->_Phase != Exited ) {
@@ -497,7 +497,7 @@ CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   else return cl__values_list(process->_ReturnValuesList);
 }
 
-CL_DOCSTRING(R"doc(Interrupt the given process to make it call the given function with no arguments. Return no values.)doc")
+CL_DOCSTRING(R"dx(Interrupt the given process to make it call the given function with no arguments. Return no values.)dx")
 CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
   unlikely_if (process->_Phase != Active) {
     FEerror("Cannot interrupt the inactive process ~A", 1, process);
@@ -506,14 +506,15 @@ CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
 };
 
 SYMBOL_EXPORT_SC_(MpPkg,exit_process);
-CL_DOCSTRING(R"doc(Force a process to end. This function is not intended for regular usage and is not reliable.)doc")
+CL_DOCSTRING(R"dx(Force a process to end. This function is not intended for regular usage and is not reliable.)dx")
 CL_DEFUN void mp__process_kill(Process_sp process)
 {
   mp__interrupt_process(process, _sym_exit_process);
 }
 
-CL_LAMBDA(&rest values);
-CL_DOCSTRING(R"doc(Immediately end the current process. The arguments to this function are returned from any PROCESS-JOIN calls with the current process as argument. Does not return.)doc")
+CL_LAMBDA(&rest values)
+CL_DOCSTRING(R"dx(Immediately end the current process)dx")
+CL_DOCSTRING_LONG(R"dx(The arguments to this function are returned from any PROCESS-JOIN calls with the current process as argument. Does not return.)doc")
 CL_DEFUN void mp__exit_process(core::List_sp values) {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
   this_process->_ReturnValuesList = values;
@@ -522,27 +523,29 @@ CL_DEFUN void mp__exit_process(core::List_sp values) {
 
 // See abort-process in mp.lisp
 CL_LISPIFY_NAME("mp:%abort-process");
-CL_LAMBDA(maybe-condition);
-CL_DOCSTRING(R"doc(Internal function; use ABORT-PROCESS instead.\nImmediately end the current process abnormally. If PROCESS-JOIN is called on this process thereafter, it will signal an error of type PROCESS-JOIN-ERROR with the given condition (or NIL) attached.)doc")
+CL_LAMBDA(maybe-condition)
+CL_DOCSTRING(R"dx(Internal function; use ABORT-PROCESS instead.)dx")
+CL_DOCSTRING_LONG(R"dx(Immediately end the current process abnormally. If PROCESS-JOIN is called on this process thereafter, it will signal an error of type PROCESS-JOIN-ERROR with the given condition (or NIL) attached.)dx")
 CL_DEFUN void mp__PERCENTabort_process(core::T_sp maybe_condition) {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
   this_process->_AbortCondition = maybe_condition;
   throw AbortProcess();
 }
 
-CL_DOCSTRING(R"doc(Return the name of the mutex, as provided at creation. The mutex may be normal or recursive.)doc")
+CL_DOCSTRING(R"dx(Return the name of the mutex, as provided at creation. The mutex may be normal or recursive.)dx")
 CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {
   return m->_Name;
 }
 
-CL_LAMBDA(mutex &optional (waitp t));
-CL_DOCSTRING(R"doc(Try to obtain exclusion on the given mutex. If WAITP is true, this function will not return until exclusion is obtained.\n\nReturn true iff exclusion was obtained, otherwise false.)doc")
+CL_LAMBDA(mutex &optional (waitp t))
+CL_DOCSTRING(R"dx(Try to obtain exclusion on the given mutex)dx")
+CL_DOCSTRING_LONG(R"dx(If WAITP is true, this function will not return until exclusion is obtained.\n\nReturn true iff exclusion was obtained, otherwise false.)dx")
 CL_DEFUN bool mp__get_lock(Mutex_sp m, bool waitp) {
   return m->lock(waitp);
 }
 
-CL_LAMBDA(mutex);
-CL_DOCSTRING(R"doc(Release exclusion on the given mutex. Return no values.)doc")
+CL_LAMBDA(mutex)
+CL_DOCSTRING(R"dx(Release exclusion on the given mutex. Return no values.)dx")
 CL_DEFUN void mp__giveup_lock(Mutex_sp m) {
   m->unlock();
 }
@@ -556,28 +559,32 @@ CL_DEFUN core::Fixnum_sp mp__lock_count(Mutex_sp m) {
 }
 
 CL_LAMBDA(&key name)
-CL_DOCSTRING(R"doc(Make a new condition variable. The NAME argument is stored with the condition variable for debugging purposes.)doc")
+CL_DOCSTRING(R"dx(Make a new condition variable)dx")
+CL_DOCSTRING_LONG(R"dx(The NAME argument is stored with the condition variable for debugging purposes.)dx")
 CL_DEFUN core::T_sp mp__make_condition_variable(core::T_sp name) {
   return ConditionVariable_O::make_ConditionVariable(name);
 }
 
-CL_DOCSTRING(R"doc(Wait on the given condition variable with the given mutex. In more detail: The mutex must already be held by this thread. Then, atomically, the mutex is released and this thread blocks on the condition variable (i.e. execution will not continue).\n\nLater, the thread will resume and obtain the mutex again. Ideally this will be when the process is properly notified (see below), but occasionally the thread may resume spuriously, so make sure to check that the condition is actually true after this function returns.)doc")
+CL_DOCSTRING(R"dx(Wait on the given condition variable with the given mutex)dx")
+CL_DOCSTRING_LONG(R"dx(In more detail: The mutex must already be held by this thread. Then, atomically, the mutex is released and this thread blocks on the condition variable (i.e. execution will not continue).\n\nLater, the thread will resume and obtain the mutex again. Ideally this will be when the process is properly notified (see below), but occasionally the thread may resume spuriously, so make sure to check that the condition is actually true after this function returns.)dx")
 CL_DEFUN bool mp__condition_variable_wait(ConditionVariable_sp cv, Mutex_sp mutex) {
   return cv->wait(mutex);
 };
 
-CL_DOCSTRING(R"doc(Like CONDITION-VARIABLE-WAIT, except that a timeout (in seconds) may be provided.)doc")
+CL_DOCSTRING(R"dx(Like CONDITION-VARIABLE-WAIT, except that a timeout (in seconds) may be provided.)dx")
 CL_DEFUN bool mp__condition_variable_timedwait(ConditionVariable_sp cv, Mutex_sp mutex, double timeout_seconds) {
 //  printf("%s:%d   timeout_seconds = %lf\n", __FILE__, __LINE__, timeout_seconds );
   return cv->timed_wait(mutex,timeout_seconds);
 };
 
-CL_DOCSTRING(R"doc(Notify at least one thread that is currently waiting on the given condition variable (i.e. wake it up). If no threads are waiting on it, there is no effect. Return no values.)doc")
+CL_DOCSTRING(R"dx(Notify at least one thread that is currently waiting on the given condition variable (i.e. wake it up))dx")
+CL_DOCSTRING_LONG(R"dx(If no threads are waiting on it, there is no effect. Return no values.)dx")
 CL_DEFUN void mp__condition_variable_signal(ConditionVariable_sp cv) {
   cv->signal();
 };
 
-CL_DOCSTRING(R"doc(Notify all threads currently waiting on the given condition variable. If no threads are waiting on it, there is no effect. Return no values.)doc")
+CL_DOCSTRING(R"dx(Notify all threads currently waiting on the given condition variable)dx")
+CL_DOCSTRING_LONG(R"dx(If no threads are waiting on it, there is no effect. Return no values.)dx")
 CL_DEFUN void mp__condition_variable_broadcast(ConditionVariable_sp cv) {
   cv->broadcast();
 };

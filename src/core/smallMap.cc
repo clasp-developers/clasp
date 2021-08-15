@@ -42,9 +42,9 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA();
+CL_LAMBDA()
 CL_DECLARE();
-CL_DOCSTRING(R"doc(makeSmallMap)doc")
+CL_DOCSTRING(R"dx(makeSmallMap)dx")
 CL_DEFUN SmallMap_sp core__make_small_map() {
   auto  sm = gctools::GC<SmallMap_O>::allocate_with_default_constructor();
   return sm;

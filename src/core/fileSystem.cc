@@ -90,9 +90,9 @@ void safeRename(Path_sp src, Path_sp dest) {
   rename_file(src, dest);
 }
 
-CL_LAMBDA(pathspec);
+CL_LAMBDA(pathspec)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Look for <path> and return it. If it doesn't exist create every missing directory along the path.)doc")
+CL_DOCSTRING(R"dx(Look for <path> and return it. If it doesn't exist create every missing directory along the path.)dx")
 CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   Path_sp path_to_create;
   if (cl__stringp(pathspec)) {
@@ -226,8 +226,8 @@ CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
   this->_Path._value = p;
 }
 
-CL_LAMBDA(self);
-CL_DOCSTRING(R"doc(Returns a list of path parts as strings)doc")
+CL_LAMBDA(self)
+CL_DOCSTRING(R"dx(Returns a list of path parts as strings)dx")
 CL_LISPIFY_NAME("path-parts");
 CL_DEFMETHOD List_sp Path_O::parts() const {
   std::filesystem::path::iterator it;

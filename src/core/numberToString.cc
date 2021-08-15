@@ -49,7 +49,7 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(buffer x base);
+CL_LAMBDA(buffer x base)
 CL_DECLARE();
 CL_DEFUN StrNs_sp core__next_to_string(StrNs_sp buffer, Bignum_sp bn,
                                        Fixnum_sp base) {
@@ -114,9 +114,9 @@ static void write_base_prefix(StrNs_sp buffer, int base) {
   }
 }
 
-CL_LAMBDA(buffer integer base radix decimalp);
+CL_LAMBDA(buffer integer base radix decimalp)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(integerToString)doc")
+CL_DOCSTRING(R"dx(integerToString)dx")
 CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
                                            Fixnum_sp base, bool radix, bool decimalp) {
   if (radix) {

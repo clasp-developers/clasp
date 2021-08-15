@@ -54,9 +54,9 @@ core::T_sp safe_signal_handler(int sig) {
   return key;
 }
 
-CL_LAMBDA(signal);
+CL_LAMBDA(signal)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(return Current handler for signal)doc")
+CL_DOCSTRING(R"dx(return Current handler for signal)dx")
 CL_DEFUN core::T_mv core__signal_info(int sig) {
   return Values(safe_signal_name(sig),safe_signal_handler(sig));
 }
@@ -317,9 +317,9 @@ CL_DEFUN void core__disable_all_fpe_masks() {
   _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
 }
 
-CL_LAMBDA(&key underflow overflow inexact invalid divide-by-zero denormalized-operand);
+CL_LAMBDA(&key underflow overflow inexact invalid divide-by-zero denormalized-operand)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(core::enable-fpe-masks)doc")
+CL_DOCSTRING(R"dx(core::enable-fpe-masks)dx")
 CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, core::T_sp inexact, core::T_sp invalid, core::T_sp divide_by_zero, core::T_sp denormalized_operand) {
   // See https://doc.rust-lang.org/stable/core/arch/x86_64/fn._mm_setcsr.html
   // mask all -> no fpe-exceptions
@@ -472,16 +472,16 @@ void initialize_signals(int clasp_signal) {
     ADD_SIGNAL_SYMBOL(sig,sigsym,handler); \
   }
 
-CL_LAMBDA(signal symbol function);
+CL_LAMBDA(signal symbol function)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(Set current handler for signal)doc")
+CL_DOCSTRING(R"dx(Set current handler for signal)dx")
 CL_DEFUN void core__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Symbol_sp handler) {
   WITH_READ_WRITE_LOCK(globals_->_UnixSignalHandlersMutex);
   ADD_SIGNAL_SYMBOL(signal,name,handler);
 }
 
-CL_LAMBDA();
-CL_DOCSTRING(R"doc(Get alist of Signal-name . Signal-code alist of known signal (Posix + extra))doc")
+CL_LAMBDA()
+CL_DOCSTRING(R"dx(Get alist of Signal-name . Signal-code alist of known signal (Posix + extra))dx")
 CL_DEFUN core::List_sp core__signal_code_alist() {
   core::List_sp alist = nil<core::T_O>();
 /* these are all posix signals */

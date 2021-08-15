@@ -333,7 +333,7 @@ namespace core {
     }
   };
 
- CL_PKG_NAME(ClPkg,car);
+CL_PKG_NAME(ClPkg,car);
 CL_DEFUN inline core::T_sp oCar(T_sp obj) {
    if (obj.consp())
      return obj.unsafe_cons()->ocar();

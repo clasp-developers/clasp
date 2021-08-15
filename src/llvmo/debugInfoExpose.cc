@@ -151,7 +151,7 @@ std::string DIFile_O::__repr__() const {
   return ss.str();
 }
 
-CL_LAMBDA(llvm-context line col scope &optional inlined-at);
+CL_LAMBDA(llvm-context line col scope &optional inlined-at)
 CL_LISPIFY_NAME(get-dilocation);
 CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
                                           unsigned int line, unsigned int col,
@@ -168,7 +168,7 @@ CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
   return ret;
 }
 
-CL_LAMBDA(module);
+CL_LAMBDA(module)
 CL_LISPIFY_NAME(make-dibuilder);
 CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
   _G();
@@ -448,13 +448,13 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
 
 // We can't translate a DWARFContext_sp into a DIContext* directly, apparently.
 // The SectionedAddress translation is also a bust.
-CL_LAMBDA(dwarfcontext sectioned-address &key verbose);
+CL_LAMBDA(dwarfcontext sectioned-address &key verbose)
 CL_LISPIFY_NAME(getLineInfoForAddress);
 CL_DEFUN core::T_mv getLineInfoForAddress_(DWARFContext_sp dc, SectionedAddress_sp addr, bool verbose) {
   return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value,verbose);
 }
 
-CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LAMBDA(dwarfcontext sectioned-address)
 CL_LISPIFY_NAME(getLocalsForAddress);
 CL_DEFUN core::T_sp getLocalsForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
   llvm::DIContext* dicontext = dc->wrappedPtr();
@@ -481,9 +481,9 @@ llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressI
   return std::vector<llvm::DWARFAddressRange>();
 }
 
-CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LAMBDA(dwarfcontext sectioned-address)
 CL_LISPIFY_NAME(getAddressRangesForAddress);
-CL_DOCSTRING(R"doc(Return the DWARF address ranges for the function DIE containing this address.)doc")
+CL_DOCSTRING(R"dx(Return the DWARF address ranges for the function DIE containing this address.)dx")
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddress_sp sa) {
   auto eranges = getAddressRangesForAddressInner(dc, sa);
@@ -503,7 +503,7 @@ CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddr
 
 namespace llvmo { // DWARFContext_O
 
-CL_LAMBDA(object-file);
+CL_LAMBDA(object-file)
 CL_LISPIFY_NAME(create-dwarf-context);
 CL_DEFUN DWARFContext_sp DWARFContext_O::createDWARFContext(ObjectFile_sp ofi) {
   llvm::StringRef sbuffer((const char*)ofi->_MemoryBuffer->getBufferStart(), ofi->_MemoryBuffer->getBufferSize());
@@ -534,7 +534,7 @@ CL_EXTERN_DEFMETHOD(DWARFContext_O, (llvm::DWARFUnit* (llvm::DWARFContext::*) (u
 CL_LISPIFY_NAME(get-line-table-for-unit);
 CL_EXTERN_DEFMETHOD(DWARFContext_O, (const llvm::DWARFDebugLine::LineTable* (llvm::DWARFContext::*) (DWARFUnit*))&llvm::DWARFContext::getLineTableForUnit);
 
-CL_LAMBDA(address &key verbose);
+CL_LAMBDA(address &key verbose)
 CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
 {
   core::T_mv object_info = object_file_for_instruction_pointer(address,verbose);

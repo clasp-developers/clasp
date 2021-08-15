@@ -85,9 +85,9 @@ CL_DEFUN void core__rack_set(Rack_sp rack, size_t i, T_sp val) {
   rack->low_level_rackSet(i, val);
 }
 
-CL_LAMBDA(instance class);
+CL_LAMBDA(instance class)
 CL_DECLARE();
-CL_DOCSTRING(R"doc(instanceClassSet)doc")
+CL_DOCSTRING(R"dx(instanceClassSet)dx")
 CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
@@ -154,20 +154,20 @@ CL_DEFUN List_sp core__class_slot_sanity_check()
 }
 
 // FIXME: Exists solely for cases where the list of slotds is hard to get.
-CL_LAMBDA(class slot-count);
+CL_LAMBDA(class slot-count)
 CL_DEFUN T_sp core__allocate_standard_instance(Instance_sp cl, size_t slot_count) {
   auto  obj = gctools::GC<Instance_O>::allocate( cl);
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
   return obj;
 }
 
-CL_LAMBDA(class rack);
+CL_LAMBDA(class rack)
 CL_DEFUN Instance_sp core__allocate_raw_instance(Instance_sp cl, Rack_sp rack) {
   auto  obj = gctools::GC<Instance_O>::allocate( cl, rack);
   return obj;
 }
 
-CL_LAMBDA(class rack);
+CL_LAMBDA(class rack)
 CL_DEFUN Instance_sp core__allocate_raw_general_instance(Instance_sp cl, Rack_sp rack) {
   // This function allocates using the creator.
   ASSERT(cl->CLASS_has_creator());
@@ -661,7 +661,7 @@ CL_DEFUN List_sp clos__direct_superclasses(Instance_sp c) {
 }
 
 // FIXME: Perhaps gctools::NextStamp could be exported and used as the stamp slot's initform.
-CL_LAMBDA(class_ &optional (name nil name-p));
+CL_LAMBDA(class_ &optional (name nil name-p))
 CL_DEFUN void core__class_new_stamp(Instance_sp c, T_sp name, T_sp namep) {
 //  printf("%s:%d Something is whacked here - I'm calling NextStamp twice for class %s!!!!\n", __FILE__, __LINE__, _safe_rep_(name).c_str() );
   gctools::ShiftedStamp stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
