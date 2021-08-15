@@ -1,0 +1,3 @@
+def build(bld):
+    for name in bld.path.ant_glob("**/*.h"):
+        bld.clasp_include_files.append(name.abspath())
