@@ -813,7 +813,8 @@ namespace core {
 
 namespace core {
 
-  inline bool clasp_plusp(Real_sp num) {
+  CL_PKG_NAME(ClPkg,plusp);
+  CL_DEFUN inline bool clasp_plusp(Real_sp num) {
     if (num.fixnump()) {
       return num.unsafe_fixnum() > 0;
     } else if (num.single_floatp()) {
@@ -822,7 +823,8 @@ namespace core {
     return num->plusp_();
   }
 
-  inline bool clasp_minusp(Real_sp num) {
+  CL_PKG_NAME(ClPkg,minusp);
+  CL_DEFUN inline bool clasp_minusp(Real_sp num) {
     if (num.fixnump()) {
       return num.unsafe_fixnum() < 0;
     } else if (num.single_floatp()) {
@@ -831,7 +833,8 @@ namespace core {
     return num->minusp_();
   }
 
-  inline bool clasp_evenp(Integer_sp num) {
+  CL_PKG_NAME(ClPkg,evenp);
+  CL_DEFUN inline bool clasp_evenp(Integer_sp num) {
     if (num.fixnump()) {
       return (num.unsafe_fixnum() % 2) == 0;
     }
