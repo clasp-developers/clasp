@@ -24,6 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
+/** @defgroup exports
+    @defgroup clasp 
+        @ingroup exports
+ */
+
 #ifndef CORE_H //[
 #define CORE_H
 

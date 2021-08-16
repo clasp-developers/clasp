@@ -45,6 +45,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, end);
 CL_LAMBDA(arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS length - works with SEQUENCES and ACTIVATION_FRAMEs)dx")
+DOCGROUP(clasp)
 CL_DEFUN size_t cl__length(T_sp arg) {
   if (arg.consp()) {
     return arg.unsafe_cons()->length();
@@ -66,6 +67,7 @@ CL_DEFUN size_t cl__length(T_sp arg) {
 CL_LAMBDA(seq)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(reverse)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__reverse(T_sp seq) {
   if (seq.consp()) {
     return seq.unsafe_cons()->reverse();
@@ -80,6 +82,7 @@ CL_DEFUN T_sp cl__reverse(T_sp seq) {
 CL_LAMBDA(seq)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(nreverse)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__nreverse(T_sp seq) {
   if (seq.consp()) {
     return seq.unsafe_cons()->nreverse();
@@ -94,6 +97,7 @@ CL_DEFUN T_sp cl__nreverse(T_sp seq) {
 CL_LAMBDA(sequence start &optional end)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(subseq)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__subseq(T_sp seq, size_t start, T_sp end) {
   if (seq.consp()) {
     return seq.unsafe_cons()->subseq(start, end);
@@ -113,6 +117,7 @@ CL_DEFUN T_sp cl__subseq(T_sp seq, size_t start, T_sp end) {
 CL_LAMBDA(seq)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(copy_seq)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
   if (seq.consp()) {
     return seq.unsafe_cons()->subseq(0, nil<T_O>());
@@ -127,6 +132,7 @@ CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
 CL_LAMBDA(sequence index)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(elt)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__elt(T_sp sequence, size_t index) {
   if (sequence.consp()) {
     return sequence.unsafe_cons()->elt(index);
@@ -160,6 +166,7 @@ CL_DEFUN T_sp cl__elt(T_sp sequence, size_t index) {
 CL_LAMBDA(sequence index value)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(setfElt)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
   if (sequence.consp()) {
     sequence.unsafe_cons()->setf_elt(index, value);

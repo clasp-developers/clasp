@@ -118,11 +118,13 @@ void flow_tracker_close() {
 namespace gctools {
 std::atomic<double>   global_DiscriminatingFunctionCompilationSeconds = ATOMIC_VAR_INIT(0.0);
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__accumulate_discriminating_function_compilation_seconds(double seconds) {
   global_DiscriminatingFunctionCompilationSeconds =
       global_DiscriminatingFunctionCompilationSeconds + seconds;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN double gctools__discriminating_function_compilation_seconds() {
   return global_DiscriminatingFunctionCompilationSeconds;
 }
@@ -141,6 +143,7 @@ size_t global_next_unused_kind = STAMPWTAG_max+1;
 const char *global_HardcodedKinds[] = {
     "", "core::T_O", "core::Instance_O", "core::Symbol_O"};
 
+DOCGROUP(clasp)
 CL_DEFUN int gctools__max_bootstrap_kinds() {
   return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
 }
@@ -157,23 +160,27 @@ int iBootstrapKind(const string &name) {
 
 std::atomic<size_t> global_lexical_depth_counter;
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp gctools__next_lexical_depth_counter() {
   core::T_sp result = core::make_fixnum(++global_lexical_depth_counter);
   return result;
 }
 
 #ifdef DEBUG_FLOW_TRACKER
+DOCGROUP(clasp)
 CL_DEFUN void gctools__flow_tracker_on() {
   initialize_flow_tracker();
   global_flow_tracker_on = true;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__flow_tracker_off() {
   global_flow_tracker_on = false;
   flow_tracker_close();
 }
 #endif
 
+DOCGROUP(clasp)
 CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   core::Cons_sp list(nil<core::Cons_O>());
   for (int i(gctools__max_bootstrap_kinds() - 1); i > 0; --i) {
@@ -183,6 +190,7 @@ CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   return list;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp gctools__bootstrap_kind_p(const string &name) {
   for (int i(0), iEnd(gctools__max_bootstrap_kinds()); i < iEnd; ++i) {
     //            printf("%s:%d i[%d]Checking if %s == %s\n", __FILE__, __LINE__, i, global_HardcodedKinds[i], name.c_str());
@@ -193,10 +201,12 @@ CL_DEFUN core::T_sp gctools__bootstrap_kind_p(const string &name) {
   return nil<core::T_O>();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t gctools__thread_local_unwind_counter() {
   return my_thread->_unwinds;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__change_sigchld_sigport_handlers()
 {
   void* old = (void*)signal(SIGCHLD, SIG_DFL);
@@ -204,16 +214,19 @@ CL_DEFUN void gctools__change_sigchld_sigport_handlers()
   printf("%s:%d old signal handler for SIGCHLD = %p   SIG_DFL = %p\n", __FILE__, __LINE__, old, SIG_DFL);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp gctools__unix_signal_handlers()
 {
   return _lisp->_Roots._UnixSignalHandlers;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
 }
 
 CL_DOCSTRING(R"dx(Return bytes allocated (values clasp-calculated-bytes))dx")
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp gctools__bytes_allocated() {
   size_t my_bytes = my_thread_low_level->_Allocations._BytesAllocated;
   ASSERT(my_bytes < gc::most_positive_fixnum);
@@ -223,6 +236,7 @@ CL_DEFUN core::T_sp gctools__bytes_allocated() {
 
 
 CL_DOCSTRING(R"dx(Return the next unused kind)dx")
+DOCGROUP(clasp)
 CL_DEFUN size_t core__next_unused_kind() {
   size_t next = global_next_unused_kind;
   ++global_next_unused_kind;
@@ -235,6 +249,7 @@ CL_DEFUN size_t core__next_unused_kind() {
 namespace gctools {
 
 CL_DOCSTRING(R"dx(Return the header value for the object)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
@@ -246,6 +261,7 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
 
 
 CL_DOCSTRING(R"dx(Return the header value for the object)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
   if (value.fixnump()) {
     Fixnum fvalue = value.unsafe_fixnum();
@@ -254,6 +270,7 @@ CL_DEFUN core::T_sp core__header_value_to_stamp(core::T_sp value) {
   TYPE_ERROR(value,cl::_sym_fixnum);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test()
 {
   // Return the values used to identify tagged pointers (PTR&POINTER_TAG_MASK)==POINTER_TAG_EQ
@@ -262,6 +279,7 @@ CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test()
 
 
 CL_DOCSTRING(R"dx(Return the header kind for the object)dx")
+DOCGROUP(clasp)
 CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {
     return gctools::STAMPWTAG_CONS;
@@ -284,12 +302,14 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
 }
 
 CL_DOCSTRING(R"dx(Return the index part of the stamp.  Stamp indices are adjacent to each other.)dx")
+DOCGROUP(clasp)
 CL_DEFUN size_t core__stamp_index(size_t stamp)
 {
   return stamp>>(gctools::Header_s::wtag_width+gctools::Header_s::mtag_width);
 }
 
 CL_DOCSTRING(R"dx(Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t unshifted_stamp)
 {
   return core::make_fixnum((unshifted_stamp << gctools::Header_s::general_mtag_shift)
@@ -297,6 +317,7 @@ CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t unshifted_s
 }
 
 CL_DOCSTRING(R"dx(Return the stamp for the object, the flags and the header stamp)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
 {
   core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(),0));
@@ -305,12 +326,14 @@ CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
 }
 
 CL_DOCSTRING(R"dx(Determine if stamp A is immediately less than stamp B, so that they can be merged into a range.)dx")
+DOCGROUP(clasp)
 CL_DEFUN bool core__stamps_adjacent_p(size_t stamp_a, size_t stamp_b) {
   return (((stamp_a >> gctools::Header_s::general_mtag_shift) + 1)
           == (stamp_b >> gctools::Header_s::general_mtag_shift));
 }
 
 CL_DOCSTRING(R"dx(Set the header stamp for the object)dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__instance_stamp_set(core::T_sp obj, core::T_sp stamp)
 {
   ASSERT(stamp.fixnump());
@@ -327,6 +350,7 @@ CL_DEFUN void core__instance_stamp_set(core::T_sp obj, core::T_sp stamp)
 
 CL_LAMBDA(obj)
 CL_DOCSTRING(R"dx(Return true if the object inherits from core:instance based on its header value)dx")
+DOCGROUP(clasp)
 CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 {
   return (gc::IsA<core::Instance_sp>(obj));
@@ -337,6 +361,7 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 namespace gctools {
 
 CL_LAMBDA(&optional x (marker 0))
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 #if defined(USE_MPS)
   return Values(nil<core::T_O>());
@@ -348,6 +373,7 @@ CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 };
 
 CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6))
+DOCGROUP(clasp)
 CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount, core::Fixnum_sp backtraceDepth) {
 #ifdef DEBUG_MONITOR_ALLOCATIONS
   global_monitorAllocations.on = on;
@@ -365,6 +391,7 @@ CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceSta
 };
 
 CL_LAMBDA(&optional marker)
+DOCGROUP(clasp)
 CL_DEFUN Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
 #if defined(USE_BOEHM)
 # ifdef USE_BOEHM_MEMORY_MARKER
@@ -387,6 +414,7 @@ SYMBOL_EXPORT_SC_(GcToolsPkg, STARallocPatternStackSTAR);
 SYMBOL_EXPORT_SC_(GcToolsPkg, ramp);
 SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 #if defined(USE_MPS)
   mps_alloc_pattern_t mps_pat;
@@ -408,6 +436,7 @@ CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 #endif
 };
 
+DOCGROUP(clasp)
 CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   core::Symbol_sp pattern(nil<core::Symbol_O>());
 #if defined(USE_MPS)
@@ -500,6 +529,7 @@ void walk_memory(mps_pool_t pool, mps_amc_apply_stepper_t stepper, void* pdata, 
   mps_arena_release(global_arena);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv gctools__measure_memory() {
   MemoryMeasure count;
   walk_memory(global_amc_pool, amc_apply_measure,(void*)&count,sizeof(count));
@@ -507,6 +537,7 @@ CL_DEFUN core::T_mv gctools__measure_memory() {
   return Values(core::make_fixnum(count._Count),core::make_fixnum(count._Size));
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__copy_memory() {
   MemoryMeasure amc_measure;
   {
@@ -538,6 +569,7 @@ CL_DEFUN void gctools__copy_memory() {
 CL_LAMBDA(&optional x)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(room - Return info about the reachable objects in memory. x can be T, nil, :default.)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
   gctools__garbage_collect();
@@ -555,6 +587,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 namespace gctools {
 
 CL_LAMBDA(&optional filename)
+DOCGROUP(clasp)
 CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename) {
 #ifdef USE_PRECISE_GC
   std::string sFilename = "";
@@ -570,6 +603,7 @@ CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename) {
 #endif
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__slad() {
   gctools__save_lisp_and_die(nil<core::T_O>());
 }
@@ -629,6 +663,7 @@ void save_lisp_and_die(const std::string& filename)
 CL_LAMBDA(stamp)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
 #if defined(USE_MPS)
   SIMPLE_ERROR(BF("Add support for MPS"));
@@ -657,6 +692,7 @@ CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
 CL_LAMBDA(address)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return a list of addresses of objects with the given stamp)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 #if defined(USE_MPS)
   SIMPLE_ERROR(BF("Add support for MPS"));
@@ -686,6 +722,7 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 
 namespace gctools {
 #ifdef USE_MPS
+DOCGROUP(clasp)
 CL_DEFUN void gctools__enable_underscanning(bool us)
 {
   global_underscanning = us;
@@ -722,6 +759,7 @@ void boehm_callback_function_call_counter(void* header, size_t size, void* hash_
 CL_LAMBDA(func)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(function-call-count-profiler - Evaluate a function, count every function call made during the evaluation.)dx")
+DOCGROUP(clasp)
 CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   core::HashTable_sp func_counters_start = core::HashTableEq_O::create_default();
   core::HashTable_sp func_counters_end = core::HashTableEq_O::create_default();
@@ -773,6 +811,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 
 namespace gctools {
 /*! Call finalizer_callback with no arguments when object is finalized.*/
+DOCGROUP(clasp)
 CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {
   //printf("%s:%d making a finalizer for %p calling %p\n", __FILE__, __LINE__, (void*)object.tagged_(), (void*)finalizer_callback.tagged_());
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
@@ -793,6 +832,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
 #endif
 };
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__definalize(core::T_sp object) {
 //  printf("%s:%d erasing finalizers for %p\n", __FILE__, __LINE__, (void*)object.tagged_());
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
@@ -823,6 +863,7 @@ namespace gctools {
 
 namespace gctools {
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv gctools__memory_profile_status() {
   int64_t allocationNumberCounter = my_thread_low_level->_Allocations._AllocationNumberCounter;
   size_t allocationNumberThreshold = my_thread_low_level->_Allocations._AllocationNumberThreshold;
@@ -835,6 +876,7 @@ CL_DEFUN core::T_mv gctools__memory_profile_status() {
 }
 
                 
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp gctools__stack_depth() {
   int z = 0;
   void *zp = &z;
@@ -842,6 +884,7 @@ CL_DEFUN core::T_sp gctools__stack_depth() {
   return core::make_fixnum((uint)stackDepth);
 };
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__garbage_collect() {
 #if defined(USE_BOEHM)
   GC_gcollect();
@@ -858,11 +901,13 @@ CL_DEFUN void gctools__garbage_collect() {
   //        printf("Garbage collection done\n");
 };
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__register_stamp_name(const std::string& name,size_t stamp_num)
 {
   register_stamp_name(name,stamp_num);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
   core::List_sp l = nil<core::T_O>();
   for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
@@ -872,6 +917,7 @@ CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
 }
 
 CL_DOCSTRING(R"dx(Process finalizers)dx")
+DOCGROUP(clasp)
 CL_LAMBDA(&optional verbose)CL_DEFUN void gctools__cleanup(bool verbose) {
 #ifdef USE_MPS
   size_t finalizations;
@@ -884,6 +930,7 @@ CL_LAMBDA(&optional verbose)CL_DEFUN void gctools__cleanup(bool verbose) {
 
 CL_DOCSTRING(R"dx(Set the number of signal polling ticks per GC cleanup and message processing.)dx")
 CL_LAMBDA(&optional verbose)
+DOCGROUP(clasp)
 CL_DEFUN void gctools__poll_ticks_per_cleanup(int ticks) {
 #ifdef USE_MPS
   global_pollTicksPerCleanup = ticks;
@@ -895,6 +942,7 @@ CL_DEFUN void gctools__poll_ticks_per_cleanup(int ticks) {
 #define ARGS_gctools__debug_allocations "(arg)"
 #define DECL_gctools__debug_allocations ""
 #define DOCS_gctools__debug_allocations "debugAllocations"
+DOCGROUP(clasp)
 CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) {
   _GlobalDebugAllocations = debugOn.isTrue();
 };
@@ -1372,6 +1420,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   return debugging;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__configuration()
 {
   stringstream ss;
@@ -1379,6 +1428,7 @@ CL_DEFUN void gctools__configuration()
   core::clasp_writeln_string(ss.str());
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void gctools__thread_local_cleanup()
 {
 #ifdef DEBUG_FINALIZERS
@@ -1387,6 +1437,7 @@ CL_DEFUN void gctools__thread_local_cleanup()
   core::thread_local_invoke_and_clear_cleanup();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
   core::Integer_sp is = core::Integer_O::create(my_thread_low_level->_unwind_time.count());
   return is;

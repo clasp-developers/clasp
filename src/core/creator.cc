@@ -101,6 +101,7 @@ LCC_RETURN Creator_O::LISP_CALLING_CONVENTION() {
   return v;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__run_creator(Creator_sp c)
 {
   return c->creator_allocate();

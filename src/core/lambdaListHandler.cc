@@ -50,6 +50,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
 
 /*! Return true if the form represents a type
 */
+DOCGROUP(clasp)
 CL_DEFUN bool core__is_a_type(T_sp form)
 {
   if ( form == _lisp->_true() ) return true;
@@ -112,6 +113,7 @@ ftype           inline     special
 ignorable       notinline  type
 And my own special one:    core:_sym_lambda_name
 */
+DOCGROUP(clasp)
 CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 {
   List_sp canon = nil<T_O>();
@@ -503,6 +505,7 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
 CL_LAMBDA(lambda-list)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(process_macro_lambda_list)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__process_macro_lambda_list(List_sp lambda_list) {
   List_sp new_ll = LambdaListHandler_O::process_macro_lambda_list(lambda_list);
   return new_ll;
@@ -511,6 +514,7 @@ CL_DEFUN T_sp core__process_macro_lambda_list(List_sp lambda_list) {
 CL_LAMBDA(lambda-list)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(process_single_dispatch_lambda_list)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
   return LambdaListHandler_O::process_single_dispatch_lambda_list(lambda_list);
 }
@@ -1113,6 +1117,7 @@ CL_LAMBDA(vl context)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(This is like ECL::process-lambda-list)dx")
 CL_DOCSTRING_LONG(R"dx(Differences are auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   _OF();
   gctools::Vec0<RequiredArgument> reqs;
@@ -1211,6 +1216,7 @@ LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int
 
 CL_LAMBDA("lambda-list &optional declares (context 'core::function)")
 CL_LISPIFY_NAME(makeLambdaListHandler);
+DOCGROUP(clasp)
 CL_DEFUN LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context) {
   LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list, declares, context);
   return llh;

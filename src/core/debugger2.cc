@@ -193,6 +193,7 @@ T_mv early_debug(T_sp condition, bool can_continue) {
   return call_with_frame([=](auto frame){return early_debug_inner(frame, can_continue);});
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__early_debug(T_sp condition) {
   return early_debug(condition, true);
 }

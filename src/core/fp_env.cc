@@ -17,6 +17,7 @@ SYMBOL_EXPORT_SC_(CorePkg, floatTrapsSupportedP);
 CL_LAMBDA()
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Are float traps supported?)dx")
+DOCGROUP(clasp)
 CL_DEFUN bool core__float_traps_supported_p() {
 #ifdef CLASP_FPT_SUPPORT
   return 1;
@@ -30,6 +31,7 @@ SYMBOL_EXPORT_SC_(CorePkg, getFloatTraps);
 CL_LAMBDA()
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Get current floating point traps state.)dx")
+DOCGROUP(clasp)
 CL_DEFUN int core__get_float_traps() {
 #ifdef CLASP_FPT_SUPPORT
   return clasp_fegetexcept();

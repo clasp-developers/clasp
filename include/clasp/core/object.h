@@ -534,14 +534,16 @@ namespace core {
   CL_LAMBDA(x y);
   CL_DECLARE();
   CL_DOCSTRING("eq")
-  inline CL_DEFUN bool cl__eq(T_sp x, T_sp y) {
+    DOCGROUP(clasp)
+    inline CL_DEFUN bool cl__eq(T_sp x, T_sp y) {
     return (x == y);
   };
 
   CL_LAMBDA(x y);
   CL_DECLARE();
   CL_DOCSTRING("eql")
-  inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
+    DOCGROUP(clasp)
+    inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
     if (x.fixnump()) {
       return x.raw_() == y.raw_();
     } else if (x.single_floatp()) {
@@ -567,7 +569,8 @@ namespace core {
   CL_LAMBDA(x y);
   CL_DECLARE();
   CL_DOCSTRING("Underlying eql. Only valid on general objects (not fixnums, single floats, characters, or conses)")
-  inline CL_DEFUN bool core__eql_underlying(T_sp x, T_sp y) {
+    DOCGROUP(clasp)
+    inline CL_DEFUN bool core__eql_underlying(T_sp x, T_sp y) {
     General_O* general = x.unsafe_general();
     return general->eql_(y);
   };
@@ -575,7 +578,8 @@ namespace core {
   CL_LAMBDA(x y);
   CL_DECLARE();
   CL_DOCSTRING("equal")
-  inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
+    DOCGROUP(clasp)
+    inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
     if (x.fixnump()) {
       return x.raw_() == y.raw_();
     } else if (x.single_floatp()) {

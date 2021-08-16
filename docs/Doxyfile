@@ -129,8 +129,8 @@ EXAMPLE_PATH           =
 EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
 IMAGE_PATH             = 
-INPUT_FILTER           = "m4 ../tools-for-build/doxygen.m4"
-FILTER_PATTERNS        = *.yy=../docs/bisonDocs *.h=../docs/filterSrc
+INPUT_FILTER           = 
+FILTER_PATTERNS        = *.yy=../docs/bisonDocs *.h=../docs/filterSrc *.cc=../docs/filterSrc
 FILTER_SOURCE_FILES    = YES
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
@@ -234,6 +234,7 @@ PREDEFINED            += "__attribute__((noinline))="
 PREDEFINED            += "__attribute__((always_inline))="
 PREDEFINED            += "BOOST_PP_ITERATE()="
 PREDEFINED            += "INIT_CLASSES_INC_H="
+PREDEFINED            += "CL_DEFUN="
 EXPAND_AS_DEFINED      = 
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------

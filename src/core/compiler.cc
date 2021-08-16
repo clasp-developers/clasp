@@ -81,10 +81,12 @@ namespace core {
 
 std::atomic<size_t> global_jit_compile_counter;
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__get_jit_compile_counter() {
   return global_jit_compile_counter.load();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__update_max_jit_compile_counter(size_t val) {
   if (val < global_jit_compile_counter.load()) return;
   size_t expected;
@@ -94,6 +96,7 @@ CL_DEFUN void core__update_max_jit_compile_counter(size_t val) {
 //  printf("%s:%d:%s Set max_jit_compile_counter to %lu\n", __FILE__, __LINE__, __FUNCTION__, val );
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__next_jit_compile_counter() {
   return ++global_jit_compile_counter;
 }
@@ -212,6 +215,7 @@ StartupInfo global_startup;
 
 std::atomic<size_t> global_next_startup_position;
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__next_startup_position() {
   return global_next_startup_position++;
 }
@@ -340,6 +344,7 @@ NOINLINE void stop_dtrace() {
 
 namespace core {
 
+DOCGROUP(clasp)
 NOINLINE CL_DEFUN T_mv core__trigger_dtrace_start(T_sp closure)
 {
   start_dtrace();
@@ -347,6 +352,7 @@ NOINLINE CL_DEFUN T_mv core__trigger_dtrace_start(T_sp closure)
 }
 
 
+DOCGROUP(clasp)
 NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
 {
   stop_dtrace();
@@ -356,6 +362,7 @@ NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
   
 
 
+DOCGROUP(clasp)
 CL_DEFUN void core__startup_functions_invoke(List_sp literals)
 {
   startup_functions_invoke((T_O*)literals.raw_());
@@ -363,6 +370,7 @@ CL_DEFUN void core__startup_functions_invoke(List_sp literals)
   abort();
 };
 
+DOCGROUP(clasp)
 CL_DEFUN void core__test_simple_error(T_sp msg) {
   core::String_sp smsg = gc::As<core::String_sp>(msg);
   std::string ss = smsg->get_std_string();
@@ -390,6 +398,7 @@ int f(Environment_sp &e) {
 CL_LAMBDA()
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Print info about booting)dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__help_booting() {
   printf("Useful *features*\n"
          ":clasp-min,  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
@@ -409,6 +418,7 @@ CL_DEFUN void core__help_booting() {
 
 
 CL_DOCSTRING(R"dx(Return the rdtsc performance timer value)dx")
+DOCGROUP(clasp)
 CL_DEFUN Fixnum core__rdtsc(){
   unsigned int lo,hi;
   __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
@@ -418,6 +428,7 @@ CL_DEFUN Fixnum core__rdtsc(){
 CL_LAMBDA(object &optional is-function)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(mangleName)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   SimpleBaseString_sp name;
   if (!is_function) {
@@ -472,6 +483,7 @@ bool startup_snapshot_is_stale(const std::string& snapshotFileName) {
 CL_LAMBDA("&optional (stage #\\c)")
 CL_DECLARE();
 CL_DOCSTRING(R"dx(startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   stringstream ss;
   ss << "app-fasl:" << stage << "clasp-" << VARIANT_NAME << "-image";
@@ -544,6 +556,7 @@ void setup_FasoHeader(FasoHeader* header)
 CL_LAMBDA(path-desig object-files &key (start-object-id 0))
 CL_DOCSTRING(R"dx(Concatenate object files in OBJECT-FILES into a faso file and write it out to PATH-DESIG.
 You can set the starting ObjectId using the keyword START-OBJECT-ID argument.)dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_object_id)
 {
   //  write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(pathDesig) % cl__length(objectFiles));
@@ -629,6 +642,7 @@ struct FasoObjectFileInfo {
   FasoObjectFileInfo(size_t oid, size_t ofs) : _ObjectId(oid), _ObjectFileSize(ofs) {};
 };
   
+DOCGROUP(clasp)
 CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, bool verbose) {
   if (verbose) write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(outputPathDesig) % cl__length(fasoFiles));
   std::vector<FasoObjectFileInfo> allObjectFiles;
@@ -730,6 +744,7 @@ CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))CL_DEFUN voi
 }
 
 
+DOCGROUP(clasp)
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
@@ -737,6 +752,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
   return _lisp->_true();
 }
 
+DOCGROUP(clasp)
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
@@ -745,6 +761,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 }
 
 
+DOCGROUP(clasp)
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
   String_sp sfilename = gc::As<String_sp>(cl__namestring(pathDesig));
@@ -786,6 +803,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
   return _lisp->_true();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
 {
   String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
@@ -843,6 +861,7 @@ void clasp_unpack_faso(const std::string& path_designator) {
 }
     
 CL_DOCSTRING(R"dx(Unpack the faso/fasp file into individual object files.)dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__unpack_faso(T_sp path_designator)
 {
   Pathname_sp pn_filename = cl__pathname(path_designator);
@@ -853,6 +872,7 @@ CL_DEFUN void core__unpack_faso(T_sp path_designator)
 
 CL_LAMBDA(name &optional verbose print external-format)
 CL_DOCSTRING(R"dx(load-binary-directory - load a binary file inside the directory)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   T_sp tpath;
   String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(pathDesig)));
@@ -888,6 +908,7 @@ CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp pri
 
 CL_DOCSTRING(R"dx(Return the startup function name and the linkage based on the current dynamic environment)dx")
 CL_DOCSTRING_LONG(R"dx(The name contains the id as part of itself. Return (values startup-name linkage shutdown-name).)dx")
+DOCGROUP(clasp)
 CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage_shutdown_names(size_t id, core::T_sp prefix)
 {
   stringstream sstart;
@@ -905,6 +926,7 @@ CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage_shutdown_n
 };
 
 
+DOCGROUP(clasp)
 CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage(size_t id, core::T_sp prefix)
 {
   T_mv result = core__startup_linkage_shutdown_names(id,prefix);
@@ -917,6 +939,7 @@ CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage(size_t id,
 CL_LAMBDA(name &optional verbose print external-format)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(load-binary)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   DEPRECATED();
 #if 0
@@ -1030,6 +1053,7 @@ std::tuple< int, string > do_dlclose(void * p_handle) {
 // -----------------------------------------------------------------------------
 CL_DOCSTRING(R"dx(dlopen - Open a dynamic library and return the handle.)dx")
 CL_DOCSTRING_LONG(R"dx(Returns (values returned-value error-message(or nil if no error)))dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
 
   int mode = RTLD_NOW | RTLD_GLOBAL;
@@ -1067,6 +1091,7 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 CL_DOCSTRING(R"dx((dlsym handle name) handle is pointer from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   void *handle = NULL;
   if (ohandle.nilp()) {
@@ -1110,12 +1135,14 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
 }
 
 CL_DOCSTRING(R"dx((call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values))dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
   InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
   (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
 }
 
 CL_DOCSTRING(R"dx((call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values))dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
   uint64_t val = (uint64_t)addr->ptr();
   void *ptr = (void *)val;
@@ -1132,6 +1159,7 @@ CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
 }
 
 CL_LAMBDA(form &optional env)
+DOCGROUP(clasp)
 CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   // Convert the form into a thunk and return like COMPILE does
   LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
@@ -1231,6 +1259,7 @@ T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
 CL_LAMBDA(symbol value thunk)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Call THUNK with the given SYMBOL bound to to the given VALUE.)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, Function_sp thunk) {
   DynamicScopeManager scope(sym, val);
   return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
@@ -1253,6 +1282,7 @@ LCC_RETURN call_with_variable_bound(core::T_O* tsym, core::T_O* tval, core::T_O*
 namespace core {
 
 // try/catch approach does work
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result;
   try {
@@ -1289,6 +1319,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 CL_LAMBDA(function &rest thunks)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(multipleValueFuncall)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
   MAKE_STACK_FRAME(frame, fmv.raw_(), MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
@@ -1317,6 +1348,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
 CL_LAMBDA(tag func)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(catchFunction)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   CLASP_BEGIN_CATCH(tag) {
@@ -1328,6 +1360,7 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
 CL_LAMBDA(tag result)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Like CL:THROW, but takes a thunk)dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
@@ -1340,6 +1373,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
 CL_LAMBDA(symbols values func)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(progvFunction)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
   if (symbols.consp()) {
     if (values.consp()) {
@@ -1356,18 +1390,21 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
   }
 }
 
- CL_DEFUN T_mv core__declared_global_inline_p(T_sp name)
+DOCGROUP(clasp)
+CL_DEFUN T_mv core__declared_global_inline_p(T_sp name)
  {
    return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_inlineSTAR->symbolValue())->gethash(name);
  }
 
-  CL_DEFUN T_mv core__declared_global_notinline_p(T_sp name)
+DOCGROUP(clasp)
+CL_DEFUN T_mv core__declared_global_notinline_p(T_sp name)
  {
    return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
  }
 
 
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__run_function( T_sp object ) {
   std::string name = gc::As<String_sp>(object)->get_std_string();
   T_sp thandle = _sym_STARcurrent_dlopen_handleSTAR->symbolValue();
@@ -1389,20 +1426,24 @@ CL_DEFUN T_sp core__run_function( T_sp object ) {
   return nil<T_O>();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__run_make_mlf( T_sp object ) {
   return core__run_function(object);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__run_init_mlf( T_sp object ) {
   return core__run_function(object);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__make_builtin_class( T_sp object ) {
   printf("%s:%d:%s  with %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(object).c_str());
   SIMPLE_ERROR(BF("Add support for core__make_builtin_class"));
 }
 
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__handle_creator( T_sp object ) {
   SIMPLE_ERROR(BF("Handle-creator for %s") % _rep_(object).c_str());
 }
@@ -1452,6 +1493,7 @@ char ll_read_char(T_sp stream, bool log, size_t& index)
 #endif
 
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__ltvc_write_char(T_sp object, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(char,stream,index);
@@ -1507,6 +1549,7 @@ size_t compact_read_size_t(T_sp stream, size_t& index) {
 
 
   
+DOCGROUP(clasp)
 CL_DEFUN size_t core__ltvc_write_size_t(T_sp object, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(size_t,stream,index);
@@ -1523,6 +1566,7 @@ size_t ltvc_read_size_t(T_sp stream, bool log, size_t& index)
   return data;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__ltvc_write_string(T_sp object, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(char*,stream,index);
@@ -1546,6 +1590,7 @@ std::string ltvc_read_string(T_sp stream, bool log, size_t& index)
   return str;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__ltvc_write_bignum(T_sp object, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(long long,stream,index);
@@ -1570,6 +1615,7 @@ T_O* ltvc_read_bignum(T_sp stream, bool log, size_t& index)
   return reinterpret_cast<T_O*>(Bignum_O::create_from_limbs(length, 0, false, size, limbs).raw_());
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(float,stream,index);
@@ -1595,6 +1641,7 @@ float ltvc_read_float(T_sp stream, bool log, size_t& index)
   return data;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__ltvc_write_double(T_sp object, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(double,stream,index);
@@ -1617,6 +1664,7 @@ double ltvc_read_double(T_sp stream, bool log, size_t& index)
 }
 
 CL_DOCSTRING(R"dx(tag is (0|1|2) where 0==literal, 1==transient, 2==immediate)dx")
+DOCGROUP(clasp)
 CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(T_O*,stream,index);
@@ -1817,10 +1865,12 @@ namespace core {
 
 std::atomic<int> global_sigchld_count{0};
 
+DOCGROUP(clasp)
 CL_DEFUN int core__sigchld_count() {
   return global_sigchld_count;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN int core__decf_sigchld_count() {
   global_sigchld_count--;
   return global_sigchld_count;
@@ -1830,14 +1880,17 @@ void sigchld(int signal) {
   global_sigchld_count++;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__install_sigchld() {
   signal(SIGCHLD, sigchld);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__uninstall_sigchld() {
   signal(SIGCHLD, SIG_DFL);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__call4(int x, int y, int z, int w) {
   printf("%s:%d call4 args: %d, %d, %d, %d\n", __FILE__, __LINE__, x, y, z, w );
 }

@@ -49,6 +49,7 @@ void throwIfNotValidClSymbol(const string &name) {
 CL_LAMBDA()
 CL_DECLARE();
 CL_DOCSTRING(R"dx(calculateMissingCommonLispSymbols)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
   Package_sp commonLispPackage = _lisp->commonLispPackage();
   List_sp missing = nil<T_O>();

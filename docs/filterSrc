@@ -1,2 +1,2 @@
 #! /bin/sh
-m4 filterSrc.m4 $1
+m4 filterSrc1.m4 $1

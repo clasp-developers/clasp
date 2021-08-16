@@ -153,6 +153,7 @@ std::string DIFile_O::__repr__() const {
 
 CL_LAMBDA(llvm-context line col scope &optional inlined-at)
 CL_LISPIFY_NAME(get-dilocation);
+DOCGROUP(clasp)
 CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
                                           unsigned int line, unsigned int col,
                                           DINode_sp scope, core::T_sp inlinedAt) {
@@ -170,6 +171,7 @@ CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
 
 CL_LAMBDA(module)
 CL_LISPIFY_NAME(make-dibuilder);
+DOCGROUP(clasp)
 CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
   _G();
   auto  me = gctools::GC<DIBuilder_O>::allocate_with_default_constructor();
@@ -276,6 +278,7 @@ CL_LISPIFY_NAME(createExpression);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, (llvm::DIExpression* (llvm::DIBuilder::*)
                                   (llvm::ArrayRef<uint64_t>))&llvm::DIBuilder::createExpression);
 CL_LISPIFY_NAME(createExpressionNone);
+DOCGROUP(clasp)
 CL_DEFUN llvm::DIExpression* llvm_sys__createExpressionNone(DIBuilder_sp dib) {
   return dib->wrappedPtr()->createExpression();
 }
@@ -450,12 +453,14 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
 // The SectionedAddress translation is also a bust.
 CL_LAMBDA(dwarfcontext sectioned-address &key verbose)
 CL_LISPIFY_NAME(getLineInfoForAddress);
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv getLineInfoForAddress_(DWARFContext_sp dc, SectionedAddress_sp addr, bool verbose) {
   return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value,verbose);
 }
 
 CL_LAMBDA(dwarfcontext sectioned-address)
 CL_LISPIFY_NAME(getLocalsForAddress);
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp getLocalsForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
   llvm::DIContext* dicontext = dc->wrappedPtr();
   llvm::object::SectionedAddress saddr = addr->_value;
@@ -485,6 +490,7 @@ CL_LAMBDA(dwarfcontext sectioned-address)
 CL_LISPIFY_NAME(getAddressRangesForAddress);
 CL_DOCSTRING(R"dx(Return the DWARF address ranges for the function DIE containing this address.)dx")
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp getAddressRangesForAddress(DWARFContext_sp dc, SectionedAddress_sp sa) {
   auto eranges = getAddressRangesForAddressInner(dc, sa);
   if (eranges) {
@@ -505,6 +511,7 @@ namespace llvmo { // DWARFContext_O
 
 CL_LAMBDA(object-file)
 CL_LISPIFY_NAME(create-dwarf-context);
+DOCGROUP(clasp)
 CL_DEFUN DWARFContext_sp DWARFContext_O::createDWARFContext(ObjectFile_sp ofi) {
   llvm::StringRef sbuffer((const char*)ofi->_MemoryBuffer->getBufferStart(), ofi->_MemoryBuffer->getBufferSize());
   stringstream ss;
@@ -535,6 +542,7 @@ CL_LISPIFY_NAME(get-line-table-for-unit);
 CL_EXTERN_DEFMETHOD(DWARFContext_O, (const llvm::DWARFDebugLine::LineTable* (llvm::DWARFContext::*) (DWARFUnit*))&llvm::DWARFContext::getLineTableForUnit);
 
 CL_LAMBDA(address &key verbose)
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
 {
   core::T_mv object_info = object_file_for_instruction_pointer(address,verbose);

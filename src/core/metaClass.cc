@@ -82,6 +82,7 @@ gc::Nilable<Instance_sp> identifyCxxDerivableAncestorClass(Instance_sp aClass) {
 
 SYMBOL_EXPORT_SC_(KeywordPkg,creator);
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, List_sp superclasses)
 {
   // If there is no metaclass - then use _TheStandardClass
@@ -160,6 +161,7 @@ bool subsetp(List_sp subset, List_sp superset) {
 CL_LAMBDA(low high)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(subclassp)dx")
+DOCGROUP(clasp)
 CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
   ASSERT(clos__classp(low));
   ASSERT(clos__classp(high));

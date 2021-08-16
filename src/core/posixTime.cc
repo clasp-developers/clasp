@@ -54,6 +54,7 @@ namespace core {
 CL_LAMBDA()
 CL_DECLARE();
 CL_DOCSTRING(R"dx(getInternalRealTime)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__get_internal_real_time() {
   auto now = std::chrono::system_clock::now();
   auto d = now.time_since_epoch();
@@ -94,6 +95,7 @@ Bignum systemTimeNs() {
 CL_LAMBDA()
 CL_DECLARE();
 CL_DOCSTRING(R"dx(clock_gettime_nanoseconds)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::Integer_sp core__clock_gettime_nanoseconds() {
   Bignum ns = systemTimeNs();
   core::Integer_sp bn = core::Integer_O::create(ns);
@@ -103,6 +105,7 @@ CL_DEFUN core::Integer_sp core__clock_gettime_nanoseconds() {
 CL_LAMBDA()
 CL_DECLARE();
 CL_DOCSTRING(R"dx(getInternalRunTime)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__get_internal_run_time() {
   return core__clock_gettime_nanoseconds();
 #if 0

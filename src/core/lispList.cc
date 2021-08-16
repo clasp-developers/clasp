@@ -158,6 +158,7 @@ setup_test(struct cl_test *t, T_sp item, T_sp test,
 CL_LAMBDA(item a-list &key test test-not key)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS rassoc)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key) {
   struct cl_test t;
   if (test.notnilp())
@@ -185,6 +186,7 @@ CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_
 CL_LAMBDA(idx arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS nth)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
   // should error on negative number
   // should return nil on positive bignums
@@ -208,6 +210,7 @@ CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
 CL_LAMBDA(idx arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(See CLHS nthcdr)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
   LIKELY_if (arg.consp()) {
     if (idx.fixnump()) {
@@ -230,6 +233,7 @@ CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
 CL_LAMBDA(arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(copyList)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__copy_list(List_sp arg) {
   if (arg.consp()) return arg.unsafe_cons()->copyList();
   if (arg.nilp()) return arg;
@@ -239,6 +243,7 @@ CL_DEFUN T_sp cl__copy_list(List_sp arg) {
 CL_LAMBDA(list &optional (n 1))
 CL_DECLARE();
 CL_DOCSTRING(R"dx(butlast)dx")
+DOCGROUP(clasp)
 CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
    if (ll.nilp())
     return ll;
@@ -280,6 +285,7 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
 CL_LAMBDA(list &optional (n 1))
 CL_DECLARE();
 CL_DOCSTRING(R"dx(nbutlast)dx")
+DOCGROUP(clasp)
 CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
   if (l.nilp()) return l;
   if (in.fixnump()) {
@@ -315,6 +321,7 @@ CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
 
 CL_LAMBDA(&rest objects)
 CL_DOCSTRING(R"dx(See CLHS: list)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__list(T_sp objects) {
   return objects;
 };
@@ -322,6 +329,7 @@ CL_DEFUN T_sp cl__list(T_sp objects) {
 CL_LAMBDA(core:&va-rest objects)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(list* see CLHS)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
   size_t nargs = vargs->remaining_nargs();
   if (nargs == 0 ) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),nil<T_O>());
@@ -348,6 +356,7 @@ CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
 CL_LAMBDA(list &optional (on 1))
 CL_DECLARE();
 CL_DOCSTRING(R"dx(last - see CLHS)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
   if (list.nilp())
     return list;
@@ -370,6 +379,7 @@ CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
 
 CL_LAMBDA(&rest lists)
 CL_DECLARE();
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__nconc(List_sp lists) {
   T_sp head = nil<T_O>();
   T_sp tail = nil<T_O>();
@@ -411,6 +421,7 @@ T_sp clasp_nconc(T_sp l, T_sp y) {
 CL_LAMBDA(list tail)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(revappend)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__revappend(List_sp list, T_sp tail) {
   if (list.nilp())
     return (tail);
@@ -420,6 +431,7 @@ CL_DEFUN T_sp cl__revappend(List_sp list, T_sp tail) {
 CL_LAMBDA(list tail)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(nreconc)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
   if (list.nilp())
     return (tail);

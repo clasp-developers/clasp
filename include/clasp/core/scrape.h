@@ -11,6 +11,8 @@
  * \defgroup DEFMETHOD C++ methods that are exposed to Clasp Common Lisp
  */
 
+#define DOCGROUP(...)
+
 #ifdef SCRAPING
 #define BEGIN_TAG BEGIN_TAG_bfc54f90bafadf5
 #define END_TAG END_TAG_bfc54f90bafadf5
@@ -30,7 +32,9 @@
 #define CL_INITIALIZER BEGIN_TAG CL_INITIALIZER_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_EXPOSE BEGIN_TAG CL_EXPOSE_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_TERMINATOR BEGIN_TAG CL_TERMINATOR_TAG ( :FILE __FILE__ :LINE __LINE__ )
+DOCGROUP(clasp)
 #define CL_DEFUN BEGIN_TAG CL_DEFUN_TAG ( :FILE __FILE__ :LINE __LINE__ )
+DOCGROUP(clasp)
 #define CL_DEFUN_SETF BEGIN_TAG CL_DEFUN_SETF_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_DEFMETHOD BEGIN_TAG CL_DEFMETHOD_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_METHOD_OVERLOAD
@@ -57,9 +61,11 @@
        DETAILED_SYMBOL_EXPORT_SC_(p,c,s)
 #else
 #define CL_INITIALIZE
-#define CL_DEFUN /** @ingroup DEFUN */
-#define CL_DEFUN_SETF /** @ingroup DEFUN-SETF */
-#define CL_DEFMETHOD /** @ingroup DEFMETHOD */
+DOCGROUP(clasp)
+#define CL_DEFUN
+DOCGROUP(clasp)
+#define CL_DEFUN_SETF
+#define CL_DEFMETHOD
 #define CL_METHOD_OVERLOAD 
 #define CL_DEF_CLASS_METHOD
 #define CL_BEGIN_ENUM(type,symbol,desc)

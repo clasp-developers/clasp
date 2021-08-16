@@ -56,7 +56,7 @@ bool SimpleBitVector_O::equal(T_sp other) const {
 
 // The division is length/BIT_ARRAY_WORD_BITS, but rounding up.
 #define DEF_SBV_BIT_OP(name, form)\
-  CL_DEFUN SimpleBitVector_sp core__sbv_bit_##name(SimpleBitVector_sp a, SimpleBitVector_sp b,\
+CL_DEFUN SimpleBitVector_sp core__sbv_bit_##name(SimpleBitVector_sp a, SimpleBitVector_sp b,\
                                                    SimpleBitVector_sp r, size_t length) { \
     bit_array_word *ab, *bb, *rb;\
     ab = a->bytes(); bb = b->bytes(); rb = r->bytes();\
@@ -64,17 +64,37 @@ bool SimpleBitVector_O::equal(T_sp other) const {
     for (size_t i = 0; i < nwords; ++i) rb[i] = form;\
     return r;\
   }
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(and, ab[i] & bb[i])
+
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(ior, ab[i] | bb[i])
+
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(xor, ab[i] ^ bb[i])
+
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(nand, ~(ab[i] & bb[i]))
+
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(nor, ~(ab[i] | bb[i]))
+
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(eqv, ~(ab[i] ^ bb[i]))
+
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(andc1, ~(ab[i]) & bb[i])
+
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(andc2, ab[i] & ~(bb[i]))
+
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(orc1, ~(ab[i]) | bb[i])
+
+DOCGROUP(clasp)
 DEF_SBV_BIT_OP(orc2, ab[i] | ~(bb[i]))
 
+DOCGROUP(clasp)
 CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitVector_sp res,
                                               size_t length) {
   bit_array_word *vecb, *resb;
@@ -107,6 +127,7 @@ CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitV
   } while (0);
 
 // Population count for simple bit vector.
+DOCGROUP(clasp)
 CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
   ASSERT(sizeof(bit_array_word) == sizeof(unsigned long long)); // for popcount. FIXME
   gctools::Fixnum result = 0;
@@ -114,12 +135,14 @@ CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
   return make_fixnum(result);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN bool core__sbv_zerop(SimpleBitVector_sp vec) {
   DO_BIT_ARRAY_WORDS(vec, word, i, if (word != 0) return false;);
   return true;
 }
 
 // Returns the index of the first 1 in the bit vector, or NIL.
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__sbv_position_one(SimpleBitVector_sp v) {
   DO_BIT_ARRAY_WORDS(v, w, i,
                      if (w != 0)

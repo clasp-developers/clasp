@@ -544,6 +544,7 @@ T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   return os_call_with_frame(f);
 #endif
 }
+DOCGROUP(clasp)
 CL_DEFUN bool core__sanity_check_backtrace() {
 #ifdef USE_LIBUNWIND
   return lu_sanity_check_backtrace();
@@ -553,51 +554,66 @@ CL_DEFUN bool core__sanity_check_backtrace() {
 }
 
 __attribute__((optnone))
-CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
+DOCGROUP(clasp)
+  CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
   auto th = [&](DebuggerFrame_sp bot){ return eval::funcall(function, bot); };
   return call_with_frame(th);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_fname(DebuggerFrame_sp df) {
   return df->fname;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_source_position(DebuggerFrame_sp df) {
   return df->source_position;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_function_description(DebuggerFrame_sp df) {
   return df->function_description;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_lang(DebuggerFrame_sp df) {
   return df->lang;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_closure(DebuggerFrame_sp df) {
   return df->closure;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_args(DebuggerFrame_sp df) {
   return df->args;
 }
+DOCGROUP(clasp)
 CL_DEFUN bool core__debugger_frame_args_available_p(DebuggerFrame_sp df) {
   return df->args_available;
 }
+DOCGROUP(clasp)
 CL_DEFUN bool core__debugger_frame_xep_p(DebuggerFrame_sp df) {
   return df->is_xep;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_up(DebuggerFrame_sp df) {
   return df->up;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_down(DebuggerFrame_sp df) {
   return df->down;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_local_fname(DebuggerLocal_sp dl) {
   return dl->fname;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_local_name(DebuggerLocal_sp dl) {
   return dl->name;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_local_declfile(DebuggerLocal_sp dl) {
   return dl->declfile;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_local_declline(DebuggerLocal_sp dl) {
   return dl->declline;
 }

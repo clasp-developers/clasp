@@ -93,6 +93,7 @@ void safeRename(Path_sp src, Path_sp dest) {
 CL_LAMBDA(pathspec)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Look for <path> and return it. If it doesn't exist create every missing directory along the path.)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   Path_sp path_to_create;
   if (cl__stringp(pathspec)) {

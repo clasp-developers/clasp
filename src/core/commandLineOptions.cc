@@ -347,6 +347,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
 
 
 
+DOCGROUP(clasp)
 CL_DEFUN List_sp core__command_line_load_eval_sequence() {
   List_sp loadEvals = nil<T_O>();
   for (auto it : global_options->_LoadEvalList) {

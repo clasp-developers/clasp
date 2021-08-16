@@ -141,6 +141,7 @@ std::string Library_O::__repr__() const {
 
 CL_DOCSTRING(R"dx(Return the Code object corresponding to the given ObjectFile)dx")
 CL_LISPIFY_NAME(object_file_code);
+DOCGROUP(clasp)
 CL_DEFUN Code_sp object_file_code(ObjectFile_sp object_file) {
   return object_file->_Code;
 }
@@ -208,12 +209,14 @@ void Code_O::describe() const
 
 CL_DOCSTRING(R"dx(Return the count of literals in the given Code object)dx")
 CL_LISPIFY_NAME(code_literals_length);
+DOCGROUP(clasp)
 CL_DEFUN core::Integer_sp code_literals_length(Code_sp code) {
   return core::Integer_O::create(code->literalsSize()/sizeof(core::T_O*));
 }
 
 CL_DOCSTRING(R"dx(Return an element from the Code object's literals vector. WARNING: Does not check bound.)dx")
 CL_LISPIFY_NAME(code_literals_ref);
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp code_literals_ref(Code_sp code, size_t idx) {
   core::T_O** literals = (core::T_O**)(code->literalsStart());
   core::T_sp ret((gc::Tagged)(literals[idx]));
@@ -351,6 +354,7 @@ void save_object_file_and_code_info(ObjectFile_sp ofi)
 
 CL_DOCSTRING(R"dx(For an instruction pointer inside of code generated from an object file - return the relative address (the sectioned address))dx")
 CL_LISPIFY_NAME(object_file_sectioned_address);
+DOCGROUP(clasp)
 CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_pointer, ObjectFile_sp ofi, bool verbose) {
         // Here is the info for the SectionedAddress
   uintptr_t sectionID = ofi->_Code->_TextSectionId;
@@ -369,6 +373,7 @@ CL_DOCSTRING_LONG(R"dx(
 Return NIL if none or (values offset-from-start object-file). 
 The index-from-start is the number of bytes of the instruction-pointer from the start of the code range.)dx")
 CL_LISPIFY_NAME(object_file_for_instruction_pointer);
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointer, bool verbose)
 {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s entered looking for instruction_pointer@%p search Code_O objects\n", __FILE__, __LINE__, __FUNCTION__, instruction_pointer ));
@@ -406,12 +411,14 @@ core::T_sp only_object_file_for_instruction_pointer(void* ip) {
 }
 
 CL_LISPIFY_NAME(release_object_files);
+DOCGROUP(clasp)
 CL_DEFUN void release_object_files() {
   _lisp->_Roots._AllObjectFiles.store(nil<core::T_O>());
   core::write_bf_stream(BF("ObjectFiles have been released\n"));
 }
 
 CL_LISPIFY_NAME(number_of_object_files);
+DOCGROUP(clasp)
 CL_DEFUN size_t number_of_object_files() {
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count = 0;
@@ -423,6 +430,7 @@ CL_DEFUN size_t number_of_object_files() {
 }
 
 CL_LISPIFY_NAME(total_memory_allocated_for_object_files);
+DOCGROUP(clasp)
 CL_DEFUN size_t total_memory_allocated_for_object_files() {
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count = 0;
@@ -443,6 +451,7 @@ struct StackmapHeader {
 };
 
 CL_LISPIFY_NAME(all_object_files);
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp all_object_files() {
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   return cur;
@@ -473,6 +482,7 @@ extern struct jit_descriptor __jit_debug_descriptor;
 
 CL_DOCSTRING(R"dx(Generate a list of jit_code_entry objects)dx")
 CL_LISPIFY_NAME(jit_code_entries)
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp jit_code_entries() {
   jit_code_entry* jce = __jit_debug_descriptor.first_entry;
   ql::list ll;
@@ -486,6 +496,7 @@ CL_DEFUN core::T_sp jit_code_entries() {
 
 
 CL_DOCSTRING(R"dx(Generate a list of JITted symbols to /tmp/perf-<pid>.map)dx")
+DOCGROUP(clasp)
 CL_DEFUN void ext__generate_perf_map() {
   stringstream ss;
   ss << "/tmp/perf-" << getpid() << ".map";
@@ -516,6 +527,7 @@ CL_DEFUN void ext__generate_perf_map() {
 
 
 CL_LISPIFY_NAME(describe_code);
+DOCGROUP(clasp)
 CL_DEFUN void describe_code() {
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count = 0;

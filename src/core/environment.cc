@@ -60,6 +60,7 @@ namespace core {
 
 CL_LAMBDA(env sym)
 CL_DECLARE();
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__classify_return_from_symbol(T_sp env, Symbol_sp sym) {
   bool interFunction = false;
   return Environment_O::clasp_recognizesBlockSymbol(env, sym, interFunction);
@@ -70,6 +71,7 @@ CL_DEFUN T_mv core__classify_return_from_symbol(T_sp env, Symbol_sp sym) {
 CL_LAMBDA(frame)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(environmentLength - number of entries in this environment)dx")
+DOCGROUP(clasp)
 CL_DEFUN int core__environment_length(T_sp frame) {
   if (frame.nilp())
     return 0;
@@ -82,6 +84,7 @@ CL_DEFUN int core__environment_length(T_sp frame) {
 CL_LAMBDA(frame)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(environmentDebugNames - number of entries in this environment)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__environment_debug_names(T_sp frame) {
   if (frame.nilp())
     return nil<T_O>();
@@ -96,6 +99,7 @@ CL_DEFUN T_sp core__environment_debug_names(T_sp frame) {
 CL_LAMBDA(frame)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(environmentDebugValues - number of entries in this environment)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
   if (frame.nilp())
     return nil<T_O>();
@@ -119,6 +123,7 @@ CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
 CL_LAMBDA(name env)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(lexicalFunction - If found return (values T fn depth index) otherwise nil)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__lexical_function(T_sp name, T_sp env) {
   int depth = 0;
   int index = 0;
@@ -133,6 +138,7 @@ CL_DEFUN T_mv core__lexical_function(T_sp name, T_sp env) {
 CL_LAMBDA(name env)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(lexicalMacroFunction - If found return (values T fn depth index) otherwise nil)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__lexical_macro_function(T_sp name, T_sp env) {
   int depth = 0;
   int index = 0;
@@ -152,6 +158,7 @@ bool clasp_updateValue(T_sp env, Symbol_sp sym, T_sp val) {
 CL_LAMBDA(env)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(environmentActivationFrame)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__environment_activation_frame(T_sp env) {
   if (env.nilp())
     return env;
@@ -161,6 +168,7 @@ CL_DEFUN T_sp core__environment_activation_frame(T_sp env) {
 CL_LAMBDA(env)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return a list of environment parents)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__environment_list(T_sp env) {
   List_sp result = nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
@@ -172,6 +180,7 @@ CL_DEFUN T_sp core__environment_list(T_sp env) {
 CL_LAMBDA(env)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return a list of environment parents)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__environment_type_list(T_sp env) {
   List_sp result = nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
@@ -192,6 +201,7 @@ int Environment_O::clasp_countFunctionContainerEnvironments(T_sp env) {
 CL_LAMBDA(env)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return the RuntimeEnvironment or nil)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__runtime_environment(T_sp tenv) {
   if (tenv.nilp())
     return nil<T_O>();
@@ -202,6 +212,7 @@ CL_DEFUN T_sp core__runtime_environment(T_sp tenv) {
 };
 
 
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__findValueEnvironmentAtDepth(T_sp env, int searchDepth) {
   int depth = 0;
   bool crossesFunction = false;
@@ -270,6 +281,7 @@ T_sp Environment_O::getActivationFrame() const {
 //
 CL_LAMBDA(env &optional stop_at_function_container_environment)
 CL_NAME(CURRENT-VISIBLE-ENVIRONMENT);
+DOCGROUP(clasp)
 CL_DEFUN T_sp Environment_O::clasp_currentVisibleEnvironment(T_sp env, bool stopAtFunctionContainerEnvironment) {
   if (env.nilp())
     return (nil<T_O>());
@@ -318,6 +330,7 @@ void Environment_O::dump() {
   printf("%s:%d Dumping environment\n%s\n", __FILE__, __LINE__, sout.str().c_str());
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__environment_dump(T_sp env)
 {
   if (env.nilp()) {
@@ -456,6 +469,7 @@ bool Environment_O::findMacro(Symbol_sp sym, int &depth, int &index, Function_sp
   return this->_findMacro(sym, depth, index, value);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__find_function_container_environment(T_sp env) {
   return Environment_O::clasp_find_current_code_environment(env);
 }
@@ -620,6 +634,7 @@ CL_DEFMETHOD int Environment_O::getBlockSymbolFrame(Symbol_sp sym) const {
   return Environment_O::clasp_getBlockSymbolFrame(this->getParentEnvironment(), sym);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__calculateRuntimeVisibleEnvironmentDepth(T_sp env, T_sp searchEnv ) {
   int depth = 0;
   if (Environment_O::clasp_calculateRuntimeVisibleEnvironmentDepth(env,searchEnv,depth)) {
@@ -980,6 +995,7 @@ bool ValueEnvironment_O::activationFrameElementBoundP(int idx) const {
 }
 
 CL_LISPIFY_NAME(makeValueEnvironment);
+DOCGROUP(clasp)
 CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent) {
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->setupForLambdaListHandler(llh, parent);
@@ -988,6 +1004,7 @@ CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLambdaListHandler(Lamb
 
 CL_LISPIFY_NAME(makeValueEnvironmentForNumberOfEntries);
 CL_LAMBDA(num-args parent &optional invisible)
+DOCGROUP(clasp)
 CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int numberOfArguments, T_sp parent, bool invisible) {
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->_Invisible = invisible;
@@ -998,6 +1015,7 @@ CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int nu
 }
 
 CL_LISPIFY_NAME(makeValueEnvironmentForLocallySpecialEntries);
+DOCGROUP(clasp)
 CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(List_sp specials, T_sp parent) {
   LOG(BF("specials -> %s parent -> %s\n") % _rep_(specials) % _rep_(parent));
   ValueEnvironment_sp env(ValueEnvironment_O::create());
@@ -1089,6 +1107,7 @@ List_sp ValueEnvironment_O::allLocalNamesAsCons() const {
   return result;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN List_sp core__ValueEnvironment_nonSpecialSymbols(ValueEnvironment_sp env) {
   return env->allLocalNamesAsCons();
 }
@@ -1182,6 +1201,7 @@ FunctionValueEnvironment_sp FunctionValueEnvironment_O::createEmpty(T_sp parent)
 }
 
 CL_LISPIFY_NAME(makeFunctionValueEnvironment);
+DOCGROUP(clasp)
 CL_DEFUN FunctionValueEnvironment_sp FunctionValueEnvironment_O::createForEntries(int numEntries, T_sp parent) {
   FunctionValueEnvironment_sp environ(FunctionValueEnvironment_O::createEmpty(parent));
   environ->_FunctionFrame = FunctionFrame_O::create(numEntries, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
@@ -1267,6 +1287,7 @@ bool CompileTimeEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool
 }
 
 CL_LISPIFY_NAME(makeUnwindProtectEnvironment);
+DOCGROUP(clasp)
 CL_DEFUN UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cleanupForm, T_sp parent) {
   UnwindProtectEnvironment_sp environ = UnwindProtectEnvironment_O::create();
   environ->_CleanupForm = cleanupForm;
@@ -1309,6 +1330,7 @@ BlockEnvironment_sp BlockEnvironment_O::create(T_sp parent) {
 }
 
 CL_LISPIFY_NAME(makeBlockEnvironment);
+DOCGROUP(clasp)
 CL_DEFUN BlockEnvironment_sp BlockEnvironment_O::make(Symbol_sp blockSymbol, T_sp parent) {
   BlockEnvironment_sp environ = BlockEnvironment_O::create(parent);
   environ->setBlockSymbol(blockSymbol);
@@ -1374,6 +1396,7 @@ T_mv BlockEnvironment_O::recognizesBlockSymbol(Symbol_sp sym, bool &interFunctio
 }
 
 CL_LISPIFY_NAME(makeCatchEnvironment);
+DOCGROUP(clasp)
 CL_DEFUN CatchEnvironment_sp CatchEnvironment_O::make(T_sp parent) {
   CatchEnvironment_sp environ = CatchEnvironment_O::create();
   environ->setupParent(parent);
@@ -1415,6 +1438,7 @@ T_sp FunctionContainerEnvironment_O::currentVisibleEnvironment(bool stopAtFuncti
 }
 
 CL_LISPIFY_NAME(makeFunctionContainerEnvironment);
+DOCGROUP(clasp)
 CL_DEFUN FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::make(T_sp parent,T_sp closure,T_sp function) {
   FunctionContainerEnvironment_sp environ = FunctionContainerEnvironment_O::create(parent);
   environ->_Closure = closure;
@@ -1502,6 +1526,7 @@ T_mv FunctionContainerEnvironment_O::recognizesBlockSymbol(Symbol_sp sym, bool &
 //
 
 CL_LISPIFY_NAME(makeTagbodyEnvironment);
+DOCGROUP(clasp)
 CL_DEFUN TagbodyEnvironment_sp TagbodyEnvironment_O::make(T_sp parent) {
   TagbodyEnvironment_sp environ = TagbodyEnvironment_O::create();
   environ->setupParent(parent);
@@ -1609,6 +1634,7 @@ GlueEnvironment_sp GlueEnvironment_O::create(List_sp parts) {
 //
 
 CL_LISPIFY_NAME(makeMacroletEnvironment);
+DOCGROUP(clasp)
 CL_DEFUN MacroletEnvironment_sp MacroletEnvironment_O::make(T_sp parent) {
   MacroletEnvironment_sp environ = MacroletEnvironment_O::create();
   environ->setupParent(parent);
@@ -1653,6 +1679,7 @@ CL_DEFMETHOD void MacroletEnvironment_O::addMacro(Symbol_sp sym, Function_sp mac
 }
 
 CL_LISPIFY_NAME(makeSymbolMacroletEnvironment);
+DOCGROUP(clasp)
 CL_DEFUN SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(T_sp parent) {
   SymbolMacroletEnvironment_sp environ = SymbolMacroletEnvironment_O::create();
   environ->setupParent(parent);

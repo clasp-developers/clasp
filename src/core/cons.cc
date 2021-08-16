@@ -57,6 +57,7 @@ List_sp coerce_to_list(T_sp o) {
 CL_LAMBDA(plist value indicator)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(putF)dx")
+DOCGROUP(clasp)
 CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
   auto it = place.begin();
   auto end = place.end();
@@ -82,6 +83,7 @@ CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
 CL_LAMBDA(plist indicator &optional default-value)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(getf)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
   if (plist.nilp())
     return (default_value);
@@ -91,6 +93,7 @@ CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
 CL_LAMBDA(plist indicator)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
   if (oCar(plist) == indicator) {
     plist = oCddr(plist);
@@ -113,6 +116,7 @@ CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
 CL_LAMBDA(object1 object2)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(cons)dx")
+DOCGROUP(clasp)
 CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
   return Cons_O::create(obj1, obj2);
 };
@@ -120,6 +124,7 @@ CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
 CL_LAMBDA(c o)
 CL_DECLARE();
 CL_DOCSTRING(R"dx()dx")
+DOCGROUP(clasp)
 CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
   return c->rplaca(o);
 };
@@ -127,6 +132,7 @@ CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
 CL_LAMBDA(c o)
 CL_DECLARE();
 CL_DOCSTRING(R"dx()dx")
+DOCGROUP(clasp)
 CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
@@ -134,6 +140,7 @@ CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
 CL_LAMBDA(osize &key initial-element)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(make_list)dx")
+DOCGROUP(clasp)
 CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   // Might be a negative Fixnum, take the right type, size_t is unsigned
   gc::Fixnum size = osize.unsafe_fixnum();
@@ -151,6 +158,7 @@ CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   }
 };
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__cons_size() {
   return gctools::ConsSizeCalculator<Cons_O,gctools::DontRegister>::value();
 }
@@ -195,6 +203,7 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
 CL_LAMBDA(l1 l2)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(append2 - append l2 to l1 by copying l1 and pointing the end of it to l2)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
   return Cons_O::append(x, y);
 };
@@ -581,6 +590,7 @@ List_sp Cons_O::copyTreeCar() const {
   return ((rootCopy));
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__cons_length(Cons_sp cons) {
   size_t sz = 1;
   T_sp cur;
@@ -631,6 +641,7 @@ string Cons_O::__repr__() const {
    SIMPLE_ERROR(BF("Not an alist -> %s") % _rep_(obj));
  }
  
+DOCGROUP(clasp)
 CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
   if (alist.consp()) {
     for ( auto cur : alist ) {
@@ -645,6 +656,7 @@ CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
   return nil<T_O>();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
   if (alist.consp()) {
     for ( auto cur : alist ) {
@@ -668,6 +680,7 @@ SYMBOL_EXPORT_SC_(ClPkg, make_list);
   SYMBOL_SC_(CorePkg, put_f);
 
 
+DOCGROUP(clasp)
 CL_DEFUN void core__verify_cons_layout(size_t cons_size, size_t cons_car_offset, size_t cons_cdr_offset)
 {
   if (cons_size!=sizeof(Cons_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp cons_size %lu does not match sizeof(Cons_O) %lu") % cons_size % sizeof(Cons_O));

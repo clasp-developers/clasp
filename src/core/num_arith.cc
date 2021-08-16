@@ -90,6 +90,7 @@ Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
 CL_LAMBDA(&rest nums)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(gcd)dx")
+DOCGROUP(clasp)
 CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
   if (nums.nilp())
     return clasp_make_fixnum(0);
@@ -138,6 +139,7 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
 CL_LAMBDA(&rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(lcm)dx")
+DOCGROUP(clasp)
 CL_DEFUN Integer_sp cl__lcm(List_sp nums) {
   if (nums.nilp())
     return clasp_make_fixnum(1);

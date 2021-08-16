@@ -575,6 +575,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
 
  
 
+DOCGROUP(clasp)
 CL_DEFUN Fixnum gctools__size_of_stamp_field_layout_table()
 {
   // First pass through the global_stamp_layout_codes_table

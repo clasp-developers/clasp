@@ -50,6 +50,7 @@ namespace core {
 
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchGenericFunction)dx")
+DOCGROUP(clasp)
 CL_DEFUN FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex) {
   T_sp tgfn;
   if (!cl__fboundp(gfname)) {
@@ -95,6 +96,7 @@ CL_DEFUN FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_
 CL_LAMBDA("gf gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ")
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function)dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__ensure_single_dispatch_method(FuncallableInstance_sp gfunction, T_sp tgfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, T_sp docstring, Function_sp body) {
   //	string docstr = docstring->get();
 //  SingleDispatchGenericFunctionClosure_sp gf = gc::As<SingleDispatchGenericFunctionClosure_sp>(gfname->symbolFunction());
@@ -196,6 +198,7 @@ void recursivelySatiate(FuncallableInstance_sp gfun, Instance_sp dispatchClass, 
 
 
 #if 0
+DOCGROUP(clasp)
 CL_DEFUN void core__satiateSingleDispatchGenericFunctions()
 {
   List_sp singleDispatchGenericFunctions = _lisp->_Roots._SingleDispatchGenericFunctions.load();

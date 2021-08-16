@@ -77,6 +77,7 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::Sh
 
 // FIXME: Exists solely for cases where the list of slotds is hard to get.
 CL_LAMBDA(class slot-count)
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
                                                            size_t slot_count) {
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
@@ -86,6 +87,7 @@ CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
   return obj;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl,
                                                                         Rack_sp rack) {
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
@@ -156,6 +158,7 @@ T_sp FuncallableInstance_O::instanceSet(size_t idx, T_sp val) {
 
 // Get the name of a generic function without calling any generic functions
 // (e.g., generic-function-name). Nice for debugging CLOS.
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__low_level_standard_generic_function_name(FuncallableInstance_sp gfun)
 {
   return gfun->functionName();
@@ -394,12 +397,14 @@ void FuncallableInstance_O::addSingleDispatchMethod(SingleDispatchMethod_sp meth
 }
 
 
+DOCGROUP(clasp)
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry()));
   } else return Values(nil<T_O>(),nil<T_O>());
 };
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     return iobj->setFuncallableInstanceFunction(func);
@@ -412,13 +417,16 @@ CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
 
 namespace core {
 
+DOCGROUP(clasp)
 CL_DEFUN size_t clos__generic_function_interpreted_calls(FuncallableInstance_sp gf) {
   return gf->interpreted_calls();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp clos__generic_function_compiled_dispatch_function(T_sp obj) {
   return gc::As<FuncallableInstance_sp>(obj)->GFUN_DISPATCHER();
 }
+DOCGROUP(clasp)
 CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_sp val) {
   gc::As<FuncallableInstance_sp>(obj)->GFUN_DISPATCHER_set(val);
 }
@@ -587,6 +595,7 @@ SYMBOL_EXPORT_SC_(ClosPkg, compile_discriminating_function);
 #define COMPILE_TRIGGER 1024 // completely arbitrary
 
 CL_LAMBDA(program gf args)
+DOCGROUP(clasp)
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
                                             VaList_sp args) {
   DTILOG(BF("=============================== Entered clos__interpret_dtree_program\n"));
@@ -798,7 +807,8 @@ SYMBOL_EXPORT_SC_(ClosPkg,codegen_dispatcher);
 SYMBOL_EXPORT_SC_(KeywordPkg,force_compile);
 SYMBOL_EXPORT_SC_(KeywordPkg,generic_function_name);
 
-  CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset)
+DOCGROUP(clasp)
+CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset)
   {
     if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O) %lu") % funcallableInstance_size % sizeof(FuncallableInstance_O));
     if (funcallableInstance_rack_offset!=offsetof(FuncallableInstance_O,_Rack))

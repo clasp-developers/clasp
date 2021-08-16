@@ -96,6 +96,7 @@ core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start,
 
 namespace core {
 
+DOCGROUP(clasp)
 CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
 {
   Vaslist* vaslist0 = &*v;
@@ -104,22 +105,26 @@ CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
   return v;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__vaslist_length(VaList_sp v)
 {
 //  printf("%s:%d va_list length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
   return v->remaining_nargs();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__vaslist_pop(VaList_sp v)
 {
   return v->next_arg();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN bool core__vaslistp(T_sp o)
 {
   return o.valistp();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
 {
   Vaslist valist_copy(*vorig);
@@ -297,10 +302,12 @@ SYMBOL_EXPORT_SC_(KeywordPkg,closure);
 
 namespace core {
 
+DOCGROUP(clasp)
 CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
   dbg_lowLevelDescribe(obj);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
   const char* symbol;
   uintptr_t start, end;
@@ -576,6 +583,7 @@ void dbg_safe_backtrace() {
 };
 namespace core {
 
+DOCGROUP(clasp)
 CL_DEFUN std::string core__safe_repr(core::T_sp obj) {
   std::string result = dbg_safe_repr((uintptr_t)obj.raw_());
   return result;
@@ -583,6 +591,7 @@ CL_DEFUN std::string core__safe_repr(core::T_sp obj) {
 
   SYMBOL_EXPORT_SC_(CorePkg, printCurrentIhsFrameEnvironment);
 
+DOCGROUP(clasp)
 CL_DEFUN Pointer_sp core__objectAddress(core::T_sp obj) {
   Pointer_sp result = Pointer_O::create(&*obj);
   return result;

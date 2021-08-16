@@ -61,7 +61,8 @@ class SharpEqualWrapper_O : public General_O {
 };
 
 
- inline CL_DEFUN SharpEqualWrapper_sp make_sharp_equal_wrapper(T_sp label)
+ DOCGROUP(clasp)
+   inline CL_DEFUN SharpEqualWrapper_sp make_sharp_equal_wrapper(T_sp label)
 {
   auto sew = gctools::GC<SharpEqualWrapper_O>::allocate(label);
   return sew;
@@ -71,7 +72,8 @@ class SharpEqualWrapper_O : public General_O {
 
 
  CL_DOCSTRING("Return true if sharp-tag")
- CL_DEFUN inline bool core__sharp_equal_wrapper_p(T_sp o)
+   DOCGROUP(clasp)
+   CL_DEFUN inline bool core__sharp_equal_wrapper_p(T_sp o)
  {
    return gc::IsA<SharpEqualWrapper_sp>(o);
  }

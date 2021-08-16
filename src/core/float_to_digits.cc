@@ -230,6 +230,7 @@ change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
 CL_LAMBDA(digits number position relativep)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(float_to_digits)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, T_sp position, T_sp relativep) {
   ASSERT(tdigits.nilp()||gc::IsA<Str8Ns_sp>(tdigits));
   gctools::Fixnum k;

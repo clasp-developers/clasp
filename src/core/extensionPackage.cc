@@ -49,6 +49,7 @@ SYMBOL_EXPORT_SC_(ExtPkg, parse_macro);
 #define ARGS_af_maybeQuote "(form)"
 #define DECL_af_maybeQuote ""
 #define DOCS_af_maybeQuote "Quotes a form only if strictly required. This happens when FORM is either a symbol and not a keyword"
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp ext__maybeQuote(core::T_sp form) {
   if (cl__atom(form)) {
     if (form.nilp())

@@ -57,6 +57,7 @@ core::T_sp safe_signal_handler(int sig) {
 CL_LAMBDA(signal)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(return Current handler for signal)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::T_mv core__signal_info(int sig) {
   return Values(safe_signal_name(sig),safe_signal_handler(sig));
 }
@@ -217,6 +218,7 @@ void handle_all_queued_interrupts()
   }
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__check_pending_interrupts() {
   handle_all_queued_interrupts();
 }
@@ -226,6 +228,7 @@ void lisp_signal_handler(int sig) {
   core::eval::funcall(core::_sym_call_lisp_symbol_handler, core::clasp_make_fixnum(sig));
 }
 
+DOCGROUP(clasp)
 CL_DEFUN int core__enable_disable_signals(int signal, int mod) {
   struct sigaction new_action;
   if (mod == 0)
@@ -313,6 +316,7 @@ int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 int global_signalTrap = 0;
 int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 
+DOCGROUP(clasp)
 CL_DEFUN void core__disable_all_fpe_masks() {
   _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
 }
@@ -320,6 +324,7 @@ CL_DEFUN void core__disable_all_fpe_masks() {
 CL_LAMBDA(&key underflow overflow inexact invalid divide-by-zero denormalized-operand)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(core::enable-fpe-masks)dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, core::T_sp inexact, core::T_sp invalid, core::T_sp divide_by_zero, core::T_sp denormalized_operand) {
   // See https://doc.rust-lang.org/stable/core/arch/x86_64/fn._mm_setcsr.html
   // mask all -> no fpe-exceptions
@@ -338,11 +343,13 @@ CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, 
     _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DENORM));
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::Fixnum_sp core__get_current_fpe_mask() {
   unsigned int before = _MM_GET_EXCEPTION_MASK ();
   return core::clasp_make_fixnum(before);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__set_current_fpe_mask(core::Fixnum_sp mask) {
   Fixnum value = core::unbox_fixnum(mask);
   _MM_SET_EXCEPTION_MASK(value);
@@ -475,6 +482,7 @@ void initialize_signals(int clasp_signal) {
 CL_LAMBDA(signal symbol function)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Set current handler for signal)dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Symbol_sp handler) {
   WITH_READ_WRITE_LOCK(globals_->_UnixSignalHandlersMutex);
   ADD_SIGNAL_SYMBOL(signal,name,handler);
@@ -482,6 +490,7 @@ CL_DEFUN void core__push_unix_signal_handler(int signal, core::Symbol_sp name, c
 
 CL_LAMBDA()
 CL_DOCSTRING(R"dx(Get alist of Signal-name . Signal-code alist of known signal (Posix + extra))dx")
+DOCGROUP(clasp)
 CL_DEFUN core::List_sp core__signal_code_alist() {
   core::List_sp alist = nil<core::T_O>();
 /* these are all posix signals */
