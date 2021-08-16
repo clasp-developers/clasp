@@ -353,7 +353,7 @@
  "core::KeyValuePair"
  "core::TwoWayStream_O"
 ) ) }
-{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__T_O")(TAGS:STAMP-KEY . "core::T_O")(TAGS:PARENT-CLASS . "_RootDummyClass")(TAGS:LISP-CLASS-BASE . "_RootDummyClass")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "0")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__T_O")(TAGS:STAMP-KEY . "core::T_O")(TAGS:PARENT-CLASS . "RootClass")(TAGS:LISP-CLASS-BASE . "RootClass")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "0")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__VaList_dummy_O")(TAGS:STAMP-KEY . "core::VaList_dummy_O")(TAGS:PARENT-CLASS . "core::T_O")(TAGS:LISP-CLASS-BASE . "core::T_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "0")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__Unused_dummy_O")(TAGS:STAMP-KEY . "core::Unused_dummy_O")(TAGS:PARENT-CLASS . "core::T_O")(TAGS:LISP-CLASS-BASE . "core::T_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "0")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__General_O")(TAGS:STAMP-KEY . "core::General_O")(TAGS:PARENT-CLASS . "core::T_O")(TAGS:LISP-CLASS-BASE . "core::T_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
