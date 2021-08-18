@@ -91,9 +91,11 @@
 
 (defun in (datum)
   (check-type datum (or bir:phi bir:ssa))
-  (or (gethash datum *datum-values*)
-      (error "BUG: No variable for datum: ~a defined by ~a"
-             datum (bir:definitions datum))))
+  (multiple-value-bind (dat presentp) (gethash datum *datum-values*)
+    (if presentp
+        dat
+        (error "BUG: No variable for datum: ~a defined by ~a"
+               datum (bir:definitions datum)))))
 
 (defun variable-in (variable)
   (check-type variable bir:variable)
@@ -117,7 +119,7 @@
 
 (defun out (value datum)
   (check-type datum bir:ssa)
-  (assert (not (gethash datum *datum-values*))
+  (assert (not (nth-value 1 (gethash datum *datum-values*)))
           ()
           "Double OUT for ~a: Old value ~a, new value ~a"
           datum (gethash datum *datum-values*) value)
@@ -125,7 +127,18 @@
 
 (defun phi-out (value datum llvm-block)
   (check-type datum bir:phi)
-  (llvm-sys:add-incoming (in datum) value llvm-block))
+  (let ((rt (cc-bmir:rtype datum)))
+    (cond ((or (eq rt :multiple-values)
+               (equal rt '(:object))) ; datum is a T_mv or T_O* respectively
+           (llvm-sys:add-incoming (in datum) value llvm-block))
+          ((null rt)) ; no values, do nothing
+          ((and (listp rt)
+                (every (lambda (x) (eq x :object)) rt))
+           ;; Datum is a list of llvm data, and (in datum) is a list of phis.
+           (loop for phi in (in datum)
+                 for val in value
+                 do (llvm-sys:add-incoming phi val llvm-block)))
+          (t (error "BUG: Bad rtype ~a" rt)))))
 
 (defun variable-out (value variable)
   (check-type variable bir:variable)

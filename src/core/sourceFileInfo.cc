@@ -282,13 +282,15 @@ CL_LAMBDA(&key (filename "-nofile-" filenamep) (filepos 0 fileposp) (lineno 0 li
 DOCGROUP(clasp)
 CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno, bool linenop, size_t column, bool columnp, T_sp function_scope, bool function_scope_p, T_sp inlined_at, bool inlined_at_p, T_sp defaults, bool defaults_p )
 {
-  SourcePosInfo_sp defaults_spi; 
+  SourcePosInfo_sp defaults_spi;
+  bool valid_default = false;
   if (defaults_p) {
     if (defaults.notnilp()) {
       if (!gc::IsA<SourcePosInfo_sp>(defaults)) {
         TYPE_ERROR(defaults,core::_sym_SourcePosInfo_O);
       }
       defaults_spi = gc::As_unsafe<SourcePosInfo_sp>(defaults);
+      valid_default = true;
     }
   }
 
@@ -296,7 +298,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   if (filenamep) {
     FileScope_mv sfi = _lisp->getOrRegisterFileScope(filename);
     t_sfi_handle = sfi->fileHandle();
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_sfi_handle = defaults_spi->fileHandle();
   } else {
     FileScope_mv sfi = _lisp->getOrRegisterFileScope(filename);
@@ -307,7 +309,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   uint t_filepos = 0;
   if (fileposp) {
     t_filepos = filepos;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_filepos = defaults_spi->filepos();
   } else {
     t_filepos = filepos;
@@ -316,7 +318,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   uint t_lineno;
   if (linenop) {
     t_lineno = lineno;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_lineno = defaults_spi->lineno();
   } else {
     t_lineno = lineno;
@@ -325,7 +327,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   uint t_column;
   if (columnp) {
     t_column = column;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_column = defaults_spi->column();
   } else {
     t_column = column;
@@ -335,14 +337,14 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   T_sp t_function_scope = nil<T_O>();
   if (function_scope_p) {
     t_function_scope = function_scope;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_function_scope = defaults_spi->function_scope();
   }
 
   T_sp t_inlined_at = nil<T_O>();
   if (inlined_at_p) {
     t_inlined_at = inlined_at;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_inlined_at = defaults_spi->inlined_at();
   }
   

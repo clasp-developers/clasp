@@ -14,12 +14,6 @@
   (setf (gethash name *ftypes*)
         (env:parse-type-specifier type *clasp-env* *clasp-system*)))
 
-(defmethod cst:reconstruct :around (expression cst (client clasp)
-                                    &key (default-source nil default-source-p))
-  (call-next-method expression cst client :default-source (if default-source-p
-                                                              default-source
-                                                              (cst:source cst))))
-
 (defmethod env:variable-info ((environment clasp-global-environment) symbol)
   (core:stack-monitor)
   (cond (;; We can check whether this symbol names a constant variable

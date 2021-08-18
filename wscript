@@ -307,10 +307,10 @@ def update_dependencies(cfg):
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
-                       "c5e9843fb077448466e418a73d7587d39fc50bbd")
+                       "504093a98a52f9ec23f68da565ed9f8baf6e519e")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
-                       "a56a5246fbaa90b98a29368c011a6616f2bcb482")
+                       "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
