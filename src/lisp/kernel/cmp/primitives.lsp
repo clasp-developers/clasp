@@ -222,6 +222,7 @@
          (primitive         "llvm.stackrestore" %void% (list %i8*%))
 
          (primitive         "llvm.memcpy.p0i8.p0i8.i64" %void% (list %i8*% %i8*% %i64% %i1%))
+         (primitive         "llvm.memmove.p0i8.p0i8.i64" %void% (list %i8*% %i8*% %i64% %i1%))
 
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
          (primitive         "restoreFromMultipleValue0" %return-type% nil)

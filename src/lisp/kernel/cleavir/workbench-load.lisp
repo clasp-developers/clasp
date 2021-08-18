@@ -34,6 +34,7 @@
 
   )
 
+#+(or)
 (start-cleavir)
 ;;; Start cleavir with no inline
 (load-cleavir-no-inline)
