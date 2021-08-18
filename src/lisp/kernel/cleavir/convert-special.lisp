@@ -112,7 +112,7 @@
                (cst-to-ast:convert
                 (cst:cst-from-expression
                  (make-type-check-form required system)
-                 origin)
+                 :source origin)
                 env system)))
          (cleavir-ast:make-the-ast ast ctype check :origin origin)))
       (t (cleavir-ast:make-the-ast ast ctype nil :origin origin)))))
@@ -442,17 +442,11 @@
   (cst:db origin (protected . cleanup) (cst:rest cst)
     (make-instance 'cc-ast:unwind-protect-ast
       :body-ast (cst-to-ast:convert protected env system)
-      :cleanup-ast (let ((cleanup-source (cst:source cleanup)))
-                     (cst-to-ast:convert
-                      (cst:cons
-                       (make-instance 'cst:atom-cst
-                         :raw 'lambda :source cleanup-source)
-                       (cst:cons (make-instance 'cst:atom-cst
-                                   :raw nil :source cleanup-source)
-                                 cleanup
-                                 :source cleanup-source)
-                       :source cleanup-source)
-                      env system))
+      :cleanup-ast (cst-to-ast:convert
+                    (cst:quasiquote (cst:source cleanup)
+                                    (lambda ()
+                                      (cst:unquote-splicing cleanup)))
+                    env system)
       :origin origin)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -467,12 +461,10 @@
   (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
     (declare (ignore op))
     (cst-to-ast:convert
-     (cst:list (cst:cst-from-expression 'apply)
-               (cst:cons (cst:cst-from-expression 'lambda)
-                         (cst:cons lambda-list-cst body-cst
-                                   :source origin)
-                         :source origin)
-               va-list-cst)
+     (cst:quasiquote origin
+                     (apply (lambda (cst:unquote lambda-list-cst)
+                              (cst:unquote-splicing body-cst))
+                            (cst:unquote va-list-cst)))
      environment system)))
 
 #+(or) ;;#+cst
