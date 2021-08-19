@@ -351,13 +351,15 @@
         for outp in (bir:outputs instruction)
         for inprt = (cc-bmir:rtype inp)
         for outprt = (cc-bmir:rtype outp)
-        do (if (eq inprt :multiple-values)
-               (unless (eq outprt :multiple-values)
-                 (error "BUG: MV input into ~a jump output in ~a"
-                        outprt instruction))
-               (if (eq outprt :multiple-values)
-                   (insert-ftm instruction inp)
-                   (assert (equal inprt outprt))))))
+        do (cond ((eq inprt :multiple-values)
+                  (unless (eq outprt :multiple-values)
+                    (error "BUG: MV input into ~a jump output in ~a"
+                           outprt instruction)))
+                 ((eq outprt :multiple-values)
+                  (insert-ftm instruction inp))
+                 (t
+                  (unless (equal inprt outprt)
+                    (insert-pad-before instruction (length outprt) inp))))))
 
 (defmethod insert-values-coercion ((instruction bir:jump))
   (insert-jump-coercion instruction))
