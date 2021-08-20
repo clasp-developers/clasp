@@ -110,14 +110,11 @@
 ;;; Ratios
 ;;;
 
-(defun ratiop (x)
-  (eq (type-of x) 'RATIO))
-
 (defun positive-ratio-p (x)
-  (and (ratiop x) (plusp x)))
+  (and (core:ratiop x) (plusp x)))
 
 (defun negative-ratio-p (x)
-  (and (ratiop x) (minusp x)))
+  (and (core:ratiop x) (minusp x)))
 
 (deftype negative-ratio ()
   '(satisfies negative-ratio-p))
