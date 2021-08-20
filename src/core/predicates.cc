@@ -178,9 +178,8 @@ CL_DEFUN bool cl__complexp(T_sp obj) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(ratioP)dx")
-DOCGROUP(clasp)
-CL_DEFUN bool core__ratio_p(T_sp obj) {
+CL_DOCSTRING(R"dx(ratioP)dx");
+CL_DEFUN bool core__ratiop(T_sp obj) {
   return gc::IsA<Ratio_sp>(obj);
 };
 
