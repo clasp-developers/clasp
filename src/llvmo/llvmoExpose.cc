@@ -1162,7 +1162,10 @@ CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::T_sp tfilename, LLVMContext_
   }
   llvm::Expected<std::unique_ptr<llvm::Module>> eom =
     llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
-  if (!eom) SIMPLE_ERROR(BF("Could not parse bitcode for file %s - there was an error") % spathname->get_std_string());
+  if (!eom)
+    SIMPLE_ERROR(BF("Could not parse bitcode for file %s - there was an error\n%s")
+                 % spathname->get_std_string()
+                 % llvm::toString(std::move(eom.takeError())));
   Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>((*eom).release());
   return omodule;
 };

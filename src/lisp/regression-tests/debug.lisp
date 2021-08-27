@@ -2,6 +2,12 @@
 
 ;;; Content of backtraces is weird to test, so we're pretty basic here
 
+;; TEMPORARY to reproduce "section table goes past end of file" bug
+(print
+      (stringp
+       (with-output-to-string (s)
+         (clasp-debug:print-backtrace :stream s))))
+
 ;;; Test that backtraces exist at all
 (test backtrace-1
       (stringp
