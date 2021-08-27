@@ -14,7 +14,8 @@
   (setf (gethash name *ftypes*)
         (env:parse-type-specifier type *clasp-env* *clasp-system*)))
 
-(defmethod env:variable-info ((environment clasp-global-environment) symbol)
+(defmethod env:variable-info ((system clasp)
+                              (environment clasp-global-environment) symbol)
   (core:stack-monitor)
   (cond (;; We can check whether this symbol names a constant variable
 	 ;; by checking the return value of CONSTANTP. 
@@ -42,8 +43,8 @@
 	 ;; Return NIL as the protocol stipulates.
 	 nil)))
 
-(defmethod env:variable-info ((environment null) symbol)
-  (env:variable-info *clasp-env* symbol))
+(defmethod env:variable-info ((system clasp) (environment null) symbol)
+  (env:variable-info system *clasp-env* symbol))
 
 (defvar *fn-attributes* (make-hash-table :test #'equal))
 (defvar *fn-transforms* (make-hash-table :test #'equal))
@@ -197,7 +198,9 @@
                     collect `(quote ,keyword)
                     collect `(quote ,value)))))
 
-(defmethod env:function-info ((environment clasp-global-environment) function-name)
+(defmethod env:function-info ((sys clasp)
+                              (environment clasp-global-environment)
+                              function-name)
   (cond
     ((and (symbolp function-name) (treat-as-special-operator-p function-name))
      (make-instance 'env:special-operator-info
@@ -244,20 +247,24 @@
 (defmethod env:symbol-macro-expansion (symbol (environment core:value-frame))
   (cleavir-environment:symbol-macro-expansion symbol *clasp-env*))
 
-(defmethod env:function-info ((environment null) symbol)
-  (env:function-info *clasp-env* symbol))
+(defmethod env:function-info ((sys clasp) (environment null) symbol)
+  (env:function-info sys *clasp-env* symbol))
 
-(defmethod env:function-info ((environment core:value-environment) symbol)
-  (env:function-info (core:get-parent-environment environment) symbol))
+(defmethod env:function-info ((sys clasp)
+                              (environment core:value-environment) symbol)
+  (env:function-info sys (core:get-parent-environment environment) symbol))
 
-(defmethod env:function-info ((environment core:value-frame) symbol)
-  (env:function-info (core:get-parent-environment environment) symbol))
+(defmethod env:function-info ((sys clasp)
+                              (environment core:value-frame) symbol)
+  (env:function-info sys (core:get-parent-environment environment) symbol))
 
-(defmethod env:variable-info ((environment core:value-frame) symbol)
-  (env:variable-info (core:get-parent-environment environment) symbol))
+(defmethod env:variable-info ((sys clasp)
+                              (environment core:value-frame) symbol)
+  (env:variable-info sys (core:get-parent-environment environment) symbol))
 
-(defmethod env:variable-info ((environment core:value-environment) symbol)
-  (env:variable-info (core:get-parent-environment environment) symbol))
+(defmethod env:variable-info ((sys clasp)
+                              (environment core:value-environment) symbol)
+  (env:variable-info sys (core:get-parent-environment environment) symbol))
 
 (defmethod env:declarations ((environment null))
   (env:declarations *clasp-env*))
@@ -324,7 +331,7 @@
 
 ;;; Used by ext:symbol-macro
 (defun core:cleavir-symbol-macro (symbol environment)
-  (let ((info (env:variable-info environment symbol)))
+  (let ((info (env:variable-info *clasp-system* environment symbol)))
     (if (typep info 'env:symbol-macro-info)
         (let ((expansion (env:expansion info)))
           (lambda (form env)
@@ -335,7 +342,7 @@
 
 ;;; Used by core:operator-shadowed-p
 (defun core:cleavir-operator-shadowed-p (name environment)
-  (typep (env:function-info environment name)
+  (typep (env:function-info *clasp-system* environment name)
          '(or env:local-function-info
            env:local-macro-info)))
 

@@ -64,7 +64,7 @@
 	 ;; Return NIL as the protocol stipulates.
 	 nil)))
 	 
-(defmethod cleavir-env:function-info ((environment clasp-global-environment) function-name)
+(defmethod cleavir-env:function-info ((sys clasp) (environment clasp-global-environment) function-name)
   (cond (;; If the function name is the name of a macro, then
 	 ;; MACRO-FUNCTION returns something other than NIL.
 	 (and (symbolp function-name) (not (null (macro-function function-name))))
