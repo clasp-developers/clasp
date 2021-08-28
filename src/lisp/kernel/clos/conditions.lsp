@@ -652,6 +652,22 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ()
   (:report "Attempted to return or go to an expired block or tagbody tag."))
 
+(define-condition abort-returned (control-error)
+  ((%abort-restart :initarg :restart :reader abort-restart))
+  (:report
+   (lambda (condition stream)
+     (format stream "~s restart ~s did not transfer control.
+(~2:*~s restarts must transfer control; the function ~:*~s is defined to never return.)"
+             'abort (abort-restart condition)))))
+
+(define-condition muffle-warning-returned (control-error)
+  ((%mw-restart :initarg :restart :reader muffle-warning-restart))
+  (:report
+   (lambda (condition stream)
+     (format stream "~s restart ~s did not transfer control.
+(~2:*~s restarts must transfer control; the function ~:*~s is defined to never return."
+             'muffle-warning (muffle-warning-restart condition)))))
+
 #+threads
 (define-condition mp:not-atomic (error)
   ((place :initarg :place :reader mp:not-atomic-place))
@@ -1077,14 +1093,18 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
      (error (condition) (values nil condition))))
 
 (defun abort (&optional c)
-  (invoke-restart (coerce-restart-designator 'ABORT c)))
+  (let ((restart (coerce-restart-designator 'abort c)))
+    (invoke-restart restart)
+    (error 'abort-returned :restart restart)))
 
 (defun continue (&optional c)
   (let ((restart (find-restart 'CONTINUE c)))
     (and restart (invoke-restart restart))))
 
 (defun muffle-warning (&optional c)
-  (invoke-restart (coerce-restart-designator 'MUFFLE-WARNING c)))
+  (let ((restart (coerce-restart-designator 'muffle-warning c)))
+    (invoke-restart restart)
+    (error 'muffle-warning-returned :restart restart)))
 
 (defun store-value (value &optional c)
   (let ((restart (find-restart 'STORE-VALUE c)))
