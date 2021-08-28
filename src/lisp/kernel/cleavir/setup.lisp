@@ -31,12 +31,14 @@
          (ext:specialp symbol)
 	 (make-instance 'env:special-variable-info
            :name symbol
-           :global-p t))
+           :global-p t
+           :type (cleavir-ctype:top system)))
 	(;; Maybe it's a symbol macro.
 	 (ext:symbol-macro symbol)
 	 (make-instance 'env:symbol-macro-info
 	   :name symbol
-	   :expansion (macroexpand-1 symbol)))
+	   :expansion (macroexpand-1 symbol)
+           :type (cleavir-ctype:top system)))
 	(;; Otherwise, this symbol does not have any variable
 	 ;; information associated with it.
 	 t
