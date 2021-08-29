@@ -122,6 +122,14 @@
     (when (or (eq restart name) (eq (restart-name restart) name))
       (return-from find-restart restart))))
 
+;;; Checks if a restart is "valid". CLHS says we must signal an
+;;; error if it isn't. "valid" means its extent hasn't exited,
+;;; I think, though I can't find this spelled out anywhere.
+(defun valid-restart-p (restart)
+  (dolist (cluster *restart-clusters* nil)
+    (when (find restart cluster :test #'eq)
+      (return t))))
+
 ;;; We don't just call FIND-RESTART because it has slightly
 ;;; different behavior when called with a restart argument.
 ;;; FIND-RESTART given a restart only returns it if that restart
@@ -139,7 +147,9 @@
 ;;; rare enough that I don't mind not checking.
 (defun coerce-restart-designator (designator &optional condition)
   (if (restart-p designator)
-      designator
+      (if (valid-restart-p designator)
+          designator
+          (error 'invalid-restart :restart designator))
       (or (find-restart designator condition)
           (signal-simple-error 'simple-control-error nil
                                "Restart ~S is not active."
@@ -651,6 +661,13 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 (define-condition core:out-of-extent-unwind (control-error)
   ()
   (:report "Attempted to return or go to an expired block or tagbody tag."))
+
+(define-condition invalid-restart (control-error)
+  ((%restart :initarg :restart :reader invalid-restart-restart))
+  (:report
+   (lambda (condition stream)
+     (format stream "~s's extent has been exited and it can no longer be invoked."
+             (invalid-restart-restart condition)))))
 
 (define-condition abort-returned (control-error)
   ((%abort-restart :initarg :restart :reader abort-restart))
