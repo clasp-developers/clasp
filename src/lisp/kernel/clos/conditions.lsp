@@ -1177,28 +1177,23 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
             (read-it)))
       value))
 
-(defvar *assert-failure-test-form* nil)
+(define-condition ext:assert-error (simple-error)
+  ((%test-form :initarg :test :reader test-form))
+  (:report (lambda (condition stream)
+             (format stream "The assertion ~s failed" (test-form condition)))))
 
-(define-condition ext:assert-error (simple-error) ())
-
-(defun assert-failure (test-form &optional place-names values
-                       &rest arguments)
-  (setq *assert-failure-test-form* test-form)
-  (unless arguments
-    (setf arguments
-          ;;; issue #499
-          (list 'ext:assert-error :FORMAT-CONTROL "The assertion ~S failed"
-                               :FORMAT-ARGUMENTS (list test-form))))
-  (restart-case (error (si::coerce-to-condition (first arguments)
-                                                (rest arguments)
-                                                'simple-error
-                                                'assert))
-    (continue ()
-      :REPORT (lambda (stream) (assert-report place-names stream))
-      (return-from assert-failure
+(defun assert-failure (test-form place-names values datum &rest arguments)
+  (let ((condition (if datum
+                       (coerce-to-condition datum arguments
+                                            'simple-error 'assert)
+                       ;; issue #499
+                       (make-condition 'ext:assert-error :test test-form))))
+    (restart-case (error condition)
+      (continue ()
+        :REPORT (lambda (stream) (assert-report place-names stream))
 	(values-list (loop for place-name in place-names
-			for value in values
-			collect (assert-prompt place-name value)))))))
+			   for value in values
+			   collect (assert-prompt place-name value)))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Unicode, initially forgotten in clasp
