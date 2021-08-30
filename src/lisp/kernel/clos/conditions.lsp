@@ -117,18 +117,46 @@
 		*restart-clusters*)))
      ,@forms))
 
-(defun find-restart (name &optional condition)
-  (dolist (restart (compute-restarts condition))
-    (when (or (eq restart name) (eq (restart-name restart) name))
-      (return-from find-restart restart))))
+;;; Return true iff either the restart is not associated with any condition, or
+;;; is associated with the given condition; see CLHS find-restart.
+(defun restart-associated-p (restart condition)
+  (let ((associated-at-all-p nil))
+    (dolist (i *condition-restarts* (not associated-at-all-p))
+      (let ((rcondition (first i)))
+        (when (member restart (rest i) :test #'eq)
+          (if (eq condition rcondition)
+              (return t)
+              (setf associated-at-all-p t)))))))
 
-;;; Checks if a restart is "valid". CLHS says we must signal an
+(defun find-restart-by-name (name condition)
+  (dolist (restart-cluster *restart-clusters* nil)
+    (dolist (restart restart-cluster)
+      (when (and (eq (restart-name restart) name)
+                 (or (not condition)
+                     (restart-associated-p restart condition))
+                 (funcall (ext:restart-test-function restart) condition))
+        (return-from find-restart-by-name restart)))))
+
+;;; Checks if a restart is "valid". CLHS says INVOKE-RESTART must signal an
 ;;; error if it isn't. "valid" means its extent hasn't exited,
 ;;; I think, though I can't find this spelled out anywhere.
 (defun valid-restart-p (restart)
   (dolist (cluster *restart-clusters* nil)
     (when (find restart cluster :test #'eq)
       (return t))))
+
+;;; Given a restart, FIND-RESTART isn't an identity - it's only returned if that
+;;; restart is visible in the dynamic environment with respect to the condition.
+(defun find-restart-by-identity (restart condition)
+  (and (valid-restart-p restart)
+       (or (null condition) (restart-associated-p restart condition))
+       (funcall (ext:restart-test-function restart) condition)
+       restart))
+
+(defun find-restart (identifier &optional condition)
+  (etypecase identifier
+    (symbol (find-restart-by-name identifier condition))
+    (restart (find-restart-by-identity identifier condition))))
 
 ;;; We don't just call FIND-RESTART because it has slightly
 ;;; different behavior when called with a restart argument.
@@ -146,14 +174,14 @@
 ;;; active, but I don't think this is required, and it seems
 ;;; rare enough that I don't mind not checking.
 (defun coerce-restart-designator (designator &optional condition)
-  (if (restart-p designator)
-      (if (valid-restart-p designator)
-          designator
-          (error 'invalid-restart :restart designator))
-      (or (find-restart designator condition)
-          (signal-simple-error 'simple-control-error nil
-                               "Restart ~S is not active."
-                               (list designator)))))
+  (etypecase designator
+    (restart (if (valid-restart-p designator)
+                 designator
+                 (error 'invalid-restart :restart designator)))
+    (symbol (or (find-restart-by-name designator condition)
+                (signal-simple-error 'simple-control-error nil
+                                     "Restart ~S is not active."
+                                     (list designator))))))
 
 (defun invoke-restart (restart &rest values)
   (let ((real-restart (coerce-restart-designator restart)))
