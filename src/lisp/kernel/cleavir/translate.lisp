@@ -1229,6 +1229,14 @@
     (cmp:irc-br body-block))
   the-function)
 
+(defun compute-rest-alloc (lambda-list)
+  ;; FIXME: We seriously need to not reparse lambda lists a million times
+  (let ((rest-var (nth-value 2 (cmp::process-cleavir-lambda-list lambda-list))))
+    (cond ((not rest-var) nil) ; don't care
+          ((bir:unused-p rest-var) 'ignore)
+          ;; TODO: Dynamic extent?
+          (t nil))))
+
 (defun layout-xep-function (function lambda-name abi)
   (let* ((*datum-values* (make-hash-table :test #'eq))
          (jit-function-name (cmp:jit-function-name lambda-name))
@@ -1238,7 +1246,6 @@
          (llvm-function-type cmp:%fn-prototype%)
          (function-info (find-llvm-function-info function))
          (xep-function (xep-function function-info))
-         (xep-function-description (xep-function-description function-info))
          (cmp:*current-function* xep-function)
          (entry-block (cmp:irc-basic-block-create "entry" xep-function))
          (*function-current-multiple-value-array-address*
@@ -1270,7 +1277,8 @@
                     (cleavir-policy:policy-value
                      (bir:policy function)
                      'save-register-args)
-                    :cleavir-lambda-list lambda-list)))
+                    :cleavir-lambda-list lambda-list
+                    :rest-alloc (compute-rest-alloc lambda-list))))
             (layout-xep-function* xep-function function calling-convention abi)))))))
 
 (defun layout-main-function (function lambda-name abi
