@@ -390,16 +390,6 @@
   (declare (ignore environment errorp))
   name)
 
-(defmethod env:parse-expanded-type-specifier
-    ((type-specifier symbol) environment (system clasp))
-  (declare (ignore environment))
-  type-specifier)
-
-(defmethod env:parse-expanded-type-specifier
-    ((type-specifier (eql 'cl:function)) environment (system clasp))
-  (declare (ignore environment))
-  (cleavir-ctype:function-top system))
-
 (defmethod env:has-extended-char-p ((environment clasp-global-environment))
   #+unicode t #-unicode nil)
 (defmethod env:has-extended-char-p ((environment null))
