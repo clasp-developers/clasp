@@ -14,6 +14,16 @@
   (setf (gethash name *ftypes*)
         (env:parse-type-specifier type *clasp-env* *clasp-system*)))
 
+(defvar *vtypes* (make-hash-table :test #'eq))
+(defun global-type (name)
+  (multiple-value-bind (value presentp) (gethash name *vtypes*)
+    (if presentp
+        value
+        (load-time-value (cleavir-ctype:top *clasp-system*)))))
+(defun (setf global-type) (type name)
+  (setf (gethash name *vtypes*)
+        (env:parse-type-specifier type *clasp-env* *clasp-system*)))
+
 (defmethod env:variable-info ((system clasp)
                               (environment clasp-global-environment) symbol)
   (core:stack-monitor)
@@ -32,13 +42,13 @@
 	 (make-instance 'env:special-variable-info
            :name symbol
            :global-p t
-           :type (cleavir-ctype:top system)))
+           :type (global-type symbol)))
 	(;; Maybe it's a symbol macro.
 	 (ext:symbol-macro symbol)
 	 (make-instance 'env:symbol-macro-info
 	   :name symbol
 	   :expansion (macroexpand-1 symbol)
-           :type (cleavir-ctype:top system)))
+           :type (global-type symbol)))
 	(;; Otherwise, this symbol does not have any variable
 	 ;; information associated with it.
 	 t
