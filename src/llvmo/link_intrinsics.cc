@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LANDING_PAD 1
-
 //#define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
 extern "C" {
@@ -1246,7 +1244,7 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gct
   if (_sym_STARdebug_valuesSTAR &&
         _sym_STARdebug_valuesSTAR->boundP() &&
         _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
-    for (size_t i(0); i < lcc_nargs; ++i) {
+    for (size_t i(0); i < ret0.nvals; ++i) {
       core::T_sp mvobj((gctools::Tagged)(*mvargs)[i]);
       printf("%s:%d  ....  cc_call_multipleValueOneFormCall[%lu] -> %s\n", __FILE__, __LINE__, i, _rep_(mvobj).c_str());
     }
@@ -1310,6 +1308,17 @@ gctools::return_type cc_restoreMultipleValue0()
 void cc_save_values(size_t nvals, T_O* primary, T_O** vector)
 {NO_UNWIND_BEGIN();
   returnTypeSaveToTemp(nvals, primary, vector);
+#ifdef DEBUG_VALUES
+  if (_sym_STARdebug_valuesSTAR &&
+        _sym_STARdebug_valuesSTAR->boundP() &&
+        _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s nvals = %lu\n", __FILE__, __LINE__, __FUNCTION__, nvals );
+    for (size_t i(0); i < nvals; ++i) {
+      core::T_sp mvobj((gctools::Tagged)(vector[i]));
+      printf("%s:%d  ....  vector[%lu] -> %s\n", __FILE__, __LINE__, i, _rep_(mvobj).c_str());
+    }
+  }
+#endif
   NO_UNWIND_END();
 }
 
