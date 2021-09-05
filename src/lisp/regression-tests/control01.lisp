@@ -25,6 +25,14 @@
           '(1)
         (and (BOUNDP 'X) (not (BOUNDP 'Y)) (not (BOUNDP 'Z)) (not (BOUNDP 'W)))))
 
+(test multiple-value-call.1
+      ;; this is intended to test the three ways we save values for mv-call
+      (equal (multiple-value-call #'list
+               (values-list '(1 2)) ; temp storage
+               (values 9 8) ; fixed # of values
+               (values-list '(3 4))) ; last form
+             '(1 2 9 8 3 4)))
+
 ;;; To fix this, I would have to "unbind" a or set its binding to undefined
 (test-expect-error
  progv-2

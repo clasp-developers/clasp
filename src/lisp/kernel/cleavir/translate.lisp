@@ -1038,20 +1038,21 @@
         (let* ((spos (nth (1- liven) partial-sums))
                (sdest (cmp:irc-gep-variable valvec (list spos)))
                ;; Add one, since we store the primary separately
-               (dest (%gep cmp:%t**% valvec '(1))))
-          ;; Store the primary
-          (cmp:irc-store primary (cmp:irc-gep-variable valvec (list spos)))
+               (dest (%gep cmp:%t**% sdest '(1)))
+               (source (%gep cmp:%t**% valvec '(1))))
           ;; Copy the rest
           (%intrinsic-call "llvm.memmove.p0i8.p0i8.i64"
                            (list (cmp:irc-bit-cast dest cmp:%i8*%)
-                                 ;; read from the start of the mv vector
-                                 (cmp:irc-bit-cast valvec cmp:%i8*%)
+                                 ;; read from the 1st value of the mv vector
+                                 (cmp:irc-bit-cast source cmp:%i8*%)
                                  ;; Multiply size by sizeof(T_O*)
                                  ;; (subtract one for the primary, again)
                                  (cmp::irc-shl
                                   (cmp::irc-sub size (%size_t 1)) 3 :nuw t)
                                  ;; non volatile
-                                 (%i1 0))))))
+                                 (%i1 0)))
+          ;; Store the primary
+          (cmp:irc-store primary sdest))))
     ;; Now copy the rest
     (loop for (key size extra) in data
           for startn = (%size_t 0) then finishn
