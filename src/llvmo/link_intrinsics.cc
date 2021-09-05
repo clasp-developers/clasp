@@ -935,6 +935,16 @@ void debugPrint_size_t(size_t v)
   NO_UNWIND_END();
 }
 
+void debug_memory(size_t num, core::T_O** vector)
+{NO_UNWIND_BEGIN();
+  printf("+++%s num: %lu\n", __FUNCTION__, num );
+  for ( size_t ii=0; ii<num; ii++ ) {
+    core::T_sp vobj((gctools::Tagged)(vector[ii]));
+    printf("...  vector[%lu]@%p -> %p %s\n", ii, (void*)&vector[ii], vobj.raw_(),  _rep_(vobj).c_str());
+  }
+  NO_UNWIND_END();
+}
+
 void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
   my_thread->_unwinds++;
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
