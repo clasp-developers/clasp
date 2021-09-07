@@ -4,8 +4,8 @@
 
 You need to use the correct commit of llvm13 (https://github.com/llvm/llvm-project.git) - 972b6a3a3471c2a742c5c5d8ec004ff640d544c4
 
-We are going to support the llvm13 standard once it comes out on Sept 21, 2021 (https://llvm.org/)
-We are in an uncomfortable time right now because we need some new llvm features that will be in llvm13 and the API is evolving rapidly until llvm13 comes out.
+We are going to support the llvm13 standard once it comes out on Sept 21, 2021 (https://llvm.org/).
+We are in an uncomfortable time right now because we need some bleeding edge llvm features that will be in llvm13 and the API is evolving rapidly until llvm13 comes out.
 
 [We have a talk up on youtube](https://www.youtube.com/watch?v=mbdXeRBbgDM)
 
