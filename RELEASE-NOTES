@@ -1,4 +1,10 @@
-Upcoming Clasp version 0.5.0
+Upcoming Clasp version 1.0.0
+
+* New compiled library format called FASP - it uses concatenated object files.
+* Implemented save-lisp-and-die. This saves the state of a running environment for loading and fast startup later. 
+Our most complex environment Cando starts up in ~4 seconds, which is 10x faster than the old startup that loaded libraries.
+
+Clasp version 0.5.0
 
 * Full integration of the Cleavir/Sicl compiler by Robert Strandh (https://github.com/robert-strandh/SICL)
 * A nascent type inference system within Cleavir by Alex Wood
