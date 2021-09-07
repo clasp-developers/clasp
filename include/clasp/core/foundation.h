@@ -35,8 +35,9 @@ THE SOFTWARE.
 //
 // Set system wide debug flags here
 //
-#if 1
-#define DEBUG_OBJECT_FILES 1
+#if 0
+//#define DEBUG_OBJECT_FILES 1
+//#define DEBUG_VALUES 1
 //#define DEBUG_FRAME 1
 //#define DEBUG_EVALUATE 1
 //#define DEBUG_DTORS 1

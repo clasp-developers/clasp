@@ -161,6 +161,7 @@
          (primitive         "debugInspect_return_type" %void% (list %return-type%))
 
          (primitive         "debugPointer" %void% (list %i8*%))
+         (primitive         "debug_memory" %void% (list %size_t% %i8*%))
          (primitive         "debug_vaslistPtr" %void% (list %vaslist*%))
          (primitive         "debug_va_list" %void% (list %va_list*%))
          (primitive         "debugMessage" %void% (list %i8*%))

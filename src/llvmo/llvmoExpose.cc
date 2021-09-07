@@ -5010,10 +5010,10 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, T
 //  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
- std::unique_ptr<llvm::MemoryBuffer> empty;
-  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(empty), startupID, this->getMainJITDylib() ,"REPL", 0);
+  std::unique_ptr<llvm::MemoryBuffer> empty;
+  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(empty), startupID, dylib,"REPL", 0);
   my_thread->pushObjectFile(of);
-  ExitOnErr(this->_LLJIT->addIRModule(this->_LLJIT->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
+  ExitOnErr(this->_LLJIT->addIRModule( *dylib->wrappedPtr(), llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr()) ));
 }
 
 
