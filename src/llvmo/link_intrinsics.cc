@@ -786,6 +786,8 @@ void debugInspectTPtr(core::T_O *tP)
 {NO_UNWIND_BEGIN();
   core::T_sp obj = gctools::smart_ptr<core::T_O>((gc::Tagged)tP);
   printf("debugInspectTPtr@%p\n", tP);
+  core::T_sp header = gctools::core__instance_stamp(obj);
+  printf("debugInspectTPtr instance_stamp -> %ld\n", header.unsafe_fixnum());
   printf("debugInspectTPtr obj.px_ref()=%p: %s\n", obj.raw_(), _rep_(obj).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
   NO_UNWIND_END();

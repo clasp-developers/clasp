@@ -659,7 +659,7 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
    (possibilities :INITARG :POSSIBILITIES :READER case-failure-possibilities))
   (:REPORT
    (lambda (condition stream)
-     (format stream "~S fell through ~S expression.~%Wanted one of ~:S."
+     (format stream "~S fell through ~S expression.~%Wanted one of ~{~s~^ ~}."
 	     (type-error-datum condition)
 	     (case-failure-name condition)
 	     (case-failure-possibilities condition)))))
