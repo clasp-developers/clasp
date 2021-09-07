@@ -530,7 +530,7 @@ string General_O::descriptionOfContents() const {
 
 string General_O::description() const {
   stringstream ss;
-  if (this == _lisp->_true().get()) {
+  if (this == &*(_lisp->_true())) {
     ss << "t";
   } else {
     General_O *me_gc_safe = const_cast<General_O *>(this);

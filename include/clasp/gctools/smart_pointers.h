@@ -114,7 +114,6 @@ public:
     return *this->untag_object();
   };
 
-  Type *get() const { return this->untag_object(); };
   bool _NULLp() const { return this->theObject == NULL; };
 
   /*! If theObject!=NULL then return true */
@@ -325,7 +324,6 @@ class base_ptr /*: public tagged_ptr<T>*/ {
     return ::gctools::untag_object(this->theObject);
   }
 
-  Type *get() const { return this->untag_object(); };
   bool _NULLp() const { return this->theObject == NULL; };
 
   /*! If theObject!=NULL then return true */
@@ -670,7 +668,6 @@ public:
   Type *&rawRef_() { return this->theObject; };
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<core::T_O *>(p); }
   void reset_() { this->theObject = NULL; };
-  Type *get() const { return this->untag_object(); };
   bool _NULLp() const { return this->theObject == NULL; };
 public:
   /*! Get the pointer typcast to an integer quantity for hashing */
@@ -875,7 +872,6 @@ public:
     return ::gctools::untag_object(this->theObject);
   }
 
-  Type *get() const { return this->untag_object(); };
   bool _NULLp() const { return this->theObject == NULL; };
 
   /*! If theObject!=NULL then return true */
@@ -1053,7 +1049,6 @@ public:
     return ::gctools::untag_object(this->theObject);
   }
 
-  Type *get() const { return this->untag_object(); };
   bool _NULLp() const { return this->theObject == NULL; };
 
   /*! If theObject!=NULL then return true */
@@ -1230,7 +1225,6 @@ public:
     return ::gctools::untag_object(this->theObject);
   }
 
-  Type *get() const { return this->untag_object(); };
   bool _NULLp() const { return this->theObject == NULL; };
 
   /*! If theObject!=NULL then return true */

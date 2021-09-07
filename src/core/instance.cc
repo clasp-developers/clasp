@@ -625,7 +625,7 @@ string Instance_O::dumpInfo() {
   stringstream ss;
   ss << (boost::format("this.instanceClassName: %s @ %X") % this->instanceClassName() % this) << std::endl;
   ss << "_FullName[" << this->_className()->fullName() << "]" << std::endl;
-  ss << boost::format("    _Class = %X  this._Class.instanceClassName()=%s\n") % this->__class().get() % this->__class()->instanceClassName();
+  ss << boost::format("    _Class = %p  this._Class.instanceClassName()=%s\n") % &*(this->__class()) % this->__class()->instanceClassName();
   for (auto cc : this->directSuperclasses()) {
     ss << "Base class: " << gc::As<Instance_sp>(oCar(cc))->instanceClassName() << std::endl;
   }
