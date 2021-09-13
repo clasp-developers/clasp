@@ -524,7 +524,8 @@ CL_DEFUN void core__dumpFunctionDescription(T_sp func)
 CL_LISPIFY_NAME("core:functionSourcePos");
 CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
   T_sp sfi = this->sourcePathname();
-  return Values(sfi, make_fixnum(this->filePos()), make_fixnum(this->lineno()));
+  return Values(sfi, make_fixnum(this->filePos()),
+                make_fixnum(this->lineno()), make_fixnum(this->column()));
 }
 
 DOCGROUP(clasp)

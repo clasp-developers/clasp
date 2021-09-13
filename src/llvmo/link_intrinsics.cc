@@ -79,16 +79,7 @@ extern "C" {
 #pragma GCC visibility push(default)
 
 using namespace core;
-namespace llvmo {
-
-core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription_sp functionDescription)
-{
-  if (functionDescription.fixnump() && functionDescription.unsafe_fixnum()==0) {
-    return nil<core::T_O>();
-  }
-  return functionDescription->_functionName;
-}
-  
+namespace llvmo {  
 
 [[noreturn]] NEVER_OPTIMIZE void not_function_designator_error(core::T_sp arg) {
   TYPE_ERROR(arg,core::Cons_O::createList(::cl::_sym_or,::cl::_sym_function,::cl::_sym_symbol));
@@ -700,21 +691,22 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArgu
   NO_UNWIND_END();
 }
 
-void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription_sp functionDescription)
+void badKeywordArgumentError(core::T_sp keyword, core::T_sp functionName,
+                             core::T_sp lambdaList)
 {
-  core::T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
   if (functionName.nilp()) {
-    SIMPLE_ERROR(BF("When calling an unnamed function the bad keyword argument %s was passed") % _rep_(keyword) );
+    SIMPLE_ERROR(BF("When calling an unnamed function with the lambda list %s the bad keyword argument %s was passed") % _rep_(lambdaList) % _rep_(keyword));
   }
-  SIMPLE_ERROR(BF("When calling %s with the lambda-list %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(functionDescription->_lambdaList) % _rep_(keyword)  );
+  SIMPLE_ERROR(BF("When calling %s with the lambda-list %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(lambdaList) % _rep_(keyword));
 }
 
 void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
                                       core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
-  core::FunctionDescription_sp functionDescription = closure->fdesc();
   if (gctools::tagged_nilp(allowOtherKeys))
-    badKeywordArgumentError(core::T_sp((gc::Tagged)kw), functionDescription);
+    badKeywordArgumentError(core::T_sp((gc::Tagged)kw),
+                            closure->functionName(),
+                            closure->lambdaList());
 }
 
 };
@@ -1284,12 +1276,11 @@ T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
 
 void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
-  core::FunctionDescription_sp functionDescription = closure->fdesc();
-  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  T_sp functionName = closure->functionName();
   if (functionName.nilp())
     SIMPLE_ERROR(BF("Odd number of keyword arguments"));
   else
-    SIMPLE_ERROR(BF("In call to %s with lambda-list %s - got odd number of keyword arguments") % _rep_(functionName) % _rep_(functionDescription->_lambdaList));
+    SIMPLE_ERROR(BF("In call to %s with lambda-list %s - got odd number of keyword arguments") % _rep_(functionName) % _rep_(closure->lambdaList()));
 }
 
 T_O **cc_multipleValuesArrayAddress()

@@ -316,7 +316,6 @@ namespace core {
     }
     void setf_column(int x) { this->fdesc()->column = x; };
     
-    T_mv function_description() const;
     virtual void __write__(T_sp) const;
     
     Pointer_sp function_pointer() const;
