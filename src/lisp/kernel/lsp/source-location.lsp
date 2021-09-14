@@ -117,6 +117,19 @@
                  method-sls)
           method-sls))))
 
+(defun special-operator-source-locations (name)
+  (append
+   ;; bclasp
+   (let ((codegen (assoc name cmp::+special-operator-dispatch+)))
+     (when codegen
+       (source-location-impl (second codegen) :function)))
+   ;; cclasp - use a function defined later
+   (let ((p (find-package "CLASP-CLEAVIR")))
+     (when p
+       (let ((s (find-symbol "SPECIAL-OPERATOR-SOURCE-LOCATIONS" p)))
+         (when (and s (fboundp s))
+           (funcall s name)))))))
+
 (defun source-location-impl (name kind)
   "* Arguments
 - name : A symbol.
@@ -143,13 +156,16 @@ Return the source-location for the name/kind pair"
             (fix-paths-and-make-source-locations source-loc)))
       (:function
        (when (fboundp name)
-         (let ((func (fdefinition name)))
-           (cond ((core:single-dispatch-generic-function-p func)
-                  (source-location name :method))
-                 ((typep func 'generic-function)
-                  (generic-function-source-locations func))
-                 (t ; normal function
-                  (function-source-locations func))))))
+         (if (special-operator-p name)
+             (special-operator-source-locations name)
+             (let ((func (or (macro-function name)
+                             (fdefinition name))))
+               (cond ((core:single-dispatch-generic-function-p func)
+                      (source-location name :method))
+                     ((typep func 'generic-function)
+                      (generic-function-source-locations func))
+                     (t ; normal function
+                      (function-source-locations func)))))))
       (:compiler-macro
        (when (fboundp name)
          (let ((cmf (compiler-macro-function name)))

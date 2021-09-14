@@ -571,3 +571,22 @@
     :value-ast value-ast
     :body-ast next-ast
     :origin (cst:source variable-cst)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Enhance source locations.
+
+;;; Called by ext::special-operator-source-locations in source-location.lsp
+(defun special-operator-source-locations (name)
+  ;; We check for explicit specialization rather than using
+  ;; compute-applicable-methods so that general around methods etc. are not
+  ;; included; they're not really germane to the particular operator.
+  (ignore-errors
+   (mapcan #'ext::method-source-location
+           (remove-if-not
+            (lambda (method)
+              (let ((spec (first (clos:method-specializers method))))
+                (and (typep spec 'clos:eql-specializer)
+                     (eq (clos:eql-specializer-object spec) name))))
+            (clos:generic-function-methods
+             #'cleavir-cst-to-ast:convert-special)))))
