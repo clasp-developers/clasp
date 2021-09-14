@@ -103,3 +103,12 @@
     (error (e)
       (note-compile-error (list file e))
       (format t "Regression: compile-file of ~a failed with ~a~%" file e))))
+
+(defun no-handler-case-load-if-compiled-correctly (file)
+  (multiple-value-bind
+        (fasl warnings-p failure-p)
+      (let (#+(or) (cmp::*compile-file-parallel* t))
+        (compile-file file))
+    (declare (ignore warnings-p failure-p))
+    (when fasl
+      (load fasl))))

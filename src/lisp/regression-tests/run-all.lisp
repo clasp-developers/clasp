@@ -48,10 +48,15 @@
 (load-if-compiled-correctly "sys:regression-tests;environment.lisp")
 (load-if-compiled-correctly "sys:regression-tests;conditions.lisp")
 (load-if-compiled-correctly "sys:regression-tests;float-features.lisp")
-(load-if-compiled-correctly "sys:regression-tests;debug.lisp")
+#+(or)(progn
+        (load-if-compiled-correctly "sys:regression-tests;system-construction.lisp")
+        (no-handler-case-load-if-compiled-correctly "sys:regression-tests;debug.lisp")
+        )
+#+(and)(load-if-compiled-correctly "sys:regression-tests;debug.lisp")
 (load-if-compiled-correctly "sys:regression-tests;mp.lisp")
 (load-if-compiled-correctly "sys:regression-tests;posix.lisp")
-;;; system-construction should always be last
+;;; system-construction should be last for now.
+;;; When we have it before debug.lisp, debug.lisp will fail
 (load-if-compiled-correctly "sys:regression-tests;system-construction.lisp")
 (progn
   (note-test-finished)
