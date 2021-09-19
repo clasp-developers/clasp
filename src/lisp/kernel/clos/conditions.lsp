@@ -522,11 +522,15 @@ returns with NIL."
 (define-condition error (serious-condition) ())
 
 (define-condition simple-condition ()
-  ((format-control :INITARG :FORMAT-CONTROL :INITFORM ""
-		   :ACCESSOR simple-condition-format-control)
-   (format-arguments :INITARG :FORMAT-ARGUMENTS :INITFORM NIL
-		     :ACCESSOR simple-condition-format-arguments))
-  (:REPORT
+  ((format-control :accessor simple-condition-format-control
+                   :initarg :format-control
+                   :initform ""
+                   :strict t)
+   (format-arguments :accessor simple-condition-format-arguments
+                     :initarg :format-arguments
+                     :initform nil
+                     :strict t))
+  (:report
    (lambda (condition stream)
      (handler-case
          (apply #'format stream
@@ -609,9 +613,13 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
                      (ext:unix-signal-received-code condition)))))
 
 (define-condition type-error (error)
-  ((datum :INITARG :DATUM :READER type-error-datum)
-   (expected-type :INITARG :EXPECTED-TYPE :READER type-error-expected-type))
-  (:REPORT
+  ((datum :reader type-error-datum
+          :initarg :datum
+          :strict t)
+   (expected-type :reader type-error-expected-type
+                  :initarg :expected-type
+                  :strict t))
+  (:report
    (lambda (condition stream)
      (format stream "~S is not of type ~S."
 	     (type-error-datum condition)
@@ -754,7 +762,9 @@ due to error:~%  ~:*~a~]"
                                              mp:*current-process*)))))))
 
 (define-condition stream-error (error)
-  ((stream :initarg :stream :reader stream-error-stream)))
+  ((stream :reader stream-error-stream
+           :initarg :stream
+           :strict t)))
 
 (define-condition core:simple-stream-error (simple-condition stream-error) ())
 
@@ -768,8 +778,10 @@ due to error:~%  ~:*~a~]"
 		     (stream-error-stream condition)))))
 
 (define-condition file-error (error)
-  ((pathname :INITARG :PATHNAME :READER file-error-pathname))
-  (:REPORT (lambda (condition stream)
+  ((pathname :reader file-error-pathname
+             :initarg :pathname
+             :strict t))
+  (:report (lambda (condition stream)
 	     (format stream "Filesystem error with pathname ~S.~%Either
  1) the file does not exist, or
  2) we are not allowed to access the file, or
@@ -779,7 +791,9 @@ due to error:~%  ~:*~a~]"
 (define-condition core:simple-file-error (simple-condition file-error) ())
 
 (define-condition package-error (error)
-  ((package :INITARG :PACKAGE :READER package-error-package))
+  ((package :reader package-error-package
+            :initarg :package
+            :strict t))
   (:report (lambda (condition stream)
              (format stream "Package error on package ~S" (package-error-package condition)))))
 
@@ -946,7 +960,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
          :format-control format-control :format-arguments format-arguments))
 
 (define-condition cell-error (error)
-  ((name :INITARG :NAME :READER cell-error-name)))
+  ((name :reader cell-error-name
+         :initarg :name
+         :strict t)))
 
 (define-condition unbound-variable (cell-error)
   ()
@@ -955,8 +971,10 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 		     (cell-error-name condition)))))
   
 (define-condition unbound-slot (cell-error)
-  ((instance :INITARG :INSTANCE :READER unbound-slot-instance))
-  (:REPORT (lambda (condition stream)
+  ((instance :reader unbound-slot-instance
+             :initarg :instance
+             :strict t))
+  (:report (lambda (condition stream)
              (handler-case
 	         (format stream "~@<The slot ~S in the object ~S is unbound.~@:>"
 		         (cell-error-name condition)
@@ -982,8 +1000,14 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
   (;; NOTE/FIXME: Sometimes we have the OPERATION be NIL - if we can't determine what
    ;; it was, as happens with floating point traps sometimes (currently all the time).
    ;; This is probably nonconforming.
-   (operation :initform nil :INITARG :OPERATION :READER arithmetic-error-operation)
-   (operands :initform nil :INITARG :OPERANDS :READER arithmetic-error-operands)))
+   (operation :reader arithmetic-error-operation
+              :initarg :operation
+              :initform nil
+              :strict t)
+   (operands :reader arithmetic-error-operands
+             :initarg :operands
+             :initform nil
+             :strict t)))
 
 (define-condition division-by-zero (arithmetic-error) ())
 
@@ -1057,8 +1081,10 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                      (core:function-name (called-function condition))))))
 
 (define-condition print-not-readable (error)
-  ((object :INITARG :OBJECT :READER print-not-readable-object))
-  (:REPORT (lambda (condition stream)
+  ((object :reader print-not-readable-object
+           :initarg :object
+           :strict t))
+  (:report (lambda (condition stream)
 	     (format stream "Cannot print object ~A of class ~A readably."
 		     (print-not-readable-object condition) (class-name (class-of (print-not-readable-object condition)))))))
 

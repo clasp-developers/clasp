@@ -252,7 +252,7 @@
       (docstring :initarg :documentation :initform nil :accessor slot-definition-documentation)
       (location :initarg :location :initform nil :reader slot-definition-location
                 :accessor %slot-definition-location)
-      )))
+      (strict :initarg :strict :initform nil :reader %slot-definition-strict))))
 
 ;;; ----------------------------------------------------------------------
 ;;; %METHOD-FUNCTION

@@ -83,7 +83,8 @@
 	     "In the slot description ~S,~%the option ~S is missing an argument"
 	     slot option))
 	  (let ((value (pop options)))
-	    (when (and (member option '(:allocation :initform :type :documentation))
+	    (when (and (member option '(:allocation :initform :type :documentation
+	                                :strict))
 		       (getf options option))
 	      (si::simple-program-error
 	       "In the slot description ~S,~%the option ~S is duplicated"
@@ -100,6 +101,7 @@
 	      (:allocation (setf (getf output :allocation) value))
 	      (:type       (setf (getf output :type) value))
 	      (:documentation  (push value (getf output :documentation)))
+	      (:strict     (setf (getf output :strict) value))
 	      (otherwise   (if (or (getf extra option)
 				   (getf options option))
 			       (push value (getf extra option))

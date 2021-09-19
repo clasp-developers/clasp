@@ -26,15 +26,22 @@
 ;;; additional user methods. In which case we have to go slowly anyway.
 ;;; 
 
-(defun std-class-accessors (slot-name)
+(defun std-class-accessors (standard-class slot-name)
   (values (make-%method-function-fast
            #'(lambda (self)
                (declare (core:lambda-name std-class-accessors.reader.lambda))
                (slot-value self slot-name)))
           (make-%method-function-fast
+           #'(lambda (self)
+               (error 'type-error :datum self :expected-type (class-name standard-class))))
+          (make-%method-function-fast
            #'(lambda (new-value self)
                (declare (core:lambda-name std-class-accessors.writer.lambda))
-               (setf (slot-value self slot-name) new-value)))))
+               (setf (slot-value self slot-name) new-value)))
+          (make-%method-function-fast
+           #'(lambda (new-value self)
+               (declare (ignore new-value))
+               (error 'type-error :datum self :expected-type (class-name standard-class))))))
 
 (defun safe-add-method (name method)
   ;; Adds a method to a function which might have been previously defined
@@ -49,7 +56,7 @@
          (fmakunbound name)
          (add-method (ensure-generic-function name) method))))
 
-(defun std-class-generate-accessors (standard-class)
+(defun std-class-generate-accessors (standard-class &aux (t-class (find-class t)))
   ;;
   ;; The accessors are closures, which are generated every time the
   ;; slots of the class change. The accessors are safe: they check that
@@ -59,55 +66,67 @@
   ;;
   (dolist (slotd (slot-value standard-class 'direct-slots))
     (with-slots ((name name) (allocation allocation) (location location)
-		 (readers readers) (writers writers))
-	slotd
-      (multiple-value-bind (reader writer) (std-class-accessors name)
-	(let* ((options (list* :slot-definition slotd
+                 (readers readers) (writers writers) (strict strict))
+        slotd
+      (multiple-value-bind (reader default-reader writer default-writer)
+          (std-class-accessors standard-class name)
+        (let* ((options (list* :slot-definition slotd
                                :leaf-method-p t
                                (if (boundp '*early-methods*)
                                    nil
                                    (list
                                     :source-position (class-source-position
                                                       standard-class)))))
-	       (reader-args (list* :function reader
-				   :generic-function nil
-				   :qualifiers nil
-				   :lambda-list '(object)
-				   :specializers `(,standard-class)
-				   options))
-	       (reader-class (if (boundp '*early-methods*)
-				 'standard-reader-method
-				 (apply #'reader-method-class standard-class slotd
-					reader-args)))
-	       (writer-args (list* :function writer
-				   :generic-function nil
-				   :qualifiers nil
-				   :lambda-list '(value object)
-				   :specializers `(,(find-class t) ,standard-class)
-				   options))
-	       (writer-class (if (boundp '*early-methods*)
-				 'standard-writer-method
-				 (apply #'writer-method-class standard-class slotd
-					writer-args))))
-	  (dolist (fname readers)
-	    (let ((method (make-method reader-class nil `(,standard-class) '(object)
-				       reader
-				       options)))
-	      (safe-add-method fname method)
-	      ;; This is redundant, but we need it at boot time because
-	      ;; the early MAKE-METHOD does not use the options field.
-	      (unless *clos-booted*
-		(setf (slot-value method 'slot-definition) slotd))))
-	  (dolist (fname writers)
-	    (let ((method (make-method writer-class nil
-				       `(,(find-class t) ,standard-class) '(value object)
-				       writer
-				       options)))
-	      (safe-add-method fname method)
-	      ;; This is redundant, but we need it at boot time because
-	      ;; the early MAKE-METHOD does not use the options field.
-	      (unless *clos-booted*
-		(setf (slot-value method 'slot-definition) slotd)))))))))
+               (reader-args (list* :function reader
+                                   :generic-function nil
+                                   :qualifiers nil
+                                   :lambda-list '(object)
+                                   :specializers `(,standard-class)
+                                   options))
+               (reader-class (if (boundp '*early-methods*)
+                                 'standard-reader-method
+                                 (apply #'reader-method-class standard-class slotd
+                                        reader-args)))
+               (writer-args (list* :function writer
+                                   :generic-function nil
+                                   :qualifiers nil
+                                   :lambda-list '(value object)
+                                   :specializers `(,t-class ,standard-class)
+                                   options))
+               (writer-class (if (boundp '*early-methods*)
+                                 'standard-writer-method
+                                 (apply #'writer-method-class standard-class slotd
+                                        writer-args))))
+          (dolist (fname readers)
+            (when strict
+              (safe-add-method fname
+                               (make-method 'standard-method nil `(,t-class) '(object)
+                                            default-reader
+                                            '(:leaf-method-p t))))
+            (let ((method (make-method reader-class nil `(,standard-class) '(object)
+                                       reader
+                                       options)))
+              (safe-add-method fname method)
+              ;; This is redundant, but we need it at boot time because
+              ;; the early MAKE-METHOD does not use the options field.
+              (unless *clos-booted*
+                (setf (slot-value method 'slot-definition) slotd))))
+          (dolist (fname writers)
+            (when strict
+              (safe-add-method fname
+                               (make-method 'standard-method nil
+                                            `(,t-class ,t-class) '(value object)
+                                            default-writer
+                                            '(:leaf-method-p t))))
+            (let ((method (make-method writer-class nil
+                                       `(,t-class ,standard-class) '(value object)
+                                       writer
+                                       options)))
+              (safe-add-method fname method)
+              ;; This is redundant, but we need it at boot time because
+              ;; the early MAKE-METHOD does not use the options field.
+              (unless *clos-booted*
+                (setf (slot-value method 'slot-definition) slotd)))))))))
 
 (defun reader-closure (index)
   (lambda (object)
