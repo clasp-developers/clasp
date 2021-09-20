@@ -72,22 +72,20 @@ value is used to indicate the expected type in the error message."
 	   (go again)))))
   value)
 
-(defmacro assert (test-form &optional places &rest arguments)
-  "Args: (assert form [({place}*) [string {arg}*]])
+(defmacro assert (test-form &optional places (datum nil datump)
+                  &rest arguments)
+  "Args: (assert form [({place}*) [datum {arg}*]])
 Evaluates FORM and signals a continuable error if the value is NIL.  Before
 continuing, receives new values of PLACEs from user.  Repeats this process
-until FORM returns a non-NIL value.  Returns NIL.  STRING is the format string
-for the error message and ARGs are arguments to the format string."
-  (let ((repl
-         (if places
-             `(setf (values ,@places)
-                    (assert-failure ',test-form ',places (list ,@places)
-                                    ,@arguments))
-             `(assert-failure ',test-form
-                              ,@(and arguments
-                                     (list* nil nil arguments))))))
+until FORM returns a non-NIL value.  Returns NIL. DATUM and ARGs designate the
+ error to signal."
   `(while (not ,test-form)
-     ,repl)))
+     (setf (values ,@places)
+           ;; Defined later in clos/conditions.lsp
+           (assert-failure ',test-form ',places (list ,@places)
+                           ;; If DATUM is provided, it must be for a
+                           ;; condition; NIL is not acceptable.
+                           ,(if datump datum nil) ,@arguments))))
 
 (defun accumulate-cases (cases list-is-atom-p)
   (do ((c cases (cdr c))

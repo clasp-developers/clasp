@@ -333,8 +333,9 @@ namespace core {
     }
   };
 
- CL_PKG_NAME(ClPkg,car);
-CL_DEFUN inline core::T_sp oCar(T_sp obj) {
+CL_PKG_NAME(ClPkg,car);
+ DOCGROUP(clasp)
+   CL_DEFUN inline core::T_sp oCar(T_sp obj) {
    if (obj.consp())
      return obj.unsafe_cons()->ocar();
    if (obj.nilp())
@@ -342,7 +343,8 @@ CL_DEFUN inline core::T_sp oCar(T_sp obj) {
    TYPE_ERROR(obj, cl::_sym_Cons_O);
  };
  CL_PKG_NAME(ClPkg,cdr);
- CL_DEFUN inline T_sp oCdr(T_sp obj) {
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdr(T_sp obj) {
   if (obj.consp())
     return obj.unsafe_cons()->cdr();
   if (obj.nilp())
@@ -350,86 +352,125 @@ CL_DEFUN inline core::T_sp oCar(T_sp obj) {
   TYPE_ERROR(obj, cl::_sym_Cons_O);
 };
 
- CL_DEFUN inline T_sp cl__rest(List_sp obj) {
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp cl__rest(List_sp obj) {
    return oCdr(obj);
 };
 
  CL_PKG_NAME(ClPkg,caar);
-CL_DEFUN inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); };
  CL_PKG_NAME(ClPkg,cadr);
- CL_DEFUN inline T_sp oCadr(T_sp o) { return oCar(oCdr(o)); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCadr(T_sp o) { return oCar(oCdr(o)); };
  CL_PKG_NAME(ClPkg,cdar);
- CL_DEFUN inline T_sp oCdar(T_sp o) { return oCdr(oCar(o)); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdar(T_sp o) { return oCdr(oCar(o)); };
  CL_PKG_NAME(ClPkg,cddr);
- CL_DEFUN inline T_sp oCddr(T_sp o) { return oCdr(oCdr(o)); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCddr(T_sp o) { return oCdr(oCdr(o)); };
  CL_PKG_NAME(ClPkg,caaar);
- CL_DEFUN inline T_sp oCaaar(T_sp o) { return oCar(oCar(oCar(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCaaar(T_sp o) { return oCar(oCar(oCar(o))); };
  CL_PKG_NAME(ClPkg,caadr);
- CL_DEFUN inline T_sp oCaadr(T_sp o) { return oCar(oCar(oCdr(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCaadr(T_sp o) { return oCar(oCar(oCdr(o))); };
  CL_PKG_NAME(ClPkg,cadar);
- CL_DEFUN inline T_sp oCadar(T_sp o) { return oCar(oCdr(oCar(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCadar(T_sp o) { return oCar(oCdr(oCar(o))); };
  CL_PKG_NAME(ClPkg,caddr);
- CL_DEFUN inline T_sp oCaddr(T_sp o) { return oCar(oCdr(oCdr(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCaddr(T_sp o) { return oCar(oCdr(oCdr(o))); };
  CL_PKG_NAME(ClPkg,cdaar);
- CL_DEFUN inline T_sp oCdaar(T_sp o) { return oCdr(oCar(oCar(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdaar(T_sp o) { return oCdr(oCar(oCar(o))); };
  CL_PKG_NAME(ClPkg,cdadr);
- CL_DEFUN inline T_sp oCdadr(T_sp o) { return oCdr(oCar(oCdr(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdadr(T_sp o) { return oCdr(oCar(oCdr(o))); };
  CL_PKG_NAME(ClPkg,cddar);
- CL_DEFUN inline T_sp oCddar(T_sp o) { return oCdr(oCdr(oCar(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCddar(T_sp o) { return oCdr(oCdr(oCar(o))); };
  CL_PKG_NAME(ClPkg,cdddr);
- CL_DEFUN inline T_sp oCdddr(T_sp o) { return oCdr(oCdr(oCdr(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdddr(T_sp o) { return oCdr(oCdr(oCdr(o))); };
  CL_PKG_NAME(ClPkg,caaaar);
- CL_DEFUN inline T_sp oCaaaar(T_sp o) { return oCar(oCar(oCar(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCaaaar(T_sp o) { return oCar(oCar(oCar(o))); };
  CL_PKG_NAME(ClPkg,caadar);
- CL_DEFUN inline T_sp oCaadar(T_sp o) { return oCar(oCar(oCdr(oCar(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCaadar(T_sp o) { return oCar(oCar(oCdr(oCar(o)))); };
  CL_PKG_NAME(ClPkg,cadaar);
- CL_DEFUN inline T_sp oCadaar(T_sp o) { return oCar(oCdr(oCar(oCar(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCadaar(T_sp o) { return oCar(oCdr(oCar(oCar(o)))); };
  CL_PKG_NAME(ClPkg,caddar);
- CL_DEFUN inline T_sp oCaddar(T_sp o) { return oCar(oCdr(oCdr(oCar(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCaddar(T_sp o) { return oCar(oCdr(oCdr(oCar(o)))); };
  CL_PKG_NAME(ClPkg,cdaaar);
- CL_DEFUN inline T_sp oCdaaar(T_sp o) { return oCdr(oCar(oCar(oCar(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdaaar(T_sp o) { return oCdr(oCar(oCar(oCar(o)))); };
  CL_PKG_NAME(ClPkg,cdadar);
- CL_DEFUN inline T_sp oCdadar(T_sp o) { return oCdr(oCar(oCdr(oCar(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdadar(T_sp o) { return oCdr(oCar(oCdr(oCar(o)))); };
  CL_PKG_NAME(ClPkg,cddaar);
- CL_DEFUN inline T_sp oCddaar(T_sp o) { return oCdr(oCdr(oCar(oCar(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCddaar(T_sp o) { return oCdr(oCdr(oCar(oCar(o)))); };
  CL_PKG_NAME(ClPkg,cdddar);
- CL_DEFUN inline T_sp oCdddar(T_sp o) { return oCdr(oCdr(oCdr(oCar(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdddar(T_sp o) { return oCdr(oCdr(oCdr(oCar(o)))); };
  CL_PKG_NAME(ClPkg,caaadr);
- CL_DEFUN inline T_sp oCaaadr(T_sp o) { return oCar(oCar(oCar(oCar(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCaaadr(T_sp o) { return oCar(oCar(oCar(oCar(o)))); };
  CL_PKG_NAME(ClPkg,caaddr);
- CL_DEFUN inline T_sp oCaaddr(T_sp o) { return oCar(oCar(oCdr(oCdr(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCaaddr(T_sp o) { return oCar(oCar(oCdr(oCdr(o)))); };
  CL_PKG_NAME(ClPkg,cadadr);
- CL_DEFUN inline T_sp oCadadr(T_sp o) { return oCar(oCdr(oCar(oCdr(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCadadr(T_sp o) { return oCar(oCdr(oCar(oCdr(o)))); };
  CL_PKG_NAME(ClPkg,cadddr);
- CL_DEFUN inline T_sp oCadddr(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCadddr(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
  CL_PKG_NAME(ClPkg,cdaadr);
- CL_DEFUN inline T_sp oCdaadr(T_sp o) { return oCdr(oCar(oCar(oCdr(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdaadr(T_sp o) { return oCdr(oCar(oCar(oCdr(o)))); };
  CL_PKG_NAME(ClPkg,cdaddr);
- CL_DEFUN inline T_sp oCdaddr(T_sp o) { return oCdr(oCar(oCdr(oCdr(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCdaddr(T_sp o) { return oCdr(oCar(oCdr(oCdr(o)))); };
  CL_PKG_NAME(ClPkg,cddadr);
- CL_DEFUN inline T_sp oCddadr(T_sp o) { return oCdr(oCdr(oCar(oCdr(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCddadr(T_sp o) { return oCdr(oCdr(oCar(oCdr(o)))); };
  CL_PKG_NAME(ClPkg,cddddr);
- CL_DEFUN inline T_sp oCddddr(T_sp o) { return oCdr(oCdr(oCdr(oCdr(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oCddddr(T_sp o) { return oCdr(oCdr(oCdr(oCdr(o)))); };
  CL_PKG_NAME(ClPkg,First);
- CL_DEFUN inline T_sp oFirst(T_sp o) { return oCar(o); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oFirst(T_sp o) { return oCar(o); };
  CL_PKG_NAME(ClPkg,Second);
- CL_DEFUN inline T_sp oSecond(T_sp o) { return oCar(oCdr(o)); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oSecond(T_sp o) { return oCar(oCdr(o)); };
  CL_PKG_NAME(ClPkg,Third);
- CL_DEFUN inline T_sp oThird(T_sp o) { return oCar(oCdr(oCdr(o))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oThird(T_sp o) { return oCar(oCdr(oCdr(o))); };
  CL_PKG_NAME(ClPkg,Fourth);
- CL_DEFUN inline T_sp oFourth(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oFourth(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
  CL_PKG_NAME(ClPkg,Fifth);
- CL_DEFUN inline T_sp oFifth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(o))))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oFifth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(o))))); };
  CL_PKG_NAME(ClPkg,Sixth);
- CL_DEFUN inline T_sp oSixth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oSixth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))); };
  CL_PKG_NAME(ClPkg,Seventh);
- CL_DEFUN inline T_sp oSeventh(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oSeventh(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))); };
  CL_PKG_NAME(ClPkg,Eighth);
- CL_DEFUN inline T_sp oEighth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oEighth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))); };
  CL_PKG_NAME(ClPkg,Ninth);
- CL_DEFUN inline T_sp oNinth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oNinth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))))); };
  CL_PKG_NAME(ClPkg,Tenth);
- CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); };
+ DOCGROUP(clasp)
+   CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); };
 
 
  inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->ocar();};

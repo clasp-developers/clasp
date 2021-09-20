@@ -961,16 +961,18 @@ public:
     this->_ptr = ptr;
   }
  public:
-  static DWARFContext_sp createDwarfContext(ObjectFile_sp);
+  static DWARFContext_sp createDWARFContext(ObjectFile_sp);
   DWARFContext_O() : Base(), _ptr(NULL){};
   ~DWARFContext_O() {
     /* delete _ptr;*/
     _ptr = NULL;
   }
+  size_t getNumCompileUnits() const;
 }; // DWARFContext_O class def
 // FIXME: move?
-core::T_mv getLineInfoForAddress( DWARFContext_sp, SectionedAddress_sp, bool verbose );
+core::T_mv getLineInfoForAddress_( DWARFContext_sp, SectionedAddress_sp, bool verbose );
 llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressInner(DWARFContext_sp, SectionedAddress_sp);
+
 }; // llvmo
 /* from_object translators */
 
@@ -994,6 +996,118 @@ struct to_object<llvm::DWARFContext *> {
   }
 };
 }; // namespace llvmo - DWARFContext_O done
+
+
+
+
+namespace llvmo {
+FORWARD(DWARFUnit);
+class DWARFUnit_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DWARFUnit, DWARFUnit_O, "DWARFUnit", core::ExternalObject_O);
+  typedef llvm::DWARFUnit ExternalType;
+  typedef llvm::DWARFUnit *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const { return this->_ptr; };
+  PointerToExternalType wrappedPtr() const { return this->_ptr; }
+  void set_wrapped(PointerToExternalType ptr) {
+    /* delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+ public:
+  DWARFUnit_O() : Base(), _ptr(NULL){};
+  ~DWARFUnit_O() {
+    /* delete _ptr;*/
+    _ptr = NULL;
+  }
+  
+}; // DWARFUnit_O class def
+
+}; // llvmo
+
+
+
+namespace translate {
+template <>
+struct from_object<llvm::DWARFUnit *, std::true_type> {
+  typedef llvm::DWARFUnit *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::DWARFUnit_sp>(object)->wrappedPtr()){};
+};
+
+};
+
+/* to_object translators */
+
+namespace translate {
+template <>
+struct to_object<llvm::DWARFUnit *> {
+  static core::T_sp convert(llvm::DWARFUnit *ptr) {
+    return core::RP_Create_wrapped<llvmo::DWARFUnit_O, llvm::DWARFUnit *>(ptr);
+  }
+};
+}; // namespace llvmo - DWARFUnit_O done
+
+
+
+
+// LineTable_O
+namespace llvmo {
+FORWARD(LineTable);
+class LineTable_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DWARFDebugLine::LineTable, LineTable_O, "LineTable", core::ExternalObject_O);
+  typedef const llvm::DWARFDebugLine::LineTable ExternalType;
+  typedef const llvm::DWARFDebugLine::LineTable *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const { return (void*)const_cast<llvm::DWARFDebugLine::LineTable*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return this->_ptr; }
+  void set_wrapped(PointerToExternalType ptr) {
+    /* delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+ public:
+  LineTable_O() : Base(), _ptr(NULL){};
+  ~LineTable_O() {
+    /* delete _ptr;*/
+    _ptr = NULL;
+  }
+  size_t size() const;
+  core::List_sp element(size_t index) const;
+  
+}; // LineTable_O class def
+// FIXME: move?
+
+}; // llvmo
+/* from_object translators */
+
+namespace translate {
+template <>
+struct from_object<const llvm::DWARFDebugLine::LineTable *, std::true_type> {
+  typedef const llvm::DWARFDebugLine::LineTable *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::LineTable_sp>(object)->wrappedPtr()){};
+};
+
+};
+
+/* to_object translators */
+
+namespace translate {
+template <>
+struct to_object<const llvm::DWARFDebugLine::LineTable *> {
+  static core::T_sp convert(const llvm::DWARFDebugLine::LineTable *ptr) {
+    return core::RP_Create_wrapped<llvmo::LineTable_O, const llvm::DWARFDebugLine::LineTable *>(ptr);
+  }
+};
+}; // namespace llvmo - LineTable_O done
+
 
 // ------------------------------------------------------------
 //

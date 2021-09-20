@@ -2572,7 +2572,7 @@ so that they don't have to be constantly recalculated"
            (class (gethash class-key (project-classes project)))
            (base-classes (cclass-bases class))
            (base-class-key (car base-classes)))
-      (when (and base-class-key (not (string= base-class-key "_RootDummyClass")))
+      (when (and base-class-key (not (string= base-class-key "RootClass")))
         (ensure-stamp-for-ancestors base-class-key analysis))
       (format t "MAKE-STAMP ~a~%" class-key)
       (setf (gethash class-key (analysis-stamps analysis))
@@ -2588,7 +2588,7 @@ so that they don't have to be constantly recalculated"
          (alloc-stamp (gethash class-key (project-classes project)))
          (base-classes (cclass-bases alloc-stamp))
          (base-class-key (car base-classes)))
-    (unless #+(or)base-class-key (string= base-class-key "_RootDummyClass")
+    (unless #+(or)base-class-key (string= base-class-key "RootClass")
       (ensure-stamp-for-ancestors base-class-key analysis))
     (cond
       ((and (not (containeralloc-p alloc))

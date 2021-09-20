@@ -90,8 +90,9 @@ void redirect_llvm_interface_addSymbol() {
 }
 
 
-CL_DOCSTRING("Load an llvm-ir file with either a bc extension or ll extension.");
-CL_LAMBDA(pathname &optional verbose print external_format startup-name);
+CL_DOCSTRING(R"dx(Load an llvm-ir file with either a bc extension or ll extension.)dx")
+CL_LAMBDA(pathname &optional verbose print external_format startup-name)
+DOCGROUP(clasp)
 CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
   core::Pathname_sp pfilename = core::cl__pathname(filename);
@@ -150,7 +151,8 @@ void loadModule(llvmo::Module_sp module, size_t startupID, const std::string& li
 #endif
 }
   
-CL_LAMBDA(filename &optional verbose print external_format startup-id);
+CL_LAMBDA(filename &optional verbose print external_format startup-id)
+DOCGROUP(clasp)
 CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
@@ -170,7 +172,8 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 }
 
 
-CL_LAMBDA(filename &optional verbose print external_format startup-id);
+CL_LAMBDA(filename &optional verbose print external_format startup-id)
+DOCGROUP(clasp)
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
@@ -189,8 +192,9 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   return true;
 }
 
-CL_DOCSTRING("Load a module into the Common Lisp environment as if it were loaded from a bitcode file");
+CL_DOCSTRING(R"dx(Load a module into the Common Lisp environment as if it were loaded from a bitcode file)dx")
 
+DOCGROUP(clasp)
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
   stringstream sout;
@@ -216,6 +220,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, character_tag);
 SYMBOL_EXPORT_SC_(KeywordPkg, single_float_tag);
 SYMBOL_EXPORT_SC_(KeywordPkg, cons_tag);
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp llvm_sys__tag_tests() {
   ql::list l;
   l << core::Cons_O::createList(kw::_sym_fixnum_tag,core::make_fixnum(gctools::STAMPWTAG_FIXNUM),core::make_fixnum(FIXNUM_TEST),core::_sym_fixnump);
@@ -226,6 +231,7 @@ CL_DEFUN core::T_sp llvm_sys__tag_tests() {
 }
 
 /*! Return an a-list containing lots of values that define C++ objects that Clasp needs to know about */
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   List_sp list = nil<T_O>();
   list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), nil<T_O>());
@@ -325,7 +331,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset gcroots-in-module valist register-save-area function-description);
+CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset gcroots-in-module valist register-save-area function-description)
+DOCGROUP(clasp)
 CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize,
                                                         core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset, core::Fixnum_sp symbol_setf_function_offset,
                                                         core::Fixnum_sp functionSize,
@@ -430,6 +437,7 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
     };
 #endif
 
+DOCGROUP(clasp)
 CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Module_sp module, const string &name, llvmo::Type_sp data_type, llvm::GlobalValue::LinkageTypes linkage) {
   llvm::Module *llvm_module = module->wrappedPtr();
   llvm::Type *llvm_data_type = data_type->wrappedPtr();
@@ -474,7 +482,8 @@ void dump_funcs(core::Function_sp compiledFunction) {
 }
 #endif
 
-CL_LAMBDA(module &optional (stream t));
+CL_LAMBDA(module &optional (stream t))
+DOCGROUP(clasp)
 CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;
@@ -483,7 +492,8 @@ CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::clasp_write_string(sout.str(),stream);
 }
 
-CL_LAMBDA(func &optional (stream t));
+CL_LAMBDA(func &optional (stream t))
+DOCGROUP(clasp)
 CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;
@@ -492,7 +502,8 @@ CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
   core::clasp_write_string(outstr,stream);
 }
 
-CL_LAMBDA(fn &optional only);
+CL_LAMBDA(fn &optional only)
+DOCGROUP(clasp)
 CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcs, core::T_sp only) {
   core::List_sp cfuncs = funcs;
   for (auto cur : cfuncs) {
@@ -508,6 +519,7 @@ CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcs, core::T_sp only) {
 }
 
 
+DOCGROUP(clasp)
 CL_DEFUN ClaspJIT_sp llvm_sys__clasp_jit() {
   return gc::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
 }

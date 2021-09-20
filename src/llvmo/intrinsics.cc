@@ -26,8 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LANDING_PAD 1
-
 //#define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
 extern "C" {
@@ -76,7 +74,7 @@ extern "C" {
 void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis)
 {
   SIMPLE_ERROR(BF("Invalid index %d for axis %d of array: expected 0-%d")
-               % untag_fixnum((core::T_O*)fixnum_index) % untag_fixnum((core::T_O*)fixnum_axis) % untag_fixnum((core::T_O*)fixnum_max));
+               % gctools::untag_fixnum((core::T_O*)fixnum_index) % gctools::untag_fixnum((core::T_O*)fixnum_axis) % gctools::untag_fixnum((core::T_O*)fixnum_max));
 }
 
 };
@@ -114,7 +112,7 @@ extern "C" {
 
 ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object)
 {NO_UNWIND_BEGIN();
-  return ensure_valid_object(tagged_object);
+  return gctools::ensure_valid_object(tagged_object);
   NO_UNWIND_END();
 }
 

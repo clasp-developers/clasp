@@ -38,10 +38,12 @@ namespace serveEvent {
 
 using namespace core;
 
+DOCGROUP(clasp)
 CL_DEFUN void serve_event_internal__ll_fd_zero(clasp_ffi::ForeignData_sp fdset) {
   FD_ZERO(fdset->data<fd_set *>());
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp fdset) {
   SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 so I'm commenting it out for now"));
 #if 0
@@ -49,6 +51,7 @@ CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp 
 #endif
 }
 
+DOCGROUP(clasp)
 CL_DEFUN int serve_event_internal__ll_fd_isset(int fd, clasp_ffi::ForeignData_sp fdset) {
   SIMPLE_ERROR(BF("FD_ISSET causes problems with Xcode 11.4 so I'm commenting it out for now"));
 #if 0
@@ -56,15 +59,18 @@ CL_DEFUN int serve_event_internal__ll_fd_isset(int fd, clasp_ffi::ForeignData_sp
 #endif
 }
 
+DOCGROUP(clasp)
 CL_DEFUN int serve_event_internal__ll_fdset_size() {
   return sizeof(fd_set);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventNoTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd, int maxfdp1) {
   gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, NULL);
   return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
 
+DOCGROUP(clasp)
 CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventWithTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd, int maxfdp1, double seconds) {
   if (seconds < 0.0) {
     SIMPLE_ERROR(BF("Illegal timeout %lf seconds") % seconds);

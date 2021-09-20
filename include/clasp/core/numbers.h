@@ -842,7 +842,8 @@ namespace core {
   }
 
   CL_PKG_NAME(ClPkg,oddp);
-  CL_DEFUN inline bool clasp_oddp(Integer_sp num) {
+  DOCGROUP(clasp)
+    CL_DEFUN inline bool clasp_oddp(Integer_sp num) {
     // for negative numbers num % 2 == 1 does not work, since -1 is returned
     if (num.fixnump()) {
       return (num.unsafe_fixnum() % 2) != 0;
@@ -852,7 +853,8 @@ namespace core {
   }
 
   CL_PKG_NAME(ClPkg,abs);
-  CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
+  DOCGROUP(clasp)
+    CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
     if (num.fixnump()) {
       gc::Fixnum fixnum = num.unsafe_fixnum();
       if (fixnum == MOST_NEGATIVE_FIXNUM) {
@@ -869,7 +871,8 @@ namespace core {
   }
 
   CL_PKG_NAME(ClPkg,signum);
-  CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
+  DOCGROUP(clasp)
+    CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
     if (num.fixnump()) {
       Fixnum fn = num.unsafe_fixnum();
       if (fn == 0)
@@ -935,7 +938,8 @@ namespace core {
   }
 
   CL_LISPIFY_NAME(negate);
-  CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
+  DOCGROUP(clasp)
+    CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
     if (num.fixnump()) {
       gc::Fixnum fixnum = num.unsafe_fixnum();
       if (fixnum == MOST_NEGATIVE_FIXNUM) {
@@ -1003,8 +1007,8 @@ namespace core {
             return result;
           }
         } else if (y==0) {
-            Integer_sp result((gctools::Tagged)0);
-            return result;
+          Integer_sp result((gctools::Tagged)0);
+          return result;
         }
         Bignum val(static_cast<signed long>(n.unsafe_fixnum()));
         Bignum res;

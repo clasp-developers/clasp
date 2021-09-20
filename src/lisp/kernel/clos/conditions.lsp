@@ -117,10 +117,46 @@
 		*restart-clusters*)))
      ,@forms))
 
-(defun find-restart (name &optional condition)
-  (dolist (restart (compute-restarts condition))
-    (when (or (eq restart name) (eq (restart-name restart) name))
-      (return-from find-restart restart))))
+;;; Return true iff either the restart is not associated with any condition, or
+;;; is associated with the given condition; see CLHS find-restart.
+(defun restart-associated-p (restart condition)
+  (let ((associated-at-all-p nil))
+    (dolist (i *condition-restarts* (not associated-at-all-p))
+      (let ((rcondition (first i)))
+        (when (member restart (rest i) :test #'eq)
+          (if (eq condition rcondition)
+              (return t)
+              (setf associated-at-all-p t)))))))
+
+(defun find-restart-by-name (name condition)
+  (dolist (restart-cluster *restart-clusters* nil)
+    (dolist (restart restart-cluster)
+      (when (and (eq (restart-name restart) name)
+                 (or (not condition)
+                     (restart-associated-p restart condition))
+                 (funcall (ext:restart-test-function restart) condition))
+        (return-from find-restart-by-name restart)))))
+
+;;; Checks if a restart is "valid". CLHS says INVOKE-RESTART must signal an
+;;; error if it isn't. "valid" means its extent hasn't exited,
+;;; I think, though I can't find this spelled out anywhere.
+(defun valid-restart-p (restart)
+  (dolist (cluster *restart-clusters* nil)
+    (when (find restart cluster :test #'eq)
+      (return t))))
+
+;;; Given a restart, FIND-RESTART isn't an identity - it's only returned if that
+;;; restart is visible in the dynamic environment with respect to the condition.
+(defun find-restart-by-identity (restart condition)
+  (and (valid-restart-p restart)
+       (or (null condition) (restart-associated-p restart condition))
+       (funcall (ext:restart-test-function restart) condition)
+       restart))
+
+(defun find-restart (identifier &optional condition)
+  (etypecase identifier
+    (symbol (find-restart-by-name identifier condition))
+    (restart (find-restart-by-identity identifier condition))))
 
 ;;; We don't just call FIND-RESTART because it has slightly
 ;;; different behavior when called with a restart argument.
@@ -138,12 +174,14 @@
 ;;; active, but I don't think this is required, and it seems
 ;;; rare enough that I don't mind not checking.
 (defun coerce-restart-designator (designator &optional condition)
-  (if (restart-p designator)
-      designator
-      (or (find-restart designator condition)
-          (signal-simple-error 'simple-control-error nil
-                               "Restart ~S is not active."
-                               (list designator)))))
+  (etypecase designator
+    (restart (if (valid-restart-p designator)
+                 designator
+                 (error 'invalid-restart :restart designator)))
+    (symbol (or (find-restart-by-name designator condition)
+                (signal-simple-error 'simple-control-error nil
+                                     "Restart ~S is not active."
+                                     (list designator))))))
 
 (defun invoke-restart (restart &rest values)
   (let ((real-restart (coerce-restart-designator restart)))
@@ -621,7 +659,7 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
    (possibilities :INITARG :POSSIBILITIES :READER case-failure-possibilities))
   (:REPORT
    (lambda (condition stream)
-     (format stream "~S fell through ~S expression.~%Wanted one of ~:S."
+     (format stream "~S fell through ~S expression.~%Wanted one of ~{~s~^ ~}."
 	     (type-error-datum condition)
 	     (case-failure-name condition)
 	     (case-failure-possibilities condition)))))
@@ -651,6 +689,29 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 (define-condition core:out-of-extent-unwind (control-error)
   ()
   (:report "Attempted to return or go to an expired block or tagbody tag."))
+
+(define-condition invalid-restart (control-error)
+  ((%restart :initarg :restart :reader invalid-restart-restart))
+  (:report
+   (lambda (condition stream)
+     (format stream "~s's extent has been exited and it can no longer be invoked."
+             (invalid-restart-restart condition)))))
+
+(define-condition abort-returned (control-error)
+  ((%abort-restart :initarg :restart :reader abort-restart))
+  (:report
+   (lambda (condition stream)
+     (format stream "~s restart ~s did not transfer control.
+(~2:*~s restarts must transfer control; the function ~:*~s is defined to never return.)"
+             'abort (abort-restart condition)))))
+
+(define-condition muffle-warning-returned (control-error)
+  ((%mw-restart :initarg :restart :reader muffle-warning-restart))
+  (:report
+   (lambda (condition stream)
+     (format stream "~s restart ~s did not transfer control.
+(~2:*~s restarts must transfer control; the function ~:*~s is defined to never return."
+             'muffle-warning (muffle-warning-restart condition)))))
 
 #+threads
 (define-condition mp:not-atomic (error)
@@ -1077,14 +1138,18 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
      (error (condition) (values nil condition))))
 
 (defun abort (&optional c)
-  (invoke-restart (coerce-restart-designator 'ABORT c)))
+  (let ((restart (coerce-restart-designator 'abort c)))
+    (invoke-restart restart)
+    (error 'abort-returned :restart restart)))
 
 (defun continue (&optional c)
   (let ((restart (find-restart 'CONTINUE c)))
     (and restart (invoke-restart restart))))
 
 (defun muffle-warning (&optional c)
-  (invoke-restart (coerce-restart-designator 'MUFFLE-WARNING c)))
+  (let ((restart (coerce-restart-designator 'muffle-warning c)))
+    (invoke-restart restart)
+    (error 'muffle-warning-returned :restart restart)))
 
 (defun store-value (value &optional c)
   (let ((restart (find-restart 'STORE-VALUE c)))
@@ -1112,28 +1177,23 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
             (read-it)))
       value))
 
-(defvar *assert-failure-test-form* nil)
+(define-condition ext:assert-error (simple-error)
+  ((%test-form :initarg :test :reader test-form))
+  (:report (lambda (condition stream)
+             (format stream "The assertion ~s failed" (test-form condition)))))
 
-(define-condition ext:assert-error (simple-error) ())
-
-(defun assert-failure (test-form &optional place-names values
-                       &rest arguments)
-  (setq *assert-failure-test-form* test-form)
-  (unless arguments
-    (setf arguments
-          ;;; issue #499
-          (list 'ext:assert-error :FORMAT-CONTROL "The assertion ~S failed"
-                               :FORMAT-ARGUMENTS (list test-form))))
-  (restart-case (error (si::coerce-to-condition (first arguments)
-                                                (rest arguments)
-                                                'simple-error
-                                                'assert))
-    (continue ()
-      :REPORT (lambda (stream) (assert-report place-names stream))
-      (return-from assert-failure
+(defun assert-failure (test-form place-names values datum &rest arguments)
+  (let ((condition (if datum
+                       (coerce-to-condition datum arguments
+                                            'simple-error 'assert)
+                       ;; issue #499
+                       (make-condition 'ext:assert-error :test test-form))))
+    (restart-case (error condition)
+      (continue ()
+        :REPORT (lambda (stream) (assert-report place-names stream))
 	(values-list (loop for place-name in place-names
-			for value in values
-			collect (assert-prompt place-name value)))))))
+			   for value in values
+			   collect (assert-prompt place-name value)))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Unicode, initially forgotten in clasp

@@ -3,7 +3,7 @@
 (define-constant *batch-classes* 3)
 (defparameter *function-partitions* 3)
 
-(define-constant +root-dummy-class+ "_RootDummyClass" :test 'equal)
+(define-constant +root-dummy-class+ "RootClass" :test 'equal)
 
 (define-condition bad-c++-name (error)
   ((name :initarg :name :accessor name))
@@ -148,6 +148,13 @@
          (line (line% obj))
          (char-offset (character-offset% obj))
          (docstring (docstring% obj))
+         (docstring-long (docstring-long% obj))
+         (all-docstring (if (string= "\"\"" docstring-long)
+                            docstring
+                            (with-output-to-string (sout)
+                              (princ docstring sout)
+                              (terpri sout)
+                              (princ docstring-long sout))))
          (kind (cond
                  ((typep obj 'function-mixin) "code_kind")
                  ((typep obj 'class-method-mixin) "code_kind")
@@ -157,7 +164,7 @@
          (helper-name (format nil "source_info_~d_helper" idx)))
     (format sout "NOINLINE void source_info_~d_helper() {~%" idx)
     (format sout " define_source_info( ~a, ~a, ~s, ~d, ~d, ~a );~%"
-            kind lisp-name file char-offset line docstring )
+            kind lisp-name file char-offset line all-docstring)
     (format sout "}~%")
     helper-name))
 
@@ -670,7 +677,7 @@ public:
   (dolist (c sorted-classes)
     (format stream "template <typename FP> struct Cast<~a*,FP> {
   inline static bool isA(FP client) {
-    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
+    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::GeneralPtrToHeaderPtr(client));
     size_t kindVal = header->shifted_stamp();~%"
             (class-key% c))
     (let ((high-stamp (highest-stamp-class c)))

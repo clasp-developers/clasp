@@ -58,36 +58,43 @@ Rack_sp Rack_O::make(size_t numSlots, T_sp sig, T_sp initialValue )
   return bs;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__make_rack(size_t numSlots, T_sp sig, T_sp stamp, T_sp initialValue) {
   Rack_sp r = Rack_O::make(numSlots, sig, initialValue);
   r->stamp_set((gctools::ShiftedStamp)(stamp.raw_()));
   return r;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__stamp_of_rack(Rack_sp rack) {
   core::T_sp stamp((gctools::Tagged)(rack->_ShiftedStamp));
   return stamp;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__rack_sig(Rack_sp rack) {
   return rack->_Sig;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__rack_size(Rack_sp rack) {
   return rack->length();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__rack_ref(Rack_sp rack, size_t i) {
   return rack->low_level_rackRef(i);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__rack_set(Rack_sp rack, size_t i, T_sp val) {
   rack->low_level_rackSet(i, val);
 }
 
-CL_LAMBDA(instance class);
+CL_LAMBDA(instance class)
 CL_DECLARE();
-CL_DOCSTRING("instanceClassSet");
+CL_DOCSTRING(R"dx(instanceClassSet)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
@@ -131,6 +138,7 @@ void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp 
 }
 
 
+DOCGROUP(clasp)
 CL_DEFUN List_sp core__class_slot_sanity_check()
 {
   List_sp sanity = nil<T_O>();
@@ -154,20 +162,23 @@ CL_DEFUN List_sp core__class_slot_sanity_check()
 }
 
 // FIXME: Exists solely for cases where the list of slotds is hard to get.
-CL_LAMBDA(class slot-count);
+CL_LAMBDA(class slot-count)
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__allocate_standard_instance(Instance_sp cl, size_t slot_count) {
   auto  obj = gctools::GC<Instance_O>::allocate( cl);
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
   return obj;
 }
 
-CL_LAMBDA(class rack);
+CL_LAMBDA(class rack)
+DOCGROUP(clasp)
 CL_DEFUN Instance_sp core__allocate_raw_instance(Instance_sp cl, Rack_sp rack) {
   auto  obj = gctools::GC<Instance_O>::allocate( cl, rack);
   return obj;
 }
 
-CL_LAMBDA(class rack);
+CL_LAMBDA(class rack)
+DOCGROUP(clasp)
 CL_DEFUN Instance_sp core__allocate_raw_general_instance(Instance_sp cl, Rack_sp rack) {
   // This function allocates using the creator.
   ASSERT(cl->CLASS_has_creator());
@@ -194,10 +205,12 @@ void Instance_O::fields(Record_sp node) {
   eval::funcall(ext::_sym_fields,this->asSmartPtr(),node);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN Rack_sp core__instance_rack(Instance_sp instance) {
   return instance->rack();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__instance_rack_set(Instance_sp instance, Rack_sp rack) {
   instance->_Rack = rack;
 }
@@ -653,6 +666,7 @@ List_sp Instance_O::directSuperclasses() const {
 
 /* The following functions should only work for Classes */
 namespace core {
+DOCGROUP(clasp)
 CL_DEFUN List_sp clos__direct_superclasses(Instance_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
     return c->directSuperclasses();
@@ -661,7 +675,8 @@ CL_DEFUN List_sp clos__direct_superclasses(Instance_sp c) {
 }
 
 // FIXME: Perhaps gctools::NextStamp could be exported and used as the stamp slot's initform.
-CL_LAMBDA(class_ &optional (name nil name-p));
+CL_LAMBDA(class_ &optional (name nil name-p))
+DOCGROUP(clasp)
 CL_DEFUN void core__class_new_stamp(Instance_sp c, T_sp name, T_sp namep) {
 //  printf("%s:%d Something is whacked here - I'm calling NextStamp twice for class %s!!!!\n", __FILE__, __LINE__, _safe_rep_(name).c_str() );
   gctools::ShiftedStamp stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
@@ -681,6 +696,7 @@ CL_DEFUN void core__class_new_stamp(Instance_sp c, T_sp name, T_sp namep) {
   register_stamp_name(sname,gctools::Header_s::StampWtagMtag::unshift_shifted_stamp(stamp));
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__class_stamp_for_instances(Instance_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
     // DONT convert this to an integer - it is already a shifted stamp and
@@ -692,6 +708,7 @@ CL_DEFUN T_sp core__class_stamp_for_instances(Instance_sp c) {
   TYPE_ERROR(c,cl::_sym_class);
 };
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__name_of_class(Instance_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
     return c->_className();
@@ -699,6 +716,7 @@ CL_DEFUN T_sp core__name_of_class(Instance_sp c) {
   TYPE_ERROR(c,cl::_sym_class);
 };
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__class_creator(Instance_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
     return c->CLASS_get_creator();
@@ -706,6 +724,7 @@ CL_DEFUN T_sp core__class_creator(Instance_sp c) {
   TYPE_ERROR(c,cl::_sym_class);
 };
 
+DOCGROUP(clasp)
 CL_DEFUN bool core__has_creator(Instance_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
     return c->CLASS_has_creator();
@@ -749,15 +768,18 @@ bool ClassHolder_O::class_unboundp() const {
   return this->_Class.load(std::memory_order_relaxed).unboundp();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN Instance_sp ext__class_get(ClassHolder_sp holder) {
   return holder->class_get();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN bool ext__class_unboundp(ClassHolder_sp holder) {
   return holder->class_unboundp();
 }
 
 
+DOCGROUP(clasp)
 CL_DEFUN void core__verify_instance_layout(size_t instance_size, size_t instance_rack_offset)
 {
   if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp instance_size %lu does not match sizeof(Instance_O) %lu") % instance_size % sizeof(Instance_O));
@@ -765,6 +787,7 @@ CL_DEFUN void core__verify_instance_layout(size_t instance_size, size_t instance
     SIMPLE_ERROR(BF("instance_rack_offset %lu does not match offsetof(_Rack,Instance_O) %lu") % instance_rack_offset % offsetof(Instance_O,_Rack));
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__verify_rack_layout(size_t stamp_offset, size_t data_offset)
 {
   size_t cxx_stamp_offset = offsetof(Rack_O,_ShiftedStamp);

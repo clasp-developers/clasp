@@ -36,6 +36,10 @@
 
 namespace core {
 
+CL_DEFMETHOD T_sp DebuggerFrame_O::returnAddress() const {
+  return this->return_address;
+}
+
 void DebuggerFrame_O::fields(Record_sp node) {
   node->field(INTERN_(kw,function_name),this->fname);
   node->field(INTERN_(kw,return_address),this->return_address);
@@ -85,7 +89,7 @@ static SimpleBaseString_sp lu_procname(unw_cursor_t* cursorp) {
 static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
                       llvmo::SectionedAddress_sp sa) {
     // FIXME: Might be better to just use the llvm::DILineInfo directly.
-  T_mv lineinfo = llvmo::getLineInfoForAddress( dcontext, sa, false );
+  T_mv lineinfo = llvmo::getLineInfoForAddress_( dcontext, sa, false );
   if (lineinfo.notnilp()) {
     SimpleBaseString_sp filename = gc::As<SimpleBaseString_sp>(lineinfo);
     Integer_sp line = gc::As<Integer_sp>(lineinfo.valueGet_(3));
@@ -236,7 +240,7 @@ __attribute__((optnone))
 static DebuggerFrame_sp make_lisp_frame(void* ip, llvmo::ObjectFile_sp ofi,
                                         void* fbp) {
   llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
-  llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDwarfContext(ofi);
+  llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
   T_sp spi = dwarf_spi(dcontext, sa);
   bool XEPp = false;
   T_sp ep = dwarf_ep(ofi, dcontext, sa, XEPp);
@@ -327,10 +331,7 @@ static DebuggerFrame_sp make_cxx_frame(void* ip, const char* cstring) {
 }
 
 __attribute__((optnone))
-static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp, bool firstFrame) {
-  if (!firstFrame) {
-    ip = (void*)((uintptr_t)ip-1); // For everything but the first frame subtract 1
-  }
+static DebuggerFrame_sp make_frame(void* ip, const char* string, void* fbp) {
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (of.nilp()) return make_cxx_frame(ip, string);
   else return make_lisp_frame(ip, gc::As_unsafe<llvmo::ObjectFile_sp>(of), fbp);
@@ -342,7 +343,7 @@ static bool sanity_check_frame(void* ip, void* fbp) {
   else if (gc::IsA<llvmo::ObjectFile_sp>(of)) {
     llvmo::ObjectFile_sp ofi = gc::As_unsafe<llvmo::ObjectFile_sp>(of);
     llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
-    llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDwarfContext(ofi);
+    llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
     bool XEPp = false;
     T_sp ep = dwarf_ep(ofi, dcontext, sa, XEPp);
     uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);
@@ -405,7 +406,7 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   // only to get a C string from it, but writing it to use stack allocation
   // is a pain in the ass for very little gain.
   std::string sstring = lu_procname(&cursor)->get_std_string();
-  DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp, true );
+  DebuggerFrame_sp bot = make_frame((void*)ip, sstring.c_str(), (void*)fbp);
   DebuggerFrame_sp prev = bot;
   while (unw_step(&cursor) > 0) {
     resip = unw_get_reg(&cursor, UNW_REG_IP, &ip);
@@ -413,6 +414,9 @@ static T_mv lu_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
     if (resip || resbp) {
       printf("%s:%d:%s  unw_get_reg resip=%d ip = %p  resbp=%d rbp = %p\n", __FILE__, __LINE__, __FUNCTION__, resip, (void*)ip, resbp, (void*)fbp);
     }
+    // Subtract 1 from IPs in case they are just beyond the end of the function
+    // as happens with return instructions sometimes.
+    --ip;
     std::string sstring = lu_procname(&cursor)->get_std_string();
     DebuggerFrame_sp frame = make_frame((void*)ip, sstring.c_str(), (void*)fbp, false );
     frame->down = prev;
@@ -459,7 +463,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
       void* fbp = __builtin_frame_address(0); // TODO later
       uintptr_t bplow = (uintptr_t)&fbp;
       uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
-      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp, true);
+      DebuggerFrame_sp bot = make_frame(buffer[0], strings[0], fbp);
       DebuggerFrame_sp prev = bot;
       void* newfbp;
       for (size_t j = 1; j < returned; ++j) {
@@ -474,7 +478,10 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
           newfbp = NULL;
         }
         fbp = newfbp;
-        DebuggerFrame_sp frame = make_frame(buffer[j], strings[j], fbp, false);
+        // Subtract one from IPs in case they are just beyond the end of the
+        // function, as happens with return instructions at times.
+        void* ip = (void*)((uintptr_t)buffer[j] - 1);
+        DebuggerFrame_sp frame = make_frame(ip, strings[j], fbp);
         frame->down = prev;
         prev->up = frame;
         prev = frame;
@@ -537,6 +544,7 @@ T_mv call_with_frame(std::function<T_mv(DebuggerFrame_sp)> f) {
   return os_call_with_frame(f);
 #endif
 }
+DOCGROUP(clasp)
 CL_DEFUN bool core__sanity_check_backtrace() {
 #ifdef USE_LIBUNWIND
   return lu_sanity_check_backtrace();
@@ -546,51 +554,66 @@ CL_DEFUN bool core__sanity_check_backtrace() {
 }
 
 __attribute__((optnone))
-CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
+DOCGROUP(clasp)
+  CL_DEFUN T_mv core__call_with_frame(Function_sp function) {
   auto th = [&](DebuggerFrame_sp bot){ return eval::funcall(function, bot); };
   return call_with_frame(th);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_fname(DebuggerFrame_sp df) {
   return df->fname;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_source_position(DebuggerFrame_sp df) {
   return df->source_position;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_function_description(DebuggerFrame_sp df) {
   return df->function_description;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_lang(DebuggerFrame_sp df) {
   return df->lang;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_closure(DebuggerFrame_sp df) {
   return df->closure;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_args(DebuggerFrame_sp df) {
   return df->args;
 }
+DOCGROUP(clasp)
 CL_DEFUN bool core__debugger_frame_args_available_p(DebuggerFrame_sp df) {
   return df->args_available;
 }
+DOCGROUP(clasp)
 CL_DEFUN bool core__debugger_frame_xep_p(DebuggerFrame_sp df) {
   return df->is_xep;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_up(DebuggerFrame_sp df) {
   return df->up;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_frame_down(DebuggerFrame_sp df) {
   return df->down;
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_local_fname(DebuggerLocal_sp dl) {
   return dl->fname;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_local_name(DebuggerLocal_sp dl) {
   return dl->name;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_local_declfile(DebuggerLocal_sp dl) {
   return dl->declfile;
 }
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__debugger_local_declline(DebuggerLocal_sp dl) {
   return dl->declline;
 }

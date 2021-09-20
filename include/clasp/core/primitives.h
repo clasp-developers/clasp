@@ -110,6 +110,11 @@ T_sp core__valid_function_name_p(T_sp arg);
 T_sp core__next_number();
 };
 
+namespace core {
+/*! Calculate crc32 for a block of data */
+void crc32(const void *data, size_t n_bytes, uint32_t* crc );
+};
+
 
 namespace core {
 FORWARD(Test);

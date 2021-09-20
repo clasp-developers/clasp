@@ -204,6 +204,7 @@ string FunctionFrame_O::asString() const {
 }
 
 
+DOCGROUP(clasp)
 CL_DEFUN void core__verify_value_frame_layout(size_t parent_offset, size_t length_offset, size_t data_offset)
 {
   size_t cxx_parent_offset = offsetof(ValueFrame_O,_Parent);

@@ -97,9 +97,10 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
   return digits;
 }
 
-CL_LAMBDA();
+CL_LAMBDA()
 CL_DECLARE();
-CL_DOCSTRING("getUniversalTime");
+CL_DOCSTRING(R"dx(getUniversalTime)dx")
+DOCGROUP(clasp)
 CL_DEFUN Integer_sp cl__get_universal_time() {
   time_t current_time;
   time(&current_time);
@@ -124,37 +125,42 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
   return false;
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("asin");
+CL_DOCSTRING(R"dx(asin)dx")
+DOCGROUP(clasp)
 CL_DEFUN double core__num_op_asin(double x) {
   return asin(x);
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("num-op-acos");
+CL_DOCSTRING(R"dx(num-op-acos)dx")
+DOCGROUP(clasp)
 CL_DEFUN double core__num_op_acos(double x) {
   return acos(x);
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("asinh");
+CL_DOCSTRING(R"dx(asinh)dx")
+DOCGROUP(clasp)
 CL_DEFUN double core__num_op_asinh(double x) {
   return log(x + sqrt(1.0 + x * x));
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("num_op_acosh");
+CL_DOCSTRING(R"dx(num_op_acosh)dx")
+DOCGROUP(clasp)
 CL_DEFUN double core__num_op_acosh(double x) {
   return log(x + sqrt((x - 1) * (x + 1)));
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("atanh");
+CL_DOCSTRING(R"dx(atanh)dx")
+DOCGROUP(clasp)
 CL_DEFUN double core__num_op_atanh(double x) {
   return log((1 + x) / (1 - x)) / 2;
 }

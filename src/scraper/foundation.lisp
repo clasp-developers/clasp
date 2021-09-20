@@ -3,6 +3,13 @@
 (define-constant +begin-tag+ "BEGIN_TAG_bfc54f90bafadf5" :test 'equal)
 (define-constant +end-tag+ "END_TAG_bfc54f90bafadf5" :test 'equal)
 
+(defun concat-ds (short long)
+  (cond
+    ((and short (null long))
+     short)
+    (long
+     (break "short: ~s long: ~s" short long))))
+
 (defun fill-config (config line)
   (let* ((trimmed (string-trim " " line))
          (var-start (position #\space trimmed))

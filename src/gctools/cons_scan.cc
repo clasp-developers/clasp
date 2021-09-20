@@ -27,7 +27,7 @@ RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUME
   SCAN_BEGIN(ss) {
     while (client<limit) {
       core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
-      gctools::Header_s* header = (gctools::Header_s*)ConsPtrToHeaderPtr(cons);
+      gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(cons);
       if ( header->_stamp_wtag_mtag.consObjectP() ) {
         //        printf("%s:%d It's a regular cons\n", __FILE__, __LINE__ );
 #if DEBUG_VALIDATE_GUARD
@@ -62,7 +62,7 @@ ADDR_T CONS_SKIP(ADDR_T client,size_t& objectSize) {
 //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
   ADDR_T oldClient = client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
-  gctools::Header_s* header = (gctools::Header_s*)ConsPtrToHeaderPtr(cons);
+  gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(cons);
   if ( header->_stamp_wtag_mtag.pad1P() ) {
     client = reinterpret_cast<ADDR_T>((char*)client+gctools::Alignment());
   } else if (header->_stamp_wtag_mtag.padP() ) {
@@ -87,7 +87,7 @@ static void CONS_FWD(ADDR_T old_client, ADDR_T new_client) {
   ADDR_T limit = CONS_SKIP_IN_CONS_FWD(old_client);
   size_t size = (char *)limit - (char *)old_client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(old_client);
-  gctools::Header_s* header = (gctools::Header_s*)ConsPtrToHeaderPtr(cons);
+  gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(cons);
   header->_stamp_wtag_mtag.setFwdPointer(new_client);
   header->_stamp_wtag_mtag.setFwdSize(sizeof(core::Cons_O));
 }

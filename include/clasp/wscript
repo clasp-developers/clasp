@@ -1,0 +1,4 @@
+import os
+
+def build(bld):
+    bld.recurse('asttooling clbind core gctools llvmo main serveEvent sockets')

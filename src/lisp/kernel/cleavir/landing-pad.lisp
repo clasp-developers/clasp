@@ -174,9 +174,8 @@
 
 ;; Is this iblock a place unknown values are nonlocally returned to?
 (defun nonlocal-valued-p (iblock)
-  (let ((inputs (cleavir-bir:inputs iblock)))
-    (and (= (length inputs) 1)
-         (eq (cleavir-bir:rtype (first inputs)) :multiple-values))))
+  (and (= (length (cleavir-bir:inputs iblock)) 1)
+       (not (null (cc-bmir:rtype (first (cleavir-bir:inputs iblock)))))))
 
 (defmethod compute-maybe-entry-processor ((dynenv cleavir-bir:catch) tags)
   (if (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
@@ -197,6 +196,19 @@
                ;; so that we get the correct values.
                (tmv (when (some #'nonlocal-valued-p destinations)
                       (restore-multiple-value-0)))
+               (tv (when tmv
+                     (let ((rt (cc-bmir:rtype
+                                (first (bir:inputs (first destinations))))))
+                       (cond ((eq rt :multiple-values) tmv)
+                             ((equal rt '(:object))
+                              (cmp:irc-tmv-primary tmv))
+                             ((null rt) nil) ; redundant with nonlocal-valued-p
+                             ((every (lambda (x) (eq x :object)) rt)
+                              (list* (cmp:irc-tmv-primary tmv)
+                                     (loop for i from 1 below (length rt)
+                                           collect (cmp:irc-load
+                                                    (return-value-elt i)))))
+                             (t (error "BUG: Bad rtype ~a" rt))))))
                (go-index (cmp:irc-load *go-index.slot*))
                (sw (cmp:irc-switch go-index next ndestinations)))
           (declare (ignore _))
@@ -222,9 +234,9 @@
                                               tag-block)
                            (unless (eq tag-block (cdr existing))
                              (error "BUG: Duplicated ID in landing-pad.lisp"))))
-                  and do (when tmv
+                  and do (when tv
                            (phi-out
-                            tmv (first (cleavir-bir:inputs dest)) bb))
+                            tv (first (cleavir-bir:inputs dest)) bb))
                   and collect (cons jump-id tag-block) into used-ids)
           bb))))
 
@@ -243,21 +255,6 @@
                                           tags)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder
                         (cmp:thread-local-llvm-context)))
-    (destructuring-bind (stackpos storage1 storage2)
-        (dynenv-storage instruction)
-      (declare (ignore storage1 storage2))
-      (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
-        (cmp:irc-begin-block bb)
-        ;; Lose the saved values alloca.
-        (%intrinsic-call "llvm.stackrestore" (list stackpos))
-        ;; Continue
-        (cmp:irc-br
-         (maybe-entry-processor (cleavir-bir:parent instruction) tags))
-        bb))))
-
-(defmethod compute-maybe-entry-processor
-    ((instruction cleavir-bir:alloca) tags)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (destructuring-bind (stackpos storage1 storage2)
         (dynenv-storage instruction)
       (declare (ignore storage1 storage2))
@@ -290,7 +287,7 @@
 (defun dynenv-may-enter-p (dynenv)
   (etypecase dynenv
     (cleavir-bir:function nil)
-    ((or cleavir-bir:leti cleavir-bir:values-save cleavir-bir:alloca
+    ((or cleavir-bir:leti cleavir-bir:values-save
          cc-bir:unwind-protect cc-bir:bind)
      (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
     (cleavir-bir:catch
@@ -318,7 +315,7 @@
               (never-entry-processor dynenv)
               (dynenv-needs-cleanup-p dynenv)
               (in dynenv))))
-        ((or cc-bir:bind cleavir-bir:values-save cleavir-bir:alloca
+        ((or cc-bir:bind cleavir-bir:values-save
              cleavir-bir:leti cc-bir:unwind-protect
              cleavir-bir:function)
          (generate-maybe-entry-landing-pad
@@ -355,8 +352,6 @@
   (generate-resume-block *exn.slot* *ehselector.slot*))
 
 (defmethod compute-never-entry-processor ((dynenv cleavir-bir:values-save))
-  (never-entry-processor (cleavir-bir:parent dynenv)))
-(defmethod compute-never-entry-processor ((dynenv cleavir-bir:alloca))
   ;; This whole frame is being discarded,
   ;; so no smaller stack unwinding is necessary.
   (never-entry-processor (cleavir-bir:parent dynenv)))
@@ -384,7 +379,7 @@
     ;; Next might need a cleanup
     ((or cleavir-bir:catch
          ;; Cleanup only required for local exit.
-         cleavir-bir:leti cleavir-bir:values-save cleavir-bir:alloca)
+         cleavir-bir:leti cleavir-bir:values-save)
      (dynenv-needs-cleanup-p (cleavir-bir:parent dynenv)))
     ;; Definitive answers
     (cleavir-bir:function nil)
@@ -393,8 +388,7 @@
 
 (defun compute-never-entry-landing-pad (dynenv)
   (etypecase dynenv
-    ((or cleavir-bir:catch cleavir-bir:leti
-         cleavir-bir:values-save cleavir-bir:alloca)
+    ((or cleavir-bir:catch cleavir-bir:leti cleavir-bir:values-save)
      ;; We never catch, so just keep going up.
      (never-entry-landing-pad (cleavir-bir:parent dynenv)))
     ((or cc-bir:bind cc-bir:unwind-protect)

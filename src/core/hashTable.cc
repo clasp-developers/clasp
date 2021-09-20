@@ -165,6 +165,7 @@ struct HashTableWriteLock {
 #endif
 
 
+DOCGROUP(clasp)
 CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base)
 {
   if (gc::IsA<HashTable_sp>(hash_table_base)) {
@@ -230,9 +231,10 @@ void HashTable_O::set_thread_safe(bool thread_safe)
 }
 #endif
 
-CL_LAMBDA(&key (test (function eql)) (size 0) (rehash-size 2.0) (rehash-threshold 0.7) weakness debug thread-safe hash-function);
+CL_LAMBDA(&key (test (function eql)) (size 0) (rehash-size 2.0) (rehash-threshold 0.7) weakness debug thread-safe hash-function)
 CL_DECLARE();
-CL_DOCSTRING("See CLHS for most behavior. As an extension, Clasp allows a TEST other than the four standard ones to be passed. In this case it must be a designator for a function of two arguments, and a :HASH-FUNCTION must be passed as well; this should be a designator of a function analogous to SXHASH, i.e. it accepts one argument, returns a nonnegative fixnum, and (TEST x y) implies (= (HASH x) (HASH y)).");
+CL_DOCSTRING(R"dx(See CLHS for most behavior. As an extension, Clasp allows a TEST other than the four standard ones to be passed. In this case it must be a designator for a function of two arguments, and a :HASH-FUNCTION must be passed as well; this should be a designator of a function analogous to SXHASH, i.e. it accepts one argument, returns a nonnegative fixnum, and (TEST x y) implies (= (HASH x) (HASH y)).)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size,
                                   Number_sp rehash_size,
                                   Real_sp orehash_threshold,
@@ -285,9 +287,10 @@ void HashTable_O::setupThreadSafeHashTable() {
 #endif
 }
 
-CL_LAMBDA(ht);
+CL_LAMBDA(ht)
 CL_DECLARE();
-CL_DOCSTRING("hash_table_weakness");
+CL_DOCSTRING(R"dx(hash_table_weakness)dx")
+DOCGROUP(clasp)
 CL_DEFUN Symbol_sp core__hash_table_weakness(T_sp ht) {
   if (gc::IsA<WeakKeyHashTable_sp>(ht)) {
     return kw::_sym_key;
@@ -339,9 +342,10 @@ void HashTable_O::maphash(T_sp function_desig) {
   } HASH_TABLE_ITER_END;
 }
 
-CL_LAMBDA(function-desig hash-table);
+CL_LAMBDA(function-desig hash-table)
 CL_DECLARE();
-CL_DOCSTRING("see CLHS");
+CL_DOCSTRING(R"dx(see CLHS)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__maphash(T_sp function_desig, HashTableBase_sp hash_table) {
   if (hash_table.nilp()) {
     SIMPLE_ERROR(BF("maphash called with nil hash-table"));
@@ -350,26 +354,29 @@ CL_DEFUN T_sp cl__maphash(T_sp function_desig, HashTableBase_sp hash_table) {
   return nil<T_O>();
 }
 
-CL_LAMBDA(hash-table);
+CL_LAMBDA(hash-table)
 CL_DECLARE();
-CL_DOCSTRING("See CLHS");
+CL_DOCSTRING(R"dx(See CLHS)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__clrhash(HashTableBase_sp hash_table) {
   hash_table->clrhash();
   return hash_table;
 };
 
-CL_LAMBDA(cons);
+CL_LAMBDA(cons)
 CL_DECLARE();
-CL_DOCSTRING("hashTableEntryDeletedP");
+CL_DOCSTRING(R"dx(hashTableEntryDeletedP)dx")
+DOCGROUP(clasp)
 CL_DEFUN bool core__hash_table_entry_deleted_p(T_sp cons) {
   if (!cons.consp())
     SIMPLE_ERROR(BF("Arg must be a cons"));
   return oCdr(gc::As<Cons_sp>(cons)).no_keyp();
 };
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(&rest args)
 CL_DECLARE();
-CL_DOCSTRING("hash_eql generates an eql hash for a list of objects");
+CL_DOCSTRING(R"dx(hash_eql generates an eql hash for a list of objects)dx")
+DOCGROUP(clasp)
 CL_DEFUN int core__hash_eql(List_sp args) {
   HashGenerator hg;
   for (auto cur : args) {
@@ -379,9 +386,10 @@ CL_DEFUN int core__hash_eql(List_sp args) {
   return hg.rawhash();
 };
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(&rest args)
 CL_DECLARE();
-CL_DOCSTRING("hash_equal generates an equal hash for a list of objects");
+CL_DOCSTRING(R"dx(hash_equal generates an equal hash for a list of objects)dx")
+DOCGROUP(clasp)
 CL_DEFUN int core__hash_equal(List_sp args) {
   HashGenerator hg;
   for (auto cur : args) {
@@ -392,9 +400,10 @@ CL_DEFUN int core__hash_equal(List_sp args) {
   return hg.rawhash();
 };
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(&rest args)
 CL_DECLARE();
-CL_DOCSTRING("hash_equalp generates an equalp hash for a list of objects");
+CL_DOCSTRING(R"dx(hash_equalp generates an equalp hash for a list of objects)dx")
+DOCGROUP(clasp)
 CL_DEFUN int core__hash_equalp(List_sp args) {
   HashGenerator hg;
   for (auto cur : args) {
@@ -405,9 +414,10 @@ CL_DEFUN int core__hash_equalp(List_sp args) {
   return hg.rawhash();
 };
 
-CL_LAMBDA(key hashtable);
+CL_LAMBDA(key hashtable)
 CL_DECLARE();
-CL_DOCSTRING("remhash");
+CL_DOCSTRING(R"dx(remhash)dx")
+DOCGROUP(clasp)
 CL_DEFUN bool cl__remhash(T_sp key, HashTableBase_sp ht) {
   return ht->remhash(key);
 };
@@ -666,9 +676,10 @@ uint HashTable_O::resizeEmptyTable_no_lock(size_t sz) {
   return sz;
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("hash-table-count");
+CL_DOCSTRING(R"dx(hash-table-count)dx")
+DOCGROUP(clasp)
 CL_DEFUN uint cl__hash_table_count(HashTableBase_sp ht) {
   return ht->hashTableCount();
 }
@@ -688,9 +699,10 @@ uint HashTable_O::calculateHashTableCount() const {
   return cnt;
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("hash-table-size");
+CL_DOCSTRING(R"dx(hash-table-size)dx")
+DOCGROUP(clasp)
 CL_DEFUN uint cl__hash_table_size(HashTableBase_sp ht) {
   return ht->hashTableSize();
 }
@@ -717,13 +729,15 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg)
   SUBCLASS_MUST_IMPLEMENT();
 }
 
-CL_LAMBDA(key hash-table &optional default-value);
-CL_DOCSTRING("gethash");
+CL_LAMBDA(key hash-table &optional default-value)
+CL_DOCSTRING(R"dx(gethash)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv cl__gethash(T_sp key, HashTableBase_sp hashTable, T_sp default_value) {
   return hashTable->gethash(key, default_value);
 };
 
-CL_DOCSTRING("gethash3");
+CL_DOCSTRING(R"dx(gethash3)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
   HashTable_sp ht = gc::As_unsafe<HashTable_sp>(hashTable);
   return ht->gethash(key, default_value);
@@ -762,9 +776,10 @@ KeyValuePair* HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock
   return nullptr;
 }
 
-CL_LAMBDA(ht);
+CL_LAMBDA(ht)
 CL_DECLARE();
-CL_DOCSTRING("hashTableForceRehash");
+CL_DOCSTRING(R"dx(hashTableForceRehash)dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
   HT_WRITE_LOCK(&*ht);
   ht->rehash_no_lock(false, no_key<T_O>());
@@ -896,6 +911,7 @@ T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
 }
 
 CL_LISPIFY_NAME("core:hash-table-setf-gethash");
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__hash_table_setf_gethash(HashTableBase_sp hash_table, T_sp key, T_sp value) {
   return hash_table->hash_table_setf_gethash(key,value);
 }
@@ -1145,25 +1161,28 @@ T_sp HashTable_O::hash_table_test() {
   return this->hashTableTest();
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("hash-table-rehash-size");
+CL_DOCSTRING(R"dx(hash-table-rehash-size)dx")
+DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__hash_table_rehash_size(HashTableBase_sp ht) {
   return ht->rehash_size();
 };
 
 
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("hash-table-rehash-threshold");
+CL_DOCSTRING(R"dx(hash-table-rehash-threshold)dx")
+DOCGROUP(clasp)
 CL_DEFUN double cl__hash_table_rehash_threshold(HashTableBase_sp ht) {
   return ht->rehash_threshold();
 };
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("hash-table-test");
+CL_DOCSTRING(R"dx(hash-table-test)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__hash_table_test(HashTableBase_sp ht) {
   return ht->hash_table_test();
 };

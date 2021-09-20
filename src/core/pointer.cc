@@ -31,7 +31,8 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_DOCSTRING(R"doc(Create a core:pointer using a fixnum as the address.)doc");
+CL_DOCSTRING(R"dx(Create a core:pointer using a fixnum as the address.)dx")
+DOCGROUP(clasp)
 CL_DEFUN Pointer_sp core__make_pointer(T_sp address)
 {
   if (address.fixnump()) {
@@ -40,6 +41,7 @@ CL_DEFUN Pointer_sp core__make_pointer(T_sp address)
   SIMPLE_ERROR(BF("Cannot convert %s to pointer") % _rep_(address));
 }
 
+DOCGROUP(clasp)
 CL_DEFUN SimpleBaseString_sp core__pointer_as_string(Pointer_sp p) {
   SimpleBaseString_sp s = SimpleBaseString_O::make((BF("%p") % p->ptr()).str());
   return s;
@@ -70,6 +72,7 @@ string Pointer_O::__repr__() const {
   return ss.str();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN bool core__pointer_in_pointer_range(Pointer_sp test, Pointer_sp low, T_sp high_or_size) {
   if (gc::IsA<Pointer_sp>(high_or_size)) {
     return test->in_pointer_range(low,gc::As_unsafe<Pointer_sp>(high_or_size));
@@ -79,11 +82,13 @@ CL_DEFUN bool core__pointer_in_pointer_range(Pointer_sp test, Pointer_sp low, T_
   SIMPLE_ERROR(BF("Illegal range for pointer comparison %s - %s") % _rep_(low) % _rep_(high_or_size));
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__fill_foreign_memory(clasp_ffi::ForeignData_sp ptr, size_t length, size_t value)
 {
   memset(ptr->ptr(), value&0xFF,length);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__replace_foreign_memory(clasp_ffi::ForeignData_sp dest, clasp_ffi::ForeignData_sp src, size_t length)
 {
   memcpy(dest->ptr(),src->ptr(),length);
@@ -94,6 +99,7 @@ CL_DEFMETHOD Integer_sp Pointer_O::pointer_integer() const {
   return Integer_O::create((uintptr_t)this->ptr());
 };
 
+DOCGROUP(clasp)
 CL_DEFUN Pointer_sp core__pointer_increment(Pointer_sp ptr,Fixnum inc)
 {
   return Pointer_O::create((void*)(((intptr_t)ptr->ptr())+inc));

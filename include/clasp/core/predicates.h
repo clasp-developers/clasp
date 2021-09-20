@@ -31,19 +31,22 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_DEFUN inline bool cl__symbolp(T_sp obj) {
+  DOCGROUP(clasp)
+    CL_DEFUN inline bool cl__symbolp(T_sp obj) {
   return gc::IsA<Symbol_sp>(obj);
 }
 
- CL_DEFUN inline bool core__fixnump(T_sp arg)
+  DOCGROUP(clasp)
+    CL_DEFUN inline bool core__fixnump(T_sp arg)
  {
    return arg.fixnump();
  }
  
  CL_LAMBDA(arg);
  CL_DECLARE();
- CL_DOCSTRING("endp");
-CL_DEFUN inline bool cl__endp(T_sp arg) {
+ CL_DOCSTRING("endp")
+   DOCGROUP(clasp)
+   CL_DEFUN inline bool cl__endp(T_sp arg) {
   if (arg.consp())
     return false;
   if (arg.nilp())
@@ -53,20 +56,24 @@ CL_DEFUN inline bool cl__endp(T_sp arg) {
 
  CL_LAMBDA(arg);
  CL_DECLARE();
- CL_DOCSTRING("atom");
-inline CL_DEFUN bool cl__atom(T_sp obj) {
+ CL_DOCSTRING("atom")
+   DOCGROUP(clasp)
+   inline CL_DEFUN bool cl__atom(T_sp obj) {
   return !obj.consp();
 }
 
-CL_DEFUN inline bool cl__consp(T_sp obj) {
+ DOCGROUP(clasp)
+   CL_DEFUN inline bool cl__consp(T_sp obj) {
   return obj.consp();
 };
 
- CL_DEFUN inline bool cl__characterp(T_sp obj) {
+ DOCGROUP(clasp)
+   CL_DEFUN inline bool cl__characterp(T_sp obj) {
    return obj.characterp();
  }
 
-CL_DEFUN inline bool cl__listp(T_sp obj) {
+ DOCGROUP(clasp)
+   CL_DEFUN inline bool cl__listp(T_sp obj) {
   if (obj.consp())
     return true;
   return obj.nilp();

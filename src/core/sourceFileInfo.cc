@@ -45,9 +45,10 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(name);
+CL_LAMBDA(name)
 CL_DECLARE();
-CL_DOCSTRING("sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index");
+CL_DOCSTRING(R"dx(sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__file_scope(T_sp sourceFile) {
   if (sourceFile.nilp()) {
     return core__file_scope(make_fixnum(0));
@@ -90,7 +91,8 @@ size_t clasp_sourcePosInfo_filepos(SourcePosInfo_sp info) {
   return info->_Filepos;
 }
 
-CL_LAMBDA(source-pos-info);
+CL_LAMBDA(source-pos-info)
+DOCGROUP(clasp)
 CL_DEFUN Integer_mv core__source_pos_info_unpack(T_sp source_pos_info) {
   if (source_pos_info.nilp() ) return Values0<T_O>();
   SourcePosInfo_sp info = gc::As<SourcePosInfo_sp>(source_pos_info);
@@ -100,7 +102,8 @@ CL_DEFUN Integer_mv core__source_pos_info_unpack(T_sp source_pos_info) {
                 Integer_O::create((gc::Fixnum)info->_Column));
 }
 
-CL_LAMBDA(source-pos-info);
+CL_LAMBDA(source-pos-info)
+DOCGROUP(clasp)
 CL_DEFUN Integer_sp core__source_pos_info_file_handle(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {
@@ -110,9 +113,10 @@ CL_DEFUN Integer_sp core__source_pos_info_file_handle(T_sp info) {
   SIMPLE_ERROR(BF("Argument %s must be a source-pos-info object") % _rep_(info));
 }
 
-CL_LAMBDA(source-pos-info);
+CL_LAMBDA(source-pos-info)
 CL_DECLARE();
-CL_DOCSTRING("sourcePosInfoFilepos");
+CL_DOCSTRING(R"dx(sourcePosInfoFilepos)dx")
+DOCGROUP(clasp)
 CL_DEFUN Integer_sp core__source_pos_info_filepos(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {
@@ -125,9 +129,10 @@ uint clasp_sourcePosInfo_lineno(SourcePosInfo_sp info) {
   return info->_Lineno;
 }
 
-CL_LAMBDA(source-pos-info);
+CL_LAMBDA(source-pos-info)
 CL_DECLARE();
-CL_DOCSTRING("sourcePosInfoLineno");
+CL_DOCSTRING(R"dx(sourcePosInfoLineno)dx")
+DOCGROUP(clasp)
 CL_DEFUN Fixnum_sp core__source_pos_info_lineno(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {
@@ -140,9 +145,10 @@ uint clasp_sourcePosInfo_column(SourcePosInfo_sp info) {
   return info->_Column;
 }
 
-CL_LAMBDA(source-pos-info);
+CL_LAMBDA(source-pos-info)
 CL_DECLARE();
-CL_DOCSTRING("sourcePosInfoColumn");
+CL_DOCSTRING(R"dx(sourcePosInfoColumn)dx")
+DOCGROUP(clasp)
 CL_DEFUN Fixnum_sp core__source_pos_info_column(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {
@@ -271,17 +277,20 @@ const char *FileScope_O::permanentFileName() {
 
 SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
 
-CL_DOCSTRING(R"doc(Like make-pathname lets you build a source-pos-info object from scratch or by referencing a defaults source-pos-info that provides default information)doc");
-CL_LAMBDA(&key (filename "-nofile-" filenamep) (filepos 0 fileposp) (lineno 0 linenop) (column 0 columnp) (function-scope nil function_scope_p) (inlined-at nil inlined_at_p) (defaults nil defaults_p));
+CL_DOCSTRING(R"dx(Like make-pathname lets you build a source-pos-info object from scratch or by referencing a defaults source-pos-info that provides default information)dx")
+CL_LAMBDA(&key (filename "-nofile-" filenamep) (filepos 0 fileposp) (lineno 0 linenop) (column 0 columnp) (function-scope nil function_scope_p) (inlined-at nil inlined_at_p) (defaults nil defaults_p))
+DOCGROUP(clasp)
 CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool filenamep, size_t filepos, bool fileposp, size_t lineno, bool linenop, size_t column, bool columnp, T_sp function_scope, bool function_scope_p, T_sp inlined_at, bool inlined_at_p, T_sp defaults, bool defaults_p )
 {
-  SourcePosInfo_sp defaults_spi; 
+  SourcePosInfo_sp defaults_spi;
+  bool valid_default = false;
   if (defaults_p) {
     if (defaults.notnilp()) {
       if (!gc::IsA<SourcePosInfo_sp>(defaults)) {
         TYPE_ERROR(defaults,core::_sym_SourcePosInfo_O);
       }
       defaults_spi = gc::As_unsafe<SourcePosInfo_sp>(defaults);
+      valid_default = true;
     }
   }
 
@@ -289,7 +298,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   if (filenamep) {
     FileScope_mv sfi = _lisp->getOrRegisterFileScope(filename);
     t_sfi_handle = sfi->fileHandle();
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_sfi_handle = defaults_spi->fileHandle();
   } else {
     FileScope_mv sfi = _lisp->getOrRegisterFileScope(filename);
@@ -300,7 +309,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   uint t_filepos = 0;
   if (fileposp) {
     t_filepos = filepos;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_filepos = defaults_spi->filepos();
   } else {
     t_filepos = filepos;
@@ -309,7 +318,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   uint t_lineno;
   if (linenop) {
     t_lineno = lineno;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_lineno = defaults_spi->lineno();
   } else {
     t_lineno = lineno;
@@ -318,7 +327,7 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   uint t_column;
   if (columnp) {
     t_column = column;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_column = defaults_spi->column();
   } else {
     t_column = column;
@@ -328,14 +337,14 @@ CL_DEFUN SourcePosInfo_sp core__makeSourcePosInfo(const string& filename, bool f
   T_sp t_function_scope = nil<T_O>();
   if (function_scope_p) {
     t_function_scope = function_scope;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_function_scope = defaults_spi->function_scope();
   }
 
   T_sp t_inlined_at = nil<T_O>();
   if (inlined_at_p) {
     t_inlined_at = inlined_at;
-  } else if (defaults_p) {
+  } else if (valid_default) {
     t_inlined_at = defaults_spi->inlined_at();
   }
   

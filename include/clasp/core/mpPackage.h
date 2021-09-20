@@ -104,7 +104,7 @@ typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
   public:
     CL_LISPIFY_NAME("make_process");
     CL_LAMBDA(name function &optional arguments special_bindings (stack-size 0));
-    CL_DOCSTRING("Make and return a new process object. The new process is inactive; it can be started with PROCESS-START.\n\nNAME is the name of the process for display purposes. FUNCTION is the function that the process should execute. ARGUMENTS is a list of arguments that will be passed to the function when the process is enabled; the default is NIL. SPECIAL-BINDINGS is an alist of (symbol . form): the forms will be evaluated in a null lexical environment, and their values bound to the symbols (as if by PROGV) when the process is started.");
+    CL_DOCSTRING("Make and return a new process object. The new process is inactive; it can be started with PROCESS-START.\n\nNAME is the name of the process for display purposes. FUNCTION is the function that the process should execute. ARGUMENTS is a list of arguments that will be passed to the function when the process is enabled; the default is NIL. SPECIAL-BINDINGS is an alist of (symbol . form): the forms will be evaluated in a null lexical environment, and their values bound to the symbols (as if by PROGV) when the process is started.")
     CL_DEF_CLASS_METHOD static Process_sp make_process(core::T_sp name, core::T_sp function, core::T_sp arguments, core::T_sp special_bindings, size_t stack_size) {
       core::List_sp passed_bindings = core::cl__reverse(special_bindings);
       core::List_sp all_bindings = core::lisp_copy_default_special_bindings();
@@ -185,7 +185,7 @@ namespace mp {
     CLASP_DEFAULT_CTOR Mutex_O() {};
   public:
     CL_LISPIFY_NAME("make-lock");
-    CL_DOCSTRING("Create and return a fresh mutex with the given name.");
+    CL_DOCSTRING("Create and return a fresh mutex with the given name.")
     CL_LAMBDA(&key (name "Anonymous Mutex"))
       CL_DEF_CLASS_METHOD static Mutex_sp make_mutex(core::T_sp name) {
       auto l = gctools::GC<Mutex_O>::allocate(name,false);
@@ -232,7 +232,7 @@ namespace mp {
   public:
     CL_LISPIFY_NAME("make-shared-mutex");
     CL_LAMBDA(&optional (name "Anonymous Shared Mutex"));
-    CL_DOCSTRING("Create and return a fresh shared mutex with the given name.");
+    CL_DOCSTRING("Create and return a fresh shared mutex with the given name.")
     CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp readName,core::T_sp writeLockName) {
       auto l = gctools::GC<SharedMutex_O>::allocate(readName,writeLockName);
       return l;
@@ -292,7 +292,7 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, RecursiveMutex_O, "RecursiveMutex",Mutex_O);
   public:
     CL_LAMBDA(&optional name);
-    CL_DOCSTRING("Create and return a recursive mutex with the given name.");
+    CL_DOCSTRING("Create and return a recursive mutex with the given name.")
     CL_DEF_CLASS_METHOD static RecursiveMutex_sp make_recursive_mutex(core::T_sp name) {
       auto l = gctools::GC<RecursiveMutex_O>::allocate( name);
       return l;
@@ -327,7 +327,7 @@ namespace mp {
     bool timed_wait(Mutex_sp m,double timeout) {return this->_ConditionVariable._value.timed_wait(m->_Mutex._value,timeout);};
     void signal() { this->_ConditionVariable._value.signal();};
     void broadcast() { this->_ConditionVariable._value.broadcast();};
-    CL_DOCSTRING("Return the name of the condition variable.");
+    CL_DOCSTRING("Return the name of the condition variable.")
     CL_DEFMETHOD core::T_sp condition_variable_name() {
       return _Name;
     }

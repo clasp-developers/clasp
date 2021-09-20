@@ -93,12 +93,14 @@ void Record_O::errorIfInvalidArguments() {
   }
 }
 
-CL_LAMBDA(&optional patcher-callback);
+CL_LAMBDA(&optional patcher-callback)
+DOCGROUP(clasp)
 CL_DEFUN Record_sp core__make_record_patcher(T_sp patcher_callback)
 {
   return Record_O::create_patcher(patcher_callback);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__patch_object(General_sp tree, Record_sp record) {
   if (tree->fieldsp()) {
     tree->fields(record);

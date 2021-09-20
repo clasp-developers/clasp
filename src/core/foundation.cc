@@ -221,6 +221,7 @@ T_sp lisp_from_void_ptr(void* p) {
 
 namespace core {
 
+DOCGROUP(clasp)
 CL_DEFUN void core__dump_class_ids()
 {
   reg::dump_class_ids();
@@ -380,9 +381,10 @@ List_sp lisp_copy_default_special_bindings() {
   return _lisp->copy_default_special_bindings();
 }
 
-CL_LAMBDA(name);
+CL_LAMBDA(name)
 CL_DECLARE();
-CL_DOCSTRING("lispifyName");
+CL_DOCSTRING(R"dx(lispifyName)dx")
+DOCGROUP(clasp)
 CL_DEFUN String_sp core__lispify_name(String_sp name) {
   ASSERT(name.notnilp());
   string lispified = lispify_symbol_name(name->get_std_string());
@@ -408,8 +410,9 @@ void colon_split(const string& name, string& package_str, string& symbol_str)
   SIMPLE_ERROR(BF("Could not convert %s into package:symbol_name") % name);
 }
 
-CL_LAMBDA("name &optional (package \"\")");
-CL_DOCSTRING(R"(Intern the package:name or name/package combination)");
+CL_LAMBDA("name &optional (package \"\")")
+CL_DOCSTRING(R"(Intern the package:name or name/package combination)")
+DOCGROUP(clasp)
 CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
 {
   std::string pkg_sym = magic_name(name,package);
@@ -469,15 +472,16 @@ std::string magic_name(const std::string& name,const std::string& package_name)
 }
 
 
-CL_LAMBDA("name &optional (package \"\")");
+CL_LAMBDA("name &optional (package \"\")")
 CL_DECLARE();
-CL_DOCSTRING(R"doc(* Arguments
+CL_DOCSTRING(R"dx(* Arguments
 - name :: A string.
 - package :: A string
 * Description
 Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, 
 run them through lispify_symbol_name and then recombine them as pkg:name.
-Then split them again (sorry) and return (values pkg:sym pkg sym).)doc");
+Then split them again (sorry) and return (values pkg:sym pkg sym).)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& package) {
   std::string pkg_sym = magic_name(name,package);
   std::string sym;
@@ -1608,7 +1612,7 @@ size_t lisp_general_badge(General_sp object) {
 }
 
 size_t lisp_cons_badge(Cons_sp object) {
-  const gctools::Header_s* header = (gctools::Header_s*)ConsPtrToHeaderPtr(object.unsafe_cons());
+  const gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(object.unsafe_cons());
   return header->_stamp_wtag_mtag._header_badge;
 }
 
@@ -1621,11 +1625,13 @@ size_t lisp_badge(T_sp object) {
 }
 
 
+DOCGROUP(clasp)
 CL_DEFUN size_t core__get_badge(T_sp object)
 {
   return lisp_badge(object);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 {
   if (object.consp()) {
@@ -1688,7 +1694,8 @@ void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size, cons
 
 
 namespace core {
-CL_LAMBDA(&optional (stream-designator t));
+CL_LAMBDA(&optional (stream-designator t))
+DOCGROUP(clasp)
 CL_DEFUN void core__mangledSymbols(T_sp stream_designator) {
   T_sp stream = coerce::outputStreamDesignator(stream_designator);
   write_bf_stream(BF("# Dumping %lu mangled function names\n" ) % global_mangledSymbols.size(), stream);

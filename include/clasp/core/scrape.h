@@ -1,4 +1,18 @@
 
+/**
+ * \defgroup DEFUN Functions that are exposed to Clasp Common Lisp
+ */
+
+/**
+ * \defgroup DEFUN-SETF Setf functions that are exposed to Clasp Common Lisp
+ */
+
+/**
+ * \defgroup DEFMETHOD C++ methods that are exposed to Clasp Common Lisp
+ */
+
+#define DOCGROUP(...)
+
 #ifdef SCRAPING
 #define BEGIN_TAG BEGIN_TAG_bfc54f90bafadf5
 #define END_TAG END_TAG_bfc54f90bafadf5
@@ -12,12 +26,15 @@
 #define CL_LAMBDA(...) BEGIN_TAG CL_LAMBDA_TAG ( :FILE __FILE__ :LINE __LINE__ :LAMBDA-LIST  #__VA_ARGS__ )
 #define CL_DECLARE(...) BEGIN_TAG CL_DECLARE_TAG ( :FILE __FILE__ :LINE __LINE__ :DECLARE #__VA_ARGS__ )
 #define CL_DOCSTRING(...) BEGIN_TAG CL_DOCSTRING_TAG ( :FILE __FILE__ :LINE __LINE__ )  __VA_ARGS__ END_TAG
+#define CL_DOCSTRING_LONG(...) BEGIN_TAG CL_DOCSTRING_LONG_TAG ( :FILE __FILE__ :LINE __LINE__ )  __VA_ARGS__ END_TAG
 #define CL_PRIORITY(...) BEGIN_TAG CL_PRIORITY_TAG ( :FILE __FILE__ :LINE __LINE__ )  __VA_ARGS__ END_TAG
 #define CL_PRE_GC_STARTUP BEGIN_TAG CL_PRE_GC_STARTUP_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_INITIALIZER BEGIN_TAG CL_INITIALIZER_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_EXPOSE BEGIN_TAG CL_EXPOSE_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_TERMINATOR BEGIN_TAG CL_TERMINATOR_TAG ( :FILE __FILE__ :LINE __LINE__ )
+DOCGROUP(clasp)
 #define CL_DEFUN BEGIN_TAG CL_DEFUN_TAG ( :FILE __FILE__ :LINE __LINE__ )
+DOCGROUP(clasp)
 #define CL_DEFUN_SETF BEGIN_TAG CL_DEFUN_SETF_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_DEFMETHOD BEGIN_TAG CL_DEFMETHOD_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_METHOD_OVERLOAD
@@ -44,7 +61,9 @@
        DETAILED_SYMBOL_EXPORT_SC_(p,c,s)
 #else
 #define CL_INITIALIZE
+DOCGROUP(clasp)
 #define CL_DEFUN
+DOCGROUP(clasp)
 #define CL_DEFUN_SETF
 #define CL_DEFMETHOD
 #define CL_METHOD_OVERLOAD 
@@ -58,6 +77,7 @@
 #define CL_LAMBDA(...)
 #define CL_DECLARE(...)
 #define CL_DOCSTRING(...)
+#define CL_DOCSTRING_LONG(...)
 #define CL_PRIORITY(...)
 #define CL_TYPE(...)
 #define CL_EXTERN_DEFMETHOD(type,pointer)

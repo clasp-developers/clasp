@@ -249,8 +249,8 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
   return nil<core::T_O>();
 };
 
-CL_LAMBDA(astnode &optional (stream *standard-output*))
-__attribute__((optnone))
+CL_LAMBDA(astnode &optional (stream *standard-output*))__attribute__((optnone))
+DOCGROUP(clasp)
 CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp stream) {
 //    .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
 //    .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
@@ -277,31 +277,37 @@ CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp stream) {
   core::clasp_write_string(ostream.str().str(),stream);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN clang::QualType cast__makeQualTypeDefault() {
   clang::QualType qt;
   return qt;
 };
 
+DOCGROUP(clasp)
 CL_DEFUN clang::QualType cast__makeQualType(clang::Type *ty) {
   clang::QualType qt(ty, 0);
   return qt;
 };
 
+DOCGROUP(clasp)
 CL_DEFUN std::string cast__getAsString(clang::QualType qt)
 {
   return qt.getAsString();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN bool cast__isCanonical(clang::QualType qt)
 {
   return qt.isCanonical();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN bool cast__isStaticLocal(clang::VarDecl *vd)
 {
   return vd->isStaticLocal();
 }
 
+DOCGROUP(clasp)
 CL_DEFUN clang::QualType cast__getCanonicalType(clang::QualType qt)
 {
   return qt.getCanonicalType();
@@ -327,6 +333,7 @@ core::T_sp af_constant_array_get_size(clang::ConstantArrayType *cat) {
 }
 
 
+DOCGROUP(clasp)
 CL_DEFUN core::T_sp cast__getTypePtrOrNull(clang::QualType qt) {
   const clang::Type *tp = qt.getTypePtrOrNull();
   if (tp) {

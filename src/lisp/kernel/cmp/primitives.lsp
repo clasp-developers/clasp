@@ -161,6 +161,7 @@
          (primitive         "debugInspect_return_type" %void% (list %return-type%))
 
          (primitive         "debugPointer" %void% (list %i8*%))
+         (primitive         "debug_memory" %void% (list %size_t% %i8*%))
          (primitive         "debug_vaslistPtr" %void% (list %vaslist*%))
          (primitive         "debug_va_list" %void% (list %va_list*%))
          (primitive         "debugMessage" %void% (list %i8*%))
@@ -222,6 +223,7 @@
          (primitive         "llvm.stackrestore" %void% (list %i8*%))
 
          (primitive         "llvm.memcpy.p0i8.p0i8.i64" %void% (list %i8*% %i8*% %i64% %i1%))
+         (primitive         "llvm.memmove.p0i8.p0i8.i64" %void% (list %i8*% %i8*% %i64% %i1%))
 
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
          (primitive         "restoreFromMultipleValue0" %return-type% nil)

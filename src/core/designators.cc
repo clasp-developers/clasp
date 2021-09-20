@@ -79,6 +79,7 @@ Closure_sp closureDesignator(T_sp obj) {
 
 namespace core {
 CL_PKG_NAME(CorePkg,coerce-fdesignator);
+DOCGROUP(clasp)
 CL_DEFUN Function_sp coerce_fdesignator(T_sp obj) {
   return coerce::functionDesignator(obj);
 }
@@ -127,6 +128,7 @@ core::Package_sp packageDesignator(core::T_sp obj) {
 
 namespace core {
 CL_PKG_NAME(CorePkg,coerce-to-package);
+DOCGROUP(clasp)
 CL_DEFUN core::Package_sp coerce_to_package(core::T_sp obj) {
   return coerce::packageDesignator(obj);
 }

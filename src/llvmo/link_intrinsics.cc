@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LANDING_PAD 1
-
 //#define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
 extern "C" {
@@ -81,16 +79,7 @@ extern "C" {
 #pragma GCC visibility push(default)
 
 using namespace core;
-namespace llvmo {
-
-core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription_sp functionDescription)
-{
-  if (functionDescription.fixnump() && functionDescription.unsafe_fixnum()==0) {
-    return nil<core::T_O>();
-  }
-  return functionDescription->_functionName;
-}
-  
+namespace llvmo {  
 
 [[noreturn]] NEVER_OPTIMIZE void not_function_designator_error(core::T_sp arg) {
   TYPE_ERROR(arg,core::Cons_O::createList(::cl::_sym_or,::cl::_sym_function,::cl::_sym_symbol));
@@ -702,21 +691,22 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArgu
   NO_UNWIND_END();
 }
 
-void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription_sp functionDescription)
+void badKeywordArgumentError(core::T_sp keyword, core::T_sp functionName,
+                             core::T_sp lambdaList)
 {
-  core::T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
   if (functionName.nilp()) {
-    SIMPLE_ERROR(BF("When calling an unnamed function the bad keyword argument %s was passed") % _rep_(keyword) );
+    SIMPLE_ERROR(BF("When calling an unnamed function with the lambda list %s the bad keyword argument %s was passed") % _rep_(lambdaList) % _rep_(keyword));
   }
-  SIMPLE_ERROR(BF("When calling %s with the lambda-list %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(functionDescription->_lambdaList) % _rep_(keyword)  );
+  SIMPLE_ERROR(BF("When calling %s with the lambda-list %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(lambdaList) % _rep_(keyword));
 }
 
 void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
                                       core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
-  core::FunctionDescription_sp functionDescription = closure->fdesc();
   if (gctools::tagged_nilp(allowOtherKeys))
-    badKeywordArgumentError(core::T_sp((gc::Tagged)kw), functionDescription);
+    badKeywordArgumentError(core::T_sp((gc::Tagged)kw),
+                            closure->functionName(),
+                            closure->lambdaList());
 }
 
 };
@@ -788,6 +778,8 @@ void debugInspectTPtr(core::T_O *tP)
 {NO_UNWIND_BEGIN();
   core::T_sp obj = gctools::smart_ptr<core::T_O>((gc::Tagged)tP);
   printf("debugInspectTPtr@%p\n", tP);
+  core::T_sp header = gctools::core__instance_stamp(obj);
+  printf("debugInspectTPtr instance_stamp -> %ld\n", header.unsafe_fixnum());
   printf("debugInspectTPtr obj.px_ref()=%p: %s\n", obj.raw_(), _rep_(obj).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
   NO_UNWIND_END();
@@ -934,6 +926,16 @@ void debugPrint_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* hand
 void debugPrint_size_t(size_t v)
 {NO_UNWIND_BEGIN();
   printf("+++DBG-size_t[%lu/%lx]\n", v, v);
+  NO_UNWIND_END();
+}
+
+void debug_memory(size_t num, core::T_O** vector)
+{NO_UNWIND_BEGIN();
+  printf("+++%s num: %lu\n", __FUNCTION__, num );
+  for ( size_t ii=0; ii<num; ii++ ) {
+    core::T_sp vobj((gctools::Tagged)(vector[ii]));
+    printf("...  vector[%lu]@%p -> %p %s\n", ii, (void*)&vector[ii], vobj.raw_(),  _rep_(vobj).c_str());
+  }
   NO_UNWIND_END();
 }
 
@@ -1246,7 +1248,7 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gct
   if (_sym_STARdebug_valuesSTAR &&
         _sym_STARdebug_valuesSTAR->boundP() &&
         _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
-    for (size_t i(0); i < lcc_nargs; ++i) {
+    for (size_t i(0); i < ret0.nvals; ++i) {
       core::T_sp mvobj((gctools::Tagged)(*mvargs)[i]);
       printf("%s:%d  ....  cc_call_multipleValueOneFormCall[%lu] -> %s\n", __FILE__, __LINE__, i, _rep_(mvobj).c_str());
     }
@@ -1276,12 +1278,11 @@ T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
 
 void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
-  core::FunctionDescription_sp functionDescription = closure->fdesc();
-  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  T_sp functionName = closure->functionName();
   if (functionName.nilp())
     SIMPLE_ERROR(BF("Odd number of keyword arguments"));
   else
-    SIMPLE_ERROR(BF("In call to %s with lambda-list %s - got odd number of keyword arguments") % _rep_(functionName) % _rep_(functionDescription->_lambdaList));
+    SIMPLE_ERROR(BF("In call to %s with lambda-list %s - got odd number of keyword arguments") % _rep_(functionName) % _rep_(closure->lambdaList()));
 }
 
 T_O **cc_multipleValuesArrayAddress()
@@ -1310,6 +1311,17 @@ gctools::return_type cc_restoreMultipleValue0()
 void cc_save_values(size_t nvals, T_O* primary, T_O** vector)
 {NO_UNWIND_BEGIN();
   returnTypeSaveToTemp(nvals, primary, vector);
+#ifdef DEBUG_VALUES
+  if (_sym_STARdebug_valuesSTAR &&
+        _sym_STARdebug_valuesSTAR->boundP() &&
+        _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s nvals = %lu\n", __FILE__, __LINE__, __FUNCTION__, nvals );
+    for (size_t i(0); i < nvals; ++i) {
+      core::T_sp mvobj((gctools::Tagged)(vector[i]));
+      printf("%s:%d  ....  vector[%lu] -> %s\n", __FILE__, __LINE__, i, _rep_(mvobj).c_str());
+    }
+  }
+#endif
   NO_UNWIND_END();
 }
 

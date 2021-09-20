@@ -185,6 +185,9 @@ FORWARD(GlobalEntryPoint);
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
+   T_mv sectionedEntryInfo() const;
+   T_sp lineTable() const;
+   llvmo::Code_sp code() const;
  };
 
 FORWARD(GlobalEntryPointGenerator);
@@ -313,7 +316,6 @@ namespace core {
     }
     void setf_column(int x) { this->fdesc()->column = x; };
     
-    T_mv function_description() const;
     virtual void __write__(T_sp) const;
     
     Pointer_sp function_pointer() const;

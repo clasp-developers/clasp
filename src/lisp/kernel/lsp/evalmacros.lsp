@@ -13,9 +13,6 @@
 
 (in-package :sys)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setq core::*debug-values* t))
-
 (defmacro unless (pred &rest body)
   "Syntax: (unless test {form}*)
 If TEST evaluates to NIL, then evaluates FORMs and returns all values of the

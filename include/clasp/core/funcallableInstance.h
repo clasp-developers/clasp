@@ -95,7 +95,6 @@ namespace core {
     T_sp make_instance();
   public:
   // Add support for Function_O methods
-    T_sp functionName() const { return this->fdesc()->functionName(); }
     virtual T_sp closedEnvironment() const { HARD_IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
     virtual List_sp declares() const { HARD_IMPLEMENT_ME(); };

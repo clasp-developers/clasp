@@ -302,6 +302,7 @@ void ThreadLocalState::pushCatchTag(T_sp tag) {
 
 namespace gctools {
 
+DOCGROUP(clasp)
 CL_DEFUN size_t gctools__thread_local_unwinds()
 {
   return

@@ -288,8 +288,8 @@ def build_extension(bld):
 def grovel(bld):
     bld.recurse("extensions")
 
-def initialize_extension_sif_nodes(cfg):
-    print("initialize_extension_sif_nodes cfg.path: %s" % cfg.path )
+def initialize_extensions_sif_nodes(cfg):
+    print("initialize_extensions_sif_nodes cfg.path: %s" % cfg.path )
     nodes = cfg.path.ant_glob("src/clasp_gc.sif")
     if (len(nodes)==0):
         raise Exception("Could not find %s/src/clasp_gc.sif" % cfg.path)
@@ -307,10 +307,10 @@ def update_dependencies(cfg):
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
-                       "c5e9843fb077448466e418a73d7587d39fc50bbd")
+                       "dbb46cf1054d8d5e7222585a14eb121b62e62f90")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
-                       "a56a5246fbaa90b98a29368c011a6616f2bcb482")
+                       "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -344,6 +344,10 @@ def update_dependencies(cfg):
     log.pprint('BLUE', "About to recurse into extensions update_dependencies ()")
     cfg.recurse("extensions",name="update_dependencies")
     log.pprint('BLUE', "Returned from recursing into extensions")
+
+def doxygen(cfg):
+    os.system("(cd docs; doxygen)")
+    print("Documentation index is in build/html/index.html")
     
 # run this from a completely cold system with:
 # ./waf distclean configure
@@ -351,14 +355,13 @@ def update_dependencies(cfg):
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
-    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
+    cfg.extensions_sif_nodes = initialize_extensions_sif_nodes(cfg)
     log.debug("analyze_clasp about to recurse\n")
     cfg.recurse('extensions')
-    print("In analyze_clasp cfg.extension_sif_nodes = %s" % cfg.extension_sif_nodes)
-    log.debug("cfg.extension_sif_nodes = %s\n", cfg.extension_sif_nodes)
-    if (len(cfg.extension_sif_nodes)>2):
-        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
-    output_file = generate_output_filename(cfg.extension_sif_nodes)
+    print("In analyze_clasp cfg.extensions_sif_nodes = %s" % cfg.extensions_sif_nodes)
+    if (len(cfg.extensions_sif_nodes)>2):
+        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extensions_sif_nodes )
+    output_file = generate_output_filename(cfg.extensions_sif_nodes)
     run_program_echo("build/boehm/iclasp-boehm",
                      "-N", "-D",
                      "--feature", "ignore-extensions",
@@ -368,12 +371,12 @@ def analyze_clasp(cfg):
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
 def analyze_test(cfg):
-    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
+    cfg.extensions_sif_nodes = initialize_extensions_sif_nodes(cfg)
     log.debug("analyze_test about to recurse\n")
-    print("In analyze_test cfg.extension_sif_nodes = %s" % cfg.extension_sif_nodes)
-    log.debug("cfg.extension_sif_nodes = %s\n", cfg.extension_sif_nodes)
-    if (len(cfg.extension_sif_nodes)>2):
-        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extension_sif_nodes )
+    print("In analyze_test cfg.extensions_sif_nodes = %s" % cfg.extensions_sif_nodes)
+    log.debug("cfg.extensions_sif_nodes = %s\n", cfg.extensions_sif_nodes)
+    if (len(cfg.extensions_sif_nodes)>2):
+        raise Exception( "You can only run the static analyzer on clasp or clasp+one-extension - you have: %s" % cfg.extensions_sif_nodes )
     output_file = "source-dir:build;clasp_gc_test.cc"
     selection_pattern = "unixfsys.cc"
     run_program_echo("build/boehm/iclasp-boehm",
@@ -1332,17 +1335,19 @@ def configure(cfg):
     cfg.extensions_gcinterface_include_files = []
     cfg.extensions_stlib = []
     cfg.extensions_lib = []
+    cfg.extensions_libpath = []
+    cfg.extensions_linkflags = []
     cfg.extensions_names = []
-    cfg.extension_startup_loads = []
-    cfg.extension_sif_nodes = initialize_extension_sif_nodes(cfg)
-    print("before extension_sif_nodes = %s" % cfg.extension_sif_nodes )
+    cfg.extensions_startup_loads = []
+    cfg.extensions_sif_nodes = initialize_extensions_sif_nodes(cfg)
+    print("before extensions_sif_nodes = %s" % cfg.extensions_sif_nodes )
     cfg.recurse('extensions')
     log.debug("cfg.extensions_names before sort = %s", cfg.extensions_names)
     cfg.extensions_names = sorted(cfg.extensions_names)
     log.debug("cfg.extensions_names after sort = %s", cfg.extensions_names)
-    log.debug("cfg.extension_startup_loads = %s", cfg.extension_startup_loads)
-    cfg.define("CLASP_EXTENSION_STARTUP_LOADS",cfg.extension_startup_loads)
-    sif_files = [x.abspath() for x in cfg.extension_sif_nodes ]
+    log.debug("cfg.extension_startup_loads = %s", cfg.extensions_startup_loads)
+    cfg.define("CLASP_EXTENSION_STARTUP_LOADS",cfg.extensions_startup_loads)
+    sif_files = [x.abspath() for x in cfg.extensions_sif_nodes ]
     cfg.env["CLASP_SIF_FILES"] = sif_files
     print("Created CLASP_SIF_FILES = %s" % cfg.env["CLASP_SIF_FILES"] )
     llvm_liblto_dir = run_llvm_config(cfg, "--libdir")
@@ -1547,6 +1552,9 @@ def configure(cfg):
     sep = " "
     cfg.env.append_value('STLIB', cfg.extensions_stlib)
     cfg.env.append_value('LIB', cfg.extensions_lib)
+    print("cfg.extensions_libpath = %s" % cfg.extensions_libpath)
+    cfg.env.append_value('LIBPATH', cfg.extensions_libpath)
+    cfg.env.append_value('LINKFLAGS', cfg.extensions_linkflags)
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
     cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
@@ -1675,7 +1683,6 @@ def build(bld):
     bld.use_human_readable_bitcode = "USE_HUMAN_READABLE_BITCODE" in bld.env
     log.info("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
-
     bld.clasp_aclasp = collect_aclasp_lisp_files(wrappers = False)
     bld.clasp_bclasp = collect_bclasp_lisp_files()
     bld.clasp_cclasp = collect_cclasp_lisp_files()
@@ -1717,13 +1724,15 @@ def build(bld):
     bld.extensions_source_files = []
     bld.extensions_gcinterface_include_files = []
     bld.extensions_builders = []
-    bld.extension_startup_load_output_nodes = []
+    bld.extensions_startup_load_output_nodes = []
     bld.iclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='i'))
 
     bld.cclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'c')
     bld.cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % bld.variant_obj.fasl_dir(stage='c')))
 
     bld.set_group('compiling/c++')
+    bld.clasp_include_files = []
+    bld.recurse('include')
     bld.recurse('extensions',name='build')
     log.info("There are %d extensions_builders", len(bld.extensions_builders))
     for x in bld.extensions_builders:
@@ -1734,7 +1743,10 @@ def build(bld):
     #
     # Installing the sources
     #
+    clasp_header_files = bld.clasp_include_files + bld.extensions_include_files
     clasp_c_source_files = bld.clasp_source_files + bld.extensions_source_files
+    source_files = clasp_header_files + clasp_c_source_files
+    write_source_file_list_for_doxygen(source_files)
     install('lib/clasp/', clasp_c_source_files)
     install('lib/clasp/', collect_waf_nodes(bld, 'include/clasp/', suffix = ".h"))
     # Gather lisp source files - but don't only use files with these extensions or we will miss lisp assets
@@ -1937,7 +1949,7 @@ def build(bld):
         bld_extensions.set_inputs([bld.iclasp_executable,
                                    bld.cclasp_link_product,
                                    bld.cclasp_asdf_fasl] +
-                                  bld.extension_startup_load_output_nodes)
+                                  bld.extensions_startup_load_output_nodes)
         bld_extensions.set_outputs([snapshot_file])
         bld.add_to_group(bld_extensions)
         bld.add_group()
@@ -2206,6 +2218,12 @@ class generate_extension_headers_h(clasp_task):
             fout.close()
         else:
             log.debug("NOT writing to %s - it is unchanged", output_file)
+
+def write_source_file_list_for_doxygen(source_files):
+    fout = open("build/doxygen-source-files.list","w")
+    for x in source_files:
+        fout.write("INPUT += %s\n" % x)
+    fout.close()
 
 class link_bitcode(clasp_task):
     ext_out = ['.a']    # this affects the task execution order

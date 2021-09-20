@@ -97,15 +97,13 @@ namespace core {
 //
 //
 
-class _RootDummyClass : public gctools::GCObject {
-private:
+class RootClass {
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
   static void set_static_creator(gc::smart_ptr<core::Creator_O> cb){};
-
-public:
-  explicit _RootDummyClass() {};
+  explicit RootClass() {};
 };
+
 template <class T_Base>
 struct LispBases1 {
   typedef T_Base Base1;
@@ -399,10 +397,10 @@ struct gctools::GCInfo<core::T_O> {
 };
 
 namespace core {
-  class T_O : public _RootDummyClass {
+  class T_O : public RootClass {
   private:
     friend class CoreExposer;
-    LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
+    LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T",::RootClass);
     T_O() {};
   };
 
@@ -535,15 +533,17 @@ namespace core {
 
   CL_LAMBDA(x y);
   CL_DECLARE();
-  CL_DOCSTRING("eq");
-  inline CL_DEFUN bool cl__eq(T_sp x, T_sp y) {
+  CL_DOCSTRING("eq")
+    DOCGROUP(clasp)
+    inline CL_DEFUN bool cl__eq(T_sp x, T_sp y) {
     return (x == y);
   };
 
   CL_LAMBDA(x y);
   CL_DECLARE();
-  CL_DOCSTRING("eql");
-  inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
+  CL_DOCSTRING("eql")
+    DOCGROUP(clasp)
+    inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
     if (x.fixnump()) {
       return x.raw_() == y.raw_();
     } else if (x.single_floatp()) {
@@ -568,16 +568,18 @@ namespace core {
 
   CL_LAMBDA(x y);
   CL_DECLARE();
-  CL_DOCSTRING("Underlying eql. Only valid on general objects (not fixnums, single floats, characters, or conses)");
-  inline CL_DEFUN bool core__eql_underlying(T_sp x, T_sp y) {
+  CL_DOCSTRING("Underlying eql. Only valid on general objects (not fixnums, single floats, characters, or conses)")
+    DOCGROUP(clasp)
+    inline CL_DEFUN bool core__eql_underlying(T_sp x, T_sp y) {
     General_O* general = x.unsafe_general();
     return general->eql_(y);
   };
 
   CL_LAMBDA(x y);
   CL_DECLARE();
-  CL_DOCSTRING("equal");
-  inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
+  CL_DOCSTRING("equal")
+    DOCGROUP(clasp)
+    inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
     if (x.fixnump()) {
       return x.raw_() == y.raw_();
     } else if (x.single_floatp()) {

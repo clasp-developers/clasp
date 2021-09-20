@@ -232,9 +232,10 @@ safe_chdir(const char *path, T_sp tprefix) {
   }
 }
 
-CL_LAMBDA(&optional return-stream);
+CL_LAMBDA(&optional return-stream)
 CL_DECLARE();
-CL_DOCSTRING("fork");
+CL_DOCSTRING(R"dx(fork)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__fork(bool bReturnStream) {
   int filedes[2];
   if (bReturnStream) {
@@ -271,9 +272,10 @@ CL_DEFUN T_mv core__fork(bool bReturnStream) {
 };
 
 
-CL_LAMBDA(stdout-fd stderr-fd);
+CL_LAMBDA(stdout-fd stderr-fd)
 CL_DECLARE();
-CL_DOCSTRING("fork-redirect");
+CL_DOCSTRING(R"dx(fork-redirect)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__fork_redirect(int stdout_fd, int stderr_fd) {
   pid_t child_PID = fork();
   if (child_PID >= 0) {
@@ -302,7 +304,8 @@ CL_DEFUN T_mv core__fork_redirect(int stdout_fd, int stderr_fd) {
 
 
 CL_DOCSTRING(R"(wait - see unix wait - returns (values pid status).
-The status can be passed to //core:wifexited// and //core:wifsignaled//. )");
+The status can be passed to //core:wifexited// and //core:wifsignaled//. )")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__wait() {
   int status;
   pid_t p = wait(&status);
@@ -383,7 +386,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,sigchld);
 SYMBOL_EXPORT_SC_(KeywordPkg,sigint);
 CL_DOCSTRING(R"(Like the unix function //sigaddset//. The second argument is a symbol that can currently be one of
 :sigchld or :sigint correspoding to the SIGCHLD and SIGINT arguments of the unix function.
-The int result of sigaddset is returned.)");
+The int result of sigaddset is returned.)")
 CL_DEFMETHOD int Sigset_O::sigset_sigaddset(SignalEnum signo)
 {
   return sigaddset(&(this->_sigset._value),(int)signo);
@@ -396,7 +399,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg,sig_setmask);
 CL_DOCSTRING(R"(Like the unix function sigthreadmask. 
 The **how** argument can be one of :sig-setmask, :sig-block, :sig-unblock.
 The **old-set** can be a core:sigset or nil (NULL).
-Returns (values NIL(success)/T(fail) errno)");
+Returns (values NIL(success)/T(fail) errno)")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set)
 {
   sigset_t* old_setp;
@@ -423,33 +427,38 @@ CL_DEFUN T_mv core__sigthreadmask(Symbol_sp how, Sigset_sp set, T_sp old_set)
   }
 }
 
-CL_DOCSTRING("Wraps the WIFEXITED(status) macro of the posix wait function.")
+CL_DOCSTRING(R"dx(Wraps the WIFEXITED(status) macro of the posix wait function.)dx")
+DOCGROUP(clasp)
 CL_DEFUN bool core__wifexited(Fixnum_sp fstatus) {
   int status = fstatus.unsafe_fixnum();
   return WIFEXITED(status);
 };
 
-CL_DOCSTRING("Wraps the WEXITSTATUS(status) macro of the posix wait function.")
+CL_DOCSTRING(R"dx(Wraps the WEXITSTATUS(status) macro of the posix wait function.)dx")
+DOCGROUP(clasp)
 CL_DEFUN int core__wexitstatus(Fixnum_sp fstatus) {
   int status = fstatus.unsafe_fixnum();
   return (int)WEXITSTATUS(status);
 };
 
-CL_DOCSTRING("Wraps the WTERMSIG(status) macro of the posix wait function.")
+CL_DOCSTRING(R"dx(Wraps the WTERMSIG(status) macro of the posix wait function.)dx")
+DOCGROUP(clasp)
 CL_DEFUN int core__wtermsig(Fixnum_sp fstatus) {
   int status = fstatus.unsafe_fixnum();
   return WTERMSIG(status);
 };
 
-CL_DOCSTRING("Wraps the WIFSIGNALED(status) macro of the posix wait function.")
+CL_DOCSTRING(R"dx(Wraps the WIFSIGNALED(status) macro of the posix wait function.)dx")
+DOCGROUP(clasp)
 CL_DEFUN bool core__wifsignaled(Fixnum_sp fstatus) {
   int status = fstatus.unsafe_fixnum();
   return WIFSIGNALED(status);
 };
 
-CL_LAMBDA(&key pid nohang untraced continued);
+CL_LAMBDA(&key pid nohang untraced continued)
 CL_DECLARE();
-CL_DOCSTRING("waitpid - see unix waitpid - returns status");
+CL_DOCSTRING(R"dx(waitpid - see unix waitpid - returns status)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__waitpid(Fixnum_sp pid, bool nohang, bool untraced, bool continued ) {
   pid_t p = unbox_fixnum(pid);
   int status(0);
@@ -461,25 +470,29 @@ CL_DEFUN T_mv core__waitpid(Fixnum_sp pid, bool nohang, bool untraced, bool cont
   return Values(make_fixnum(wpid),make_fixnum(status));
 };
 
-CL_LAMBDA();
+CL_LAMBDA()
 CL_DECLARE();
-CL_DOCSTRING("getpid");
+CL_DOCSTRING(R"dx(getpid)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__getpid() {
   Fixnum_sp pid = make_fixnum(getpid());
   return pid;
 };
 
-CL_LAMBDA();
+CL_LAMBDA()
 CL_DECLARE();
-CL_DOCSTRING("getppid");
+CL_DOCSTRING(R"dx(getppid)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__getppid() {
   Fixnum_sp pid = make_fixnum(getppid());
   return pid;
 };
 
-CL_LAMBDA(pathname &optional change_default_pathname_defaults);
+CL_LAMBDA(pathname &optional change_default_pathname_defaults)
 CL_DECLARE();
-CL_DOCSTRING("Change the posix current working directory to pathname.  If change-default-pathname-defaults is T then also change *default-pathname-defaults*.");
+CL_DOCSTRING(R"dx(Change the posix current working directory to pathname.)dx")
+CL_DOCSTRING_LONG(R"dx(If change-default-pathname-defaults is T then also change *default-pathname-defaults*.)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
   if (dir.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
 //  printf("%s:%d ext__chdir dir -> %s\n", __FILE__, __LINE__, _rep_(dir).c_str());
@@ -544,7 +557,8 @@ namespace ext {
  * string which grows until it can host the whole path.
  */
 
-CL_DOCSTRING("Return the unix current working directory");
+CL_DOCSTRING(R"dx(Return the unix current working directory)dx")
+DOCGROUP(clasp)
 CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
   const char *ok = ::getcwd(NULL,0);
@@ -679,9 +693,10 @@ static Symbol_sp smart_file_kind(String_sp sfilename, bool follow_links) {
   }
 }
 
-CL_LAMBDA(filename follow-links);
+CL_LAMBDA(filename follow-links)
 CL_DECLARE();
-CL_DOCSTRING("file_kind (values kind found) - if found but kind==nil then its a broken symlink");
+CL_DOCSTRING(R"dx(file_kind (values kind found) - if found but kind==nil then its a broken symlink)dx")
+DOCGROUP(clasp)
 CL_DEFUN Symbol_sp core__file_kind(T_sp filename, bool follow_links) {
   ASSERT(filename);
   String_sp sfilename = coerce_to_posix_filename(filename);
@@ -690,9 +705,10 @@ CL_DEFUN Symbol_sp core__file_kind(T_sp filename, bool follow_links) {
 
 #if defined(HAVE_LSTAT) && !defined(CLASP_MS_WINDOWS_HOST)
 
-CL_LAMBDA(filename);
+CL_LAMBDA(filename)
 CL_DECLARE();
-CL_DOCSTRING("file_kind (values kind found) - if found but kind==nil then its a br");
+CL_DOCSTRING(R"dx(file_kind (values kind found) - if found but kind==nil then its a br)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__readlink(String_sp filename) {
   ASSERT(cl__stringp(filename));
   /* Given a filename which is a symlink, this routine returns
@@ -897,9 +913,10 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
   return Values(gc::As<Pathname_sp>(pathname), kind);
 }
 
-CL_LAMBDA(pathname filename follow-links);
+CL_LAMBDA(pathname filename follow-links)
 CL_DECLARE();
-CL_DOCSTRING("truename");
+CL_DOCSTRING(R"dx(truename)dx")
+DOCGROUP(clasp)
 CL_DEFUN Pathname_mv core__file_truename(T_sp pathname, T_sp filename, bool follow_links) {
   return file_truename(pathname, filename, follow_links);
 }
@@ -910,9 +927,10 @@ CL_DEFUN Pathname_mv core__file_truename(T_sp pathname, T_sp filename, bool foll
  * current directory
  */
 
-CL_LAMBDA(orig-pathname);
+CL_LAMBDA(orig-pathname)
 CL_DECLARE();
-CL_DOCSTRING("truename");
+CL_DOCSTRING(R"dx(truename)dx")
+DOCGROUP(clasp)
 CL_DEFUN Pathname_sp cl__truename(T_sp orig_pathname) {
   Pathname_sp pathname = make_absolute_pathname(orig_pathname);
   Pathname_sp base_dir = make_base_pathname(pathname);
@@ -966,9 +984,10 @@ clasp_file_len(int f) {
   return Integer_O::create((gc::Fixnum)(filestatus.st_size));
 }
 
-CL_LAMBDA(oldn newn &key (if-exists :error));
+CL_LAMBDA(oldn newn &key (if-exists :error))
 CL_DECLARE();
-CL_DOCSTRING("renameFile");
+CL_DOCSTRING(R"dx(renameFile)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
   Pathname_sp old_truename, new_truename;
   /* 1) Get the old filename, and complain if it has wild components,
@@ -1050,9 +1069,10 @@ directory_pathname_p(Pathname_sp path) {
          (path->_Type.nilp());
 }
 
-CL_LAMBDA(file);
+CL_LAMBDA(file)
 CL_DECLARE();
-CL_DOCSTRING("deleteFile");
+CL_DOCSTRING(R"dx(deleteFile)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__delete_file(T_sp file) {
   if (file.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp path = cl__pathname(file);
@@ -1079,9 +1099,10 @@ CL_DEFUN T_sp cl__delete_file(T_sp file) {
   return _lisp->_true();
 }
 
-CL_LAMBDA(filespec);
+CL_LAMBDA(filespec)
 CL_DECLARE();
-CL_DOCSTRING("probe_file");
+CL_DOCSTRING(R"dx(probe_file)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__probe_file(T_sp filespec) {
   if (filespec.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pfile = cl__pathname(filespec);
@@ -1089,9 +1110,10 @@ CL_DEFUN T_sp cl__probe_file(T_sp filespec) {
   return (core__file_kind(pfile, true).notnilp() ? cl__truename(pfile) : nil<Pathname_O>());
 }
 
-CL_LAMBDA(pathspec);
+CL_LAMBDA(pathspec)
 CL_DECLARE();
-CL_DOCSTRING("file_write_date");
+CL_DOCSTRING(R"dx(file_write_date)dx")
+DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   Number_sp time;
   if (pathspec.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
@@ -1108,9 +1130,10 @@ CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   return time;
 }
 
-CL_LAMBDA(file);
+CL_LAMBDA(file)
 CL_DECLARE();
-CL_DOCSTRING("file_author");
+CL_DOCSTRING(R"dx(file_author)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__file_author(T_sp file) {
   T_sp output;
   if (file.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
@@ -1197,9 +1220,10 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
   return gc::As<Pathname_sp>(cl__parse_namestring(namestring));
 }
 
-CL_LAMBDA(&optional host);
+CL_LAMBDA(&optional host)
 CL_DECLARE();
-CL_DOCSTRING("userHomedirPathname");
+CL_DOCSTRING(R"dx(userHomedirPathname)dx")
+DOCGROUP(clasp)
 CL_DEFUN Pathname_sp cl__user_homedir_pathname(T_sp host) {
   /* Ignore optional host argument. */
   return clasp_homedir_pathname(nil<T_O>());
@@ -1273,9 +1297,10 @@ OUTPUT:
   return cl__nreverse(out);
 }
 
-CL_LAMBDA(template);
+CL_LAMBDA(template)
 CL_DECLARE();
-CL_DOCSTRING("mkstemp");
+CL_DOCSTRING(R"dx(mkstemp)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   //  cl_index l;
   int fd;
@@ -1302,9 +1327,10 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   return output;
 }
 
-CL_LAMBDA(template);
+CL_LAMBDA(template)
 CL_DECLARE();
-CL_DOCSTRING("mkstemp-fd - return a file descriptor");
+CL_DOCSTRING(R"dx(mkstemp-fd - return a file descriptor)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
   //  cl_index l;
   int fd;
@@ -1332,7 +1358,8 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
 
 
 
- CL_DEFUN void ext__rmtree(const string& spath)
+DOCGROUP(clasp)
+CL_DEFUN void ext__rmtree(const string& spath)
  {
    const char* path = spath.c_str();
    rmtree(path);
@@ -1341,9 +1368,10 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
 
 
 
- CL_LAMBDA(template);
+ CL_LAMBDA(template)
 CL_DECLARE();
-CL_DOCSTRING("mkdtemp");
+CL_DOCSTRING(R"dx(mkdtemp)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
   //  cl_index l;
   ASSERT(cl__stringp(thetemplate));
@@ -1525,9 +1553,10 @@ T_sp core__mkstemp(T_sp template)
 	}
 #endif // working
 
-CL_LAMBDA(directory);
+CL_LAMBDA(directory)
 CL_DECLARE();
-CL_DOCSTRING("Like unix rmdir");
+CL_DOCSTRING(R"dx(Like unix rmdir)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__rmdir(T_sp directory) {
   return cl__delete_file(eval::funcall(cl::_sym_makePathname,
                                        kw::_sym_name, nil<T_O>(),
@@ -1535,9 +1564,10 @@ CL_DEFUN T_sp core__rmdir(T_sp directory) {
                                        kw::_sym_defaults, directory));
 }
 
-CL_LAMBDA(file mode);
+CL_LAMBDA(file mode)
 CL_DECLARE();
-CL_DOCSTRING("chmod - use octal values for mode for convenience (eg #o777)");
+CL_DOCSTRING(R"dx(chmod - use octal values for mode for convenience (eg #o777))dx")
+DOCGROUP(clasp)
 CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
   mode_t code = clasp_to_uint32_t(mode);
   T_sp filename = coerce_to_posix_filename(file);
@@ -1556,9 +1586,10 @@ CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
   }
 }
 
-CL_LAMBDA(orig dest);
+CL_LAMBDA(orig dest)
 CL_DECLARE();
-CL_DOCSTRING("copy_file");
+CL_DOCSTRING(R"dx(copy_file)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   FILE *in, *out;
   int ok = 0;
@@ -1710,9 +1741,10 @@ AGAIN:
   return output;
 }
 
-CL_LAMBDA(mask &key (resolve-symlinks t) &allow-other-keys);
+CL_LAMBDA(mask &key (resolve-symlinks t) &allow-other-keys)
 CL_DECLARE();
-CL_DOCSTRING("directory");
+CL_DOCSTRING(R"dx(directory)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   T_sp base_dir;
   T_sp output;
@@ -1725,18 +1757,20 @@ CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   return output;
 };
 
-CL_LAMBDA(unix-time);
+CL_LAMBDA(unix-time)
 CL_DECLARE();
-CL_DOCSTRING("unixDaylightSavingTime return true if in daylight saving time");
+CL_DOCSTRING(R"dx(unixDaylightSavingTime return true if in daylight saving time)dx")
+DOCGROUP(clasp)
 CL_DEFUN bool core__unix_daylight_saving_time(Integer_sp unix_time) {
   time_t when = clasp_to_uint64_t(unix_time);
   struct tm *ltm = localtime(&when);
   return ltm->tm_isdst;
 }
 
-CL_LAMBDA();
+CL_LAMBDA()
 CL_DECLARE();
-CL_DOCSTRING("unixGetLocalTimeZone");
+CL_DOCSTRING(R"dx(unixGetLocalTimeZone)dx")
+DOCGROUP(clasp)
 CL_DEFUN Rational_sp core__unix_get_local_time_zone() {
   gctools::Fixnum mw;
 #if 0 && defined(HAVE_TZSET)
@@ -1762,9 +1796,10 @@ CL_DEFUN Rational_sp core__unix_get_local_time_zone() {
   return Rational_O::create(make_fixnum(mw), make_fixnum(60));
 }
 
-CL_LAMBDA(dir mode);
+CL_LAMBDA(dir mode)
 CL_DECLARE();
-CL_DOCSTRING("mkdir");
+CL_DOCSTRING(R"dx(mkdir)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   int modeint = 0;
   int ok;
@@ -1814,18 +1849,20 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
 
 
 
-CL_LAMBDA(name value &optional (overwrite t));
+CL_LAMBDA(name value &optional (overwrite t))
 CL_DECLARE();
-CL_DOCSTRING("Set environment variable NAME to VALUE");
+CL_DOCSTRING(R"dx(Set environment variable NAME to VALUE)dx")
+DOCGROUP(clasp)
 CL_DEFUN void ext__setenv(String_sp name, String_sp value, bool overwrite) {
   ASSERT(cl__stringp(name));
   ASSERT(cl__stringp(value));
   setenv(name->get_std_string().c_str(), value->get_std_string().c_str(), overwrite);
 }
 
-CL_LAMBDA(cmd);
+CL_LAMBDA(cmd)
 CL_DECLARE();
-CL_DOCSTRING("system");
+CL_DOCSTRING(R"dx(system)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv ext__system(String_sp cmd) {
   ASSERT(cl__stringp(cmd));
   string command = cmd->get_std_string();
@@ -1837,14 +1874,16 @@ CL_DEFUN T_mv ext__system(String_sp cmd) {
   }
 }
 
-CL_DOCSTRING("Invoke unix setpgid(p1, p2)");
+CL_DOCSTRING(R"dx(Invoke unix setpgid(p1, p2))dx")
+DOCGROUP(clasp)
 CL_DEFUN int core__setpgid(pid_t p1, pid_t p2)
 {
   int pid = setpgid(p1, p2);
   return pid;
 }
 
-CL_DOCSTRING("Invoke unix setpgrp()");
+CL_DOCSTRING(R"dx(Invoke unix setpgrp())dx")
+DOCGROUP(clasp)
 CL_DEFUN int core__setpgrp()
 {
   // not a typo in the function name.  This is the portable version
@@ -1852,7 +1891,8 @@ CL_DEFUN int core__setpgrp()
   return pid;
 }
 
-CL_DOCSTRING("Return (values pipe0 pipe1). Signal an error if pipe failed.");
+CL_DOCSTRING(R"dx(Return (values pipe0 pipe1). Signal an error if pipe failed.)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__pipe()
 {
   int pipes[2];
@@ -1863,10 +1903,11 @@ CL_DEFUN T_mv core__pipe()
   SIMPLE_ERROR(BF("Could not create pipe - error: %s") % strerror(errno));
 }
   
-CL_LAMBDA(call-and-arguments &optional return-stream);
+CL_LAMBDA(call-and-arguments &optional return-stream)
 CL_DECLARE();
 CL_DOCSTRING(R"(vfork_execvp - pass optional return-stream value of T if you want the output stream of the child.
-Returns (values 0 child-pid stream) if return-stream is T, (values errno error-message nil) if there was an error. )");
+Returns (values 0 child-pid stream) if return-stream is T, (values errno error-message nil) if there was an error. )")
+DOCGROUP(clasp)
 CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) {
 
   if (call_and_arguments.nilp())
@@ -2027,10 +2068,11 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
 
 
 
-CL_LAMBDA(call-and-arguments &optional return-stream);
+CL_LAMBDA(call-and-arguments &optional return-stream)
 CL_DECLARE();
 CL_DOCSTRING(R"(fork_execvp - set optional return-stream to T if you want the output stream of the child.
-Returns (values error pid return-stream).)");
+Returns (values error pid return-stream).)")
+DOCGROUP(clasp)
 CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
   bool bReturnStream = return_stream.isTrue();
   if (call_and_arguments.nilp())
@@ -2102,9 +2144,10 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
   }
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(arg)
 CL_DECLARE();
-CL_DOCSTRING("Get environment variable NAME");
+CL_DOCSTRING(R"dx(Get environment variable NAME)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp ext__getenv(String_sp arg) {
   ASSERT(cl__stringp(arg));
   char *sres = getenv(arg->get_std_string().c_str());
@@ -2128,7 +2171,8 @@ void error_bad_fd(int fd) {
 }
 
 
-CL_DOCSTRING("See unix select");
+CL_DOCSTRING(R"dx(See unix select)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_sp errorfds,  size_t seconds, size_t microseconds )
 {
   struct timeval timeout;
@@ -2141,6 +2185,7 @@ CL_DEFUN T_mv core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_
   return Values(make_fixnum(num), nil<T_O>());
 }
 
+DOCGROUP(clasp)
 CL_DEFUN FdSet_sp core__make_fd_set() {
   auto fdset = gctools::GC<FdSet_O>::allocate_with_default_constructor();
   return fdset;
@@ -2148,14 +2193,15 @@ CL_DEFUN FdSet_sp core__make_fd_set() {
 #endif // defined(HAVE_SELECT)
 
 
-CL_LAMBDA(filedescriptor);
+CL_LAMBDA(filedescriptor)
 CL_DECLARE();
 CL_DOCSTRING("Returns data of the posix fstat() function for file-descriptor"
 "if pathname is not found, returns nil"
 "else mutiple values of"
 "stat.st_size (file size in bytes, follows symbolic links)"
 "stat.st_mtime (Time of last data modification.)"
-"stat.st_mode (Mode of file)");
+"stat.st_mode (Mode of file))doc")
+DOCGROUP(clasp)
 CL_DEFUN T_mv ext__fstat(int filedescriptor) {
   struct stat sb;
   if (fstat(filedescriptor, &sb) == -1)
@@ -2178,14 +2224,15 @@ bool clasp_has_file_position (int filedescriptor) {
       return true;
 }
 
-CL_LAMBDA(pathname);
+CL_LAMBDA(pathname)
 CL_DECLARE();
-CL_DOCSTRING("Returns data of the posix stat() function for pathname"
+CL_DOCSTRING(R"dx(Returns data of the posix stat() function for pathname"
 "if pathname is not found, returns nil"
 "else mutiple values of"
 "stat.st_size (file size in bytes, follows symbolic links)"
 "stat.st_mtime (Time of last data modification.)"
-"stat.st_mode (Mode of file)");
+"stat.st_mode (Mode of file))dx")
+DOCGROUP(clasp)
 CL_DEFUN T_mv ext__stat (T_sp pathname) {
   struct stat sb;
   String_sp filename = gc::As<String_sp>(cl__namestring(cl__translate_logical_pathname (pathname)));

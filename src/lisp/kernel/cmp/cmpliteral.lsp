@@ -489,7 +489,7 @@ rewrite the slot in the literal table to store a closure."
     ((core:single-float-p  object) (values nil #'ltv/single-float))
     ((symbolp object) (values (literal-machine-symbol-coalesce literal-machine) #'ltv/symbol))
     ((double-float-p object) (values (literal-machine-double-float-coalesce literal-machine) #'ltv/double-float))
-    ((core:ratio-p object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
+    ((core:ratiop object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
     ((sys:function-description-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
     ((sys:local-entry-point-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/local-entry-point))
     ((sys:global-entry-point-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/global-entry-point))

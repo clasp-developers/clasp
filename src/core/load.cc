@@ -69,9 +69,10 @@ T_sp load_stream(T_sp strm, bool print) {
   return _lisp->_true();
 }
 
-CL_LAMBDA(source &optional verbose print external-format);
+CL_LAMBDA(source &optional verbose print external-format)
 CL_DECLARE();
-CL_DOCSTRING("loadSource");
+CL_DOCSTRING(R"dx(loadSource)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_sp externalFormat) {
   T_sp strm;
   if (source.nilp()) {
@@ -102,6 +103,7 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   return load_stream(strm, print);
 }
 
+DOCGROUP(clasp)
 CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
   Pathname_sp pathname;
   T_sp pntype;
@@ -215,9 +217,10 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
 }
 
 /*! Translated from from ecl::load.d */
-CL_LAMBDA(source &key (verbose *load-verbose*) (print *load-print*) (if-does-not-exist :error) (external-format :default) (search-list core::*load-search-list*));
+CL_LAMBDA(source &key (verbose *load-verbose*) (print *load-print*) (if-does-not-exist :error) (external-format :default) (search-list core::*load-search-list*))
 CL_DECLARE();
-CL_DOCSTRING("CLHS: load");
+CL_DOCSTRING(R"dx(CLHS: load)dx")
+DOCGROUP(clasp)
 CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_exist, T_sp external_format, T_sp search_list) {
   if (source.nilp()) {
     TYPE_ERROR(source,Cons_O::createList(cl::_sym_stream,cl::_sym_Pathname_O,cl::_sym_string));

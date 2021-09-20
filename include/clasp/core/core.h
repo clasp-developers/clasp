@@ -24,6 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
+/** @defgroup exports
+    @defgroup clasp 
+        @ingroup exports
+ */
+
 #ifndef CORE_H //[
 #define CORE_H
 
@@ -621,7 +627,7 @@ uint lisp_hash(uintptr_t v);
 #include <clasp/gctools/gc_interface.h>
 
 
-class _RootDummyClass;
+class RootClass;
 
 
 #define EXTERN_SYMBOL(sym) extern core::Symbol_sp& _sym_##sym;
