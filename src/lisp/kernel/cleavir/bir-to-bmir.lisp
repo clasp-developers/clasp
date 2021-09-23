@@ -59,7 +59,9 @@
        (change-class primop 'cc-bmir:load :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs in :outputs (list nout)
-                   :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+))))
+                   :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
+                   :origin (bir:origin primop)
+                   :policy (bir:policy primop))))
          (bir:insert-instruction-before mr primop)
          (setf (bir:inputs primop) (list nout)))))
     ((cleavir-primop:cdr)
@@ -68,7 +70,9 @@
        (change-class primop 'cc-bmir:load :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs in :outputs (list nout)
-                   :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))))
+                   :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
+                   :origin (bir:origin primop)
+                   :policy (bir:policy primop))))
          (bir:insert-instruction-before mr primop)
          (setf (bir:inputs primop) (list nout)))))
     ((cleavir-primop:rplaca)
@@ -77,7 +81,9 @@
        (change-class primop 'cc-bmir:store :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs (list (first in)) :outputs (list nout)
-                   :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+))))
+                   :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
+                   :origin (bir:origin primop)
+                   :policy (bir:policy primop))))
          (bir:insert-instruction-before mr primop)
          (setf (bir:inputs primop) (list (second in) nout)))))
     ((cleavir-primop:rplacd)
@@ -86,7 +92,9 @@
        (change-class primop 'cc-bmir:store :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs (list (first in)) :outputs (list nout)
-                   :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))))
+                   :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
+                   :origin (bir:origin primop)
+                   :policy (bir:policy primop))))
          (bir:insert-instruction-before mr primop)
          (setf (bir:inputs primop) (list (second in) nout)))))))
 
@@ -260,7 +268,9 @@
 (defun insert-mtf (after datum)
   (let* ((fx (make-instance 'cc-bmir:output :rtype '(:object)
                             :derived-type (bir:ctype datum)))
-         (mtf (make-instance 'cc-bmir:mtf :outputs (list fx))))
+         (mtf (make-instance 'cc-bmir:mtf
+                :origin (bir:origin after) :policy (bir:policy after)
+                :outputs (list fx))))
     (bir:insert-instruction-after mtf after)
     (bir:replace-uses fx datum)
     (setf (cc-bmir:rtype datum) :multiple-values)
@@ -277,7 +287,9 @@
 (defun insert-ftm (before datum)
   (let* ((mv (make-instance 'cc-bmir:output :rtype :multiple-values
                             :derived-type (bir:ctype datum)))
-         (ftm (make-instance 'cc-bmir:ftm :outputs (list mv))))
+         (ftm (make-instance 'cc-bmir:ftm
+                :origin (bir:origin before) :policy (bir:policy before)
+                :outputs (list mv))))
     (bir:insert-instruction-before ftm before)
     (bir:replace-uses mv datum)
     (setf (bir:inputs ftm) (list datum))
@@ -297,7 +309,9 @@
   (let* ((new (make-instance 'cc-bmir:output
                 :rtype (make-list ninputs :initial-element :object)
                 :derived-type (bir:ctype datum)))
-         (pad (make-instance 'cc-bmir:fixed-values-pad :inputs (list new))))
+         (pad (make-instance 'cc-bmir:fixed-values-pad
+                :origin (bir:origin after) :policy (bir:policy after)
+                :inputs (list new))))
     (bir:insert-instruction-after pad after)
     (setf (bir:outputs after) (list new)
           (bir:outputs pad) (list datum))
@@ -313,7 +327,9 @@
   (let* ((new (make-instance 'cc-bmir:output
                 :rtype (make-list noutputs :initial-element :object)
                 :derived-type (bir:ctype datum)))
-         (pad (make-instance 'cc-bmir:fixed-values-pad :outputs (list new))))
+         (pad (make-instance 'cc-bmir:fixed-values-pad
+                :origin (bir:origin before) :policy (bir:policy before)
+                :outputs (list new))))
     (bir:insert-instruction-before pad before)
     (bir:replace-uses new datum)
     (setf (bir:inputs pad) (list datum))
@@ -394,7 +410,8 @@
            (cleavir-set:doset (s (cleavir-bir:scope instruction))
              (setf (cleavir-bir:dynamic-environment s) nde))
            (cleavir-bir:replace-terminator
-            (make-instance 'cleavir-bir:jump
+            (make-instance 'bir:jump
+              :origin (bir:origin instruction) :policy (bir:policy instruction)
               :inputs () :outputs () :next (bir:next instruction))
             instruction)
            ;; Don't need to recompute flow order since we haven't changed it.
