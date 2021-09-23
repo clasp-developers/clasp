@@ -440,9 +440,8 @@
 (defvar *use-cst-eval* t)
 
 (defun wrap-cst (cst)
-  (cst:list (cst:cst-from-expression 'lambda)
-            (cst:cst-from-expression nil)
-            cst))
+  (cst:quasiquote (cst:source cst)
+                  (lambda () (cst:unquote cst))))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
                                          system)
