@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 #include <csignal>
 #include <execinfo.h>
-#include <dlfcn.h>
 #include <iomanip>
 #include <clasp/core/foundation.h>
 #ifdef USE_LIBUNWIND
@@ -41,7 +40,6 @@ THE SOFTWARE.
 #import <mach-o/nlist.h>
 #include <sys/mman.h>
 #include <sys/types.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #endif
@@ -50,17 +48,12 @@ THE SOFTWARE.
 #endif
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 #include <err.h>
-#include <fcntl.h>
-#include <gelf.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <dlfcn.h>
 #define _GNU_SOURCE
-#include <elf.h>
-#include <link.h>
-//#include <bsd/vis.h>
 #endif
 
 
@@ -83,7 +76,8 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/designators.h>
 #include <clasp/llvmo/llvmoExpose.h>
-#include <clasp/llvmo/debugInfoExpose.fwd.h>
+#include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/code.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/stackmap.h>
 
@@ -258,17 +252,32 @@ bool library_with_name( const std::string& name, bool isExecutable, std::string&
   return false;
 }
 
-bool lookup_address_main(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type, bool& foundLibrary, std::string& libraryName, uintptr_t& libraryStart )
-{
-  printf("%s:%d:%s    Replace this function with a DWARF version\n", __FILE__, __LINE__, __FUNCTION__ );
-  return false;
-}
+bool lookup_address(uintptr_t address, const char*& symbol,
+                    uintptr_t& start, uintptr_t& end) {
+  void* ip = (void*)address;
+  T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
+  if (!gc::IsA<llvmo::ObjectFile_sp>(of)) return false; // no ofi found
 
-bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type) {
-  bool libraryFound;
-  std::string libraryName;
-  uintptr_t libraryStart;  
-  return lookup_address_main(address,symbol,start,end,type,libraryFound,libraryName,libraryStart);
+  // Get DWARF stuff set up
+  llvmo::ObjectFile_sp ofi = gc::As_unsafe<llvmo::ObjectFile_sp>(of);
+  llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
+  llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
+
+  symbol = llvmo::getFunctionNameForAddress(dcontext, sa);
+
+  // Get the address ranges
+  llvmo::Code_sp code = ofi->_Code;
+  uintptr_t code_start = code->codeStart();
+  auto eranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
+  if (eranges) {
+    auto ranges = eranges.get();
+    // NOTE: We assume the first range is the one we got. Practically speaking
+    // I think this is okay?
+    if (ranges.empty()) return false;
+    start = code_start + ranges[0].LowPC;
+    end = code_start + ranges[0].HighPC;
+    return true; // success!
+  } else return false; // no ranges available
 }
 
 bool check_for_frame(uintptr_t frame) {
@@ -309,31 +318,15 @@ CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
 
 DOCGROUP(clasp)
 CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
-  const char* symbol;
-  uintptr_t start, end;
-  char type;
-  bool libraryFound;
-  std::string sLibraryName;
-  uintptr_t libraryStart;  
-  bool foundSymbol = lookup_address_main((uintptr_t)address->ptr(),symbol,start,end,type,libraryFound,sLibraryName,libraryStart);
-  if (foundSymbol) {
-    core::T_sp libraryName = nil<T_O>();
-    core::T_sp offsetFromStartOfLibraryAddress = nil<T_O>();
-    core::T_sp library_origin = nil<T_O>();
-    if (libraryFound) {
-      libraryName = SimpleBaseString_O::make(sLibraryName);
-      library_origin = Integer_O::create((uintptr_t)libraryStart);
-      offsetFromStartOfLibraryAddress = Integer_O::create((uintptr_t)address->ptr()-libraryStart);
-    }
-    return Values(core::SimpleBaseString_O::make(symbol),
-                  core::Pointer_O::create((void*)start),
-                  core::Pointer_O::create((void*)end),
-                  core::clasp_make_character(type),
-                  libraryName,
-                  library_origin,
-                  offsetFromStartOfLibraryAddress);
-  }
-  return Values(nil<core::T_O>());
+  const char* symbol; uintptr_t start; uintptr_t end;
+  if (lookup_address((uintptr_t)(address->ptr()), symbol, start, end))
+    return Values(SimpleBaseString_O::make(symbol),
+                  Pointer_O::create((void*)start),
+                  Pointer_O::create((void*)end));
+  else
+    return Values(nil<core::T_O>(),
+                  nil<core::T_O>(),
+                  nil<core::T_O>());
 }
 
 void dbg_VaList_sp_describe(T_sp obj) {

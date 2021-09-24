@@ -242,8 +242,7 @@ int my_LLVMOpInfoCallback(void* DisInfo, uint64_t pc, uint64_t offset, uint64_t 
 const char* my_LLVMSymbolLookupCallback (void *DisInfo, uint64_t ReferenceValue, uint64_t *ReferenceType, uint64_t ReferencePC, const char **ReferenceName) {
   const char* symbol;
   uintptr_t start, end;
-  char type;
-  bool found = core::lookup_address((uintptr_t)ReferenceValue, symbol, start, end, type);
+  bool found = core::lookup_address((uintptr_t)ReferenceValue, symbol, start, end);
 //  printf("%s:%d:%s ReferenceValue->%p ReferencePC->%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)ReferenceValue, (void*)ReferencePC);
   if (found) {
     stringstream ss;
@@ -300,7 +299,9 @@ CL_LAMBDA(target-triple start-address end-address)CL_DEFUN void llvm_sys__disass
                                               0,
                                               my_LLVMOpInfoCallback,
                                               my_LLVMSymbolLookupCallback);
-  LLVMSetDisasmOptions(dis,LLVMDisassembler_Option_PrintImmHex|LLVMDisassembler_Option_PrintLatency
+  LLVMSetDisasmOptions(dis,
+                       LLVMDisassembler_Option_PrintImmHex
+                       | LLVMDisassembler_Option_PrintLatency
                        /*|LLVMDisassembler_Option_UseMarkup*/);
   size_t ii = 0;
   size_t offset = 0;
