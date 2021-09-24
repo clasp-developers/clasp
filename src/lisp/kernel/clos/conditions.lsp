@@ -523,9 +523,9 @@ returns with NIL."
 
 (define-condition simple-condition ()
   ((format-control :INITARG :FORMAT-CONTROL :INITFORM ""
-		   :ACCESSOR simple-condition-format-control)
+		   :reader simple-condition-format-control)
    (format-arguments :INITARG :FORMAT-ARGUMENTS :INITFORM NIL
-		     :ACCESSOR simple-condition-format-arguments))
+		     :reader simple-condition-format-arguments))
   (:REPORT
    (lambda (condition stream)
      (handler-case
@@ -553,7 +553,7 @@ returns with NIL."
 (define-condition storage-condition (serious-condition) ())
 
 (define-condition ext:segmentation-violation (storage-condition)
-  ((address :initarg :address :accessor memory-condition-address))
+  ((address :initarg :address :reader memory-condition-address))
   (:REPORT
    (lambda (condition stream)
      (format stream "Segmentation fault. Attempted to access resticted memory address #x~x.
@@ -593,7 +593,7 @@ No information available on cause. This may be a bug in Clasp."))
 (defun ext:illegal-instruction () (error 'ext:illegal-instruction))
 
 (define-condition ext:bus-error (error)
-  ((address :initarg :address :accessor memory-condition-address))
+  ((address :initarg :address :reader memory-condition-address))
   (:report
    (lambda (condition stream)
      (format stream "Bus error. Attempted to access invalid memory address #x~x.
@@ -606,10 +606,10 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ((code :type fixnum
          :initform 0
          :initarg :code
-         :accessor ext:unix-signal-received-code)
+         :reader ext:unix-signal-received-code)
    (handler :initarg :handler
             :initform nil
-            :accessor unix-signal-received-handler))
+            :reader unix-signal-received-handler))
   (:report (lambda (condition stream)
              (format stream "Serious signal ~D caught."
                      (ext:unix-signal-received-code condition)))))
