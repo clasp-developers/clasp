@@ -536,6 +536,12 @@ returns with NIL."
          (declare (ignore p))
          (format stream "~%#<Error while printing condition>~%"))))))
 
+(defmethod simple-condition-format-control (instance)
+  (error 'type-error :datum instance :expected-type 'simple-condition))
+
+(defmethod simple-condition-format-arguments (instance)
+  (error 'type-error :datum instance :expected-type 'simple-condition))
+
 (define-condition simple-warning (simple-condition warning) ())
 
 (define-condition style-warning (warning) ())
@@ -616,6 +622,12 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
      (format stream "~S is not of type ~S."
 	     (type-error-datum condition)
 	     (type-error-expected-type condition)))))
+
+(defmethod type-error-datum (instance)
+  (error 'type-error :datum instance :expected-type 'type-error))
+
+(defmethod type-error-expected-type (instance)
+  (error 'type-error :datum instance :expected-type 'type-error))
 
 (define-condition out-of-bounds (type-error)
   ;; the type-error DATUM is the index, and its EXPECTED-TYPE is the range.
@@ -756,6 +768,9 @@ due to error:~%  ~:*~a~]"
 (define-condition stream-error (error)
   ((stream :initarg :stream :reader stream-error-stream)))
 
+(defmethod stream-error-stream (instance)
+  (error 'type-error :datum instance :expected-type 'stream-error))
+
 (define-condition core:simple-stream-error (simple-condition stream-error) ())
 
 (define-condition core:closed-stream (core:simple-stream-error)
@@ -776,12 +791,18 @@ due to error:~%  ~:*~a~]"
  3) the pathname points to a broken symbolic link."
 		     (file-error-pathname condition)))))
 
+(defmethod file-error-pathname (instance)
+  (error 'type-error :datum instance :expected-type 'file-error))
+
 (define-condition core:simple-file-error (simple-condition file-error) ())
 
 (define-condition package-error (error)
   ((package :INITARG :PACKAGE :READER package-error-package))
   (:report (lambda (condition stream)
              (format stream "Package error on package ~S" (package-error-package condition)))))
+
+(defmethod package-error-package (instance)
+  (error 'type-error :datum instance :expected-type 'package-error))
 
 (define-condition core:simple-package-error (simple-condition package-error) ())
 
@@ -948,6 +969,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))
 
+(defmethod cell-error-name (instance)
+  (error 'type-error :datum instance :expected-type 'cell-error))
+
 (define-condition unbound-variable (cell-error)
   ()
   (:REPORT (lambda (condition stream)
@@ -965,6 +989,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                  (format stream "~@<The slot ~s is unbound in an instance of ~s.~@:>"
                          (cell-error-name condition)
                          (type-of (unbound-slot-instance condition))))))))
+
+(defmethod unbound-slot-instance (instance)
+  (error 'type-error :datum instance :expected-type 'unbound-slot))
 
 (define-condition undefined-function (cell-error)
   ()
@@ -1061,6 +1088,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
   (:REPORT (lambda (condition stream)
 	     (format stream "Cannot print object ~A of class ~A readably."
 		     (print-not-readable-object condition) (class-name (class-of (print-not-readable-object condition)))))))
+
+(defmethod print-not-readable-object (instance)
+  (error 'type-error :datum instance :expected-type 'print-not-readable))
 
 (define-condition parse-error (error) ())
 
