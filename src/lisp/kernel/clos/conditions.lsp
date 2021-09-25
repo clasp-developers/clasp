@@ -1012,6 +1012,12 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
    (operation :initform nil :INITARG :OPERATION :READER arithmetic-error-operation)
    (operands :initform nil :INITARG :OPERANDS :READER arithmetic-error-operands)))
 
+(defmethod arithmetic-error-operation (instance)
+  (error 'type-error :datum instance :expected-type 'arithmetic-error))
+
+(defmethod arithmetic-error-operands (instance)
+  (error 'type-error :datum instance :expected-type 'arithmetic-error))
+
 (define-condition division-by-zero (arithmetic-error) ())
 
 (define-condition floating-point-overflow (arithmetic-error) ())
