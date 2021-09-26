@@ -189,6 +189,10 @@
 (import 'core:argv :ext)
 (import 'core:rmdir :ext)
 (import 'core:mkstemp :ext)
+(import 'core:weak-pointer-value :ext)
+(import 'core:make-weak-pointer :ext)
+(import 'core:weak-pointer-valid :ext)
+(import 'core:hash-table-weakness :ext)
 
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
