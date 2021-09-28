@@ -536,7 +536,7 @@ CL_DEFUN void mp__process_kill(Process_sp process)
 CL_LAMBDA(&rest values)
 CL_DOCSTRING(R"dx(Immediately end the current process)dx")
 CL_DOCSTRING_LONG(R"dx(The arguments to this function are returned from any PROCESS-JOIN calls with the current process as argument. Does not return.)doc")
-DOCGROUP(clasp)
+DOCGROUP(clasp)dx")
 CL_DEFUN void mp__exit_process(core::List_sp values) {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
   this_process->_ReturnValuesList = values;
