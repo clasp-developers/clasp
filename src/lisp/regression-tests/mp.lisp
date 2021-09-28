@@ -76,6 +76,13 @@
 (test current-thread-2
       (mp:process-active-p mp:*current-process*))
 
+(test process-exit
+      (equal
+       (multiple-value-list
+        (mp:process-join
+         (mp:process-run-function nil (lambda () (mp:exit-process 3 4)))))
+       '(3 4)))
+
 ;; Check process-join-error working at all
 (test-expect-error process-abort-1
                    (mp:process-join
