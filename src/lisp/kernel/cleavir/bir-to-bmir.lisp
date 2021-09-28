@@ -1,29 +1,36 @@
 (in-package #:cc-bir-to-bmir)
 
+(defun process-typeq-type (ts)
+  ;; Undo some parsing. KLUDGE.
+  (cond
+    ((equal ts '(integer #.most-negative-fixnum #.most-positive-fixnum))
+     'fixnum)
+    ((equal ts '(or (integer * (#.most-negative-fixnum))
+                 (integer (#.most-positive-fixnum) *)))
+     'bignum)
+    ((equal ts '(single-float * *)) 'single-float)
+    ((equal ts '(double-float * *)) 'double-float)
+    ((equal ts '(rational * *)) 'rational)
+    ((equal ts '(real * *)) 'real)
+    ((equal ts '(complex *)) 'complex)
+    ((equal ts '(array * *)) 'array)
+    ((equal ts '(cons t t)) 'cons)
+    ;; simple-bit-array becomes (simple-array bit (*)), etc.
+    ((and (consp ts) (eq (car ts) 'simple-array))
+     (core::simple-vector-type (second ts)))    
+    ((or (equal ts '(or (simple-array base-char (*))
+                     (simple-array character (*))))
+         (equal ts '(or (simple-array character (*))
+                     (simple-array base-char (*)))))
+     (setf ts 'simple-string))
+    ((and (consp ts) (eq (car ts) 'function))
+     ;; We should check that this does not specialize, because
+     ;; obviously we can't check that.
+     'function)
+    (t ts)))
+
 (defun replace-typeq (typeq)
-  (let ((ts (bir:test-ctype typeq)))
-    ;; Undo some parsing. KLUDGE.
-    (cond
-      ;; FIXNUM
-      ((equal ts '(integer #.most-negative-fixnum #.most-positive-fixnum))
-       (setf ts 'fixnum))
-      ;; bignum
-      ((equal ts '(or (integer * (#.most-negative-fixnum))
-                   (integer (#.most-positive-fixnum) *)))
-       (setf ts 'bignum))
-      ;; simple-bit-array becomes (simple-array bit (*)), etc.
-      ((and (consp ts) (eq (car ts) 'simple-array))
-       (setf ts (core::simple-vector-type (second ts))))
-      ;; simple-string
-      ((or (equal ts '(or (simple-array base-char (*))
-                       (simple-array character (*))))
-           (equal ts '(or (simple-array character (*))
-                       (simple-array base-char (*)))))
-       (setf ts 'simple-string))
-      ((and (consp ts) (eq (car ts) 'function))
-       ;; We should check that this does not specialize, because
-       ;; obviously we can't check that.
-       (setf ts 'function)))
+  (let ((ts (process-typeq-type (bir:test-ctype typeq))))
     (case ts
       ((fixnum) (change-class typeq 'cc-bmir:fixnump))
       ((cons) (change-class typeq 'cc-bmir:consp))

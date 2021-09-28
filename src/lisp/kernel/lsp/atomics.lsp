@@ -38,7 +38,8 @@ defaulting of ORDER is applied."
            (apply #'get-atomic-expansion expansion keys)
            (error "Atomic operations on lexical variables not supported yet")))
      #+cclasp
-     (let ((info (cleavir-env:variable-info environment place)))
+     (let ((info (cleavir-env:variable-info
+                  clasp-cleavir:*clasp-system* environment place)))
        (etypecase info
          (cleavir-env:symbol-macro-info
           (apply #'get-atomic-expansion (macroexpand-1 place environment) keys))

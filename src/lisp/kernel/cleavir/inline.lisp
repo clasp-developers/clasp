@@ -996,7 +996,8 @@
   (let ((name (constant-function-form function env)))
     (when name
       (return-from funcall
-        (let* ((func-info (cleavir-env:function-info env name))
+        (let* ((func-info (cleavir-env:function-info
+                           clasp-cleavir:*clasp-system* env name))
                (notinline (and func-info
                                (eq 'notinline (cleavir-env:inline func-info))))
                ;; We can't get this from the func-info because it might be

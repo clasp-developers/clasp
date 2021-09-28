@@ -1484,7 +1484,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (ver module "meta")
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
-  (bir-transformations:module-generate-type-checks module)
+  (bir-transformations:module-generate-type-checks module system)
   (cc-bir-to-bmir:assign-module-rtypes module)
   (cc-bir-to-bmir:insert-values-coercion-into-module module)
   ;; These should happen last since they are like "post passes" which

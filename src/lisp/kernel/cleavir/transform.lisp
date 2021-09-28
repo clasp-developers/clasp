@@ -88,6 +88,7 @@
                      ((function)
                       (if (and (symbolp (second form)) trust-type-decls-p)
                           (let ((info (cleavir-env:function-info
+                                       clasp-cleavir:*clasp-system*
                                        env (second form))))
                             (if (typep info '(or cleavir-env:local-function-info
                                               cleavir-env:global-function-info))
@@ -106,7 +107,9 @@
                           't))
                      (otherwise
                       (if trust-type-decls-p
-                          (let ((info (cleavir-env:function-info env operator)))
+                          (let ((info (cleavir-env:function-info
+                                       clasp-cleavir:*clasp-system*
+                                       env operator)))
                             (if (typep info '(or cleavir-env:local-function-info
                                               cleavir-env:global-function-info))
                                 (function-type-result (cleavir-env:type info) env)
@@ -115,7 +118,8 @@
                    't)))
             (t ; symbol (everything else covered by constantp and consp)
              (if trust-type-decls-p
-                 (let ((info (cleavir-env:variable-info env form)))
+                 (let ((info (cleavir-env:variable-info
+                              clasp-cleavir:*clasp-system* env form)))
                    (if info
                        (cleavir-env:type info)
                        't))
