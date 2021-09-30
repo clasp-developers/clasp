@@ -268,6 +268,7 @@ FuncallableInstance_sp FuncallableInstance_O::create_single_dispatch_generic_fun
   rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,nil<T_O>());
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(gfname,FuncallableInstance_O::single_dispatch_funcallable_entry_point,llhandler->lambdaList());
   Instance_sp class_ = gc::As<Instance_sp>(cl__find_class(_sym_SingleDispatchGenericFunctionClosure_O));
+  rack->stamp_set(class_->CLASS_stamp_for_instances());
   auto gfun = gctools::GC<FuncallableInstance_O>::allocate(entryPoint,class_,rack);
 //  gfun->entry = single_dispatch_funcallable_entry_point;
   return gfun;
