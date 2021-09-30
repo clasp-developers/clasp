@@ -4,20 +4,14 @@
 (TEST-EXPECT-ERROR TEST-MAKE-SYMBOL-ERROR-1 (MAKE-SYMBOL 'DEFUN) :TYPE
  TYPE-ERROR)
 (TEST-EXPECT-ERROR TEST-MAKE-SYMBOL-ERROR-2 (MAKE-SYMBOL #\A) :TYPE TYPE-ERROR)
-(TEST TEST-MAKE-SYMBOL-0
- (SYMBOLP (HANDLER-CASE (MAKE-SYMBOL "ABCCC") (ERROR (E) E))))
-(TEST TEST-MAKE-SYMBOL-1
- (SYMBOLP
-  (HANDLER-CASE
-   (MAKE-SYMBOL
-    (MAKE-ARRAY '(6)
-                :INITIAL-CONTENTS
-                '(#\A #\B #\C #\D #\E #\F)
-                :ELEMENT-TYPE
-                'CHARACTER
-                :FILL-POINTER
-                4))
-    (ERROR (E) E))))
+(TEST-type TEST-MAKE-SYMBOL-0 (make-symbol "ABCCC") symbol)
+(TEST-type TEST-MAKE-SYMBOL-1
+    (MAKE-SYMBOL
+     (MAKE-ARRAY '(6)
+                 :INITIAL-CONTENTS '(#\A #\B #\C #\D #\E #\F)
+                 :ELEMENT-TYPE 'CHARACTER
+                 :FILL-POINTER 4))
+    symbol)
 
 (test-expect-error makunbound-1
                    (let ((foo 23))
@@ -36,16 +30,16 @@
                    (gensym 'defun)
                    :type type-error)
 
-(test gensym-5 (gensym (+ most-positive-fixnum  most-positive-fixnum)))
+(test-true gensym-5 (gensym (+ most-positive-fixnum  most-positive-fixnum)))
 
-(test gensym-6
+(test-true gensym-6
       (let ((bignum 12345678901234567890123456789012345678901234567890))
         (= (1+ bignum)
            (LET ((*GENSYM-COUNTER* bignum))
              (GENSYM)
              *GENSYM-COUNTER*))))
 
-(test gensym-7
+(test-true gensym-7
       (= (1+ most-positive-fixnum)
          (let ((*gensym-counter* most-positive-fixnum))
            (gensym)
@@ -71,15 +65,15 @@
                    (gentemp nil)
                    :type type-error)
 
-(test build-sbcl-1 (setf (symbol-plist nil)(list 1 2)))
-(test build-sbcl-2 (setf (get nil 1) 2))
+(test-true build-sbcl-1 (setf (symbol-plist nil)(list 1 2)))
+(test-true build-sbcl-2 (setf (get nil 1) 2))
 
 (test 978-symbols-common-lisp-exported
       (let ((sum 0))
-        (do-external-symbols (sym (find-package :cl))
+        (do-external-symbols (sym (find-package :cl) sum)
           (declare (ignore sym))
-          (incf sum))
-        (= 978 sum)))
+          (incf sum)))
+      (978))
 
 (test
  fboundp.8
@@ -133,8 +127,7 @@
            STRING-STREAM STRUCTURE STRUCTURE-CLASS STRUCTURE-OBJECT STYLE-WARNING SYMBOL
            SYNONYM-STREAM T TWO-WAY-STREAM TYPE TYPE-ERROR UNBOUND-SLOT UNBOUND-VARIABLE
            UNDEFINED-FUNCTION UNSIGNED-BYTE VARIABLE WARNING)))     
-      (null
-       (loop for x in cl-non-function-macro-special-operator-symbols
-        when (fboundp x)
-        collect x))))
-
+   (loop for x in cl-non-function-macro-special-operator-symbols
+         when (fboundp x)
+           collect x))
+ (nil))

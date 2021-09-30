@@ -1,5 +1,5 @@
 (in-package #:clasp-tests)
-(test test-standard-char-p-$ (standard-char-p #\$))
+(test-type test-standard-char-p-$ #\$ standard-char)
 
 ;;; CHAR= CHAR/= CHAR< CHAR> CHAR<= CHAR>= CHAR-LESSP CHAR-GREATERP CHAR-EQUAL CHAR-NOT-LESSP CHAR-NOT-GREATERP CHAR-NOT-EQUAL 
 ;;; Should signal an error of type program-error if at least one character is not supplied.
@@ -30,64 +30,50 @@
 (TEST-EXPECT-ERROR TEST-CHAR-10a (CHAR-NOT-GREATERP (make-hash-table)) :TYPE type-error)
 (TEST-EXPECT-ERROR TEST-CHAR-11a (CHAR-NOT-EQUAL (make-hash-table)) :TYPE type-error)
 
-(test TEST-CHAR-12
-      (char= #\RETURN
-             (name-char 
-              (char-name (code-char 13)))))
+(test TEST-CHAR-12 (name-char (char-name (code-char 13))) (#\return))
 
-(test TEST-CHAR-12a
-      (char= #\U80
-             (name-char 
-              (char-name (code-char 128)))))
+(test TEST-CHAR-12a (name-char (char-name (code-char 128))) (#\u80))
 
 #+(or) (test-expect-error test-unicode-out-of-range #\U110000)
 
-(test TEST-CHAR-13
-      (typep  
-       (name-char 
-        (char-name (code-char 255)))
-       'character))
+(test-type TEST-CHAR-13 (name-char (char-name (code-char 255))) character)
 
-(test TEST-CHAR-14
-      (typep  
-       (name-char 
-        (char-name (code-char 256)))
-       'character))
+(test-type TEST-CHAR-14 (name-char (char-name (code-char 256))) character)
 
 (test TEST-CHAR-15
-      (null
-       (loop for i from 0 below (min 65536 char-code-limit)
-          for x = (code-char i)
-          unless (or (not (characterp x))
-                     (if (both-case-p x)
-                         (and (graphic-char-p x)
-                              (or (upper-case-p x)
-                                (lower-case-p x)))
-                         (not (or (upper-case-p x)
-                                  (lower-case-p x)))))
-          collect (char-name x))))
+      (loop for i from 0 below (min 65536 char-code-limit)
+            for x = (code-char i)
+            unless (or (not (characterp x))
+                       (if (both-case-p x)
+                           (and (graphic-char-p x)
+                                (or (upper-case-p x)
+                                    (lower-case-p x)))
+                           (not (or (upper-case-p x)
+                                    (lower-case-p x)))))
+              collect (char-name x))
+      (nil))
 
 (test test-char-16
-      (null
-       (let ((names
+      (let ((names
               (append
                (mapcar #'car clasp-cleavir::*additional-clasp-character-mappings-alist*)
                '("NEWLINE"  "SPACE" "RUBOUT" "PAGE" "TAB" "BACKSPACE" "RETURN" "LINEFEED")
                '("U80"  "U81"  "U82"  "U83"  "U84"  "U85"  "U86"  "U87"  "U88"  "U89"  "U8A"  "U8B"  "U8C"  "U8D"  "U8E"  "U8F" 
                  "U90"  "U91"  "U92"  "U93"  "U94"  "U95"  "U96"  "U97"  "U98"  "U99"  "U9A"  "U9B"  "U9C"  "U9D"  "U9E"  "U9F")))
-             (result nil))
-         (dolist (name names)
-           (unless (name-char name)
-             (push name result)))
-         result)))
+            (result nil))
+        (dolist (name names)
+          (unless (name-char name)
+            (push name result)))
+        result)
+      (nil))
 
-(test test-char-17 (char/= #\a #\b #\c #\d))
-(test test-char-18 (let ()(char/= #\a #\b #\c #\d)))
+(test-true test-char-17 (char/= #\a #\b #\c #\d))
+(test-true test-char-18 (let ()(char/= #\a #\b #\c #\d)))
 
-(test test-char-19 (eql #\Rubout #\Del))
+(test-true test-char-19 (eql #\Rubout #\Del))
 
 ;;; https://en.wikipedia.org/wiki/C0_and_C1_control_codes
-(test test-char-c0
+(test-true test-char-c0
       (list #\NUL #\SOH #\STX #\ETX
             #\EOT #\ENQ #\ACK #\BEL
             #\BS #\HT #\LF #\VT
@@ -98,10 +84,10 @@
             #\FS #\GS #\RS #\US
             #\SP #\DEL))
 
-(test test-char-standard-names
+(test-true test-char-standard-names
       (list #\Backspace #\Tab #\Newline #\Linefeed #\Page #\Return #\Space
             #\BACKSPACE #\TAB #\NEWLINE #\LINEFEED #\PAGE #\RETURN #\SPACE))
 
-(TEST test-char-semistandard-names
+(TEST-true test-char-semistandard-names
       (list #\Null #\Bell #\Escape #\Rubout
             #\NULL #\BELL #\ESCAPE #\RUBOUT))

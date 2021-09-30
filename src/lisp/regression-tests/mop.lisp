@@ -5,7 +5,7 @@
 ;;; Test that all the AMOP generic functions are defined
 ;;; and are generic.
 ;;; CL symbols are commented out but kept for reference.
-(test mop.generics.fboundp
+(test-true mop.generics.fboundp
       (let ((mop-generic-names
               '(clos:accessor-method-slot-definition clos:add-dependent
                 clos:add-direct-method clos:add-direct-subclass
@@ -56,7 +56,7 @@
 ;;; Test that the non-generic functions are available too.
 ;;; (We don't test that they're not generic, because they're not
 ;;;  required to not be generic.)
-(test mop.nongenerics.fboundp
+(test-true mop.nongenerics.fboundp
       (let ((nongeneric-names
               '(clos:eql-specializer-object clos:extract-lambda-list
                 clos:extract-specializer-names)))
@@ -65,7 +65,7 @@
 
 ;;; Test that writers for most functions are NOT defined.
 ;;; This is only very likely for a naively defined accessor, but still.
-(test mop.writers.nonfboundp
+(test-true mop.writers.nonfboundp
       (let ((nonwriters
               '(clos:accessor-method-slot-definition clos:add-dependent
                 clos:add-direct-method clos:add-direct-subclass

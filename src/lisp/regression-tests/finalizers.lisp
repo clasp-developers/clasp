@@ -23,7 +23,8 @@
 (dotimes (i 10)
   (gctools:garbage-collect))
 (format t "finalizers-cons *count* -> ~d - it should be 5~%" *count*)
-(test finalizers-cons (= *count* 5) :description "Check if list of cons finalizers were executed")
+(test finalizers-cons *count* (5)
+      :description "Check if list of cons finalizers were executed")
 
 (setq *count* 0)
 (create-*a* 5)
@@ -36,7 +37,8 @@
 (setq *a* nil)
 (dotimes (i 10)
   (gctools:garbage-collect))
-(test finalizers-cons-remove (= *count* 0) :description "Check if list of cons finalizers were discarded")
+(test finalizers-cons-remove *count* (0)
+      :description "Check if list of cons finalizers were discarded")
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -55,7 +57,8 @@
 (dotimes (i 10)
   (gctools:garbage-collect))
 (format t "*count* --> ~a - it should be 5~%" *count*)
-(test finalizers-general (= *count* 5) :description "Check if list of general finalizers were executed")
+(test finalizers-general *count* (5)
+      :description "Check if list of general finalizers were executed")
 
 (setq *count* 0)
 (bar 5)
@@ -69,4 +72,5 @@
 (dotimes (i 10)
   (gctools:garbage-collect))
 (format t "*count* --> ~a - it should be 0~%" *count*)
-(test finalizers-general-remove (= *count* 0) :description "Check if list of general finalizers were discarded")
+(test finalizers-general-remove *count* (0)
+      :description "Check if list of general finalizers were discarded")

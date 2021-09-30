@@ -19,23 +19,18 @@
                               (cond ((> x y) 1) ((< x y) -1) (t 0))))))
 
 (test cffi-defcallback
-      (progn
-        (format t "Native defcallback starting~%")
-        (let* ((sorted (let* ((array (clasp-ffi:%foreign-alloc (* 10 (clasp-ffi:%foreign-type-size :int)))))
-                         (unwind-protect
-                              (progn
-                                ;; initialize array.
-                                (loop for i from 0 and n in '(7 2 10 4 3 5 1 6 9 8)
-                                      do (clasp-ffi:%mem-set array :int n (* i (clasp-ffi:%foreign-type-size :int))))
-                                ;; sort it.
-                                (qsort array 10 (clasp-ffi:%foreign-type-size :int) (clasp-ffi:%get-callback '<))
-                                ;; return it as a list.
-                                (loop for i from 0 below 10
-                                      collect (clasp-ffi:%mem-ref array :int (* i (clasp-ffi:%foreign-type-size :int)))))
-                           (clasp-ffi:%foreign-free array))))
-               (result (equalp '(1 2 3 4 5 6 7 8 9 10) sorted)))
-          (format t "Native defcallback sorted -> ~a~%" sorted)
-          (format t "Native defcallback result -> ~a~%" result)
-          result)))
-
-
+      (let* ((intsize (clasp-ffi:%foreign-type-size :int))
+             (array
+               (clasp-ffi:%foreign-alloc (* 10 intsize))))
+        (unwind-protect
+             (progn
+               ;; initialize array.
+               (loop for i from 0 and n in '(7 2 10 4 3 5 1 6 9 8)
+                     do (clasp-ffi:%mem-set array :int n (* i intsize)))
+               ;; sort it.
+               (qsort array 10 intsize (clasp-ffi:%get-callback '<))
+               ;; return it as a list.
+               (loop for i from 0 below 10
+                     collect (clasp-ffi:%mem-ref array :int (* i intsize))))
+          (clasp-ffi:%foreign-free array)))
+      ((1 2 3 4 5 6 7 8 9 10)))

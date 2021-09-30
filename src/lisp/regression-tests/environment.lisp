@@ -79,11 +79,14 @@ documentation (x symbol) (doc-type (eql 'variable))
          (with-output-to-string (*standard-output*)
                   (describe object)))))
 
-(test describe-function-documentation (test-documentation-with-args 'foo-test-describe))
+(test-true describe-function-documentation
+           (test-documentation-with-args 'foo-test-describe))
 
-(test describe-function-documentation-a (test-documentation-with-args 'core:function-lambda-list))
+(test-true describe-function-documentation-a
+           (test-documentation-with-args 'core:function-lambda-list))
 
-(test describe-function-documentation-macro (test-documentation-with-args 'cl:defconstant))
+(test-true describe-function-documentation-macro
+           (test-documentation-with-args 'cl:defconstant))
 
 (defun stupid-function (a) a)
 
@@ -92,45 +95,48 @@ documentation (x symbol) (doc-type (eql 'variable))
   (declare (ignore form))
   `(list ,arg))
 
-(test describe-compiler-macro (test-documentation-without-args 'stupid-function 'compiler-macro))
+(test-true describe-compiler-macro
+           (test-documentation-without-args 'stupid-function 'compiler-macro))
 
-(test describe-special-from (test-documentation-with-args 'progn))
+(test-true describe-special-form (test-documentation-with-args 'progn))
 
 (defconstant a-silly-constant 23 "and the constant doc")
 
-(test describe-constant (test-documentation-without-args 'a-silly-constant 'variable))
+(test-true describe-constant
+           (test-documentation-without-args 'a-silly-constant 'variable))
 
 (defparameter *a-silly-var* 23 "and the special doc")
 
-(test describe-special (test-documentation-without-args '*a-silly-var* 'variable))
+(test-true describe-special
+           (test-documentation-without-args '*a-silly-var* 'variable))
 
 (deftype a-silly-type ()
   "Documentation of a type"
   'fixnum)
 
-(test describe-type (test-documentation-without-args 'a-silly-type 'type))
+(test-true describe-type (test-documentation-without-args 'a-silly-type 'type))
 
 (defstruct silly-struct-normal "Documentation for a normal struct" a (b 23) (c "nada" :type string)(d 25 :read-only t))
 (defstruct (silly-struct-vector (:type vector)) "Documentation for a vector struct" a b c)
 (defstruct (silly-struct-list (:type vector)) "Documentation for a list struct" a b c)
 
-(test describe-struct-a (test-documentation-without-args 'silly-struct-normal 'structure))
+(test-true describe-struct-a (test-documentation-without-args 'silly-struct-normal 'structure))
 
-(test describe-struct-b (test-documentation-without-args 'silly-struct-vector 'structure))
+(test-true describe-struct-b (test-documentation-without-args 'silly-struct-vector 'structure))
 
-(test describe-struct-c (test-documentation-without-args  'silly-struct-list 'structure))
+(test-true describe-struct-c (test-documentation-without-args  'silly-struct-list 'structure))
 
 (defun (setf nada) (new old)
   "asdjhaskdhj"
   (list new old))
 
-(test simple-setf (documentation '(setf nada) 'function))
+(test-true simple-setf (documentation '(setf nada) 'function))
 
 (defun setf-access-fn (value) "a fn doc" value)
 (defun setf-update-fn (old new)(list old new))
 (defsetf setf-access-fn setf-update-fn "A short detsetf documentation")
 
-(test describe-setf-short (test-documentation-without-args 'setf-access-fn 'setf))
+(test-true describe-setf-short (test-documentation-without-args 'setf-access-fn 'setf))
 
 (defun setf-access-fn-for-long-setf (value) "a fn doc" value)
 
@@ -140,15 +146,15 @@ documentation (x symbol) (doc-type (eql 'variable))
                     :start1 ,start :end1 ,end)
            ,new-sequence))
 
-(test describe-setf-long (test-documentation-without-args 'setf-access-fn-for-long-setf 'setf))
+(test-true describe-setf-long (test-documentation-without-args 'setf-access-fn-for-long-setf 'setf))
 
 (defclass describe-class ()
   ((foo :initform 23 :initarg :foo :accessor describe-class))
   (:documentation "A doc for a class"))
 
-(test describe-class (test-documentation-without-args (find-class 'describe-class) t))
+(test-true describe-class (test-documentation-without-args (find-class 'describe-class) t))
 
-(test describe-instance
+(test-true describe-instance
       (let* ((object (make-instance 'describe-class)))
         (with-output-to-string (*standard-output*)
           (describe object))))
@@ -163,7 +169,7 @@ documentation (x symbol) (doc-type (eql 'variable))
 (defpackage nonsense-for-describe-uses
   (:use :cl :nonsense-for-describe))
 
-(test describe-package (test-documentation-without-args (find-package :nonsense-for-describe) t))
+(test-true describe-package (test-documentation-without-args (find-package :nonsense-for-describe) t))
 
 (defgeneric blah-blah (a b c)
   (:documentation "A generic function documentation")
@@ -171,9 +177,9 @@ documentation (x symbol) (doc-type (eql 'variable))
     "A method documentation"
     (list a b c)))
 
-(test describe-generic-function (test-documentation-without-args #'blah-blah  'function))
+(test-true describe-generic-function (test-documentation-without-args #'blah-blah  'function))
 
-(test describe-method-via-generic-function
+(test-true describe-method-via-generic-function
       (test-documentation-without-args
        (find-method #'blah-blah nil (list (find-class 'describe-class)(find-class 'string)(find-class t)))
        'function))
@@ -184,7 +190,7 @@ documentation (x symbol) (doc-type (eql 'variable))
 (describe (CLOS::SEARCH-METHOD-COMBINATION 'test1))
 |#
 
-(test describe-alltogether
+(test-true describe-alltogether
       (with-output-to-string (*standard-output*)
         (let ((objects-to-describe
                (list
@@ -765,11 +771,9 @@ documentation (x symbol) (doc-type (eql 'variable))
                           Y-OR-N-P
                           YES-OR-NO-P
                           ZEROP)))
-  (null
-   (LOOP FOR S IN cl-function-list
-         FOR FN = (SYMBOL-FUNCTION S)
-         FOR DOC = (DOCUMENTATION FN T)
-         UNLESS (OR (NULL DOC) (STRING DOC))
-         COLLECT (LIST S DOC)))))
-
-
+        (LOOP FOR S IN cl-function-list
+              FOR FN = (SYMBOL-FUNCTION S)
+              FOR DOC = (DOCUMENTATION FN T)
+              UNLESS (OR (NULL DOC) (STRING DOC))
+                COLLECT (LIST S DOC)))
+      (nil))
