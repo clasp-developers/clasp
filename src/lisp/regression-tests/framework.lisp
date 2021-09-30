@@ -82,6 +82,7 @@
   (incf *passes*))
 
 (defun %test (name form thunk expected &key description (test 'equalp))
+  (note-test name)
   (multiple-value-bind (results error)
       (ignore-errors (values (multiple-value-list (funcall thunk)) nil))
     (cond (error (%fail-test-with-error name form expected error description))
