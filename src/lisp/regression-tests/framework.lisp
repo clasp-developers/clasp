@@ -65,7 +65,7 @@
   (push (list name error) *all-runtime-errors*)
   (incf *fails*)
   (push name *failed-tests*)
-  (format t "~&Failed ~s~%Unexpected error~%~t~s~%while evaluating~%~t~a~%"
+  (format t "~&Failed ~s~%Unexpected error~%~t~a~%while evaluating~%~t~a~%"
           name error form)
   (when description (format t "~s~%" description)))
 
