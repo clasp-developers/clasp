@@ -48,6 +48,89 @@ THE SOFTWARE.
 
 namespace core {
 
+
+FuncallableInstance_sp SingleDispatchGenericFunctionClosure_O::create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex)
+{
+  size_t number_of_required_arguments = llhandler->numberOfRequiredArguments();
+  Rack_sp rack = Rack_O::make(REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS,nil<T_O>(),nil<T_O>());
+  rack->low_level_rackSet(REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,nil<T_O>());
+  rack->low_level_rackSet(REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER,llhandler);
+  rack->low_level_rackSet(REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX,
+                          make_fixnum(singleDispatchArgumentIndex));
+  rack->low_level_rackSet(REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,nil<T_O>());
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(gfname,single_dispatch_funcallable_entry_point,llhandler->lambdaList());
+  Instance_sp class_ = gc::As<Instance_sp>(cl__find_class(_sym_SingleDispatchGenericFunctionClosure_O));
+  rack->stamp_set(class_->CLASS_stamp_for_instances());
+  auto gfun = gctools::GC<FuncallableInstance_O>::allocate(entryPoint,class_,rack);
+//  gfun->entry = single_dispatch_funcallable_entry_point;
+  return gfun;
+}
+
+LCC_RETURN SingleDispatchGenericFunctionClosure_O::single_dispatch_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
+  SETUP_CLOSURE(FuncallableInstance_O,closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+  size_t singleDispatchArgumentIndex = closure->_Rack->low_level_rackRef(REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX).unsafe_fixnum();
+  Instance_sp dispatchArgClass;
+  // SingleDispatchGenericFunctions can dispatch on the first or second argument
+  // so we need this switch here.
+#ifdef DEBUG_EVALUATE
+  if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+    printf("%s:%d single dispatch arg0 %s\n", __FILE__, __LINE__, _rep_(LCC_ARG0()).c_str());
+  }
+#endif
+  switch (singleDispatchArgumentIndex) {
+  case 0:
+      dispatchArgClass = lisp_instance_class(LCC_ARG0());
+      break;
+  case 1:
+      dispatchArgClass = lisp_instance_class(LCC_ARG1());
+      break;
+  default:
+      SIMPLE_ERROR(BF("Add support to dispatch off of something other than one of the first two arguments - arg: %d") % singleDispatchArgumentIndex);
+  }
+  List_sp callHistory = gc::As_unsafe<List_sp>(closure->_Rack->low_level_rackRef(REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY));
+  INITIALIZE_VA_LIST();
+  while (callHistory.consp()) {
+    Cons_sp entry = gc::As_unsafe<Cons_sp>(CONS_CAR(callHistory));
+    callHistory = CONS_CDR(callHistory);
+    if (CONS_CAR(entry) == dispatchArgClass) {
+      SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>(CONS_CDR(entry));
+      Function_sp method_function = method->_function;
+      return (method_function->entry())(LCC_PASS_ARGS_VASLIST(method_function.raw_(),lcc_vargs));
+    }
+  }
+  // There wasn't a direct match in the call history - so search the class-precedence list of the
+  // argument to see if any of the ancestor classes are handled by this single dispatch generic function
+  // This is the slow path for discriminating functions.
+  // Update the call-history with what we find.
+  List_sp classPrecedenceList = dispatchArgClass->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+  List_sp methods = gc::As_unsafe<List_sp>(closure->_Rack->low_level_rackRef(REF_SINGLE_DISPATCH_SPECIALIZER_METHODS));
+  while (classPrecedenceList.consp()) {
+    Instance_sp class_ = gc::As<Instance_sp>(CONS_CAR(classPrecedenceList));
+    classPrecedenceList = CONS_CDR(classPrecedenceList);
+    List_sp curMethod = methods;
+    while (curMethod.consp()) {
+      SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>(CONS_CAR(curMethod));
+      curMethod = CONS_CDR(curMethod);
+      Instance_sp methodClass = method->receiver_class();
+      if (methodClass == class_) {
+        // Update the call-history using CAS
+        T_sp expected;
+        Cons_sp entry = Cons_O::create(dispatchArgClass,method);
+        Cons_sp callHistoryEntry = Cons_O::create(entry,nil<T_O>());
+        do {
+          expected = closure->_Rack->low_level_rackRef(REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY);
+          callHistoryEntry->rplacd(expected);
+        } while (!closure->_Rack->low_level_rack_compare_exchange_weak(REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,expected,callHistoryEntry));
+        Function_sp method_function = method->_function;
+        return (method_function->entry())(LCC_PASS_ARGS_VASLIST(method_function.raw_(),lcc_vargs));
+      }
+    }
+  }
+  SIMPLE_ERROR(BF("This single dispatch generic function %s does not recognize argument class %s") % _rep_(closure->asSmartPtr()) % _rep_(dispatchArgClass));
+}
+
+
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchGenericFunction)dx")
 DOCGROUP(clasp)
@@ -72,7 +155,7 @@ CL_DEFUN FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_
       if (setf_gfname->fboundp_setf()) {
         SIMPLE_ERROR(BF("The name %s has something bound to its setf function slot but no generic function with that name was found") % _rep_(gfname));
       }
-      gfn = FuncallableInstance_O::create_single_dispatch_generic_function(gfname, llhandler,singleDispatchArgumentIndex);
+      gfn = SingleDispatchGenericFunctionClosure_O::create_single_dispatch_generic_function(gfname, llhandler,singleDispatchArgumentIndex);
       setf_gfname->setSetfFdefinition(gfn);
       if (autoExport) setf_gfname->exportYourself();
     } else {
@@ -82,7 +165,7 @@ CL_DEFUN FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_
         T_sp symFunc = gfname_symbol->symbolFunction();
         SIMPLE_ERROR(BF("The symbol %s has something bound to its function slot but no FuncallableInstance with that name was found") % _rep_(gfname));
       }
-      gfn = FuncallableInstance_O::create_single_dispatch_generic_function(gfname, llhandler,singleDispatchArgumentIndex);
+      gfn = SingleDispatchGenericFunctionClosure_O::create_single_dispatch_generic_function(gfname, llhandler,singleDispatchArgumentIndex);
       gfname_symbol->setf_symbolFunction(gfn);
       if (autoExport) gfname_symbol->exportYourself();
     }
@@ -107,7 +190,7 @@ CL_DEFUN void core__ensure_single_dispatch_method(FuncallableInstance_sp gfuncti
                                                                   docstring,
                                                                   body);
   ASSERT(lambda_list_handler.notnilp());
-  LambdaListHandler_sp gf_llh = gc::As<LambdaListHandler_sp>(gfunction->lambdaListHandler());
+  LambdaListHandler_sp gf_llh = gc::As<LambdaListHandler_sp>(gfunction->_Rack->low_level_rackRef(SingleDispatchGenericFunctionClosure_O::REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER));
   if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments()) {
     SIMPLE_ERROR(BF("There is a mismatch between the number of required arguments\n"
                     " between the single-dispatch-generic-function %s which expects %d arguments\n"
@@ -119,9 +202,17 @@ CL_DEFUN void core__ensure_single_dispatch_method(FuncallableInstance_sp gfuncti
                     " --> The solution is to give the most recent Common Lisp method you defined\n"
                     " a new name by prefixing it with the class name\n"
                     " eg: getFilename -> PresumedLoc-getFilename") %
-                 _rep_(tgfname) % gf_llh->numberOfRequiredArguments() % _rep_(gfunction->callHistory()) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
+                 _rep_(tgfname) % gf_llh->numberOfRequiredArguments() % _rep_(gfunction->_Rack->low_level_rackRef(SingleDispatchGenericFunctionClosure_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY)) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
   }
-  gfunction->addSingleDispatchMethod(method);
+  // Update the methods using CAS
+  {
+    T_sp expected;
+    Cons_sp entry = Cons_O::create(method,nil<T_O>());
+    do {
+      expected = gfunction->_Rack->low_level_rackRef(SingleDispatchGenericFunctionClosure_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS);
+      entry->rplacd(expected);
+    } while (!gfunction->_Rack->low_level_rack_compare_exchange_weak(SingleDispatchGenericFunctionClosure_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS, expected, entry));
+  }
   if (docstring.notnilp()) {
     core::ext__annotate(method,cl::_sym_documentation,core::_sym_single_dispatch_method, docstring );
   }
@@ -195,45 +286,6 @@ void recursivelySatiate(FuncallableInstance_sp gfun, Instance_sp dispatchClass, 
     directSubClasses = oCdr(directSubClasses);
   }
 }
-
-
-#if 0
-DOCGROUP(clasp)
-CL_DEFUN void core__satiateSingleDispatchGenericFunctions()
-{
-  List_sp singleDispatchGenericFunctions = _lisp->_Roots._SingleDispatchGenericFunctions.load();
-  size_t len = cl__length(singleDispatchGenericFunctions);
-  SimpleVector_sp functions = SimpleVector_O::make(len);
-  size_t index = 0;
-  List_sp cur = singleDispatchGenericFunctions;
-  while (cur.notnilp()) {
-    T_sp tgfunName = oCar(cur);
-    FuncallableInstance_sp gfun = gc::As<FuncallableInstance_sp>(cl__fdefinition(tgfunName));
-    ComplexVector_T_sp dispatchVector = gc::As<ComplexVector_T_sp>(gfun->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR));
-    ComplexVector_T_sp sortedDispatchVector = sortDispatchVectorByClassPrecedence(dispatchVector);
-#ifdef DEBUG_SINGLE_DISPATCH
-    printf("%s:%d vvvvvvvvvvvvvvvvvv  %s with %lu entries\n", __FILE__, __LINE__, _rep_(tgfunName).c_str(), dispatchVector->length()/2 );
-    printf("%s:%d           dispatchVector\n", __FILE__, __LINE__);
-    for ( size_t ii = 0; ii<dispatchVector->length(); ii+= 2) printf("      %s\n", _rep_((*dispatchVector)[ii]).c_str());
-    if (dispatchVector->length()>2) {
-      printf("%s:%d     sortedDispatchVector\n", __FILE__, __LINE__);
-      for ( size_t ii = 0; ii<sortedDispatchVector->length(); ii+= 2) printf("      %s\n", _rep_((*sortedDispatchVector)[ii]).c_str());
-    }
-#endif
-    ComplexVector_T_sp newDispatchVector = ComplexVector_T_O::make(16,nil<T_O>(),make_fixnum(0));
-    for (size_t ii = 0; ii<sortedDispatchVector->length(); ii += 2) {
-      Instance_sp dispatchClass = gc::As<Instance_sp>((*sortedDispatchVector)[ii]);
-      SingleDispatchMethod_sp method = gc::As<SingleDispatchMethod_sp>((*sortedDispatchVector)[ii+1]);
-      recursivelySatiate(gfun,dispatchClass,method,newDispatchVector);
-    }
-    gfun->_Rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR,newDispatchVector);
-#ifdef DEBUG_SINGLE_DISPATCH
-    printf("%s:%d ^^^^^^^^^^^^^^^^^  satiating %s there are %lu entries\n", __FILE__, __LINE__, _rep_(tgfunName).c_str(), newDispatchVector->length()/2 );
-#endif
-    cur = oCdr(cur);
-  }
-}
-#endif
 
 // ----------------------------------------------------------------------
 //

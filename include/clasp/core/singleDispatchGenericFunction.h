@@ -33,10 +33,21 @@ THE SOFTWARE.
 
 
 namespace core {
-  FORWARD(SingleDispatchMethod);
-  class SingleDispatchGenericFunctionClosure_O : public Closure_O {
-    LISP_CLASS(core,CorePkg,SingleDispatchGenericFunctionClosure_O,"SingleDispatchGenericFunctionClosure",Closure_O);
-  };
+FORWARD(SingleDispatchMethod);
+class SingleDispatchGenericFunctionClosure_O : public Closure_O {
+  LISP_CLASS(core,CorePkg,SingleDispatchGenericFunctionClosure_O,"SingleDispatchGenericFunctionClosure",Closure_O);
+public:
+  typedef enum {
+      REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY = 0,
+      REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER = 1,
+      REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX = 2,
+      REF_SINGLE_DISPATCH_SPECIALIZER_METHODS = 3,
+      REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS = 4
+  } SingleDispatchSlots;
+public:
+  static FuncallableInstance_sp create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex);
+  static LCC_RETURN single_dispatch_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
+};
 
 };
 
