@@ -21,18 +21,21 @@
        (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
 
 ;;; See NOTE on compile-in-env below.
-(defun compile-with-hook (compile-hook definition env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun compile-with-hook (compile-hook definition env pathname
+                          &key (linkage 'llvm-sys:internal-linkage) name)
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
   (with-compilation-results ()
     (if compile-hook
-        (funcall compile-hook definition env pathname :linkage linkage)
-        (bclasp-compile* definition env pathname :linkage linkage))))
+        (funcall compile-hook definition env pathname
+                 :linkage linkage :name name)
+        (bclasp-compile* definition env pathname :linkage linkage :name name))))
 
 ;;; NOTE: cclasp may pass a definition that is a CST or AST.
 ;;; As such, this function should probably not examine the definition at all.
-(defun compile-in-env (definition env &optional (compile-hook *cleavir-compile-hook*)
-                                        (linkage 'llvm-sys:internal-linkage))
+(defun compile-in-env (definition env
+                       &optional (compile-hook *cleavir-compile-hook*)
+                         (linkage 'llvm-sys:internal-linkage) name)
   "Compile in the given environment"
   (with-compiler-env ()
     (let* ((module (create-run-time-module-for-compile)))
@@ -42,7 +45,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
         (cmp-log "Dumping module%N")
         (cmp-log-dump-module module)
         (let ((pathname (if *load-pathname* (namestring *load-pathname*) "repl-code")))
-          (compile-with-hook compile-hook definition env pathname :linkage linkage))))))
+          (compile-with-hook compile-hook definition env pathname :linkage linkage :name name))))))
 
 (defun compile (name &optional definition)
   (multiple-value-bind (function warnp failp)
@@ -55,12 +58,12 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
          (multiple-value-bind (lambda-expression wrapped-env)
              (generate-lambda-expression-from-interpreted-function definition)
            (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s%N" name lambda-expression wrapped-env)
-           (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage)))
+           (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage name)))
         ((functionp definition)
          (error "COMPILE doesn't know how to handle this type of function"))
         ((and (consp definition) (eq (car definition) 'lambda))
          (cmp-log "compile form: %s%N" definition)
-         (compile-in-env definition nil *cleavir-compile-hook* 'llvm-sys:internal-linkage))
+         (compile-in-env definition nil *cleavir-compile-hook* 'llvm-sys:internal-linkage name))
         ((null definition)
          (let ((func (cond ((fboundp name) (fdefinition name))
                            ((and (symbolp name) (macro-function name)))
@@ -71,7 +74,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (multiple-value-bind (lambda-expression wrapped-env)
                   (generate-lambda-expression-from-interpreted-function func)
                 (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s%N" name lambda-expression wrapped-env)
-                (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:internal-linkage)))
+                (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:internal-linkage name)))
              ((compiled-function-p func)
               (values func nil nil))
              ((core:instancep func) ; FIXME: funcallable-instance-p, probably

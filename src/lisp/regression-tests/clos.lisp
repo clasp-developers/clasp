@@ -7,22 +7,21 @@
 (test-expect-error defclass-1 (eval '(defclass foo ()(bar bar))) :type program-error)
 
 (test JIT-FUNCTION-NAME-1
-      (equal '(NIL (3 (3 . 2)))
-             (multiple-value-list
-              (let* ((sym (gensym))
-                     (method
-                       (eval `(defmethod (setf ,sym) ((x t) (y cons)) (setf (car y) x)))))
-                (declare (ignore method))
-                (values
-                 (fboundp sym)
-                 (let ((x (cons 1 2))) (list (funcall (fdefinition `(setf ,sym)) 3 x) x)))))))
+      (let* ((sym (gensym))
+             (method
+               (eval `(defmethod (setf ,sym) ((x t) (y cons)) (setf (car y) x)))))
+        (declare (ignore method))
+        (values
+         (fboundp sym)
+         (let ((x (cons 1 2))) (list (funcall (fdefinition `(setf ,sym)) 3 x) x))))
+      (NIL (3 (3 . 2))))
 
 (test-expect-error defclass-2 (eval '(defclass xxx nil nil nil))  :type program-error)
 
 (defmethod foo-bar ((vector vector)) vector)
 
-(test issue-698
-      (vectorp (foo-bar (make-array 23 :adjustable T))))
+;; if 698 is broken, this would signal an error
+(test-true issue-698 (foo-bar (make-array 23 :adjustable T)))
 
 (test-expect-error make-instance.error.5 (let ()(make-instance)) :type program-error)
 
@@ -35,31 +34,31 @@
   42)
 
 (test slot-missing-2-simplified
-      (eq 'bar
-          (let ((obj (make-instance 'slot-missing-class-01)))
-            (setf (slot-value obj 'foo) 'bar))))
+      (let ((obj (make-instance 'slot-missing-class-01)))
+        (setf (slot-value obj 'foo) 'bar))
+      (bar))
 
 (defstruct foo-make-load-form-saving-slots a b c)
 
-(test make-load-form-saving-slots-defstruct
-      (let ((object (make-foo-make-load-form-saving-slots :a 'foo :b '(1 2) :c 23)))
-        (multiple-value-bind
-              (form-allocation form-initialisation)
-            (make-load-form-saving-slots object)
-          (let ((new-object (eval form-allocation)))
-            (eval (subst new-object object form-initialisation))
-            (eq (class-of object) (class-of new-object))))))
+(test-true make-load-form-saving-slots-defstruct
+           (let ((object (make-foo-make-load-form-saving-slots :a 'foo :b '(1 2) :c 23)))
+             (multiple-value-bind
+                   (form-allocation form-initialisation)
+                 (make-load-form-saving-slots object)
+               (let ((new-object (eval form-allocation)))
+                 (eval (subst new-object object form-initialisation))
+                 (eq (class-of object) (class-of new-object))))))
 
 (defclass foo-make-load-form-saving-slots-class ()((a :initform :a)))
 
-(test make-load-form-saving-slots-class
-      (let ((object (make-instance 'foo-make-load-form-saving-slots-class)))
-        (multiple-value-bind
-              (form-allocation form-initialisation)
-            (make-load-form-saving-slots object)
-          (let ((new-object (eval form-allocation)))
-            (eval (subst new-object object form-initialisation))
-            (eq (class-of object) (class-of new-object))))))
+(test-true make-load-form-saving-slots-class
+           (let ((object (make-instance 'foo-make-load-form-saving-slots-class)))
+             (multiple-value-bind
+                   (form-allocation form-initialisation)
+                 (make-load-form-saving-slots object)
+               (let ((new-object (eval form-allocation)))
+                 (eval (subst new-object object form-initialisation))
+                 (eq (class-of object) (class-of new-object))))))
             
 (test-expect-error
  defclass-error-options-1
@@ -75,31 +74,30 @@
          (:illegal-option nil)))
  :type program-error)
 
-(test slot-exists-p-gives-single-value-slot-exists
-      (null (cdr
-             (multiple-value-list
-              (slot-exists-p (make-instance 'test) 'foo)))))
+(test-true slot-exists-p-gives-single-value-slot-exists
+           (null (cdr
+                  (multiple-value-list
+                   (slot-exists-p (make-instance 'test) 'foo)))))
 
-(test slot-exists-p-gives-single-value-slot-not-exists
-      (null (cdr
-             (multiple-value-list
-              (slot-exists-p (make-instance 'test) 'fooasdasdasd)))))
+(test-true slot-exists-p-gives-single-value-slot-not-exists
+           (null (cdr
+                  (multiple-value-list
+                   (slot-exists-p (make-instance 'test) 'fooasdasdasd)))))
 
-(test slot-exists-p-gives-single-value-slot-not-exists-build-in-class
-      (null (cdr
-             (multiple-value-list
-              (slot-exists-p (find-class 'test) 'fooasdasdasd)))))
+(test-true slot-exists-p-gives-single-value-slot-not-exists-build-in-class
+           (null (cdr
+                  (multiple-value-list
+                   (slot-exists-p (find-class 'test) 'fooasdasdasd)))))
 
-(test slot-exists-p-other-arguments
-      (notany  #'(lambda(object)
-                   (slot-exists-p object 'foo))
-               (list 42 42.0 'c "324789" (code-char 65)
-                     (vector 1 2 3) (make-hash-table))))
+(test-true slot-exists-p-other-arguments
+           (notany #'(lambda (object) (slot-exists-p object 'foo))
+                   (list 42 42.0 'c "324789" (code-char 65)
+                         (vector 1 2 3) (make-hash-table))))
 
 (defgeneric find-method-gf-02 (x))
 (defmethod find-method-gf-02 ((x (eql 1234567890))) 'a)
-(test find-method-eql
-      (find-method #'find-method-gf-02 nil (list '(eql 1234567890))))
+(test-true find-method-eql
+           (find-method #'find-method-gf-02 nil (list '(eql 1234567890))))
 
 
 (defclass %foo-1 ()
@@ -110,21 +108,16 @@
   (call-next-method)
   23)
 
-(test test-issue-1031
-      (not (numberp (make-instance '%foo-1 :a 1))))
+(test-type test-issue-1031 (make-instance '%foo-1 :a 1) %foo-1)
 
 (defgeneric congruent-gf (a &key b &allow-other-keys))
-(test clos-lambda-list-congruent-allow-other-keys
-      (defmethod congruent-gf (a &key)
-        a))
+(test-true clos-lambda-list-congruent-allow-other-keys
+           (defmethod congruent-gf (a &key)
+             a))
 
 (defgeneric q (object))
 (defmethod q ((list list)))
 (defmethod q ((s symbol)))
 (defmethod q ((true (eql t))) t)
 (defmethod q ((n (eql nil))) t)
-(test eql-specializers-from-irc
-      (q t))
- 
-
-
+(test-true eql-specializers-from-irc (q t))

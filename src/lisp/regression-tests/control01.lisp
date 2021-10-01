@@ -2,45 +2,41 @@
 
 ;;; all from failed ansi-tests
 (TEST MULTIPLE-VALUE-SETQ.9
-      (multiple-value-bind (a b)
-          (LET (X)
-            (VALUES (MULTIPLE-VALUE-SETQ (X X) (VALUES 1 2)) X))
-        (and (= a 1) (= b 2))))
+      (LET (X)
+        (VALUES (MULTIPLE-VALUE-SETQ (X X) (VALUES 1 2)) X))
+      (1 2))
 
 (TEST MULTIPLE-VALUE-SETQ.10
-      (multiple-value-bind (a b)
-          (LET (X)
-        (VALUES (MULTIPLE-VALUE-SETQ (X X) (VALUES 1)) X))
-        (and (= a 1) (null b))))
+      (VALUES (MULTIPLE-VALUE-SETQ (X X) (VALUES 1)) X)
+      (1 nil))
 
-(TEST MULTIPLE-VALUE-SETQ.13 (eq :good (MULTIPLE-VALUE-SETQ NIL :good)))
+(TEST MULTIPLE-VALUE-SETQ.13 (MULTIPLE-VALUE-SETQ NIL :good) (:good))
 
-(TEST MULTIPLE-VALUE-SETQ.14 (null (MULTIPLE-VALUE-SETQ NIL (VALUES))))
+(TEST MULTIPLE-VALUE-SETQ.14 (MULTIPLE-VALUE-SETQ NIL (VALUES)) (nil))
 
-(TEST MULTIPLE-VALUE-SETQ.15 (eq 'a (MULTIPLE-VALUE-SETQ NIL (VALUES 'A 'B))))
+(TEST MULTIPLE-VALUE-SETQ.15 (MULTIPLE-VALUE-SETQ NIL (VALUES 'A 'B)) (a))
 
 (test progv-1
-      (PROGV
-          '(X Y Z W)
-          '(1)
-        (and (BOUNDP 'X) (not (BOUNDP 'Y)) (not (BOUNDP 'Z)) (not (BOUNDP 'W)))))
+      (PROGV '(X Y Z W) '(1)
+        (values (boundp 'x) (boundp 'y) (boundp 'z) (boundp 'w)))
+      (t nil nil nil))
 
 (test multiple-value-call.1
       ;; this is intended to test the three ways we save values for mv-call
-      (equal (multiple-value-call #'list
-               (values-list '(1 2)) ; temp storage
-               (values 9 8) ; fixed # of values
-               (values-list '(3 4))) ; last form
-             '(1 2 9 8 3 4)))
+      (multiple-value-call #'list
+        (values-list '(1 2)) ; temp storage
+        (values 9 8) ; fixed # of values
+        (values-list '(3 4))) ; last form
+      ((1 2 9 8 3 4)))
 
 ;;; To fix this, I would have to "unbind" a or set its binding to undefined
-(test-expect-error
- progv-2
- (let ((a 1))(declare (special a))(progv '(a) nil a))
- :type unbound-variable)
+(test-expect-error progv-2
+                   (let ((a 1)) (declare (special a)) (progv '(a) nil a))
+                   :type unbound-variable)
 
 (test progv-3
-      (= 1 (let ((a 1))(declare (special a))(progv '(a) nil) (symbol-value 'a))))
+      (let ((a 1))(declare (special a))(progv '(a) nil) (symbol-value 'a))
+      (1))
 
 (defun dummy (a) a)
 (defun (setf dummy) (new old)
@@ -52,9 +48,9 @@
 (test-expect-error FBOUNDP.ERROR.5 (FBOUNDP '(SETF dummy BAR)) :type type-error)
 (test-expect-error FBOUNDP.ERROR.9 (FBOUNDP '(SETF . dummy)) :type type-error)
 (test-expect-error FBOUNDP.ERROR.10 (FBOUNDP '(SETF nil nil)) :type type-error)
-(test FBOUNDP.11 (null (FBOUNDP '(SETF nil))))
-(test FBOUNDP.12 (core:valid-function-name-p '(SETF nil)))
-(test FBOUNDP.13 (null (core:function-block-name '(SETF nil))))
+(test FBOUNDP.11 (FBOUNDP '(SETF nil)) (nil))
+(test FBOUNDP.12 (core:valid-function-name-p '(SETF nil)) (t))
+(test FBOUNDP.13 (core:function-block-name '(SETF nil)) (nil))
 
 
 (test-expect-error fmakunbound.1 (fmakunbound '(setf)) :type type-error)
@@ -66,7 +62,7 @@
 (test-expect-error fdefinition.2 (fdefinition '(SETF dummy . BAR)) :type type-error)
 (test-expect-error fdefinition.3 (fdefinition '(SETF dummy BAR)) :type type-error)
 (test-expect-error fdefinition.4 (fdefinition '(SETF . dummy)) :type type-error)
-(test              fdefinition.5 (fdefinition '(SETF dummy)))
+(test-true         fdefinition.5 (fdefinition '(SETF dummy)))
 (test-expect-error fdefinition.6 (fdefinition '(SETF  %%%nada%%%)) :type undefined-function)
 (test-expect-error fdefinition.7 (fdefinition '%%%nada%%%) :type undefined-function)
 
@@ -74,35 +70,34 @@
 (test-expect-error setf-fdefinition.2 (setf (fdefinition '(SETF dummy . BAR)) #'(lambda(&rest was)(declare (ignore was)))) :type type-error)
 (test-expect-error setf-fdefinition.3 (setf (fdefinition '(SETF dummy BAR)) #'(lambda(&rest was)(declare (ignore was)))) :type type-error)
 (test-expect-error setf-fdefinition.4 (setf (fdefinition '(SETF . dummy)) #'(lambda(&rest was)(declare (ignore was)))) :type type-error)
-(test              setf-fdefinition.5 (setf (fdefinition '%%%nada%%%) #'(lambda(&rest was)(declare (ignore was)))))
+(test-true              setf-fdefinition.5 (setf (fdefinition '%%%nada%%%) #'(lambda(&rest was)(declare (ignore was)))))
 
-(test equalp-babel
+(test-true equalp-babel
       (equalp 
        (make-array 4 :element-type 'character :initial-contents (list #\a #\SUB #\b #\c))
        #(#\a #\Sub #\b #\c)))
 
-(test notnot (eql t (let()
-                      (not (not 3)))))
+(test notnot (let () (not (not 3))) (t))
 
 (test-expect-error flet-too-few (flet ((%f (a) a)) (%f)) :type program-error)
 (test-expect-error flet-too-many (flet ((%f (a) a)) (%f 1 2)) :type program-error)
 
 (test issue-930
       (let ()
-        (eq :good
-            (handler-case
-                (progn
-                  (FUNCALL 'PROGN 1)
-                  :bad)
-              (undefined-function (uf)
-                (if (eq (cell-error-name uf) 'progn)
-                    :good
-                    :bad))))))
+        (handler-case
+            (progn
+              (FUNCALL 'PROGN 1)
+              :bad)
+          (undefined-function (uf)
+            (if (eq (cell-error-name uf) 'progn)
+                :good
+                :bad))))
+      (:good))
 
 (test issue-780
-      (equalp '(2 1)
-              (macrolet ((%m (&key ((:a (b c)))) `(quote (,c ,b))))
-    (%m :a (1 2)))))
+      (macrolet ((%m (&key ((:a (b c)))) `(quote (,c ,b))))
+        (%m :a (1 2)))
+      ((2 1)))
 
 ;;; Test that setf expanders are shadowed by flet, labels, and macrolet.
 (define-setf-expander issue-982-place (place &environment env)
@@ -114,7 +109,8 @@
         (declare (ignore #'issue-982-place))
         (let ((c (cons nil nil)))
           (setf (issue-982-place c) t)
-          (car c))))
+          (car c)))
+      (t))
 
 (test issue-982-labels
       (labels ((issue-982-place (c) (car c))
@@ -122,13 +118,15 @@
         (declare (ignore #'issue-982-place))
         (let ((c (cons nil nil)))
           (setf (issue-982-place c) t)
-          (car c))))
+          (car c)))
+      (t))
 
 (test issue-982-macrolet
       (macrolet ((issue-982-place (c) `(car ,c)))
         (let ((c (cons nil nil)))
           (setf (issue-982-place c) t)
-          (car c))))
+          (car c)))
+      (t))
 
 ;;; Test that setf uses macroexpand-1, not macroexpand,
 ;;; and therefore can prefer setf expanders to macro expanders.
@@ -141,4 +139,5 @@
       (macrolet ((macro-place-pre (place) `(macro-place-1 ,place)))
         (let ((c (cons nil nil)))
           (setf (macro-place-pre c) t)
-          (cdr c))))
+          (cdr c)))
+      (t))

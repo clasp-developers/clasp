@@ -449,6 +449,21 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
                 core::Integer_O::create(info.Discriminator));
 }
 
+// Get the function name for an address, i.e. part of the line info.
+// We go through DIEs to get a const char* we don't need to free.
+// FIXME: This is all needs reorganization badly.
+const char* getFunctionNameForAddress(DWARFContext_sp sdc,
+                                      SectionedAddress_sp saddr) {
+  llvm::DWARFContext* dicontext = sdc->wrappedPtr();
+  llvm::object::SectionedAddress addr = saddr->_value;
+
+  auto dies = dicontext->getDIEsForAddress(addr.Address);
+  llvm::DWARFDie fdie = dies.FunctionDIE;
+  if (fdie.isValid())
+    return fdie.getSubroutineName(llvm::DINameKind::LinkageName);
+  else return NULL;
+}
+
 // We can't translate a DWARFContext_sp into a DIContext* directly, apparently.
 // The SectionedAddress translation is also a bust.
 CL_LAMBDA(dwarfcontext sectioned-address &key verbose)

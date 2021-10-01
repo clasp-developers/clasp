@@ -39,9 +39,9 @@
 (defun disassemble-function-to-asm (function)
   (multiple-value-bind (symbol start end)
       (core:lookup-address (core:function-pointer function))
-    (declare (ignore symbol))
-    (disassemble-assembly start end)
-    (bformat t "Done%N")))
+    (if symbol
+        (disassemble-assembly start end)
+        (format t "; could not locate code object (bug?)~%"))))
 
 ;;; should work for both lambda expressions and interpreted functions.
 (defun disassemble-to-ir (thing)

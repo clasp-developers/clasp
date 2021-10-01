@@ -59,37 +59,54 @@
         (format t "~%unexpected success ~a~%" (nreverse unexpected-successes))))))
 
 (defvar *all-runtime-errors* nil)
-(defmacro test (name form &key description )
-  `(if (progn
-         (note-test ',name)
-         (multiple-value-bind (result error)
-             (ignore-errors ,form)
-           (when error
-             (push (list ',name error) *all-runtime-errors*))
-           result))
-       (progn
-         (format t "Passed ~s~%" ',name)
-         (incf *passes*))
-       (progn
-         (incf *fails*)
-         (push ',name *failed-tests*)
-         (format t "Failed ~s~%" ',name)
-         (when ,description (format t "~s~%" ,description)))))
 
-(defmacro test-type= (t1 t2)
-  `(test (and (subtypep ,t1 ,t2) (subtypep ,t2 ,t1))))
+(defun %fail-test-with-error (name form expected error description)
+  (declare (ignore expected)) ; maybe display later?
+  (push (list name error) *all-runtime-errors*)
+  (incf *fails*)
+  (push name *failed-tests*)
+  (format t "~&Failed ~s~%Unexpected error~%~t~a~%while evaluating~%~t~a~%"
+          name error form)
+  (when description (format t "~s~%" description)))
 
-#+(or)
-(defun expand-test-expect-error (fn)
-  (handler-case
-      (progn
-        (funcall fn)
-        nil)
-    (error () t)))
+(defun %fail-test (name form expected actual description test)
+  (incf *fails*)
+  (push name *failed-tests*)
+  (format t "~&Failed ~s~%Wanted values ~s to~%~{~t~a~%~}but got~%~{~t~a~%~}"
+          name test expected actual)
+  (format t "while evaluating~%~t~a~%" form)
+  (when description (format t "~s~%" description)))
+
+(defun %succeed-test (name)
+  (format t "~&Passed ~s~%" name)
+  (incf *passes*))
+
+(defun %test (name form thunk expected &key description (test 'equalp))
+  (note-test name)
+  (multiple-value-bind (results error)
+      (ignore-errors (values (multiple-value-list (funcall thunk)) nil))
+    (cond (error (%fail-test-with-error name form expected error description))
+          ((and (= (length expected) (length results))
+                (every test results expected))
+           (%succeed-test name))
+          (t (%fail-test name form expected results description test)))))
+
+(defmacro test (name form expected &key description (test ''equalp))
+  `(%test ',name ',form (lambda () ,form) ',expected
+          :description ,description :test ,test))
 
 (defmacro test-expect-error (name form &key (type 'error) description)
-  `(test ,name (handler-case (progn ,form nil)
-                 (,type () t)) :description ,description))
+  `(test ,name
+         (ignore-errors (values (multiple-value-list ,form) nil))
+         (null ,type)
+         :test 'typep
+         :description ,description))
+
+(defmacro test-true (name form &key description)
+  `(test ,name (not (not ,form)) (t) :description ,description))
+
+(defmacro test-type (name form type &key description)
+  `(test ,name (values ,form) (,type) :test 'typep :description ,description))
 
 (defun load-if-compiled-correctly (file)
   (handler-case

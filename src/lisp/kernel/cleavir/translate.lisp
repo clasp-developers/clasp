@@ -1484,7 +1484,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (ver module "meta")
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
-  (bir-transformations:module-generate-type-checks module)
+  (bir-transformations:module-generate-type-checks module system)
   (cc-bir-to-bmir:assign-module-rtypes module)
   (cc-bir-to-bmir:insert-values-coercion-into-module module)
   ;; These should happen last since they are like "post passes" which
@@ -1507,16 +1507,18 @@ COMPILE-FILE will use the default *clasp-env*."
     (translate bir :abi abi :linkage linkage)))
 
 (defun bir-compile (form env pathname
-                    &key (linkage 'llvm-sys:internal-linkage))
-  (bir-compile-cst (cst:cst-from-expression form) env pathname :linkage linkage))
+                    &key (linkage 'llvm-sys:internal-linkage) name)
+  (bir-compile-cst (cst:cst-from-expression form) env pathname
+                   :linkage linkage :name name))
 
 (defun bir-compile-cst (cst env pathname
-                        &key (linkage 'llvm-sys:internal-linkage))
+                        &key (linkage 'llvm-sys:internal-linkage) name)
   (declare (ignore linkage))
   (let* (function
          ordered-raw-constants-list constants-table startup-shutdown-id
          (cst-to-ast:*compiler* 'cl:compile)
-         (ast (cst->ast cst env)))
+         (ast (cst->ast cst env))
+         (name (or name (ast:name ast))))
     (declare (ignorable constants-table))
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-shutdown-id)
@@ -1527,7 +1529,7 @@ COMPILE-FILE will use the default *clasp-env*."
     ;;(llvm-sys:dump-module cmp:*the-module* *standard-output*)
     (cmp:jit-add-module-return-function
      cmp:*the-module*
-     function startup-shutdown-id ordered-raw-constants-list)))
+     function startup-shutdown-id ordered-raw-constants-list :name name)))
 
 (defun bir-compile-in-env (form &optional env)
   (bir-compile-cst-in-env (cst:cst-from-expression form) env))

@@ -4,8 +4,8 @@
 (defstruct defstruct-predicate.a)
 (defstruct (defstruct-predicate.b (:include defstruct-predicate.a)))
 
-(test defstruct-predicate
-      (defstruct-predicate.a-p (make-defstruct-predicate.b)))
+(test-true defstruct-predicate
+           (defstruct-predicate.a-p (make-defstruct-predicate.b)))
 
 (setf (find-class 'defstruct-predicate.a) nil
       (find-class 'defstruct-predicate.b) nil)
@@ -13,7 +13,7 @@
 ;; Bug 445
 (defstruct copy-structure.foo bar)
 
-(test copy-structure
+(test-true copy-structure
       (let* ((foo1 (make-copy-structure.foo :bar nil))
              (foo2 (copy-structure foo1)))
         (setf (copy-structure.foo-bar foo2) t)
@@ -22,7 +22,7 @@
 (setf (find-class 'copy-structure.foo) nil)
 
 ;; Normal-case
-(test structure-no-keyword-name-normal
+(test-true structure-no-keyword-name-normal
       (let ((instance nil))
         (defstruct otto a b c)
         (setq instance (make-otto :a 1 :b 2 :c 3))
@@ -34,7 +34,7 @@
 ;; Following the pattern of above
 (setf (find-class 'otto) nil)
 
-(test structure-keyword-name-normal
+(test-true structure-keyword-name-normal
       (let ((instance nil))
         (defstruct :otto1 a b c)
         (setq instance (make-otto1 :a 1 :b 2 :c 3))
@@ -51,11 +51,9 @@
       (let ((instance nil))
         (defstruct (:otto2 (:type list)) a b c)
         (setq instance (make-otto2 :a 1 :b 2 :c 3))
-        (multiple-value-bind
-              (copy a b c)
-            (values (copy-otto2 instance) (otto2-a instance)(otto2-b instance)(otto2-c instance))
-          (declare (ignore copy))
-          (and (eql a 1)(eql b 2)(eql c 3)))))
+        (copy-otto2 instance)
+        (values (otto2-a instance) (otto2-b instance) (otto2-c instance)))
+      (1 2 3))
 
 (setf (find-class 'otto2) nil)
 
@@ -64,11 +62,9 @@
       (let ((instance nil))
         (defstruct (:otto3 (:type vector)) a b c)
         (setq instance (make-otto3 :a 1 :b 2 :c 3))
-        (multiple-value-bind
-              (copy a b c)
-            (values (copy-otto3 instance) (otto3-a instance)(otto3-b instance)(otto3-c instance))
-          (declare (ignore copy))
-          (and (eql a 1)(eql b 2)(eql c 3)))))
+        (copy-otto3 instance)
+        (values (otto3-a instance) (otto3-b instance) (otto3-c instance)))
+      (1 2 3))
 
 (setf (find-class 'otto3) nil)
 
@@ -78,7 +74,8 @@
 (defstruct foo-0c (bar 42))
 (test structure-use-readonly-value-positive
       (let ((object (make-foo-0a)))
-        (setf (foo-0a-bar object) 42)))
+        (setf (foo-0a-bar object) 42))
+      (42))
 
 (test-expect-error structure-use-readonly-value-negative
       (let ((object (make-foo-0b)))
@@ -86,7 +83,8 @@
 
 (test structure-use-readonly-value-implicit
       (let ((object (make-foo-0c)))
-        (setf (foo-0c-bar object) 42)))
+        (setf (foo-0c-bar object) 42))
+      (42))
 
 ;;; (DEFSTRUCT (STRUCT-TEST-07 :CONC-NAME) A07 B07) should result in accessors a07, b07
 
@@ -94,17 +92,18 @@
 
 (test struct-test-07-5.simplified
       (let ((obj (make-STRUCT-TEST-07 :a07 23 :b07 42)))
-        (and (a07 obj)(b07 obj))))
+        (values (a07 obj) (b07 obj)))
+      (23 42))
 
 (DEFSTRUCT (STRUCT-TEST-15 (:PREDICATE NIL)) A15 B15)
-(test STRUCT-TEST-15/10 (null (FBOUNDP 'STRUCT-TEST-15-P)))
+(test STRUCT-TEST-15/10 (FBOUNDP 'STRUCT-TEST-15-P) (nil))
 
 (DEFSTRUCT (STRUCT-TEST-15a (:PREDICATE)) A15 B15)
-(test STRUCT-TEST-15/10a (FBOUNDP 'STRUCT-TEST-15A-P))
+(test-true STRUCT-TEST-15/10a (FBOUNDP 'STRUCT-TEST-15A-P))
 (DEFSTRUCT (STRUCT-TEST-15b :PREDICATE) A15 B15)
-(test STRUCT-TEST-15/10b (FBOUNDP 'STRUCT-TEST-15B-P))
+(test-true STRUCT-TEST-15/10b (FBOUNDP 'STRUCT-TEST-15B-P))
 (DEFSTRUCT (STRUCT-TEST-38 (:TYPE LIST) :NAMED) A38 B38 C38)
-(test STRUCT-TEST-38-2
+(test-true STRUCT-TEST-38-2
       (LET ((S (MAKE-STRUCT-TEST-38)))
         (AND (FBOUNDP 'STRUCT-TEST-38-P)
              (FUNCTIONP #'STRUCT-TEST-38-P)
@@ -114,7 +113,7 @@
 
 (DEFSTRUCT (STRUCT-TEST-45 (:TYPE LIST) (:INITIAL-OFFSET 2)) A45 B45)
 ;;; used to error with duplicate slot nil
-(test STRUCT-TEST-45
+(test-true STRUCT-TEST-45
       (eval '(DEFSTRUCT
               (STRUCT-TEST-47 (:TYPE LIST) (:INITIAL-OFFSET 3)
                (:INCLUDE STRUCT-TEST-45))
@@ -124,12 +123,12 @@
 (defstruct foo-2 (bar 42 :read-only t))
 
 ;;; if read-only is not repeated, assume it is set (don't require it explicitely)
-(test sbcl-cross-compile-2
+(test-true sbcl-cross-compile-2
       (eval '(progn
               (defstruct (ifoo-1 (:include foo-2 (bar 43))))
               t)))
 
-(test sbcl-cross-compile-3
+(test-true sbcl-cross-compile-3
       (eval '(progn
               (defstruct (ifoo-2 (:include foo-2 (bar 43 :read-only t))))
               t)))
@@ -147,7 +146,7 @@
 (defstruct node tail-p)
 ;;; must not define node-tail-p in valued-node, since it would override the function from the parent
 ;;; Fdefinition tip from Bike
-(test include-level-2
+(test-true include-level-2
       (let ((before (fdefinition 'node-tail-p)))
         (eval '(defstruct (valued-node (:conc-name node-) (:include node))))
         (eql before (fdefinition 'node-tail-p))))
@@ -155,7 +154,7 @@
 ;;; Should find it , if conc-name leads to different accessor name
 (defstruct (valued-nodea (:conc-name nodea-) (:include node)))
 
-(test include-level-2a
+(test-true include-level-2a
       (progn
         (eval '(defstruct (combination (:include valued-node))))
         (fboundp 'combination-tail-p)))
@@ -163,7 +162,7 @@
 ;;; should generate combination-tailp, but doesn't
 ;;; That breaks cross-compiling sbcl
 ;;; Might be wrong in fix-old-slotd
-(test include-level-2b
+(test-true include-level-2b
       (fboundp 'combination-tail-p))
 
 (defstruct bar0 a)
@@ -172,13 +171,13 @@
 ;;; must not re-generate accessor bar0-a, but must generate bar0-b & bar0-c
 ;;; so it is not enough to look at the immediate parent
 ;;; ccl check in sd-refname-in-included-struct-p all the chain up
-(test include-level-3
+(test-true include-level-3
       (let ((before (fdefinition 'bar0-a)))
         (eval '(defstruct (bar2 (:include bar1)(:conc-name bar0-)) c))
         (eql before (fdefinition 'bar0-a))))
 
 (defstruct (bar2 (:include bar1)(:conc-name bar0-)) c)
-(test include-level-3a
+(test-true include-level-3a
       (and (fboundp 'bar0-b)
            (fboundp 'bar0-c)))
  
@@ -199,7 +198,7 @@
                      (setf (sub-sub-blah1-a object) 15)
                      object))
 
-(test include-level-5a
+(test-true include-level-5a
       (let ((object (make-sub-sub-blah1 :a 1 :b 2 :c 3)))
         (values
          (sub-sub-blah1-a object)
@@ -222,7 +221,7 @@
                            :named)
   d56 e56)
 
-(test struct-test-56
+(test-true struct-test-56
       (let ((s (make-struct-test-56 :a55 1 :b55 2 :c55 3 :d56 4 :e56 5)))
         (and (struct-test-56-p s)
              (= (struct-test-56-a55 s) 1)

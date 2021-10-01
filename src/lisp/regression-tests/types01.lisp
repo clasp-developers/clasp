@@ -4,22 +4,19 @@
                          type-sub type-super
                          expected-subtype-p
                          expected-valid-p)
-  `(test ,name
-         (multiple-value-bind (subtype-p valid-p)
-             (subtypep ,type-sub ,type-super)
-           (and (eq subtype-p ',expected-subtype-p)
-                (eq valid-p ',expected-valid-p)))))
+  `(test ,name (subtypep ,type-sub ,type-super)
+         (,expected-subtype-p ,expected-valid-p)))
 
 (defmacro test-types-classes (lname rname type)
   `(progn
-     (test ,lname
-           (multiple-value-bind (st vp)
-               (subtypep ',type (find-class ',type))
-             (and st vp)))
-     (test ,rname
-           (multiple-value-bind (st vp)
-               (subtypep (find-class ',type) ',type)
-             (and st vp)))))
+     (test-true ,lname
+                (multiple-value-bind (st vp)
+                    (subtypep ',type (find-class ',type))
+                  (and st vp)))
+     (test-true ,rname
+                (multiple-value-bind (st vp)
+                    (subtypep (find-class ',type) ',type)
+                  (and st vp)))))
 
 (test-types-classes types-classes-1 types-classes-2 fixnum)
 (test-types-classes types-classes-3 types-classes-4 bignum)
@@ -34,8 +31,8 @@
 (test-subtypep types-classes-10
                (type-of #'car) 'function t t)
 
-(test ARRAY.9.8
-      (let () (TYPEP #2A((A B) (C D) (E F)) '(SIMPLE-ARRAY * (* 2)))))
+(test-true ARRAY.9.8
+           (let () (TYPEP #2A((A B) (C D) (E F)) '(SIMPLE-ARRAY * (* 2)))))
 
 (test-types-classes types-classes-11-a types-classes-11-b string)
 (test-types-classes types-classes-12-a types-classes-12-b base-string)
