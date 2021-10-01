@@ -828,7 +828,7 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::StandardClassCreator_O);
      Init_class_kind(core::SpecialForm_O);
      Init_class_kind(core::TranslationFunctor_O);
-     Init_class_kind(core::SingleDispatchGenericFunctionClosure_O);
+     Init_class_kind(core::SingleDispatchGenericFunction_O);
      Init_class_kind(core::ImmobileObject_O);
      Init_class_kind(core::WeakPointer_O);
      Init_class_kind(llvmo::DebugLoc_O);

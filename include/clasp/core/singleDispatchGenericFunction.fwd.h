@@ -29,7 +29,7 @@ THE SOFTWARE.
 #define _singleDispatchGenericFunction_fwd_H_
 
 namespace core {
-FORWARD(SingleDispatchGenericFunctionClosure);
+FORWARD(SingleDispatchGenericFunction);
 };
 
 #endif /* _singleDispatchGenericFunction_fwd_H_ */

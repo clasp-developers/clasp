@@ -40,7 +40,6 @@ struct gctools::GCInfo<core::SingleDispatchMethod_O> {
 
 namespace core {
 class SingleDispatchMethod_O : public General_O {
-  friend class SingleDispatchGenericFunctionClosure_O;
   LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod",General_O);
   //    DECLARE_ARCHIVE();
 public:

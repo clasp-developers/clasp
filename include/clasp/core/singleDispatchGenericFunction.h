@@ -34,8 +34,8 @@ THE SOFTWARE.
 
 namespace core {
 FORWARD(SingleDispatchMethod);
-class SingleDispatchGenericFunctionClosure_O : public Closure_O {
-  LISP_CLASS(core,CorePkg,SingleDispatchGenericFunctionClosure_O,"SingleDispatchGenericFunctionClosure",Closure_O);
+class SingleDispatchGenericFunction_O : public Closure_O {
+  LISP_CLASS(core,CorePkg,SingleDispatchGenericFunction_O,"SingleDispatchGenericFunction",Closure_O);
 public:
   typedef enum {
       REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY = 0,
