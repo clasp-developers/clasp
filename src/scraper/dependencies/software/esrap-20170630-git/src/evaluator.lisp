@@ -34,7 +34,8 @@
      ;; KLUDGE: Calling via a variable symbol can be slow, but if we
      ;; grab the SYMBOL-FUNCTION here we will not see redefinitions.
      (handler-bind ((style-warning #'muffle-warning))
-       (compile nil `(lambda ,arguments (,name ,@arguments)))))))
+       ;; Backported from https://github.com/scymtym/esrap/commit/866f28fa7a2c1d3fb6d0d0423850d1f9d955750f
+       (values (compile nil `(lambda ,arguments (,name ,@arguments))))))))
 
 ;;; COMPILING RULES
 
