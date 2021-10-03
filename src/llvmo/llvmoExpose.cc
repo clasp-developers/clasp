@@ -4407,15 +4407,17 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
   }
-
+  
   void parseLinkGraph(llvm::jitlink::LinkGraph &G) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+    uintptr_t textStart = ~0;
+    uintptr_t textEnd = 0;
     bool gotGcroots = false;
     for (auto &S : G.sections()) {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  section: %s getOrdinal->%u \n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
       std::string sectionName = S.getName().str();
-    if ( (sectionName.find(BSS_NAME)!=string::npos) ||
-         (sectionName.find(DATA_NAME)!=string::npos) ) {
+      if ( (sectionName.find(BSS_NAME)!=string::npos) ||
+	   (sectionName.find(DATA_NAME)!=string::npos) ) {
         llvm::jitlink::SectionRange range(S);
         for ( auto& sym : S.symbols() ) {
           std::string name = sym->getName().str();
@@ -4423,22 +4425,26 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           size_t size = sym->getSize();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
         }
-    }
-#if 0
-    else if (sectionName.find(DATA_NAME)!=string::npos) {
-        // If we want to handle the .data section differently than .bss then add more code here
-      llvm::jitlink::SectionRange range(S);
-      for ( auto& sym : S.symbols() ) {
-          // If we need to grab symbols from DATA_NAME segment do it here
       }
-    }
+#if 0
+      else if (sectionName.find(DATA_NAME)!=string::npos) {
+        // If we want to handle the .data section differently than .bss then add more code here
+	llvm::jitlink::SectionRange range(S);
+	for ( auto& sym : S.symbols() ) {
+          // If we need to grab symbols from DATA_NAME segment do it here
+	}
+      }
 #endif    
-    else if (sectionName.find(TEXT_NAME)!=string::npos) {
+      else if (S.getProtectionFlags() & llvm::sys::Memory::MF_EXEC) {
+	// Text section
         llvm::jitlink::SectionRange range(S);
+	if ((uintptr_t)range.getStart() < textStart) textStart = (uintptr_t)range.getStart();
+	uintptr_t tend = (uintptr_t)range.getStart()+range.getSize();
+	if ( textEnd < tend ) textEnd = tend;
         Code_sp currentCode = my_thread->topObjectFile()->_Code;
         currentCode->_TextSectionStart = (void*)range.getStart();
         currentCode->_TextSectionEnd = (void*)((char*)range.getStart()+range.getSize());
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart/TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
         if (snapshotSaveLoad::global_debugSnapshot) {
           printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
                  __FILE__, __LINE__, __FUNCTION__,
@@ -4473,6 +4479,25 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         my_thread->topObjectFile()->_Code->_StackmapSize = (size_t)range.getSize();
       }
     }
+    // Keep track of the executable region
+    if (textStart) {
+      Code_sp currentCode = my_thread->topObjectFile()->_Code;
+      //      printf("%s:%d:%s  textStart %p - textStop %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)textStart, (void*)textEnd );
+      currentCode->_TextSectionStart = (void*)textStart;
+      currentCode->_TextSectionEnd = (void*)textEnd;
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- Final TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
+      if (snapshotSaveLoad::global_debugSnapshot) {
+	printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
+	       __FILE__, __LINE__, __FUNCTION__,
+	       my_thread->topObjectFile().raw_(),
+	       currentCode.raw_(),
+	       currentCode->_TextSectionStart,
+	       currentCode->_TextSectionEnd );
+      }
+    } else {
+      printf("%s:%d:%s No executable region was found for the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+    }
+    //
     size_t gcroots_in_module_name_len = gcroots_in_module_name.size();
     size_t literals_name_len = literals_name.size();
     bool found_gcroots_in_module = false;
@@ -4539,8 +4564,8 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     currentCode->_gcroots->_module_memory = (void*)currentCode->_LiteralVectorStart;
     currentCode->_gcroots->_num_entries = currentCode->_LiteralVectorSizeBytes/sizeof(void*);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-           (gctools::GCRootsInModule*)currentCode->_gcroots,
-           currentCode->_gcroots->_module_memory,
+			      (gctools::GCRootsInModule*)currentCode->_gcroots,
+			      currentCode->_gcroots->_module_memory,
                               currentCode->_gcroots->_num_entries ));
 
 #ifdef DEBUG_OBJECT_FILES
