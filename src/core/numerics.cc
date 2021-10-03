@@ -206,29 +206,31 @@ SYMBOL_EXPORT_SC_(ClPkg, pi);
 void exposeCando_Numerics() {
   cl::_sym_mostPositiveSingleFloat->defconstant(clasp_make_single_float(FLT_MAX));
   cl::_sym_mostNegativeSingleFloat->defconstant(clasp_make_single_float(-FLT_MAX));
-  cl::_sym_leastPositiveSingleFloat->defconstant(clasp_make_single_float(FLT_MIN));
-  cl::_sym_leastNegativeSingleFloat->defconstant(clasp_make_single_float(-FLT_MIN));
+  cl::_sym_leastPositiveSingleFloat->defconstant(clasp_make_single_float( std::numeric_limits<float>::denorm_min()));
+  cl::_sym_leastNegativeSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_mostPositiveShortFloat->defconstant(clasp_make_single_float(FLT_MAX));
   cl::_sym_mostNegativeShortFloat->defconstant(clasp_make_single_float(-FLT_MAX));
-  cl::_sym_leastPositiveShortFloat->defconstant(clasp_make_single_float(FLT_MIN));
-  cl::_sym_leastNegativeShortFloat->defconstant(clasp_make_single_float(-FLT_MIN));
+  cl::_sym_leastPositiveShortFloat->defconstant(clasp_make_single_float( std::numeric_limits<float>::denorm_min()));
+  cl::_sym_leastNegativeShortFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_mostPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
   cl::_sym_mostNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
-  cl::_sym_leastPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
-  cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
+  cl::_sym_leastPositiveDoubleFloat->defconstant(DoubleFloat_O::create(std::numeric_limits<double>::denorm_min()));
+  cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
   cl::_sym_mostPositiveLongFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
   cl::_sym_mostNegativeLongFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
-  cl::_sym_leastPositiveLongFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
-  cl::_sym_leastNegativeLongFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
-  cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
-  cl::_sym_leastNegativeNormalizedShortFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
-  cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
-  cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
+  cl::_sym_leastPositiveLongFloat->defconstant(DoubleFloat_O::create(std::numeric_limits<double>::denorm_min()));
+  cl::_sym_leastNegativeLongFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
+  
+  cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(clasp_make_single_float(-FLT_MIN));
+  cl::_sym_leastNegativeNormalizedShortFloat->defconstant(clasp_make_single_float(-FLT_MIN));
+  cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
+  cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-DBL_MIN));
   // the following must be positive, not negative, fixes #434
-  cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(clasp_make_single_float(std::numeric_limits<float>::denorm_min()));
-  cl::_sym_leastPositiveNormalizedShortFloat->defconstant(clasp_make_single_float(std::numeric_limits<float>::denorm_min()));
-  cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(std::numeric_limits<double>::denorm_min()));
-  cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(std::numeric_limits<LongFloat>::denorm_min()));
+  cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(clasp_make_single_float(FLT_MIN));
+  cl::_sym_leastPositiveNormalizedShortFloat->defconstant(clasp_make_single_float(FLT_MIN));
+  cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
+  cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(DBL_MIN));
+  
   cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));
   // extensions
   ext::_sym_singleFloatPositiveInfinity->defconstant(clasp_make_single_float(std::numeric_limits<float>::infinity()));
