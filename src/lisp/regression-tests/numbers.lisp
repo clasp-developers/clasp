@@ -654,3 +654,61 @@
               unless (equal x y)
               do (format t "Diff ~a with ~a~2%" x y)))
         (values no-error-p)))
+
+(test-true float-constants-1
+      (<=  least-positive-double-float least-positive-normalized-double-float
+           least-positive-single-float least-positive-normalized-single-float))
+
+(test-true float-constants-2
+      (<=  least-positive-long-float least-positive-normalized-long-float
+           least-positive-short-float least-positive-normalized-short-float))
+
+(test-true float-constants-3
+      (<= least-positive-long-float least-positive-double-float
+          least-positive-single-float least-positive-short-float))
+
+(test-true float-constants-4
+      (<= least-positive-normalized-long-float least-positive-normalized-double-float
+          least-positive-normalized-single-float least-positive-normalized-short-float))
+
+(test-true float-constants-1-negative
+      (>=  least-negative-double-float least-negative-normalized-double-float
+           least-negative-single-float least-negative-normalized-single-float))
+
+(test-true float-constants-2-negative
+      (>=  least-negative-long-float least-negative-normalized-long-float
+           least-negative-short-float least-negative-normalized-short-float))
+
+(test-true float-constants-3-negative
+      (>= least-negative-long-float  least-negative-double-float
+          least-negative-single-float least-negative-short-float))
+
+(test-true float-constants-4-negative
+      (>= least-negative-normalized-long-float  least-negative-normalized-double-float
+          least-negative-normalized-single-float least-negative-normalized-short-float))
+
+(test-true float-constants-5
+      (every #'plusp
+             (list least-positive-short-float least-positive-normalized-short-float
+                   least-positive-single-float least-positive-normalized-single-float
+                   least-positive-double-float least-positive-normalized-double-float
+                   least-positive-long-float least-positive-normalized-double-float)))
+
+(test-true float-constants-5-negative
+      (every #'minusp
+             (list least-negative-short-float least-negative-normalized-short-float
+                   least-negative-single-float least-negative-normalized-single-float
+                   least-negative-double-float least-negative-normalized-double-float
+                   least-negative-long-float least-negative-normalized-long-float)))
+
+(test-true random-short
+      (zerop (random least-positive-short-float)))
+
+(test-true random-single
+      (zerop (random least-positive-single-float)))
+
+(test-true random-double
+      (zerop (random least-positive-double-float)))
+
+(test-true random-long
+      (zerop (random least-positive-long-float)))
