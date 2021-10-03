@@ -1,8 +1,7 @@
 (defpackage #:clasp-debug
   (:use #:cl)
   ;; low level
-  (:export #:code-source-line
-           #:code-source-line-pathname
+  (:export #:code-source-line-pathname
            #:code-source-line-line-number
            #:code-source-line-column)
   (:export #:frame) ; TODO: Rename core:debugger-frame to frame, reexport that
@@ -42,11 +41,13 @@
 
 ;;; Low level interface
 
-;;; FIXME: Unify source position stuff somehow.
-;;; This one could be a core:source-pos-info, except
-;;; we don't have an offset into the file.
-(defstruct (code-source-line (:type vector) :named)
-  pathname line-number column)
+;;; these should maybe be deprecated, since they just go through source
+;;; position info accessors.
+(defun code-source-line-pathname (spi)
+  (core:file-scope-pathname
+   (core:file-scope (core:source-pos-info-file-handle spi))))
+(defun code-source-line-line-number (spi) (core:source-pos-info-lineno spi))
+(defun code-source-line-column (spi) (core:source-pos-info-column spi))
 
 (defun frame-up (frame)
    "Return the frame directly above the current frame, or NIL if there are no more frames.
@@ -67,13 +68,7 @@ This function ignores visibility and may not halt at delimiters. DOWN is the low
   (core:debugger-frame-fname frame))
 (defun frame-source-position (frame)
   "Return a CODE-SOURCE-LINE object representing the source file position for this frame's call, or NIL if no information is available."
-  (let ((spi (core:debugger-frame-source-position frame)))
-    (when spi
-      (make-code-source-line
-       :pathname (core:file-scope-pathname
-                  (core:file-scope (core:source-pos-info-file-handle spi)))
-       :line-number (core:source-pos-info-lineno spi)
-       :column (core:source-pos-info-column spi)))))
+  (core:debugger-frame-source-position frame))
 (defun frame-function-description (frame)
   (core:debugger-frame-function-description frame))
 (defun frame-language (frame)

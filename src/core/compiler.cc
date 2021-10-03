@@ -745,7 +745,8 @@ CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))CL_DEFUN voi
 
 
 DOCGROUP(clasp)
-CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
+CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))
+CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
   llvmo::llvm_sys__load_bitcode_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
@@ -753,7 +754,8 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 }
 
 DOCGROUP(clasp)
-CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
+CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))
+CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
   llvmo::llvm_sys__load_bitcode(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
@@ -762,7 +764,8 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 
 
 DOCGROUP(clasp)
-CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
+CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))
+CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
   String_sp sfilename = gc::As<String_sp>(cl__namestring(pathDesig));
   std::string filename = sfilename->get_std_string(); 

@@ -1273,7 +1273,7 @@ Generate offsets for every array element that exposes the fields in elements."
 ;;       (cast:get-as-string (cast:get-as-type template-arg))
        (record-key (cast:get-type-ptr-or-null (cast:get-as-type template-arg))))
       (clang-ast:argkind-integral
-       (llvm:to-string (cast:get-as-integral template-arg) 10 t))
+       (llvm:apint-to-string (cast:get-as-integral template-arg) 10 t))
       (clang-ast:argkind-pack
        (let ((pack-size (cast:pack-size template-arg)))
          (if (eql pack-size 0)

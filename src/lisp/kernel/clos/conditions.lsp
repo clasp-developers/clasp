@@ -523,9 +523,9 @@ returns with NIL."
 
 (define-condition simple-condition ()
   ((format-control :INITARG :FORMAT-CONTROL :INITFORM ""
-		   :ACCESSOR simple-condition-format-control)
+		   :reader simple-condition-format-control)
    (format-arguments :INITARG :FORMAT-ARGUMENTS :INITFORM NIL
-		     :ACCESSOR simple-condition-format-arguments))
+		     :reader simple-condition-format-arguments))
   (:REPORT
    (lambda (condition stream)
      (handler-case
@@ -535,6 +535,12 @@ returns with NIL."
        (format-error (p)
          (declare (ignore p))
          (format stream "~%#<Error while printing condition>~%"))))))
+
+(defmethod simple-condition-format-control (instance)
+  (error 'type-error :datum instance :expected-type 'simple-condition))
+
+(defmethod simple-condition-format-arguments (instance)
+  (error 'type-error :datum instance :expected-type 'simple-condition))
 
 (define-condition simple-warning (simple-condition warning) ())
 
@@ -547,7 +553,7 @@ returns with NIL."
 (define-condition storage-condition (serious-condition) ())
 
 (define-condition ext:segmentation-violation (storage-condition)
-  ((address :initarg :address :accessor memory-condition-address))
+  ((address :initarg :address :reader memory-condition-address))
   (:REPORT
    (lambda (condition stream)
      (format stream "Segmentation fault. Attempted to access resticted memory address #x~x.
@@ -587,7 +593,7 @@ No information available on cause. This may be a bug in Clasp."))
 (defun ext:illegal-instruction () (error 'ext:illegal-instruction))
 
 (define-condition ext:bus-error (error)
-  ((address :initarg :address :accessor memory-condition-address))
+  ((address :initarg :address :reader memory-condition-address))
   (:report
    (lambda (condition stream)
      (format stream "Bus error. Attempted to access invalid memory address #x~x.
@@ -600,10 +606,10 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ((code :type fixnum
          :initform 0
          :initarg :code
-         :accessor ext:unix-signal-received-code)
+         :reader ext:unix-signal-received-code)
    (handler :initarg :handler
             :initform nil
-            :accessor unix-signal-received-handler))
+            :reader unix-signal-received-handler))
   (:report (lambda (condition stream)
              (format stream "Serious signal ~D caught."
                      (ext:unix-signal-received-code condition)))))
@@ -616,6 +622,12 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
      (format stream "~S is not of type ~S."
 	     (type-error-datum condition)
 	     (type-error-expected-type condition)))))
+
+(defmethod type-error-datum (instance)
+  (error 'type-error :datum instance :expected-type 'type-error))
+
+(defmethod type-error-expected-type (instance)
+  (error 'type-error :datum instance :expected-type 'type-error))
 
 (define-condition out-of-bounds (type-error)
   ;; the type-error DATUM is the index, and its EXPECTED-TYPE is the range.
@@ -659,7 +671,7 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
    (possibilities :INITARG :POSSIBILITIES :READER case-failure-possibilities))
   (:REPORT
    (lambda (condition stream)
-     (format stream "~S fell through ~S expression.~%Wanted one of ~:S."
+     (format stream "~S fell through ~S expression.~%Wanted one of ~{~s~^ ~}."
 	     (type-error-datum condition)
 	     (case-failure-name condition)
 	     (case-failure-possibilities condition)))))
@@ -756,6 +768,9 @@ due to error:~%  ~:*~a~]"
 (define-condition stream-error (error)
   ((stream :initarg :stream :reader stream-error-stream)))
 
+(defmethod stream-error-stream (instance)
+  (error 'type-error :datum instance :expected-type 'stream-error))
+
 (define-condition core:simple-stream-error (simple-condition stream-error) ())
 
 (define-condition core:closed-stream (core:simple-stream-error)
@@ -776,12 +791,18 @@ due to error:~%  ~:*~a~]"
  3) the pathname points to a broken symbolic link."
 		     (file-error-pathname condition)))))
 
+(defmethod file-error-pathname (instance)
+  (error 'type-error :datum instance :expected-type 'file-error))
+
 (define-condition core:simple-file-error (simple-condition file-error) ())
 
 (define-condition package-error (error)
   ((package :INITARG :PACKAGE :READER package-error-package))
   (:report (lambda (condition stream)
              (format stream "Package error on package ~S" (package-error-package condition)))))
+
+(defmethod package-error-package (instance)
+  (error 'type-error :datum instance :expected-type 'package-error))
 
 (define-condition core:simple-package-error (simple-condition package-error) ())
 
@@ -948,6 +969,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))
 
+(defmethod cell-error-name (instance)
+  (error 'type-error :datum instance :expected-type 'cell-error))
+
 (define-condition unbound-variable (cell-error)
   ()
   (:REPORT (lambda (condition stream)
@@ -965,6 +989,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                  (format stream "~@<The slot ~s is unbound in an instance of ~s.~@:>"
                          (cell-error-name condition)
                          (type-of (unbound-slot-instance condition))))))))
+
+(defmethod unbound-slot-instance (instance)
+  (error 'type-error :datum instance :expected-type 'unbound-slot))
 
 (define-condition undefined-function (cell-error)
   ()
@@ -984,6 +1011,12 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
    ;; This is probably nonconforming.
    (operation :initform nil :INITARG :OPERATION :READER arithmetic-error-operation)
    (operands :initform nil :INITARG :OPERANDS :READER arithmetic-error-operands)))
+
+(defmethod arithmetic-error-operation (instance)
+  (error 'type-error :datum instance :expected-type 'arithmetic-error))
+
+(defmethod arithmetic-error-operands (instance)
+  (error 'type-error :datum instance :expected-type 'arithmetic-error))
 
 (define-condition division-by-zero (arithmetic-error) ())
 
@@ -1061,6 +1094,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
   (:REPORT (lambda (condition stream)
 	     (format stream "Cannot print object ~A of class ~A readably."
 		     (print-not-readable-object condition) (class-name (class-of (print-not-readable-object condition)))))))
+
+(defmethod print-not-readable-object (instance)
+  (error 'type-error :datum instance :expected-type 'print-not-readable))
 
 (define-condition parse-error (error) ())
 

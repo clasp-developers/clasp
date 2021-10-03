@@ -970,6 +970,7 @@ public:
   size_t getNumCompileUnits() const;
 }; // DWARFContext_O class def
 // FIXME: move?
+const char* getFunctionNameForAddress(DWARFContext_sp, SectionedAddress_sp);
 core::T_mv getLineInfoForAddress_( DWARFContext_sp, SectionedAddress_sp, bool verbose );
 llvm::Expected<std::vector<llvm::DWARFAddressRange>> getAddressRangesForAddressInner(DWARFContext_sp, SectionedAddress_sp);
 

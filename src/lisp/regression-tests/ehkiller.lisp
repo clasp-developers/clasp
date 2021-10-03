@@ -1,20 +1,17 @@
-;; This buffer is for text that is not saved, and for Lisp evaluation.
-;; To create a file, visit it with C-x C-f and enter text in its buffer.
-
 (defun eh-foo ()
   (block x
     (block y
       (unwind-protect
           (return-from y 1)
         (funcall (lambda () (return-from x 2)))))))
-(test eh-foo (eql (eh-foo) 2))
+(test eh-foo (eh-foo) (2))
       
 (defun eh-bar ()
   (block x
       (unwind-protect
           nil
         (funcall (lambda () (return-from x 2))))))
-(test eh-bar (eql (eh-bar) 2))
+(test eh-bar (eh-bar) (2))
 
 (defun eh-baz ()
   (block x
@@ -36,5 +33,4 @@
 
 
                               
-(test eh-baz (eql (eh-baz) 1))
-
+(test eh-baz (eh-baz) (1))

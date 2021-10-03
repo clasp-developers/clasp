@@ -132,6 +132,7 @@ namespace llvmo {
   public:
     virtual uintptr_t codeStart() const = 0;
     virtual std::string filename() const = 0;
+    virtual void validateEntryPoint(void* entry_point) {};
   };
  
 };
@@ -198,6 +199,7 @@ public:
 
   ~Code_O();
   uintptr_t codeStart() const { return (uintptr_t)this->_TextSectionStart; };
+  uintptr_t codeEnd() const { return (uintptr_t)this->_TextSectionEnd; };
   void* absoluteAddress(SectionedAddress_sp sa);
   size_t frontSize() const { return sizeof(*this); };
   size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };
@@ -207,6 +209,7 @@ public:
   size_t TOLiteralsSize() const { return literalsSize()/sizeof(core::T_O*); }
   virtual std::string filename() const;
   core::T_sp codeLineTable() const;
+  virtual void validateEntryPoint(void* entry_point);
 };
 
 };

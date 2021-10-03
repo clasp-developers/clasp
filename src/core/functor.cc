@@ -84,9 +84,18 @@ CL_DEFMETHOD Pointer_sp EntryPointBase_O::defaultEntryAddress() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
-Pointer_sp GlobalEntryPoint_O::defaultEntryAddress() const {
-  return Pointer_O::create(this->_EntryPoints[0]);
-};
+
+  GlobalEntryPoint_O::GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : CodeEntryPoint_O(fdesc, code), _EntryPoints{entry_point} {
+    code->validateEntryPoint(entry_point);
+  };
+  
+  LocalEntryPoint_O::LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {
+    code->validateEntryPoint(entry_point);
+  };
+  
+  Pointer_sp GlobalEntryPoint_O::defaultEntryAddress() const {
+    return Pointer_O::create(this->_EntryPoints[0]);
+  };
 
 CL_LISPIFY_NAME("global-entry-point-code");
 CL_DEFMETHOD
@@ -137,11 +146,25 @@ Pointer_sp LocalEntryPoint_O::defaultEntryAddress() const {
 };
 
 void GlobalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
+    llvmo::Code_sp code = gc::As_unsafe<llvmo::Code_sp>(this->_Code);
+    if ((uintptr_t)this->_EntryPoints[0]<code->codeStart()) {
+      printf("%s:%d:%s Entrypoint %p is before the codeStart %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this->_EntryPoints[0], (void*)code->codeStart() );
+      abort();
+    }
+  }
   this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints[0]);
 };
 
 
 void LocalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) {
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
+    llvmo::Code_sp code = gc::As_unsafe<llvmo::Code_sp>(this->_Code);
+    if ((uintptr_t)this->_EntryPoint<code->codeStart()) {
+      printf("%s:%d:%s Entrypoint %p is before the codeStart %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)this->_EntryPoint, (void*)code->codeStart() );
+      abort();
+    }
+  }
   this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoint);
 };
 
@@ -296,8 +319,8 @@ GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }
-  auto  entryPoint = gctools::GC< GlobalEntryPoint_O>::allocate( original->_FunctionDescription, (void*)entry_point, code);
-  return entryPoint;
+  auto globalEntryPoint = gctools::GC< GlobalEntryPoint_O>::allocate( original->_FunctionDescription, (void*)entry_point, code);
+  return globalEntryPoint;
 }
 
 #if 0
@@ -524,7 +547,8 @@ CL_DEFUN void core__dumpFunctionDescription(T_sp func)
 CL_LISPIFY_NAME("core:functionSourcePos");
 CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
   T_sp sfi = this->sourcePathname();
-  return Values(sfi, make_fixnum(this->filePos()), make_fixnum(this->lineno()));
+  return Values(sfi, make_fixnum(this->filePos()),
+                make_fixnum(this->lineno()), make_fixnum(this->column()));
 }
 
 DOCGROUP(clasp)

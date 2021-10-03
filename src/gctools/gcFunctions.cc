@@ -325,6 +325,13 @@ CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
   SIMPLE_ERROR(BF("core:instance-stamp was about to return a non-fixnum %p") % (void*)stamp.raw_());
 }
 
+CL_DOCSTRING(R"dx(Return the tagged pointer for the object, the flags and the header stamp)dx")
+DOCGROUP(clasp)
+CL_DEFUN core::T_sp core__instance_tagged_pointer(core::T_sp obj)
+{
+  return core::Pointer_O::create(obj.raw_());
+}
+
 CL_DOCSTRING(R"dx(Determine if stamp A is immediately less than stamp B, so that they can be merged into a range.)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool core__stamps_adjacent_p(size_t stamp_a, size_t stamp_b) {

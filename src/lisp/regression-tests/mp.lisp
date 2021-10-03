@@ -1,80 +1,87 @@
 (in-package #:clasp-tests)
 
-(test process-1
+(test-true process-1
       (progn (mp:process-run-function nil (lambda ())) t))
-(test process-2
-      (typep (mp:process-run-function nil (lambda ())) 'mp:process))
-(test process-3
-      (typep (mp:make-process nil (lambda ())) 'mp:process))
+(test-type process-2 (mp:process-run-function nil (lambda ())) mp:process)
+(test-type process-3 (mp:make-process nil (lambda ())) mp:process)
 
-(test process-name
+(test-true process-name
       (let ((g (gensym)))
         (eq g (mp:process-name (mp:make-process g (lambda ()))))))
 
 (test process-join
-      (equal
-       (multiple-value-list
-        (mp:process-join
-         (mp:process-run-function nil (lambda () (values 'a 2 'b)))))
-       '(a 2 b)))
+      (mp:process-join
+       (mp:process-run-function nil (lambda () (values 'a 2 'b))))
+      (a 2 b))
 
 (test process-specials
       (mp:process-join
        (mp:process-run-function nil (lambda () (declare (special x)) x)
-                                `((x . t)))))
+                                `((x . t))))
+      (t))
 
-(test mutex-1 (typep (mp:make-lock) 'mp:mutex))
-(test mutex-2 (mp:get-lock (mp:make-lock)))
-(test mutex-3 (mp:get-lock (mp:make-lock) nil))
+(test-type mutex-1 (mp:make-lock) mp:mutex)
+(test-true mutex-2 (mp:get-lock (mp:make-lock)))
+(test-true mutex-3 (mp:get-lock (mp:make-lock) nil))
 (test mutex-4
       (let ((mut (mp:make-lock)))
         (mp:with-lock (mut)
-          (not (mp:process-join
-                (mp:process-run-function
-                 nil (lambda () (mp:get-lock mut nil))))))))
+          (mp:process-join
+           (mp:process-run-function
+            nil (lambda () (mp:get-lock mut nil))))))
+      (nil))
 
 (test process-active-p-1
       (let ((p (mp:process-run-function nil (lambda ()))))
         (mp:process-join p)
-        (not (mp:process-active-p p))))
+        (mp:process-active-p p))
+      (nil))
 (test process-active-p-2
       (let ((mut (mp:make-lock)))
         (mp:with-lock (mut)
           (let ((p (mp:process-run-function
                     nil (lambda () (mp:get-lock mut)))))
-            (mp:process-active-p p)))))
+            (mp:process-active-p p))))
+      (t))
 (test process-active-p-3
-      (not (mp:process-active-p (mp:make-process nil (lambda ())))))
+      (mp:process-active-p (mp:make-process nil (lambda ())))
+      (nil))
 (test process-active-p-4
       (let ((mut (mp:make-lock)))
         (mp:with-lock (mut)
           (let ((p (mp:make-process nil (lambda () (mp:get-lock mut)))))
             (mp:process-start p)
-            (mp:process-active-p p)))))
+            (mp:process-active-p p))))
+      (t))
 
-(test all-processes-1
+(test-true all-processes-1
       (let ((p (mp:process-run-function nil (lambda ()))))
         (mp:process-join p)
         (not (member p (mp:all-processes)))))
-(test all-processes-2
+(test-true all-processes-2
       (let ((mut (mp:make-lock)))
         (mp:with-lock (mut)
           (let ((p (mp:process-run-function
                     nil (lambda () (mp:get-lock mut)))))
             (member p (mp:all-processes))))))
-(test all-processes-3
+(test-true all-processes-3
       (not (member (mp:make-process nil (lambda ())) (mp:all-processes))))
-(test all-processes-4
+(test-true all-processes-4
       (let ((mut (mp:make-lock)))
         (mp:with-lock (mut)
           (let ((p (mp:make-process nil (lambda () (mp:get-lock mut)))))
             (mp:process-start p)
             (member p (mp:all-processes))))))
 
-(test current-thread-1
+(test-true current-thread-1
       (member mp:*current-process* (mp:all-processes)))
-(test current-thread-2
+(test-true current-thread-2
       (mp:process-active-p mp:*current-process*))
+
+(test process-exit
+      (mp:process-join
+       (mp:process-run-function nil (lambda () (mp:exit-process 3 4))))
+      (3 4))
 
 ;; Check process-join-error working at all
 (test-expect-error process-abort-1
@@ -83,21 +90,19 @@
                    :type mp:process-join-error)
 
 ;; Check that if a condition is passed it's stored properly
-(test process-abort-2
-      (typep
-       (mp:process-join-error-original-condition
-        (nth-value 1
-                   (ignore-errors
-                    (mp:process-join
-                     (mp:process-run-function
-                      nil (lambda ()
-                            (mp:abort-process 'type-error
-                                              :datum 4
-                                              :expected-type 'cons)))))))
-       'type-error))
+(test-type process-abort-2
+    (mp:process-join-error-original-condition
+     (nth-value 1 (ignore-errors
+                   (mp:process-join
+                    (mp:process-run-function
+                     nil (lambda ()
+                           (mp:abort-process 'type-error
+                                             :datum 4
+                                             :expected-type 'cons)))))))
+    type-error)
 
 ;; Check that the abort restart exists in new threads
-(test process-abort-3
+(test-true process-abort-3
       (find 'abort
             (mp:process-join
              (mp:process-run-function
@@ -117,7 +122,7 @@
                             (handler-bind ((error #'abort)) (=))))))))
        'program-error))
 
-(test process-abort-5
+(test-true process-abort-5
       (let ((thread (mp:process-run-function nil #'mp:abort-process)))
         (eq thread (mp:process-error-process
                     (nth-value 1 (ignore-errors (mp:process-join thread)))))))
@@ -125,14 +130,14 @@
 (test-expect-error not-atomic-1
                    (macroexpand-1 `(mp:atomic (,(gensym))))
                    :type mp:not-atomic)
-(test not-atomic-2
+(test-true not-atomic-2
       (let ((place (list (gensym))))
         (handler-case (macroexpand-1 `(mp:atomic ,place))
           (mp:not-atomic (e)
             (eq (mp:not-atomic-place e) place)))))
 
 (macrolet ((atomic-place-test (name place create)
-             `(test ,name
+             `(test-true ,name
                     (let ((object ,create) (s (gensym)))
                       (setf (mp:atomic ,place) s)
                       (eq (mp:atomic ,place) s)))))
@@ -143,7 +148,7 @@
   (atomic-place-test atomic-symbol-value-1 (symbol-value object) (gensym))
   (atomic-place-test atomic-svref (svref object 0) (vector nil)))
 
-(test atomic-symbol-value-2
+(test-true atomic-symbol-value-2
       (let ((x nil) (s (gensym)))
         (declare (special x))
         (setf (mp:atomic x) s)
@@ -167,9 +172,10 @@
                    (acquire)
                    (unwind-protect (incf value) (release))))
           (spam-processes nthreads #'thunk)
-          (= value nthreads))))
+          value))
+      (7))
 
-(test atomic-acquire-release-2
+(test-true atomic-acquire-release-2
       (let* ((L (list 0 0 0 0 0))
              (consumer
                (mp:process-run-function
@@ -187,9 +193,10 @@
 (test atomic-incf
       (let ((x (list 0)))
         (mp:atomic-incf (car x) 319)
-        (= (car x) 319)))
+        (car x))
+      (319))
 
-(test atomic-sequential-consistency-1
+(test-true atomic-sequential-consistency-1
       ;; from cppreference.com
       (let ((x (list nil)) (y (list nil)) (z (list 0)))
         (let ((write-x
@@ -219,21 +226,22 @@
                         (lambda ()
                           (mp:atomic-incf-explicit ((car counter)
                                                     :order :relaxed))))
-        (eql (car counter) nthreads)))
+        (car counter))
+      (7))
 
 (test atomic-counter-value
       (let ((counter (list 0))
             (nthreads 7))
-        (equal (sort (spam-processes
-                      nthreads
-                      (lambda ()
-                        (mp:atomic-incf-explicit ((car counter)
-                                                  :order :relaxed))))
-                     #'<)
-               (loop repeat nthreads for i from 1 collect i))))
+        (sort (spam-processes
+               nthreads
+               (lambda ()
+                 (mp:atomic-incf-explicit ((car counter) :order :relaxed))))
+              #'<))
+      ((1 2 3 4 5 6 7)))
 
 (test atomic-push
       (let ((place (list nil))
             (nthreads 7))
         (spam-processes nthreads (lambda () (mp:atomic-push nil (car place))))
-        (equal (car place) (make-list nthreads))))
+        (car place))
+      ((nil nil nil nil nil nil nil)))

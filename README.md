@@ -1,14 +1,19 @@
 # Clasp — Bringing Common Lisp and C++ Together
 
-## NOTE:  November 28, 2018 - This contains a pre-release of Clasp 0.9.
+## NOTE:  September 7, 2021 - This contains a pre-release of Clasp 1.0.
 
-[We have a new talk up on youtube!](https://www.youtube.com/watch?v=mbdXeRBbgDM)
+You need to use the correct commit of llvm13 (https://github.com/llvm/llvm-project.git) - 972b6a3a3471c2a742c5c5d8ec004ff640d544c4
+
+We are going to support the llvm13 standard once it comes out on Sept 21, 2021 (https://llvm.org/).
+We are in an uncomfortable time right now because we need some bleeding edge llvm features that will be in llvm13 and the API is evolving rapidly until llvm13 comes out.
+
+[We have a talk up on youtube](https://www.youtube.com/watch?v=mbdXeRBbgDM)
 
 ##  Overview
 Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seamlessly interoperates with C++ libraries and programs using [LLVM](http://llvm.org/) for compilation to native code. This allows Clasp to take advantage of a vast array of preexisting libraries and programs, such as out of the scientific computing ecosystem. Embedding them in a Common Lisp environment allows you to make use of rapid prototyping, incremental development, and other capabilities that make it a powerful language.
 
 ## Latest Release
-The upcoming release is [Clasp 0.9](https://github.com/clasp-developers/clasp/releases/tag/0.9.0). [Changes](https://github.com/clasp-developers/clasp/milestone/3)
+The upcoming release is [Clasp 1.0](https://github.com/clasp-developers/clasp/releases/tag/1.0.0). [Changes](https://github.com/clasp-developers/clasp/milestone/3)
 
 See the [RELEASE-NOTES](RELEASE-NOTES)
 

@@ -307,7 +307,7 @@ def update_dependencies(cfg):
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
-                       "3884e9325acf8db4d45d2a0e86378285ecbc2926")
+                       "1d5372d2d1c98029eb027cb80c95409611c96972")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
@@ -1263,6 +1263,12 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
         cfg.env.append_value('INCLUDES', "/usr/local/include" )
+    if (UNWINDER == DEFAULT):
+        if (cfg.env['DEST_OS'] == LINUX_OS ):
+            cfg.env.append_value('LINKFLAGS',"--unwindlib=libgcc")
+            cfg.env.append_value('LINKFLAGS',"--rtlib=libgcc")
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            print("What do I do about --unwindlib/--rtlib")
     if (UNWINDER == LLVM_LIBUNWIND):
         if (cfg.env['DEST_OS'] == LINUX_OS ):
             cfg.env.append_value('LINKFLAGS', "-L%s" % UNWINDER_PATH )
