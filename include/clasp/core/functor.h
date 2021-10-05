@@ -158,7 +158,7 @@ fields at the same offset as Instance_O.
    void* _EntryPoint;
  public:
   // Accessors
-   LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {};
+   LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code );
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
@@ -171,7 +171,7 @@ class LocalEntryPointGenerator_O : public EntryPointBase_O {
   T_sp _entry_point_indices;
  public:
   // Accessors
-  LocalEntryPointGenerator_O( FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices) {};
+   LocalEntryPointGenerator_O( FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices) {};
  };
 
 FORWARD(GlobalEntryPoint);
@@ -181,7 +181,7 @@ FORWARD(GlobalEntryPoint);
    void* _EntryPoints[NUMBER_OF_ENTRY_POINTS];
  public:
   // Accessors
-   GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : CodeEntryPoint_O(fdesc, code), _EntryPoints{entry_point} {};
+   GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code);
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;

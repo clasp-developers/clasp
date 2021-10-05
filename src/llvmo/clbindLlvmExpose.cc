@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/ADT/APSInt.h>
+#include <llvm/ADT/SmallString.h>
 #include <llvm/IR/DataLayout.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/clbind/clbind.h>
@@ -51,8 +52,13 @@ using namespace clbind;
 void initialize_clbind_llvm_expose() {
   clbind::package_ pkg("LLVM");
   clbind::scope_& m = pkg.scope();
-  class_<llvm::APInt>(m,"APInt")
-    .def("toString", (std::string (llvm::APInt::*)(unsigned Radix, bool Signed) const) & llvm::APInt::toString);
+  class_<llvm::APInt>(m,"APInt");
+  m.def("APInt_toString", +[](const llvm::APInt& ai, unsigned Radix, bool Signed) {
+        llvm::SmallString<256> istr;
+        ai.toString( istr, Radix, Signed );
+        return istr.str().str();
+  } );
+
   class_<llvm::APSInt, llvm::APInt>(m,"APSInt");
 }
 }

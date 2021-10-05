@@ -23,6 +23,7 @@
 #include "llvm/Support/Debug.h"
 #endif
 
+#include <llvm/ADT/SmallString.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 //#include <llvm/ExecutionEngine/Orc/MachOPlatform.h>
@@ -101,7 +102,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/AssemblyAnnotationWriter.h> // will be llvm/IR
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
-#include <llvm/ExecutionEngine/Orc/TargetProcessControl.h>
+#include <llvm/ExecutionEngine/Orc/ExecutorProcessControl.h>
 #include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
 #include <llvm/ExecutionEngine/Orc/TargetProcess/RegisterEHFrames.h>
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
@@ -1079,7 +1080,7 @@ DOCGROUP(clasp)
 CL_DEFUN void llvm_sys__writeIrToFile(Module_sp module, core::String_sp path) {
   std::error_code errcode;
   string pathName = path->get_std_string();
-  llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
+  llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::OF_None);
   if (errcode) {
     SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % errcode.message());
   }
@@ -1093,7 +1094,7 @@ DOCGROUP(clasp)
 CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pathname, bool useThinLTO) {
   string pn = pathname->get_std_string();
   std::error_code errcode;
-  llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
+  llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::OF_None);
   if (errcode) {
     SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message());
   }
@@ -2299,7 +2300,9 @@ CL_EXTERN_DEFUN((llvm::ConstantInt *(*)(llvm::LLVMContext &)) &llvm::ConstantInt
 
 string ConstantInt_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << this->wrappedPtr()->getValue().toString(10, true) << ">";
+  llvm::SmallString<40> nstr;
+  this->wrappedPtr()->getValue().toString(nstr,10,true);
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << nstr.str().str() << ">";
   return ss.str();
 }
 }; // llvmo
@@ -2463,20 +2466,26 @@ namespace llvmo {
 
 CL_LISPIFY_NAME("toString");
 CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
-  return this->_value._value.toString(radix, isigned);
+  llvm::SmallString<256> istr;
+  printf("%s:%d:%s converting %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(this->asSmartPtr()).c_str() );
+  this->_value._value.toString(istr,radix, isigned);
+  return istr.str().str();
 }
 
 CL_LAMBDA(api &optional (issigned t))CL_LISPIFY_NAME("toInteger");
 DOCGROUP(clasp)
 CL_DEFUN core::Integer_sp toInteger(APInt_sp api, bool issigned) {
-  string s = api->toString(10,issigned);
-  return core::Integer_O::create(s);
+  llvm::SmallString<256> istr;
+  api->_value._value.toString( istr, 10, issigned);
+  return core::Integer_O::create(istr.str().str());
 }
 
 string APInt_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
-  ss << this->_value._value.toString(10, true);
+  llvm::SmallString<256> istr;
+  this->_value._value.toString(istr,10,true);
+  ss << istr.str().str();
   ss << ">";
   return ss.str();
 }
@@ -3193,10 +3202,12 @@ CL_LISPIFY_NAME(CreateLoad_value_twine);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
 CL_LISPIFY_NAME(CreateLoad_value_bool_twine);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, bool, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
+CL_DOCSTRING("The type must be equiv to firstValue->getType()->getScalarType()->getPointerElementType()");
 CL_LISPIFY_NAME(CreateGEP0);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Type*, llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
+CL_DOCSTRING("The type must be equiv to firstValue->getType()->getScalarType()->getPointerElementType()");
 CL_LISPIFY_NAME(CreateGEPArray);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Type*, llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
 
 CL_LISPIFY_NAME(CreateInBoundsGEPType);
 //CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Type *, llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateInBoundsGEP);
@@ -3520,6 +3531,11 @@ CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getSequentialElementType);
 CL_LISPIFY_NAME(getSequentialElementType);
 CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
 #endif
+CL_LISPIFY_NAME(getScalarType);
+CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getScalarType);
+CL_LISPIFY_NAME(getPointerElementType);
+CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getPointerElementType);
+
   CL_LISPIFY_NAME("type-get-void-ty");
   CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getVoidTy);
   CL_LISPIFY_NAME("type-get-float-ty");
@@ -3562,7 +3578,6 @@ CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&ll
 CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt32PtrTy);
   CL_LISPIFY_NAME("type-get-int64-ptr-ty");
 CL_EXTERN_DEFUN((llvm::PointerType * (*) (llvm::LLVMContext &C, unsigned AS))&llvm::Type::getInt64PtrTy);
-
 ;
 
 
@@ -4257,17 +4272,20 @@ SYMBOL_EXPORT_SC_(LlvmoPkg,library);
 };
 
 #ifdef _TARGET_OS_DARWIN    
-#define TEXT_NAME "__text"
-#define DATA_NAME "__data"
-#define BSS_NAME  "__bss"
-#define STACKMAPS_NAME "__llvm_stackmaps"
+#define TEXT_NAME "__TEXT,__text"
+#define DATA_NAME "__DATA,__data"
+#define EH_FRAME_NAME "__TEXT,__eh_frame"
+#define BSS_NAME  "__DATA,__bss"
+#define STACKMAPS_NAME "__LLVM_STACKMAPS,__llvm_stackmaps"
 #elif defined(_TARGET_OS_LINUX)
 #define TEXT_NAME ".text"
+#define EH_FRAME_NAME ".eh_frame"
 #define DATA_NAME ".data"
 #define BSS_NAME  ".bss"
 #define STACKMAPS_NAME ".llvm_stackmaps"
 #elif defined(_TARGET_OS_FREEBSD)
 #define TEXT_NAME ".text"
+#define EH_FRAME_NAME ".eh_frame"
 #define DATA_NAME ".data"
 #define BSS_NAME  ".bss"
 #define STACKMAPS_NAME ".llvm_stackmaps"
@@ -4277,21 +4295,6 @@ SYMBOL_EXPORT_SC_(LlvmoPkg,library);
 
 namespace llvmo {
 
-#ifdef _TARGET_OS_DARWIN    
-#define TEXT_NAME "__text"
-#define EH_FRAME_NAME "__eh_frame"
-#define STACKMAPS_NAME "__llvm_stackmaps"
-#elif defined(_TARGET_OS_LINUX)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#elif defined(_TARGET_OS_FREEBSD)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#else
-#error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
-#endif
 #if defined(_TARGET_OS_DARWIN)
   std::string gcroots_in_module_name = "_" GCROOTS_IN_MODULE_NAME;
   std::string literals_name = "_" LITERALS_NAME;
@@ -4344,7 +4347,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                           keptAlive = true;
                                         } else if ( sname.find(literals_name) != std::string::npos ) {
                                           keptAlive = true;
-#if 0
+#if 1
                                           // I'd like to do this on linux because jit symbols need to be exposed but it slows down startup enormously
                                         } else if ( sname.find("^^") != std::string::npos ) {
                                           // Keep alive mangled symbols that we care about
@@ -4404,13 +4407,17 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
   }
-
+  
   void parseLinkGraph(llvm::jitlink::LinkGraph &G) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+    uintptr_t textStart = ~0;
+    uintptr_t textEnd = 0;
     bool gotGcroots = false;
     for (auto &S : G.sections()) {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
-      if (S.getName().str() == BSS_NAME || S.getName().str() == DATA_NAME) {
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  section: %s getOrdinal->%u \n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
+      std::string sectionName = S.getName().str();
+      if ( (sectionName.find(BSS_NAME)!=string::npos) ||
+	   (sectionName.find(DATA_NAME)!=string::npos) ) {
         llvm::jitlink::SectionRange range(S);
         for ( auto& sym : S.symbols() ) {
           std::string name = sym->getName().str();
@@ -4418,19 +4425,26 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           size_t size = sym->getSize();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
         }
-      } else if (S.getName().str() == DATA_NAME) {
+      }
 #if 0
+      else if (sectionName.find(DATA_NAME)!=string::npos) {
         // If we want to handle the .data section differently than .bss then add more code here
-        llvm::jitlink::SectionRange range(S);
-        for ( auto& sym : S.symbols() ) {
+	llvm::jitlink::SectionRange range(S);
+	for ( auto& sym : S.symbols() ) {
           // If we need to grab symbols from DATA_NAME segment do it here
-        }
-#endif
-      } else if (S.getName().str() == TEXT_NAME) {
+	}
+      }
+#endif    
+      else if (S.getProtectionFlags() & llvm::sys::Memory::MF_EXEC) {
+	// Text section
         llvm::jitlink::SectionRange range(S);
+	if ((uintptr_t)range.getStart() < textStart) textStart = (uintptr_t)range.getStart();
+	uintptr_t tend = (uintptr_t)range.getStart()+range.getSize();
+	if ( textEnd < tend ) textEnd = tend;
         Code_sp currentCode = my_thread->topObjectFile()->_Code;
         currentCode->_TextSectionStart = (void*)range.getStart();
         currentCode->_TextSectionEnd = (void*)((char*)range.getStart()+range.getSize());
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
         if (snapshotSaveLoad::global_debugSnapshot) {
           printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
                  __FILE__, __LINE__, __FUNCTION__,
@@ -4439,7 +4453,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                  currentCode->_TextSectionStart,
                  currentCode->_TextSectionEnd );
         }
-
         for ( auto& sym : S.symbols() ) {
           if (sym->isCallable()&&sym->hasName()) {
             std::string name = sym->getName().str();
@@ -4454,18 +4467,37 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 #endif
           }
         }
-      } else if (S.getName().str() == EH_FRAME_NAME) {
+      } else if (sectionName.find(EH_FRAME_NAME)!=string::npos) {
         llvm::jitlink::SectionRange range(S);
         void* start = (void*)range.getStart();
         uintptr_t size = range.getSize();
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
-      } else if (S.getName().str() == STACKMAPS_NAME) {
+      } else if (sectionName.find(STACKMAPS_NAME)!=string::npos) {
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range in thread local storage\n", __FILE__, __LINE__, __FUNCTION__ ));
         llvm::jitlink::SectionRange range(S);
         my_thread->topObjectFile()->_Code->_StackmapStart = (void*)range.getStart();
         my_thread->topObjectFile()->_Code->_StackmapSize = (size_t)range.getSize();
       }
     }
+    // Keep track of the executable region
+    if (textStart) {
+      Code_sp currentCode = my_thread->topObjectFile()->_Code;
+      //      printf("%s:%d:%s  textStart %p - textStop %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)textStart, (void*)textEnd );
+      currentCode->_TextSectionStart = (void*)textStart;
+      currentCode->_TextSectionEnd = (void*)textEnd;
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- Final TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
+      if (snapshotSaveLoad::global_debugSnapshot) {
+	printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
+	       __FILE__, __LINE__, __FUNCTION__,
+	       my_thread->topObjectFile().raw_(),
+	       currentCode.raw_(),
+	       currentCode->_TextSectionStart,
+	       currentCode->_TextSectionEnd );
+      }
+    } else {
+      printf("%s:%d:%s No executable region was found for the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+    }
+    //
     size_t gcroots_in_module_name_len = gcroots_in_module_name.size();
     size_t literals_name_len = literals_name.size();
     bool found_gcroots_in_module = false;
@@ -4532,8 +4564,8 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     currentCode->_gcroots->_module_memory = (void*)currentCode->_LiteralVectorStart;
     currentCode->_gcroots->_num_entries = currentCode->_LiteralVectorSizeBytes/sizeof(void*);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-           (gctools::GCRootsInModule*)currentCode->_gcroots,
-           currentCode->_gcroots->_module_memory,
+			      (gctools::GCRootsInModule*)currentCode->_gcroots,
+			      currentCode->_gcroots->_module_memory,
                               currentCode->_gcroots->_num_entries ));
 
 #ifdef DEBUG_OBJECT_FILES
@@ -4618,9 +4650,15 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
   }
   auto objf = my_thread->topObjectFile()->getObjectFile();
   llvm::object::ObjectFile& of = *objf->release();
-  uint64_t secId = getModuleSectionIndexForText( of );
   Code_sp code = my_thread->topObjectFile()->_Code;
+#if defined(_TARGET_OS_LINUX)
+  uint64_t secId = getModuleSectionIndexForText( of );
   code->_TextSectionId = secId;
+#elif defined(_TARGET_OS_DARWIN)
+  code->_TextSectionId = 0;
+#else
+  printf("%s:%d:%s Add support to set _TextSectionID for this os\n", __FILE__, __LINE__, __FUNCTION__);
+#endif
   save_object_file_and_code_info(my_thread->topObjectFile());
   buffer.reset();
 }
@@ -4906,13 +4944,13 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
         auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
         JTMB.setCodeModel(CodeModel::Small);
         JTMB.setRelocationModel(Reloc::Model::PIC_);
-        this->_TPC = ExitOnErr(orc::SelfTargetProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
+        this->_TPC = ExitOnErr(orc::SelfExecutorProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
         auto J = ExitOnErr(
                            LLJITBuilder()
+                           .setExecutionSession(std::make_unique<ExecutionSession>(std::move(this->_TPC)))
                            .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
-                           .setExecutionSession(std::make_unique<ExecutionSession>(this->_TPC->getSymbolStringPool()))
                            .setJITTargetMachineBuilder(std::move(JTMB))
-                           .setPlatformSetUp(orc::setUpMachOPlatform)
+//                           .setPlatformSetUp(orc::setUpMachOPlatform)
                            .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
                        auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
                        ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
@@ -4921,7 +4959,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
                        // GDB registrar isn't working at the moment
                        if (!getenv("CLASP_NO_JIT_GDB")) {
                            printf("%s:%d:%s Adding ObjLinkingLayer plugin for orc::createJITLoaderGDBRegistrar\n", __FILE__, __LINE__, __FUNCTION__ );
-                           ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*this->_TPC))));
+                           ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
                        }
                        ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
                        return ObjLinkingLayer;

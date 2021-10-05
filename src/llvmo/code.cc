@@ -261,7 +261,7 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   for ( core::T_sp cur = allLibraries; cur.consp(); cur = CONS_CDR(cur) ) {
     Library_sp lib = gc::As<Library_sp>(CONS_CAR(cur));
     if (lib->_Start <= entry_point && entry_point < lib->_End) {
-//      printf("%s:%d:%s Returning library found in _lisp->_Roots._AllLibraries entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(lib).c_str());
+      //      printf("%s:%d:%s Returning library found in _lisp->_Roots._AllLibraries entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(lib).c_str());
       return lib;
     }
   }
@@ -273,7 +273,7 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   bool foundBase = gctools::tagged_pointer_from_interior_pointer<Code_O>( entry_point, taggedCodePointer );
   Code_sp codeObject(taggedCodePointer);
   if (foundBase) {
-//    printf("%s:%d:%s Returning Code_sp object entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(codeObject).c_str());
+    //    printf("%s:%d:%s Returning Code_sp object entry_point @%p  -> %s codeStart: %p  codeEnd: %p\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(codeObject).c_str(), codeObject->codeStart(), codeObject->codeEnd());
     return codeObject;
   }
 
@@ -287,7 +287,7 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   bool isExecutable;
   bool foundLibrary = core::lookup_address_in_library( reinterpret_cast<gctools::clasp_ptr_t>(entry_point), start, end, libraryName, isExecutable, vtableStart, vtableEnd );
   if (foundLibrary) {
-    // printf("%s:%d:%s For entry_point @%p found new library start: %p   end: %p  name: %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, (void*)start, (void*)end, libraryName.c_str());
+    //    printf("%s:%d:%s For entry_point @%p found new library start: %p   end: %p  name: %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, (void*)start, (void*)end, libraryName.c_str());
     Library_sp newlib = Library_O::make(isExecutable, reinterpret_cast<gctools::clasp_ptr_t>(start),reinterpret_cast<gctools::clasp_ptr_t>(end), vtableStart, vtableEnd, libraryName);
     core::T_sp expected;
     core::Cons_sp entry = core::Cons_O::create(newlib,nil<core::T_O>());
@@ -295,7 +295,7 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
       expected = _lisp->_Roots._AllLibraries.load();
       entry->rplacd(expected);
     } while (!_lisp->_Roots._AllLibraries.compare_exchange_weak(expected,entry));
-    // printf("%s:%d:%s Returning new library added to _lisp->_Roots._AllLibraries entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(newlib).c_str());
+    //    printf("%s:%d:%s Returning new library added to _lisp->_Roots._AllLibraries entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(newlib).c_str());
     return newlib;
   }
   
@@ -309,6 +309,7 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
 
 namespace llvmo {
 std::atomic<size_t> fileNum;
+
 
 
 void dumpObjectFile(const char* start, size_t size, void* codeStart) {
@@ -335,6 +336,14 @@ void dumpObjectFile(const char* start, size_t size, void* codeStart) {
 
 namespace llvmo {
 
+  void Code_O::validateEntryPoint(void* entryPoint) {
+    if (this->codeStart()<=(uintptr_t)entryPoint &&
+	(uintptr_t)entryPoint < this->codeEnd()) {
+      return;
+    }
+    printf("%s:%d:%s Entrypoint %p is not bounded by the codeStart %p and codeEnd %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint, (void*)this->codeStart(), (void*)this->codeEnd() );
+    abort();
+  }
 
 void save_object_file_and_code_info(ObjectFile_sp ofi)
 {
