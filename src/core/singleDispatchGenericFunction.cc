@@ -49,27 +49,21 @@ THE SOFTWARE.
 namespace core {
 
 
-FuncallableInstance_sp SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex)
+SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex)
 {
-  size_t number_of_required_arguments = llhandler->numberOfRequiredArguments();
-  Rack_sp rack = Rack_O::make(REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS,nil<T_O>(),nil<T_O>());
-  rack->low_level_rackSet(REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,nil<T_O>());
-  rack->low_level_rackSet(REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER,llhandler);
-  rack->low_level_rackSet(REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX,
-                          make_fixnum(singleDispatchArgumentIndex));
-  rack->low_level_rackSet(REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,nil<T_O>());
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(gfname,single_dispatch_funcallable_entry_point,llhandler->lambdaList());
-  Instance_sp class_ = gc::As<Instance_sp>(cl__find_class(_sym_SingleDispatchGenericFunction_O));
-  rack->stamp_set(class_->CLASS_stamp_for_instances());
-  auto gfun = gctools::GC<FuncallableInstance_O>::allocate(entryPoint,class_,rack);
-//  gfun->entry = single_dispatch_funcallable_entry_point;
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(gfname, single_dispatch_funcallable_entry_point, llhandler->lambdaList());
+  auto gfun = gctools::GC<SingleDispatchGenericFunction_O>::allocate(entryPoint);
+  gfun->callHistory = nil<T_O>();
+  gfun->lambdaListHandler = llhandler;
+  gfun->argumentIndex = make_fixnum(singleDispatchArgumentIndex);
+  gfun->methods = nil<T_O>();
   return gfun;
 }
 
 LCC_RETURN SingleDispatchGenericFunction_O::single_dispatch_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
-  SETUP_CLOSURE(FuncallableInstance_O,closure);
+  SETUP_CLOSURE(SingleDispatchGenericFunction_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  size_t singleDispatchArgumentIndex = closure->_Rack->low_level_rackRef(REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX).unsafe_fixnum();
+  size_t singleDispatchArgumentIndex = closure->argumentIndex.unsafe_fixnum();
   Instance_sp dispatchArgClass;
   // SingleDispatchGenericFunctions can dispatch on the first or second argument
   // so we need this switch here.
@@ -88,7 +82,7 @@ LCC_RETURN SingleDispatchGenericFunction_O::single_dispatch_funcallable_entry_po
   default:
       SIMPLE_ERROR(BF("Add support to dispatch off of something other than one of the first two arguments - arg: %d") % singleDispatchArgumentIndex);
   }
-  List_sp callHistory = gc::As_unsafe<List_sp>(closure->_Rack->low_level_rackRef(REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY));
+  List_sp callHistory = gc::As_unsafe<List_sp>(closure->callHistory.load(std::memory_order_relaxed));
   INITIALIZE_VA_LIST();
   while (callHistory.consp()) {
     Cons_sp entry = gc::As_unsafe<Cons_sp>(CONS_CAR(callHistory));
@@ -104,7 +98,7 @@ LCC_RETURN SingleDispatchGenericFunction_O::single_dispatch_funcallable_entry_po
   // This is the slow path for discriminating functions.
   // Update the call-history with what we find.
   List_sp classPrecedenceList = dispatchArgClass->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
-  List_sp methods = gc::As_unsafe<List_sp>(closure->_Rack->low_level_rackRef(REF_SINGLE_DISPATCH_SPECIALIZER_METHODS));
+  List_sp methods = gc::As_unsafe<List_sp>(closure->methods.load(std::memory_order_relaxed));
   while (classPrecedenceList.consp()) {
     Instance_sp class_ = gc::As<Instance_sp>(CONS_CAR(classPrecedenceList));
     classPrecedenceList = CONS_CDR(classPrecedenceList);
@@ -119,9 +113,9 @@ LCC_RETURN SingleDispatchGenericFunction_O::single_dispatch_funcallable_entry_po
         Cons_sp entry = Cons_O::create(dispatchArgClass,method);
         Cons_sp callHistoryEntry = Cons_O::create(entry,nil<T_O>());
         do {
-          expected = closure->_Rack->low_level_rackRef(REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY);
+          expected = closure->callHistory.load(std::memory_order_relaxed);
           callHistoryEntry->rplacd(expected);
-        } while (!closure->_Rack->low_level_rack_compare_exchange_weak(REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,expected,callHistoryEntry));
+        } while (!closure->callHistory.compare_exchange_weak(expected, callHistoryEntry));
         Function_sp method_function = method->_function;
         return (method_function->entry())(LCC_PASS_ARGS_VASLIST(method_function.raw_(),lcc_vargs));
       }
@@ -134,14 +128,14 @@ LCC_RETURN SingleDispatchGenericFunction_O::single_dispatch_funcallable_entry_po
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchGenericFunction)dx")
 DOCGROUP(clasp)
-CL_DEFUN FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex) {
+CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex) {
   T_sp tgfn;
   if (!cl__fboundp(gfname)) {
     tgfn = nil<T_O>();
   } else {
     tgfn = cl__fdefinition(gfname);
   }
-  FuncallableInstance_sp gfn;
+  SingleDispatchGenericFunction_sp gfn;
   if (tgfn.nilp()) {
     // Use CAS to push the new gfname into the list of single dispatch generic functions
     T_sp expected;
@@ -163,14 +157,14 @@ CL_DEFUN FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_
       Symbol_sp gfname_symbol = gc::As_unsafe<Symbol_sp>(gfname);
       if (gfname_symbol->fboundp()) {
         T_sp symFunc = gfname_symbol->symbolFunction();
-        SIMPLE_ERROR(BF("The symbol %s has something bound to its function slot but no FuncallableInstance with that name was found") % _rep_(gfname));
+        SIMPLE_ERROR(BF("The symbol %s has something bound to its function slot but not a single dispatch generic function") % _rep_(gfname));
       }
       gfn = SingleDispatchGenericFunction_O::create_single_dispatch_generic_function(gfname, llhandler,singleDispatchArgumentIndex);
       gfname_symbol->setf_symbolFunction(gfn);
       if (autoExport) gfname_symbol->exportYourself();
     }
   } else {
-    gfn = gc::As<FuncallableInstance_sp>(tgfn);
+    gfn = gc::As<SingleDispatchGenericFunction_sp>(tgfn);
   }
   return gfn;
 };
@@ -180,9 +174,7 @@ CL_LAMBDA("gf gfname receiver-class &key lambda-list-handler declares (docstring
 CL_DECLARE();
 CL_DOCSTRING(R"dx(ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function)dx")
 DOCGROUP(clasp)
-CL_DEFUN void core__ensure_single_dispatch_method(FuncallableInstance_sp gfunction, T_sp tgfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, T_sp docstring, Function_sp body) {
-  //	string docstr = docstring->get();
-//  SingleDispatchGenericFunction_sp gf = gc::As<SingleDispatchGenericFunction_sp>(gfname->symbolFunction());
+CL_DEFUN void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp tgfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, T_sp docstring, Function_sp body) {
   SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(tgfname,
                                                                   receiver_class,
                                                                   lambda_list_handler,
@@ -190,7 +182,7 @@ CL_DEFUN void core__ensure_single_dispatch_method(FuncallableInstance_sp gfuncti
                                                                   docstring,
                                                                   body);
   ASSERT(lambda_list_handler.notnilp());
-  LambdaListHandler_sp gf_llh = gc::As<LambdaListHandler_sp>(gfunction->_Rack->low_level_rackRef(SingleDispatchGenericFunction_O::REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER));
+  LambdaListHandler_sp gf_llh = gfunction->lambdaListHandler;
   if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments()) {
     SIMPLE_ERROR(BF("There is a mismatch between the number of required arguments\n"
                     " between the single-dispatch-generic-function %s which expects %d arguments\n"
@@ -202,16 +194,16 @@ CL_DEFUN void core__ensure_single_dispatch_method(FuncallableInstance_sp gfuncti
                     " --> The solution is to give the most recent Common Lisp method you defined\n"
                     " a new name by prefixing it with the class name\n"
                     " eg: getFilename -> PresumedLoc-getFilename") %
-                 _rep_(tgfname) % gf_llh->numberOfRequiredArguments() % _rep_(gfunction->_Rack->low_level_rackRef(SingleDispatchGenericFunction_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY)) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
+                 _rep_(tgfname) % gf_llh->numberOfRequiredArguments() % _rep_(gfunction->callHistory.load(std::memory_order_relaxed)) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
   }
   // Update the methods using CAS
   {
     T_sp expected;
     Cons_sp entry = Cons_O::create(method,nil<T_O>());
     do {
-      expected = gfunction->_Rack->low_level_rackRef(SingleDispatchGenericFunction_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS);
+      expected = gfunction->methods.load(std::memory_order_relaxed);
       entry->rplacd(expected);
-    } while (!gfunction->_Rack->low_level_rack_compare_exchange_weak(SingleDispatchGenericFunction_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS, expected, entry));
+    } while (!gfunction->methods.compare_exchange_weak(expected, entry));
   }
   if (docstring.notnilp()) {
     core::ext__annotate(method,cl::_sym_documentation,core::_sym_single_dispatch_method, docstring );

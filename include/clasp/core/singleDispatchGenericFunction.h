@@ -30,12 +30,14 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
-
+#include <atomic>
 
 namespace core {
 FORWARD(SingleDispatchMethod);
 class SingleDispatchGenericFunction_O : public Closure_O {
   LISP_CLASS(core,CorePkg,SingleDispatchGenericFunction_O,"SingleDispatchGenericFunction",Closure_O);
+public:
+  SingleDispatchGenericFunction_O(GlobalEntryPoint_sp ep) : Base(ep) {};
 public:
   typedef enum {
       REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY = 0,
@@ -45,15 +47,20 @@ public:
       REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS = 4
   } SingleDispatchSlots;
 public:
-  static FuncallableInstance_sp create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex);
+  static SingleDispatchGenericFunction_sp create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex);
   static LCC_RETURN single_dispatch_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
+public:
+  std::atomic<T_sp> callHistory;
+  LambdaListHandler_sp lambdaListHandler;
+  Fixnum_sp argumentIndex;
+  std::atomic<T_sp> methods;
 };
 
 };
 
 
 namespace core {
-FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex);
+SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex);
 // void core__satiateSingleDispatchGenericFunctions();
 
 };

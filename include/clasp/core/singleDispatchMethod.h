@@ -97,7 +97,7 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-void core__ensure_single_dispatch_method(FuncallableInstance_sp gfunction, T_sp gfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, core::T_sp docstring, Function_sp body);
+void core__ensure_single_dispatch_method(SingleDispatchGenericFunction_sp gfunction, T_sp gfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, core::T_sp docstring, Function_sp body);
 
 
 };
