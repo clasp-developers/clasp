@@ -36,8 +36,7 @@ THE SOFTWARE.
 #include <libunwind.h>
 #endif
 #ifdef _TARGET_OS_DARWIN
-#import <mach-o/dyld.h>
-#import <mach-o/nlist.h>
+#include <dlfcn.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h>
