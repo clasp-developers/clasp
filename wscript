@@ -2283,9 +2283,8 @@ class scraper_task(clasp_task):
         fasl_dir = os.path.join(bld.path.abspath(), out, "host-fasl/")
         cmd = [] + env.SCRAPER_LISP + [
             "--eval", "(require :asdf)",
-            "--eval", "(asdf:initialize-source-registry '(:source-registry (:directory \"%s\") :ignore-inherited-configuration))" % scraper_home,
+            "--eval", "(asdf:initialize-source-registry '(:source-registry (:tree \"%s\") :ignore-inherited-configuration))" % scraper_home,
             "--eval", "(asdf:initialize-output-translations '(:output-translations (t (\"%s\" :implementation)) :inherit-configuration))" % fasl_dir,
-            "--load", os.path.join(env.BUILD_ROOT, "src/scraper/dependencies/bundle.lisp"),
             "--eval", "(let ((uiop:*uninteresting-conditions* (list* 'style-warning uiop:*usual-uninteresting-conditions*)) (*compile-print* nil) (*compile-verbose* nil)) (asdf:load-system :clasp-scraper))",
             ] + extraCommands + [
             "--eval", "(quit)", "--end-toplevel-options"] + scraperArgs
