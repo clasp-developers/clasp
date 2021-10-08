@@ -13,10 +13,10 @@
            (concatenate 'string (make-string 3 :initial-element #\Nul) "abc"))
 (test-true concatenate-with-nul1
            (string= (concatenate 'string (make-string 3 :initial-element #\Nul) "abc")
-                    (core:bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
+                    (format nil "~c~c~cabc" #\nul #\nul #\nul)))
 (test-true copy-seq-with-nul0
            (string= (copy-seq (concatenate 'string (make-string 3 :initial-element #\Nul) "abc"))
-                    (core:bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
+                    (format nil "~c~c~cabc" #\nul #\nul #\nul)))
 (test string=-with-nul0
       (substitute #\X #\Nul
                   (subseq (concatenate 'string "a" (make-string 3 :initial-element #\Nul) "bcd") 0))

@@ -325,6 +325,18 @@ def update_dependencies(cfg):
     fetch_git_revision("src/lisp/kernel/contrib/alexandria",
                        "https://github.com/clasp-developers/alexandria.git",
                        "e5c54bc30b0887c237bde2827036d17315f88737")
+    # This duplicate copy is used by the scraper. It's possible we could
+    # use the same Alexandria for both, but for the moment I'm keeping them
+    # separated, in case Clasp and the scraper ever need different versions.
+    fetch_git_revision("src/scraper/dependencies/alexandria",
+                       "https://github.com/clasp-developers/alexandria.git",
+                       "e5c54bc30b0887c237bde2827036d17315f88737")
+    fetch_git_revision("src/scraper/dependencies/esrap",
+                       "https://github.com/scymtym/esrap.git",
+                       "866f28fa7a2c1d3fb6d0d0423850d1f9d955750f")
+    fetch_git_revision("src/scraper/dependencies/trivial-with-current-source-form",
+                       "https://github.com/scymtym/trivial-with-current-source-form.git",
+                       "3898e09f8047ef89113df265574ae8de8afa31ac")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        #DLM says this will be faster.
@@ -2282,9 +2294,8 @@ class scraper_task(clasp_task):
         fasl_dir = os.path.join(bld.path.abspath(), out, "host-fasl/")
         cmd = [] + env.SCRAPER_LISP + [
             "--eval", "(require :asdf)",
-            "--eval", "(asdf:initialize-source-registry '(:source-registry (:directory \"%s\") :ignore-inherited-configuration))" % scraper_home,
+            "--eval", "(asdf:initialize-source-registry '(:source-registry (:tree \"%s\") :ignore-inherited-configuration))" % scraper_home,
             "--eval", "(asdf:initialize-output-translations '(:output-translations (t (\"%s\" :implementation)) :inherit-configuration))" % fasl_dir,
-            "--load", os.path.join(env.BUILD_ROOT, "src/scraper/dependencies/bundle.lisp"),
             "--eval", "(let ((uiop:*uninteresting-conditions* (list* 'style-warning uiop:*usual-uninteresting-conditions*)) (*compile-print* nil) (*compile-verbose* nil)) (asdf:load-system :clasp-scraper))",
             ] + extraCommands + [
             "--eval", "(quit)", "--end-toplevel-options"] + scraperArgs
