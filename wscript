@@ -113,8 +113,7 @@ GCS_NAMES = [ 'boehm',
               'boehmprecise',
               'mmtk',
               'mmtkprecise',
-              'mpsprep',
-              'mps' ]
+              'preciseprep' ]
 
 CLANG_LIBRARIES = [
             'clangASTMatchers',
@@ -351,7 +350,7 @@ def doxygen(cfg):
     
 # run this from a completely cold system with:
 # ./waf distclean configure
-# ./waf build_impsprep
+# ./waf build_ipreciseprep
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
@@ -702,22 +701,22 @@ class mps_base(variant):
                 cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
         self.common_setup(cfg)
 
-class mpsprep(mps_base):
-    gc_name = 'mpsprep'
+class preciseprep(mps_base):
+    gc_name = 'preciseprep'
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mpsprep", env=env_copy.derive())
-        cfg.define("RUNNING_MPSPREP",1)
+        cfg.setenv("preciseprep", env=env_copy.derive())
+        cfg.define("RUNNING_PRECISEPREP",1)
         cfg.env["PRECISE"] = 0
-        super(mpsprep,self).configure_variant(cfg,env_copy)
+        super(preciseprep,self).configure_variant(cfg,env_copy)
 
-class mpsprep_d(mps_base):
-    gc_name = 'mpsprep'
+class preciseprep_d(mps_base):
+    gc_name = 'preciseprep'
     build_with_debug_info = True
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mpsprep_d", env=env_copy.derive())
-        cfg.define("RUNNING_MPSPREP",1)
+        cfg.setenv("preciseprep_d", env=env_copy.derive())
+        cfg.define("RUNNING_PRECISEPREP",1)
         cfg.env["PRECISE"] = 0
-        super(mpsprep_d,self).configure_variant(cfg,env_copy)
+        super(preciseprep_d,self).configure_variant(cfg,env_copy)
 
 class mps(mps_base):
     gc_name = 'mps'
@@ -828,22 +827,22 @@ class bmps_d(mps_d):
 class cmps_d(mps_d):
     stage_char = 'c'
 
-class impsprep(mpsprep):
+class ipreciseprep(preciseprep):
     stage_char = 'i'
-class ampsprep(mpsprep):
+class apreciseprep(preciseprep):
     stage_char = 'a'
-class bmpsprep(mpsprep):
+class bpreciseprep(preciseprep):
     stage_char = 'b'
-class cmpsprep(mpsprep):
+class cpreciseprep(preciseprep):
     stage_char = 'c'
 
-class impsprep_d(mpsprep_d):
+class ipreciseprep_d(preciseprep_d):
     stage_char = 'i'
-class ampsprep_d(mpsprep_d):
+class apreciseprep_d(preciseprep_d):
     stage_char = 'a'
-class bmpsprep_d(mpsprep_d):
+class bpreciseprep_d(preciseprep_d):
     stage_char = 'b'
-class cmpsprep_d(mpsprep_d):
+class cpreciseprep_d(preciseprep_d):
     stage_char = 'c'
 
 ###### MPI versions
@@ -920,22 +919,22 @@ class mps_mpi_base(variant):
                 cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
         self.common_setup(cfg)
 
-class mpsprep_mpi(mps_mpi_base):
-    gc_name = 'mpsprep'
+class preciseprep_mpi(mps_mpi_base):
+    gc_name = 'preciseprep'
 
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mpsprep_mpi", env=env_copy.derive())
-        cfg.define("RUNNING_MPSPREP",1)
-        super(mpsprep_mpi,self).configure_variant(cfg,env_copy)
+        cfg.setenv("preciseprep_mpi", env=env_copy.derive())
+        cfg.define("RUNNING_PRECISEPREP",1)
+        super(preciseprep_mpi,self).configure_variant(cfg,env_copy)
 
-class mpsprep_mpi_d(mps_mpi_base):
-    gc_name = 'mpsprep'
+class preciseprep_mpi_d(mps_mpi_base):
+    gc_name = 'preciseprep'
     build_with_debug_info = True
 
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mpsprep_mpi_d", env=env_copy.derive())
-        cfg.define("RUNNING_MPSPREP",1)
-        super(mpsprep_mpi_d,self).configure_variant(cfg,env_copy)
+        cfg.setenv("preciseprep_mpi_d", env=env_copy.derive())
+        cfg.define("RUNNING_PRECISEPREP",1)
+        super(preciseprep_mpi_d,self).configure_variant(cfg,env_copy)
 
 class mps_mpi(mps_mpi_base):
     gc_name = 'mps'
@@ -1007,22 +1006,22 @@ class bmps_mpi_d(mps_mpi_d):
 class cmps_mpi_d(mps_mpi_d):
     stage_char = 'c'
 
-class impsprep_mpi(mpsprep_mpi):
+class ipreciseprep_mpi(preciseprep_mpi):
     stage_char = 'i'
-class ampsprep_mpi(mpsprep_mpi):
+class apreciseprep_mpi(preciseprep_mpi):
     stage_char = 'a'
-class bmpsprep_mpi(mpsprep_mpi):
+class bpreciseprep_mpi(preciseprep_mpi):
     stage_char = 'b'
-class cmpsprep_mpi(mpsprep_mpi):
+class cpreciseprep_mpi(preciseprep_mpi):
     stage_char = 'c'
 
-class impsprep_mpi_d(mpsprep_mpi_d):
+class ipreciseprep_mpi_d(preciseprep_mpi_d):
     stage_char = 'i'
-class ampsprep_mpi_d(mpsprep_mpi_d):
+class apreciseprep_mpi_d(preciseprep_mpi_d):
     stage_char = 'a'
-class bmpsprep_mpi_d(mpsprep_mpi_d):
+class bpreciseprep_mpi_d(preciseprep_mpi_d):
     stage_char = 'b'
-class cmpsprep_mpi_d(mpsprep_mpi_d):
+class cpreciseprep_mpi_d(preciseprep_mpi_d):
     stage_char = 'c'
 
 

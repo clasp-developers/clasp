@@ -3,7 +3,7 @@
 (asdf:load-asd (probe-file "sys:modules;clasp-analyzer;clasp-analyzer.asd"))
 (asdf:load-system :clasp-analyzer)
 
-(defparameter *compile-commands* "build/mpsprep/compile_commands.json")
+(defparameter *compile-commands* "build/preciseprep/compile_commands.json")
 
 (defun run-search (output-filename &key (selection-pattern nil selection-pattern-p))
   (format t "output-filename: ~s~%" output-filename)

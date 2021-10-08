@@ -3788,7 +3788,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (lambda (args filename)
     (declare (ignore filename))
     (let ((result (concatenate 'vector args
-                               (vector "-v" "-DRUNNING_MPSPREP" "-Wno-nullability-completeness"))))
+                               (vector "-v" "-DRUNNING_PRECISEPREP" "-Wno-nullability-completeness"))))
       result)))
 
 (defun setup-tools (compilation-tool-database)

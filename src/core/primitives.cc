@@ -235,7 +235,7 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   ss << "mmtk-";
 # endif
 #endif
-#ifdef USE_MPSPREP
+#ifdef RUNNING_PRECISEPREP
   ss << "mpsprep-";
 #endif
   ss << CLASP_VERSION;

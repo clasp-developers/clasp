@@ -739,7 +739,9 @@ size_t processMpsMessages(size_t& finalizations) {
           ht->remhash(obj);
           invoked_finalizer = true;
         }
+#ifndef RUNNING_PRECISEPREP
         if (!invoked_finalizer && obj.generalp()) obj_finalize(ref_o);
+#endif
       } else {
 //        printf("%s:%d Got finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object so I'm ignoring it - maybe get rid of this message\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp_());
       }
@@ -1067,7 +1069,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_fmt_t weak_obj_fmt;
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(Header_s));
-#ifndef RUNNING_MPSPREP
+#ifndef RUNNING_PRECISEPREP
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, weak_obj_scan);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, weak_obj_skip);
@@ -1156,7 +1158,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // printf("%s:%d UNDEF USE_main_thread_roots_scan NUMBER_OF_CORE_SYMBOLS[%d] global_symbol_count[%d]\n", __FILE__, __LINE__, NUMBER_OF_CORE_SYMBOLS, global_symbol_count );
 #endif  
 //  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
-#ifdef RUNNING_MPSPREP
+#ifdef RUNNING_PRECISEPREP
   printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);
   printf("%s:%d   You could run some tests here\n", __FILE__, __LINE__);
   printf("%s:%d   ... shutting down now\n", __FILE__, __LINE__);
