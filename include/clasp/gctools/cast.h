@@ -51,7 +51,7 @@ namespace clbind {
   class ConstructorCreator_O;
 };
 
-#if ((defined(USE_MMTK)||defined(USE_BOEHM)) && !defined(USE_PRECISE_GC)) || defined(RUNNING_MPSPREP)
+#if ((defined(USE_MMTK)||defined(USE_BOEHM)) && !defined(USE_PRECISE_GC)) || defined(RUNNING_PRECISEPREP)
 //----------------------------------------------------------------------
 # ifndef SCRAPING
 #  define DECLARE_FORWARDS

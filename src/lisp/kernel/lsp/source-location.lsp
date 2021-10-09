@@ -67,11 +67,20 @@
      :offset (core:source-pos-info-filepos source-position-info)
      :definer definer)))
 
-;;; Class source positions are just stored in a slot.
+;;; Class source positions are just stored in a slot, or ones from C++ are
+;;; stored as sysprops. We prefer the slot.
 (defun class-source-location (class)
   (let ((csp (clos:class-source-position class)))
-    (when csp
-      (source-position-info->source-location csp 'defclass))))
+    (if csp
+        (source-position-info->source-location csp 'defclass)
+        (let ((cppinfo (core:get-sysprop (class-name class)
+                                         'core:class-source-location)))
+          (when cppinfo
+            ;; This is a list (filename offset)
+            (make-source-location
+             :pathname (pathname (first cppinfo))
+             :offset (second cppinfo)
+             :definer 'defclass))))))
 
 ;;; Method combinations don't have source positions. In fact,
 ;;; they don't even exist as objects globally. The only global

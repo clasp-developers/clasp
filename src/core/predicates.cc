@@ -294,7 +294,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(singleDispatchGenericFunctionP)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool core__single_dispatch_generic_function_p(T_sp obj) {
-  return gc::IsA<SingleDispatchGenericFunctionClosure_sp>(obj);
+  return gc::IsA<SingleDispatchGenericFunction_sp>(obj);
 };
 
 CL_LAMBDA(arg)

@@ -113,8 +113,7 @@ GCS_NAMES = [ 'boehm',
               'boehmprecise',
               'mmtk',
               'mmtkprecise',
-              'mpsprep',
-              'mps' ]
+              'preciseprep' ]
 
 CLANG_LIBRARIES = [
             'clangASTMatchers',
@@ -307,7 +306,7 @@ def update_dependencies(cfg):
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
-                       "1d5372d2d1c98029eb027cb80c95409611c96972")
+                       "04f1f75cd3be18a4e58f17efe0f2dbcde2105ed7")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
@@ -326,6 +325,18 @@ def update_dependencies(cfg):
     fetch_git_revision("src/lisp/kernel/contrib/alexandria",
                        "https://github.com/clasp-developers/alexandria.git",
                        "e5c54bc30b0887c237bde2827036d17315f88737")
+    # This duplicate copy is used by the scraper. It's possible we could
+    # use the same Alexandria for both, but for the moment I'm keeping them
+    # separated, in case Clasp and the scraper ever need different versions.
+    fetch_git_revision("src/scraper/dependencies/alexandria",
+                       "https://github.com/clasp-developers/alexandria.git",
+                       "e5c54bc30b0887c237bde2827036d17315f88737")
+    fetch_git_revision("src/scraper/dependencies/esrap",
+                       "https://github.com/scymtym/esrap.git",
+                       "866f28fa7a2c1d3fb6d0d0423850d1f9d955750f")
+    fetch_git_revision("src/scraper/dependencies/trivial-with-current-source-form",
+                       "https://github.com/scymtym/trivial-with-current-source-form.git",
+                       "3898e09f8047ef89113df265574ae8de8afa31ac")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
                        #DLM says this will be faster.
@@ -351,7 +362,7 @@ def doxygen(cfg):
     
 # run this from a completely cold system with:
 # ./waf distclean configure
-# ./waf build_impsprep
+# ./waf build_ipreciseprep
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
@@ -702,22 +713,22 @@ class mps_base(variant):
                 cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
         self.common_setup(cfg)
 
-class mpsprep(mps_base):
-    gc_name = 'mpsprep'
+class preciseprep(mps_base):
+    gc_name = 'preciseprep'
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mpsprep", env=env_copy.derive())
-        cfg.define("RUNNING_MPSPREP",1)
+        cfg.setenv("preciseprep", env=env_copy.derive())
+        cfg.define("RUNNING_PRECISEPREP",1)
         cfg.env["PRECISE"] = 0
-        super(mpsprep,self).configure_variant(cfg,env_copy)
+        super(preciseprep,self).configure_variant(cfg,env_copy)
 
-class mpsprep_d(mps_base):
-    gc_name = 'mpsprep'
+class preciseprep_d(mps_base):
+    gc_name = 'preciseprep'
     build_with_debug_info = True
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mpsprep_d", env=env_copy.derive())
-        cfg.define("RUNNING_MPSPREP",1)
+        cfg.setenv("preciseprep_d", env=env_copy.derive())
+        cfg.define("RUNNING_PRECISEPREP",1)
         cfg.env["PRECISE"] = 0
-        super(mpsprep_d,self).configure_variant(cfg,env_copy)
+        super(preciseprep_d,self).configure_variant(cfg,env_copy)
 
 class mps(mps_base):
     gc_name = 'mps'
@@ -828,22 +839,22 @@ class bmps_d(mps_d):
 class cmps_d(mps_d):
     stage_char = 'c'
 
-class impsprep(mpsprep):
+class ipreciseprep(preciseprep):
     stage_char = 'i'
-class ampsprep(mpsprep):
+class apreciseprep(preciseprep):
     stage_char = 'a'
-class bmpsprep(mpsprep):
+class bpreciseprep(preciseprep):
     stage_char = 'b'
-class cmpsprep(mpsprep):
+class cpreciseprep(preciseprep):
     stage_char = 'c'
 
-class impsprep_d(mpsprep_d):
+class ipreciseprep_d(preciseprep_d):
     stage_char = 'i'
-class ampsprep_d(mpsprep_d):
+class apreciseprep_d(preciseprep_d):
     stage_char = 'a'
-class bmpsprep_d(mpsprep_d):
+class bpreciseprep_d(preciseprep_d):
     stage_char = 'b'
-class cmpsprep_d(mpsprep_d):
+class cpreciseprep_d(preciseprep_d):
     stage_char = 'c'
 
 ###### MPI versions
@@ -920,22 +931,22 @@ class mps_mpi_base(variant):
                 cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
         self.common_setup(cfg)
 
-class mpsprep_mpi(mps_mpi_base):
-    gc_name = 'mpsprep'
+class preciseprep_mpi(mps_mpi_base):
+    gc_name = 'preciseprep'
 
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mpsprep_mpi", env=env_copy.derive())
-        cfg.define("RUNNING_MPSPREP",1)
-        super(mpsprep_mpi,self).configure_variant(cfg,env_copy)
+        cfg.setenv("preciseprep_mpi", env=env_copy.derive())
+        cfg.define("RUNNING_PRECISEPREP",1)
+        super(preciseprep_mpi,self).configure_variant(cfg,env_copy)
 
-class mpsprep_mpi_d(mps_mpi_base):
-    gc_name = 'mpsprep'
+class preciseprep_mpi_d(mps_mpi_base):
+    gc_name = 'preciseprep'
     build_with_debug_info = True
 
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mpsprep_mpi_d", env=env_copy.derive())
-        cfg.define("RUNNING_MPSPREP",1)
-        super(mpsprep_mpi_d,self).configure_variant(cfg,env_copy)
+        cfg.setenv("preciseprep_mpi_d", env=env_copy.derive())
+        cfg.define("RUNNING_PRECISEPREP",1)
+        super(preciseprep_mpi_d,self).configure_variant(cfg,env_copy)
 
 class mps_mpi(mps_mpi_base):
     gc_name = 'mps'
@@ -1007,22 +1018,22 @@ class bmps_mpi_d(mps_mpi_d):
 class cmps_mpi_d(mps_mpi_d):
     stage_char = 'c'
 
-class impsprep_mpi(mpsprep_mpi):
+class ipreciseprep_mpi(preciseprep_mpi):
     stage_char = 'i'
-class ampsprep_mpi(mpsprep_mpi):
+class apreciseprep_mpi(preciseprep_mpi):
     stage_char = 'a'
-class bmpsprep_mpi(mpsprep_mpi):
+class bpreciseprep_mpi(preciseprep_mpi):
     stage_char = 'b'
-class cmpsprep_mpi(mpsprep_mpi):
+class cpreciseprep_mpi(preciseprep_mpi):
     stage_char = 'c'
 
-class impsprep_mpi_d(mpsprep_mpi_d):
+class ipreciseprep_mpi_d(preciseprep_mpi_d):
     stage_char = 'i'
-class ampsprep_mpi_d(mpsprep_mpi_d):
+class apreciseprep_mpi_d(preciseprep_mpi_d):
     stage_char = 'a'
-class bmpsprep_mpi_d(mpsprep_mpi_d):
+class bpreciseprep_mpi_d(preciseprep_mpi_d):
     stage_char = 'b'
-class cmpsprep_mpi_d(mpsprep_mpi_d):
+class cpreciseprep_mpi_d(preciseprep_mpi_d):
     stage_char = 'c'
 
 
@@ -2283,9 +2294,8 @@ class scraper_task(clasp_task):
         fasl_dir = os.path.join(bld.path.abspath(), out, "host-fasl/")
         cmd = [] + env.SCRAPER_LISP + [
             "--eval", "(require :asdf)",
-            "--eval", "(asdf:initialize-source-registry '(:source-registry (:directory \"%s\") :ignore-inherited-configuration))" % scraper_home,
+            "--eval", "(asdf:initialize-source-registry '(:source-registry (:tree \"%s\") :ignore-inherited-configuration))" % scraper_home,
             "--eval", "(asdf:initialize-output-translations '(:output-translations (t (\"%s\" :implementation)) :inherit-configuration))" % fasl_dir,
-            "--load", os.path.join(env.BUILD_ROOT, "src/scraper/dependencies/bundle.lisp"),
             "--eval", "(let ((uiop:*uninteresting-conditions* (list* 'style-warning uiop:*usual-uninteresting-conditions*)) (*compile-print* nil) (*compile-verbose* nil)) (asdf:load-system :clasp-scraper))",
             ] + extraCommands + [
             "--eval", "(quit)", "--end-toplevel-options"] + scraperArgs

@@ -820,7 +820,7 @@ void StrongKeyHashTable::clrhash() {
 extern "C" {
 using namespace gctools;
 mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
-#if !defined(RUNNING_MPSPREP)  
+#if !defined(RUNNING_PRECISEPREP)  
   MPS_SCAN_BEGIN(ss) {
     while (base < limit) {
       WeakObject *weakObj = reinterpret_cast<WeakObject *>(base);
@@ -971,7 +971,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
 }
 
 mps_addr_t weak_obj_skip_debug(mps_addr_t base, bool dbg) {
-#if !defined(RUNNING_MPSPREP)
+#if !defined(RUNNING_PRECISEPREP)
   GCWEAK_LOG(BF("weak_obj_skip base=%p") % ((void *)base));
   WeakObject *weakObj = reinterpret_cast<WeakObject *>(base);
   switch (weakObj->kind()) {
@@ -1038,7 +1038,7 @@ __attribute__((noinline))  mps_addr_t weak_obj_skip_debug_wrong_size(mps_addr_t 
 }
 
 void weak_obj_fwd(mps_addr_t old, mps_addr_t newv) {
-#if !defined(RUNNING_MPSPREP)
+#if !defined(RUNNING_PRECISEPREP)
   WeakObject *weakObj = reinterpret_cast<WeakObject *>(old);
   mps_addr_t limit = weak_obj_skip(old);
   size_t size = (char *)limit - (char *)old;
@@ -1057,7 +1057,7 @@ void weak_obj_fwd(mps_addr_t old, mps_addr_t newv) {
 }
 
 mps_addr_t weak_obj_isfwd(mps_addr_t addr) {
-#if !defined(RUNNING_MPSPREP)
+#if !defined(RUNNING_PRECISEPREP)
   WeakObject *obj = reinterpret_cast<WeakObject *>(addr);
   switch (obj->kind()) {
   case WeakFwd2Kind: {
@@ -1074,7 +1074,7 @@ mps_addr_t weak_obj_isfwd(mps_addr_t addr) {
 }
 
 void weak_obj_pad(mps_addr_t addr, size_t size) {
-#if !defined(RUNNING_MPSPREP)
+#if !defined(RUNNING_PRECISEPREP)
   WeakObject *weakObj = reinterpret_cast<WeakObject *>(addr);
   assert(size >= Align(sizeof(weak_pad1_s)));
   if (size == Align(sizeof(weak_pad1_s))) {

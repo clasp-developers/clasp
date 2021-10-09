@@ -229,10 +229,9 @@
  "core::SimpleVector_byte32_t_O"
  "core::Lisp"
  "core::MDArray_byte8_t_O"
- "core::SingleDispatchGenericFunctionClosure_O"
  "core::FuncallableInstanceCreator_O"
- "core::AnsiStream_O"
  "core::StringOutputStream_O"
+ "core::AnsiStream_O"
  "core::KeywordArgument"
  "llvmo::Module_O"
  "core::SingleFloat_dummy_O"
@@ -316,6 +315,7 @@
  "core::SymbolToEnumConverter_O"
  "llvmo::SwitchInst_O"
  "core::ComplexVector_size_t_O"
+ "core::SingleDispatchGenericFunction_O"
  "llvmo::Pass_O"
  "core::ComplexVector_int32_t_O"
  "core::VaList_dummy_O"
@@ -422,6 +422,12 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::SpecialForm_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_fptr")) }
 { TAGS:TEMPLATED-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__Closure_O")(TAGS:STAMP-KEY . "core::Closure_O")(TAGS:PARENT-CLASS . "core::Function_O")(TAGS:LISP-CLASS-BASE . "core::Function_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::GlobalEntryPoint_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Closure_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_EntryPoint")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__SingleDispatchGenericFunction_O")(TAGS:STAMP-KEY . "core::SingleDispatchGenericFunction_O")(TAGS:PARENT-CLASS . "core::Closure_O")(TAGS:LISP-CLASS-BASE . "core::Closure_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::GlobalEntryPoint_O>")( TAGS:OFFSET-BASE-CTYPE . "core::SingleDispatchGenericFunction_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_EntryPoint")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::SingleDispatchGenericFunction_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "callHistory")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::LambdaListHandler_O>")( TAGS:OFFSET-BASE-CTYPE . "core::SingleDispatchGenericFunction_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "lambdaListHandler")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Fixnum_I>")( TAGS:OFFSET-BASE-CTYPE . "core::SingleDispatchGenericFunction_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "argumentIndex")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::SingleDispatchGenericFunction_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "methods")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__ClosureWithSlots_O")(TAGS:STAMP-KEY . "core::ClosureWithSlots_O")(TAGS:PARENT-CLASS . "core::Closure_O")(TAGS:LISP-CLASS-BASE . "core::Closure_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::GlobalEntryPoint_O>")( TAGS:OFFSET-BASE-CTYPE . "core::ClosureWithSlots_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_EntryPoint")) }
 { TAGS:VARIABLE-ARRAY0 ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-BASE-CTYPE . "core::ClosureWithSlots_O")( TAGS:FIELD-NAMES . ("_Slots" "._Data"))) }
@@ -434,8 +440,6 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::GlobalEntryPoint_O>")( TAGS:OFFSET-BASE-CTYPE . "core::TranslationFunctor_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_EntryPoint")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::LambdaListHandler_O>")( TAGS:OFFSET-BASE-CTYPE . "core::TranslationFunctor_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_lambdaListHandler")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::TranslationFunctor_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "fptr")) }
-{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O")(TAGS:STAMP-KEY . "core::SingleDispatchGenericFunctionClosure_O")(TAGS:PARENT-CLASS . "core::Closure_O")(TAGS:LISP-CLASS-BASE . "core::Closure_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::GlobalEntryPoint_O>")( TAGS:OFFSET-BASE-CTYPE . "core::SingleDispatchGenericFunctionClosure_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_EntryPoint")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__ImmobileObject_O")(TAGS:STAMP-KEY . "core::ImmobileObject_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::ImmobileObject_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Head")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::ImmobileObject_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Tail")) }
