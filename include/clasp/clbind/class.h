@@ -593,15 +593,18 @@ struct property_registration : registration {
      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
      core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
      using VariadicGetterType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get>;
-     core::FunctionDescription_sp fdesc = core::makeFunctionDescription(sym,VariadicGetterType::entry_point);
-     auto raw_getter = gc::GC<VariadicGetterType>::allocate(fdesc, get);
-     core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(raw_getter);
-     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1);
-     core::validateFunctionDescription(__FILE__,__LINE__,getter);
-     core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf,sym);
+     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( sym, VariadicGetterType::entry_point );
+     maybe_register_symbol_using_dladdr( (void*)VariadicGetterType::entry_point );
+//     auto raw_getter = gc::GC<VariadicGetterType>::allocate(fdesc, get);
+     core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>( entryPoint ); // raw_getter);
+     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1 );
+     core::validateFunctionDescription( __FILE__, __LINE__, getter );
+     core::T_sp setf_name = core::Cons_O::createList( cl::_sym_setf, sym );
      using VariadicSetterType = SetterMethoid<reg::null_type, Class, Set>;
-     core::FunctionDescription_sp fdesc_setf = core::makeFunctionDescription(setf_name,VariadicSetterType::entry_point);
-     core::BuiltinClosure_sp setter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicSetterType>::allocate(fdesc_setf, set));
+     core::GlobalEntryPoint_sp setterEntryPoint = makeGlobalEntryPointAndFunctionDescription( setf_name, VariadicSetterType::entry_point );
+     maybe_register_symbol_using_dladdr( (void*)VariadicSetterType::entry_point );
+//     core::FunctionDescription_sp fdesc_setf = core::makeFunctionDescription( setf_name, VariadicSetterType::entry_point );
+     core::BuiltinClosure_sp setter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicSetterType>::allocate(setterEntryPoint));
      lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_doc_string, true, 2);
      core::validateFunctionDescription(__FILE__,__LINE__,setter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
@@ -844,34 +847,30 @@ public:
     return *this;
   }
 
-  template <class C, class D>
-  class_ &def_readonly(const string &name, D C::*mem_ptr) {
+  template <typename NameType, class C, class D>
+  class_ &def_readonly(const NameType &name, D C::*mem_ptr) {
     typedef detail::property_registration<T, D C::*, detail::null_type>
       registration_type;
 
-    this->add_member(
-                     new registration_type(name, mem_ptr, detail::null_type()));
+    this->add_member(new registration_type( PrepareName(name), mem_ptr, detail::null_type()));
     return *this;
   }
 
-  template <class C, class D, class Policies>
-  class_ &def_readonly(const string &name, D C::*mem_ptr, Policies const &policies) {
+  template <typename NameType, class C, class D, class Policies>
+  class_ &def_readonly(const NameType &name, D C::*mem_ptr, Policies const &policies) {
     typedef detail::property_registration<T, D C::*, Policies>
       registration_type;
 
-    this->add_member(
-                     new registration_type(name, mem_ptr, policies));
+    this->add_member(new registration_type( PrepareName(name), mem_ptr, policies ));
     return *this;
   }
 
-  template <class C, class D>
-  class_ &def_readwrite(const char *name, D C::*mem_ptr) {
+  template <typename NameType, class C, class D>
+  class_ &def_readwrite(const NameType& name, D C::*mem_ptr) {
     typedef detail::property_registration<
       T, D C::*, detail::null_type, D C::*> registration_type;
 
-    this->add_member(
-                     new registration_type(
-                                           name, mem_ptr, detail::null_type(), mem_ptr));
+    this->add_member(new registration_type( PrepareName(name), mem_ptr, detail::null_type(), mem_ptr));
     return *this;
   }
 
@@ -882,8 +881,7 @@ public:
       T, D C::*, GetPolicies, D C::*> registration_type;
 
     this->add_member(
-                     new registration_type(
-                                           name, mem_ptr, get_policies, mem_ptr));
+                     new registration_type( name, mem_ptr, get_policies, mem_ptr));
     return *this;
   }
 
