@@ -11,7 +11,7 @@
 
 
 (progn
-  (defparameter *compile-commands* (probe-file "source-dir:build;mpsprep;compile_commands.json"))
+  (defparameter *compile-commands* (probe-file "source-dir:build;preciseprep;compile_commands.json"))
   (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                       (pathname *compile-commands*)
                       :selection-pattern "bignum.cc"
@@ -23,7 +23,7 @@
 ;;; ------------------------------------------------------------
 ;;; To load and analyze one file in the project
 (progn
-  (defparameter *compile-commands* (probe-file "source-dir:build;mpsprep;compile_commands.json"))
+  (defparameter *compile-commands* (probe-file "source-dir:build;preciseprep;compile_commands.json"))
   (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                       (pathname *compile-commands*)
                       ))
@@ -33,7 +33,7 @@
 ;;; ------------------------------------------------------------
 ;;; To load and analyze one file in the project
 (progn
-  (defparameter *compile-commands* (probe-file "source-dir:build;mpsprep;compile_commands.json"))
+  (defparameter *compile-commands* (probe-file "source-dir:build;preciseprep;compile_commands.json"))
   (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                       (pathname *compile-commands*)
                       ))
@@ -63,11 +63,11 @@
 
 ;; --- Test pattern matchers
 
-(probe-file "source-dir:build;mpsprep;compile_commands.json")
-(probe-file "source-dir:build;mpsprep;compile_commands.json")
+(probe-file "source-dir:build;preciseprep;compile_commands.json")
+(probe-file "source-dir:build;preciseprep;compile_commands.json")
 
 (progn
-  (defparameter *compile-commands* (probe-file "source-dir:build;mpsprep;compile_commands.json"))
+  (defparameter *compile-commands* (probe-file "source-dir:build;preciseprep;compile_commands.json"))
   (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                       (pathname *compile-commands*)
                       :selection-pattern "bignum.cc"
@@ -123,7 +123,7 @@
 
 (trace classify-ctype)
 (progn
-  (defparameter *compile-commands* (probe-file "/Development/clasp/build/mpsprep/compile_commands.json"))
+  (defparameter *compile-commands* (probe-file "/Development/clasp/build/preciseprep/compile_commands.json"))
   (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                 (pathname *compile-commands*)
                 :selection-pattern "/array.cc"))
@@ -164,7 +164,7 @@
 
 
 
-(defvar *compile-commands* "~/Development/clasp/build/mpsprep/compile_commands.json")
+(defvar *compile-commands* "~/Development/clasp/build/preciseprep/compile_commands.json")
 (defvar *compile-commands* "~/Development/clasp/build/boehm/compile_commands.json")
 
 (setf *print-pretty* nil)
@@ -218,7 +218,7 @@
   (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl"))
 
 (progn
-  (defparameter *compile-commands* (probe-file "~/Development/clasp/build/mpsprep/compile_commands.json"))
+  (defparameter *compile-commands* (probe-file "~/Development/clasp/build/preciseprep/compile_commands.json"))
   (setf *print-pretty* nil)
   (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                 (pathname *compile-commands*))))
@@ -237,7 +237,7 @@
 (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl")
 
 (in-package :clasp-analyzer)
-(defvar *compile-commands* "/Users/meister/Development/clasp/build/mpsprep/compile_commands_small.json")
+(defvar *compile-commands* "/Users/meister/Development/clasp/build/preciseprep/compile_commands_small.json")
 (setf *print-pretty* nil)
 (defvar *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*)))
 (defvar *p* (search/generate-code *db*))
@@ -448,7 +448,7 @@ T
 
 
 
-(defparameter *db* (ast-tooling:wrapped-jsoncompilation-database-load-from-file (namestring #P"/Users/meister/Development/clasp/build/mpsprep/compile_commands_small.json") :auto-detect))
+(defparameter *db* (ast-tooling:wrapped-jsoncompilation-database-load-from-file (namestring #P"/Users/meister/Development/clasp/build/preciseprep/compile_commands_small.json") :auto-detect))
 (defparameter *files* (ast-tooling:get-all-files *db*))
 (defparameter *tool* (ast-tooling:new-refactoring-tool *db* *files*))
 (ast-tooling:clear-arguments-adjusters *tool*)

@@ -612,7 +612,7 @@ void initialize_llvm(int argc, char **argv) {
 //
 // Include the Kinds
 //
-#ifndef RUNNING_MPSPREP
+#ifndef RUNNING_PRECISEPREP
 #define NAMESPACE_llvmo
 #ifndef SCRAPING
 #include CLASP_GC_FILENAME

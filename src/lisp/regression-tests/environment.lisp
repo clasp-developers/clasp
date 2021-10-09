@@ -63,7 +63,7 @@ documentation (x symbol) (doc-type (eql 'variable))
         (let ((describe-string 
                (with-output-to-string (*standard-output*)
                  (describe object)))
-              (args (core:function-lambda-list object)))
+              (args (ext:function-lambda-list object)))
           (and (search doc describe-string)
                (search (write-to-string args :escape t :readably t) describe-string)))
         (with-output-to-string (*standard-output*)
@@ -83,7 +83,7 @@ documentation (x symbol) (doc-type (eql 'variable))
            (test-documentation-with-args 'foo-test-describe))
 
 (test-true describe-function-documentation-a
-           (test-documentation-with-args 'core:function-lambda-list))
+           (test-documentation-with-args 'ext:function-lambda-list))
 
 (test-true describe-function-documentation-macro
            (test-documentation-with-args 'cl:defconstant))
@@ -195,7 +195,7 @@ documentation (x symbol) (doc-type (eql 'variable))
         (let ((objects-to-describe
                (list
                 'foo-test-describe
-                'core:function-lambda-list
+                'ext:function-lambda-list
                 'cl:defconstant
                 'stupid-function
                 'progn

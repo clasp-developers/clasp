@@ -1,3 +1,0 @@
-software/alexandria-20170630-git/alexandria-tests.asd
-software/alexandria-20170630-git/alexandria.asd
-software/esrap-20170630-git/esrap.asd

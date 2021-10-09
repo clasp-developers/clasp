@@ -124,7 +124,9 @@ mps_addr_t weak_obj_skip_debug_wrong_size(mps_addr_t base, size_t allocate_size,
 
 
 /*! Implemented in gc_interace.cc */
-void obj_finalize(mps_addr_t base);
+#ifndef RUNNING_PRECISEPREP
+  void obj_finalize(mps_addr_t base);
+#endif
 
 /*! This must be implemented in the main directory */
 extern mps_res_t main_thread_roots_scan(mps_ss_t ss, void *p, size_t s);

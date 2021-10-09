@@ -211,7 +211,7 @@ struct RootClassAllocator {
   static void deallocate(gctools::tagged_pointer<T> memory) {
 #if defined(USE_BOEHM)
     GC_FREE(&*memory);
-#elif defined(USE_MPS) && !defined(RUNNING_MPSPREP)
+#elif defined(USE_MPS) && !defined(RUNNING_PRECISEPREP)
     throw_hard_error("I need a way to deallocate MPS allocated objects that are not moveable or collectable");
     GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #elif defined(USE_MMTK)
@@ -596,7 +596,7 @@ should not be managed by the GC */
       GC_FREE(memory);
 #elif defined(USE_MMTK)
       MISSING_GC_SUPPORT();
-#elif defined(USE_MPS) && !defined(RUNNING_MPSPREP)
+#elif defined(USE_MPS) && !defined(RUNNING_PRECISEPREP)
       throw_hard_error(" GCObjectAppropriatePoolAllocator<OT, unmanaged > I need a way to deallocate MPS allocated objects that are not moveable or collectable");
       GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif

@@ -33,32 +33,17 @@
 (test nthcdr-2 (nthcdr most-positive-fixnum (list 1 2 3)) (nil))
 (test nthcdr-3 (nthcdr (1+  most-positive-fixnum) (list 1 2 3)) (nil))
 
-(test write-sequence-1
-      (with-output-to-string (blah)
-        (core:do-write-sequence "1223" blah 0 2))
-      ("12"))
-
 (test write-sequence-1a
-      (with-output-to-string (blah)
-        (core:do-write-sequence (list #\1 #\2 #\3 #\4) blah 0 2))
-      ("12"))
-
-(test write-sequence-1b
-      (with-output-to-string (blah)
-        (core:do-write-sequence (vector #\1 #\2 #\3 #\4) blah 0 2))
-      ("12"))
-
-(test write-sequence-1c
       (with-output-to-string (blah)
         (write-sequence "1223" blah :start 0 :end 2))
       ("12"))
 
-(test write-sequence-1d
+(test write-sequence-1b
       (with-output-to-string (blah)
         (write-sequence (list #\1 #\2 #\3 #\4) blah :start 0 :end 2))
       ("12"))
 
-(test write-sequence-1e
+(test write-sequence-1c
       (with-output-to-string (blah)
         (write-sequence (vector #\1 #\2 #\3 #\4) blah :start 0 :end 2))
       ("12"))
@@ -84,7 +69,7 @@
 (test read-sequence-1
       (let ((seq (make-string 10 :initial-element #\space)))
 	(with-input-from-string (blah "127182187261762")
-	  (core:do-read-sequence seq blah 0 2))
+	  (read-sequence seq blah :end 2))
 	seq)
       ("12        "))
 

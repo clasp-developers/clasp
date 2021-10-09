@@ -161,7 +161,7 @@
     class SingleFloat_dummy_O;
     class KeywordArgument;
     class AnsiStream_O;
-    class SingleDispatchGenericFunctionClosure_O;
+    class SingleDispatchGenericFunction_O;
     class SimpleVector_byte32_t_O;
     class SimpleVector_fixnum_O;
     class MDArray_byte64_t_O;
@@ -1051,7 +1051,7 @@ STAMPWTAG_core__Closure_O = ADJUST_STAMP(1475), // Stamp(368)  wtag(3)
 STAMPWTAG_core__BuiltinClosure_O = ADJUST_STAMP(1479), // Stamp(369)  wtag(3)
 STAMPWTAG_core__TranslationFunctor_O = ADJUST_STAMP(1483), // Stamp(370)  wtag(3)
 STAMPWTAG_core__ClosureWithSlots_O = ADJUST_STAMP(1487), // Stamp(371)  wtag(3)
-STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O = ADJUST_STAMP(1491), // Stamp(372)  wtag(3)
+STAMPWTAG_core__SingleDispatchGenericFunction_O = ADJUST_STAMP(1491), // Stamp(372)  wtag(3)
 STAMPWTAG_core__ImmobileObject_O = ADJUST_STAMP(1495), // Stamp(373)  wtag(3)
 STAMPWTAG_core__WeakPointer_O = ADJUST_STAMP(1499), // Stamp(374)  wtag(3)
 STAMPWTAG_llvmo__DebugLoc_O = ADJUST_STAMP(1503), // Stamp(375)  wtag(3)
@@ -2852,7 +2852,7 @@ register_stamp_name("STAMPWTAG_core__Closure_O", ADJUST_STAMP(1475));
 register_stamp_name("STAMPWTAG_core__BuiltinClosure_O", ADJUST_STAMP(1479));
 register_stamp_name("STAMPWTAG_core__TranslationFunctor_O", ADJUST_STAMP(1483));
 register_stamp_name("STAMPWTAG_core__ClosureWithSlots_O", ADJUST_STAMP(1487));
-register_stamp_name("STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O", ADJUST_STAMP(1491));
+register_stamp_name("STAMPWTAG_core__SingleDispatchGenericFunction_O", ADJUST_STAMP(1491));
 register_stamp_name("STAMPWTAG_core__ImmobileObject_O", ADJUST_STAMP(1495));
 register_stamp_name("STAMPWTAG_core__WeakPointer_O", ADJUST_STAMP(1499));
 register_stamp_name("STAMPWTAG_llvmo__DebugLoc_O", ADJUST_STAMP(1503));
@@ -4497,12 +4497,12 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<std::pair<gctools:
       return (kindVal == ISA_ADJUST_STAMP(3239));
   };
 };
-// STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O
-template <typename FP> struct Cast<core::SingleDispatchGenericFunctionClosure_O*,FP> {
+// STAMPWTAG_core__SingleDispatchGenericFunction_O
+template <typename FP> struct Cast<core::SingleDispatchGenericFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SingleDispatchGenericFunctionClosure_O val -> 1491
+    // IsA-stamp-range core::SingleDispatchGenericFunction_O val -> 1491
       return (kindVal == ISA_ADJUST_STAMP(1491));
   };
 };
@@ -10200,7 +10200,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(llvmo::Target_O,TYPEQ_ADJUST_STAMP(2627));
       ADD_RANGE_TYPEQ_TEST(kinematics::MonomerNode_O,kinematics::RingClosingMonomerNode_O,TYPEQ_ADJUST_STAMP(723),TYPEQ_ADJUST_STAMP(727));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte32_t_O,TYPEQ_ADJUST_STAMP(2039));
-      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(1491));
+      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchGenericFunction_O,TYPEQ_ADJUST_STAMP(1491));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Module_O,TYPEQ_ADJUST_STAMP(2623));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DIExpression_O,TYPEQ_ADJUST_STAMP(2595));
       ADD_SINGLE_TYPEQ_TEST(core::SingleFloat_dummy_O,TYPEQ_ADJUST_STAMP(1387));
@@ -10348,7 +10348,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayCharacter_O,TYPEQ_ADJUST_STAMP(1995));
       ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,TYPEQ_ADJUST_STAMP(2375));
       ADD_SINGLE_TYPEQ_TEST(core::ImmobileObject_O,TYPEQ_ADJUST_STAMP(1495));
-      ADD_RANGE_TYPEQ_TEST(core::Function_O,core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(1431),TYPEQ_ADJUST_STAMP(1491));
+      ADD_RANGE_TYPEQ_TEST(core::Function_O,core::SingleDispatchGenericFunction_O,TYPEQ_ADJUST_STAMP(1431),TYPEQ_ADJUST_STAMP(1491));
       ADD_RANGE_TYPEQ_TEST(kinematics::BondedJoint_O,kinematics::DelayedBondedJoint_O,TYPEQ_ADJUST_STAMP(215),TYPEQ_ADJUST_STAMP(223));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int2_t_O,TYPEQ_ADJUST_STAMP(1643));
       ADD_SINGLE_TYPEQ_TEST(kinematics::KinematicsExposer_O,TYPEQ_ADJUST_STAMP(1175));
@@ -10527,7 +10527,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_RANGE_TYPEQ_TEST(chem::AbstractLargeSquareMatrix_O,chem::FullLargeSquareMatrix_O,TYPEQ_ADJUST_STAMP(347),TYPEQ_ADJUST_STAMP(355));
       ADD_RANGE_TYPEQ_TEST(core::General_O,core::UserData_O,TYPEQ_ADJUST_STAMP(15),TYPEQ_ADJUST_STAMP(2739));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ObjectFile_O,TYPEQ_ADJUST_STAMP(399));
-      ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(1475),TYPEQ_ADJUST_STAMP(1491));
+      ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchGenericFunction_O,TYPEQ_ADJUST_STAMP(1475),TYPEQ_ADJUST_STAMP(1491));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_size_t_O,TYPEQ_ADJUST_STAMP(1895));
       ADD_SINGLE_TYPEQ_TEST(chem::RestraintAngle_O,TYPEQ_ADJUST_STAMP(283));
       ADD_SINGLE_TYPEQ_TEST(chem::CandoDatabase_O,TYPEQ_ADJUST_STAMP(343));
@@ -10804,7 +10804,7 @@ DO_CLASS(SAFE_TYPE_MACRO(chem::SuperposeSelectedAtoms_O),STAMPWTAG_chem__Superpo
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::Target_O),STAMPWTAG_llvmo__Target_O);
 DO_CLASS(SAFE_TYPE_MACRO(kinematics::MonomerNode_O),STAMPWTAG_kinematics__MonomerNode_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),STAMPWTAG_core__SimpleVector_byte32_t_O);
-DO_CLASS(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunction_O),STAMPWTAG_core__SingleDispatchGenericFunction_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::Module_O),STAMPWTAG_llvmo__Module_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIExpression_O),STAMPWTAG_llvmo__DIExpression_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::SingleFloat_dummy_O),STAMPWTAG_core__SingleFloat_dummy_O);
@@ -11826,9 +11826,9 @@ template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools:
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___ ;
 };
-template <> class gctools::GCStamp<core::SingleDispatchGenericFunctionClosure_O> {
+template <> class gctools::GCStamp<core::SingleDispatchGenericFunction_O> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O ;
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SingleDispatchGenericFunction_O ;
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>> {
 public:
@@ -19684,10 +19684,10 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// StampWtag = core::SingleDispatchGenericFunctionClosure_O/1491
-{ class_kind, STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O, sizeof(core::SingleDispatchGenericFunctionClosure_O), 0, IS_POLYMORPHIC, "core::SingleDispatchGenericFunctionClosure_O" },
+// StampWtag = core::SingleDispatchGenericFunction_O/1491
+{ class_kind, STAMPWTAG_core__SingleDispatchGenericFunction_O, sizeof(core::SingleDispatchGenericFunction_O), 0, IS_POLYMORPHIC, "core::SingleDispatchGenericFunction_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
- {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunction_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // StampWtag = core::ImmobileObject_O/1495
 { class_kind, STAMPWTAG_core__ImmobileObject_O, sizeof(core::ImmobileObject_O), 0, IS_POLYMORPHIC, "core::ImmobileObject_O" },
 //      field: "_Head" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -30978,13 +30978,13 @@ obj_finalize_STAMPWTAG_core__ClosureWithSlots_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O:
+obj_finalize_STAMPWTAG_core__SingleDispatchGenericFunction_O:
 {
      // stamp value 1491
-    core::SingleDispatchGenericFunctionClosure_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunctionClosure_O*>(client);
+    core::SingleDispatchGenericFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunction_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~SingleDispatchGenericFunctionClosure_O();
+    obj_gc_safe->~SingleDispatchGenericFunction_O();
 #pragma clang diagnostic pop
     goto finalize_done;
 }
@@ -34732,7 +34732,7 @@ static void* OBJ_FINALIZE_table[] = {
   /* 1479 */ &&obj_finalize_STAMPWTAG_core__BuiltinClosure_O,
   /* 1483 */ &&obj_finalize_STAMPWTAG_core__TranslationFunctor_O,
   /* 1487 */ &&obj_finalize_STAMPWTAG_core__ClosureWithSlots_O,
-  /* 1491 */ &&obj_finalize_STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O,
+  /* 1491 */ &&obj_finalize_STAMPWTAG_core__SingleDispatchGenericFunction_O,
   /* 1495 */ &&obj_finalize_STAMPWTAG_core__ImmobileObject_O,
   /* 1499 */ &&obj_finalize_STAMPWTAG_core__WeakPointer_O,
   /* 1503 */ &&obj_finalize_STAMPWTAG_llvmo__DebugLoc_O,
@@ -37799,11 +37799,11 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ClosureWithSlots_O:
     GC<core::ClosureWithSlots_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O:
+obj_deallocate_unmanaged_instance_STAMPWTAG_core__SingleDispatchGenericFunction_O:
 {
      // stamp value 1491
-    core::SingleDispatchGenericFunctionClosure_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunctionClosure_O*>(client);
-    GC<core::SingleDispatchGenericFunctionClosure_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    core::SingleDispatchGenericFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunction_O*>(client);
+    GC<core::SingleDispatchGenericFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ImmobileObject_O:
@@ -40852,7 +40852,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 1479 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__BuiltinClosure_O,
   /* 1483 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__TranslationFunctor_O,
   /* 1487 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ClosureWithSlots_O,
-  /* 1491 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O,
+  /* 1491 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__SingleDispatchGenericFunction_O,
   /* 1495 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__ImmobileObject_O,
   /* 1499 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__WeakPointer_O,
   /* 1503 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_llvmo__DebugLoc_O,

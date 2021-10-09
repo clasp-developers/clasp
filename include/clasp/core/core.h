@@ -55,7 +55,7 @@ THE SOFTWARE.
 // Checkif we are running the static analyzer
 // Modify the preprocessor settings for the static analyzer
 // Turn on USE_MPS and turn off USE_BOEHM
-#ifdef RUNNING_MPSPREP
+#ifdef RUNNING_PRECISEPREP
 #undef USE_BOEHM
 #undef USE_MMTK
 #define USE_MPS
@@ -826,7 +826,7 @@ namespace gctools {
 #if defined(USE_BOEHM) || defined(USE_MMTK)
 # define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_stamp_layout_codes();
 #elif defined(USE_MPS)
-# ifdef RUNNING_MPSPREP
+# ifdef RUNNING_PRECISEPREP
 #  define FRIEND_GC_SCANNER(nscl)
 # else
 //#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
