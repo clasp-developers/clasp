@@ -485,3 +485,23 @@
            (let ()
              (declare (inline make-sequence))
              (make-sequence '(array char (*)) 0)))
+             
+(test-type can-map-to-specialized-vectors-0
+           (map (class-of (make-array 0)) 'identity (list 1 2 3))
+           simple-vector)
+
+(test-type can-map-to-specialized-vectors-1
+           (map (class-of (make-array 0 :adjustable t)) 'identity (list 1 2 3))
+           (vector t))
+
+(test-type can-map-to-specialized-vectors-2
+           (map (class-name (class-of (make-array 0 :adjustable t))) 'identity (list 1 2 3))
+           (vector t))
+
+(test-type can-map-to-specialized-vectors-3
+           (map (class-of (make-array 0 :fill-pointer t)) 'identity (list 1 2 3))
+           (vector t))
+
+(test-type can-map-to-specialized-vectors-4
+           (map (class-of (make-array 0 :displaced-to (make-array 3))) 'identity (list 1 2 3))
+           (vector t))

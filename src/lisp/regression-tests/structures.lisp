@@ -155,15 +155,15 @@
 (defstruct (valued-nodea (:conc-name nodea-) (:include node)))
 
 (test-true include-level-2a
-      (progn
-        (eval '(defstruct (combination (:include valued-node))))
-        (fboundp 'combination-tail-p)))
+      (fboundp 'nodea-tail-p))
 
 ;;; should generate combination-tailp, but doesn't
 ;;; That breaks cross-compiling sbcl
 ;;; Might be wrong in fix-old-slotd
 (test-true include-level-2b
-      (fboundp 'combination-tail-p))
+      (progn
+        (eval '(defstruct (combination (:include valued-node))))
+        (fboundp 'combination-tail-p)))
 
 (defstruct bar0 a)
 (defstruct (bar1 (:include bar0)) b)
@@ -207,7 +207,6 @@
          (setf (sub-sub-blah1-b object) 23)
          (setf (sub-sub-blah1-b object) 42)
          object)))
-
 
 ;;; include slots with :named
 (defstruct  (struct-test-55 (:type list)

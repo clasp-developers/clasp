@@ -344,10 +344,8 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
     void* data;
     void* base = SmartPtrToBasePtr(object);
     GC_register_finalizer_no_order(base,NULL,NULL,&orig_finalizer,&data);
-//    printf("%s:%d boehm_clear_finalizer_list orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, (void*)orig_finalizer, (void*)data);
     if ( data != NULL ) {
       gctools::Tagged list_tagged = *reinterpret_cast<gctools::Tagged*>(data);
-//      printf("%s:%d definalize - wiping out the finalizer list in the UNCOLLECTABLE memory -> %p\n", __FILE__, __LINE__, (void*)list_tagged);
       GC_free(data);
       data = NULL;
     }
@@ -355,12 +353,10 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
   } else if (object.consp()) {
     BoehmFinalizerFn orig_finalizer;
     void* data;
-    void* base = (void*)(&*object);
+    void* base = (void*)gctools::ConsPtrToHeaderPtr(&*object);
     GC_register_finalizer_no_order(base,NULL,NULL,&orig_finalizer,&data);
-    printf("%s:%d orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, (void*)orig_finalizer, (void*)data);
     if ( data != NULL ) {
       gctools::Tagged list_tagged = *reinterpret_cast<gctools::Tagged*>(data);
-      printf("%s:%d definalize - wiping out the finalizer list in the UNCOLLECTABLE memory -> %p\n", __FILE__, __LINE__, (void*)list_tagged);
       GC_free(data);
       data = NULL;
     }
