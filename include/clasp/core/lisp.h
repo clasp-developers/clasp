@@ -76,9 +76,9 @@ namespace llvmo {
 namespace core {
 
 
-extern CommandLineOptions *global_options;
-extern bool global_initialize_builtin_classes;
-
+  extern CommandLineOptions *global_options;
+  extern bool global_initialize_builtin_classes;
+  
 class Bundle;
 class CallStack;
 SMART(Intrinsic);
@@ -388,6 +388,8 @@ class Lisp {
     HashTableEqual_sp _SourceFileIndices; // map<string,int>
     HashTableEqual_sp _PackageNameIndexMap; // map<string,int>
     bool           _PrintSymbolsProperly;
+    bool           _TheSystemIsUp;
+    bool           _Started;
     GCRoots();
   };
 

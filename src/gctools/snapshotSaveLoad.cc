@@ -26,6 +26,7 @@
 #include <clasp/core/functor.h>
 #include <clasp/core/null.h>
 #include <clasp/core/bundle.h>
+#include <clasp/core/lisp.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gcFunctions.h>
@@ -2858,7 +2859,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
 //  printf("%s:%d:%s Calling setup_pathname_translations\n", __FILE__, __LINE__, __FUNCTION__);
     globals_->_Bundle->setup_pathname_translations();
-    core::getcwd(true);                                        // set *default-pathname-defaults*
+    core::getcwd(true);         // set *default-pathname-defaults*
     {
       char* pause_startup = getenv("CLASP_PAUSE_INIT");
       if (pause_startup) {
