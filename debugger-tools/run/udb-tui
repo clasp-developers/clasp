@@ -1,6 +1,6 @@
 #! /bin/bash
 
-export CLASP_HOME=${PWD%/*/*}
+export CLASP_HOME=${PWD%}
 
 echo CLASP_HOME = $CLASP_HOME
 
