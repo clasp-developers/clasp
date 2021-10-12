@@ -576,7 +576,6 @@ void Lisp::startupLispEnvironment() {
     this->_Roots._ImaginaryUnit = Complex_O::create(0.0, 1.0);
     this->_Roots._ImaginaryUnitNegative = Complex_O::create(0.0, -1.0);
     this->_Roots._PlusHalf = Ratio_O::create_primitive(make_fixnum(1), make_fixnum(2));
-    this->_Roots._MinusHalf = Ratio_O::create_primitive(make_fixnum(-1), make_fixnum(2));
     
     core::getcwd(true);                                        // set *default-pathname-defaults*
   };

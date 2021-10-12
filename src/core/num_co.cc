@@ -79,15 +79,6 @@ THE SOFTWARE.
 
 namespace core {
 
-static Number_sp
-number_remainder(Number_sp x, Number_sp y, Number_sp q) {
-  Number_sp z;
-
-  z = clasp_times(q, y);
-  z = clasp_minus(x, z);
-  return (z);
-}
-
 /* Coerce X to single-float if one arg,
    otherwise coerce to same float type as second arg */
 
@@ -587,40 +578,42 @@ static LongFloat round_long_double(LongFloat d) {
 
 static void clasp_round(Real_sp dividend, Real_sp divisor,
                         Real_sp& quotient, Real_sp& remainder) {
-  Real_sp q;
+  Real_sp tru, rem;
+  clasp_truncate(dividend, divisor, tru, rem);
 
-  q = gc::As<Real_sp>(clasp_divide(dividend, divisor));
-  switch (clasp_t_of(q)) {
-  case number_Fixnum:
-  case number_Bignum: {
-    quotient = q;
-    remainder = clasp_make_fixnum(0);
+  // If they divide, no need to round
+  if (clasp_zerop(rem)) {
+    quotient = tru; remainder = rem;
     return;
   }
-  case number_Ratio: {
-    Ratio_sp rq = gc::As_unsafe<Ratio_sp>(q);
-    Integer_sp q1 = clasp_integer_divide(rq->numerator(), rq->denominator());
-    Real_sp r = gc::As_unsafe<Real_sp>(clasp_minus(q, q1));
-    if (clasp_minusp(r)) {
-      int c = clasp_number_compare(_lisp->minusHalf(), r);
-      if (c > 0 || (c == 0 && clasp_oddp(q1))) {
-        q1 = gc::As_unsafe<Integer_sp>(clasp_one_minus(q1));
-      }
+
+  Real_sp threshold = clasp_divide(clasp_abs(divisor), clasp_make_fixnum(2));
+  int c = clasp_number_compare(rem, threshold);
+  if (c > 0 || (c == 0 && clasp_oddp(tru))) {
+    if (clasp_minusp(divisor)) {
+      quotient = contagion_sub(tru, clasp_make_fixnum(1));
+      remainder = contagion_add(rem, divisor);
     } else {
-      int c = clasp_number_compare(r, _lisp->plusHalf());
-      if (c > 0 || (c == 0 && clasp_oddp(q1))) {
-        q1 = gc::As_unsafe<Integer_sp>(clasp_one_plus(q1));
-      }
+      quotient = clasp_one_plus(tru);
+      remainder = contagion_sub(rem, divisor);
     }
-    quotient = q1;
-    remainder = gc::As_unsafe<Real_sp>(number_remainder(dividend, divisor, q1));
     return;
   }
-  default:
-    quotient = q = gc::As_unsafe<Integer_sp>(clasp_round1(q));
-    remainder = gc::As_unsafe<Real_sp>(number_remainder(dividend, divisor, q));
+  threshold = clasp_negate(threshold);
+  c = clasp_number_compare(rem, threshold);
+  if (c < 0 || (c == 0 && clasp_oddp(tru))) {
+    if (clasp_minusp(divisor)) {
+      quotient = clasp_one_plus(tru);
+      remainder = contagion_sub(rem, divisor);
+    } else {
+      quotient = contagion_sub(tru, clasp_make_fixnum(1));
+      remainder = contagion_add(rem, divisor);
+    }
     return;
   }
+  // not rounding
+  quotient = tru;
+  remainder = rem;
 }
 
 Real_mv clasp_round1(Real_sp x) {

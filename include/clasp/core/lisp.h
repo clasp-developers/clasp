@@ -369,7 +369,6 @@ class Lisp {
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
-    Ratio_sp _MinusHalf;
     List_sp _UnixSignalHandlers;
     List_sp _CommandLineArguments; // Make this the last smart_ptr in the GCRoots struct
 //    DynamicBindingStack _Bindings;
@@ -518,7 +517,6 @@ public: // numerical constants
   Complex_sp imaginaryUnit() const { return this->_Roots._ImaginaryUnit; };
   Complex_sp imaginaryUnitNegative() const { return this->_Roots._ImaginaryUnitNegative; };
   Ratio_sp plusHalf() const { return this->_Roots._PlusHalf; };
-  Ratio_sp minusHalf() const { return this->_Roots._MinusHalf; };
 public:
   /*! Setup makePackage and exportSymbol callbacks */
 
