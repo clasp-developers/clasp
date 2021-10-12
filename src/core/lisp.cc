@@ -579,14 +579,8 @@ void Lisp::startupLispEnvironment() {
     this->_Roots._MinusHalf = Ratio_O::create_primitive(make_fixnum(-1), make_fixnum(2));
     this->_Roots._SingleFloatOne = clasp_make_single_float(1.0);
     this->_Roots._DoubleFloatOne = DoubleFloat_O::create(1.0);
-    this->_Roots._SingleFloatMinusZero = clasp_make_single_float(-0.0);
-    this->_Roots._SingleFloatPlusZero = clasp_make_single_float(0.0);
-    this->_Roots._DoubleFloatMinusZero = DoubleFloat_O::create(-0.0);
-    this->_Roots._DoubleFloatPlusZero = DoubleFloat_O::create(0.0);
 #ifdef CLASP_LONG_FLOAT
     this->_Roots._LongFloatOne = LongFloat_O::create(1.0);
-    this->_Roots._LongFloatMinusZero = LongFloat_O::create(-0.0l);
-    this->_Roots._LongFloatPlusZero = LongFloat_O::create(0.0l);
 #endif // ifdef CLASP_LONG_FLOAT
     
     core::getcwd(true);                                        // set *default-pathname-defaults*

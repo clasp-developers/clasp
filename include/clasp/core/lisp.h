@@ -370,15 +370,9 @@ class Lisp {
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
     Ratio_sp _MinusHalf;
-    SingleFloat_sp _SingleFloatMinusZero;
-    SingleFloat_sp _SingleFloatPlusZero;
-    DoubleFloat_sp _DoubleFloatMinusZero;
-    DoubleFloat_sp _DoubleFloatPlusZero;
     SingleFloat_sp _SingleFloatOne;
     DoubleFloat_sp _DoubleFloatOne;
 #ifdef CLASP_LONG_FLOAT
-    LongFloat_sp _LongFloatMinusZero;
-    LongFloat_sp _LongFloatPlusZero;
     LongFloat_sp _LongFloatOne;
 #endif // ifdef CLASP_LONG_FLOAT
     List_sp _UnixSignalHandlers;
@@ -530,15 +524,9 @@ public: // numerical constants
   Complex_sp imaginaryUnitNegative() const { return this->_Roots._ImaginaryUnitNegative; };
   Ratio_sp plusHalf() const { return this->_Roots._PlusHalf; };
   Ratio_sp minusHalf() const { return this->_Roots._MinusHalf; };
-  SingleFloat_sp singleFloatMinusZero() const { return this->_Roots._SingleFloatMinusZero; };
-  SingleFloat_sp singleFloatPlusZero() const { return this->_Roots._SingleFloatPlusZero; };
-  DoubleFloat_sp doubleFloatMinusZero() const { return this->_Roots._DoubleFloatMinusZero; };
-  DoubleFloat_sp doubleFloatPlusZero() const { return this->_Roots._DoubleFloatPlusZero; };
   SingleFloat_sp singleFloatOne() const { return this->_Roots._SingleFloatOne; };
   DoubleFloat_sp doubleFloatOne() const { return this->_Roots._DoubleFloatOne; };
 #ifdef CLASP_LONG_FLOAT
-  LongFloat_sp longFloatMinusZero() const { return this->_Roots._LongFloatMinusZero; };
-  LongFloat_sp longFloatPlusZero() const { return this->_Roots._LongFloatPlusZero; };
   LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
 #endif // ifdef CLASP_LONG_FLOAT
 public:

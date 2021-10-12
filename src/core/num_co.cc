@@ -1027,24 +1027,15 @@ CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
   case number_Ratio:
     return clasp_make_fixnum(0);
   case number_SingleFloat:
-    if (std::signbit(x.unsafe_single_float()))
-      return _lisp->singleFloatMinusZero();
-    else
-      return _lisp->singleFloatPlusZero();
+    return clasp_make_single_float((float)0 * x.unsafe_single_float());
   case number_DoubleFloat:
-      if (std::signbit(gc::As_unsafe<DoubleFloat_sp>(x)->get()))
-        return _lisp->doubleFloatMinusZero();
-      else
-        return _lisp->doubleFloatPlusZero();
+    return DoubleFloat_O::create((float)0 * gc::As_unsafe<DoubleFloat_sp>(x)->get());
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-    if (std::signbit(clasp_long_float(x)))
-      return _lisp->longFloatMinusZero();
-    else
-      return _lisp->longFloatPlusZero();
+    return LongFloat_O::create((float)0 * clasp_long_float(x));
 #endif
   case number_Complex:
-      return gc::As_unsafe<Complex_sp>(x)->imaginary();
+    return gc::As_unsafe<Complex_sp>(x)->imaginary();
   default:
       QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
   }
