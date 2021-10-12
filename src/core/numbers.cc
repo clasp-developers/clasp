@@ -152,18 +152,6 @@ CL_DEFUN bool cl__zerop(Number_sp num) {
   return clasp_zerop(num);
 }
 
-CL_LAMBDA(z)
-CL_DECLARE();
-CL_DOCSTRING(R"dx(convert_overflow_result_to_bignum)dx")
-DOCGROUP(clasp)
-CL_DEFUN Integer_sp core__convert_overflow_result_to_bignum(Fixnum_sp z) {
-  if ((Fixnum)z.raw_() > 0) {
-    return gc::As<Integer_sp>(contagion_sub(z, _lisp->_Roots._IntegerOverflowAdjust));
-  } else {
-    return gc::As<Integer_sp>(contagion_add(z, _lisp->_Roots._IntegerOverflowAdjust));
-  }
-}
-
 CL_LAMBDA()
 CL_DECLARE();
 CL_DOCSTRING(R"dx(fixnum_number_of_bits)dx")

@@ -589,9 +589,6 @@ void Lisp::startupLispEnvironment() {
     this->_Roots._LongFloatPlusZero = LongFloat_O::create(0.0l);
 #endif // ifdef CLASP_LONG_FLOAT
     
-    Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
-    Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
-    this->_Roots._IntegerOverflowAdjust = gc::As<Integer_sp>(cl__expt(two, bits)); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
     core::getcwd(true);                                        // set *default-pathname-defaults*
   };
   //

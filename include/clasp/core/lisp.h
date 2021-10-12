@@ -332,7 +332,6 @@ class Lisp {
     WeakKeyHashTable_sp        _Finalizers;
     HashTable_sp               _Sysprop;
     HashTable_sp               _ClassTable;
-    Integer_sp                 _IntegerOverflowAdjust;
     CharacterInfo              charInfo; // Contains GC managed pointers
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolderUnshiftedNowhere;
     gctools::Vec0<Instance_sp>     staticClassesUnshiftedNowhere;
@@ -571,9 +570,6 @@ protected:
   void setConditionHandlers(List_sp handlers);
   List_sp getRestartHandlers();
   void setRestartHandlers(List_sp handlers);
-
-public:
-Integer_sp integerOverflowAdjust() { return this->_Roots._IntegerOverflowAdjust; };
 
 public:
   bool isEnvironmentInitialized() { return this->_EnvironmentInitialized; };
