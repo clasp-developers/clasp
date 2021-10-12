@@ -59,7 +59,8 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  };
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -83,7 +84,11 @@ private:
   typedef MemberType *const(OT::*VariablePtrType);
   VariablePtrType _MemberPtr;
 public:
-  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+  
+public:
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -96,6 +101,9 @@ public:
 
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
 class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType>> {
+public:
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+  
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
 };
@@ -117,7 +125,8 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  SetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
+  SetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  };
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -143,7 +152,11 @@ private:
   typedef MemberType *const(OT::*VariablePtrType);
   VariablePtrType _MemberPtr;
 public:
-  SetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+
+public:
+  SetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -158,6 +171,9 @@ public:
 
 template <typename SetterPolicies, typename OT, typename VariablePtrType>
 class gctools::GCStamp<clbind::SetterMethoid<SetterPolicies, OT, VariablePtrType>> {
+public:
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+
 public:
   static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::SetterMethoid<SetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
 };

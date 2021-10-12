@@ -4445,6 +4445,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         currentCode->_TextSectionStart = (void*)range.getStart();
         currentCode->_TextSectionEnd = (void*)((char*)range.getStart()+range.getSize());
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
+#if 0
         if (snapshotSaveLoad::global_debugSnapshot) {
           printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
                  __FILE__, __LINE__, __FUNCTION__,
@@ -4453,6 +4454,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                  currentCode->_TextSectionStart,
                  currentCode->_TextSectionEnd );
         }
+#endif
         for ( auto& sym : S.symbols() ) {
           if (sym->isCallable()&&sym->hasName()) {
             std::string name = sym->getName().str();

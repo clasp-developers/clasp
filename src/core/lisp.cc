@@ -170,9 +170,6 @@ namespace core {
 CommandLineOptions *global_options;
 bool global_initialize_builtin_classes = false;
 
-bool global_Started = false;
-bool globalTheSystemIsUp = false;
-
 const int Lisp::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 
 struct FindApropos : public KeyValueMapper //, public gctools::StackRoot
@@ -216,8 +213,9 @@ Lisp::GCRoots::GCRoots() :
   _NullStream(nil<T_O>()),
   _ThePathnameTranslations(nil<T_O>()),
   _UnixSignalHandlers(nil<T_O>()),
-  _PrintSymbolsProperly(false)
-
+  _PrintSymbolsProperly(false),
+  _TheSystemIsUp(false),
+  _Started(false)
 {
   this->_JITDylibs.store(nil<core::T_O>());
   this->_SingleDispatchGenericFunctions.store(nil<core::T_O>());
@@ -318,13 +316,6 @@ void Lisp::finalizeSpecialSymbols() {
 }
 
 LispPtr Lisp::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
-#if 0
-  {
-    global_initialize_builtin_classes = true;
-    initialize_clasp_Kinds();
-    global_initialize_builtin_classes = false;
-  }
-#endif
   Lisp::setupSpecialSymbols();
   // Now NIL is defined so we can finish initializing the main thread ThreadLocalState
   my_thread->finish_initialization_main_thread(nil<core::T_O>());
@@ -610,7 +601,7 @@ void Lisp::startupLispEnvironment() {
   
   this->_Roots._PrintSymbolsProperly = true;
   mpip::Mpi_O::initializeGlobals(_lisp);
-  global_Started = true;
+  _lisp->_Roots._Started = true;
 
   //
   // Pause if CLASP_PAUSE_INIT environment variable is defined
@@ -1055,7 +1046,7 @@ Package_sp Lisp::makePackage(const string &name, list<string> const &nicknames, 
 T_sp Lisp::findPackage_no_lock(const string &name, bool errorp) const {
   // Check local nicknames first.
   // FIXME: This conses!
-  if (globalTheSystemIsUp) {
+  if (_lisp->_Roots._TheSystemIsUp) {
     T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(SimpleBaseString_O::make(name));
     if (local.notnilp()) return local;
   }
@@ -2411,7 +2402,7 @@ int Lisp::run() {
     }
   }
   // The system is fully up now
-  globalTheSystemIsUp = true;
+  _lisp->_Roots._TheSystemIsUp = true;
   Package_sp cluser = gc::As<Package_sp>(_lisp->findPackage("COMMON-LISP-USER"));
   cl::_sym_STARpackageSTAR->defparameter(cluser);
   try {

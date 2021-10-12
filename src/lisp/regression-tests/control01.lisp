@@ -141,3 +141,10 @@
           (setf (macro-place-pre c) t)
           (cdr c)))
       (t))
+
+;;; https://github.com/clasp-developers/clasp/commit/f276e6867a807845bea17e893ffc3723e4c5ac13
+(test-true equalp-10
+      (not (equalp 1.0s0 (1+ most-positive-fixnum))))
+
+(test-true equalp-11
+      (not (equalp 1.0s0 2.0d0)))

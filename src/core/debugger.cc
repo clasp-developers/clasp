@@ -45,7 +45,7 @@ THE SOFTWARE.
 #ifdef _TARGET_OS_LINUX
 #include <bsd/bsd.h>
 #endif
-#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
 #include <err.h>
 #include <stdio.h>
 #include <stdint.h>

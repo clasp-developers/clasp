@@ -865,7 +865,6 @@ void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void
 LCC_RETURN unboundSetfFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
   Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
-  printf("%s:%d:%s closure@%p function@%p  symbol@%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)closure, (void*)unboundSetfFunctionEntryPoint, (void*)symbol.raw_());
   List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
   ERROR_UNDEFINED_FUNCTION(name);
 }
