@@ -2468,6 +2468,7 @@ clasp_expt(Number_sp x, Number_sp y) {
     if (!clasp_plusp((ty == number_Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))
       z = clasp_divide(clasp_make_fixnum(1), z);
   } else if (ty != number_Fixnum && ty != number_Bignum) {
+    // Use the general definition, a^b = exp(b log(a))
     /* The following could be just
 	   z = clasp_log1(x);
 	   however, Maxima expects EXPT to have double accuracy
