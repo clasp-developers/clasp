@@ -370,11 +370,6 @@ class Lisp {
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
     Ratio_sp _MinusHalf;
-    SingleFloat_sp _SingleFloatOne;
-    DoubleFloat_sp _DoubleFloatOne;
-#ifdef CLASP_LONG_FLOAT
-    LongFloat_sp _LongFloatOne;
-#endif // ifdef CLASP_LONG_FLOAT
     List_sp _UnixSignalHandlers;
     List_sp _CommandLineArguments; // Make this the last smart_ptr in the GCRoots struct
 //    DynamicBindingStack _Bindings;
@@ -524,11 +519,6 @@ public: // numerical constants
   Complex_sp imaginaryUnitNegative() const { return this->_Roots._ImaginaryUnitNegative; };
   Ratio_sp plusHalf() const { return this->_Roots._PlusHalf; };
   Ratio_sp minusHalf() const { return this->_Roots._MinusHalf; };
-  SingleFloat_sp singleFloatOne() const { return this->_Roots._SingleFloatOne; };
-  DoubleFloat_sp doubleFloatOne() const { return this->_Roots._DoubleFloatOne; };
-#ifdef CLASP_LONG_FLOAT
-  LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
-#endif // ifdef CLASP_LONG_FLOAT
 public:
   /*! Setup makePackage and exportSymbol callbacks */
 

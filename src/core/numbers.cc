@@ -2433,12 +2433,12 @@ expt_zero(Number_sp x, Number_sp y) {
   case number_Ratio:
       return clasp_make_fixnum(1);
   case number_SingleFloat:
-      return _lisp->singleFloatOne();
+      return clasp_make_single_float(1.0f);
   case number_DoubleFloat:
-      return _lisp->doubleFloatOne();
+      return DoubleFloat_O::create(1.0);
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-      return _lisp->longFloatOne();
+      return LongFloat_O::create(1.0);
 #endif
   case number_Complex:
       z = expt_zero((tx == number_Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(x)->real()) : x,
