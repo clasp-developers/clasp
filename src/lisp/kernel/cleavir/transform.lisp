@@ -255,3 +255,19 @@
 
 (deftransform core:coerce-fdesignator ((fd symbol)) 'fdefinition)
 (deftransform core:coerce-fdesignator ((fd function)) 'identity)
+
+(defun maybe-transform-two-arg-+ (call)
+  (let ((arguments (rest (bir:inputs call)))
+        (sf (cleavir-ctype:range 'single-float '* '* *clasp-system*)))
+    (if (every (lambda (arg)
+                 (cleavir-ctype:subtypep
+                  (cleavir-ctype:primary (bir:ctype arg) *clasp-system*)
+                  sf *clasp-system*))
+               arguments)
+        (progn
+          (change-class call
+                        'cleavir-bir:vprimop
+                        :inputs arguments ; don't need the function
+                        :info (cleavir-primop-info:info 'core::two-arg-sf-+))
+          t)
+        nil)))

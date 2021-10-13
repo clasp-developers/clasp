@@ -333,7 +333,9 @@
   (defprimop core:rack-set 3 :effect)
 
   (defprimop core:vaslist-pop 1 :value)
-  (defprimop core:vaslist-length 1 :value))
+  (defprimop core:vaslist-length 1 :value)
+
+  (defprimop core::two-arg-sf-+ 2 :value))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn

@@ -70,6 +70,7 @@
 #+tag-bits4(defvar +fixnum11-tag+ (get-cxx-data-structure-info :fixnum11-tag))
 (defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
 (defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
+(defvar +single-float-shift+ (get-cxx-data-structure-info :single-float-shift))
 (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
 (defvar +vaslist-size+ (get-cxx-data-structure-info :vaslist-size))
 (defvar +vaslist-valist-offset+ (get-cxx-data-structure-info :vaslist-valist-offset))

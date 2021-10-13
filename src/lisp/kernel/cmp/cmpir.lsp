@@ -480,6 +480,19 @@ representing a tagged fixnum."
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
+(defun irc-untag-single-float (t* &optional (label "single-float"))
+  (irc-bit-cast
+   (irc-trunc (irc-lshr (irc-ptr-to-int t* %i64%) +single-float-shift+) %i32%)
+   %float% label))
+
+(defun irc-tag-single-float (sf &optional (label "single-float"))
+  (irc-int-to-ptr
+   (llvm-sys:create-or-value-uint64
+    *irbuilder*
+    (irc-shl (irc-zext (irc-bit-cast sf %i32%) %i64%) +single-float-shift+)
+    +single-float-tag+ "")
+   %t*% label))
+
 (defun irc-maybe-cast-integer-to-t* (val &optional (label "fixnum-to-t*"))
   "If it's a fixnum then cast it - otherwise just return it - it should already be a t*"
   (if (typep val '(integer #.(- (expt 2 63)) #.(1- (expt 2 63))))

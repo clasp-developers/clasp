@@ -913,6 +913,13 @@
                     (in (second (bir:inputs inst)))
                     (in (third (bir:inputs inst)))))
 
+(defmethod translate-primop ((name (eql 'core::two-arg-sf-+)) inst)
+  (out
+   (cmp::irc-tag-single-float
+    (%fadd (cmp::irc-untag-single-float (in (first (bir:inputs inst))))
+           (cmp::irc-untag-single-float (in (second (bir:inputs inst))))))
+   (first (bir:outputs inst))))
+ 
 (defmethod translate-primop ((name cons) inst) ; FIXME
   (cond ((equal name '(setf symbol-value))
          (%intrinsic-invoke-if-landing-pad-or-call
