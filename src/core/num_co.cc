@@ -156,7 +156,7 @@ CL_DEFUN Number_sp cl__denominator(Rational_sp x) {
 
 // Stores the result in quotient, remainder.
 static void clasp_truncate(Real_sp dividend, Real_sp divisor,
-                           Real_sp& quotient, Real_sp& remainder) {
+                           Integer_sp& quotient, Real_sp& remainder) {
   MATH_DISPATCH_BEGIN(dividend, divisor) {
   case_Fixnum_v_Fixnum: {
       Fixnum a = dividend.unsafe_fixnum();
@@ -343,13 +343,14 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor,
 }
 
 static void clasp_floor(Real_sp dividend, Real_sp divisor,
-                        Real_sp& quotient, Real_sp& remainder) {
-  Real_sp t0, t1;
+                        Integer_sp& quotient, Real_sp& remainder) {
+  Integer_sp t0;
+  Real_sp t1;
   clasp_truncate(dividend, divisor, t0, t1);
   if (!(clasp_zerop(t1))
       && (clasp_minusp(divisor)
           ? clasp_plusp(dividend) : clasp_minusp(dividend))) {
-    quotient = gc::As_unsafe<Real_sp>(clasp_one_minus(t0));
+    quotient = gc::As_unsafe<Integer_sp>(clasp_one_minus(t0));
     remainder = gc::As_unsafe<Real_sp>(clasp_plus(t1, divisor));
   } else {
     quotient = t0; remainder = t1;
@@ -363,7 +364,8 @@ Real_mv clasp_floor1(Real_sp x) {
       return Values(x, clasp_make_fixnum(0));
   case number_Ratio: {
     Ratio_sp rx(gc::As_unsafe<Ratio_sp>(x));
-    Real_sp v0, tv1;
+    Integer_sp v0;
+    Real_sp tv1;
     clasp_floor(rx->numerator(), rx->denominator(), v0, tv1);
     return Values(v0, Ratio_O::create(gc::As_unsafe<Integer_sp>(tv1),
                                       rx->denominator()));
@@ -406,7 +408,8 @@ Real_mv clasp_floor1(Real_sp x) {
 }
 
 Real_mv clasp_floor2(Real_sp dividend, Real_sp divisor) {
-  Real_sp v0, v1;
+  Integer_sp v0;
+  Real_sp v1;
   clasp_floor(dividend, divisor, v0, v1);
   return Values(v0, v1);
 }
@@ -423,13 +426,14 @@ CL_DEFUN Real_mv cl__floor(Real_sp x, T_sp y) {
 }
 
 static void clasp_ceiling(Real_sp dividend, Real_sp divisor,
-                          Real_sp& quotient, Real_sp& remainder) {
-  Real_sp t0, t1;
+                          Integer_sp& quotient, Real_sp& remainder) {
+  Integer_sp t0;
+  Real_sp t1;
   clasp_truncate(dividend, divisor, t0, t1);
   if (!(clasp_zerop(t1))
       && (clasp_minusp(divisor)
           ? clasp_minusp(dividend) : clasp_plusp(dividend))) {
-    quotient = gc::As_unsafe<Real_sp>(clasp_one_plus(t0));
+    quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(t0));
     remainder = gc::As_unsafe<Real_sp>(clasp_minus(t1, divisor));
   } else {
     quotient = t0; remainder = t1;
@@ -442,7 +446,8 @@ Real_mv clasp_ceiling1(Real_sp x) {
   case number_Bignum:
       return Values(x, clasp_make_fixnum(0));
   case number_Ratio: {
-    Real_sp t0, t1;
+    Integer_sp t0;
+    Real_sp t1;
     Ratio_sp rx = gc::As_unsafe<Ratio_sp>(x);
     clasp_ceiling(rx->numerator(), rx->denominator(), t0, t1);
     return Values(t0, Ratio_O::create(gc::As_unsafe<Integer_sp>(t1),
@@ -474,7 +479,8 @@ Real_mv clasp_ceiling1(Real_sp x) {
 }
 
 Real_mv clasp_ceiling2(Real_sp dividend, Real_sp divisor) {
-  Real_sp v0, v1;
+  Integer_sp v0;
+  Real_sp v1;
   clasp_ceiling(dividend, divisor, v0, v1);
   return Values(v0, v1);
 }
@@ -497,7 +503,8 @@ Real_mv clasp_truncate1(Real_sp x) {
       return Values(x, clasp_make_fixnum(0));
   case number_Ratio: {
     Ratio_sp rx = gc::As<Ratio_sp>(x);
-    Real_sp v0, v1;
+    Integer_sp v0;
+    Real_sp v1;
     clasp_truncate(rx->numerator(), rx->denominator(), v0, v1);
     return Values(v0, Ratio_O::create(gc::As_unsafe<Integer_sp>(v1),
                                       rx->denominator()));
@@ -528,7 +535,8 @@ Real_mv clasp_truncate1(Real_sp x) {
 }
 
 Real_mv clasp_truncate2(Real_sp x, Real_sp y) {
-  Real_sp v0, v1;
+  Integer_sp v0;
+  Real_sp v1;
   clasp_truncate(x, y, v0, v1);
   return Values(v0, v1);
 }
@@ -577,8 +585,9 @@ static LongFloat round_long_double(LongFloat d) {
 #endif
 
 static void clasp_round(Real_sp dividend, Real_sp divisor,
-                        Real_sp& quotient, Real_sp& remainder) {
-  Real_sp tru, rem;
+                        Integer_sp& quotient, Real_sp& remainder) {
+  Integer_sp tru;
+  Real_sp rem;
   clasp_truncate(dividend, divisor, tru, rem);
 
   // If they divide, no need to round
@@ -589,24 +598,24 @@ static void clasp_round(Real_sp dividend, Real_sp divisor,
 
   Real_sp threshold = gc::As_unsafe<Real_sp>(clasp_divide(clasp_abs(divisor), clasp_make_fixnum(2)));
   int c = clasp_number_compare(rem, threshold);
-  if (c > 0 || (c == 0 && clasp_oddp(gc::As_unsafe<Integer_sp>(tru)))) {
+  if (c > 0 || (c == 0 && clasp_oddp(tru))) {
     if (clasp_minusp(divisor)) {
-      quotient = gc::As_unsafe<Real_sp>(contagion_sub(tru, clasp_make_fixnum(1)));
+      quotient = gc::As_unsafe<Integer_sp>(contagion_sub(tru, clasp_make_fixnum(1)));
       remainder = gc::As_unsafe<Real_sp>(contagion_add(rem, divisor));
     } else {
-      quotient = gc::As_unsafe<Real_sp>(clasp_one_plus(tru));
+      quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(tru));
       remainder = gc::As_unsafe<Real_sp>(contagion_sub(rem, divisor));
     }
     return;
   }
   threshold = gc::As_unsafe<Real_sp>(clasp_negate(threshold));
   c = clasp_number_compare(rem, threshold);
-  if (c < 0 || (c == 0 && clasp_oddp(gc::As_unsafe<Integer_sp>(tru)))) {
+  if (c < 0 || (c == 0 && clasp_oddp(tru))) {
     if (clasp_minusp(divisor)) {
-      quotient = gc::As_unsafe<Real_sp>(clasp_one_plus(tru));
+      quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(tru));
       remainder = gc::As_unsafe<Real_sp>(contagion_sub(rem, divisor));
     } else {
-      quotient = gc::As_unsafe<Real_sp>(contagion_sub(tru, clasp_make_fixnum(1)));
+      quotient = gc::As_unsafe<Integer_sp>(contagion_sub(tru, clasp_make_fixnum(1)));
       remainder = gc::As_unsafe<Real_sp>(contagion_add(rem, divisor));
     }
     return;
@@ -617,14 +626,14 @@ static void clasp_round(Real_sp dividend, Real_sp divisor,
 }
 
 Real_mv clasp_round1(Real_sp x) {
-  Real_sp v0, v1;
   switch (clasp_t_of(x)) {
   case number_Fixnum:
   case number_Bignum:
       return Values(x, clasp_make_fixnum(0));
   case number_Ratio: {
     Ratio_sp rx = gc::As<Ratio_sp>(x);
-    Real_sp tv0, tv1;
+    Integer_sp tv0;
+    Real_sp tv1;
     clasp_round(rx->numerator(), rx->denominator(), tv0, tv1);
     return Values(tv0, Ratio_O::create(gc::As_unsafe<Integer_sp>(tv1),
                                        rx->denominator()));
@@ -655,7 +664,8 @@ Real_mv clasp_round1(Real_sp x) {
 }
 
 Real_mv clasp_round2(Real_sp dividend, Real_sp divisor) {
-  Real_sp v0, v1;
+  Integer_sp v0;
+  Real_sp v1;
   clasp_round(dividend, divisor, v0, v1);
   return Values(v0, v1);
 }
@@ -676,7 +686,8 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(mod)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_sp cl__mod(Real_sp dividend, Real_sp divisor) {
-  Real_sp q, mod;
+  Integer_sp q;
+  Real_sp mod;
   clasp_floor(dividend, divisor, q, mod);
   return mod;
 }
@@ -686,7 +697,8 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(rem)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_sp cl__rem(Real_sp dividend, Real_sp divisor) {
-  Real_sp q, rem;
+  Integer_sp q;
+  Real_sp rem;
   clasp_truncate(dividend, divisor, q, rem);
   return rem;
 }
