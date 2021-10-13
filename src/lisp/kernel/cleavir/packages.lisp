@@ -111,5 +111,5 @@
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store #:cas)
-  (:export #:ftm #:mtf #:fixed-values-pad)
+  (:export #:ftm #:mtf #:fixed-values-pad #:re-present)
   (:export #:datum #:output #:phi #:rtype))

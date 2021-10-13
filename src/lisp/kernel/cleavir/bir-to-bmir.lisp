@@ -121,10 +121,10 @@
 ;;;
 ;;; An rtype describes how a value or values is represented in the runtime.
 ;;; An rtype is either :multiple-values, meaning several T_O*s stored in the
-;;; thread local multiple values vector, or a list of value rtypes; and a value
-;;; rtype can only be :object meaning T_O*. So e.g. (:object :object) means a
-;;; pair of T_O*. In the future there will probably be rtypes for unboxed
-;;; values as well as fixed numbers of values.
+;;; thread local multiple values vector, or a list of value rtypes. A value
+;;; rtype can be either :object, meaning T_O*, or :single-float, meaning an
+;;; unboxed single float. So e.g. (:object :object) means a
+;;; pair of T_O*.
 
 ;; Given an instruction, determine what rtype it outputs.
 (defgeneric definition-rtype (instruction))
@@ -149,6 +149,11 @@
     (cc-bmir:rtype input)))
 (defmethod definition-rtype ((inst bir:fixed-to-multiple))
   (make-list (length (bir:inputs inst)) :initial-element :object))
+(defmethod definition-rtype ((inst bir:vprimop))
+  ;; KLUDGE
+  (if (eql (cleavir-primop-info:name (bir:info inst)) 'core::two-arg-sf-+)
+      '(:single-float)
+      '(:object)))
 
 ;;; Given a datum, determine what rtype its use requires.
 (defgeneric use-rtype (datum))
@@ -171,6 +176,11 @@
   (if (= (length (bir:inputs inst)) 1)
       (use-rtype (bir:output inst))
       :multiple-values))
+(defmethod %use-rtype ((inst bir:vprimop) (datum bir:datum))
+  ;; KLUDGE
+  (if (eql (cleavir-primop-info:name (bir:info inst)) 'core::two-arg-sf-+)
+      '(:single-float)
+      '(:object)))
 (defmethod %use-rtype ((inst bir:unwind) (datum bir:datum))
   (error "BUG: transitive-rtype should make this impossible!"))
 (defmethod %use-rtype ((inst bir:jump) (datum bir:datum))
@@ -196,14 +206,16 @@
 (defmethod use-rtype ((datum bir:argument)) (transitive-rtype datum))
 
 ;;; Given two value rtypes, return the most preferable.
-;;; Only :object is valid right now, so this does nothing.
+;;; More sophisticated representation selection may be required in the future.
 (defun min-vrtype (vrt1 vrt2)
-  (declare (ignore vrt1 vrt2))
-  :object)
+  (if (or (eql vrt1 :single-float) (eql vrt2 :single-float))
+      :single-float
+      :object))
 
 (defun max-vrtype (vrt1 vrt2)
-  (declare (ignore vrt1 vrt2))
-  :object)
+  (if (and (eql vrt1 :single-float) (eql vrt2 :single-float))
+      :single-float
+      :object))
 
 ;;; Given two rtypes, return the most preferable rtype.
 (defun min-rtype (rt1 rt2)
@@ -305,7 +317,9 @@
 (defun maybe-insert-ftm (before datum)
   (let ((rt (cc-bmir:rtype datum)))
     (cond ((eq rt :multiple-values))
-          ((and (listp rt) (every (lambda (x) (eq x :object)) rt))
+          ((listp rt)
+           (unless (every (lambda (x) (eq x :object)) rt)
+             (setf datum (insert-box-before before datum)))
            (insert-ftm before datum))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
@@ -322,7 +336,7 @@
     (bir:insert-instruction-after pad after)
     (setf (bir:outputs after) (list new)
           (bir:outputs pad) (list datum))
-    pad))
+    new))
 
 (defun maybe-insert-pad-after (after ninputs datum)
   (when (/= ninputs (length (cc-bmir:rtype datum)))
@@ -340,19 +354,61 @@
     (bir:insert-instruction-before pad before)
     (bir:replace-uses new datum)
     (setf (bir:inputs pad) (list datum))
-    pad))
+    new))
+
+;;; input is unboxed data; we insert a box instruction
+(defun insert-box-before (before datum)
+  (let* ((ortype (make-list (length (cc-bmir:rtype datum))
+                            :initial-element :object))
+         (new (make-instance 'cc-bmir:output
+                :rtype ortype
+                :derived-type (bir:ctype datum)))
+         (box (make-instance 'cc-bmir:re-present
+                :origin (bir:origin before) :policy (bir:policy before)
+                :outputs (list new))))
+    (bir:insert-instruction-before box before)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs box) (list datum))
+    new))
+
+(defun insert-unbox-before (before datum rtype)
+  (let* ((ortype (make-list (length (cc-bmir:rtype datum))
+                            :initial-element rtype))
+         (new (make-instance 'cc-bmir:output
+                :rtype ortype
+                :derived-type (bir:ctype datum)))
+         (unbox (make-instance 'cc-bmir:re-present
+                  :origin (bir:origin before) :policy (bir:policy before)
+                  :outputs (list new))))
+    (bir:insert-instruction-before unbox before)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs unbox) (list datum))
+    new))
 
 (defgeneric insert-values-coercion (instruction))
 
 (defun object-input (instruction input)
   (let ((rt (cc-bmir:rtype input)))
     (cond ((equal rt '(:object)))
+          ((equal rt '(:single-float)) (insert-box-before instruction input))
           ((null rt) (insert-pad-before instruction 1 input))
           (t (error "BUG: Bad rtype ~a where ~a expected" rt '(:object))))))
 
+(defun unboxed-input (instruction input expected-rtype)
+  (let ((rt (cc-bmir:rtype input)))
+    (cond ((equal rt '(:object))
+           (insert-unbox-before instruction input expected-rtype))
+          ((equal rt (list expected-rtype)))
+          (t (error "BUG: Bad rtype ~a where ~a expected"
+                    rt (list expected-rtype))))))
+
 (defun object-inputs (instruction
-                            &optional (inputs (bir:inputs instruction)))
+                      &optional (inputs (bir:inputs instruction)))
   (loop for inp in inputs do (object-input instruction inp)))
+
+(defun unboxed-inputs (instruction expected-rtype
+                       &optional (inputs (bir:inputs instruction)))
+  (loop for inp in inputs do (unboxed-input instruction inp expected-rtype)))
 
 (defmethod insert-values-coercion ((instruction bir:instruction))
   ;; Default method: Assume we need all :objects and output (:object).
@@ -437,6 +493,11 @@
            (maybe-insert-mtf instruction output)))))
 (defmethod insert-values-coercion ((instruction bir:returni))
   (maybe-insert-ftms instruction (bir:inputs instruction)))
+(defmethod insert-values-coercion ((inst bir:vprimop))
+  ;; KLUDGE
+  (if (eql (cleavir-primop-info:name (bir:info inst)) 'core::two-arg-sf-+)
+      (unboxed-inputs inst :single-float)
+      (call-next-method)))
 
 (defun insert-values-coercion-into-function (function)
   (cleavir-bir:map-local-instructions #'insert-values-coercion function))

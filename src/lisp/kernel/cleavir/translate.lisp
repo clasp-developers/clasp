@@ -798,6 +798,31 @@
                                        :initial-element (%nil)))))
          output)))
 
+(defun re-present-one (datum from to)
+  (ecase from
+    ((:single-float)
+     (ecase to
+       ((:single-float) datum)
+       ((:object) (cmp::irc-tag-single-float datum))))
+    ((:object)
+     (ecase to
+       ((:single-float) (cmp::irc-untag-single-float datum))
+       ((:object) datum)))))
+
+(defmethod translate-simple-instruction ((inst cc-bmir:re-present) abi)
+  (declare (ignore abi))
+  (let* ((input (first (bir:inputs inst))) (ins (in input))
+         (inrt (cc-bmir:rtype input))
+         (output (first (bir:outputs inst)))
+         (outrt (cc-bmir:rtype output)))
+    (assert (and (listp inrt) (listp outrt) (= (length inrt) (length outrt))))
+    (if (= (length inrt) 1)
+        (out (re-present-one ins (first inrt) (first outrt)) output)
+        (out (loop for irt in inrt for ort in outrt
+                   for inp in ins
+                   collect (re-present-one inp irt ort))
+             output))))
+
 (defmethod translate-simple-instruction ((inst cc-bmir:memref2) abi)
   (declare (ignore abi))
   (out (cmp::gen-memref-address (in (first (bir:inputs inst)))
@@ -914,11 +939,12 @@
                     (in (third (bir:inputs inst)))))
 
 (defmethod translate-primop ((name (eql 'core::two-arg-sf-+)) inst)
-  (out
-   (cmp::irc-tag-single-float
-    (%fadd (cmp::irc-untag-single-float (in (first (bir:inputs inst))))
-           (cmp::irc-untag-single-float (in (second (bir:inputs inst))))))
-   (first (bir:outputs inst))))
+  (assert (= 2 (length (bir:inputs inst))))
+  (assert (equal '(:single-float) (cc-bmir:rtype (first (bir:inputs inst)))))
+  (assert (equal '(:single-float) (cc-bmir:rtype (second (bir:inputs inst)))))
+  (assert (equal '(:single-float) (cc-bmir:rtype (first (bir:outputs inst)))))
+  (out (%fadd (in (first (bir:inputs inst))) (in (second (bir:inputs inst))))
+       (first (bir:outputs inst))))
  
 (defmethod translate-primop ((name cons) inst) ; FIXME
   (cond ((equal name '(setf symbol-value))

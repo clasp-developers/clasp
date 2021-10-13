@@ -37,6 +37,14 @@
 ;;; load the NIL constant.
 (defclass fixed-values-pad (bir:one-input bir:one-output bir:instruction) ())
 
+;;; Represent values in a different way; i.e. box and unbox.
+;;; The input and output rtype must be fixed values and of the same length.
+;;; Identity conversions are always allowed and NOPs. They may come up when
+;;; un/boxing a group of values.
+;;; Otherwise, one of each pair of value rtypes must be :object, i.e. only
+;;; boxing and unboxing are possible now, not general casting.
+(defclass re-present (bir:one-input bir:one-output bir:instruction) ())
+
 ;;;
 
 (defclass datum (bir:datum)
