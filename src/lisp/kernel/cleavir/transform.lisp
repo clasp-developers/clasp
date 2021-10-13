@@ -256,7 +256,11 @@
 (deftransform core:coerce-fdesignator ((fd symbol)) 'fdefinition)
 (deftransform core:coerce-fdesignator ((fd function)) 'identity)
 
-(defun maybe-transform-two-arg-+ (call)
+(defmacro define-bir-transform (fname (instparam) &body body)
+  `(setf (gethash ',fname *fn-transforms*)
+         (list (lambda (,instparam) ,@body))))
+
+(define-bir-transform core:two-arg-+ (call)
   (let ((arguments (rest (bir:inputs call)))
         (sf (cleavir-ctype:range 'single-float '* '* *clasp-system*)))
     (if (every (lambda (arg)
