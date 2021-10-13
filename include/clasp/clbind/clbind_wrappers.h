@@ -756,6 +756,18 @@ struct from_object<int&,std::false_type> {
   };
 };
 
+  template <>
+struct from_object<int*,std::false_type> {
+  typedef int DeclareType;
+  int _v;
+  from_object(gctools::smart_ptr<core::T_O> vv) {
+    (void)vv;
+  };
+  ~from_object() {
+    // non-trivial dtor to keep _v around
+  };
+};
+
 
 template <>
 struct from_object<const char*, std::true_type> {

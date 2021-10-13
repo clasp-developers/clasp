@@ -1563,8 +1563,9 @@ def configure(cfg):
     sep = " "
     cfg.env.append_value('STLIB', cfg.extensions_stlib)
     cfg.env.append_value('LIB', cfg.extensions_lib)
-    print("cfg.extensions_libpath = %s" % cfg.extensions_libpath)
+    print("cfg.extensions_lib = %s" % cfg.extensions_lib)
     cfg.env.append_value('LIBPATH', cfg.extensions_libpath)
+    print("cfg.extensions_libpath = %s" % cfg.extensions_libpath)
     cfg.env.append_value('LINKFLAGS', cfg.extensions_linkflags)
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)

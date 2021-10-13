@@ -429,13 +429,13 @@ struct memfun_registration : registration {
 
 template <class Class, class Begin, class End, class Policies>
 struct iterator_registration : registration {
-  iterator_registration(char const *name, Begin begin, End end, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
-      : m_name(name), beginPtr(begin), endPtr(end), policies(policies), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
+  iterator_registration(const string& name, Begin begin, End end, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
+    : m_name(name), beginPtr(begin), endPtr(end), policies(policies), m_arguments(arguments), m_declares(declares), m_doc_string(docstring) {}
 
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-    core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
+    core::Symbol_sp sym = core::lisp_intern(m_name, symbol_packageName(classSymbol));
     using VariadicType = IteratorMethoid<Policies, Class, Begin, End>;
     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
     maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
@@ -449,7 +449,7 @@ struct iterator_registration : registration {
   virtual std::string name() const { return this->m_name; };
   virtual std::string kind() const { return "iterator_registration"; };
 
-  char const *m_name;
+  string m_name;
   Begin beginPtr;
   End endPtr;
   Policies policies;
@@ -591,20 +591,20 @@ struct property_registration : registration {
     //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
     //                printf("%p\n", i);
      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-     core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
+     core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
      using VariadicGetterType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get>;
      core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( sym, VariadicGetterType::entry_point );
      maybe_register_symbol_using_dladdr( (void*)VariadicGetterType::entry_point );
-//     auto raw_getter = gc::GC<VariadicGetterType>::allocate(fdesc, get);
-     core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>( entryPoint ); // raw_getter);
+     auto raw_getter = gc::GC<VariadicGetterType>::allocate( entryPoint, get );
+     core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>( raw_getter );
      lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1 );
      core::validateFunctionDescription( __FILE__, __LINE__, getter );
      core::T_sp setf_name = core::Cons_O::createList( cl::_sym_setf, sym );
      using VariadicSetterType = SetterMethoid<reg::null_type, Class, Set>;
      core::GlobalEntryPoint_sp setterEntryPoint = makeGlobalEntryPointAndFunctionDescription( setf_name, VariadicSetterType::entry_point );
      maybe_register_symbol_using_dladdr( (void*)VariadicSetterType::entry_point );
-//     core::FunctionDescription_sp fdesc_setf = core::makeFunctionDescription( setf_name, VariadicSetterType::entry_point );
-     core::BuiltinClosure_sp setter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicSetterType>::allocate(setterEntryPoint));
+     auto raw_setter = gc::GC<VariadicSetterType>::allocate( setterEntryPoint, set );
+     core::BuiltinClosure_sp setter = gc::As<core::BuiltinClosure_sp>( raw_setter );
      lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_doc_string, true, 2);
      core::validateFunctionDescription(__FILE__,__LINE__,setter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
@@ -643,11 +643,11 @@ struct property_registration : registration {
     //                int*** i = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type,Class,Get>(n,get);
     //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-    core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
+    core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
     using VariadicType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get>;
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
     maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
-    core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, get));
+    core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, get));
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1);
     core::validateFunctionDescription(__FILE__, __LINE__, getter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, m_name);
@@ -732,7 +732,8 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
-  class_(scope_& outer_scope, const char *name, const string& docstring="") : class_base(name), _outer_scope(&outer_scope), scope(*this) {
+  template <typename NameType>
+  class_(scope_& outer_scope, const NameType& name, const std::string& docstring="") : class_base(PrepareName(name)), _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
     detail::check_link_compatibility();
 #endif
@@ -740,30 +741,13 @@ public:
     this->_outer_scope->operator,(*this);
   }
 
-  class_(scope_& outer_scope, const RawName& rawName, const std::string& docstring="") : class_base(rawName), _outer_scope(&outer_scope), scope(*this) {
-#ifndef NDEBUG
-    detail::check_link_compatibility();
-#endif
-    init();
-    this->_outer_scope->operator,(*this);
-  }
-  
-  template <typename... Types>
-  class_ &def_constructor(const string &name,
+  template <typename NameType, typename... Types>
+  class_ &def_constructor(const NameType& name,
                           constructor<Types...> sig,
                           string const &arguments = "",
                           string const &declares = "",
                           string const &docstring = "") {
-    return this->def_constructor_(core::lispify_symbol_name(name), &sig, policies<adopt<result>>(), arguments, declares, docstring);
-  }
-
-  template <typename... Types>
-  class_ &def_constructor(const RawName &name,
-                          constructor<Types...> sig,
-                          string const &arguments = "",
-                          string const &declares = "",
-                          string const &docstring = "") {
-    return this->def_constructor_(name._raw_name, &sig, policies<adopt<result>>(), arguments, declares, docstring);
+    return this->def_constructor_(PrepareName(name), &sig, policies<adopt<result>>(), arguments, declares, docstring);
   }
 
   template <typename NameType, class F, class... PTypes>
@@ -778,7 +762,7 @@ public:
   }
 
   // static functions
-  template <class F, class Policies>
+  template <typename NameType, class F, class Policies>
   class_ &def_static(const char*name,
                      F fn,
                      string const &docstring = "",
@@ -790,13 +774,13 @@ public:
     return *this;
   }
   // static functions
-  template <class F>
-  class_ &def_static(const char* name,
+  template <typename NameType, class F>
+  class_ &def_static(const NameType& name,
                      F fn,
                      string const &docstring = "",
                      string const &arguments = "",
                      string const &declares = "") {
-    this->scope_::def(name,fn,docstring.c_str(),arguments.c_str(),declares.c_str());
+    this->scope_::def( name,fn,docstring.c_str(),arguments.c_str(),declares.c_str());
     return *this;
   }  
 
@@ -817,11 +801,11 @@ public:
     return *this;
   }
 
-  template <class Getter>
-  class_ &property(const char *name, Getter g, string const &arguments = "", string const &declares = "", string const &docstring = "") {
+  template <typename NameType, class Getter>
+  class_ &property( const NameType& name, Getter g, string const &arguments = "", string const &declares = "", string const &docstring = "") {
     this->add_member(
                      new detail::property_registration<T, Getter, reg::null_type>(
-                                                                                  name // name
+                                                                                  PrepareName(name) // name
                                                                                   ,
                                                                                   g // Get
                                                                                   ,
@@ -831,11 +815,10 @@ public:
     return *this;
   }
 
-  template <class Begin, class End>
-  class_ &iterator(const char *iteratorName, Begin beginFn, End endFn, string const &arguments = "", string const &declares = "", string const &docstring = "") {
-    this->add_member(
-                     new detail::iterator_registration<T, Begin, End, reg::null_type>(
-                                                                                      iteratorName // name
+  template <typename NameType, class Begin, class End>
+  class_ &iterator(const NameType &iteratorName, Begin beginFn, End endFn, string const &arguments = "", string const &declares = "", string const &docstring = "") {
+    this->add_member(new detail::iterator_registration<T, Begin, End, reg::null_type>(
+										      PrepareName(iteratorName)
                                                                                       ,
                                                                                       beginFn // begin
                                                                                       ,
@@ -874,26 +857,26 @@ public:
     return *this;
   }
 
-  template <class C, class D, class GetPolicies>
+    template <typename NameType, class C, class D, class GetPolicies>
   class_ &def_readwrite(
-                        const char *name, D C::*mem_ptr, GetPolicies const &get_policies) {
+                        const NameType& name, D C::*mem_ptr, GetPolicies const &get_policies) {
     typedef detail::property_registration<
       T, D C::*, GetPolicies, D C::*> registration_type;
 
     this->add_member(
-                     new registration_type( name, mem_ptr, get_policies, mem_ptr));
+                     new registration_type( PrepareName(name), mem_ptr, get_policies, mem_ptr));
     return *this;
   }
 
-  template <class C, class D, class GetPolicies, class SetPolicies>
+    template < typename NameType, class C, class D, class GetPolicies, class SetPolicies>
   class_ &def_readwrite(
-                        const char *name, D C::*mem_ptr, GetPolicies const &get_policies, SetPolicies const &set_policies) {
+                        const NameType& name, D C::*mem_ptr, GetPolicies const &get_policies, SetPolicies const &set_policies) {
     typedef detail::property_registration<
       T, D C::*, GetPolicies, D C::*, SetPolicies> registration_type;
 
     this->add_member(
                      new registration_type(
-                                           name, mem_ptr, get_policies, mem_ptr, set_policies));
+                                           PrepareName(name), mem_ptr, get_policies, mem_ptr, set_policies));
     return *this;
   }
 
@@ -908,7 +891,7 @@ public:
     return this->def(
                      Derived::name(), &Derived::template apply<T, detail::null_type>::execute);
   }
-
+    
   //#endif // end_meister_disabled
 
 #if 0

@@ -35,7 +35,8 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <pthread.h> // TODO: PORTING - frgo, 2017-08-04
 #include <signal.h>  // TODO: PORTING - frgo, 2017-08-04
-#include <sys/utsname.h> 
+#include <sys/utsname.h>
+#include <ffi.h>
 #include <clasp/external/PicoSHA2/picosha2.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -826,6 +827,130 @@ CL_DEFUN void core__break_low_level(T_sp fmt, List_sp args) {
   dbg_hook("built in break");
   core__invoke_internal_debugger(nil<core::T_O>());
 };
+
+
+struct StringStorage {
+  int      _End;
+  int      _Capacity;
+  const char**    _Values;
+  StringStorage() : _End(0), _Capacity(0), _Values(NULL) {};
+  ~StringStorage() {
+    if (this->_Values) {
+      for ( int ii=0; ii<this->_End; ++ii ) {
+	free((void*)this->_Values[ii]);
+      }
+      free((void*)this->_Values);
+    }
+  }
+  void* addValue(size_t size, const char* val) {
+    if (this->_End == this->_Capacity) {
+      if (this->_Values) {
+	this->_Values = (const char**)realloc(this->_Values, this->_Capacity*2 );
+	this->_Capacity *= 2;
+      } else {
+	this->_Values = (const char**)malloc(sizeof(char*)*4);
+	this->_Capacity = 4;
+      }
+    }
+    if (this->_End<this->_Capacity) {
+      char* buffer = (char*)malloc(size+1);
+      strncpy(buffer,val,size);
+      buffer[size] = '\0';
+      printf("%s:%d:%s Storing string: %s\n", __FILE__, __LINE__, __FUNCTION__, buffer );
+      this->_Values[this->_End] = buffer;
+      void* address = &this->_Values[this->_End];
+      this->_End++;
+      return address;
+    }
+    printf("%s:%d:%s Error _End is larger than _Capacity\n", __FILE__, __LINE__, __FUNCTION__ );
+    abort();
+  }
+};
+
+template <typename Type>
+struct Storage {
+  int      _End;
+  int      _Capacity;
+  Type*    _Values;
+  Storage() : _End(0), _Capacity(0), _Values(NULL) {};
+  ~Storage() {
+    if (this->_Values) free(this->_Values);
+  }
+  void* addValue(Type val) {
+    if (this->_End == this->_Capacity) {
+      if (this->_Values) {
+	this->_Values = (Type*)realloc( this->_Values, this->_Capacity*2 );
+	this->_Capacity *= 2;
+      } else {
+	this->_Values = (Type*)malloc(sizeof(Type)*4);
+	this->_Capacity = 4;
+      }
+    }
+    if (this->_End<this->_Capacity) {
+      this->_Values[this->_End] = val;
+      void* address = &this->_Values[this->_End];
+      this->_End++;
+      return address;
+    }
+    printf("%s:%d:%s Error _End is larger than _Capacity\n", __FILE__, __LINE__, __FUNCTION__ );
+    abort();
+  }
+};
+
+struct SaveArgs {
+  int         _Index;
+  ffi_type**   _Types;
+  void**       _Addrs;
+  Storage<int64_t>   _Int64s;
+  StringStorage      _Strings;
+  SaveArgs( ffi_type* types[], void* addrs[]) : _Index(0), _Types(types), _Addrs(addrs) {
+  }
+
+  void addArg(T_sp arg) {
+    if (gc::IsA<String_sp>(arg)) {
+      std::string str = gc::As_unsafe<String_sp>(arg)->get_std_string();
+      this->_Types[this->_Index] = &ffi_type_pointer;
+      this->_Index++;
+      return;
+    } else if (arg.fixnump()) {
+      this->_Types[this->_Index] = &ffi_type_sint64;
+      this->_Index++;
+      return;
+    }
+    SIMPLE_ERROR(BF("Illegal value %s") % _rep_(arg) );
+  }
+
+     
+};
+
+CL_LAMBDA(fmt &rest args)
+CL_DEFUN void core__cprintf(String_sp fmt, List_sp largs) {
+  ffi_cif cif;
+  int numArgs = cl__length(largs);
+  ffi_type *arg_types[numArgs];
+  void *args[numArgs];
+  SaveArgs bargs(arg_types,args);
+  int fmtSize = cl__length(fmt);
+  char sfmt[fmtSize+1];
+  strncpy( sfmt, fmt->get_std_string().c_str(), fmtSize );
+  sfmt[fmtSize] = '\0';
+  ffi_arg rc;
+  ffi_type retType;
+  for ( int ii = 0; ii<numArgs; ++ii ) {
+    T_sp val = CONS_CAR(largs);
+    largs = CONS_CDR(largs);
+    bargs.addArg(val);
+  }
+  retType = ffi_type_sint;
+  if (FFI_OK == ffi_prep_cif(&cif, FFI_DEFAULT_ABI, bargs._Index, &retType, bargs._Types ) ) {
+    int ret;
+    ffi_call( &cif, (void(*)(void))printf, &ret, bargs._Addrs );
+  } else {
+    SIMPLE_ERROR(BF("Could not call printf"));
+  }
+}
+
+
 
 CL_LAMBDA(&optional msg)
 CL_DECLARE();
