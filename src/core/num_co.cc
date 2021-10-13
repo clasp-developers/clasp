@@ -587,27 +587,27 @@ static void clasp_round(Real_sp dividend, Real_sp divisor,
     return;
   }
 
-  Real_sp threshold = clasp_divide(clasp_abs(divisor), clasp_make_fixnum(2));
+  Real_sp threshold = gc::As_unsafe<Real_sp>(clasp_divide(clasp_abs(divisor), clasp_make_fixnum(2)));
   int c = clasp_number_compare(rem, threshold);
-  if (c > 0 || (c == 0 && clasp_oddp(tru))) {
+  if (c > 0 || (c == 0 && clasp_oddp(gc::As_unsafe<Integer_sp>(tru)))) {
     if (clasp_minusp(divisor)) {
-      quotient = contagion_sub(tru, clasp_make_fixnum(1));
-      remainder = contagion_add(rem, divisor);
+      quotient = gc::As_unsafe<Real_sp>(contagion_sub(tru, clasp_make_fixnum(1)));
+      remainder = gc::As_unsafe<Real_sp>(contagion_add(rem, divisor));
     } else {
-      quotient = clasp_one_plus(tru);
-      remainder = contagion_sub(rem, divisor);
+      quotient = gc::As_unsafe<Real_sp>(clasp_one_plus(tru));
+      remainder = gc::As_unsafe<Real_sp>(contagion_sub(rem, divisor));
     }
     return;
   }
-  threshold = clasp_negate(threshold);
+  threshold = gc::As_unsafe<Real_sp>(clasp_negate(threshold));
   c = clasp_number_compare(rem, threshold);
-  if (c < 0 || (c == 0 && clasp_oddp(tru))) {
+  if (c < 0 || (c == 0 && clasp_oddp(gc::As_unsafe<Integer_sp>(tru)))) {
     if (clasp_minusp(divisor)) {
-      quotient = clasp_one_plus(tru);
-      remainder = contagion_sub(rem, divisor);
+      quotient = gc::As_unsafe<Real_sp>(clasp_one_plus(tru));
+      remainder = gc::As_unsafe<Real_sp>(contagion_sub(rem, divisor));
     } else {
-      quotient = contagion_sub(tru, clasp_make_fixnum(1));
-      remainder = contagion_add(rem, divisor);
+      quotient = gc::As_unsafe<Real_sp>(contagion_sub(tru, clasp_make_fixnum(1)));
+      remainder = gc::As_unsafe<Real_sp>(contagion_add(rem, divisor));
     }
     return;
   }
