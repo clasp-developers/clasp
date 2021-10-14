@@ -114,6 +114,9 @@
 (defun %fcmp-oeq (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fcmp-oeq cmp:*irbuilder* x y label fast-math-flags))
 
+(defun %fneg (value &optional (label "") fast-math-flags)
+  (llvm-sys:create-fneg cmp:*irbuilder* value label fast-math-flags))
+
 (defun %fpext (value type &optional (label ""))
   (llvm-sys:create-fpext cmp:*irbuilder* value type label))
 

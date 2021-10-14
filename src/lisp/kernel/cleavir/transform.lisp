@@ -352,4 +352,7 @@
   (define-one-arg-sf sin core::sf-sin core::df-sin)
   (define-one-arg-sf abs core::sf-abs core::df-abs)
   (define-one-arg-sf sqrt core::sf-sqrt core::df-sqrt)
-  (define-one-arg-sf exp core::sf-exp core::df-exp))
+  (define-one-arg-sf exp core::sf-exp core::df-exp)
+  ;; there's probably some weird floating point reason to explain why
+  ;; llvm has an fneg instruction but not a reciprocal, but i don't know it.
+  (define-one-arg-sf core:negate core::sf-negate core::df-negate))

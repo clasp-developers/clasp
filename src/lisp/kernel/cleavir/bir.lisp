@@ -366,7 +366,7 @@
       (def-sf-binops core::two-arg-sf-+ core::two-arg-sf--
         core::two-arg-sf-* core::two-arg-sf-/)
       (def-sf-unops core::sf-cos core::sf-sin core::sf-abs core::sf-sqrt
-        core::sf-exp))
+        core::sf-exp core::sf-negate))
     (macrolet ((def-df-binop (name) `(def-binop ,name :double-float))
                (def-df-binops (&rest names)
                  `(progn
@@ -378,7 +378,7 @@
       (def-df-binops core::two-arg-df-+ core::two-arg-df--
         core::two-arg-df-* core::two-arg-df-/)
       (def-df-unops core::df-cos core::df-sin core::df-abs core::df-sqrt
-        core::df-exp)))
+        core::df-exp core::df-negate)))
 
   (defprimop core::single-to-double 1 :value :double-float :single-float))
 
