@@ -284,189 +284,103 @@
 (defun assign-module-rtypes (module)
   (bir:map-functions #'assign-function-rtypes module))
 
-(defun insert-mtf (after datum)
-  (let* ((fx (make-instance 'cc-bmir:output :rtype '(:object)
-                            :derived-type (bir:ctype datum)))
-         (mtf (make-instance 'cc-bmir:mtf
-                :origin (bir:origin after) :policy (bir:policy after)
-                :outputs (list fx))))
-    (bir:insert-instruction-after mtf after)
-    (bir:replace-uses fx datum)
-    (setf (cc-bmir:rtype datum) :multiple-values)
-    (setf (bir:inputs mtf) (list datum)))
+;;;
+
+;; here our datum actually has its rtype, but we (maybe) need to convert it
+;; for the sake of some instruction.
+(defun maybe-cast-before (inst datum needed-rtype)
+  (unless (equal (cc-bmir:rtype datum) needed-rtype)
+    (let* ((new (make-instance 'cc-bmir:output
+                  :rtype needed-rtype :derived-type (bir:ctype datum)))
+           (cast (make-instance 'cc-bmir:cast
+                   :origin (bir:origin inst) :policy (bir:policy inst)
+                   :outputs (list new))))
+      (bir:insert-instruction-before cast inst)
+      (bir:replace-uses new datum)
+      (setf (bir:inputs cast) (list datum))))
   (values))
 
-(defun maybe-insert-mtf (after datum)
-  (let ((rt (cc-bmir:rtype datum)))
-    (cond ((eq rt :multiple-values))
-          ((null rt))
-          ((equal rt '(:object)) (insert-mtf after datum))
-          (t (error "BUG: Bad rtype ~a" rt)))))
+;;; Here, the rtype we want is what datum has, and the actual rtype is what
+;;; instruction actually outputs. DATUM must be the output of INST.
+(defun maybe-cast-after (inst datum actual-rtype)
+  (unless (equal (cc-bmir:rtype datum) actual-rtype)
+    (let* ((new (make-instance 'cc-bmir:output
+                  :rtype actual-rtype :derived-type (bir:ctype datum)))
+           (cast (make-instance 'cc-bmir:cast
+                   :origin (bir:origin inst) :policy (bir:policy inst)
+                   :inputs (list new))))
+      (bir:insert-instruction-after cast inst)
+      (setf (bir:outputs inst) (list new)
+            (bir:outputs cast) (list datum))))
+  (values))
 
-(defun insert-ftm (before datum)
-  (let* ((mv (make-instance 'cc-bmir:output :rtype :multiple-values
-                            :derived-type (bir:ctype datum)))
-         (ftm (make-instance 'cc-bmir:ftm
-                :origin (bir:origin before) :policy (bir:policy before)
-                :outputs (list mv))))
-    (bir:insert-instruction-before ftm before)
-    (bir:replace-uses mv datum)
-    (setf (bir:inputs ftm) (list datum))
-    ftm))
+(defgeneric insert-casts (instruction))
 
-(defun maybe-insert-ftm (before datum)
-  (let ((rt (cc-bmir:rtype datum)))
-    (cond ((eq rt :multiple-values))
-          ((listp rt)
-           (unless (every (lambda (x) (eq x :object)) rt)
-             (setf datum (insert-box-before before datum)))
-           (insert-ftm before datum))
-          (t (error "BUG: Bad rtype ~a" rt)))))
-
-(defun maybe-insert-ftms (before data)
-  (loop for dat in data do (maybe-insert-ftm before dat)))
-
-(defun insert-pad-after (after ninputs datum)
-  (let* ((new (make-instance 'cc-bmir:output
-                :rtype (make-list ninputs :initial-element :object)
-                :derived-type (bir:ctype datum)))
-         (pad (make-instance 'cc-bmir:fixed-values-pad
-                :origin (bir:origin after) :policy (bir:policy after)
-                :inputs (list new))))
-    (bir:insert-instruction-after pad after)
-    (setf (bir:outputs after) (list new)
-          (bir:outputs pad) (list datum))
-    new))
-
-(defun maybe-insert-pad-after (after ninputs datum)
-  (when (/= ninputs (length (cc-bmir:rtype datum)))
-    (insert-pad-after after ninputs datum)))
-
-;;; This is necessary for the situation where zero values are used as an input
-;;; to something expecting values.
-(defun insert-pad-before (before noutputs datum)
-  (let* ((new (make-instance 'cc-bmir:output
-                :rtype (make-list noutputs :initial-element :object)
-                :derived-type (bir:ctype datum)))
-         (pad (make-instance 'cc-bmir:fixed-values-pad
-                :origin (bir:origin before) :policy (bir:policy before)
-                :outputs (list new))))
-    (bir:insert-instruction-before pad before)
-    (bir:replace-uses new datum)
-    (setf (bir:inputs pad) (list datum))
-    new))
-
-;;; input is unboxed data; we insert a box instruction
-(defun insert-box-before (before datum)
-  (let* ((ortype (make-list (length (cc-bmir:rtype datum))
-                            :initial-element :object))
-         (new (make-instance 'cc-bmir:output
-                :rtype ortype
-                :derived-type (bir:ctype datum)))
-         (box (make-instance 'cc-bmir:re-present
-                :origin (bir:origin before) :policy (bir:policy before)
-                :outputs (list new))))
-    (bir:insert-instruction-before box before)
-    (bir:replace-uses new datum)
-    (setf (bir:inputs box) (list datum))
-    new))
-
-(defun insert-unbox-before (before datum rtype)
-  (let* ((ortype (make-list (length (cc-bmir:rtype datum))
-                            :initial-element rtype))
-         (new (make-instance 'cc-bmir:output
-                :rtype ortype
-                :derived-type (bir:ctype datum)))
-         (unbox (make-instance 'cc-bmir:re-present
-                  :origin (bir:origin before) :policy (bir:policy before)
-                  :outputs (list new))))
-    (bir:insert-instruction-before unbox before)
-    (bir:replace-uses new datum)
-    (setf (bir:inputs unbox) (list datum))
-    new))
-
-(defgeneric insert-values-coercion (instruction))
+(defun cast-inputs (instruction needed-rtype
+                    &optional (inputs (bir:inputs instruction)))
+  (loop for inp in inputs do (maybe-cast-before instruction inp needed-rtype)))
 
 (defun object-input (instruction input)
-  (let ((rt (cc-bmir:rtype input)))
-    (cond ((equal rt '(:object)))
-          ((equal rt '(:single-float)) (insert-box-before instruction input))
-          ((null rt) (insert-pad-before instruction 1 input))
-          (t (error "BUG: Bad rtype ~a where ~a expected" rt '(:object))))))
-
-(defun unboxed-input (instruction input expected-rtype)
-  (let ((rt (cc-bmir:rtype input)))
-    (cond ((equal rt '(:object))
-           (insert-unbox-before instruction input expected-rtype))
-          ((equal rt (list expected-rtype)))
-          (t (error "BUG: Bad rtype ~a where ~a expected"
-                    rt (list expected-rtype))))))
+  (maybe-cast-before instruction input '(:object)))
 
 (defun object-inputs (instruction
                       &optional (inputs (bir:inputs instruction)))
-  (loop for inp in inputs do (object-input instruction inp)))
+  (cast-inputs instruction '(:object) inputs))
 
-(defun unboxed-inputs (instruction expected-rtype
-                       &optional (inputs (bir:inputs instruction)))
-  (loop for inp in inputs do (unboxed-input instruction inp expected-rtype)))
+(defun cast-output (instruction actual-rtype)
+  (maybe-cast-after instruction (first (bir:outputs instruction)) actual-rtype))
 
-(defmethod insert-values-coercion ((instruction bir:instruction))
-  ;; Default method: Assume we need all :objects and output (:object).
-  (object-inputs instruction))
+(defun object-output (instruction) (cast-output instruction '(:object)))
 
-(defmethod insert-values-coercion ((instruction bir:fixed-to-multiple))
+(defmethod insert-casts ((instruction bir:instruction))
+  ;; Default method: Assume we need all :objects, and if we output anything,
+  ;; it's (:object).
   (object-inputs instruction)
-  (maybe-insert-pad-after instruction (length (bir:inputs instruction))
-                          (bir:output instruction)))
+  (unless (null (bir:outputs instruction)) (object-output instruction)))
+
+(defmethod insert-casts ((instruction bir:fixed-to-multiple))
+  (object-inputs instruction)
+  (cast-output instruction (make-list (length (bir:inputs instruction))
+                                      :initial-element :object)))
 ;;; Make sure we don't insert things infinitely
-(defmethod insert-values-coercion ((instruction cc-bmir:mtf)))
-(defmethod insert-values-coercion ((instruction cc-bmir:ftm)))
-(defmethod insert-values-coercion ((instruction cc-bmir:fixed-values-pad)))
+(defmethod insert-casts ((instruction cc-bmir:cast)))
 ;;; Doesn't need to do anything, and might not have all :object inputs
-(defmethod insert-values-coercion ((instruction bir:thei)))
+(defmethod insert-casts ((instruction bir:thei)))
 
 (defun insert-jump-coercion (instruction)
   (loop for inp in (bir:inputs instruction)
         for outp in (bir:outputs instruction)
         for inprt = (cc-bmir:rtype inp)
         for outprt = (cc-bmir:rtype outp)
-        do (cond ((eq inprt :multiple-values)
-                  (unless (eq outprt :multiple-values)
-                    (error "BUG: MV input into ~a jump output in ~a"
-                           outprt instruction)))
-                 ((eq outprt :multiple-values)
-                  (insert-ftm instruction inp))
-                 (t
-                  (unless (equal inprt outprt)
-                    (insert-pad-before instruction (length outprt) inp))))))
+        do (maybe-cast-before instruction inp outprt)))
 
-(defmethod insert-values-coercion ((instruction bir:jump))
+(defmethod insert-casts ((instruction bir:jump))
   (insert-jump-coercion instruction))
-(defmethod insert-values-coercion ((instruction bir:unwind))
+(defmethod insert-casts ((instruction bir:unwind))
   (insert-jump-coercion instruction))
 
-(defmethod insert-values-coercion ((instruction bir:call))
+(defmethod insert-casts ((instruction bir:call))
   (object-inputs instruction)
-  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
-(defmethod insert-values-coercion ((instruction bir:mv-call))
+  (cast-output instruction :multiple-values))
+(defmethod insert-casts ((instruction bir:mv-call))
   (object-input instruction (first (bir:inputs instruction)))
-  (maybe-insert-ftms instruction (rest (bir:inputs instruction)))
-  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
-(defmethod insert-values-coercion ((instruction bir:local-call))
+  (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
+  (cast-output instruction :multiple-values))
+(defmethod insert-casts ((instruction bir:local-call))
   (object-inputs instruction (rest (bir:inputs instruction)))
-  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
-(defmethod insert-values-coercion ((instruction bir:mv-local-call))
-  (maybe-insert-ftms instruction (rest (bir:inputs instruction)))
-  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
-(defmethod insert-values-coercion ((instruction cc-bir:mv-foreign-call))
+  (cast-output instruction :multiple-values))
+(defmethod insert-casts ((instruction bir:mv-local-call))
+  (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
+  (cast-output instruction :multiple-values))
+(defmethod insert-casts ((instruction cc-bir:mv-foreign-call))
   (object-inputs instruction)
-  (maybe-insert-mtf instruction (first (bir:outputs instruction))))
-(defmethod insert-values-coercion ((instruction bir:values-save))
+  (cast-output instruction :multiple-values))
+(defmethod insert-casts ((instruction bir:values-save))
   (let* ((input (bir:input instruction)) (output (bir:output instruction))
          (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output))
          (nde (bir:dynamic-environment instruction)))
     (cond ((eq outputrt :multiple-values)
-           (maybe-insert-ftms instruction (bir:inputs instruction)))
+           (cast-inputs instruction :multiple-values))
           (t
            ;; The number of values is fixed, so this is a nop to delete.
            (assert (equal inputrt outputrt))
@@ -481,7 +395,7 @@
            ;; We also don't merge iblocks because we're mostly done optimizing
            ;; at this point anyway.
            (bir:replace-uses input output)))))
-(defmethod insert-values-coercion ((instruction bir:values-collect))
+(defmethod insert-casts ((instruction bir:values-collect))
   (let* ((inputs (bir:inputs instruction)) (output (bir:output instruction))
          (outputrt (cc-bmir:rtype output)))
     (cond ((and (= (length inputs) 1) (not (eq outputrt :multiple-values)))
@@ -490,17 +404,18 @@
            (bir:replace-uses (first inputs) output)
            (bir:delete-instruction instruction))
           (t
-           (maybe-insert-mtf instruction output)))))
-(defmethod insert-values-coercion ((instruction bir:returni))
-  (maybe-insert-ftms instruction (bir:inputs instruction)))
-(defmethod insert-values-coercion ((inst bir:vprimop))
+           (cast-output instruction :multiple-values)))))
+(defmethod insert-casts ((instruction bir:returni))
+  (cast-inputs instruction :multiple-values))
+(defmethod insert-casts ((inst bir:vprimop))
   ;; KLUDGE
   (if (eql (cleavir-primop-info:name (bir:info inst)) 'core::two-arg-sf-+)
-      (unboxed-inputs inst :single-float)
+      (progn (cast-inputs inst :single-float)
+             (cast-output inst :single-float))
       (call-next-method)))
 
-(defun insert-values-coercion-into-function (function)
-  (cleavir-bir:map-local-instructions #'insert-values-coercion function))
+(defun insert-casts-into-function (function)
+  (cleavir-bir:map-local-instructions #'insert-casts function))
 
-(defun insert-values-coercion-into-module (module)
-  (bir:map-functions #'insert-values-coercion-into-function module))
+(defun insert-casts-into-module (module)
+  (bir:map-functions #'insert-casts-into-function module))
