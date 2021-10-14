@@ -260,6 +260,27 @@
   `(setf (gethash ',fname *fn-transforms*)
          (list (lambda (,instparam) ,@body))))
 
+(defun replace-call-with-primop (call primop-name)
+  (change-class call 'cleavir-bir:vprimop
+                :inputs (rest (bir:inputs call)) ; don't need the function
+                :info (cleavir-primop-info:info primop-name)))
+
+;;; This is important to perform complex type derivations.
+;;; I have serious reservations about doing it in this side effectual way,
+;;; but the perfect is the enemy of the good.
+(defun wrap-in-thei (inst ctype)
+  (let* ((datum (bir:output inst))
+         (new-datum (make-instance 'bir:output
+                      :derived-type (bir:ctype datum)))
+         (thei (make-instance 'bir:thei
+                 :policy (bir:policy inst) :origin (bir:origin inst)
+                 :asserted-type ctype :type-check-function :trusted
+                 :outputs (list new-datum))))
+    (bir:insert-instruction-after thei inst)
+    (bir:replace-uses new-datum datum)
+    (setf (bir:inputs thei) (list datum))
+    thei))
+
 (define-bir-transform core:two-arg-+ (call)
   (let ((arguments (rest (bir:inputs call)))
         (sf (cleavir-ctype:range 'single-float '* '* *clasp-system*)))
@@ -269,9 +290,7 @@
                   sf *clasp-system*))
                arguments)
         (progn
-          (change-class call
-                        'cleavir-bir:vprimop
-                        :inputs arguments ; don't need the function
-                        :info (cleavir-primop-info:info 'core::two-arg-sf-+))
+          (wrap-in-thei call (cleavir-ctype:coerce-to-values sf *clasp-system*))
+          (replace-call-with-primop call 'core::two-arg-sf-+)
           t)
         nil)))
