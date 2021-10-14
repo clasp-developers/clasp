@@ -95,7 +95,8 @@
            #:mv-foreign-call #:function-name
            #:atomic #:order #:fence
            #:atomic-rack-read #:atomic-rack-write #:cas-rack
-           #:vref #:vset #:vcas #:element-type #:simple-p #:boxed-p))
+           #:vref #:vset #:vcas #:element-type #:simple-p #:boxed-p)
+  (:export #:primop-rtype-info))
 
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)

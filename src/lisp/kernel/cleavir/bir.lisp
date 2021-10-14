@@ -315,9 +315,25 @@
 
 ;;;
 
-(macrolet ((defprimop (name ninputs out)
+;;; Hash table from primop infos to rtype info.
+;;; An rtype info is just a list (return-rtype argument-rtypes...)
+;;; If there is no entry in the table, it's assumed to return an :object
+;;; and take :object arguments.
+;;; See bir-to-bmir for more information about rtypes.
+(defvar *primop-rtypes* (make-hash-table :test #'eq))
+
+(defun primop-rtype-info (primop-info)
+  (or (gethash primop-info *primop-rtypes*)
+      (list* :object (make-list (cleavir-primop-info:ninputs primop-info)
+                                :initial-element :object))))
+
+(macrolet ((defprimop (name ninputs out &rest rtype-info)
              `(progn
                 (cleavir-primop-info:defprimop ,name ,ninputs ,out)
+                ,@(when rtype-info
+                    `((setf (gethash (cleavir-primop-info:info ',name)
+                                     *primop-rtypes*)
+                            '(,@rtype-info))))
                 (cleavir-cst-to-ast:defprimop ,name))))
   (defprimop core::vector-length 1 :value)
   (defprimop core::%displacement 1 :value)
@@ -335,7 +351,8 @@
   (defprimop core:vaslist-pop 1 :value)
   (defprimop core:vaslist-length 1 :value)
 
-  (defprimop core::two-arg-sf-+ 2 :value))
+  (defprimop core::two-arg-sf-+ 2 :value
+    :single-float :single-float :single-float))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn

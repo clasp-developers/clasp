@@ -150,10 +150,7 @@
 (defmethod definition-rtype ((inst bir:fixed-to-multiple))
   (make-list (length (bir:inputs inst)) :initial-element :object))
 (defmethod definition-rtype ((inst bir:vprimop))
-  ;; KLUDGE
-  (if (eql (cleavir-primop-info:name (bir:info inst)) 'core::two-arg-sf-+)
-      '(:single-float)
-      '(:object)))
+  (list (first (cc-bir:primop-rtype-info (bir:info inst)))))
 
 ;;; Given a datum, determine what rtype its use requires.
 (defgeneric use-rtype (datum))
@@ -177,10 +174,8 @@
       (use-rtype (bir:output inst))
       :multiple-values))
 (defmethod %use-rtype ((inst bir:vprimop) (datum bir:datum))
-  ;; KLUDGE
-  (if (eql (cleavir-primop-info:name (bir:info inst)) 'core::two-arg-sf-+)
-      '(:single-float)
-      '(:object)))
+  (list (nth (position datum (bir:inputs inst))
+             (rest (cc-bir:primop-rtype-info (bir:info inst))))))
 (defmethod %use-rtype ((inst bir:unwind) (datum bir:datum))
   (error "BUG: transitive-rtype should make this impossible!"))
 (defmethod %use-rtype ((inst bir:jump) (datum bir:datum))
@@ -408,11 +403,15 @@
 (defmethod insert-casts ((instruction bir:returni))
   (cast-inputs instruction :multiple-values))
 (defmethod insert-casts ((inst bir:vprimop))
-  ;; KLUDGE
-  (if (eql (cleavir-primop-info:name (bir:info inst)) 'core::two-arg-sf-+)
-      (progn (cast-inputs inst '(:single-float))
-             (cast-output inst '(:single-float)))
-      (call-next-method)))
+  (let* ((info (bir:info inst))
+         (rt-info (cc-bir:primop-rtype-info info))
+         (ret (first rt-info))
+         (args (rest rt-info)))
+    (loop for input in (bir:inputs inst)
+          for art in args
+          do (maybe-cast-before inst input (list art)))
+    (unless (null (bir:outputs inst))
+      (cast-output inst (list ret)))))
 
 (defun insert-casts-into-function (function)
   (cleavir-bir:map-local-instructions #'insert-casts function))
