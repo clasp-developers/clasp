@@ -351,8 +351,21 @@
   (defprimop core:vaslist-pop 1 :value)
   (defprimop core:vaslist-length 1 :value)
 
-  (defprimop core::two-arg-sf-+ 2 :value
-    :single-float :single-float :single-float))
+  (macrolet ((def-sf-binop (name)
+               `(defprimop ,name 2 :value
+                  :single-float :single-float :single-float))
+             (def-sf-binops (&rest names)
+               `(progn
+                  ,@(loop for name in names collect `(def-sf-binop ,name))))
+             (def-sf-unop (name)
+               `(defprimop ,name 1 :value :single-float :single-float))
+             (def-sf-unops (&rest names)
+               `(progn
+                  ,@(loop for name in names collect `(def-sf-unop ,name)))))
+    (def-sf-binops core::two-arg-sf-+ core::two-arg-sf--
+      core::two-arg-sf-* core::two-arg-sf-/)
+    #+(or)
+    (def-sf-unops core::sf-cos core::sf-sin core::sf-abs core::sf-sqrt)))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn

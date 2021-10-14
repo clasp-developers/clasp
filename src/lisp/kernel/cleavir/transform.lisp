@@ -281,16 +281,26 @@
     (setf (bir:inputs thei) (list datum))
     thei))
 
-(define-bir-transform core:two-arg-+ (call)
-  (let ((arguments (rest (bir:inputs call)))
-        (sf (cleavir-ctype:range 'single-float '* '* *clasp-system*)))
-    (if (every (lambda (arg)
-                 (cleavir-ctype:subtypep
-                  (cleavir-ctype:primary (bir:ctype arg) *clasp-system*)
-                  sf *clasp-system*))
-               arguments)
-        (progn
-          (wrap-in-thei call (cleavir-ctype:coerce-to-values sf *clasp-system*))
-          (replace-call-with-primop call 'core::two-arg-sf-+)
-          t)
-        nil)))
+(defun arg-subtypep (arg ctype)
+  (cleavir-ctype:subtypep (cleavir-ctype:primary (bir:ctype arg)
+                                                 *clasp-system*)
+                          ctype *clasp-system*))
+
+(macrolet ((define-two-arg-sf (name primop)
+             `(define-bir-transform ,name (call)
+                (let ((arguments (rest (bir:inputs call)))
+                      (sf (cleavir-ctype:range
+                           'single-float '* '* *clasp-system*)))
+                  (if (and (arg-subtypep (first arguments) sf)
+                           (arg-subtypep (second arguments) sf))
+                      (progn
+                        (wrap-in-thei
+                         call
+                         (cleavir-ctype:coerce-to-values sf *clasp-system*))
+                        (replace-call-with-primop call ',primop)
+                        t)
+                      nil)))))
+  (define-two-arg-sf core:two-arg-+ core::two-arg-sf-+)
+  (define-two-arg-sf core:two-arg-- core::two-arg-sf--)
+  (define-two-arg-sf core:two-arg-* core::two-arg-sf-*)
+  (define-two-arg-sf core:two-arg-/ core::two-arg-sf-/))
