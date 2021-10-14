@@ -50,6 +50,12 @@
   (let ((*package* (find-package "KEYWORD")))
     (write-to-string datum :escape t :readably nil :pretty nil)))
 
+(defun vrtype->llvm (vrtype)
+  (ecase vrtype
+    ((:object) cmp:%t*%)
+    ((:single-float) cmp:%float%)
+    ((:double-float) cmp:%double%)))
+
 (defun bind-variable (var)
   (if (bir:immutablep var)
       ;; Since immutable vars are just LLVM Values, they will be initialized
@@ -60,8 +66,13 @@
               ((:local :dynamic)
                ;; just an alloca
                (let* ((name (datum-name-as-string var))
+                      #+(or)
                       (fname (full-datum-name-as-string var))
-                      (alloca (cmp:alloca-t* name))
+                      ;; FIXME: Seems broken for an rtype of (); what should we
+                      ;; do in that situation?
+                      (vrtype (first (cc-bmir:rtype var)))
+                      (alloca (cmp:alloca (vrtype->llvm vrtype) 1 name))
+                      #+(or)
                       (spi (origin-spi (bir:origin var))))
                  ;; set up debug info
                  ;; Disable for now - FIXME and get it working

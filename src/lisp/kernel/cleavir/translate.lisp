@@ -446,8 +446,9 @@
 (defmethod translate-simple-instruction ((instruction bir:writevar)
                                          abi)
   (declare (ignore abi))
-  (let ((i (in (first (bir:inputs instruction)))))
-    (unless (llvm-sys:type-equal cmp:%t*% (llvm-sys:get-type i))
+  (let ((i (in (bir:input instruction))) (o (bir:output instruction)))
+    (unless (llvm-sys:type-equal (vrtype->llvm (first (cc-bmir:rtype o)))
+                                 (llvm-sys:get-type i))
       (cleavir-bir-disassembler:display
        (bir:module (bir:function instruction)))
       (error "~a has wrong rtype; definitions ~a with definition-rtypes ~a; input rtype ~a"
@@ -458,8 +459,7 @@
               #'cc-bir-to-bmir::definition-rtype
               (bir:definitions (first (bir:inputs instruction))))
              (cc-bmir:rtype (first (bir:inputs instruction)))))
-              
-    (variable-out i (first (bir:outputs instruction)))))
+    (variable-out i o)))
 
 (defmethod translate-simple-instruction ((instruction bir:readvar) abi)
   (declare (ignore abi))
@@ -1585,14 +1585,17 @@ COMPILE-FILE will use the default *clasp-env*."
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   (bir-transformations:module-generate-type-checks module system)
-  (cc-bir-to-bmir:assign-module-rtypes module)
-  (cc-bir-to-bmir:insert-casts-into-module module)
-  ;; These should happen last since they are like "post passes" which
-  ;; do not modify the flow graph.
+  ;; These should happen after higher level optimizations since they are like
+  ;; "post passes" which do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.
   (bir-transformations:determine-function-environments module)
   (bir-transformations:determine-closure-extents module)
   (bir-transformations:determine-variable-extents module)
+  ;; These currently use information about variable extents, which is why they're
+  ;; after the "post" passes. It may be better to not use that information so
+  ;; these can be before them?
+  (cc-bir-to-bmir:assign-module-rtypes module)
+  (cc-bir-to-bmir:insert-casts-into-module module)
   (when *dis*
     (cleavir-bir-disassembler:display module :show-ctype nil)
     (break))

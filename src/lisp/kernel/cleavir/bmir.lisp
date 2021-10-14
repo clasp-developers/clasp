@@ -37,6 +37,7 @@
 
 (defclass output (datum bir:output) ())
 (defclass phi (datum bir:phi) ())
+(defclass variable (datum bir:variable) ())
 
 (defmethod rtype ((datum bir:variable)) '(:object))
 (defmethod rtype ((datum bir:argument)) '(:object))

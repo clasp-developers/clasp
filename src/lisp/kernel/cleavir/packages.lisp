@@ -113,4 +113,5 @@
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store #:cas)
   (:export #:cast)
-  (:export #:datum #:output #:phi #:rtype))
+  (:export #:datum #:output #:phi #:variable)
+  (:export #:rtype))

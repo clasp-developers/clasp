@@ -128,36 +128,88 @@
 ;;; * :double-float, meaning an unboxed double float
 ;;; So e.g. (:object :object) means a pair of T_O*.
 
-;; Given an instruction, determine what rtype it outputs.
+;;; TODO: While (re)writing this I've realized that cast placement here is not
+;;; really optimal. It might have to be more sophisticated, e.g. moving it out
+;;; of loops and stuff.
+
+;;; This is bound by definition-rtype on variables and phis, and use-rtype on
+;;; variables. (Not on phis, since phis are once use and that's not itself.)
+;;; Because variables and phis can input from themselves and/or output to
+;;; themselves, without a recursion check determination is indefinitely
+;;; recursive. Instead, we can treat a recursive definition/use as rtype (),
+;;; nothing, since it doesn't mandate anything as an actual def/use would.
+;;; This can also happen indirectly (like (setq a b) (setq b a)).
+(defvar *chasing-rtypes-of* nil)
+
+;; Given a datum, determine the rtype given by its writer(s).
 (defgeneric definition-rtype (instruction))
-;; usually correct default
-(defmethod definition-rtype ((inst bir:instruction)) '(:object))
-(defmethod definition-rtype ((inst bir:abstract-call)) :multiple-values)
-(defmethod definition-rtype ((inst bir:values-save))
-  (let ((input (bir:input inst)))
-    (maybe-assign-rtype input)
-    (cc-bmir:rtype input)))
-(defmethod definition-rtype ((inst bir:values-collect))
+;; Given an instruction (writer) and a datum, determine the rtype output.
+(defgeneric %definition-rtype (instruction datum))
+(defmethod %definition-rtype ((inst bir:instruction) (datum bir:datum))
+  ;; usually correct default
+  '(:object))
+(defmethod %definition-rtype ((inst bir:abstract-call) (datum bir:datum))
+  :multiple-values)
+(defmethod %definition-rtype ((inst bir:values-save) (datum bir:datum))
+  (definition-rtype (bir:input inst)))
+(defmethod %definition-rtype ((inst bir:values-collect) (datum bir:datum))
   (if (= (length (bir:inputs inst)) 1)
-      (let ((input (first (bir:inputs inst))))
-        (maybe-assign-rtype input)
-        (cc-bmir:rtype input))
+      (definition-rtype (first (bir:inputs inst)))
       :multiple-values))
-(defmethod definition-rtype ((inst cc-bir:mv-foreign-call)) :multiple-values)
-(defmethod definition-rtype ((inst bir:thei))
+(defmethod %definition-rtype ((inst cc-bir:mv-foreign-call) (datum bir:datum))
+  :multiple-values)
+(defmethod %definition-rtype ((inst bir:thei) (datum bir:datum))
   ;; THEI really throws a wrench in some stuff.
-  (let ((input (first (bir:inputs inst))))
-    (maybe-assign-rtype input)
-    (cc-bmir:rtype input)))
-(defmethod definition-rtype ((inst bir:fixed-to-multiple))
+  (definition-rtype (bir:input inst)))
+(defmethod %definition-rtype ((inst bir:fixed-to-multiple) (datum bir:datum))
   ;; pass through without alteration
   (loop for inp in (bir:inputs inst)
-        for rt = (progn (maybe-assign-rtype inp) (cc-bmir:rtype inp))
+        for rt = (definition-rtype inp)
         collect (cond ((eq rt :multiple-values) :object)
                       ((null rt) :object)
                       (t (first rt)))))
-(defmethod definition-rtype ((inst bir:vprimop))
+(defmethod %definition-rtype ((inst bir:vprimop) (datum bir:datum))
   (list (first (cc-bir:primop-rtype-info (bir:info inst)))))
+(defmethod %definition-rtype ((inst bir:writevar) (datum bir:datum))
+  (definition-rtype (bir:input inst)))
+(defmethod %definition-rtype ((inst bir:readvar) (datum bir:datum))
+  (definition-rtype (bir:input inst)))
+
+(defmethod definition-rtype ((datum bir:output))
+  (%definition-rtype (bir:definition datum) datum))
+(defmethod definition-rtype ((datum bir:argument)) '(:object))
+
+(defmethod definition-rtype ((phi bir:phi))
+  (when (member phi *chasing-rtypes-of* :test #'eq)
+    (return-from definition-rtype ()))
+  (let ((*chasing-rtypes-of* (cons phi *chasing-rtypes-of*))
+        (rt nil))
+    (cleavir-set:doset (def (bir:definitions phi) rt)
+      (etypecase def
+        ((or bir:jump bir:unwind)
+         (let* ((in (nth (position phi (bir:outputs def)) (bir:inputs def)))
+                (inrt (definition-rtype in)))
+           (cond ((eq inrt :multiple-values) (return inrt)) ; nothing for it
+                 ((null rt) (setf rt inrt))
+                 ((= (length rt) (length inrt))
+                  (setf rt (mapcar #'max-vrtype rt inrt)))
+                 ;; different value counts
+                 (t (return :multiple-values)))))))))
+
+(defmethod definition-rtype ((var bir:variable))
+  ;; See the use-rtype for variables below for logic
+  ;; FIXME: We recompute this kind of a lot, I think, due to multiple readers.
+  (when (member var *chasing-rtypes-of* :test #'eq)
+    (return-from definition-rtype ()))
+  (let ((*chasing-rtypes-of* (cons var *chasing-rtypes-of*))
+        (rt nil))
+    (cleavir-set:doset (writer (bir:writers var) rt)
+      (let* ((next-rt (%definition-rtype writer var))
+             (real-next-rt
+               (cond ((null next-rt) (if (null rt) nil '(:object)))
+                     ((eq next-rt :multiple-values) '(:object))
+                     (t (list (first next-rt))))))
+        (setf rt (if (null rt) real-next-rt (min-rtype real-next-rt rt)))))))
 
 ;;; Given a datum, determine what rtype its use requires.
 (defgeneric use-rtype (datum))
@@ -219,6 +271,21 @@
 (defmethod use-rtype ((datum bir:output)) (transitive-rtype datum))
 (defmethod use-rtype ((datum bir:argument)) (transitive-rtype datum))
 
+(defmethod use-rtype ((datum bir:variable))
+  ;; Take the minimum of all uses, except we only get () if every reader has
+  ;; it, and otherwise always return a single value type.
+  (when (member datum *chasing-rtypes-of* :test #'eq)
+    (return-from use-rtype ()))
+  (let ((*chasing-rtypes-of* (cons datum *chasing-rtypes-of*))
+        (rt nil))
+    (cleavir-set:doset (reader (bir:readers datum) rt)
+      (let* ((next-rt (use-rtype (bir:output reader)))
+             (real-next-rt
+               (cond ((null next-rt) (if (null rt) nil '(:object)))
+                     ((eq next-rt :multiple-values) '(:object))
+                     (t (list (first next-rt))))))
+        (setf rt (if (null rt) real-next-rt (min-rtype real-next-rt rt)))))))
+
 ;;; Given two value rtypes, return the most preferable.
 ;;; More sophisticated representation selection may be required in the future.
 (defun min-vrtype (vrt1 vrt2)
@@ -246,7 +313,7 @@
         (t (error "Bad rtype: ~a" rt1))))
 
 (defun assign-output-rtype (datum)
-  (let* ((source (definition-rtype (bir:definition datum)))
+  (let* ((source (definition-rtype datum))
          (dest (use-rtype datum))
          (rtype (min-rtype source dest)))
     (change-class datum 'cc-bmir:output :rtype rtype)
@@ -256,33 +323,31 @@
   ;; PHIs are trickier. If the destination is single-value, the phi can be too.
   ;; If not, then the phi could still be single-value, but only if EVERY
   ;; definition is, and otherwise we need to use multiple values.
-  (let ((rt :any) (dest (use-rtype datum)))
+  (let ((dest (use-rtype datum)))
     (if (eq dest :multiple-values)
-        ;; If the phi definitions are all non-mv and agree on a number of
-        ;; values, that works.
-        (cleavir-set:doset (def (bir:definitions datum) rt)
-          (etypecase def
-            ((or bir:jump bir:unwind)
-             (let ((in (nth (position datum (bir:outputs def))
-                            (bir:inputs def))))
-               (maybe-assign-rtype in)
-               (let ((irt (cc-bmir:rtype in)))
-                 (cond ((eq irt :multiple-values) (return irt)) ; nothing for it
-                       ((eq rt :any) (setf rt irt))
-                       ((= (length rt) (length irt))
-                        (setf rt (mapcar #'max-vrtype rt irt)))
-                       ;; different value counts
-                       (t (return :multiple-values))))))))
-        ;; Destination only needs some fixed thing - do that
+        (definition-rtype datum)
         dest)))
 
 (defun assign-phi-rtype (datum)
   (change-class datum 'cc-bmir:phi :rtype (phi-rtype datum)))
 
+(defun variable-rtype (datum)
+  ;; Just take the minimum of the writers and readers.
+  (min-rtype (definition-rtype datum) (use-rtype datum)))
+
+(defun assign-variable-rtype (datum)
+  ;; At the moment we can only have unboxed local variables.
+  ;; TODO: Extend to unboxed DX variables. Indefinite would be harder, since
+  ;; closure vectors are full of boxed data.
+  (change-class datum 'cc-bmir:variable
+                :rtype (if (eq (bir:extent datum) :local)
+                           (variable-rtype datum)
+                           '(:object))))
+
 (defgeneric maybe-assign-rtype (datum))
 (defmethod maybe-assign-rtype ((datum cc-bmir:output)))
 (defmethod maybe-assign-rtype ((datum cc-bmir:phi)))
-(defmethod maybe-assign-rtype ((datum bir:variable)))
+(defmethod maybe-assign-rtype ((datum cc-bmir:variable)))
 (defmethod maybe-assign-rtype ((datum bir:argument)))
 (defmethod maybe-assign-rtype ((datum bir:load-time-value)))
 (defmethod maybe-assign-rtype ((datum bir:constant)))
@@ -290,6 +355,8 @@
   (assign-output-rtype datum))
 (defmethod maybe-assign-rtype ((datum bir:phi))
   (assign-phi-rtype datum))
+(defmethod maybe-assign-rtype ((datum bir:variable))
+  (assign-variable-rtype datum))
 
 (defun assign-instruction-rtypes (inst)
   (mapc #'maybe-assign-rtype (bir:outputs inst)))
@@ -438,6 +505,10 @@
           do (maybe-cast-before inst input (list art)))
     (unless (null (bir:outputs inst))
       (cast-output inst (list ret)))))
+(defmethod insert-casts ((inst bir:writevar))
+  (cast-inputs inst (cc-bmir:rtype (bir:output inst))))
+(defmethod insert-casts ((inst bir:readvar))
+  (cast-output inst (cc-bmir:rtype (bir:input inst))))
 
 (defun insert-casts-into-function (function)
   (cleavir-bir:map-local-instructions #'insert-casts function))
