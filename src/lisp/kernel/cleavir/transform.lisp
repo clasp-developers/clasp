@@ -281,10 +281,38 @@
     (setf (bir:inputs thei) (list datum))
     thei))
 
+(defun replace-with-primop-and-wrap (inst primop ctype)
+  (wrap-in-thei inst (cleavir-ctype:single-value ctype *clasp-system*))
+  (replace-call-with-primop inst primop)
+  t)
+
+(defun wrap-coerce-sf-to-df (inst datum)
+  (let* ((df (cleavir-ctype:single-value
+              (cleavir-ctype:range 'double-float '* '* *clasp-system*)
+              *clasp-system*))
+         (new (make-instance 'bir:output
+                :derived-type df))
+         (coerce (make-instance 'bir:vprimop
+                   :origin (bir:origin inst) :policy (bir:policy inst)
+                   :info (cleavir-primop-info:info 'core::single-to-double)
+                   :outputs (list new))))
+    (bir:insert-instruction-before coerce inst)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs coerce) (list datum)))
+  (values))
+
 (defun arg-subtypep (arg ctype)
   (cleavir-ctype:subtypep (cleavir-ctype:primary (bir:ctype arg)
                                                  *clasp-system*)
                           ctype *clasp-system*))
+
+;; warning: multiply evaluates args
+(defmacro subtypepcase (args &rest clauses)
+  `(cond ,@(loop for (types . body) in clauses
+                 collect `((and ,@(loop for arg in args
+                                        for type in types
+                                        collect `(arg-subtypep ,arg ,type)))
+                           ,@body))))
 
 (macrolet ((define-two-arg-sf (name sf-primop df-primop)
              `(define-bir-transform ,name (call)
@@ -293,20 +321,16 @@
                            'single-float '* '* *clasp-system*))
                       (df (cleavir-ctype:range
                            'double-float '* '* *clasp-system*)))
-                  (cond ((and (arg-subtypep (first arguments) sf)
-                              (arg-subtypep (second arguments) sf))
-                         (wrap-in-thei
-                          call
-                          (cleavir-ctype:single-value sf *clasp-system*))
-                         (replace-call-with-primop call ',sf-primop)
-                         t)
-                        ((and (arg-subtypep (first arguments) df)
-                              (arg-subtypep (second arguments) df))
-                         (wrap-in-thei
-                          call
-                          (cleavir-ctype:single-value df *clasp-system*))
-                         (replace-call-with-primop call ',df-primop))
-                        (t nil))))))
+                  (subtypepcase
+                   ((first arguments) (second arguments))
+                   ((sf sf) (replace-with-primop-and-wrap call ',sf-primop sf))
+                   ((df df) (replace-with-primop-and-wrap call ',df-primop df))
+                   ((sf df)
+                    (wrap-coerce-sf-to-df call (first arguments))
+                    (replace-with-primop-and-wrap call ',df-primop df))
+                   ((df sf)
+                    (wrap-coerce-sf-to-df call (second arguments))
+                    (replace-with-primop-and-wrap call ',df-primop df)))))))
   (define-two-arg-sf core:two-arg-+ core::two-arg-sf-+ core::two-arg-df-+)
   (define-two-arg-sf core:two-arg-- core::two-arg-sf-- core::two-arg-df--)
   (define-two-arg-sf core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
@@ -319,19 +343,11 @@
                            'single-float '* '* *clasp-system*))
                       (df (cleavir-ctype:range
                            'double-float '* '* *clasp-system*)))
-                  (cond ((arg-subtypep (first arguments) sf)
-                         (wrap-in-thei
-                          call
-                          (cleavir-ctype:single-value sf *clasp-system*))
-                         (replace-call-with-primop call ',sf-primop)
-                         t)
-                        ((arg-subtypep (first arguments) df)
-                         (wrap-in-thei
-                          call
-                          (cleavir-ctype:single-value df *clasp-system*))
-                         (replace-call-with-primop call ',df-primop)
-                         t)
-                        (t nil))))))
+                  (subtypepcase
+                   ((first arguments))
+                   ((sf) (replace-with-primop-and-wrap call ',sf-primop sf))
+                   ((df)
+                    (replace-with-primop-and-wrap call ',df-primop df)))))))
   (define-one-arg-sf cos core::sf-cos core::df-cos)
   (define-one-arg-sf sin core::sf-sin core::df-sin)
   (define-one-arg-sf abs core::sf-abs core::df-abs)

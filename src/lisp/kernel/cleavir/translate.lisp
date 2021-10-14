@@ -978,6 +978,12 @@
 (define-unary-primop core::df-sqrt "llvm.sqrt.f64" cmp:%double%)
 (define-unary-primop core::df-exp "llvm.exp.f64" cmp:%double%)
 
+(defmethod translate-primop ((name (eql 'core::single-to-double)) inst)
+  (assert (= 1 (length (bir:inputs inst))))
+  (let ((arg (in (first (bir:inputs inst)))))
+    (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%float%))
+    (out (%fpext arg cmp:%double%) (first (bir:outputs inst)))))
+
 (defmethod translate-primop ((name cons) inst) ; FIXME
   (cond ((equal name '(setf symbol-value))
          (%intrinsic-invoke-if-landing-pad-or-call

@@ -378,7 +378,9 @@
       (def-df-binops core::two-arg-df-+ core::two-arg-df--
         core::two-arg-df-* core::two-arg-df-/)
       (def-df-unops core::df-cos core::df-sin core::df-abs core::df-sqrt
-        core::df-exp))))
+        core::df-exp)))
+
+  (defprimop core::single-to-double 1 :value :double-float :single-float))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn
