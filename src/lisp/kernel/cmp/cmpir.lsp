@@ -493,6 +493,12 @@ representing a tagged fixnum."
     +single-float-tag+ "")
    %t*% label))
 
+;;; FIXME: Inline this - it's just a memory load, unlike boxing
+(defun irc-unbox-double-float (t* &optional (label "double-float"))
+  (irc-intrinsic-call "from_object_double" (list t*) label))
+(defun irc-box-double-float (double &optional (label "double-float"))
+  (irc-intrinsic-call "to_object_double" (list double) label))
+
 (defun irc-maybe-cast-integer-to-t* (val &optional (label "fixnum-to-t*"))
   "If it's a fixnum then cast it - otherwise just return it - it should already be a t*"
   (if (typep val '(integer #.(- (expt 2 63)) #.(1- (expt 2 63))))

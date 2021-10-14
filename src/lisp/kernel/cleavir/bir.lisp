@@ -351,21 +351,34 @@
   (defprimop core:vaslist-pop 1 :value)
   (defprimop core:vaslist-length 1 :value)
 
-  (macrolet ((def-sf-binop (name)
-               `(defprimop ,name 2 :value
-                  :single-float :single-float :single-float))
-             (def-sf-binops (&rest names)
-               `(progn
-                  ,@(loop for name in names collect `(def-sf-binop ,name))))
-             (def-sf-unop (name)
-               `(defprimop ,name 1 :value :single-float :single-float))
-             (def-sf-unops (&rest names)
-               `(progn
-                  ,@(loop for name in names collect `(def-sf-unop ,name)))))
-    (def-sf-binops core::two-arg-sf-+ core::two-arg-sf--
-      core::two-arg-sf-* core::two-arg-sf-/)
-    (def-sf-unops core::sf-cos core::sf-sin core::sf-abs core::sf-sqrt
-      core::sf-exp)))
+  (macrolet ((def-binop (name rtype)
+               `(defprimop ,name 2 :value ,rtype ,rtype ,rtype))
+             (def-unop (name rtype)
+               `(defprimop ,name 1 :value ,rtype ,rtype)))
+    (macrolet ((def-sf-binop (name) `(def-binop ,name :single-float))
+               (def-sf-binops (&rest names)
+                 `(progn
+                    ,@(loop for name in names collect `(def-sf-binop ,name))))
+               (def-sf-unop (name) `(def-unop ,name :single-float))
+               (def-sf-unops (&rest names)
+                 `(progn
+                    ,@(loop for name in names collect `(def-sf-unop ,name)))))
+      (def-sf-binops core::two-arg-sf-+ core::two-arg-sf--
+        core::two-arg-sf-* core::two-arg-sf-/)
+      (def-sf-unops core::sf-cos core::sf-sin core::sf-abs core::sf-sqrt
+        core::sf-exp))
+    (macrolet ((def-df-binop (name) `(def-binop ,name :double-float))
+               (def-df-binops (&rest names)
+                 `(progn
+                    ,@(loop for name in names collect `(def-df-binop ,name))))
+               (def-df-unop (name) `(def-unop ,name :double-float))
+               (def-df-unops (&rest names)
+                 `(progn
+                    ,@(loop for name in names collect `(def-df-unop ,name)))))
+      (def-df-binops core::two-arg-df-+ core::two-arg-df--
+        core::two-arg-df-* core::two-arg-df-/)
+      (def-df-unops core::df-cos core::df-sin core::df-abs core::df-sqrt
+        core::df-exp))))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn

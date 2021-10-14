@@ -122,9 +122,11 @@
 ;;; An rtype describes how a value or values is represented in the runtime.
 ;;; An rtype is either :multiple-values, meaning several T_O*s stored in the
 ;;; thread local multiple values vector, or a list of value rtypes. A value
-;;; rtype can be either :object, meaning T_O*, or :single-float, meaning an
-;;; unboxed single float. So e.g. (:object :object) means a
-;;; pair of T_O*.
+;;; rtype can be either
+;;; * :object, meaning T_O*
+;;; * :single-float, meaning an unboxed single float
+;;; * :double-float, meaning an unboxed double float
+;;; So e.g. (:object :object) means a pair of T_O*.
 
 ;; Given an instruction, determine what rtype it outputs.
 (defgeneric definition-rtype (instruction))
@@ -220,14 +222,16 @@
 ;;; Given two value rtypes, return the most preferable.
 ;;; More sophisticated representation selection may be required in the future.
 (defun min-vrtype (vrt1 vrt2)
-  (if (or (eql vrt1 :single-float) (eql vrt2 :single-float))
-      :single-float
-      :object))
+  (ecase vrt1
+    ((:single-float) (ecase vrt2 ((:single-float :object) vrt1)))
+    ((:double-float) (ecase vrt2 ((:double-float :object) vrt1)))
+    ((:object) (ecase vrt2 ((:single-float :double-float :object) vrt2)))))
 
 (defun max-vrtype (vrt1 vrt2)
-  (if (and (eql vrt1 :single-float) (eql vrt2 :single-float))
-      :single-float
-      :object))
+  (ecase vrt1
+    ((:single-float) (ecase vrt2 ((:single-float :object) vrt2)))
+    ((:double-float) (ecase vrt2 ((:double-float :object) vrt2)))
+    ((:object) (ecase vrt2 ((:single-float :double-float :object) vrt1)))))
 
 ;;; Given two rtypes, return the most preferable rtype.
 (defun min-rtype (rt1 rt2)

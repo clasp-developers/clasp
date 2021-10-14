@@ -286,40 +286,54 @@
                                                  *clasp-system*)
                           ctype *clasp-system*))
 
-(macrolet ((define-two-arg-sf (name primop)
+(macrolet ((define-two-arg-sf (name sf-primop df-primop)
              `(define-bir-transform ,name (call)
                 (let ((arguments (rest (bir:inputs call)))
                       (sf (cleavir-ctype:range
-                           'single-float '* '* *clasp-system*)))
-                  (if (and (arg-subtypep (first arguments) sf)
-                           (arg-subtypep (second arguments) sf))
-                      (progn
-                        (wrap-in-thei
-                         call
-                         (cleavir-ctype:single-value sf *clasp-system*))
-                        (replace-call-with-primop call ',primop)
-                        t)
-                      nil)))))
-  (define-two-arg-sf core:two-arg-+ core::two-arg-sf-+)
-  (define-two-arg-sf core:two-arg-- core::two-arg-sf--)
-  (define-two-arg-sf core:two-arg-* core::two-arg-sf-*)
-  (define-two-arg-sf core:two-arg-/ core::two-arg-sf-/))
+                           'single-float '* '* *clasp-system*))
+                      (df (cleavir-ctype:range
+                           'double-float '* '* *clasp-system*)))
+                  (cond ((and (arg-subtypep (first arguments) sf)
+                              (arg-subtypep (second arguments) sf))
+                         (wrap-in-thei
+                          call
+                          (cleavir-ctype:single-value sf *clasp-system*))
+                         (replace-call-with-primop call ',sf-primop)
+                         t)
+                        ((and (arg-subtypep (first arguments) df)
+                              (arg-subtypep (second arguments) df))
+                         (wrap-in-thei
+                          call
+                          (cleavir-ctype:single-value df *clasp-system*))
+                         (replace-call-with-primop call ',df-primop))
+                        (t nil))))))
+  (define-two-arg-sf core:two-arg-+ core::two-arg-sf-+ core::two-arg-df-+)
+  (define-two-arg-sf core:two-arg-- core::two-arg-sf-- core::two-arg-df--)
+  (define-two-arg-sf core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
+  (define-two-arg-sf core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/))
 
-(macrolet ((define-one-arg-sf (name primop)
+(macrolet ((define-one-arg-sf (name sf-primop df-primop)
              `(define-bir-transform ,name (call)
                 (let ((arguments (rest (bir:inputs call)))
                       (sf (cleavir-ctype:range
-                           'single-float '* '* *clasp-system*)))
-                  (if (arg-subtypep (first arguments) sf)
-                      (progn
-                        (wrap-in-thei
-                         call
-                         (cleavir-ctype:single-value sf *clasp-system*))
-                        (replace-call-with-primop call ',primop)
-                        t)
-                      nil)))))
-  (define-one-arg-sf cos core::sf-cos)
-  (define-one-arg-sf sin core::sf-sin)
-  (define-one-arg-sf abs core::sf-abs)
-  (define-one-arg-sf sqrt core::sf-sqrt)
-  (define-one-arg-sf exp core::sf-exp))
+                           'single-float '* '* *clasp-system*))
+                      (df (cleavir-ctype:range
+                           'double-float '* '* *clasp-system*)))
+                  (cond ((arg-subtypep (first arguments) sf)
+                         (wrap-in-thei
+                          call
+                          (cleavir-ctype:single-value sf *clasp-system*))
+                         (replace-call-with-primop call ',sf-primop)
+                         t)
+                        ((arg-subtypep (first arguments) df)
+                         (wrap-in-thei
+                          call
+                          (cleavir-ctype:single-value df *clasp-system*))
+                         (replace-call-with-primop call ',df-primop)
+                         t)
+                        (t nil))))))
+  (define-one-arg-sf cos core::sf-cos core::df-cos)
+  (define-one-arg-sf sin core::sf-sin core::df-sin)
+  (define-one-arg-sf abs core::sf-abs core::df-abs)
+  (define-one-arg-sf sqrt core::sf-sqrt core::df-sqrt)
+  (define-one-arg-sf exp core::sf-exp core::df-exp))
