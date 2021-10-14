@@ -949,6 +949,20 @@
   (def-translate-two-arg-sf core::two-arg-sf-* %fmul)
   (def-translate-two-arg-sf core::two-arg-sf-/ %fdiv))
 
+(macrolet ((def-translate-one-arg-sf (name intrinsic)
+             `(defmethod translate-primop ((name (eql ',name)) inst)
+                (assert (= 1 (length (bir:inputs inst))))
+                (let ((arg (in (first (bir:inputs inst)))))
+                  (assert (llvm-sys:type-equal (llvm-sys:get-type arg)
+                                               cmp:%float%))
+                  (out (%intrinsic-call ',intrinsic (list arg))
+                       (first (bir:outputs inst)))))))
+  (def-translate-one-arg-sf core::sf-cos "llvm.cos.f32")
+  (def-translate-one-arg-sf core::sf-sin "llvm.sin.f32")
+  (def-translate-one-arg-sf core::sf-abs "llvm.fabs.f32")
+  (def-translate-one-arg-sf core::sf-sqrt "llvm.sqrt.f32")
+  (def-translate-one-arg-sf core::sf-exp "llvm.exp.f32"))
+
 (defmethod translate-primop ((name cons) inst) ; FIXME
   (cond ((equal name '(setf symbol-value))
          (%intrinsic-invoke-if-landing-pad-or-call

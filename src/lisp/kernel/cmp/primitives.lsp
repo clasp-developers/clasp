@@ -206,7 +206,13 @@
          (primitive         "llvm.sadd.with.overflow.i64" %{i64.i1}% (list %i64% %i64%))
          (primitive         "llvm.ssub.with.overflow.i32" %{i32.i1}% (list %i32% %i32%))
          (primitive         "llvm.ssub.with.overflow.i64" %{i64.i1}% (list %i64% %i64%))
-
+         ;; NOTE: FP primitives may signal a floating point exception but this
+         ;; is not the same as raising an exception. I think. FIXME: Check.
+         (primitive         "llvm.cos.f32" %float% (list %float%))
+         (primitive         "llvm.sin.f32" %float% (list %float%))
+         (primitive         "llvm.fabs.f32" %float% (list %float%))
+         (primitive         "llvm.sqrt.f32" %float% (list %float%))
+         (primitive         "llvm.exp.f32" %float% (list %float%))
          (primitive         "llvm.experimental.stackmap" %void% (list %i64% %i32%) :varargs t)
          (primitive         "llvm.va_copy" %void% (list %i8*% %i8*%))
          (primitive         "llvm.va_start" %void% (list %i8*%))

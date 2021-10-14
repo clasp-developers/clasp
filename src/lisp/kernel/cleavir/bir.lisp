@@ -364,8 +364,8 @@
                   ,@(loop for name in names collect `(def-sf-unop ,name)))))
     (def-sf-binops core::two-arg-sf-+ core::two-arg-sf--
       core::two-arg-sf-* core::two-arg-sf-/)
-    #+(or)
-    (def-sf-unops core::sf-cos core::sf-sin core::sf-abs core::sf-sqrt)))
+    (def-sf-unops core::sf-cos core::sf-sin core::sf-abs core::sf-sqrt
+      core::sf-exp)))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn

@@ -296,7 +296,7 @@
                       (progn
                         (wrap-in-thei
                          call
-                         (cleavir-ctype:coerce-to-values sf *clasp-system*))
+                         (cleavir-ctype:single-value sf *clasp-system*))
                         (replace-call-with-primop call ',primop)
                         t)
                       nil)))))
@@ -304,3 +304,22 @@
   (define-two-arg-sf core:two-arg-- core::two-arg-sf--)
   (define-two-arg-sf core:two-arg-* core::two-arg-sf-*)
   (define-two-arg-sf core:two-arg-/ core::two-arg-sf-/))
+
+(macrolet ((define-one-arg-sf (name primop)
+             `(define-bir-transform ,name (call)
+                (let ((arguments (rest (bir:inputs call)))
+                      (sf (cleavir-ctype:range
+                           'single-float '* '* *clasp-system*)))
+                  (if (arg-subtypep (first arguments) sf)
+                      (progn
+                        (wrap-in-thei
+                         call
+                         (cleavir-ctype:single-value sf *clasp-system*))
+                        (replace-call-with-primop call ',primop)
+                        t)
+                      nil)))))
+  (define-one-arg-sf cos core::sf-cos)
+  (define-one-arg-sf sin core::sf-sin)
+  (define-one-arg-sf abs core::sf-abs)
+  (define-one-arg-sf sqrt core::sf-sqrt)
+  (define-one-arg-sf exp core::sf-exp))
