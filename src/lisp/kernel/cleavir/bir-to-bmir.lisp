@@ -410,8 +410,8 @@
 (defmethod insert-casts ((inst bir:vprimop))
   ;; KLUDGE
   (if (eql (cleavir-primop-info:name (bir:info inst)) 'core::two-arg-sf-+)
-      (progn (cast-inputs inst :single-float)
-             (cast-output inst :single-float))
+      (progn (cast-inputs inst '(:single-float))
+             (cast-output inst '(:single-float)))
       (call-next-method)))
 
 (defun insert-casts-into-function (function)
