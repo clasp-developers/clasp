@@ -148,7 +148,12 @@
     (maybe-assign-rtype input)
     (cc-bmir:rtype input)))
 (defmethod definition-rtype ((inst bir:fixed-to-multiple))
-  (make-list (length (bir:inputs inst)) :initial-element :object))
+  ;; pass through without alteration
+  (loop for inp in (bir:inputs inst)
+        for rt = (progn (maybe-assign-rtype inp) (cc-bmir:rtype inp))
+        collect (cond ((eq rt :multiple-values) :object)
+                      ((null rt) :object)
+                      (t (first rt)))))
 (defmethod definition-rtype ((inst bir:vprimop))
   (list (first (cc-bir:primop-rtype-info (bir:info inst)))))
 
@@ -186,6 +191,18 @@
   (if (symbolp (bir:type-check-function inst))
       (use-rtype (first (bir:outputs inst)))
       :multiple-values))
+(defmethod %use-rtype ((inst bir:fixed-to-multiple) (datum bir:datum))
+  ;; Use the destination rtype
+  (let ((ort (use-rtype (bir:output inst))))
+    (cond ((eq ort :multiple-values) '(:object))
+          ((null ort) '())
+          (t (let ((pos (position datum (bir:inputs inst))))
+               (assert pos)
+               (let ((rt (nth pos ort)))
+                 (if rt
+                     (list rt)
+                     ;; out of range of ort: unused
+                     nil)))))))
              
 ;; Determine the rtype a datum needs to end up as by chasing transitive use.
 (defun transitive-rtype (datum)
@@ -334,9 +351,14 @@
   (unless (null (bir:outputs instruction)) (object-output instruction)))
 
 (defmethod insert-casts ((instruction bir:fixed-to-multiple))
-  (object-inputs instruction)
-  (cast-output instruction (make-list (length (bir:inputs instruction))
-                                      :initial-element :object)))
+  ;; recapitulates definition-rtype, but makes sure the inputs have been
+  ;; reduced from :multiple-values.
+  (let ((ortype (loop for inp in (bir:inputs instruction)
+                      for rt = (cc-bmir:rtype inp)
+                      do (assert (listp rt))
+                      collect (if (null rt) :object (first rt)))))
+    (cast-output instruction ortype)))
+
 ;;; Make sure we don't insert things infinitely
 (defmethod insert-casts ((instruction cc-bmir:cast)))
 ;;; Doesn't need to do anything, and might not have all :object inputs
