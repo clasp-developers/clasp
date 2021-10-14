@@ -334,7 +334,8 @@
   (define-two-arg-sf core:two-arg-+ core::two-arg-sf-+ core::two-arg-df-+)
   (define-two-arg-sf core:two-arg-- core::two-arg-sf-- core::two-arg-df--)
   (define-two-arg-sf core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
-  (define-two-arg-sf core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/))
+  (define-two-arg-sf core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/)
+  (define-two-arg-sf expt core::sf-expt core::df-expt))
 
 (macrolet ((define-one-arg-sf (name sf-primop df-primop)
              `(define-bir-transform ,name (call)

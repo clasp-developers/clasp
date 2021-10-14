@@ -364,7 +364,7 @@
                  `(progn
                     ,@(loop for name in names collect `(def-sf-unop ,name)))))
       (def-sf-binops core::two-arg-sf-+ core::two-arg-sf--
-        core::two-arg-sf-* core::two-arg-sf-/)
+        core::two-arg-sf-* core::two-arg-sf-/ core::sf-expt)
       (def-sf-unops core::sf-cos core::sf-sin core::sf-abs core::sf-sqrt
         core::sf-exp core::sf-negate))
     (macrolet ((def-df-binop (name) `(def-binop ,name :double-float))
@@ -376,7 +376,7 @@
                  `(progn
                     ,@(loop for name in names collect `(def-df-unop ,name)))))
       (def-df-binops core::two-arg-df-+ core::two-arg-df--
-        core::two-arg-df-* core::two-arg-df-/)
+        core::two-arg-df-* core::two-arg-df-/ core::df-expt)
       (def-df-unops core::df-cos core::df-sin core::df-abs core::df-sqrt
         core::df-exp core::df-negate)))
 
