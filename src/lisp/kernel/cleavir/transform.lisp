@@ -357,3 +357,18 @@
   ;; there's probably some weird floating point reason to explain why
   ;; llvm has an fneg instruction but not a reciprocal, but i don't know it.
   (define-one-arg-sf core:negate core::sf-negate core::df-negate))
+
+;;; Transform log, but only one-argument log (which can be derived from the
+;;; two argument case by the compiler macro in opt-number.lsp)
+(define-bir-transform log (call)
+  (let ((arguments (rest (bir:inputs call)))
+        (sf (cleavir-ctype:range
+             'single-float '* '* *clasp-system*))
+        (df (cleavir-ctype:range
+             'double-float '* '* *clasp-system*)))
+    (if (= (length arguments) 1)
+        (subtypepcase
+         ((first arguments))
+         ((sf) (replace-with-primop-and-wrap call 'core::sf-log sf))
+         ((df) (replace-with-primop-and-wrap call 'core::df-log df)))
+        nil)))

@@ -70,6 +70,13 @@
 (define-compiler-macro 1- (x)
   `(core:two-arg-- ,x 1))
 
+;;; TODO: With integers it might be easier to do log base 2; rewriting as such
+;;; would need a more sophisticated transformation.
+(define-compiler-macro log (&whole form number &optional (base nil base-p))
+  (if base-p
+      `(/ (log ,number) (log ,base))
+      form))
+
 ;;; log* operations
 (define-compiler-macro logand (&rest numbers)
   (core:expand-associative 'logand 'core:logand-2op numbers -1))
