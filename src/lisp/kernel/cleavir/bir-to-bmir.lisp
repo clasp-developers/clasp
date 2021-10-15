@@ -502,6 +502,34 @@
 (defmethod insert-casts ((inst bir:readvar))
   (cast-output inst (cc-bmir:rtype (bir:input inst))))
 
+;;; Unbox constants if possible.
+;;; Note that constant-reference is still understood to output an :object
+;;; above; this is because, if a constant is actually used as an object
+;;; (passed to a general function, etc.) we don't want to box it every time.
+
+(defun constant-unboxable-p (value rt)
+  (ecase rt
+    ((nil :object) nil) ; not sure nil is actually possible, but hey
+    ((:single-float) (typep value 'single-float))
+    ((:double-float) (typep value 'double-float))))
+(defun unbox-constant-reference (inst value)
+  (let ((constant (bir:input inst)))
+    (change-class inst 'cc-bmir:unboxed-constant-reference
+                  :inputs ()
+                  :value value)
+    ;; BUG? in cleavir - it won't delete the constant from the change-class,
+    ;; even though it makes the constant unreferenced. As a KLUDGE we do it
+    ;; ourselves here.
+    (when (cleavir-set:empty-set-p (bir:readers constant))
+      (cleavir-set:nremovef (bir:constants (bir:module (bir:function inst)))
+                            constant))))
+(defmethod insert-casts ((inst bir:constant-reference))
+  (let ((value (bir:constant-value (bir:input inst)))
+        (rt (first (cc-bmir:rtype (bir:output inst)))))
+    (if (constant-unboxable-p value rt)
+        (unbox-constant-reference inst value)
+        (call-next-method))))
+
 (defun insert-casts-into-function (function)
   (cleavir-bir:map-local-instructions #'insert-casts function))
 

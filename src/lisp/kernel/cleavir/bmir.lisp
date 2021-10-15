@@ -24,11 +24,24 @@
 
 ;;;
 
+;;; This instruction represents a low-level representation change, such as a
+;;; NOP, putting into or removing from a multiple value structure, or box
+;;; related operations.
 (defclass cast (bir:one-input bir:one-output bir:instruction) ())
 
 (defmethod bir::disassemble-instruction-extra append ((inst cast))
   (list (cc-bmir:rtype (bir:input inst))
         (cc-bmir:rtype (bir:output inst))))
+
+;;; This is a possible lowering of bir:constant-reference.
+;;; We use an instruction because for unboxed constants we don't need the
+;;; constant to be registered in the module or anything.
+(defclass unboxed-constant-reference (bir:no-input bir:one-output
+                                      bir:instruction)
+  ((%value :initarg :value :reader bir:constant-value)))
+(defmethod bir::disassemble-instruction-extra append
+    ((inst unboxed-constant-reference))
+  (list (bir:constant-value inst)))
 
 ;;;
 

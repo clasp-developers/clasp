@@ -1220,6 +1220,18 @@
              immediate-or-index))
        (first (bir:outputs inst))))
 
+(defmethod translate-simple-instruction
+    ((inst cc-bmir:unboxed-constant-reference) abi)
+  (declare (ignore abi))
+  (let ((val (bir:constant-value inst))
+        (out (bir:output inst)))
+    (out (ecase (first (cc-bmir:rtype out))
+           ((:single-float)
+            (llvm-sys:constant-fp-get-type-double cmp:%float% val))
+           ((:double-float)
+            (llvm-sys:constant-fp-get-type-double cmp:%double% val)))
+         out)))
+
 (defun initialize-iblock-translation (iblock)
   (let ((phis (bir:inputs iblock)))
     (unless (null phis)
