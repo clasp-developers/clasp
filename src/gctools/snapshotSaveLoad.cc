@@ -2187,8 +2187,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       abort();
     }
     ISLFileHeader* fileHeader = reinterpret_cast<ISLFileHeader*>(memory);
-    //    printf("%s:%d:%s  Read NextUnshiftedStamp from snapshot --> %lu    global_NextUnshiftedStamp --> %lu ... updating\n",
-           __FILE__, __LINE__, __FUNCTION__, fileHeader->_NextUnshiftedStamp, gctools::global_NextUnshiftedStamp.load() );
     gctools::global_NextUnshiftedStamp.store(fileHeader->_NextUnshiftedStamp);
     gctools::global_NextUnshiftedClbindStamp.store(fileHeader->_NextUnshiftedClbindStamp);
     char* objectFilesStartAddress = (char*)memory + fileHeader->_ObjectFileStart;
