@@ -236,9 +236,9 @@
   (list (nth (position datum (bir:inputs inst))
              (rest (cc-bir:primop-rtype-info (bir:info inst))))))
 (defmethod %use-rtype ((inst bir:unwind) (datum bir:datum))
-  (error "BUG: transitive-rtype should make this impossible!"))
+  (use-rtype (nth (position datum (bir:inputs inst)) (bir:outputs inst))))
 (defmethod %use-rtype ((inst bir:jump) (datum bir:datum))
-  (error "BUG: transitive-rtype should make this impossible!"))
+  (use-rtype (nth (position datum (bir:inputs inst)) (bir:outputs inst))))
 (defmethod %use-rtype ((inst bir:thei) (datum bir:datum))
   ;; actual type tests, which need multiple values, should have been turned
   ;; into mv calls by this point. but out of an abundance of caution,
@@ -258,18 +258,15 @@
                      ;; out of range of ort: unused
                      nil)))))))
              
-;; Determine the rtype a datum needs to end up as by chasing transitive use.
-(defun transitive-rtype (datum)
-  (loop (let ((use (bir:use datum)))
-          (etypecase use
-            (null (return '())) ; don't need any value at all
-            ((or bir:jump bir:unwind)
-             (setf datum (nth (position datum (bir:inputs use))
-                              (bir:outputs use))))
-            (bir:instruction (return (%use-rtype use datum)))))))
-(defmethod use-rtype ((datum bir:phi)) (transitive-rtype datum))
-(defmethod use-rtype ((datum bir:output)) (transitive-rtype datum))
-(defmethod use-rtype ((datum bir:argument)) (transitive-rtype datum))
+(defun basic-use-rtype (datum)
+  (let ((use (bir:use datum)))
+    (if (null use)
+        () ; don't need any value at all
+        (%use-rtype use datum))))
+
+(defmethod use-rtype ((datum bir:phi)) (basic-use-rtype datum))
+(defmethod use-rtype ((datum bir:output)) (basic-use-rtype datum))
+(defmethod use-rtype ((datum bir:argument)) (basic-use-rtype datum))
 
 (defmethod use-rtype ((datum bir:variable))
   ;; Take the minimum of all uses, except we only get () if every reader has
@@ -312,13 +309,6 @@
         ((eq rt1 :multiple-values) rt2)
         (t (error "Bad rtype: ~a" rt1))))
 
-(defun assign-output-rtype (datum)
-  (let* ((source (definition-rtype datum))
-         (dest (use-rtype datum))
-         (rtype (min-rtype source dest)))
-    (change-class datum 'cc-bmir:output :rtype rtype)
-    rtype))
-
 (defun phi-rtype (datum)
   ;; PHIs are trickier. If the destination is single-value, the phi can be too.
   ;; If not, then the phi could still be single-value, but only if EVERY
@@ -328,21 +318,9 @@
         (definition-rtype datum)
         dest)))
 
-(defun assign-phi-rtype (datum)
-  (change-class datum 'cc-bmir:phi :rtype (phi-rtype datum)))
-
 (defun variable-rtype (datum)
   ;; Just take the minimum of the writers and readers.
   (min-rtype (definition-rtype datum) (use-rtype datum)))
-
-(defun assign-variable-rtype (datum)
-  ;; At the moment we can only have unboxed local variables.
-  ;; TODO: Extend to unboxed DX variables. Indefinite would be harder, since
-  ;; closure vectors are full of boxed data.
-  (change-class datum 'cc-bmir:variable
-                :rtype (if (eq (bir:extent datum) :local)
-                           (variable-rtype datum)
-                           '(:object))))
 
 (defgeneric maybe-assign-rtype (datum))
 (defmethod maybe-assign-rtype ((datum cc-bmir:output)))
@@ -352,11 +330,21 @@
 (defmethod maybe-assign-rtype ((datum bir:load-time-value)))
 (defmethod maybe-assign-rtype ((datum bir:constant)))
 (defmethod maybe-assign-rtype ((datum bir:output))
-  (assign-output-rtype datum))
+  (let* ((source (definition-rtype datum))
+         (dest (use-rtype datum))
+         (rtype (min-rtype source dest)))
+    (change-class datum 'cc-bmir:output :rtype rtype)
+    rtype))
 (defmethod maybe-assign-rtype ((datum bir:phi))
-  (assign-phi-rtype datum))
+  (change-class datum 'cc-bmir:phi :rtype (phi-rtype datum)))
 (defmethod maybe-assign-rtype ((datum bir:variable))
-  (assign-variable-rtype datum))
+  ;; At the moment we can only have unboxed local variables.
+  ;; TODO: Extend to unboxed DX variables. Indefinite would be harder, since
+  ;; closure vectors are full of boxed data.
+  (change-class datum 'cc-bmir:variable
+                :rtype (if (eq (bir:extent datum) :local)
+                           (variable-rtype datum)
+                           '(:object))))
 
 (defun assign-instruction-rtypes (inst)
   (mapc #'maybe-assign-rtype (bir:outputs inst)))
