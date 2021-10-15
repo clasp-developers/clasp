@@ -480,12 +480,19 @@ representing a tagged fixnum."
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
-(defun irc-untag-single-float (t* &optional (label "single-float"))
+(defun irc-unbox-single-float (t* &optional (label "single-float"))
+  (irc-intrinsic-call "cc_unbox_single_float" (list t*) label)
+  ;; unsafe ver - cc_unbox_single_float type errors, but this will happily
+  ;; proceed if given garbage. FIXME: Could use on safety 0.
+  ;; Also, we could inline this plus a tag check with branch to error, which
+  ;; might be faster than calling the unboxer but would mean bigger code.
+  #+(or)
   (irc-bit-cast
    (irc-trunc (irc-lshr (irc-ptr-to-int t* %i64%) +single-float-shift+) %i32%)
    %float% label))
 
-(defun irc-tag-single-float (sf &optional (label "single-float"))
+(defun irc-box-single-float (sf &optional (label "single-float"))
+  ;; Do it inline since it's pretty trivial
   (irc-int-to-ptr
    (llvm-sys:create-or-value-uint64
     *irbuilder*
@@ -495,7 +502,7 @@ representing a tagged fixnum."
 
 ;;; FIXME: Inline this - it's just a memory load, unlike boxing
 (defun irc-unbox-double-float (t* &optional (label "double-float"))
-  (irc-intrinsic-call "from_object_double" (list t*) label))
+  (irc-intrinsic-call "cc_unbox_double_float" (list t*) label))
 (defun irc-box-double-float (double &optional (label "double-float"))
   (irc-intrinsic-call "to_object_double" (list double) label))
 

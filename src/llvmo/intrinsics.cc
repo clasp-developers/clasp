@@ -253,6 +253,26 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 };
 
 extern "C" {
+/* These functions are called by the runtime when the compiler wants to unbox
+ * things. Unlike the FLI translators below, they are not permissive, in that
+ * they will signal a type error if given anything but the particular type that's
+ * supposed to be unboxed.
+ * FIXME: Would be cleaner if we only had one set of translators, if they
+ * actually have the same requirements (I don't know if this is the case).
+ */
+
+float cc_unbox_single_float(core::T_O* box) {
+  T_sp tbox((gctools::Tagged)box);
+  return gc::As<SingleFloat_sp>(tbox).unsafe_single_float();
+}
+double cc_unbox_double_float(core::T_O* box) {
+  T_sp tbox((gctools::Tagged)box);
+  return gc::As<DoubleFloat_sp>(tbox)->get();
+}
+
+}; // extern "C"
+
+extern "C" {
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------

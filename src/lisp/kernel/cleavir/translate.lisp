@@ -762,15 +762,15 @@
     ((:single-float)
      (ecase to
        ((:single-float) value)
-       ((:object) (cmp::irc-tag-single-float value))))
+       ((:object) (cmp:irc-box-single-float value))))
     ((:double-float)
      (ecase to
        ((:double-float) value)
-       ((:object) (cmp::irc-box-double-float value))))
+       ((:object) (cmp:irc-box-double-float value))))
     ((:object)
      (ecase to
-       ((:single-float) (cmp::irc-untag-single-float value))
-       ((:double-float) (cmp::irc-unbox-double-float value))
+       ((:single-float) (cmp:irc-unbox-single-float value))
+       ((:double-float) (cmp:irc-unbox-double-float value))
        ((:object) value)))))
 
 (defun %cast-some (inputv inputrt outputrt)
@@ -1039,7 +1039,7 @@
   (declare (ignore abi))
   (out (cmp:irc-cmpxchg (cmp::irc-rack-slot-address
                          (in (third (bir:inputs inst)))
-                         (cmp::irc-untag-fixnum
+                         (cmp:irc-untag-fixnum
                           (in (fourth (bir:inputs inst)))
                           cmp:%size_t% "slot-location"))
                         (in (first (bir:inputs inst)))

@@ -247,6 +247,10 @@
             irc-untag-fixnum
             irc-untag-general
             irc-untag-cons
+            irc-unbox-single-float
+            irc-box-single-float
+            irc-unbox-double-float
+            irc-box-double-float
             irc-fdefinition
             irc-setf-fdefinition
             irc-real-array-displacement
