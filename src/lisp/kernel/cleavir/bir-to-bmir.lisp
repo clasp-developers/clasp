@@ -175,6 +175,9 @@
 (defmethod %definition-rtype ((inst bir:readvar) (datum bir:datum))
   (definition-rtype (bir:input inst)))
 
+;;; if we already have an rtype computed, don't do it again
+(defmethod definition-rtype ((datum cc-bmir:datum)) (cc-bmir:rtype datum))
+
 (defmethod definition-rtype ((datum bir:output))
   (%definition-rtype (bir:definition datum) datum))
 (defmethod definition-rtype ((datum bir:argument)) '(:object))
@@ -198,7 +201,6 @@
 
 (defmethod definition-rtype ((var bir:variable))
   ;; See the use-rtype for variables below for logic
-  ;; FIXME: We recompute this kind of a lot, I think, due to multiple readers.
   (when (member var *chasing-rtypes-of* :test #'eq)
     (return-from definition-rtype ()))
   (let ((*chasing-rtypes-of* (cons var *chasing-rtypes-of*))
@@ -282,6 +284,8 @@
                      ((eq next-rt :multiple-values) '(:object))
                      (t (list (first next-rt))))))
         (setf rt (if (null rt) real-next-rt (min-rtype real-next-rt rt)))))))
+
+(defmethod use-rtype ((datum cc-bmir:datum)) (cc-bmir:rtype datum))
 
 ;;; Given two value rtypes, return the most preferable.
 ;;; More sophisticated representation selection may be required in the future.
