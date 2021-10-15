@@ -337,7 +337,6 @@ struct class_registration : registration {
 struct CLBIND_API class_base : scope_ {
 public:
   class_base(const string &name);
-  class_base(const RawName& name);
   
   struct base_desc {
     type_id type;

@@ -174,12 +174,7 @@ void class_registration::register_() const {
 // -- interface ---------------------------------------------------------
 
 class_base::class_base(const string &name)
-  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(core::lispify_symbol_name(name))))
-  , m_init_counter(0) {
-}
-
-class_base::class_base(const RawName &name)
-  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name._raw_name)))
+  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name)))
   , m_init_counter(0) {
 }
 
