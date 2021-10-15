@@ -44,11 +44,12 @@ struct memberpointertraits<M C::*> {
   typedef C class_type;
 };
 
+  extern void trapGetterMethoid();
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
-class TEMPLATED_FUNCTION_GetterMethoid : public core::Closure_O {
+class TEMPLATED_FUNCTION_GetterMethoid : public core::BuiltinClosure_O {
 public:
   typedef TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies,OT,VariablePtrType> MyType;
-  typedef core::Closure_O TemplatedBase;
+  typedef core::BuiltinClosure_O TemplatedBase;
 
 private:
   typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
@@ -59,7 +60,8 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+    trapGetterMethoid();
   };
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -73,10 +75,10 @@ public:
 
 namespace clbind {
 template <typename GetterPolicies, typename OT, typename MemberType>
-class TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*)> : public core::Closure_O {
+class TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*)> : public core::BuiltinClosure_O {
  public:
   typedef TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies,OT,MemberType *const(OT::*)> MyType;
-  typedef core::Closure_O TemplatedBase;
+  typedef core::BuiltinClosure_O TemplatedBase;
 
 private:
   typedef clbind::Wrapper<MemberType,MemberType*> WrapperType;
@@ -87,7 +89,8 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   
 public:
-  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+    trapGetterMethoid();
   };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -111,10 +114,10 @@ public:
 
 namespace clbind {
 template <typename SetterPolicies, typename OT, typename VariablePtrType>
-class SetterMethoid : public core::Closure_O {
+class SetterMethoid : public core::BuiltinClosure_O {
 public:
   typedef SetterMethoid<SetterPolicies,OT,VariablePtrType> MyType;
-  typedef core::Closure_O TemplatedBase;
+  typedef core::BuiltinClosure_O TemplatedBase;
 
 private:
   typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
@@ -125,7 +128,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  SetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(gep,entry_point)), _MemberPtr(p){
   };
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -141,10 +144,10 @@ public:
 
 namespace clbind {
 template <typename SetterPolicies, typename OT, typename MemberType>
-class SetterMethoid<SetterPolicies, OT, MemberType *const(OT::*)> : public core::Closure_O {
+class SetterMethoid<SetterPolicies, OT, MemberType *const(OT::*)> : public core::BuiltinClosure_O {
  public:
   typedef SetterMethoid<SetterPolicies,OT,MemberType *const(OT::*)> MyType;
-  typedef core::Closure_O TemplatedBase;
+  typedef core::BuiltinClosure_O TemplatedBase;
 
 private:
   typedef clbind::Wrapper<MemberType,MemberType*> WrapperType;
@@ -155,7 +158,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  SetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : BuiltinClosure_O(ENSURE_ENTRY_POINT(gep,entry_point)), _MemberPtr(p){
   };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);

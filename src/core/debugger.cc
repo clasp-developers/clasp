@@ -35,8 +35,8 @@ THE SOFTWARE.
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #endif
-#ifdef _TARGET_OS_DARWIN
 #include <dlfcn.h>
+#ifdef _TARGET_OS_DARWIN
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -51,7 +51,6 @@ THE SOFTWARE.
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dlfcn.h>
 #define _GNU_SOURCE
 #endif
 

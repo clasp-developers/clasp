@@ -152,18 +152,6 @@ CL_DEFUN bool cl__zerop(Number_sp num) {
   return clasp_zerop(num);
 }
 
-CL_LAMBDA(z)
-CL_DECLARE();
-CL_DOCSTRING(R"dx(convert_overflow_result_to_bignum)dx")
-DOCGROUP(clasp)
-CL_DEFUN Integer_sp core__convert_overflow_result_to_bignum(Fixnum_sp z) {
-  if ((Fixnum)z.raw_() > 0) {
-    return gc::As<Integer_sp>(contagion_sub(z, _lisp->_Roots._IntegerOverflowAdjust));
-  } else {
-    return gc::As<Integer_sp>(contagion_add(z, _lisp->_Roots._IntegerOverflowAdjust));
-  }
-}
-
 CL_LAMBDA()
 CL_DECLARE();
 CL_DOCSTRING(R"dx(fixnum_number_of_bits)dx")
@@ -2445,12 +2433,12 @@ expt_zero(Number_sp x, Number_sp y) {
   case number_Ratio:
       return clasp_make_fixnum(1);
   case number_SingleFloat:
-      return _lisp->singleFloatOne();
+      return clasp_make_single_float(1.0f);
   case number_DoubleFloat:
-      return _lisp->doubleFloatOne();
+      return DoubleFloat_O::create(1.0);
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
-      return _lisp->longFloatOne();
+      return LongFloat_O::create(1.0);
 #endif
   case number_Complex:
       z = expt_zero((tx == number_Complex) ? gc::As<Number_sp>(gc::As<Complex_sp>(x)->real()) : x,
@@ -2480,6 +2468,7 @@ clasp_expt(Number_sp x, Number_sp y) {
     if (!clasp_plusp((ty == number_Complex) ? gc::As<Complex_sp>(y)->real() : gc::As<Real_sp>(y)))
       z = clasp_divide(clasp_make_fixnum(1), z);
   } else if (ty != number_Fixnum && ty != number_Bignum) {
+    // Use the general definition, a^b = exp(b log(a))
     /* The following could be just
 	   z = clasp_log1(x);
 	   however, Maxima expects EXPT to have double accuracy

@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <pthread.h> // TODO: PORTING - frgo, 2017-08-04
 #include <signal.h>  // TODO: PORTING - frgo, 2017-08-04
-#include <sys/utsname.h> 
+#include <sys/utsname.h>
 #include <clasp/external/PicoSHA2/picosha2.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>

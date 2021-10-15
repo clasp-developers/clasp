@@ -74,12 +74,19 @@ default_constructor globalDefaultConstructorSignature;
 }
 
 namespace clbind {
+    void trapGetterMethoid() {
+      //    printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
+};
+
+namespace clbind {
 namespace detail {
 
 class_registration::class_registration(const std::string &name) : m_default_constructor(NULL) {
   m_name = name;
 }
 
+  
 void class_registration::register_() const {
   LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
@@ -167,12 +174,7 @@ void class_registration::register_() const {
 // -- interface ---------------------------------------------------------
 
 class_base::class_base(const string &name)
-  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(core::lispify_symbol_name(name))))
-  , m_init_counter(0) {
-}
-
-class_base::class_base(const RawName &name)
-  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name._raw_name)))
+  : scope_(std::unique_ptr<registration>(m_registration = new class_registration(name)))
   , m_init_counter(0) {
 }
 

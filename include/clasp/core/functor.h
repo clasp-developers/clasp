@@ -391,7 +391,6 @@ namespace core {
     T_sp closedEnvironment() const override { return nil<T_O>(); };
     virtual size_t templatedSizeof() const override { return sizeof(*this); };
     // Fixup the code pointers
-    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) { SIMPLE_ERROR(BF("Subclass must implement")); };
     void fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** address, size_t size );
     virtual const char *describe() const override { return "BuiltinClosure"; };
     bool builtinP() const override { return true; };
