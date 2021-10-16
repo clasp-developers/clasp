@@ -107,7 +107,7 @@
 
 (defpackage #:clasp-cleavir-bmir
   (:nicknames #:cc-bmir)
-  (:shadow #:characterp #:consp #:load)
+  (:shadow #:characterp #:consp #:load #:variable)
   (:local-nicknames (#:bir #:cleavir-bir))
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
