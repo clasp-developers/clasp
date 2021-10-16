@@ -119,6 +119,8 @@
 
 (defun %fpext (value type &optional (label ""))
   (llvm-sys:create-fpext cmp:*irbuilder* value type label))
+(defun %fptrunc (value type &optional (label ""))
+  (llvm-sys:create-fptrunc cmp:*irbuilder* value type label))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

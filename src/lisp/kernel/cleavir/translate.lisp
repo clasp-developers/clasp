@@ -1073,6 +1073,11 @@
   (let ((arg (in (first (bir:inputs inst)))))
     (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%float%))
     (out (%fpext arg cmp:%double%) (first (bir:outputs inst)))))
+(defmethod translate-primop ((name (eql 'core::double-to-single)) inst)
+  (assert (= 1 (length (bir:inputs inst))))
+  (let ((arg (in (first (bir:inputs inst)))))
+    (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%double%))
+    (out (%fptrunc arg cmp:%float%) (first (bir:outputs inst)))))
 
 (defmethod translate-primop ((name cons) inst) ; FIXME
   (cond ((equal name '(setf symbol-value))

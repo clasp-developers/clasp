@@ -363,6 +363,21 @@
     (setf (bir:inputs coerce) (list datum)))
   (values))
 
+(defun wrap-coerce-df-to-sf (inst datum)
+  (let* ((sf (cleavir-ctype:single-value
+              (cleavir-ctype:range 'single-float '* '* *clasp-system*)
+              *clasp-system*))
+         (new (make-instance 'bir:output
+                :derived-type sf))
+         (coerce (make-instance 'bir:vprimop
+                   :origin (bir:origin inst) :policy (bir:policy inst)
+                   :info (cleavir-primop-info:info 'core::double-to-single)
+                   :outputs (list new))))
+    (bir:insert-instruction-before coerce inst)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs coerce) (list datum)))
+  (values))
+
 ;;; This is basically a massive KLUDGE.
 ;;; The deal is, we essentially want to replace (= x y) with
 ;;; (if (primitive-float-= x y) t nil). meta evaluate can then collapse that
@@ -562,6 +577,22 @@
   (replace-with-vprimop-and-wrap call 'core::df-log
                                  (cleavir-ctype:range 'double-float '* '*
                                                       *clasp-system*)))
+
+(define-bir-transform float (call) (single-float)
+  (replace-call-with-argument call 0))
+(define-bir-transform float (call) (single-float single-float)
+  (replace-call-with-argument call 0))
+(define-bir-transform float (call) (double-float double-float)
+  (replace-call-with-argument call 0))
+(define-bir-transform float (call) (single-float double-float)
+  (wrap-coerce-sf-to-df call (first (rest (bir:inputs call))))
+  (replace-call-with-argument call 0))
+(define-bir-transform float (call) (double-float single-float)
+  (wrap-coerce-df-to-sf call (first (rest (bir:inputs call))))
+  (replace-call-with-argument call 0))
+(define-bir-transform float (call) (double-float)
+  (wrap-coerce-df-to-sf call (first (rest (bir:inputs call))))
+  (replace-call-with-argument call 0))
 
 (define-bir-transform realpart (c) (real) (replace-call-with-argument c 0))
 (define-bir-transform imagpart (c) (rational) (replace-call-with-constant c 0))

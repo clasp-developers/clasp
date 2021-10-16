@@ -399,7 +399,8 @@
     (defdfcomparisons core::two-arg-df-= core::two-arg-df-< core::two-arg-df-<=
       core::two-arg-df-> core::two-arg-df->=))
 
-  (defprimop core::single-to-double 1 :value :double-float :single-float))
+  (defprimop core::single-to-double 1 :value :double-float :single-float)
+  (defprimop core::double-to-single 1 :value :single-float :double-float))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn
