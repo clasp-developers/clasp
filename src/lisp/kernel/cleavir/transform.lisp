@@ -473,6 +473,44 @@
   ;; llvm has an fneg instruction but not a reciprocal, but i don't know it.
   (define-one-arg-sf core:negate core::sf-negate core::df-negate))
 
+(define-bir-transform core:reciprocal (call)
+  (let ((arguments (rest (bir:inputs call)))
+        (sf (cleavir-ctype:range 'single-float '* '* *clasp-system*))
+        (df (cleavir-ctype:range 'double-float '* '* *clasp-system*))
+        (module (bir:module (bir:function call))))
+    (subtypepcase
+     ((first arguments))
+     ((sf) (let* ((one (bir:constant-in-module 1f0 module))
+                  (onet
+                    (cleavir-ctype:range 'single-float 1f0 1f0 *clasp-system*))
+                  (onett (cleavir-ctype:single-value onet *clasp-system*))
+                  (onev (make-instance 'bir:output
+                          :derived-type onett :name '#:one))
+                  (cr (make-instance 'bir:constant-reference
+                        :policy (bir:policy call) :origin (bir:origin call)
+                        :inputs (list one) :outputs (list onev))))
+             (bir:insert-instruction-before cr call)
+             (change-class call 'cleavir-bir:vprimop
+                           :inputs (list onev (first arguments))
+                           :info (cleavir-primop-info:info
+                                  'core::two-arg-sf-/))
+             t))
+     ((df) (let* ((one (bir:constant-in-module 1d0 module))
+                  (onet
+                    (cleavir-ctype:range 'double-float 1d0 1d0 *clasp-system*))
+                  (onett (cleavir-ctype:single-value onet *clasp-system*))
+                  (onev (make-instance 'bir:output
+                          :derived-type onett :name '#:one))
+                  (cr (make-instance 'bir:constant-reference
+                        :policy (bir:policy call) :origin (bir:origin call)
+                        :inputs (list one) :outputs (list onev))))
+             (bir:insert-instruction-before cr call)
+             (change-class call 'cleavir-bir:vprimop
+                           :inputs (list onev (first arguments))
+                           :info (cleavir-primop-info:info
+                                  'core::two-arg-df-/))
+             t)))))
+
 ;;; Transform log, but only one-argument log (which can be derived from the
 ;;; two argument case by the compiler macro in opt-number.lsp)
 (define-bir-transform log (call)
