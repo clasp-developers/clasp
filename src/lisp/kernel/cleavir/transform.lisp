@@ -301,6 +301,27 @@
           do (funcall transform call)
           and return t))
 
+;;; for folding identity operations.
+(defun replace-call-with-argument (call idx)
+  (let ((argument (nth idx (rest (bir:inputs call)))))
+    (setf (bir:inputs call) nil)
+    (bir:replace-uses argument (bir:output call))
+    (bir:delete-instruction call)))
+
+(defun replace-call-with-constant (call value)
+  (let* ((module (bir:module (bir:function call)))
+         (constant (bir:constant-in-module value module))
+         (cv (make-instance 'bir:output
+               :derived-type (cleavir-ctype:single-value
+                              (cleavir-ctype:member *clasp-system* value)
+                              *clasp-system*)))
+         (cr (make-instance 'bir:constant-reference
+               :policy (bir:policy call) :origin (bir:origin call)
+               :inputs (list constant) :outputs (list cv))))
+    (bir:insert-instruction-before cr call)
+    (bir:replace-uses cv (bir:output call))
+    (bir:delete-instruction call)))
+
 (defun replace-call-with-vprimop (call primop-name)
   (change-class call 'cleavir-bir:vprimop
                 :inputs (rest (bir:inputs call)) ; don't need the function
@@ -541,3 +562,14 @@
   (replace-with-vprimop-and-wrap call 'core::df-log
                                  (cleavir-ctype:range 'double-float '* '*
                                                       *clasp-system*)))
+
+(define-bir-transform realpart (c) (real) (replace-call-with-argument c 0))
+(define-bir-transform imagpart (c) (rational) (replace-call-with-constant c 0))
+;; imagpart of a float is slightly complicated with negative zero
+(define-bir-transform conjugate (c) (real) (replace-call-with-argument c 0))
+(define-bir-transform numerator (c) (integer) (replace-call-with-argument c 0))
+(define-bir-transform denominator (c) (integer)
+  (replace-call-with-constant c 1))
+(define-bir-transform rational (c) (rational) (replace-call-with-argument c 0))
+(define-bir-transform rationalize (c) (rational)
+  (replace-call-with-argument c 0))
