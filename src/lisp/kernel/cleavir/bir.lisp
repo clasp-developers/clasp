@@ -365,8 +365,10 @@
                     ,@(loop for name in names collect `(def-sf-unop ,name)))))
       (def-sf-binops core::two-arg-sf-+ core::two-arg-sf--
         core::two-arg-sf-* core::two-arg-sf-/ core::sf-expt)
-      (def-sf-unops core::sf-cos core::sf-sin core::sf-abs core::sf-sqrt
-        core::sf-exp core::sf-negate core::sf-log))
+      (def-sf-unops core::sf-abs core::sf-sqrt core::sf-exp core::sf-negate
+        core::sf-log core::sf-cos core::sf-sin core::sf-tan core::sf-acos
+        core::sf-asin core::sf-sinh core::sf-cosh core::sf-tanh
+        core::sf-asinh core::sf-acosh core::sf-atanh))
     (macrolet ((def-df-binop (name) `(def-binop ,name :double-float))
                (def-df-binops (&rest names)
                  `(progn
@@ -377,8 +379,10 @@
                     ,@(loop for name in names collect `(def-df-unop ,name)))))
       (def-df-binops core::two-arg-df-+ core::two-arg-df--
         core::two-arg-df-* core::two-arg-df-/ core::df-expt)
-      (def-df-unops core::df-cos core::df-sin core::df-abs core::df-sqrt
-        core::df-exp core::df-negate core::df-log)))
+      (def-df-unops core::df-abs core::df-sqrt core::df-exp core::df-negate
+        core::df-log core::df-cos core::df-sin core::df-tan core::df-acos
+        core::df-asin core::df-sinh core::df-cosh core::df-tanh
+        core::df-asinh core::df-acosh core::df-atanh)))
 
   (macrolet ((defsfcomparison (name)
                `(defprimop ,name 2 :value :object :single-float :single-float))
