@@ -324,8 +324,9 @@
 
 (defun primop-rtype-info (primop-info)
   (or (gethash primop-info *primop-rtypes*)
-      (list* :object (make-list (cleavir-primop-info:ninputs primop-info)
-                                :initial-element :object))))
+      (list* '(:object)
+             (make-list (cleavir-primop-info:ninputs primop-info)
+                        :initial-element :object))))
 
 (macrolet ((defprimop (name ninputs out &rest rtype-info)
              `(progn
@@ -352,9 +353,9 @@
   (defprimop core:vaslist-length 1 :value)
 
   (macrolet ((def-binop (name rtype)
-               `(defprimop ,name 2 :value ,rtype ,rtype ,rtype))
+               `(defprimop ,name 2 :value (,rtype) ,rtype ,rtype))
              (def-unop (name rtype)
-               `(defprimop ,name 1 :value ,rtype ,rtype)))
+               `(defprimop ,name 1 :value (,rtype) ,rtype)))
     (macrolet ((def-sf-binop (name) `(def-binop ,name :single-float))
                (def-sf-binops (&rest names)
                  `(progn
@@ -384,13 +385,18 @@
         core::df-asin core::df-sinh core::df-cosh core::df-tanh
         core::df-asinh core::df-acosh core::df-atanh)))
 
+  (defprimop core::df-ftruncate 2 :value
+    (:double-float :double-float) :double-float :double-float)
+  (defprimop core::sf-ftruncate 2 :value
+    (:single-float :single-float) :single-float :single-float)
+
   (macrolet ((defsfcomparison (name)
-               `(defprimop ,name 2 :value :object :single-float :single-float))
+               `(defprimop ,name 2 :value (:object) :single-float :single-float))
              (defsfcomparisons (&rest names)
                `(progn
                   ,@(loop for name in names collect `(defsfcomparison ,name))))
              (defdfcomparison (name)
-               `(defprimop ,name 2 :value :object :double-float :double-float))
+               `(defprimop ,name 2 :value (:object) :double-float :double-float))
              (defdfcomparisons (&rest names)
                `(progn
                   ,@(loop for name in names collect `(defdfcomparison ,name)))))
@@ -399,8 +405,8 @@
     (defdfcomparisons core::two-arg-df-= core::two-arg-df-< core::two-arg-df-<=
       core::two-arg-df-> core::two-arg-df->=))
 
-  (defprimop core::single-to-double 1 :value :double-float :single-float)
-  (defprimop core::double-to-single 1 :value :single-float :double-float))
+  (defprimop core::single-to-double 1 :value (:double-float) :single-float)
+  (defprimop core::double-to-single 1 :value (:single-float) :double-float))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn

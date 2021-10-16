@@ -169,7 +169,7 @@
                       ((null rt) :object)
                       (t (first rt)))))
 (defmethod %definition-rtype ((inst bir:vprimop) (datum bir:datum))
-  (list (first (cc-bir:primop-rtype-info (bir:info inst)))))
+  (first (cc-bir:primop-rtype-info (bir:info inst))))
 (defmethod %definition-rtype ((inst bir:writevar) (datum bir:datum))
   (definition-rtype (bir:input inst)))
 (defmethod %definition-rtype ((inst bir:readvar) (datum bir:datum))
@@ -496,7 +496,7 @@
           for art in args
           do (maybe-cast-before inst input (list art)))
     (unless (null (bir:outputs inst))
-      (cast-output inst (list ret)))))
+      (cast-output inst ret))))
 (defmethod insert-casts ((inst bir:writevar))
   (cast-inputs inst (cc-bmir:rtype (bir:output inst))))
 (defmethod insert-casts ((inst bir:readvar))

@@ -106,6 +106,8 @@
   (llvm-sys:create-fmul cmp:*irbuilder* x y label fast-math-flags))
 (defun %fdiv (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fdiv cmp:*irbuilder* x y label fast-math-flags))
+(defun %frem (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-frem cmp:*irbuilder* x y label fast-math-flags))
 
 (defun %fcmp-olt (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fcmp-olt cmp:*irbuilder* x y label fast-math-flags))

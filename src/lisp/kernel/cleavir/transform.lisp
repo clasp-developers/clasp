@@ -272,6 +272,19 @@
                                      (gethash ',name *bir-transformers*))))))
      ',name))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun %def-bir-transformer (name function param-types)
+    ;; We just use a reverse alist (function . types).
+    ;; EQUALP does not actually technically test type equality, which is what we
+    ;; want, but it should be okay for now at least.
+    (let* ((transformers (gethash name *bir-transformers*))
+           (existing (rassoc param-types transformers :test #'equalp)))
+      (if existing
+          ;; replace
+          (setf (car existing) function)
+          (push (cons function param-types)
+                (gethash name *bir-transformers*))))))
+
 (defmacro define-bir-transform (name (instparam) (&rest param-types)
                                 &body body)
   (let ((param-types
@@ -281,12 +294,7 @@
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (unless (nth-value 1 (gethash ',name *bir-transformers*))
          (define-bir-transformation ,name))
-       (pushnew (list* (lambda (,instparam) ,@body) '(,@param-types))
-                (gethash ',name *bir-transformers*)
-                :key #'cdr
-                ;; The test is type equality. equalp is... not really there,
-                ;; but should mostly work.
-                :test #'equalp)
+       (%def-bir-transformer ',name (lambda (,instparam) ,@body) '(,@param-types))
        ',name)))
 
 (defun arg-subtypep (arg ctype)
@@ -485,6 +493,32 @@
   (define-two-arg-f core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
   (define-two-arg-f core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/)
   (define-two-arg-f expt           core::sf-expt      core::df-expt))
+
+(define-bir-transform ftruncate (call) (single-float single-float)
+  (wrap-in-thei call (cleavir-env:parse-values-type-specifier
+                      '(values single-float single-float &rest nil)
+                      nil *clasp-system*))
+  (replace-call-with-vprimop call 'core::sf-ftruncate))
+(define-bir-transform ftruncate (call) (double-float double-float)
+  (wrap-in-thei call (cleavir-env:parse-values-type-specifier
+                      '(values double-float double-float &rest nil)
+                      nil *clasp-system*))
+  (replace-call-with-vprimop call 'core::df-ftruncate))
+(define-bir-transform ftruncate (call) (single-float double-float)
+  ;; FIXME: i think our FTRUNCATE function has a bug: it should return doubles in
+  ;; this case, by my reading.
+  (wrap-coerce-sf-to-df call (first (rest (bir:inputs call))))
+  (wrap-in-thei call (cleavir-env:parse-values-type-specifier
+                      '(values double-float double-float &rest nil)
+                      nil *clasp-system*))
+  (replace-call-with-vprimop call 'core::df-ftruncate))
+(define-bir-transform ftruncate (call) (double-float single-float)
+  (wrap-coerce-sf-to-df call (second (rest (bir:inputs call))))
+  (wrap-in-thei call (cleavir-env:parse-values-type-specifier
+                      '(values double-float double-float &rest nil)
+                      nil *clasp-system*))
+  (replace-call-with-vprimop call 'core::df-ftruncate))
+;; TODO: one-arg form
 
 (macrolet ((define-float-conditional (name sf-primop df-primop)
              `(progn
