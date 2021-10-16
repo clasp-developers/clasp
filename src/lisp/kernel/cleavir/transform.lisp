@@ -260,7 +260,7 @@
   `(setf (gethash ',fname *fn-transforms*)
          (list (lambda (,instparam) ,@body))))
 
-(defun replace-call-with-primop (call primop-name)
+(defun replace-call-with-vprimop (call primop-name)
   (change-class call 'cleavir-bir:vprimop
                 :inputs (rest (bir:inputs call)) ; don't need the function
                 :info (cleavir-primop-info:info primop-name)))
@@ -281,9 +281,9 @@
     (setf (bir:inputs thei) (list datum))
     thei))
 
-(defun replace-with-primop-and-wrap (inst primop ctype)
+(defun replace-with-vprimop-and-wrap (inst primop ctype)
   (wrap-in-thei inst (cleavir-ctype:single-value ctype *clasp-system*))
-  (replace-call-with-primop inst primop)
+  (replace-call-with-vprimop inst primop)
   t)
 
 (defun wrap-coerce-sf-to-df (inst datum)
@@ -300,6 +300,93 @@
     (bir:replace-uses new datum)
     (setf (bir:inputs coerce) (list datum)))
   (values))
+
+;;; This is basically a massive KLUDGE.
+;;; The deal is, we essentially want to replace (= x y) with
+;;; (if (primitive-float-= x y) t nil). meta evaluate can then collapse that
+;;; in the common (if (= ...) ...) case. We have to construct the IR ourselves
+;;; because there's no good mechanism to do so, and that's verbose.
+;;; FIXME: Two things to do here: One, allow introducing a new function into a
+;;; module and then inlining it - then we can just keep the IR of
+;;; (lambda (x y) (if (primitive-float-= x y) t nil)) around and copy it into
+;;; wherever - but that also requires a copier. Second, maybe think about
+;;; an IR assembler syntax.
+
+(defun replace-with-test-primop (call primop-name)
+  (multiple-value-bind (fore aft) (bir:split-block-after call)
+    (let* ((args (rest (bir:inputs call)))
+           (boolt
+             (cleavir-ctype:single-value
+              (cleavir-ctype:member *clasp-system* t nil)
+              *clasp-system*))
+           (phi (make-instance 'bir:phi
+                  :name primop-name :iblock aft :derived-type boolt))
+           (dynenv (bir:dynamic-environment fore))
+           (function (bir:function fore))
+           (module (bir:module function))
+           (true (bir:constant-in-module t module))
+           (false (bir:constant-in-module nil module))
+           (truet (cleavir-ctype:single-value
+                   (cleavir-ctype:member *clasp-system* t)
+                   *clasp-system*))
+           (falset (cleavir-ctype:single-value
+                    (cleavir-ctype:member *clasp-system* nil)
+                    *clasp-system*))
+           (truev (make-instance 'bir:output :derived-type truet))
+           (falsev (make-instance 'bir:output :derived-type falset))
+           (trueb (make-instance 'bir:iblock
+                    :predecessors (cleavir-set:make-set fore)
+                    :inputs ()
+                    :dynamic-environment dynenv :function function
+                    :name (make-symbol
+                           (concatenate 'string (symbol-name primop-name)
+                                        "-TRUE"))))
+           (falseb (make-instance 'bir:iblock
+                     :predecessors (cleavir-set:make-set fore)
+                     :inputs ()
+                     :dynamic-environment dynenv :function function
+                     :name (make-symbol
+                            (concatenate 'string (symbol-name primop-name)
+                                         "-FALSE"))))
+           (truer (make-instance 'bir:constant-reference
+                    :policy (bir:policy call) :origin (bir:origin call)
+                    :predecessor nil :iblock trueb
+                    :inputs (list true) :outputs (list truev)))
+           (falser (make-instance 'bir:constant-reference
+                     :policy (bir:policy call) :origin (bir:origin call)
+                     :predecessor nil :iblock falseb
+                     :inputs (list false) :outputs (list falsev)))
+           (truej (make-instance 'bir:jump
+                    :policy (bir:policy call) :origin (bir:origin call)
+                    :inputs (list truev) :outputs (list phi) :iblock trueb
+                    :predecessor truer :next (list aft)))
+           (falsej (make-instance 'bir:jump
+                     :policy (bir:policy call) :origin (bir:origin call)
+                     :inputs (list falsev) :outputs (list phi) :iblock falseb
+                     :predecessor falser :next (list aft)))
+           (info (cleavir-primop-info:info primop-name))
+           (ifi (make-instance 'bir:ifi
+                  :policy (bir:policy call) :origin (bir:origin call)
+                  :next (list trueb falseb)))
+           (cout (bir:output call)))
+      ;; Fill the blocks - they just read a constant to the phi
+      (setf (bir:start trueb) truer (bir:successor truer) truej
+            (bir:end trueb) truej
+            (bir:start falseb) falser (bir:successor falser) falsej
+            (bir:end falseb) falsej
+            (bir:inputs aft) (list phi))
+      ;; Replace the call
+      (change-class call 'cleavir-bir:vprimop
+                    :info info :inputs args)
+      (cleavir-set:nadjoinf (bir:predecessors aft) trueb)
+      (cleavir-set:nadjoinf (bir:predecessors aft) falseb)
+      (cleavir-set:nremovef (bir:predecessors aft) fore)
+      (cleavir-set:nadjoinf (bir:scope dynenv) trueb)
+      (cleavir-set:nadjoinf (bir:scope dynenv) falseb)
+      (bir:replace-terminator ifi (bir:end fore))
+      (bir:replace-uses phi cout)
+      (setf (bir:inputs ifi) (list cout))))
+  t)
 
 (defun arg-subtypep (arg ctype)
   (cleavir-ctype:subtypep (cleavir-ctype:primary (bir:ctype arg)
@@ -323,19 +410,47 @@
                            'double-float '* '* *clasp-system*)))
                   (subtypepcase
                    ((first arguments) (second arguments))
-                   ((sf sf) (replace-with-primop-and-wrap call ',sf-primop sf))
-                   ((df df) (replace-with-primop-and-wrap call ',df-primop df))
+                   ((sf sf) (replace-with-vprimop-and-wrap call ',sf-primop sf))
+                   ((df df) (replace-with-vprimop-and-wrap call ',df-primop df))
                    ((sf df)
                     (wrap-coerce-sf-to-df call (first arguments))
-                    (replace-with-primop-and-wrap call ',df-primop df))
+                    (replace-with-vprimop-and-wrap call ',df-primop df))
                    ((df sf)
                     (wrap-coerce-sf-to-df call (second arguments))
-                    (replace-with-primop-and-wrap call ',df-primop df)))))))
+                    (replace-with-vprimop-and-wrap call ',df-primop df)))))))
   (define-two-arg-sf core:two-arg-+ core::two-arg-sf-+ core::two-arg-df-+)
   (define-two-arg-sf core:two-arg-- core::two-arg-sf-- core::two-arg-df--)
   (define-two-arg-sf core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
   (define-two-arg-sf core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/)
   (define-two-arg-sf expt core::sf-expt core::df-expt))
+
+(macrolet ((define-float-conditional (name sf-primop df-primop)
+             `(define-bir-transform ,name (call)
+                (let ((arguments (rest (bir:inputs call)))
+                      (sf (cleavir-ctype:range 'single-float
+                                               '* '* *clasp-system*))
+                      (df (cleavir-ctype:range 'double-float
+                                               '* '* *clasp-system*)))
+                  (subtypepcase
+                   ((first arguments) (second arguments))
+                   ((sf sf) (replace-with-test-primop call ',sf-primop))
+                   ((df df) (replace-with-test-primop call ',df-primop))
+                   ((sf df)
+                    (wrap-coerce-sf-to-df call (first arguments))
+                    (replace-with-test-primop call ',df-primop))
+                   ((df sf)
+                    (wrap-coerce-sf-to-df call (second arguments))
+                    (replace-with-test-primop call ',df-primop)))))))
+  (define-float-conditional core:two-arg-=
+    core::two-arg-sf-= core::two-arg-df-=)
+  (define-float-conditional core:two-arg-<
+    core::two-arg-sf-< core::two-arg-df-<)
+  (define-float-conditional core:two-arg-<=
+    core::two-arg-sf-<= core::two-arg-df-<=)
+  (define-float-conditional core:two-arg->
+    core::two-arg-sf-> core::two-arg-df->)
+  (define-float-conditional core:two-arg->=
+    core::two-arg-sf->= core::two-arg-df->=))
 
 (macrolet ((define-one-arg-sf (name sf-primop df-primop)
              `(define-bir-transform ,name (call)
@@ -346,9 +461,9 @@
                            'double-float '* '* *clasp-system*)))
                   (subtypepcase
                    ((first arguments))
-                   ((sf) (replace-with-primop-and-wrap call ',sf-primop sf))
+                   ((sf) (replace-with-vprimop-and-wrap call ',sf-primop sf))
                    ((df)
-                    (replace-with-primop-and-wrap call ',df-primop df)))))))
+                    (replace-with-vprimop-and-wrap call ',df-primop df)))))))
   (define-one-arg-sf cos core::sf-cos core::df-cos)
   (define-one-arg-sf sin core::sf-sin core::df-sin)
   (define-one-arg-sf abs core::sf-abs core::df-abs)
@@ -369,6 +484,6 @@
     (if (= (length arguments) 1)
         (subtypepcase
          ((first arguments))
-         ((sf) (replace-with-primop-and-wrap call 'core::sf-log sf))
-         ((df) (replace-with-primop-and-wrap call 'core::df-log df)))
+         ((sf) (replace-with-vprimop-and-wrap call 'core::sf-log sf))
+         ((df) (replace-with-vprimop-and-wrap call 'core::df-log df)))
         nil)))

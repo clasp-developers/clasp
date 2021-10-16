@@ -212,6 +212,46 @@
    (in (first (bir:inputs instruction)))
    (first next) (second next)))
 
+(defgeneric translate-conditional-primop (opname instruction))
+
+(defparameter *conditional-primops*
+  '(core::two-arg-sf-= core::two-arg-sf-< core::two-arg-sf->
+    core::two-arg-sf-<= core::two-arg-sf->=
+    core::two-arg-df-= core::two-arg-df-< core::two-arg-df->
+    core::two-arg-df-<= core::two-arg-df->=))
+
+(macrolet ((def-float-compare (name op reversep type)
+             `(progn
+                (defmethod translate-conditional-primop
+                    ((name (eql ',name)) inst)
+                  (assert (= (length (bir:inputs inst)) 2))
+                  (let ((,(if reversep 'i2 'i1)
+                          (in (first (bir:inputs inst))))
+                        (,(if reversep 'i1 'i2)
+                          (in (second (bir:inputs inst)))))
+                    (assert (llvm-sys:type-equal (llvm-sys:get-type i1) ,type))
+                    (assert (llvm-sys:type-equal (llvm-sys:get-type i2) ,type))
+                    (,op i1 i2)))
+                (defmethod translate-primop ((name (eql ',name)) inst)
+                  (declare (ignore inst))))))
+  (def-float-compare core::two-arg-sf-=  %fcmp-oeq nil cmp:%float%)
+  (def-float-compare core::two-arg-sf-<  %fcmp-olt nil cmp:%float%)
+  (def-float-compare core::two-arg-sf-<= %fcmp-ole nil cmp:%float%)
+  (def-float-compare core::two-arg-sf->  %fcmp-olt   t cmp:%float%)
+  (def-float-compare core::two-arg-sf->= %fcmp-ole   t cmp:%float%)
+  (def-float-compare core::two-arg-df-=  %fcmp-oeq nil cmp:%double%)
+  (def-float-compare core::two-arg-df-<  %fcmp-olt nil cmp:%double%)
+  (def-float-compare core::two-arg-df-<= %fcmp-ole nil cmp:%double%)
+  (def-float-compare core::two-arg-df->  %fcmp-olt   t cmp:%double%)
+  (def-float-compare core::two-arg-df->= %fcmp-ole   t cmp:%double%))
+
+(defmethod translate-conditional-test ((inst bir:vprimop) next)
+  (let ((name (cleavir-primop-info:name (bir:info inst))))
+    (if (member name *conditional-primops*)
+        (cmp:irc-cond-br (translate-conditional-primop name inst)
+                         (first next) (second next))
+        (call-next-method))))
+
 (defmethod translate-terminator ((instruction bir:ifi) abi next)
   (declare (ignore abi))
   (let ((in (first (bir:inputs instruction))))

@@ -380,6 +380,21 @@
       (def-df-unops core::df-cos core::df-sin core::df-abs core::df-sqrt
         core::df-exp core::df-negate core::df-log)))
 
+  (macrolet ((defsfcomparison (name)
+               `(defprimop ,name 2 :value :object :single-float :single-float))
+             (defsfcomparisons (&rest names)
+               `(progn
+                  ,@(loop for name in names collect `(defsfcomparison ,name))))
+             (defdfcomparison (name)
+               `(defprimop ,name 2 :value :object :double-float :double-float))
+             (defdfcomparisons (&rest names)
+               `(progn
+                  ,@(loop for name in names collect `(defdfcomparison ,name)))))
+    (defsfcomparisons core::two-arg-sf-= core::two-arg-sf-< core::two-arg-sf-<=
+      core::two-arg-sf-> core::two-arg-sf->=)
+    (defdfcomparisons core::two-arg-df-= core::two-arg-df-< core::two-arg-df-<=
+      core::two-arg-df-> core::two-arg-df->=))
+
   (defprimop core::single-to-double 1 :value :double-float :single-float))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
