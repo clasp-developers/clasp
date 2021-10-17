@@ -406,7 +406,14 @@
       core::two-arg-df-> core::two-arg-df->=))
 
   (defprimop core::single-to-double 1 :value (:double-float) :single-float)
-  (defprimop core::double-to-single 1 :value (:single-float) :double-float))
+  (defprimop core::double-to-single 1 :value (:single-float) :double-float)
+
+  (defprimop core::sf-vref 2 :value (:single-float) :object :object)
+  (defprimop core::df-vref 2 :value (:double-float) :object :object)
+  ;; These return the new value because it's a bit involved to rewrite BIR to use
+  ;; a linear datum more than once.
+  (defprimop core::sf-vset 3 :value (:single-float) :single-float :object :object)
+  (defprimop core::df-vset 3 :value (:double-float) :double-float :object :object))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn

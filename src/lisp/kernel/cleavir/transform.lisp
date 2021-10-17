@@ -628,6 +628,8 @@
   (wrap-coerce-df-to-sf call (first (rest (bir:inputs call))))
   (replace-call-with-argument call 0))
 
+;;;
+
 (define-bir-transform realpart (c) (real) (replace-call-with-argument c 0))
 (define-bir-transform imagpart (c) (rational) (replace-call-with-constant c 0))
 ;; imagpart of a float is slightly complicated with negative zero
@@ -638,3 +640,40 @@
 (define-bir-transform rational (c) (rational) (replace-call-with-argument c 0))
 (define-bir-transform rationalize (c) (rational)
   (replace-call-with-argument c 0))
+
+;;;
+
+(define-bir-transform aref (call) ((simple-array single-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::sf-vref
+                                 (cleavir-ctype:range 'single-float '* '*
+                                                      *clasp-system*)))
+(define-bir-transform aref (call) ((simple-array double-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::df-vref
+                                 (cleavir-ctype:range 'double-float '* '*
+                                                      *clasp-system*)))
+(define-bir-transform row-major-aref (call) ((simple-array single-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::sf-vref
+                                 (cleavir-ctype:range 'single-float '* '*
+                                                      *clasp-system*)))
+(define-bir-transform row-major-aref (call) ((simple-array double-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::df-vref
+                                 (cleavir-ctype:range 'double-float '* '*
+                                                      *clasp-system*)))
+(define-bir-transform core:row-major-aset (call)
+  (t (simple-array single-float (*)) t)
+  (wrap-in-thei call (cleavir-ctype:range 'single-float '* '* *clasp-system*))
+  (change-class call 'cleavir-bir:primop
+                :inputs (let ((args (rest (bir:inputs call))))
+                          ;; aset takes (array index value) while the intrinsic
+                          ;; takes (value array index)
+                          (list (third args) (first args) (second args)))
+                :info (cleavir-primop-info:info 'core::sf-vset)))
+(define-bir-transform core:row-major-aset (call)
+  (t (simple-array single-float (*)) t)
+  (wrap-in-thei call (cleavir-ctype:range 'double-float '* '* *clasp-system*))
+  (change-class call 'cleavir-bir:primop
+                :inputs (let ((args (rest (bir:inputs call))))
+                          ;; aset takes (array index value) while the intrinsic
+                          ;; takes (value array index)
+                          (list (third args) (first args) (second args)))
+                :info (cleavir-primop-info:info 'core::df-vset)))

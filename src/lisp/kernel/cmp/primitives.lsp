@@ -285,6 +285,10 @@
          (primitive-unwinds "cc_makeCell" %t*% nil)
          (primitive         "cc_simpleBitVectorAref" %i8% (list %t*% %size_t%))
          (primitive         "cc_simpleBitVectorAset" %void% (list %t*% %size_t% %i8%))
+         (primitive-unwinds "cc_simpleFloatVectorAref" %float% (list %t*% %t*%))
+         (primitive-unwinds "cc_simpleDoubleVectorAref" %double% (list %t*% %t*%))
+         (primitive-unwinds "cc_simpleFloatVectorAset" %void% (list %float% %t*% %t*%))
+         (primitive-unwinds "cc_simpleDoubleVectorAset" %void% (list %double% %t*% %t*%))
          (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% ; holder
                                                                       %t**% ; root_address
                                                                       %size_t% ; num_roots

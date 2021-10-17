@@ -59,6 +59,7 @@ extern "C" {
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/array.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/activationFrame.h>
@@ -936,6 +937,39 @@ unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
 void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, unsigned char v) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
   (*array)[index] = v;
+}
+
+float cc_simpleFloatVectorAref(core::T_O* array, core::T_O* index) {
+  T_sp tarray((gctools::Tagged)array);
+  T_sp tindex((gctools::Tagged)index);
+  // [] does bounds checking (I think).
+  if (tindex.fixnump())
+    return (*(gc::As<SimpleVector_float_sp>(tarray)))[tindex.unsafe_fixnum()];
+  else TYPE_ERROR(tindex, cl::_sym_fixnum);
+}
+
+double cc_simpleDoubleVectorAref(core::T_O* array, core::T_O* index) {
+  T_sp tarray((gctools::Tagged)array);
+  T_sp tindex((gctools::Tagged)index);
+  if (tindex.fixnump())
+    return (*(gc::As<SimpleVector_double_sp>(tarray)))[tindex.unsafe_fixnum()];
+  else TYPE_ERROR(tindex, cl::_sym_fixnum);
+}
+
+void cc_simpleFloatVectorAset(float v, core::T_O* array, core::T_O* index) {
+  T_sp tarray((gctools::Tagged)array);
+  T_sp tindex((gctools::Tagged)index);
+  if (tindex.fixnump())
+    (*(gc::As<SimpleVector_float_sp>(tarray)))[tindex.unsafe_fixnum()] = v;
+  else TYPE_ERROR(tindex, cl::_sym_fixnum);
+}
+
+void cc_simpleDoubleVectorAset(double v, core::T_O* array, core::T_O* index) {
+  T_sp tarray((gctools::Tagged)array);
+  T_sp tindex((gctools::Tagged)index);
+  if (tindex.fixnump())
+    (*(gc::As<SimpleVector_double_sp>(tarray)))[tindex.unsafe_fixnum()] = v;
+  else TYPE_ERROR(tindex, cl::_sym_fixnum);
 }
 
 core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)

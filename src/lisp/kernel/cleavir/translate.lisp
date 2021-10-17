@@ -1099,6 +1099,26 @@
     (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%double%))
     (out (%fptrunc arg cmp:%float%) (first (bir:outputs inst)))))
 
+(defmethod translate-primop ((name (eql 'core::sf-vref)) inst)
+  (out (%intrinsic-invoke-if-landing-pad-or-call
+        "cc_simpleFloatVectorAref" (mapcar #'in (bir:inputs inst)))
+       (first (bir:outputs inst))))
+(defmethod translate-primop ((name (eql 'core::df-vref)) inst)
+  (out (%intrinsic-invoke-if-landing-pad-or-call
+        "cc_simpleDoubleVectorAref" (mapcar #'in (bir:inputs inst)))
+       (first (bir:outputs inst))))
+
+(defmethod translate-primop ((name (eql 'core::sf-vset)) inst)
+  (let ((args (mapcar #'in (bir:inputs inst))))
+    (assert (llvm-sys:type-equal (llvm-sys:get-type (first args)) cmp:%float%))
+    (%intrinsic-invoke-if-landing-pad-or-call "cc_simpleFloatVectorAset" args)
+    (out (first args) (first (bir:outputs inst)))))
+(defmethod translate-primop ((name (eql 'core::df-vset)) inst)
+  (let ((args (mapcar #'in (bir:inputs inst))))
+    (assert (llvm-sys:type-equal (llvm-sys:get-type (first args)) cmp:%double%))
+    (%intrinsic-invoke-if-landing-pad-or-call "cc_simpleDoubleVectorAset" args)
+    (out (first args) (first (bir:outputs inst)))))
+
 (defmethod translate-primop ((name cons) inst) ; FIXME
   (cond ((equal name '(setf symbol-value))
          (%intrinsic-invoke-if-landing-pad-or-call
