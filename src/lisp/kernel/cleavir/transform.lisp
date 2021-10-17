@@ -660,18 +660,24 @@
                                  (cleavir-ctype:range 'double-float '* '*
                                                       *clasp-system*)))
 (define-bir-transform core:row-major-aset (call)
-  (t (simple-array single-float (*)) t)
-  (wrap-in-thei call (cleavir-ctype:range 'single-float '* '* *clasp-system*))
-  (change-class call 'cleavir-bir:primop
+  ((simple-array single-float (*)) t t)
+  (wrap-in-thei call
+                (cleavir-ctype:single-value
+                 (cleavir-ctype:range 'single-float '* '* *clasp-system*)
+                 *clasp-system*))
+  (change-class call 'cleavir-bir:vprimop
                 :inputs (let ((args (rest (bir:inputs call))))
                           ;; aset takes (array index value) while the intrinsic
                           ;; takes (value array index)
                           (list (third args) (first args) (second args)))
                 :info (cleavir-primop-info:info 'core::sf-vset)))
 (define-bir-transform core:row-major-aset (call)
-  (t (simple-array single-float (*)) t)
-  (wrap-in-thei call (cleavir-ctype:range 'double-float '* '* *clasp-system*))
-  (change-class call 'cleavir-bir:primop
+  ((simple-array double-float (*)) t t)
+  (wrap-in-thei call
+                (cleavir-ctype:single-value
+                 (cleavir-ctype:range 'double-float '* '* *clasp-system*)
+                 *clasp-system*))
+  (change-class call 'cleavir-bir:vprimop
                 :inputs (let ((args (rest (bir:inputs call))))
                           ;; aset takes (array index value) while the intrinsic
                           ;; takes (value array index)
