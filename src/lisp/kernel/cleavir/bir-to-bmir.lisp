@@ -420,6 +420,14 @@
                       for rt = (cc-bmir:rtype inp)
                       do (assert (listp rt))
                       collect (if (null rt) :object (first rt)))))
+    ;; Cast any () to a value.
+    (loop for inp in (bir:inputs instruction)
+          for rt in ortype
+          ;; this WHEN is redundant with maybe-cast-before's checking,
+          ;; but saves a bit of consing of (list rt) in the common case.
+          when (null (cc-bmir:rtype inp))
+            do (maybe-cast-before instruction inp (list rt)))
+    ;; Cast the output to whatever
     (cast-output instruction ortype)))
 
 ;;; Make sure we don't insert things infinitely
