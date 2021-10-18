@@ -287,6 +287,10 @@
          (primitive-unwinds "cc_makeCell" :t* nil)
          (primitive         "cc_simpleBitVectorAref" :i8 (list :t* :size_t))
          (primitive         "cc_simpleBitVectorAset" :void (list :t* :size_t :i8))
+         (primitive-unwinds "cc_simpleFloatVectorAref" :single-float (list :t* :t*))
+         (primitive-unwinds "cc_simpleDoubleVectorAref" :double-float (list :t* :t*))
+         (primitive-unwinds "cc_simpleFloatVectorAset" :void (list :single-float :t* :t*))
+         (primitive-unwinds "cc_simpleDoubleVectorAset" :void (list :double-float :t* :t*))
          (primitive         "cc_initialize_gcroots_in_module" :void (list :gcroots-in-module* ; holder
                                                                       :t** ; root_address
                                                                       :size_t ; num_roots
@@ -295,7 +299,7 @@
                                                                       :size_t ; transient_entries
                                                                       :size_t ; function_pointer_count
                                                                       :i8** ; fptrs
-                                                                      )) 
+                                                                      ))
          (primitive         "cc_finish_gcroots_in_module" :void (list :gcroots-in-module*))
          (primitive         "cc_remove_gcroots_in_module" :void (list :gcroots-in-module* ))
          (primitive-unwinds "cc_invoke_sub_run_all_function" :void (list :fn-start-up*))

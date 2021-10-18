@@ -36,6 +36,7 @@
                (:file "bmir")
                (:file "bir-to-bmir")
                (:file "landing-pad")
+               (:file "primop")
                (:file "translate")
                ;; end BIR
                ;;                (:file "satiation")

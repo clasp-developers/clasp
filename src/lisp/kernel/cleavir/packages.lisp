@@ -37,7 +37,8 @@
    #:*code-walker*
    #:alloca-i8
    #:inline-ast
-   ))
+   )
+  (:export #:primop-rtype-info))
 
 (defpackage #:clasp-cleavir-ast
   (:nicknames #:cc-ast)
@@ -95,8 +96,7 @@
            #:mv-foreign-call #:function-name
            #:atomic #:order #:fence
            #:atomic-rack-read #:atomic-rack-write #:cas-rack
-           #:vref #:vset #:vcas #:element-type #:simple-p #:boxed-p)
-  (:export #:primop-rtype-info))
+           #:vref #:vset #:vcas #:element-type #:simple-p #:boxed-p))
 
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)

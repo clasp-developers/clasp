@@ -169,7 +169,7 @@
                       ((null rt) :object)
                       (t (first rt)))))
 (defmethod %definition-rtype ((inst bir:vprimop) (datum bir:datum))
-  (first (cc-bir:primop-rtype-info (bir:info inst))))
+  (first (clasp-cleavir:primop-rtype-info (bir:info inst))))
 (defmethod %definition-rtype ((inst bir:writevar) (datum bir:datum))
   (definition-rtype (bir:input inst)))
 (defmethod %definition-rtype ((inst bir:readvar) (datum bir:datum))
@@ -236,7 +236,7 @@
       :multiple-values))
 (defmethod %use-rtype ((inst bir:vprimop) (datum bir:datum))
   (list (nth (position datum (bir:inputs inst))
-             (rest (cc-bir:primop-rtype-info (bir:info inst))))))
+             (rest (clasp-cleavir:primop-rtype-info (bir:info inst))))))
 (defmethod %use-rtype ((inst bir:unwind) (datum bir:datum))
   (use-rtype (nth (position datum (bir:inputs inst)) (bir:outputs inst))))
 (defmethod %use-rtype ((inst bir:jump) (datum bir:datum))
@@ -420,6 +420,14 @@
                       for rt = (cc-bmir:rtype inp)
                       do (assert (listp rt))
                       collect (if (null rt) :object (first rt)))))
+    ;; Cast any () to a value.
+    (loop for inp in (bir:inputs instruction)
+          for rt in ortype
+          ;; this WHEN is redundant with maybe-cast-before's checking,
+          ;; but saves a bit of consing of (list rt) in the common case.
+          when (null (cc-bmir:rtype inp))
+            do (maybe-cast-before instruction inp (list rt)))
+    ;; Cast the output to whatever
     (cast-output instruction ortype)))
 
 ;;; Make sure we don't insert things infinitely
@@ -489,7 +497,7 @@
   (cast-inputs instruction :multiple-values))
 (defmethod insert-casts ((inst bir:vprimop))
   (let* ((info (bir:info inst))
-         (rt-info (cc-bir:primop-rtype-info info))
+         (rt-info (clasp-cleavir:primop-rtype-info info))
          (ret (first rt-info))
          (args (rest rt-info)))
     (loop for input in (bir:inputs inst)
