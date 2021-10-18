@@ -942,34 +942,57 @@ void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, unsigned char v) {
 float cc_simpleFloatVectorAref(core::T_O* array, core::T_O* index) {
   T_sp tarray((gctools::Tagged)array);
   T_sp tindex((gctools::Tagged)index);
-  // [] does bounds checking (I think).
-  if (tindex.fixnump())
-    return (*(gc::As<SimpleVector_float_sp>(tarray)))[tindex.unsafe_fixnum()];
-  else TYPE_ERROR(tindex, cl::_sym_fixnum);
+  SimpleVector_float_sp svarray = gc::As<SimpleVector_float_sp>(tarray);
+  if (tindex.fixnump()) {
+    Fixnum findex = tindex.unsafe_fixnum();
+    if ((0 <= findex) && (findex < svarray->length()))
+      return (*svarray)[findex];
+    else TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer,
+                                               core::make_fixnum(0),
+                                               Cons_O::createList(core::make_fixnum(svarray->length()))));
+  } else TYPE_ERROR(tindex, cl::_sym_fixnum);
 }
 
 double cc_simpleDoubleVectorAref(core::T_O* array, core::T_O* index) {
   T_sp tarray((gctools::Tagged)array);
   T_sp tindex((gctools::Tagged)index);
-  if (tindex.fixnump())
-    return (*(gc::As<SimpleVector_double_sp>(tarray)))[tindex.unsafe_fixnum()];
-  else TYPE_ERROR(tindex, cl::_sym_fixnum);
+  SimpleVector_double_sp svarray = gc::As<SimpleVector_double_sp>(tarray);
+  if (tindex.fixnump()) {
+    Fixnum findex = tindex.unsafe_fixnum();
+    if ((0 <= findex) && (findex < svarray->length()))
+      return (*svarray)[findex];
+    else TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer,
+                                               core::make_fixnum(0),
+                                               Cons_O::createList(core::make_fixnum(svarray->length()))));
+  } else TYPE_ERROR(tindex, cl::_sym_fixnum);
 }
 
 void cc_simpleFloatVectorAset(float v, core::T_O* array, core::T_O* index) {
   T_sp tarray((gctools::Tagged)array);
   T_sp tindex((gctools::Tagged)index);
-  if (tindex.fixnump())
-    (*(gc::As<SimpleVector_float_sp>(tarray)))[tindex.unsafe_fixnum()] = v;
-  else TYPE_ERROR(tindex, cl::_sym_fixnum);
+  SimpleVector_float_sp svarray = gc::As<SimpleVector_float_sp>(tarray);
+  if (tindex.fixnump()) {
+    Fixnum findex = tindex.unsafe_fixnum();
+    if ((0 <= findex) && (findex < svarray->length()))
+      (*svarray)[findex] = v;
+    else TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer,
+                                               core::make_fixnum(0),
+                                               Cons_O::createList(core::make_fixnum(svarray->length()))));
+  } else TYPE_ERROR(tindex, cl::_sym_fixnum);
 }
 
 void cc_simpleDoubleVectorAset(double v, core::T_O* array, core::T_O* index) {
   T_sp tarray((gctools::Tagged)array);
   T_sp tindex((gctools::Tagged)index);
-  if (tindex.fixnump())
-    (*(gc::As<SimpleVector_double_sp>(tarray)))[tindex.unsafe_fixnum()] = v;
-  else TYPE_ERROR(tindex, cl::_sym_fixnum);
+  SimpleVector_double_sp svarray = gc::As<SimpleVector_double_sp>(tarray);
+  if (tindex.fixnump()) {
+    Fixnum findex = tindex.unsafe_fixnum();
+    if ((0 <= findex) && (findex < svarray->length()))
+      (*svarray)[findex] = v;
+    else TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer,
+                                               core::make_fixnum(0),
+                                               Cons_O::createList(core::make_fixnum(svarray->length()))));
+  } else TYPE_ERROR(tindex, cl::_sym_fixnum);
 }
 
 core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
