@@ -43,7 +43,6 @@
                          :ltvc ltvc)))))
 
 (defun define-primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return ltvc)
-  (format t "Defining primitive: ~a~%" name)
   (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return ltvc)))
     (core::hash-table-setf-gethash *primitives* name info)))
 
