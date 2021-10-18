@@ -629,7 +629,7 @@ if not possible."
       ((short-float) (float object 0.0s0))
       ((single-float) (float object 0.0f0))
       ((double-float) (float object 0.0d0))
-      ((long-float) (float 0.0l0))
+      ((long-float) (float object 0.0l0))
       ((function) (coerce-to-function object))
       ((complex)
        (destructuring-bind (&optional (realt t) (imagt t))

@@ -315,19 +315,6 @@
 
 ;;;
 
-;;; Hash table from primop infos to rtype info.
-;;; An rtype info is just a list (return-rtype argument-rtypes...)
-;;; If there is no entry in the table, it's assumed to return an :object
-;;; and take :object arguments.
-;;; See bir-to-bmir for more information about rtypes.
-(defvar *primop-rtypes* (make-hash-table :test #'eq))
-
-(defun primop-rtype-info (primop-info)
-  (or (gethash primop-info *primop-rtypes*)
-      (list* '(:object)
-             (make-list (cleavir-primop-info:ninputs primop-info)
-                        :initial-element :object))))
-
 (macrolet ((defprimop (name ninputs out &rest rtype-info)
              `(progn
                 (cleavir-primop-info:defprimop ,name ,ninputs ,out)
@@ -350,70 +337,7 @@
   (defprimop core:rack-set 3 :effect)
 
   (defprimop core:vaslist-pop 1 :value)
-  (defprimop core:vaslist-length 1 :value)
-
-  (macrolet ((def-binop (name rtype)
-               `(defprimop ,name 2 :value (,rtype) ,rtype ,rtype))
-             (def-unop (name rtype)
-               `(defprimop ,name 1 :value (,rtype) ,rtype)))
-    (macrolet ((def-sf-binop (name) `(def-binop ,name :single-float))
-               (def-sf-binops (&rest names)
-                 `(progn
-                    ,@(loop for name in names collect `(def-sf-binop ,name))))
-               (def-sf-unop (name) `(def-unop ,name :single-float))
-               (def-sf-unops (&rest names)
-                 `(progn
-                    ,@(loop for name in names collect `(def-sf-unop ,name)))))
-      (def-sf-binops core::two-arg-sf-+ core::two-arg-sf--
-        core::two-arg-sf-* core::two-arg-sf-/ core::sf-expt)
-      (def-sf-unops core::sf-abs core::sf-sqrt core::sf-exp core::sf-negate
-        core::sf-log core::sf-cos core::sf-sin core::sf-tan core::sf-acos
-        core::sf-asin core::sf-sinh core::sf-cosh core::sf-tanh
-        core::sf-asinh core::sf-acosh core::sf-atanh))
-    (macrolet ((def-df-binop (name) `(def-binop ,name :double-float))
-               (def-df-binops (&rest names)
-                 `(progn
-                    ,@(loop for name in names collect `(def-df-binop ,name))))
-               (def-df-unop (name) `(def-unop ,name :double-float))
-               (def-df-unops (&rest names)
-                 `(progn
-                    ,@(loop for name in names collect `(def-df-unop ,name)))))
-      (def-df-binops core::two-arg-df-+ core::two-arg-df--
-        core::two-arg-df-* core::two-arg-df-/ core::df-expt)
-      (def-df-unops core::df-abs core::df-sqrt core::df-exp core::df-negate
-        core::df-log core::df-cos core::df-sin core::df-tan core::df-acos
-        core::df-asin core::df-sinh core::df-cosh core::df-tanh
-        core::df-asinh core::df-acosh core::df-atanh)))
-
-  (defprimop core::df-ftruncate 2 :value
-    (:double-float :double-float) :double-float :double-float)
-  (defprimop core::sf-ftruncate 2 :value
-    (:single-float :single-float) :single-float :single-float)
-
-  (macrolet ((defsfcomparison (name)
-               `(defprimop ,name 2 :value (:object) :single-float :single-float))
-             (defsfcomparisons (&rest names)
-               `(progn
-                  ,@(loop for name in names collect `(defsfcomparison ,name))))
-             (defdfcomparison (name)
-               `(defprimop ,name 2 :value (:object) :double-float :double-float))
-             (defdfcomparisons (&rest names)
-               `(progn
-                  ,@(loop for name in names collect `(defdfcomparison ,name)))))
-    (defsfcomparisons core::two-arg-sf-= core::two-arg-sf-< core::two-arg-sf-<=
-      core::two-arg-sf-> core::two-arg-sf->=)
-    (defdfcomparisons core::two-arg-df-= core::two-arg-df-< core::two-arg-df-<=
-      core::two-arg-df-> core::two-arg-df->=))
-
-  (defprimop core::single-to-double 1 :value (:double-float) :single-float)
-  (defprimop core::double-to-single 1 :value (:single-float) :double-float)
-
-  (defprimop core::sf-vref 2 :value (:single-float) :object :object)
-  (defprimop core::df-vref 2 :value (:double-float) :object :object)
-  ;; These return the new value because it's a bit involved to rewrite BIR to use
-  ;; a linear datum more than once.
-  (defprimop core::sf-vset 3 :value (:single-float) :single-float :object :object)
-  (defprimop core::df-vset 3 :value (:double-float) :double-float :object :object))
+  (defprimop core:vaslist-length 1 :value))
 
 (macrolet ((defprimop (name ninputs out ast &rest readers)
              `(progn
