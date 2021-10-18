@@ -3,6 +3,37 @@
 ;;; A "primop" is something that can be "called" like a function (all its
 ;;; arguments are evaluated) but which is specially translated by the compiler.
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; CORE:PRIMOP special operator
+;;;
+;;; This allows primops to be used directly in source code. Use with caution.
+;;;
+
+(defmethod cst-to-ast:convert-special ((symbol (eql 'core::primop)) cst env
+                                       (system clasp-cleavir:clasp))
+  (unless (cst:proper-list-p cst)
+    (error 'cleavir-cst-to-ast:form-must-be-proper-list :cst cst))
+  (let* ((name (cst:raw (cst:second cst)))
+         (op (cleavir-primop-info:info name))
+         (nargs (cleavir-primop-info:ninputs op)))
+    (let ((count (- (length (cst:raw cst)) 2)))
+      (unless (= count nargs) ; 2 for PRIMOP and the name
+        (error 'cst-to-ast:incorrect-number-of-arguments-error
+               :cst cst :expected-min nargs :expected-max nargs
+               :observed count)))
+    (make-instance 'cleavir-ast:primop-ast
+      :info op
+      :argument-asts (cst-to-ast::convert-sequence
+                      (cst:rest (cst:rest cst))
+                      env system)
+      :origin (cst:source cst))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Primop definition machinery
+;;;
+
 ;;; Called by translate-simple-instruction. Return value irrelevant.
 (defgeneric translate-primop (opname instruction))
 ;;; Called by translate-conditional-test
@@ -95,6 +126,9 @@
          ,@body)
        ',name)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Particular primops
 ;;;
 
 (macrolet ((def-float-compare (sfname dfname op reversep)
