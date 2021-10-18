@@ -1411,6 +1411,7 @@ def configure(cfg):
     cfg.define("PROGRAM_CLASP",1)
     cfg.define("CLASP_THREADS",1)
     cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
+    cfg.define("CLASP_GIT_FULL_COMMIT",get_git_full_commit(cfg))
     cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
     cfg.define("DEFINE_CL_SYMBOLS",1)

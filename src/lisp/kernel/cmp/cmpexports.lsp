@@ -153,6 +153,7 @@
             compiler-fatal-error
             compiler-message-file
             compiler-message-file-position
+            define-primitive
             warn-undefined-global-variable
             warn-undefined-type
             warn-cannot-coerce

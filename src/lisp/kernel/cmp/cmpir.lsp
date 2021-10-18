@@ -1322,9 +1322,7 @@ and then the irbuilder-alloca, irbuilder-body."
 ;----------------------------------------------------------------------
 
 (defun get-primitives ()
-  (if (and (boundp '*primitives*) *primitives*)
-      *primitives*
-      (setf *primitives* (primitives-in-thread))))
+  *primitives*)
 
 (defun throw-if-mismatched-arguments (fn-name args)
   (let* ((info (gethash fn-name (get-primitives)))

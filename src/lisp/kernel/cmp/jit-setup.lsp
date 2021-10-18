@@ -34,8 +34,6 @@
 
 (defconstant +debug-dwarf-version+ 4)
 
-;; bound when a new thread is created
-(defvar *primitives*)
 (export '*primitives*)
 
 ;;; Bound thread-local when the builtins module is needed
@@ -49,7 +47,6 @@
 ;;;
 (eval-when (:load-toplevel :execute)
   (mp:push-default-special-binding 'cmp:*thread-safe-context* '(llvm-sys:create-thread-safe-context))
-  (mp:push-default-special-binding 'cmp:*primitives* nil)
   (mp:push-default-special-binding '*debugger-hook* nil)
   (mp:push-default-special-binding 'core::*handler-clusters* nil)
   (mp:push-default-special-binding 'core::*restart-clusters* nil)
