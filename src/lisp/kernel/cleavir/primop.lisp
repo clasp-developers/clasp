@@ -84,9 +84,9 @@
 (defmacro defvprimop-intrinsic (name param-info intrinsic)
   ;; TODO: Assert argument types? Or maybe that should be done at a lower level
   ;; in irc-intrinsic-etc.
-  `(defvprimop ,name ,param-info (call)
+  `(defvprimop ,name ,param-info (inst)
      (%intrinsic-invoke-if-landing-pad-or-call
-      ,intrinsic (mapcar #'in (rest (bir:inputs call))))))
+      ,intrinsic (mapcar #'in (bir:inputs inst)))))
 
 ;;; Define a primop called for effect.
 ;;; Here param-info is parameters only.
