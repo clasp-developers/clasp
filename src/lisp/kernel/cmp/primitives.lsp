@@ -488,6 +488,7 @@
     (:register-save-area* %register-save-area*%)
     (:return-type %return-type%)
     (:size_t %size_t%)
+    (:object %t*%)
     (:t* %t*%)
     (:t** %t**%)
     (:t*[0]* %t*[0]*%)
@@ -500,6 +501,7 @@
     (:void* %void*%)
     (:{i32.i1} %{i32.i1}%)
     (:{i64.i1} %{i64.i1}%)
+    (otherwise (error "Illegal type ~a~%" type-name))
     ))
 
 (defun lookup-type-list (type-names)
