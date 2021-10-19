@@ -54,7 +54,7 @@
 (defvar *primop-rtypes* (make-hash-table :test #'eq))
 
 (defun primop-rtype-info (primop-info)
-  (or (gethash primop-info *primop-rtypes*)
+  (or (gethash (cleavir-primop-info:name primop-info) *primop-rtypes*)
       (list* '(:object)
              (make-list (cleavir-primop-info:ninputs primop-info)
                         :initial-element :object))))
@@ -74,8 +74,7 @@
         (nsym (gensym "NAME")))
     `(progn
        (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) :value)
-       (setf (gethash (cleavir-primop-info:info ',name) *primop-rtypes*)
-             '(,@param-info))
+       (setf (gethash ',name *primop-rtypes*) '(,@param-info))
        (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
          (out (progn ,@body) (first (bir:outputs ,instparam))))
        ',name)))
@@ -98,8 +97,7 @@
         (nsym (gensym "NAME")))
     `(progn
        (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) :effect)
-       (setf (gethash (cleavir-primop-info:info ',name) *primop-rtypes*)
-             '(,@param-info))
+       (setf (gethash ',name *primop-rtypes*) '(,@param-info))
        (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
          ,@body)
        ',name)))
@@ -117,8 +115,7 @@
         (nsym (gensym "NAME")))
     `(progn
        (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) :value)
-       (setf (gethash (cleavir-primop-info:info ',name) *primop-rtypes*)
-             '(,@param-info))
+       (setf (gethash ',name *primop-rtypes*) '(,@param-info))
        (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
          (declare (ignore ,instparam)))
        (defmethod translate-conditional-primop ((,nsym (eql ',name))
