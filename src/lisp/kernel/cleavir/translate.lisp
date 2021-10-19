@@ -452,13 +452,10 @@
                                  (llvm-sys:get-type i))
       (cleavir-bir-disassembler:display
        (bir:module (bir:function instruction)))
-      (error "~a has wrong rtype; definitions ~a with definition-rtypes ~a; input rtype ~a"
+      (error "~a has wrong rtype; definitions ~a with definition-rtype ~a; input rtype ~a"
              (first (bir:inputs instruction))
              (bir:definitions (first (bir:inputs instruction)))
-             (cleavir-set:mapset
-              'list
-              #'cc-bir-to-bmir::definition-rtype
-              (bir:definitions (first (bir:inputs instruction))))
+             (cc-bir-to-bmir::definition-rtype (first (bir:inputs instruction)))
              (cc-bmir:rtype (first (bir:inputs instruction)))))
     (variable-out i o)))
 
