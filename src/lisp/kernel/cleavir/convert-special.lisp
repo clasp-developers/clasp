@@ -84,8 +84,7 @@
                for ty in required
                unless (cleavir-ctype:top-p ty system)
                  collect `(if (typep ,var
-                                     ',(discrimination-type
-                                        ty))
+                                     ',(discrimination-type ty))
                               ,var
                               (error 'type-error
                                      :datum ,var

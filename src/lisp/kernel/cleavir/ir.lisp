@@ -106,6 +106,8 @@
   (llvm-sys:create-fmul cmp:*irbuilder* x y label fast-math-flags))
 (defun %fdiv (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fdiv cmp:*irbuilder* x y label fast-math-flags))
+(defun %frem (x y &optional (label "") fast-math-flags)
+  (llvm-sys:create-frem cmp:*irbuilder* x y label fast-math-flags))
 
 (defun %fcmp-olt (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fcmp-olt cmp:*irbuilder* x y label fast-math-flags))
@@ -114,8 +116,13 @@
 (defun %fcmp-oeq (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fcmp-oeq cmp:*irbuilder* x y label fast-math-flags))
 
+(defun %fneg (value &optional (label "") fast-math-flags)
+  (llvm-sys:create-fneg cmp:*irbuilder* value label fast-math-flags))
+
 (defun %fpext (value type &optional (label ""))
   (llvm-sys:create-fpext cmp:*irbuilder* value type label))
+(defun %fptrunc (value type &optional (label ""))
+  (llvm-sys:create-fptrunc cmp:*irbuilder* value type label))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

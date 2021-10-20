@@ -854,7 +854,7 @@ namespace core {
 
   CL_PKG_NAME(ClPkg,abs);
   DOCGROUP(clasp)
-    CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
+  CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
     if (num.fixnump()) {
       gc::Fixnum fixnum = num.unsafe_fixnum();
       if (fixnum == MOST_NEGATIVE_FIXNUM) {
@@ -939,7 +939,7 @@ namespace core {
 
   CL_LISPIFY_NAME(negate);
   DOCGROUP(clasp)
-    CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
+  CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
     if (num.fixnump()) {
       gc::Fixnum fixnum = num.unsafe_fixnum();
       if (fixnum == MOST_NEGATIVE_FIXNUM) {
@@ -1073,7 +1073,9 @@ namespace core {
     return z->sqrt_();
   }
 
-  inline Number_sp clasp_reciprocal(Number_sp x) {
+  CL_LISPIFY_NAME(reciprocal);
+  DOCGROUP(clasp)
+  CL_DEFUN inline Number_sp clasp_reciprocal(Number_sp x) {
     if (x.fixnump() ) {
       Integer_sp ix = gc::As_unsafe<Integer_sp>(x);
       Fixnum fx = x.unsafe_fixnum();

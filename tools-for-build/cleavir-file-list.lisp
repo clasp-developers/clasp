@@ -220,7 +220,7 @@
  "src/lisp/kernel/cleavir/translation-environment"
  "src/lisp/kernel/cleavir/bir" "src/lisp/kernel/cleavir/bmir"
  "src/lisp/kernel/cleavir/bir-to-bmir" "src/lisp/kernel/cleavir/landing-pad"
- "src/lisp/kernel/cleavir/translate"
+ "src/lisp/kernel/cleavir/primop" "src/lisp/kernel/cleavir/translate"
  "src/lisp/kernel/cleavir/fixup-eclector-readtables"
  "src/lisp/kernel/cleavir/activate-clasp-readtables-for-eclector"
  "src/lisp/kernel/cleavir/define-unicode-tables"
