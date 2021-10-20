@@ -3698,6 +3698,21 @@ CL_DEFUN PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpac
 
 namespace llvmo {
 
+CL_LAMBDA(element-type nelems scalablep);
+CL_LISPIFY_NAME(vector-type-get);
+DOCGROUP(clasp)
+CL_DEFUN VectorType_sp VectorType_O::get(Type_sp elementType, unsigned nelems,
+                                         bool scalablep) {
+  VectorType_sp vt = VectorType_O::create();
+  llvm::VectorType *llvm_vt = llvm::VectorType::get(elementType->wrappedPtr(),
+                                                    nelems, scalablep);
+  vt->set_wrapped(llvm_vt);
+  return vt;
+}
+}; // namespace llvmo
+
+namespace llvmo {
+
 DOCGROUP(clasp)
 CL_LAMBDA(time)CL_DEFUN void llvm_sys__accumulate_llvm_usage_seconds(double time)
 {

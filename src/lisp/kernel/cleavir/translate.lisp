@@ -755,25 +755,25 @@
                do (cmp:irc-store v (return-value-elt i)))
          (cmp:irc-make-tmv (%size_t (length values)) (first values)))))
 
-(defun %cast-one (value from to)
-  (ecase from
-    ((:single-float)
-     (ecase to
-       ((:single-float) value)
-       ((:object) (cmp:irc-box-single-float value))))
-    ((:double-float)
-     (ecase to
-       ((:double-float) value)
-       ((:object) (cmp:irc-box-double-float value))))
-    ((:object)
-     (ecase to
-       ((:single-float) (cmp:irc-unbox-single-float value))
-       ((:double-float) (cmp:irc-unbox-double-float value))
-       ((:object) value)))))
+(defgeneric cast-one (from to value)
+  (:method (from to value)
+    (if (eql from to)
+        value
+        (error "BUG: Don't know how to cast ~a ~a to ~a" from value to))))
 
-(defun %cast-some (inputv inputrt outputrt)
+(defmethod cast-one ((from (eql :single-float)) (to (eql :object)) value)
+  (cmp:irc-box-single-float value))
+(defmethod cast-one ((from (eql :object)) (to (eql :single-float)) value)
+  (cmp:irc-unbox-single-float value))
+
+(defmethod cast-one ((from (eql :double-float)) (to (eql :object)) value)
+  (cmp:irc-box-double-float value))
+(defmethod cast-one ((from (eql :object)) (to (eql :double-float)) value)
+  (cmp:irc-unbox-double-float value))
+
+(defun %cast-some (inputrt outputrt inputv)
   (let ((Lin (length inputrt)) (Lout (length outputrt))
-        (pref (mapcar #'%cast-one inputv inputrt outputrt)))
+        (pref (mapcar #'cast-one inputrt outputrt inputv)))
     (cond ((<= Lout Lin) pref)
           (t
            (assert (every (lambda (r) (eq r :object)) (subseq outputrt Lin)))
@@ -790,36 +790,36 @@
                    ;; NOPs shouldn't actually be generated; paranoia here
                    (in input))
                   ((and (listp outputrt) (= (length outputrt) 1))
-                   (%cast-one (cmp:irc-tmv-primary (in input))
-                              :object (first outputrt)))
+                   (cast-one :object (first outputrt)
+                             (cmp:irc-tmv-primary (in input))))
                   ((null outputrt) nil)
                   (t (error "BUG: Cast from ~a to ~a" inputrt outputrt))))
            ((= (length inputrt) 1)
             (cond ((eq outputrt :multiple-values)
                    (cmp:irc-make-tmv (%size_t 1)
-                                     (%cast-one (in input)
-                                                (first inputrt) :object)))
+                                     (cast-one (first inputrt) :object
+                                               (in input))))
                   ((null outputrt) nil)
                   ((= (length outputrt) 1)
-                   (%cast-one (in input) (first inputrt) (first outputrt)))
+                   (cast-one (first inputrt) (first outputrt) (in input)))
                   (t ;; pad with nil
                    (assert (every (lambda (r) (eq r :object)) (rest outputrt)))
-                   (cons (%cast-one (in input) (first inputrt) (first outputrt))
+                   (cons (cast-one (first inputrt) (first outputrt) (in input))
                          (loop repeat (length (rest outputrt))
                                collect (%nil))))))
            (t
             (cond ((eq outputrt :multiple-values)
                    (%cast-to-mv
                     (loop for inv in (in input) for irt in inputrt
-                          collect (%cast-one inv irt :object))))
+                          collect (cast-one irt :object inv))))
                   ((= (length outputrt) 1)
                    (cond ((null inputrt)
                           (assert (equal outputrt '(:object)))
                           (%nil))
                          (t
-                          (%cast-one (first (in input))
-                                     (first inputrt) (first outputrt)))))
-                  (t (%cast-some (in input) inputrt outputrt)))))
+                          (cast-one (first inputrt) (first outputrt)
+                                    (first (in input))))))
+                  (t (%cast-some inputrt outputrt (in input))))))
      output)))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:memref2) abi)

@@ -4415,7 +4415,7 @@ public:
   ~VectorType_O() {}
 
 public: // static methods
-  static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
+  static VectorType_sp get(Type_sp etype, unsigned nelems, bool scalablep);
 }; // VectorType_O
 }; // llvmo
 /* from_object translators */
