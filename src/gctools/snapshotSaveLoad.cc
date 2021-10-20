@@ -2559,6 +2559,17 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           cur_header = next_header;
         }
       }
+      char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
+      if (pause_startup) {
+#ifdef USE_USER_SIGNAL
+        gctools::setup_user_signal();
+        gctools::wait_for_user_signal("Paused at startup after object files added");
+#else
+        printf("%s:%d PID = %d  Paused at startup after object files added to JIT - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+        fflush(stdout);
+        getchar();
+#endif
+      }
       {
       // Allocate all other objects
         MaybeTimeStartup time6("Allocate objects");

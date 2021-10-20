@@ -134,6 +134,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "export CLASP_DEBUG_SNAPSHOT  Dump info during snapshot loading\n"
              "export CLASP_DEBUG_OBJECT_FILES \"save\" saves all object files, anything else prints info about object file generation\n"
              "export CLASP_PAUSE_STARTUP (set to anything)  Pause right at startup before basic initialization\n"
+             "export CLASP_PAUSE_OBJECTS_ADDED (set to anything)  Pause right at startup during snapshot load after objects are added to the jit\n"
              "export CLASP_PAUSE_INIT (set to anything)  Pause after startup and after basic initialization\n"
              "export CLASP_DUMP_FUNCTIONS (set to anything)  Dump all function definitions at startup\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
