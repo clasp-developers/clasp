@@ -343,9 +343,6 @@
              `(progn
                 (cleavir-primop-info:defprimop ,name ,ninputs ,out)
                 (ast-to-bir:defprimop ,name ,ast ,@readers))))
-  (defprimop setf-fdefinition 1 :value
-    cc-ast:setf-fdefinition-ast cleavir-ast:name-ast)
-  
   (defprimop core::instance-cas 4 :value cc-ast:slot-cas-ast
     cc-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:object-ast
     cleavir-ast:slot-number-ast)
@@ -358,3 +355,17 @@
     cc-ast:wrapped-stamp-ast cleavir-ast:arg-ast)
   (defprimop core::rack-stamp 1 :value
     cc-ast:rack-stamp-ast cleavir-ast:arg-ast))
+
+;;; Get the attributes into the output of the setf-definition.
+(cleavir-primop-info:defprimop setf-fdefinition 1 :value)
+(defmethod ast-to-bir:compile-ast
+    ((ast cc-ast:setf-fdefinition-ast) inserter system)
+  (ast-to-bir:with-compiled-asts (rv ((cleavir-ast:name-ast ast))
+                                     inserter system)
+    (let ((out (make-instance 'bir:output
+                 :attributes (cleavir-ast:attributes ast))))
+      (ast-to-bir:insert inserter
+                         (make-instance 'bir:vprimop
+                           :info (cleavir-primop-info:info 'setf-fdefinition)
+                           :inputs rv :outputs (list out)))
+      (list out))))

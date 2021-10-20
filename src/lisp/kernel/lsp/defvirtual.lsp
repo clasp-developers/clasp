@@ -6,7 +6,7 @@
 (defmacro defvirtual (name lambda-list &body body)
     (multiple-value-bind (simple-lambda-list dispatch-symbol dispatch-class dispatch-index)
         (core:process-single-dispatch-lambda-list lambda-list)
-      (declare (ignore dispatch-symbol dispatch-index))
+      (declare (ignore dispatch-index))
       (multiple-value-bind (declares code docstring specials)
           (core:process-declarations body t)
         (declare (ignore specials))
