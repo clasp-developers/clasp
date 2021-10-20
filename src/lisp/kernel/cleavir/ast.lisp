@@ -9,8 +9,12 @@
 (defclass setf-fdefinition-ast (ast:fdefinition-ast)
   ())
 
-(defun make-setf-fdefinition-ast (name-ast &key origin)
-  (make-instance 'setf-fdefinition-ast :name-ast name-ast :origin origin))
+(defun make-setf-fdefinition-ast (name-ast
+                                  &key origin
+                                    (attributes
+                                     (cleavir-attributes:default-attributes)))
+  (make-instance 'setf-fdefinition-ast :name-ast name-ast
+                 :attributes attributes :origin origin))
 
 (cleavir-io:define-save-info setf-fdefinition-ast)
 
