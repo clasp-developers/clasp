@@ -357,15 +357,34 @@
     cc-ast:rack-stamp-ast cleavir-ast:arg-ast))
 
 ;;; Get the attributes into the output of the setf-definition.
+;;; Also get the name if it's there.
 (cleavir-primop-info:defprimop setf-fdefinition 1 :value)
 (defmethod ast-to-bir:compile-ast
-    ((ast cc-ast:setf-fdefinition-ast) inserter system)
-  (ast-to-bir:with-compiled-asts (rv ((cleavir-ast:name-ast ast))
-                                     inserter system)
-    (let ((out (make-instance 'bir:output
-                 :attributes (cleavir-ast:attributes ast))))
-      (ast-to-bir:insert inserter
-                         (make-instance 'bir:vprimop
-                           :info (cleavir-primop-info:info 'setf-fdefinition)
-                           :inputs rv :outputs (list out)))
-      (list out))))
+    ((ast cc-ast:setf-fdefinition-ast) inserter (system clasp-cleavir:clasp))
+  (let ((name (cleavir-ast:name-ast ast)))
+    (ast-to-bir:with-compiled-asts (rv (name) inserter system)
+      (let* ((name (if (typep name 'cleavir-ast:constant-ast)
+                       (cleavir-ast:value name)
+                       nil))
+             (out (make-instance 'bir:output
+                    :name name :attributes (cleavir-ast:attributes ast))))
+        (ast-to-bir:insert inserter
+                           (make-instance 'bir:vprimop
+                             :info (cleavir-primop-info:info 'setf-fdefinition)
+                             :inputs rv :outputs (list out)))
+        (list out)))))
+
+(defmethod ast-to-bir:compile-ast
+    ((ast cleavir-ast:fdefinition-ast) inserter (system clasp-cleavir:clasp))
+  (let ((name (cleavir-ast:name-ast ast)))
+    (ast-to-bir:with-compiled-asts (rv (name) inserter system)
+      (let* ((name (if (typep name 'cleavir-ast:constant-ast)
+                       (cleavir-ast:value name)
+                       nil))
+             (out (make-instance 'cleavir-bir:output
+                    :name name :attributes (cleavir-ast:attributes ast))))
+        (ast-to-bir:insert inserter
+                           (make-instance 'cleavir-bir:vprimop
+                             :info (cleavir-primop-info:info 'fdefinition)
+                             :inputs rv :outputs (list out)))
+        (list out)))))
