@@ -659,6 +659,7 @@
   (replace-with-vprimop-and-wrap call 'core::df-vref
                                  (cleavir-ctype:range 'double-float '* '*
                                                       *clasp-system*)))
+
 (define-bir-transform core:row-major-aset (call)
   ((simple-array single-float (*)) t t)
   (wrap-in-thei call
@@ -683,3 +684,12 @@
                           ;; takes (value array index)
                           (list (third args) (first args) (second args)))
                 :info (cleavir-primop-info:info 'core::df-vset)))
+
+(define-bir-transform (setf aref) (call) (t (simple-array single-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::sf-vset
+                                 (cleavir-ctype:range 'single-float '* '*
+                                                      *clasp-system*)))
+(define-bir-transform (setf aref) (call) (t (simple-array double-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::df-vset
+                                 (cleavir-ctype:range 'double-float '* '*
+                                                      *clasp-system*)))
