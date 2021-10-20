@@ -2024,8 +2024,6 @@ void snapshot_save(const std::string& filename) {
   //
   // Clear out a few things
   //
-  comp::_sym_STARprimitivesSTAR->setf_symbolValue(nil<core::T_O>());
-
   gctools::gctools__garbage_collect();
   gctools::gctools__garbage_collect();
   gctools::gctools__garbage_collect();
@@ -2890,7 +2888,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // Clear out a few things
   //
-  comp::_sym_STARprimitivesSTAR->setf_symbolValue(nil<core::T_O>());
 
   return exitCode;
 }

@@ -59,6 +59,7 @@ extern "C" {
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/array.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/activationFrame.h>
@@ -251,6 +252,26 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 
 
 };
+
+extern "C" {
+/* These functions are called by the runtime when the compiler wants to unbox
+ * things. Unlike the FLI translators below, they are not permissive, in that
+ * they will signal a type error if given anything but the particular type that's
+ * supposed to be unboxed.
+ * FIXME: Would be cleaner if we only had one set of translators, if they
+ * actually have the same requirements (I don't know if this is the case).
+ */
+
+float cc_unbox_single_float(core::T_O* box) {
+  T_sp tbox((gctools::Tagged)box);
+  return gc::As<SingleFloat_sp>(tbox).unsafe_single_float();
+}
+double cc_unbox_double_float(core::T_O* box) {
+  T_sp tbox((gctools::Tagged)box);
+  return gc::As<DoubleFloat_sp>(tbox)->get();
+}
+
+}; // extern "C"
 
 extern "C" {
 
@@ -916,6 +937,62 @@ unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
 void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, unsigned char v) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
   (*array)[index] = v;
+}
+
+float cc_simpleFloatVectorAref(core::T_O* array, core::T_O* index) {
+  T_sp tarray((gctools::Tagged)array);
+  T_sp tindex((gctools::Tagged)index);
+  SimpleVector_float_sp svarray = gc::As<SimpleVector_float_sp>(tarray);
+  if (tindex.fixnump()) {
+    Fixnum findex = tindex.unsafe_fixnum();
+    if ((0 <= findex) && (findex < svarray->length()))
+      return (*svarray)[findex];
+    else TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer,
+                                               core::make_fixnum(0),
+                                               Cons_O::createList(core::make_fixnum(svarray->length()))));
+  } else TYPE_ERROR(tindex, cl::_sym_fixnum);
+}
+
+double cc_simpleDoubleVectorAref(core::T_O* array, core::T_O* index) {
+  T_sp tarray((gctools::Tagged)array);
+  T_sp tindex((gctools::Tagged)index);
+  SimpleVector_double_sp svarray = gc::As<SimpleVector_double_sp>(tarray);
+  if (tindex.fixnump()) {
+    Fixnum findex = tindex.unsafe_fixnum();
+    if ((0 <= findex) && (findex < svarray->length()))
+      return (*svarray)[findex];
+    else TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer,
+                                               core::make_fixnum(0),
+                                               Cons_O::createList(core::make_fixnum(svarray->length()))));
+  } else TYPE_ERROR(tindex, cl::_sym_fixnum);
+}
+
+void cc_simpleFloatVectorAset(float v, core::T_O* array, core::T_O* index) {
+  T_sp tarray((gctools::Tagged)array);
+  T_sp tindex((gctools::Tagged)index);
+  SimpleVector_float_sp svarray = gc::As<SimpleVector_float_sp>(tarray);
+  if (tindex.fixnump()) {
+    Fixnum findex = tindex.unsafe_fixnum();
+    if ((0 <= findex) && (findex < svarray->length()))
+      (*svarray)[findex] = v;
+    else TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer,
+                                               core::make_fixnum(0),
+                                               Cons_O::createList(core::make_fixnum(svarray->length()))));
+  } else TYPE_ERROR(tindex, cl::_sym_fixnum);
+}
+
+void cc_simpleDoubleVectorAset(double v, core::T_O* array, core::T_O* index) {
+  T_sp tarray((gctools::Tagged)array);
+  T_sp tindex((gctools::Tagged)index);
+  SimpleVector_double_sp svarray = gc::As<SimpleVector_double_sp>(tarray);
+  if (tindex.fixnump()) {
+    Fixnum findex = tindex.unsafe_fixnum();
+    if ((0 <= findex) && (findex < svarray->length()))
+      (*svarray)[findex] = v;
+    else TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer,
+                                               core::make_fixnum(0),
+                                               Cons_O::createList(core::make_fixnum(svarray->length()))));
+  } else TYPE_ERROR(tindex, cl::_sym_fixnum);
 }
 
 core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)

@@ -315,9 +315,13 @@
 
 ;;;
 
-(macrolet ((defprimop (name ninputs out)
+(macrolet ((defprimop (name ninputs out &rest rtype-info)
              `(progn
                 (cleavir-primop-info:defprimop ,name ,ninputs ,out)
+                ,@(when rtype-info
+                    `((setf (gethash (cleavir-primop-info:info ',name)
+                                     *primop-rtypes*)
+                            '(,@rtype-info))))
                 (cleavir-cst-to-ast:defprimop ,name))))
   (defprimop core::vector-length 1 :value)
   (defprimop core::%displacement 1 :value)

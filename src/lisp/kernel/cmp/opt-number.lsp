@@ -32,9 +32,16 @@
 (define-compiler-macro - (minuend &rest subtrahends)
   (if (proper-list-p subtrahends)
       (if subtrahends
-          `(core:two-arg-- ,minuend ,(core:expand-associative '+ 'core:two-arg-+ subtrahends 0))
+          `(core:two-arg-- ,minuend (+ ,@subtrahends))
           `(core:negate ,minuend))
       (error "The - operator can not be part of a form that is a dotted list.")))
+
+(define-compiler-macro / (dividend &rest divisors)
+  (if (proper-list-p divisors)
+      (if divisors
+          `(core:two-arg-/ ,dividend (* ,@divisors))
+          `(core:reciprocal ,dividend))
+      (error "The / operator can not be part of a form that is a dotted list.")))
 
 (define-compiler-macro < (&whole form &rest numbers)
   (core:expand-compare form 'core:two-arg-< numbers 'real))
@@ -62,6 +69,13 @@
 
 (define-compiler-macro 1- (x)
   `(core:two-arg-- ,x 1))
+
+;;; TODO: With integers it might be easier to do log base 2; rewriting as such
+;;; would need a more sophisticated transformation.
+(define-compiler-macro log (&whole form number &optional (base nil base-p))
+  (if base-p
+      `(/ (log ,number) (log ,base))
+      form))
 
 ;;; log* operations
 (define-compiler-macro logand (&rest numbers)

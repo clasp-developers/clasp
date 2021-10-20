@@ -90,9 +90,6 @@
 ;;; Ditto
 (defgeneric translate-terminator (instruction abi next))
 
-;;; Ditto
-(defgeneric translate-primop (opname instruction))
-
 ;;; Put in source info.
 (defmethod translate-simple-instruction :around
     ((instruction bir:instruction) abi)
@@ -211,6 +208,10 @@
    (cc-bmir:info instruction)
    (in (first (bir:inputs instruction)))
    (first next) (second next)))
+
+(defmethod translate-conditional-test ((inst bir:vprimop) next)
+  (translate-conditional-primop (cleavir-primop-info:name (bir:info inst))
+                                inst next))
 
 (defmethod translate-terminator ((instruction bir:ifi) abi next)
   (declare (ignore abi))
@@ -446,20 +447,17 @@
 (defmethod translate-simple-instruction ((instruction bir:writevar)
                                          abi)
   (declare (ignore abi))
-  (let ((i (in (first (bir:inputs instruction)))))
-    (unless (llvm-sys:type-equal cmp:%t*% (llvm-sys:get-type i))
+  (let ((i (in (bir:input instruction))) (o (bir:output instruction)))
+    (unless (llvm-sys:type-equal (vrtype->llvm (first (cc-bmir:rtype o)))
+                                 (llvm-sys:get-type i))
       (cleavir-bir-disassembler:display
        (bir:module (bir:function instruction)))
-      (error "~a has wrong rtype; definitions ~a with definition-rtypes ~a; input rtype ~a"
+      (error "~a has wrong rtype; definitions ~a with definition-rtype ~a; input rtype ~a"
              (first (bir:inputs instruction))
              (bir:definitions (first (bir:inputs instruction)))
-             (cleavir-set:mapset
-              'list
-              #'cc-bir-to-bmir::definition-rtype
-              (bir:definitions (first (bir:inputs instruction))))
+             (cc-bir-to-bmir::definition-rtype (first (bir:inputs instruction)))
              (cc-bmir:rtype (first (bir:inputs instruction)))))
-              
-    (variable-out i (first (bir:outputs instruction)))))
+    (variable-out i o)))
 
 (defmethod translate-simple-instruction ((instruction bir:readvar) abi)
   (declare (ignore abi))
@@ -750,53 +748,79 @@
     (assert (equal (length outputrt) ninputs))
     (out (if (= ninputs 1) (in (first inputs)) (mapcar #'in inputs)) output)))
 
-(defmethod translate-simple-instruction ((instr cc-bmir:ftm) (abi abi-x86-64))
-  (let* ((input (bir:input instr))
-         (inputrt (cc-bmir:rtype input))
-         (output (bir:output instr))
-         (outputrt (cc-bmir:rtype output)))
-    (assert (and (listp inputrt) (every (lambda (x) (eq x :object)) inputrt)))
-    (assert (eq outputrt :multiple-values))
-    (cond ((equal inputrt '(:object))
-           (out (cmp:irc-make-tmv (%size_t 1) (in input)) output))
-          ((null inputrt)
-           (out (cmp:irc-make-tmv (%size_t 0) (%nil)) output))
+(defun %cast-to-mv (values)
+  (cond ((null values) (cmp:irc-make-tmv (%size_t 0) (%nil)))
+        (t
+         (loop for i from 1 for v in (rest values)
+               do (cmp:irc-store v (return-value-elt i)))
+         (cmp:irc-make-tmv (%size_t (length values)) (first values)))))
+
+(defun %cast-one (value from to)
+  (ecase from
+    ((:single-float)
+     (ecase to
+       ((:single-float) value)
+       ((:object) (cmp:irc-box-single-float value))))
+    ((:double-float)
+     (ecase to
+       ((:double-float) value)
+       ((:object) (cmp:irc-box-double-float value))))
+    ((:object)
+     (ecase to
+       ((:single-float) (cmp:irc-unbox-single-float value))
+       ((:double-float) (cmp:irc-unbox-double-float value))
+       ((:object) value)))))
+
+(defun %cast-some (inputv inputrt outputrt)
+  (let ((Lin (length inputrt)) (Lout (length outputrt))
+        (pref (mapcar #'%cast-one inputv inputrt outputrt)))
+    (cond ((<= Lout Lin) pref)
           (t
-           (let ((ninputs (length inputrt))
-                 (ins (in input)))
-             (loop for i from 1 below ninputs
-                   do (cmp:irc-store (elt ins i) (return-value-elt i)))
-             (out (cmp:irc-make-tmv (%size_t ninputs) (first ins)) output))))))
+           (assert (every (lambda (r) (eq r :object)) (subseq outputrt Lin)))
+           (nconc pref (loop repeat (- Lout Lin) collect (%nil)))))))
 
-(defmethod translate-simple-instruction ((instr cc-bmir:mtf) (abi abi-x86-64))
-  (assert (= (length (bir:outputs instr)) 1))
-  (assert (equal (cc-bmir:rtype (bir:output instr)) '(:object)))
-  (out (cmp:irc-tmv-primary (in (bir:input instr))) (bir:output instr)))
-
-(defmethod translate-simple-instruction ((inst cc-bmir:fixed-values-pad) abi)
-  (declare (ignore abi))
-  (let* ((input (bir:input inst)) (ins (in input))
-         (inputrt (cc-bmir:rtype input)) (ninputs (length inputrt))
-         (output (bir:output inst))
-         (outputrt (cc-bmir:rtype output)) (noutputs (length outputrt)))
-    (out (cond ((equal outputrt '(:object))
-                ;; Single value object rtypes are not represented as lists, so
-                ;; they have to be handled a little specially
-                (cond ((equal inputrt '(:object)) ins)
-                      ((null inputrt) (%nil))
-                      (t (first ins))))
-               ((equal inputrt '(:object))
-                (cond ((null outputrt) nil)
-                      ;; outputrt = (:object) handled above
-                      (t (list* ins (make-list (1- noutputs)
-                                               :initial-element (%nil))))))
-               ((< (length outputrt) (length inputrt))
-                ;; Shrink
-                (subseq ins 0 ninputs))
-               (t ;; Expand
-                (append ins (make-list (- noutputs ninputs)
-                                       :initial-element (%nil)))))
-         output)))
+(defmethod translate-simple-instruction ((instr cc-bmir:cast) (abi abi-x86-64))
+  (let* ((input (bir:input instr)) (inputrt (cc-bmir:rtype input))
+         (output (bir:output instr)) (outputrt (cc-bmir:rtype output)))
+    ;; most of this is special casing crap due to 1-value values not being
+    ;; passed around as lists.
+    (out
+     (cond ((eq inputrt :multiple-values)
+            (cond ((eq outputrt :multiple-values)
+                   ;; NOPs shouldn't actually be generated; paranoia here
+                   (in input))
+                  ((and (listp outputrt) (= (length outputrt) 1))
+                   (%cast-one (cmp:irc-tmv-primary (in input))
+                              :object (first outputrt)))
+                  ((null outputrt) nil)
+                  (t (error "BUG: Cast from ~a to ~a" inputrt outputrt))))
+           ((= (length inputrt) 1)
+            (cond ((eq outputrt :multiple-values)
+                   (cmp:irc-make-tmv (%size_t 1)
+                                     (%cast-one (in input)
+                                                (first inputrt) :object)))
+                  ((null outputrt) nil)
+                  ((= (length outputrt) 1)
+                   (%cast-one (in input) (first inputrt) (first outputrt)))
+                  (t ;; pad with nil
+                   (assert (every (lambda (r) (eq r :object)) (rest outputrt)))
+                   (cons (%cast-one (in input) (first inputrt) (first outputrt))
+                         (loop repeat (length (rest outputrt))
+                               collect (%nil))))))
+           (t
+            (cond ((eq outputrt :multiple-values)
+                   (%cast-to-mv
+                    (loop for inv in (in input) for irt in inputrt
+                          collect (%cast-one inv irt :object))))
+                  ((= (length outputrt) 1)
+                   (cond ((null inputrt)
+                          (assert (equal outputrt '(:object)))
+                          (%nil))
+                         (t
+                          (%cast-one (first (in input))
+                                     (first inputrt) (first outputrt)))))
+                  (t (%cast-some (in input) inputrt outputrt)))))
+     output)))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:memref2) abi)
   (declare (ignore abi))
@@ -936,7 +960,7 @@
   (declare (ignore abi))
   (out (cmp:irc-cmpxchg (cmp::irc-rack-slot-address
                          (in (third (bir:inputs inst)))
-                         (cmp::irc-untag-fixnum
+                         (cmp:irc-untag-fixnum
                           (in (fourth (bir:inputs inst)))
                           cmp:%size_t% "slot-location"))
                         (in (first (bir:inputs inst)))
@@ -1116,6 +1140,18 @@
                                     ""))
              immediate-or-index))
        (first (bir:outputs inst))))
+
+(defmethod translate-simple-instruction
+    ((inst cc-bmir:unboxed-constant-reference) abi)
+  (declare (ignore abi))
+  (let ((val (bir:constant-value inst))
+        (out (bir:output inst)))
+    (out (ecase (first (cc-bmir:rtype out))
+           ((:single-float)
+            (llvm-sys:constant-fp-get-type-double cmp:%float% val))
+           ((:double-float)
+            (llvm-sys:constant-fp-get-type-double cmp:%double% val)))
+         out)))
 
 (defun initialize-iblock-translation (iblock)
   (let ((phis (bir:inputs iblock)))
@@ -1473,7 +1509,6 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir-transformations (module system)
   (ver module "start")
-  (when *dis* (cleavir-bir-disassembler:display module))
   (bir-transformations:module-eliminate-catches module)
   (ver module "elim catches")
   (bir-transformations:find-module-local-calls module)
@@ -1485,15 +1520,20 @@ COMPILE-FILE will use the default *clasp-env*."
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   (bir-transformations:module-generate-type-checks module system)
-  (cc-bir-to-bmir:assign-module-rtypes module)
-  (cc-bir-to-bmir:insert-values-coercion-into-module module)
-  ;; These should happen last since they are like "post passes" which
-  ;; do not modify the flow graph.
+  ;; These should happen after higher level optimizations since they are like
+  ;; "post passes" which do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.
   (bir-transformations:determine-function-environments module)
   (bir-transformations:determine-closure-extents module)
   (bir-transformations:determine-variable-extents module)
-  (when *dis* (cleavir-bir-disassembler:display module))
+  ;; These currently use information about variable extents, which is why they're
+  ;; after the "post" passes. It may be better to not use that information so
+  ;; these can be before them?
+  (cc-bir-to-bmir:assign-module-rtypes module)
+  (cc-bir-to-bmir:insert-casts-into-module module)
+  (when *dis*
+    (cleavir-bir-disassembler:display module :show-ctype nil)
+    (break))
   (values))
 
 (defun translate-ast (ast &key (abi *abi-x86-64*)

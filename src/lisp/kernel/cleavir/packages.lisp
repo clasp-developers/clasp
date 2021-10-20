@@ -37,7 +37,8 @@
    #:*code-walker*
    #:alloca-i8
    #:inline-ast
-   ))
+   )
+  (:export #:primop-rtype-info))
 
 (defpackage #:clasp-cleavir-ast
   (:nicknames #:cc-ast)
@@ -102,14 +103,15 @@
   (:local-nicknames (#:bir #:cleavir-bir))
   (:export #:reduce-module-typeqs)
   (:export #:reduce-module-primops)
-  (:export #:assign-module-rtypes #:insert-values-coercion-into-module))
+  (:export #:assign-module-rtypes #:insert-casts-into-module))
 
 (defpackage #:clasp-cleavir-bmir
   (:nicknames #:cc-bmir)
-  (:shadow #:characterp #:consp #:load)
+  (:shadow #:characterp #:consp #:load #:variable)
   (:local-nicknames (#:bir #:cleavir-bir))
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store #:cas)
-  (:export #:ftm #:mtf #:fixed-values-pad)
-  (:export #:datum #:output #:phi #:rtype))
+  (:export #:cast #:unboxed-constant-reference)
+  (:export #:datum #:output #:phi #:variable)
+  (:export #:rtype))

@@ -153,6 +153,7 @@
             compiler-fatal-error
             compiler-message-file
             compiler-message-file-position
+            define-primitive
             warn-undefined-global-variable
             warn-undefined-type
             warn-cannot-coerce
@@ -247,6 +248,10 @@
             irc-untag-fixnum
             irc-untag-general
             irc-untag-cons
+            irc-unbox-single-float
+            irc-box-single-float
+            irc-unbox-double-float
+            irc-box-double-float
             irc-fdefinition
             irc-setf-fdefinition
             irc-real-array-displacement
