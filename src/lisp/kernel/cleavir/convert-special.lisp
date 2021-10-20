@@ -538,6 +538,7 @@
       (t
        (cleavir-ast:make-fdefinition-ast
         (cleavir-ast:make-constant-ast name :origin (cst:source cst))
+        :attributes (cleavir-env:attributes info)
         :origin source)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
