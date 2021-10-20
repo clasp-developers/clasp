@@ -264,7 +264,7 @@
 
 (defvprimop-intrinsic core::sf-vref ((:single-float) :object :object)
   "cc_simpleFloatVectorAref")
-(defvprimop-intrinsic core::df-aref ((:double-float) :object :object)
+(defvprimop-intrinsic core::df-vref ((:double-float) :object :object)
   "cc_simpleDoubleVectorAref")
 
 ;;; These return the new value because it's a bit involved to rewrite BIR to use

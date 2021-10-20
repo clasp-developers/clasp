@@ -289,17 +289,25 @@
 
 ;;; Given two value rtypes, return the most preferable.
 ;;; More sophisticated representation selection may be required in the future.
-(defun min-vrtype (vrt1 vrt2)
-  (ecase vrt1
-    ((:single-float) (ecase vrt2 ((:single-float :object) vrt1)))
-    ((:double-float) (ecase vrt2 ((:double-float :object) vrt1)))
-    ((:object) (ecase vrt2 ((:single-float :double-float :object) vrt2)))))
+(defgeneric min-vrtype (vrt1 vrt2))
+(defmethod min-vrtype (vrt1 vrt2)
+  (if (eql vrt1 vrt2)
+      vrt1
+      (error "BUG: ~a not defined on ~a ~a" 'min-vrtype vrt1 vrt2)))
+(defmethod min-vrtype ((vrt1 (eql :object)) vrt2) vrt2)
+(defmethod min-vrtype (vrt1 (vrt2 (eql :object))) vrt1)
 
-(defun max-vrtype (vrt1 vrt2)
-  (ecase vrt1
-    ((:single-float) (ecase vrt2 ((:single-float :object) vrt2)))
-    ((:double-float) (ecase vrt2 ((:double-float :object) vrt2)))
-    ((:object) (ecase vrt2 ((:single-float :double-float :object) vrt1)))))
+(defgeneric max-vrtype (vrt1 vrt2))
+(defmethod max-vrtype (vrt1 vrt2)
+  (if (eql vrt1 vrt2)
+      vrt1
+      (error "BUG: ~a not defined on ~a ~a" 'max-vrtype vrt1 vrt2)))
+(defmethod max-vrtype ((vrt1 (eql :object)) vrt2)
+  (declare (ignore vrt2))
+  vrt1)
+(defmethod max-vrtype (vrt1 (vrt2 (eql :object)))
+  (declare (ignore vrt1))
+  vrt2)
 
 ;;; Given two rtypes, return the most preferable rtype.
 (defun min-rtype (rt1 rt2)
