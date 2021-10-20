@@ -50,11 +50,10 @@
   (let ((*package* (find-package "KEYWORD")))
     (write-to-string datum :escape t :readably nil :pretty nil)))
 
-(defun vrtype->llvm (vrtype)
-  (ecase vrtype
-    ((:object) cmp:%t*%)
-    ((:single-float) cmp:%float%)
-    ((:double-float) cmp:%double%)))
+(defgeneric vrtype->llvm (vrtype))
+(defmethod vrtype->llvm ((vrtype (eql :object))) cmp:%t*%)
+(defmethod vrtype->llvm ((vrtype (eql :single-float))) cmp:%float%)
+(defmethod vrtype->llvm ((vrtype (eql :double-float))) cmp:%double%)
 
 (defun bind-variable (var)
   (if (bir:immutablep var)
