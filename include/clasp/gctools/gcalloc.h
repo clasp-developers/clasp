@@ -106,9 +106,6 @@ inline void* verify_alignment(void* ptr) {
 
 inline void* monitor_alloc(void* ptr,size_t sz) {
   // printf("%s:%d Allocate pointer size: %lu at %p\n", __FILE__, __LINE__, sz, ptr);
-  if (sz==32784) {
-    printf("%s:%d  It's one of the special objects that fail when enumerating\n", __FILE__, __LINE__ );
-  }
   return ptr;
 }
 
