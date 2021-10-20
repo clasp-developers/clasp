@@ -261,15 +261,29 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *bir-transformers* (make-hash-table :test #'equal)))
 
+(defun arg-subtypep (arg ctype)
+  (cleavir-ctype:subtypep (cleavir-ctype:primary (bir:ctype arg) *clasp-system*)
+                          ctype *clasp-system*))
+
+(defun maybe-bir-transform (call transforms)
+  (loop with args = (rest (bir:inputs call))
+        with nargs = (length args)
+        for (transform . types) in transforms
+        when (and (= (length types) nargs) (every #'arg-subtypep args types))
+          do (funcall transform call)
+          and return t))
+
+(defmethod cleavir-bir-transformations:transform-call
+    ((system clasp) key call)
+  (let ((trans (gethash key *bir-transformers*)))
+    (if trans
+        (maybe-bir-transform call trans)
+        nil)))
+
 (defmacro define-bir-transformation (name)
-  `(progn
-     (eval-when (:compile-toplevel :load-toplevel :execute)
-       (setf (gethash ',name *bir-transformers*) nil)
-       (setf (gethash ',name *fn-transforms*)
-             (list
-              (lambda (call)
-                (maybe-bir-transform call
-                                     (gethash ',name *bir-transformers*))))))
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (setf (gethash ',name *bir-transformers*) nil)
+     (setf (gethash ',name *fn-transforms*) '(,name))
      ',name))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -296,18 +310,6 @@
          (define-bir-transformation ,name))
        (%def-bir-transformer ',name (lambda (,instparam) ,@body) '(,@param-types))
        ',name)))
-
-(defun arg-subtypep (arg ctype)
-  (cleavir-ctype:subtypep (cleavir-ctype:primary (bir:ctype arg) *clasp-system*)
-                          ctype *clasp-system*))
-
-(defun maybe-bir-transform (call transforms)
-  (loop with args = (rest (bir:inputs call))
-        with nargs = (length args)
-        for (transform . types) in transforms
-        when (and (= (length types) nargs) (every #'arg-subtypep args types))
-          do (funcall transform call)
-          and return t))
 
 ;;; for folding identity operations.
 (defun replace-call-with-argument (call idx)
