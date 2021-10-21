@@ -127,7 +127,9 @@
          (save (%intrinsic-call "llvm.stacksave" nil))
          (mv-temp (cmp:alloca-temp-values nvals)))
     (setf (dynenv-storage inst) (list save nvals mv-temp))
-    (out (%intrinsic-call "cc_save_values" (list nvals primary mv-temp)) outp))
+    (out (%intrinsic-call "cc_save_values" (list nvals primary mv-temp)
+                          (datum-name-as-string outp))
+         outp))
   ;; Continue
   (cmp:irc-br (first next)))
 
@@ -178,7 +180,8 @@
   ;; When the test is not a conditional test, just grab the value and
   ;; compare to NIL.
   (cmp:irc-cond-br
-   (cmp:irc-icmp-eq (in (first (bir:outputs instruction))) (%nil))
+   (cmp:irc-icmp-eq (in (first (bir:outputs instruction))) (%nil)
+                    (datum-name-as-string (first (bir:outputs instruction))))
    (second next) (first next)))
 (defmethod translate-conditional-test
     ((instruction bir:conditional-test) next)
@@ -188,7 +191,8 @@
 (defmethod translate-conditional-test ((instruction bir:eq-test) next)
   (let ((inputs (bir:inputs instruction)))
     (cmp:irc-cond-br
-     (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs)))
+     (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs))
+                      (datum-name-as-string (first (bir:outputs instruction))))
      (first next) (second next))))
 
 (defmacro define-tag-test (inst mask tag)
@@ -594,15 +598,17 @@
          (iinputs (mapcar #'in inputs))
          (output (first (bir:outputs instruction))))
     (out (closure-call-or-invoke
-          (first iinputs) (rest iinputs))
+          (first iinputs) (rest iinputs)
+          :label (datum-name-as-string output))
          output)))
 
-(defun general-mv-local-call (callee-info tmv)
+(defun general-mv-local-call (callee-info tmv label)
   (%intrinsic-invoke-if-landing-pad-or-call
    "cc_call_multipleValueOneFormCallWithRet0"
-   (list (enclose callee-info :dynamic nil) tmv)))
+   (list (enclose callee-info :dynamic nil) tmv)
+   label))
 
-(defun direct-mv-local-call (tmv callee-info nreq nopt rest-var)
+(defun direct-mv-local-call (tmv callee-info nreq nopt rest-var label)
   (let* ((rnret (cmp:irc-tmv-nret tmv))
          (rprimary (cmp:irc-tmv-primary tmv))
          (nfixed (+ nreq nopt))
@@ -684,7 +690,9 @@
              (function (main-function callee-info))
              (function-type (llvm-sys:get-function-type function))
              (call
-               (cmp::irc-call-or-invoke function-type function arguments)))
+               (cmp::irc-call-or-invoke function-type function arguments
+                                        cmp:*current-unwind-landing-pad-dest*
+                                        label)))
         #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
         call)))))
 
@@ -692,6 +700,7 @@
     ((instruction bir:mv-local-call) abi)
   (declare (ignore abi))
   (let* ((output (first (bir:outputs instruction)))
+         (oname (datum-name-as-string output))
          (callee (bir:callee instruction))
          (callee-info (find-llvm-function-info callee))
          (tmv (in (second (bir:inputs instruction)))))
@@ -699,9 +708,9 @@
         (cmp::process-cleavir-lambda-list (bir:lambda-list callee))
       (declare (ignore keyargs aok aux))
       (out (if (or key-flag varest-p)
-               (general-mv-local-call callee-info tmv)
+               (general-mv-local-call callee-info tmv oname)
                (direct-mv-local-call
-                tmv callee-info (car req) (car opt) rest-var))
+                tmv callee-info (car req) (car opt) rest-var oname))
            output))))
 
 (defmethod translate-simple-instruction ((instruction bir:mv-call) abi)
@@ -710,7 +719,8 @@
     (out (%intrinsic-invoke-if-landing-pad-or-call
           "cc_call_multipleValueOneFormCallWithRet0"
           (list (in (first (bir:inputs instruction)))
-                (in (second (bir:inputs instruction)))))
+                (in (second (bir:inputs instruction))))
+          (datum-name-as-string output))
          output)))
 
 (defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
@@ -718,7 +728,8 @@
   (let ((output (first (bir:outputs instruction))))
     (out (unsafe-multiple-value-foreign-call
           (cc-bir:function-name instruction)
-          (mapcar #'in (bir:inputs instruction)) abi)
+          (mapcar #'in (bir:inputs instruction)) abi
+          :label (datum-name-as-string output))
          output)))
 
 (defmethod translate-simple-instruction
@@ -831,7 +842,9 @@
 (defmethod translate-simple-instruction ((inst cc-bmir:load) abi)
   (declare (ignore abi))
   (out (cmp:irc-load-atomic (in (first (bir:inputs inst)))
-                            :order (cmp::order-spec->order (cc-bir:order inst)))
+                            :order (cmp::order-spec->order (cc-bir:order inst))
+                            :label (datum-name-as-string
+                                    (first (bir:outputs inst))))
        (first (bir:outputs inst))))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:store) abi)
@@ -850,7 +863,9 @@
   (out (cmp:irc-cmpxchg (in (first (bir:inputs inst)))
                         (in (second (bir:inputs inst)))
                         (in (third (bir:inputs inst)))
-                        :order (cmp::order-spec->order (cc-bir:order inst)))
+                        :order (cmp::order-spec->order (cc-bir:order inst))
+                        :label (datum-name-as-string
+                                (first (bir:outputs inst))))
        (first (bir:outputs inst))))
 
 (defmethod translate-simple-instruction ((inst bir:vprimop) abi)
@@ -859,7 +874,8 @@
 
 (defmethod translate-primop ((name (eql 'symbol-value)) inst)
   (out (%intrinsic-invoke-if-landing-pad-or-call
-        "cc_safe_symbol_value" (list (in (first (bir:inputs inst)))))
+        "cc_safe_symbol_value" (list (in (first (bir:inputs inst))))
+        (datum-name-as-string (first (bir:outputs inst))))
        (first (bir:outputs inst))))
 (defmethod translate-primop ((name (eql 'fdefinition)) inst)
   (let ((symbol (in (first (bir:inputs inst))))
@@ -879,15 +895,18 @@
 (defmethod translate-primop ((name (eql 'core::%displaced-index-offset)) inst)
   (out
    (cmp:irc-tag-fixnum
-    (cmp:irc-real-array-index-offset (in (first (bir:inputs inst)))))
+    (cmp:irc-real-array-index-offset (in (first (bir:inputs inst))))
+    (datum-name-as-string (first (bir:outputs inst))))
    (first (bir:outputs inst))))
 (defmethod translate-primop ((name (eql 'core::%array-total-size)) inst)
   (out (cmp:irc-tag-fixnum
-        (cmp:irc-array-total-size (in (first (bir:inputs inst)))))
+        (cmp:irc-array-total-size (in (first (bir:inputs inst))))
+        (datum-name-as-string (first (bir:outputs inst))))
        (first (bir:outputs inst))))
 (defmethod translate-primop ((name (eql 'core::%array-rank)) inst)
   (out (cmp:irc-tag-fixnum
-        (cmp:irc-array-rank (in (first (bir:inputs inst)))))
+        (cmp:irc-array-rank (in (first (bir:inputs inst))))
+        (datum-name-as-string (first (bir:outputs inst))))
        (first (bir:outputs inst))))
 (defmethod translate-primop ((name (eql 'core::%array-dimension)) inst)
   (out (cmp:gen-%array-dimension (in (first (bir:inputs inst)))
@@ -967,7 +986,9 @@
                           cmp:%size_t% "slot-location"))
                         (in (first (bir:inputs inst)))
                         (in (second (bir:inputs inst)))
-                        :order (cmp::order-spec->order (cc-bir:order inst)))
+                        :order (cmp::order-spec->order (cc-bir:order inst))
+                        :label (datum-name-as-string
+                                (first (bir:outputs inst))))
        (first (bir:outputs inst))))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
@@ -1119,11 +1140,10 @@
   (declare (ignore abi))
   (out (let* ((ltv (first (bir:inputs inst)))
               (index (gethash ltv *constant-values*))
-              (label ""))
+              (label (datum-name-as-string (first (bir:outputs inst)))))
          (cmp:irc-load
           (cmp:irc-gep-variable (literal:ltv-global)
-                                (list (%size_t 0)
-                                      (%i64 index))
+                                (list (%size_t 0) (%i64 index))
                                 label)))
        (first (bir:outputs inst))))
 
@@ -1131,6 +1151,11 @@
                                          abi)
   (declare (ignore abi))
   (out (let* ((constant (first (bir:inputs inst)))
+              ;; NOTE: Printing out the constant for a label is problematic,
+              ;; because LLVM will reject (assert failure) if a label has
+              ;; any null bytes in it. Null bytes can arise in non-obvious
+              ;; ways, e.g. from non-ASCII Unicode characters.
+              (label "")
               (immediate-or-index (gethash constant *constant-values*)))
          (assert immediate-or-index () "Constant not found!")
          (if (integerp immediate-or-index)
@@ -1138,8 +1163,8 @@
               (cmp:irc-gep-variable (literal:ltv-global)
                                     (list (%size_t 0)
                                           (%i64 immediate-or-index))
-                                    ;; Maybe we can have a nice label for this.
-                                    ""))
+                                    label)
+              label)
              immediate-or-index))
        (first (bir:outputs inst))))
 
