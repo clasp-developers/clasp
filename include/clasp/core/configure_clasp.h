@@ -215,6 +215,15 @@ typedef unsigned int  claspCharacter;
 /*! Return 1 pointer in register */
 #define LCC_RETURN_VALUES_IN_REGISTERS 1
 
+/*! Range of fixed entry point aritys 
+    This will be used for the calling convention.
+    Arity from ENTRY_POINT_ARITY_BEGIN to (ENTRY_POINT_ARITY_END-1) are supported
+*/
+#define ENTRY_POINT_ARITY_BEGIN 0
+#define ENTRY_POINT_ARITY_END 7
+//! One entry point for each arity and one for general
+#define NUMBER_OF_ENTRY_POINTS ENTRY_POINT_ARITY_END-ENTRY_POINT_ARITY_BEGIN+1
+
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 136
 
@@ -254,6 +263,5 @@ typedef unsigned int  claspCharacter;
 #define HAVE_MKDTEMP
 
 
-#define NUMBER_OF_ENTRY_POINTS 1
 
 #endif // __CORE_CONFIG_H__

@@ -178,6 +178,9 @@ FORWARD(GlobalEntryPoint);
  class GlobalEntryPoint_O : public CodeEntryPoint_O {
    LISP_CLASS(core,CorePkg,GlobalEntryPoint_O,"GlobalEntryPoint",CodeEntryPoint_O);
  public:
+   /*! A general entry point at 0 and fixed arity entry points from 1...(NUMBER_OF_ENTRY_POINTS-1)
+       The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
+   */
    void* _EntryPoints[NUMBER_OF_ENTRY_POINTS];
  public:
   // Accessors

@@ -329,6 +329,9 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
 //  ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMPWTAG_CLASS)));
   ENTRY(list, "SIMPLE-VECTOR._DATA-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Data)));
   ENTRY(list, "SIMPLE-VECTOR._LENGTH-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_MaybeSignedLength)));
+  ENTRY(list, "ENTRY-POINT-ARITY-BEGIN",make_fixnum(ENTRY_POINT_ARITY_BEGIN));
+  ENTRY(list, "ENTRY-POINT-ARITY-END",make_fixnum(ENTRY_POINT_ARITY_END));
+  ENTRY(list, "NUMBER-OF-ENTRY-POINTS",make_fixnum(NUMBER_OF_ENTRY_POINTS));
   return list;
 }
 
