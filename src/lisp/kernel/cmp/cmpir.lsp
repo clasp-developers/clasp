@@ -1106,12 +1106,35 @@ and then the irbuilder-alloca, irbuilder-body."
          (entry-point-reference (irc-create-entry-point-reference :local (llvm-sys:get-name fn) fn module function-info)))         
     (values fn entry-point-reference)))
 
-(defun irc-cclasp-function-create (llvm-function-type linkage function-name module function-info)
+(defstruct (xep-info (:type vector) :named)
+  arity ; arity of this entry point (:general-entry or an integer 0...n)
+  function ; The function object for this entry point
+  entry-point-reference ; the entry-point-reference
+  )
+
+(defstruct (external-entry-point-info (:type list) :named)
+  entries)
+
+(defun external-entry-point-info-lookup (external-entry-point-info arity)
+  (dolist (entry (external-entry-point-info-entries external-entry-point-info))
+    (let ((entry-arity (xep-info-arity entry)))
+      (when (eql entry-arity arity)
+        (return-from external-entry-point-info-lookup entry))))
+  (error "Could not find arity ~a in external-entry-point-info" arity))
+
+(defparameter *multiple-entry-points* nil)
+(defun irc-cclasp-external-entry-point-functions-create (linkage function-name module function-info)
   "Create a function and a function description for a cclasp function"
+  ;; MULTIPLE-ENTRY-POINT first return value is list of entry points
   (let* ((xep-function-name (concatenate 'string function-name "-xep"))
-         (fn (irc-function-create llvm-function-type linkage xep-function-name module))
-         (entry-point-reference (irc-create-entry-point-reference :global (llvm-sys:get-name fn) fn module function-info)))
-    (values fn entry-point-reference)))
+         (fn (irc-function-create %fn-prototype% linkage xep-function-name module))
+         (entry-point-reference (irc-create-entry-point-reference :global (llvm-sys:get-name fn) fn module function-info))
+         (general-xep-info (make-xep-info :arity :general-entry
+                                          :function fn
+                                          :entry-point-reference entry-point-reference))
+         (entry-point-info (make-external-entry-point-info :entries (list general-xep-info))))
+    (when *multiple-entry-points* (break "Check entry-point-info ~a" entry-point-info))
+    entry-point-info))
 
 (defun irc-verify-no-function-environment-cleanup (env)
   (let ((unwind (local-metadata env :unwind)))

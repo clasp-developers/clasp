@@ -68,21 +68,27 @@
                          jit-function-name
                          cmp:*the-module*
                          function-info)))
-      (multiple-value-bind (xep-function xep-function-description)
-          (if (xep-needed-p function)
-              (cmp:irc-cclasp-function-create
-               cmp:%fn-prototype%
-               linkage
-               jit-function-name
-               cmp:*the-module*
-               function-info)
-              (values :xep-unallocated :xep-unallocated))
-        (make-instance 'llvm-function-info
-                       :environment (cleavir-set:set-to-list (bir:environment function))
-                       :main-function the-function
-                       :xep-function xep-function
-                       :xep-function-description xep-function-description
-                       :arguments arguments)))))
+      (let ((external-entry-point-info (if (xep-needed-p function)
+                                           (cmp:irc-cclasp-external-entry-point-functions-create
+                                            linkage
+                                            jit-function-name
+                                            cmp:*the-module*
+                                            function-info)
+                                           :xep-unallocated)))
+        (if (eq external-entry-point-info :xep-unallocated)
+            (make-instance 'llvm-function-info
+                           :environment (cleavir-set:set-to-list (bir:environment function))
+                           :main-function the-function
+                           :xep-function :xep-unallocated
+                           :xep-function-description :xep-unallocated
+                           :arguments arguments)
+            (let ((xep-info (cmp:external-entry-point-info-lookup external-entry-point-info :general-entry)))
+              (make-instance 'llvm-function-info
+                             :environment (cleavir-set:set-to-list (bir:environment function))
+                             :main-function the-function
+                             :xep-function (cmp:xep-info-function xep-info)
+                             :xep-function-description (cmp:xep-info-entry-point-reference xep-info)
+                             :arguments arguments)))))))
 
 ;;; Return value is unspecified/irrelevant.
 (defgeneric translate-simple-instruction (instruction abi))

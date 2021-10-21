@@ -28,7 +28,10 @@
             irc-function-create
             irc-bclasp-function-create
             irc-cclasp-local-function-create
-            irc-cclasp-function-create
+            irc-cclasp-external-entry-point-functions-create
+            xep-info-function
+            xep-info-entry-point-reference
+            external-entry-point-info-lookup
             +c++-stamp-max+
             %opaque-fn-prototype*%
             %fn-prototype%
@@ -314,6 +317,9 @@
             +cons-car-offset+
             +cons-cdr-offset+
             +simple-vector._length-offset+
+            +entry-point-arity-begin+
+            +entry-point-arity-end+
+            +number-of-entry-points+
             %uintptr_t%
             %return-type%
             %vaslist%
