@@ -89,3 +89,7 @@
 (defvar +simple-vector._length-offset+ (get-cxx-data-structure-info :simple-vector._length-offset))
 (defvar +simple-vector._data-offset+ (get-cxx-data-structure-info :simple-vector._data-offset))
 (defvar +size_t-bits+ (get-cxx-data-structure-info :size_t-bits))
+(defvar +entry-point-arity-begin+ (get-cxx-data-structure-info :entry-point-arity-begin))
+(defvar +entry-point-arity-end+ (get-cxx-data-structure-info :entry-point-arity-end))
+(defvar +number-of-entry-points+ (get-cxx-data-structure-info :number-of-entry-points))
+
