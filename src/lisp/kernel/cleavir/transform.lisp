@@ -428,7 +428,8 @@
       (cleavir-set:nadjoinf (bir:scope dynenv) falseb)
       (bir:replace-terminator ifi (bir:end fore))
       (bir:replace-uses phi cout)
-      (setf (bir:inputs ifi) (list cout))))
+      (setf (bir:inputs ifi) (list cout))
+      (cleavir-bir:compute-iblock-flow-order function)))
   t)
 
 (macrolet ((define-two-arg-f (name sf-primop df-primop)
@@ -759,3 +760,16 @@
   (define-fixnum-conditional core:two-arg-<= core::two-arg-fixnum-<=)
   (define-fixnum-conditional core:two-arg->  core::two-arg-fixnum->)
   (define-fixnum-conditional core:two-arg->= core::two-arg-fixnum->=))
+
+(define-bir-transform zerop (call) (fixnum)
+  (let ((zero (reference-constant-before call 0)))
+    (replace-with-test-primop call 'core::two-arg-fixnum-=
+                              (list zero (first (rest (bir:inputs call)))))))
+(define-bir-transform plusp (call) (fixnum)
+  (let ((zero (reference-constant-before call 0)))
+    (replace-with-test-primop call 'core::two-arg-fixnum-<
+                              (list zero (first (rest (bir:inputs call)))))))
+(define-bir-transform minusp (call) (fixnum)
+  (let ((zero (reference-constant-before call 0)))
+    (replace-with-test-primop call 'core::two-arg-fixnum->
+                              (list zero (first (rest (bir:inputs call)))))))
