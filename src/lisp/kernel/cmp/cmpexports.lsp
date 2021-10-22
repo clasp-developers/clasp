@@ -217,6 +217,8 @@
             irc-icmp-eq
             irc-icmp-sle
             irc-icmp-slt
+            irc-icmp-sge
+            irc-icmp-sgt
             irc-intrinsic
             irc-load
             irc-load-atomic

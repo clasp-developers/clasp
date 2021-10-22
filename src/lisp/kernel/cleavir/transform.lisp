@@ -785,3 +785,12 @@
                                                       most-negative-fixnum
                                                       most-positive-fixnum
                                                       *clasp-system*)))
+
+(macrolet ((define-fixnum-conditional (name primop)
+             `(define-bir-transform ,name (call) (fixnum fixnum)
+                (replace-with-test-primop call ',primop))))
+  (define-fixnum-conditional core:two-arg-=  core::two-arg-fixnum-=)
+  (define-fixnum-conditional core:two-arg-<  core::two-arg-fixnum-<)
+  (define-fixnum-conditional core:two-arg-<= core::two-arg-fixnum-<=)
+  (define-fixnum-conditional core:two-arg->  core::two-arg-fixnum->)
+  (define-fixnum-conditional core:two-arg->= core::two-arg-fixnum->=))

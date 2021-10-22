@@ -319,3 +319,20 @@
          (cast2 (cmp:irc-ptr-to-int arg2 cmp:%i64%))
          (sum (cmp:irc-sub cast1 cast2)))
     (cmp:irc-int-to-ptr sum cmp:%t*%)))
+
+(macrolet ((def-fixnum-compare (name op)
+             `(progn
+                (deftprimop ,name (:object :object)
+                  (inst next)
+                  (assert (= (length (bir:inputs inst)) 2))
+                  ;; NOTE: We do not have to cast to i64, as icmp works fine
+                  ;; on pointers directly.
+                  (let ((i1 (in (first (bir:inputs inst))))
+                        (i2 (in (second (bir:inputs inst)))))
+                    (cmp:irc-cond-br (,op i1 i2)
+                                     (first next) (second next)))))))
+  (def-fixnum-compare core::two-arg-fixnum-=  cmp:irc-icmp-eq)
+  (def-fixnum-compare core::two-arg-fixnum-<  cmp:irc-icmp-slt)
+  (def-fixnum-compare core::two-arg-fixnum-<= cmp:irc-icmp-sle)
+  (def-fixnum-compare core::two-arg-fixnum->  cmp:irc-icmp-sgt)
+  (def-fixnum-compare core::two-arg-fixnum->= cmp:irc-icmp-sge))
