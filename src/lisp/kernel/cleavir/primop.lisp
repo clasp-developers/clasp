@@ -279,3 +279,27 @@
     (assert (llvm-sys:type-equal (llvm-sys:get-type (first args)) cmp:%double%))
     (%intrinsic-invoke-if-landing-pad-or-call "cc_simpleDoubleVectorAset" args)
     (first args)))
+
+;;;
+
+(defvprimop core::fixnum-lognot ((:object) :object) (inst)
+  (let* ((arg (in (first (bir:inputs inst))))
+         (cast (cmp:irc-ptr-to-int arg cmp:%i64%))
+         ;; Make the tag bits 1, so they are negated to zero in the result
+         (ior (cmp:irc-or cast (%i64 cmp:+fixnum-mask+) "unmasked"))
+         (not (cmp:irc-not ior)))
+    (cmp:irc-int-to-ptr not cmp:%t*%)))
+
+;;; NOTE: 0 & 0, 0 | 0, and 0 ^ 0 are all zero, so these operations all
+;;; preserve the zero fixnum tag without any issue.
+(macrolet ((deflog2 (name op)
+             `(defvprimop ,name ((:object) :object :object) (inst)
+                (let* ((arg1 (in (first (bir:inputs inst))))
+                       (arg2 (in (second (bir:inputs inst))))
+                       (cast1 (cmp:irc-ptr-to-int arg1 cmp:%i64%))
+                       (cast2 (cmp:irc-ptr-to-int arg2 cmp:%i64%))
+                       (and (,op cast1 cast2)))
+                  (cmp:irc-int-to-ptr and cmp:%t*%)))))
+  (deflog2 core::fixnum-logand cmp:irc-and)
+  (deflog2 core::fixnum-logior cmp:irc-or)
+  (deflog2 core::fixnum-logxor cmp:irc-xor))

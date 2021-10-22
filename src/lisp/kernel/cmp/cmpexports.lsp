@@ -186,6 +186,9 @@
             alloca-temp-values
             irc-lisp-function-type
             irc-and
+            irc-or
+            irc-xor
+            irc-not
             irc-basic-block-create
             irc-begin-block
             irc-br

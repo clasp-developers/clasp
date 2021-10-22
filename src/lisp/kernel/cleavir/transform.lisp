@@ -695,3 +695,78 @@
   (replace-with-vprimop-and-wrap call 'core::df-vset
                                  (cleavir-ctype:range 'double-float '* '*
                                                       *clasp-system*)))
+
+;;;
+
+(define-bir-transform lognot (call) (fixnum)
+  (replace-with-vprimop-and-wrap call 'core::fixnum-lognot
+                                 (cleavir-ctype:range 'integer
+                                                      most-negative-fixnum
+                                                      most-positive-fixnum
+                                                      *clasp-system*)))
+
+(macrolet ((deflog2 (name primop)
+             (let ((fix (cleavir-ctype:range 'integer
+                                             most-negative-fixnum
+                                             most-positive-fixnum
+                                             *clasp-system*)))
+               `(define-bir-transform ,name (call) (fixnum fixnum)
+                  (replace-with-vprimop-and-wrap call ',primop ',fix)))))
+  (deflog2 core:logand-2op core::fixnum-logand)
+  (deflog2 core:logior-2op core::fixnum-logior)
+  (deflog2 core:logxor-2op core::fixnum-logxor))
+
+(defun lognot-before (before datum)
+  (let* ((fix (cleavir-ctype:single-value
+               (cleavir-ctype:range 'integer most-negative-fixnum
+                                    most-positive-fixnum *clasp-system*)
+               *clasp-system*))
+         (new (make-instance 'bir:output :derived-type fix))
+         (not (make-instance 'bir:vprimop
+                :origin (bir:origin before) :policy (bir:policy before)
+                :info (cleavir-primop-info:info 'core::fixnum-lognot)
+                :outputs (list new))))
+    (bir:insert-instruction-before not before)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs not) (list datum)))
+  (values))
+(defun lognot-after (after datum)
+  (let* ((fix (cleavir-ctype:single-value
+               (cleavir-ctype:range 'integer most-negative-fixnum
+                                    most-positive-fixnum *clasp-system*)
+               *clasp-system*))
+         (new (make-instance 'bir:output :derived-type fix))
+         (not (make-instance 'bir:vprimop
+                :origin (bir:origin after) :policy (bir:policy after)
+                :info (cleavir-primop-info:info 'core::fixnum-lognot)
+                :outputs (list new))))
+    (bir:insert-instruction-after not after)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs not) (list datum)))
+  (values))
+
+(macrolet ((deflog2c (name primop which)
+             (let ((fix (cleavir-ctype:range 'integer
+                                             most-negative-fixnum
+                                             most-positive-fixnum
+                                             *clasp-system*)))
+               `(define-bir-transform ,name (call) (fixnum fixnum)
+                  (lognot-before call (,which (rest (bir:inputs call))))
+                  (replace-with-vprimop-and-wrap call ',primop ',fix)))))
+  (deflog2c logandc1 core::fixnum-logand first)
+  (deflog2c logandc2 core::fixnum-logand second)
+  (deflog2c logorc1 core::fixnum-logior first)
+  (deflog2c logorc2 core::fixnum-logior second))
+
+(macrolet ((deflog2r (name primop)
+             (let ((fix (cleavir-ctype:range 'integer
+                                             most-negative-fixnum
+                                             most-positive-fixnum
+                                             *clasp-system*)))
+               `(define-bir-transform ,name (call) (fixnum fixnum)
+                  (let ((out (bir:output call)))
+                    (replace-with-vprimop-and-wrap call ',primop ',fix)
+                    (lognot-after call out))))))
+  (deflog2r core:logeqv-2op core::fixnum-logxor)
+  (deflog2r lognand core::fixnum-logand)
+  (deflog2r lognor core::fixnum-logior))
