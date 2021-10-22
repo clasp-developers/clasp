@@ -1106,21 +1106,21 @@ and then the irbuilder-alloca, irbuilder-body."
          (entry-point-reference (irc-create-entry-point-reference :local (llvm-sys:get-name fn) fn module function-info)))         
     (values fn entry-point-reference)))
 
-(defstruct (xep-info (:type vector) :named)
+(defstruct (xep-arity (:type vector) :named)
   arity ; arity of this entry point (:general-entry or an integer 0...n)
   function ; The function object for this entry point
   entry-point-reference ; the entry-point-reference
   )
 
-(defstruct (external-entry-point-info (:type list) :named)
+(defstruct (xep-group (:type list) :named)
   entries)
 
-(defun external-entry-point-info-lookup (external-entry-point-info arity)
-  (dolist (entry (external-entry-point-info-entries external-entry-point-info))
-    (let ((entry-arity (xep-info-arity entry)))
+(defun xep-group-lookup (xep-group arity)
+  (dolist (entry (xep-group-entries xep-group))
+    (let ((entry-arity (xep-arity-arity entry)))
       (when (eql entry-arity arity)
-        (return-from external-entry-point-info-lookup entry))))
-  (error "Could not find arity ~a in external-entry-point-info" arity))
+        (return-from xep-group-lookup entry))))
+  (error "Could not find arity ~a in xep-group" arity))
 
 (defparameter *multiple-entry-points* nil)
 (defun irc-cclasp-external-entry-point-functions-create (linkage function-name module function-info)
@@ -1129,10 +1129,10 @@ and then the irbuilder-alloca, irbuilder-body."
   (let* ((xep-function-name (concatenate 'string function-name "-xep"))
          (fn (irc-function-create %fn-prototype% linkage xep-function-name module))
          (entry-point-reference (irc-create-entry-point-reference :global (llvm-sys:get-name fn) fn module function-info))
-         (general-xep-info (make-xep-info :arity :general-entry
+         (general-xep-arity (make-xep-arity :arity :general-entry
                                           :function fn
                                           :entry-point-reference entry-point-reference))
-         (entry-point-info (make-external-entry-point-info :entries (list general-xep-info))))
+         (entry-point-info (make-xep-group :entries (list general-xep-arity))))
     (when *multiple-entry-points* (break "Check entry-point-info ~a" entry-point-info))
     entry-point-info))
 

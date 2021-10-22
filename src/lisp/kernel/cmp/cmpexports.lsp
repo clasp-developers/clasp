@@ -29,9 +29,9 @@
             irc-bclasp-function-create
             irc-cclasp-local-function-create
             irc-cclasp-external-entry-point-functions-create
-            xep-info-function
-            xep-info-entry-point-reference
-            external-entry-point-info-lookup
+            xep-arity-function
+            xep-arity-entry-point-reference
+            xep-group-lookup
             +c++-stamp-max+
             %opaque-fn-prototype*%
             %fn-prototype%
