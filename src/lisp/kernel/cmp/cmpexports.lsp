@@ -174,6 +174,7 @@
             *optimization-level*
             with-track-llvm-time
             irc-add
+            irc-sub
             irc-add-clause
             alloca
             alloca-t*

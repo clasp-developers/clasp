@@ -770,3 +770,18 @@
   (deflog2r core:logeqv-2op core::fixnum-logxor)
   (deflog2r lognand core::fixnum-logand)
   (deflog2r lognor core::fixnum-logior))
+
+;;; This is a very KLUDGEy way to find additions of fixnums whose result is
+;;; a fixnum as well. Plus it hardcodes the number of fixnum bits. FIXME
+(define-bir-transform core:two-arg-+ (call) ((signed-byte 60) (signed-byte 60))
+  (replace-with-vprimop-and-wrap call 'core::fixnum-add
+                                 (cleavir-ctype:range 'integer
+                                                      most-negative-fixnum
+                                                      most-positive-fixnum
+                                                      *clasp-system*)))
+(define-bir-transform core:two-arg-- (call) ((signed-byte 60) (signed-byte 60))
+  (replace-with-vprimop-and-wrap call 'core::fixnum-sub
+                                 (cleavir-ctype:range 'integer
+                                                      most-negative-fixnum
+                                                      most-positive-fixnum
+                                                      *clasp-system*)))
