@@ -100,11 +100,10 @@
           ;; get the line-number/column for makeCompiledFunction
           (let* ((runtime-environment (irc-load (irc-renv env)))
                  (fnptr (irc-intrinsic "makeCompiledFunction" 
-                                       compiled-fn
                                        (literal:constants-table-value (cmp:entry-point-reference-index entry-point-ref)) 
                                        runtime-environment)))
-            (irc-t*-result fnptr result))
-          (values compiled-fn lambda-name)))))
+            (irc-t*-result fnptr result))))
+    (values)))
 
 (defun codegen-global-function-lookup (result sym env)
   ;; Was symbolFunctionRead
