@@ -48,7 +48,7 @@ namespace core {
     typedef core::T_O* (*Type)(core::T_O* arg);
     Type fptr;
   public:
-    TranslationFunctor_O(GlobalEntryPoint_sp fdesc, Type ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,TranslationFunctor_O::entry_point)), fptr(ptr) {
+    TranslationFunctor_O(GlobalEntryPoint_sp ep, Type ptr) : BuiltinClosure_O(ep), fptr(ptr) {
       this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
     };
   public:
@@ -92,7 +92,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  TEMPLATED_FUNCTION_VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+  TEMPLATED_FUNCTION_VariadicMethoid(GlobalEntryPoint_sp ep, MethodType ptr) : BuiltinClosure_O(ep), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -129,7 +129,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  TEMPLATED_FUNCTION_VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+  TEMPLATED_FUNCTION_VariadicMethoid(GlobalEntryPoint_sp ep, MethodType ptr) : BuiltinClosure_O(ep), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};

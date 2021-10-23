@@ -599,7 +599,6 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
   ClosureWithSlots_sp closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               INTERPRETED_CLOSURE_SLOTS,
-                                                              &interpretedClosureEntryPoint,
                                                               entryPoint,
                                                               ClosureWithSlots_O::interpretedClosure);
   (*closure)[INTERPRETED_CLOSURE_FORM_SLOT] = form;
@@ -619,7 +618,6 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunc
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               BCLASP_CLOSURE_SLOTS,
-                                                              ptr,
                                                               entryPoint,
                                                               ClosureWithSlots_O::bclaspClosure);
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
@@ -636,7 +634,6 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunc
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               0,
-                                                              ptr,
                                                               entryPoint,
                                                               ClosureWithSlots_O::cclaspClosure);
   closure->setf_lambdaList(lambda_list);

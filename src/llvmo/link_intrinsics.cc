@@ -160,38 +160,15 @@ typedef void LtvcReturn;
 
 LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index, size_t entry_point_index)
 {NO_UNWIND_BEGIN();
-  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
   core::GlobalEntryPoint_sp entryPoint(tentrypoint);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
-                                                              llvm_func,
                                                               entryPoint,
                                                               core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
   NO_UNWIND_END();
 }
-
-#if 0
-LtvcReturn ltvc_make_closurette_no_function_info(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index)
-{NO_UNWIND_BEGIN();
-  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
-  printf("%s:%d:%s  NO functionInfo\n", __FILE__, __LINE__, __FUNCTION__ );
-#if 1
-  FUNCTION_DESCRIPTION_ERROR();
-  SIMPLE_ERROR(BF("The functionDescription %p will be incorrect") % (void*)functionDescription );
-#else
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
-                                                              llvm_func,
-                                                              functionDescription,
-                                                              core::ClosureWithSlots_O::cclaspClosure);
-  LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
-#endif
-  NO_UNWIND_END();
-}
-#endif
-
 
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index)
 {
@@ -714,8 +691,7 @@ void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
 extern "C" {
 
 
-core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
-                                core::T_O* tentrypoint,
+core::T_O* makeCompiledFunction(core::T_O* tentrypoint,
                                 core::T_O* frameP
                                 )
 {NO_UNWIND_BEGIN();
@@ -728,7 +704,6 @@ core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
 //  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,
-                                                              funcPtr,
                                                               entryPoint,
                                                               core::ClosureWithSlots_O::bclaspClosure);
   (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
@@ -1207,14 +1182,12 @@ NEVER_OPTIMIZE void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* n
                       kw::_sym_possibilities, tpossibilities);
 }
 
-core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
-                      core::T_O* entryPointInfo,
+core::T_O *cc_enclose(core::T_O* entryPointInfo,
                       std::size_t numCells)
 {
   core::GlobalEntryPoint_sp entryPoint((gctools::Tagged)entryPointInfo);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( false, numCells
-                                                               , llvm_func
                                                                , entryPoint
                                                                , core::ClosureWithSlots_O::cclaspClosure);
   return functoid.raw_();

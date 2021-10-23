@@ -61,12 +61,6 @@ struct gctools::GCInfo<core::LocalEntryPoint_O> {
 };
 
 namespace core {
-FORWARD(FunctionDescription);
-GlobalEntryPoint_sp ensureEntryPoint(GlobalEntryPoint_sp ep, claspFunction entry_point);
-};
-#define ENSURE_ENTRY_POINT(_ep_,_entry_point_) core::ensureEntryPoint(_ep_,_entry_point_)
-
-namespace core {
 
   /*! Set to something other than NIL to dump functions as they are defined at startup */
   
@@ -436,10 +430,9 @@ namespace core {
     static ClosureWithSlots_sp make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO);
   public:
   ClosureWithSlots_O(size_t capacity,
-                     claspFunction functionPtr,
                      GlobalEntryPoint_sp ep,
                      ClosureType nclosureType)
-      : Base(ENSURE_ENTRY_POINT(ep,functionPtr)),
+      : Base(ep),
         closureType(nclosureType),
         _Slots(capacity,unbound<T_O>(),true) {};
     virtual string __repr__() const override;

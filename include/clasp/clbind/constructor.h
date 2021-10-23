@@ -150,7 +150,7 @@ public:
   typedef core::Function_O TemplatedBase;
 public:
   enum { NumParams = 0 };
-  DerivableDefaultConstructorFunctor(core::FunctionDescription_sp fdesc) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)){};
+  DerivableDefaultConstructorFunctor(core::GlobalEntryPoint_sp fdesc) : core::Closure_O(fdesc){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
@@ -180,7 +180,7 @@ public:
 public:
   virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
-  VariadicConstructorFunction_O(core::GlobalEntryPoint_sp ep) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)) {};
+  VariadicConstructorFunction_O(core::GlobalEntryPoint_sp ep) : core::BuiltinClosure_O(ep) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     // nothing to do - no wrapped functions

@@ -123,9 +123,9 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" :t* (list :gcroots-in-module* :size_t))
          (primitive         "ltvc_lookup_transient" :t* (list :gcroots-in-module* :i8 :size_t))
-         (primitive         "makeCompiledFunction" :t* (list :fn-prototype* ; funcPtr
-                                                        :i8* ; function-description
-                                                             :t* ; environment
+         (primitive         "makeCompiledFunction" :t* (list
+                                                        :i8* ; global-entry-point
+                                                        :t* ; environment
                                                         ))
          (primitive         "lexicalValueReference" :t** (list :size_t :size_t :t*))
          (primitive         "cc_match" :t* (list :t* :t*))
@@ -304,13 +304,13 @@
          (primitive-unwinds "cc_invoke_sub_run_all_function" :void (list :fn-start-up*))
          (primitive-unwinds "cc_invoke_byte_code_interpreter" :void (list :gcroots-in-module* :i8* :size_t))
 
-         (primitive-unwinds "cc_enclose" :t* (list :fn-prototype*
-                                               :t*
-                                               :size_t))
-         (primitive         "cc_stack_enclose" :t* (list :i8*
-                                                     :fn-prototype*
-                                                     :t*
-                                                     :size_t ))
+         (primitive-unwinds "cc_enclose" :t* (list
+                                              :t*
+                                              :size_t))
+         (primitive         "cc_stack_enclose" :t* (list
+                                                    :i8*
+                                                    :t*
+                                                    :size_t ))
          (primitive-unwinds "cc_initialize_closure" :void (list :t*
                                                             :size_t ) :varargs t)
          (primitive-unwinds "cc_safe_symbol_value" :t* (list :t*))

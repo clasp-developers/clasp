@@ -224,7 +224,6 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
-                                          fnLispCallingConvention llvm_func,
                                           core::T_O* entryPointInfo,
                                           std::size_t numCells)
 {NO_UNWIND_BEGIN();
@@ -241,7 +240,6 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   core::GlobalEntryPoint_sp entryPoint((gctools::Tagged)entryPointInfo);
   auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
-                                                                           llvm_func,
                                                                            entryPoint,
                                                                            core::ClosureWithSlots_O::cclaspClosure);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);

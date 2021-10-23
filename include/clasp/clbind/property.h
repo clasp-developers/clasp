@@ -60,7 +60,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp ep, VariablePtrType p) : core::BuiltinClosure_O(ep), _MemberPtr(p){
     trapGetterMethoid();
   };
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
@@ -89,7 +89,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   
 public:
-  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp ep, VariablePtrType p) : BuiltinClosure_O(ep), _MemberPtr(p){
     trapGetterMethoid();
   };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
@@ -128,7 +128,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(gep,entry_point)), _MemberPtr(p){
+  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : core::BuiltinClosure_O(gep), _MemberPtr(p){
   };
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -158,7 +158,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : BuiltinClosure_O(ENSURE_ENTRY_POINT(gep,entry_point)), _MemberPtr(p){
+  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : BuiltinClosure_O(gep), _MemberPtr(p){
   };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);

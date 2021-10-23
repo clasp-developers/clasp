@@ -116,7 +116,7 @@ public:
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
   TEMPLATED_FUNCTION_VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr)
-    : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point))
+    : core::BuiltinClosure_O(ep)
     , fptr(ptr) {
     this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
   };
@@ -160,7 +160,7 @@ public:
 public:
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
-    TEMPLATED_FUNCTION_VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)), fptr(ptr) {
+    TEMPLATED_FUNCTION_VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr) : core::BuiltinClosure_O(ep), fptr(ptr) {
         this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
     };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
