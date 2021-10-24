@@ -72,8 +72,6 @@
             (setf all-encodings (append all-encodings unicode-encodings)))
           all-encodings))))
 
-(export 'ext:all-encodings :ext)
-
 (defun ext:make-encoding (encoding)
   (ecase encoding
     ((:US-ASCII

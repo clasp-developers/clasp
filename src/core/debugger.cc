@@ -540,15 +540,6 @@ void tprint(void* ptr)
   core::dbg_printTPtr((uintptr_t) ptr,false);
 }
 
-void c_bt() {
-  core::eval::funcall(core::_sym_btcl->symbolFunction(),
-                      INTERN_(kw,all),_lisp->_true());
-};
-
-void c_btcl() {
-  core::eval::funcall(core::_sym_btcl->symbolFunction());
-};
-
 void tsymbol(void* ptr)
 {
   printf("%s:%d Looking up symbol at ptr->%p\n", __FILE__, __LINE__, ptr);
