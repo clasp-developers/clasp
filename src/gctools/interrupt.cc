@@ -709,9 +709,12 @@ void initialize_unix_signal_handlers() {
 #ifdef SIGWINCH
         ADD_SIGNAL( SIGWINCH, "SIGWINCH", nil<core::T_O>());
 #endif
+/*
+ext::_sym_information_interrupt is undefined
 #ifdef SIGINFO
         ADD_SIGNAL( SIGINFO, "SIGINFO", ext::_sym_information_interrupt);
 #endif
+*/
 #if 0
 #ifdef SIGUSR1
         ADD_SIGNAL( SIGUSR1, "SIGUSR1", nil<core::T_O>());
@@ -721,9 +724,11 @@ void initialize_unix_signal_handlers() {
 #ifdef _TARGET_OS_DARWIN
         ADD_SIGNAL( SIGUSR2, "SIGUSR2", nil<core::T_O>());
 #endif
+/*
 #ifdef _TARGET_OS_LINUX
         ADD_SIGNAL( SIGUSR2, "SIGUSR2", ext::_sym_information_interrupt);
 #endif
+*/
 #endif
 #ifdef SIGTHR
         ADD_SIGNAL( SIGTHR, "SIGTHR", nil<core::T_O>());

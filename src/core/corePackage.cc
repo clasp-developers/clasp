@@ -172,7 +172,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_hash_tableSTAR)
-SYMBOL_EXPORT_SC_(CorePkg,btcl)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CompPkg, STARcompile_file_parallelSTAR);
@@ -201,8 +200,6 @@ SYMBOL_EXPORT_SC_(ExtPkg,unix_signal_received);
 SYMBOL_EXPORT_SC_(KeywordPkg,process);
 SYMBOL_EXPORT_SC_(KeywordPkg,code);
 SYMBOL_EXPORT_SC_(KeywordPkg,handler);
-SYMBOL_EXPORT_SC_(ExtPkg,information_interrupt);
-
 
 SYMBOL_EXPORT_SC_(CorePkg, STARmpi_rankSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARmpi_sizeSTAR);
@@ -380,7 +377,6 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, specialVar);
 SYMBOL_EXPORT_SC_(ExtPkg, registerVar);
 SYMBOL_EXPORT_SC_(ExtPkg, lexicalVar);
-SYMBOL_EXPORT_SC_(ExtPkg, stackVar);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_numberOfFixedArguments_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARinterpreterTraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugLoadTimeValuesSTAR);

@@ -47,9 +47,7 @@ int core__ihs_current_frame();
       If the idx is out of bounds then return a valid value */
 void core__gdb(T_sp msg);
 int core__set_ihs_current_frame(int idx);
-void core__btcl(T_sp stream, bool all, bool args, bool source_info);
-
-
+ 
 }; // namespace core
 
 namespace core {
@@ -201,14 +199,6 @@ DebugInfo& debugInfo();
 void executablePath( std::string& name);
 void executableTextSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
-
-
-};
-
-extern "C" {
-// Generate a backtrace with JIT symbols resolved 
-void c_bt();
-void c_btcl();
 
 
 };

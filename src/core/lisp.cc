@@ -2099,8 +2099,6 @@ CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, Lis
   dbg_hook("universalErrorHandler");
   if (globals_->_Interactive) {
     core__invoke_internal_debugger(nil<T_O>());
-  } else {
-    c_bt();
   }
   abort();
 };
