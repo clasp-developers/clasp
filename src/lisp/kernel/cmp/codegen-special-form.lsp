@@ -88,10 +88,9 @@
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
-  (multiple-value-bind (compiled-fn lambda-name lambda-list entry-point-ref)
-      (compile-lambda-function lambda-or-lambda-block env)
-    (declare (ignore lambda-list))
-    (if (null lambda-name) (error "The lambda doesn't have a name"))
+  (let* ((function-info (compile-lambda-function lambda-or-lambda-block env))
+         (compiled-fn (bclasp-llvm-function-info-xep-function function-info))
+         (entry-point-ref (bclasp-llvm-function-info-function-description-reference function-info)))
     (if result
         (let ((llvm-function-name (llvm-sys:get-name compiled-fn)))
           (unless entry-point-ref

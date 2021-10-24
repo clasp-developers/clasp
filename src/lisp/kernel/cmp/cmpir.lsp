@@ -33,6 +33,29 @@
 (in-package :compiler)
 
 
+(defstruct (xep-arity (:type vector) :named)
+  arity ; arity of this entry point (:general-entry or an integer 0...n)
+  function ; The function object for this entry point
+  entry-point-reference ; the entry-point-reference
+  )
+
+(defstruct (xep-group (:type list) :named)
+  entries)
+
+(defun xep-group-lookup (xep-group arity)
+  (dolist (entry (xep-group-entries xep-group))
+    (let ((entry-arity (xep-arity-arity entry)))
+      (when (eql entry-arity arity)
+        (return-from xep-group-lookup entry))))
+  (error "Could not find arity ~a in xep-group" arity))
+
+(defstruct (bclasp-llvm-function-info (:type vector) :named)
+  local-function
+  xep-function
+  function-description-reference)
+
+
+
 (defun irc-single-step-callback ()
   (irc-intrinsic "singleStepCallback" ))
 
@@ -1105,22 +1128,6 @@ and then the irbuilder-alloca, irbuilder-body."
          (fn (irc-function-create llvm-function-type linkage local-function-name module))
          (entry-point-reference (irc-create-entry-point-reference :local (llvm-sys:get-name fn) fn module function-info)))         
     (values fn entry-point-reference)))
-
-(defstruct (xep-arity (:type vector) :named)
-  arity ; arity of this entry point (:general-entry or an integer 0...n)
-  function ; The function object for this entry point
-  entry-point-reference ; the entry-point-reference
-  )
-
-(defstruct (xep-group (:type list) :named)
-  entries)
-
-(defun xep-group-lookup (xep-group arity)
-  (dolist (entry (xep-group-entries xep-group))
-    (let ((entry-arity (xep-arity-arity entry)))
-      (when (eql entry-arity arity)
-        (return-from xep-group-lookup entry))))
-  (error "Could not find arity ~a in xep-group" arity))
 
 (defparameter *multiple-entry-points* nil)
 (defun irc-cclasp-external-entry-point-functions-create (linkage function-name module function-info)

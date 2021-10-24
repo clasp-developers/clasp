@@ -213,7 +213,7 @@ namespace core {
 ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
 {
   if (_lisp->_Roots._UnboundSymbolFunctionEntryPoint.unboundp()) {
-    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription(name,unboundFunctionEntryPoint);
+    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundFunctionEntryPoint>(name);
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,1,
@@ -227,7 +227,7 @@ ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 {
   if (_lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint.unboundp()) {
     List_sp sname = Cons_O::createList(cl::_sym_setf,name);
-    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription(sname,unboundSetfFunctionEntryPoint);
+    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundSetfFunctionEntryPoint>(sname);
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, 1,
@@ -301,7 +301,7 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
 }
 
 bool Symbol_O::fboundp() const {
-  return symbolFunction()->entry() != unboundFunctionEntryPoint;
+  return symbolFunction()->entry() != UnboundFunctionEntryPoint::entry_point_old;
 };
 
 void Symbol_O::fmakunbound()
@@ -310,7 +310,7 @@ void Symbol_O::fmakunbound()
 }
 
 bool Symbol_O::fboundp_setf() const {
-  return getSetfFdefinition()->entry() != unboundSetfFunctionEntryPoint;
+  return getSetfFdefinition()->entry() != UnboundSetfFunctionEntryPoint::entry_point_old;
 };
 
 void Symbol_O::fmakunbound_setf()

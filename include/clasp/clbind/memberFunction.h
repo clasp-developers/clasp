@@ -60,7 +60,7 @@ public:
   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->fixupOneCodePointer( fixup,(void**)&this->mptr,sizeof(this->mptr));
   }
-  static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
+  static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -95,7 +95,7 @@ public:
   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
     this->fixupOneCodePointer( fixup,(void**)&this->mptr,sizeof(this->mptr));
   }
-  static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
+  static inline gctools::return_type LISP_CALLING_CONVENTION()
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);

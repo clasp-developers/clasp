@@ -388,7 +388,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (core::select-package :core))
 (export 'bind-va-list)
 
-(defparameter *debug-bclasp* (member :debug-bclasp-lisp *features*))
+(defparameter *debug-bclasp* (if (member :debug-bclasp-lisp *features*) t nil))
 
 (defvar *special-init-defun-symbol* (gensym "special-init-defun-symbol"))
 

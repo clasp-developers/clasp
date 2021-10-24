@@ -252,19 +252,21 @@ rewrite the slot in the literal table to store a closure."
     (run-all-add-node rase)
     rase))
 
-(defun register-function->function-datum (llvm-func)
+(defun register-function->function-datum (functions)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
+  (unless (typep functions 'llvm-sys:function)
+    (error "In register-function->function-datum functions ~s of ~s can be a xep-group and then we have to register all entry-points" functions (class-of functions)))
   (dotimes (idx (length (literal-machine-function-vector *literal-machine*)))
-    (when (eq llvm-func (elt (literal-machine-function-vector *literal-machine*) idx))
+    (when (eq functions (elt (literal-machine-function-vector *literal-machine*) idx))
       (return-from register-function->function-datum (make-function-datum :index idx))))
   (let ((function-index (length (literal-machine-function-vector *literal-machine*))))
-    (vector-push-extend llvm-func (literal-machine-function-vector *literal-machine*))
+    (vector-push-extend functions (literal-machine-function-vector *literal-machine*))
     (make-function-datum :index function-index)))
 
 
-(defun register-function-index (llvm-func)
+(defun register-function-index (functions)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
-  (let ((function-datum (register-function->function-datum llvm-func)))
+  (let ((function-datum (register-function->function-datum functions)))
     (function-datum-index function-datum)))
 
 ;;; Helper function: we write a few things out as base strings.
@@ -905,11 +907,9 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                                        :docstring nil
                                                        :declares nil
                                                        :spi core:*current-source-pos-info*))
-              (let* ((given-name (llvm-sys:get-name fn)))
-                (declare (ignorable given-name))
-                ;; Map the function argument names
-                (cmp:cmp-log "Creating ltv thunk with name: %s%N" given-name)
-                (cmp:codegen fn-result form fn-env)))))
+              ;; Map the function argument names
+              (cmp:cmp-log "Creating ltv thunk with name: %s%N" (llvm-sys:get-name fn))
+              (cmp:codegen fn-result form fn-env))))
     (cmp:cmp-log-dump-function fn)
     (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function fn t))
     fn))

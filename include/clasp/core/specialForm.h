@@ -35,10 +35,6 @@ THE SOFTWARE.
 
 namespace core {
 
-  inline LCC_RETURN specialFormDummyEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
-    SIMPLE_ERROR_SPRINTF("Never call this");
-  }
-  
 
 SMART(SpecialForm);
 class SpecialForm_O : public Function_O {
@@ -62,6 +58,11 @@ public: // initialize
 
   SpecialForm_O(GlobalEntryPoint_sp ep) : Base(ep) {};
   virtual ~SpecialForm_O() {};
+
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    SIMPLE_ERROR_SPRINTF("Never call this");
+  }
+  
 };
 };
 #endif //]

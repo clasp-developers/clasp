@@ -133,7 +133,22 @@ namespace core {
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    static LCC_RETURN funcallable_entry_point(LCC_ARGS_ELLIPSIS);
+    static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      SETUP_CLOSURE(FuncallableInstance_O,closure);
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      // We need to be sure to load the GFUN_DISPATCHER only once.
+      // We used to load it twice, which caused a race condition in that other threads
+      // could call setFuncallableInstanceFunction between the loads, meaning we called
+      // the code for one function but pass it the closure object for another.
+      T_sp funcallable_closure = closure->GFUN_DISPATCHER();
+      if (lcc_nargs<=LCC_ARGS_IN_REGISTERS) {
+        return (gc::As_unsafe<Function_sp>(funcallable_closure)->entry())(funcallable_closure.raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
+      }
+      INITIALIZE_VA_LIST();
+      // This is where we could decide to compile the dtree and switch the GFUN_DISPATCHER() or not
+      //  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
+      return funcall_consume_valist_<core::Function_O>(funcallable_closure.tagged_(),lcc_vargs);
+    }
     
   }; // FuncallableInstance class
 

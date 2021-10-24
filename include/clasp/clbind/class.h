@@ -174,8 +174,7 @@ public:
     SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", core::_rep_(this->_name).c_str());
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className)  override{
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(nil<T_O>(),DummyCreator_O::entry_point);
-    maybe_register_symbol_using_dladdr((void*)DummyCreator_O::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<DummyCreator_O>(nil<T_O>());
     return gc::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
 };
@@ -402,12 +401,11 @@ struct memfun_registration : registration {
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-    core::Symbol_sp sym = core::lisp_intern(m_name, symbol_packageName(classSymbol));
+    core::Symbol_sp symbol = core::lisp_intern(m_name, symbol_packageName(classSymbol));
     using VariadicType = TEMPLATED_FUNCTION_IndirectVariadicMethoid<Policies, Class, MethodPointerType>;
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::method_entry_point);
-    maybe_register_symbol_using_dladdr((void*)VariadicType::method_entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol);
     core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,methodPtr));
-    lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
+    lisp_defineSingleDispatchMethod(symbol, classSymbol, ffunc, 0, true,
                                     m_arguments, m_declares, m_doc_string,
                                     true,
                                     CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
@@ -436,8 +434,7 @@ struct iterator_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lisp_intern(m_name, symbol_packageName(classSymbol));
     using VariadicType = IteratorMethoid<Policies, Class, Begin, End>;
-    core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
-    maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(sym);
     core::BuiltinClosure_sp methoid = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, beginPtr, endPtr));
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
@@ -496,8 +493,7 @@ struct constructor_registration_base : public registration {
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
     core::Symbol_sp sym = core::lisp_intern(tname, core::lisp_currentPackageName());
     using VariadicType = VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>;
-    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
-    maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
+    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription<VariadicType>(sym);
     core::BuiltinClosure_sp func = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(ep));
     lisp_defun(sym, core::lisp_currentPackageName(),func, m_arguments, m_declares, m_doc_string, "=external=", 0, CountConstructorArguments<Signature>::value);
     core::validateFunctionDescription( __FILE__, __LINE__, func );
@@ -529,8 +525,7 @@ template <class Class, class HoldType, class Policies>
   struct constructor_registration<Class, HoldType, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, HoldType, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, HoldType, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(nil<core::T_O>(),DefaultConstructorCreator_O<Class, HoldType>::entry_point);
-    maybe_register_symbol_using_dladdr((void*)DefaultConstructorCreator_O<Class, HoldType>::entry_point);
+    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription<DefaultConstructorCreator_O<Class,HoldType>>(nil<core::T_O>());
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, HoldType>>::allocate(ep));
     return allocator;
   }
@@ -592,7 +587,7 @@ struct property_registration : registration {
      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
      core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
      using VariadicGetterType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get>;
-     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( sym, VariadicGetterType::entry_point );
+     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicGetterType>( sym );
      maybe_register_symbol_using_dladdr( (void*)VariadicGetterType::entry_point );
      auto raw_getter = gc::GC<VariadicGetterType>::allocate( entryPoint, get );
      core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>( raw_getter );
@@ -600,7 +595,7 @@ struct property_registration : registration {
      core::validateFunctionDescription( __FILE__, __LINE__, getter );
      core::T_sp setf_name = core::Cons_O::createList( cl::_sym_setf, sym );
      using VariadicSetterType = SetterMethoid<reg::null_type, Class, Set>;
-     core::GlobalEntryPoint_sp setterEntryPoint = makeGlobalEntryPointAndFunctionDescription( setf_name, VariadicSetterType::entry_point );
+     core::GlobalEntryPoint_sp setterEntryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicSetterType>( setf_name );
      maybe_register_symbol_using_dladdr( (void*)VariadicSetterType::entry_point );
      auto raw_setter = gc::GC<VariadicSetterType>::allocate( setterEntryPoint, set );
      core::BuiltinClosure_sp setter = gc::As<core::BuiltinClosure_sp>( raw_setter );
@@ -644,8 +639,7 @@ struct property_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lisp_intern(n, symbol_packageName(classSymbol));
     using VariadicType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get>;
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
-    maybe_register_symbol_using_dladdr((void*)VariadicType::entry_point);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<VariadicType>(sym);
     core::BuiltinClosure_sp getter = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, get));
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_doc_string, true, 1);
     core::validateFunctionDescription(__FILE__, __LINE__, getter);

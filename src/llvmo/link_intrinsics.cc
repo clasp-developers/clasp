@@ -158,7 +158,7 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 typedef void LtvcReturn;
 #define LTVCRETURN /* Nothing return for void */
 
-LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index, size_t entry_point_index)
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, size_t entry_point_index)
 {NO_UNWIND_BEGIN();
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
   core::GlobalEntryPoint_sp entryPoint(tentrypoint);
@@ -394,7 +394,7 @@ LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char
 
 LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t )
 {NO_UNWIND_BEGIN();
-  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(functionIndex);
+  ClaspLocalFunction llvm_func = (ClaspLocalFunction)holder->lookup_function(functionIndex);
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
   core::LocalEntryPoint_sp entryPoint = core::makeLocalEntryPoint(fdesc,llvm_func);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
@@ -412,9 +412,12 @@ LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char ta
 
 LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t )
 {NO_UNWIND_BEGIN();
-  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(functionIndex);
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,llvm_func);
+  core::ClaspXepFunction xep((XepFilling()));
+  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
+    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
+  }
+  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,xep);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
     SIMPLE_ERROR(BF("The object is not a GlobalEntryPoint %s") % core::_rep_(entryPoint));
@@ -473,47 +476,59 @@ gctools::Tagged ltvc_lookup_literal( gctools::GCRootsInModule* holder, size_t in
   return holder->getTaggedIndex(LITERAL_TAG_CHAR,index);
 }
 
-LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) {
-  fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
+LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, const char* name) {
   core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, nil<core::T_O>(),  nil<core::T_O>() );
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
+  core::ClaspXepFunction xep((XepFilling()));
+  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
+    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
+  }
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(),  nil<core::T_O>() );
+  LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
 }
 
-LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name) {
-  fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
+LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t functionIndex, const char* name) {
   core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
+  core::ClaspXepFunction xep((XepFilling()));
+  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
+    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
+  }
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
+  LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
 // Similar to the above, but puts value in the table.
-LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) {\
-  fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
+LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, const char* name) {\
   core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
+  core::ClaspXepFunction xep((XepFilling()));
+  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
+    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
+  }
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
+  LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
 }
 
-LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name) {
-  fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);  
-#ifdef DEBUG_SLOW
-  MaybeDebugStartup startup((void*)fptr,name);
-#endif
+LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t functionIndex, const char* name) {
   core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
+  core::ClaspXepFunction xep((XepFilling()));
+  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
+    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
+  }
+#ifdef DEBUG_SLOW
+  MaybeDebugStartup startup((void*)xep._EntryPoints[1],name);
+#endif
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
+  LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 

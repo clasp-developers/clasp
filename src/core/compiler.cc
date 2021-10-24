@@ -308,13 +308,14 @@ core::T_O* startup_functions_invoke(T_O* literals)
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
-//      T_mv result = (fn)(LCC_PASS_MAIN());
       switch (startup._Type) {
       case StartUp::T_O_function:
           result = ((T_OStartUp)startup._Function)(literals); // invoke the startup function
+          printf("%s:%d:%s Returning a function pointer from startup_functions_invoke - we need to support this\n", __FILE__, __LINE__, __FUNCTION__ );
           break;
       case StartUp::void_function:
           ((voidStartUp)startup._Function)();
+          printf("%s:%d:%s Returning NULL startup_functions_invoke\n", __FILE__, __LINE__, __FUNCTION__ );
           result = NULL;
       }
     }
@@ -1415,7 +1416,7 @@ CL_DEFUN T_sp core__run_function( T_sp object ) {
   if (thandle.notnilp() && gc::IsA<Pointer_sp>(thandle)) {
     handle = (uintptr_t)gc::As_unsafe<Pointer_sp>(thandle)->ptr();
   }
-  claspFunction func = (claspFunction)dlsym((void*)handle,name.c_str());
+  ClaspXepGeneralFunction func = (ClaspXepGeneralFunction)dlsym((void*)handle,name.c_str());
 //  printf("%s:%d:%s running function %s  at %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)func);
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)func);

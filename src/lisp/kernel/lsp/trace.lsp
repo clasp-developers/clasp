@@ -17,6 +17,10 @@
 (defparameter *trace-list* nil)
 (defparameter *trace-max-indent* 20)
 
+#+clasp-min
+(eval-when (:load-toplevel :execute)
+  (setq core::*trace-output* *standard-output*))
+
 (defun currently-traced ()
   (mapcar #'first *trace-list*))
 
@@ -202,7 +206,9 @@ all functions."
           (multiple-value-bind (bars rem)
               (floor indent 4)
             (dotimes (i bars) (princ (if (< i 10) "|   " "|    ") *trace-output*))
-            (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+            (when (plusp rem) (progn
+                                #-clasp-min (format *trace-output* "~V,,,' A" rem "|")
+                                #+clasp-min (format *trace-output* " | "))))
           #-clasp-min
           (format *trace-output*
                   "~D> (~S~{ ~S~})~%" *trace-level* fname vals)
@@ -213,7 +219,9 @@ all functions."
           (multiple-value-bind (bars rem)
               (floor indent 4)
             (dotimes (i bars) (princ "|   " *trace-output*))
-            (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+            (when (plusp rem) (progn
+                                #-clasp-min (format *trace-output* "~V,,,' A" rem "|")
+                                #+clasp-min (format *trace-output* " | "))))
           #-clasp-min
           (format *trace-output*
                   "<~D (~S~{ ~S~})~%" *trace-level* fname vals)
@@ -224,9 +232,13 @@ all functions."
          (multiple-value-bind (bars rem)
              (floor indent 4)
            (dotimes (i bars) (princ "|   " *trace-output*))
-           (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-         (format *trace-output*
-                 "~0,4@T\\\\ ~{ ~S~}~%" extras))
+           (when (plusp rem) (progn
+                               #-clasp-min (format *trace-output* "~V,,,' A" rem "|")
+                               #+clasp-min (format *trace-output* " | "))))
+         #-clasp-min(format *trace-output*
+                            "~0,4@T\\\\ ~{ ~S~}~%" extras)
+         #+clasp-min(format *trace-output*
+                            " ~s " extras))
        *trace-output*)
      *trace-output*)))
 

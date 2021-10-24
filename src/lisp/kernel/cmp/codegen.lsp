@@ -80,7 +80,10 @@ Could return more functions that provide lambda-list for swank for example"
           (unless *suppress-llvm-output* (irc-verify-function fn))
           ;; Return the llvm Function and the symbol/setf name
           (if (null name) (error "The lambda name is nil"))
-          (values fn name lambda-list function-description-reference))))))
+          (make-bclasp-llvm-function-info
+           :local-function nil
+           :xep-function fn
+           :function-description-reference function-description-reference))))))
 
 ;;; Given a lambda list, return a lambda list suitable for display purposes.
 ;;; This means only the external interface is required.
@@ -117,7 +120,7 @@ Return the same things that generate-llvm-function-from-code returns"
                                         code
                                         env
                                         :linkage linkage))))
-
+#+(or)
 (defun generate-llvm-function-from-interpreted-function (fn)
   "Extract everything necessary to compile an interpreted function and
 then compile it and return (values compiled-llvm-function lambda-name)"
@@ -158,44 +161,44 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun compile-to-module (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (with-lexical-variable-optimizer (t)
-    (multiple-value-bind (fn function-kind wrapped-env lambda-name function-description-reference)
+    (multiple-value-bind (fn function-kind wrapped-env)
         (with-debug-info-generator (:module *the-module* :pathname pathname)
-          (multiple-value-bind (llvm-function-from-lambda lambda-name function-description-reference)
-              (compile-lambda-function definition env :linkage linkage)
+          (let* ((function-info (compile-lambda-function definition env :linkage linkage))
+            ;; (multiple-value-bind (llvm-function-from-lambda lambda-name function-description-reference)
+                 (llvm-function-from-lambda (bclasp-llvm-function-info-xep-function function-info))
+                 (function-description-reference (bclasp-llvm-function-info-function-description-reference function-info)))
             (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
-            (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
-            (values llvm-function-from-lambda :function env lambda-name)))
-      (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
+            (values llvm-function-from-lambda :function env)))
       (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
       (potentially-save-module)
       (cmp-log "fn --> %s%N" fn)
       (cmp-log-dump-module *the-module*)
-      (values fn function-kind wrapped-env lambda-name function-description-reference))))
+      (values fn function-kind wrapped-env))))
 
 (defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (let* (fn function-kind wrapped-env lambda-name)
     (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
         (literal:with-rtv
-            (multiple-value-setq (fn function-kind wrapped-env lambda-name)
+            (multiple-value-setq (fn function-kind wrapped-env)
               (compile-to-module
                :definition definition
                :env env
                :pathname pathname
                :linkage linkage)))
-      (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-shutdown-id))))
+      (values fn function-kind wrapped-env ordered-raw-constants-list constants-table startup-shutdown-id))))
 
 (defun bclasp-compile* (definition env pathname
                         &key (linkage 'llvm-sys:internal-linkage) name)
   "Compile the definition using the bclasp compiler"
   (when core:*debug-startup*
     (core:monitor-write (core:bformat nil "startup bclasp-compile* form: %s%N" definition)))
-  (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-shutdown-id)
+  (multiple-value-bind (fn function-kind wrapped-env ordered-raw-constants-list constants-table startup-shutdown-id)
       (compile-to-module-with-run-time-table
        :definition definition
        :env env
        :pathname pathname
        :linkage linkage)
-    (declare (ignore function-kind wrapped-env lambda-name constants-table))
+    (declare (ignore function-kind wrapped-env constants-table))
     (quick-module-dump *the-module* "preoptimize")
     (let ((compiled-function (jit-add-module-return-function *the-module* fn startup-shutdown-id ordered-raw-constants-list :name name)))
       compiled-function)))

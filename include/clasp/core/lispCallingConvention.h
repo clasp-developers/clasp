@@ -91,8 +91,15 @@ namespace gctools {
 #define LCC_PASS_ARGS_VASLIST(_closure,_vaslist) _closure, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3, _vaslist
 
 /*! This is a void function */
-#define LISP_CALLING_CONVENTION() entry_point(LCC_ARGS_ELLIPSIS)
-#define LISP_METHOD_CALLING_CONVENTION method_entry_point(LCC_ARGS_ELLIPSIS)
+#define LISP_CALLING_CONVENTION() entry_point_old(LCC_ARGS_ELLIPSIS)
+#define LISP_ENTRY_n() LCC_RETURN entry_pointn(core::T_O *lcc_closure, std::size_t lcc_nargs, ... )
+#define LISP_ENTRY_0() LCC_RETURN entry_point0(core::T_O *lcc_closure)
+#define LISP_ENTRY_1() LCC_RETURN entry_point1(core::T_O *lcc_closure, core::T_O* farg0)
+#define LISP_ENTRY_2() LCC_RETURN entry_point2(core::T_O *lcc_closure, core::T_O* farg0, core::T_O* farg1 )
+#define LISP_ENTRY_3() LCC_RETURN entry_point3(core::T_O *lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2 )
+#define LISP_ENTRY_4() LCC_RETURN entry_point4(core::T_O *lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3 )
+#define LISP_ENTRY_5() LCC_RETURN entry_point5(core::T_O *lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3, core::T_O* farg4 )
+
 // Compiled functions get the raw va_list
 #define LCC_VA_LIST(_valist) (*_valist)._Args
 #define LCC_VA_START_ARG lcc_fixed_arg3
@@ -341,7 +348,40 @@ namespace gctools {
 #endif                
 #ifdef LCC_PROTOTYPES
 
-typedef LCC_RETURN_RAW(*claspFunction)(LCC_ARGS_ELLIPSIS);
+typedef LCC_RETURN_RAW(*ClaspLocalFunction)();
+typedef LCC_RETURN_RAW(*ClaspXepAnonymousFunction)();
+#if 0
+typedef LCC_RETURN_RAW(*ClaspXepGeneralFunction)(core::T_O* closure, size_t nargs, ... );
+typedef LCC_RETURN_RAW(*ClaspXep0Function)(core::T_O* closure);
+typedef LCC_RETURN_RAW(*ClaspXep1Function)(core::T_O* closure, core::T_O* farg0);
+#else
+typedef LCC_RETURN_RAW(*ClaspXepGeneralFunction)(LCC_ARGS_ELLIPSIS);
+#endif
+
+struct XepFilling {};
+struct XepFillUsingLambda {};
+
+struct ClaspXepFunction {
+  static const int Entries = NUMBER_OF_ENTRY_POINTS;
+  bool _Defined;
+  ClaspXepAnonymousFunction _EntryPoints[NUMBER_OF_ENTRY_POINTS];
+  ClaspXepFunction() : _Defined(false) {};
+  //! Use this ctor when filling ClaspXepFunction with entry points
+  ClaspXepFunction(XepFilling f) : _Defined(true) {};
+  template <typename Wrapper>
+  void setup() {
+    this->_Defined = true;
+    this->_EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_old;
+  }
+  ClaspXepAnonymousFunction operator[](int index) const { return this->_EntryPoints[index]; };
+  inline LCC_RETURN invoke_0(T_O* closure) {
+    return ((ClaspXepGeneralFunction)(this->_EntryPoints[0]))(closure,0,NULL,NULL,NULL,NULL);
+  }
+  inline LCC_RETURN invoke_1(T_O* closure, size_t nargs, T_O* farg0) {
+    return ((ClaspXepGeneralFunction)(this->_EntryPoints[0]))(closure,1,farg0,NULL,NULL,NULL);
+  }
+};
+
 typedef LCC_RETURN_RAW (*fnLispCallingConvention)(LCC_ARGS_ELLIPSIS);
 typedef LCC_RETURN_RAW (*CompiledClosure_fptr_type)(LCC_ARGS_ELLIPSIS);
 typedef LCC_RETURN (*InitFnPtr)(LCC_ARGS_ELLIPSIS);

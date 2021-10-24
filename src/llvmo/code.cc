@@ -336,14 +336,15 @@ void dumpObjectFile(const char* start, size_t size, void* codeStart) {
 
 namespace llvmo {
 
-  void Code_O::validateEntryPoint(void* entryPoint) {
-    if (this->codeStart()<=(uintptr_t)entryPoint &&
-	(uintptr_t)entryPoint < this->codeEnd()) {
-      return;
+void Code_O::validateEntryPoint(const core::ClaspXepFunction& entryPoint) {
+  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ii++ ) {
+    if (!(this->codeStart()<=(uintptr_t)entryPoint[ii] &&
+          (uintptr_t)entryPoint[ii] < this->codeEnd())) {
+      printf("%s:%d:%s Entrypoint %p is not bounded by the codeStart %p and codeEnd %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint[ii], (void*)this->codeStart(), (void*)this->codeEnd() );
+      abort();
     }
-    printf("%s:%d:%s Entrypoint %p is not bounded by the codeStart %p and codeEnd %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint, (void*)this->codeStart(), (void*)this->codeEnd() );
-    abort();
   }
+}
 
 void save_object_file_and_code_info(ObjectFile_sp ofi)
 {

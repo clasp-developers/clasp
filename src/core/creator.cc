@@ -59,7 +59,7 @@ T_sp InstanceCreator_O::creator_allocate() {
 namespace core {
 T_sp FuncallableInstanceCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<FuncallableInstance_O>();
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda);
   FuncallableInstance_sp instance = gctools::GC<FuncallableInstance_O>::allocate_instance(gctools::Header_s::StampWtagMtag::make_funcallable_instance(), size,entryPoint);
   return instance;
 };

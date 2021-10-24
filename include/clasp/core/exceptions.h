@@ -690,6 +690,9 @@ void Warn(T_sp datum, List_sp arguments);
 
 void clasp_internal_error(const char *error);
 
+[[noreturn]] void wrong_number_of_arguments(T_O* closure, std::size_t given, std::size_t expected );
+
+
 };
 
 #endif

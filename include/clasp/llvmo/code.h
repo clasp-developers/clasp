@@ -132,7 +132,8 @@ namespace llvmo {
   public:
     virtual uintptr_t codeStart() const = 0;
     virtual std::string filename() const = 0;
-    virtual void validateEntryPoint(void* entry_point) {};
+    virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point) {};
+    virtual void validateEntryPoint(const core::ClaspLocalFunction& entry_point) {};
   };
  
 };
@@ -209,7 +210,7 @@ public:
   size_t TOLiteralsSize() const { return literalsSize()/sizeof(core::T_O*); }
   virtual std::string filename() const;
   core::T_sp codeLineTable() const;
-  virtual void validateEntryPoint(void* entry_point);
+  virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point);
 };
 
 };

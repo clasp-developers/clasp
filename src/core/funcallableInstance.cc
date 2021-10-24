@@ -80,7 +80,7 @@ CL_LAMBDA(class slot-count)
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
                                                            size_t slot_count) {
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda);
   auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint);
   obj->_Class = cl;
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
@@ -90,7 +90,7 @@ CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
 DOCGROUP(clasp)
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl,
                                                                         Rack_sp rack) {
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda);
   auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint, cl, rack);
   return obj;
 }
@@ -183,23 +183,6 @@ string FuncallableInstance_O::__repr__() const {
   return ss.str();
 }
 
-LCC_RETURN FuncallableInstance_O::funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
-  SETUP_CLOSURE(FuncallableInstance_O,closure);
-  INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  // We need to be sure to load the GFUN_DISPATCHER only once.
-  // We used to load it twice, which caused a race condition in that other threads
-  // could call setFuncallableInstanceFunction between the loads, meaning we called
-  // the code for one function but pass it the closure object for another.
-  T_sp funcallable_closure = closure->GFUN_DISPATCHER();
-  if (lcc_nargs<=LCC_ARGS_IN_REGISTERS) {
-    return (gc::As_unsafe<Function_sp>(funcallable_closure)->entry())(funcallable_closure.raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
-  }
-  INITIALIZE_VA_LIST();
-  // This is where we could decide to compile the dtree and switch the GFUN_DISPATCHER() or not
-//  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
-  return funcall_consume_valist_<core::Function_O>(funcallable_closure.tagged_(),lcc_vargs);
-}
-
 T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
   /* We have to be cautious about thread safety here. We don't want to crash
@@ -233,11 +216,11 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
       if (closure->openP())
         this->_EntryPoint.store(closure->_EntryPoint.load());
       else {
-        GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointCopy(this->_EntryPoint,funcallable_entry_point);
+        GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(this->_EntryPoint);
         this->_EntryPoint.store(entryPoint);
       }
     } else {
-      GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointCopy(this->_EntryPoint,funcallable_entry_point);
+      GlobalEntryPoint_sp entryPoint = templated_makeGlobalEntryPointCopy<FuncallableInstance_O>(this->_EntryPoint);
       this->_EntryPoint.store(entryPoint);
     }
   } else {
