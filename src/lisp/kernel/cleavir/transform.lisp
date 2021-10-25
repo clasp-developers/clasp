@@ -182,10 +182,10 @@
 (deftransform primop:inlined-two-arg-+ ((x fixnum) (y fixnum))
   'core:two-arg-+-fixnum-fixnum)
 
-(deftransform array-total-size ((a (simple-array * (*)))) 'core::vector-length)
+
 ;;(deftransform array-total-size ((a core:mdarray)) 'core::%array-total-size)
 
-(deftransform array-rank ((a (simple-array * (*)))) '(lambda (a) (declare (ignore a)) 1))
+
 
 #+(or)
 (deftransform svref/no-bounds-check ((a simple-vector) (index fixnum))
@@ -661,6 +661,15 @@
   (replace-with-vprimop-and-wrap call 'core::df-vset
                                  (cleavir-ctype:range 'double-float '* '*
                                                       *clasp-system*)))
+
+(define-bir-transform array-rank (call) ((array * (*)))
+  (replace-call-with-constant call 1))
+
+(define-bir-transform array-total-size (call) ((simple-array * (*)))
+  (replace-with-vprimop-and-wrap call 'core::vector-length
+                                 (env:parse-type-specifier
+                                  'valid-array-dimension
+                                  nil *clasp-system*)))
 
 ;;;
 
