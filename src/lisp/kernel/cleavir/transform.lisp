@@ -167,9 +167,6 @@
 (deftransform eql ((x (not core::eq-incomparable)) y) 'eq)
 (deftransform eql (x (y (not core::eq-incomparable))) 'eq)
 
-(deftransform car ((x cons)) 'cleavir-primop:car)
-(deftransform cdr ((x cons)) 'cleavir-primop:cdr)
-
 (deftransform rplaca ((cons cons) value)
   '(lambda (cons value)
     (cleavir-primop:rplaca cons value)
@@ -179,31 +176,7 @@
     (cleavir-primop:rplacd cons value)
     cons))
 
-(deftransform primop:inlined-two-arg-+ ((x fixnum) (y fixnum))
-  'core:two-arg-+-fixnum-fixnum)
-
-
-;;(deftransform array-total-size ((a core:mdarray)) 'core::%array-total-size)
-
-
-
-#+(or)
-(deftransform svref/no-bounds-check ((a simple-vector) (index fixnum))
-  '(lambda (vector index) (cleavir-primop:aref vector index t t t)))
-#+(or)
-(deftransform (setf svref/no-bounds-check) (value (a simple-vector) (index fixnum))
-  '(lambda (value vector index)
-    (cleavir-primop:aset vector index value t t t)
-    value))
-
 (deftransform length ((s list)) '(lambda (x) (if x (core:cons-length x) 0)))
-(deftransform length ((s vector)) 'core::vector-length)
-
-#+(or)
-(deftransform elt ((s vector) index) 'vector-read)
-#+(or)
-(deftransform core:setf-elt (value (s vector) index)
-  '(lambda (value sequence index) (vector-set sequence index new-value)))
 
 ;;;
 
@@ -668,6 +641,12 @@
                                   'valid-array-dimension
                                   nil *clasp-system*)))
 
+(define-bir-transform length (call) (vector)
+  (replace-with-vprimop-and-wrap call 'core::vector-length
+                                 (env:parse-type-specifier
+                                  'valid-array-dimension
+                                  nil *clasp-system*)))
+
 ;;;
 
 (define-bir-transform lognot (call) (fixnum)
@@ -779,3 +758,10 @@
   (let ((zero (reference-constant-before call 0)))
     (replace-with-test-primop call 'core::two-arg-fixnum->
                               (list zero (first (rest (bir:inputs call)))))))
+
+;;;
+
+(define-bir-transform car (call) (cons)
+  (replace-call-with-vprimop call 'cleavir-primop:car))
+(define-bir-transform cdr (call) (cons)
+  (replace-call-with-vprimop call 'cleavir-primop:cdr))
