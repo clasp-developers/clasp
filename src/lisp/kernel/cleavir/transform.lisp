@@ -79,6 +79,47 @@
        (%def-bir-transformer ',name (lambda (,instparam) ,@body) '(,@param-types))
        ',name)))
 
+;;; Given an expression, make a CST for it.
+;;; FIXME: This should be more sophisticated. I'm thinking the source info
+;;; should be as for an inlined function.
+(defun cstify-transformer (origin expression)
+  (cst:cst-from-expression expression :source origin))
+
+;;; FIXME: Only required parameters permitted here
+(defmacro deftransform (name typed-lambda-list &body body)
+  (let* ((params (loop for entry in typed-lambda-list
+                       collect (if (consp entry) (first entry) entry)))
+         (typespecs (loop for entry in typed-lambda-list
+                          collect (if (consp entry) (second entry) 't)))
+         (csym (gensym "CALL")))
+    `(%deftransform ,name (,csym) (,@typespecs)
+        (replace-callee-with-lambda ,csym
+                                    (cstify-transformer
+                                     (bir:origin ,csym)
+                                     (list 'lambda '(,@params)
+                                           '(declare (ignorable ,@params))
+                                           (progn ,@body)))))))
+
+;;;
+
+(defun replace-callee-with-lambda (call lambda-expression-cst)
+  (let* (;; FIXME: We should be harsher with errors than cst->ast is here,
+         ;; since deftransforms are part of the compiler, and not the
+         ;; user's fault.
+         (ast (cst->ast lambda-expression-cst))
+         (module (bir:module (bir:function call)))
+         (bir (cleavir-ast-to-bir:compile-into-module ast module
+                                                      *clasp-system*)))
+    ;; Run the first few transformations.
+    ;; FIXME: Use a pass manager/reoptimize flags/something smarter.
+    (bir-transformations:eliminate-catches bir)
+    (bir-transformations:find-module-local-calls module)
+    (bir-transformations:function-optimize-variables bir)
+    ;; Now properly insert it.
+    (change-class call 'bir:local-call
+                  :inputs (list* bir (rest (bir:inputs call))))
+    (bir-transformations:maybe-interpolate bir)))
+
 ;;; for folding identity operations.
 (defun replace-call-with-argument (call idx)
   (let ((argument (nth idx (rest (bir:inputs call)))))
@@ -611,3 +652,10 @@
   (replace-call-with-vprimop call 'cleavir-primop:car))
 (%deftransform cdr (call) (cons)
   (replace-call-with-vprimop call 'cleavir-primop:cdr))
+
+(deftransform length ((x null)) 0)
+(deftransform length ((x cons)) '(core:cons-length x))
+(deftransform length ((x list))
+  `(if (null x)
+       0
+       (core:cons-length x)))
