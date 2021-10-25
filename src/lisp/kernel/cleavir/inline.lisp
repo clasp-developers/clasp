@@ -1839,16 +1839,6 @@
 ;;;
 
 (declaim (ftype (function (sequence) sys:index) length))
-(progn
-  (debug-inline "length")
-  (declaim (inline length))
-  (defun length (sequence)
-    (typecase sequence
-      (cons (core:cons-length sequence))
-      ;; note: vector-length returns the fill pointer if there is one.
-      (vector (core::vector-length sequence))
-      (null 0)
-      (t (sequence:length sequence)))))
 
 #+(or)
 (progn
