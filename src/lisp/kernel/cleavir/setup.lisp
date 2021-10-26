@@ -60,6 +60,7 @@
 
 (defvar *fn-flags* (make-hash-table :test #'equal))
 (defvar *fn-transforms* (make-hash-table :test #'equal))
+(defvar *derivers* (make-hash-table :test #'equal))
 
 (macrolet ((define-function-flags (name &rest attributes)
              `(setf (gethash ',name *fn-flags*)
@@ -231,10 +232,11 @@
             (inline-status (core:global-inline-status function-name))
             (flags (gethash function-name *fn-flags*))
             (transforms (gethash function-name *fn-transforms*))
+            (derivers (gethash function-name *derivers*))
             (attributes (if (or flags transforms)
                             (make-instance 'cleavir-attributes:attributes
                               :flags (or flags (cleavir-attributes:make-flags))
-                              :transforms transforms)
+                              :transforms transforms :derivers derivers)
                             (cleavir-attributes:default-attributes))))
        (make-instance 'env:global-function-info
          :name function-name

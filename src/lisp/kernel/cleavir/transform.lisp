@@ -100,6 +100,13 @@
                                            '(declare (ignorable ,@params))
                                            (progn ,@body)))))))
 
+(defmacro define-deriver (name deriver-name)
+  `(setf (gethash ',name *derivers*) '(,deriver-name)))
+
+(defmethod bir-transformations:derive-return-type ((inst bir:call) deriver
+                                                   (system clasp))
+  (funcall (fdefinition deriver) inst))
+
 ;;;
 
 (defun replace-callee-with-lambda (call lambda-expression-cst)
@@ -533,6 +540,20 @@
                                  (env:parse-type-specifier
                                   'valid-array-dimension
                                   nil *clasp-system*)))
+
+(defun derive-aref (call)
+  (let* ((aarg (first (rest (bir:inputs call))))
+         (ct (cleavir-ctype:primary (bir:ctype aarg) *clasp-system*)))
+    (cleavir-ctype:single-value
+     (if (and (consp ct)
+              (member (first ct) '(array simple-array vector))
+              (consp (cdr ct)))
+         (second ct)
+         (cleavir-ctype:top *clasp-system*))
+     *clasp-system*)))
+
+(define-deriver aref derive-aref)
+(define-deriver row-major-aref derive-aref)
 
 ;;;
 
