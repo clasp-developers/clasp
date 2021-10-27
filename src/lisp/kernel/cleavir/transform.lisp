@@ -608,5 +608,9 @@
        0
        (core:cons-length x)))
 
+;; These transforms are unsafe, as NTH does not signal out-of-bounds.
+#+(or)
+(progn
 (deftransform elt ((seq list) n) '(nth n seq))
 (deftransform core:setf-elt ((seq list) n value) '(setf (nth n seq) value))
+)
