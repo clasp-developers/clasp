@@ -26,12 +26,17 @@
             *compile-file-unique-symbol-prefix*
             %ltv*%
             irc-function-create
-            irc-bclasp-function-create
-            irc-cclasp-local-function-create
-            irc-cclasp-external-entry-point-functions-create
+            irc-make-function-description
+            irc-local-function-create
+            irc-xep-functions-create
             xep-arity-function
             xep-arity-entry-point-reference
             xep-group-lookup
+            xep-group
+            xep-group-p
+            xep-group-entries
+            xep-group-name
+            xep-arity-function
             +c++-stamp-max+
             %opaque-fn-prototype*%
             %fn-prototype%

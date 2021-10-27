@@ -252,17 +252,30 @@ rewrite the slot in the literal table to store a closure."
     (run-all-add-node rase)
     rase))
 
-(defun register-function->function-datum (functions)
+(defun register-function->function-datum-impl (function)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
-  (unless (typep functions 'llvm-sys:function)
-    (error "In register-function->function-datum functions ~s of ~s can be a xep-group and then we have to register all entry-points" functions (class-of functions)))
+  (unless (typep function 'llvm-sys:function)
+    (error "In register-function->function-datum function ~s of ~s can be a xep-group and then we have to register all entry-points" function (class-of function)))
   (dotimes (idx (length (literal-machine-function-vector *literal-machine*)))
-    (when (eq functions (elt (literal-machine-function-vector *literal-machine*) idx))
-      (return-from register-function->function-datum (make-function-datum :index idx))))
+    (when (eq function (elt (literal-machine-function-vector *literal-machine*) idx))
+      (return-from register-function->function-datum-impl (make-function-datum :index idx))))
   (let ((function-index (length (literal-machine-function-vector *literal-machine*))))
-    (vector-push-extend functions (literal-machine-function-vector *literal-machine*))
+    (vector-push-extend function (literal-machine-function-vector *literal-machine*))
     (make-function-datum :index function-index)))
 
+(defun register-function->function-datum (functions)
+  "Add a function to the (literal-machine-function-vector *literal-machine*)"
+    (cond
+    ((typep functions 'llvm-sys:function)
+     (register-function->function-datum-impl functions))
+    ((cmp:xep-group-p functions)
+     (let (first-datum)
+       (dolist (xep-arity (cmp:xep-group-entries functions))
+         (let ((xep-function (cmp:xep-arity-function xep-arity)))
+           (unless first-datum
+             (setf first-datum (register-function->function-datum-impl xep-function)))))
+       first-datum))
+    (t (error "Illegal functions ~a" functions))))
 
 (defun register-function-index (functions)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
@@ -674,7 +687,7 @@ Return the index of the load-time-value"
   (run-all-add-node (make-literal-node-toplevel-funcall
                      :arguments (list *gcroots-in-module*
                                       (register-function->function-datum thunk)
-                                      (llvm-sys:get-name thunk)))))
+                                      (cmp:xep-group-name thunk)))))
 
 (defun setup-literal-machine-function-vectors (the-module &key (id 0))
   (let* ((function-vector-length (length (literal-machine-function-vector *literal-machine*)))
@@ -898,7 +911,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;;
 
 (defun bclasp-compile-form (form)
-  (let ((fn (cmp:with-new-function (fn fn-env fn-result
+  (let ((fn (cmp:with-new-function (local-fn fn-env fn-result
                                        :function-name 'bclasp-top-level-form
                                        :parent-env nil
                                        :function-info (cmp:make-function-info
@@ -908,10 +921,10 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                                        :declares nil
                                                        :spi core:*current-source-pos-info*))
               ;; Map the function argument names
-              (cmp:cmp-log "Creating ltv thunk with name: %s%N" (llvm-sys:get-name fn))
+              (cmp:cmp-log "Creating ltv thunk with name: %s%N" (llvm-sys:get-name local-fn))
               (cmp:codegen fn-result form fn-env))))
-    (cmp:cmp-log-dump-function fn)
-    (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function fn t))
+    (cmp:cmp-log-dump-function local-fn)
+    (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function local-fn t))
     fn))
 
 (defun compile-form (form)
@@ -1074,7 +1087,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;; Should be bclasp-compile-load-time-value-thunk
 (defun compile-load-time-value-thunk (form)
   "bclasp compile the form into an llvm function and return that function"
-  (let ((fn (cmp:with-new-function (fn fn-env fn-result
+  (let ((fn (cmp:with-new-function (local-fn fn-env fn-result
                                        :function-name 'bclasp-top-level-form
                                        :parent-env nil
                                        :function-info (cmp:make-function-info
@@ -1084,7 +1097,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                                                        :declares nil
                                                        :spi core:*current-source-pos-info*))
               (cmp:codegen fn-result form fn-env))))
-    (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function fn t))
+    (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function local-fn t))
     (or (llvm-sys:valuep fn) (error "compile-load-time-value-thunk must return an llvm::Function object - it will return ~a" fn))
     fn))
 

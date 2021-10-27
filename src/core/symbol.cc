@@ -301,7 +301,7 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
 }
 
 bool Symbol_O::fboundp() const {
-  return symbolFunction()->entry() != UnboundFunctionEntryPoint::entry_point_old;
+  return symbolFunction()->entry() != UnboundFunctionEntryPoint::entry_point_n;
 };
 
 void Symbol_O::fmakunbound()
@@ -310,7 +310,7 @@ void Symbol_O::fmakunbound()
 }
 
 bool Symbol_O::fboundp_setf() const {
-  return getSetfFdefinition()->entry() != UnboundSetfFunctionEntryPoint::entry_point_old;
+  return getSetfFdefinition()->entry() != UnboundSetfFunctionEntryPoint::entry_point_n;
 };
 
 void Symbol_O::fmakunbound_setf()

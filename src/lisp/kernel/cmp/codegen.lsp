@@ -4,11 +4,6 @@
 ;;; bclasp-compile* and compile-thunk are entries from compile and compile-file resp.
 ;;; codegen is the main event.
 
-
-
-
-
-
 (defun generate-llvm-function-from-code (
                                          ;; Symbol xxx or (setf xxx) name of the function that is
                                          ;; assigned to this code by
@@ -42,29 +37,29 @@ Could return more functions that provide lambda-list for swank for example"
       (let ((name (core:extract-lambda-name-from-declares
                    declares (or given-name
                                 `(cl:lambda ,(lambda-list-for-name lambda-list))))))
-        (multiple-value-bind (fn function-description-reference)
-            (with-new-function (fn fn-env result
-                                   :function-name name
-                                   :parent-env env-around-lambda
-                                   :linkage linkage
-                                   :function-info (make-function-info
-                                                   :function-name name
-                                                   :lambda-list lambda-list
-                                                   :docstring docstring
-                                                   :declares declares
-                                                   :spi core:*current-source-pos-info*))
+        (multiple-value-bind (xep-group local-fn)
+            (with-new-function (local-fn fn-env result
+                                         :function-name name
+                                         :parent-env env-around-lambda
+                                         :linkage linkage
+                                         :function-info (make-function-info
+                                                         :function-name name
+                                                         :lambda-list lambda-list
+                                                         :cleavir-lambda-list cleavir-lambda-list
+                                                         :docstring docstring
+                                                         :declares declares
+                                                         :spi core:*current-source-pos-info*))
               (cmp-log "Starting new function name: %s%N" name)
               ;; The following injects a debugInspectT_sp at the start of the body
               ;; it will print the address of the literal which must correspond to an entry in the
               ;; load time values table
               #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
-              (let* ((arguments      (llvm-sys:get-argument-list fn))
-                     (callconv       (setup-calling-convention
-                                      arguments
-                                      :debug-on core::*debug-bclasp*
-                                      :cleavir-lambda-list cleavir-lambda-list
-                                      :rest-alloc rest-alloc)))
-                (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
+              (format t "In codgen.lsp generate-llvm~%")
+              (let* ((arguments      (llvm-sys:get-argument-list local-fn))
+                     (callconv       :was-callconv ))
+                (cmp-log "argument-list %s%N" arguments)
+                (cmp-log "fn-env -> %s%N" fn-env)
+                (let ((new-env fn-env)) ; (irc-make-unbound-value-environment-of-size fn-env:was-new-env-codegen #+(or)(bclasp-compile-lambda-list-code fn-env callconv)))
                   (cmp-log "Created new register environment -> %s%N" new-env)
                   ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
                   ;; in which case the (with-try ...) can be removed
@@ -76,14 +71,13 @@ Could return more functions that provide lambda-list for swank for example"
                          (irc-unwind-environment new-env)))
                       (codegen-progn result (list new-body) new-env)))))
           (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
-          (cmp-log-dump-function fn)
-          (unless *suppress-llvm-output* (irc-verify-function fn))
+          (cmp-log-dump-function local-fn)
+          (unless *suppress-llvm-output* (irc-verify-function local-fn))
           ;; Return the llvm Function and the symbol/setf name
           (if (null name) (error "The lambda name is nil"))
-          (make-bclasp-llvm-function-info
-           :local-function nil
-           :xep-function fn
-           :function-description-reference function-description-reference))))))
+          (make-bclasp-llvm-function-info :xep-function xep-group
+                                          :local-function local-fn
+                                          ))))))
 
 ;;; Given a lambda list, return a lambda list suitable for display purposes.
 ;;; This means only the external interface is required.
@@ -357,7 +351,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun compile-thunk (name form env optimize)
   "Compile the form into an llvm function and return that function"
   (with-lexical-variable-optimizer (optimize)
-    (let ((top-level-func (with-new-function (fn
+    (let ((top-level-func (with-new-function (local-fn
                                               fn-env
                                               result
                                               :function-name name
@@ -370,8 +364,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                                               :declares nil
                                                               :spi core:*current-source-pos-info*))
                             ;; Map the function argument names
-                            (cmp-log "Creating repl function with name: %s%N"
-                                     (llvm-sys:get-name fn))
+                            (cmp-log "Creating repl function with name: %s%N" (llvm-sys:get-name local-fn))
                             ;;	(break "codegen repl form") 
                             (codegen result form fn-env))))
       (cmp-log "Dumping the repl function%N")

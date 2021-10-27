@@ -580,6 +580,7 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
+#+(or) ;; OLD
 (defun initialize-calling-convention (arguments setup &key cleavir-lambda-list rest-alloc)
   (let ((register-save-area* (calling-convention-configuration-register-save-area* setup)))
     (unless (first arguments)
@@ -606,6 +607,38 @@ Boehm and MPS use a single pointer"
                                         :cleavir-lambda-list cleavir-lambda-list
                                         :rest-alloc rest-alloc)))))
 
+(defun initialize-calling-convention (llvm-function setup arity &key cleavir-lambda-list rest-alloc)
+  (cmp-log "llvm-function: %s%N" llvm-function)
+  (let ((arguments (llvm-sys:get-argument-list llvm-function)))
+    (cmp-log "llvm-function arguments: %s%N" (llvm-sys:get-argument-list llvm-function))
+    (cmp-log "llvm-function isVarArg: %s%N" (llvm-sys:is-var-arg llvm-function))
+    (let* ((register-save-area* (calling-convention-configuration-register-save-area* setup))
+           (use-only-registers (calling-convention-configuration-use-only-registers setup))
+           (create-a-va-list (null use-only-registers)))
+      (cmp-log "A%N")
+      (unless (first arguments)
+        (error "initialize-calling-convention for arguments ~a - the closure is NIL" arguments))
+      (cmp-log "A%N")
+      (cond
+        ((eq arity :general-entry)
+         (cmp-log "B%N")
+         (let ((va-list* (alloca-va_list))
+               (closure (first arguments))
+               (nargs (second arguments)))
+           (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
+           (maybe-spill-to-register-save-area-va-list* closure
+                                                       nargs
+                                                       va-list* register-save-area*)
+           (make-calling-convention-impl :closure closure
+                                         :nargs nargs
+                                         :register-args nil
+                                         :use-only-registers nil
+                                         :va-list* va-list* ; Always create a va-list for general-entry
+                                         :register-save-area* register-save-area*
+                                         :cleavir-lambda-list cleavir-lambda-list
+                                         :rest-alloc rest-alloc)))
+        (t (error "Handle arity ~a~%" arity))))))
+
 (defun calling-convention-args.va-end (cc)
   (when (calling-convention-va-list* cc)
     (irc-intrinsic "llvm.va_end" (calling-convention-va-list* cc))))
@@ -614,17 +647,6 @@ Boehm and MPS use a single pointer"
 ;;; Read the next argument from the va_list
 (defun calling-convention-args.va-arg (cc)
   (irc-va_arg (calling-convention-va-list* cc) %t*%))
-
-(defun calling-convention-args.va-start (cc &optional (rewind t))
-  "Like va-start - but it rewinds the va-list to start at the third argument. 
-This allows all of the arguments to be accessed with successive calls to calling-convention-args.va-arg.
-eg:  (f closure-ptr nargs a b c d ...)
-                          ^-----  after calling-convention-args.va-start the va-list will point here."
-                                        ; Initialize the va_list - the only valid field will be overflow-area
-  (let* ((va-list*                      (calling-convention-va-list* cc)))
-    (when va-list*
-      (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
-      (when rewind (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
 
 #+x86-64
 (progn
@@ -639,16 +661,14 @@ eg:  (f closure-ptr nargs a b c d ...)
 
   (define-symbol-macro %register-arg-types% (list %t*% %t*% %t*% %t*%))
   (define-symbol-macro %reglist-types% (list %t*% %t*% %t*% %t*% %t*%)) ; VaList follows register arguments
-  (defvar *register-arg-names* (list "farg0" "farg1" "farg2" "farg3"))
-  (defvar *reglist-arg-names* (list "farg0" "farg1" "farg2" "farg3" "VaList"))
   (defvar +fn-registers-prototype-argument-names+
-    (list* "closure-ptr" "nargs" *register-arg-names*))
+    (list* "closure-ptr" "nargs" nil))
   (defvar +fn-reglist-prototype-argument-names+
-    (list* "closure-ptr" "nargs" *reglist-arg-names*))
+    (list* "closure-ptr" "nargs" nil))
   (define-symbol-macro %fn-registers-prototype%
-      (llvm-sys:function-type-get %tmv% (list* %t*% %size_t% %register-arg-types%) T #|VARARGS!|#))
+      (llvm-sys:function-type-get %tmv% (list* %t*% %size_t% nil) T #|VARARGS!|#))
   (define-symbol-macro %fn-reglist-prototype%
-      (llvm-sys:function-type-get %tmv% (list* %t*% %size_t% %reglist-arg-types%) T #|VARARGS!|#))
+      (llvm-sys:function-type-get %tmv% (list* %t*% %size_t% nil) T #|VARARGS!|#))
   (define-symbol-macro %register-save-area% (llvm-sys:array-type-get
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
@@ -665,6 +685,8 @@ eg:  (f closure-ptr nargs a b c d ...)
 
   ;; (Maybe) generate code to store registers in memory. Return value unspecified.  
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
+    (cmp-log "maybe-spill-to-register-save-area registers -> %s%N" registers)
+    (cmp-log "maybe-spill-to-register-save-area register-save-area* -> %s%N" register-save-area*)
     (cond
       (registers
        (flet ((spill-reg (idx reg addr-name)
@@ -705,8 +727,42 @@ eg:  (f closure-ptr nargs a b c d ...)
   )
 
 
+
+
 #-(and x86-64)
 (error "Define calling convention for system")
+
+
+
+(defun maybe-spill-to-register-save-area-va-list* (closure nargs va-list* register-save-area*)
+  (cmp-log "maybe-spill-to-register-save-area registers -> %s%N" va-list*)
+  (cmp-log "maybe-spill-to-register-save-area register-save-area* -> %s%N" register-save-area*)
+  (let ((va-copy (alloca-va_list)))
+    (irc-intrinsic "llvm.va_copy" (irc-bit-cast va-list* %i8*%) (irc-bit-cast va-copy %i8*%))
+    (flet ((spill-reg (idx reg addr-name)
+             (let ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
+                   (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*")))
+               (irc-store reg-i8* addr t)
+               (when (llvm-sys:current-debug-location *irbuilder*)
+                 (let ((var (dbg-parameter-var addr-name (1+ idx))))
+                   (%dbg-variable-value reg-i8* var)
+                   (%dbg-variable-addr addr var)))
+               addr)))
+      (spill-reg 0 closure "closure0")
+      (spill-reg 1 (irc-int-to-ptr nargs %i8*%) "nargs1")
+      (dotimes (i +args-in-registers+)
+        (let ((va-arg (irc-va_arg va-copy %i8*%)))
+          (spill-reg (+ 2 i) va-arg (format nil "farg~a" i))))
+      (irc-intrinsic "llvm.va_end" (irc-bit-cast va-copy %i8*%))))
+  (when (llvm-sys:current-debug-location *irbuilder*)
+    (let ((rsa-var (dbg-create-auto-variable
+                    :name "register-save-area"
+                    :lineno *dbg-current-function-lineno*
+                    :type (llvm-sys:create-basic-type
+                           *the-module-dibuilder*
+                           "T_O**" 64 llvm-sys:+dw-ate-address+ 0)
+                    :always-preserve t)))
+      (%dbg-variable-value register-save-area* rsa-var))))
 
 (defun %dbg-variable-addr (addr var)
   (let* ((addrmd (llvm-sys:metadata-as-value-get

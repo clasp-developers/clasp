@@ -1,3 +1,74 @@
+(progn
+  (setf cmp::*debug-compiler* t)
+  (trace COMPILER:SETUP-CALLING-CONVENTION
+         COMPILER::IRC-cCLASP-local-FUNCTION-CREATE
+         cmp::irc-cclasp-external-entry-point-functions-create COMPILER::CODEGEN-FILL-FUNCTION-FRAME
+         COMPILER::CODEGEN-FUNCTION COMPILER::COMPILE-TO-MODULE COMPILER::CODEGEN-CLOSURE
+         COMPILER:COMPILE-LAMBDA-FUNCTION COMPILER::GENERATE-LLVM-FUNCTION-FROM-CODE
+         COMPILER::TRANSFORM-LAMBDA-PARTS COMPILE-FILE
+         cmp::irc-cclasp-local-function-create cmp::irc-cclasp-external-entry-point-functions-create
+         cmp::do-new-function
+         cmp::do-dbg-function
+         cmp::compile-file-serial
+         cmp::compile-file-to-module
+         cmp::loop-read-and-compile-file-forms
+         cmp::bclasp-loop-read-and-compile-file-forms
+         cmp::t1expr
+         cmp::compile-top-level
+         literal:arrange-thunk-as-top-level
+         cmp::compile-thunk
+         cmp::codegen-symbol-value
+         cmp::codegen
+         cmp::codegen-progn
+         cmp::codegen-let/let*
+         cmp::codegen-let
+         cmp::codegen-let*
+         cmp::codegen-special-operator
+         cmp::codegen-cons
+         cmp::codegen-var-lookup
+         cmp::codegen-lexical-var-lookup
+         cmp::codegen-alloca-var-lookup
+         cmp::variable-info
+         cmp::classify-variable
+         cmp::setup-calling-convention
+         literal::register-function->function-datum
+         literal::register-function-index
+         cmp::compile-lambda-list-code
+         cmp::compile-general-lambda-list-code
+         cmp::compile-required-arguments
+         cmp::compile-optional-arguments
+         cmp::compile-key-arguments
+         cmp::codegen-lexical-var-reference
+         cmp::calling-convention-rewind-va-list-to-start-on-third-argument
+         cmp::do-make-new-run-all
+         cmp::irc-ret
+         cmp::irc-ret-void
+         cmp::irc-ret-null-t*
+         cmp::irc-funcall-results-in-registers-wft
+         cmp::irc-calculate-entry
+         cmp::irc-calculate-real-args
+         cmp::irc-lisp-function-type
+         cmp::maybe-alloc-cc-setup
+         cmp::initialize-calling-convention
+         cmp::compile-wrong-number-of-arguments-block
+         cmp::compile-error-if-too-many-arguments
+         cmp::compile-error-if-not-enough-arguments
+         cmp::irc-icmp-ugt
+         cmp::maybe-spill-to-register-save-area
+         cmp::make-calling-convention-impl
+         cmp::calling-convention-configuration-register-save-area*
+         cmp::calling-convention-configuration-use-only-registers
+         cmp::layout-xep-function
+         cmp::layout-xep-function*
+         cmp::irc-ret
+         cmp::irc-create-call-wft
+         cmp::lambda-list-arguments
+         cmp::jit-add-module-return-function
+         )
+  (compile-file "/tmp/foo.lisp"))
+
+
+
 
 ;;; Test core:bind-va-list special operator
 

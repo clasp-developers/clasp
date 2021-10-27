@@ -3313,6 +3313,8 @@ CL_LISPIFY_NAME("setHasUWTable");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setHasUWTable);
 CL_LISPIFY_NAME("setDoesNotThrow");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setDoesNotThrow);
+CL_LISPIFY_NAME("isVarArg");
+CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::isVarArg);
 CL_LISPIFY_NAME("addFnAttr");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(Attribute::AttrKind Kind))&llvm::Function::addFnAttr);
 CL_LISPIFY_NAME("removeFnAttr");

@@ -67,7 +67,7 @@ that are susceptible to be changed by PROCLAIM."
 	(cmp-env-functions env))
   env)
 
-(defun cmp-env-register-var (var &optional (env *cmp-env*) (boundp t))
+(defun cmp-env-alloca-var (var &optional (env *cmp-env*) (boundp t))
   (push (list (var-name var)
 	      (if (member (var-kind var) '(special global))
 		  :special
@@ -79,7 +79,7 @@ that are susceptible to be changed by PROCLAIM."
 
 
 (defun cmp-env-declare-special (name &optional (env *cmp-env*))
-  (cmp-env-register-var name 'special (c::c1make-global-variable name :warn nil :kind 'SPECIAL)
+  (cmp-env-alloca-var name 'special (c::c1make-global-variable name :warn nil :kind 'SPECIAL)
 			env nil)
   env)
 

@@ -88,20 +88,17 @@
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
-  (let* ((function-info (compile-lambda-function lambda-or-lambda-block env))
-         (compiled-fn (bclasp-llvm-function-info-xep-function function-info))
-         (entry-point-ref (bclasp-llvm-function-info-function-description-reference function-info)))
+  (let* ((bclasp-llvm-function-info (compile-lambda-function lambda-or-lambda-block env))
+         (xep-group (bclasp-llvm-function-info-xep-function bclasp-llvm-function-info)))
+    (cmp-log "codegen-closure xep-group %s%N" xep-group)
     (if result
-        (let ((llvm-function-name (llvm-sys:get-name compiled-fn)))
-          (unless entry-point-ref
-            (error "Could not find entry-point-ref for function name: ~a lambda: ~a" llvm-function-name lambda-or-lambda-block))
-          ;; TODO:   Here walk the source code in lambda-or-lambda-block and
-          ;; get the line-number/column for makeCompiledFunction
-          (let* ((runtime-environment (irc-load (irc-renv env)))
-                 (fnptr (irc-intrinsic "makeCompiledFunction" 
-                                       (literal:constants-table-value (cmp:entry-point-reference-index entry-point-ref)) 
-                                       runtime-environment)))
-            (irc-t*-result fnptr result))))
+        ;; TODO:   Here walk the source code in lambda-or-lambda-block and
+        ;; get the line-number/column for makeCompiledFunction
+        (let* ((runtime-environment (irc-load (irc-renv env)))
+               (fnptr (irc-intrinsic "makeCompiledFunction" 
+                                     (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference xep-group)))
+                                     runtime-environment)))
+          (irc-t*-result fnptr result)))
     (values)))
 
 (defun codegen-global-function-lookup (result sym env)
@@ -1541,7 +1538,7 @@ jump to blocks within this tagbody."
                                                            :cleavir-lambda-list cleavir-lambda-list)))
               (declare (ignore _))
               ;; See comment in cleavir bind-va-list w/r/t safep.
-              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil))
+              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :general-entry :safep nil))
                     (*notinlines* (new-notinlines canonical-declares)))
                 (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
                 (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))

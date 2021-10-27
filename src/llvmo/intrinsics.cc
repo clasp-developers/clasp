@@ -237,7 +237,8 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 #else
   new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_header);
 #endif
-  core::GlobalEntryPoint_sp entryPoint((gctools::Tagged)entryPointInfo);
+  core::T_sp tentryPoint((gctools::Tagged)entryPointInfo);
+  core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tentryPoint);
   auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
                                                                            entryPoint,

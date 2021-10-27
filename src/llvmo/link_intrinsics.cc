@@ -712,7 +712,8 @@ core::T_O* makeCompiledFunction(core::T_O* tentrypoint,
 {NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
   core::T_sp frame((gctools::Tagged)frameP);
-  core::GlobalEntryPoint_sp entryPoint((gctools::Tagged)tentrypoint);
+  core::T_sp tep((gctools::Tagged)tentrypoint);
+  core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tep);
   if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
     printf("%s:%d:%s You must pass a global-entry-point - you passed a %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(entryPoint).c_str());
   };
@@ -1200,7 +1201,8 @@ NEVER_OPTIMIZE void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* n
 core::T_O *cc_enclose(core::T_O* entryPointInfo,
                       std::size_t numCells)
 {
-  core::GlobalEntryPoint_sp entryPoint((gctools::Tagged)entryPointInfo);
+  core::T_sp tentryPoint((gctools::Tagged)entryPointInfo);
+  core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tentryPoint);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( false, numCells
                                                                , entryPoint

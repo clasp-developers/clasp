@@ -171,7 +171,7 @@
 
 (defun do-dbg-function (closure lineno function-type function)
   (let ((linkage-name (llvm-sys:get-name function)))
-    (unless (llvm-sys:type-equal function-type %fn-prototype%)
+    #+(or)(unless (llvm-sys:type-equal function-type %fn-prototype%)
       (format t "!~%!~%!~%!~%!~%!~%    do-dbg-function called with function-type ~s that did not match %fn-prototype% ~s~%!~%!~%!~%!~%!~%!~%" function-type %fn-prototype%))
     (multiple-value-bind (file-scope file-handle)
         (core:file-scope (llvm-sys:get-path *dbg-current-file*))
@@ -185,6 +185,7 @@
           (funcall closure)))))
 
 (defmacro with-dbg-function ((&key lineno function-type function) &rest body)
+  (cmp-log "Entered with-dbg-function%N")
   `(do-dbg-function
        (lambda () (progn ,@body))
      ,lineno ,function-type ,function))

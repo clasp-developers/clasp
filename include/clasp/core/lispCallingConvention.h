@@ -91,7 +91,6 @@ namespace gctools {
 #define LCC_PASS_ARGS_VASLIST(_closure,_vaslist) _closure, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2, lcc_fixed_arg3, _vaslist
 
 /*! This is a void function */
-#define LISP_CALLING_CONVENTION() entry_point_old(LCC_ARGS_ELLIPSIS)
 #define LISP_ENTRY_n() LCC_RETURN entry_pointn(core::T_O *lcc_closure, std::size_t lcc_nargs, ... )
 #define LISP_ENTRY_0() LCC_RETURN entry_point0(core::T_O *lcc_closure)
 #define LISP_ENTRY_1() LCC_RETURN entry_point1(core::T_O *lcc_closure, core::T_O* farg0)
@@ -351,10 +350,12 @@ namespace gctools {
 typedef LCC_RETURN_RAW(*ClaspLocalFunction)();
 typedef LCC_RETURN_RAW(*ClaspXepAnonymousFunction)();
 #if 0
+#define LISP_CALLING_CONVENTION() entry_point_n(core::T_O* closure, size_t nargs, ... )
 typedef LCC_RETURN_RAW(*ClaspXepGeneralFunction)(core::T_O* closure, size_t nargs, ... );
 typedef LCC_RETURN_RAW(*ClaspXep0Function)(core::T_O* closure);
 typedef LCC_RETURN_RAW(*ClaspXep1Function)(core::T_O* closure, core::T_O* farg0);
 #else
+#define LISP_CALLING_CONVENTION() entry_point_n(LCC_ARGS_ELLIPSIS)
 typedef LCC_RETURN_RAW(*ClaspXepGeneralFunction)(LCC_ARGS_ELLIPSIS);
 #endif
 
@@ -371,7 +372,7 @@ struct ClaspXepFunction {
   template <typename Wrapper>
   void setup() {
     this->_Defined = true;
-    this->_EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_old;
+    this->_EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
   }
   ClaspXepAnonymousFunction operator[](int index) const { return this->_EntryPoints[index]; };
   inline LCC_RETURN invoke_0(T_O* closure) {

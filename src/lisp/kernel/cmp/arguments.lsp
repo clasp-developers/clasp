@@ -36,6 +36,7 @@
 (defun compile-required-arguments (reqargs cc)
   ;; reqargs is as returned from process-lambda-list- (# ...) where # is the count.
   ;; cc is the calling-convention object.
+  (cmp-log "(calling-convention-args.va-arg cc) -> %s%N" (calling-convention-args.va-arg cc))
   (dolist (req (cdr reqargs))
     (funcall *argument-out* (calling-convention-args.va-arg cc) req)))
 
@@ -412,6 +413,7 @@ a_p = a_p_temp; a = a_temp;
               ;; we could use it in the error check to save a subtraction, though.
               (compile-optional-arguments optargs nreq calling-conv iNIL iT))
             (when safep
+              (cmp-log "Last if-too-many-arguments %s %s" cmax nargs)
               (compile-error-if-too-many-arguments wrong-nargs-block cmax nargs)))))))
 
 (defun compile-only-reg-and-opt-arguments (reqargs optargs calling-conv &key argument-out (safep t))
@@ -556,7 +558,7 @@ a_p = a_p_temp; a = a_temp;
 ;;;   alloca-size_t (label) that allocas a size_t slot in the current function
 ;;;   alloca-vaslist (label) that allocas a vaslist slot in the current function
 ;;;   translate-datum (datum) that translates a datum into an alloca in the current function
-(defun compile-lambda-list-code (lambda-list calling-conv
+(defun compile-lambda-list-code (lambda-list calling-conv arity
                                  &key argument-out (safep t))
   (cmp-log "About to process-cleavir-lambda-list lambda-list: %s%N" lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
@@ -566,27 +568,31 @@ a_p = a_p_temp; a = a_temp;
     (cmp-log "    reqargs -> %s%N" reqargs)
     (cmp-log "    optargs -> %s%N" optargs)
     (cmp-log "    keyargs -> %s%N" keyargs)
-    (cmp-log "    outputs -> %s%N" outputs)
-    (if (calling-convention-use-only-registers calling-conv)
-        ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-        (progn
-          (compile-only-reg-and-opt-arguments reqargs optargs calling-conv
-                                              :argument-out argument-out
-                                              :safep safep))
-        ;; Test for
-        ;; (x &optional y)
-        ;; (x y &optional z)
-        (progn
-          (compile-general-lambda-list-code reqargs 
-                                            optargs 
-                                            rest-var
-                                            varest-p
-                                            key-flag 
-                                            keyargs 
-                                            allow-other-keys
-                                            calling-conv
-                                            :argument-out argument-out
-                                            :safep safep)))))
+    (cond
+      ((eq arity :general-entry)
+       (progn
+         (compile-general-lambda-list-code reqargs 
+                                           optargs 
+                                           rest-var
+                                           varest-p
+                                           key-flag 
+                                           keyargs 
+                                           allow-other-keys
+                                           calling-conv
+                                           :argument-out argument-out
+                                           :safep safep)
+         (irc-intrinsic "llvm.va_end" (irc-bit-cast (calling-convention-va-list* calling-conv) %i8*%))
+         ))
+      (t (error "Handle arity ~a" arity)
+         #+(or)
+         (if (calling-convention-use-only-registers calling-conv)
+             ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
+             (progn
+               (compile-only-reg-and-opt-arguments reqargs optargs calling-conv
+                                                   :argument-out argument-out
+                                                   :safep safep))
+             )))))
+
 
 (defun maybe-alloc-cc-setup (cleavir-lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
@@ -638,14 +644,12 @@ a_p = a_p_temp; a = a_temp;
 ;;
 ;; Setup the calling convention
 ;;
-(defun setup-calling-convention (arguments
+(defun setup-calling-convention (llvm-function arity
                                  &key debug-on rest-alloc cleavir-lambda-list)
   (let ((setup (maybe-alloc-cc-setup cleavir-lambda-list debug-on)))
-    (let ((cc (initialize-calling-convention arguments
-                                             setup
+    (let ((cc (initialize-calling-convention llvm-function setup arity
                                              :rest-alloc rest-alloc
                                              :cleavir-lambda-list cleavir-lambda-list)))
-      (calling-convention-args.va-start cc)
       cc)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -703,6 +707,7 @@ a_p = a_p_temp; a = a_temp;
       (compile-lambda-list-code
        cleavir-lambda-list
        callconv
+       :general-arity
        :safep safep
        :argument-out (lambda (value datum)
                        (let* ((info (assoc datum output-bindings))

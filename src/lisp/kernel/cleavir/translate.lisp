@@ -58,23 +58,23 @@
                         (push (third item) arglist)))
                      (push item arglist))))
              (nreverse arglist))))
-    (let ((the-function (cmp:irc-cclasp-local-function-create
-                         (llvm-sys:function-type-get
-                          cmp::%tmv%
-                          (make-list (+ (cleavir-set:size (bir:environment function))
-                                        (length arguments))
-                                     :initial-element cmp::%t*%))
-                         'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
-                         jit-function-name
-                         cmp:*the-module*
-                         function-info)))
+    (let* ((function-description (cmp:irc-make-function-description function-info))
+           (the-function (cmp:irc-local-function-create
+                          (llvm-sys:function-type-get
+                           cmp::%tmv%
+                           (make-list (+ (cleavir-set:size (bir:environment function))
+                                         (length arguments))
+                                      :initial-element cmp::%t*%))
+                          'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
+                          jit-function-name
+                          cmp:*the-module*
+                          function-description)))
       (let ((xep-group (if (xep-needed-p function)
-                                           (cmp:irc-cclasp-external-entry-point-functions-create
-                                            linkage
-                                            jit-function-name
-                                            cmp:*the-module*
-                                            function-info)
-                                           :xep-unallocated)))
+                           (cmp:irc-xep-functions-create linkage
+                                                         jit-function-name
+                                                         cmp:*the-module*
+                                                         function-description)
+                           :xep-unallocated)))
         (if (eq xep-group :xep-unallocated)
             (make-instance 'llvm-function-info
                            :environment (cleavir-set:set-to-list (bir:environment function))
@@ -1220,6 +1220,7 @@
       ;; Parse lambda list.
     (cmp:compile-lambda-list-code (bir:lambda-list ir)
                                   calling-convention
+                                  :general-entry
                                   :argument-out #'out)
     ;; Import cells.
     (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
@@ -1315,7 +1316,8 @@
                  (lambda-list (bir:lambda-list function))
                  (calling-convention
                    (cmp:setup-calling-convention
-                    fn-args
+                    xep-function
+                    :general-entry
                     :debug-on
                     (cleavir-policy:policy-value
                      (bir:policy function)
