@@ -208,94 +208,6 @@
     (setf (bir:inputs coerce) (list datum)))
   (values))
 
-;;; This is basically a massive KLUDGE.
-;;; The deal is, we essentially want to replace (= x y) with
-;;; (if (primitive-float-= x y) t nil). meta evaluate can then collapse that
-;;; in the common (if (= ...) ...) case. We have to construct the IR ourselves
-;;; because there's no good mechanism to do so, and that's verbose.
-;;; FIXME: Two things to do here: One, allow introducing a new function into a
-;;; module and then inlining it - then we can just keep the IR of
-;;; (lambda (x y) (if (primitive-float-= x y) t nil)) around and copy it into
-;;; wherever - but that also requires a copier. Second, maybe think about
-;;; an IR assembler syntax.
-
-(defun replace-with-test-primop (call primop-name
-                                 &optional (args (rest (bir:inputs call))))
-  (multiple-value-bind (fore aft) (bir:split-block-after call)
-    (let* ((boolt
-             (cleavir-ctype:single-value
-              (cleavir-ctype:member *clasp-system* t nil)
-              *clasp-system*))
-           (phi (make-instance 'bir:phi
-                  :name primop-name :iblock aft :derived-type boolt))
-           (dynenv (bir:dynamic-environment fore))
-           (function (bir:function fore))
-           (module (bir:module function))
-           (true (bir:constant-in-module t module))
-           (false (bir:constant-in-module nil module))
-           (truet (cleavir-ctype:single-value
-                   (cleavir-ctype:member *clasp-system* t)
-                   *clasp-system*))
-           (falset (cleavir-ctype:single-value
-                    (cleavir-ctype:member *clasp-system* nil)
-                    *clasp-system*))
-           (truev (make-instance 'bir:output :derived-type truet))
-           (falsev (make-instance 'bir:output :derived-type falset))
-           (trueb (make-instance 'bir:iblock
-                    :predecessors (cleavir-set:make-set fore)
-                    :inputs ()
-                    :dynamic-environment dynenv :function function
-                    :name (make-symbol
-                           (concatenate 'string (symbol-name primop-name)
-                                        "-TRUE"))))
-           (falseb (make-instance 'bir:iblock
-                     :predecessors (cleavir-set:make-set fore)
-                     :inputs ()
-                     :dynamic-environment dynenv :function function
-                     :name (make-symbol
-                            (concatenate 'string (symbol-name primop-name)
-                                         "-FALSE"))))
-           (truer (make-instance 'bir:constant-reference
-                    :policy (bir:policy call) :origin (bir:origin call)
-                    :predecessor nil :iblock trueb
-                    :inputs (list true) :outputs (list truev)))
-           (falser (make-instance 'bir:constant-reference
-                     :policy (bir:policy call) :origin (bir:origin call)
-                     :predecessor nil :iblock falseb
-                     :inputs (list false) :outputs (list falsev)))
-           (truej (make-instance 'bir:jump
-                    :policy (bir:policy call) :origin (bir:origin call)
-                    :inputs (list truev) :outputs (list phi) :iblock trueb
-                    :predecessor truer :next (list aft)))
-           (falsej (make-instance 'bir:jump
-                     :policy (bir:policy call) :origin (bir:origin call)
-                     :inputs (list falsev) :outputs (list phi) :iblock falseb
-                     :predecessor falser :next (list aft)))
-           (info (cleavir-primop-info:info primop-name))
-           (ifi (make-instance 'bir:ifi
-                  :policy (bir:policy call) :origin (bir:origin call)
-                  :next (list trueb falseb)))
-           (cout (bir:output call)))
-      ;; Fill the blocks - they just read a constant to the phi
-      (setf (bir:start trueb) truer (bir:successor truer) truej
-            (bir:end trueb) truej
-            (bir:start falseb) falser (bir:successor falser) falsej
-            (bir:end falseb) falsej
-            (bir:inputs aft) (list phi))
-      ;; Replace the call
-      (change-class call 'cleavir-bir:primop
-                    :info info :inputs args)
-      (cleavir-set:nadjoinf (bir:predecessors aft) trueb)
-      (cleavir-set:nadjoinf (bir:predecessors aft) falseb)
-      (cleavir-set:nremovef (bir:predecessors aft) fore)
-      (cleavir-set:nadjoinf (bir:scope dynenv) trueb)
-      (cleavir-set:nadjoinf (bir:scope dynenv) falseb)
-      (bir:replace-terminator ifi (bir:end fore))
-      (bir:replace-uses phi cout)
-      (setf (bir:inputs ifi) (list cout))
-      (cleavir-bir:compute-iblock-flow-order function)))
-  t)
-
 (macrolet ((define-two-arg-f (name sf-primop df-primop)
              (let ((sf (cleavir-ctype:range 'single-float '* '* *clasp-system*))
                    (df
@@ -345,18 +257,18 @@
 
 (macrolet ((define-float-conditional (name sf-primop df-primop)
              `(progn
-                (%deftransform ,name (call) (single-float single-float)
-                  (replace-with-test-primop call ',sf-primop))
-                (%deftransform ,name (call) (double-float double-float)
-                  (replace-with-test-primop call ',df-primop))
-                (%deftransform ,name (call) (single-float double-float)
-                  (wrap-coerce-sf-to-df call
-                                        (first (rest (bir:inputs call))))
-                  (replace-with-test-primop call ',df-primop))
-                (%deftransform ,name (call) (double-float single-float)
-                  (wrap-coerce-sf-to-df call
-                                        (second (rest (bir:inputs call))))
-                  (replace-with-test-primop call ',df-primop)))))
+                (deftransform ,name ((x single-float) (y single-float))
+                  '(if (core::primop ,sf-primop x y) t nil))
+                (deftransform ,name ((x double-float) (y double-float))
+                  '(if (core::primop ,df-primop x y) t nil))
+                (deftransform ,name ((x single-float) (y double-float))
+                  '(if (core::primop ,df-primop
+                        (core::primop core::single-to-double x) y)
+                    t nil))
+                (deftransform ,name ((x double-float) (y single-float))
+                  '(if (core::primop ,df-primop
+                        x (core::primop core::single-to-double y))
+                    t nil)))))
   (define-float-conditional core:two-arg-=
     core::two-arg-sf-= core::two-arg-df-=)
   (define-float-conditional core:two-arg-<
@@ -368,32 +280,19 @@
   (define-float-conditional core:two-arg->=
     core::two-arg-sf->= core::two-arg-df->=))
 
-(%deftransform zerop (call) (single-float)
-  (let ((zero (reference-constant-before call 0f0)))
-    (replace-with-test-primop call 'core::two-arg-sf-=
-                              (list zero (first (rest (bir:inputs call)))))))
-(%deftransform plusp (call) (single-float)
-  (let ((zero (reference-constant-before call 0f0)))
-    (replace-with-test-primop call 'core::two-arg-sf-<
-                              (list zero (first (rest (bir:inputs call)))))))
-(%deftransform minusp (call) (single-float)
-  (let ((zero (reference-constant-before call 0f0)))
-    (replace-with-test-primop call 'core::two-arg-sf->
-                              (list zero (first (rest (bir:inputs call)))))))
+(deftransform zerop ((n single-float))
+  '(if (core::primop core::two-arg-sf-= n 0f0) t nil))
+(deftransform plusp ((n single-float))
+  '(if (core::primop core::two-arg-sf-> n 0f0) t nil))
+(deftransform minusp ((n single-float))
+  '(if (core::primop core::two-arg-sf-< n 0f0) t nil))
 
-
-(%deftransform zerop (call) (double-float)
-  (let ((zero (reference-constant-before call 0d0)))
-    (replace-with-test-primop call 'core::two-arg-df-=
-                              (list zero (first (rest (bir:inputs call)))))))
-(%deftransform plusp (call) (double-float)
-  (let ((zero (reference-constant-before call 0d0)))
-    (replace-with-test-primop call 'core::two-arg-df-<
-                              (list zero (first (rest (bir:inputs call)))))))
-(%deftransform minusp (call) (double-float)
-  (let ((zero (reference-constant-before call 0d0)))
-    (replace-with-test-primop call 'core::two-arg-df->
-                              (list zero (first (rest (bir:inputs call)))))))
+(deftransform zerop ((n double-float))
+  '(if (core::primop core::two-arg-df-= n 0d0) t nil))
+(deftransform plusp ((n double-float))
+  '(if (core::primop core::two-arg-df-> n 0d0) t nil))
+(deftransform minusp ((n double-float))
+  '(if (core::primop core::two-arg-df-< n 0d0) t nil))
 
 (macrolet ((define-one-arg-f (name sf-primop df-primop)
              (let ((sf (cleavir-ctype:range 'single-float '* '* *clasp-system*))
@@ -646,26 +545,20 @@
                                                       *clasp-system*)))
 
 (macrolet ((define-fixnum-conditional (name primop)
-             `(%deftransform ,name (call) (fixnum fixnum)
-                (replace-with-test-primop call ',primop))))
+             `(deftransform ,name ((x fixnum) (y fixnum))
+                '(if (core::primop ,primop x y) t nil))))
   (define-fixnum-conditional core:two-arg-=  core::two-arg-fixnum-=)
   (define-fixnum-conditional core:two-arg-<  core::two-arg-fixnum-<)
   (define-fixnum-conditional core:two-arg-<= core::two-arg-fixnum-<=)
   (define-fixnum-conditional core:two-arg->  core::two-arg-fixnum->)
   (define-fixnum-conditional core:two-arg->= core::two-arg-fixnum->=))
 
-(%deftransform zerop (call) (fixnum)
-  (let ((zero (reference-constant-before call 0)))
-    (replace-with-test-primop call 'core::two-arg-fixnum-=
-                              (list zero (first (rest (bir:inputs call)))))))
-(%deftransform plusp (call) (fixnum)
-  (let ((zero (reference-constant-before call 0)))
-    (replace-with-test-primop call 'core::two-arg-fixnum-<
-                              (list zero (first (rest (bir:inputs call)))))))
-(%deftransform minusp (call) (fixnum)
-  (let ((zero (reference-constant-before call 0)))
-    (replace-with-test-primop call 'core::two-arg-fixnum->
-                              (list zero (first (rest (bir:inputs call)))))))
+(deftransform zerop ((n fixnum))
+  '(if (core::primop core::two-arg-fixnum-= n 0) t nil))
+(deftransform plusp ((n fixnum))
+  '(if (core::primop core::two-arg-fixnum-> n 0) t nil))
+(deftransform minusp ((n fixnum))
+  '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
 
 ;;;
 
