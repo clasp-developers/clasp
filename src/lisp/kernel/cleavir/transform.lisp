@@ -372,6 +372,13 @@
 (%deftransform rationalize (c) (rational)
   (replace-call-with-argument c 0))
 
+(deftransform equalp ((x number) (y number)) '(= x y))
+
+;;;
+
+(deftransform equal ((x character) (y character)) '(char= x y))
+(deftransform equalp ((x character) (y character)) '(char-equal x y))
+
 ;;;
 
 (%deftransform aref (call) ((simple-array single-float (*)) t)
@@ -453,6 +460,9 @@
 
 (define-deriver aref derive-aref)
 (define-deriver row-major-aref derive-aref)
+
+#+(or) ; string= is actually slower atm due to keyword etc processing
+(deftransform equal ((x string) (y string)) '(string= x y))
 
 ;;;
 
@@ -573,3 +583,6 @@
   `(if (null x)
        0
        (core:cons-length x)))
+
+(deftransform elt ((seq list) n) '(nth n seq))
+(deftransform core:setf-elt ((seq list) n value) '(setf (nth n seq) value))
