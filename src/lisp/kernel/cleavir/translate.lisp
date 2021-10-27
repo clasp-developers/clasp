@@ -451,17 +451,19 @@
 (defmethod translate-simple-instruction ((instruction bir:writevar)
                                          abi)
   (declare (ignore abi))
-  (let ((i (in (bir:input instruction))) (o (bir:output instruction)))
-    (unless (llvm-sys:type-equal (vrtype->llvm (first (cc-bmir:rtype o)))
-                                 (llvm-sys:get-type i))
-      (cleavir-bir-disassembler:display
-       (bir:module (bir:function instruction)))
-      (error "~a has wrong rtype; definitions ~a with definition-rtype ~a; input rtype ~a"
-             (first (bir:inputs instruction))
-             (bir:definitions (first (bir:inputs instruction)))
-             (cc-bir-to-bmir::definition-rtype (first (bir:inputs instruction)))
-             (cc-bmir:rtype (first (bir:inputs instruction)))))
-    (variable-out i o)))
+  (let* ((i (in (bir:input instruction))) (o (bir:output instruction))
+         (rt (cc-bmir:rtype o)))
+    (unless (null rt)
+      (unless (llvm-sys:type-equal (vrtype->llvm (first rt))
+                                   (llvm-sys:get-type i))
+        (cleavir-bir-disassembler:display
+         (bir:module (bir:function instruction)))
+        (error "~a has wrong rtype; definitions ~a with definition-rtype ~a; input rtype ~a"
+               (first (bir:inputs instruction))
+               (bir:definitions (first (bir:inputs instruction)))
+               (cc-bir-to-bmir::definition-rtype (first (bir:inputs instruction)))
+               (cc-bmir:rtype (first (bir:inputs instruction)))))
+      (variable-out i o))))
 
 (defmethod translate-simple-instruction ((instruction bir:readvar) abi)
   (declare (ignore abi))
