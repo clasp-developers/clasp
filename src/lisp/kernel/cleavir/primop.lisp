@@ -114,7 +114,7 @@
                      param-info)))
         (nsym (gensym "NAME")))
     `(progn
-       (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) :value)
+       (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) 2)
        (setf (gethash ',name *primop-rtypes*) '(,@param-info))
        (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
          (declare (ignore ,instparam)))
