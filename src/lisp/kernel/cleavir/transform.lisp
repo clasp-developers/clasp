@@ -30,8 +30,8 @@
   (defvar *bir-transformers* (make-hash-table :test #'equal)))
 
 (defun arg-subtypep (arg ctype)
-  (cleavir-ctype:subtypep (cleavir-ctype:primary (bir:ctype arg) *clasp-system*)
-                          ctype *clasp-system*))
+  (ctype:subtypep (ctype:primary (bir:ctype arg) *clasp-system*)
+                  ctype *clasp-system*))
 
 (defun maybe-transform (call transforms)
   (loop with args = (rest (bir:inputs call))
@@ -138,8 +138,8 @@
   (let* ((module (bir:module (bir:function inst)))
          (constant (bir:constant-in-module value module))
          (cv (make-instance 'bir:output
-               :derived-type (cleavir-ctype:single-value
-                              (cleavir-ctype:member *clasp-system* value)
+               :derived-type (ctype:single-value
+                              (ctype:member *clasp-system* value)
                               *clasp-system*)))
          (cr (make-instance 'bir:constant-reference
                :policy (bir:policy inst) :origin (bir:origin inst)
@@ -174,13 +174,13 @@
     thei))
 
 (defun replace-with-vprimop-and-wrap (inst primop ctype)
-  (wrap-in-thei inst (cleavir-ctype:single-value ctype *clasp-system*))
+  (wrap-in-thei inst (ctype:single-value ctype *clasp-system*))
   (replace-call-with-vprimop inst primop)
   t)
 
 (defun wrap-coerce-sf-to-df (inst datum)
-  (let* ((df (cleavir-ctype:single-value
-              (cleavir-ctype:range 'double-float '* '* *clasp-system*)
+  (let* ((df (ctype:single-value
+              (ctype:range 'double-float '* '* *clasp-system*)
               *clasp-system*))
          (new (make-instance 'bir:output
                 :derived-type df))
@@ -194,8 +194,8 @@
   (values))
 
 (defun wrap-coerce-df-to-sf (inst datum)
-  (let* ((sf (cleavir-ctype:single-value
-              (cleavir-ctype:range 'single-float '* '* *clasp-system*)
+  (let* ((sf (ctype:single-value
+              (ctype:range 'single-float '* '* *clasp-system*)
               *clasp-system*))
          (new (make-instance 'bir:output
                 :derived-type sf))
@@ -209,9 +209,9 @@
   (values))
 
 (macrolet ((define-two-arg-f (name sf-primop df-primop)
-             (let ((sf (cleavir-ctype:range 'single-float '* '* *clasp-system*))
+             (let ((sf (ctype:range 'single-float '* '* *clasp-system*))
                    (df
-                     (cleavir-ctype:range 'double-float '* '* *clasp-system*)))
+                     (ctype:range 'double-float '* '* *clasp-system*)))
              `(progn
                 (%deftransform ,name (call) (single-float single-float)
                   (replace-with-vprimop-and-wrap call ',sf-primop ',sf))
@@ -295,9 +295,9 @@
   '(if (core::primop core::two-arg-df-< n 0d0) t nil))
 
 (macrolet ((define-one-arg-f (name sf-primop df-primop)
-             (let ((sf (cleavir-ctype:range 'single-float '* '* *clasp-system*))
+             (let ((sf (ctype:range 'single-float '* '* *clasp-system*))
                    (df
-                     (cleavir-ctype:range 'double-float '* '* *clasp-system*)))
+                     (ctype:range 'double-float '* '* *clasp-system*)))
                `(progn
                   (%deftransform ,name (call) (single-float)
                     (replace-with-vprimop-and-wrap call ',sf-primop ',sf))
@@ -336,12 +336,12 @@
 ;;; two argument case by the compiler macro in opt-number.lsp)
 (%deftransform log (call) (single-float)
   (replace-with-vprimop-and-wrap call 'core::sf-log
-                                 (cleavir-ctype:range 'single-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'single-float '* '*
+                                              *clasp-system*)))
 (%deftransform log (call) (double-float)
   (replace-with-vprimop-and-wrap call 'core::df-log
-                                 (cleavir-ctype:range 'double-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'double-float '* '*
+                                              *clasp-system*)))
 
 (%deftransform float (call) (single-float)
   (replace-call-with-argument call 0))
@@ -358,6 +358,27 @@
 (%deftransform float (call) (double-float)
   (wrap-coerce-df-to-sf call (first (rest (bir:inputs call))))
   (replace-call-with-argument call 0))
+
+(defun derive-float (call)
+  (cleavir-ctype:single-value
+   (let ((args (rest (bir:inputs call))))
+     (if (rest args)
+         (let ((proto (second args))
+               #+(or) ; nonexistent
+               (short (ctype:range 'short-float '* '* *clasp-system*))
+               (single (ctype:range 'single-float '* '* *clasp-system*))
+               (double (ctype:range 'double-float '* '* *clasp-system*))
+               #+(or) ; nonexistent
+               (long (ctype:range 'long-float '* '* *clasp-system*)))
+           (cond #+(or)((arg-subtypep proto short) short)
+                 ((arg-subtypep proto single) single)
+                 ((arg-subtypep proto double) double)
+                 #+(or)((arg-subtypep proto long) long)
+                 (t (env:parse-type-specifier 'float nil *clasp-system*))))
+         (ctype:range 'single-float '* '* *clasp-system*)))
+   *clasp-system*))
+
+(define-deriver float derive-float)
 
 ;;;
 
@@ -383,26 +404,26 @@
 
 (%deftransform aref (call) ((simple-array single-float (*)) t)
   (replace-with-vprimop-and-wrap call 'core::sf-vref
-                                 (cleavir-ctype:range 'single-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'single-float '* '*
+                                              *clasp-system*)))
 (%deftransform aref (call) ((simple-array double-float (*)) t)
   (replace-with-vprimop-and-wrap call 'core::df-vref
-                                 (cleavir-ctype:range 'double-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'double-float '* '*
+                                              *clasp-system*)))
 (%deftransform row-major-aref (call) ((simple-array single-float (*)) t)
   (replace-with-vprimop-and-wrap call 'core::sf-vref
-                                 (cleavir-ctype:range 'single-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'single-float '* '*
+                                              *clasp-system*)))
 (%deftransform row-major-aref (call) ((simple-array double-float (*)) t)
   (replace-with-vprimop-and-wrap call 'core::df-vref
-                                 (cleavir-ctype:range 'double-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'double-float '* '*
+                                              *clasp-system*)))
 
 (%deftransform core:row-major-aset (call)
   ((simple-array single-float (*)) t t)
   (wrap-in-thei call
-                (cleavir-ctype:single-value
-                 (cleavir-ctype:range 'single-float '* '* *clasp-system*)
+                (ctype:single-value
+                 (ctype:range 'single-float '* '* *clasp-system*)
                  *clasp-system*))
   (change-class call 'cleavir-bir:primop
                 :inputs (let ((args (rest (bir:inputs call))))
@@ -413,8 +434,8 @@
 (%deftransform core:row-major-aset (call)
   ((simple-array double-float (*)) t t)
   (wrap-in-thei call
-                (cleavir-ctype:single-value
-                 (cleavir-ctype:range 'double-float '* '* *clasp-system*)
+                (ctype:single-value
+                 (ctype:range 'double-float '* '* *clasp-system*)
                  *clasp-system*))
   (change-class call 'cleavir-bir:primop
                 :inputs (let ((args (rest (bir:inputs call))))
@@ -425,12 +446,12 @@
 
 (%deftransform (setf aref) (call) (t (simple-array single-float (*)) t)
   (replace-with-vprimop-and-wrap call 'core::sf-vset
-                                 (cleavir-ctype:range 'single-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'single-float '* '*
+                                              *clasp-system*)))
 (%deftransform (setf aref) (call) (t (simple-array double-float (*)) t)
   (replace-with-vprimop-and-wrap call 'core::df-vset
-                                 (cleavir-ctype:range 'double-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'double-float '* '*
+                                              *clasp-system*)))
 
 (%deftransform array-rank (call) ((array * (*)))
   (replace-call-with-constant call 1))
@@ -449,13 +470,13 @@
 
 (defun derive-aref (call)
   (let* ((aarg (first (rest (bir:inputs call))))
-         (ct (cleavir-ctype:primary (bir:ctype aarg) *clasp-system*)))
-    (cleavir-ctype:single-value
+         (ct (ctype:primary (bir:ctype aarg) *clasp-system*)))
+    (ctype:single-value
      (if (and (consp ct)
               (member (first ct) '(array simple-array vector))
               (consp (cdr ct)))
          (second ct)
-         (cleavir-ctype:top *clasp-system*))
+         (ctype:top *clasp-system*))
      *clasp-system*)))
 
 (define-deriver aref derive-aref)
@@ -464,20 +485,23 @@
 #+(or) ; string= is actually slower atm due to keyword etc processing
 (deftransform equal ((x string) (y string)) '(string= x y))
 
+(deftransform string ((x symbol)) '(symbol-name x))
+(deftransform string ((x string)) '(progn x))
+
 ;;;
 
 (%deftransform lognot (call) (fixnum)
   (replace-with-vprimop-and-wrap call 'core::fixnum-lognot
-                                 (cleavir-ctype:range 'integer
-                                                      most-negative-fixnum
-                                                      most-positive-fixnum
-                                                      *clasp-system*)))
+                                 (ctype:range 'integer
+                                              most-negative-fixnum
+                                              most-positive-fixnum
+                                              *clasp-system*)))
 
 (macrolet ((deflog2 (name primop)
-             (let ((fix (cleavir-ctype:range 'integer
-                                             most-negative-fixnum
-                                             most-positive-fixnum
-                                             *clasp-system*)))
+             (let ((fix (ctype:range 'integer
+                                     most-negative-fixnum
+                                     most-positive-fixnum
+                                     *clasp-system*)))
                `(%deftransform ,name (call) (fixnum fixnum)
                   (replace-with-vprimop-and-wrap call ',primop ',fix)))))
   (deflog2 core:logand-2op core::fixnum-logand)
@@ -485,9 +509,9 @@
   (deflog2 core:logxor-2op core::fixnum-logxor))
 
 (defun lognot-before (before datum)
-  (let* ((fix (cleavir-ctype:single-value
-               (cleavir-ctype:range 'integer most-negative-fixnum
-                                    most-positive-fixnum *clasp-system*)
+  (let* ((fix (ctype:single-value
+               (ctype:range 'integer most-negative-fixnum
+                            most-positive-fixnum *clasp-system*)
                *clasp-system*))
          (new (make-instance 'bir:output :derived-type fix))
          (not (make-instance 'bir:primop
@@ -499,9 +523,9 @@
     (setf (bir:inputs not) (list datum)))
   (values))
 (defun lognot-after (after datum)
-  (let* ((fix (cleavir-ctype:single-value
-               (cleavir-ctype:range 'integer most-negative-fixnum
-                                    most-positive-fixnum *clasp-system*)
+  (let* ((fix (ctype:single-value
+               (ctype:range 'integer most-negative-fixnum
+                            most-positive-fixnum *clasp-system*)
                *clasp-system*))
          (new (make-instance 'bir:output :derived-type fix))
          (not (make-instance 'bir:primop
@@ -514,10 +538,10 @@
   (values))
 
 (macrolet ((deflog2c (name primop which)
-             (let ((fix (cleavir-ctype:range 'integer
-                                             most-negative-fixnum
-                                             most-positive-fixnum
-                                             *clasp-system*)))
+             (let ((fix (ctype:range 'integer
+                                     most-negative-fixnum
+                                     most-positive-fixnum
+                                     *clasp-system*)))
                `(%deftransform ,name (call) (fixnum fixnum)
                   (lognot-before call (,which (rest (bir:inputs call))))
                   (replace-with-vprimop-and-wrap call ',primop ',fix)))))
@@ -527,10 +551,10 @@
   (deflog2c logorc2 core::fixnum-logior second))
 
 (macrolet ((deflog2r (name primop)
-             (let ((fix (cleavir-ctype:range 'integer
-                                             most-negative-fixnum
-                                             most-positive-fixnum
-                                             *clasp-system*)))
+             (let ((fix (ctype:range 'integer
+                                     most-negative-fixnum
+                                     most-positive-fixnum
+                                     *clasp-system*)))
                `(%deftransform ,name (call) (fixnum fixnum)
                   (let ((out (bir:output call)))
                     (replace-with-vprimop-and-wrap call ',primop ',fix)
@@ -543,16 +567,16 @@
 ;;; a fixnum as well. Plus it hardcodes the number of fixnum bits. FIXME
 (%deftransform core:two-arg-+ (call) ((signed-byte 60) (signed-byte 60))
   (replace-with-vprimop-and-wrap call 'core::fixnum-add
-                                 (cleavir-ctype:range 'integer
-                                                      most-negative-fixnum
-                                                      most-positive-fixnum
-                                                      *clasp-system*)))
+                                 (ctype:range 'integer
+                                              most-negative-fixnum
+                                              most-positive-fixnum
+                                              *clasp-system*)))
 (%deftransform core:two-arg-- (call) ((signed-byte 60) (signed-byte 60))
   (replace-with-vprimop-and-wrap call 'core::fixnum-sub
-                                 (cleavir-ctype:range 'integer
-                                                      most-negative-fixnum
-                                                      most-positive-fixnum
-                                                      *clasp-system*)))
+                                 (ctype:range 'integer
+                                              most-negative-fixnum
+                                              most-positive-fixnum
+                                              *clasp-system*)))
 
 (macrolet ((define-fixnum-conditional (name primop)
              `(deftransform ,name ((x fixnum) (y fixnum))
