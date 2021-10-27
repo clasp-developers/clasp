@@ -153,7 +153,7 @@
     (bir:delete-instruction call)))
 
 (defun replace-call-with-vprimop (call primop-name)
-  (change-class call 'cleavir-bir:vprimop
+  (change-class call 'cleavir-bir:primop
                 :inputs (rest (bir:inputs call)) ; don't need the function
                 :info (cleavir-primop-info:info primop-name)))
 
@@ -184,7 +184,7 @@
               *clasp-system*))
          (new (make-instance 'bir:output
                 :derived-type df))
-         (coerce (make-instance 'bir:vprimop
+         (coerce (make-instance 'bir:primop
                    :origin (bir:origin inst) :policy (bir:policy inst)
                    :info (cleavir-primop-info:info 'core::single-to-double)
                    :outputs (list new))))
@@ -199,7 +199,7 @@
               *clasp-system*))
          (new (make-instance 'bir:output
                 :derived-type sf))
-         (coerce (make-instance 'bir:vprimop
+         (coerce (make-instance 'bir:primop
                    :origin (bir:origin inst) :policy (bir:policy inst)
                    :info (cleavir-primop-info:info 'core::double-to-single)
                    :outputs (list new))))
@@ -283,7 +283,7 @@
             (bir:end falseb) falsej
             (bir:inputs aft) (list phi))
       ;; Replace the call
-      (change-class call 'cleavir-bir:vprimop
+      (change-class call 'cleavir-bir:primop
                     :info info :inputs args)
       (cleavir-set:nadjoinf (bir:predecessors aft) trueb)
       (cleavir-set:nadjoinf (bir:predecessors aft) falseb)
@@ -424,12 +424,12 @@
 
 (%deftransform core:reciprocal (call) (single-float)
   (let ((onev (reference-constant-before call 1f0)))
-    (change-class call 'cleavir-bir:vprimop
+    (change-class call 'cleavir-bir:primop
                   :inputs (list onev (first (rest (bir:inputs call))))
                   :info (cleavir-primop-info:info 'core::two-arg-sf-/))))
 (%deftransform core:reciprocal (call) (double-float)
   (let ((onev (reference-constant-before call 1d0)))
-    (change-class call 'cleavir-bir:vprimop
+    (change-class call 'cleavir-bir:primop
                   :inputs (list onev (first (rest (bir:inputs call))))
                   :info (cleavir-primop-info:info 'core::two-arg-df-/))))
 
@@ -498,7 +498,7 @@
                 (cleavir-ctype:single-value
                  (cleavir-ctype:range 'single-float '* '* *clasp-system*)
                  *clasp-system*))
-  (change-class call 'cleavir-bir:vprimop
+  (change-class call 'cleavir-bir:primop
                 :inputs (let ((args (rest (bir:inputs call))))
                           ;; aset takes (array index value) while the intrinsic
                           ;; takes (value array index)
@@ -510,7 +510,7 @@
                 (cleavir-ctype:single-value
                  (cleavir-ctype:range 'double-float '* '* *clasp-system*)
                  *clasp-system*))
-  (change-class call 'cleavir-bir:vprimop
+  (change-class call 'cleavir-bir:primop
                 :inputs (let ((args (rest (bir:inputs call))))
                           ;; aset takes (array index value) while the intrinsic
                           ;; takes (value array index)
@@ -581,7 +581,7 @@
                                     most-positive-fixnum *clasp-system*)
                *clasp-system*))
          (new (make-instance 'bir:output :derived-type fix))
-         (not (make-instance 'bir:vprimop
+         (not (make-instance 'bir:primop
                 :origin (bir:origin before) :policy (bir:policy before)
                 :info (cleavir-primop-info:info 'core::fixnum-lognot)
                 :outputs (list new))))
@@ -595,7 +595,7 @@
                                     most-positive-fixnum *clasp-system*)
                *clasp-system*))
          (new (make-instance 'bir:output :derived-type fix))
-         (not (make-instance 'bir:vprimop
+         (not (make-instance 'bir:primop
                 :origin (bir:origin after) :policy (bir:policy after)
                 :info (cleavir-primop-info:info 'core::fixnum-lognot)
                 :outputs (list new))))

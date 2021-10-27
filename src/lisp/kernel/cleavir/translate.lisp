@@ -213,7 +213,7 @@
    (in (first (bir:inputs instruction)))
    (first next) (second next)))
 
-(defmethod translate-conditional-test ((inst bir:vprimop) next)
+(defmethod translate-conditional-test ((inst bir:primop) next)
   (translate-conditional-primop (cleavir-primop-info:name (bir:info inst))
                                 inst next))
 
@@ -868,7 +868,7 @@
                                 (first (bir:outputs inst))))
        (first (bir:outputs inst))))
 
-(defmethod translate-simple-instruction ((inst bir:vprimop) abi)
+(defmethod translate-simple-instruction ((inst bir:primop) abi)
   (declare (ignore abi))
   (translate-primop (cleavir-primop-info:name (bir:info inst)) inst))
 

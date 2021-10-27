@@ -38,7 +38,7 @@
 (defgeneric translate-primop (opname instruction))
 ;;; Called by translate-conditional-test
 (defgeneric translate-conditional-primop (opname instruction next)
-  (:method (opname (instruction bir:vprimop) next)
+  (:method (opname (instruction bir:primop) next)
     (declare (ignore opname))
     ;; Like the default method on translate-conditional-test, compare the output
     ;; against NIL.
