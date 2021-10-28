@@ -4,7 +4,6 @@
       '(
         LOOP-FIXNUM-1 LOOP-FINALLY-1 LOOP-FINALLY-2 LOOP-FINALLY-3 LOOP-FINALLY-4
         random-short random-double random-long
-        read-symbol.19
         test-issue-950
         compile-file-no-unwind
         TYPES-CLASSES-10

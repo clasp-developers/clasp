@@ -318,7 +318,7 @@ def update_dependencies(cfg):
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
                        "https://github.com/s-expressionists/Eclector.git",
-                       label = "without-signal", revision = "e92cf239783be90c97e80aff2a14d65778a38325")
+                       label = "without-signal", revision = "dddb4d8af3eae78017baae7fb9b99e73d2a56e6b")
                        # "7e9561c410897d499b581f6a8e98cbbd17cd7a81")
 #"66cf5e2370eef4be659212269272a5e79a82fa1c")
 #                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
