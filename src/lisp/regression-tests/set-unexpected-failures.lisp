@@ -4,7 +4,7 @@
       '(
         LOOP-FIXNUM-1 LOOP-FINALLY-1 LOOP-FINALLY-2 LOOP-FINALLY-3 LOOP-FINALLY-4
         random-short random-double random-long
-        find-all-symbols.1 read-symbol.19
+        read-symbol.19
         test-issue-950
         compile-file-no-unwind
         TYPES-CLASSES-10
