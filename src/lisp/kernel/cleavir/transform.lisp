@@ -24,7 +24,9 @@
 ;;;; returns EQ, so the compiler replaces the form with (eq 'foo x) and
 ;;;; compiles that instead.
 ;;;; More complicated examples return a lambda expression.
-;;;: NOTE: The order in which transforms are tried is not defined.
+;;;; Transforms are tried most-specific first. A transform is more specific
+;;;; than another if they work on calls with the same number of arguments, and
+;;;; all types of the first are recognizable subtypes of the second.
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *bir-transformers* (make-hash-table :test #'equal)))
@@ -55,6 +57,12 @@
      ',name))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun more-specific-types-p (types1 types2)
+    ;; True if the lists have the same number of types, and all types in
+    ;; the first are recognizable subtypes of those in the second.
+    (and (= (length types1) (length types2))
+         (every (lambda (t1 t2) (ctype:subtypep t1 t2 *clasp-system*))
+                types1 types2)))
   (defun %def-bir-transformer (name function param-types)
     ;; We just use a reverse alist (function . types).
     ;; EQUALP does not actually technically test type equality, which is what we
@@ -64,8 +72,12 @@
       (if existing
           ;; replace
           (setf (car existing) function)
-          (push (cons function param-types)
-                (gethash name *bir-transformers*))))))
+          ;; Merge in, respecting subtypep
+          (setf (gethash name *bir-transformers*)
+                (merge 'list (list (cons function param-types))
+                       (gethash name *bir-transformers*)
+                        #'more-specific-types-p
+                       :key #'cdr))))))
 
 (defmacro %deftransform (name (instparam) (&rest param-types)
                                 &body body)
