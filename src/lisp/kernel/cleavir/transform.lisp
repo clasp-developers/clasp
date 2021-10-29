@@ -359,6 +359,13 @@
   (wrap-coerce-df-to-sf call (first (rest (bir:inputs call))))
   (replace-call-with-argument call 0))
 
+(deftransform float ((num fixnum) (proto single-float))
+  `(core::primop core::fixnum-to-single num))
+(deftransform float ((num fixnum))
+  `(core::primop core::fixnum-to-single num))
+(deftransform float ((num fixnum) (proto double-float))
+  `(core::primop core::fixnum-to-double num))
+
 (defun derive-float (call)
   (cleavir-ctype:single-value
    (let ((args (rest (bir:inputs call))))

@@ -262,6 +262,19 @@
     (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%double%))
     (%fptrunc arg cmp:%float%)))
 
+(defvprimop core::fixnum-to-single ((:single-float) :object) (inst)
+  (assert (= 1 (length (bir:inputs inst))))
+  (let* ((arg (in (first (bir:inputs inst))))
+         (fix (cmp:irc-untag-fixnum arg cmp:%i64%)))
+    (%sitofp fix cmp:%float%
+             (datum-name-as-string (first (bir:outputs inst))))))
+(defvprimop core::fixnum-to-double ((:double-float) :object) (inst)
+  (assert (= 1 (length (bir:inputs inst))))
+  (let* ((arg (in (first (bir:inputs inst))))
+         (fix (cmp:irc-untag-fixnum arg cmp:%i64%)))
+    (%sitofp fix cmp:%double%
+             (datum-name-as-string (first (bir:outputs inst))))))
+
 (defvprimop-intrinsic core::sf-vref ((:single-float) :object :object)
   "cc_simpleFloatVectorAref")
 (defvprimop-intrinsic core::df-vref ((:double-float) :object :object)

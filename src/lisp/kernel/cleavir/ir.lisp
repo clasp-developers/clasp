@@ -124,6 +124,9 @@
 (defun %fptrunc (value type &optional (label ""))
   (llvm-sys:create-fptrunc cmp:*irbuilder* value type label))
 
+(defun %sitofp (value type &optional (label ""))
+  (llvm-sys:create-sito-fp cmp:*irbuilder* value type label))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; with-entry-basic-block
