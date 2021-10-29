@@ -349,3 +349,12 @@
   (def-fixnum-compare core::two-arg-fixnum-<= cmp:irc-icmp-sle)
   (def-fixnum-compare core::two-arg-fixnum->  cmp:irc-icmp-sgt)
   (def-fixnum-compare core::two-arg-fixnum->= cmp:irc-icmp-sge))
+
+(defvprimop core::fixnum-positive-logcount ((:object) :object) (inst)
+  (let* ((arg (in (first (bir:inputs inst))))
+         ;; NOTE we do not need to untag the argument: the tag is all zero
+         ;; so it won't affect the population count.
+         (iarg (cmp:irc-ptr-to-int arg cmp:%i64%))
+         (count (%intrinsic-call "llvm.ctpop.i64" (list iarg))))
+    (cmp:irc-tag-fixnum count
+                        (datum-name-as-string (first (bir:outputs inst))))))

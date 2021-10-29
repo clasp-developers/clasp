@@ -616,6 +616,9 @@
 (deftransform minusp ((n fixnum))
   '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
 
+(deftransform logcount ((n (and fixnum unsigned-byte)))
+  '(core::primop core::fixnum-positive-logcount n))
+
 ;;;
 
 (%deftransform car (call) (cons)
