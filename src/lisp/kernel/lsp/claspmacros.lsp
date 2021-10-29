@@ -17,6 +17,8 @@
 (defmacro ext:with-float-traps-masked (traps &body body)
   (let ((previous (gensym "PREVIOUS"))
         (all-traps '(:underflow :overflow :inexact :invalid :divide-by-zero :denormalized-operand)))
+    (unless (subsetp traps all-traps)
+      (warn "Unknown float traps ~a ignored" (set-difference traps all-traps)))
     `(let ((,previous (core::get-current-fpe-mask)))
        (unwind-protect
             (progn
