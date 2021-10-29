@@ -475,6 +475,10 @@
                                  (ctype:range 'double-float '* '*
                                               *clasp-system*)))
 
+(deftransform aref ((arr vector) (index t)) '(row-major-aref arr index))
+(deftransform (setf aref) ((val t) (arr vector) (index t))
+  '(setf (row-major-aref arr index) val))
+
 (%deftransform array-rank (call) ((array * (*)))
   (replace-call-with-constant call 1))
 
