@@ -42,8 +42,5 @@ namespace core {
 SYMBOL_SC_(CorePkg, loadTimeValuesIds);
 SYMBOL_SC_(CorePkg, loadTimeValueArray);
 SYMBOL_SC_(CorePkg, lookupLoadTimeValue);
-//SYMBOL_SC_(CorePkg, lookupLoadTimeSymbol);
-SYMBOL_EXPORT_SC_(CorePkg, setRunTimeValuesVector);
-
 
 }; /* core */

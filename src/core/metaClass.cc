@@ -176,9 +176,5 @@ CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
 
 SYMBOL_SC_(CorePkg, subclassp);
 SYMBOL_SC_(CorePkg, allocateRawClass);
-SYMBOL_EXPORT_SC_(CorePkg, inheritDefaultAllocator);
-
-
-
 
 };
