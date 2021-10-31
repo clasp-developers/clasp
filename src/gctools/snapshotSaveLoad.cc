@@ -443,12 +443,13 @@ void encodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Cod
     printf("%s:%d:%s There is a problem - the function address %p falls before the codeStart %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, (void*)codeStart );
     abort();
   }
-  uintptr_t result = (((uintptr_t)firstByte<<56) | (address - codeStart));
-  DBG_SL_ENTRY_POINT(BF("base: %p encoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
-  if ((intptr_t)result<0) {
-    printf("%s:%d:%s Generating a vaddress that is negative: %p firstByte: 0x%x address: %p codeStart: 0x%" PRIxPTR "\n", __FILE__, __LINE__, __FUNCTION__, (void*)result, firstByte, (void*)address, codeStart );
+  intptr_t offset = (address - codeStart);
+  if (offset<0) {
+    printf("%s:%d:%s Generating a vaddress that is negative: %p firstByte: 0x%x address: %p codeStart: 0x%" PRIxPTR "\n", __FILE__, __LINE__, __FUNCTION__, (void*)offset, firstByte, (void*)address, codeStart );
     abort();
   }
+  uintptr_t result = (((uintptr_t)firstByte<<56) | (uintptr_t)offset);
+  DBG_SL_ENTRY_POINT(BF("base: %p encoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
   *ptrptr = result;
 }
 
