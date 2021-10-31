@@ -662,7 +662,6 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,args);
 }
 
-SYMBOL_EXPORT_SC_(ClosPkg,codegen_dispatcher);
 SYMBOL_EXPORT_SC_(KeywordPkg,force_compile);
 SYMBOL_EXPORT_SC_(KeywordPkg,generic_function_name);
 
