@@ -213,7 +213,7 @@
    (in (first (bir:inputs instruction)))
    (first next) (second next)))
 
-(defmethod translate-conditional-test ((inst bir:vprimop) next)
+(defmethod translate-conditional-test ((inst bir:primop) next)
   (translate-conditional-primop (cleavir-primop-info:name (bir:info inst))
                                 inst next))
 
@@ -451,17 +451,19 @@
 (defmethod translate-simple-instruction ((instruction bir:writevar)
                                          abi)
   (declare (ignore abi))
-  (let ((i (in (bir:input instruction))) (o (bir:output instruction)))
-    (unless (llvm-sys:type-equal (vrtype->llvm (first (cc-bmir:rtype o)))
-                                 (llvm-sys:get-type i))
-      (cleavir-bir-disassembler:display
-       (bir:module (bir:function instruction)))
-      (error "~a has wrong rtype; definitions ~a with definition-rtype ~a; input rtype ~a"
-             (first (bir:inputs instruction))
-             (bir:definitions (first (bir:inputs instruction)))
-             (cc-bir-to-bmir::definition-rtype (first (bir:inputs instruction)))
-             (cc-bmir:rtype (first (bir:inputs instruction)))))
-    (variable-out i o)))
+  (let* ((i (in (bir:input instruction))) (o (bir:output instruction))
+         (rt (cc-bmir:rtype o)))
+    (unless (null rt)
+      (unless (llvm-sys:type-equal (vrtype->llvm (first rt))
+                                   (llvm-sys:get-type i))
+        (cleavir-bir-disassembler:display
+         (bir:module (bir:function instruction)))
+        (error "~a has wrong rtype; definitions ~a with definition-rtype ~a; input rtype ~a"
+               (first (bir:inputs instruction))
+               (bir:definitions (first (bir:inputs instruction)))
+               (cc-bir-to-bmir::definition-rtype (first (bir:inputs instruction)))
+               (cc-bmir:rtype (first (bir:inputs instruction)))))
+      (variable-out i o))))
 
 (defmethod translate-simple-instruction ((instruction bir:readvar) abi)
   (declare (ignore abi))
@@ -868,7 +870,7 @@
                                 (first (bir:outputs inst))))
        (first (bir:outputs inst))))
 
-(defmethod translate-simple-instruction ((inst bir:vprimop) abi)
+(defmethod translate-simple-instruction ((inst bir:primop) abi)
   (declare (ignore abi))
   (translate-primop (cleavir-primop-info:name (bir:info inst)) inst))
 
@@ -1191,12 +1193,13 @@
               for dat
                 = (cond ((eq rt :multiple-values)
                          (cmp:irc-phi cmp::%tmv% ndefinitions))
-                        ((equal rt '(:object))
-                         (cmp:irc-phi cmp:%t*% ndefinitions))
-                        ((and (listp rt)
-                              (every (lambda (x) (eq x :object)) rt))
-                         (loop repeat (length rt)
-                               collect (cmp:irc-phi cmp:%t*% ndefinitions)))
+                        ((and (listp rt) (= (length rt) 1))
+                         (cmp:irc-phi (vrtype->llvm (first rt))
+                                      ndefinitions))
+                        ((listp rt)
+                         (loop for vrt in rt
+                               for ll = (vrtype->llvm vrt)
+                               collect (cmp:irc-phi ll ndefinitions)))
                         (t (error "BUG: Bad rtype ~a" rt)))
               do (setf (gethash phi *datum-values*) dat))))))
 

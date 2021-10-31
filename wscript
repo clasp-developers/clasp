@@ -306,7 +306,7 @@ def update_dependencies(cfg):
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
-                       "2e761025e42d4443005c3757516dd6ef6fa00333")
+                       "f5a9f2b10fad7689abbdb65229ede3386088e35d")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
@@ -318,7 +318,7 @@ def update_dependencies(cfg):
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
                        "https://github.com/s-expressionists/Eclector.git",
-                       label = "without-signal", revision = "e92cf239783be90c97e80aff2a14d65778a38325")
+                       label = "without-signal", revision = "dddb4d8af3eae78017baae7fb9b99e73d2a56e6b")
                        # "7e9561c410897d499b581f6a8e98cbbd17cd7a81")
 #"66cf5e2370eef4be659212269272a5e79a82fa1c")
 #                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
@@ -333,7 +333,7 @@ def update_dependencies(cfg):
                        "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/scraper/dependencies/esrap",
                        "https://github.com/scymtym/esrap.git",
-                       "866f28fa7a2c1d3fb6d0d0423850d1f9d955750f")
+                       "c99c33a33ff58ca85e8ba73912eba45d458eaa72")
     fetch_git_revision("src/scraper/dependencies/trivial-with-current-source-form",
                        "https://github.com/scymtym/trivial-with-current-source-form.git",
                        "3898e09f8047ef89113df265574ae8de8afa31ac")

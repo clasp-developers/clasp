@@ -907,14 +907,6 @@ void Lisp::finishPackageSetup(const string &pkgname, list<string> const &nicknam
   }
   {
     ql::list sn;
-    for ( auto name : shadow ) {
-      SimpleBaseString_sp str = SimpleBaseString_O::make(name);
-      sn << str;
-    }
-    pkg->shadow((List_sp)sn.cons());
-  }
-  {
-    ql::list sn;
     for ( auto name : usePackages ) {
       Package_sp other = gc::As<Package_sp>(_lisp->findPackage(name,true));
       pkg->usePackage(other);
@@ -2099,8 +2091,6 @@ CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, Lis
   dbg_hook("universalErrorHandler");
   if (globals_->_Interactive) {
     core__invoke_internal_debugger(nil<T_O>());
-  } else {
-    c_bt();
   }
   abort();
 };

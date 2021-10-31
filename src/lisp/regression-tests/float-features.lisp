@@ -7,6 +7,8 @@
          (ext:with-float-traps-masked (:divide-by-zero)
            (/ (bar) (foo))))))
 
+;;; Floating point signals are problematic right now. See #961.
+#+(or)
 (test-expect-error float-features-1b
                    (flet ((foo () (if (> 10 (random 20)) 0.0 0.0))
                           (bar () (if (> 10 (random 20)) 23 24)))
@@ -26,6 +28,7 @@
          (let ((n (random 100)))
            (+ (foo-ext-1 n) (bar-ext-1 n))))))
 
+#+(or)
 (test-expect-error float-features-4
                    (let ((n (random 100)))
                      (ext:with-float-traps-masked ()
@@ -44,6 +47,7 @@
          (let ((n (random 100)))
            (+ (foo-ext-2 n) (bar-ext-2 n))))))
 
+#+(or)
 (test-expect-error float-features-6
                    (let ((n (random 100)))
                      (ext:with-float-traps-masked ()
@@ -62,6 +66,7 @@
          (let ((n (random 100)))
            (/ (foo-ext-3 n) (bar-ext-3 n))))))
 
+#+(or)
 (test-expect-error float-features-8
                    (ext:with-float-traps-masked ()
                      (let ((n (random 100)))

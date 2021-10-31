@@ -140,11 +140,10 @@
   (check-type datum bir:phi)
   (let ((rt (cc-bmir:rtype datum)))
     (cond ((or (eq rt :multiple-values)
-               (equal rt '(:object))) ; datum is a T_mv or T_O* respectively
+               (and (listp rt) (= (length rt) 1)))
+           ;; datum is a T_mv or a single value
            (llvm-sys:add-incoming (in datum) value llvm-block))
-          ((null rt)) ; no values, do nothing
-          ((and (listp rt)
-                (every (lambda (x) (eq x :object)) rt))
+          ((listp rt)
            ;; Datum is a list of llvm data, and (in datum) is a list of phis.
            (loop for phi in (in datum)
                  for val in value

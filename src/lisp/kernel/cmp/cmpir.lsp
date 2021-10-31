@@ -847,6 +847,15 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 (defun irc-and (x y &optional (label "and"))
   (llvm-sys:create-and-value-value *irbuilder* x y label))
+(defun irc-or (x y &optional (label "or"))
+  (llvm-sys:create-or-value-value *irbuilder* x y label))
+(defun irc-xor (x y &optional (label "xor"))
+  (llvm-sys:create-xor-value-value *irbuilder* x y label))
+
+(defun irc-not (x &optional (label "not"))
+  ;; NOTE: LLVM does not have a "not" instruction. What it generates is
+  ;; a XOR with an all-1s constant, which amounts to the same.
+  (llvm-sys:create-not *irbuilder* x label))
 
 (defun irc-va_arg (valist* type &optional (name "vaarg"))
   (llvm-sys:create-vaarg *irbuilder* valist* type name))

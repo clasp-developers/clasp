@@ -76,6 +76,7 @@ using namespace core;
 
 namespace llvmo {
 
+SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, function);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);

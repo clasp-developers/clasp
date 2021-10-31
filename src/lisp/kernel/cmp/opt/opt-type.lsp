@@ -420,7 +420,9 @@
                  basic)))
           (t ; vector or ext-sequence.
            ;; We let make-sequence handle the length test.
-           `(replace (make-sequence ',type (length object)) object)))))
+           `(if (typep object ',type)
+                object
+                (replace (make-sequence ',type (length object)) object))))))
 
 ;;; FIXME: These should not exist. Instead, coerce should be inlined, and
 ;;; the compiler should eliminate tests where both arguments are constant.
@@ -436,7 +438,8 @@
         (case head
           ((t) (da 'object))
           ((character base-char) (da `(character object)))
-          ((float) (da `(float object)))
+          ;; make sure we don't convert other floats
+          ((float) (da `(if (floatp object) object (float object))))
           ((short-float) (da `(float object 0.0s0)))
           ((single-float) (da `(float object 0.0f0)))
           ((double-float) (da `(float object 0.0d0)))
@@ -460,32 +463,29 @@
                  `(the t object)
                  (aux 'object tail))))
           (t
-           (or (maybe-sequence-coercion-form type env)
-               ;; Dunno what's going on. Punt to runtime.
-               ;; COERCE is actually defined for any type, provided
-               ;; that type exists: if the object is of the given
-               ;; type, it is returned, and otherwise a type-error
-               ;; is signaled. Nonetheless, if we reach here with a
-               ;; constant type, it's either undefined or does not
-               ;; have a coercion defined (e.g. INTEGER), which would
-               ;; be a weird thing to do. So we signal a style-warning.
-               ;; FIXME: We should differentiate "not defined" and
-               ;; "no coercion behavior", though.
-               ;; And maybe "can't figure it out at compile time but
-               ;; will at runtime".
-               (progn (cmp:warn-cannot-coerce nil type)
-                      whole))))))))
+           (let ((seqf (maybe-sequence-coercion-form type env)))
+             (cond (seqf (da seqf))
+                   (t
+                    ;; Dunno what's going on. Punt to runtime.
+                    ;; COERCE is actually defined for any type, provided
+                    ;; that type exists: if the object is of the given
+                    ;; type, it is returned, and otherwise a type-error
+                    ;; is signaled. Nonetheless, if we reach here with a
+                    ;; constant type, it's either undefined or does not
+                    ;; have a coercion defined (e.g. INTEGER), which would
+                    ;; be a weird thing to do. So we signal a style-warning.
+                    ;; FIXME: We should differentiate "not defined" and
+                    ;; "no coercion behavior", though.
+                    ;; And maybe "can't figure it out at compile time but
+                    ;; will at runtime".
+                    (cmp:warn-cannot-coerce nil type)
+                    whole)))))))))
 
 (define-compiler-macro coerce (&whole form object type &environment env)
   (if (constantp type env)
       (let* ((type (ext:constant-form-value type env))
              (expansion (expand-coercion type env form)))
-        (if (eq expansion form) ; failure
+        (if (eq expansion form)
             form
-            `(let ((object ,object))
-               ;; this check is required by the definition of coerce.
-               ;; of course, we should eliminate it later.
-               (if (typep object ',type)
-                   object
-                   ,expansion))))
+            `(let ((object ,object)) ,expansion)))
       form))

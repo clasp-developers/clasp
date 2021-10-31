@@ -151,7 +151,6 @@
             assume-no-errors
             sequence-stream
             all-encodings
-            load-encoding
             make-encoding
             assume-right-type
             segmentation-violation
@@ -165,12 +164,9 @@
             unix-signal-received-handler
             interactive-interrupt
             compiled-function-file
-            lisp-implementation-vcs-id
             getcwd
             chdir
             +process-standard-input+
-            external-process-wait
-            external-process-status
             compiled-function-name
             system
             float-nan-string

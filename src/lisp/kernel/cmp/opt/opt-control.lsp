@@ -25,6 +25,23 @@
                    ,@(mapcar #'list syms fixed))
                (,op ,fsym ,last ,@syms))))))
 
+(defun function-form-p (form)
+  (and (consp form)
+       (eq (car form) 'function)
+       (consp (cdr form))
+       (null (cddr form))))
+
+;;; Collapse (coerce-fdesignator #'foo) to #'foo, and
+;;; (coerce-fdesignator 'foo) to (fdefinition 'foo).
+(define-compiler-macro core:coerce-fdesignator (&whole form designator
+                                                       &environment env)
+  (cond ((function-form-p designator) designator)
+        ((constantp designator env)
+         (if (symbolp (ext:constant-form-value designator env))
+             `(fdefinition ,designator)
+             form))
+        (t form)))
+
 (define-compiler-macro not (objectf)
   ;; Take care of (not (not x)), which code generates sometimes.
   (if (and (consp objectf)

@@ -6,6 +6,7 @@
   (:local-nicknames (#:bir #:cleavir-bir)
                     (#:bir-transformations #:cleavir-bir-transformations)
                     (#:ast #:cleavir-ast)
+                    (#:ctype #:cleavir-ctype)
                     (#:cst-to-ast #:cleavir-cst-to-ast)
                     (#:env #:cleavir-env))
   (:export

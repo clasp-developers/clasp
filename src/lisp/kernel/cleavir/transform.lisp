@@ -1,12 +1,11 @@
 (in-package #:clasp-cleavir)
 
 ;;;; TRANSFORMS are like compiler macros, but use the context (environment)
-;;;; more heavily. Currently they are implemented through compiler macros,
-;;;; but the intent is that in the future they will be used after the source
-;;;; stage, when much more information has been made available through analysis.
+;;;; more heavily. They can access inferred types and other information about
+;;;; their parameters (mostly just types so far).
 ;;;; Syntax is as follows:
 ;;;; deftransform (op-name (&rest lambda-list) &body body)
-;;;; op-name is the name of a function or macro.
+;;;; op-name is the name of a function.
 ;;;; lambda-list is a typed lambda list, kind of like defmethod, but with
 ;;;;  types allowed as "specializers". Currently the lambda list can only have
 ;;;;  required parameters.
@@ -25,247 +24,18 @@
 ;;;; returns EQ, so the compiler replaces the form with (eq 'foo x) and
 ;;;; compiles that instead.
 ;;;; More complicated examples return a lambda expression.
-;;;: NOTE: The order in which transforms are tried is not defined.
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun values-type-primary (values-type)
-    ;; VALUES-TYPE is an actual values type spec, i.e. a cons (values ...)
-    ;; get the first thing in the values type - either a scalar type
-    ;; or a lambda-list keyword. We assume validity.
-    (let ((first (second values-type)))
-      (case first
-        ((&optional)
-         (let ((second (third values-type)))
-           (if (eq second '&rest)
-               (fourth values-type)
-               second)))
-        ((&rest) (third values-type))
-        (t first))))
-  
-  (defun function-type-result (type &optional env)
-    ;; type is any type specifier
-    (multiple-value-bind (head args) (core::normalize-type type env)
-      (if (eq head 'function)
-          (let ((result (second args)))
-            (cond ((null result) 't)
-                  ((and (consp result) (eq (car result) 'values))
-                   (values-type-primary result))
-                  (t result)))
-          't)))
-
-  ;;; Given a type, find what type (aref (the TYPE ...) ...) is.
-  (defun array-type-element-type (type env)
-    (let ((types
-            (loop for et in core::+upgraded-array-element-types+
-                  ;; Exclude any element type that is CERTAINLY not included.
-                  unless (subtypep `(and (array ,et) ,type) nil env)
-                    collect et)))
-      ;; Now simplify a bit for common stupid cases
-      (if (member t types)
-          't
-          (cons 'or (remove nil types)))))
-
-  ;;; Because some transforms relying on type information are unsafe,
-  ;;; we ignore type declarations unless the TRUST-TYPE-DECLARATIONS policy
-  ;;; is in place (at low SAFETY). See policy.lisp.
-  (defun form-type (form env)
-    (let ((trust-type-decls-p
-            (environment-has-policy-p env 'ext:assume-right-type)))
-      (cond ((constantp form env)
-             `(eql ,(ext:constant-form-value form env)))
-            ((consp form)
-             (let ((operator (first form)))
-               (if (symbolp operator)
-                   (case operator
-                     ((the)
-                      (if trust-type-decls-p
-                          (let ((type (second form)) (form (third form)))
-                            `(and ,(if (and (consp type) (eq (first type) 'values))
-                                       (values-type-primary type)
-                                       type)
-                                  ,(form-type form env)))
-                          't))
-                     ((function)
-                      (if (and (symbolp (second form)) trust-type-decls-p)
-                          (let ((info (cleavir-env:function-info
-                                       clasp-cleavir:*clasp-system*
-                                       env (second form))))
-                            (if (typep info '(or cleavir-env:local-function-info
-                                              cleavir-env:global-function-info))
-                                (cleavir-env:type info)
-                                'function))
-                          'function))
-                     ;; This could be expanded.
-                     ((lambda) 'function)
-                     ;; This is really KLUDGEy, but then this whole thing kind of is.
-                     ((aref)
-                      (if (and (consp form) (consp (cdr form)))
-                          (let* ((array-form (second form))
-                                 (array-form-type (form-type array-form env)))
-                            (array-type-element-type array-form-type env))
-                          ;; malformed
-                          't))
-                     (otherwise
-                      (if trust-type-decls-p
-                          (let ((info (cleavir-env:function-info
-                                       clasp-cleavir:*clasp-system*
-                                       env operator)))
-                            (if (typep info '(or cleavir-env:local-function-info
-                                              cleavir-env:global-function-info))
-                                (function-type-result (cleavir-env:type info) env)
-                                't))
-                          't)))
-                   't)))
-            (t ; symbol (everything else covered by constantp and consp)
-             (if trust-type-decls-p
-                 (let ((info (cleavir-env:variable-info
-                              clasp-cleavir:*clasp-system* env form)))
-                   (if info
-                       (cleavir-env:type info)
-                       't))
-                 't)))))
-
-  (defvar *transformers* (make-hash-table :test #'equal))
-
-  (defun maybe-transform (form table args env)
-    (let ((argtypes (mapcar (lambda (f) (form-type f env)) args)))
-      (with-hash-table-iterator (next table)
-        (loop
-          (multiple-value-bind (present types transformer) (next)
-            (if present
-                (when (every (lambda (at ty) (subtypep at ty env)) argtypes types)
-                  (let ((res (apply transformer args)))
-                    (when res (return `(,res ,@args)))))
-                (return form))))))))
-
-;;; Set up an operator as having transforms
-(defmacro deftransformation (name)
-  `(progn
-     (eval-when (:compile-toplevel :load-toplevel :execute)
-       (setf (gethash ',name *transformers*)
-             (make-hash-table :test #'equalp)))
-     (define-cleavir-compiler-macro ,name (&whole form &rest args &environment env)
-       (maybe-transform form (gethash ',name *transformers*) args env))))
-
-;;; Main interface
-(defmacro deftransform (name (&rest lambda-list) &body body)
-  (let ((params (loop for var in lambda-list
-                      collect (if (consp var) (car var) var)))
-        (types (loop for var in lambda-list
-                     collect (if (consp var) (second var) 't))))
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ;; If the operator hasn't been set up for transformation yet,
-       ;; do so implicitly
-       (unless (nth-value 1 (gethash ',name *transformers*))
-         (deftransformation ,name))
-       ;; Actually define the transform
-       (setf (gethash ',types (gethash ',name *transformers*))
-             (lambda (,@params) (declare (ignorable ,@params)) ,@body)))))
-
-;;;
-
-(deftransform eql ((x (not core::eq-incomparable)) y) 'eq)
-(deftransform eql (x (y (not core::eq-incomparable))) 'eq)
-
-(deftransform car ((x cons)) 'cleavir-primop:car)
-(deftransform cdr ((x cons)) 'cleavir-primop:cdr)
-
-(deftransform rplaca ((cons cons) value)
-  '(lambda (cons value)
-    (cleavir-primop:rplaca cons value)
-    cons))
-(deftransform rplacd ((cons cons) value)
-  '(lambda (cons value)
-    (cleavir-primop:rplacd cons value)
-    cons))
-
-(deftransform primop:inlined-two-arg-+ ((x fixnum) (y fixnum))
-  'core:two-arg-+-fixnum-fixnum)
-
-#+(or)
-(macrolet ((def-float-op (name op)
-             `(progn
-                (deftransform ,name ((x single-float) (y single-float))
-                  '(lambda (x y) (,op single-float x y)))
-                (deftransform ,name ((x single-float) (y double-float))
-                  '(lambda (x y)
-                    (,op double-float
-                     (cleavir-primop:coerce single-float double-float x) y)))
-                (deftransform ,name ((x double-float) (y single-float))
-                  '(lambda (x y)
-                    (,op double-float
-                     x (cleavir-primop:coerce single-float double-float y))))
-                (deftransform ,name ((x double-float) (y double-float))
-                  '(lambda (x y) (,op double-float x y)))))
-           (def-float-compare (name op)
-             `(progn
-                (deftransform ,name ((x single-float) (y single-float))
-                  '(lambda (x y) (if (,op single-float x y) t nil)))
-                (deftransform ,name ((x double-float) (y double-float))
-                  '(lambda (x y) (if (,op double-float x y) t nil))))))
-  (def-float-op primop:inlined-two-arg-+ cleavir-primop:float-add)
-  (def-float-op primop:inlined-two-arg-- cleavir-primop:float-sub)
-  (def-float-op primop:inlined-two-arg-* cleavir-primop:float-mul)
-  (def-float-op primop:inlined-two-arg-/ cleavir-primop:float-div)
-  (def-float-compare primop:inlined-two-arg-<  cleavir-primop:float-less)
-  (def-float-compare primop:inlined-two-arg-<= cleavir-primop:float-not-greater)
-  (def-float-compare primop:inlined-two-arg-=  cleavir-primop:float-equal)
-  (def-float-compare primop:inlined-two-arg->  cleavir-primop:float-greater)
-  (def-float-compare primop:inlined-two-arg->= cleavir-primop:float-not-less))
-
-#+(or)
-(macrolet ((def-fixnum-compare (name op)
-             `(deftransform ,name ((x fixnum) (y fixnum))
-                '(lambda (x y) (if (,op x y) t nil)))))
-  (def-fixnum-compare primop:inlined-two-arg-<  cleavir-primop:fixnum-less)
-  (def-fixnum-compare primop:inlined-two-arg-<= cleavir-primop:fixnum-not-greater)
-  (def-fixnum-compare primop:inlined-two-arg-=  cleavir-primop:fixnum-equal)
-  (def-fixnum-compare primop:inlined-two-arg->  cleavir-primop:fixnum-greater)
-  (def-fixnum-compare primop:inlined-two-arg->= cleavir-primop:fixnum-not-less))
-
-#+(or)
-(deftransform minusp ((number fixnum))
-  '(lambda (n) (if (cleavir-primop:fixnum-less n 0) t nil)))
-#+(or)
-(deftransform plusp ((number fixnum))
-  '(lambda (n) (if (cleavir-primop:fixnum-greater n 0) t nil)))
-
-(deftransform array-total-size ((a (simple-array * (*)))) 'core::vector-length)
-;;(deftransform array-total-size ((a core:mdarray)) 'core::%array-total-size)
-
-(deftransform array-rank ((a (simple-array * (*)))) '(lambda (a) (declare (ignore a)) 1))
-
-#+(or)
-(deftransform svref/no-bounds-check ((a simple-vector) (index fixnum))
-  '(lambda (vector index) (cleavir-primop:aref vector index t t t)))
-#+(or)
-(deftransform (setf svref/no-bounds-check) (value (a simple-vector) (index fixnum))
-  '(lambda (value vector index)
-    (cleavir-primop:aset vector index value t t t)
-    value))
-
-(deftransform length ((s list)) '(lambda (x) (if x (core:cons-length x) 0)))
-(deftransform length ((s vector)) 'core::vector-length)
-
-#+(or)
-(deftransform elt ((s vector) index) 'vector-read)
-#+(or)
-(deftransform core:setf-elt (value (s vector) index)
-  '(lambda (value sequence index) (vector-set sequence index new-value)))
-
-(deftransform core:coerce-fdesignator ((fd symbol)) 'fdefinition)
-(deftransform core:coerce-fdesignator ((fd function)) 'identity)
-
-;;;
+;;;; Transforms are tried most-specific first. A transform is more specific
+;;;; than another if they work on calls with the same number of arguments, and
+;;;; all types of the first are recognizable subtypes of the second.
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *bir-transformers* (make-hash-table :test #'equal)))
 
 (defun arg-subtypep (arg ctype)
-  (cleavir-ctype:subtypep (cleavir-ctype:primary (bir:ctype arg) *clasp-system*)
-                          ctype *clasp-system*))
+  (ctype:subtypep (ctype:primary (bir:ctype arg) *clasp-system*)
+                  ctype *clasp-system*))
 
-(defun maybe-bir-transform (call transforms)
+(defun maybe-transform (call transforms)
   (loop with args = (rest (bir:inputs call))
         with nargs = (length args)
         for (transform . types) in transforms
@@ -277,16 +47,22 @@
     ((system clasp) key call)
   (let ((trans (gethash key *bir-transformers*)))
     (if trans
-        (maybe-bir-transform call trans)
+        (maybe-transform call trans)
         nil)))
 
-(defmacro define-bir-transformation (name)
+(defmacro %deftransformation (name)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (setf (gethash ',name *bir-transformers*) nil)
      (setf (gethash ',name *fn-transforms*) '(,name))
      ',name))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun more-specific-types-p (types1 types2)
+    ;; True if the lists have the same number of types, and all types in
+    ;; the first are recognizable subtypes of those in the second.
+    (and (= (length types1) (length types2))
+         (every (lambda (t1 t2) (ctype:subtypep t1 t2 *clasp-system*))
+                types1 types2)))
   (defun %def-bir-transformer (name function param-types)
     ;; We just use a reverse alist (function . types).
     ;; EQUALP does not actually technically test type equality, which is what we
@@ -296,10 +72,14 @@
       (if existing
           ;; replace
           (setf (car existing) function)
-          (push (cons function param-types)
-                (gethash name *bir-transformers*))))))
+          ;; Merge in, respecting subtypep
+          (setf (gethash name *bir-transformers*)
+                (merge 'list (list (cons function param-types))
+                       (gethash name *bir-transformers*)
+                        #'more-specific-types-p
+                       :key #'cdr))))))
 
-(defmacro define-bir-transform (name (instparam) (&rest param-types)
+(defmacro %deftransform (name (instparam) (&rest param-types)
                                 &body body)
   (let ((param-types
           (loop for ty in param-types
@@ -307,9 +87,57 @@
                          ty nil *clasp-system*))))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (unless (nth-value 1 (gethash ',name *bir-transformers*))
-         (define-bir-transformation ,name))
+         (%deftransformation ,name))
        (%def-bir-transformer ',name (lambda (,instparam) ,@body) '(,@param-types))
        ',name)))
+
+;;; Given an expression, make a CST for it.
+;;; FIXME: This should be more sophisticated. I'm thinking the source info
+;;; should be as for an inlined function.
+(defun cstify-transformer (origin expression)
+  (cst:cst-from-expression expression :source origin))
+
+;;; FIXME: Only required parameters permitted here
+(defmacro deftransform (name typed-lambda-list &body body)
+  (let* ((params (loop for entry in typed-lambda-list
+                       collect (if (consp entry) (first entry) entry)))
+         (typespecs (loop for entry in typed-lambda-list
+                          collect (if (consp entry) (second entry) 't)))
+         (csym (gensym "CALL")))
+    `(%deftransform ,name (,csym) (,@typespecs)
+        (replace-callee-with-lambda ,csym
+                                    (cstify-transformer
+                                     (bir:origin ,csym)
+                                     (list 'lambda '(,@params)
+                                           '(declare (ignorable ,@params))
+                                           (progn ,@body)))))))
+
+(defmacro define-deriver (name deriver-name)
+  `(setf (gethash ',name *derivers*) '(,deriver-name)))
+
+(defmethod bir-transformations:derive-return-type ((inst bir:call) deriver
+                                                   (system clasp))
+  (funcall (fdefinition deriver) inst))
+
+;;;
+
+(defun replace-callee-with-lambda (call lambda-expression-cst)
+  (let* (;; FIXME: We should be harsher with errors than cst->ast is here,
+         ;; since deftransforms are part of the compiler, and not the
+         ;; user's fault.
+         (ast (cst->ast lambda-expression-cst))
+         (module (bir:module (bir:function call)))
+         (bir (cleavir-ast-to-bir:compile-into-module ast module
+                                                      *clasp-system*)))
+    ;; Run the first few transformations.
+    ;; FIXME: Use a pass manager/reoptimize flags/something smarter.
+    (bir-transformations:eliminate-catches bir)
+    (bir-transformations:find-module-local-calls module)
+    (bir-transformations:function-optimize-variables bir)
+    ;; Now properly insert it.
+    (change-class call 'bir:local-call
+                  :inputs (list* bir (rest (bir:inputs call))))
+    (bir-transformations:maybe-interpolate bir)))
 
 ;;; for folding identity operations.
 (defun replace-call-with-argument (call idx)
@@ -318,22 +146,26 @@
     (bir:replace-uses argument (bir:output call))
     (bir:delete-instruction call)))
 
-(defun replace-call-with-constant (call value)
-  (let* ((module (bir:module (bir:function call)))
+(defun reference-constant-before (inst value)
+  (let* ((module (bir:module (bir:function inst)))
          (constant (bir:constant-in-module value module))
          (cv (make-instance 'bir:output
-               :derived-type (cleavir-ctype:single-value
-                              (cleavir-ctype:member *clasp-system* value)
+               :derived-type (ctype:single-value
+                              (ctype:member *clasp-system* value)
                               *clasp-system*)))
          (cr (make-instance 'bir:constant-reference
-               :policy (bir:policy call) :origin (bir:origin call)
+               :policy (bir:policy inst) :origin (bir:origin inst)
                :inputs (list constant) :outputs (list cv))))
-    (bir:insert-instruction-before cr call)
+    (bir:insert-instruction-before cr inst)
+    cv))
+
+(defun replace-call-with-constant (call value)
+  (let ((cv (reference-constant-before call value)))
     (bir:replace-uses cv (bir:output call))
     (bir:delete-instruction call)))
 
 (defun replace-call-with-vprimop (call primop-name)
-  (change-class call 'cleavir-bir:vprimop
+  (change-class call 'cleavir-bir:primop
                 :inputs (rest (bir:inputs call)) ; don't need the function
                 :info (cleavir-primop-info:info primop-name)))
 
@@ -354,17 +186,17 @@
     thei))
 
 (defun replace-with-vprimop-and-wrap (inst primop ctype)
-  (wrap-in-thei inst (cleavir-ctype:single-value ctype *clasp-system*))
+  (wrap-in-thei inst (ctype:single-value ctype *clasp-system*))
   (replace-call-with-vprimop inst primop)
   t)
 
 (defun wrap-coerce-sf-to-df (inst datum)
-  (let* ((df (cleavir-ctype:single-value
-              (cleavir-ctype:range 'double-float '* '* *clasp-system*)
+  (let* ((df (ctype:single-value
+              (ctype:range 'double-float '* '* *clasp-system*)
               *clasp-system*))
          (new (make-instance 'bir:output
                 :derived-type df))
-         (coerce (make-instance 'bir:vprimop
+         (coerce (make-instance 'bir:primop
                    :origin (bir:origin inst) :policy (bir:policy inst)
                    :info (cleavir-primop-info:info 'core::single-to-double)
                    :outputs (list new))))
@@ -374,12 +206,12 @@
   (values))
 
 (defun wrap-coerce-df-to-sf (inst datum)
-  (let* ((sf (cleavir-ctype:single-value
-              (cleavir-ctype:range 'single-float '* '* *clasp-system*)
+  (let* ((sf (ctype:single-value
+              (ctype:range 'single-float '* '* *clasp-system*)
               *clasp-system*))
          (new (make-instance 'bir:output
                 :derived-type sf))
-         (coerce (make-instance 'bir:vprimop
+         (coerce (make-instance 'bir:primop
                    :origin (bir:origin inst) :policy (bir:policy inst)
                    :info (cleavir-primop-info:info 'core::double-to-single)
                    :outputs (list new))))
@@ -388,125 +220,53 @@
     (setf (bir:inputs coerce) (list datum)))
   (values))
 
-;;; This is basically a massive KLUDGE.
-;;; The deal is, we essentially want to replace (= x y) with
-;;; (if (primitive-float-= x y) t nil). meta evaluate can then collapse that
-;;; in the common (if (= ...) ...) case. We have to construct the IR ourselves
-;;; because there's no good mechanism to do so, and that's verbose.
-;;; FIXME: Two things to do here: One, allow introducing a new function into a
-;;; module and then inlining it - then we can just keep the IR of
-;;; (lambda (x y) (if (primitive-float-= x y) t nil)) around and copy it into
-;;; wherever - but that also requires a copier. Second, maybe think about
-;;; an IR assembler syntax.
-
-(defun replace-with-test-primop (call primop-name)
-  (multiple-value-bind (fore aft) (bir:split-block-after call)
-    (let* ((args (rest (bir:inputs call)))
-           (boolt
-             (cleavir-ctype:single-value
-              (cleavir-ctype:member *clasp-system* t nil)
-              *clasp-system*))
-           (phi (make-instance 'bir:phi
-                  :name primop-name :iblock aft :derived-type boolt))
-           (dynenv (bir:dynamic-environment fore))
-           (function (bir:function fore))
-           (module (bir:module function))
-           (true (bir:constant-in-module t module))
-           (false (bir:constant-in-module nil module))
-           (truet (cleavir-ctype:single-value
-                   (cleavir-ctype:member *clasp-system* t)
-                   *clasp-system*))
-           (falset (cleavir-ctype:single-value
-                    (cleavir-ctype:member *clasp-system* nil)
-                    *clasp-system*))
-           (truev (make-instance 'bir:output :derived-type truet))
-           (falsev (make-instance 'bir:output :derived-type falset))
-           (trueb (make-instance 'bir:iblock
-                    :predecessors (cleavir-set:make-set fore)
-                    :inputs ()
-                    :dynamic-environment dynenv :function function
-                    :name (make-symbol
-                           (concatenate 'string (symbol-name primop-name)
-                                        "-TRUE"))))
-           (falseb (make-instance 'bir:iblock
-                     :predecessors (cleavir-set:make-set fore)
-                     :inputs ()
-                     :dynamic-environment dynenv :function function
-                     :name (make-symbol
-                            (concatenate 'string (symbol-name primop-name)
-                                         "-FALSE"))))
-           (truer (make-instance 'bir:constant-reference
-                    :policy (bir:policy call) :origin (bir:origin call)
-                    :predecessor nil :iblock trueb
-                    :inputs (list true) :outputs (list truev)))
-           (falser (make-instance 'bir:constant-reference
-                     :policy (bir:policy call) :origin (bir:origin call)
-                     :predecessor nil :iblock falseb
-                     :inputs (list false) :outputs (list falsev)))
-           (truej (make-instance 'bir:jump
-                    :policy (bir:policy call) :origin (bir:origin call)
-                    :inputs (list truev) :outputs (list phi) :iblock trueb
-                    :predecessor truer :next (list aft)))
-           (falsej (make-instance 'bir:jump
-                     :policy (bir:policy call) :origin (bir:origin call)
-                     :inputs (list falsev) :outputs (list phi) :iblock falseb
-                     :predecessor falser :next (list aft)))
-           (info (cleavir-primop-info:info primop-name))
-           (ifi (make-instance 'bir:ifi
-                  :policy (bir:policy call) :origin (bir:origin call)
-                  :next (list trueb falseb)))
-           (cout (bir:output call)))
-      ;; Fill the blocks - they just read a constant to the phi
-      (setf (bir:start trueb) truer (bir:successor truer) truej
-            (bir:end trueb) truej
-            (bir:start falseb) falser (bir:successor falser) falsej
-            (bir:end falseb) falsej
-            (bir:inputs aft) (list phi))
-      ;; Replace the call
-      (change-class call 'cleavir-bir:vprimop
-                    :info info :inputs args)
-      (cleavir-set:nadjoinf (bir:predecessors aft) trueb)
-      (cleavir-set:nadjoinf (bir:predecessors aft) falseb)
-      (cleavir-set:nremovef (bir:predecessors aft) fore)
-      (cleavir-set:nadjoinf (bir:scope dynenv) trueb)
-      (cleavir-set:nadjoinf (bir:scope dynenv) falseb)
-      (bir:replace-terminator ifi (bir:end fore))
-      (bir:replace-uses phi cout)
-      (setf (bir:inputs ifi) (list cout))))
-  t)
-
 (macrolet ((define-two-arg-f (name sf-primop df-primop)
-             (let ((sf (cleavir-ctype:range 'single-float '* '* *clasp-system*))
+             (let ((sf (ctype:range 'single-float '* '* *clasp-system*))
                    (df
-                     (cleavir-ctype:range 'double-float '* '* *clasp-system*)))
+                     (ctype:range 'double-float '* '* *clasp-system*)))
+               `(progn
+                  (%deftransform ,name (call) (single-float single-float)
+                    (replace-with-vprimop-and-wrap call ',sf-primop ',sf))
+                  (%deftransform ,name (call) (double-float double-float)
+                    (replace-with-vprimop-and-wrap call ',df-primop ',df))
+                  (%deftransform ,name (call) (single-float double-float)
+                    (wrap-coerce-sf-to-df call (first (rest (bir:inputs call))))
+                    (replace-with-vprimop-and-wrap call ',df-primop ',df))
+                  (%deftransform ,name (call) (double-float single-float)
+                    (wrap-coerce-sf-to-df call (second (rest (bir:inputs call))))
+                    (replace-with-vprimop-and-wrap call ',df-primop ',df)))))
+           (define-two-arg-ff (name sf-primop df-primop)
              `(progn
-                (define-bir-transform ,name (call) (single-float single-float)
-                  (replace-with-vprimop-and-wrap call ',sf-primop ',sf))
-                (define-bir-transform ,name (call) (double-float double-float)
-                  (replace-with-vprimop-and-wrap call ',df-primop ',df))
-                (define-bir-transform ,name (call) (single-float double-float)
-                  (wrap-coerce-sf-to-df call (first (rest (bir:inputs call))))
-                  (replace-with-vprimop-and-wrap call ',df-primop ',df))
-                (define-bir-transform ,name (call) (double-float single-float)
-                  (wrap-coerce-sf-to-df call (second (rest (bir:inputs call))))
-                  (replace-with-vprimop-and-wrap call ',df-primop ',df))))))
-  (define-two-arg-f core:two-arg-+ core::two-arg-sf-+ core::two-arg-df-+)
-  (define-two-arg-f core:two-arg-- core::two-arg-sf-- core::two-arg-df--)
-  (define-two-arg-f core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
-  (define-two-arg-f core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/)
+                (define-two-arg-f ,name ,sf-primop ,df-primop)
+                (deftransform ,name ((x fixnum) (y single-float))
+                  '(core::primop ,sf-primop
+                    (core::primop core::fixnum-to-single x) y))
+                (deftransform ,name ((x single-float) (y fixnum))
+                  '(core::primop ,sf-primop
+                    x (core::primop core::fixnum-to-single y)))
+                (deftransform ,name ((x fixnum) (y double-float))
+                  '(core::primop ,df-primop
+                    (core::primop core::fixnum-to-double x) y))
+                (deftransform ,name ((x double-float) (y fixnum))
+                  '(core::primop ,df-primop
+                    x (core::primop core::fixnum-to-double y))))))
+  (define-two-arg-ff core:two-arg-+ core::two-arg-sf-+ core::two-arg-df-+)
+  (define-two-arg-ff core:two-arg-- core::two-arg-sf-- core::two-arg-df--)
+  (define-two-arg-ff core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
+  (define-two-arg-ff core:two-arg-/ core::two-arg-sf-/ core::two-arg-df-/)
   (define-two-arg-f expt           core::sf-expt      core::df-expt))
 
-(define-bir-transform ftruncate (call) (single-float single-float)
+(%deftransform ftruncate (call) (single-float single-float)
   (wrap-in-thei call (cleavir-env:parse-values-type-specifier
                       '(values single-float single-float &rest nil)
                       nil *clasp-system*))
   (replace-call-with-vprimop call 'core::sf-ftruncate))
-(define-bir-transform ftruncate (call) (double-float double-float)
+(%deftransform ftruncate (call) (double-float double-float)
   (wrap-in-thei call (cleavir-env:parse-values-type-specifier
                       '(values double-float double-float &rest nil)
                       nil *clasp-system*))
   (replace-call-with-vprimop call 'core::df-ftruncate))
-(define-bir-transform ftruncate (call) (single-float double-float)
+(%deftransform ftruncate (call) (single-float double-float)
   ;; FIXME: i think our FTRUNCATE function has a bug: it should return doubles in
   ;; this case, by my reading.
   (wrap-coerce-sf-to-df call (first (rest (bir:inputs call))))
@@ -514,7 +274,7 @@
                       '(values double-float double-float &rest nil)
                       nil *clasp-system*))
   (replace-call-with-vprimop call 'core::df-ftruncate))
-(define-bir-transform ftruncate (call) (double-float single-float)
+(%deftransform ftruncate (call) (double-float single-float)
   (wrap-coerce-sf-to-df call (second (rest (bir:inputs call))))
   (wrap-in-thei call (cleavir-env:parse-values-type-specifier
                       '(values double-float double-float &rest nil)
@@ -524,18 +284,18 @@
 
 (macrolet ((define-float-conditional (name sf-primop df-primop)
              `(progn
-                (define-bir-transform ,name (call) (single-float single-float)
-                  (replace-with-test-primop call ',sf-primop))
-                (define-bir-transform ,name (call) (double-float double-float)
-                  (replace-with-test-primop call ',df-primop))
-                (define-bir-transform ,name (call) (single-float double-float)
-                  (wrap-coerce-sf-to-df call
-                                        (first (rest (bir:inputs call))))
-                  (replace-with-test-primop call ',df-primop))
-                (define-bir-transform ,name (call) (double-float single-float)
-                  (wrap-coerce-sf-to-df call
-                                        (second (rest (bir:inputs call))))
-                  (replace-with-test-primop call ',df-primop)))))
+                (deftransform ,name ((x single-float) (y single-float))
+                  '(if (core::primop ,sf-primop x y) t nil))
+                (deftransform ,name ((x double-float) (y double-float))
+                  '(if (core::primop ,df-primop x y) t nil))
+                (deftransform ,name ((x single-float) (y double-float))
+                  '(if (core::primop ,df-primop
+                        (core::primop core::single-to-double x) y)
+                    t nil))
+                (deftransform ,name ((x double-float) (y single-float))
+                  '(if (core::primop ,df-primop
+                        x (core::primop core::single-to-double y))
+                    t nil)))))
   (define-float-conditional core:two-arg-=
     core::two-arg-sf-= core::two-arg-df-=)
   (define-float-conditional core:two-arg-<
@@ -547,14 +307,28 @@
   (define-float-conditional core:two-arg->=
     core::two-arg-sf->= core::two-arg-df->=))
 
+(deftransform zerop ((n single-float))
+  '(if (core::primop core::two-arg-sf-= n 0f0) t nil))
+(deftransform plusp ((n single-float))
+  '(if (core::primop core::two-arg-sf-> n 0f0) t nil))
+(deftransform minusp ((n single-float))
+  '(if (core::primop core::two-arg-sf-< n 0f0) t nil))
+
+(deftransform zerop ((n double-float))
+  '(if (core::primop core::two-arg-df-= n 0d0) t nil))
+(deftransform plusp ((n double-float))
+  '(if (core::primop core::two-arg-df-> n 0d0) t nil))
+(deftransform minusp ((n double-float))
+  '(if (core::primop core::two-arg-df-< n 0d0) t nil))
+
 (macrolet ((define-one-arg-f (name sf-primop df-primop)
-             (let ((sf (cleavir-ctype:range 'single-float '* '* *clasp-system*))
+             (let ((sf (ctype:range 'single-float '* '* *clasp-system*))
                    (df
-                     (cleavir-ctype:range 'double-float '* '* *clasp-system*)))
+                     (ctype:range 'double-float '* '* *clasp-system*)))
                `(progn
-                  (define-bir-transform ,name (call) (single-float)
+                  (%deftransform ,name (call) (single-float)
                     (replace-with-vprimop-and-wrap call ',sf-primop ',sf))
-                  (define-bir-transform ,name (call) (double-float)
+                  (%deftransform ,name (call) (double-float)
                     (replace-with-vprimop-and-wrap call ',df-primop ',df))))))
   (define-one-arg-f abs         core::sf-abs    core::df-abs)
   (define-one-arg-f sqrt        core::sf-sqrt   core::df-sqrt)
@@ -574,124 +348,310 @@
   (define-one-arg-f asinh       core::sf-asinh  core::df-asinh)
   (define-one-arg-f atanh       core::sf-atanh  core::df-atanh))
 
-(define-bir-transform core:reciprocal (call) (single-float)
-  (let* ((arguments (rest (bir:inputs call)))
-         (module (bir:module (bir:function call)))
-         (one (bir:constant-in-module 1f0 module))
-         (onet (cleavir-ctype:range 'single-float 1f0 1f0 *clasp-system*))
-         (onett (cleavir-ctype:single-value onet *clasp-system*))
-         (onev (make-instance 'bir:output :derived-type onett :name '#:one))
-         (cr (make-instance 'bir:constant-reference
-               :policy (bir:policy call) :origin (bir:origin call)
-               :inputs (list one) :outputs (list onev))))
-    (bir:insert-instruction-before cr call)
-    (change-class call 'cleavir-bir:vprimop
-                  :inputs (list onev (first arguments))
+(%deftransform core:reciprocal (call) (single-float)
+  (let ((onev (reference-constant-before call 1f0)))
+    (change-class call 'cleavir-bir:primop
+                  :inputs (list onev (first (rest (bir:inputs call))))
                   :info (cleavir-primop-info:info 'core::two-arg-sf-/))))
-(define-bir-transform core:reciprocal (call) (double-float)
-  (let* ((arguments (rest (bir:inputs call)))
-         (module (bir:module (bir:function call)))
-         (one (bir:constant-in-module 1d0 module))
-         (onet (cleavir-ctype:range 'double-float 1d0 1d0 *clasp-system*))
-         (onett (cleavir-ctype:single-value onet *clasp-system*))
-         (onev (make-instance 'bir:output :derived-type onett :name '#:one))
-         (cr (make-instance 'bir:constant-reference
-               :policy (bir:policy call) :origin (bir:origin call)
-               :inputs (list one) :outputs (list onev))))
-    (bir:insert-instruction-before cr call)
-    (change-class call 'cleavir-bir:vprimop
-                  :inputs (list onev (first arguments))
+(%deftransform core:reciprocal (call) (double-float)
+  (let ((onev (reference-constant-before call 1d0)))
+    (change-class call 'cleavir-bir:primop
+                  :inputs (list onev (first (rest (bir:inputs call))))
                   :info (cleavir-primop-info:info 'core::two-arg-df-/))))
 
 ;;; Transform log, but only one-argument log (which can be derived from the
 ;;; two argument case by the compiler macro in opt-number.lsp)
-(define-bir-transform log (call) (single-float)
+(%deftransform log (call) (single-float)
   (replace-with-vprimop-and-wrap call 'core::sf-log
-                                 (cleavir-ctype:range 'single-float '* '*
-                                                      *clasp-system*)))
-(define-bir-transform log (call) (double-float)
+                                 (ctype:range 'single-float '* '*
+                                              *clasp-system*)))
+(%deftransform log (call) (double-float)
   (replace-with-vprimop-and-wrap call 'core::df-log
-                                 (cleavir-ctype:range 'double-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'double-float '* '*
+                                              *clasp-system*)))
 
-(define-bir-transform float (call) (single-float)
+(%deftransform float (call) (single-float)
   (replace-call-with-argument call 0))
-(define-bir-transform float (call) (single-float single-float)
+(%deftransform float (call) (single-float single-float)
   (replace-call-with-argument call 0))
-(define-bir-transform float (call) (double-float double-float)
+(%deftransform float (call) (double-float double-float)
   (replace-call-with-argument call 0))
-(define-bir-transform float (call) (single-float double-float)
+(%deftransform float (call) (single-float double-float)
   (wrap-coerce-sf-to-df call (first (rest (bir:inputs call))))
   (replace-call-with-argument call 0))
-(define-bir-transform float (call) (double-float single-float)
+(%deftransform float (call) (double-float single-float)
   (wrap-coerce-df-to-sf call (first (rest (bir:inputs call))))
   (replace-call-with-argument call 0))
-(define-bir-transform float (call) (double-float)
+(%deftransform float (call) (double-float)
   (wrap-coerce-df-to-sf call (first (rest (bir:inputs call))))
   (replace-call-with-argument call 0))
+
+(deftransform float ((num fixnum) (proto single-float))
+  `(core::primop core::fixnum-to-single num))
+(deftransform float ((num fixnum))
+  `(core::primop core::fixnum-to-single num))
+(deftransform float ((num fixnum) (proto double-float))
+  `(core::primop core::fixnum-to-double num))
+
+(defun derive-float (call)
+  (cleavir-ctype:single-value
+   (let ((args (rest (bir:inputs call))))
+     (if (rest args)
+         (let ((proto (second args))
+               #+(or) ; nonexistent
+               (short (ctype:range 'short-float '* '* *clasp-system*))
+               (single (ctype:range 'single-float '* '* *clasp-system*))
+               (double (ctype:range 'double-float '* '* *clasp-system*))
+               #+(or) ; nonexistent
+               (long (ctype:range 'long-float '* '* *clasp-system*)))
+           (cond #+(or)((arg-subtypep proto short) short)
+                 ((arg-subtypep proto single) single)
+                 ((arg-subtypep proto double) double)
+                 #+(or)((arg-subtypep proto long) long)
+                 (t (env:parse-type-specifier 'float nil *clasp-system*))))
+         (ctype:range 'single-float '* '* *clasp-system*)))
+   *clasp-system*))
+
+(define-deriver float derive-float)
 
 ;;;
 
-(define-bir-transform realpart (c) (real) (replace-call-with-argument c 0))
-(define-bir-transform imagpart (c) (rational) (replace-call-with-constant c 0))
+(%deftransform realpart (c) (real) (replace-call-with-argument c 0))
+(%deftransform imagpart (c) (rational) (replace-call-with-constant c 0))
 ;; imagpart of a float is slightly complicated with negative zero
-(define-bir-transform conjugate (c) (real) (replace-call-with-argument c 0))
-(define-bir-transform numerator (c) (integer) (replace-call-with-argument c 0))
-(define-bir-transform denominator (c) (integer)
+(%deftransform conjugate (c) (real) (replace-call-with-argument c 0))
+(%deftransform numerator (c) (integer) (replace-call-with-argument c 0))
+(%deftransform denominator (c) (integer)
   (replace-call-with-constant c 1))
-(define-bir-transform rational (c) (rational) (replace-call-with-argument c 0))
-(define-bir-transform rationalize (c) (rational)
+(%deftransform rational (c) (rational) (replace-call-with-argument c 0))
+(%deftransform rationalize (c) (rational)
   (replace-call-with-argument c 0))
 
+(deftransform equalp ((x number) (y number)) '(= x y))
+
 ;;;
 
-(define-bir-transform aref (call) ((simple-array single-float (*)) t)
-  (replace-with-vprimop-and-wrap call 'core::sf-vref
-                                 (cleavir-ctype:range 'single-float '* '*
-                                                      *clasp-system*)))
-(define-bir-transform aref (call) ((simple-array double-float (*)) t)
-  (replace-with-vprimop-and-wrap call 'core::df-vref
-                                 (cleavir-ctype:range 'double-float '* '*
-                                                      *clasp-system*)))
-(define-bir-transform row-major-aref (call) ((simple-array single-float (*)) t)
-  (replace-with-vprimop-and-wrap call 'core::sf-vref
-                                 (cleavir-ctype:range 'single-float '* '*
-                                                      *clasp-system*)))
-(define-bir-transform row-major-aref (call) ((simple-array double-float (*)) t)
-  (replace-with-vprimop-and-wrap call 'core::df-vref
-                                 (cleavir-ctype:range 'double-float '* '*
-                                                      *clasp-system*)))
+(deftransform equal ((x character) (y character)) '(char= x y))
+(deftransform equalp ((x character) (y character)) '(char-equal x y))
 
-(define-bir-transform core:row-major-aset (call)
+;;;
+
+(%deftransform aref (call) ((simple-array single-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::sf-vref
+                                 (ctype:range 'single-float '* '*
+                                              *clasp-system*)))
+(%deftransform aref (call) ((simple-array double-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::df-vref
+                                 (ctype:range 'double-float '* '*
+                                              *clasp-system*)))
+(%deftransform row-major-aref (call) ((simple-array single-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::sf-vref
+                                 (ctype:range 'single-float '* '*
+                                              *clasp-system*)))
+(%deftransform row-major-aref (call) ((simple-array double-float (*)) t)
+  (replace-with-vprimop-and-wrap call 'core::df-vref
+                                 (ctype:range 'double-float '* '*
+                                              *clasp-system*)))
+
+(%deftransform core:row-major-aset (call)
   ((simple-array single-float (*)) t t)
   (wrap-in-thei call
-                (cleavir-ctype:single-value
-                 (cleavir-ctype:range 'single-float '* '* *clasp-system*)
+                (ctype:single-value
+                 (ctype:range 'single-float '* '* *clasp-system*)
                  *clasp-system*))
-  (change-class call 'cleavir-bir:vprimop
+  (change-class call 'cleavir-bir:primop
                 :inputs (let ((args (rest (bir:inputs call))))
                           ;; aset takes (array index value) while the intrinsic
                           ;; takes (value array index)
                           (list (third args) (first args) (second args)))
                 :info (cleavir-primop-info:info 'core::sf-vset)))
-(define-bir-transform core:row-major-aset (call)
+(%deftransform core:row-major-aset (call)
   ((simple-array double-float (*)) t t)
   (wrap-in-thei call
-                (cleavir-ctype:single-value
-                 (cleavir-ctype:range 'double-float '* '* *clasp-system*)
+                (ctype:single-value
+                 (ctype:range 'double-float '* '* *clasp-system*)
                  *clasp-system*))
-  (change-class call 'cleavir-bir:vprimop
+  (change-class call 'cleavir-bir:primop
                 :inputs (let ((args (rest (bir:inputs call))))
                           ;; aset takes (array index value) while the intrinsic
                           ;; takes (value array index)
                           (list (third args) (first args) (second args)))
                 :info (cleavir-primop-info:info 'core::df-vset)))
 
-(define-bir-transform (setf aref) (call) (t (simple-array single-float (*)) t)
+(%deftransform (setf aref) (call) (t (simple-array single-float (*)) t)
   (replace-with-vprimop-and-wrap call 'core::sf-vset
-                                 (cleavir-ctype:range 'single-float '* '*
-                                                      *clasp-system*)))
-(define-bir-transform (setf aref) (call) (t (simple-array double-float (*)) t)
+                                 (ctype:range 'single-float '* '*
+                                              *clasp-system*)))
+(%deftransform (setf aref) (call) (t (simple-array double-float (*)) t)
   (replace-with-vprimop-and-wrap call 'core::df-vset
-                                 (cleavir-ctype:range 'double-float '* '*
-                                                      *clasp-system*)))
+                                 (ctype:range 'double-float '* '*
+                                              *clasp-system*)))
+
+(deftransform aref ((arr vector) (index t)) '(row-major-aref arr index))
+(deftransform (setf aref) ((val t) (arr vector) (index t))
+  '(setf (row-major-aref arr index) val))
+
+(%deftransform array-rank (call) ((array * (*)))
+  (replace-call-with-constant call 1))
+
+(%deftransform array-total-size (call) ((simple-array * (*)))
+  (replace-with-vprimop-and-wrap call 'core::vector-length
+                                 (env:parse-type-specifier
+                                  'valid-array-dimension
+                                  nil *clasp-system*)))
+
+(%deftransform length (call) (vector)
+  (replace-with-vprimop-and-wrap call 'core::vector-length
+                                 (env:parse-type-specifier
+                                  'valid-array-dimension
+                                  nil *clasp-system*)))
+
+(defun derive-aref (call)
+  (let* ((aarg (first (rest (bir:inputs call))))
+         (ct (ctype:primary (bir:ctype aarg) *clasp-system*)))
+    (ctype:single-value
+     (if (and (consp ct)
+              (member (first ct) '(array simple-array vector))
+              (consp (cdr ct)))
+         (second ct)
+         (ctype:top *clasp-system*))
+     *clasp-system*)))
+
+(define-deriver aref derive-aref)
+(define-deriver row-major-aref derive-aref)
+
+#+(or) ; string= is actually slower atm due to keyword etc processing
+(deftransform equal ((x string) (y string)) '(string= x y))
+
+(deftransform string ((x symbol)) '(symbol-name x))
+(deftransform string ((x string)) '(progn x))
+
+;;;
+
+(%deftransform lognot (call) (fixnum)
+  (replace-with-vprimop-and-wrap call 'core::fixnum-lognot
+                                 (ctype:range 'integer
+                                              most-negative-fixnum
+                                              most-positive-fixnum
+                                              *clasp-system*)))
+
+(macrolet ((deflog2 (name primop)
+             (let ((fix (ctype:range 'integer
+                                     most-negative-fixnum
+                                     most-positive-fixnum
+                                     *clasp-system*)))
+               `(%deftransform ,name (call) (fixnum fixnum)
+                  (replace-with-vprimop-and-wrap call ',primop ',fix)))))
+  (deflog2 core:logand-2op core::fixnum-logand)
+  (deflog2 core:logior-2op core::fixnum-logior)
+  (deflog2 core:logxor-2op core::fixnum-logxor))
+
+(defun lognot-before (before datum)
+  (let* ((fix (ctype:single-value
+               (ctype:range 'integer most-negative-fixnum
+                            most-positive-fixnum *clasp-system*)
+               *clasp-system*))
+         (new (make-instance 'bir:output :derived-type fix))
+         (not (make-instance 'bir:primop
+                :origin (bir:origin before) :policy (bir:policy before)
+                :info (cleavir-primop-info:info 'core::fixnum-lognot)
+                :outputs (list new))))
+    (bir:insert-instruction-before not before)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs not) (list datum)))
+  (values))
+(defun lognot-after (after datum)
+  (let* ((fix (ctype:single-value
+               (ctype:range 'integer most-negative-fixnum
+                            most-positive-fixnum *clasp-system*)
+               *clasp-system*))
+         (new (make-instance 'bir:output :derived-type fix))
+         (not (make-instance 'bir:primop
+                :origin (bir:origin after) :policy (bir:policy after)
+                :info (cleavir-primop-info:info 'core::fixnum-lognot)
+                :outputs (list new))))
+    (bir:insert-instruction-after not after)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs not) (list datum)))
+  (values))
+
+(macrolet ((deflog2c (name primop which)
+             (let ((fix (ctype:range 'integer
+                                     most-negative-fixnum
+                                     most-positive-fixnum
+                                     *clasp-system*)))
+               `(%deftransform ,name (call) (fixnum fixnum)
+                  (lognot-before call (,which (rest (bir:inputs call))))
+                  (replace-with-vprimop-and-wrap call ',primop ',fix)))))
+  (deflog2c logandc1 core::fixnum-logand first)
+  (deflog2c logandc2 core::fixnum-logand second)
+  (deflog2c logorc1 core::fixnum-logior first)
+  (deflog2c logorc2 core::fixnum-logior second))
+
+(macrolet ((deflog2r (name primop)
+             (let ((fix (ctype:range 'integer
+                                     most-negative-fixnum
+                                     most-positive-fixnum
+                                     *clasp-system*)))
+               `(%deftransform ,name (call) (fixnum fixnum)
+                  (let ((out (bir:output call)))
+                    (replace-with-vprimop-and-wrap call ',primop ',fix)
+                    (lognot-after call out))))))
+  (deflog2r core:logeqv-2op core::fixnum-logxor)
+  (deflog2r lognand core::fixnum-logand)
+  (deflog2r lognor core::fixnum-logior))
+
+;;; This is a very KLUDGEy way to find additions of fixnums whose result is
+;;; a fixnum as well. Plus it hardcodes the number of fixnum bits. FIXME
+(%deftransform core:two-arg-+ (call) ((signed-byte 60) (signed-byte 60))
+  (replace-with-vprimop-and-wrap call 'core::fixnum-add
+                                 (ctype:range 'integer
+                                              most-negative-fixnum
+                                              most-positive-fixnum
+                                              *clasp-system*)))
+(%deftransform core:two-arg-- (call) ((signed-byte 60) (signed-byte 60))
+  (replace-with-vprimop-and-wrap call 'core::fixnum-sub
+                                 (ctype:range 'integer
+                                              most-negative-fixnum
+                                              most-positive-fixnum
+                                              *clasp-system*)))
+
+(macrolet ((define-fixnum-conditional (name primop)
+             `(deftransform ,name ((x fixnum) (y fixnum))
+                '(if (core::primop ,primop x y) t nil))))
+  (define-fixnum-conditional core:two-arg-=  core::two-arg-fixnum-=)
+  (define-fixnum-conditional core:two-arg-<  core::two-arg-fixnum-<)
+  (define-fixnum-conditional core:two-arg-<= core::two-arg-fixnum-<=)
+  (define-fixnum-conditional core:two-arg->  core::two-arg-fixnum->)
+  (define-fixnum-conditional core:two-arg->= core::two-arg-fixnum->=))
+
+(deftransform zerop ((n fixnum))
+  '(if (core::primop core::two-arg-fixnum-= n 0) t nil))
+(deftransform plusp ((n fixnum))
+  '(if (core::primop core::two-arg-fixnum-> n 0) t nil))
+(deftransform minusp ((n fixnum))
+  '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
+
+(deftransform logcount ((n (and fixnum unsigned-byte)))
+  '(core::primop core::fixnum-positive-logcount n))
+
+;;;
+
+(%deftransform car (call) (cons)
+  (replace-call-with-vprimop call 'cleavir-primop:car))
+(%deftransform cdr (call) (cons)
+  (replace-call-with-vprimop call 'cleavir-primop:cdr))
+
+(deftransform length ((x null)) 0)
+(deftransform length ((x cons)) '(core:cons-length x))
+(deftransform length ((x list))
+  `(if (null x)
+       0
+       (core:cons-length x)))
+
+;; These transforms are unsafe, as NTH does not signal out-of-bounds.
+#+(or)
+(progn
+(deftransform elt ((seq list) n) '(nth n seq))
+(deftransform core:setf-elt ((seq list) n value) '(setf (nth n seq) value))
+)

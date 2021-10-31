@@ -369,7 +369,7 @@
              (out (make-instance 'bir:output
                     :name name :attributes (cleavir-ast:attributes ast))))
         (ast-to-bir:insert inserter
-                           (make-instance 'bir:vprimop
+                           (make-instance 'bir:primop
                              :info (cleavir-primop-info:info 'setf-fdefinition)
                              :inputs rv :outputs (list out)))
         (list out)))))
@@ -384,7 +384,7 @@
              (out (make-instance 'cleavir-bir:output
                     :name name :attributes (cleavir-ast:attributes ast))))
         (ast-to-bir:insert inserter
-                           (make-instance 'cleavir-bir:vprimop
+                           (make-instance 'cleavir-bir:primop
                              :info (cleavir-primop-info:info 'fdefinition)
                              :inputs rv :outputs (list out)))
         (list out)))))
