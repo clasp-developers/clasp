@@ -141,13 +141,9 @@ namespace core {
       // could call setFuncallableInstanceFunction between the loads, meaning we called
       // the code for one function but pass it the closure object for another.
       T_sp funcallable_closure = closure->GFUN_DISPATCHER();
-      if (lcc_nargs<=LCC_ARGS_IN_REGISTERS) {
-        return (gc::As_unsafe<Function_sp>(funcallable_closure)->entry())(funcallable_closure.raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
-      }
-      INITIALIZE_VA_LIST();
       // This is where we could decide to compile the dtree and switch the GFUN_DISPATCHER() or not
       //  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
-      return funcall_consume_valist_<core::Function_O>(funcallable_closure.tagged_(),lcc_vargs);
+      return funcall_general<core::Function_O>( funcallable_closure.tagged_(), lcc_nargs, lcc_args );
     }
     
   }; // FuncallableInstance class

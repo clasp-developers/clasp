@@ -38,17 +38,18 @@
          cmp::compile-required-arguments
          cmp::compile-optional-arguments
          cmp::compile-key-arguments
+         cmp::add-global-ctor-function
+         cmp::create-invoke-default-unwind
          cmp::codegen-lexical-var-reference
-         cmp::calling-convention-rewind-va-list-to-start-on-third-argument
+         cmp::irc-intrinsic-call-or-invoke
          cmp::do-make-new-run-all
          cmp::irc-ret
          cmp::irc-ret-void
          cmp::irc-ret-null-t*
-         cmp::irc-funcall-results-in-registers-wft
+         cmp::irc-funcall-results-in-register
          cmp::irc-calculate-entry
          cmp::irc-calculate-real-args
-         cmp::irc-lisp-function-type
-         cmp::maybe-alloc-cc-setup
+         cmp::irc-calculate-call-info
          cmp::initialize-calling-convention
          cmp::compile-wrong-number-of-arguments-block
          cmp::compile-error-if-too-many-arguments
@@ -56,16 +57,33 @@
          cmp::irc-icmp-ugt
          cmp::maybe-spill-to-register-save-area
          cmp::make-calling-convention-impl
-         cmp::calling-convention-configuration-register-save-area*
-         cmp::calling-convention-configuration-use-only-registers
          cmp::layout-xep-function
          cmp::layout-xep-function*
          cmp::irc-ret
          cmp::irc-create-call-wft
+         cmp::irc-create-arity-call-wft
+         cmp::irc-create-general-call-wft
+         cmp::irc-generate-arguments
+         cmp::irc-gep
+         cmp::irc-bit-cast
+         cmp::dbg-parameter-var
+         cmp::%dbg-variable-value
+         cmp::%dbg-variable-addr
+         cmp::alloca-temp-values
+         cmp::alloca-arguments
+         cmp::alloca-register-save-area
          cmp::lambda-list-arguments
          cmp::jit-add-module-return-function
+         cmp::c++-field-ptr
+         cmp::calling-convention-vaslist.va-arg
+         cmp::calling-convention-vaslist*
+         cmp::irc-load
+         cmp::irc-add
+         cmp::irc-sub
+         cmp::irc-store
          )
-  (compile-file "/tmp/foo.lisp"))
+  (compile-file "/tmp/foo.lisp")
+  )
 
 
 

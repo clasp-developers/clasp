@@ -575,9 +575,9 @@ SYMBOL_SC_(CompPkg,vtable);
 SYMBOL_SC_(CompPkg,entry);
 SYMBOL_EXPORT_SC_(CorePkg,entry_point);
 SYMBOL_EXPORT_SC_(CorePkg,object_file);
-SYMBOL_SC_(CompPkg,closure_type);
-SYMBOL_SC_(CompPkg,data_length);
-SYMBOL_SC_(CompPkg,data0);
+SYMBOL_EXPORT_SC_(CompPkg,closure_type);
+SYMBOL_EXPORT_SC_(CompPkg,data_length);
+SYMBOL_EXPORT_SC_(CompPkg,data0);
 
 
 DOCGROUP(clasp)
@@ -589,16 +589,39 @@ CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
   expect_offset(comp::_sym_data0,alist,offsetof(ClosureWithSlots_O,_Slots._Data)-gctools::general_tag);
 }
 
-SYMBOL_EXPORT_SC_(CorePkg,function_description);
-SYMBOL_EXPORT_SC_(CorePkg,code);
+SYMBOL_EXPORT_SC_(KeywordPkg,function_description);
+SYMBOL_EXPORT_SC_(KeywordPkg,code);
+SYMBOL_EXPORT_SC_(KeywordPkg,entry_points);
+SYMBOL_EXPORT_SC_(KeywordPkg,defined);
 
 DOCGROUP(clasp)
 CL_DEFUN void core__verify_global_entry_point(T_sp alist)
 {
-  expect_offset(core::_sym_function_description,alist,offsetof(GlobalEntryPoint_O,_FunctionDescription)-gctools::general_tag);
-  expect_offset(core::_sym_code,alist,offsetof(GlobalEntryPoint_O,_Code)-gctools::general_tag);
-  expect_offset(comp::_sym_data0,alist,offsetof(GlobalEntryPoint_O,_EntryPoints)-gctools::general_tag);
+  expect_offset(kw::_sym_function_description,alist,offsetof(GlobalEntryPoint_O,_FunctionDescription)-gctools::general_tag);
+  expect_offset(kw::_sym_code,alist,offsetof(GlobalEntryPoint_O,_Code)-gctools::general_tag);
+  expect_offset(kw::_sym_entry_points,alist,offsetof(GlobalEntryPoint_O,_EntryPoints._EntryPoints)-gctools::general_tag);
+  expect_offset(kw::_sym_defined,alist,offsetof(GlobalEntryPoint_O,_EntryPoints._Defined)-gctools::general_tag);
 }
+
+struct InterpretedClosureEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    //  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    ++global_interpreted_closure_calls;
+    ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(gc::As<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]), (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT]);
+    //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
+    //  newValueEnvironment->dump();
+    LambdaListHandler_sp llh = gc::As_unsafe<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]);
+    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,lisp_lambdaListHandlerNumberOfSpecialVariables(llh));
+    ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newValueEnvironment);
+    lambdaListHandler_createBindings(closure->asSmartPtr(), llh, &scope, LCC_PASS_ARGS_LLH);
+    //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
+    //  newValueEnvironment->dump();
+    ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
+    return eval::sp_progn((*closure)[INTERPRETED_CLOSURE_FORM_SLOT], newValueEnvironment).as_return_type();
+  };
+};
 
     
 ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
@@ -842,12 +865,6 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   }
 }
 
-NEVER_OPTIMIZE LCC_RETURN unboundFunctionEntryPoint_(LCC_ARGS_FUNCALL_ELLIPSIS) {
-  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
-  Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
-  ERROR_UNDEFINED_FUNCTION(symbol);
-}
-
 
 
 void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** funcPtr, size_t sizeofFuncPtr ) {
@@ -869,33 +886,9 @@ void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void
 #endif
 }
 
-LCC_RETURN unboundSetfFunctionEntryPoint_(LCC_ARGS_FUNCALL_ELLIPSIS) {
-  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
-  Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
-  List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
-  ERROR_UNDEFINED_FUNCTION(name);
-}
 
 //  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint_(LCC_ARGS_FUNCALL_ELLIPSIS) {
-  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
-//  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
-  INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  INITIALIZE_VA_LIST();
-  ++global_interpreted_closure_calls;
-  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(gc::As<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]), (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT]);
-//  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
-//  newValueEnvironment->dump();
-  LambdaListHandler_sp llh = gc::As_unsafe<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]);
-  MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,llh->numberOfSpecialVariables());
-  ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newValueEnvironment);
-  lambdaListHandler_createBindings(closure->asSmartPtr(), llh, scope, LCC_PASS_ARGS_LLH);
-//  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
-//  newValueEnvironment->dump();
-  ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
-  return eval::sp_progn((*closure)[INTERPRETED_CLOSURE_FORM_SLOT], newValueEnvironment).as_return_type();
-};
 
 
 };

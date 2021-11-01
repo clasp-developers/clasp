@@ -67,7 +67,8 @@ static bool
 test_compare(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  T_sp res = (*t->test_fn).entry()(LCC_PASS_ARGS2_ELLIPSIS(t->test_fn.raw_(),t->item_compared.raw_(), x.raw_()));
+  T_O* args[2] = {t->item_compared.raw_(), x.raw_()};
+  T_sp res = (*t->test_fn).entry()(t->test_fn.raw_(),2,args);
   return res.notnilp();
 }
 
@@ -75,7 +76,8 @@ static bool
 test_compare_not(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  T_sp res = (*t->test_fn).entry()(LCC_PASS_ARGS2_ELLIPSIS(t->test_fn.raw_(),t->item_compared.raw_(), x.raw_()));
+  T_O* args[2] = {t->item_compared.raw_(), x.raw_()};
+  T_sp res = (*t->test_fn).entry()(t->test_fn.raw_(),2,args);
   return res.nilp();
 }
 
@@ -103,7 +105,8 @@ static T_sp
 key_function(struct cl_test *t, T_sp x) {
   //t->env->function = t->key_function;
   T_mv result;
-  return (*t->key_fn).entry()(LCC_PASS_ARGS1_ELLIPSIS(t->key_fn.raw_(),x.raw_()));
+  T_O* args[] = {x.raw_()};
+  return (*t->key_fn).entry()(t->key_fn.raw_(),1,args);
 }
 
 static T_sp
@@ -335,12 +338,12 @@ CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
   if (nargs == 0 ) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),nil<T_O>());
   ql::list result;
   while (nargs > 1) {
-    T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+    T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
     T_sp csp((gctools::Tagged)tcsp);
     result << csp;
     nargs--;
   }
-  T_O* tailptr = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+  T_O* tailptr = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
   T_sp tail((gctools::Tagged)tailptr);
   result.dot(tail);
   return result.cons();

@@ -181,12 +181,11 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    INITIALIZE_VA_LIST();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
     core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::go(frame->arguments());
 //    int*** iii = WrapperType(); // Check the wrapper type

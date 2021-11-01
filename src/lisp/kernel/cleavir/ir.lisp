@@ -187,13 +187,11 @@ And convert everything to JIT constants."
 ;;;
 
 (defun closure-call-or-invoke (closure arguments &key (label ""))
-  (let* ((entry-point (cmp:irc-calculate-entry closure arguments))
-         (function-type cmp::%fn-prototype%)
-         (real-args (cmp:irc-calculate-real-args arguments))
-         (args (list* closure
-                      (%size_t (length arguments))
-                      real-args)))
-    (cmp::irc-call-or-invoke function-type entry-point args
+  (error "Handle number of arguments ~a" (length arguments))
+  (let ((call-info (cmp:irc-calculate-call-info closure arguments)))
+    (cmp::irc-call-or-invoke (call-info-function-type call-info)
+                             (call-info-entry-point call-info)
+                             (call-info-real-args call-info)
                              cmp::*current-unwind-landing-pad-dest*
                              label)))
 

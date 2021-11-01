@@ -234,8 +234,7 @@ size_t Array_O::arrayRowMajorIndex(List_sp indices) const {
 
 size_t Array_O::arrayRowMajorIndex(VaList_sp indices) const {
   size_t rank = this->rank();
-  size_t indices_passed = indices->remaining_nargs();
-
+  size_t indices_passed = indices->_nargs;
   unlikely_if (indices_passed < rank) {
     insufficientIndexListError(core__list_from_va_list(indices));
   } else {
@@ -243,12 +242,11 @@ size_t Array_O::arrayRowMajorIndex(VaList_sp indices) const {
       tooManyIndicesListError(core__list_from_va_list(indices));
     }
   }
-  
   size_t offset = 0;
   size_t idx = 0;
   size_t idxEnd(indices_passed);
   for ( ; idx<rank; ++idx ) {
-    core::T_sp one = indices->next_arg();
+    core::T_sp one((gctools::Tagged)(*indices)[idx]);
     size_t curDimension = this->arrayDimension(idx);
     LIKELY_if (one.fixnump()) {
       gc::Fixnum oneIndex = one.unsafe_fixnum();

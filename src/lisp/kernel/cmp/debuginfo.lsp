@@ -171,8 +171,6 @@
 
 (defun do-dbg-function (closure lineno function-type function)
   (let ((linkage-name (llvm-sys:get-name function)))
-    #+(or)(unless (llvm-sys:type-equal function-type %fn-prototype%)
-      (format t "!~%!~%!~%!~%!~%!~%    do-dbg-function called with function-type ~s that did not match %fn-prototype% ~s~%!~%!~%!~%!~%!~%!~%" function-type %fn-prototype%))
     (multiple-value-bind (file-scope file-handle)
         (core:file-scope (llvm-sys:get-path *dbg-current-file*))
       (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
@@ -233,7 +231,7 @@
                           function-scope-info
                         (make-function-metadata :linkage-name function-name
                                                 :lineno lineno
-                                                :function-type (if function-type function-type %fn-prototype%)
+                                                :function-type (if function-type function-type (fn-prototype :general-entry))
                                                 :file-metadata (cached-file-metadata file-handle))))
                 :created))))
 

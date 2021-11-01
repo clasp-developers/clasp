@@ -1171,7 +1171,7 @@ jump to blocks within this tagbody."
 (defun gen-vaslist-length (vaslist)
   (irc-tag-fixnum
    (irc-load
-    (irc-vaslist-remaining-nargs-address vaslist))))
+    (irc-vaslist-nargs-address vaslist))))
 
 (defun codegen-vaslist-length (result rest env)
   (let ((form (car rest))
@@ -1186,7 +1186,7 @@ jump to blocks within this tagbody."
 
 (defun gen-vaslist-pop (vaslist)
   ;; We need to decrement the remaining nargs, then return va_arg.
-  (let* ((nargs* (irc-vaslist-remaining-nargs-address vaslist))
+  (let* ((nargs* (irc-vaslist-nargs-address vaslist))
          (nargs (irc-load nargs*))
          (nargs-- (irc-sub nargs (jit-constant-size_t 1))))
     ;; Decrement.
@@ -1513,6 +1513,7 @@ jump to blocks within this tagbody."
 
 ;;; core:bind-va-list
 (defun codegen-bind-va-list (result form evaluate-env)
+  (error "codegen-bind-va-list work with new vaslist")
   (let ((lambda-list (first form))
         (vaslist     (second form))
         (body        (cddr form)))
@@ -1526,14 +1527,14 @@ jump to blocks within this tagbody."
           (let ((eval-vaslist (alloca-t* "bind-vaslist")))
             (codegen eval-vaslist vaslist evaluate-env)
             (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
-                   (src-remaining-nargs* (irc-vaslist-remaining-nargs-address lvaslist))
+                   (src-remaining-nargs* (irc-vaslist-nargs-address lvaslist))
                    (src-va_list* (irc-vaslist-va_list-address lvaslist))
                    (local-va_list* (alloca-va_list "local-va_list"))
                    (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
                                                                            (irc-pointer-cast src-va_list* %i8*%))))
                    (callconv (make-calling-convention-impl :closure (llvm-sys:constant-pointer-null-get %i8*%)
                                                            :nargs (irc-load src-remaining-nargs*)
-                                                           :va-list* local-va_list*
+                                                           :vaslist* local-vaslist*
                                                            :rest-alloc rest-alloc
                                                            :cleavir-lambda-list cleavir-lambda-list)))
               (declare (ignore _))
@@ -1720,13 +1721,7 @@ jump to blocks within this tagbody."
                    ;; results-in-registers keeps things in the basic tmv format, because
                    ;; here we don't need the store/load values dance.
                    ;; (The C function only gets/needs/wants the primary value.)
-                   #+(or)(_ (format t "About to irc-funcall-results-in-registers-wft c-function-type -> ~s  closure-to-call -> ~s   cl-args -> ~s ~%"
-                                    c-function-type
-                                    closure-to-call
-                                    cl-args ))
-                   (closure-function-type (irc-lisp-function-type (length cl-args)))
-                   (cl-result (irc-funcall-results-in-registers-wft
-                               closure-function-type ; NOT c-function-type
+                   (cl-result (irc-funcall-results-in-registers
                                closure-to-call cl-args (core:bformat nil "%s_closure" c-name))))
               ;; Now generate a call the translator for the return value if applicable, then return.
               ;; NOTE: (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro

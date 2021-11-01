@@ -1287,8 +1287,9 @@
          (cmp:*current-function-name* jit-function-name)
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string jit-function-name "fn-name"))
-         (llvm-function-type cmp:%fn-prototype%)
          (function-info (find-llvm-function-info function))
+         (_ (error "Handle new call-info"))
+         (llvm-function-type cmp:%fn-prototype%)
          (xep-function (xep-function function-info))
          (cmp:*current-function* xep-function)
          (entry-block (cmp:irc-basic-block-create "entry" xep-function))
@@ -1335,8 +1336,9 @@
          (cmp:*current-function-name* jit-function-name)
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string jit-function-name "fn-name"))
-         (llvm-function-type cmp:%fn-prototype%)
          (function-info (find-llvm-function-info function))
+         (_ (error "Handle new call-info"))
+         (llvm-function-type cmp:%fn-prototype%)
          (the-function (main-function function-info))
          #+(or)(function-description (main-function-description function-info))
          (cmp:*current-function* the-function)

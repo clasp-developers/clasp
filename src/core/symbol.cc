@@ -210,6 +210,25 @@ CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
 
 namespace core {
 
+
+struct UnboundFunctionEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
+    ERROR_UNDEFINED_FUNCTION(symbol);
+  }
+};
+
+struct UnboundSetfFunctionEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
+    List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
+    ERROR_UNDEFINED_FUNCTION(name);
+  }
+};
+
+
 ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
 {
   if (_lisp->_Roots._UnboundSymbolFunctionEntryPoint.unboundp()) {
@@ -222,6 +241,8 @@ ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
   (*closure)[0] = name;
   return closure;
 }
+
+
 
 ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 {

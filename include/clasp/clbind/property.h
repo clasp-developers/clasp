@@ -66,7 +66,8 @@ public:
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
+    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>(arg0)->cast<OT>();
     MemberType &orig = (*objPtr).*(closure->_MemberPtr);
     return Values(translate::to_object<MemberType, translate::dont_adopt_pointer>::convert(orig));
   }
@@ -95,7 +96,8 @@ public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
+    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>(arg0)->cast<OT>();
     MemberType *ptr = (*objPtr).*(closure->_MemberPtr);
     return translate::to_object<MemberType *, translate::dont_adopt_pointer>::convert(ptr);
   }
@@ -133,10 +135,13 @@ public:
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG1()))->cast<OT>();
-    translate::from_object<MemberType> fvalue(LCC_ARG0());
+    ASSERT(lcc_nargs==2);
+    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+    core::T_sp arg1((gctools::Tagged)lcc_args[1]);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>(arg1)->cast<OT>();
+    translate::from_object<MemberType> fvalue(arg0);
     (*objPtr).*(closure->_MemberPtr) = fvalue._v;
-    gctools::return_type retv(LCC_ARG0().raw_(),1);
+    gctools::return_type retv(arg0.raw_(),1);
     return retv;
   }
 };
@@ -163,10 +168,12 @@ public:
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG1()))->cast<OT>();
-    translate::from_object<MemberType> fvalue(LCC_ARG0());
+    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+    core::T_sp arg1((gctools::Tagged)lcc_args[1]);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>(arg1)->cast<OT>();
+    translate::from_object<MemberType> fvalue(arg0);
     (*objPtr).*(closure->_MemberPtr) = fvalue._v;
-    typename gctools::return_type ret(LCC_ARG0().raw_(),1);
+    typename gctools::return_type ret(arg0.raw_(),1);
     return ret;
   }
 };

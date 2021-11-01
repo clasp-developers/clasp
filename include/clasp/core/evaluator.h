@@ -94,19 +94,26 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   int numArgsPassed = sizeof...(Args);
   int numArgsPlus = argsPLUS.consp() ? argsPLUS.unsafe_cons()->proper_list_length() : 0;
   int nargs = numArgsPassed + numArgsPlus;
-  T_sp initialContents[sizeof...(Args)] = {args...};
   MAKE_STACK_FRAME( frame, func.raw_(), nargs);
   size_t i(0);
+#if 1
+  // Initialize using args
+  using InitialContents = T_O*[sizeof...(Args)];
+  InitialContents* initialContents((InitialContents*)frame->arguments());
+  new (initialContents) InitialContents {args.raw_()...};
+  i = sizeof...(Args);
+#else
+  // Also initialize using args but requires copying
+  T_sp initialContents[sizeof...(Args)] = {args...};
   for ( ; i< sizeof...(Args); ++i ) {
     (*frame)[i] = initialContents[i].raw_();
   }
+#endif
   for ( auto cur : argsPLUS ) {
     (*frame)[i] = CONS_CAR(cur).raw_();
     ++i;
   }
-  Vaslist valist_struct(frame);
-  VaList_sp valist(&valist_struct);
-  return funcall_consume_valist_<core::T_O>(func.tagged_(),valist);
+  return funcall_general<core::T_O>( func.tagged_(), nargs, frame->arguments() );
 }
 
 
@@ -125,80 +132,87 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
 inline LCC_RETURN funcall(T_sp fn) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry()(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  return func->entry()( func.raw_() ,0 , NULL );
 }
 
 template <class ARG0>
 inline LCC_RETURN funcall(T_sp fn, ARG0 arg0) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry()(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
+  T_O* args[1] = {arg0.raw_()};
+  return func->entry()( func.raw_(), 1, &args[0] );
 }
 
 template <class ARG0, class ARG1>
 inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
+  T_O* args[2] = {arg0.raw_(),arg1.raw_()};
+  return func->entry()( func.raw_(), 2, &args[0] );
 }
 
 template <class ARG0, class ARG1, class ARG2>
 inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry()(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
+  T_O* args[3] = {arg0.raw_(),arg1.raw_(),arg2.raw_()};
+  return func->entry()( func.raw_(), 3, &args[0] );
 }
 
- template <class ARG0, class ARG1, class ARG2, class ARG3>
-   inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
+template <class ARG0, class ARG1, class ARG2, class ARG3>
+inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry()(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
+  T_O* args[4] = {arg0.raw_(),arg1.raw_(),arg2.raw_(),arg3.raw_()};
+  return func->entry()( func.raw_(), 4, &args[0] );
 }
 
 // Do I need a variadic funcall???
- template <class ARG0, class ARG1, class ARG2, class ARG3, class... ARGS>
-  inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARGS &&... args) {
+ template <class... ARGS>
+  inline LCC_RETURN funcall(T_sp fn, ARGS &&... args) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  size_t vnargs = sizeof...(ARGS);
-  size_t nargs = vnargs + LCC_FIXED_NUM;
-  return func->entry()(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
+  size_t nargs = sizeof...(ARGS);
+  T_O* aargs[sizeof...(ARGS)] = {args.raw_()...};
+  return func->entry()(func.raw_(), nargs, &aargs[0] );
 }
 
 inline LCC_RETURN funcall_function(Function_sp func) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry()(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  IMPLEMENT_MEF(BF("Handle 0 arg funcall_function"));
+#if 0
+  return func->entry0()(func.raw_());
+#endif
 }
 
 template <class ARG0>
 inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry()(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
+  IMPLEMENT_MEF(BF("Handle 1 arg funcall_function"));
+#if 0
+  return func->entry1()(func.(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
+#endif
 }
 
 template <class ARG0, class ARG1>
@@ -207,39 +221,46 @@ inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1) {
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
+  IMPLEMENT_MEF(BF("Handle 2 arg funcall_function"));
+#if 0
   return func->entry()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
+#endif
 }
 
 template <class ARG0, class ARG1, class ARG2>
 inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
+  IMPLEMENT_MEF(BF("Handle 3 arg funcall_function"));
+#if 0
   return func->entry()(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
+#endif
 }
 
  template <class ARG0, class ARG1, class ARG2, class ARG3>
    inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
+  IMPLEMENT_MEF(BF("Handle 4 arg funcall_function"));
+#if 0
   return func->entry()(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
+#endif
 }
 
-// Do I need a variadic funcall???
- template <class ARG0, class ARG1, class ARG2, class ARG3, class... ARGS>
-  inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARGS &&... args) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
-  ASSERT(gc::IsA<Function_sp>(func));
-  size_t vnargs = sizeof...(ARGS);
-  size_t nargs = vnargs + LCC_FIXED_NUM;
-  return func->entry()(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
-}
-
+ template <class... ARGS>
+     inline LCC_RETURN funcall_function(Function_sp func, ARGS &&... args) {
+   /* If the following assertion fails then the funcall functions in this header
+      need to be made consistent with lispCallingConvention.h */
+   ASSERT(gc::IsA<Function_sp>(func));
+   size_t vnargs = sizeof...(ARGS);
+   IMPLEMENT_MEF(BF("Handle N arg funcall_function"));
+#if 0
+   return func->entry()(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
+#endif
+ }
+ 
 };
 
  namespace eval {

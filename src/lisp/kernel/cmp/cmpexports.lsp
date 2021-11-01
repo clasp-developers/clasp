@@ -39,9 +39,7 @@
             xep-arity-function
             +c++-stamp-max+
             %opaque-fn-prototype*%
-            %fn-prototype%
-            +fn-prototype-argument-names+
-            %fn-prototype*%
+            fn-prototype
             *cleavir-compile-file-hook*
             *cleavir-compile-hook*
             *compile-print*
@@ -126,8 +124,8 @@
             calling-convention-closure
             calling-convention-use-only-registers
             calling-convention-args
-            calling-convention-args.va-arg
-            calling-convention-va-list*
+            calling-convention-vaslist*
+            calling-convention-vaslist.va-arg
             calling-convention-register-save-area*
             calling-convention-nargs
             calling-convention-register-args
@@ -143,7 +141,6 @@
             irc-create-call-wft
             irc-create-invoke
             irc-calculate-entry
-            irc-calculate-real-args
             compile-file-to-module
             optimize-module-for-compile
             optimize-module-for-compile-file
@@ -192,7 +189,7 @@
             alloca-return
             alloca-va_list
             alloca-temp-values
-            irc-lisp-function-type
+            alloca-arguments
             irc-and
             irc-basic-block-create
             irc-begin-block
@@ -237,6 +234,8 @@
             irc-store-atomic
             irc-cmpxchg
             irc-struct-gep
+            vaslist-start
+            vaslist-copy
             irc-read-slot
             irc-write-slot
             irc-make-tmv
@@ -268,7 +267,7 @@
             irc-array-rank
             gen-%array-dimension
             irc-vaslist-va_list-address
-            irc-vaslist-remaining-nargs-address
+            irc-vaslist-nargs-address
             gen-instance-rack
             gen-instance-rack-set
             gen-rack-ref
@@ -328,7 +327,6 @@
             %uintptr_t%
             %return-type%
             %vaslist%
-            %register-save-area%
             null-t-ptr
             compile-error-if-wrong-number-of-arguments
             compile-error-if-too-many-arguments

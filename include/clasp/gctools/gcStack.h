@@ -51,8 +51,8 @@ struct Frame {
   static inline size_t FrameBytes_(size_t elements) {
     return FrameElements_(elements) * sizeof(ElementType);
   }
-  ElementType* data() {return (ElementType*)reg_save_area_ptr();}
-  ElementType* arguments(size_t start=0) {return ((ElementType*)reg_save_area_ptr())+LCC_ARG0_REGISTER+start;}
+  ElementType* data0() const {return (ElementType*)reg_save_area_ptr();}
+  ElementType* arguments(size_t start=0) const {return ((ElementType*)reg_save_area_ptr())+2+start;}
   void* reg_save_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_register_save_area[0])); };
   void* overflow_arg_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_overflow_area[0])); };
   Frame(core::T_O* closure, size_t numArguments) {
@@ -91,9 +91,11 @@ struct Frame {
   inline core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged) this->operator[](idx)); }
 };
 
-#define MAKE_STACK_FRAME( framename, closure, num_elements)                                                                                                        \
-  gctools::Frame *framename = reinterpret_cast<gctools::Frame *>(__builtin_alloca(gctools::Frame::FrameBytes_(num_elements))); \
-  new(framename) gctools::Frame(closure, num_elements);
+#define MAKE_STACK_FRAME( framename, closure, num_elements) \
+  size_t sf_nargs = (num_elements); \
+  gctools::Frame *framename = reinterpret_cast<gctools::Frame *>(__builtin_alloca(gctools::Frame::FrameBytes_(sf_nargs))); \
+  new(framename) gctools::Frame(closure, num_elements); \
+  core::T_O** sf_args = framename->arguments(0);
 
 } // namespace gctools
 
@@ -110,81 +112,83 @@ struct Vaslist {
   /* WARNING WARNING WARNING WARNING
 DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_list+ in cmpintrinsics.lsp
 */
-  mutable va_list _Args;
-  mutable size_t  _remaining_nargs;
+  mutable T_O**   _args;
+  mutable size_t  _nargs;
 
 #ifdef _DEBUG_BUILD
-  inline void check_remaining_nargs() const {
-    if (this->_remaining_nargs >CALL_ARGUMENTS_LIMIT) {
-      printf("%s:%d  this->_remaining_nargs has bad value %lu\n", __FILE__, __LINE__, this->_remaining_nargs);
+  inline void check_nargs() const {
+    if (this->_nargs >CALL_ARGUMENTS_LIMIT) {
+      printf("%s:%d  this->_nargs has bad value %lu\n", __FILE__, __LINE__, this->_nargs);
     }
   }
 #else
-  inline void check_remaining_nargs() const {};
+  inline void check_nargs() const {};
 #endif
 
+  inline size_t total_nargs() const { return this->_nargs; };
   inline core::T_O *asTaggedPtr() {
     return gctools::tag_vaslist<core::T_O *>(this);
   }
-  Vaslist(gc::Frame* frame) {
-    LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, *frame);
-    this->_remaining_nargs = frame->number_of_arguments();
-    this->check_remaining_nargs();
+  Vaslist(gc::Frame* frame) : _args(frame->arguments(0)), _nargs(frame->number_of_arguments()) {
+    this->check_nargs();
   };
 
-  Vaslist(const gc::Frame& frame) {
-    LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, frame);
-    this->_remaining_nargs = frame.number_of_arguments();
-    this->check_remaining_nargs();
+  Vaslist(const gc::Frame& frame) : _args(frame.arguments(0)), _nargs(frame.number_of_arguments()) {
+    this->check_nargs();
   };
 
-  Vaslist(size_t nargs, va_list vargs) {
-    va_copy(this->_Args, vargs);
-    this->_remaining_nargs = nargs;
-    this->check_remaining_nargs();
+  Vaslist(size_t nargs, T_O** args) : _args(args), _nargs(nargs) {
+    this->check_nargs();
   };
   // The Vaslist._Args must be initialized immediately after this
   //    using va_start(xxxx._Args,FIRST_ARG)
   //    See lispCallingConvention.h INITIALIZE_VA_LIST
   Vaslist(size_t nargs) {
-    this->_remaining_nargs = nargs;
-    this->check_remaining_nargs();
+    this->_nargs = nargs;
+    this->check_nargs();
   };
-  Vaslist(const Vaslist &other) {
-    va_copy(this->_Args, other._Args);
-    this->_remaining_nargs = other._remaining_nargs;
-    this->check_remaining_nargs();
+  Vaslist(const Vaslist &other) : _args(other._args), _nargs(other._nargs) {
+    this->check_nargs();
   }
 
   Vaslist(){};
 
   ~Vaslist() {
-    va_end(this->_Args);
   }
 
-#if 0  
-  void set_from_other_Vaslist_change_nargs(Vaslist *other, size_t nargs_remaining) {
-    LCC_SETUP_VA_LIST_FROM_VA_LIST_CHANGE_NARGS(this->_Args, other->_Args, nargs_remaining);
-  }
-#endif
-  void set_from_other_Vaslist(Vaslist *other) {
-    LCC_SETUP_VA_LIST_FROM_VA_LIST(this->_Args, other->_Args);
-    this->_remaining_nargs = other->_remaining_nargs;
-    this->check_remaining_nargs();
+  T_O* operator[](size_t index) { return this->_args[index]; };
+
+  inline core::T_sp next_arg() {
+    core::T_sp obj((gctools::Tagged)(*this->_args));
+    this->_args++;
+    this->_nargs--;
+    return obj;
   }
 
+  inline core::T_sp next_arg_indexed(size_t idx) {
+    core::T_sp obj((gctools::Tagged)this->operator[](idx));
+    return obj;
+  }
+  
+
+  void set_from_other_Vaslist(Vaslist *other,size_t arg_idx) {
+    this->_nargs = other->_nargs-arg_idx; // remaining arguments
+    this->_args = other->_args+arg_idx; // advance to start on remaining args
+    this->check_nargs();
+  }
+#if 0
   inline size_t total_nargs() const {
     size_t n = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(this);
     return n;
   }
-
-
+#endif
+  
 
   inline const size_t& remaining_nargs() const {
-    return this->_remaining_nargs;
+    return this->_nargs;
   }
   inline size_t& remaining_nargs() {
-    return this->_remaining_nargs;
+    return this->_nargs;
   }
 #if 0
   inline size_t current_index() const {
@@ -194,28 +198,6 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
     return idx;
   }
 #endif
-  inline core::T_O* next_arg_raw() {
-    --this->_remaining_nargs;
- #ifdef _DEBUG_BUILD
-    this->check_remaining_nargs();
- #endif
-    return LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
-  }
-
-  inline core::T_sp next_arg() {
-    --this->_remaining_nargs;
-#ifdef _DEBUG_BUILD
-    this->check_remaining_nargs();
-#endif
-    T_O* ptr = LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
-    return T_sp(reinterpret_cast<gctools::Tagged>(ptr));
-  }
-
-  inline core::T_O *relative_indexed_arg(size_t idx) const {
-    core::T_O *res;
-    LCC_VA_LIST_RELATIVE_INDEXED_ARG(res, this, idx);
-    return res;
-  }
 };
 };
 

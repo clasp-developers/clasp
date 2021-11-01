@@ -129,6 +129,8 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
 
 ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
+  IMPLEMENT_MEF(BF("What do I do with args"));
+#if 0
   va_copy(untagged_vargs_rest[0]._Args,vargs);
   va_copy(untagged_vargs_rest[1]._Args,vargs);
 #ifdef DEBUG_ENSURE_VALID_OBJECT
@@ -146,6 +148,7 @@ ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nar
   T_O* result = untagged_vargs_rest->asTaggedPtr();
   return result;
   NO_UNWIND_END();
+#endif
 }
 
 ALWAYS_INLINE core::T_O *cc_makeCell()
@@ -922,11 +925,13 @@ T_O* cc_match(T_O* old_value, T_O* new_value ) {
 
 
 
-
+#if 0
 void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
 {
   LCC_REWIND_VA_LIST(va_args,register_save_areaP);
 }
+#endif
+
 
 unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));

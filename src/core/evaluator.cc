@@ -144,6 +144,7 @@ extern "C" void cc_protect_alloca(char* ptr);
 #define REG_ARGS 4  // 4 common lisp arguments in registers
 // NOTE that changes to REG_ARGS require changes to code below.
 
+#if 0
 T_mv apply0_inner_valist(Function_sp func, VaList_sp v) {
   T_O *a0, *a1, *a2, *a3;
   Vaslist valist_scopy(*v);
@@ -184,7 +185,9 @@ T_mv apply0_inner_valist(Function_sp func, VaList_sp v) {
   }
   }
 }
+#endif
 
+#if 0
 T_mv apply1_inner_valist(Function_sp func, VaList_sp v, T_O *a0) {
   T_O *a1, *a2, *a3;
   Vaslist valist_scopy(*v);
@@ -282,8 +285,12 @@ T_mv apply4_inner_valist(Function_sp func, VaList_sp v,
   return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
 }
 
+#endif
+
 // These substantially recapitulate the above, but with GET_AND_ADVANCE_LIST.
 T_mv apply0_inner_list(Function_sp func, T_sp var) {
+  IMPLEMENT_ME();
+#if 0
   T_O *a0, *a1, *a2, *a3;
   int lenRest = 0;
   // Compute length of the list, and complain if it's not a proper list.
@@ -327,8 +334,10 @@ T_mv apply0_inner_list(Function_sp func, T_sp var) {
     return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
+#endif
 }
 
+#if 0
 T_mv apply1_inner_list(Function_sp func, T_sp var, T_O *a0) {
   T_O *a1, *a2, *a3;
   int lenRest = 0;
@@ -366,7 +375,8 @@ T_mv apply1_inner_list(Function_sp func, T_sp var, T_O *a0) {
   }
   }
 }
-
+#endif
+#if 0
 T_mv apply2_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1) {
   T_O *a2, *a3;
   int lenRest = 0;
@@ -398,7 +408,8 @@ T_mv apply2_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1) {
   }
   }
 }
-
+#endif
+#if 0
 T_mv apply3_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1, T_O *a2) {
   T_O *a3;
   int lenRest = 0;
@@ -425,7 +436,8 @@ T_mv apply3_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1, T_O *a2) {
   }
   }
 }
-
+#endif
+#if 0
 T_mv apply4_inner_list(Function_sp func, T_sp var,
                        T_O* a0, T_O* a1, T_O* a2, T_O* a3,
                        size_t lenFixed, VaList_sp fixed) {
@@ -448,43 +460,31 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
     GET_AND_ADVANCE_LIST(variadic[variadic_idx], var);
   return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
 }
+#endif
 
 /* The idea is that given a call to apply: (apply f1 f2... fn var),
  * we end up here with var = var, lenFixed = n, fixed = the apply valist.
  * When var is a VaList, naturally. */
 T_mv apply_inner_valist(Function_sp func, size_t lenFixed, VaList_sp fixed, VaList_sp var) {
-  switch (lenFixed) {
-  case 0: return apply0_inner_valist(func, var);
-  case 1: return apply1_inner_valist(func, var,
-                                     fixed->next_arg_raw());
-  case 2: return apply2_inner_valist(func, var,
-                                     fixed->next_arg_raw(), fixed->next_arg_raw());
-  case 3: return apply3_inner_valist(func, var,
-                                     fixed->next_arg_raw(), fixed->next_arg_raw(),
-                                     fixed->next_arg_raw());
-  default: return apply4_inner_valist(func, var,
-                                      fixed->next_arg_raw(), fixed->next_arg_raw(),
-                                      fixed->next_arg_raw(), fixed->next_arg_raw(),
-                                      lenFixed - 4, fixed);
-  }
+  size_t nargs_var = var->_nargs;
+  size_t total_args = lenFixed + nargs_var;
+  MAKE_STACK_FRAME( frame, func.raw_(), total_args );
+  memcpy( (void*)frame->arguments(), fixed->_args, lenFixed*sizeof(T_O*));
+  memcpy( (void*)((T_O*)frame->arguments()+lenFixed), var->_args, nargs_var*sizeof(T_O*));
+  return (*func).entry()(func.raw_(),total_args,frame->arguments());
 }
 
-// But if var is a list, we end up here.
-T_mv apply_inner_list(Function_sp func, size_t lenFixed, VaList_sp fixed, T_sp var) {
-  switch (lenFixed) {
-  case 0: return apply0_inner_list(func, var);
-  case 1: return apply1_inner_list(func, var,
-                                   fixed->next_arg_raw());
-  case 2: return apply2_inner_list(func, var,
-                                   fixed->next_arg_raw(), fixed->next_arg_raw());
-  case 3: return apply3_inner_list(func, var,
-                                   fixed->next_arg_raw(), fixed->next_arg_raw(),
-                                   fixed->next_arg_raw());
-  default: return apply4_inner_list(func, var,
-                                    fixed->next_arg_raw(), fixed->next_arg_raw(),
-                                    fixed->next_arg_raw(), fixed->next_arg_raw(),
-                                    lenFixed - 4, fixed);
+T_mv apply_inner_list(Function_sp func, size_t lenFixed, VaList_sp fixed, List_sp var) {
+  size_t nargs_var = cl__length(var);
+  size_t total_args = lenFixed + nargs_var;
+  MAKE_STACK_FRAME( frame, func.raw_(), total_args );
+  memcpy( (void*)frame->arguments(), fixed->_args, lenFixed*sizeof(T_O*));
+  size_t idx(lenFixed);
+  for ( auto cur : var ) {
+    (*frame)[idx] = CONS_CAR(cur).raw_();
+    idx++;
   }
+  return (*func).entry()(func.raw_(),total_args,frame->arguments());
 }
 
 CL_LAMBDA(head core:&va-rest args)
@@ -494,8 +494,8 @@ DOCGROUP(clasp)
 CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   Function_sp func = coerce::functionDesignator( head );
   if (args->total_nargs() == 0) eval::errorApplyZeroArguments();
-  int lenArgs = args->remaining_nargs();
-  T_O* lastArgRaw = args->relative_indexed_arg(lenArgs - 1);
+  int lenArgs = args->_nargs;
+  T_O* lastArgRaw = (*args)[lenArgs - 1];
   if (gctools::tagged_vaslistp(lastArgRaw)) {
     VaList_sp valast((gc::Tagged)lastArgRaw);
     return apply_inner_valist(func, lenArgs - 1, args, valast);
@@ -516,13 +516,19 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
-  if (lastArg.valistp())
+  if (lastArg.valistp()) {
+    IMPLEMENT_ME();
+#if 0
     return apply0_inner_valist(func, gc::As_unsafe<VaList_sp>(lastArg));
+#endif
+  }
   else if (lastArg.consp() || lastArg.nilp())
     return apply0_inner_list(func, lastArg);
   else eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
+
+#if 0
 
 CL_LAMBDA(func args arg0)
 CL_DECLARE();
@@ -539,7 +545,8 @@ CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg,
   else eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
-
+#endif
+#if 0
 CL_LAMBDA(func args arg0 arg1)
 CL_DECLARE();
 CL_DOCSTRING(R"dx((apply f a b m) = (apply2 (coerce-fdesignator f) m a b))dx")
@@ -555,7 +562,8 @@ CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
   else eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
-
+#endif
+#if 0
 CL_LAMBDA(func args arg0 arg1 arg2)
 CL_DECLARE();
 CL_DOCSTRING(R"dx((apply f a b c m) = (apply3 (coerce-fdesignator f) m a b c))dx")
@@ -571,14 +579,17 @@ CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
   else eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
-
-CL_LAMBDA(func args arg0 arg1 arg2 arg3 core:&va-rest more)
-CL_DECLARE();
+#endif
+#if 0
+CL_LAMBDA(func args arg0 arg1 arg2 arg3 &rest more)
+CL_DECLARE("(declare (dynamic-extent more))");
 CL_DOCSTRING(R"dx((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3,
-                           VaList_sp more) {
+                           List_sp more) {
+  IMPLEMENT_ME();
+#if 0
   if (lastArg.valistp())
     return apply4_inner_valist(func, gc::As_unsafe<VaList_sp>(lastArg),
                                arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(),
@@ -589,7 +600,11 @@ CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
                              more->remaining_nargs(), more);
   else eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
+#endif
 }
+#endif
+
+
 
 gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
   ASSERT(gctools::tagged_consp(args_tagged));
@@ -613,9 +628,9 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
       (*frame)[j] = tail_cur->ocar().raw_();
       tail_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_cur->cdr().raw_()));
     }
-    Vaslist valist_struct(frame);
+    Vaslist valist_struct(*frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return funcall_consume_valist_<core::Function_O>((gc::Tagged)func_tagged, valist);
+    return funcall_general<core::Function_O>((gc::Tagged)func_tagged, valist_struct._nargs, valist_struct._args );
   }
   Cons_O* cons_tail = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_tagged));
   int nargs = front_nargs;
@@ -627,25 +642,13 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
   }
   Vaslist valist_struct(frame);
   VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-  return funcall_consume_valist_<core::Function_O>((gc::Tagged)func_tagged, valist);
+  return funcall_general<core::Function_O>((gc::Tagged)func_tagged, valist_struct._nargs, valist_struct._args );
 }
 
 template <typename... FixedArgs>
 LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&...fixedArgs) {
   int nargs;
-  LIKELY_if ( gctools::tagged_vaslistp(rest_args_tagged) ) {
-    VaList_sp rest_args_as_VaList_sp((gctools::Tagged)rest_args_tagged);
-    Vaslist va_rest_copy_S(*rest_args_as_VaList_sp);
-    VaList_sp va_rest_args(&va_rest_copy_S);
-    nargs = sizeof...(FixedArgs)+va_rest_args->remaining_nargs();
-    MAKE_STACK_FRAME( frame, function_tagged, nargs );
-    T_O* _[] = {fixedArgs...};
-    for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
-    for (int j=sizeof...(FixedArgs);j<nargs; ++j ) (*frame)[j] = va_rest_copy_S.next_arg_raw();
-    Vaslist valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
-  } else if (gctools::tagged_consp(rest_args_tagged)) {
+  if (gctools::tagged_consp(rest_args_tagged)) {
     Cons_sp cons_rest_args((gctools::Tagged)rest_args_tagged);
     List_sp list_rest_args((gctools::Tagged)rest_args_tagged);
     nargs = sizeof...(FixedArgs)+cons_rest_args->length();
@@ -658,7 +661,7 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
     }
     Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
+    return funcall_general<core::Function_O>((gc::Tagged)function_tagged, valist_struct._nargs, valist_struct._args );
   }
   nargs = sizeof...(FixedArgs);
   MAKE_STACK_FRAME( frame, function_tagged, nargs );
@@ -666,7 +669,7 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
   for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
   Vaslist valist_struct(frame);
   VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-  return funcall_consume_valist_<core::Function_O>((gc::Tagged)function_tagged, valist);
+  return funcall_general<core::Function_O>((gc::Tagged)function_tagged, valist_struct._nargs, valist_struct._args );
 }
 
 
@@ -725,11 +728,11 @@ CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
 
 
 // fast funcall
-CL_LAMBDA(function-desig core:&va-rest args)
-CL_DECLARE();
+CL_LAMBDA(function-desig &rest args)
+CL_DECLARE("(declare (dynamic-extent args))");
 CL_DOCSTRING(R"dx(See CLHS: funcall)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
+CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
   //    printf("%s:%d cl__funcall should be inlined after the compiler starts up\n", __FILE__, __LINE__ );
   Function_sp func = coerce::functionDesignator(function_desig);
   if (func.nilp()) {
@@ -740,12 +743,15 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
     if (function_desig.unboundp()) SIMPLE_ERROR(BF("The function designator was UNBOUND"));
     SIMPLE_ERROR(BF("The function %s was unbound") % _rep_(function_desig));
   }
-
-#ifdef _DEBUG_BUILD
-  Vaslist debug_valist(*args);
-  core::T_O* debug_lcc_valist = debug_valist.asTaggedPtr();
-#endif
-  T_mv res = funcall_consume_valist_<core::Function_O>(func.tagged_(), args);
+  size_t nargs = cl__length(args);
+  MAKE_STACK_FRAME( fargs, func.raw_(), nargs );
+  size_t ia(0);
+  for ( auto cur : args ) {
+    T_sp val = CONS_CAR(cur);
+    fargs->operator[](ia) = val.raw_();
+    ia++;
+  }
+  T_mv res = funcall_general<core::Function_O>(func.tagged_(), nargs, fargs->arguments(0));
   return res;
 }
 
@@ -1730,7 +1736,7 @@ namespace core {
             fargs->set_number_of_arguments(idx);
             Vaslist valist_struct(fargs);
             VaList_sp valist(&valist_struct); // = valist_struct.fargs.setupVaList(valist_struct);
-            return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
+            return funcall_general<core::Function_O>(func.tagged_(), valist_struct._nargs, valist_struct._args );
         }
 
 
@@ -2369,7 +2375,7 @@ namespace core {
                 Vaslist valist_struct(callArgs);
                 VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
                 try {
-                    return funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
+                  return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
                 } catch (core::ExitProgramException& ee) {
                     throw(ee);
                 }
@@ -2555,9 +2561,10 @@ SYMBOL_EXPORT_SC_(ClPkg, funcall);
 SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 
-
 gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
 {
+  IMPLEMENT_ME();
+#if 0
   switch ((*frame).number_of_arguments()) {
 #define APPLY_TO_FRAME
 #include <clasp/core/applyToFrame.h>
@@ -2565,6 +2572,7 @@ gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
   default:
       SIMPLE_ERROR(BF("Function call with %lu arguments exceeded the call-arguments-limit %lu") % (*frame).number_of_arguments() % CALL_ARGUMENTS_LIMIT);
   };
+#endif
 }
 
 };

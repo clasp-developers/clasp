@@ -31,7 +31,7 @@ namespace gctools {
 void Frame::dump() const {
   size_t numElements = this->number_of_arguments();
   printf("%s:%d dumping Frame with %lu elements\n", __FILE__, __LINE__, numElements);
-  core::Closure_sp closure((gctools::Tagged)this->_register_save_area[0]);
+  core::Closure_sp closure((gctools::Tagged)this->data0()[0]);
   printf("%s:%d closure %s\n", __FILE__, __LINE__, _rep_(closure).c_str());
   for ( size_t ii=0; ii<numElements; ++ii ) {
     core::T_sp arg((gctools::Tagged)(*this)[ii]);

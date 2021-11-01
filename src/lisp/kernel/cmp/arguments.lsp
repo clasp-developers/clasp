@@ -36,9 +36,10 @@
 (defun compile-required-arguments (reqargs cc)
   ;; reqargs is as returned from process-lambda-list- (# ...) where # is the count.
   ;; cc is the calling-convention object.
-  (cmp-log "(calling-convention-args.va-arg cc) -> %s%N" (calling-convention-args.va-arg cc))
   (dolist (req (cdr reqargs))
-    (funcall *argument-out* (calling-convention-args.va-arg cc) req)))
+    (let ((arg (calling-convention-vaslist.va-arg cc)))
+      (cmp-log "(calling-convention-vaslist.va-arg cc) -> %s%N" arg)
+      (funcall *argument-out* arg req))))
 
 ;;; Unlike the other compile-*-arguments, this one returns a value-
 ;;; an LLVM Value for the number of arguments remaining.
@@ -105,7 +106,7 @@ switch (nargs) {
                 (enough (< j i) (< j i)))
                ((endp var-phis))
             (irc-phi-add-incoming suppliedp-phi (if enough true false) new)
-            (irc-phi-add-incoming var-phi (if enough (calling-convention-args.va-arg calling-conv) undef) new))
+            (irc-phi-add-incoming var-phi (if enough (calling-convention-vaslist.va-arg calling-conv) undef) new))
           (irc-br assn)))
       ;; Default case: everything gets a value and a suppliedp=T.
       (irc-begin-block enough)
@@ -113,7 +114,7 @@ switch (nargs) {
       (dolist (suppliedp-phi suppliedp-phis)
         (irc-phi-add-incoming suppliedp-phi true enough))
       (dolist (var-phi var-phis)
-        (irc-phi-add-incoming var-phi (calling-convention-args.va-arg calling-conv) enough))
+        (irc-phi-add-incoming var-phi (calling-convention-vaslist.va-arg calling-conv) enough))
       (irc-br assn)
       ;; ready to generate more code
       (irc-begin-block final)
@@ -131,19 +132,19 @@ switch (nargs) {
                     ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
                     (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
                       (irc-intrinsic-call "cc_gatherDynamicExtentRestArguments"
-                                          (list (cmp:calling-convention-va-list* calling-conv)
+                                          (list (cmp:calling-convention-vaslist* calling-conv)
                                                 nremaining
                                                 (irc-bit-cast rrest %t**%)))))
                    (varest-p
-                    (let ((temp-valist (alloca-vaslist :label "rest")))
+                    (let ((temp-vaslist (alloca-vaslist :label "rest")))
                       (irc-intrinsic-call "cc_gatherVaRestArguments" 
-                                          (list (cmp:calling-convention-va-list* calling-conv)
+                                          (list (cmp:calling-convention-vaslist* calling-conv)
                                                 nremaining
-                                                temp-valist))))
+                                                temp-vaslist))))
                    (t
                     ;; general case- heap allocation
                     (irc-intrinsic-call "cc_gatherRestArguments" 
-                                        (list (cmp:calling-convention-va-list* calling-conv)
+                                        (list (cmp:calling-convention-vaslist* calling-conv)
                                               nremaining))))))
       (funcall *argument-out* rest rest-var))))
 
@@ -266,8 +267,8 @@ a_p = a_p_temp; a = a_temp;
           (irc-cond-br zerop after matching))
         (irc-begin-block matching)
         ;; Start matching keywords
-        (let ((key-arg (calling-convention-args.va-arg calling-conv))
-              (value-arg (calling-convention-args.va-arg calling-conv)))
+        (let ((key-arg (calling-convention-vaslist.va-arg calling-conv))
+              (value-arg (calling-convention-vaslist.va-arg calling-conv)))
           (do* ((cur-key (cdr keyargs) (cddddr cur-key))
                 (key (car cur-key) (car cur-key))
                 (suppliedp-phis top-suppliedp-phis (cdr suppliedp-phis))
@@ -581,7 +582,7 @@ a_p = a_p_temp; a = a_temp;
                                            calling-conv
                                            :argument-out argument-out
                                            :safep safep)
-         (irc-intrinsic "llvm.va_end" (irc-bit-cast (calling-convention-va-list* calling-conv) %i8*%))
+         (calling-convention-args.va-end calling-conv)
          ))
       (t (error "Handle arity ~a" arity)
          #+(or)
@@ -594,63 +595,17 @@ a_p = a_p_temp; a = a_temp;
              )))))
 
 
-(defun maybe-alloc-cc-setup (cleavir-lambda-list debug-on)
-  "Maybe allocate slots in the stack frame to handle the calls
-   depending on what is in the lambda-list (&rest, &key etc) and debug-on.
-   Return a calling-convention-configuration object that describes what was allocated."
-  ;; Parse a cleavir lambda list a little bit.
-  ;; Form is (req+ [&optional (o -p)+] [&rest r] [&key (:k k -p)+] [&allow-other-keys])
-  (let ((nreq 0) (nopt 0) (req-opt-only t)
-        (state nil))
-    (dolist (item cleavir-lambda-list)
-      (cond ((eq item '&optional)
-             (if (eq state '&optional)
-                 (progn (setf req-opt-only nil) ; dupe &optional; just mark as general
-                        (return))
-                 (setf state '&optional)))
-            ((member item lambda-list-keywords)
-             (setf req-opt-only nil)
-             (return))
-            (t (if (eq state '&optional)
-                   (incf nopt)
-                   (incf nreq)))))
-    ;; Currently if nargs <= +args-in-registers+ required arguments and (null debug-on)
-    ;;      then can optimize and use the arguments in registers directly
-    ;;  If anything else then allocate space to spill the registers
-    ;;
-    ;; Currently only cases:
-    ;; (w)
-    ;; (w x)
-    ;; (w x y)
-    ;; (w x y z)  up to the +args-in-registers+
-    ;;    can use only registers
-    ;; In the future add support for required + optional 
-    ;; (x &optional y)
-    ;; (x y &optional z) etc
-    (let* (;; If only required or optional arguments are used
-           ;; and the sum of required and optional arguments is less
-           ;; than the number +args-in-register+ then use only registers.
-           (may-use-only-registers (and req-opt-only (<= (+ nreq nopt) +args-in-registers+)))
-           ;; If (not may-use-only-registers) then we absolutely need a register-save-area
-           (need-register-save-area (not may-use-only-registers)))
-      (if (or need-register-save-area debug-on)
-          (make-calling-convention-configuration
-           :use-only-registers may-use-only-registers
-           :register-save-area* (alloca-register-save-area :label "register-save-area"))
-          (make-calling-convention-configuration :use-only-registers t)))))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Setup the calling convention
 ;;
 (defun setup-calling-convention (llvm-function arity
                                  &key debug-on rest-alloc cleavir-lambda-list)
-  (let ((setup (maybe-alloc-cc-setup cleavir-lambda-list debug-on)))
-    (let ((cc (initialize-calling-convention llvm-function setup arity
-                                             :rest-alloc rest-alloc
-                                             :cleavir-lambda-list cleavir-lambda-list)))
-      cc)))
+    (initialize-calling-convention llvm-function
+                                   arity
+                                   :register-save-area* (when debug-on (alloca-register-save-area arity :label "register-save-area"))
+                                   :rest-alloc rest-alloc
+                                   :cleavir-lambda-list cleavir-lambda-list))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -707,7 +662,7 @@ a_p = a_p_temp; a = a_temp;
       (compile-lambda-list-code
        cleavir-lambda-list
        callconv
-       :general-arity
+       :general-entry
        :safep safep
        :argument-out (lambda (value datum)
                        (let* ((info (assoc datum output-bindings))

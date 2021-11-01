@@ -546,7 +546,7 @@ CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   if (nargs > 0) {
     first = vargs->next_arg();
     for (size_t i(1); i< nargs; ++i ) {
-      T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+      T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
       T_sp csp((gctools::Tagged)tcsp);
       me.valueSet(i, csp);
     }
@@ -1211,7 +1211,7 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
       if (!atend) {
         Vaslist valist_struct(frame);
         VaList_sp valist(&valist_struct);
-        retVal = funcall_consume_valist_<core::Function_O>(predicate.tagged_(),valist);
+        retVal = funcall_general<core::Function_O>(predicate.tagged_(),sf_nargs,sf_args);
         if (retVal.isTrue() == elementTest) {
           return elementReturn;
         }
@@ -1271,7 +1271,8 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     ql::list result;
-    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    size_t nargs = lists.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame,func.raw_(),nargs);
     bool atend = false;
     while (!atend) {
       atend = false;
@@ -1284,9 +1285,7 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
-        VaList_sp valist(&valist_struct);
-        result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+        result << funcall_general<core::Function_O>(func.tagged_(),nargs,frame->arguments(0));
       }
     }
     return result.cons();
@@ -1307,7 +1306,8 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     List_sp result = CONS_CAR(lists);
-    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    size_t nargs = lists.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame,func.raw_(), nargs );
     bool atend = false;
     while (!atend) {
       atend = false;
@@ -1320,9 +1320,7 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
-        VaList_sp valist(&valist_struct);
-        funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+        funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments(0));
       }
     }
     return result;
@@ -1351,9 +1349,7 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
-        VaList_sp valist(&valist_struct);
-        result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+        result << funcall_general<core::Function_O>(func.tagged_(), sf_nargs, sf_args );
       }
     }
     return result.cons();
@@ -1382,9 +1378,7 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
-        VaList_sp valist(&valist_struct);
-        funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+        funcall_general<core::Function_O>(func.tagged_(),sf_nargs,frame->arguments(0));
       }
     }
     return result;
@@ -1430,7 +1424,7 @@ CL_DEFUN T_sp cl__append(VaList_sp args) {
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   size_t lenArgs = args->total_nargs();
   unlikely_if (lenArgs==0) return nil<T_O>();
-  T_O* lastArg = args->relative_indexed_arg(lenArgs-1);
+  T_O* lastArg = (*args)[lenArgs-1];
   for ( int i(0),iEnd(lenArgs-1);i<iEnd; ++i ) {
     T_sp curit = args->next_arg();
     LIKELY_if (curit.consp()) {

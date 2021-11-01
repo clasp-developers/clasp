@@ -246,7 +246,7 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     VaList_sp xa(&valist_scopy); // = gc::smart_ptr<Vaslist>((gc::Tagged)last.raw_());
     ql::list l;
     int nargs = xa->remaining_nargs();
-    for (int i(0); i < nargs; ++i) l << xa->next_arg();
+    for (int i(0); i < nargs; ++i) l << xa->next_arg_indexed(i);
     core::write_object(l.cons(),stream);
     clasp_write_string(">",stream);
   } else {

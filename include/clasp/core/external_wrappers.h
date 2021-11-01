@@ -75,12 +75,11 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    COPY_VA_LIST();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
     core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,LCC_PASS_ARGS_LLH);
     DEBUG_DUMP_FRAME(frame);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT* otep  = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
@@ -111,12 +110,11 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    COPY_VA_LIST();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
     core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,LCC_PASS_ARGS_LLH);
     DEBUG_DUMP_FRAME(frame);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT* otep = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));

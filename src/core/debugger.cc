@@ -126,7 +126,7 @@ CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
   size_t nargs = valist->remaining_nargs();
 //  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
   for ( size_t i=0; i<nargs; ++i ) {
-    T_sp one = valist->next_arg();
+    T_sp one = valist->next_arg_indexed(i);
     l << one;
   }
   T_sp result = l.cons();
@@ -330,7 +330,7 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
 void dbg_VaList_sp_describe(T_sp obj) {
     // Convert the T_sp object into a VaList_sp object
   VaList_sp vl = VaList_sp((gc::Tagged)obj.raw_());
-  printf("Original va_list at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_Args);
+  printf("Original va_list at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_args);
     // Create a copy of the Vaslist with a va_copy of the va_list
   Vaslist vlcopy_s(*vl);
   VaList_sp vlcopy(&vlcopy_s);
@@ -338,7 +338,7 @@ void dbg_VaList_sp_describe(T_sp obj) {
   bool atHead = dump_Vaslist_ptr(stdout,&vlcopy_s);
   if (atHead) {
     for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
-      T_sp v = vlcopy->next_arg();
+      T_sp v = vlcopy->next_arg_indexed(i);
       printf("entry@%p %3zu --> %s\n", v.raw_(), i, _rep_(v).c_str());
     }
   }

@@ -85,7 +85,6 @@ T_mv macro_core__quasiquote(List_sp whole, T_sp env) {
   to c.
 */
 CL_LAMBDA(core:&va-rest lists)
-CL_DECLARE();
 CL_DOCSTRING(R"dx(append as in clhs)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__backquote_append(VaList_sp lists) {
@@ -94,10 +93,11 @@ CL_DEFUN T_sp core__backquote_append(VaList_sp lists) {
   unlikely_if (lists->total_nargs()==0) {
     SIMPLE_ERROR(BF("backquote-append was called with zero arguments"));
   }
-  if (lists->total_nargs()>1) {
-    size_t nargs = lists->total_nargs()-1;
-    for ( size_t i(0); i<nargs; ++i ) {
-      T_sp head = lists->next_arg();
+  size_t nargs = lists->total_nargs();
+  size_t fnargs = nargs-1;
+  if (nargs>1) {
+    for ( size_t i(0); i<fnargs; ++i ) {
+      T_sp head = lists->next_arg_indexed(i);
       List_sp oneList = head;
       for (auto element : oneList) {
         list << CONS_CAR(element);
@@ -106,8 +106,8 @@ CL_DEFUN T_sp core__backquote_append(VaList_sp lists) {
   }
   /* Now append the last argument by setting the new lists last element cdr
 	   to the last argument of append */
-  List_sp result = list.dot(lists->next_arg()).cons();
-  return result;
+  T_sp lastArg = lists->next_arg_indexed(fnargs);
+  return list.dot(lastArg).cons();
 }
 
 

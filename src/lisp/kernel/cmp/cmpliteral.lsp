@@ -684,6 +684,8 @@ Return the index of the load-time-value"
 
 (defun arrange-thunk-as-top-level (thunk)
   "Arrange to evaluate the thunk as the top-level form."
+  (unless (cmp:xep-group-p thunk)
+    (error "The thunk ~s must be a xep-group" thunk))
   (run-all-add-node (make-literal-node-toplevel-funcall
                      :arguments (list *gcroots-in-module*
                                       (register-function->function-datum thunk)

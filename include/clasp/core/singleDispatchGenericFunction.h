@@ -62,30 +62,22 @@ public:
     Instance_sp dispatchArgClass;
     // SingleDispatchGenericFunctions can dispatch on the first or second argument
     // so we need this switch here.
+    ASSERT(singleDispatchArgumentIndex<lcc_nargs);
+    T_sp dispatchArg((gctools::Tagged)lcc_args[singleDispatchArgumentIndex]);
 #ifdef DEBUG_EVALUATE
     if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-      printf("%s:%d single dispatch arg0 %s\n", __FILE__, __LINE__, _rep_(LCC_ARG0()).c_str());
+      printf("%s:%d single dispatch arg0 %s\n", __FILE__, __LINE__, _rep_(dispatchArg).c_str());
     }
 #endif
-    switch (singleDispatchArgumentIndex) {
-    case 0:
-      dispatchArgClass = lisp_instance_class(LCC_ARG0());
-      break;
-    case 1:
-      dispatchArgClass = lisp_instance_class(LCC_ARG1());
-      break;
-    default:
-      SIMPLE_ERROR(BF("Add support to dispatch off of something other than one of the first two arguments - arg: %d") % singleDispatchArgumentIndex);
-    }
+    dispatchArgClass = lisp_instance_class(dispatchArg);
     List_sp callHistory = gc::As_unsafe<List_sp>(closure->callHistory.load(std::memory_order_relaxed));
-    INITIALIZE_VA_LIST();
     while (callHistory.consp()) {
       Cons_sp entry = gc::As_unsafe<Cons_sp>(CONS_CAR(callHistory));
       callHistory = CONS_CDR(callHistory);
       if (CONS_CAR(entry) == dispatchArgClass) {
         SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>(CONS_CDR(entry));
         Function_sp method_function = method->_function;
-        return (method_function->entry())(LCC_PASS_ARGS_VASLIST(method_function.raw_(),lcc_vargs));
+        return (method_function->entry())(method_function.raw_(),lcc_nargs,lcc_args);
       }
     }
     // There wasn't a direct match in the call history - so search the class-precedence list of the
@@ -112,7 +104,7 @@ public:
             callHistoryEntry->rplacd(expected);
           } while (!closure->callHistory.compare_exchange_weak(expected, callHistoryEntry));
           Function_sp method_function = method->_function;
-          return (method_function->entry())(LCC_PASS_ARGS_VASLIST(method_function.raw_(),lcc_vargs));
+          return (method_function->entry())(method_function.raw_(),lcc_nargs,lcc_args);
         }
       }
     }

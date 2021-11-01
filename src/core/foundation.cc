@@ -920,7 +920,7 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   return sscons;
 }
 
-size_t lisp_lambda_list_handler_number_of_specials(LambdaListHandler_sp lambda_list_handler)
+size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp lambda_list_handler)
 {
   return lambda_list_handler->numberOfSpecialVariables();
 }

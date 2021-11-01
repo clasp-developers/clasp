@@ -846,22 +846,8 @@ void debugPointer(const unsigned char *ptr)
 void debug_vaslistPtr(Vaslist *vargs)
 {NO_UNWIND_BEGIN();
   Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)vargs));
-  printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
-  printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
-  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
-  printf("++++++ debug_va_list: overflow_arg_area @%p \n", args->_Args[0].overflow_arg_area);
-  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_t *)((char *)args->_Args[0].overflow_arg_area))[0]));
-  NO_UNWIND_END();
-}
-
-void debug_va_list(va_list vargs)
-{NO_UNWIND_BEGIN();
-  printf("++++++ debug_va_list:          gp_offset@%p -> %x \n", &vargs[0].gp_offset, vargs[0].gp_offset);
-  printf("++++++ debug_va_list:          fp_offset@%p -> %x \n", &vargs[0].fp_offset, vargs[0].fp_offset);
-  printf("++++++ debug_va_list: overflow_arg_area @%p -> %p \n", &vargs[0].overflow_arg_area, vargs[0].overflow_arg_area);
-  printf("++++++ debug_va_list:     reg_save_area @%p -> %p \n", &vargs[0].reg_save_area, vargs[0].reg_save_area);
-  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_t *)((char *)vargs[0].reg_save_area + vargs[0].gp_offset))[0]));
-  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_t *)((char *)vargs[0].overflow_arg_area))[0]));
+  printf("++++++ debug_va_list: _args @%p \n", args->_args );
+  printf("++++++ debug_va_list: _nargs %lu\n", args->_nargs );
   NO_UNWIND_END();
 }
 

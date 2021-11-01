@@ -1180,7 +1180,7 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
                                                                         nil<T_O>(),
                                                                         code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
-  return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+  return (thunk->entry())(thunk.raw_(),0,NULL);
   //  return eval::funcall(thunk);
 };
 
@@ -1344,9 +1344,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
       }
   }
   frame->set_number_of_arguments(idx);
-  Vaslist valist_s(frame);
-  VaList_sp args(&valist_s);
-  return funcall_consume_valist_<Function_O>(fmv.tagged_(),args);
+  return funcall_general<Function_O>(fmv.tagged_(),sf_nargs,sf_args);
 }
 
 CL_LAMBDA(tag func)
@@ -1422,7 +1420,7 @@ CL_DEFUN T_sp core__run_function( T_sp object ) {
   MaybeDebugStartup startup((void*)func);
 #endif
   if( func != nullptr ) {
-    LCC_RETURN ret = func(LCC_PASS_ARGS0_VA_LIST(nil<T_O>().raw_()));
+    LCC_RETURN ret = func(nil<T_O>().raw_(),0,NULL);
     core::T_sp res((gctools::Tagged)ret.ret0[0]);
     core::T_sp val = res;
     return val;

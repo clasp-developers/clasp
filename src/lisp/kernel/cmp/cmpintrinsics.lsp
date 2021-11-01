@@ -210,7 +210,6 @@ names to offsets."
 ;;;  "A pointer to the run-all function prototype")
 (define-symbol-macro %fn-start-up*% (llvm-sys:type-get-pointer-to %fn-start-up%))
 
-
 (define-symbol-macro %global-ctors-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %fn-ctor*% %i8*%) nil))
 
 ;;;  "An array of pointers to the global-ctors-struct")
@@ -291,6 +290,25 @@ Boehm and MPS use a single pointer"
 
 (define-symbol-macro %metadata% (llvm-sys:type-get-metadata-ty (thread-local-llvm-context)))
 
+(define-symbol-macro %fn-xep-anonymous-function% (llvm-sys:function-type-get %t*% nil))
+
+(define-symbol-macro %entry-point-vector% (llvm-sys:array-type-get %i8*% (+ 1 (- +entry-point-arity-end+ +entry-point-arity-begin+))))
+
+
+(define-c++-struct %global-entry-point% +general-tag+
+                 ((%i8*% :vtable)
+                  (%t*%  :function-description)
+                  (%t*%  :code)
+                  (%entry-point-vector% :entry-points)
+                  (%i8%  :defined)
+                  ))
+(define-symbol-macro %global-entry-point*% (llvm-sys:type-get-pointer-to %global-entry-point%))
+(define-symbol-macro %entry-point-vector*% (llvm-sys:type-get-pointer-to %entry-point-vector%))
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (verify-global-entry-point (c++-struct-field-offsets info.%global-entry-point%)))
+
 
 ;;; MUST match WrappedPointer_O layout
 (define-c++-struct %wrapped-pointer% +general-tag+
@@ -309,13 +327,6 @@ Boehm and MPS use a single pointer"
    (%t*%      :Rack)
    ))
 
-
-;;; MUST match Instance_O layout
-(define-c++-struct %instance% +general-tag+
-  ((%i8*%     :vtable)
-   (%t*%      :Class)
-   (%t*%      :Rack)
-   ))
 
 (defconstant +instance.rack-index+ (c++-field-index :rack info.%instance%))
 (define-symbol-macro %instance*% (llvm-sys:type-get-pointer-to %instance%))
@@ -534,14 +545,10 @@ Boehm and MPS use a single pointer"
 ;;;
 (progn
   ;; Tack on a size_t to store the number of remaining arguments
-  #+X86-64(define-symbol-macro %va_list% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %i32% %i8*% %i8*%) nil))
-  #-X86-64
-  (error "I need a va_list struct definition for this system")
 
-  (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
   (define-c++-struct %vaslist% +vaslist0-tag+  ;; TODO - there is going to be a problem here becaues of +vaslist1-tag+
-    ((%va_list% va_list)
-     (%size_t% remaining-nargs)))
+    ((%t**% :args)
+     (%size_t% :nargs)))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
 ;;;    "Function prototype for generic functions")
@@ -551,15 +558,6 @@ Boehm and MPS use a single pointer"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Set up the calling convention using core:+number-of-fixed-arguments+ to define the types
-;; and names of the arguments passed in registers
-;;
-
-(defstruct (calling-convention-configuration (:type vector))
-  use-only-registers
-  register-save-area*)
-
 ;; Provide the arguments passed to the function in a convenient manner.
 ;; Either the register arguments are available in register-args
 ;;   or the va-list is used to access the arguments
@@ -571,50 +569,20 @@ Boehm and MPS use a single pointer"
   nargs
   use-only-registers ; If T then use only the register-args
   register-args ; The arguments that were passed in registers
-  va-list*       ; The address of the va_list on the stack
+  vaslist*      ; The address of the args on the stack or NIL
   register-save-area*
   cleavir-lambda-list ; cleavir-style lambda-list
   rest-alloc ; whether we can dx or ignore a &rest argument
   )
 
 ;; Parse the function arguments into a calling-convention
-;;
-;; What if we don't want/need to spill the registers to the register-save-area?
-#+(or) ;; OLD
-(defun initialize-calling-convention (arguments setup &key cleavir-lambda-list rest-alloc)
-  (let ((register-save-area* (calling-convention-configuration-register-save-area* setup)))
-    (unless (first arguments)
-      (error "initialize-calling-convention for arguments ~a - the closure is NIL" arguments))
-    (if (null register-save-area*)
-        ;; If there's no RSA, we determined we only need registers and don't need to dump things.
-        (make-calling-convention-impl :closure (first arguments)
-                                      :nargs (second arguments)
-                                      :use-only-registers t
-                                      :register-args (nthcdr 2 arguments)
-                                      :cleavir-lambda-list cleavir-lambda-list
-                                      :rest-alloc rest-alloc)
-        ;; The register arguments need to be spilled to the register-save-area
-        ;;    and the va_list needs to be initialized.
-        (let* ((use-only-registers (calling-convention-configuration-use-only-registers setup))
-               (create-a-va-list (null use-only-registers)))
-          (maybe-spill-to-register-save-area arguments register-save-area*)
-          (make-calling-convention-impl :closure (first arguments)
-                                        :nargs (second arguments) ;; The number of arguments
-                                        :register-args (nthcdr 2 arguments)
-                                        :use-only-registers use-only-registers
-                                        :va-list* (when create-a-va-list (alloca-va_list)) ; Only create va-list* if we need to rewind it
-                                        :register-save-area* register-save-area*
-                                        :cleavir-lambda-list cleavir-lambda-list
-                                        :rest-alloc rest-alloc)))))
 
-(defun initialize-calling-convention (llvm-function setup arity &key cleavir-lambda-list rest-alloc)
+(defun initialize-calling-convention (llvm-function arity &key register-save-area* cleavir-lambda-list rest-alloc)
   (cmp-log "llvm-function: %s%N" llvm-function)
   (let ((arguments (llvm-sys:get-argument-list llvm-function)))
     (cmp-log "llvm-function arguments: %s%N" (llvm-sys:get-argument-list llvm-function))
     (cmp-log "llvm-function isVarArg: %s%N" (llvm-sys:is-var-arg llvm-function))
-    (let* ((register-save-area* (calling-convention-configuration-register-save-area* setup))
-           (use-only-registers (calling-convention-configuration-use-only-registers setup))
-           (create-a-va-list (null use-only-registers)))
+    (let* ()
       (cmp-log "A%N")
       (unless (first arguments)
         (error "initialize-calling-convention for arguments ~a - the closure is NIL" arguments))
@@ -622,147 +590,100 @@ Boehm and MPS use a single pointer"
       (cond
         ((eq arity :general-entry)
          (cmp-log "B%N")
-         (let ((va-list* (alloca-va_list))
-               (closure (first arguments))
-               (nargs (second arguments)))
-           (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
-           (maybe-spill-to-register-save-area-va-list* closure
-                                                       nargs
-                                                       va-list* register-save-area*)
+         (let ((closure (first arguments))
+               (nargs (second arguments))
+               (args (third arguments))
+               (vaslist (alloca-vaslist)))
+           (vaslist-start vaslist nargs args)
+           (maybe-spill-to-register-save-area arity register-save-area* closure nargs args)
            (make-calling-convention-impl :closure closure
                                          :nargs nargs
-                                         :register-args nil
-                                         :use-only-registers nil
-                                         :va-list* va-list* ; Always create a va-list for general-entry
+                                         :vaslist* vaslist
                                          :register-save-area* register-save-area*
                                          :cleavir-lambda-list cleavir-lambda-list
                                          :rest-alloc rest-alloc)))
         (t (error "Handle arity ~a~%" arity))))))
 
+(defun vaslist-start (vaslist nargs args)
+  (irc-store args (c++-field-ptr info.%vaslist% vaslist :args))
+  (irc-store nargs (c++-field-ptr info.%vaslist% vaslist :nargs))
+  )
+
+(defun vaslist-copy (vaslist-dst vaslist-src)
+  (let ((args (irc-load (c++-field-ptr info.%vaslist% vaslist-src :args)))
+        (nargs (irc-load (c++-field-ptr info.%vaslist% vaslist-src :nargs))))
+    (irc-store args (c++-field-ptr info.%vaslist% vaslist-dst :args))
+    (irc-store nargs (c++-field-ptr info.%vaslist% vaslist-dst :nargs))))
+
 (defun calling-convention-args.va-end (cc)
-  (when (calling-convention-va-list* cc)
-    (irc-intrinsic "llvm.va_end" (calling-convention-va-list* cc))))
+  ;; Nothing
+  )
 
 ;;;
 ;;; Read the next argument from the va_list
-(defun calling-convention-args.va-arg (cc)
-  (irc-va_arg (calling-convention-va-list* cc) %t*%))
+(defun calling-convention-vaslist.va-arg (cc)
+  (let* ((vaslist (calling-convention-vaslist* cc))
+         (args (irc-load (c++-field-ptr info.%vaslist% vaslist :args)))
+         (val (irc-load args))
+         (args-next (irc-gep args (list (jit-constant-i64 1))))
+         (nargs (irc-load (c++-field-ptr info.%vaslist% vaslist :nargs)))
+         (nargs-next (irc-sub nargs (jit-constant-i64 1))))
+    (irc-store args-next (c++-field-ptr info.%vaslist% vaslist :args))
+    (irc-store nargs-next (c++-field-ptr info.%vaslist% vaslist :nargs))
+    val))
 
-#+x86-64
-(progn
-;;; X86_64 calling convention The general function prototypes pass the following pass:
-;;; 1) A closed over runtime environment a pointer to a closure.
-;;; 2) A valist of remaining arguments
-;;; 3) The number of arguments %size_t%
-;;; 4) core::+number-of-fixed-arguments+ T_O* pointers,
-;;;    the first arguments passed in registers,
-;;; 5) The remaining arguments are on the stack
-;;;       If no argument is passed then pass NULL.")
+(defun fn-prototype (arity)
+  (cond
+    ((eq arity :general-entry)
+     (llvm-sys:function-type-get %tmv% (list %t*% %size_t% %t**%)))
+    ((fixnump arity)
+     (llvm-sys:function-type-get %tmv% (make-list (+ 1 arity) :initial-element %t*%) nil))
+    (t (error "fn-prototype Illegal arity ~a" arity))))
 
-  (define-symbol-macro %register-arg-types% (list %t*% %t*% %t*% %t*%))
-  (define-symbol-macro %reglist-types% (list %t*% %t*% %t*% %t*% %t*%)) ; VaList follows register arguments
-  (defvar +fn-registers-prototype-argument-names+
-    (list* "closure-ptr" "nargs" nil))
-  (defvar +fn-reglist-prototype-argument-names+
-    (list* "closure-ptr" "nargs" nil))
-  (define-symbol-macro %fn-registers-prototype%
-      (llvm-sys:function-type-get %tmv% (list* %t*% %size_t% nil) T #|VARARGS!|#))
-  (define-symbol-macro %fn-reglist-prototype%
-      (llvm-sys:function-type-get %tmv% (list* %t*% %size_t% nil) T #|VARARGS!|#))
-  (define-symbol-macro %register-save-area% (llvm-sys:array-type-get
-                                             %i8*%
-                                             (/ +register-save-area-size+ +void*-size+)))
-  (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
+(defun fn-prototype-names (arity)
+  (cond
+    ((eq arity :general-entry)
+     (list "closure" "nargs" "args"))
+    ((and (fixnump arity) (< arith 9))
+     (subseq (list "closure" "arg0" "arg1" "arg2" "arg3" "arg4" "arg5" "arg6" "arg7" "arg8")
+             0 (+ 1 arity)))
+    ((fixnump arity)
+     (error "Arity is too high -add support for this ~a" arity))
+    (t (error "fn-prototype-names Illegal arity ~a" arity))))
 
-  (defun dbg-parameter-var (name argno &optional (type-name "T_O*")
-                                         (type llvm-sys:+dw-ate-address+))
-    (dbg-create-parameter-variable :name name :argno argno
-                                   :lineno *dbg-current-function-lineno*
-                                   :type (llvm-sys:create-basic-type
-                                          *the-module-dibuilder*
-                                          type-name 64 type 0)
-                                   :always-preserve t))
+(defun dbg-parameter-var (name argno &optional (type-name "T_O*")
+                                       (type llvm-sys:+dw-ate-address+))
+  (dbg-create-parameter-variable :name name :argno argno
+                                 :lineno *dbg-current-function-lineno*
+                                 :type (llvm-sys:create-basic-type
+                                        *the-module-dibuilder*
+                                        type-name 64 type 0)
+                                 :always-preserve t))
 
-  ;; (Maybe) generate code to store registers in memory. Return value unspecified.  
-  (defun maybe-spill-to-register-save-area (registers register-save-area*)
-    (cmp-log "maybe-spill-to-register-save-area registers -> %s%N" registers)
-    (cmp-log "maybe-spill-to-register-save-area register-save-area* -> %s%N" register-save-area*)
-    (cond
-      (registers
-       (flet ((spill-reg (idx reg addr-name)
-                (let ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
-                      (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*")))
-                  (irc-store reg-i8* addr t)
-                  (when (llvm-sys:current-debug-location *irbuilder*)
-                    (let ((var (dbg-parameter-var addr-name (1+ idx))))
-                      (%dbg-variable-value reg-i8* var)
-                      (%dbg-variable-addr addr var)))
-                  addr)))
-         (spill-reg 0 (elt registers 0) "closure0")
-         (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1")
-         ;; this is the first fixed arg currently.
-         (spill-reg 2 (elt registers 2) "arg0")
-         (spill-reg 3 (elt registers 3) "arg1")
-         (spill-reg 4 (elt registers 4) "arg2")
-         (spill-reg 5 (elt registers 5) "arg3"))
-       ;; Spill the register-save-area as a whole, because LLVM deletes a whole
-       ;; lot of debug information for no obvious reason
-       (when (llvm-sys:current-debug-location *irbuilder*)
-         (let ((rsa-var (dbg-create-auto-variable
-                         :name "register-save-area"
-                         :lineno *dbg-current-function-lineno*
-                         :type (llvm-sys:create-basic-type
-                                *the-module-dibuilder*
-                                "T_O**" 64 llvm-sys:+dw-ate-address+ 0)
-                         :always-preserve t)))
-           (%dbg-variable-value register-save-area* rsa-var))))
-      (register-save-area*
-       (error "If registers is NIL then register-save-area* also must be NIL"))))
-
-  (defun calling-convention-rewind-va-list-to-start-on-third-argument (cc)
-    (let* ((va-list*                      (calling-convention-va-list* cc))
-           (register-save-area*           (calling-convention-register-save-area* cc)))
-      (irc-intrinsic "cc_rewind_va_list" va-list* register-save-area*)))
-;;; end of x86-64 specific stuff
-  )
-
-
-
-
-#-(and x86-64)
-(error "Define calling convention for system")
-
-
-
-(defun maybe-spill-to-register-save-area-va-list* (closure nargs va-list* register-save-area*)
-  (cmp-log "maybe-spill-to-register-save-area registers -> %s%N" va-list*)
+;; (Maybe) generate code to store registers in memory. Return value unspecified.  
+(defun maybe-spill-to-register-save-area (arity register-save-area* &rest registers)
   (cmp-log "maybe-spill-to-register-save-area register-save-area* -> %s%N" register-save-area*)
-  (let ((va-copy (alloca-va_list)))
-    (irc-intrinsic "llvm.va_copy" (irc-bit-cast va-list* %i8*%) (irc-bit-cast va-copy %i8*%))
-    (flet ((spill-reg (idx reg addr-name)
-             (let ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
-                   (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*")))
-               (irc-store reg-i8* addr t)
-               (when (llvm-sys:current-debug-location *irbuilder*)
-                 (let ((var (dbg-parameter-var addr-name (1+ idx))))
-                   (%dbg-variable-value reg-i8* var)
-                   (%dbg-variable-addr addr var)))
-               addr)))
-      (spill-reg 0 closure "closure0")
-      (spill-reg 1 (irc-int-to-ptr nargs %i8*%) "nargs1")
-      (dotimes (i +args-in-registers+)
-        (let ((va-arg (irc-va_arg va-copy %i8*%)))
-          (spill-reg (+ 2 i) va-arg (format nil "farg~a" i))))
-      (irc-intrinsic "llvm.va_end" (irc-bit-cast va-copy %i8*%))))
-  (when (llvm-sys:current-debug-location *irbuilder*)
-    (let ((rsa-var (dbg-create-auto-variable
-                    :name "register-save-area"
-                    :lineno *dbg-current-function-lineno*
-                    :type (llvm-sys:create-basic-type
-                           *the-module-dibuilder*
-                           "T_O**" 64 llvm-sys:+dw-ate-address+ 0)
-                    :always-preserve t)))
-      (%dbg-variable-value register-save-area* rsa-var))))
+  (cmp-log "maybe-spill-to-register-save-area registers -> %s%N" registers)
+  (flet ((spill-reg (idx reg addr-name)
+           (let ((addr          (irc-gep register-save-area* (list 0 idx) addr-name))
+                 (reg-i8*       (cond
+                                  ((llvm-sys:type-equal (llvm-sys:get-type reg) %i64%)
+                                   (irc-int-to-ptr reg %i8*% "nargs-i8*"))
+                                  (t
+                                   (irc-bit-cast reg %i8*% "reg-i8*")))))
+             (irc-store reg-i8* addr t)
+             (when (llvm-sys:current-debug-location *irbuilder*)
+               (let ((var (dbg-parameter-var addr-name (1+ idx))))
+                 (%dbg-variable-value reg-i8* var)
+                 (%dbg-variable-addr addr var)))
+             addr)))
+    (let* ((names (if (eq arity :general-entry)
+                      (list "closure" "nargs" "args")
+                      (list "closure" "arg0" "arg1" "arg2" "arg3" "arg4" "arg5" "arg6" "arg7")))
+           (idx 0))
+      (mapc (lambda (reg name)
+              (spill-reg idx reg name))
+            registers names))))
 
 (defun %dbg-variable-addr (addr var)
   (let* ((addrmd (llvm-sys:metadata-as-value-get
@@ -828,37 +749,30 @@ Boehm and MPS use a single pointer"
 
 ;;; This is the normal C-style prototype for a function
 (define-symbol-macro %opaque-fn-prototype*% %i8*%)
-(define-symbol-macro %fn-prototype% %fn-registers-prototype%)
-(defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+)
-;;; This is the C-style prototype with an extra argument that contains the vaslist for all arguments
-(define-symbol-macro %fn-va-prototype% %fn-reglist-prototype%)
-(defvar +fn-va-prototype-argument-names+ +fn-reglist-prototype-argument-names+)
 
+#+(or)
+(progn
 ;;;  "A pointer to the function prototype"
-(define-symbol-macro %fn-prototype*% (llvm-sys:type-get-pointer-to %fn-prototype%))
+  (define-symbol-macro %fn-prototype*% (llvm-sys:type-get-pointer-to %fn-prototype%))
 ;;;  "A pointer to a pointer to the function prototype"
-(define-symbol-macro %fn-prototype**% (llvm-sys:type-get-pointer-to %fn-prototype*%))
+  (define-symbol-macro %fn-prototype**% (llvm-sys:type-get-pointer-to %fn-prototype*%))
 ;;;  "An array of pointers to the function prototype"
-(define-symbol-macro %fn-prototype*[0]% (llvm-sys:array-type-get %fn-prototype*% 0))
+  (define-symbol-macro %fn-prototype*[0]% (llvm-sys:array-type-get %fn-prototype*% 0))
 ;;;  "An array of pointers to the function prototype"
-(define-symbol-macro %fn-prototype*[1]% (llvm-sys:array-type-get %fn-prototype*% 1))
+  (define-symbol-macro %fn-prototype*[1]% (llvm-sys:array-type-get %fn-prototype*% 1))
 ;;;  "An array of pointers to the function prototype"
-(define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
-
+  (define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
+  )
 
 ;;
 ;; The %function% type MUST match the layout and size of Function_O in functor.h
 ;;
-(define-symbol-macro %Function%
-    (llvm-sys:struct-type-get
-     (thread-local-llvm-context)
-     (list %i8*%            ; 0 vtable
-           %i8*%            ; 1 function-description
-           ) nil))
-(defconstant +function.function-description-index+ 1)
+(define-c++-struct %Function% +general-tag+
+  ((%i8*%      :vtable)
+   (%global-entry-point*% :global-entry-point)))
 
-(define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
-(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
+(define-symbol-macro %Function*% (llvm-sys:type-get-pointer-to %Function%))
+(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %Function*%) nil)) ;; "Cfn_sp"
 (define-symbol-macro %Function_sp*% (llvm-sys:type-get-pointer-to %Function_sp%))
 
 ;;; ------------------------------------------------------------
@@ -881,16 +795,6 @@ Boehm and MPS use a single pointer"
                                     %i32%                  ;  9 filepos
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
-
-(define-c++-struct %global-entry-point% +general-tag+
-    ((%i8*% vtable)
-     (%t*% function-description)
-     (%t*% code)
-     (%entry-points-vector% data0)
-     ))
-    
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (verify-global-entry-point (c++-struct-field-offsets info.%global-entry-point%)))
 
 (define-c++-struct %closure-with-slots% +general-tag+
   ((%i8*% vtable)
@@ -1087,11 +991,11 @@ and initialize it with an array consisting of one function pointer."
          (symbol-function-offset (llvm-sys:struct-layout-get-element-offset symbol-layout +symbol.function-index+))
          (symbol-setf-function-offset (llvm-sys:struct-layout-get-element-offset symbol-layout +symbol.setf-function-index+))
          (function-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function%))
-         (function-layout (llvm-sys:data-layout-get-struct-layout data-layout %function%))
-         (function-description-offset (llvm-sys:struct-layout-get-element-offset function-layout +function.function-description-index+))
+         (global-entry-point-layout (llvm-sys:data-layout-get-struct-layout data-layout %global-entry-point%))
+         (function-description-offset (c++-field-offset :function-description info.%global-entry-point%))
          (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
-         (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
          (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%))
+         (global-entry-point-size (llvm-sys:data-layout-get-type-alloc-size data-layout %global-entry-point%))
          (function-description-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
                                                   :tmv tmv-size
@@ -1099,10 +1003,9 @@ and initialize it with an array consisting of one function pointer."
                                                   :symbol-function-offset symbol-function-offset
                                                   :symbol-setf-function-offset symbol-setf-function-offset
                                                   :function function-size
-                                                  :function-description-offset function-description-offset
+                                                  :function-description-offset (+ function-description-offset +general-tag+)
                                                   :gcroots-in-module gcroots-in-module-size
-                                                  :valist vaslist-size
-                                                  :register-save-area register-save-area-size
+                                                  :vaslist vaslist-size
                                                   :function-description function-description-size)
 
     (let* ((instance-size (llvm-sys:data-layout-get-type-alloc-size data-layout %instance%))

@@ -29,7 +29,7 @@
 ;; Don't use FORMAT here use BFORMAT 
 ;; otherwise you will have problems when format.lsp is bootstrapped
 
-#+(or)
+;;#+(or)
 (eval-when (:compile-toplevel :execute)
   (setq core:*debug-eval* t))
 

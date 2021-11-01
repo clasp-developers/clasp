@@ -31,8 +31,6 @@
 
 (in-package :cmp)
 
-
-
 (defvar *global-function-defs*)
 (defvar *global-function-refs*)
 (defvar *compilation-messages*)

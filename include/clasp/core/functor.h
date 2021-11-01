@@ -265,6 +265,9 @@ void validateFunctionDescription(const char* filename, size_t lineno, Function_s
 
 
 namespace core {
+
+extern std::atomic<uint64_t> global_interpreted_closure_calls;
+
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
 */
   class Function_O : public General_O {
@@ -424,34 +427,10 @@ namespace core {
 }
 
 namespace core {
-extern LCC_RETURN interpretedClosureEntryPoint_(LCC_ARGS_FUNCALL_ELLIPSIS);
-extern LCC_RETURN unboundFunctionEntryPoint_(LCC_ARGS_FUNCALL_ELLIPSIS);
-extern LCC_RETURN unboundSetfFunctionEntryPoint_(LCC_ARGS_FUNCALL_ELLIPSIS);
 
-
-struct InterpretedClosureEntryPoint {
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    return interpretedClosureEntryPoint_(lcc_closure,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
-  };
-};
-
-
-struct UnboundFunctionEntryPoint {
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    return unboundFunctionEntryPoint_(lcc_closure,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
-  };
-};
-
-
-struct UnboundSetfFunctionEntryPoint {
-  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    return unboundSetfFunctionEntryPoint_(lcc_closure,lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
-  };
-};
-
-class ClosureWithSlots_O final : public core::BuiltinClosure_O::BuiltinClosure_O::Closure_O {
-  LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::Closure_O);
-  typedef enum { interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
+  class ClosureWithSlots_O final : public core::BuiltinClosure_O::BuiltinClosure_O::Closure_O {
+    LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::Closure_O);
+    typedef enum { interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
 #define ENVIRONMENT_SLOT 0
 #define INTERPRETED_CLOSURE_SLOTS  3
 #define INTERPRETED_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
@@ -459,67 +438,71 @@ class ClosureWithSlots_O final : public core::BuiltinClosure_O::BuiltinClosure_O
 #define INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT 2
 #define BCLASP_CLOSURE_SLOTS  1
 #define BCLASP_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
-public:
-  //! Slots must be the last field
-  typedef core::T_sp value_type;
-public:
-  ClosureType   closureType;
-  gctools::GCArray_moveable<value_type> _Slots;
-public:
-  virtual const char *describe() const override { return "CompiledClosure"; };
-  virtual size_t templatedSizeof() const override {
-    return gctools::sizeof_container<ClosureWithSlots_O>(this->_Slots.size());
-  };
-public:
-  static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO);
-    
-  static ClosureWithSlots_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment);
-    
-  static ClosureWithSlots_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, SOURCE_INFO);
-public:
-  ClosureWithSlots_O(size_t capacity,
-                     GlobalEntryPoint_sp ep,
-                     ClosureType nclosureType)
-      : Base(ep),
-        closureType(nclosureType),
-        _Slots(capacity,unbound<T_O>(),true) {};
-  virtual string __repr__() const override;
-  core::T_sp lambdaListHandler() const override {
-    switch (this->closureType) {
-    case interpretedClosure:
-      return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
-    case bclaspClosure:
-      return nil<T_O>();
-    case cclaspClosure:
-      return nil<T_O>();
+  public:
+    //! Slots must be the last field
+    typedef core::T_sp value_type;
+  public:
+    ClosureType   closureType;
+    gctools::GCArray_moveable<value_type> _Slots;
+  public:
+    virtual const char *describe() const override { return "CompiledClosure"; };
+    virtual size_t templatedSizeof() const override {
+      return gctools::sizeof_container<ClosureWithSlots_O>(this->_Slots.size());
     };
-  }
-  CL_DEFMETHOD T_sp interpretedSourceCode();
-  CL_DEFMETHOD T_sp closedEnvironment() const override {
-    ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
-    return (*this)[ENVIRONMENT_SLOT];
-  };      
-  CL_DEFMETHOD T_O*& closedEnvironment_rawRef() {
-    ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
-    return (*this)[ENVIRONMENT_SLOT].rawRef_();
-  };      
-  bool compiledP() const override {
-    return (this->closureType!=interpretedClosure);
-  }
-  bool interpretedP() const override {
-    return (this->closureType==interpretedClosure);
-  }
-  bool openP();
-  inline T_sp &operator[](size_t idx) {
-    BOUNDS_ASSERT(idx<this->_Slots.length());
-    return this->_Slots[idx];
+  public:
+    static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO);
+    
+    static ClosureWithSlots_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment);
+    
+    static ClosureWithSlots_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, SOURCE_INFO);
+  public:
+    ClosureWithSlots_O(size_t capacity,
+                       GlobalEntryPoint_sp ep,
+                       ClosureType nclosureType)
+        : Base(ep),
+          closureType(nclosureType),
+          _Slots(capacity,unbound<T_O>(),true) {};
+    virtual string __repr__() const override;
+    core::T_sp lambdaListHandler() const override {
+      switch (this->closureType) {
+      case interpretedClosure:
+        return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
+      case bclaspClosure:
+        return nil<T_O>();
+      case cclaspClosure:
+        return nil<T_O>();
+      };
+    }
+    CL_DEFMETHOD T_sp interpretedSourceCode();
+    CL_DEFMETHOD T_sp closedEnvironment() const override {
+      ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
+      return (*this)[ENVIRONMENT_SLOT];
+    };      
+    CL_DEFMETHOD T_O*& closedEnvironment_rawRef() {
+      ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
+      return (*this)[ENVIRONMENT_SLOT].rawRef_();
+    };      
+    bool compiledP() const override {
+      return (this->closureType!=interpretedClosure);
+    }
+    bool interpretedP() const override {
+      return (this->closureType==interpretedClosure);
+    }
+    bool openP();
+    inline T_sp &operator[](size_t idx) {
+      BOUNDS_ASSERT(idx<this->_Slots.length());
+      return this->_Slots[idx];
+    };
+    inline const T_sp &operator[](size_t idx) const {
+      BOUNDS_ASSERT(idx<this->_Slots.length());
+      return this->_Slots[idx];
+    };
+    T_sp code() const;
   };
-  inline const T_sp &operator[](size_t idx) const {
-    BOUNDS_ASSERT(idx<this->_Slots.length());
-    return this->_Slots[idx];
-  };
-  T_sp code() const;
-};
+
+
+
+
 };
 
 namespace core {

@@ -39,6 +39,7 @@ THE SOFTWARE.
 #endif
 
 
+#include <clasp/core/lambdaListHandler.fwd.h>
 //#include "clbind/prefix.h"
 #include <clasp/clbind/config.h>
 #include <clasp/clbind/cl_include.h>
@@ -128,12 +129,11 @@ public:
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    INITIALIZE_VA_LIST();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
     core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope, LCC_PASS_ARGS_LLH );
     core::MultipleValues& returnValues = core::lisp_multipleValues();
 #ifdef DEBUG_EVALUATE
     if (core::_sym_STARdebugEvalSTAR && core::_sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
@@ -172,13 +172,12 @@ public:
 //    printf("%s:%d Entered entry_point of a VariadicFunctor\n", __FILE__, __LINE__ );
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    INITIALIZE_VA_LIST();
     MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+                                 lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
     core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
 //    printf("%s:%d About to create bindings for closure->_lambdaListHandler->%s\n", __FILE__, __LINE__, _rep_(closure->_lambdaListHandler).c_str());
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,LCC_PASS_ARGS_LLH);
 #ifdef DEBUG_EVALUATE
     if (core::_sym_STARdebugEvalSTAR && core::_sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
       for (size_t ia=0; ia<sizeof...(ARGS); ++ia) {

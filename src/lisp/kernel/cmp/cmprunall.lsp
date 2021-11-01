@@ -56,7 +56,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
       (cmp-log "Entering with-dbg-function%N")
       (cmp:with-dbg-function (:lineno 0
                               :function run-all-fn
-                              :function-type cmp:%fn-prototype%)
+                              :function-type (cmp:fn-prototype :general-entry))
         ;; Set up dummy debug info for these irbuilders
         (let ((entry-bb (irc-basic-block-create "entry" run-all-fn)))
           (irc-set-insert-point-basic-block entry-bb irbuilder-alloca))

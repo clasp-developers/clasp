@@ -280,7 +280,9 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"), make_fixnum(sizeof(uintptr_t))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-SIZE"), make_fixnum(sizeof(Vaslist))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-VALIST-OFFSET"), make_fixnum((int)offsetof(Vaslist,_Args))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-ARGS-OFFSET"), make_fixnum((int)offsetof(Vaslist,_args))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-OFFSET"), make_fixnum((int)offsetof(Vaslist,_nargs))),list);
+  
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-SIZE"), make_fixnum(sizeof(gctools::Header_s))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-STAMP-OFFSET"), make_fixnum(offsetof(gctools::Header_s,_stamp_wtag_mtag._value))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-STAMP-SIZE"), make_fixnum(sizeof(gctools::tagged_stamp_t))), list);
@@ -290,7 +292,6 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("JMP-BUF-SIZE"),make_fixnum(sizeof(jmp_buf))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,_EntryPoint))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GLOBAL-ENTRY-POINT-ENTRY-POINTS-OFFSET"),make_fixnum(offsetof(core::GlobalEntryPoint_O, _EntryPoints))),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-REMAINING-NARGS-OFFSET"),make_fixnum(offsetof(core::Vaslist,_remaining_nargs))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   LoadTimeValues_O tempLtv;
@@ -335,15 +336,14 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset gcroots-in-module valist register-save-area function-description)
+CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset gcroots-in-module vaslist function-description)
 DOCGROUP(clasp)
 CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize,
                                                         core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset, core::Fixnum_sp symbol_setf_function_offset,
                                                         core::Fixnum_sp functionSize,
                                                         core::Fixnum_sp function_description_offset,
                                                         core::T_sp gcRootsInModuleSize,
-                                                        core::T_sp tvalistsize,
-                                                        core::T_sp tRegisterSaveAreaSize,
+                                                        core::T_sp tvaslistsize,
                                                         core::T_sp tFunctionDescriptionSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
@@ -368,8 +368,8 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   if (unbox_fixnum(functionSize) != Function_O_size) {
     SIMPLE_ERROR(BF("Mismatch between function size[%d] and core::Function_O size[%d]") % unbox_fixnum(functionSize) % Function_O_size);
   }
-  if (function_description_offset.unsafe_fixnum()!=offsetof(core::Function_O,_EntryPoint)) {
-    SIMPLE_ERROR(BF("Mismatch between function entry offset[%d] and core::Function_O.entry offset[%d]") % function_description_offset.unsafe_fixnum() % offsetof(core::Function_O,_EntryPoint));
+  if (function_description_offset.unsafe_fixnum()!=offsetof(core::GlobalEntryPoint_O,_FunctionDescription)) {
+    SIMPLE_ERROR(BF("Mismatch between function description offset[%d] and core::GlobalEntryPoint_O._FunctionDescription offset[%d]") % function_description_offset.unsafe_fixnum() % offsetof(core::GlobalEntryPoint_O,_FunctionDescription));
   }
   if ( gcRootsInModuleSize.notnilp() ) {
     int gcRootsInModule_size = sizeof(gctools::GCRootsInModule);
@@ -381,22 +381,10 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
       SIMPLE_ERROR(BF("gcRootsInModule keyword argument expects a fixnum"));
     }
   }
-  if (tvalistsize.fixnump()) {
-    size_t valistsize = tvalistsize.unsafe_fixnum();
-    if (valistsize != sizeof(Vaslist)) {
-      SIMPLE_ERROR(BF("Vaslist size %d mismatch with Common Lisp code %d") % sizeof(Vaslist) % valistsize);
-    }
-  }
-  if (tRegisterSaveAreaSize.fixnump()) {
-    size_t registerSaveAreaSize = tRegisterSaveAreaSize.unsafe_fixnum();
-    if (registerSaveAreaSize != (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS)) {
-      SIMPLE_ERROR(BF("register-save-area size %lu mismatch with Common Lisp code %lu") % (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS) % registerSaveAreaSize );
-    }
-  }
-  if (tRegisterSaveAreaSize.fixnump()) {
-    size_t registerSaveAreaSize = tRegisterSaveAreaSize.unsafe_fixnum();
-    if (registerSaveAreaSize != (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS)) {
-      SIMPLE_ERROR(BF("register-save-area size %lu mismatch with Common Lisp code %lu") % (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS) % registerSaveAreaSize );
+  if (tvaslistsize.fixnump()) {
+    size_t vaslistsize = tvaslistsize.unsafe_fixnum();
+    if (vaslistsize != sizeof(Vaslist)) {
+      SIMPLE_ERROR(BF("Vaslist size %d mismatch with Common Lisp code %d") % sizeof(Vaslist) % vaslistsize);
     }
   }
   if (tFunctionDescriptionSize.fixnump()) {

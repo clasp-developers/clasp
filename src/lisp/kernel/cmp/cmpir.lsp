@@ -102,6 +102,13 @@
           *lexical-function-references*)
     instruction))
 
+(defun irc-arity-info (arity)
+  "Return the (values register-save-words entry-index) for the arity"
+  (cond
+    ((eq arity :general-entry) (values 3 0))
+    ((fixnump arity) (values arity (+ 1 arity)))
+    (t (error "irc-arity-info Illegal arity ~a" arity))))
+
 (defun irc-personality-function ()
   (get-or-declare-function-or-error *the-module* "__gxx_personality_v0"))
 
@@ -120,12 +127,6 @@
 
 (defun irc-add-case (switch val block)
   (llvm-sys:add-case switch val block))
-
-(defun irc-lisp-function-type (number-of-arguments)
-  (cond
-    ((< number-of-arguments +ENTRY-POINT-ARITY-END+)
-     (llvm-sys:function-type-get %return-type% (subseq (list %t*% %t*% %t*% %t*% %t*%) 0 (1+ number-of-arguments))))
-    (t %fn-prototype%)))
 
 (defun irc-gep (array indices &optional (name "gep"))
   (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-intptr_t x) x)) indices)))
@@ -897,6 +898,15 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 (defun irc-and (x y &optional (label "and"))
   (llvm-sys:create-and-value-value *irbuilder* x y label))
+(defun irc-or (x y &optional (label "or"))
+  (llvm-sys:create-or-value-value *irbuilder* x y label))
+(defun irc-xor (x y &optional (label "xor"))
+  (llvm-sys:create-xor-value-value *irbuilder* x y label))
+
+(defun irc-not (x &optional (label "not"))
+  ;; NOTE: LLVM does not have a "not" instruction. What it generates is
+  ;; a XOR with an all-1s constant, which amounts to the same.
+  (llvm-sys:create-not *irbuilder* x label))
 
 (defun irc-va_arg (valist* type &optional (name "vaarg"))
   (llvm-sys:create-vaarg *irbuilder* valist* type name))
@@ -1096,11 +1106,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
         ;; if its a symbol then it is mangled by appending "FN-SYMB." to it
         ;; if its a cons of the form (setf ...) then its mangled by appending FN-SETF. to it
       (function-name "function")
-        ;; Specify the LLVM type of the function
-      (function-type '%fn-prototype% function-type-p)
-      ;; List the names of the arguments - this must match what
-      ;; is passed to the the :FUNCTION-TYPE keyword above
-      (argument-names '+fn-prototype-argument-names+ argument-names-p)
       ;; This is the parent environment of the new function environment that
       ;; will be returned
       parent-env
@@ -1117,7 +1122,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       )
      &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
-  (declare (ignore function-attributes-p argument-names-p function-type-p))
+  (declare (ignore function-attributes-p))
   `(do-new-function (lambda (local-fn fn-env result)
                       (progn
                         ,@body))
@@ -1239,7 +1244,7 @@ But no irbuilders or basic-blocks. Return the fn."
   "Create a function and a function description for a cclasp function"
   ;; MULTIPLE-ENTRY-POINT first return value is list of entry points
   (let* ((xep-function-name (concatenate 'string function-name "-xep"))
-         (fn (irc-function-create %fn-prototype% linkage xep-function-name module))
+         (fn (irc-function-create (fn-prototype :general-entry) linkage xep-function-name module))
          (entry-point-reference (irc-create-entry-point-reference :global (llvm-sys:get-name fn) fn module function-description))
          (general-xep-arity (make-xep-arity :arity :general-entry
                                             :function fn))
@@ -1314,9 +1319,8 @@ But no irbuilders or basic-blocks. Return the fn."
 
 
 (defun alloca-i32 (&optional (label "i32-")) (alloca %i32% 1 label))
-(defun alloca-va_list (&optional (label "va_list")) (alloca %va_list% 1 label))
 (defun alloca-size_t (&optional (label "var")) (alloca %size_t% 1 label))
-(defun alloca-vaslist (&key (label "va_list")) (alloca %vaslist% 2 label))
+(defun alloca-vaslist (&key (label "vaslist")) (alloca %vaslist% 2 label))
 
 (defun alloca-dx-list (&key length (label "dx-list"))
   ;; Unlike most allocas, we want dx object allocas to be done inline with the code,
@@ -1330,16 +1334,21 @@ But no irbuilders or basic-blocks. Return the fn."
   ;; Also VLA
   (llvm-sys:create-alloca *irbuilder* %t*% size label))
 
-(defun alloca-register-save-area (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+(defun alloca-arguments (size &optional (label "temp-values"))
+  ;; Also VLA
+  (llvm-sys:create-alloca *irbuilder* (llvm-sys:array-type-get %t*% size) (jit-constant-i64 1) label))
+
+(defun alloca-register-save-area (arity &key (irbuilder *irbuilder-function-alloca*) (label "vaslist"))
   "Alloca space for a register save area, and keep it in the stack map."
   (with-irbuilder (irbuilder)
-    (let ((rsa
-            (llvm-sys:create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)))
-      (unless (member :sanitizer=thread *features*)
-        ;; Don't generate calls to llvm.experimental.stackmap when :sanitizer=thread feature is on
-        (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 1234567) (jit-constant-i32 0)
-                       rsa))
-      rsa)))
+    (multiple-value-bind (words index)
+        (irc-arity-info arity)
+      (let ((rsa (alloca (llvm-sys:array-type-get %t*% words) 1 label)))
+        (unless (member :sanitizer=thread *features*)
+          ;; Don't generate calls to llvm.experimental.stackmap when :sanitizer=thread feature is on
+          (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 (logior #xDEAD0000 index)) (jit-constant-i32 0)
+                         rsa))
+        rsa))))
 
 (defun null-t-ptr ()
   (llvm-sys:constant-pointer-null-get %t*%))
@@ -1401,24 +1410,22 @@ But no irbuilders or basic-blocks. Return the fn."
   (irc-t*-result (irc-smart-ptr-extract tsp) result))
 
 
-(defun irc-calculate-entry (closure arguments &optional (label "entry-point-gep"))
-  (let* ((closure-i8*           (irc-bit-cast closure %i8*%))
-         (entry-point-addr-i8*  (irc-gep closure-i8* (list (- +closure-entry-point-offset+ +general-tag+))))
-         (entry-point-i8** (irc-bit-cast entry-point-addr-i8* %i8**%))
-         (entry-point-i8* (irc-load entry-point-i8**))
-         (call-addr-i8*  (irc-gep entry-point-i8* (list (- +global-entry-point-entry-points-offset+ +general-tag+))))
-         (call-addr-fp** (irc-bit-cast call-addr-i8* %fn-prototype**%))
-         (call           (irc-load call-addr-fp** (core:bformat nil "%s-gep" label))))
-    call))
+(defun irc-calculate-entry (closure arity function-type &optional (label "entry-point-gep"))
+  (let* ((global-entry-point** (c++-field-ptr info.%function% closure :global-entry-point "global-entry-point**"))
+         (global-entry-point* (irc-load global-entry-point** "global-entry-point*"))
+         (entry-point-i8** (c++-field-ptr info.%global-entry-point% global-entry-point* :entry-points "entry-point-i8**"))
+         (arity-index (cond
+                        ((eq arity :general-entry)
+                         0)
+                        ((fixnump arity)
+                         (+ 1 arity))
+                        (t (error "irc-calculate-entry Illegal arity ~a" arity))))
+         (entry-point-arity-i8** (irc-gep (irc-bit-cast entry-point-i8** %entry-point-vector*%) (list 0 arity-index) "entry-point-arity-i8**"))
+         (entry-point-arity-i8*  (irc-load entry-point-arity-i8** "entry-point-arity-i8*")))
+    (cmp-log "Got entry-point-arity-i8* -> %s%N" entry-point-arity-i8*)
+    (prog1 (irc-bit-cast entry-point-arity-i8* function-type "ep")
+      (cmp-log-dump-module *the-module*))))
 
-
-#+(or)
-(progn
-  (defparameter *use-gep* nil)
-  (defun irc-calculate-entry (closure &optional (label "entry-point"))
-    (if *use-gep*
-        (irc-calculate-entry-gep closure label)
-        (irc-calculate-entry-ptr closure label))))
 
 ;;; Our present convention is that Lisp functions uniformly have
 ;;; (closure nargs arg0 .. argm ...) as parameters, where m is
@@ -1428,31 +1435,52 @@ But no irbuilders or basic-blocks. Return the fn."
 ;;; enough to match the type; since the function will check nargs and
 ;;; ignore anything past, undef is fine. (NULL results in pointless
 ;;; register zeroing.)
-(defun irc-calculate-real-args (args)
-  (let* ((nargs                  (length args))
-         #+debug-guard-exhaustive-validate
-         (_                      (mapc (lambda (arg) (irc-intrinsic "cc_ensure_valid_object" arg)) args))
-;;; If there are < core:+number-of-fixed-arguments+ pad the list up to that
-	 (real-args              (if (< nargs core:+number-of-fixed-arguments+)
-                                     (append args (make-list (- core:+number-of-fixed-arguments+ nargs)
-                                                             :initial-element (undef-t-ptr)))
-                                     args)))
-    real-args))
 
-(defun irc-funcall-results-in-registers-wft (function-type closure args &optional (label ""))
+                  
+(defun irc-calculate-real-args (arity closure arguments)
+  (if (eq arity :general-entry)
+      (let ((arg-buffer (alloca-arguments (length arguments) "args"))
+            (idx 0))
+        (dolist (arg arguments)
+          (let ((arg-gep (irc-gep arg-buffer (list 0 idx))))
+            (irc-store arg arg-gep)))
+        (list closure (jit-constant-size_t (length arguments)) (irc-bit-cast arg-buffer %t**%)))
+      (list* closure arguments)))
+
+(defstruct (call-info (:type vector) :named)
+  entry-point
+  real-args
+  function-type
+  function*-type)
+
+(defun irc-calculate-call-info (closure arguments)
+  (let* ((arity (cond
+                  ((and (<= (length arguments) +entry-point-arity-begin+)
+                        (< (length arguments) +entry-point-arity-end+))
+                   (- (length arguments) +entry-point-arity-begin+))
+                  (t :general-entry)))
+         (function-type (fn-prototype arity))
+         (function*-type (llvm-sys:type-get-pointer-to function-type))
+         (entry-point (irc-calculate-entry closure arity function*-type))
+         (real-args (irc-calculate-real-args arity closure arguments)))
+    (make-call-info :entry-point entry-point
+                    :function-type function-type
+                    :function*-type function*-type
+                    :real-args real-args)))
+
+(defun irc-funcall-results-in-registers (closure args &optional (label ""))
   ;; (bformat t "irc-funcall-results-in-register-wft closure: %s%N" closure)
-  (let* ((entry-point         (irc-calculate-entry closure label))
-         (real-args           (irc-calculate-real-args args))  ; fill in NULL for missing register arguments
-         (result-in-registers (irc-call-or-invoke function-type entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest*)))
-    ;;(bformat t "function-type: %s%N" function-type)
-    ;;(bformat t "result-in-registers -> %s%N" result-in-registers)
-    result-in-registers))
+  (let ((call-info (irc-calculate-call-info closure args)))
+    (let ((result-in-registers (irc-call-or-invoke (call-info-function-type call-info)
+                                                   (call-info-entry-point call-info)
+                                                   (call-info-real-args call-info)
+                                                   *current-unwind-landing-pad-dest*)))
+      result-in-registers)))
 
 (defun irc-funcall (result closure args &optional label)
   (unless label
     (setf label "unlabeled-function"))
-  (let* ((function-type (irc-lisp-function-type (length args)))
-         (result-in-registers (irc-funcall-results-in-registers-wft function-type closure args label)))
+  (let ((result-in-registers (irc-funcall-results-in-registers closure args label)))
     (irc-tmv-result result-in-registers result)))
 
 ;----------------------------------------------------------------------
