@@ -37,12 +37,13 @@
   ;; Using SYMBOL-NAME like this is about 25x faster than using write-to-string,
   ;; and this function is called rather a lot so it's nice to make it faster.
   (let ((name (bir:name datum)))
-    (if (symbolp name)
-        (symbol-name name)
-        (write-to-string name
-                         :escape nil
-                         :readably nil
-                         :pretty nil))))
+    (typecase name
+      (null "")
+      (symbol (symbol-name name))
+      (t (write-to-string name
+                          :escape nil
+                          :readably nil
+                          :pretty nil)))))
 
 ;;; This function is used for names for debug information, so we want them to be
 ;;; a little bit more complete.
@@ -139,11 +140,10 @@
   (check-type datum bir:phi)
   (let ((rt (cc-bmir:rtype datum)))
     (cond ((or (eq rt :multiple-values)
-               (equal rt '(:object))) ; datum is a T_mv or T_O* respectively
+               (and (listp rt) (= (length rt) 1)))
+           ;; datum is a T_mv or a single value
            (llvm-sys:add-incoming (in datum) value llvm-block))
-          ((null rt)) ; no values, do nothing
-          ((and (listp rt)
-                (every (lambda (x) (eq x :object)) rt))
+          ((listp rt)
            ;; Datum is a list of llvm data, and (in datum) is a list of phis.
            (loop for phi in (in datum)
                  for val in value

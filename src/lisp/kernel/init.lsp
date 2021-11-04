@@ -187,7 +187,6 @@
 
 ;;; Imports
 (import 'core:quit :ext)
-(import 'core:btcl :ext)
 (import 'core:getpid :ext)
 (import 'core:argc :ext)
 (import 'core:argv :ext)
@@ -221,11 +220,9 @@
           integer32
           byte64
           integer64
-          cl-fixnum
           assume-no-errors
           sequence-stream
           all-encodings
-          load-encoding
           make-encoding
           assume-right-type
           assert-error
@@ -238,7 +235,6 @@
           stream-decoding-error
           generate-encoding-hashtable
           quit
-          btcl
           with-float-traps-masked
           enable-interrupt default-interrupt ignore-interrupt
           get-signal-handler set-signal-handler

@@ -38,7 +38,7 @@
 (defgeneric translate-primop (opname instruction))
 ;;; Called by translate-conditional-test
 (defgeneric translate-conditional-primop (opname instruction next)
-  (:method (opname (instruction bir:vprimop) next)
+  (:method (opname (instruction bir:primop) next)
     (declare (ignore opname))
     ;; Like the default method on translate-conditional-test, compare the output
     ;; against NIL.
@@ -114,7 +114,7 @@
                      param-info)))
         (nsym (gensym "NAME")))
     `(progn
-       (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) :value)
+       (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) 2)
        (setf (gethash ',name *primop-rtypes*) '(,@param-info))
        (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
          (declare (ignore ,instparam)))
@@ -262,6 +262,19 @@
     (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%double%))
     (%fptrunc arg cmp:%float%)))
 
+(defvprimop core::fixnum-to-single ((:single-float) :object) (inst)
+  (assert (= 1 (length (bir:inputs inst))))
+  (let* ((arg (in (first (bir:inputs inst))))
+         (fix (cmp:irc-untag-fixnum arg cmp:%i64%)))
+    (%sitofp fix cmp:%float%
+             (datum-name-as-string (first (bir:outputs inst))))))
+(defvprimop core::fixnum-to-double ((:double-float) :object) (inst)
+  (assert (= 1 (length (bir:inputs inst))))
+  (let* ((arg (in (first (bir:inputs inst))))
+         (fix (cmp:irc-untag-fixnum arg cmp:%i64%)))
+    (%sitofp fix cmp:%double%
+             (datum-name-as-string (first (bir:outputs inst))))))
+
 (defvprimop-intrinsic core::sf-vref ((:single-float) :object :object)
   "cc_simpleFloatVectorAref")
 (defvprimop-intrinsic core::df-vref ((:double-float) :object :object)
@@ -279,3 +292,69 @@
     (assert (llvm-sys:type-equal (llvm-sys:get-type (first args)) cmp:%double%))
     (%intrinsic-invoke-if-landing-pad-or-call "cc_simpleDoubleVectorAset" args)
     (first args)))
+
+;;;
+
+(defvprimop core::fixnum-lognot ((:object) :object) (inst)
+  (let* ((arg (in (first (bir:inputs inst))))
+         (cast (cmp:irc-ptr-to-int arg cmp:%i64%))
+         ;; Make the tag bits 1, so they are negated to zero in the result
+         (ior (cmp:irc-or cast (%i64 cmp:+fixnum-mask+) "unmasked"))
+         (not (cmp:irc-not ior)))
+    (cmp:irc-int-to-ptr not cmp:%t*%)))
+
+;;; NOTE: 0 & 0, 0 | 0, and 0 ^ 0 are all zero, so these operations all
+;;; preserve the zero fixnum tag without any issue.
+(macrolet ((deflog2 (name op)
+             `(defvprimop ,name ((:object) :object :object) (inst)
+                (let* ((arg1 (in (first (bir:inputs inst))))
+                       (arg2 (in (second (bir:inputs inst))))
+                       (cast1 (cmp:irc-ptr-to-int arg1 cmp:%i64%))
+                       (cast2 (cmp:irc-ptr-to-int arg2 cmp:%i64%))
+                       (and (,op cast1 cast2)))
+                  (cmp:irc-int-to-ptr and cmp:%t*%)))))
+  (deflog2 core::fixnum-logand cmp:irc-and)
+  (deflog2 core::fixnum-logior cmp:irc-or)
+  (deflog2 core::fixnum-logxor cmp:irc-xor))
+
+;; Wrapping addition of tagged fixnums.
+(defvprimop core::fixnum-add ((:object) :object :object) (inst)
+  (let* ((arg1 (in (first (bir:inputs inst))))
+         (arg2 (in (second (bir:inputs inst))))
+         (cast1 (cmp:irc-ptr-to-int arg1 cmp:%i64%))
+         (cast2 (cmp:irc-ptr-to-int arg2 cmp:%i64%))
+         (sum (cmp:irc-add cast1 cast2)))
+    (cmp:irc-int-to-ptr sum cmp:%t*%)))
+(defvprimop core::fixnum-sub ((:object) :object :object) (inst)
+  (let* ((arg1 (in (first (bir:inputs inst))))
+         (arg2 (in (second (bir:inputs inst))))
+         (cast1 (cmp:irc-ptr-to-int arg1 cmp:%i64%))
+         (cast2 (cmp:irc-ptr-to-int arg2 cmp:%i64%))
+         (sum (cmp:irc-sub cast1 cast2)))
+    (cmp:irc-int-to-ptr sum cmp:%t*%)))
+
+(macrolet ((def-fixnum-compare (name op)
+             `(progn
+                (deftprimop ,name (:object :object)
+                  (inst next)
+                  (assert (= (length (bir:inputs inst)) 2))
+                  ;; NOTE: We do not have to cast to i64, as icmp works fine
+                  ;; on pointers directly.
+                  (let ((i1 (in (first (bir:inputs inst))))
+                        (i2 (in (second (bir:inputs inst)))))
+                    (cmp:irc-cond-br (,op i1 i2)
+                                     (first next) (second next)))))))
+  (def-fixnum-compare core::two-arg-fixnum-=  cmp:irc-icmp-eq)
+  (def-fixnum-compare core::two-arg-fixnum-<  cmp:irc-icmp-slt)
+  (def-fixnum-compare core::two-arg-fixnum-<= cmp:irc-icmp-sle)
+  (def-fixnum-compare core::two-arg-fixnum->  cmp:irc-icmp-sgt)
+  (def-fixnum-compare core::two-arg-fixnum->= cmp:irc-icmp-sge))
+
+(defvprimop core::fixnum-positive-logcount ((:object) :object) (inst)
+  (let* ((arg (in (first (bir:inputs inst))))
+         ;; NOTE we do not need to untag the argument: the tag is all zero
+         ;; so it won't affect the population count.
+         (iarg (cmp:irc-ptr-to-int arg cmp:%i64%))
+         (count (%intrinsic-call "llvm.ctpop.i64" (list iarg))))
+    (cmp:irc-tag-fixnum count
+                        (datum-name-as-string (first (bir:outputs inst))))))

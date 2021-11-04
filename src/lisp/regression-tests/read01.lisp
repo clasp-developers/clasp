@@ -180,6 +180,10 @@
       (READ-FROM-STRING "0.0f0"))
     single-float)
 
+;;; This is from ansi-tests but it's commented out there as well.
+;;; The reason is that an unknown reader macro has totally unknown syntax,
+;;; so the reader can't proceed except with a wild guess.
+#+(or)
 (test READ-SUPPRESS.17
       (WITH-STANDARD-IO-SYNTAX
         (LET ((*READ-SUPPRESS* T))
@@ -197,7 +201,7 @@
         (mapcar #'read-from-string
                 '("#(foo bar baz)" "#P(:type :lisp)" "#c1.2"
                   "#.(PRINT 'FOO)" "#3AHELLO" "#S(INTEGER)"
-                  "#*ABC" "#\GARBAGE" "#RALPHA" "#3R444")))
+                  "#*ABC" "#\\GARBAGE" "#RALPHA" "#3R444")))
       ((NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)))
 
 (test READ-SUPPRESS.SHARP-ASTERISK.2

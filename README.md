@@ -2,10 +2,8 @@
 
 ## NOTE:  September 7, 2021 - This contains a pre-release of Clasp 1.0.
 
-You need to use the correct commit of llvm13 (https://github.com/llvm/llvm-project.git) - 972b6a3a3471c2a742c5c5d8ec004ff640d544c4
-
-We are going to support the llvm13 standard once it comes out on Sept 21, 2021 (https://llvm.org/).
-We are in an uncomfortable time right now because we need some bleeding edge llvm features that will be in llvm13 and the API is evolving rapidly until llvm13 comes out.
+You need to use the release version of [llvm13](https://github.com/llvm/llvm-project/releases/tag/llvmorg-13.0.0).
+Packaged version should do nicely (e.g. brew for macos)
 
 [We have a talk up on youtube](https://www.youtube.com/watch?v=mbdXeRBbgDM)
 
@@ -29,7 +27,7 @@ Building takes a lot of resources.  In parallel mode
 you will not be able to survive with only 8 GB of RAM and it will be 1-2 hours build time.
 If you have 8 GB of RAM you can turn off the parallel build which will then run for a day or so.  Make sure to have some paging space ("swapfile") configured.
 
-There is a docker image for a superset of Clasp called [Cando](https://hub.docker.com/r/drmeister/cando/)
+There is a docker image for a superset of Clasp called [Cando](https://hub.docker.com/r/thirdlaw/cando-test)
 
 Currently there are no binary releases available, however you can extract a working /opt/clasp tree for Debian 10 out of the docker image.
 
@@ -58,7 +56,7 @@ Generally you can report problems in two fashions, either by [opening an issue t
 * Patience.
 
 ## IRC
-Clasp has an IRC channel on [Freenode](https://freenode.net/) called [#clasp](irc://irc.freenode.net/#clasp). If you have questions, problems, suggestions, or generally would like to just hang out with us devs, come and stop by!
+Clasp has an IRC channel on [Libera](https://libera.chat) called [#clasp](irc://irc.libera.chat/#clasp). If you have questions, problems, suggestions, or generally would like to just hang out with us devs, come and stop by!
 
 ## More on Clasp
 For more information on Clasp and the discussion around it, see the following sites:

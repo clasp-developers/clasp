@@ -189,21 +189,26 @@ CL_DEFUN Instance_sp core__allocate_raw_general_instance(Instance_sp cl, Rack_sp
   return obj;
 }
 
-SYMBOL_EXPORT_SC_(ExtPkg,fieldsp);
-SYMBOL_EXPORT_SC_(ExtPkg,fields);
-
+SYMBOL_EXPORT_SC_(CorePkg, fieldsp);
 
 bool Instance_O::fieldsp() const {
-  if (ext::_sym_fieldsp->fboundp()) {
-    T_sp result = eval::funcall(ext::_sym_fieldsp,this->asSmartPtr());
+  if (core::_sym_fieldsp->fboundp()) {
+    T_sp result = eval::funcall(core::_sym_fieldsp,this->asSmartPtr());
     return result.notnilp();
   }
   return false;
 }
 
+// funcalling ext::fields can't work, since ext::fields is unbound
+// so at least let protect it
+// and export it from core to be consistent 
+SYMBOL_EXPORT_SC_(CorePkg,fields);
 void Instance_O::fields(Record_sp node) {
-  eval::funcall(ext::_sym_fields,this->asSmartPtr(),node);
+  if (core::_sym_fields->fboundp()) {
+    eval::funcall(core::_sym_fields,this->asSmartPtr(),node);
+  }
 }
+
 
 DOCGROUP(clasp)
 CL_DEFUN Rack_sp core__instance_rack(Instance_sp instance) {

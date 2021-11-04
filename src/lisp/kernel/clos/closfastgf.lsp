@@ -722,7 +722,6 @@ Return true iff a new entry was added; so for example it will return false if an
   (when (find (cons generic-function (core:list-from-va-list valist-args)) *dispatch-miss-recursion-check*
               :test #'equal)
     (format t "~&Recursive dispatch miss detected~%")
-    (ext:btcl)
     (ext:quit 1))
   (let (#+debug-fastgf
         (*dispatch-miss-recursion-check* (cons (cons generic-function

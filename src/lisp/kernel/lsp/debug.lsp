@@ -1,43 +1,45 @@
-(defpackage #:clasp-debug
-  (:use #:cl)
-  ;; low level
-  (:export #:code-source-line-pathname
-           #:code-source-line-line-number
-           #:code-source-line-column)
-  (:export #:frame) ; TODO: Rename core:debugger-frame to frame, reexport that
-  (:export #:frame-up #:frame-down)
-  (:export #:frame-function #:frame-arguments
-           #:frame-locals #:frame-source-position
-           #:frame-language)
-  (:export #:frame-function-name
-           #:frame-function-lambda-list
-           #:frame-function-source-position
-           #:frame-function-form
-           #:frame-function-documentation)
-  (:export #:disassemble-frame)
-  ;; frame selection
-  (:export #:with-truncated-stack #:truncation-frame-p
-           #:with-capped-stack #:cap-frame-p)
-  (:export #:*frame-filters*)
-  ;; mid level
-  (:export #:call-with-stack #:with-stack)
-  (:export #:up #:down #:visible)
-  (:export #:map-stack #:list-stack)
-  ;; defined later in conditions.lsp
-  (:export #:safe-prin1 #:prin1-frame-call
-           #:princ-code-source-line
-           #:print-stack)
-  ;; high level
-  (:export #:map-indexed-stack #:goto)
-  (:export #:print-backtrace ; in conditions.lsp
-           #:map-backtrace
-           #:map-indexed-backtrace)
-  (:export #:hide-package #:unhide-package
-           #:hide #:unhide #:unhide-all)
-  ;; misc
-  (:export #:function-name-package))
-
-(in-package #:clasp-debug)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (find-package "CLASP-DEBUG")
+    (make-package "CLASP-DEBUG" :use '("CL")))
+  (in-package #:clasp-debug)
+  (flet ((%export (names)
+           (export (mapcar (lambda (s) (intern (symbol-name s))) names))))
+    (%export '(#:code-source-line-pathname
+               #:code-source-line-line-number
+               #:code-source-line-column))
+    ;; TODO: Rename core:debugger-frame to frame, reexport that
+    (%export '(#:frame))
+    (%export '(#:frame-up #:frame-down))
+    (%export '(#:frame-function #:frame-arguments
+               #:frame-locals #:frame-source-position
+               #:frame-language))
+    (%export '(#:frame-function-name
+               #:frame-function-lambda-list
+               #:frame-function-source-position
+               #:frame-function-form
+               #:frame-function-documentation))
+    (%export '(#:disassemble-frame))
+    ;; frame selection
+    (%export '(#:with-truncated-stack #:truncation-frame-p
+               #:with-capped-stack #:cap-frame-p))
+    (%export '(#:*frame-filters*))
+    ;; mid level
+    (%export '(#:call-with-stack #:with-stack))
+    (%export '(#:up #:down #:visible))
+    (%export '(#:map-stack #:list-stack))
+    ;; defined later in conditions.lsp
+    (%export '(#:safe-prin1 #:prin1-frame-call
+               #:princ-code-source-line
+               #:print-stack))
+    ;; high level
+    (%export '(#:map-indexed-stack #:goto))
+    (%export '(#:print-backtrace ; in conditions.lsp
+               #:map-backtrace
+               #:map-indexed-backtrace))
+    (%export '(#:hide-package #:unhide-package
+               #:hide #:unhide #:unhide-all))
+    ;; misc
+    (%export '(#:function-name-package))))
 
 ;;; Low level interface
 
@@ -110,19 +112,27 @@ If the arguments are not available, returns NIL NIL."
            (when supplied-p ; bind supplied-p if requested
              (push (cons supplied-p (and test-form t)) bindings))))
     (multiple-value-bind (required optional rest key-flag keys allow-other-keys aux)
-                         (core:process-lambda-list lambda-list 'function)
+        (core:process-lambda-list lambda-list 'function)
       (declare (ignore key-flag allow-other-keys))
       (dolist (var (cdr required))
         (push (cons var (pop arguments)) bindings))
-      (loop for (var init-form supplied-p) on (cdr optional) by #'cdddr
-            do (bind-var var init-form supplied-p arguments (pop arguments)))
+      (do* ((opts (cdr optional) (cdddr opts)))
+           ((null opts))
+        (let ((var (first opts)) (init-form (second opts))
+              (supplied-p (third opts)))
+          (bind-var var init-form supplied-p arguments (pop arguments))))
       (when rest
         (push (cons rest (copy-list arguments)) bindings))
-      (loop for (key var init-form supplied-p) on (cdr keys) by #'cddddr
-            for (indicator value nil) = (multiple-value-list (get-properties arguments (list key)))
-            do (bind-var var init-form supplied-p indicator value))
-      (loop for (var init-form) on aux by #'cddr
-            do (bind-var var init-form))
+      (do* ((keys (cdr keys) (cddddr keys)))
+           ((null keys))
+        (let ((keyk (first keys)) (var (second keys))
+              (init-form (third keys)) (supplied-p (fourth keys)))
+          (multiple-value-bind (indicator value)
+              (get-properties arguments (list keyk))
+            (bind-var var init-form supplied-p indicator value))))
+      (do* ((auxs aux (cddr auxs)))
+           ((null auxs))
+        (bind-var (first auxs) (second auxs)))
       (nreverse bindings))))
 
 (defun frame-locals (frame &key eval
@@ -135,7 +145,7 @@ If the arguments are not available, returns NIL NIL."
   returned. Passing a function (lambda (form locals) ...) via the eval key will result in init-forms
   being evaluated with this function along with the current locals passed as the second argument."
   (multiple-value-bind (lambda-list lambda-list-available)
-                       (frame-function-lambda-list frame)
+      (frame-function-lambda-list frame)
     (cond
       (lambda-list-available
         (lambda-list-alist lambda-list args eval))
@@ -149,15 +159,23 @@ If the arguments are not available, returns NIL NIL."
         (let ((method-args (core:list-from-va-list (first args)))
               (next-methods (second args)))
           (append
-            (loop for arg in method-args for i from 0
-                  collect (cons (intern (format nil "ARG~d" i) :cl-user)
-                                arg))
-            (list (cons 'cl-user::next-methods next-methods)))))
+           (let ((result ()))
+             (do ((args method-args (cdr method-args))
+                  (i 0 (1+ i)))
+                 ((null args) (nreverse result))
+               (push (cons (intern (format nil "ARG~d" i) :cl-user)
+                           (first args))
+                     result)))
+           (list (cons 'cl-user::next-methods next-methods)))))
       (t
-        ;; This is a fast method. Just treat it normally.
-        (loop for arg in args for i from 0
-              collect (cons (intern (format nil "ARG~d" i) :cl-user)
-                            arg))))))
+       ;; This is a fast method. Just treat it normally.
+       (let ((result ()))
+         (do ((args args (cdr args))
+              (i 0 (1+ i)))
+             ((null args) (nreverse result))
+           (push (cons (intern (format nil "ARG~d" i) :cl-user)
+                       (first args))
+                 result)))))))
 
 (defun frame-function-lambda-list (frame)
   "Return the lambda list of the function being called in this frame, and a second value indicating success. This function may fail, in which case the first value is undefined and the second is NIL. In success the first value is the lambda list and the second value is true."
@@ -284,13 +302,15 @@ The delimiters and visibility may be ignored by using the lower level FRAME-UP, 
 
 (defun up (frame &optional (n 1))
   "Return the nth visible frame above the given frame, or if there are not that many visible frames above, return the topmost frame."
-  (loop repeat n do (setf frame (up1 frame *stack-top*)))
-  frame)
+  (dotimes (i n frame)
+    (declare (ignore i))
+    (setf frame (up1 frame *stack-top*))))
 
 (defun down (frame &optional (n 1))
   "Return the nth visible frame below the given frame, or if there are not that many visible frames above, return the bottommost frame."
-  (loop repeat n do (setf frame (down1 frame *stack-bot*)))
-  frame)
+  (dotimes (i n frame)
+    (declare (ignore i))
+    (setf frame (down1 frame *stack-bot*))))
 
 ;; Return the frame if it's visible, or else the next
 ;; visible frame up if it's not.
@@ -303,14 +323,14 @@ The delimiters and visibility may be ignored by using the lower level FRAME-UP, 
 (defun map-stack (function frame &key count)
   "Call FUNCTION exactly once on each visible frame in the stack, starting at FRAME and then proceeding upward.
 If COUNT is provided, at most that many visible frames are called on."
-  (loop for f = (visible frame) then (up f)
-        for i from 0
-        when (or (and count (= i count))
-                 ;; This is a bit inefficient, but interactive
-                 ;; debuggers aren't usually fast path
-                 (eq (up f) f))
-          return (values)
-        do (funcall function f)))
+  (do ((f (visible frame) (up f))
+       (i 0 (1+ i)))
+      ((or (and count (= i count))
+           ;; This is a bit inefficient, but interactive
+           ;; debuggers aren't usually fast path
+           (eq (up f) f))
+       (values))
+    (funcall function f)))
 
 (defun list-stack (frame &key count)
   "Return a list of visible frames starting at FRAME and moving upward.
@@ -337,22 +357,25 @@ If COUNT is provided, at most that many frames are returned."
   "Like MAP-STACK, except the function is called with two arguments: the frame, and an index number.
 These index numbers start with base = 0 and increase by 1 for each frame, visible or not. This means that frames from the same WITH-STACK will have consistent indices even if visibility rules are changed between MAP-INDEXED-STACK calls.
 Note that as with MAP-STACK, only visible frames are used with respect to the COUNT."
-  (loop for f = base then (frame-up f)
-        for i from 0
-        with c = 0
-        when (frame-visible-p f)
-          do (funcall function f i)
-             (incf c)
-        until (eq (frame-up f) *stack-top*)
-        until (and count (= c count))))
+  (do ((f base (frame-up f))
+       (i 0 (1+ i))
+       (c 0))
+      (nil)
+    (when (frame-visible-p f)
+      (funcall function f i)
+      (incf c))
+    (when (or (eq (frame-up f) *stack-top*)
+              (and count (= c count)))
+      (return))))
 
 (defun goto (base i)
   "Return the frame I up from the base frame, where I is an index as in MAP-INDEXED-STACK.
 Note that as such, the frame returned may not be visible."
-  (loop repeat i
-        if (eq (frame-up base) *stack-top*) return base
-        else do (setf base (frame-up base)))
-  base)
+  (dotimes (n i base)
+    (declare (ignore n))
+    (if (eq (frame-up base) *stack-top*)
+        (return base)
+        (setf base (frame-up base)))))
 
 (defun map-backtrace (function &key count (delimited t))
   "Like MAP-STACK, but implicitly uses WITH-STACK to obtain and use the current stack."

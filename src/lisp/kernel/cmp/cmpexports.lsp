@@ -179,6 +179,7 @@
             *optimization-level*
             with-track-llvm-time
             irc-add
+            irc-sub
             irc-add-clause
             alloca
             alloca-t*
@@ -191,6 +192,9 @@
             alloca-temp-values
             alloca-arguments
             irc-and
+            irc-or
+            irc-xor
+            irc-not
             irc-basic-block-create
             irc-begin-block
             irc-br
@@ -218,6 +222,8 @@
             irc-icmp-eq
             irc-icmp-sle
             irc-icmp-slt
+            irc-icmp-sge
+            irc-icmp-sgt
             irc-intrinsic
             irc-load
             irc-load-atomic
