@@ -1191,8 +1191,13 @@ jump to blocks within this tagbody."
          (nargs-- (irc-sub nargs (jit-constant-size_t 1))))
     ;; Decrement.
     (irc-store nargs-- nargs*)
-    ;; va_arg.
-    (irc-va_arg (irc-vaslist-va_list-address vaslist) %t*%)))
+    (let* ((args* (irc-vaslist-args-address vaslist))
+           (args (irc-load args*))
+           (args++ (irc-gep args (list 1))))
+      ;; Increment
+      (irc-store args++ args*)
+      ;; va_arg.
+      (irc-load args++))))
 
 (defun codegen-vaslist-pop (result rest env)
   (let ((form (car rest))
@@ -1521,9 +1526,9 @@ jump to blocks within this tagbody."
     (multiple-value-bind (declares code)
         (process-declarations body t)
       (let ((canonical-declares (core:canonicalize-declarations declares)))
-        (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
+        (multiple-value-bind (cleavir-lambda-list-analysis new-body rest-alloc)
             (transform-lambda-parts lambda-list canonical-declares code)
-          (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
+          (blog "got cleavir-lambda-list-analysis -> %s%N" cleavir-lambda-list-analysis)
           (let ((eval-vaslist (alloca-t* "bind-vaslist")))
             (codegen eval-vaslist vaslist evaluate-env)
             (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
@@ -1532,15 +1537,16 @@ jump to blocks within this tagbody."
                    (local-va_list* (alloca-va_list "local-va_list"))
                    (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
                                                                            (irc-pointer-cast src-va_list* %i8*%))))
-                   (callconv (make-calling-convention-impl :closure (llvm-sys:constant-pointer-null-get %i8*%)
-                                                           :nargs (irc-load src-remaining-nargs*)
-                                                           :vaslist* local-vaslist*
-                                                           :rest-alloc rest-alloc
-                                                           :cleavir-lambda-list cleavir-lambda-list)))
+                   (callconv (make-calling-convention :closure (llvm-sys:constant-pointer-null-get %i8*%)
+                                                      :nargs (irc-load src-remaining-nargs*)
+                                                      :vaslist* local-vaslist*
+                                                      :rest-alloc rest-alloc
+                                                      :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)))
               (declare (ignore _))
               ;; See comment in cleavir bind-va-list w/r/t safep.
               (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :general-entry :safep nil))
                     (*notinlines* (new-notinlines canonical-declares)))
+                (error "Check result of bclasp-compile-lmbda-list-code - it should behave like compile-lambda-list-code")
                 (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
                 (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))
 

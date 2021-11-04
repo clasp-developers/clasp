@@ -26,55 +26,57 @@ lambda-list, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
-  (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
+  (multiple-value-bind (cleavir-lambda-list-analysis new-body rest-alloc)
       (transform-lambda-parts lambda-list original-declares code)
     (let ((declares (core:canonicalize-declarations original-declares)))
       (cmp-log "generate-llvm-function-from-code%N")
-      (cmp-log "cleavir-lambda-list -> %s%N" cleavir-lambda-list)
+      (cmp-log "cleavir-lambda-list-analysis -> %s%N" cleavir-lambda-list-analysis)
       (cmp-log "new-body -> %s%N" new-body)
 ;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
 ;;;    (bformat *error-output* "new-body -> %s%N" new-body)
       (let ((name (core:extract-lambda-name-from-declares
                    declares (or given-name
                                 `(cl:lambda ,(lambda-list-for-name lambda-list))))))
-        (multiple-value-bind (xep-group local-fn)
-            (with-new-function (local-fn fn-env result
-                                         :function-name name
-                                         :parent-env env-around-lambda
-                                         :linkage linkage
-                                         :function-info (make-function-info
-                                                         :function-name name
-                                                         :lambda-list lambda-list
-                                                         :cleavir-lambda-list cleavir-lambda-list
-                                                         :docstring docstring
-                                                         :declares declares
-                                                         :spi core:*current-source-pos-info*))
-              (cmp-log "Starting new function name: %s%N" name)
-              ;; The following injects a debugInspectT_sp at the start of the body
-              ;; it will print the address of the literal which must correspond to an entry in the
-              ;; load time values table
-              #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
-              (format t "In codgen.lsp generate-llvm~%")
-              (let* ((arguments      (llvm-sys:get-argument-list local-fn))
-                     (callconv       :was-callconv ))
-                (cmp-log "argument-list %s%N" arguments)
-                (cmp-log "fn-env -> %s%N" fn-env)
-                (let ((new-env fn-env)) ; (irc-make-unbound-value-environment-of-size fn-env:was-new-env-codegen #+(or)(bclasp-compile-lambda-list-code fn-env callconv)))
-                  (cmp-log "Created new register environment -> %s%N" new-env)
-                  ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
-                  ;; in which case the (with-try ...) can be removed
-                  ;; Christian Schafmeister June 2019
-                  (if (irc-environment-has-cleanup new-env)
-                      (with-try "TRY.func"
-                        (codegen-progn result (list new-body) new-env)
-                        ((cleanup)
-                         (irc-unwind-environment new-env)))
-                      (codegen-progn result (list new-body) new-env)))))
+        (let* ((xep-group 
+                 (with-new-function (local-fn fn-env result
+                                              :function-name name
+                                              :parent-env env-around-lambda
+                                              :linkage linkage
+                                              :function-info (make-function-info
+                                                              :function-name name
+                                                              :lambda-list lambda-list
+                                                              :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
+                                                              :docstring docstring
+                                                              :declares declares
+                                                              :spi core:*current-source-pos-info*))
+                   (cmp-log "Starting new function name: %s%N" name)
+                   ;; The following injects a debugInspectT_sp at the start of the body
+                   ;; it will print the address of the literal which must correspond to an entry in the
+                   ;; load time values table
+                   #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
+                   (let* ((arguments      (llvm-sys:get-argument-list local-fn))
+                          (callconv       :was-callconv ))
+                     (cmp-log "argument-list %s%N" arguments)
+                     (cmp-log "fn-env -> %s%N" fn-env)
+                     (let ((new-env fn-env)) ; (irc-make-unbound-value-environment-of-size fn-env:was-new-env-codegen #+(or)(bclasp-compile-lambda-list-code fn-env callconv)))
+                       (cmp-log "Created new register environment -> %s%N" new-env)
+                       ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
+                       ;; in which case the (with-try ...) can be removed
+                       ;; Christian Schafmeister June 2019
+                       (if (irc-environment-has-cleanup new-env)
+                           (with-try "TRY.func"
+                             (codegen-progn result (list new-body) new-env)
+                             ((cleanup)
+                              (irc-unwind-environment new-env)))
+                           (codegen-progn result (list new-body) new-env))))))
+               (local-fn (xep-group-local-function xep-group)))
           (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
           (cmp-log-dump-function local-fn)
           (unless *suppress-llvm-output* (irc-verify-function local-fn))
           ;; Return the llvm Function and the symbol/setf name
           (if (null name) (error "The lambda name is nil"))
+          (when (null xep-group) (error "The xep-group is nil"))
+          (when (null local-fn) (error "The local-fn is nil"))
           (make-bclasp-llvm-function-info :xep-function xep-group
                                           :local-function local-fn
                                           ))))))

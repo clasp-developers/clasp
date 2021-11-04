@@ -417,101 +417,118 @@ a_p = a_p_temp; a = a_temp;
               (cmp-log "Last if-too-many-arguments %s %s" cmax nargs)
               (compile-error-if-too-many-arguments wrong-nargs-block cmax nargs)))))))
 
-(defun compile-only-reg-and-opt-arguments (reqargs optargs calling-conv &key argument-out (safep t))
-  (let* ((register-args (calling-convention-register-args calling-conv))
-         (nargs (calling-convention-nargs calling-conv))
-         (nreq (car reqargs))
-         (creq (irc-size_t nreq))
-         (nopt (car optargs))
-         (cmax (irc-size_t (+ nreq nopt)))
-         (error-block
-           ;; See KLUDGE above
-           (when safep
-             (compile-wrong-number-arguments-block
-              (calling-convention-closure calling-conv)
-              nargs creq cmax))))
-    ;; FIXME: It would probably be nicer to generate one switch such that not-enough-arguments
-    ;; goes to an error block and too-many goes to another. Then we'll only have one test on
-    ;; the argument count. LLVM might reduce it to that anyway, though.
 
-    ;; Required arguments
-    (when (> nreq 0)
-      (when safep
-        (compile-error-if-not-enough-arguments error-block creq nargs))
-      (dolist (req (cdr reqargs))
-        ;; we POP the register-args so that the optionals below won't use em.
-        (funcall argument-out (pop register-args) req)))
-    ;; Optional arguments. Code is mostly the same as compile-optional-arguments (FIXME).
-    (if (> nopt 0)
-        (let* ((npreds (1+ nopt))
-               (undef (irc-undef-value-get %t*%))
-               (true (irc-t))
-               (false (irc-nil))
-               (default (irc-basic-block-create "enough-for-optional"))
-               (assn (irc-basic-block-create "optional-assignments"))
-               (after (irc-basic-block-create "argument-parsing-done"))
-               (sw (irc-switch nargs default nopt))
-               (var-phis nil) (suppliedp-phis nil))
-          (irc-begin-block assn)
-          (dotimes (i nopt)
-            (push (irc-phi %t*% npreds) var-phis)
-            (push (irc-phi %t*% npreds) suppliedp-phis))
-          (do ((cur-opt (cdr optargs) (cdddr cur-opt))
-               (var-phis var-phis (cdr var-phis))
-               (suppliedp-phis suppliedp-phis (cdr suppliedp-phis)))
-              ((endp cur-opt))
-            (funcall argument-out (car suppliedp-phis) (second cur-opt))
-            (funcall argument-out (car var-phis) (first cur-opt)))
-          (irc-br after)
-          ;; Each case
-          (dotimes (i nopt)
-            (let* ((opti (+ i nreq))
-                   (blck (irc-basic-block-create (core:bformat nil "supplied-%d-arguments" opti))))
-              (llvm-sys:add-case sw (irc-size_t opti) blck)
-              (do ((var-phis var-phis (cdr var-phis))
-                   (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
-                   (registers register-args (cdr registers))
-                   (optj nreq (1+ optj)))
-                  ((endp var-phis))
-                (cond ((< optj opti)    ; enough arguments
-                       (irc-phi-add-incoming (car suppliedp-phis) true blck)
-                       (irc-phi-add-incoming (car var-phis) (car registers) blck))
-                      (t                ; nope
-                       (irc-phi-add-incoming (car suppliedp-phis) false blck)
-                       (irc-phi-add-incoming (car var-phis) undef blck))))
-              (irc-begin-block blck) (irc-br assn)))
-          ;; Default
-          ;; Just use a register for each argument
-          ;; We have to use another block because compile-error-etc does an invoke
-          ;; and generates more blocks.
-          (let ((default-cont (irc-basic-block-create "enough-for-optional-continued")))
-            (do ((var-phis var-phis (cdr var-phis))
-                 (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
-                 (registers register-args (cdr registers)))
-                ((endp var-phis))
-              (irc-phi-add-incoming (car suppliedp-phis) true default-cont)
-              (irc-phi-add-incoming (car var-phis) (car registers) default-cont))
-            (irc-begin-block default)
-            ;; Test for too many arguments
+        
+  
+(defun compile-only-req-and-opt-arguments (arity cleavir-lambda-list-analysis calling-conv &key argument-out (safep t))
+  (multiple-value-bind (reqargs optargs)
+      (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
+    (let* ((register-args (calling-convention-register-args calling-conv))
+           (nargs (calling-convention-nargs calling-conv))
+           (nreq (car (cleavir-lambda-list-analysis-required cleavir-lambda-list-analysis)))
+           (creq (irc-size_t nreq))
+           (nopt (car (cleavir-lambda-list-analysis-optional cleavir-lambda-list-analysis)))
+           (cmax (irc-size_t (+ nreq nopt)))
+           (error-block
+             ;; see kludge above
+             (when safep
+               (compile-wrong-number-arguments-block
+                (calling-convention-closure calling-conv)
+                nargs creq cmax))))
+      ;; fixme: it would probably be nicer to generate one switch such that not-enough-arguments
+      ;; goes to an error block and too-many goes to another. then we'll only have one test on
+      ;; the argument count. llvm might reduce it to that anyway, though.
+      (flet ((ensure-register (registers undef &optional name)
+               (let ((register (car registers)))
+                 (if register
+                     register
+                     undef))))
+        (when (cmp:arity-is-wrong-number-of-arguments-p arity cleavir-lambda-list-analysis)
+          (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure calling-conv)
+                                                                   (jit-constant-i64 (length register-args))
+                                                                   (jit-constant-i64 nreq)
+                                                                   (jit-constant-i64 (+ nreq nopt)))))
+            (irc-br error-block)
+            (return-from compile-only-req-and-opt-arguments nil)))
+        ;; required arguments
+        (when (> nreq 0)
+          (when safep
+            (compile-error-if-not-enough-arguments error-block creq nargs))
+          (dolist (req (cdr reqargs))
+            ;; we pop the register-args so that the optionals below won't use em.
+            (funcall argument-out (pop register-args) req)))
+        ;; optional arguments. code is mostly the same as compile-optional-arguments (fixme).
+        (if (> nopt 0)
+            (let* ((npreds (1+ nopt))
+                   (undef (irc-undef-value-get %t*%))
+                   (true (irc-t))
+                   (false (irc-nil))
+                   (default (irc-basic-block-create "enough-for-optional"))
+                   (assn (irc-basic-block-create "optional-assignments"))
+                   (after (irc-basic-block-create "argument-parsing-done"))
+                   (sw (irc-switch nargs default nopt))
+                   (var-phis nil) (suppliedp-phis nil))
+              (irc-begin-block assn)
+              (dotimes (i nopt)
+                (push (irc-phi %t*% npreds) var-phis)
+                (push (irc-phi %t*% npreds) suppliedp-phis))
+              (do ((cur-opt (cdr optargs) (cdddr cur-opt))
+                   (var-phis var-phis (cdr var-phis))
+                   (suppliedp-phis suppliedp-phis (cdr suppliedp-phis)))
+                  ((endp cur-opt))
+                (funcall argument-out (car suppliedp-phis) (second cur-opt))
+                (funcall argument-out (car var-phis) (first cur-opt)))
+              (irc-br after)
+              ;; each case
+              (dotimes (i nopt)
+                (let* ((opti (+ i nreq))
+                       (blck (irc-basic-block-create (core:bformat nil "supplied-%d-arguments" opti))))
+                  (llvm-sys:add-case sw (irc-size_t opti) blck)
+                  (do ((var-phis var-phis (cdr var-phis))
+                       (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
+                       (registers register-args (cdr registers))
+                       (optj nreq (1+ optj)))
+                      ((endp var-phis))
+                    (cond ((< optj opti) ; enough arguments
+                           (irc-phi-add-incoming (car suppliedp-phis) true blck)
+                           (irc-phi-add-incoming (car var-phis) (ensure-register registers undef :nopt) blck))
+                          (t            ; nope
+                           (irc-phi-add-incoming (car suppliedp-phis) false blck)
+                           (irc-phi-add-incoming (car var-phis) undef blck))))
+                  (irc-begin-block blck) (irc-br assn)))
+              ;; default
+              ;; just use a register for each argument
+              ;; we have to use another block because compile-error-etc does an invoke
+              ;; and generates more blocks.
+              (let ((default-cont (irc-basic-block-create "enough-for-optional-continued")))
+                (do ((var-phis var-phis (cdr var-phis))
+                     (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
+                     (registers register-args (cdr registers)))
+                    ((endp var-phis))
+                  (irc-phi-add-incoming (car suppliedp-phis) true default-cont)
+                  (irc-phi-add-incoming (car var-phis) (ensure-register registers undef :var-phis) default-cont))
+                (irc-begin-block default)
+                ;; test for too many arguments
+                (when safep
+                  (compile-error-if-too-many-arguments error-block cmax nargs))
+                (irc-branch-to-and-begin-block default-cont)
+                (irc-br assn)
+                ;; and, done.
+                (irc-begin-block after)))
+            ;; no optional arguments, so not much to do
             (when safep
-              (compile-error-if-too-many-arguments error-block cmax nargs))
-            (irc-branch-to-and-begin-block default-cont)
-            (irc-br assn)
-            ;; and, done.
-            (irc-begin-block after)))
-        ;; No optional arguments, so not much to do
-        (when safep
-          (compile-error-if-too-many-arguments error-block cmax nargs)))))
+              (compile-error-if-too-many-arguments error-block cmax nargs))))
+      t)))
 
-(defun process-cleavir-lambda-list (lambda-list)
-  ;; We assume that the lambda list is in its correct format:
+(defun calculate-cleavir-lambda-list-analysis (lambda-list)
+  ;; we assume that the lambda list is in its correct format:
   ;; 1) required arguments are lexical locations.
   ;; 2) optional arguments are (<lexical location> <lexical location>)
   ;; 3) keyword arguments are (<symbol> <lexical location> <lexical location>)
-  ;; This lets us cheap out on parsing, except &rest and &allow-other-keys.
-  (cmp-log "process-cleavir-lambda-list lambda-list -> %s%N" lambda-list)
+  ;; this lets us cheap out on parsing, except &rest and &allow-other-keys.
+  (cmp-log "calculate-cleavir-lambda-list-analysis lambda-list -> %s%n" lambda-list)
   (let (required optional rest-type rest key aok-p key-flag
-        (required-count 0) (optional-count 0) (key-count 0))
+                 (required-count 0) (optional-count 0) (key-count 0))
     (dolist (item lambda-list)
       (case item
         ((&optional) #|ignore|#)
@@ -524,7 +541,7 @@ a_p = a_p_temp; a = a_temp;
                       (incf optional-count)
                       ;; above, we expect (location -p whatever)
                       ;; though it's specified as (var init -p)
-                      ;; FIX ME
+                      ;; fix me
                       (push (first item) optional)
                       (push (second item) optional)
                       (push nil optional))
@@ -535,7 +552,7 @@ a_p = a_p_temp; a = a_temp;
                       ;; above, we treat this as being the location,
                       ;; even though from process-lambda-list it's
                       ;; the initform.
-                      ;; This file needs work FIXME.
+                      ;; this file needs work fixme.
                       (push (second item) key)
                       (push (third item) key)))
                ;; nonlist; we picked off lambda list keywords, so it's an argument.
@@ -545,27 +562,53 @@ a_p = a_p_temp; a = a_temp;
                      ;; haven't seen anything, it's required
                      (t (incf required-count)
                         (push item required)))))))
-    (values (cons required-count (nreverse required))
-            (cons optional-count (nreverse optional))
-            rest
-            key-flag
-            (cons key-count (nreverse key))
-            aok-p
-            nil ; aux-p; unused here
-            (if (eq rest-type 'core:&va-rest) t nil))))
+    (let* ((cleavir-lambda-list (ensure-cleavir-lambda-list lambda-list))
+           (arguments (lambda-list-arguments cleavir-lambda-list)))
+      (make-cleavir-lambda-list-analysis
+       :cleavir-lambda-list (ensure-cleavir-lambda-list lambda-list) ; Is this correct?
+       :lambda-list-arguments arguments
+       :required (cons required-count (nreverse required))
+       :optional (cons optional-count (nreverse optional))
+       :rest rest
+       :key-flag key-flag
+       :key-count (cons key-count (nreverse key))
+       :aok-p aok-p
+       :aux-p nil                       ; aux-p; unused here
+       :va-rest-p (if (eq rest-type 'core:&va-rest) t nil)))))
+
+(defun may-use-only-registers (cleavir-lambda-list-analysis)
+  (let ((nreq 0) (nopt 0) (req-opt-only t)
+        (state nil))
+    (dolist (item (cleavir-lambda-list-analysis-cleavir-lambda-list cleavir-lambda-list-analysis))
+      (cond ((eq item '&optional)
+             (if (eq state '&optional)
+                 (progn (setf req-opt-only nil) ; dupe &optional; just mark as general
+                        (return))
+                 (setf state '&optional)))
+            ((member item lambda-list-keywords)
+             (setf req-opt-only nil)
+             (return))
+            (t (if (eq state '&optional)
+                   (incf nopt)
+                   (incf nreq)))))
+    (and req-opt-only
+         (and (<= +entry-point-arity-begin+ (+ nreq nopt))
+              (< (+ nreq nopt) +entry-point-arity-end+)))))
 
 ;;; compile-lambda-list-code
-;;; You must provide the following lambdas
+;;; you must provide the following lambdas
 ;;;   alloca-size_t (label) that allocas a size_t slot in the current function
 ;;;   alloca-vaslist (label) that allocas a vaslist slot in the current function
 ;;;   translate-datum (datum) that translates a datum into an alloca in the current function
-(defun compile-lambda-list-code (lambda-list calling-conv arity
+;;;
+(defun compile-lambda-list-code (cleavir-lambda-list-analysis calling-conv arity
                                  &key argument-out (safep t))
-  (cmp-log "About to process-cleavir-lambda-list lambda-list: %s%N" lambda-list)
+  "Return T if arguments were processed and NIL if they were not"
+  (cmp-log "about to compile-lambda-list-code cleavir-lambda-list-analysis: %s%n" cleavir-lambda-list-analysis)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
-      (process-cleavir-lambda-list lambda-list)
+      (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
     (declare (ignore unused-auxs))
-    (cmp-log "About to calling-convention-use-only-registers%N")
+    
     (cmp-log "    reqargs -> %s%N" reqargs)
     (cmp-log "    optargs -> %s%N" optargs)
     (cmp-log "    keyargs -> %s%N" keyargs)
@@ -583,16 +626,48 @@ a_p = a_p_temp; a = a_temp;
                                            :argument-out argument-out
                                            :safep safep)
          (calling-convention-args.va-end calling-conv)
+         )
+       t ;; always successful for general lambda-list processing
+       )
+      ((and (fixnump arity)
+            (may-use-only-registers cleavir-lambda-list-analysis))
+       (let ((result (compile-only-req-and-opt-arguments arity cleavir-lambda-list-analysis #|reqargs optargs|#
+                                                         calling-conv
+                                                         :argument-out argument-out
+                                                         :safep safep)))
+         result                         ; may be nil or t
          ))
-      (t (error "Handle arity ~a" arity)
-         #+(or)
-         (if (calling-convention-use-only-registers calling-conv)
-             ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
-             (progn
-               (compile-only-reg-and-opt-arguments reqargs optargs calling-conv
-                                                   :argument-out argument-out
-                                                   :safep safep))
-             )))))
+      (t (let* ((register-args (calling-convention-register-args calling-conv))
+                (nargs (length register-args))
+                (arg-buffer (if (= nargs 0)
+                                nil
+                                (alloca-arguments nargs "ll-args")))
+                (vaslist (alloca-vaslist))
+                (vaslist-v* (irc-tag-vaslist vaslist))
+                (idx 0))
+           (dolist (arg register-args)
+             (let ((arg-gep (irc-gep arg-buffer (list 0 idx))))
+               (incf idx)
+               (irc-store arg arg-gep)))
+           (if (= nargs 0)
+               (vaslist-start vaslist-v* (jit-constant-i64 nargs))
+               (vaslist-start vaslist-v* (jit-constant-i64 nargs)
+                              (irc-bit-cast arg-buffer %i8**%)))
+           (setf (calling-convention-vaslist* calling-conv) vaslist-v*)
+           (compile-general-lambda-list-code reqargs 
+                                             optargs 
+                                             rest-var
+                                             varest-p
+                                             key-flag 
+                                             keyargs 
+                                             allow-other-keys
+                                             calling-conv
+                                             :argument-out argument-out
+                                             :safep safep)
+           (calling-convention-args.va-end calling-conv)
+           )
+         t ;; always successful when using general lambda-list processing
+         ))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -600,12 +675,12 @@ a_p = a_p_temp; a = a_temp;
 ;; Setup the calling convention
 ;;
 (defun setup-calling-convention (llvm-function arity
-                                 &key debug-on rest-alloc cleavir-lambda-list)
+                                 &key debug-on rest-alloc cleavir-lambda-list-analysis)
     (initialize-calling-convention llvm-function
                                    arity
-                                   :register-save-area* (when debug-on (alloca-register-save-area arity :label "register-save-area"))
+                                   :debug-on debug-on
                                    :rest-alloc rest-alloc
-                                   :cleavir-lambda-list cleavir-lambda-list))
+                                   :cleavir-lambda-list-analysis cleavir-lambda-list-analysis))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -613,9 +688,9 @@ a_p = a_p_temp; a = a_temp;
 ;;;
 
 
-(defun bclasp-map-lambda-list-symbols-to-indices (cleavir-lambda-list)
+(defun bclasp-map-lambda-list-symbols-to-indices (cleavir-lambda-list-analysis)
   (multiple-value-bind (reqs opts rest key-flag keys)
-      (process-cleavir-lambda-list cleavir-lambda-list)
+      (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
     (declare (ignore key-flag))
     ;; Create the register lexicals using allocas
     (let (bindings
@@ -645,9 +720,10 @@ a_p = a_p_temp; a = a_temp;
       (nreverse bindings))))
 
 (defun bclasp-compile-lambda-list-code (fn-env callconv &key (safep t))
-  (let ((cleavir-lambda-list (calling-convention-cleavir-lambda-list callconv)))
+  (error "Return T or nil like compile-lambda-list-code")
+  (let ((cleavir-lambda-list-analysis (calling-convention-cleavir-lambda-list-analysis callconv)))
     (cmp-log "Entered bclasp-compile-lambda-list-code%N")
-    (let* ((output-bindings (bclasp-map-lambda-list-symbols-to-indices cleavir-lambda-list))
+    (let* ((output-bindings (bclasp-map-lambda-list-symbols-to-indices cleavir-lambda-list-analysis))
            (new-env (irc-new-unbound-value-environment-of-size
                      fn-env
                      :number-of-arguments (length output-bindings)
@@ -660,7 +736,7 @@ a_p = a_p_temp; a = a_temp;
             output-bindings)
       (cmp-log "register-environment contents -> %s%N" new-env)
       (compile-lambda-list-code
-       cleavir-lambda-list
+       cleavir-lambda-list-analysis
        callconv
        :general-entry
        :safep safep
@@ -670,4 +746,5 @@ a_p = a_p_temp; a = a_temp;
                               (index (cdr info))
                               (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
                          (irc-t*-result value ref))))
+      (error "Check result of bclasp-compile-lambda-list-code")
       new-env)))

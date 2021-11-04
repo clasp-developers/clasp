@@ -165,7 +165,10 @@ class LocalEntryPointGenerator_O : public EntryPointBase_O {
   T_sp _entry_point_indices;
  public:
   // Accessors
-   LocalEntryPointGenerator_O( FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices) {};
+   LocalEntryPointGenerator_O( FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices) {
+     //ASSERT(cl__length(entry_point_indices)==1);
+   };
+  std::string __repr__() const;
  };
 
 FORWARD(GlobalEntryPoint);
@@ -195,6 +198,7 @@ class GlobalEntryPointGenerator_O : public EntryPointBase_O {
  public:
   // Accessors
   GlobalEntryPointGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices) {};
+  std::string __repr__() const;
  };
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
@@ -291,6 +295,13 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
 #endif
     };
     ClaspXepGeneralFunction entry() const { return (ClaspXepGeneralFunction)(this->_EntryPoint.load()->_EntryPoints[0]); }
+    ClaspXep0Function entry_0() const { return (ClaspXep0Function)(this->_EntryPoint.load()->_EntryPoints[1]); }
+    ClaspXep1Function entry_1() const { return (ClaspXep1Function)(this->_EntryPoint.load()->_EntryPoints[2]); }
+    ClaspXep2Function entry_2() const { return (ClaspXep2Function)(this->_EntryPoint.load()->_EntryPoints[3]); }
+    ClaspXep3Function entry_3() const { return (ClaspXep3Function)(this->_EntryPoint.load()->_EntryPoints[4]); }
+    ClaspXep4Function entry_4() const { return (ClaspXep4Function)(this->_EntryPoint.load()->_EntryPoints[5]); }
+    ClaspXep5Function entry_5() const { return (ClaspXep5Function)(this->_EntryPoint.load()->_EntryPoints[6]); }
+
     virtual FunctionDescription_sp fdesc() const { return this->_EntryPoint.load()->_FunctionDescription; };
     // Rewrite the function-description pointer - used in direct-calls.lsp
     

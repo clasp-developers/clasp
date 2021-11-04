@@ -96,10 +96,6 @@ T_sp ClassRepCreator_O::creator_allocate() {
 
 namespace core {
 
-LCC_RETURN Creator_O::LISP_CALLING_CONVENTION() {
-  LCC_RETURN v;
-  return v;
-}
 
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__run_creator(Creator_sp c)

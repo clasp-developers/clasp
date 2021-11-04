@@ -227,6 +227,26 @@ extern uint64_t cx_read_stamp(core::T_O* tagged_pointer, uint64_t new_stamp);
 extern core::T_O* cc_match(core::T_O* old_value, core::T_O* new_value );
 extern void unreachableError();
 [[noreturn]] void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis);
+core::T_O* makeCompiledFunction(core::T_O* tentrypoint,
+                                core::T_O* frameP);
+
+void entry_wrong_number_of_arguments_0(core::T_O* closure );
+
+void entry_wrong_number_of_arguments_1(core::T_O* closure, core::T_O* farg0 );
+
+void entry_wrong_number_of_arguments_2(core::T_O* closure, core::T_O* farg0, core::T_O* farg1 );
+
+void entry_wrong_number_of_arguments_3(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2 );
+
+void entry_wrong_number_of_arguments_4(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3 );
+
+void entry_wrong_number_of_arguments_5(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4 );
+
+void entry_wrong_number_of_arguments_6(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4, core::T_O* farg5 );
+
+void entry_wrong_number_of_arguments_7(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4, core::T_O* farg5, core::T_O* farg6 );
+
+
 }
 namespace llvmo {
 

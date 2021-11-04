@@ -15,6 +15,7 @@
 #include <clasp/core/lispStream.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/pointer.h>
+#include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 
@@ -338,8 +339,17 @@ namespace llvmo {
 
 void Code_O::validateEntryPoint(const core::ClaspXepFunction& entryPoint) {
   for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ii++ ) {
-    if (!(this->codeStart()<=(uintptr_t)entryPoint[ii] &&
-          (uintptr_t)entryPoint[ii] < this->codeEnd())) {
+    void* ep = (void*)entryPoint[ii];
+    if ( ep == entry_wrong_number_of_arguments_0 ||
+         ep == entry_wrong_number_of_arguments_1 ||
+         ep == entry_wrong_number_of_arguments_2 ||
+         ep == entry_wrong_number_of_arguments_3 ||
+         ep == entry_wrong_number_of_arguments_4 ||
+         ep == entry_wrong_number_of_arguments_5 ||
+         ep == entry_wrong_number_of_arguments_6 ||
+         ep == entry_wrong_number_of_arguments_7 ) continue;
+    if (!(this->codeStart()<=(uintptr_t)ep &&
+          (uintptr_t)ep < this->codeEnd())) {
       printf("%s:%d:%s Entrypoint %p is not bounded by the codeStart %p and codeEnd %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint[ii], (void*)this->codeStart(), (void*)this->codeEnd() );
       abort();
     }

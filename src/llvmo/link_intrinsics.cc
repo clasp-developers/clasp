@@ -160,6 +160,7 @@ typedef void LtvcReturn;
 
 LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, size_t entry_point_index)
 {NO_UNWIND_BEGIN();
+  printf("%s:%d:%s got functionIndex %lu change to entryPointIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
   core::GlobalEntryPoint_sp entryPoint(tentrypoint);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
@@ -394,6 +395,7 @@ LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char
 
 LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t )
 {NO_UNWIND_BEGIN();
+//  printf("%s:%d:%s got functionIndex %lu to index: %lu\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, index );
   ClaspLocalFunction llvm_func = (ClaspLocalFunction)holder->lookup_function(functionIndex);
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
   core::LocalEntryPoint_sp entryPoint = core::makeLocalEntryPoint(fdesc,llvm_func);
@@ -410,12 +412,13 @@ LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char ta
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t )
+LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex0, core::T_O* functionDescription_t )
 {NO_UNWIND_BEGIN();
+//  printf("%s:%d:%s got functionIndex0 %lu to index: %lu\n", __FILE__, __LINE__, __FUNCTION__, functionIndex0, index );
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
   core::ClaspXepFunction xep((XepFilling()));
   for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
-    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
+    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex0+ii);
   }
   core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,xep);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
@@ -477,6 +480,7 @@ gctools::Tagged ltvc_lookup_literal( gctools::GCRootsInModule* holder, size_t in
 }
 
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, const char* name) {
+  printf("%s:%d:%s make entry-point-index  got functionIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, name );
   core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
   core::ClaspXepFunction xep((XepFilling()));
@@ -491,6 +495,7 @@ LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char t
 }
 
 LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t functionIndex, const char* name) {
+  printf("%s:%d:%s make entry-point-index got functionIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, name );
   core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
   core::ClaspXepFunction xep((XepFilling()));
@@ -503,32 +508,30 @@ LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t functi
 }
 
 // Similar to the above, but puts value in the table.
-LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, const char* name) {\
+LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t entryPointIndex, const char* name) {\
+//  printf("%s:%d:%s make entry-point-index got functionIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, name );
   core::T_O *lcc_arglist = nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClaspXepFunction xep((XepFilling()));
-  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
-    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
-  }
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
-  LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
+  core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
+#ifdef DEBUG_SLOW
+  MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
+#endif
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
+  LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
 }
 
-LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t functionIndex, const char* name) {
-  core::T_O *lcc_arglist = nil<core::T_O>().raw_();
+LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t entryPointIndex, const char* name) {
+//  printf("%s:%d:%s got entryPointIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, entryPointIndex, name );
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClaspXepFunction xep((XepFilling()));
-  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
-    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
-  }
+  core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
 #ifdef DEBUG_SLOW
-  MaybeDebugStartup startup((void*)xep._EntryPoints[1],name);
+  MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
 #endif
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
-  LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
+  LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
@@ -644,16 +647,14 @@ T_O* cc_list(size_t nargs, ...) {
 
 /* Conses up a &rest argument from the passed valist.
  * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
-__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t nargs)
+__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(core::T_O* vas, std::size_t nargs)
 {NO_UNWIND_BEGIN();
-  va_list rargs;
-  va_copy(rargs, vargs); // the original valist is needed for &key processing elsewhere.
+  Vaslist* vaslist = (Vaslist*)gctools::untag_vaslist(vas);
   ql::list result;
   for (int i = 0; i < nargs; ++i) {
-    core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
+    core::T_O* tagged_obj = ENSURE_VALID_OBJECT((*vaslist)[i]);
     result << gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj);
   }
-  va_end(rargs);
   MAYBE_VERIFY_ALIGNMENT(&*(result.result()));
   return result.result().raw_();
   NO_UNWIND_END();
@@ -661,25 +662,22 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
 
 /* Like cc_gatherRestArguments, but uses a vector of conses provided by the caller-
  * intended to be stack space, for &rest parameters declared dynamic-extent. */
-__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list vargs, std::size_t nargs, core::Cons_O* cur)
+__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(core::T_O* vas, std::size_t nargs, core::Cons_O* cur)
 {NO_UNWIND_BEGIN();
-  va_list rargs;
-  va_copy(rargs, vargs);
+  Vaslist* vaslist = (Vaslist*)gctools::untag_vaslist(vas);
   core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
   if (nargs) {
     for (int i = 0; i<nargs-1; ++i ) {
-      core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
+      core::T_O* tagged_obj = ENSURE_VALID_OBJECT((*vaslist)[i]);
       Cons_O* next = cur+1;
       new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),T_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)next)));
       cur = next;
     }
-    core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
+    core::T_O* tagged_obj = ENSURE_VALID_OBJECT((*vaslist)[nargs-1]);
     new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),nil<T_O>());
-    va_end(rargs);
     return result.raw_();
   }
-  va_end(rargs);
-  return nil<T_O>().raw_();
+  return nil<core::T_O>().raw_();
   NO_UNWIND_END();
 }
 
@@ -790,19 +788,18 @@ void debugInspectTPtr_detailed(core::T_O *tP) {
   }
 }
 
-void debugInspectT_mv(core::T_mv *objP)
+void debugInspectT_mv(core::T_mv obj)
 {NO_UNWIND_BEGIN();
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
-  printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%zu mvarray.size=%zu\n", (*objP).raw_(), (*objP).number_of_values(), size);
-  size = std::max(size, (size_t)(*objP).number_of_values());
+  printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%zu mvarray.size=%zu\n", (obj).raw_(), (obj).number_of_values(), size);
+  size = std::max(size, (size_t)(obj).number_of_values());
   for (size_t i(0); i < size; ++i) {
     printf("[%zu]->%p : %s\n", i, mv.valueGet(i, size).raw_(), _rep_(core::T_sp((gc::Tagged)mv.valueGet(i,size).raw_())).c_str());
   }
   printf("\n");
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
-  printf("debugInspectT_mv@%p  #val=%zu\n", (void *)objP, objP->number_of_values());
-  printf("   debugInspectT_mv  obj= %s\n", _rep_(*objP).c_str());
+  printf("   debugInspectT_mv  obj= %s\n", _rep_(obj).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
   NO_UNWIND_END();
 }
@@ -1214,24 +1211,24 @@ void cc_initialize_closure(core::T_O* functoid,
 
 LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gctools::return_type ret0 ) {
   ASSERTF(gctools::tagged_generalp(tfunc), BF("The argument %p does not have a general tag!") % (void*)tfunc);
-  MAKE_STACK_FRAME( mvargs, tfunc, ret0.nvals);
-  FILL_FRAME_WITH_RETURN_REGISTERS(mvargs,ret0);
+  MAKE_STACK_FRAME( callargs, tfunc, ret0.nvals);
+  FILL_FRAME_WITH_RETURN_REGISTERS(callargs,ret0);
   if (ret0.nvals>LCC_RETURN_VALUES_IN_REGISTERS) {
     core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
-    for (size_t i(LCC_RETURN_VALUES_IN_REGISTERS); i < ret0.nvals; ++i) (*mvargs)[i] = ENSURE_VALID_OBJECT(mvThreadLocal[i]);
+    for (size_t i(LCC_RETURN_VALUES_IN_REGISTERS); i < ret0.nvals; ++i) (*callargs)[i] = ENSURE_VALID_OBJECT(mvThreadLocal[i]);
   }
 #ifdef DEBUG_VALUES
   if (_sym_STARdebug_valuesSTAR &&
         _sym_STARdebug_valuesSTAR->boundP() &&
         _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
     for (size_t i(0); i < ret0.nvals; ++i) {
-      core::T_sp mvobj((gctools::Tagged)(*mvargs)[i]);
+      core::T_sp mvobj((gctools::Tagged)(*callargs)[i]);
       printf("%s:%d  ....  cc_call_multipleValueOneFormCall[%lu] -> %s\n", __FILE__, __LINE__, i, _rep_(mvobj).c_str());
     }
   }
 #endif
   core::Function_sp func((gctools::Tagged)tfunc);
-  return core::funcall_frame(func,mvargs);
+  return func->entry()(func.raw_(),ret0.nvals,callargs->arguments(0));
 }
 
 T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
@@ -1357,6 +1354,43 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
   // throw * unwindP;
   throw;
 }
+
+void cc_wrong_number_of_arguments_ll( core::T_O* closure, size_t nargs ) {
+  SIMPLE_ERROR(BF("%s:%d:%s wrong number of arguments %lu closure %p") % __FILE__ % __LINE__ % __FUNCTION__ % nargs % (void*)closure );
+}
+
+void entry_wrong_number_of_arguments_0(core::T_O* closure ) {
+  cc_wrong_number_of_arguments_ll( closure, 0 );
+}
+
+void entry_wrong_number_of_arguments_1(core::T_O* closure, core::T_O* farg0 ) {
+  cc_wrong_number_of_arguments_ll( closure, 1 );
+}
+
+void entry_wrong_number_of_arguments_2(core::T_O* closure, core::T_O* farg0, core::T_O* farg1 ) {
+  cc_wrong_number_of_arguments_ll( closure, 2 );
+}
+
+void entry_wrong_number_of_arguments_3(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2 ) {
+  cc_wrong_number_of_arguments_ll( closure, 3 );
+}
+
+void entry_wrong_number_of_arguments_4(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3 ) {
+  cc_wrong_number_of_arguments_ll( closure, 4 );
+}
+
+void entry_wrong_number_of_arguments_5(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4 ) {
+  cc_wrong_number_of_arguments_ll( closure, 5 );
+}
+
+void entry_wrong_number_of_arguments_6(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4, core::T_O* farg5 ) {
+  cc_wrong_number_of_arguments_ll( closure, 6 );
+}
+
+void entry_wrong_number_of_arguments_7(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4, core::T_O* farg5, core::T_O* farg6 ) {
+  cc_wrong_number_of_arguments_ll( closure, 7 );
+}
+
 
 };
 

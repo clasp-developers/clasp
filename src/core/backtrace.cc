@@ -144,10 +144,12 @@ static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
   }
 }
 
+
 __attribute__((optnone))
 static bool args_from_offset(void* frameptr, int32_t offset,
-                             T_sp& closure, T_sp& args) {
-  if (frameptr) {
+                             T_sp& closure, T_sp& args, int64_t patch_point_id ) {
+  int64_t arity_code;
+  if ( frameptr && is_entry_point_arity(patch_point_id,arity_code) ) {
     T_O** register_save_area = (T_O**)((uintptr_t)frameptr + offset);
     T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
     if (!gc::IsA<Function_sp>(tclosure)) {
@@ -155,30 +157,45 @@ static bool args_from_offset(void* frameptr, int32_t offset,
       return false;
     }
     closure = tclosure;
-    size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
-    if (nargs>256) {
-      fprintf(stderr, "%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
-      return false;
-    }
-    ql::list largs;
+    if (arity_code==0) {
+      // For the general entry point the registers are (closure, nargs, arg_ptr)
+      size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
+      if (nargs>256) {
+        fprintf(stderr, "%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+        return false;
+      }
+      ql::list largs;
+    // Get the arg ptr from the register save area
+      T_O** arg_ptr = (T_O**)register_save_area[LCC_ARGS_PTR_REGISTER];
+    // get the args from the arg_ptr
+      for (size_t i = 0; i < nargs; ++i) {
+        T_O* rarg = arg_ptr[i];
+        T_sp temp((gctools::Tagged)rarg);
+        largs << temp;
+      }
+      args = largs.cons();
+    } else {
+      // for fixed arity entry points calculate the nargs from the arity_code
+      size_t nargs = (arity_code-1)+ENTRY_POINT_ARITY_BEGIN;
     // Get the first args from the register save area
-    for (size_t i = 0; i < std::min(nargs, (size_t)LCC_ARGS_IN_REGISTERS);
-         ++i) {
-      T_sp temp((gctools::Tagged)(register_save_area[i+2]));
-      largs << temp;
-    }
+      ql::list largs;
+      for (size_t i = 0; i < std::min(nargs, (size_t)LCC_ARGS_IN_REGISTERS); ++i) {
+        T_sp temp((gctools::Tagged)(register_save_area[i+2]));
+        largs << temp;
+      }
     // and the rest from the stack frame
-    for (size_t i = LCC_ARGS_IN_REGISTERS; i < nargs; ++i) {
-      T_O* rarg = ((T_O**)frameptr)[i + 2 - LCC_ARGS_IN_REGISTERS];
-      T_sp temp((gctools::Tagged)rarg);
-      largs << temp;
+      for (size_t i = LCC_ARGS_IN_REGISTERS; i < nargs; ++i) {
+        T_O* rarg = ((T_O**)frameptr)[i + 2 - LCC_ARGS_IN_REGISTERS];
+        T_sp temp((gctools::Tagged)rarg);
+        largs << temp;
+      }
+      args = largs.cons();
     }
-    args = largs.cons();
     return true;
   } else return false;
 }
 
-bool sanity_check_args(void* frameptr, int32_t offset) {
+bool sanity_check_args(void* frameptr, int32_t offset, int64_t patch_point_id ) {
   if (frameptr) {
     T_O** register_save_area = (T_O**)((uintptr_t)frameptr + offset);
     T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
@@ -186,10 +203,22 @@ bool sanity_check_args(void* frameptr, int32_t offset) {
       fprintf(stderr, "%s:%d:%s When trying to get arguments from CL frame read what should be a closure %p but it isn't\n", __FILE__, __LINE__, __FUNCTION__, tclosure.raw_());
       return false;
     }
-    size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
-    if (nargs > 256) {
-      fprintf(stderr, "%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
-      return false;
+    int64_t arity_code;
+    if (is_entry_point_arity(patch_point_id,arity_code)) {
+      if (arity_code==0) {// general entry point arity is the only one with nargs
+        size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
+        if (nargs > 256) {
+          fprintf(stderr, "%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+          return false;
+        }
+      }
+      // check if first argument is a tagged pointer (must be closure)
+      core::T_O* closure = (core::T_O*)register_save_area[LCC_CLOSURE_REGISTER];
+      T_sp tclosure((gctools::Tagged)closure);
+      if (!gc::IsA<Function_sp>(tclosure) ) {
+        fprintf(stderr, "%s:%d:%s  The first entry in register_save_area %p is not a closure\n", __FILE__, __LINE__, __FUNCTION__, closure );
+        return false;
+      }
     }
     return true;
   } return true; // information not being available is unfortunate but sane
@@ -207,9 +236,9 @@ static bool args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
   if (gc::IsA<LocalEntryPoint_sp>(ep)) {
     LocalEntryPoint_sp lep = gc::As_unsafe<LocalEntryPoint_sp>(ep);
     auto thunk = [&](size_t _, const smStkSizeRecord& function,
-                     int32_t offsetOrSmallConstant) {
+                     int32_t offsetOrSmallConstant, int64_t patchPointId) {
       if (function.FunctionAddress == (uintptr_t)(lep->_EntryPoint)) {
-        if (args_from_offset(frameptr, offsetOrSmallConstant, closure, args))
+        if (args_from_offset(frameptr, offsetOrSmallConstant, closure, args, patchPointId))
           args_available |= true;
         return;
       }
@@ -219,11 +248,10 @@ static bool args_for_entry_point(llvmo::ObjectFile_sp ofi, T_sp ep,
   } else if (gc::IsA<GlobalEntryPoint_sp>(ep)) {
     GlobalEntryPoint_sp gep = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
     auto thunk = [&](size_t _, const smStkSizeRecord& function,
-                     int32_t offsetOrSmallConstant) {
+                     int32_t offsetOrSmallConstant, int64_t patchPointId) {
       for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
         if (function.FunctionAddress == (uintptr_t)(gep->_EntryPoints[j])) {
-          if (args_from_offset(frameptr, offsetOrSmallConstant,
-                               closure, args))
+          if (args_from_offset(frameptr, offsetOrSmallConstant, closure, args, patchPointId))
             args_available |= true;
           return;
         }
@@ -352,9 +380,9 @@ static bool sanity_check_frame(void* ip, void* fbp) {
       LocalEntryPoint_sp lep = gc::As_unsafe<LocalEntryPoint_sp>(ep);
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function,
-                       int32_t offsetOrSmallConstant) {
+                       int32_t offsetOrSmallConstant, int64_t patchPointId) {
         if (function.FunctionAddress == (uintptr_t)(lep->_EntryPoint)) {
-          if (!sanity_check_args(fbp, offsetOrSmallConstant)) result = false;
+          if (!sanity_check_args(fbp, offsetOrSmallConstant, patchPointId )) result = false;
           return;
         }
       };
@@ -364,10 +392,10 @@ static bool sanity_check_frame(void* ip, void* fbp) {
       GlobalEntryPoint_sp gep = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function,
-                       int32_t offsetOrSmallConstant) {
+                       int32_t offsetOrSmallConstant, int64_t patchPointId ) {
         for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
           if (function.FunctionAddress == (uintptr_t)(gep->_EntryPoints[j])) {
-            if (!sanity_check_args(fbp, offsetOrSmallConstant)) result = false;
+            if (!sanity_check_args(fbp, offsetOrSmallConstant, patchPointId)) result = false;
             return;
           }
         }

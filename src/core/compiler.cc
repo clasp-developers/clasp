@@ -311,7 +311,9 @@ core::T_O* startup_functions_invoke(T_O* literals)
       switch (startup._Type) {
       case StartUp::T_O_function:
           result = ((T_OStartUp)startup._Function)(literals); // invoke the startup function
-          printf("%s:%d:%s Returning a function pointer from startup_functions_invoke - we need to support this\n", __FILE__, __LINE__, __FUNCTION__ );
+          if (result) {
+            printf("%s:%d:%s Returning a function pointer %p from startup_functions_invoke - we need to support this\n", __FILE__, __LINE__, __FUNCTION__, result );
+          }
           break;
       case StartUp::void_function:
           ((voidStartUp)startup._Function)();
@@ -750,7 +752,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bitcode_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
+  llvmo::llvm_sys__load_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
   return _lisp->_true();
 }
 
@@ -759,7 +761,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bitcode(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
+  llvmo::llvm_sys__load_bc(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
   return _lisp->_true();
 }
 

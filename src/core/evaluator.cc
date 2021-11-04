@@ -2134,9 +2134,11 @@ namespace core {
         SYMBOL_EXPORT_SC_(CompPkg, compileInEnv);
 
         T_mv t1Progn(List_sp args, T_sp environment) {
+#ifdef DEBUG_EVALUATE
             if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
                 printf("%s:%d t1Progn args: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
             }
+#endif
             T_mv result(nil<T_O>());
             T_sp localEnv(environment);
             for (auto cur : args) {
@@ -2146,9 +2148,11 @@ namespace core {
         }
 
         T_mv t1EvalWhen(T_sp args, T_sp environment) {
+#ifdef DEBUG_EVALUATE
             if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
                 printf("%s:%d t1EvalWhen args: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
             }
+#endif
             List_sp situations = oCar(args);
             List_sp body = oCdr(args);
             bool execute = cl__member(kw::_sym_execute, situations, nil<T_O>(), nil<T_O>(), nil<T_O>()).isTrue();
@@ -2158,19 +2162,21 @@ namespace core {
             return (Values(nil<T_O>()));
         }
 
-        T_mv t1Locally(List_sp args, T_sp env) {
-            if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-                printf("%s:%d t1Locally args: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
-            }
-            List_sp declares;
-            gc::Nilable<String_sp> docstring;
-            List_sp code;
-            List_sp specials;
-            extract_declares_docstring_code_specials(args, declares, false, docstring, code, specials);
-            ValueEnvironment_sp le = ValueEnvironment_O::createForLocallySpecialEntries(specials, env);
+    T_mv t1Locally(List_sp args, T_sp env) {
+#ifdef DEBUG_EVALUATE
+      if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+        printf("%s:%d t1Locally args: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
+      }
+#endif
+      List_sp declares;
+      gc::Nilable<String_sp> docstring;
+      List_sp code;
+      List_sp specials;
+      extract_declares_docstring_code_specials(args, declares, false, docstring, code, specials);
+      ValueEnvironment_sp le = ValueEnvironment_O::createForLocallySpecialEntries(specials, env);
             // ignore everything else for now
-            return eval::t1Progn(code, le);
-        }
+      return eval::t1Progn(code, le);
+    }
 
         T_mv t1Macrolet(List_sp args, T_sp env) {
             return doMacrolet(args, env, true /*toplevel*/);
@@ -2183,9 +2189,11 @@ namespace core {
         T_mv t1Evaluate(T_sp exp, T_sp environment) {
             if ((exp).consp()) {
                 T_sp head = oCar(exp);
+#ifdef DEBUG_EVALUATE
                 if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
                     printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str());
                 }
+#endif
                 // TODO: Deal with Compiler macros here
                 T_sp macroFunction(nil<T_O>());
                 if (cl__symbolp(head)) {
@@ -2207,9 +2215,11 @@ namespace core {
                     }
                 }
             }
+#ifdef DEBUG_EVALUATE
             if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
                 printf("%s:%d About to compileFormAndEvalWithEnv: %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
             }
+#endif
             return eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
         }
 

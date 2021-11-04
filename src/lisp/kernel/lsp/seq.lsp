@@ -286,8 +286,9 @@ default value of INITIAL-ELEMENT depends on TYPE."
         ((vectorp sequence)
          (make-vector-iterator sequence from-end start end))
         (t
-         (sequence:make-sequence-iterator
-          sequence :from-end from-end :start start :end end))))
+         #-clasp-min(sequence:make-sequence-iterator
+                     sequence :from-end from-end :start start :end end)
+         #+clasp-min(error "The arg passed as a sequence to %make-sequence-iterator is ~a - in aclasp make-sequence-iterator is not available to use this" sequence))))
 
 ;;; Given a list of sequences, return two lists of the same length:
 ;;; one with irrelevant elements, and one with "iterators" for the sequences.

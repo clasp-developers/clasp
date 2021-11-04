@@ -182,6 +182,21 @@ CL_DEFUN LocalEntryPointGenerator_sp core__makeLocalEntryPointGenerator(Function
 }
 
 
+std::string LocalEntryPointGenerator_O::__repr__() const {
+  stringstream ss;
+  ss << "#<LOCAL-ENTRY-POINT-GENERATOR ";
+  ss << _rep_(this->_entry_point_indices) << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+  
+std::string GlobalEntryPointGenerator_O::__repr__() const {
+  stringstream ss;
+  ss << "#<GLOBAL-ENTRY-POINT-GENERATOR ";
+  ss << _rep_(this->_entry_point_indices) << " @" << (void*)this << ">";
+  return ss.str();
+}
+
 CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname (lineno 0) (column 0) (filepos 0))
 DOCGROUP(clasp)
 CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
@@ -621,6 +636,30 @@ struct InterpretedClosureEntryPoint {
     ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
     return eval::sp_progn((*closure)[INTERPRETED_CLOSURE_FORM_SLOT], newValueEnvironment).as_return_type();
   };
+    static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
 };
 
     

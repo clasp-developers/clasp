@@ -90,15 +90,12 @@ namespace gctools {
 #define LCC_PASS_ARGS_LLH lcc_nargs, lcc_args
 
 /*! This is a void function */
-#if 0
-#define LISP_ENTRY_n() LCC_RETURN entry_pointn(core::T_O *lcc_closure, std::size_t lcc_nargs, ... )
-#define LISP_ENTRY_0() LCC_RETURN entry_point0(core::T_O *lcc_closure)
-#define LISP_ENTRY_1() LCC_RETURN entry_point1(core::T_O *lcc_closure, core::T_O* farg0)
-#define LISP_ENTRY_2() LCC_RETURN entry_point2(core::T_O *lcc_closure, core::T_O* farg0, core::T_O* farg1 )
-#define LISP_ENTRY_3() LCC_RETURN entry_point3(core::T_O *lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2 )
-#define LISP_ENTRY_4() LCC_RETURN entry_point4(core::T_O *lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3 )
-#define LISP_ENTRY_5() LCC_RETURN entry_point5(core::T_O *lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3, core::T_O* farg4 )
-#endif
+#define LISP_ENTRY_0() LCC_RETURN entry_point_0(core::T_O *lcc_closure)
+#define LISP_ENTRY_1() LCC_RETURN entry_point_1(core::T_O *lcc_closure, core::T_O* lcc_farg0)
+#define LISP_ENTRY_2() LCC_RETURN entry_point_2(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1 )
+#define LISP_ENTRY_3() LCC_RETURN entry_point_3(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2 )
+#define LISP_ENTRY_4() LCC_RETURN entry_point_4(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3 )
+#define LISP_ENTRY_5() LCC_RETURN entry_point_5(core::T_O *lcc_closure, core::T_O* lcc_farg0, core::T_O* lcc_farg1, core::T_O* lcc_farg2, core::T_O* lcc_farg3, core::T_O* lcc_farg4 )
 
 // Compiled functions get the raw va_list
 #define LCC_VA_LIST(_valist) (*_valist)._Args
@@ -174,6 +171,7 @@ namespace gctools {
 // Registers are %rdi, %rsi, %rdx, %rcx, %r8, %r9
 #define LCC_CLOSURE_REGISTER 0
 #define LCC_NARGS_REGISTER 1
+#define LCC_ARGS_PTR_REGISTER 2
 #define LCC_ARGS_PASSED_IN_REGISTERS LCC_ARGS_IN_REGISTERS
 #define LCC_TOTAL_REGISTERS LCC_ABI_ARGS_IN_REGISTERS
 #define LCC_ARG0_REGISTER 2
@@ -365,15 +363,14 @@ namespace gctools {
 
 typedef LCC_RETURN_RAW(*ClaspLocalFunction)();
 typedef LCC_RETURN_RAW(*ClaspXepAnonymousFunction)();
-#if 1
 #define LISP_CALLING_CONVENTION() entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args )
 typedef LCC_RETURN_RAW(*ClaspXepGeneralFunction)(core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args );
 typedef LCC_RETURN_RAW(*ClaspXep0Function)(core::T_O* lcc_closure);
 typedef LCC_RETURN_RAW(*ClaspXep1Function)(core::T_O* lcc_closure, core::T_O* farg0);
-#else
-#define LISP_CALLING_CONVENTION() entry_point_n(LCC_ARGS_ELLIPSIS)
-typedef LCC_RETURN_RAW(*ClaspXepGeneralFunction)(LCC_ARGS_ELLIPSIS);
-#endif
+typedef LCC_RETURN_RAW(*ClaspXep2Function)(core::T_O* lcc_closure, core::T_O* farg0, core::T_O* farg1 );
+typedef LCC_RETURN_RAW(*ClaspXep3Function)(core::T_O* lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2 );
+typedef LCC_RETURN_RAW(*ClaspXep4Function)(core::T_O* lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3 );
+typedef LCC_RETURN_RAW(*ClaspXep5Function)(core::T_O* lcc_closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3, core::T_O* farg4 );
 
 struct XepFilling {};
 struct XepFillUsingLambda {};
@@ -387,20 +384,21 @@ struct ClaspXepFunction {
   ClaspXepFunction(XepFilling f) : _Defined(true) {};
   template <typename Wrapper>
   void setup() {
+    assert(NUMBER_OF_ENTRY_POINTS==5);
     this->_Defined = true;
     this->_EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
+    this->_EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
+    this->_EntryPoints[2] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_1;
+    this->_EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
+    this->_EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
+    this->_EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
   }
   ClaspXepAnonymousFunction operator[](int index) const { return this->_EntryPoints[index]; };
   inline LCC_RETURN invoke_0(T_O* closure) {
-    printf("%s:%d:%s Use the arity0 entry point\n", __FILE__, __LINE__, __FUNCTION__ );
-    // TODO: use the arity0 entry point
-    return ((ClaspXepGeneralFunction)(this->_EntryPoints[0]))( closure, 0, NULL );
+    return ((ClaspXep0Function)(this->_EntryPoints[1]))( closure );
   }
-  inline LCC_RETURN invoke_1(T_O* closure, size_t nargs, T_O* farg0) {
-    printf("%s:%d:%s Use the arity1 entry point\n", __FILE__, __LINE__, __FUNCTION__ );
-    // TODO: use the arity1 entry point
-    T_O* store_farg0 = farg0;
-    return ((ClaspXepGeneralFunction)(this->_EntryPoints[0]))( closure, 1, &store_farg0);
+  inline LCC_RETURN invoke_1(T_O* closure, T_O* farg0) {
+    return ((ClaspXep1Function)(this->_EntryPoints[2]))( closure, farg0 );
   }
 };
 

@@ -35,17 +35,84 @@
 
 (defstruct (xep-arity (:type vector) :named)
   arity ; arity of this entry point (:general-entry or an integer 0...n)
-  function ; The function object for this entry point
+  function-or-placeholder ; The function object for this entry point
   entry-point-reference ; the entry-point-reference
   )
 
-(defstruct (xep-group (:type list) :named)
-  entries
+(defstruct (cleavir-lambda-list-analysis (:type vector) :named)
+  cleavir-lambda-list
+  (lambda-list-arguments nil)
+  (required (list 0)) ; default zero required
+  (optional (list 0)) ; default zero optional
+  rest
+  key-flag
+  key-count
+  aok-p
+  aux-p
+  va-rest-p)
+
+(defun cleavir-lambda-list-analysis-min-nargs (cll-analysis)
+  (car (cleavir-lambda-list-analysis-required cll-analysis)))
+
+(defun cleavir-lambda-list-analysis-max-nargs (cll-analysis)
+  (+ (cleavir-lambda-list-analysis-min-nargs cll-analysis)
+     (car (cleavir-lambda-list-analysis-optional cll-analysis))))
+
+(defun process-cleavir-lambda-list-analysis (cll-analysis)
+  (values
+   (cleavir-lambda-list-analysis-required cll-analysis)
+   (cleavir-lambda-list-analysis-optional cll-analysis)
+   (cleavir-lambda-list-analysis-rest cll-analysis)
+   (cleavir-lambda-list-analysis-key-flag cll-analysis)
+   (cleavir-lambda-list-analysis-key-count cll-analysis)
+   (cleavir-lambda-list-analysis-aok-p cll-analysis)
+   (cleavir-lambda-list-analysis-aux-p cll-analysis)
+   (cleavir-lambda-list-analysis-va-rest-p cll-analysis)))
+
+(defun ensure-cleavir-lambda-list (lambda-list)
+  "Return arg if lambda-list is nil, or a list containing gensyms"
+  (cond
+    ((null lambda-list) (return-from ensure-cleavir-lambda-list nil))
+    (t (dolist (entry lambda-list)
+         (cond
+           ((symbolp entry)
+            (when (null (symbol-package entry))
+              (return-from ensure-cleavir-lambda-list lambda-list)))
+           ((consp entry)
+            (when (some (lambda (sym) (and (symbolp sym) (null (symbol-package sym)))) entry)
+              (return-from ensure-cleavir-lambda-list lambda-list)))
+           (t (error "Handle cleavir-lambda-list entry ~s" entry))))))
+  (error "ensure-cleavir-lambda-list doesn't know what to do with ~s" lambda-list))
+
+(defun ensure-cleavir-lambda-list-analysis (arg)
+  (unless (cleavir-lambda-list-analysis-p arg)
+    (error "This ~a is not a cleavir-lambda-list-analysis - it must be" arg))
+  arg)
+
+(defun process-bir-lambda-list (lambda-list)
+  "Temporary until bir:lambda-list can return a cleavir-lambda-list-analysis"
+  (let* ((cleavir-lambda-list (ensure-cleavir-lambda-list lambda-list))
+         (cleavir-lambda-list-analysis (calculate-cleavir-lambda-list-analysis cleavir-lambda-list)))
+    (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)))
+
+(defun arity-is-wrong-number-of-arguments-p (arity cll-analysis)
+  (if (eq arity :general-entry)
+      nil ; :general-entry handles all numbers of arguments
+      (let* ((nargs arity)
+             (nreq (car (cleavir-lambda-list-analysis-required cll-analysis)))
+             (nopt (car (cleavir-lambda-list-analysis-optional cll-analysis))))
+        (or (< arity nreq)
+            (< (+ nreq nopt) arity)))))
+  
+(defstruct (xep-group (:type vector) :named)
   name
-  entry-point-reference)
+  cleavir-lambda-list-analysis
+  arities
+  entry-point-reference
+  local-function)
 
 (defun xep-group-lookup (xep-group arity)
-  (dolist (entry (xep-group-entries xep-group))
+  (dolist (entry (xep-group-arities xep-group))
     (let ((entry-arity (xep-arity-arity entry)))
       (when (eql entry-arity arity)
         (return-from xep-group-lookup entry))))
@@ -59,14 +126,25 @@
 
 (defstruct (function-info (:type list) :named
                           (:constructor %make-function-info
-                              (function-name lambda-list cleavir-lambda-list
-                               docstring declares
-                               source-pathname lineno column filepos)))
+                              (function-name
+                               lambda-list
+                               cleavir-lambda-list-analysis
+                               docstring
+                               declares
+                               source-pathname
+                               lineno
+                               column
+                               filepos)))
   function-name
-  lambda-list cleavir-lambda-list docstring declares
+  lambda-list cleavir-lambda-list-analysis docstring declares
   source-pathname lineno column filepos)
 
-(defun make-function-info (&key function-name cleavir-lambda-list lambda-list docstring declares spi)
+(defun make-function-info (&key function-name
+                             (cleavir-lambda-list-analysis (make-cleavir-lambda-list-analysis))
+                             lambda-list
+                             docstring
+                             declares
+                             spi)
   (let ((lineno 0) (column 0) (filepos 0) (source-pathname "-unknown-file-"))
     (when spi
       (setf source-pathname (core:file-scope-pathname
@@ -76,7 +154,7 @@
             ;; FIXME: Why 1+?
             column (1+ (core:source-pos-info-column spi))
             filepos (core:source-pos-info-filepos spi)))
-    (%make-function-info function-name lambda-list cleavir-lambda-list docstring declares
+    (%make-function-info function-name lambda-list cleavir-lambda-list-analysis docstring declares
                          source-pathname lineno column filepos)))
 
 
@@ -106,7 +184,7 @@
   "Return the (values register-save-words entry-index) for the arity"
   (cond
     ((eq arity :general-entry) (values 3 0))
-    ((fixnump arity) (values arity (+ 1 arity)))
+    ((fixnump arity) (values (+ 1 arity) (+ 1 arity)))
     (t (error "irc-arity-info Illegal arity ~a" arity))))
 
 (defun irc-personality-function ()
@@ -531,6 +609,12 @@ representing a tagged fixnum."
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
+(defun irc-tag-vaslist (ptr &optional (label "vaslist-v*"))
+  "Given a word aligned ptr, add the vaslist tag"
+  (let* ((ptr-i8* (irc-bit-cast ptr %i8*%))
+         (ptr-tagged (irc-gep ptr-i8* (list (jit-constant-i64 +vaslist0-tag+)) label)))
+    ptr-tagged))
+
 (defun irc-unbox-single-float (t* &optional (label "single-float"))
   (irc-intrinsic-call "cc_unbox_single_float" (list t*) label)
   ;; unsafe ver - cc_unbox_single_float type errors, but this will happily
@@ -806,6 +890,7 @@ Otherwise do a variable shift."
            (llvm-sys:create-store *irbuilder* val destination is-volatile))
           ((llvm-sys:llvmcontext-equal
             (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
+           (cmp-log-dump-module *the-module*)
            (error "BUG: Mismatch in irc-store between val type ~a and destination contained type ~a"
                   val-type dest-contained-type))
           (t
@@ -885,6 +970,9 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
 
 (defun irc-phi-add-incoming (phi-node value basic-block)
+  (unless value
+    (cmp-log-dump-module *the-module*)
+    (error "value is NULL for phi-node ~a basic-block ~a" phi-node basic-block))
   (llvm-sys:add-incoming phi-node value basic-block))
 
 
@@ -911,187 +999,212 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-va_arg (valist* type &optional (name "vaarg"))
   (llvm-sys:create-vaarg *irbuilder* valist* type name))
 
-(defun irc-vaslist-va_list-address (vaslist &optional (label "va_list_address"))
-  (c++-field-ptr info.%vaslist% vaslist 'va_list label))
+(defun irc-vaslist-args-address (vaslist-v &optional (label "va_list_address"))
+  (c++-field-ptr info.%vaslist% vaslist-v :args label))
 
-(defun irc-vaslist-remaining-nargs-address (vaslist
-                                            &optional (label "va_list_remaining_nargs_address"))
-  (c++-field-ptr info.%vaslist% vaslist 'remaining-nargs label))
+(defun irc-vaslist-nargs-address (vaslist-v
+                                  &optional (label "va_list_remaining_nargs_address"))
+  (c++-field-ptr info.%vaslist% vaslist-v :nargs label))
 
 (defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
                                               ("frame-pointer" "all")))
 
-(defun layout-xep-function* (function-info xep-function local-function calling-convention func-env)
-  ;; Copy what is going on in bclasp-compile-lambda-list-code
-  (let* ((pass-args '())
-         (lambda-list (function-info-cleavir-lambda-list function-info))
-         (variables (lambda-list-arguments lambda-list)))
+(defun setup-wrong-number-of-arguments-xep (arity xep-group calling-convention)
+  ;; Remove the xep corresponding to the arity from the xep-group and replace it with a place-holder that the literal compiler will recognize
+  ;; Do nothing for now.
+  )
+
+
+(defun layout-xep-function* (arity function-info xep-group calling-convention func-env)
+  (let* ((local-function (xep-group-local-function xep-group))
+         (pass-args '())
+         (cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info))
+         (variables (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis)))
     (cmp-log "lambda list variables = %s%N" variables)
-    (let ((output-bindings '()))
+    (let ((rev-output-bindings '()))
       (with-irbuilder (*irbuilder-function-alloca*)
         (dolist (var variables)
-          (push (cons var (alloca-t* (string var))) output-bindings))
-        (cmp-log "output-bindings = %s%N" output-bindings))
-      ;; Parse lambda list.
-      (with-irbuilder (*irbuilder-function-body*)
-        (compile-lambda-list-code
-         (function-info-cleavir-lambda-list function-info)
-         calling-convention
-         :general-entry
-         :argument-out (lambda (value datum)
-                         (cmp-log "argument-out: %s %s%N" value datum)
-                         (let ((alloca (cdr (assoc datum output-bindings))))
-                           (irc-t*-result value alloca))))
-        (let ((call-block (irc-basic-block-create "docall")))
-          (irc-br call-block)
-          (irc-begin-block call-block))
-        (cmp-log "pass-args %s%N" pass-args)
-        (let* ((cleavir-lambda-list (function-info-cleavir-lambda-list function-info))
-               (cleavir-arguments (lambda-list-arguments cleavir-lambda-list))
-               (new-env (irc-new-unbound-value-environment-of-size
-                         func-env
-                         :number-of-arguments (length output-bindings)
-                         :label "arguments-env")))
-          ;; Now generate llvm registers for each argument
-          (let ((rev-call-args '()))
-            (push (calling-convention-closure calling-convention) rev-call-args)
-            (dolist (binding output-bindings)
-              (let ((alloca-arg (cdr binding)))
-                (push (irc-load alloca-arg) rev-call-args)))
-            (let ((call-args (nreverse rev-call-args)))
-              (cmp:irc-ret
-               (let ((function-type (llvm-sys:get-function-type local-function)))
-                 (cmp-log "(length variables) %s%N" (length variables))
-                 (cmp-log "variables: %s%N" variables)
-                 (cmp-log "function-type %s%N" function-type)
-                 (cmp-log "local-function %s%N" local-function)
-                 (cmp-log "length call-args: %s%N" (length call-args))
-                 (cmp-log "call-args: %s%N" call-args)
-                 (cmp:irc-create-call-wft
-                  function-type
-                  local-function
-                  call-args)))))
-          (cmp-log-dump-module *the-module*)
-          (values xep-function local-function))))))
+          (push (cons var (alloca-t* (string var))) rev-output-bindings))
+        (cmp-log "output-bindings = %s%N" rev-output-bindings))
+      (let ((output-bindings (nreverse rev-output-bindings)))
+        ;; Parse lambda list.
+        (with-irbuilder (*irbuilder-function-body*)
+          (let ((good-args (compile-lambda-list-code
+                            (function-info-cleavir-lambda-list-analysis function-info)
+                            calling-convention
+                            arity
+                            :argument-out (lambda (value datum)
+                                            (cmp-log "argument-out: %s %s%N" value datum)
+                                            (let ((alloca (cdr (assoc datum output-bindings))))
+                                              (irc-t*-result value alloca))))))
+            (cond
+              ((not good-args)
+               ;; If the arity of the xep doesn't match the lambda-list then
+               ;; we want to call a standard wrong-number-of-arguments entry point
+               ;; Delete the current entry-point function from the xep-group
+               ;;  and replace it with a place-holder that the literal compiler will recognize
+               ;;  and redirect to a standard entry-point for the wrong number of arguments.
+               (setup-wrong-number-of-arguments-xep arity xep-group calling-convention))
+              (t
+               (let ((call-block (irc-basic-block-create "docall")))
+                 (irc-br call-block)
+                 (irc-begin-block call-block))
+               (cmp-log "pass-args %s%N" pass-args)
+               (let* ((cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info))
+                      (cleavir-arguments (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis))
+                      (new-env (irc-new-unbound-value-environment-of-size
+                                func-env
+                                :number-of-arguments (length output-bindings)
+                                :label "arguments-env")))
+                 ;; Now generate llvm registers for each argument
+                 (let ((rev-call-args '()))
+                   (push (calling-convention-closure calling-convention) rev-call-args)
+                   (dolist (binding output-bindings)
+                     (let ((alloca-arg (cdr binding)))
+                       (push (irc-load alloca-arg) rev-call-args)))
+                   (let ((call-args (nreverse rev-call-args)))
+                     (cmp:irc-ret
+                      (let ((function-type (llvm-sys:get-function-type local-function)))
+                        (cmp-log "(length variables) %s%N" (length variables))
+                        (cmp-log "variables: %s%N" variables)
+                        (cmp-log "function-type %s%N" function-type)
+                        (cmp-log "local-function %s%N" local-function)
+                        (cmp-log "length call-args: %s%N" (length call-args))
+                        (cmp-log "call-args: %s%N" call-args)
+                        (cmp:irc-create-call-wft
+                         function-type
+                         local-function
+                         call-args)))))
+                 (cmp-log-dump-module *the-module*)
+                 (cmp-log "layout-xep-group* xep-group: %s%N" xep-group))))))))))
 
-(defun layout-xep-function (function-info xep-group function-name local-fn parent-env)
-  (let* ((xep-arity (xep-group-lookup xep-group :general-entry))
-         (xep-fn (xep-arity-function xep-arity)))
-    (cmp-log "xep-fn = %s%N" xep-fn)
-    (let ((*current-function* xep-fn)
-          (func-env (make-function-container-environment parent-env (car (llvm-sys:get-argument-list xep-fn)) xep-fn))
-          traceid
-          (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-          (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-          (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-          (entry-bb (irc-basic-block-create "entry" xep-fn)))
-      (cmp-log "entry-bb = %s%N" entry-bb)
-      (irc-set-insert-point-basic-block entry-bb irbuilder-cur)
-      ;; Setup exception handling and cleanup landing pad
-      (irc-set-function-for-environment func-env xep-fn)
-      (with-irbuilder (irbuilder-cur)
-        (let* ((body-bb (irc-basic-block-create "body" xep-fn))
-               (entry-branch (irc-br body-bb)))
-          (irc-set-insert-point-instruction entry-branch irbuilder-alloca)
-          (irc-set-insert-point-basic-block body-bb irbuilder-body)))
-      (let* ((*current-function* xep-fn)
-             (*current-function-name* function-name)
-             (*irbuilder-function-alloca* irbuilder-alloca)
-             (*irbuilder-function-body* irbuilder-body)
-             (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
-        (with-irbuilder (irbuilder-body)
-          (cmp-log "xep-fn2 = %s%N" xep-fn)
-          (let ((arguments      (llvm-sys:get-argument-list xep-fn)))
-            (cmp-log "arguments -> %s%N" arguments)
-            (let* ((rest-alloc     (alloca-t* "rest"))
-                   (callconv       (setup-calling-convention
-                                    xep-fn
-                                    :general-entry
-                                    :debug-on core::*debug-bclasp*
-                                    :cleavir-lambda-list (function-info-cleavir-lambda-list function-info)
-                                    :rest-alloc rest-alloc)))
-              (cmp-log "Setup the lambda-list handler and callconf %s%N" callconv)
-              (layout-xep-function* function-info xep-group local-fn callconv func-env))))))))
+(defun layout-xep-function (function-info xep-group function-name parent-env)
+  (let ((local-fn (xep-group-local-function xep-group)))
+    (dolist (xep-arity (xep-group-arities xep-group))
+      (let* ((arity (xep-arity-arity xep-arity))
+             (xep-fn (xep-arity-function-or-placeholder xep-arity)))
+        (cmp-log "xep-fn = %s%N" xep-fn)
+        (if (literal:wrong-number-of-arguments-placeholder-p xep-fn)
+            (progn
+              ;;(format t "layout-xep-function skipping arity ~a for ~a~%" arity xep-fn)
+              )
+            (let ((*current-function* xep-fn)
+                  (func-env (make-function-container-environment parent-env (car (llvm-sys:get-argument-list xep-fn)) xep-fn))
+                  traceid
+                  (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+                  (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+                  (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+                  (entry-bb (irc-basic-block-create "entry" xep-fn)))
+              (cmp-log "entry-bb = %s%N" entry-bb)
+              (irc-set-insert-point-basic-block entry-bb irbuilder-cur)
+              ;; Setup exception handling and cleanup landing pad
+              (irc-set-function-for-environment func-env xep-fn)
+              (with-irbuilder (irbuilder-cur)
+                (let* ((body-bb (irc-basic-block-create "body" xep-fn))
+                       (entry-branch (irc-br body-bb)))
+                  (irc-set-insert-point-instruction entry-branch irbuilder-alloca)
+                  (irc-set-insert-point-basic-block body-bb irbuilder-body)))
+              (let* ((*current-function* xep-fn)
+                     (*current-function-name* function-name)
+                     (*irbuilder-function-alloca* irbuilder-alloca)
+                     (*irbuilder-function-body* irbuilder-body)
+                     (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
+                (with-irbuilder (irbuilder-body)
+                  (let ((*current-unwind-landing-pad-dest* nil))
+                    (cmp-log "xep-fn2 = %s%N" xep-fn)
+                    (let ((arguments      (llvm-sys:get-argument-list xep-fn)))
+                      (cmp-log "arguments -> %s%N" arguments)
+                      (let* ((rest-alloc     (alloca-t* "rest"))
+                             (callconv       (setup-calling-convention
+                                              xep-fn
+                                              arity
+                                              :debug-on core::*debug-bclasp*
+                                              :cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info)
+                                              :rest-alloc rest-alloc)))
+                        (cmp-log "Setup the lambda-list handler and callconf %s%N" callconv)
+                        (layout-xep-function* arity function-info xep-group callconv func-env))))))))))))
+
 
 (defun do-new-function (body-fn function-symbol parent-env function-attributes linkage return-void function-info)
-  (cmp-log "Entered do-new-function %s%N" (function-info-cleavir-lambda-list function-info))
-  (cmp-log "     (lambda-list-arguments cleavir-lambda-list) -> %s%N" (lambda-list-arguments (function-info-cleavir-lambda-list function-info)))
-  (let* ((argument-names (list* "closure" (mapcar (lambda (sym) (string sym)) (lambda-list-arguments (function-info-cleavir-lambda-list function-info)))))
-         (num-args (length argument-names))
-         (local-function-type (llvm-sys:function-type-get
-                               (lookup-type :tmv)
-                               (make-list num-args :initial-element (lookup-type :t*))))
-         (function-name (jit-function-name (jit-function-name function-symbol)))
-         (function-description (irc-make-function-description function-info))
-         )
-    (cmp-log "argument-names: %s%N" argument-names)
-    (cmp-log "local-function-type: %s%N" local-function-type)
-    (multiple-value-bind (local-fn)    ;  local-entry-point-reference)
-        (irc-local-function-create local-function-type linkage function-name *the-module* function-description)
-      (llvm-sys:set-personality-fn local-fn (irc-personality-function))
-      (let ((*current-function* local-fn)
-            (func-env (make-function-container-environment parent-env (car (llvm-sys:get-argument-list local-fn)) local-fn))
-            traceid
-            (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-            (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-            (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
-        (let ((entry-bb (irc-basic-block-create "entry" local-fn)))
-          (irc-set-insert-point-basic-block entry-bb irbuilder-cur))
-        ;; Setup exception handling and cleanup landing pad
-        (irc-set-function-for-environment func-env local-fn)
-        (with-irbuilder (irbuilder-cur)
-          (let* ((body-bb (irc-basic-block-create "body" local-fn))
-                 (entry-branch (irc-br body-bb)))
-            (irc-set-insert-point-instruction entry-branch irbuilder-alloca)
-            (irc-set-insert-point-basic-block body-bb irbuilder-body)))
-        (setf-metadata func-env :cleanup ())
-        (let* ((result (let ((*irbuilder-function-alloca* irbuilder-alloca)) (alloca-tmv "result")))
-               (*current-function* local-fn)
-               (*current-function-name* (llvm-sys:get-name local-fn))
-               (*irbuilder-function-alloca* irbuilder-alloca)
-               (*irbuilder-function-body* irbuilder-body)
-               (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
-          (with-irbuilder (*irbuilder-function-body*)
-            (with-new-function-prepare-for-try (local-fn)
-              (with-dbg-function (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                  :function local-fn
-                                  :function-type local-function-type)
-                (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
-                  (when core:*current-source-pos-info*
-                    (dbg-set-irbuilder-source-location irbuilder-alloca
-                                                       core:*current-source-pos-info*)
-                    (dbg-set-irbuilder-source-location irbuilder-body
-                                                       core:*current-source-pos-info*))
-                  (with-irbuilder (*irbuilder-function-body*)
-                    (or *the-module* (error "with-new-function *the-module* is NIL"))
-                    (cmp-log "with-landing-pad around body%N")
-                    (let* ((cleavir-lambda-list (function-info-cleavir-lambda-list function-info))
-                           (function-arguments (rest (llvm-sys:get-argument-list local-fn)))
-                           (cleavir-arguments (lambda-list-arguments cleavir-lambda-list)))
-                      (cmp-log "function-arguments: %s%N" function-arguments)
-                      (cmp-log "cleavir-arguments: %s%N" cleavir-arguments)
-                      (let ((output-bindings (mapcar (lambda (name var) (cons name (cons 'ext:llvm-register-var var))) cleavir-arguments function-arguments))
-                            (new-env (irc-new-unbound-value-environment-of-size
-                                      func-env
-                                      :number-of-arguments (length (lambda-list-arguments (function-info-cleavir-lambda-list function-info)))
-                                      :label "arguments-env")))
-                        (irc-make-value-frame-set-parent new-env (length output-bindings) func-env)
-                        (mapc (lambda (ob)
-                                (cmp-log "Adding to environment: %s%N" ob)
-                                (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
-                              output-bindings)
-                        (funcall body-fn local-fn new-env result))))))
-              (cmp-log "ReturnAA%N")
-              #+(or)(irc-verify-no-function-environment-cleanup func-env))
-            (cmp-log "ReturnA%N")
-            (if return-void
-                (irc-ret-void)
-                (irc-ret (irc-load result)))))
-        (cmp-log "ReturnB%N")
-        (let ((xep-group (irc-xep-functions-create linkage (string function-name) *the-module* function-description)))
-          (cmp-log "xep-group = %s%N" xep-group)
-          (layout-xep-function function-info xep-group function-name local-fn parent-env))))))
-                                                                                              
+  (let ((cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info)))
+    (cmp-log "Entered do-new-function %s%N" (function-info-cleavir-lambda-list-analysis function-info))
+    (cmp-log "     (lambda-list-arguments cleavir-lambda-list) -> %s%N" (cleavir-lambda-list-analysis-lambda-list-arguments (function-info-cleavir-lambda-list-analysis function-info)))
+    (let* ((argument-names (list* "closure" (mapcar (lambda (sym) (string sym)) (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis))))
+           (num-args (length argument-names))
+           (local-function-type (llvm-sys:function-type-get
+                                 (lookup-type :tmv)
+                                 (make-list num-args :initial-element (lookup-type :t*))))
+           (function-name (jit-function-name (jit-function-name function-symbol)))
+           (function-description (irc-make-function-description function-info))
+           )
+      (cmp-log "argument-names: %s%N" argument-names)
+      (cmp-log "local-function-type: %s%N" local-function-type)
+      (multiple-value-bind (local-fn)  ;  local-entry-point-reference)
+          (irc-local-function-create local-function-type linkage function-name *the-module* function-description)
+        (llvm-sys:set-personality-fn local-fn (irc-personality-function))
+        (let ((*current-function* local-fn)
+              (func-env (make-function-container-environment parent-env (car (llvm-sys:get-argument-list local-fn)) local-fn))
+              traceid
+              (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+              (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+              (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
+          (let ((entry-bb (irc-basic-block-create "entry" local-fn)))
+            (irc-set-insert-point-basic-block entry-bb irbuilder-cur))
+          ;; Setup exception handling and cleanup landing pad
+          (irc-set-function-for-environment func-env local-fn)
+          (with-irbuilder (irbuilder-cur)
+            (let* ((body-bb (irc-basic-block-create "body" local-fn))
+                   (entry-branch (irc-br body-bb)))
+              (irc-set-insert-point-instruction entry-branch irbuilder-alloca)
+              (irc-set-insert-point-basic-block body-bb irbuilder-body)))
+          (setf-metadata func-env :cleanup ())
+          (let* ((result (let ((*irbuilder-function-alloca* irbuilder-alloca)) (alloca-tmv "result")))
+                 (*current-function* local-fn)
+                 (*current-function-name* (llvm-sys:get-name local-fn))
+                 (*irbuilder-function-alloca* irbuilder-alloca)
+                 (*irbuilder-function-body* irbuilder-body)
+                 (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
+            (with-irbuilder (*irbuilder-function-body*)
+              (with-new-function-prepare-for-try (local-fn)
+                (with-dbg-function (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                    :function local-fn
+                                    :function-type local-function-type)
+                  (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
+                    (when core:*current-source-pos-info*
+                      (dbg-set-irbuilder-source-location irbuilder-alloca
+                                                         core:*current-source-pos-info*)
+                      (dbg-set-irbuilder-source-location irbuilder-body
+                                                         core:*current-source-pos-info*))
+                    (with-irbuilder (*irbuilder-function-body*)
+                      (or *the-module* (error "with-new-function *the-module* is NIL"))
+                      (cmp-log "with-landing-pad around body%N")
+                      (let* ((function-arguments (rest (llvm-sys:get-argument-list local-fn)))
+                             (cleavir-arguments (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis)))
+                        (cmp-log "function-arguments: %s%N" function-arguments)
+                        (cmp-log "cleavir-arguments: %s%N" cleavir-arguments)
+                        (let ((output-bindings (mapcar (lambda (name var) (cons name (cons 'ext:llvm-register-var var))) cleavir-arguments function-arguments))
+                              (new-env (irc-new-unbound-value-environment-of-size
+                                        func-env
+                                        :number-of-arguments (length (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis))
+                                        :label "arguments-env")))
+                          (irc-make-value-frame-set-parent new-env (length output-bindings) func-env)
+                          (format t "layout-xep-function local-function ~s output-bindings: ~s~%" *current-function-name* output-bindings)
+                          (mapc (lambda (ob)
+                                  (cmp-log "Adding to environment: %s%N" ob)
+                                  (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
+                                output-bindings)
+                          (funcall body-fn local-fn new-env result))))))
+                (cmp-log "ReturnAA%N")
+                #+(or)(irc-verify-no-function-environment-cleanup func-env))
+              (cmp-log "ReturnA%N")
+              (if return-void
+                  (irc-ret-void)
+                  (irc-ret (irc-load result)))))
+          (cmp-log "ReturnB%N")
+          (let ((xep-group (irc-xep-functions-create cleavir-lambda-list-analysis linkage (string function-name) *the-module* function-description local-fn)))
+            (cmp-log "xep-group = %s%N" xep-group)
+            (layout-xep-function function-info xep-group function-name parent-env)
+            xep-group))))))
   
 (defmacro with-new-function
     ((;; LOCAL-FN is bound to the function being created
@@ -1099,7 +1212,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       ;; FN-ENV is bound to the function environment
       fn-env
       ;; RESULT is bound to the %tmv% result
-      result
+      fn-result
       &key
         ;; The function name can be a symbol or a string.
         ;; if its a string it is used unchanged
@@ -1123,7 +1236,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
      &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
   (declare (ignore function-attributes-p))
-  `(do-new-function (lambda (local-fn fn-env result)
+  `(do-new-function (lambda (,local-fn ,fn-env ,fn-result)
                       (progn
                         ,@body))
      ,function-name
@@ -1182,7 +1295,10 @@ But no irbuilders or basic-blocks. Return the fn."
 (defconstant +maxi32+ 4294967295)
 
 (defstruct (entry-point-reference (:type vector) :named)
-  index)
+  index
+  kind ; for debugging (:global or :local)
+  function-description ; for debugging 
+  )
 
 (defstruct (function-description-placeholder (:type vector) :named)
   function function-name source-pathname lambda-list docstring declares lineno column filepos
@@ -1217,42 +1333,56 @@ But no irbuilders or basic-blocks. Return the fn."
                                      :column column
                                      :filepos filepos))))
 
-(defun irc-create-entry-point-reference (kind llvm-function-name fn module function-description)
-  (let* ((entry-point-indices (mapcar (lambda (func) (literal:register-function-index fn)) (list fn)))
-         (entry-point-generator (cond
-                                  ((eq kind :global)
-                                   (sys:make-global-entry-point-generator
-                                    :entry-point-functions entry-point-indices
-                                    :function-description function-description))
-                                  ((eq kind :local)
-                                   (sys:make-local-entry-point-generator
-                                    :entry-point-functions entry-point-indices
-                                    :function-description function-description))
-                                  (t (error "Unknown entry-point kind: ~a" kind))))
+(defun irc-create-global-entry-point-reference (xep-arity-list module function-description)
+  (let* ((entry-point-generator (let ((entry-point-indices (literal:register-xep-function-indices xep-arity-list)))
+                                  (sys:make-global-entry-point-generator
+                                   :entry-point-functions entry-point-indices
+                                   :function-description function-description)))
          (index (literal:reference-literal entry-point-generator)))
-    (make-entry-point-reference :index index)))
+    (make-entry-point-reference :index index :kind :global :function-description function-description)))
+
+(defun irc-create-local-entry-point-reference (local-fn module function-description)
+  (let* ((entry-point-generator (let ((entry-point-index (literal:register-local-function-index local-fn)))
+                                 (sys:make-local-entry-point-generator
+                                  :entry-point-functions (list entry-point-index)
+                                  :function-description function-description)))
+         (index (literal:reference-literal entry-point-generator)))
+    (make-entry-point-reference :index index :kind :local :function-description function-description)))
+
 
 (defun irc-local-function-create (llvm-function-type linkage function-name module function-description)
   "Create a local function and no function description is needed"
   (let* ((local-function-name (concatenate 'string function-name "-lcl"))
          (fn (irc-function-create llvm-function-type linkage local-function-name module))
-         (entry-point-reference (irc-create-entry-point-reference :local (llvm-sys:get-name fn) fn module function-description)))         
+         (entry-point-reference (irc-create-local-entry-point-reference fn module function-description)))         
     (values fn entry-point-reference)))
 
 (defparameter *multiple-entry-points* nil)
-(defun irc-xep-functions-create (linkage function-name module function-description)
+(defun irc-xep-functions-create (cleavir-lambda-list-analysis linkage function-name module function-description local-function)
   "Create a function and a function description for a cclasp function"
   ;; MULTIPLE-ENTRY-POINT first return value is list of entry points
-  (let* ((xep-function-name (concatenate 'string function-name "-xep"))
-         (fn (irc-function-create (fn-prototype :general-entry) linkage xep-function-name module))
-         (entry-point-reference (irc-create-entry-point-reference :global (llvm-sys:get-name fn) fn module function-description))
-         (general-xep-arity (make-xep-arity :arity :general-entry
-                                            :function fn))
-         (entry-point-info (make-xep-group :entries (list general-xep-arity)
-                                           :name function-name
-                                           :entry-point-reference entry-point-reference)))
-    (when *multiple-entry-points* (break "Check entry-point-info ~a" entry-point-info))
-    entry-point-info))
+  (let ((rev-xep-aritys '()))
+    (dolist (arity (list* :general-entry (subseq (list 0 1 2 3 4 5 6 7 8) +entry-point-arity-begin+ +entry-point-arity-end+)))
+      (cmp-log "Creating xep function for %s%N" arity)
+      (let* ((xep-function-name (concatenate 'string function-name (format nil "-xep~a" (if (eq arity :general-entry) "" arity))))
+             (fn (if (arity-is-wrong-number-of-arguments-p arity cleavir-lambda-list-analysis)
+                     (literal:make-wrong-number-of-arguments-placeholder :arity arity
+                                                                         :name xep-function-name
+                                                                         :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
+                     (irc-function-create (fn-prototype arity) linkage xep-function-name module)))
+             (xep-arity (make-xep-arity :arity arity :function-or-placeholder fn)))
+        (push xep-arity rev-xep-aritys)))
+    (cmp-log "Created xep-arities%N")
+    (let* ((xep-aritys (nreverse rev-xep-aritys))
+           (entry-point-reference (irc-create-global-entry-point-reference xep-aritys
+                                                                           module
+                                                                           function-description))
+           (entry-point-info (make-xep-group :name function-name
+                                             :arities xep-aritys
+                                             :entry-point-reference entry-point-reference
+                                             :local-function local-function)))
+      (cmp-log "Created entry-point-info %s%N" entry-point-info)
+      entry-point-info)))
 
 (defun irc-verify-no-function-environment-cleanup (env)
   (let ((unwind (local-metadata env :unwind)))
@@ -1334,9 +1464,8 @@ But no irbuilders or basic-blocks. Return the fn."
   ;; Also VLA
   (llvm-sys:create-alloca *irbuilder* %t*% size label))
 
-(defun alloca-arguments (size &optional (label "temp-values"))
-  ;; Also VLA
-  (llvm-sys:create-alloca *irbuilder* (llvm-sys:array-type-get %t*% size) (jit-constant-i64 1) label))
+(defun alloca-arguments (size &optional (label "callargs"))
+  (llvm-sys:create-alloca *irbuilder-function-alloca* (llvm-sys:array-type-get %t*% size) (jit-constant-i64 1) label))
 
 (defun alloca-register-save-area (arity &key (irbuilder *irbuilder-function-alloca*) (label "vaslist"))
   "Alloca space for a register save area, and keep it in the stack map."
@@ -1410,20 +1539,21 @@ But no irbuilders or basic-blocks. Return the fn."
   (irc-t*-result (irc-smart-ptr-extract tsp) result))
 
 
-(defun irc-calculate-entry (closure arity function-type &optional (label "entry-point-gep"))
+(defun irc-calculate-entry (closure arity function-type &optional (label "ep-gep"))
   (let* ((global-entry-point** (c++-field-ptr info.%function% closure :global-entry-point "global-entry-point**"))
          (global-entry-point* (irc-load global-entry-point** "global-entry-point*"))
-         (entry-point-i8** (c++-field-ptr info.%global-entry-point% global-entry-point* :entry-points "entry-point-i8**"))
+         (ep-i8** (c++-field-ptr info.%global-entry-point% global-entry-point* :entry-points "ep-i8**"))
          (arity-index (cond
                         ((eq arity :general-entry)
                          0)
                         ((fixnump arity)
                          (+ 1 arity))
                         (t (error "irc-calculate-entry Illegal arity ~a" arity))))
-         (entry-point-arity-i8** (irc-gep (irc-bit-cast entry-point-i8** %entry-point-vector*%) (list 0 arity-index) "entry-point-arity-i8**"))
-         (entry-point-arity-i8*  (irc-load entry-point-arity-i8** "entry-point-arity-i8*")))
-    (cmp-log "Got entry-point-arity-i8* -> %s%N" entry-point-arity-i8*)
-    (prog1 (irc-bit-cast entry-point-arity-i8* function-type "ep")
+         (ep-bc (irc-bit-cast ep-i8** %entry-point-vector*% "ep-bc"))
+         (ep-arity-i8** (irc-gep ep-bc (list 0 arity-index) "ep-arity-i8**"))
+         (ep-arity-i8*  (irc-load ep-arity-i8** "ep-arity-i8*")))
+    (cmp-log "Got ep-arity-i8* -> %s%N" ep-arity-i8*)
+    (prog1 (irc-bit-cast ep-arity-i8* function-type "ep")
       (cmp-log-dump-module *the-module*))))
 
 
@@ -1439,10 +1569,11 @@ But no irbuilders or basic-blocks. Return the fn."
                   
 (defun irc-calculate-real-args (arity closure arguments)
   (if (eq arity :general-entry)
-      (let ((arg-buffer (alloca-arguments (length arguments) "args"))
+      (let ((arg-buffer (alloca-arguments (length arguments) "call-args"))
             (idx 0))
         (dolist (arg arguments)
           (let ((arg-gep (irc-gep arg-buffer (list 0 idx))))
+            (incf idx)
             (irc-store arg arg-gep)))
         (list closure (jit-constant-size_t (length arguments)) (irc-bit-cast arg-buffer %t**%)))
       (list* closure arguments)))

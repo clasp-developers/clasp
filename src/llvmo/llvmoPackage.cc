@@ -91,24 +91,26 @@ void redirect_llvm_interface_addSymbol() {
 
 
 CL_DOCSTRING(R"dx(Load an llvm-ir file with either a bc extension or ll extension.)dx")
-CL_LAMBDA(pathname &optional verbose print external_format startup-name)
+CL_LAMBDA(pathname &optional verbose print external_format (startup-id 0))
 DOCGROUP(clasp)
-CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
+CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startup_name )
 {
   core::Pathname_sp pfilename = core::cl__pathname(filename);
-  core::Pathname_sp bc_file = core::Pathname_O::makePathname(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),
-                                                             nil<core::T_O>(),core::SimpleBaseString_O::make("bc"));
-  bc_file = cl__merge_pathnames(bc_file,pfilename);
-  T_sp found = cl__probe_file(bc_file);
-  if (found.notnilp()) {
-    return llvm_sys__load_bitcode(bc_file,verbose,print,externalFormat,startup_name);
-  }
   core::Pathname_sp ll_file = core::Pathname_O::makePathname(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),
                                                              nil<core::T_O>(),core::SimpleBaseString_O::make("ll"));
   ll_file = cl__merge_pathnames(ll_file,pfilename);
-  found = cl__probe_file(ll_file);
+  T_sp found = cl__probe_file(ll_file);
   if (found.notnilp()) {
-    return llvm_sys__load_bitcode_ll(ll_file,verbose,print,externalFormat,startup_name);
+    core::write_bf_stream(BF("Loading ll file %s\n") % _rep_(ll_file));
+    return llvm_sys__load_ll(ll_file,verbose,print,externalFormat,startup_name);
+  }
+  core::Pathname_sp bc_file = core::Pathname_O::makePathname(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),
+                                                             nil<core::T_O>(),core::SimpleBaseString_O::make("bc"));
+  bc_file = cl__merge_pathnames(bc_file,pfilename);
+  found = cl__probe_file(bc_file);
+  if (found.notnilp()) {
+    core::write_bf_stream(BF("Loading bc file %s\n") % _rep_(bc_file));
+    return llvm_sys__load_bc(bc_file,verbose,print,externalFormat,startup_name);
   }
   SIMPLE_ERROR(BF("Could not find llvm-ir file %s with .bc or .ll extension") % _rep_(filename));
 }
@@ -151,9 +153,9 @@ void loadModule(llvmo::Module_sp module, size_t startupID, const std::string& li
 #endif
 }
   
-CL_LAMBDA(filename &optional verbose print external_format startup-id)
+CL_LAMBDA(filename &optional verbose print external_format (startup-id 0))
 DOCGROUP(clasp)
-CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID )
+CL_DEFUN bool llvm_sys__load_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
@@ -172,9 +174,9 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 }
 
 
-CL_LAMBDA(filename &optional verbose print external_format startup-id)
+CL_LAMBDA(filename &optional verbose print external_format (startup-id 0))
 DOCGROUP(clasp)
-CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID )
+CL_DEFUN bool llvm_sys__load_bc(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, size_t startupID )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);

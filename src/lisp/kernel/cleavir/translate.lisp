@@ -19,7 +19,7 @@
 (defun lambda-list-too-hairy-p (lambda-list)
   (multiple-value-bind (reqargs optargs rest-var
                         key-flag keyargs aok aux varest-p)
-      (cmp::process-cleavir-lambda-list lambda-list)
+      (cmp:process-bir-lambda-list lambda-list)
     (declare (ignore reqargs optargs rest-var keyargs aok aux))
     (or key-flag varest-p)))
 
@@ -31,8 +31,7 @@
       (and (cleavir-set:some (lambda (c) (typep c 'bir:mv-local-call))
                              (bir:local-calls function))
            (multiple-value-bind (req opt rest)
-               (cmp::process-cleavir-lambda-list
-                (bir:lambda-list function))
+               (cmp:process-bir-lambda-list (bir:lambda-list function))
              (declare (ignore opt))
              (or (plusp (car req)) (not rest))))
       ;; Assume that a function with no enclose and no local calls is
@@ -73,7 +72,8 @@
                            (cmp:irc-xep-functions-create linkage
                                                          jit-function-name
                                                          cmp:*the-module*
-                                                         function-description)
+                                                         function-description
+                                                         the-function)
                            :xep-unallocated)))
         (if (eq xep-group :xep-unallocated)
             (make-instance 'llvm-function-info
@@ -86,7 +86,7 @@
               (make-instance 'llvm-function-info
                              :environment (cleavir-set:set-to-list (bir:environment function))
                              :main-function the-function
-                             :xep-function (cmp:xep-arity-function xep-arity)
+                             :xep-function (cmp:ensure-xep-function-not-placeholder (cmp:xep-arity-function-or-placeholder xep-arity))
                              :xep-function-description (cmp:xep-arity-entry-point-reference xep-arity)
                              :arguments arguments)))))))
 
@@ -564,7 +564,7 @@
            ;; argcount mismatch, so we don't need to sweat that.
            (multiple-value-bind (req opt rest-var key-flag keyargs aok aux
                                  varest-p)
-               (cmp::process-cleavir-lambda-list (bir:lambda-list callee))
+               (cmp:process-bir-lambda-list (bir:lambda-list callee))
              (declare (ignore keyargs aok aux))
              (assert (and (not key-flag) (not varest-p)))
              (let* ((rest-id (cond ((null rest-var) nil)
@@ -700,7 +700,7 @@
          (callee-info (find-llvm-function-info callee))
          (tmv (in (second (bir:inputs instruction)))))
     (multiple-value-bind (req opt rest-var key-flag keyargs aok aux varest-p)
-        (cmp::process-cleavir-lambda-list (bir:lambda-list callee))
+        (cmp::process-bir-lambda-list (bir:lambda-list callee))
       (declare (ignore keyargs aok aux))
       (out (if (or key-flag varest-p)
                (general-mv-local-call callee-info tmv)
@@ -1201,6 +1201,7 @@
 (defun calculate-function-info (irfunction lambda-name)
   (let* ((origin (bir:origin irfunction))
          (spi (origin-spi origin)))
+    (error "Where do we get the cleavir-lambda-list-analysis for function-info?????")
     (cmp:make-function-info
      :function-name lambda-name
      :lambda-list (bir:original-lambda-list irfunction)
@@ -1218,10 +1219,11 @@
   (declare (ignore abi))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
       ;; Parse lambda list.
-    (cmp:compile-lambda-list-code (bir:lambda-list ir)
+    (cmp:compile-lambda-list-code (ensure-cleavir-lambda-list-analysis (bir:lambda-list ir))
                                   calling-convention
                                   :general-entry
                                   :argument-out #'out)
+    (error "Check result of compile-lambda-list-code - it may have returned NIL which means no args")
     ;; Import cells.
     (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
            (llvm-function-info (find-llvm-function-info ir))
@@ -1275,7 +1277,7 @@
 
 (defun compute-rest-alloc (lambda-list)
   ;; FIXME: We seriously need to not reparse lambda lists a million times
-  (let ((rest-var (nth-value 2 (cmp::process-cleavir-lambda-list lambda-list))))
+  (let ((rest-var (nth-value 2 (cmp::process-lambda-list lambda-list))))
     (cond ((not rest-var) nil) ; don't care
           ((bir:unused-p rest-var) 'ignore)
           ;; TODO: Dynamic extent?
@@ -1315,6 +1317,7 @@
         (cmp:with-debug-info-source-position (source-pos-info xep-function)
           (let* ((fn-args (llvm-sys:get-argument-list xep-function))
                  (lambda-list (bir:lambda-list function))
+                 (cleavir-lambda-list-analysis (calculate-cleavir-lambda-list-analysis lambda-list))
                  (calling-convention
                    (cmp:setup-calling-convention
                     xep-function
@@ -1323,7 +1326,7 @@
                     (cleavir-policy:policy-value
                      (bir:policy function)
                      'save-register-args)
-                    :cleavir-lambda-list lambda-list
+                    :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
                     :rest-alloc (compute-rest-alloc lambda-list))))
             (layout-xep-function* xep-function function calling-convention abi)))))))
 

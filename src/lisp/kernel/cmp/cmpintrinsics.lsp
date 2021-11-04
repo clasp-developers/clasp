@@ -137,13 +137,13 @@ names to offsets."
   (llvm-sys:type-get-pointer-to (funcall (c++-struct-type-getter struct-info))))
   
 (defun c++-field-ptr (struct-info tagged-object field-name &optional (label ""))
-  (let* ((tagged-object-i8* tagged-object)
+  (let* ((tagged-object-i8* (irc-bit-cast tagged-object %i8*%))
          (field* (irc-gep tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
          (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
          (field-ptr (irc-bit-cast field* (funcall field-type-getter) label)))
     field-ptr))
 
-                                     
+                                    
 (define-symbol-macro %i1% (llvm-sys:type-get-int1-ty (thread-local-llvm-context)))
 (define-symbol-macro %i3% (llvm-sys:type-get-int-nty (thread-local-llvm-context) 3))
 
@@ -562,27 +562,24 @@ Boehm and MPS use a single pointer"
 ;; Either the register arguments are available in register-args
 ;;   or the va-list is used to access the arguments
 ;;   one after the other with calling-convention.va-arg
-(defstruct (calling-convention-impl
-            (:conc-name "CALLING-CONVENTION-")
-            (:type vector))
+(defstruct (calling-convention (:type vector) :named)
   closure
   nargs
-  use-only-registers ; If T then use only the register-args
   register-args ; The arguments that were passed in registers
   vaslist*      ; The address of the args on the stack or NIL
-  register-save-area*
-  cleavir-lambda-list ; cleavir-style lambda-list
+  cleavir-lambda-list-analysis ; analysis of cleavir-lambda-list
   rest-alloc ; whether we can dx or ignore a &rest argument
   )
 
 ;; Parse the function arguments into a calling-convention
 
-(defun initialize-calling-convention (llvm-function arity &key register-save-area* cleavir-lambda-list rest-alloc)
+(defun initialize-calling-convention (llvm-function arity &key debug-on cleavir-lambda-list-analysis rest-alloc)
   (cmp-log "llvm-function: %s%N" llvm-function)
   (let ((arguments (llvm-sys:get-argument-list llvm-function)))
     (cmp-log "llvm-function arguments: %s%N" (llvm-sys:get-argument-list llvm-function))
     (cmp-log "llvm-function isVarArg: %s%N" (llvm-sys:is-var-arg llvm-function))
-    (let* ()
+    (let ((register-save-area* (when debug-on (alloca-register-save-area arity :label "register-save-area")))
+          (closure (first arguments)))
       (cmp-log "A%N")
       (unless (first arguments)
         (error "initialize-calling-convention for arguments ~a - the closure is NIL" arguments))
@@ -590,23 +587,31 @@ Boehm and MPS use a single pointer"
       (cond
         ((eq arity :general-entry)
          (cmp-log "B%N")
-         (let ((closure (first arguments))
-               (nargs (second arguments))
-               (args (third arguments))
-               (vaslist (alloca-vaslist)))
-           (vaslist-start vaslist nargs args)
-           (maybe-spill-to-register-save-area arity register-save-area* closure nargs args)
-           (make-calling-convention-impl :closure closure
-                                         :nargs nargs
-                                         :vaslist* vaslist
-                                         :register-save-area* register-save-area*
-                                         :cleavir-lambda-list cleavir-lambda-list
-                                         :rest-alloc rest-alloc)))
-        (t (error "Handle arity ~a~%" arity))))))
+         (let* ((nargs (second arguments))
+                (args (third arguments))
+                (vaslist (alloca-vaslist))
+                (vaslist-v* (irc-tag-vaslist vaslist)))
+           (vaslist-start vaslist-v* nargs args)
+           (maybe-spill-to-register-save-area arity register-save-area* (list closure nargs args))
+           (make-calling-convention :closure closure
+                                    :nargs nargs
+                                    :vaslist* vaslist-v*
+                                    :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
+                                    :rest-alloc rest-alloc)))
+        (t
+         (let ((nargs (length (cdr arguments)))
+               (register-args (cdr arguments)))
+           (maybe-spill-to-register-save-area arity register-save-area* (list* closure register-args))
+           (make-calling-convention :closure closure
+                                    :nargs (jit-constant-i64 nargs)
+                                    :register-args register-args
+                                    :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
+                                    :rest-alloc rest-alloc)))))))
 
-(defun vaslist-start (vaslist nargs args)
-  (irc-store args (c++-field-ptr info.%vaslist% vaslist :args))
-  (irc-store nargs (c++-field-ptr info.%vaslist% vaslist :nargs))
+(defun vaslist-start (vaslist-v nargs &optional args)
+  (when args
+      (irc-store args (c++-field-ptr info.%vaslist% vaslist-v :args)))
+  (irc-store nargs (c++-field-ptr info.%vaslist% vaslist-v :nargs))
   )
 
 (defun vaslist-copy (vaslist-dst vaslist-src)
@@ -660,8 +665,9 @@ Boehm and MPS use a single pointer"
                                         type-name 64 type 0)
                                  :always-preserve t))
 
+
 ;; (Maybe) generate code to store registers in memory. Return value unspecified.  
-(defun maybe-spill-to-register-save-area (arity register-save-area* &rest registers)
+(defun maybe-spill-to-register-save-area (arity register-save-area* registers)
   (cmp-log "maybe-spill-to-register-save-area register-save-area* -> %s%N" register-save-area*)
   (cmp-log "maybe-spill-to-register-save-area registers -> %s%N" registers)
   (flet ((spill-reg (idx reg addr-name)
@@ -678,12 +684,14 @@ Boehm and MPS use a single pointer"
                  (%dbg-variable-addr addr var)))
              addr)))
     (let* ((names (if (eq arity :general-entry)
-                      (list "closure" "nargs" "args")
-                      (list "closure" "arg0" "arg1" "arg2" "arg3" "arg4" "arg5" "arg6" "arg7")))
+                      (list "rsa-closure" "rsa-nargs" "rsa-args")
+                      (list "rsa-closure" "rsa-arg0" "rsa-arg1" "rsa-arg2" "rsa-arg3" "rsa-arg4" "rsa-arg5" "rsa-arg6" "rsa-arg7")))
            (idx 0))
       (mapc (lambda (reg name)
-              (spill-reg idx reg name))
+              (spill-reg idx reg name)
+              (incf idx))
             registers names))))
+
 
 (defun %dbg-variable-addr (addr var)
   (let* ((addrmd (llvm-sys:metadata-as-value-get
@@ -1076,7 +1084,7 @@ and initialize it with an array consisting of one function pointer."
     (error "result must be an instance of llvm-sys:Value_O but instead it has the value ~s" result)))
 
 
-(defun codegen-startup-shutdown (module module-id THE-REPL-FUNCTION &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
+(defun codegen-startup-shutdown (module module-id THE-REPL-XEP-GROUP &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
   (declare (ignore array))
   (multiple-value-bind (startup-shutdown-id startup-function-name shutdown-function-name)
       (jit-startup-shutdown-function-names module-id)
@@ -1132,7 +1140,8 @@ and initialize it with an array consisting of one function pointer."
                                                       ordered-literals))) 
             (when gcroots-in-module
               (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
-            (irc-ret (irc-bit-cast THE-REPL-FUNCTION %t*%)))))
+            (let ((global-entry-point (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference THE-REPL-XEP-GROUP)))))
+              (irc-ret (irc-bit-cast global-entry-point %t*%))))))
       (let ((shutdown-fn (irc-simple-function-create shutdown-function-name
                                                      %fn-shut-down%
                                                      'llvm-sys::internal-linkage
@@ -1151,6 +1160,7 @@ and initialize it with an array consisting of one function pointer."
                   (irc-intrinsic-call "cc_remove_gcroots_in_module" (list gcroots-in-module)))
               (irc-ret-void))))
         (make-boot-function-global-variable module startup-shutdown-id :position startup-shutdown-id)
+        (cmp-log-dump-module *the-module*)
         (values startup-shutdown-id ordered-raw-literals-list)))))
 
 

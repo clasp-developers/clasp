@@ -127,28 +127,16 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
 }
 
 
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nargs, Vaslist untagged_vargs_rest[2])
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(core::T_O* vas, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
-  IMPLEMENT_MEF(BF("What do I do with args"));
-#if 0
-  va_copy(untagged_vargs_rest[0]._Args,vargs);
-  va_copy(untagged_vargs_rest[1]._Args,vargs);
-#ifdef DEBUG_ENSURE_VALID_OBJECT
-  // Validate the arguments in the va_list
-  va_list validate_vargs;
-  va_copy(validate_vargs,vargs);
-  for ( size_t i(0); i<nargs; ++i ) {
-    core::T_O* tobj = va_arg(validate_vargs,core::T_O*);
-    ENSURE_VALID_OBJECT(tobj);
-  }
-  va_end(validate_vargs);
-#endif
-  untagged_vargs_rest[0]._remaining_nargs = nargs;
-  untagged_vargs_rest[1]._remaining_nargs = nargs;
+  Vaslist* vaslist = (Vaslist*)gctools::untag_vaslist(vas);
+  untagged_vargs_rest[0]._args = vaslist->_args;
+  untagged_vargs_rest[1]._args = vaslist->_args;
+  untagged_vargs_rest[0]._nargs = nargs;
+  untagged_vargs_rest[1]._nargs = nargs;
   T_O* result = untagged_vargs_rest->asTaggedPtr();
   return result;
   NO_UNWIND_END();
-#endif
 }
 
 ALWAYS_INLINE core::T_O *cc_makeCell()

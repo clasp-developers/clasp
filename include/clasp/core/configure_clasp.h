@@ -220,9 +220,11 @@ typedef unsigned int  claspCharacter;
     Arity from ENTRY_POINT_ARITY_BEGIN to (ENTRY_POINT_ARITY_END-1) are supported
 */
 #define ENTRY_POINT_ARITY_BEGIN 0
-#define ENTRY_POINT_ARITY_END 0
+#define ENTRY_POINT_ARITY_END 6
 //! One entry point for each arity and one for general
 #define NUMBER_OF_ENTRY_POINTS ENTRY_POINT_ARITY_END-ENTRY_POINT_ARITY_BEGIN+1
+#define STACKMAP_REGISTER_SAVE_AREA_MAGIC_NUMBER 0xDEAD0000
+#define STACKMAP_REGISTER_SAVE_AREA_MASK         0xFFFF0000
 
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 136

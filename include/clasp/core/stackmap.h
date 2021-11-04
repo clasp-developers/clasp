@@ -39,9 +39,14 @@ struct smStkMapRecord {
   std::vector<smLiveOut> LiveOuts;
 };
 
+/* Return true if the patchPointId corresponds to a register_save_area and
+   mask out the arity_code into arity_code */
+bool is_entry_point_arity(int64_t patchPointId, int64_t& arity_code );
+
 void walk_one_llvm_stackmap(std::function<void(size_t,
                                                const smStkSizeRecord&,
-                                               int32_t)>,
+                                               int32_t,
+                                               int64_t)>,
                             uintptr_t&, uintptr_t);
 
 #endif /* guard */

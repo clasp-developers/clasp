@@ -117,6 +117,10 @@
 
 (defvar *primitives* (make-hash-table :test 'equal :thread-safe t))
 
+(defun wrong-number-of-arguments-name (arity)
+  "Return the name of the wrong-number-of-arguments function for the arity"
+  (core:bformat nil "entry_wrong_number_of_arguments_%s" arity))
+
 (defmacro primitives-macro ()
   "ltvc functions are used to construct the byte-code interpreter"
   `(progn
@@ -157,7 +161,7 @@
          
          (primitive-unwinds "gdb" :void nil)
          (primitive         "debugInspectTPtr" :void (list :t*))
-         (primitive         "debugInspectT_mv" :void (list :tmv*))
+         (primitive         "debugInspectT_mv" :void (list :tmv))
          (primitive         "debugInspect_return_type" :void (list :return-type))
 
          (primitive         "debugPointer" :void (list :i8*))
@@ -180,9 +184,9 @@
 
          (primitive         "cc_list" :t* (list :size_t) :varargs t)
          (primitive         "cc_mvcGatherRest" :t* (list :size_t :t* :size_t))
-         (primitive         "cc_gatherRestArguments" :t* (list :vaslist* :size_t))
-         (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :vaslist* :size_t :t**))
-         (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
+         (primitive         "cc_gatherRestArguments" :t* (list :t* :size_t))
+         (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :t* :size_t :t**))
+         (primitive         "cc_gatherVaRestArguments" :t* (list :t* :size_t :vaslist*))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
 
          (primitive         "initializeBlockClosure" :t* (list :t**))
@@ -452,8 +456,20 @@
          (primitive         "cc_read_derivable_cxx_stamp_untagged_object" :i64 (list :i8*))
          #+(or)(primitive         "cc_read_slot" :t* (list :t* :size_t))
          #+(or)(primitive         "cc_write_slot" :t* (list :t* :size_t :t*))
+
+         (primitive-unwinds (wrong-number-of-arguments-name 0) :void (list :t*))
+         (primitive-unwinds (wrong-number-of-arguments-name 1) :void (list :t* :t*))
+         (primitive-unwinds (wrong-number-of-arguments-name 2) :void (list :t* :t* :t*))
+         (primitive-unwinds (wrong-number-of-arguments-name 3) :void (list :t* :t* :t* :t*))
+         (primitive-unwinds (wrong-number-of-arguments-name 4) :void (list :t* :t* :t* :t* :t*))
+         (primitive-unwinds (wrong-number-of-arguments-name 5) :void (list :t* :t* :t* :t* :t* :t*))
+         (primitive-unwinds (wrong-number-of-arguments-name 6) :void (list :t* :t* :t* :t* :t* :t* :t*))
+         (primitive-unwinds (wrong-number-of-arguments-name 7) :void (list :t* :t* :t* :t* :t* :t* :t* :t*))
+         
          )
      ))
+
+
 
 (eval-when (:load-toplevel :execute)
   (primitives-macro))

@@ -2,7 +2,17 @@
 #include <functional>
 #include <vector>
 #include <stdio.h>
+#include <clasp/core/foundation.h>
 #include <clasp/core/stackmap.h>
+
+bool is_entry_point_arity(int64_t patchPointId, int64_t& arity_code ) {
+  if ( (patchPointId&STACKMAP_REGISTER_SAVE_AREA_MASK) == STACKMAP_REGISTER_SAVE_AREA_MAGIC_NUMBER ) {
+    arity_code = (int64_t)(patchPointId&0xF);
+    return true;
+  }
+  return false;
+}
+ 
 
 template <typename T>
 static T read_then_advance(uintptr_t& address) {
@@ -41,7 +51,7 @@ static void parse_constant(uintptr_t& address, uint64_t& constant) {
 }
 
 static void parse_record(std::function<void(size_t, const smStkSizeRecord&,
-                                            int32_t)> thunk,
+                                            int32_t,int64_t)> thunk,
                          uintptr_t& address, size_t functionIndex,
                          const smStkSizeRecord& function,
                          smStkMapRecord& record) {
@@ -62,8 +72,9 @@ static void parse_record(std::function<void(size_t, const smStkSizeRecord&,
       abort();
     }
     int32_t offsetOrSmallConstant = read_then_advance<int32_t>(address);
-    if (patchPointID == 1234567 ) {
-      thunk(functionIndex, function, offsetOrSmallConstant);
+    int64_t arity_code;
+    if (is_entry_point_arity(patchPointID,arity_code)) {
+      thunk(functionIndex, function, offsetOrSmallConstant, patchPointID );
     }
   }
   if (((uintptr_t)address)&0x7) {
@@ -93,8 +104,7 @@ static void parse_record(std::function<void(size_t, const smStkSizeRecord&,
      The format is described here: https://llvm.org/docs/StackMaps.html#stack-map-format
 */
 
-void walk_one_llvm_stackmap(std::function<void(size_t, const smStkSizeRecord&,
-                                               int32_t)> thunk,
+void walk_one_llvm_stackmap(std::function<void(size_t, const smStkSizeRecord&, int32_t,int64_t)> thunk,
                             uintptr_t& address, uintptr_t end) {
   uintptr_t stackMapAddress = address;
   smHeader header;

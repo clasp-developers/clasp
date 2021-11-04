@@ -80,7 +80,8 @@ Return (values cleavir-lambda-list wrapped-code rest-alloc)."
                    (cleavir-body `(let* (,@assignments)
                                     ,@(if declares (list `(declare ,@declares)) nil)
                                     ,@code)))
-              (values cleavir-lambda-list cleavir-body
+              (values (calculate-cleavir-lambda-list-analysis cleavir-lambda-list)
+                      cleavir-body
                       (compute-rest-alloc rest-var declares)))))))))
 
 

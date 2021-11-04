@@ -29,14 +29,14 @@
             irc-make-function-description
             irc-local-function-create
             irc-xep-functions-create
-            xep-arity-function
+            xep-arity-function-or-placeholder
             xep-arity-entry-point-reference
             xep-group-lookup
             xep-group
             xep-group-p
-            xep-group-entries
+            xep-group-arities
             xep-group-name
-            xep-arity-function
+            xep-group-entry-point-reference
             +c++-stamp-max+
             %opaque-fn-prototype*%
             fn-prototype
@@ -122,11 +122,9 @@
             evaluate-foreign-arguments
             jit-remove-module
             calling-convention-closure
-            calling-convention-use-only-registers
             calling-convention-args
             calling-convention-vaslist*
             calling-convention-vaslist.va-arg
-            calling-convention-register-save-area*
             calling-convention-nargs
             calling-convention-register-args
             calling-convention-write-registers-to-multiple-values
@@ -138,6 +136,8 @@
             make-function-metadata
             function-info
             make-function-info
+            arity-is-wrong-number-of-arguments-p
+
             irc-create-call-wft
             irc-create-invoke
             irc-calculate-entry
@@ -149,7 +149,7 @@
             compile-in-env
             compile-lambda-function
             compile-lambda-list-code
-            make-calling-convention-impl
+            make-calling-convention
             bclasp-compile-form
             compile-form
             compiler-error
@@ -289,6 +289,11 @@
             load-bitcode
             setup-calling-convention
             initialize-calling-convention
+            ensure-cleavir-lambda-list
+            ensure-cleavir-lambda-list-analysis
+            process-cleavir-lambda-list-analysis
+            cleavir-lambda-list-analysis-cleavir-lambda-list
+            process-bir-lambda-list
             treat-as-special-operator-p
             typeid-core-unwind
             with-begin-end-catch
@@ -338,6 +343,9 @@
             compute-rest-alloc
             compile-tag-check
             compile-header-check
+            ensure-xep-function-not-placeholder
+            wrong-number-of-arguments-name
+            get-or-declare-function-or-error
             )))
 
 ;;; exports for runall
@@ -367,12 +375,17 @@
           *byte-codes*
           add-creator
           next-value-table-holder-name
+          wrong-number-of-arguments-placeholder
+          wrong-number-of-arguments-placeholder-p
+          ensure-not-placeholder
+          make-wrong-number-of-arguments-placeholder
           make-literal-node-call
           make-literal-node-creator
           setup-literal-machine-function-vectors
           run-all-add-node
-          register-function->function-datum
-          register-function-index
+          entry-point-datum-for-xep-group
+          register-local-function-index
+          register-xep-function-indices
           literal-node-runtime-p
           literal-node-runtime-index
           literal-node-runtime-object

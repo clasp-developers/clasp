@@ -116,73 +116,57 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   return funcall_general<core::T_O>( func.tagged_(), nargs, frame->arguments() );
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
- 
 inline LCC_RETURN funcall(T_sp fn) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry()( func.raw_() ,0 , NULL );
+  return func->entry_0()( func.raw_() );
 }
 
-template <class ARG0>
-inline LCC_RETURN funcall(T_sp fn, ARG0 arg0) {
+
+inline LCC_RETURN funcall(T_sp fn, T_sp arg0 ) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  T_O* args[1] = {arg0.raw_()};
-  return func->entry()( func.raw_(), 1, &args[0] );
+  return func->entry_1()( func.raw_(), arg0.raw_() );
 }
 
-template <class ARG0, class ARG1>
-inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
+
+inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1 ) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  T_O* args[2] = {arg0.raw_(),arg1.raw_()};
-  return func->entry()( func.raw_(), 2, &args[0] );
+  return func->entry_2()( func.raw_(), arg0.raw_(), arg1.raw_() );
 }
 
-template <class ARG0, class ARG1, class ARG2>
-inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
+inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2 ) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  T_O* args[3] = {arg0.raw_(),arg1.raw_(),arg2.raw_()};
-  return func->entry()( func.raw_(), 3, &args[0] );
+  return func->entry_3()( func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_() );
 }
 
-template <class ARG0, class ARG1, class ARG2, class ARG3>
-inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
+inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3 ) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(NUMBER_OF_ENTRY_POINTS==1); // Trigger when more entry points are supported
   Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  T_O* args[4] = {arg0.raw_(),arg1.raw_(),arg2.raw_(),arg3.raw_()};
-  return func->entry()( func.raw_(), 4, &args[0] );
+  return func->entry_4()( func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_() );
 }
 
-// Do I need a variadic funcall???
+inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3, T_sp arg4 ) {
+  /* If the following assertion fails then the funcall functions in this header
+     need to be made consistent with lispCallingConvention.h */
+  Function_sp func = interpreter_lookup_function_or_error(fn, nil<T_O>());
+  ASSERT(gc::IsA<Function_sp>(func));
+  return func->entry_5()( func.raw_(), arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(), arg4.raw_() );
+}
+
+
  template <class... ARGS>
   inline LCC_RETURN funcall(T_sp fn, ARGS &&... args) {
   /* If the following assertion fails then the funcall functions in this header
