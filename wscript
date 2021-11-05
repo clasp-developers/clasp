@@ -333,7 +333,7 @@ def update_dependencies(cfg):
                        "e5c54bc30b0887c237bde2827036d17315f88737")
     fetch_git_revision("src/scraper/dependencies/esrap",
                        "https://github.com/scymtym/esrap.git",
-                       "866f28fa7a2c1d3fb6d0d0423850d1f9d955750f")
+                       "c99c33a33ff58ca85e8ba73912eba45d458eaa72")
     fetch_git_revision("src/scraper/dependencies/trivial-with-current-source-form",
                        "https://github.com/scymtym/trivial-with-current-source-form.git",
                        "3898e09f8047ef89113df265574ae8de8afa31ac")
