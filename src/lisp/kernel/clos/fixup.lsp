@@ -1,5 +1,5 @@
 ;; Should be commented out
-#+(or)
+;;#+(or)
 (eval-when (:execute)
   (setq core:*echo-repl-read* t))
 

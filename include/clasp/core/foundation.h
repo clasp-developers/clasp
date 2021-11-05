@@ -39,6 +39,7 @@ THE SOFTWARE.
 //#define DEBUG_OBJECT_FILES 1
 //#define DEBUG_VALUES 1
 //#define DEBUG_FRAME 1
+//#define DEBUG_VASLIST 1
 //#define DEBUG_EVALUATE 1
 //#define DEBUG_DTORS 1
 // If ANY flags above are set - then set this one to print a message at startup

@@ -252,15 +252,15 @@ rewrite the slot in the literal table to store a closure."
     (run-all-add-node rase)
     rase))
 
-(defstruct (wrong-number-of-arguments-placeholder (:type vector) :named)
+(defstruct (general-entry-placeholder (:type vector) :named)
   arity
   name
   cleavir-lambda-list-analysis
   )
 
 (defun ensure-not-placeholder (obj)
-  (when (wrong-number-of-arguments-placeholder-p obj)
-    (error "The obj ~a must not be a wrong-number-of-arguments-placeholder" obj))
+  (when (general-entry-placeholder-p obj)
+    (error "The obj ~a must not be a general-entry-placeholder" obj))
   obj)
 
 (defun entry-point-datum-for-xep-group (xep-group)
@@ -271,12 +271,12 @@ rewrite the slot in the literal table to store a closure."
 (defun register-function->function-datum-impl (function)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
   (unless (or (typep function 'llvm-sys:function)
-              (wrong-number-of-arguments-placeholder-p function))
-    (error "In register-function->function-datum-impl function ~s of ~s must be a function or a wrong-number-of-arguments-placeholder" function (class-of-function)))
-  (when (wrong-number-of-arguments-placeholder-p function)
+              (general-entry-placeholder-p function))
+    (error "In register-function->function-datum-impl function ~s of ~s must be a function or a general-entry-placeholder" function (class-of-function)))
+  (when (general-entry-placeholder-p function)
     ;; Lookup a wrong-number-of-arguments function and use that
-    (let* ((wna-arity (wrong-number-of-arguments-placeholder-arity function))
-           (wna-function-name (cmp:wrong-number-of-arguments-name wna-arity))
+    (let* ((wna-arity (general-entry-placeholder-arity function))
+           (wna-function-name (cmp:general-entry-point-redirect-name wna-arity))
            (wna-function (cmp:get-or-declare-function-or-error cmp:*the-module* wna-function-name)))
       (setf function wna-function)))
   ;; Functions are laid out in linear order and xep-functions have all their entry points
@@ -315,7 +315,7 @@ rewrite the slot in the literal table to store a closure."
   (let ((f-or-p-list (mapcar 'cmp:xep-arity-function-or-placeholder xep-arity-list)))
     (unless (every (lambda (f-or-p)
                      (or (typep f-or-p 'llvm-sys:function)
-                         (wrong-number-of-arguments-placeholder-p f-or-p)))
+                         (general-entry-placeholder-p f-or-p)))
                    f-or-p-list)
       (error "The argument must be a list of functions or placeholders - it's a ~a" xep-arity-list))
     (let ((function-datums (register-xep-function->function-datums f-or-p-list)))

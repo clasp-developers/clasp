@@ -107,7 +107,19 @@ CL_DEFUN size_t core__vaslist_length(VaList_sp v)
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__vaslist_pop(VaList_sp v)
 {
-  return v->next_arg();
+#ifdef DEBUG_VASLIST
+  if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s nargs: %lu  args: %p\n", __FILE__, __LINE__, __FUNCTION__, v->_nargs, v->_args );
+  }
+#endif
+  T_sp val = v->next_arg();
+#ifdef DEBUG_VASLIST
+  if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s Returning vaslist_pop-> @%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_() );
+    printf("%s:%d:%s Returning vaslist_pop->%s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(val).c_str());
+  }
+#endif
+  return val;
 }
 
 DOCGROUP(clasp)
@@ -447,12 +459,7 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 
 }
 
-std::string dbg_safe_repr(uintptr_t raw);
-
-string _safe_rep_(core::T_sp obj) {
-  return dbg_safe_repr((uintptr_t)obj.raw_());
-}
-
+extern "C" {
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
 std::string dbg_safe_repr(uintptr_t raw) {
@@ -519,6 +526,12 @@ std::string dbg_safe_repr(uintptr_t raw) {
   }
   return ss.str();
 }
+};
+
+string _safe_rep_(core::T_sp obj) {
+  return dbg_safe_repr((uintptr_t)obj.raw_());
+}
+
 
 extern "C" {
 

@@ -136,7 +136,7 @@
             make-function-metadata
             function-info
             make-function-info
-            arity-is-wrong-number-of-arguments-p
+            generate-function-for-arity-p
 
             irc-create-call-wft
             irc-create-invoke
@@ -350,7 +350,7 @@
             compile-tag-check
             compile-header-check
             ensure-xep-function-not-placeholder
-            wrong-number-of-arguments-name
+            general-entry-point-redirect-name
             get-or-declare-function-or-error
             )))
 
@@ -381,10 +381,10 @@
           *byte-codes*
           add-creator
           next-value-table-holder-name
-          wrong-number-of-arguments-placeholder
-          wrong-number-of-arguments-placeholder-p
+          general-entry-placeholder
+          general-entry-placeholder-p
           ensure-not-placeholder
-          make-wrong-number-of-arguments-placeholder
+          make-general-entry-placeholder
           make-literal-node-call
           make-literal-node-creator
           setup-literal-machine-function-vectors

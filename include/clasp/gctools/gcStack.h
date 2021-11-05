@@ -165,6 +165,13 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
     return obj;
   }
 
+  inline core::T_O* next_arg_raw() {
+    core::T_O* obj = *this->_args;
+    this->_args++;
+    this->_nargs--;
+    return obj;
+  }
+
   inline core::T_sp next_arg_indexed(size_t idx) {
     core::T_sp obj((gctools::Tagged)this->operator[](idx));
     return obj;
@@ -213,25 +220,25 @@ public:
   //Default constructor, set theObject to NULL
  smart_ptr() : theObject((Type*)NULL){};
   explicit inline smart_ptr(core::Vaslist *ptr) : theObject((Type*)gctools::tag_vaslist<Type *>(ptr)) {
-//    GCTOOLS_ASSERT(this->valistp());
+//    GCTOOLS_ASSERT(this->vaslistp());
   };
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : theObject((Type*)ptr) {
-//    GCTOOLS_ASSERT(this->theObject == NULL || this->valistp());
+//    GCTOOLS_ASSERT(this->theObject == NULL || this->vaslistp());
   };
 
   inline Type *operator->() {
-//    GCTOOLS_ASSERT(this->valistp());
+//    GCTOOLS_ASSERT(this->vaslistp());
     return reinterpret_cast<Type *>(this->unsafe_valist());
   };
 
   inline const Type *operator->() const {
-//    GCTOOLS_ASSERT(this->valistp());
+//    GCTOOLS_ASSERT(this->vaslistp());
     return reinterpret_cast<Type *>(this->unsafe_valist());
   };
 
   inline Type &operator*() {
-//    GCTOOLS_ASSERT(this->valistp());
+//    GCTOOLS_ASSERT(this->vaslistp());
     return *reinterpret_cast<Type *>(this->unsafe_valist());
   };
 

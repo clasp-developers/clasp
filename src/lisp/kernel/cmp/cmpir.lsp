@@ -41,6 +41,7 @@
 
 (defstruct (cleavir-lambda-list-analysis (:type vector) :named)
   cleavir-lambda-list
+  req-opt-only-p
   (lambda-list-arguments nil)
   (required (list 0)) ; default zero required
   (optional (list 0)) ; default zero optional
@@ -82,7 +83,8 @@
             (when (some (lambda (sym) (and (symbolp sym) (null (symbol-package sym)))) entry)
               (return-from ensure-cleavir-lambda-list lambda-list)))
            (t (error "Handle cleavir-lambda-list entry ~s" entry))))))
-  (error "ensure-cleavir-lambda-list doesn't know what to do with ~s" lambda-list))
+  lambda-list ;; (error "ensure-cleavir-lambda-list doesn't know what to do with ~s" lambda-list))
+  )
 
 (defun ensure-cleavir-lambda-list-analysis (arg)
   (unless (cleavir-lambda-list-analysis-p arg)
@@ -95,14 +97,18 @@
          (cleavir-lambda-list-analysis (calculate-cleavir-lambda-list-analysis cleavir-lambda-list)))
     (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)))
 
-(defun arity-is-wrong-number-of-arguments-p (arity cll-analysis)
+(defun generate-function-for-arity-p (arity cll-analysis)
+  "Return T if a function should be generated for this arity.
+If nil then insert a general_entry_point_redirect_x function"
   (if (eq arity :general-entry)
-      nil ; :general-entry handles all numbers of arguments
-      (let* ((nargs arity)
-             (nreq (car (cleavir-lambda-list-analysis-required cll-analysis)))
-             (nopt (car (cleavir-lambda-list-analysis-optional cll-analysis))))
-        (or (< arity nreq)
-            (< (+ nreq nopt) arity)))))
+      t
+      (if (cleavir-lambda-list-analysis-req-opt-only-p cll-analysis)
+          (let* ((nargs arity)
+                 (nreq (car (cleavir-lambda-list-analysis-required cll-analysis)))
+                 (nopt (car (cleavir-lambda-list-analysis-optional cll-analysis))))
+            (not (or (< arity nreq)
+                     (< (+ nreq nopt) arity))))
+          nil)))
   
 (defstruct (xep-group (:type vector) :named)
   name
@@ -999,11 +1005,11 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-va_arg (valist* type &optional (name "vaarg"))
   (llvm-sys:create-vaarg *irbuilder* valist* type name))
 
-(defun irc-vaslist-args-address (vaslist-v &optional (label "va_list_address"))
+(defun irc-vaslist-args-address (vaslist-v &optional (label "vaslist_address"))
   (c++-field-ptr info.%vaslist% vaslist-v :args label))
 
 (defun irc-vaslist-nargs-address (vaslist-v
-                                  &optional (label "va_list_remaining_nargs_address"))
+                                  &optional (label "vaslist_remaining_nargs_address"))
   (c++-field-ptr info.%vaslist% vaslist-v :nargs label))
 
 (defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
@@ -1084,7 +1090,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       (let* ((arity (xep-arity-arity xep-arity))
              (xep-fn (xep-arity-function-or-placeholder xep-arity)))
         (cmp-log "xep-fn = %s%N" xep-fn)
-        (if (literal:wrong-number-of-arguments-placeholder-p xep-fn)
+        (if (literal:general-entry-placeholder-p xep-fn)
             (progn
               ;;(format t "layout-xep-function skipping arity ~a for ~a~%" arity xep-fn)
               )
@@ -1188,7 +1194,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                         :number-of-arguments (length (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis))
                                         :label "arguments-env")))
                           (irc-make-value-frame-set-parent new-env (length output-bindings) func-env)
-                          (format t "layout-xep-function local-function ~s output-bindings: ~s~%" *current-function-name* output-bindings)
                           (mapc (lambda (ob)
                                   (cmp-log "Adding to environment: %s%N" ob)
                                   (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
@@ -1365,11 +1370,12 @@ But no irbuilders or basic-blocks. Return the fn."
     (dolist (arity (list* :general-entry (subseq (list 0 1 2 3 4 5 6 7 8) +entry-point-arity-begin+ +entry-point-arity-end+)))
       (cmp-log "Creating xep function for %s%N" arity)
       (let* ((xep-function-name (concatenate 'string function-name (format nil "-xep~a" (if (eq arity :general-entry) "" arity))))
-             (fn (if (arity-is-wrong-number-of-arguments-p arity cleavir-lambda-list-analysis)
-                     (literal:make-wrong-number-of-arguments-placeholder :arity arity
-                                                                         :name xep-function-name
-                                                                         :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
-                     (irc-function-create (fn-prototype arity) linkage xep-function-name module)))
+             (fn (if (generate-function-for-arity-p arity cleavir-lambda-list-analysis)
+                     (irc-function-create (fn-prototype arity) linkage xep-function-name module)
+                     (literal:make-general-entry-placeholder :arity arity
+                                                             :name xep-function-name
+                                                             :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
+                     ))
              (xep-arity (make-xep-arity :arity arity :function-or-placeholder fn)))
         (push xep-arity rev-xep-aritys)))
     (cmp-log "Created xep-arities%N")

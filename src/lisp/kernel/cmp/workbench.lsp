@@ -94,7 +94,8 @@
          cmp::ensure-cleavir-lambda-list
          cmp::ensure-cleavir-lambda-list-analysis
          cmp::process-bir-lambda-list
-         cmp::arity-is-wrong-number-of-arguments-p
+         cmp::generate-function-for-arity-p
+         
          cmp:xep-group-p
          cmp:xep-group-arities
          cmp:xep-arity-function-or-placeholder

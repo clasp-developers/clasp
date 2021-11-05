@@ -443,7 +443,7 @@ a_p = a_p_temp; a = a_temp;
                  (if register
                      register
                      undef))))
-        (when (cmp:arity-is-wrong-number-of-arguments-p arity cleavir-lambda-list-analysis)
+        (unless (cmp:generate-function-for-arity-p arity cleavir-lambda-list-analysis)
           (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure calling-conv)
                                                                    (jit-constant-i64 (length register-args))
                                                                    (jit-constant-i64 nreq)
@@ -520,6 +520,24 @@ a_p = a_p_temp; a = a_temp;
               (compile-error-if-too-many-arguments error-block cmax nargs))))
       t)))
 
+(defun req-opt-only-p (cleavir-lambda-list)
+  (let ((nreq 0) (nopt 0) (req-opt-only t)
+        (state nil))
+    (dolist (item cleavir-lambda-list)
+      (cond ((eq item '&optional)
+             (if (eq state '&optional)
+                 (progn (setf req-opt-only nil) ; dupe &optional; just mark as general
+                        (return))
+                 (setf state '&optional)))
+            ((member item lambda-list-keywords)
+             (setf req-opt-only nil)
+             (return))
+            (t (if (eq state '&optional)
+                   (incf nopt)
+                   (incf nreq)))))
+    (values req-opt-only nreq nopt)))
+
+
 (defun calculate-cleavir-lambda-list-analysis (lambda-list)
   ;; we assume that the lambda list is in its correct format:
   ;; 1) required arguments are lexical locations.
@@ -566,6 +584,7 @@ a_p = a_p_temp; a = a_temp;
            (arguments (lambda-list-arguments cleavir-lambda-list)))
       (make-cleavir-lambda-list-analysis
        :cleavir-lambda-list (ensure-cleavir-lambda-list lambda-list) ; Is this correct?
+       :req-opt-only-p (req-opt-only-p (ensure-cleavir-lambda-list lambda-list))
        :lambda-list-arguments arguments
        :required (cons required-count (nreverse required))
        :optional (cons optional-count (nreverse optional))
@@ -576,21 +595,11 @@ a_p = a_p_temp; a = a_temp;
        :aux-p nil                       ; aux-p; unused here
        :va-rest-p (if (eq rest-type 'core:&va-rest) t nil)))))
 
+
+
 (defun may-use-only-registers (cleavir-lambda-list-analysis)
-  (let ((nreq 0) (nopt 0) (req-opt-only t)
-        (state nil))
-    (dolist (item (cleavir-lambda-list-analysis-cleavir-lambda-list cleavir-lambda-list-analysis))
-      (cond ((eq item '&optional)
-             (if (eq state '&optional)
-                 (progn (setf req-opt-only nil) ; dupe &optional; just mark as general
-                        (return))
-                 (setf state '&optional)))
-            ((member item lambda-list-keywords)
-             (setf req-opt-only nil)
-             (return))
-            (t (if (eq state '&optional)
-                   (incf nopt)
-                   (incf nreq)))))
+  (multiple-value-bind (req-opt-only nreq nopt)
+      (req-opt-only-p (cleavir-lambda-list-analysis-cleavir-lambda-list cleavir-lambda-list-analysis))
     (and req-opt-only
          (and (<= +entry-point-arity-begin+ (+ nreq nopt))
               (< (+ nreq nopt) +entry-point-arity-end+)))))
@@ -608,7 +617,6 @@ a_p = a_p_temp; a = a_temp;
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
     (declare (ignore unused-auxs))
-    
     (cmp-log "    reqargs -> %s%N" reqargs)
     (cmp-log "    optargs -> %s%N" optargs)
     (cmp-log "    keyargs -> %s%N" keyargs)
@@ -719,8 +727,7 @@ a_p = a_p_temp; a = a_temp;
         (push (cons keyp (incf index)) bindings))
       (nreverse bindings))))
 
-(defun bclasp-compile-lambda-list-code (fn-env callconv &key (safep t))
-  (error "Return T or nil like compile-lambda-list-code")
+(defun bclasp-compile-lambda-list-code (fn-env callconv arity &key (safep t))
   (let ((cleavir-lambda-list-analysis (calling-convention-cleavir-lambda-list-analysis callconv)))
     (cmp-log "Entered bclasp-compile-lambda-list-code%N")
     (let* ((output-bindings (bclasp-map-lambda-list-symbols-to-indices cleavir-lambda-list-analysis))
@@ -738,7 +745,7 @@ a_p = a_p_temp; a = a_temp;
       (compile-lambda-list-code
        cleavir-lambda-list-analysis
        callconv
-       :general-entry
+       arity
        :safep safep
        :argument-out (lambda (value datum)
                        (let* ((info (assoc datum output-bindings))
@@ -746,5 +753,4 @@ a_p = a_p_temp; a = a_temp;
                               (index (cdr info))
                               (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
                          (irc-t*-result value ref))))
-      (error "Check result of bclasp-compile-lambda-list-code")
       new-env)))

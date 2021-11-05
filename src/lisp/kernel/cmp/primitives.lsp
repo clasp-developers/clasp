@@ -117,9 +117,9 @@
 
 (defvar *primitives* (make-hash-table :test 'equal :thread-safe t))
 
-(defun wrong-number-of-arguments-name (arity)
+(defun general-entry-point-redirect-name (arity)
   "Return the name of the wrong-number-of-arguments function for the arity"
-  (core:bformat nil "entry_wrong_number_of_arguments_%s" arity))
+  (core:bformat nil "general_entry_point_redirect_%s" arity))
 
 (defmacro primitives-macro ()
   "ltvc functions are used to construct the byte-code interpreter"
@@ -458,14 +458,14 @@
          #+(or)(primitive         "cc_read_slot" :t* (list :t* :size_t))
          #+(or)(primitive         "cc_write_slot" :t* (list :t* :size_t :t*))
 
-         (primitive-unwinds (wrong-number-of-arguments-name 0) :void (list :t*))
-         (primitive-unwinds (wrong-number-of-arguments-name 1) :void (list :t* :t*))
-         (primitive-unwinds (wrong-number-of-arguments-name 2) :void (list :t* :t* :t*))
-         (primitive-unwinds (wrong-number-of-arguments-name 3) :void (list :t* :t* :t* :t*))
-         (primitive-unwinds (wrong-number-of-arguments-name 4) :void (list :t* :t* :t* :t* :t*))
-         (primitive-unwinds (wrong-number-of-arguments-name 5) :void (list :t* :t* :t* :t* :t* :t*))
-         (primitive-unwinds (wrong-number-of-arguments-name 6) :void (list :t* :t* :t* :t* :t* :t* :t*))
-         (primitive-unwinds (wrong-number-of-arguments-name 7) :void (list :t* :t* :t* :t* :t* :t* :t* :t*))
+         (primitive-unwinds (general-entry-point-redirect-name 0) :void (list :t*))
+         (primitive-unwinds (general-entry-point-redirect-name 1) :void (list :t* :t*))
+         (primitive-unwinds (general-entry-point-redirect-name 2) :void (list :t* :t* :t*))
+         (primitive-unwinds (general-entry-point-redirect-name 3) :void (list :t* :t* :t* :t*))
+         (primitive-unwinds (general-entry-point-redirect-name 4) :void (list :t* :t* :t* :t* :t*))
+         (primitive-unwinds (general-entry-point-redirect-name 5) :void (list :t* :t* :t* :t* :t* :t*))
+         (primitive-unwinds (general-entry-point-redirect-name 6) :void (list :t* :t* :t* :t* :t* :t* :t*))
+         (primitive-unwinds (general-entry-point-redirect-name 7) :void (list :t* :t* :t* :t* :t* :t* :t* :t*))
          
          )
      ))
