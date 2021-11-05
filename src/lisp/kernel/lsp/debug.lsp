@@ -487,3 +487,53 @@ For example, for a function-name that is a symbol, returns that symbol's package
          nil)
         ;; shrug.
         (t nil)))
+
+;;;
+
+(defun primitive-display-fname (fname &optional output-stream-designator)
+  (if (stringp fname) ; C/C++ frame
+      (write-string fname output-stream-designator)
+      (prin1 fname output-stream-designator)))
+
+(defun primitive-prin1-frame-call (frame &optional os-designator)
+  (let ((fname (frame-function-name frame)))
+    (multiple-value-bind (args availablep)
+        (frame-arguments frame)
+      (cond (availablep
+             (write-char #\( os-designator)
+             (primitive-display-fname fname os-designator)
+             (dolist (arg args)
+               (write-char #\Space os-designator)
+               (prin1 arg os-designator))
+             (write-char #\) os-designator))
+            (t (primitive-display-fname fname os-designator)))))
+  frame)
+
+(defun primitive-princ-code-source-line (code-source-line
+                                         &optional os-designator)
+  (format os-designator "~a:~d"
+          (code-source-line-pathname code-source-line)
+          (code-source-line-line-number code-source-line)))
+
+(defun primitive-print-stack (base &key (stream *standard-output*)
+                                     count source-positions)
+  (map-indexed-stack
+   (lambda (frame i)
+     (fresh-line stream)
+     (format stream "~d: " i)
+     (primitive-prin1-frame-call frame stream)
+     (when source-positions
+       (let ((fsp (frame-source-position frame)))
+         (when fsp
+           (fresh-line stream)
+           (write-string "    |---> " stream)
+           (primitive-princ-code-source-line fsp stream)))))
+   base :count count)
+  (fresh-line stream)
+  (values))
+
+(defun primitive-print-backtrace (&key (stream *standard-output*)
+                                    count source-positions (delimited t))
+  (with-stack (stack :delimited delimited)
+    (primitive-print-stack stack :stream stream :count count
+                                 :source-positions source-positions)))
