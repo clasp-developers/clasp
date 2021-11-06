@@ -80,7 +80,8 @@
 (defvar +alignment+ (get-cxx-data-structure-info :alignment))
 (defvar +args-in-registers+ (get-cxx-data-structure-info :lcc-args-in-registers))
 (export '(+fixnum-mask+ +ptag-mask+ +immediate-mask+
-          +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
+          +cons-tag+
+          +character-tag+ +single-float-tag+
           +general-tag+ +vaslist-size+ +void*-size+ +alignment+ ))
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
