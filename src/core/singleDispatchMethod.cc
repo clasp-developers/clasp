@@ -41,11 +41,6 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-
-
-
-SYMBOL_EXPORT_SC_(CorePkg,no_filename_single_dispatch_method);
-
 SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        Instance_sp receiverClass,
                                                        LambdaListHandler_sp llh,

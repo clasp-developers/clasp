@@ -2157,7 +2157,6 @@ CL_DEFUN T_sp ext__getenv(String_sp arg) {
   return SimpleBaseString_O::make(sres);
 };
 
-SYMBOL_EXPORT_SC_(CorePkg, currentDir);
 SYMBOL_EXPORT_SC_(CorePkg, file_kind);
 SYMBOL_EXPORT_SC_(ClPkg, truename);
 SYMBOL_EXPORT_SC_(ClPkg, probe_file);

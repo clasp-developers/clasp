@@ -201,7 +201,6 @@ CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
 };
 
   SYMBOL_EXPORT_SC_(CorePkg, setfElt);
-  SYMBOL_EXPORT_SC_(CorePkg, eltSet);
   SYMBOL_EXPORT_SC_(CorePkg, setfSubseq);
   SYMBOL_EXPORT_SC_(ClPkg, make_sequence);
   SYMBOL_EXPORT_SC_(ClPkg, reverse);
