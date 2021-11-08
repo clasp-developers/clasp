@@ -1423,19 +1423,22 @@ Integer_sp Integer_O::create( uintptr_t v) {
  */
 
 Integer_sp Integer_O::create(float v) {
-  if (v >= (float)gc::most_negative_fixnum && v <= (float)gc::most_positive_fixnum) {
+  // This is really supposed to be >= <. see above comment
+  if (v >= (float)gc::most_negative_fixnum && v < (float)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
   } else return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::create(double v) {
-  if (v >= (double)gc::most_negative_fixnum && v <= (double)gc::most_positive_fixnum) {
+  // This is really supposed to be >= <. see above comment
+  if (v >= (double)gc::most_negative_fixnum && v < (double)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
   } else return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::createLongFloat(LongFloat v) {
-  if (v >= (LongFloat)gc::most_negative_fixnum && v <= (LongFloat)gc::most_positive_fixnum) {
+  // This is really supposed to be >= <. see above comment
+  if (v >= (LongFloat)gc::most_negative_fixnum && v < (LongFloat)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
   } else return Bignum_O::create(v);
 }
