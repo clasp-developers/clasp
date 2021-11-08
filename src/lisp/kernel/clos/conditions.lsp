@@ -1059,14 +1059,6 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                              (t           "between ~d and ~d"))
                        min max)))))
 
-(define-condition core:argument-number-error (core:wrong-number-of-arguments)
-  ())
-
-(defmethod initialize-instance ((me core:wrong-number-of-arguments)
-                                &rest args
-                                &key supplied min max)
-  (apply #'call-next-method me :min-nargs min :max-nargs max :given-nargs supplied args))
-
 (define-condition destructure-wrong-number-of-arguments (program-error)
   ((%macro-name :initarg :macro-name :reader macro-name)
    (%lambda-list :initarg :lambda-list :reader lambda-list)
