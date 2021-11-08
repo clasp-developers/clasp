@@ -680,6 +680,7 @@ void core__reader_error_internal(const string &sourceFile, uint lineno,
 
 T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
 
+[[noreturn]] void file_libc_error(T_sp error_type, T_sp stream, const char *msg, int narg, ...);
 [[noreturn]] void FEerror(const string &fmt, int numArgs, ...);
 void FEtype_error_list(T_sp thing);
 void FElibc_error(const char *fmt, int nargs, ...);

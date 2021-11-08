@@ -188,7 +188,7 @@
             alloca-i32
             alloca-size_t
             alloca-return
-            alloca-va_list
+            alloca-vaslist
             alloca-temp-values
             alloca-arguments
             irc-and
@@ -272,7 +272,7 @@
             irc-array-total-size
             irc-array-rank
             gen-%array-dimension
-            irc-vaslist-va_list-address
+            irc-vaslist-vaslist-address
             irc-vaslist-nargs-address
             gen-instance-rack
             gen-instance-rack-set

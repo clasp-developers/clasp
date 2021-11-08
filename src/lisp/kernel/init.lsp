@@ -386,7 +386,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (core::export 'defun)
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
-(export 'bind-va-list)
+(export 'bind-vaslist)
 
 (defparameter *debug-bclasp* (if (member :debug-bclasp-lisp *features*) t nil))
 

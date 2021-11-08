@@ -560,7 +560,7 @@ Boehm and MPS use a single pointer"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Provide the arguments passed to the function in a convenient manner.
 ;; Either the register arguments are available in register-args
-;;   or the va-list is used to access the arguments
+;;   or the vaslist is used to access the arguments
 ;;   one after the other with calling-convention.va-arg
 (defstruct (calling-convention (:type vector) :named)
   closure
@@ -625,7 +625,7 @@ Boehm and MPS use a single pointer"
   )
 
 ;;;
-;;; Read the next argument from the va_list
+;;; Read the next argument from the vaslist
 (defun calling-convention-vaslist.va-arg (cc)
   (let* ((vaslist (calling-convention-vaslist* cc))
          (args (irc-load (c++-field-ptr info.%vaslist% vaslist :args)))

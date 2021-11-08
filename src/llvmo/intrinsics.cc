@@ -922,9 +922,9 @@ T_O* cc_match(T_O* old_value, T_O* new_value ) {
 
 
 #if 0
-void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
+void cc_rewind_vaslist(vaslist va_args, void** register_save_areaP)
 {
-  LCC_REWIND_VA_LIST(va_args,register_save_areaP);
+  LCC_REWIND_VASLIST(va_args,register_save_areaP);
 }
 #endif
 

@@ -87,7 +87,7 @@ T_mv macro_core__quasiquote(List_sp whole, T_sp env) {
 CL_LAMBDA(core:&va-rest lists)
 CL_DOCSTRING(R"dx(append as in clhs)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp core__backquote_append(VaList_sp lists) {
+CL_DEFUN T_sp core__backquote_append(Vaslist_sp lists) {
   ql::list list; // (lists);
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   unlikely_if (lists->total_nargs()==0) {

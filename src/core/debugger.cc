@@ -91,7 +91,7 @@ core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start,
 namespace core {
 
 DOCGROUP(clasp)
-CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
+CL_DEFUN Vaslist_sp core__vaslist_rewind(Vaslist_sp v)
 {
   Vaslist* vaslist0 = &*v;
   Vaslist* vaslist1 = &vaslist0[1];
@@ -100,14 +100,14 @@ CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
 }
 
 DOCGROUP(clasp)
-CL_DEFUN size_t core__vaslist_length(VaList_sp v)
+CL_DEFUN size_t core__vaslist_length(Vaslist_sp v)
 {
-//  printf("%s:%d va_list length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
+//  printf("%s:%d vaslist length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
   return v->remaining_nargs();
 }
 
 DOCGROUP(clasp)
-CL_DEFUN T_sp core__vaslist_pop(VaList_sp v)
+CL_DEFUN T_sp core__vaslist_pop(Vaslist_sp v)
 {
 #ifdef DEBUG_VASLIST
   if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
@@ -131,10 +131,10 @@ CL_DEFUN bool core__vaslistp(T_sp o)
 }
 
 DOCGROUP(clasp)
-CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
+CL_DEFUN List_sp core__list_from_vaslist(Vaslist_sp vorig)
 {
   Vaslist valist_copy(*vorig);
-  VaList_sp valist(&valist_copy);
+  Vaslist_sp valist(&valist_copy);
   ql::list l;
   size_t nargs = valist->remaining_nargs();
 //  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
@@ -340,13 +340,13 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
                   nil<core::T_O>());
 }
 
-void dbg_VaList_sp_describe(T_sp obj) {
-    // Convert the T_sp object into a VaList_sp object
-  VaList_sp vl = VaList_sp((gc::Tagged)obj.raw_());
-  printf("Original va_list at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_args);
-    // Create a copy of the Vaslist with a va_copy of the va_list
+void dbg_Vaslist_sp_describe(T_sp obj) {
+    // Convert the T_sp object into a Vaslist_sp object
+  Vaslist_sp vl = Vaslist_sp((gc::Tagged)obj.raw_());
+  printf("Original vaslist at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_args);
+    // Create a copy of the Vaslist with a va_copy of the vaslist
   Vaslist vlcopy_s(*vl);
-  VaList_sp vlcopy(&vlcopy_s);
+  Vaslist_sp vlcopy(&vlcopy_s);
   printf("Calling dump_Vaslist_ptr\n");
   bool atHead = dump_Vaslist_ptr(stdout,&vlcopy_s);
   if (atHead) {
@@ -359,7 +359,7 @@ void dbg_VaList_sp_describe(T_sp obj) {
 
 void dbg_lowLevelDescribe(T_sp obj) {
   if (obj.valistp()) {
-    dbg_VaList_sp_describe(obj);
+    dbg_Vaslist_sp_describe(obj);
   } else if (obj.fixnump()) {
     printf("fixnum_tag: %" PFixnum "\n", obj.unsafe_fixnum());
   } else if (obj.single_floatp()) {
@@ -528,7 +528,7 @@ std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.nilp()) {
     ss << "NIL";
   } else if (obj.valistp()) {
-    core::VaList_sp vaslist = gc::As_unsafe<core::VaList_sp>(obj);
+    core::Vaslist_sp vaslist = gc::As_unsafe<core::Vaslist_sp>(obj);
     ss << "#<VASLIST ";;
 #if 0
     // difference during diff

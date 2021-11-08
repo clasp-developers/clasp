@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <boost/algorithm/string.hpp>
 #pragma clang diagnostic pop
 #include <clasp/core/foundation.h>
-#include <clasp/core/primitives.h> // core__list_from_va_list
+#include <clasp/core/primitives.h> // core__list_from_vaslist
 #include <clasp/core/common.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
@@ -160,7 +160,7 @@ bool character_comparison(int s, int t, Character_sp x, Character_sp y,
   return !(dir < t);
 }
 
-bool monotonic(int s, int t, VaList_sp args, bool preserve_case = true) {
+bool monotonic(int s, int t, Vaslist_sp args, bool preserve_case = true) {
   Character_sp x = gc::As<Character_sp>(args->next_arg());
   Character_sp y;
   while (args->remaining_nargs() != 0) {
@@ -185,7 +185,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool cl__char_LT_(VaList_sp args) {
+CL_DEFUN bool cl__char_LT_(Vaslist_sp args) {
   if (args->remaining_nargs() == 0) PROGRAM_ERROR();
   else return monotonic(-1, 1, args);
 };
@@ -202,7 +202,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool cl__char_GT_(VaList_sp args) {
+CL_DEFUN bool cl__char_GT_(Vaslist_sp args) {
   if (args->remaining_nargs() == 0) PROGRAM_ERROR();
   else return monotonic(1, 1, args);
 };
@@ -219,7 +219,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool cl__char_LE_(VaList_sp args) {
+CL_DEFUN bool cl__char_LE_(Vaslist_sp args) {
   if (args->remaining_nargs() == 0) PROGRAM_ERROR();
   else return monotonic(-1, 0, args);
 };
@@ -236,7 +236,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool cl__char_GE_(VaList_sp args) {
+CL_DEFUN bool cl__char_GE_(Vaslist_sp args) {
   if (args->remaining_nargs() == 0) PROGRAM_ERROR();
   else return monotonic(1, 0, args);
 };
@@ -253,7 +253,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically increasing, ignore case)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool cl__char_lessp(VaList_sp args) {
+CL_DEFUN bool cl__char_lessp(Vaslist_sp args) {
   if (args->remaining_nargs() == 0) PROGRAM_ERROR();
   else return monotonic(-1, 1, args, false);
 };
@@ -270,7 +270,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically decreasing, ignore case)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool cl__char_greaterp(VaList_sp args) {
+CL_DEFUN bool cl__char_greaterp(Vaslist_sp args) {
   if (args->remaining_nargs() == 0) PROGRAM_ERROR();
   else return monotonic(1, 1, args, false);
 };
@@ -287,7 +287,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-increasing, ignore case)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool cl__char_not_greaterp(VaList_sp args) {
+CL_DEFUN bool cl__char_not_greaterp(Vaslist_sp args) {
   if (args->remaining_nargs() == 0) PROGRAM_ERROR();
   else return monotonic(-1, 0, args, false);
 };
@@ -304,7 +304,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return true if characters are monotonically non-decreasing, ignore case)dx")
 DOCGROUP(clasp)
-CL_DEFUN bool cl__char_not_lessp(VaList_sp args) {
+CL_DEFUN bool cl__char_not_lessp(Vaslist_sp args) {
   if (args->remaining_nargs() == 0) PROGRAM_ERROR();
   else return monotonic(1, 0, args, false);
 };
@@ -313,7 +313,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(NE_)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl__char_NE_(VaList_sp args) {
+CL_DEFUN T_sp cl__char_NE_(Vaslist_sp args) {
   // Just like cl___NE_
   switch (args->remaining_nargs()) {
     /* I expect the order of likelihood is 2, 3, 1, >3, 0.
@@ -343,7 +343,7 @@ CL_DEFUN T_sp cl__char_NE_(VaList_sp args) {
     /* General case is a nested loop.
      * We're going to iterate over the arguments several times,
      * so a valist isn't going to cut it. */
-    List_sp largs = core__list_from_va_list(args);
+    List_sp largs = core__list_from_vaslist(args);
     while (largs.notnilp()) {
       claspCharacter c1 = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(largs)));
       for (List_sp cur = oCdr(largs); cur.notnilp(); cur = oCdr(cur)) {
@@ -361,7 +361,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(EQ_)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl__char_EQ_(VaList_sp args) {
+CL_DEFUN T_sp cl__char_EQ_(Vaslist_sp args) {
   switch (args->remaining_nargs()) {
   case 0:
       PROGRAM_ERROR();
@@ -432,7 +432,7 @@ CL_LAMBDA(core:&va-rest chars)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(EQ_)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl__char_equal(VaList_sp chars) {
+CL_DEFUN T_sp cl__char_equal(Vaslist_sp chars) {
   switch (chars->remaining_nargs()) {
   case 0:
       PROGRAM_ERROR();

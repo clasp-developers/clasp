@@ -7,7 +7,7 @@
 (core:defconstant-equal +special-operator-dispatch+
   '(
     (progn codegen-progn)
-    (core:bind-va-list codegen-bind-va-list)
+    (core:bind-vaslist codegen-bind-vaslist)
     (if codegen-if)
     (block  codegen-block)
     (core::local-block  codegen-local-block)
@@ -1516,8 +1516,8 @@ jump to blocks within this tagbody."
   (declare (ignore fmt fargs))
   nil)
 
-;;; core:bind-va-list
-(defun codegen-bind-va-list (result form evaluate-env)
+;;; core:bind-vaslist
+(defun codegen-bind-vaslist (result form evaluate-env)
   (let ((lambda-list (first form))
         (vaslist     (second form))
         (body        (cddr form)))
@@ -1536,15 +1536,15 @@ jump to blocks within this tagbody."
                    (local-args* (alloca-vaslist :label "local-vaslist"))
                    (local-args-v* (irc-tag-vaslist local-args*))
                    (_ (vaslist-start local-args-v* (irc-load src-remaining-nargs*) (irc-load src-args*)))
-                   #+(or)(_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
-                                                                                 (irc-pointer-cast src-va_list* %i8*%))))
+                   #+(or)(_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-vaslist* %i8*%)
+                                                                                 (irc-pointer-cast src-vaslist* %i8*%))))
                    (callconv (make-calling-convention :closure (llvm-sys:constant-pointer-null-get %i8*%)
                                                       :nargs (irc-load src-remaining-nargs*)
                                                       :vaslist* local-args-v*
                                                       :rest-alloc rest-alloc
                                                       :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)))
               (declare (ignore _))
-              ;; See comment in cleavir bind-va-list w/r/t safep.
+              ;; See comment in cleavir bind-vaslist w/r/t safep.
               (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :general-entry :safep nil))
                     (*notinlines* (new-notinlines canonical-declares)))
                 (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))

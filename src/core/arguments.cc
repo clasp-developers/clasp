@@ -177,7 +177,7 @@ void ValueEnvironmentDynamicScopeManager::va_rest_binding(const Argument &argume
     SIMPLE_ERROR(BF("You cannot bind &VA-REST argument to a special"));
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
-  VaList_sp valist(&this->valist());
+  Vaslist_sp valist(&this->valist());
   T_sp argTarget = argument._ArgTarget;
   this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, valist);
 }
@@ -220,7 +220,7 @@ void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
     SIMPLE_ERROR(BF("You cannot bind &VA-REST argument to a special"));
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
-  VaList_sp valist(&this->valist());
+  Vaslist_sp valist(&this->valist());
   gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, valist.raw_() );
 }
 

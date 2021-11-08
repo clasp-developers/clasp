@@ -167,7 +167,7 @@
     (bind-variable rest
                    (if va-rest-p
                        arguments
-                       (core:list-from-va-list arguments))
+                       (core:list-from-vaslist arguments))
                    env))
   (when keyp
     (unless (evenp (core:vaslist-length arguments))
@@ -175,7 +175,7 @@
   (when (and (not rest) (not keyp) (plusp (core:vaslist-length arguments)))
     (error "Too many arguments"))
   (loop with indicator = (list nil) ; arbitrary unique thing
-        with arguments = (core:list-from-va-list arguments)
+        with arguments = (core:list-from-vaslist arguments)
         for (k var var-p) in key
         for value = (getf arguments k indicator)
         if (eq value indicator) ; not present
@@ -456,18 +456,18 @@
 
 ;; The array access ASTs, like vector-length, are annoying to do non-metacircularly, so we don't.
 
-#-cst (defcan cc-ast:bind-va-list-ast)
-#-cst ; bind-va-list doesn't inline right - FIXME
-(defmethod interpret-ast ((ast cc-ast:bind-va-list-ast) env)
+#-cst (defcan cc-ast:bind-vaslist-ast)
+#-cst ; bind-vaslist doesn't inline right - FIXME
+(defmethod interpret-ast ((ast cc-ast:bind-vaslist-ast) env)
   (let ((lambda-list (cleavir-ast:lambda-list ast))
-        (va-list-ast (cc-ast:va-list-ast ast))
+        (vaslist-ast (cc-ast:vaslist-ast ast))
         (body-ast (cleavir-ast:body-ast ast)))
     (multiple-value-bind (required optional rest va-rest-p keyp key aok-p)
         (parse-lambda-list lambda-list)
-      ;; We need to copy the vaslist for bind-va-list semantics.
+      ;; We need to copy the vaslist for bind-vaslist semantics.
       ;; This is the only way I know how, and yes, it's kind of silly.
-      (core:bind-va-list (core:&va-rest vaslist-copy)
-          (interpret-ast va-list-ast env)
+      (core:bind-vaslist (core:&va-rest vaslist-copy)
+          (interpret-ast vaslist-ast env)
         (bind-list vaslist-copy env
                    required optional rest va-rest-p keyp key aok-p)
         (interpret-ast body-ast env)))))

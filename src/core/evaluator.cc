@@ -144,7 +144,7 @@ extern "C" void cc_protect_alloca(char* ptr);
 #define GET_AND_ADVANCE_VASLIST(x_,cur_) {x_ = cur_->next_arg_raw(); };
 // NOTE that changes to REG_ARGS require changes to code below.
 
-T_mv apply0_inner_valist(Function_sp func, VaList_sp var) {
+T_mv apply0_inner_valist(Function_sp func, Vaslist_sp var) {
   T_O *a0, *a1, *a2, *a3;
   int lenRest = var->remaining_nargs();
   int nargs = lenRest + 0;
@@ -181,7 +181,7 @@ T_mv apply0_inner_valist(Function_sp func, VaList_sp var) {
   }
 }
 
-T_mv apply1_inner_valist(Function_sp func, T_O* a0, VaList_sp var) {
+T_mv apply1_inner_valist(Function_sp func, T_O* a0, Vaslist_sp var) {
   T_O *a1, *a2, *a3;
   size_t lenRest = var->remaining_nargs();
   size_t nargs = lenRest + 1;
@@ -215,7 +215,7 @@ T_mv apply1_inner_valist(Function_sp func, T_O* a0, VaList_sp var) {
   }
 }
 
-T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, VaList_sp var) {
+T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, Vaslist_sp var) {
   T_O *a2, *a3;
   size_t lenRest = var->remaining_nargs();
   size_t nargs = lenRest + 2;
@@ -244,7 +244,7 @@ T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, VaList_sp var) {
   }
 }
 
-T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, VaList_sp var) {
+T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, Vaslist_sp var) {
   T_O *a3;
   size_t lenRest = var->remaining_nargs();
   size_t nargs = lenRest + 3;
@@ -269,9 +269,9 @@ T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, VaList_sp 
   }
 }
 
-T_mv apply4_inner_valist(Function_sp func, VaList_sp v,
+T_mv apply4_inner_valist(Function_sp func, Vaslist_sp v,
                          T_O* a0, T_O* a1, T_O* a2, T_O *a3,
-                         VaList_sp var) {
+                         Vaslist_sp var) {
   size_t lenRest = var->remaining_nargs();
   size_t nargs = lenRest + 4 + v->remaining_nargs();
   MAKE_STACK_FRAME( frame, nargs );
@@ -498,7 +498,7 @@ T_mv apply4_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_O* a3, T_s
 #endif
 T_mv apply4_inner_list(Function_sp func, T_sp var,
                        T_O* a0, T_O* a1, T_O* a2, T_O* a3,
-                       VaList_sp fixed) {
+                       Vaslist_sp fixed) {
   size_t lenRest = 0;
   {
     T_sp cur = var;
@@ -524,8 +524,8 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
 
 /* The idea is that given a call to apply: (apply f1 f2... fn var),
  * we end up here with var = var, lenFixed = n, fixed = the apply valist.
- * When var is a VaList, naturally. */
-T_mv apply_inner_valist(Function_sp func, size_t lenFixed, VaList_sp fixed, VaList_sp var) {
+ * When var is a Vaslist, naturally. */
+T_mv apply_inner_valist(Function_sp func, size_t lenFixed, Vaslist_sp fixed, Vaslist_sp var) {
   size_t nargs_var = var->_nargs;
   size_t total_args = lenFixed + nargs_var;
   MAKE_STACK_FRAME( frame, total_args );
@@ -536,7 +536,7 @@ T_mv apply_inner_valist(Function_sp func, size_t lenFixed, VaList_sp fixed, VaLi
   return (*func).entry()(func.raw_(),total_args,frame->arguments());
 }
 
-T_mv apply_inner_list(Function_sp func, size_t lenFixed, VaList_sp fixed, List_sp var) {
+T_mv apply_inner_list(Function_sp func, size_t lenFixed, Vaslist_sp fixed, List_sp var) {
   size_t nargs_var = cl__length(var);
   size_t total_args = lenFixed + nargs_var;
   MAKE_STACK_FRAME( frame, total_args );
@@ -551,13 +551,13 @@ CL_LAMBDA(head core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(apply)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
+CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
   Function_sp func = coerce::functionDesignator( head );
   if (args->total_nargs() == 0) eval::errorApplyZeroArguments();
   size_t lenArgs = args->_nargs;
   T_O* lastArgRaw = (*args)[lenArgs - 1];
   if (gctools::tagged_vaslistp(lastArgRaw)) {
-    VaList_sp valast((gc::Tagged)lastArgRaw);
+    Vaslist_sp valast((gc::Tagged)lastArgRaw);
     return apply_inner_valist(func, lenArgs - 1, args, valast);
   } else if ( gctools::tagged_consp(lastArgRaw) || gctools::tagged_nilp(lastArgRaw)) {
     T_sp lastArg((gc::Tagged)lastArgRaw);
@@ -577,7 +577,7 @@ CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
   if (lastArg.valistp()) {
-    return apply0_inner_valist(func, gc::As_unsafe<VaList_sp>(lastArg));
+    return apply0_inner_valist(func, gc::As_unsafe<Vaslist_sp>(lastArg));
   }
   else if (lastArg.consp() || lastArg.nilp())
     return apply0_inner_list(func, lastArg);
@@ -591,7 +591,7 @@ CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__trace_apply0(Function_sp func, T_sp lastArg) {
   if (lastArg.valistp()) {
-    return apply0_inner_valist(func, gc::As_unsafe<VaList_sp>(lastArg));
+    return apply0_inner_valist(func, gc::As_unsafe<Vaslist_sp>(lastArg));
   }
   else if (lastArg.consp() || lastArg.nilp())
     return apply0_inner_list(func, lastArg);
@@ -605,7 +605,7 @@ CL_DOCSTRING(R"dx((apply f a m) = (apply1 (coerce-fdesignator f) m a))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
   if (lastArg.valistp())
-    return apply1_inner_valist(func, arg0.raw_(), gc::As_unsafe<VaList_sp>(lastArg));
+    return apply1_inner_valist(func, arg0.raw_(), gc::As_unsafe<Vaslist_sp>(lastArg));
   else if (lastArg.consp() || lastArg.nilp())
     return apply1_inner_list(func, arg0.raw_(), lastArg);
   else eval::errorApplyLastArgumentNotList(lastArg);
@@ -619,7 +619,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1) {
   if (lastArg.valistp())
-    return apply2_inner_valist(func, arg0.raw_(), arg1.raw_(), gc::As_unsafe<VaList_sp>(lastArg));
+    return apply2_inner_valist(func, arg0.raw_(), arg1.raw_(), gc::As_unsafe<Vaslist_sp>(lastArg));
   else if (lastArg.consp() || lastArg.nilp())
     return apply2_inner_list(func, arg0.raw_(), arg1.raw_(), lastArg);
   else eval::errorApplyLastArgumentNotList(lastArg);
@@ -634,7 +634,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1, T_sp arg2) {
   if (lastArg.valistp())
-    return apply3_inner_valist(func, arg0.raw_(), arg1.raw_(), arg2.raw_(), gc::As_unsafe<VaList_sp>(lastArg));
+    return apply3_inner_valist(func, arg0.raw_(), arg1.raw_(), arg2.raw_(), gc::As_unsafe<Vaslist_sp>(lastArg));
   else if (lastArg.consp() || lastArg.nilp())
     return apply3_inner_list(func, arg0.raw_(), arg1.raw_(), arg2.raw_(), lastArg);
   else eval::errorApplyLastArgumentNotList(lastArg);
@@ -647,9 +647,9 @@ CL_DOCSTRING(R"dx((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3,
-                           VaList_sp more) {
+                           Vaslist_sp more) {
   if (lastArg.valistp())
-    return apply4_inner_valist(func, gc::As_unsafe<VaList_sp>(lastArg),
+    return apply4_inner_valist(func, gc::As_unsafe<Vaslist_sp>(lastArg),
                                arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(),
                                more);
   else if (lastArg.consp() || lastArg.nilp())
@@ -682,7 +682,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
       tail_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_cur->cdr().raw_()));
     }
     Vaslist valist_struct(nargs,frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+    Vaslist_sp valist(&valist_struct); // = frame.setupVaslist(valist_struct);;
     return funcall_general<core::Function_O>((gc::Tagged)func_tagged, valist_struct._nargs, valist_struct._args );
   }
   Cons_O* cons_tail = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_tagged));
@@ -694,7 +694,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
     front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->cdr().raw_()));
   }
   Vaslist valist_struct(nargs,frame);
-  VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+  Vaslist_sp valist(&valist_struct); // = frame.setupVaslist(valist_struct);;
   return funcall_general<core::Function_O>((gc::Tagged)func_tagged, valist_struct._nargs, valist_struct._args );
 }
 #endif
@@ -715,7 +715,7 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
       list_rest_args = oCdr(list_rest_args);
     }
     Vaslist valist_struct(nargs,frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+    Vaslist_sp valist(&valist_struct); // = frame.setupVaslist(valist_struct);;
     return funcall_general<core::Function_O>((gc::Tagged)function_tagged, valist_struct._nargs, valist_struct._args );
   }
   nargs = sizeof...(FixedArgs);
@@ -723,7 +723,7 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
   T_O* _[] = {fixedArgs...};
   for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
   Vaslist valist_struct(nargs,frame);
-  VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+  Vaslist_sp valist(&valist_struct); // = frame.setupVaslist(valist_struct);;
   return funcall_general<core::Function_O>((gc::Tagged)function_tagged, valist_struct._nargs, valist_struct._args );
 }
 
@@ -1781,7 +1781,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
                 }
             }
             Vaslist valist_struct(idx,fargs);
-            VaList_sp valist(&valist_struct); // = valist_struct.fargs.setupVaList(valist_struct);
+            Vaslist_sp valist(&valist_struct); // = valist_struct.fargs.setupVaslist(valist_struct);
             return funcall_general<core::Function_O>(func.tagged_(), valist_struct._nargs, valist_struct._args );
         }
 
@@ -2428,7 +2428,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
             }
 #endif
             Vaslist valist_struct(nargs,callArgs);
-            VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
+            Vaslist_sp valist(&valist_struct); // = callArgs.setupVaslist(valist_struct);
             try {
               return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
             } catch (core::ExitProgramException& ee) {

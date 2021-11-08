@@ -148,7 +148,7 @@ namespace core {
       return res;
     }
 
-    static Cons_sp createFrom_va_list(va_list &va_args);
+    static Cons_sp createFrom_vaslist(Vaslist &va_args);
     static Cons_sp createList(T_sp o1);
     static Cons_sp createList(T_sp o1, T_sp o2);
     static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3);

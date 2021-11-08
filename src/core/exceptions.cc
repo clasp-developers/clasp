@@ -793,13 +793,38 @@ void FEerror(const string &fmt, int nargs, ...) {
   UNREACHABLE();
 }
 
+List_sp clasp_grab_rest_args(va_list args, int nargs) {
+  ql::list l;
+  while (nargs) {
+    T_sp arg = gctools::smart_ptr<T_O>((gc::Tagged)va_arg(args, T_O *));
+    l << arg;
+    --nargs;
+  }
+  return l.cons();
+}
+
+void file_libc_error(T_sp error_type, T_sp stream, const char *msg, int narg, ...) {
+  va_list args;
+  T_sp error = SimpleBaseString_O::make(std::string(strerror(errno)));
+  va_start(args, narg);
+  T_sp rest = clasp_grab_rest_args(args, narg);
+  va_end(args);
+  eval::funcall(core::_sym_signalSimpleError,
+                error_type, nil<T_O>(),
+                SimpleBaseString_O::make("~?~%C library explanation: ~A."),
+                Cons_O::createList(SimpleBaseString_O::make(std::string(msg)), rest,
+                                   error));
+  UNREACHABLE();
+}
+
+
 void FElibc_error(const char *msg, int nargs, ...) {
   T_sp error = SimpleBaseString_O::make(strerror(errno));
   SimpleBaseString_sp smsg = SimpleBaseString_O::make(msg);
   va_list args;
   va_start(args, nargs);
   List_sp l = clasp_grab_rest_args(args, nargs);
-  clasp_va_end(args);
+  va_end(args);
   FEerror("~?~%C library explanation: ~A.", 3,
           smsg.raw_(), l.raw_(),
           error.raw_());
@@ -821,13 +846,13 @@ void FEargument_number_error(T_sp supplied, T_sp min, T_sp max) {
 }
 
 T_sp CEerror(T_sp c, const char *err, int narg, ...) {
-  clasp_va_list args;
-  clasp_va_start(args, narg);
+  va_list args;
+  va_start(args, narg);
   T_sp result = eval::funcall(core::_sym_universalErrorHandler,
                               c,                  // correctable
                               SimpleBaseString_O::make(err), // continue format string
                               clasp_grab_rest_args(args, narg));
-  clasp_va_end(args);
+  va_end(args);
   return result;
 }
 
@@ -835,10 +860,10 @@ void CEpackage_error(const char *fmt,
                      const char *continue_message,
                      T_sp package,
                      int nargs, ...) {
-  clasp_va_list args;
-  clasp_va_start(args, nargs);
+  va_list args;
+  va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
-  clasp_va_end(args);
+  va_end(args);
   if (fmtargs.nilp()) fmtargs = Cons_O::create(package,nil<T_O>());
   eval::funcall(core::_sym_signalSimpleError,
                 core::_sym_simplePackageError,
@@ -852,10 +877,10 @@ void CEpackage_error(const char *fmt,
 void FEpackage_error(const char *fmt,
                      T_sp package,
                      int nargs, ...) {
-  clasp_va_list args;
-  clasp_va_start(args, nargs);
+  va_list args;
+  va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
-  clasp_va_end(args);
+  va_end(args);
   if (fmtargs.nilp()) fmtargs = Cons_O::create(package,nil<T_O>());
   eval::funcall(core::_sym_signalSimpleError,
                 core::_sym_simplePackageError,

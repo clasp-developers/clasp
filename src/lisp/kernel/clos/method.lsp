@@ -170,7 +170,7 @@
              (declare (core:lambda-name ,lambda-name))
              ,@(when doc (list doc))
              ,(wrap-contf-lexical-function-binds
-               `(core::bind-va-list ,lambda-list .method-args. ,@decls ,@body)
+               `(core::bind-vaslist ,lambda-list .method-args. ,@decls ,@body)
                contsym call-next-method-p no-next-method-p-p
                `(apply ,contsym .method-args.)))
           ;; We have only required parameters. This allows us to use a function

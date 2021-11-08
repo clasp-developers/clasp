@@ -440,7 +440,7 @@ CL_LAMBDA(program gf args)
 DOCGROUP(clasp)
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
-                                            VaList_sp pass_args) {
+                                            Vaslist_sp pass_args) {
   DTILOG(BF("=============================== Entered clos__interpret_dtree_program\n"));
   DTILOG(BF("---- generic function: %s\n") % _safe_rep_(generic_function));
   DTILOG(BF("---- program length: %d\n") % program->length());
@@ -459,7 +459,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   DTILOG(BF("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n"));
   DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
   Vaslist valist_copy(*pass_args);
-  VaList_sp dispatch_args(&valist_copy);
+  Vaslist_sp dispatch_args(&valist_copy);
   DTILOG(BF("About to dump copied dispatch_args Vaslist\n"));
   DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
   T_sp arg;

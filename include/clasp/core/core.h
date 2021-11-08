@@ -886,7 +886,7 @@ uint64_t lisp_nameword(T_sp name);
   string lisp_classNameAsString(Instance_sp c);
   void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId);
   core::T_sp lisp_false();
-  T_sp lisp_va_list_toCons(va_list vargs);
+//  T_sp lisp_vaslist_toCons(vaslist vargs);
 //bool lisp_fixnumP(core::T_sp obj);
 //gctools::Fixnum lisp_asFixnum(core::T_sp obj);
 /*! Create a SourcePosInfo object for a C++ function */
@@ -1122,13 +1122,6 @@ inline void clasp_disable_interrupts_env(const cl_env_ptr){};
 inline void clasp_enable_interrupts_env(const cl_env_ptr){};
 //    inline void clasp_disable_interrupts() {};
 //    inline void clasp_enable_interrupts() {};
-};
-
-namespace core {
-typedef va_list clasp_va_list;
-#define clasp_va_start va_start
-List_sp clasp_grab_rest_args(va_list args, int nargs);
-#define clasp_va_end va_end
 };
 
 

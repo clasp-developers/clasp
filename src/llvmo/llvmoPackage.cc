@@ -320,7 +320,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "STAMP-MASK", make_fixnum(gctools::Header_s::stamp_mask));
   ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMPWTAG_max));
   ENTRY(list, "CONS-STAMP", make_fixnum(gctools::STAMPWTAG_CONS));
-  ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::STAMPWTAG_VA_LIST_S));
+  ENTRY(list, "VASLIST_S-STAMP", make_fixnum(gctools::STAMPWTAG_VASLIST_S));
   ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::STAMPWTAG_CHARACTER));
   ENTRY(list, "SINGLE-FLOAT-STAMP", make_fixnum(gctools::STAMPWTAG_SINGLE_FLOAT)); 
   ENTRY(list, "INSTANCE-RACK-OFFSET", make_fixnum(offsetof(Instance_O,_Rack)));

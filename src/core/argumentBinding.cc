@@ -27,12 +27,12 @@ THE SOFTWARE.
 
 /*! Define the following macros to configure this code for using ActivationFrames 
   or var-args...
-  Name				va_list
+  Name				vaslist
   PASS_FUNCTION_REQUIRED 	bind_required_var_args
   PASS_FUNCTION_OPTIONAL 	bind_optional_var_args
   PASS_FUNCTION_REST 		bind_rest_var_args
   PASS_FUNCTION_KEYWORD 	bind_keyword_var_args
-  PASS_ARGS  			'int n_args, va_list ap'	'ActivationFrame_sp args'
+  PASS_ARGS  			'int n_args, vaslist ap'	'ActivationFrame_sp args'
   PASS_ARGS_NUM 		'n_args'				'cl__length(args)'
   PASS_NEXT_ARG(arg_idx) 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */

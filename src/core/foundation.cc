@@ -340,16 +340,6 @@ void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
 
 namespace core {
 
-List_sp clasp_grab_rest_args(va_list args, int nargs) {
-  ql::list l;
-  while (nargs) {
-    T_sp arg = gctools::smart_ptr<T_O>((gc::Tagged)va_arg(args, T_O *));
-    l << arg;
-    --nargs;
-  }
-  return l.cons();
-}
-
 void lisp_pushClassSymbolOntoSTARallCxxClassesSTAR(Symbol_sp classSymbol) {
   if (_sym_STARallCxxClassesSTAR->symbolValueUnsafe()) {
     _sym_STARallCxxClassesSTAR->setf_symbolValue(Cons_O::create(classSymbol, _sym_STARallCxxClassesSTAR->symbolValue()));
@@ -754,7 +744,7 @@ Instance_sp lisp_instance_class(T_sp o) {
     General_sp go(o.unsafe_general());
     tc = go->_instanceClass();
   } else if (o.valistp()) {
-    tc = core::VaList_dummy_O::staticClass();
+    tc = core::Vaslist_dummy_O::staticClass();
   } else {
     SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") % (void*)(o.raw_()));
   }
@@ -798,8 +788,8 @@ string _rep_(T_sp obj) {
     General_sp gobj(obj.unsafe_general());
     return gobj->__repr__(); // This is the only place where obj->__repr__() is allowed
   } else if (obj.valistp()) {
-    VaList_sp vobj((gctools::Tagged)obj.raw_());
-    List_sp l = core__list_from_va_list(vobj);
+    Vaslist_sp vobj((gctools::Tagged)obj.raw_());
+    List_sp l = core__list_from_vaslist(vobj);
     return _rep_(l);
   } else if (obj.unboundp()) {
     return "!UNBOUND!";

@@ -814,7 +814,7 @@ void dumpBoehmLayoutTables(FILE* fout) {
 #endif
 
 
-     Init_class_kind(core::VaList_dummy_O);
+     Init_class_kind(core::Vaslist_dummy_O);
      Init_class_kind(core::Unused_dummy_O);
      Init_class_kind(core::ClassHolder_O);
      Init_class_kind(core::SymbolToEnumConverter_O);

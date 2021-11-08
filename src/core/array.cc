@@ -232,14 +232,14 @@ size_t Array_O::arrayRowMajorIndex(List_sp indices) const {
   return offset;
 }
 
-size_t Array_O::arrayRowMajorIndex(VaList_sp indices) const {
+size_t Array_O::arrayRowMajorIndex(Vaslist_sp indices) const {
   size_t rank = this->rank();
   size_t indices_passed = indices->_nargs;
   unlikely_if (indices_passed < rank) {
-    insufficientIndexListError(core__list_from_va_list(indices));
+    insufficientIndexListError(core__list_from_vaslist(indices));
   } else {
     unlikely_if (indices_passed > rank) {
-      tooManyIndicesListError(core__list_from_va_list(indices));
+      tooManyIndicesListError(core__list_from_vaslist(indices));
     }
   }
   size_t offset = 0;
@@ -468,7 +468,7 @@ CL_DEFUN  T_sp cl__arrayElementType(Array_sp array)
 CL_LAMBDA(array core:&va-rest core::indices)
 CL_LISPIFY_NAME("cl:arrayRowMajorIndex");
 DOCGROUP(clasp)
-CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, VaList_sp indices) {
+CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, Vaslist_sp indices) {
   return array->arrayRowMajorIndex(indices);
 }
 
@@ -636,7 +636,7 @@ CL_LAMBDA(value array core:&va-rest indices)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(aset)dx")
 DOCGROUP(clasp)
-CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
+CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, Vaslist_sp indices) {
   cl_index rowMajorIndex = array->arrayRowMajorIndex(indices);
   array->rowMajorAset(rowMajorIndex,value);
   return value;
@@ -645,7 +645,7 @@ CL_DEFUN_SETF T_sp core__aset(T_sp value, Array_sp array, VaList_sp indices) {
 CL_LISPIFY_NAME("cl:aref");
 CL_LAMBDA(array core:&va-rest core::indices)
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl__aref(Array_sp array, VaList_sp vargs)
+CL_DEFUN T_sp cl__aref(Array_sp array, Vaslist_sp vargs)
 {
   cl_index rowMajorIndex = array->arrayRowMajorIndex(vargs);
   return array->rowMajorAref(rowMajorIndex);
@@ -654,7 +654,7 @@ CL_DEFUN T_sp cl__aref(Array_sp array, VaList_sp vargs)
 CL_LAMBDA(array core:&va-rest indices)
 CL_LISPIFY_NAME("core:index");
 DOCGROUP(clasp)
-CL_DEFUN gc::Fixnum core__index(Array_sp array, VaList_sp indices) {
+CL_DEFUN gc::Fixnum core__index(Array_sp array, Vaslist_sp indices) {
   return array->arrayRowMajorIndex(indices);
 }
 

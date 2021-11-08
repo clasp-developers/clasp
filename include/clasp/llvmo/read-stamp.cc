@@ -49,8 +49,8 @@ core::T_O* template_read_stamp(TTT* obj)
 #if TAG_BITS==4
   case VASLIST1_TAG:
 #endif
-      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_VA_LIST_S));
-      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMPWTAG_VA_LIST_S);
+      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_VASLIST_S));
+      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMPWTAG_VASLIST_S);
   case SINGLE_FLOAT_TAG:
       ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_SINGLE_FLOAT));
       return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMPWTAG_SINGLE_FLOAT);

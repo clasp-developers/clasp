@@ -1144,7 +1144,7 @@ CL_DOCSTRING(R"dx((call dladdr with the address and return nil if not found or t
 DOCGROUP(clasp)
 CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
   InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
-  (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
+  (*mainFunctionPointer)(LCC_PASS_ARGS0_VASLIST_INITFNPTR());
 }
 
 CL_DOCSTRING(R"dx((call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values))dx")

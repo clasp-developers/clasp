@@ -295,7 +295,7 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   } else if (obj.characterp()) {
     return gctools::STAMPWTAG_CHARACTER;
   } else if (obj.valistp()) {
-    return gctools::STAMPWTAG_VA_LIST_S;
+    return gctools::STAMPWTAG_VASLIST_S;
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
   SIMPLE_ERROR(BF("The object %s doesn't have a stamp") % _rep_(obj));

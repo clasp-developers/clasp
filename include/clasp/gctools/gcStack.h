@@ -116,16 +116,14 @@ inline void fill_frame_nargs_args(Frame* frame, size_t& idx, size_t nargs, core:
 
 namespace core {
 
-// A struct that wraps va_list and behaves like a Common Lisp LIST
-typedef gctools::smart_ptr<Vaslist> VaList_sp;
-/*! Vaslist: A class that maintains a C va_list and allows the programmer to
-iterate over a list of arguments.  It uses a lot of trickery to let it iterate over
-a list of arguments passed to a function or a list of arguments in a Frame.
+typedef gctools::smart_ptr<Vaslist> Vaslist_sp;
+/*! Vaslist: A class that maintains a pointer to a vector of arguments and a number of arguments
+to allow iteration over a list of arguments.  
 It must always be allocated on the Stack.
 */
 struct Vaslist {
   /* WARNING WARNING WARNING WARNING
-DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_list+ in cmpintrinsics.lsp
+DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vaslist+ in cmpintrinsics.lsp
 */
   mutable T_O**   _args;
   mutable size_t  _nargs;
@@ -153,7 +151,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
   };
   // The Vaslist._Args must be initialized immediately after this
   //    using va_start(xxxx._Args,FIRST_ARG)
-  //    See lispCallingConvention.h INITIALIZE_VA_LIST
+  //    See lispCallingConvention.h INITIALIZE_VASLIST
   Vaslist(size_t nargs) {
     this->_nargs = nargs;
     this->check_nargs();
@@ -196,7 +194,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
   }
 #if 0
   inline size_t total_nargs() const {
-    size_t n = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(this);
+    size_t n = LCC_VASLIST_TOTAL_NUMBER_OF_ARGUMENTS(this);
     return n;
   }
 #endif
@@ -220,7 +218,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
   inline size_t current_index() const {
     printf("%s:%d  implement-me\n", __FILE__, __LINE__ );
     size_t idx;
-    LCC_VA_LIST_CURRENT_INDEX(idx,this);
+    LCC_VASLIST_CURRENT_INDEX(idx,this);
     return idx;
   }
 #endif
@@ -276,7 +274,7 @@ public:
 
 };
 
-inline void fill_frame_vaslist(Frame* frame, size_t& idx, const core::VaList_sp vaslist) {
+inline void fill_frame_vaslist(Frame* frame, size_t& idx, const core::Vaslist_sp vaslist) {
   core::Vaslist* vas = vaslist.unsafe_valist();
   fill_frame_nargs_args( frame, idx, vas->_nargs, vas->_args );
 }

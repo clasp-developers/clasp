@@ -33,7 +33,7 @@
     class CatchEnvironment_O;
     class ComplexVector_byte4_t_O;
     class Lisp_O;
-    class VaList_dummy_O;
+    class Vaslist_dummy_O;
     class ComplexVector_int32_t_O;
     class SymbolToEnumConverter_O;
     class DerivableCxxObject_O;
@@ -1365,7 +1365,7 @@ STAMPWTAG_core__DirectoryEntry_O = ADJUST_STAMP(2731), // Stamp(682)  wtag(3)
 STAMPWTAG_core__LightUserData_O = ADJUST_STAMP(2735), // Stamp(683)  wtag(3)
 STAMPWTAG_core__UserData_O = ADJUST_STAMP(2739), // Stamp(684)  wtag(3)
 STAMPWTAG_core__Cons_O = ADJUST_STAMP(2743), // Stamp(685)  wtag(3)
-STAMPWTAG_core__VaList_dummy_O = ADJUST_STAMP(2747), // Stamp(686)  wtag(3)
+STAMPWTAG_core__Vaslist_dummy_O = ADJUST_STAMP(2747), // Stamp(686)  wtag(3)
 STAMPWTAG_core__Lisp_O = ADJUST_STAMP(2751), // Stamp(687)  wtag(3)
 STAMPWTAG_gctools__GCContainer = ADJUST_STAMP(2755), // Stamp(688)  wtag(3)
 STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__BackboneDependentRotamerSet_O__ = ADJUST_STAMP(2759), // Stamp(689)  wtag(3)
@@ -3166,7 +3166,7 @@ register_stamp_name("STAMPWTAG_core__DirectoryEntry_O", ADJUST_STAMP(2731));
 register_stamp_name("STAMPWTAG_core__LightUserData_O", ADJUST_STAMP(2735));
 register_stamp_name("STAMPWTAG_core__UserData_O", ADJUST_STAMP(2739));
 register_stamp_name("STAMPWTAG_core__Cons_O", ADJUST_STAMP(2743));
-register_stamp_name("STAMPWTAG_core__VaList_dummy_O", ADJUST_STAMP(2747));
+register_stamp_name("STAMPWTAG_core__Vaslist_dummy_O", ADJUST_STAMP(2747));
 register_stamp_name("STAMPWTAG_core__Lisp_O", ADJUST_STAMP(2751));
 register_stamp_name("STAMPWTAG_gctools__GCContainer", ADJUST_STAMP(2755));
 register_stamp_name("STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__BackboneDependentRotamerSet_O__", ADJUST_STAMP(2759));
@@ -6585,12 +6585,12 @@ template <typename FP> struct Cast<core::ComplexVector_int32_t_O*,FP> {
       return (kindVal == ISA_ADJUST_STAMP(1823));
   };
 };
-// STAMPWTAG_core__VaList_dummy_O
-template <typename FP> struct Cast<core::VaList_dummy_O*,FP> {
+// STAMPWTAG_core__Vaslist_dummy_O
+template <typename FP> struct Cast<core::Vaslist_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::VaList_dummy_O val -> 2747
+    // IsA-stamp-range core::Vaslist_dummy_O val -> 2747
       return (kindVal == ISA_ADJUST_STAMP(2747));
   };
 };
@@ -10392,7 +10392,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(chem::RestrainedPiBond_O,TYPEQ_ADJUST_STAMP(935));
       ADD_RANGE_TYPEQ_TEST(chem::ConformationCollection_O,chem::SuperposableConformationCollection_O,TYPEQ_ADJUST_STAMP(631),TYPEQ_ADJUST_STAMP(635));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int32_t_O,TYPEQ_ADJUST_STAMP(1823));
-      ADD_SINGLE_TYPEQ_TEST(core::VaList_dummy_O,TYPEQ_ADJUST_STAMP(2747));
+      ADD_SINGLE_TYPEQ_TEST(core::Vaslist_dummy_O,TYPEQ_ADJUST_STAMP(2747));
       ADD_SINGLE_TYPEQ_TEST(geom::Color_O,TYPEQ_ADJUST_STAMP(627));
       ADD_RANGE_TYPEQ_TEST(kinematics::JointTemplate_O,kinematics::RootBondedJointTemplate_O,TYPEQ_ADJUST_STAMP(611),TYPEQ_ADJUST_STAMP(623));
       ADD_SINGLE_TYPEQ_TEST(core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(2667));
@@ -10440,7 +10440,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(chem::Smirks_O,TYPEQ_ADJUST_STAMP(483));
       ADD_SINGLE_TYPEQ_TEST(chem::EnergyDihedralRestraint_O,TYPEQ_ADJUST_STAMP(95));
       ADD_RANGE_TYPEQ_TEST(core::Number_O,core::Complex_O,TYPEQ_ADJUST_STAMP(1351),TYPEQ_ADJUST_STAMP(1399));
-      ADD_RANGE_TYPEQ_TEST(core::T_O,core::VaList_dummy_O,TYPEQ_ADJUST_STAMP(7),TYPEQ_ADJUST_STAMP(2747));
+      ADD_RANGE_TYPEQ_TEST(core::T_O,core::Vaslist_dummy_O,TYPEQ_ADJUST_STAMP(7),TYPEQ_ADJUST_STAMP(2747));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(2571));
       ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(2247));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(2087));
@@ -10996,7 +10996,7 @@ DO_CLASS(SAFE_TYPE_MACRO(core::SymbolToEnumConverter_O),STAMPWTAG_core__SymbolTo
 DO_CLASS(SAFE_TYPE_MACRO(chem::RestrainedPiBond_O),STAMPWTAG_chem__RestrainedPiBond_O);
 DO_CLASS(SAFE_TYPE_MACRO(chem::ConformationCollection_O),STAMPWTAG_chem__ConformationCollection_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_int32_t_O),STAMPWTAG_core__ComplexVector_int32_t_O);
-DO_CLASS(SAFE_TYPE_MACRO(core::VaList_dummy_O),STAMPWTAG_core__VaList_dummy_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Vaslist_dummy_O),STAMPWTAG_core__Vaslist_dummy_O);
 DO_CLASS(SAFE_TYPE_MACRO(geom::Color_O),STAMPWTAG_geom__Color_O);
 DO_CLASS(SAFE_TYPE_MACRO(kinematics::JointTemplate_O),STAMPWTAG_kinematics__JointTemplate_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::LogicalPathname_O),STAMPWTAG_core__LogicalPathname_O);
@@ -12754,9 +12754,9 @@ template <> class gctools::GCStamp<core::ComplexVector_int32_t_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_int32_t_O ;
 };
-template <> class gctools::GCStamp<core::VaList_dummy_O> {
+template <> class gctools::GCStamp<core::Vaslist_dummy_O> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__VaList_dummy_O ;
+  static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Vaslist_dummy_O ;
 };
 template <> class gctools::GCStamp<geom::Color_O> {
 public:
@@ -24049,8 +24049,8 @@ public:
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_Car), 0, "_Car" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Cdr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_Cdr), 0, "_Cdr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// StampWtag = core::VaList_dummy_O/2747
-{ class_kind, STAMPWTAG_core__VaList_dummy_O, sizeof(core::VaList_dummy_O), 0, 0, "core::VaList_dummy_O" },
+// StampWtag = core::Vaslist_dummy_O/2747
+{ class_kind, STAMPWTAG_core__Vaslist_dummy_O, sizeof(core::Vaslist_dummy_O), 0, 0, "core::Vaslist_dummy_O" },
 // StampWtag = core::Lisp_O/2751
 { class_kind, STAMPWTAG_core__Lisp_O, sizeof(core::Lisp_O), 0, IS_POLYMORPHIC, "core::Lisp_O" },
 //      field: "_Roots" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
@@ -33698,13 +33698,13 @@ obj_finalize_STAMPWTAG_core__Cons_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMPWTAG_core__VaList_dummy_O:
+obj_finalize_STAMPWTAG_core__Vaslist_dummy_O:
 {
      // stamp value 2747
-    core::VaList_dummy_O* obj_gc_safe = reinterpret_cast<core::VaList_dummy_O*>(client);
+    core::Vaslist_dummy_O* obj_gc_safe = reinterpret_cast<core::Vaslist_dummy_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~VaList_dummy_O();
+    obj_gc_safe->~Vaslist_dummy_O();
 #pragma clang diagnostic pop
     goto finalize_done;
 }
@@ -35046,7 +35046,7 @@ static void* OBJ_FINALIZE_table[] = {
   /* 2735 */ &&obj_finalize_STAMPWTAG_core__LightUserData_O,
   /* 2739 */ &&obj_finalize_STAMPWTAG_core__UserData_O,
   /* 2743 */ &&obj_finalize_STAMPWTAG_core__Cons_O,
-  /* 2747 */ &&obj_finalize_STAMPWTAG_core__VaList_dummy_O,
+  /* 2747 */ &&obj_finalize_STAMPWTAG_core__Vaslist_dummy_O,
   /* 2751 */ &&obj_finalize_STAMPWTAG_core__Lisp_O,
   /* 2755 */ &&obj_finalize_STAMPWTAG_gctools__GCContainer,
   /* 2759 */ &&obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__BackboneDependentRotamerSet_O__,
@@ -39829,11 +39829,11 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__Cons_O:
     GC<core::Cons_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMPWTAG_core__VaList_dummy_O:
+obj_deallocate_unmanaged_instance_STAMPWTAG_core__Vaslist_dummy_O:
 {
      // stamp value 2747
-    core::VaList_dummy_O* obj_gc_safe = reinterpret_cast<core::VaList_dummy_O*>(client);
-    GC<core::VaList_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    core::Vaslist_dummy_O* obj_gc_safe = reinterpret_cast<core::Vaslist_dummy_O*>(client);
+    GC<core::Vaslist_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Lisp_O:
@@ -41166,7 +41166,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 2735 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__LightUserData_O,
   /* 2739 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__UserData_O,
   /* 2743 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Cons_O,
-  /* 2747 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__VaList_dummy_O,
+  /* 2747 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Vaslist_dummy_O,
   /* 2751 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_core__Lisp_O,
   /* 2755 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCContainer,
   /* 2759 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__BackboneDependentRotamerSet_O__,

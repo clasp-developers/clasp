@@ -175,7 +175,7 @@ namespace gctools {
   #undef GC_ENUM
  #endif
 #endif
-        STAMPWTAG_VA_LIST_S = STAMPWTAG_core__VaList_dummy_O, 
+        STAMPWTAG_VASLIST_S = STAMPWTAG_core__Vaslist_dummy_O, 
         STAMPWTAG_CONS = STAMPWTAG_core__Cons_O, 
         STAMPWTAG_CHARACTER = STAMPWTAG_core__Character_dummy_O, 
         STAMPWTAG_UNUSED = STAMPWTAG_core__Unused_dummy_O, 
@@ -1007,7 +1007,7 @@ namespace core {
   class Character_dummy_O;
   class CPointer_dummy_O;
   class Cons_O;
-  class VaList_dummy_O;
+  class Vaslist_dummy_O;
   class Instance_O;
   class FuncallableInstance_O;
 }

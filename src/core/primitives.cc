@@ -520,7 +520,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(values)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_mv cl__values(VaList_sp vargs) {
+CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
   // returns multiple values
   size_t nargs = vargs->remaining_nargs();
   SUPPRESS_GC();
@@ -531,8 +531,6 @@ CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   if (_sym_STARdebug_valuesSTAR &&
       _sym_STARdebug_valuesSTAR->boundP() &&
       _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
-    va_list debugl;
-    va_copy(debugl,vargs->_Args);
     for (size_t di(0); di<nargs; ++di) {
       T_sp dsp((gctools::Tagged)va_arg(debugl,T_O*));
       printf("%s:%d   VALUES[%lu] -> %s\n", __FILE__, __LINE__, di, _rep_(dsp).c_str());
@@ -1211,7 +1209,7 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
       }
       if (!atend) {
         Vaslist valist_struct(nargs,frame);
-        VaList_sp valist(&valist_struct);
+        Vaslist_sp valist(&valist_struct);
         retVal = funcall_general<core::Function_O>(predicate.tagged_(),nargs,frame->arguments());
         if (retVal.isTrue() == elementTest) {
           return elementReturn;
@@ -1422,7 +1420,7 @@ CL_LAMBDA(core:&va-rest lists)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(append as in clhs)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl__append(VaList_sp args) {
+CL_DEFUN T_sp cl__append(Vaslist_sp args) {
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   size_t lenArgs = args->total_nargs();

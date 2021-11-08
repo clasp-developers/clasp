@@ -367,7 +367,7 @@ and cannot be added to ~A." method other-gf gf)))
   (sys:safe-trace (setf fdefinition))
   (sys:safe-trace invalidated-dispatch-function)
   (sys:safe-trace initialize-instance)
-  (sys:safe-trace core:list-from-va-list)
+  (sys:safe-trace core:list-from-vaslist)
   (sys:safe-trace apply))
 
 #+(or)

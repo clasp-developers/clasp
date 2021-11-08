@@ -338,7 +338,7 @@ CL_LAMBDA(core:&va-rest objects)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(list* see CLHS)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
+CL_DEFUN T_sp cl__listSTAR(Vaslist_sp vargs) {
   size_t nargs = vargs->remaining_nargs();
   if (nargs == 0 ) FEargument_number_error(clasp_make_fixnum(0),clasp_make_fixnum(1),nil<T_O>());
   ql::list result;

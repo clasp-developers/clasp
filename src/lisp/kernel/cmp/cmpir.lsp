@@ -1589,7 +1589,7 @@ But no irbuilders or basic-blocks. Return the fn."
 
 ;;; Our present convention is that Lisp functions uniformly have
 ;;; (closure nargs arg0 .. argm ...) as parameters, where m is
-;;; core:+number-of-fixed-arguments+; the final ... will be a va_list,
+;;; core:+number-of-fixed-arguments+; the final ... will be a vaslist,
 ;;; which is more expensive.
 ;;; If we want to pass fewer than four arguments, we still need to pass
 ;;; enough to match the type; since the function will check nargs and

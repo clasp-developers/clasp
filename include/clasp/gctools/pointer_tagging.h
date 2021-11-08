@@ -96,7 +96,7 @@ namespace gctools {
 /*! A pointer that is already tagged can be passed to smart_ptr constructors
       by first reinterpret_casting it to Tagged */
   typedef uintptr_t Tagged;
-  typedef uintptr_t TaggedVaList; // Used in situations where only a tagged Vaslist ptr is accepted
+  typedef uintptr_t TaggedVaslist; // Used in situations where only a tagged Vaslist ptr is accepted
   static const int tag_shift = TAG_BITS;
 static const int fixnum_bits = 64-FIXNUM_SHIFT;
   static const int fixnum_shift = FIXNUM_SHIFT;
@@ -200,7 +200,7 @@ used by the garbage collector */
 iterate over variable numbers of arguments passed to functions.
 Pointers with this tag are NOT moved in memory, the objects valist_tag'd pointers
 point to are only ever on the stack.
-I hack the va_list structure in X86_64 ABI dependent ways and I will abstract all of the
+I hack the vaslist structure in X86_64 ABI dependent ways and I will abstract all of the
 ABI dependent behavior into a single header file so that it can be implemented for other
 ABI's  */
   static const uintptr_t vaslist0_tag = VASLIST0_TAG; // means a valist

@@ -843,8 +843,8 @@ void debugPointer(const unsigned char *ptr)
 void debug_vaslistPtr(Vaslist *vargs)
 {NO_UNWIND_BEGIN();
   Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)vargs));
-  printf("++++++ debug_va_list: _args @%p \n", args->_args );
-  printf("++++++ debug_va_list: _nargs %lu\n", args->_nargs );
+  printf("++++++ debug_vaslist: _args @%p \n", args->_args );
+  printf("++++++ debug_vaslist: _nargs %lu\n", args->_nargs );
   NO_UNWIND_END();
 }
 

@@ -156,7 +156,7 @@ If the arguments are not available, returns NIL NIL."
             (core:vaslistp (first args)))
         ;; This is non-fast method. The real arguments are a vaslist in
         ;; the first element and the method list is in the second element.
-        (let ((method-args (core:list-from-va-list (first args)))
+        (let ((method-args (core:list-from-vaslist (first args)))
               (next-methods (second args)))
           (append
            (let ((result ()))
