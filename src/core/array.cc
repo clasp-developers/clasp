@@ -1067,7 +1067,6 @@ CL_DEFUN void core__verify_mdarray_layout(T_sp alist)
 }
 
 SYMBOL_SC_(CorePkg, make_vector);
-SYMBOL_EXPORT_SC_(CorePkg, adjustVector);
 SYMBOL_EXPORT_SC_(ClPkg, vectorPush);
 SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
 

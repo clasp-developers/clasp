@@ -90,7 +90,6 @@ namespace core {
 Integer_sp clasp_file_len(int f);
 int clasp_backup_open(const char *filename, int option, int mode);
 
-String_sp core__current_dir();
 Pathname_sp cl__truename(T_sp filespec);
 T_sp cl__probe_file(T_sp filespec);
 Symbol_sp core__file_kind(T_sp filename, bool follow_links = true);

@@ -6,18 +6,14 @@
   (core:select-package "CORE"))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '( single-dispatch-missing-dispatch-argument-error
-            too-few-arguments-error
-            too-many-arguments-error
+  (export '(single-dispatch-missing-dispatch-argument-error
             unrecognized-keyword-argument-error
             argc
             argv
             rmdir
-            external-process-pid
             select-source-files
             compile-kernel-file
             *target-backend*
-            target-backend-pathname
             default-target-backend
             load-system
             compile-system
@@ -31,10 +27,7 @@
             expand-compare
             expand-uncompare
             with-memory-ramp
-            with-dtrace-trigger
-            ))
-
-  (export '( ;;;;MISSING SYMBOLS!!!!!
+            ;;;;MISSING SYMBOLS!!!!!
             fill-pointer-set ;;; MISSING!!!! from C++ source code used in vector-pop arraylib.lsp
             set-symbol-plist
             structure-name

@@ -494,7 +494,7 @@
     (:i8* %i8*%)
     (:i8** %i8**%)
     (:jmp-buf-tag* %jmp-buf-tag*%)
-    (:long-float %long-float%)
+    #+long-float (:long-float %long-float%)
     (:ltv** %ltv**%)
     (:ltvc-return %ltvc-return%)
     (:metadata %metadata%)
