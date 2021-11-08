@@ -50,22 +50,19 @@ struct Frame {
   }
   
   ElementType* arguments(size_t start=0) const {return ((ElementType*)&_args[0])+start;}
-  
-  inline void debugEmptyFrame( size_t nargs) {
-#if DEBUG_FRAME() == 2 
-    for ( size_t ii=0; ii<nargs; ++ii ) {
-      (*this)._args[ii] = gctools::tag_unbound<core::T_O*>();
-    }
-#endif
+
+  inline void mkunboundValue_(size_t idx) {
+    this->_args[idx] = gctools::tag_unbound<core::T_O*>();
   }
 
-  inline ElementType value(size_t idx) const {
+  inline ElementType value_(size_t idx) const {
     return this->_args[idx];
   }
 
   //! Describe the Frame
   void dumpFrame(size_t nargs) const;
   void checkFrame( size_t idx, size_t nargs ) const;
+  void debugEmptyFrame( size_t nargs);
   inline core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged) this->_args[idx]); }
 
 };

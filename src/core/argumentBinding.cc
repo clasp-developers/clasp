@@ -180,7 +180,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
         int ik(0);
         for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {
           if (fi->_Keyword == keyword) {
-            if (!scope.lexicalElementBoundP(*fi)) {
+            if (!scope.lexicalElementBoundP_(*fi)) {
               scope.new_binding(*fi, value);
             }
             if (fi->_Sensor.isDefined()) {

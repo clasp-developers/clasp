@@ -152,7 +152,12 @@ ScopeManager::~ScopeManager() {
   }
 }
 
-bool ValueEnvironmentDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
+void ValueEnvironmentDynamicScopeManager::ensureLexicalElementUnbound( const Argument& argument) {
+  this->new_binding(argument,unbound<core::T_O>());
+}
+
+
+bool ValueEnvironmentDynamicScopeManager::lexicalElementBoundP_(const Argument &argument) {
   return ((this->_Environment->activationFrameElementBoundP(argument._ArgTargetFrameIndex)));
 }
 
@@ -219,9 +224,13 @@ void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
   gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, valist.raw_() );
 }
 
-bool StackFrameDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
+void StackFrameDynamicScopeManager::ensureLexicalElementUnbound( const Argument& argument) {
+  this->frame.mkunboundValue_(argument._ArgTargetFrameIndex);
+}
+
+bool StackFrameDynamicScopeManager::lexicalElementBoundP_(const Argument &argument) {
   //  core::T_O **array(frame::ValuesArray(this->frame));
-  return !gctools::tagged_unboundp(this->frame.value(argument._ArgTargetFrameIndex));
+  return !gctools::tagged_unboundp(this->frame.value_(argument._ArgTargetFrameIndex));
 }
 
 T_sp StackFrameDynamicScopeManager::lexenv() const {

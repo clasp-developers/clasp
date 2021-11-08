@@ -636,6 +636,8 @@ void LambdaListHandler_O::createBindingsInScope(core::T_sp closure,
     bind_rest_va_list(closure,this->_RestArgument, nargs, arglist, arg_idx, scope);
   }
   if (UNLIKELY(this->_KeywordArguments.size() != 0)) {
+    for (auto fi = this->_KeywordArguments.begin(); fi != this->_KeywordArguments.end(); fi++)
+      scope.ensureLexicalElementUnbound(*fi);
     bind_keyword_va_list(closure,this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
   }
   if (UNLIKELY(this->_AuxArguments.size() != 0))

@@ -155,7 +155,8 @@ struct ScopeManager {
   virtual T_sp lexenv() const = 0;
   virtual Vaslist &valist() { N_A_(); };
   virtual void va_rest_binding(const Argument &argument) { N_A_(); };
-  virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
+  virtual bool lexicalElementBoundP_(const Argument &argument) { N_A_(); };
+  virtual void ensureLexicalElementUnbound(const Argument &argument) { N_A_(); };
 };
 
 class ValueEnvironmentDynamicScopeManager : public ScopeManager {
@@ -171,7 +172,8 @@ public:
   virtual void new_binding(const Argument &argument, T_sp val);
   void new_variable(List_sp classifiedVariable, T_sp val);
   void new_special(List_sp classifiedVariable);
-  virtual bool lexicalElementBoundP(const Argument &argument);
+  virtual void ensureLexicalElementUnbound(const Argument &argument);
+  virtual bool lexicalElementBoundP_(const Argument &argument);
   virtual T_sp lexenv() const { return this->_Environment; };
 };
 
@@ -187,7 +189,8 @@ public:
   virtual Vaslist &valist() { return this->VaRest; };
   virtual void va_rest_binding(const Argument &argument);
   virtual void new_binding(const Argument &argument, T_sp val);
-  virtual bool lexicalElementBoundP(const Argument &argument);
+  virtual void ensureLexicalElementUnbound(const Argument &argument);
+  virtual bool lexicalElementBoundP_(const Argument &argument);
   //  T_sp activationFrame() const;
   virtual T_sp lexenv() const;
 };

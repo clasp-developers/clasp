@@ -36,9 +36,16 @@ void Frame::dumpFrame(size_t nargs) const {
   }
 }
 
+void Frame::debugEmptyFrame( size_t nargs) {
+#if DEBUG_FRAME() == 2
+  for ( size_t ii=0; ii<nargs; ++ii ) {
+    (*this)._args[ii] = gctools::tag_unbound<core::T_O*>();
+  }
+#endif
+}
+
 void Frame::checkFrame(size_t idx, size_t nargs) const {
-  if (idx!=nargs) 
-  {
+  if (idx!=nargs) {
     printf("%s:%d:%s FRAME not filled %lu should be %lu\n", __FILE__, __LINE__, __FUNCTION__, idx, nargs );
     abort();
   }

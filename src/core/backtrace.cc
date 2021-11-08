@@ -130,6 +130,7 @@ static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
                      void*& startAddress,
                      bool& XEPp,
                      int& arityCode) {
+  startAddress = NULL;
   auto eranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
   if (eranges) {
     auto ranges = eranges.get();
@@ -144,8 +145,9 @@ static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
         uintptr_t ip = (uintptr_t)(ep->_EntryPoint) - code_start;
         for (auto range : ranges) {
           if ((range.LowPC <= ip) && (ip < range.HighPC)) {
-            startAddress = (void*)range.LowPC;
             XEPp = false;
+            // This will be identical to the entry point address in LocalEntryPoint_sp ep
+            startAddress = (void*)range.LowPC;
             return ep;
           }
         }
@@ -155,8 +157,10 @@ static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
           uintptr_t ip = (uintptr_t)(ep->_EntryPoints[j]) - code_start;
           for (auto range : ranges) {
             if ((range.LowPC <= ip) && (ip < range.HighPC)) {
-              startAddress = (void*)range.LowPC;
               XEPp = true;
+              // This will be identical to ONE of the the entry point address in GlobalEntryPoint_sp ep
+              startAddress = (void*)range.LowPC;
+              // arityCode is the index into the GlobalEntryPoint_sp vector corresponding to startAddress
               arityCode = j;
               return ep;
             }
@@ -273,59 +277,36 @@ bool sanity_check_args(void* frameptr, int32_t offset32, int64_t patch_point_id 
 }
 
 __attribute__((optnone))
-static bool args_for_entry_point(size_t fi, void* ip, const char* string,
-                                 T_sp name, bool XEPp, int arityCode,
-                                 llvmo::ObjectFile_sp ofi, T_sp ep,
-                                 void* frameptr,
-                                 T_sp& closure, T_sp& args) {
+static bool args_for_function(size_t fi, void* ip, const char* string,
+                              bool XEPp, int arityCode,
+                              void* startAddress,
+                              llvmo::ObjectFile_sp ofi,
+                              FunctionDescription_sp functionDescription,
+                              void* frameptr,
+                              T_sp& closure, T_sp& args) {
   MaybeTrace trace(__FUNCTION__);
-  if (ep.nilp()) return false;
+  if (!startAddress) return false;
   uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);
   if (!stackmap_start) return false; // ends up as null sometimes apparently
   uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
   bool args_available = false;
-  if (gc::IsA<LocalEntryPoint_sp>(ep)) {
-    LocalEntryPoint_sp lep = gc::As_unsafe<LocalEntryPoint_sp>(ep);
-    D(printf("%s:%d:%s LocalEntryPoint FunctionDescription %s lep->_EntryPoint = %p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(lep->functionDescription()->functionName()).c_str(), lep->_EntryPoint ););
-    auto thunk = [&](size_t _, const smStkSizeRecord& function,
-                     int32_t offsetOrSmallConstant, int64_t patchPointId) {
-      if (function.FunctionAddress == (uintptr_t)(lep->_EntryPoint)) {
-        MaybeTrace tracel("LocalEntryPoint_thunk");
-        D(printf("%s:%d:%s LocalEntryPoint function.FunctionAddress = %p  lep->_EntryPoint = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)function.FunctionAddress, lep->_EntryPoint ););
-        if (args_from_offset( fi, ip, string, name, XEPp, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
-          args_available |= true;
-        return;
-      }
-    };
-    {
-      MaybeTrace tracew("walk_one_llvm_stackmap");
-      walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
+  D(printf("%s:%d:%s startAddress FunctionDescription %s startAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(functionDescription->functionName()).c_str(), startAddress ););
+  auto thunk = [&](size_t _, const smStkSizeRecord& function,
+                   int32_t offsetOrSmallConstant, int64_t patchPointId) {
+    if (function.FunctionAddress == (uintptr_t)startAddress ) {
+      MaybeTrace tracel("startAddress_thunk");
+      D(printf("%s:%d:%s function.FunctionAddress = %p  startAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)function.FunctionAddress, startAddress ););
+      if (args_from_offset( fi, ip, string, functionDescription->functionName(), XEPp, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
+        args_available |= true;
+      return;
     }
-    D(printf("%s:%d:%s args_available = %d\n", __FILE__, __LINE__, __FUNCTION__, args_available ););
-    return args_available;
-  } else if (gc::IsA<GlobalEntryPoint_sp>(ep)) {
-    GlobalEntryPoint_sp gep = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
-    D(printf("%s:%d:%s GlobalEntryPoint FunctionDescription %s gep->_EntryPoints[0] = %p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(gep->functionDescription()->functionName()).c_str(), gep->_EntryPoints[0]  ););
-    auto thunk = [&](size_t _, const smStkSizeRecord& function,
-                     int32_t offsetOrSmallConstant, int64_t patchPointId) {
-      int patchPointIdArityCode = (patchPointId & STACKMAP_ARITY_CODE_MASK);
-      if (function.FunctionAddress == (uintptr_t)(gep->_EntryPoints[arityCode])) {
-        D(printf("%s:%d:%s  arityCode=%d patchPointIdArityCode=%d match= %d\n", __FILE__, __LINE__, __FUNCTION__, arityCode, patchPointIdArityCode, (arityCode==patchPointIdArityCode) ););
-        MaybeTrace trace1("GlobalEntryPoint_thunk");
-        D(printf("%s:%d:%s GlobalEntryPoint function.FunctionAddress = %p  gep->_EntryPoints[%d] = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)function.FunctionAddress, patchPointIdArityCode, gep->_EntryPoints[patchPointIdArityCode] ););
-        if (args_from_offset( fi, ip, string, name, XEPp, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
-          args_available |= true;
-        return;
-      }
-    };
-    {
-      MaybeTrace tracew("walk_one_llvm_stackmap");
-      walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
-    }
-    return args_available;
+  };
+  {
+    MaybeTrace tracew("walk_one_llvm_stackmap");
+    walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
   }
-  // dwarf_ep returned something impossible; FIXME error?
-  return false;
+  D(printf("%s:%d:%s args_available = %d\n", __FILE__, __LINE__, __FUNCTION__, args_available ););
+  return args_available;
 }
 
 __attribute__((optnone))
@@ -346,8 +327,14 @@ static DebuggerFrame_sp make_lisp_frame(size_t fi,
   T_sp ep = dwarf_ep(ofi, dcontext, sa, startAddress, XEPp, arityCode );
   T_sp fd = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
   T_sp closure = nil<T_O>(), args = nil<T_O>();
-  bool args_available = args_for_entry_point( fi, ip, string, gc::As_unsafe<FunctionDescription_sp>(fd)->functionName(),
-                                              XEPp, arityCode, ofi, ep, fbp, closure, args);
+  bool args_available = args_for_function( fi, ip, string,
+                                           XEPp, arityCode,
+                                           startAddress,
+                                           ofi,
+                                           gc::As<FunctionDescription_sp>(fd),
+                                           fbp,
+                                           closure,
+                                           args);
   T_sp fname = nil<T_O>();
   if (fd.notnilp())
     fname = gc::As_unsafe<FunctionDescription_sp>(fd)->functionName();
@@ -457,11 +444,11 @@ static bool sanity_check_frame( void* ip, void* fbp) {
     uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);
     uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
     if (gc::IsA<LocalEntryPoint_sp>(ep)) {
-      LocalEntryPoint_sp lep = gc::As_unsafe<LocalEntryPoint_sp>(ep);
+      LocalEntryPoint_sp localEntryPoint = gc::As_unsafe<LocalEntryPoint_sp>(ep);
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function,
                        int32_t offsetOrSmallConstant, int64_t patchPointId) {
-        if (function.FunctionAddress == (uintptr_t)(lep->_EntryPoint)) {
+        if (function.FunctionAddress == (uintptr_t)(localEntryPoint->_EntryPoint)) {
           if (!sanity_check_args(fbp, offsetOrSmallConstant, patchPointId )) result = false;
           return;
         }
@@ -472,11 +459,11 @@ static bool sanity_check_frame( void* ip, void* fbp) {
       }
       return result;
     } else if (gc::IsA<GlobalEntryPoint_sp>(ep)) {
-      GlobalEntryPoint_sp gep = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
+      GlobalEntryPoint_sp globalEntryPoint = gc::As_unsafe<GlobalEntryPoint_sp>(ep);
       bool result = true;
       auto thunk = [&](size_t _, const smStkSizeRecord& function,
                        int32_t offsetOrSmallConstant, int64_t patchPointId ) {
-        if (function.FunctionAddress == (uintptr_t)(gep->_EntryPoints[arityCode])) {
+        if (function.FunctionAddress == (uintptr_t)(globalEntryPoint->_EntryPoints[arityCode])) {
           if (!sanity_check_args( fbp, offsetOrSmallConstant, patchPointId)) result = false;
           return;
         }
