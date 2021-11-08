@@ -1333,6 +1333,12 @@ SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos
   return SourcePosInfo_O::create(sfindex, filePos, lineno, 0);
 }
 
+/*! Create a core:source-pos-info object on the fly */
+SourcePosInfo_sp core__createSourcePosInfo(const string& filename, size_t filePos, int lineno) {
+  return lisp_createSourcePosInfo(filename,filePos,lineno);
+}
+
+  
 T_sp lisp_createList(T_sp a1) { return Cons_O::create(a1, nil<T_O>()); }
 T_sp lisp_createList(T_sp a1, T_sp a2) { return Cons_O::createList(a1, a2); };
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3) { return Cons_O::createList(a1, a2, a3); };
@@ -1434,7 +1440,7 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
     printf("%s:%d lisp_error ->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
     early_debug(nil<T_O>(), false);
   }
-  eval::applyLastArgsPLUSFirst(cl::_sym_error, arguments, datum);
+  core__apply1( coerce::functionDesignator(cl::_sym_error), arguments, datum);
   UNREACHABLE();
 }
 

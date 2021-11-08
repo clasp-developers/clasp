@@ -30,20 +30,21 @@ THE SOFTWARE.
 
 namespace gctools {
   struct return_type {
-#if (LCC_RETURN_VALUES_IN_REGISTERS!=1)
+#if (LCC_RETURN_VALUES_IN_REGISTERS()!=1)
 #error "The number of return values in registers does not match core::return_type"
 #endif
-    void* ret0[LCC_RETURN_VALUES_IN_REGISTERS];  // One for every LCC_RETURN_VALUES_IN_REGISTERS
+    void* ret0[LCC_RETURN_VALUES_IN_REGISTERS()];  // One for every LCC_RETURN_VALUES_IN_REGISTERS
     size_t nvals;
   return_type() : ret0{NULL}, nvals(0){};
   return_type(core::T_O *r0, size_t nv) : ret0{r0}, nvals(nv) {};
     template <typename T>
     return_type(T* r0, size_t nv) : ret0{reinterpret_cast<void*>(r0)}, nvals(nv) {};
   };
+
 };
 
 #define FILL_FRAME_WITH_RETURN_REGISTERS(frame,retval) \
-  for ( size_t _i = 0, _iEnd(MIN(retval.nvals,LCC_RETURN_VALUES_IN_REGISTERS)); _i<_iEnd; ++_i) { \
+  for ( size_t _i = 0, _iEnd(MIN(retval.nvals,LCC_RETURN_VALUES_IN_REGISTERS())); _i<_iEnd; ++_i) { \
     (*frame)[_i] = reinterpret_cast<T_O*>(retval.ret0[_i]); \
   }
   
@@ -320,6 +321,7 @@ namespace gctools {
   va_start(lcc_arglist_struct._Args, LCC_VA_START_ARG); \
   VaList_sp lcc_arglist(&lcc_arglist_struct);
 
+#if 0
 /*! Initialize a Vaslist struct from a Frame object */
 #define LCC_SETUP_VA_LIST_FROM_FRAME(_va_list_, _frame_) { \
     (_va_list_)[0].reg_save_area = (_frame_).reg_save_area_ptr(); \
@@ -327,6 +329,8 @@ namespace gctools {
     (_va_list_)[0].gp_offset = (LCC_ABI_ARGS_IN_REGISTERS-LCC_ARGS_IN_REGISTERS) * sizeof(gc::Frame::ElementType); \
     (_va_list_)[0].fp_offset = 304; \
   }
+#endif
+
 
 /*! Rewind the general pointer area for a va_list to the first required argument */
 #if 0
@@ -467,6 +471,13 @@ inline gctools::return_type funcall_general(gc::Tagged func_tagged, size_t nargs
   ASSERT(gc::tagged_generalp(func_tagged));
   gc::smart_ptr<Function_O> func((gc::Tagged)func_tagged);
   return func->entry()((core::T_O*)func_tagged,nargs,args);
+}
+
+template <typename Func_O_Type>
+inline gctools::return_type funcall_vaslist(gc::Tagged func_tagged, VaList_sp var ) {
+  ASSERT(gc::tagged_generalp(func_tagged));
+  gc::smart_ptr<Function_O> func((gc::Tagged)func_tagged);
+  return func->entry()((core::T_O*)func_tagged,var->remaining_nargs(), var->args());
 }
 
 #endif // LCC_FUNCALL

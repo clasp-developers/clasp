@@ -148,6 +148,7 @@ T_mv apply0_inner_valist(Function_sp func, VaList_sp var) {
   T_O *a0, *a1, *a2, *a3;
   int lenRest = var->remaining_nargs();
   int nargs = lenRest + 0;
+  Vaslist* vaslist = &*var;
   switch (lenRest) {
   case 0: 
       return (*func).entry_0()(func.raw_());
@@ -175,15 +176,15 @@ T_mv apply0_inner_valist(Function_sp func, VaList_sp var) {
       return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
       break;
   default: { // lenRest>=4
-    return (*func).entry()(func.raw_(),nargs,var->_args);
+    return (*func).entry()(func.raw_(),nargs,var->args());
   }
   }
 }
 
 T_mv apply1_inner_valist(Function_sp func, T_O* a0, VaList_sp var) {
   T_O *a1, *a2, *a3;
-  int lenRest = var->remaining_nargs();
-  int nargs = lenRest + 1;
+  size_t lenRest = var->remaining_nargs();
+  size_t nargs = lenRest + 1;
   switch (lenRest) {
   case 0: 
       return (*func).entry_1()(func.raw_(),a0);
@@ -204,18 +205,20 @@ T_mv apply1_inner_valist(Function_sp func, T_O* a0, VaList_sp var) {
       return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
       break;
   default: { // lenRest>=4
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
-    (*frame)[0] = a0;
-    memcpy( (void*)(*frame)[1], (void*)var->_args, sizeof(T_O*)*lenRest );
-    return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
+    MAKE_STACK_FRAME( frame, nargs );
+    size_t idx(0);
+    gctools::fill_frame_one( frame, idx, a0 );
+    gctools::fill_frame_vaslist( frame, idx, var );
+    CHECK_FRAME( frame, idx, nargs );
+    return (*func).entry()(func.raw_(),nargs,frame->arguments());
   }
   }
 }
 
 T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, VaList_sp var) {
   T_O *a2, *a3;
-  int lenRest = var->remaining_nargs();
-  int nargs = lenRest + 2;
+  size_t lenRest = var->remaining_nargs();
+  size_t nargs = lenRest + 2;
   switch (lenRest) {
   case 0: 
       return (*func).entry_2()(func.raw_(),a0,a1);
@@ -230,10 +233,12 @@ T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, VaList_sp var) {
       return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
       break;
   default: { // lenRest>=4
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
-    (*frame)[0] = a0;
-    (*frame)[1] = a1;
-    memcpy( (void*)(*frame)[2], (void*)var->_args, sizeof(T_O*)*lenRest );
+    MAKE_STACK_FRAME( frame, nargs );
+    size_t idx(0);
+    gctools::fill_frame_one( frame, idx, a0 );
+    gctools::fill_frame_one( frame, idx, a1 );
+    gctools::fill_frame_vaslist( frame, idx, var );
+    CHECK_FRAME( frame, idx, nargs );
     return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
   }
   }
@@ -241,8 +246,8 @@ T_mv apply2_inner_valist(Function_sp func, T_O* a0, T_O* a1, VaList_sp var) {
 
 T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, VaList_sp var) {
   T_O *a3;
-  int lenRest = var->remaining_nargs();
-  int nargs = lenRest + 3;
+  size_t lenRest = var->remaining_nargs();
+  size_t nargs = lenRest + 3;
   switch (lenRest) {
   case 0: 
       return (*func).entry_3()(func.raw_(),a0,a1,a2);
@@ -252,33 +257,33 @@ T_mv apply3_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, VaList_sp 
       return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
       break;
   default: { // lenRest>=4
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
-    (*frame)[0] = a0;
-    (*frame)[1] = a1;
-    (*frame)[2] = a2;
-    memcpy( (void*)(*frame)[3], (void*)var->_args, sizeof(T_O*)*lenRest );
+    MAKE_STACK_FRAME( frame, nargs );
+    size_t idx(0);
+    gctools::fill_frame_one( frame, idx, a0 );
+    gctools::fill_frame_one( frame, idx, a1 );
+    gctools::fill_frame_one( frame, idx, a2 );
+    gctools::fill_frame_vaslist( frame, idx, var );
+    CHECK_FRAME( frame, idx, nargs );
     return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
   }
   }
 }
 
-T_mv apply4_inner_valist(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_O *a3, VaList_sp var) {
-  int lenRest = var->remaining_nargs();
-  int nargs = lenRest + 4;
-  switch (lenRest) {
-  case 0: 
-      return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
-      break;
-  default: { // lenRest>=4
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
-    (*frame)[0] = a0;
-    (*frame)[1] = a1;
-    (*frame)[2] = a2;
-    (*frame)[3] = a3;
-    memcpy( (void*)(*frame)[4], (void*)var->_args, sizeof(T_O*)*lenRest );
-    return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
-  }
-  }
+T_mv apply4_inner_valist(Function_sp func, VaList_sp v,
+                         T_O* a0, T_O* a1, T_O* a2, T_O *a3,
+                         VaList_sp var) {
+  size_t lenRest = var->remaining_nargs();
+  size_t nargs = lenRest + 4 + v->remaining_nargs();
+  MAKE_STACK_FRAME( frame, nargs );
+  size_t idx(0);
+  gctools::fill_frame_one( frame, idx, a0 );
+  gctools::fill_frame_one( frame, idx, a1 );
+  gctools::fill_frame_one( frame, idx, a2 );
+  gctools::fill_frame_one( frame, idx, a3 );
+  gctools::fill_frame_vaslist( frame, idx, var );
+  gctools::fill_frame_vaslist( frame, idx, v );
+  CHECK_FRAME( frame, idx, nargs );
+  return (*func).entry()(func.raw_(),idx,frame->arguments(0));
 }
 
 
@@ -289,7 +294,7 @@ T_mv apply0_inner_list(Function_sp func, T_sp var )
   T_O* a1;
   T_O* a2;
   T_O* a3;
-  int rargs = 0;
+  size_t rargs = 0;
   {
     T_sp cur = var;
     while (cur.consp()) {
@@ -326,10 +331,10 @@ T_mv apply0_inner_list(Function_sp func, T_sp var )
       return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
       break;
   default: { // lenRest>=1
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
-    for ( size_t idx = fargs; idx<nargs; ++idx ) {
-      GET_AND_ADVANCE_LIST((*frame)[idx],var);
-    }
+    MAKE_STACK_FRAME( frame, nargs );
+    size_t idx(0);
+    gctools::fill_frame_list( frame, idx, var );
+    CHECK_FRAME( frame, idx, nargs );
     return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
   }
   }
@@ -342,7 +347,7 @@ T_mv apply1_inner_list(Function_sp func, T_O* a0, T_sp var )
   T_O* a1;
   T_O* a2;
   T_O* a3;
-  int rargs = 0;
+  size_t rargs = 0;
   {
     T_sp cur = var;
     while (cur.consp()) {
@@ -372,11 +377,11 @@ T_mv apply1_inner_list(Function_sp func, T_O* a0, T_sp var )
       return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
       break;
   default: { // lenRest>=1
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
-    (*frame)[0] = a0;
-    for ( size_t idx = fargs; idx<nargs; ++idx ) {
-      GET_AND_ADVANCE_LIST((*frame)[idx],var);
-    }
+    MAKE_STACK_FRAME( frame, nargs );
+    size_t idx(0);
+    gctools::fill_frame_one( frame, idx, a0 );
+    gctools::fill_frame_list( frame, idx, var );
+    CHECK_FRAME( frame, idx, nargs );
     return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
   }
   }
@@ -388,7 +393,7 @@ T_mv apply2_inner_list(Function_sp func, T_O* a0, T_O* a1, T_sp var )
   const size_t fargs = 2;
   T_O* a2;
   T_O* a3;
-  int rargs = 0;
+  size_t rargs = 0;
   {
     T_sp cur = var;
     while (cur.consp()) {
@@ -412,12 +417,12 @@ T_mv apply2_inner_list(Function_sp func, T_O* a0, T_O* a1, T_sp var )
       return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
       break;
   default: { // lenRest>=1
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
-    (*frame)[0] = a0;
-    (*frame)[1] = a1;
-    for ( size_t idx = fargs; idx<nargs; ++idx ) {
-      GET_AND_ADVANCE_LIST((*frame)[idx],var);
-    }
+    MAKE_STACK_FRAME( frame, nargs );
+    size_t idx(0);
+    gctools::fill_frame_one( frame, idx, a0 );
+    gctools::fill_frame_one( frame, idx, a1 );
+    gctools::fill_frame_list( frame, idx, var );
+    CHECK_FRAME( frame, idx, nargs );
     return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
   }
   }
@@ -428,7 +433,7 @@ T_mv apply3_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_sp var )
 {
   const size_t fargs = 3;
   T_O* a3;
-  int rargs = 0;
+  size_t rargs = 0;
   {
     T_sp cur = var;
     while (cur.consp()) {
@@ -447,23 +452,23 @@ T_mv apply3_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_sp var )
       return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
       break;
   default: { // lenRest>=1
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
-    (*frame)[0] = a0;
-    (*frame)[1] = a1;
-    (*frame)[2] = a2;
-    for ( size_t idx = fargs; idx<nargs; ++idx ) {
-      GET_AND_ADVANCE_LIST((*frame)[idx],var);
-    }
+    MAKE_STACK_FRAME( frame, nargs );
+    size_t idx(0);
+    gctools::fill_frame_one( frame, idx, a0 );
+    gctools::fill_frame_one( frame, idx, a1 );
+    gctools::fill_frame_one( frame, idx, a2 );
+    gctools::fill_frame_list( frame, idx, var );
+    CHECK_FRAME( frame, idx, nargs );
     return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
   }
   }
 }
 
-
+#if 0
 T_mv apply4_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_O* a3, T_sp var )
 {
   const size_t fargs = 4;
-  int rargs = 0;
+  size_t rargs = 0;
   {
     T_sp cur = var;
     while (cur.consp()) {
@@ -478,17 +483,42 @@ T_mv apply4_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_O* a3, T_s
       return (*func).entry_4()(func.raw_(),a0,a1,a2,a3);
       break;
   default: { // lenRest>=1
-    MAKE_STACK_FRAME( frame, func.raw_(), nargs );
-    (*frame)[0] = a0;
-    (*frame)[1] = a1;
-    (*frame)[2] = a2;
-    (*frame)[3] = a3;
-    for ( size_t idx = fargs; idx<nargs; ++idx ) {
-      GET_AND_ADVANCE_LIST((*frame)[idx],var);
-    }
+    MAKE_STACK_FRAME( frame, nargs );
+    size_t idx(0);
+    gctools::fill_frame_one( frame, idx, a0 );
+    gctools::fill_frame_one( frame, idx, a1 );
+    gctools::fill_frame_one( frame, idx, a2 );
+    gctools::fill_frame_one( frame, idx, a4 );
+    gctools::fill_frame_list( frame, idx, var );
+    CHECK_FRAME( frame, idx, nargs );
     return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
   }
   }
+}
+#endif
+T_mv apply4_inner_list(Function_sp func, T_sp var,
+                       T_O* a0, T_O* a1, T_O* a2, T_O* a3,
+                       VaList_sp fixed) {
+  size_t lenRest = 0;
+  {
+    T_sp cur = var;
+    while (cur.consp()) {
+      ++lenRest;
+      cur = CONS_CDR(cur);
+    }
+    if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(var);
+  }
+  size_t nargs = lenRest + fixed->_nargs + 4;
+  MAKE_STACK_FRAME( frame, nargs );
+  size_t idx(0);
+  gctools::fill_frame_one( frame, idx, a0 );
+  gctools::fill_frame_one( frame, idx, a1 );
+  gctools::fill_frame_one( frame, idx, a2 );
+  gctools::fill_frame_one( frame, idx, a3 );
+  gctools::fill_frame_vaslist( frame, idx, fixed );
+  gctools::fill_frame_list( frame, idx, var );
+  CHECK_FRAME( frame, idx, nargs );
+  return (*func).entry()(func.raw_(),nargs,frame->arguments(0));
 }
 
 
@@ -498,22 +528,22 @@ T_mv apply4_inner_list(Function_sp func, T_O* a0, T_O* a1, T_O* a2, T_O* a3, T_s
 T_mv apply_inner_valist(Function_sp func, size_t lenFixed, VaList_sp fixed, VaList_sp var) {
   size_t nargs_var = var->_nargs;
   size_t total_args = lenFixed + nargs_var;
-  MAKE_STACK_FRAME( frame, func.raw_(), total_args );
-  memcpy( (void*)frame->arguments(), fixed->_args, lenFixed*sizeof(T_O*));
-  memcpy( (void*)((T_O*)frame->arguments()+lenFixed), var->_args, nargs_var*sizeof(T_O*));
+  MAKE_STACK_FRAME( frame, total_args );
+  size_t idx(0);
+  gctools::fill_frame_nargs_args( frame, idx, lenFixed, fixed->_args );
+  gctools::fill_frame_vaslist( frame, idx, var );
+  CHECK_FRAME( frame, idx, total_args );
   return (*func).entry()(func.raw_(),total_args,frame->arguments());
 }
 
 T_mv apply_inner_list(Function_sp func, size_t lenFixed, VaList_sp fixed, List_sp var) {
   size_t nargs_var = cl__length(var);
   size_t total_args = lenFixed + nargs_var;
-  MAKE_STACK_FRAME( frame, func.raw_(), total_args );
-  memcpy( (void*)frame->arguments(), fixed->_args, lenFixed*sizeof(T_O*));
-  size_t idx(lenFixed);
-  for ( auto cur : var ) {
-    (*frame)[idx] = CONS_CAR(cur).raw_();
-    idx++;
-  }
+  MAKE_STACK_FRAME( frame, total_args );
+  size_t idx(0);
+  gctools::fill_frame_nargs_args( frame, idx, lenFixed, fixed->_args );
+  gctools::fill_frame_list( frame, idx, var );
+  CHECK_FRAME( frame, idx, total_args );
   return (*func).entry()(func.raw_(),total_args,frame->arguments());
 }
 
@@ -524,7 +554,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   Function_sp func = coerce::functionDesignator( head );
   if (args->total_nargs() == 0) eval::errorApplyZeroArguments();
-  int lenArgs = args->_nargs;
+  size_t lenArgs = args->_nargs;
   T_O* lastArgRaw = (*args)[lenArgs - 1];
   if (gctools::tagged_vaslistp(lastArgRaw)) {
     VaList_sp valast((gc::Tagged)lastArgRaw);
@@ -555,12 +585,25 @@ CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
   UNREACHABLE();
 }
 
+CL_LAMBDA(func args)
+CL_DECLARE();
+CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx")
+DOCGROUP(clasp)
+CL_DEFUN T_mv core__trace_apply0(Function_sp func, T_sp lastArg) {
+  if (lastArg.valistp()) {
+    return apply0_inner_valist(func, gc::As_unsafe<VaList_sp>(lastArg));
+  }
+  else if (lastArg.consp() || lastArg.nilp())
+    return apply0_inner_list(func, lastArg);
+  else eval::errorApplyLastArgumentNotList(lastArg);
+  UNREACHABLE();
+}
+
 CL_LAMBDA(func args arg0)
 CL_DECLARE();
 CL_DOCSTRING(R"dx((apply f a m) = (apply1 (coerce-fdesignator f) m a))dx")
 DOCGROUP(clasp)
-CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg,
-                           T_sp arg0) {
+CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
   if (lastArg.valistp())
     return apply1_inner_valist(func, arg0.raw_(), gc::As_unsafe<VaList_sp>(lastArg));
   else if (lastArg.consp() || lastArg.nilp())
@@ -598,23 +641,27 @@ CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
   UNREACHABLE();
 }
 
-CL_LAMBDA(func args arg0 arg1 arg2 arg3 &rest more)
-CL_DECLARE((declare (dynamic-extent more)));
+CL_LAMBDA(func args arg0 arg1 arg2 arg3 core:&va-rest more)
+CL_DECLARE();
 CL_DOCSTRING(R"dx((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
                            T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3,
-                           List_sp more) {
-  if (lastArg.valistp()) 
-    return apply4_inner_valist(func, arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(), gc::As_unsafe<VaList_sp>(lastArg));
+                           VaList_sp more) {
+  if (lastArg.valistp())
+    return apply4_inner_valist(func, gc::As_unsafe<VaList_sp>(lastArg),
+                               arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(),
+                               more);
   else if (lastArg.consp() || lastArg.nilp())
-    return apply4_inner_list(func, arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_( ), lastArg );
+    return apply4_inner_list(func, lastArg,
+                             arg0.raw_(), arg1.raw_(), arg2.raw_(), arg3.raw_(),
+                             more);
   else eval::errorApplyLastArgumentNotList(lastArg);
   UNREACHABLE();
 }
 
 
-
+#if 0
 gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
   ASSERT(gctools::tagged_consp(args_tagged));
   Cons_O* cons_args = reinterpret_cast<Cons_O*>(gctools::untag_cons(args_tagged));
@@ -626,34 +673,33 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
     Cons_O* cons_tail = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_tagged));
     int tail_nargs = 1+cons_tail->length();
     int nargs = front_nargs+tail_nargs;
-    MAKE_STACK_FRAME( frame, func_tagged, nargs );
-    Cons_O* front_cur = cons_args;
-    for (int i=0; i<front_nargs; ++i ) {
-      (*frame)[i] = front_cur->ocar().raw_();
-      front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->cdr().raw_()));
-    }
+    MAKE_STACK_FRAME( frame, nargs );
+    size_t idx(0);
+    gctools::fill_frame_list( frame, idx, cons_args );
     Cons_O* tail_cur = cons_tail;
     for (int j=front_nargs; j<nargs; ++j ) {
       (*frame)[j] = tail_cur->ocar().raw_();
       tail_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_cur->cdr().raw_()));
     }
-    Vaslist valist_struct(*frame);
+    Vaslist valist_struct(nargs,frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_general<core::Function_O>((gc::Tagged)func_tagged, valist_struct._nargs, valist_struct._args );
   }
   Cons_O* cons_tail = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_tagged));
   int nargs = front_nargs;
-  MAKE_STACK_FRAME( frame, func_tagged, nargs );
+  MAKE_STACK_FRAME( frame, nargs );
   Cons_O* front_cur = cons_args;
   for (int i=0; i<front_nargs; ++i ) {
     (*frame)[i] = front_cur->ocar().raw_();
     front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->cdr().raw_()));
   }
-  Vaslist valist_struct(frame);
+  Vaslist valist_struct(nargs,frame);
   VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
   return funcall_general<core::Function_O>((gc::Tagged)func_tagged, valist_struct._nargs, valist_struct._args );
 }
+#endif
 
+#if 0
 template <typename... FixedArgs>
 LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&...fixedArgs) {
   int nargs;
@@ -661,22 +707,22 @@ LCC_RETURN fast_apply_(T_O* function_tagged, T_O* rest_args_tagged, FixedArgs&&.
     Cons_sp cons_rest_args((gctools::Tagged)rest_args_tagged);
     List_sp list_rest_args((gctools::Tagged)rest_args_tagged);
     nargs = sizeof...(FixedArgs)+cons_rest_args->length();
-    MAKE_STACK_FRAME( frame, function_tagged, nargs );
+    MAKE_STACK_FRAME( frame, nargs );
     T_O* _[] = {fixedArgs...};
     for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
     for (int j=sizeof...(FixedArgs);j<nargs; ++j ) {
       (*frame)[j] = oCar(list_rest_args).raw_();
       list_rest_args = oCdr(list_rest_args);
     }
-    Vaslist valist_struct(frame);
+    Vaslist valist_struct(nargs,frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
     return funcall_general<core::Function_O>((gc::Tagged)function_tagged, valist_struct._nargs, valist_struct._args );
   }
   nargs = sizeof...(FixedArgs);
-  MAKE_STACK_FRAME( frame, function_tagged, nargs );
+  MAKE_STACK_FRAME( frame, nargs );
   T_O* _[] = {fixedArgs...};
   for (int i=0; i<sizeof...(FixedArgs); ++i ) (*frame)[i] = _[i];
-  Vaslist valist_struct(frame);
+  Vaslist valist_struct(nargs,frame);
   VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
   return funcall_general<core::Function_O>((gc::Tagged)function_tagged, valist_struct._nargs, valist_struct._args );
 }
@@ -711,7 +757,7 @@ gctools::return_type fast_apply8(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O
   return fast_apply_(function_tagged,rest,arg0,arg1,arg2,arg3,arg4,arg5,arg6);
 };
 };
-
+#endif // FAST_APPLY
 
 CL_LAMBDA(form)
 CL_DECLARE();
@@ -753,13 +799,9 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
     SIMPLE_ERROR(BF("The function %s was unbound") % _rep_(function_desig));
   }
   size_t nargs = cl__length(args);
-  MAKE_STACK_FRAME( fargs, func.raw_(), nargs );
+  MAKE_STACK_FRAME( fargs, nargs );
   size_t ia(0);
-  for ( auto cur : args ) {
-    T_sp val = CONS_CAR(cur);
-    fargs->operator[](ia) = val.raw_();
-    ia++;
-  }
+  gctools::fill_frame_list( fargs, ia, args );
   T_mv res = funcall_general<core::Function_O>(func.tagged_(), nargs, fargs->arguments(0));
   return res;
 }
@@ -1727,23 +1769,18 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
             } else {
                 func = gc::As_unsafe<Function_sp>(funcdesig);
             }
-            MAKE_STACK_FRAME(fargs, func.raw_(), MultipleValues::MultipleValuesLimit);
+            MAKE_STACK_FRAME(fargs, MultipleValues::MultipleValuesLimit);
             size_t idx = 0;
             core::MultipleValues& mv = core::lisp_multipleValues();
             for (auto forms : (List_sp)oCdr(args)) {
                 T_sp oneForm = oCar(forms);
                 T_mv retval = eval::evaluate(oneForm, env);
                 if (retval.number_of_values()>0) {
-                  (*fargs)[idx] = retval.raw_();
-                  ++idx;
-                  for (size_t i = 1; i < retval.number_of_values(); ++i) {
-                    (*fargs)[idx] = mv._Values[i];
-                    ++idx;
-                  }
+                  gctools::fill_frame_one( fargs, idx, retval.raw_() );
+                  gctools::fill_frame_nargs_args( fargs, idx, retval.number_of_values()-1, &mv._Values[1] );
                 }
             }
-            fargs->set_number_of_arguments(idx);
-            Vaslist valist_struct(fargs);
+            Vaslist valist_struct(idx,fargs);
             VaList_sp valist(&valist_struct); // = valist_struct.fargs.setupVaList(valist_struct);
             return funcall_general<core::Function_O>(func.tagged_(), valist_struct._nargs, valist_struct._args );
         }
@@ -2247,161 +2284,160 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
           }
 #endif
             //            printf("    environment: %s\n", _rep_(environment).c_str() );
-            ASSERT(environment.generalp());
-            T_mv result;
-            List_sp form;
-            T_sp head;
-            core__stack_monitor();
-            EvaluateDepthUpdater evaluateDepthUpdater;
-            if (_evaluateVerbosity > 0) {
-                printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
-            }
-            if (!exp.consp()) {
-              T_sp result = evaluate_atom(exp, environment);
-#ifdef DEBUG_EVALUATE
-          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
-            printf("%s:%d evaluate_atom returned  %s\n", __FILE__, __LINE__, _rep_(result).c_str());
+          ASSERT(environment.generalp());
+          T_mv result;
+          List_sp form;
+          T_sp head;
+          core__stack_monitor();
+          EvaluateDepthUpdater evaluateDepthUpdater;
+          if (_evaluateVerbosity > 0) {
+            printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
           }
-#endif              
-              return Values(result);
+          if (!exp.consp()) {
+            T_sp result = evaluate_atom(exp, environment);
+#ifdef DEBUG_EVALUATE
+            if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+              printf("%s:%d evaluate_atom returned  %s\n", __FILE__, __LINE__, _rep_(result).c_str());
             }
+#endif              
+            return Values(result);
+          }
             //
             // If it reached here then exp is a cons
             //
             //	    LOG(BF("Evaluating cons[%s]") % exp->__repr__() );
             //	    printf("    Evaluating: %s\n", _rep_(exp).c_str() );
             //	    printf("    In env: %s\n", _rep_(environment).c_str() );
-            Cons_sp cform((gctools::Tagged)exp.raw_());
-            form = cform;
-            ASSERTNOTNULL(form);
-            head = CONS_CAR(form);
-            T_sp tail = CONS_CDR(form);
-            if (head.consp()) {
-                Cons_sp chead((gctools::Tagged)head.raw_());
-                if (CONS_CAR(chead)==cl::_sym_lambda) {
+          Cons_sp cform((gctools::Tagged)exp.raw_());
+          form = cform;
+          ASSERTNOTNULL(form);
+          head = CONS_CAR(form);
+          T_sp tail = CONS_CDR(form);
+          if (head.consp()) {
+            Cons_sp chead((gctools::Tagged)head.raw_());
+            if (CONS_CAR(chead)==cl::_sym_lambda) {
 #ifdef DEBUG_EVALUATE
-                    printf("%s:%d %s is lambda\n", __FILE__, __LINE__, _rep_(chead).c_str());
+              printf("%s:%d %s is lambda\n", __FILE__, __LINE__, _rep_(chead).c_str());
 #endif
-                    return core::eval::evaluate(Cons_O::create(cl::_sym_funcall,exp),environment);
-                }
-                SIMPLE_ERROR(BF("Illegal head of form %s") % _rep_(head));
-            } else if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
+              return core::eval::evaluate(Cons_O::create(cl::_sym_funcall,exp),environment);
+            }
+            SIMPLE_ERROR(BF("Illegal head of form %s") % _rep_(head));
+          } else if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
                 // ------------------------------------------------------------
                 //
                 // These must EXACTLY match the special operators defined in evaluator.cc::defineSpecialOperatorsAndMacros(...)
                 //
-                if (headSym == cl::_sym_progn) return sp_progn(tail,environment);
-                else if (headSym == cl::_sym_block) return sp_block(tail,environment);
-                else if (headSym == cl::_sym_catch) return sp_catch(tail,environment);
-                else if (headSym == cl::_sym_eval_when) return sp_eval_when(tail,environment);
-                else if (headSym == cl::_sym_flet) return sp_flet(tail,environment);
-                else if (headSym == cl::_sym_function) return sp_function(tail,environment);
-                else if (headSym == cl::_sym_the) return sp_the(tail,environment);
-                else if (headSym == cl::_sym_go) return sp_go(tail,environment);
-                else if (headSym == cl::_sym_if) return sp_if(tail,environment);
-                else if (headSym == cl::_sym_labels) return sp_labels(tail,environment);
-                else if (headSym == cl::_sym_let) return sp_let(tail,environment);
-                else if (headSym == cl::_sym_letSTAR) return sp_letSTAR(tail,environment);
-                else if (headSym == cl::_sym_locally) return sp_locally(tail,environment);
-                else if (headSym == cl::_sym_macrolet) return sp_macrolet(tail,environment);
-                else if (headSym == cl::_sym_multiple_value_prog1) return sp_multipleValueProg1(tail,environment);
-                else if (headSym == cl::_sym_multiple_value_call) return sp_multipleValueCall(tail,environment);
-                else if (headSym == core::_sym_debug_message) return sp_debug_message(tail,environment);
-                else if (headSym == core::_sym_multiple_value_foreign_call) return sp_multipleValueForeignCall(tail,environment);
-                else if (headSym == core::_sym_foreign_call) return sp_foreignCall(tail,environment);
-                else if (headSym == core::_sym_foreign_call_pointer) return sp_foreignCallPointer(tail,environment);
-                else if (headSym == cl::_sym_progv) return sp_progv(tail,environment);
-                else if (headSym == cl::_sym_quote) return sp_quote(tail,environment);
-                else if (headSym == cl::_sym_return_from) return sp_returnFrom(tail,environment);
-                else if (headSym == cl::_sym_setq) return sp_setq(tail,environment);
-                else if (headSym == cl::_sym_tagbody) return sp_tagbody(tail,environment);
-                else if (headSym == cl::_sym_throw) return sp_throw(tail,environment);
-                else if (headSym == cl::_sym_unwind_protect) return sp_unwindProtect(tail,environment);
-                else if (headSym == cl::_sym_symbol_macrolet) return sp_symbolMacrolet(tail,environment);
-                else if (headSym == cl::_sym_load_time_value) return sp_loadTimeValue(tail,environment);
-                else if (headSym == ext::_sym_specialVar) return sp_specialVar(tail,environment);
-                else if (headSym == ext::_sym_lexicalVar) return sp_lexicalVar(tail,environment);
+            if (headSym == cl::_sym_progn) return sp_progn(tail,environment);
+            else if (headSym == cl::_sym_block) return sp_block(tail,environment);
+            else if (headSym == cl::_sym_catch) return sp_catch(tail,environment);
+            else if (headSym == cl::_sym_eval_when) return sp_eval_when(tail,environment);
+            else if (headSym == cl::_sym_flet) return sp_flet(tail,environment);
+            else if (headSym == cl::_sym_function) return sp_function(tail,environment);
+            else if (headSym == cl::_sym_the) return sp_the(tail,environment);
+            else if (headSym == cl::_sym_go) return sp_go(tail,environment);
+            else if (headSym == cl::_sym_if) return sp_if(tail,environment);
+            else if (headSym == cl::_sym_labels) return sp_labels(tail,environment);
+            else if (headSym == cl::_sym_let) return sp_let(tail,environment);
+            else if (headSym == cl::_sym_letSTAR) return sp_letSTAR(tail,environment);
+            else if (headSym == cl::_sym_locally) return sp_locally(tail,environment);
+            else if (headSym == cl::_sym_macrolet) return sp_macrolet(tail,environment);
+            else if (headSym == cl::_sym_multiple_value_prog1) return sp_multipleValueProg1(tail,environment);
+            else if (headSym == cl::_sym_multiple_value_call) return sp_multipleValueCall(tail,environment);
+            else if (headSym == core::_sym_debug_message) return sp_debug_message(tail,environment);
+            else if (headSym == core::_sym_multiple_value_foreign_call) return sp_multipleValueForeignCall(tail,environment);
+            else if (headSym == core::_sym_foreign_call) return sp_foreignCall(tail,environment);
+            else if (headSym == core::_sym_foreign_call_pointer) return sp_foreignCallPointer(tail,environment);
+            else if (headSym == cl::_sym_progv) return sp_progv(tail,environment);
+            else if (headSym == cl::_sym_quote) return sp_quote(tail,environment);
+            else if (headSym == cl::_sym_return_from) return sp_returnFrom(tail,environment);
+            else if (headSym == cl::_sym_setq) return sp_setq(tail,environment);
+            else if (headSym == cl::_sym_tagbody) return sp_tagbody(tail,environment);
+            else if (headSym == cl::_sym_throw) return sp_throw(tail,environment);
+            else if (headSym == cl::_sym_unwind_protect) return sp_unwindProtect(tail,environment);
+            else if (headSym == cl::_sym_symbol_macrolet) return sp_symbolMacrolet(tail,environment);
+            else if (headSym == cl::_sym_load_time_value) return sp_loadTimeValue(tail,environment);
+            else if (headSym == ext::_sym_specialVar) return sp_specialVar(tail,environment);
+            else if (headSym == ext::_sym_lexicalVar) return sp_lexicalVar(tail,environment);
                 // ------------------------------------------------------------
 
                 //
                 // The following speeds up a couple of other forms
                 //
-                if (headSym == cl::_sym_cond) {
-                    return evaluate_cond(form, environment);
-                } else if (headSym == cl::_sym_case) {
-                    return evaluate_case(form, environment);
-                } else if (headSym == cl::_sym_multipleValueSetq) {
-                    return evaluate_multipleValueSetq(form, environment);
-                } else if (headSym == cl::_sym_prog1) {
-                    return evaluate_prog1(form, environment);
-                }
+            if (headSym == cl::_sym_cond) {
+              return evaluate_cond(form, environment);
+            } else if (headSym == cl::_sym_case) {
+              return evaluate_case(form, environment);
+            } else if (headSym == cl::_sym_multipleValueSetq) {
+              return evaluate_multipleValueSetq(form, environment);
+            } else if (headSym == cl::_sym_prog1) {
+              return evaluate_prog1(form, environment);
+            }
 
-                T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
-                if (theadFunc.notnilp()) {
+            T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
+            if (theadFunc.notnilp()) {
 #ifdef DEBUG_EVALUATE
-          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-            printf("%s:%d %s is macro\n", __FILE__, __LINE__, _rep_(headSym).c_str());
-          }
+              if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+                printf("%s:%d %s is macro\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+              }
 #endif
-                    T_sp expanded;
+              T_sp expanded;
                     /* macros are expanded again and again and again */
-                    if (_sym_STARcache_macroexpandSTAR->symbolValue().notnilp()) {
-                        HashTableEqual_sp ht = gc::As<HashTableEqual_sp>(_sym_STARcache_macroexpandSTAR->symbolValue());
-                        T_mv expanded_mv = ht->gethash(form);
-                        if (expanded_mv.second().notnilp()) {
-                            expanded = expanded_mv;
-                        } else {
-                            expanded = cl__macroexpand(form,environment);
-                            ht->setf_gethash(form,expanded);
-                        }
-                    } else {
-                        expanded = cl__macroexpand(form, environment);
-                    }
-                    return eval::evaluate(expanded, environment);
+              if (_sym_STARcache_macroexpandSTAR->symbolValue().notnilp()) {
+                HashTableEqual_sp ht = gc::As<HashTableEqual_sp>(_sym_STARcache_macroexpandSTAR->symbolValue());
+                T_mv expanded_mv = ht->gethash(form);
+                if (expanded_mv.second().notnilp()) {
+                  expanded = expanded_mv;
+                } else {
+                  expanded = cl__macroexpand(form,environment);
+                  ht->setf_gethash(form,expanded);
                 }
-                theadFunc = interpreter_lookup_function_or_error(headSym, environment);
+              } else {
+                expanded = cl__macroexpand(form, environment);
+              }
+              return eval::evaluate(expanded, environment);
+            }
+            theadFunc = interpreter_lookup_function_or_error(headSym, environment);
                 //
                 // It is a form and its head is a symbol,
                 // evaluate the arguments and apply the function bound to the head to them
                 //
                 //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
 #ifdef DEBUG_EVALUATE
-          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-            printf("%s:%d %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
-          }
+            if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+              printf("%s:%d %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+            }
 #endif
-                size_t nargs = cl__length(oCdr(form));
-                T_sp headFunc = theadFunc;
-                MAKE_STACK_FRAME(callArgs, headFunc.raw_(), nargs);
-                size_t argIdx = 0;
-                for (auto cur : (List_sp)oCdr(form)) {
-                    (*callArgs)[argIdx] = eval::evaluate(CONS_CAR(cur), environment).raw_();
-                    ++argIdx;
-                }
+            size_t nargs = cl__length(oCdr(form));
+            T_sp headFunc = theadFunc;
+            MAKE_STACK_FRAME(callArgs, nargs);
+            size_t argIdx = 0;
+            for (auto cur : (List_sp)oCdr(form)) {
+              gctools::fill_frame_one(callArgs,argIdx,eval::evaluate(CONS_CAR(cur), environment).raw_());
+            }
 #ifdef DEBUG_EVALUATE
-          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-            printf("%s:%d evaluate %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
-            for (size_t ia=0; ia<argIdx; ++ia) {
-              T_sp obj((gctools::Tagged)(*callArgs)[ia]);
-              printf("    arg[%lu] -> %s\n", ia, _rep_(obj).c_str());
+            if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+              printf("%s:%d evaluate %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+              for (size_t ia=0; ia<argIdx; ++ia) {
+                T_sp obj((gctools::Tagged)callArgs->value(ia));
+                printf("    arg[%lu] -> %s\n", ia, _rep_(obj).c_str());
+              }
+              if (_rep_(headSym)=="REPLACE-ALL-USES-WITH") {
+                printf("%s:%d About to hit error\n", __FILE__, __LINE__ );
+              }
             }
-            if (_rep_(headSym)=="REPLACE-ALL-USES-WITH") {
-              printf("%s:%d About to hit error\n", __FILE__, __LINE__ );
+#endif
+            Vaslist valist_struct(nargs,callArgs);
+            VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
+            try {
+              return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
+            } catch (core::ExitProgramException& ee) {
+              throw(ee);
             }
           }
-#endif
-                Vaslist valist_struct(callArgs);
-                VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
-                try {
-                  return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
-                } catch (core::ExitProgramException& ee) {
-                    throw(ee);
-                }
-            }
-            SIMPLE_ERROR(BF("Illegal form %s") % _rep_(exp));
+          SIMPLE_ERROR(BF("Illegal form %s") % _rep_(exp));
         }
-
+    
         void evaluateIntoActivationFrame(ActivationFrame_sp af,
                                          List_sp args, T_sp environment) {
             if (args.nilp()) {

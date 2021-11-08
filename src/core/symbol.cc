@@ -547,6 +547,20 @@ string Symbol_O::symbolNameAsString() const {
   return this->_Name->get_std_string();
 }
 
+
+string Symbol_O::safeFormattedName() const { //no guard
+  stringstream ss;
+  Package_sp pkg = gc::As_unsafe<Package_sp>(this->_HomePackage.load());
+  if (pkg.generalp() && gc::IsA<Package_sp>(pkg)) {
+    ss << pkg->_Name->get_std_string();
+  }
+  ss << "::";
+  if (this->_Name.generalp() && gc::IsA<String_sp>(this->_Name)) {
+    ss << this->_Name->get_std_string();
+  }
+  return ss.str();
+};
+
 string Symbol_O::formattedName(bool prefixAlways) const { //no guard
   stringstream ss;
   if (this->getPackage().nilp()) {

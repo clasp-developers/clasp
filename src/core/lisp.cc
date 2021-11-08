@@ -432,7 +432,7 @@ void Lisp::initializeMainThread() {
 void Lisp::startupLispEnvironment() {
  
 #ifdef DEBUG_FLAGS_SET
-  printf("%s:%d There are DEBUG_xxxx flags on - check the top of foundation.h !!!!\n", __FILE__, __LINE__ );
+  printf("%s:%d There are DEBUG_xxxx flags on - check the top of configure_clasp.h !!!!\n", __FILE__, __LINE__ );
 #endif
   
   MONITOR(BF("Starting lisp environment\n"));

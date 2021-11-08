@@ -102,7 +102,7 @@ Options are :tagbody :go :all :eh-landing-pads
   (bformat t "!%N!%N!\n!  Turning on compiler debugging\n!\n!\n!\n"))
 
 
-#+(or)
+;;#+(or)
 (progn
   (defmacro debug-print-i32 (num) (declare (ignore num)) nil)
   (defmacro cmp-log-dump-function (fn) (declare (ignore fn)) nil)
@@ -120,7 +120,7 @@ Options are :tagbody :go :all :eh-landing-pads
 ;; List of function names which have been declared NOTINLINE.
 (defvar *notinlines* nil)
 
-;;#+(or)
+#+(or)
 (progn
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (core:bformat *error-output* "!%N!%N!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lsp\n!\n!\n!\n"))

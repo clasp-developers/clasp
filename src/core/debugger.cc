@@ -71,6 +71,8 @@ THE SOFTWARE.
 #include <clasp/core/bformat.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/sort.h>
+#include <clasp/core/package.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/designators.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -133,7 +135,6 @@ CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
 {
   Vaslist valist_copy(*vorig);
   VaList_sp valist(&valist_copy);
-
   ql::list l;
   size_t nargs = valist->remaining_nargs();
 //  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
@@ -460,6 +461,9 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 }
 
 extern "C" {
+//#define REPR_ADDR(addr) << "@" << (void*)addr
+#define REPR_ADDR(addr)
+
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
 std::string dbg_safe_repr(uintptr_t raw) {
@@ -468,14 +472,21 @@ std::string dbg_safe_repr(uintptr_t raw) {
   if (gc::tagged_generalp((gc::Tagged)raw) ||gc::tagged_consp((gc::Tagged)raw)) {
     // protect us from bad pointers
     if ( raw < 0x1000) {
-      ss << "BAD-TAGGED-POINTER(" << (void*)raw << ")";
+      ss << "BAD-TAGGED-POINTER(" REPR_ADDR(raw) << ")";
       return ss.str();
     }
   }
   if (obj.generalp() ) {
     if (gc::IsA<core::Symbol_sp>(obj)) {
       core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);
-      ss << sym->formattedName(true);
+      core::Package_sp pkg = gc::As_unsafe<core::Package_sp>(sym->_HomePackage.load());
+      if (pkg.generalp() && gc::IsA<core::Package_sp>(pkg)) {
+        ss << pkg->_Name->get_std_string();
+      }
+      ss << "::";
+      if (sym->_Name.generalp() && gc::IsA<core::String_sp>(sym->_Name)) {
+        ss << sym->_Name->get_std_string();
+      }
     } else if (gc::IsA<core::SimpleBaseString_sp>(obj)) {
       core::SimpleBaseString_sp sobj = gc::As_unsafe<core::SimpleBaseString_sp>(obj);
       ss << "\"" << sobj->get_std_string() << "\"";
@@ -485,15 +496,21 @@ std::string dbg_safe_repr(uintptr_t raw) {
       for ( size_t i=0, iEnd(svobj->length()); i<iEnd; ++i ) {
         ss << dbg_safe_repr((uintptr_t) ((*svobj)[i]).raw_()) << " ";
       }
-      ss << ")@" << (void*)raw;
+      ss << ")" REPR_ADDR(raw);
     } else if (gc::IsA<core::FuncallableInstance_sp>(obj)) {
       core::FuncallableInstance_sp fi = gc::As_unsafe<core::FuncallableInstance_sp>(obj);
       ss << "#<FUNCALLABLE-INSTANCE ";
       ss << _safe_rep_(fi->functionName());
-      ss << ">@" << (void*)raw;;
+      ss << " :class " << _safe_rep_(fi->_Class->_className());
+      ss << ">" REPR_ADDR(raw); 
+    } else if (gc::IsA<core::Instance_sp>(obj)) {
+      core::Instance_sp ii = gc::As_unsafe<core::Instance_sp>(obj);
+      ss << "#<INSTANCE :class ";
+      ss << _safe_rep_(ii->_Class->_className());
+      ss << ">" REPR_ADDR(raw);
     } else {
       core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
-      ss << "#<" << gen->className() << " " << (void*)gen.raw_() << ">";
+      ss << "#<" << gen->className() << " " REPR_ADDR(gen.raw_()) << ">";
     }
   } else if (obj.consp()) {
     ss << "(";
@@ -511,7 +528,22 @@ std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.nilp()) {
     ss << "NIL";
   } else if (obj.valistp()) {
-    ss << "#<VASLIST " << (void*)obj.raw_() << ">";
+    core::VaList_sp vaslist = gc::As_unsafe<core::VaList_sp>(obj);
+    ss << "#<VASLIST ";;
+#if 0
+    // difference during diff
+    ss << (void*)obj.raw_();
+#endif
+#if 0
+    ss  << " :args @" << (void*)vaslist->_args;
+    ;
+#endif
+    ss << ":nargs " << vaslist->remaining_nargs();
+    ss << " :contents (";
+    for ( size_t ii=0; ii<vaslist->remaining_nargs(); ii++ ) {
+      ss << dbg_safe_repr((uintptr_t)vaslist->relative_indexed_arg(ii)) << " ";
+    }
+    ss << ") >";
   } else if (obj.unboundp()) {
     ss << "#:UNBOUND";
   } else if (obj.characterp()) {
@@ -519,7 +551,7 @@ std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.single_floatp()) {
     ss << (float)obj.unsafe_single_float();
   } else {
-    ss << " #<RAW@" << (void*)obj.raw_() << ">";
+    ss << " #<RAW" REPR_ADDR(obj.raw_()) << ">";
   }
   if (ss.str().size() > 2048) {
     return ss.str().substr(0,2048);

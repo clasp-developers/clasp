@@ -407,7 +407,15 @@ def test(cfg):
 
 def tests(cfg):
     test(cfg)
-    
+
+def test1(cfg):
+    log.debug("Execute regression tests\n")
+    run_program_echo("build/boehmprecise/iclasp-boehmprecise -t a",
+                     "--feature", "ignore-extensions",
+                     "--load",    "sys:regression-tests;run-one.lisp",
+                     "--eval",    "(progn (format t \"~%Test done~%\")(core:quit))")
+    log.debug("Done one regression test\n")
+
 def stage_value(ctx,s):
     if ( s == 'r' ):
         sval = -1

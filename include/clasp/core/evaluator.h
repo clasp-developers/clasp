@@ -78,6 +78,8 @@ extern void evaluateIntoActivationFrame(ActivationFrame_sp af, List_sp args, T_s
   (functionDesignator) can be a Symbol or an Function
 */
 
+
+#if 0
 /*! I want a variadic template function that does APPLY.  C++ variadic template parameter packs
 	  must be the last arguments of a function.   APPLY has as its last arguments argsPLUS.
 	  So we move argsPLUS up to be the second argument (after the function designator) and list
@@ -94,14 +96,18 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   int numArgsPassed = sizeof...(Args);
   int numArgsPlus = argsPLUS.consp() ? argsPLUS.unsafe_cons()->proper_list_length() : 0;
   int nargs = numArgsPassed + numArgsPlus;
-  MAKE_STACK_FRAME( frame, func.raw_(), nargs);
+  MAKE_STACK_FRAME( frame, nargs);
   size_t i(0);
+  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
 #if 1
+  gctools::fill_frame_templated( frame, i, args... );
+# if 0
   // Initialize using args
   using InitialContents = T_O*[sizeof...(Args)];
   InitialContents* initialContents((InitialContents*)frame->arguments());
   new (initialContents) InitialContents {args.raw_()...};
   i = sizeof...(Args);
+# endif
 #else
   // Also initialize using args but requires copying
   T_sp initialContents[sizeof...(Args)] = {args...};
@@ -109,12 +115,12 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
     (*frame)[i] = initialContents[i].raw_();
   }
 #endif
-  for ( auto cur : argsPLUS ) {
-    (*frame)[i] = CONS_CAR(cur).raw_();
-    ++i;
-  }
+  gctools::fill_frame_list( frame, i, argsPLUS );
+  CHECK_FRAME( frame, i, nargs );
   return funcall_general<core::T_O>( func.tagged_(), nargs, frame->arguments() );
 }
+#endif
+
 
 inline LCC_RETURN funcall(T_sp fn) {
   /* If the following assertion fails then the funcall functions in this header
@@ -258,4 +264,14 @@ inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 
 
 };
 
+
+namespace core {
+
+T_mv core__apply0(Function_sp func, T_sp lastArg );
+T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0 );
+T_mv core__apply2(Function_sp func, T_sp lastArg, T_sp arg0, T_sp arg1 );
+T_mv core__apply3(Function_sp func, T_sp lastArg, T_sp arg0, T_sp arg1, T_sp arg2 );
+
+
+};
 #endif

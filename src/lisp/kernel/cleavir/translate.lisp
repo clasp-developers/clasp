@@ -1329,34 +1329,35 @@
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
          (source-pos-info (function-source-pos-info function))
          (lineno (core:source-pos-info-lineno source-pos-info)))
-    (cmp:with-dbg-function (:lineno lineno
-                            :function-type llvm-function-type
-                            :function xep-function)
-      (llvm-sys:set-personality-fn xep-function
-                                   (cmp:irc-personality-function))
-      (llvm-sys:add-fn-attr xep-function 'llvm-sys:attribute-uwtable)
-      (unless (cleavir-policy:policy-value (bir:policy function)
-                                           'perform-optimization)
-        (llvm-sys:add-fn-attr xep-function 'llvm-sys:attribute-no-inline)
-        (llvm-sys:add-fn-attr xep-function 'llvm-sys:attribute-optimize-none))
-      (cmp:irc-set-insert-point-basic-block entry-block
-                                            cmp:*irbuilder-function-alloca*)
-      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-        (cmp:with-debug-info-source-position (source-pos-info xep-function)
-          (let* ((fn-args (llvm-sys:get-argument-list xep-function))
-                 (lambda-list (bir:lambda-list function))
-                 (cleavir-lambda-list-analysis (calculate-cleavir-lambda-list-analysis lambda-list))
-                 (calling-convention
-                   (cmp:setup-calling-convention
-                    xep-function
-                    :general-entry
-                    :debug-on
-                    (cleavir-policy:policy-value
-                     (bir:policy function)
-                     'save-register-args)
-                    :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-                    :rest-alloc (compute-rest-alloc lambda-list))))
-            (layout-xep-function* xep-function function calling-convention abi)))))))
+    (cmp:with-guaranteed-*current-source-pos-info* ()
+      (cmp:with-dbg-function (:lineno lineno
+                              :function-type llvm-function-type
+                              :function xep-function)
+        (llvm-sys:set-personality-fn xep-function
+                                     (cmp:irc-personality-function))
+        (llvm-sys:add-fn-attr xep-function 'llvm-sys:attribute-uwtable)
+        (unless (cleavir-policy:policy-value (bir:policy function)
+                                             'perform-optimization)
+          (llvm-sys:add-fn-attr xep-function 'llvm-sys:attribute-no-inline)
+          (llvm-sys:add-fn-attr xep-function 'llvm-sys:attribute-optimize-none))
+        (cmp:irc-set-insert-point-basic-block entry-block
+                                              cmp:*irbuilder-function-alloca*)
+        (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+          (cmp:with-debug-info-source-position (source-pos-info xep-function)
+            (let* ((fn-args (llvm-sys:get-argument-list xep-function))
+                   (lambda-list (bir:lambda-list function))
+                   (cleavir-lambda-list-analysis (calculate-cleavir-lambda-list-analysis lambda-list))
+                   (calling-convention
+                     (cmp:setup-calling-convention
+                      xep-function
+                      :general-entry
+                      :debug-on
+                      (cleavir-policy:policy-value
+                       (bir:policy function)
+                       'save-register-args)
+                      :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
+                      :rest-alloc (compute-rest-alloc lambda-list))))
+              (layout-xep-function* xep-function function calling-convention abi))))))))
 
 (defun layout-main-function (function lambda-name abi
                              &aux (linkage 'llvm-sys:internal-linkage)) ; llvm-sys:private-linkage
@@ -1383,35 +1384,36 @@
          (body-block (cmp:irc-basic-block-create "body"))
          (source-pos-info (function-source-pos-info function))
          (lineno (core:source-pos-info-lineno source-pos-info)))
-    (cmp:with-dbg-function (:lineno lineno
-                            :function-type llvm-function-type
-                            :function the-function)
-      #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
-      (llvm-sys:set-personality-fn the-function
-                                   (cmp:irc-personality-function))
-      (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
-      (unless (cleavir-policy:policy-value (bir:policy function)
-                                           'perform-optimization)
-        (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
-        (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
-      (cmp:with-irbuilder (body-irbuilder)
-        (bir:map-iblocks
-         (lambda (ib)
-           (setf (gethash ib *tags*)
-                 (cmp:irc-basic-block-create
-                  (iblock-name ib)))
-           (initialize-iblock-translation ib))
-         function))
-      (cmp:irc-set-insert-point-basic-block entry-block
-                                            cmp:*irbuilder-function-alloca*)
-      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-        (cmp:with-debug-info-source-position (source-pos-info the-function)
-          (cmp:with-dbg-lexical-block
-              (:lineno (core:source-pos-info-lineno source-pos-info))
+    (cmp:with-guaranteed-*current-source-pos-info* ()
+      (cmp:with-dbg-function (:lineno lineno
+                              :function-type llvm-function-type
+                              :function the-function)
+        #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
+        (llvm-sys:set-personality-fn the-function
+                                     (cmp:irc-personality-function))
+        (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
+        (unless (cleavir-policy:policy-value (bir:policy function)
+                                             'perform-optimization)
+          (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
+          (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
+        (cmp:with-irbuilder (body-irbuilder)
+          (bir:map-iblocks
+           (lambda (ib)
+             (setf (gethash ib *tags*)
+                   (cmp:irc-basic-block-create
+                    (iblock-name ib)))
+             (initialize-iblock-translation ib))
+           function))
+        (cmp:irc-set-insert-point-basic-block entry-block
+                                              cmp:*irbuilder-function-alloca*)
+        (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+          (cmp:with-debug-info-source-position (source-pos-info the-function)
+            (cmp:with-dbg-lexical-block
+                (:lineno (core:source-pos-info-lineno source-pos-info))
             
-            (layout-main-function* the-function function
-                                   body-irbuilder body-block
-                                   abi :linkage linkage)))))))
+              (layout-main-function* the-function function
+                                     body-irbuilder body-block
+                                     abi :linkage linkage))))))))
 
 (defun layout-procedure (function lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))

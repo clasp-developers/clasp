@@ -39,6 +39,12 @@
   entry-point-reference ; the entry-point-reference
   )
 
+(defun arity-code (arity)
+  (cond
+    ((eq arity :general-entry)
+     0)
+    (t (1+ arity))))
+
 (defstruct (cleavir-lambda-list-analysis (:type vector) :named)
   cleavir-lambda-list
   req-opt-only-p
@@ -1012,8 +1018,12 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                   &optional (label "vaslist_remaining_nargs_address"))
   (c++-field-ptr info.%vaslist% vaslist-v :nargs label))
 
-(defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
-                                              ("frame-pointer" "all")))
+(defparameter *default-function-attributes*
+  #+cclasp '(llvm-sys:attribute-uwtable
+             ("frame-pointer" "all"))
+  #-cclasp '(llvm-sys:attribute-uwtable
+             ("frame-pointer" "all"))
+  )
 
 (defun setup-wrong-number-of-arguments-xep (arity xep-group calling-convention)
   ;; Remove the xep corresponding to the arity from the xep-group and replace it with a place-holder that the literal compiler will recognize
@@ -1095,7 +1105,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
               ;;(format t "layout-xep-function skipping arity ~a for ~a~%" arity xep-fn)
               )
             (let ((*current-function* xep-fn)
-                  (func-env (make-function-container-environment parent-env (car (llvm-sys:get-argument-list xep-fn)) xep-fn))
+                  (func-env (make-function-container-environment
+                             parent-env (car (llvm-sys:get-argument-list xep-fn)) xep-fn))
                   traceid
                   (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
                   (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
@@ -1114,21 +1125,33 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                      (*current-function-name* function-name)
                      (*irbuilder-function-alloca* irbuilder-alloca)
                      (*irbuilder-function-body* irbuilder-body)
-                     (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
-                (with-irbuilder (irbuilder-body)
-                  (let ((*current-unwind-landing-pad-dest* nil))
-                    (cmp-log "xep-fn2 = %s%N" xep-fn)
-                    (let ((arguments      (llvm-sys:get-argument-list xep-fn)))
-                      (cmp-log "arguments -> %s%N" arguments)
-                      (let* ((rest-alloc     (alloca-t* "rest"))
-                             (callconv       (setup-calling-convention
-                                              xep-fn
-                                              arity
-                                              :debug-on core::*debug-bclasp*
-                                              :cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info)
-                                              :rest-alloc rest-alloc)))
-                        (cmp-log "Setup the lambda-list handler and callconf %s%N" callconv)
-                        (layout-xep-function* arity function-info xep-group callconv func-env))))))))))))
+                     (*gv-current-function-name* (module-make-global-string
+                                                  *current-function-name* "fn-name")))
+                (with-guaranteed-*current-source-pos-info* ()
+                  (with-dbg-function (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                      :function xep-fn
+                                      :function-type (llvm-sys:get-function-type xep-fn))
+                    (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno
+                                                      core:*current-source-pos-info*))
+                      (when core:*current-source-pos-info*
+                        (dbg-set-irbuilder-source-location irbuilder-alloca
+                                                           core:*current-source-pos-info*)
+                        (dbg-set-irbuilder-source-location irbuilder-body
+                                                           core:*current-source-pos-info*))
+                      (with-irbuilder (irbuilder-body)
+                        (let ((*current-unwind-landing-pad-dest* nil))
+                          (cmp-log "xep-fn2 = %s%N" xep-fn)
+                          (let ((arguments      (llvm-sys:get-argument-list xep-fn)))
+                            (cmp-log "arguments -> %s%N" arguments)
+                            (let* ((rest-alloc     (alloca-t* "rest"))
+                                   (callconv       (setup-calling-convention
+                                                    xep-fn
+                                                    arity
+                                                    :debug-on core::*debug-bclasp*
+                                                    :cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info)
+                                                    :rest-alloc rest-alloc)))
+                              (cmp-log "Setup the lambda-list handler and callconf %s%N" callconv)
+                              (layout-xep-function* arity function-info xep-group callconv func-env)))))))))))))))
 
 
 (defun do-new-function (body-fn function-symbol parent-env function-attributes linkage return-void function-info)
@@ -1164,47 +1187,48 @@ the type LLVMContexts don't match - so they were defined in different threads!"
               (irc-set-insert-point-instruction entry-branch irbuilder-alloca)
               (irc-set-insert-point-basic-block body-bb irbuilder-body)))
           (setf-metadata func-env :cleanup ())
-          (let* ((result (let ((*irbuilder-function-alloca* irbuilder-alloca)) (alloca-tmv "result")))
-                 (*current-function* local-fn)
-                 (*current-function-name* (llvm-sys:get-name local-fn))
-                 (*irbuilder-function-alloca* irbuilder-alloca)
-                 (*irbuilder-function-body* irbuilder-body)
-                 (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
-            (with-irbuilder (*irbuilder-function-body*)
-              (with-new-function-prepare-for-try (local-fn)
-                (with-dbg-function (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                    :function local-fn
-                                    :function-type local-function-type)
-                  (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
-                    (when core:*current-source-pos-info*
-                      (dbg-set-irbuilder-source-location irbuilder-alloca
-                                                         core:*current-source-pos-info*)
-                      (dbg-set-irbuilder-source-location irbuilder-body
-                                                         core:*current-source-pos-info*))
-                    (with-irbuilder (*irbuilder-function-body*)
-                      (or *the-module* (error "with-new-function *the-module* is NIL"))
-                      (cmp-log "with-landing-pad around body%N")
-                      (let* ((function-arguments (rest (llvm-sys:get-argument-list local-fn)))
-                             (cleavir-arguments (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis)))
-                        (cmp-log "function-arguments: %s%N" function-arguments)
-                        (cmp-log "cleavir-arguments: %s%N" cleavir-arguments)
-                        (let ((output-bindings (mapcar (lambda (name var) (cons name (cons 'ext:llvm-register-var var))) cleavir-arguments function-arguments))
-                              (new-env (irc-new-unbound-value-environment-of-size
-                                        func-env
-                                        :number-of-arguments (length (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis))
-                                        :label "arguments-env")))
-                          (irc-make-value-frame-set-parent new-env (length output-bindings) func-env)
-                          (mapc (lambda (ob)
-                                  (cmp-log "Adding to environment: %s%N" ob)
-                                  (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
-                                output-bindings)
-                          (funcall body-fn local-fn new-env result))))))
-                (cmp-log "ReturnAA%N")
-                #+(or)(irc-verify-no-function-environment-cleanup func-env))
-              (cmp-log "ReturnA%N")
-              (if return-void
-                  (irc-ret-void)
-                  (irc-ret (irc-load result)))))
+          (with-guaranteed-*current-source-pos-info* ()
+            (let* ((result (let ((*irbuilder-function-alloca* irbuilder-alloca)) (alloca-tmv "result")))
+                   (*current-function* local-fn)
+                   (*current-function-name* (llvm-sys:get-name local-fn))
+                   (*irbuilder-function-alloca* irbuilder-alloca)
+                   (*irbuilder-function-body* irbuilder-body)
+                   (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
+              (with-irbuilder (*irbuilder-function-body*)
+                (with-new-function-prepare-for-try (local-fn)
+                  (with-dbg-function (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                      :function local-fn
+                                      :function-type local-function-type)
+                    (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
+                      (when core:*current-source-pos-info*
+                        (dbg-set-irbuilder-source-location irbuilder-alloca
+                                                           core:*current-source-pos-info*)
+                        (dbg-set-irbuilder-source-location irbuilder-body
+                                                           core:*current-source-pos-info*))
+                      (with-irbuilder (*irbuilder-function-body*)
+                        (or *the-module* (error "with-new-function *the-module* is NIL"))
+                        (cmp-log "with-landing-pad around body%N")
+                        (let* ((function-arguments (rest (llvm-sys:get-argument-list local-fn)))
+                               (cleavir-arguments (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis)))
+                          (cmp-log "function-arguments: %s%N" function-arguments)
+                          (cmp-log "cleavir-arguments: %s%N" cleavir-arguments)
+                          (let ((output-bindings (mapcar (lambda (name var) (cons name (cons 'ext:llvm-register-var var))) cleavir-arguments function-arguments))
+                                (new-env (irc-new-unbound-value-environment-of-size
+                                          func-env
+                                          :number-of-arguments (length (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis))
+                                          :label "arguments-env")))
+                            (irc-make-value-frame-set-parent new-env (length output-bindings) func-env)
+                            (mapc (lambda (ob)
+                                    (cmp-log "Adding to environment: %s%N" ob)
+                                    (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
+                                  output-bindings)
+                            (funcall body-fn local-fn new-env result)))
+                        (cmp-log "ReturnAA%N")
+                        #+(or)(irc-verify-no-function-environment-cleanup func-env))
+                      (cmp-log "ReturnA%N")
+                      (if return-void
+                          (irc-ret-void)
+                          (irc-ret (irc-load result)))))))))
           (cmp-log "ReturnB%N")
           (let ((xep-group (irc-xep-functions-create cleavir-lambda-list-analysis linkage (string function-name) *the-module* function-description local-fn)))
             (cmp-log "xep-group = %s%N" xep-group)
@@ -1760,15 +1784,15 @@ But no irbuilders or basic-blocks. Return the fn."
         (varargs (getf (primitive-properties primitive-info) :varargs))
         (does-not-throw (getf (primitive-properties primitive-info) :does-not-throw))
         (does-not-return (getf (primitive-properties primitive-info) :does-not-return))
-        fnattrs)
-    (when does-not-throw (push 'llvm-sys:attribute-no-unwind fnattrs))
-    (when does-not-return (push 'llvm-sys:attribute-no-return fnattrs))
-    (push '("frame-pointer" "all") fnattrs)
+        function-attributes)
+    (when does-not-throw (push 'llvm-sys:attribute-no-unwind function-attributes))
+    (when does-not-return (push 'llvm-sys:attribute-no-return function-attributes))
+    (push '("frame-pointer" "all") function-attributes)
     (let ((function (irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
                                              'llvm-sys::External-linkage
                                              dispatch-name
                                              module
-                                             :function-attributes fnattrs)))
+                                             :function-attributes function-attributes)))
       #+(or)(bformat t "Created function: %s arg-ty: %s%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)

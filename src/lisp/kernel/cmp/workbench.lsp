@@ -109,7 +109,7 @@
          sys:make-global-entry-point-generator
          sys:make-local-entry-point-generator
          )
-  #+(or)(compile 'foo '(lambda (x) x))
-  (compile-file "/tmp/xxx.lisp")
+  (compile 'foo '(lambda (x) x))
+  #+(or)(compile-file "/tmp/xxx.lisp")
   )
 

@@ -28,74 +28,92 @@ THE SOFTWARE.
 #define gc_gcStack_H
 
 namespace gctools {
-#if 0
-static const size_t IdxRegisterSaveArea = 0;
-static const size_t IdxNumElements = LCC_NARGS_REGISTER;                                 // Where the num arguments (RAW - do not fix!!!)
-static const size_t IdxOverflowArgs = LCC_TOTAL_REGISTERS;                               // IdxOverflowArgs-IdxRegisterSaveArea == Number of arguments passed in registers
-static const size_t IdxRegisterArgumentsStart = IdxOverflowArgs - LCC_ARGS_IN_REGISTERS; // Where the register arguments start
-static const size_t IdxValuesArray = IdxRegisterArgumentsStart;                          // where the stack based arguments start
- #endif
+
+
 /*! Frame: A class that maintains an array of T_O* pointers on a thread-local stack for setting up calls.
 This class always needs to be allocated on the stack.
 It uses RAII to pop its array of pointers from the stack when the Frame goes out of scope.
 */
 struct Frame {
+  
   typedef core::T_O *ElementType;
-  ElementType _register_save_area[LCC_ABI_ARGS_IN_REGISTERS];
-  ElementType _overflow_area[];
-  /*! Calculate the number of elements required to represent the frame.
-     It's IdxValuesArray+#elements */
-  static inline size_t FrameElements_(size_t frame_elements) {
-    return std::max(LCC_ABI_ARGS_IN_REGISTERS,(int)frame_elements-LCC_ARGS_IN_REGISTERS+LCC_ABI_ARGS_IN_REGISTERS);
-  }
+  ElementType _args[];
+
+  /* Calculate size of frame in bytes for __builtin_alloca
+   */
   static inline size_t FrameBytes_(size_t elements) {
-    return FrameElements_(elements) * sizeof(ElementType);
+    return elements * sizeof(ElementType);
   }
-  ElementType* data0() const {return (ElementType*)reg_save_area_ptr();}
-  ElementType* arguments(size_t start=0) const {return ((ElementType*)reg_save_area_ptr())+2+start;}
-  void* reg_save_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_register_save_area[0])); };
-  void* overflow_arg_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_overflow_area[0])); };
-  Frame(core::T_O* closure, size_t numArguments) {
-    this->_register_save_area[LCC_CLOSURE_REGISTER] = closure;
-//    this->_register_save_area[LCC_OVERFLOW_SAVE_REGISTER] = reinterpret_cast<core::T_O*>(&this->_overflow_area[0]);
-    this->_register_save_area[LCC_NARGS_REGISTER] = reinterpret_cast<core::T_O*>(numArguments);
-    for ( int i=(LCC_ABI_ARGS_IN_REGISTERS-LCC_ARGS_IN_REGISTERS); i<LCC_ABI_ARGS_IN_REGISTERS; ++i ) {
-      this->_register_save_area[i] = gctools::tag_unbound<core::T_O*>();
+
+  Frame(size_t numArguments) {
+    this->debugEmptyFrame(numArguments);
+  }
+  
+  ElementType* arguments(size_t start=0) const {return ((ElementType*)&_args[0])+start;}
+  
+  inline void debugEmptyFrame( size_t nargs) {
+#if DEBUG_FRAME() == 2 
+    for ( size_t ii=0; ii<nargs; ++ii ) {
+      (*this)._args[ii] = gctools::tag_unbound<core::T_O*>();
     }
-    int num_overflow_args = (int)numArguments - LCC_ARGS_IN_REGISTERS;
-    for ( int j=0; j<num_overflow_args; ++j ) {
-      this->_overflow_area[j] = gctools::tag_unbound<core::T_O*>();
-    }
+#endif
   }
 
-  inline size_t number_of_arguments() const {
-    return reinterpret_cast<size_t>(this->_register_save_area[LCC_NARGS_REGISTER]);
+  inline ElementType value(size_t idx) const {
+    return this->_args[idx];
   }
 
-  inline void set_number_of_arguments(size_t num) {
-    this->_register_save_area[LCC_NARGS_REGISTER] = reinterpret_cast<core::T_O*>(num);
-  }
-
-  inline ElementType& operator[](size_t idx) {
-    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),"idx out of bounds");
-    // This works because the overflow area follows the register save area
-    return this->_register_save_area[idx+LCC_ARG0_REGISTER];
-  }
-  inline const ElementType& operator[](size_t idx) const {
-    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),"idx out of bounds");
-    // This works because the overflow area follows the register save area
-    return this->_register_save_area[idx+LCC_ARG0_REGISTER];
-  }
   //! Describe the Frame
-  void dump() const;
-  inline core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged) this->operator[](idx)); }
+  void dumpFrame(size_t nargs) const;
+  void checkFrame( size_t idx, size_t nargs ) const;
+  inline core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged) this->_args[idx]); }
+
 };
 
-#define MAKE_STACK_FRAME( framename, closure, num_elements) \
-  size_t sf_nargs = (num_elements); \
-  gctools::Frame *framename = reinterpret_cast<gctools::Frame *>(__builtin_alloca(gctools::Frame::FrameBytes_(sf_nargs))); \
-  new(framename) gctools::Frame(closure, num_elements); \
-  core::T_O** sf_args = framename->arguments(0);
+template <typename...Args>
+inline void fill_frame_templated( Frame* frame, size_t& idx, Args...args ) {
+  using InitialContents = core::T_O*[sizeof...(Args)];
+  InitialContents* initialContents((InitialContents*)frame->arguments(idx));
+  new (initialContents) InitialContents {args.raw_()...};
+  idx += sizeof...(Args);
+};
+
+inline void fill_frame_one_indexed(Frame* frame, size_t idx, core::T_O* val) {
+  frame->_args[idx] = val;
+}
+
+inline void fill_frame_one(Frame* frame, size_t& idx, core::T_O* val) {
+  frame->_args[idx] = val;
+  idx++;
+}
+
+inline void fill_frame_nargs_args(Frame* frame, size_t& idx, size_t nargs, core::T_O** args) {
+  memcpy( (void*)frame->arguments(idx), (void*)args, sizeof(core::T_O*)*nargs );
+  idx += nargs;
+}
+
+#define MAKE_STACK_FRAME( framename, num_elements) \
+  gctools::Frame *framename = reinterpret_cast<gctools::Frame *>(__builtin_alloca(gctools::Frame::FrameBytes_(num_elements))); \
+  new(framename) gctools::Frame(num_elements);
+
+#if 0
+#define DEBUG_DUMP_FRAME(frame,nargs) frame->dump(nargs);
+#else
+#define DEBUG_DUMP_FRAME(frame,nargs)
+#endif
+
+
+
+#if DEBUG_FRAME()==1
+#define CHECK_FRAME( framename, _idx_, _nargs_ ) if (_idx_ != _nargs_) { printf("%s:%d:%s FRAME not filled %lu should be %lu\n", __FILE__, __LINE__, __FUNCTION__, _idx_, _nargs_ ); abort(); }
+#elif DEBUG_FRAME()==2
+#define CHECK_FRAME( framename, _idx_, _nargs_ ) framename->checkFrame(_idx_,_nargs_)
+#elif DEBUG_FRAME()==0
+#define CHECK_FRAME( framename, _idx_, _nargs_ )
+#else
+# error "Bad DEBUG_FRAME() value"
+#endif
+
 
 } // namespace gctools
 
@@ -129,11 +147,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
   inline core::T_O *asTaggedPtr() {
     return gctools::tag_vaslist<core::T_O *>(this);
   }
-  Vaslist(gc::Frame* frame) : _args(frame->arguments(0)), _nargs(frame->number_of_arguments()) {
-    this->check_nargs();
-  };
-
-  Vaslist(const gc::Frame& frame) : _args(frame.arguments(0)), _nargs(frame.number_of_arguments()) {
+  Vaslist(size_t nargs, gc::Frame* frame) : _args(frame->arguments(0)), _nargs(nargs) {
     this->check_nargs();
   };
 
@@ -197,6 +211,14 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
   inline size_t& remaining_nargs() {
     return this->_nargs;
   }
+  inline core::T_O** args() const {
+    return this->_args;
+  }
+  
+  inline core::T_O *relative_indexed_arg(size_t idx) const {
+    return this->_args[idx];
+  }
+
 #if 0
   inline size_t current_index() const {
     printf("%s:%d  implement-me\n", __FILE__, __LINE__ );
@@ -256,6 +278,13 @@ public:
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
 };
+
+inline void fill_frame_vaslist(Frame* frame, size_t& idx, const core::VaList_sp vaslist) {
+  core::Vaslist* vas = vaslist.unsafe_valist();
+  fill_frame_nargs_args( frame, idx, vas->_nargs, vas->_args );
+}
+
 };
+
 
 #endif

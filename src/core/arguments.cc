@@ -207,7 +207,7 @@ void StackFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp v
     return;
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
-  this->frame[argument._ArgTargetFrameIndex] = val.raw_();
+  gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, val.raw_() );
 }
 
 void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
@@ -216,12 +216,12 @@ void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
   VaList_sp valist(&this->valist());
-  this->frame[argument._ArgTargetFrameIndex] = valist.raw_();
+  gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, valist.raw_() );
 }
 
 bool StackFrameDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
   //  core::T_O **array(frame::ValuesArray(this->frame));
-  return !gctools::tagged_unboundp(this->frame[argument._ArgTargetFrameIndex]);
+  return !gctools::tagged_unboundp(this->frame.value(argument._ArgTargetFrameIndex));
 }
 
 T_sp StackFrameDynamicScopeManager::lexenv() const {

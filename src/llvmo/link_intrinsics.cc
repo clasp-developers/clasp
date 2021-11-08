@@ -1211,12 +1211,9 @@ void cc_initialize_closure(core::T_O* functoid,
 
 LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gctools::return_type ret0 ) {
   ASSERTF(gctools::tagged_generalp(tfunc), BF("The argument %p does not have a general tag!") % (void*)tfunc);
-  MAKE_STACK_FRAME( callargs, tfunc, ret0.nvals);
-  FILL_FRAME_WITH_RETURN_REGISTERS(callargs,ret0);
-  if (ret0.nvals>LCC_RETURN_VALUES_IN_REGISTERS) {
-    core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
-    for (size_t i(LCC_RETURN_VALUES_IN_REGISTERS); i < ret0.nvals; ++i) (*callargs)[i] = ENSURE_VALID_OBJECT(mvThreadLocal[i]);
-  }
+  MAKE_STACK_FRAME( callargs, ret0.nvals);
+  size_t idx(0);
+  gctools::fill_frame_multiple_value_return( callargs, idx, ret0 );
 #ifdef DEBUG_VALUES
   if (_sym_STARdebug_valuesSTAR &&
         _sym_STARdebug_valuesSTAR->boundP() &&
@@ -1361,65 +1358,65 @@ LCC_RETURN_RAW general_entry_point_redirect_0(core::T_O* closure ) {
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_1(core::T_O* closure, core::T_O* farg0 ) {
-  MAKE_STACK_FRAME( frame, closure, 1 );
-  (*frame)[0] = farg0;
+  MAKE_STACK_FRAME( frame, 1 );
+  gctools::fill_frame_one_indexed( frame, 0, farg0 );
   return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure,1,frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_2(core::T_O* closure, core::T_O* farg0, core::T_O* farg1 ) {
-  MAKE_STACK_FRAME( frame, closure, 2 );
-  (*frame)[0] = farg0;
-  (*frame)[1] = farg1;
+  MAKE_STACK_FRAME( frame, 2 );
+  gctools::fill_frame_one_indexed( frame, 0, farg0 );
+  gctools::fill_frame_one_indexed( frame, 1, farg1 );
   return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure,2,frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_3(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2 ) {
-  MAKE_STACK_FRAME( frame, closure, 3 );
-  (*frame)[0] = farg0;
-  (*frame)[1] = farg1;
-  (*frame)[2] = farg2;
+  MAKE_STACK_FRAME( frame, 3 );
+  gctools::fill_frame_one_indexed( frame, 0, farg0 );
+  gctools::fill_frame_one_indexed( frame, 1, farg1 );
+  gctools::fill_frame_one_indexed( frame, 2, farg2 );
   return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure,3,frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_4(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3 ) {
-  MAKE_STACK_FRAME( frame, closure, 4 );
-  (*frame)[0] = farg0;
-  (*frame)[1] = farg1;
-  (*frame)[2] = farg2;
-  (*frame)[3] = farg3;
+  MAKE_STACK_FRAME( frame, 4 );
+  gctools::fill_frame_one_indexed( frame, 0, farg0 );
+  gctools::fill_frame_one_indexed( frame, 1, farg1 );
+  gctools::fill_frame_one_indexed( frame, 2, farg2 );
+  gctools::fill_frame_one_indexed( frame, 3, farg3 );
   return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure,4,frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_5(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4 ) {
-  MAKE_STACK_FRAME( frame, closure, 5 );
-  (*frame)[0] = farg0;
-  (*frame)[1] = farg1;
-  (*frame)[2] = farg2;
-  (*frame)[3] = farg3;
-  (*frame)[4] = farg4;
+  MAKE_STACK_FRAME( frame, 5 );
+  gctools::fill_frame_one_indexed( frame, 0, farg0 );
+  gctools::fill_frame_one_indexed( frame, 1, farg1 );
+  gctools::fill_frame_one_indexed( frame, 2, farg2 );
+  gctools::fill_frame_one_indexed( frame, 3, farg3 );
+  gctools::fill_frame_one_indexed( frame, 4, farg4 );
   return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure,5,frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_6(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4, core::T_O* farg5 ) {
-  MAKE_STACK_FRAME( frame, closure, 6 );
-  (*frame)[0] = farg0;
-  (*frame)[1] = farg1;
-  (*frame)[2] = farg2;
-  (*frame)[3] = farg3;
-  (*frame)[4] = farg4;
-  (*frame)[5] = farg5;
+  MAKE_STACK_FRAME( frame, 6 );
+  gctools::fill_frame_one_indexed( frame, 0, farg0 );
+  gctools::fill_frame_one_indexed( frame, 1, farg1 );
+  gctools::fill_frame_one_indexed( frame, 2, farg2 );
+  gctools::fill_frame_one_indexed( frame, 3, farg3 );
+  gctools::fill_frame_one_indexed( frame, 4, farg4 );
+  gctools::fill_frame_one_indexed( frame, 5, farg5 );
   return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure,6,frame->arguments(0));
 }
 
 LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4, core::T_O* farg5, core::T_O* farg6 ) {
-  MAKE_STACK_FRAME( frame, closure, 7 );
-  (*frame)[0] = farg0;
-  (*frame)[1] = farg1;
-  (*frame)[2] = farg2;
-  (*frame)[3] = farg3;
-  (*frame)[4] = farg4;
-  (*frame)[5] = farg5;
-  (*frame)[6] = farg6;
+  MAKE_STACK_FRAME( frame, 7 );
+  gctools::fill_frame_one_indexed( frame, 0, farg0 );
+  gctools::fill_frame_one_indexed( frame, 1, farg1 );
+  gctools::fill_frame_one_indexed( frame, 2, farg2 );
+  gctools::fill_frame_one_indexed( frame, 3, farg3 );
+  gctools::fill_frame_one_indexed( frame, 4, farg4 );
+  gctools::fill_frame_one_indexed( frame, 5, farg5 );
+  gctools::fill_frame_one_indexed( frame, 6, farg6 );
   return gctools::untag_general<core::Function_O*>((core::Function_O*)closure)->entry()(closure,7,frame->arguments(0));
 }
 

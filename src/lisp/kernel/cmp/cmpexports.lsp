@@ -309,6 +309,7 @@
             *dbg-current-function-lineno*
             *dbg-current-scope*
             with-new-function
+            with-guaranteed-*current-source-pos-info*
             with-dbg-function
             with-dbg-lexical-block
             dbg-variable-alloca
@@ -345,6 +346,7 @@
             *irbuilder-function-alloca*
             irc-get-terminate-landing-pad-block
             irc-function-cleanup-and-return
+            irc-calculate-call-info
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
             compute-rest-alloc
             compile-tag-check

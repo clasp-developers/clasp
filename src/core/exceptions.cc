@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/exceptions.h>
+#include <clasp/core/designators.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/array.h>
@@ -866,7 +867,7 @@ void FEpackage_error(const char *fmt,
 }
 
 void Warn(T_sp datum, List_sp arguments) {
-  eval::applyLastArgsPLUSFirst(cl::_sym_warn, arguments, datum);
+  core__apply1( core::coerce::functionDesignator(cl::_sym_warn), arguments, datum);
 }
 
 void clasp_internal_error(const char *msg) {

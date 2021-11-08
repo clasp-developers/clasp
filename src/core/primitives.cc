@@ -1196,22 +1196,23 @@ CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp 
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
   if (!sequences.consp()) goto FALLTHROUGH;
   {
-    MAKE_STACK_FRAME(frame,predicate.raw_(),sequences.unsafe_cons()->proper_list_length());
+    size_t nargs = sequences.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame,nargs);
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : sequences ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = oCar(top).raw_();
+        gctools::fill_frame_one( frame, idx, oCar(top).raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
+        Vaslist valist_struct(nargs,frame);
         VaList_sp valist(&valist_struct);
-        retVal = funcall_general<core::Function_O>(predicate.tagged_(),sf_nargs,sf_args);
+        retVal = funcall_general<core::Function_O>(predicate.tagged_(),nargs,frame->arguments());
         if (retVal.isTrue() == elementTest) {
           return elementReturn;
         }
@@ -1272,14 +1273,14 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
   if (lists.consp()) {
     ql::list result;
     size_t nargs = lists.unsafe_cons()->proper_list_length();
-    MAKE_STACK_FRAME(frame,func.raw_(),nargs);
+    MAKE_STACK_FRAME(frame,nargs);
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : lists ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = oCar(top).raw_();
+        gctools::fill_frame_one( frame, idx, oCar(top).raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
@@ -1307,14 +1308,14 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
   if (lists.consp()) {
     List_sp result = CONS_CAR(lists);
     size_t nargs = lists.unsafe_cons()->proper_list_length();
-    MAKE_STACK_FRAME(frame,func.raw_(), nargs );
+    MAKE_STACK_FRAME(frame, nargs );
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : lists ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = oCar(top).raw_();
+        gctools::fill_frame_one( frame, idx, oCar(top).raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
@@ -1336,20 +1337,21 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     ql::list result;
-    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    size_t nargs = lists.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame,nargs);
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : lists ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = top.raw_();
+        gctools::fill_frame_one( frame, idx, top.raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
       }
       if (!atend) {
-        result << funcall_general<core::Function_O>(func.tagged_(), sf_nargs, sf_args );
+        result << funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments() );
       }
     }
     return result.cons();
@@ -1365,20 +1367,21 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     List_sp result = CONS_CAR(lists);
-    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    size_t nargs = lists.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame, nargs );
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : lists ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = top.raw_();
+        gctools::fill_frame_one( frame, idx, top.raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
       }
       if (!atend) {
-        funcall_general<core::Function_O>(func.tagged_(),sf_nargs,frame->arguments(0));
+        funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments(0));
       }
     }
     return result;

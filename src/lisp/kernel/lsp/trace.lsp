@@ -54,6 +54,38 @@ SI::ARGS."
       `(currently-traced)
       `(progn ,@(mapcan #'one-trace specs))))
 
+(export 'safe-trace)
+(defmacro safe-trace (&rest specs)
+"Syntax: (safe-trace ({function-name | ({function-name}+)} {keyword [form|(form*)]}*)
+Begins tracing the specified functions - does not use the printer so it's safer.
+With no FUNCTION-NAMEs, returns a list of functions currently being traced. 
+The printed information consists of the name of function followed 
+at entry by its arguments and on exit by its
+return values.
+The keywords allow to control when and how tracing is performed.
+The possible keywords are:
+
+ :BREAK		a breakpoint is entered after printing the entry trace
+		information, but before applying the traced function to its
+		arguments, if form evaluates to non-nil
+ :BREAK-AFTER 	like :BREAK but the breakpoint is entered after the function
+		has been executed and the exit trace information has been
+		printed and before control returns
+ :COND-BEFORE	information is printed upon entry if form evaluates to non-nil
+ :COND-AFTER	information is printed upon exit if form evaluates to non-nil
+ :COND		specifies a single condition for both entry and exit
+ :PRINT		prints the values of the forms in the list upon entry.
+		They are preceeded by a backslash (\\)
+ :PRINT-AFTER	prints the values of the forms in the list upon exit from the
+		function. They are preceeded by a backslash (\\)
+ :STEP		turns on the stepping facility
+
+Forms can refer to the list of arguments of the function through the variable
+SI::ARGS."
+  (if (null specs)
+      `(currently-traced)
+      `(progn ,@(mapcan (lambda (spec) (one-trace spec t)) specs))))
+
 (defmacro untrace (&rest r)
   "Syntax: (untrace {function-name}*)
 
@@ -69,12 +101,12 @@ all functions."
 
 ;;; Expands into a list of forms that will trace the given fname.
 ;;; Most of the work is done in one-trace*; this just parses.
-(defun one-trace (spec)
+(defun one-trace (spec &optional safe)
   (let (break exitbreak (entrycond t) (exitcond t) entry exit
         step (barfp t))
     (cond ((valid-function-name-p spec) ; short form
            (list
-            (one-trace* spec break exitbreak entrycond exitcond entry exit step)))
+            (one-trace* spec break exitbreak entrycond exitcond entry exit step safe)))
           ((not (proper-list-p spec))
            (simple-program-error "Not a valid argument to TRACE: ~s" spec))
           (t ; long form
@@ -104,17 +136,19 @@ all functions."
                         (push one results)))))
                  ((valid-function-name-p (first spec))
                   (list
-                   (one-trace* (first spec) break exitbreak entrycond exitcond entry exit step)))
+                   (one-trace* (first spec) break exitbreak entrycond exitcond entry exit step safe)))
                  (t (simple-program-error
                      "Invalid function name or list for TRACE: ~s"
                      (first spec))))))))
 
-(defun one-trace* (fname break exitbreak entrycond exitcond entry exit step)
+(defun one-trace* (fname break exitbreak entrycond exitcond entry exit step &optional safe)
   `(when (traceable ',fname)
      ,(if (and (not break) (not exitbreak) (not entry) (not exit) (not step)
                (eq entrycond 't) (eq exitcond 't))
-          `(simple-trace ',fname)
-          (complex-trace fname break exitbreak entrycond exitcond entry exit step))))
+          `(simple-trace ',fname ,safe)
+          (if safe
+              (error "complex-trace cannot be made safe")
+              (complex-trace fname break exitbreak entrycond exitcond entry exit step)))))
 
 (defun traceable (fname)
   (when (null (fboundp fname))
@@ -139,27 +173,40 @@ all functions."
 ;;; This traces a function without doing any complicated stuff.
 ;;; In fact the compiler shouldn't be invoked at all. This is nice if you
 ;;; just broke the compiler and want to do some tracing to find the problem.
-(defun simple-trace (fname)
+(defun simple-trace (fname safe)
   (let ((oldf (fdefinition fname)))
     (funcall #'(setf fdefinition)
-             (make-trace-closure fname oldf)
+             (make-trace-closure fname oldf safe)
              fname)
     (add-to-trace-list fname oldf))
   (list fname))
 
-(defun make-trace-closure (fname oldf)
-  (lambda (&rest args)
-    (declare (core:lambda-name trace-lambda))
-    (let ((*trace-level* (1+ *trace-level*)))
-      (if *inside-trace*
-          (apply oldf args)
-          (let ((*inside-trace* t))
-            (trace-print 'enter fname args)
-            (let ((results
-                    (let ((*inside-trace* nil))
-                      (multiple-value-list (apply oldf args)))))
-              (trace-print 'exit fname results)
-              (values-list results)))))))
+(defun make-trace-closure (fname oldf safe)
+  (if safe
+      (lambda (&rest args)
+        (declare (core:lambda-name trace-lambda))
+        (let ((*trace-level* (1+ *trace-level*)))
+          (if *inside-trace*
+              (apply oldf args)
+              (let ((*inside-trace* t))
+                (trace-safe-print 'enter fname args)
+                (let ((results
+                        (let ((*inside-trace* nil))
+                          (multiple-value-list (core:trace-apply0 oldf args)))))
+                  (trace-safe-print 'exit fname results)
+                  (values-list results))))))
+      (lambda (&rest args)
+        (declare (core:lambda-name trace-lambda))
+        (let ((*trace-level* (1+ *trace-level*)))
+          (if *inside-trace*
+              (apply oldf args)
+              (let ((*inside-trace* t))
+                (trace-print 'enter fname args)
+                (let ((results
+                        (let ((*inside-trace* nil))
+                          (multiple-value-list (core:trace-apply0 oldf args)))))
+                  (trace-print 'exit fname results)
+                  (values-list results))))))))
 
 (defun complex-trace (fname break exitbreak entrycond exitcond entry exit step)
   (declare (ignore step))
@@ -241,6 +288,36 @@ all functions."
                             " ~s " extras))
        *trace-output*)
      *trace-output*)))
+
+(defun trace-safe-print (direction fname vals &rest extras)
+  (let ((indent (min (* (1- *trace-level*) 2) *trace-max-indent*))
+        (*print-circle* t))
+    (core:bformat
+     *trace-output*
+     "%s"
+     (with-output-to-string (*trace-output*)
+       #+(or)(core:bformat *trace-output* "%N")
+       (case direction
+         (ENTER
+          (multiple-value-bind (bars rem)
+              (floor indent 4)
+            (dotimes (i bars) (core:bformat *trace-output* "%s" (if (< i 10) "|   " "|    ")))
+            (when (plusp rem) (core:bformat *trace-output* " | ")))
+          (core:bformat *trace-output* "%s> (%s . %s)%N" *trace-level* fname vals))
+         (EXIT
+          (multiple-value-bind (bars rem)
+              (floor indent 4)
+            (dotimes (i bars) (core:bformat *trace-output* "|   "))
+            (when (plusp rem) (core:bformat *trace-output* " | ")))
+          (core:bformat *trace-output* "<%s (%s . %s)%N" *trace-level* fname vals)))
+       (when extras
+         (multiple-value-bind (bars rem)
+             (floor indent 4)
+           (dotimes (i bars) (core:bformat *trace-output* "|   " ))
+           (when (plusp rem) (core:bformat *trace-output* " | ")))
+         (core:bformat *trace-output* " %s " extras))
+       *trace-output*)
+     )))
 
 (defun trace-record (fname)
   (find fname *trace-list* :key #'first :test #'equal))

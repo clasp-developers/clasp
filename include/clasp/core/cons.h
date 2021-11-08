@@ -483,8 +483,15 @@ CL_PKG_NAME(ClPkg,car);
 };
 
 
+namespace gctools {
 
-//TRANSLATE(core::Cons_O);
+inline void fill_frame_list(Frame* frame, size_t& idx, core::List_sp list) {
+  for ( auto val : list ) {
+    gctools::fill_frame_one( frame, idx, CONS_CAR(val).raw_() );;
+  }
+};
+
+};
 
 
 namespace core {

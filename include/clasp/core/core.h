@@ -560,6 +560,7 @@ extern void clasp_mps_debug_container(const char *ctype, const char *name, int s
 #include <clasp/gctools/gcalloc.h>
 #include <clasp/gctools/containers.h>
 #include <clasp/gctools/threadLocalStacks.h>
+#include <clasp/gctools/gcStack.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/gctools/threadlocal.h>

@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/predicates.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/serialize.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/designators.h>
@@ -622,15 +623,15 @@ string Cons_O::__repr__() const {
   T_sp car = start->ocar();
   T_sp cdr = start->cdr();
   stringstream sout;
-  sout << "(" << _rep_(car);
+  sout << "(" << _safe_rep_(car);
   while (cdr.consp()) {
     Cons_sp p = gc::As<Cons_sp>(cdr);
     car = p->ocar();
-    sout << " " << _rep_(car);
+    sout << " " << _safe_rep_(car);
     cdr = oCdr(p);
   }
   if (cdr.notnilp()) {
-    sout << " . " << _rep_(cdr) << ")";
+    sout << " . " << _safe_rep_(cdr) << ")";
   } else {
     sout << ")";
   }

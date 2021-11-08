@@ -27,6 +27,23 @@ THE SOFTWARE.
 #if !defined( __CORE_CONFIG_H__ )
 #define __CORE_CONFIG_H__
 
+
+// ----------------------------------------------------------------------------
+// Set system wide debug flags here
+// ----------------------------------------------------------------------------
+#if 1
+/* 0 == no CHECK_FRAME, 1 == fast CHECK_FRAME, 2 == slow CHECK_FRAME */
+#define DEBUG_FRAME() 2
+//#define DEBUG_OBJECT_FILES 1
+//#define DEBUG_VALUES 1
+//#define DEBUG_VASLIST 1
+#define DEBUG_EVALUATE 1
+//#define DEBUG_DTORS 1
+// If ANY flags above are set - then set this one to print a message at startup
+#define DEBUG_FLAGS_SET 1
+#endif
+
+
 // ----------------------------------------------------------------------------
 //  SYSTEM INCLUDES
 // ----------------------------------------------------------------------------
@@ -162,6 +179,7 @@ typedef unsigned char claspChar;
 typedef unsigned int  claspCharacter;
 #define CLASP_CHAR(x) ((x)&0xff)
 
+
 // ----------------------------------------------------------------------------
 //  DIR SEP
 // ----------------------------------------------------------------------------
@@ -213,7 +231,7 @@ typedef unsigned int  claspCharacter;
 #define LCC_ARGS_IN_REGISTERS 4
 
 /*! Return 1 pointer in register */
-#define LCC_RETURN_VALUES_IN_REGISTERS 1
+#define LCC_RETURN_VALUES_IN_REGISTERS() 1
 
 /*! Range of fixed entry point aritys 
     This will be used for the calling convention.
@@ -225,6 +243,7 @@ typedef unsigned int  claspCharacter;
 #define NUMBER_OF_ENTRY_POINTS ENTRY_POINT_ARITY_END-ENTRY_POINT_ARITY_BEGIN+1
 #define STACKMAP_REGISTER_SAVE_AREA_MAGIC_NUMBER 0xDEAD0000
 #define STACKMAP_REGISTER_SAVE_AREA_MASK         0xFFFF0000
+#define STACKMAP_ARITY_CODE_MASK                 0x0000000F
 
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 136

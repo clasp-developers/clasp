@@ -178,7 +178,6 @@ public:
 class StackFrameDynamicScopeManager : public ScopeManager {
 private:
   gc::Frame &frame;
-
 public:
   Vaslist VaRest;
 
