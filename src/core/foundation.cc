@@ -182,7 +182,7 @@ uint64_t lisp_nameword(core::T_sp name)
     nw.name[7] = '\0';
     return nw.word;
   }
-  SIMPLE_ERROR(BF("The name must be a string or a symbol"));
+  SIMPLE_ERROR(BF("The name %s must be a string or a symbol") % _rep_(name));
 }
     
 
