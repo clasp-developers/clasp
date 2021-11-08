@@ -67,34 +67,6 @@ struct MatchFinderMatchResult : public MatchFinder::MatchResult {
 
 namespace asttooling {
 
-#if 0
-    template <typename T>
-    gctools::smart_ptr<clbind::Wrapper<T,T*> > Wrap(T* p) { return clbind::Wrapper<T,T*>::create(p,reg::registered_class<T>::id);};
-
-    template <typename T>
-    gctools::smart_ptr<clbind::Wrapper<T,std::unique_ptr<T>> > Wrap(std::unique_ptr<T>& p) {
-	return clbind::Wrapper<T,std::unique_ptr<T>>::create(p,reg::registered_class<T>::id);
-    };
-#endif
-
-#if 0
-    class DerivableArgumentsAdjuster : public clbind::Derivable<clang::tooling::ArgumentsAdjuster> {
-        typedef clang::tooling::ArgumentsAdjuster  Base;
-    public:
-        virtual clang::tooling::CommandLineArguments Adjust(const clang::tooling::CommandLineArguments& args) {
-            core::T_sp obj = core::eval::funcall(_sym_ArgumentsAdjusterAdjust,this->asSmartPtr()
-                                           , translate::to_object<clang::tooling::CommandLineArguments>::convert(args));
-            translate::from_object<const clang::tooling::CommandLineArguments&> result(obj);
-            return result._v;
-        }
-
-        clang::tooling::CommandLineArguments default_Adjust(const clang::tooling::CommandLineArguments& args) {
-            return this->Base::Adjust(args);
-        }
-    };
-#endif
-
-
 class DerivableASTFrontendAction : public clbind::Derivable<clang::ASTFrontendAction> {
   typedef clang::ASTFrontendAction Base;
 

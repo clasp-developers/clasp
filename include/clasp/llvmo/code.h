@@ -70,36 +70,6 @@ typedef enum { SaveState, RunState } CodeState_t;
   }; // ObjectFile_O class def
 }; // llvmo
 
-
-
-/* from_object translators */
-
-#if 0
-namespace translate {
-template <>
-struct from_object<llvm::object::ObjectFile *, std::true_type> {
-  typedef llvm::object::ObjectFile *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::ObjectFile_sp>(object)->wrappedPtr()){};
-};
-
-};
-
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::object::ObjectFile *> {
-  static core::T_sp convert(llvm::object::ObjectFile *ptr) {
-    return core::RP_Create_wrapped<llvmo::ObjectFile_O, llvm::object::ObjectFile *>(ptr);
-  }
-};
-}; // namespace llvmo - ObjectFile_O done
-#endif
-
-
-
-
 namespace llvmo {
   FORWARD(Code);
   FORWARD(ObjectFile);
@@ -113,14 +83,7 @@ namespace llvmo {
   public:
     static LibraryFile_sp createLibrary(const std::string& libraryName);
   };
-
-
-
 };
-
-
-
-
 
 namespace llvmo {
   class CodeBase_O;

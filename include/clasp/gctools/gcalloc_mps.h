@@ -33,10 +33,6 @@ smart_ptr<ConsType> do_cons_mps_allocation(mps_ap_t& allocation_point,
   }
   DEBUG_MPS_UNDERSCANNING_TESTS();
   handle_all_queued_interrupts();
-#if 0
-  globalMpsMetrics.totalMemoryAllocated += cons_size;
-  ++globalMpsMetrics.consAllocations;
-#endif    
   return tagged_obj;
 };
 

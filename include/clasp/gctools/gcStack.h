@@ -161,9 +161,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
   }
 
   Vaslist(){};
-
-  ~Vaslist() {
-  }
+  ~Vaslist() {}
 
   T_O* operator[](size_t index) { return this->_args[index]; };
 
@@ -185,20 +183,12 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
     core::T_sp obj((gctools::Tagged)this->operator[](idx));
     return obj;
   }
-  
 
   void set_from_other_Vaslist(Vaslist *other,size_t arg_idx) {
     this->_nargs = other->_nargs-arg_idx; // remaining arguments
     this->_args = other->_args+arg_idx; // advance to start on remaining args
     this->check_nargs();
   }
-#if 0
-  inline size_t total_nargs() const {
-    size_t n = LCC_VASLIST_TOTAL_NUMBER_OF_ARGUMENTS(this);
-    return n;
-  }
-#endif
-  
 
   inline const size_t& remaining_nargs() const {
     return this->_nargs;
@@ -214,14 +204,6 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vas
     return this->_args[idx];
   }
 
-#if 0
-  inline size_t current_index() const {
-    printf("%s:%d  implement-me\n", __FILE__, __LINE__ );
-    size_t idx;
-    LCC_VASLIST_CURRENT_INDEX(idx,this);
-    return idx;
-  }
-#endif
 };
 };
 
@@ -235,7 +217,7 @@ public:
   Type* theObject;
 public:
   //Default constructor, set theObject to NULL
- smart_ptr() : theObject((Type*)NULL){};
+  smart_ptr() : theObject((Type*)NULL){};
   explicit inline smart_ptr(core::Vaslist *ptr) : theObject((Type*)gctools::tag_vaslist<Type *>(ptr)) {
 //    GCTOOLS_ASSERT(this->vaslistp());
   };
@@ -259,7 +241,7 @@ public:
     return *reinterpret_cast<Type *>(this->unsafe_valist());
   };
 
-  public:
+public:
   inline operator bool() { return this->theObject != NULL; };
 public:
   inline bool nilp() const { return tagged_nilp(this->theObject); }
@@ -271,7 +253,6 @@ public:
   inline Type* unsafe_valist() const { return reinterpret_cast<Type*>(untag_vaslist(this->theObject)); };
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); };
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
-
 };
 
 inline void fill_frame_vaslist(Frame* frame, size_t& idx, const core::Vaslist_sp vaslist) {
