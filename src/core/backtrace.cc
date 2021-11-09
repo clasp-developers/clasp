@@ -20,8 +20,12 @@
 #include <stdio.h> // debug messaging
 #include <stdlib.h> // calloc, realloc, free
 
-//#define D(x) do { x } while(0);
+//#define DEBUG_BACKTRACE 1
+#ifdef DEBUG_BACKTRACE
+#define D(x) do { x } while(0);
+#else
 #define D(x) do {} while(0);
+#endif
 
 /*
  * This file contains the low-ish level code to get backtrace information.
@@ -41,10 +45,9 @@
 size_t global_MaybeTraceDepth = 0;
 struct MaybeTrace {
   string _Msg;
-  MaybeTrace(const string& msg) {};
-  
-#if 0
-  MaybeTrace(const string& msg) :_Msg(msg) 
+#ifdef DEBUG_BACKTRACE
+  MaybeTrace(const string& msg) :_Msg(msg)
+  {
     global_MaybeTraceDepth++;
     printf("%lu> | %s\n", global_MaybeTraceDepth, msg.c_str());
   };
@@ -52,6 +55,8 @@ struct MaybeTrace {
     printf("<%lu | %s\n", global_MaybeTraceDepth, this->_Msg.c_str());
     global_MaybeTraceDepth--;
   }
+#else
+  MaybeTrace(const string& msg) {};
 #endif
 };
 
@@ -127,39 +132,42 @@ static T_sp dwarf_spi(llvmo::DWARFContext_sp dcontext,
 static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
                      llvmo::DWARFContext_sp dcontext,
                      llvmo::SectionedAddress_sp sa,
+                     void*& codeStart,
                      void*& startAddress,
                      bool& XEPp,
                      int& arityCode) {
+  MaybeTrace(__FUNCTION__);
   startAddress = NULL;
   auto eranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
   if (eranges) {
     auto ranges = eranges.get();
     llvmo::Code_sp code = ofi->_Code;
-    uintptr_t code_start = code->codeStart();
+    codeStart = (void*)code->codeStart();
+    D(printf("%s:%d:%s code_start = %p \n", __FILE__, __LINE__, __FUNCTION__, (void*)codeStart ); );
     T_O** rliterals = code->TOLiteralsStart();
     size_t nliterals = code->TOLiteralsSize();
     for (size_t i = 0; i < nliterals; ++i) {
       T_sp literal((gc::Tagged)(rliterals[i]));
       if (gc::IsA<LocalEntryPoint_sp>(literal)) {
         LocalEntryPoint_sp ep = gc::As_unsafe<LocalEntryPoint_sp>(literal);
-        uintptr_t ip = (uintptr_t)(ep->_EntryPoint) - code_start;
+        uintptr_t ip = (uintptr_t)(ep->_EntryPoint) - (uintptr_t)codeStart;
         for (auto range : ranges) {
           if ((range.LowPC <= ip) && (ip < range.HighPC)) {
             XEPp = false;
             // This will be identical to the entry point address in LocalEntryPoint_sp ep
-            startAddress = (void*)range.LowPC;
+            startAddress = (void*)(range.LowPC+(uintptr_t)codeStart);
             return ep;
           }
         }
       } else if (gc::IsA<GlobalEntryPoint_sp>(literal)) {
         GlobalEntryPoint_sp ep = gc::As_unsafe<GlobalEntryPoint_sp>(literal);
         for (size_t j = 0; j < NUMBER_OF_ENTRY_POINTS; ++j) {
-          uintptr_t ip = (uintptr_t)(ep->_EntryPoints[j]) - code_start;
+          uintptr_t ip = (uintptr_t)(ep->_EntryPoints[j]) - (uintptr_t)codeStart;
           for (auto range : ranges) {
             if ((range.LowPC <= ip) && (ip < range.HighPC)) {
               XEPp = true;
               // This will be identical to ONE of the the entry point address in GlobalEntryPoint_sp ep
-              startAddress = (void*)range.LowPC;
+              startAddress = (void*)(range.LowPC+(uintptr_t)codeStart);
               // arityCode is the index into the GlobalEntryPoint_sp vector corresponding to startAddress
               arityCode = j;
               return ep;
@@ -279,9 +287,10 @@ bool sanity_check_args(void* frameptr, int32_t offset32, int64_t patch_point_id 
 __attribute__((optnone))
 static bool args_for_function(size_t fi, void* ip, const char* string,
                               bool XEPp, int arityCode,
+                              void* code_start,
                               void* startAddress,
                               llvmo::ObjectFile_sp ofi,
-                              FunctionDescription_sp functionDescription,
+                              T_sp functionDescriptionOrNil,
                               void* frameptr,
                               T_sp& closure, T_sp& args) {
   MaybeTrace trace(__FUNCTION__);
@@ -290,13 +299,15 @@ static bool args_for_function(size_t fi, void* ip, const char* string,
   if (!stackmap_start) return false; // ends up as null sometimes apparently
   uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
   bool args_available = false;
-  D(printf("%s:%d:%s startAddress FunctionDescription %s startAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(functionDescription->functionName()).c_str(), startAddress ););
-  auto thunk = [&](size_t _, const smStkSizeRecord& function,
-                   int32_t offsetOrSmallConstant, int64_t patchPointId) {
+  T_sp name = nil<T_O>();;
+  if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil)) 
+    name = gc::As_unsafe<FunctionDescription_sp>(functionDescriptionOrNil);
+  D(printf("%s:%d:%s startAddress FunctionDescription %s  code_start = %p  startAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(name).c_str(), (void*)code_start, startAddress ););
+  auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
     if (function.FunctionAddress == (uintptr_t)startAddress ) {
       MaybeTrace tracel("startAddress_thunk");
       D(printf("%s:%d:%s function.FunctionAddress = %p  startAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)function.FunctionAddress, startAddress ););
-      if (args_from_offset( fi, ip, string, functionDescription->functionName(), XEPp, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
+      if (args_from_offset( fi, ip, string, name, XEPp, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
         args_available |= true;
       return;
     }
@@ -323,23 +334,25 @@ static DebuggerFrame_sp make_lisp_frame(size_t fi,
   D(printf("%s:%d:%s spi= %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(spi).c_str()););
   bool XEPp = false;
   int arityCode;
+  void* codeStart;
   void* startAddress;
-  T_sp ep = dwarf_ep(ofi, dcontext, sa, startAddress, XEPp, arityCode );
-  T_sp fd = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
+  T_sp ep = dwarf_ep(ofi, dcontext, sa, codeStart, startAddress, XEPp, arityCode );
+  T_sp functionDescriptionOrNil = ep.notnilp() ? gc::As_unsafe<EntryPointBase_sp>(ep)->_FunctionDescription : nil<FunctionDescription_O>();
   T_sp closure = nil<T_O>(), args = nil<T_O>();
   bool args_available = args_for_function( fi, ip, string,
                                            XEPp, arityCode,
+                                           codeStart,
                                            startAddress,
                                            ofi,
-                                           gc::As<FunctionDescription_sp>(fd),
+                                           functionDescriptionOrNil,
                                            fbp,
                                            closure,
                                            args);
   T_sp fname = nil<T_O>();
-  if (fd.notnilp())
-    fname = gc::As_unsafe<FunctionDescription_sp>(fd)->functionName();
+  if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil)) 
+    fname = gc::As_unsafe<FunctionDescription_sp>(functionDescriptionOrNil)->functionName();
   D(printf("%s:%d:%s fname = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fname).c_str()););
-  return DebuggerFrame_O::make(fname, Cons_O::create(sa,ofi), spi, fd, closure, args, args_available,
+  return DebuggerFrame_O::make(fname, Cons_O::create(sa,ofi), spi, functionDescriptionOrNil, closure, args, args_available,
                                INTERN_(kw, lisp), XEPp);
 }
 
@@ -437,10 +450,11 @@ static bool sanity_check_frame( void* ip, void* fbp) {
     llvmo::ObjectFile_sp ofi = gc::As_unsafe<llvmo::ObjectFile_sp>(of);
     llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
     llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
+    void* codeStart;
     void* startAddress;
     bool XEPp = false;
     int arityCode;
-    T_sp ep = dwarf_ep(ofi, dcontext, sa, startAddress, XEPp, arityCode);
+    T_sp ep = dwarf_ep(ofi, dcontext, sa, codeStart, startAddress, XEPp, arityCode);
     uintptr_t stackmap_start = (uintptr_t)(ofi->_Code->_StackmapStart);
     uintptr_t stackmap_end = stackmap_start + ofi->_Code->_StackmapSize;
     if (gc::IsA<LocalEntryPoint_sp>(ep)) {

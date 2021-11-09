@@ -123,6 +123,11 @@ If nil then insert a general_entry_point_redirect_x function"
   entry-point-reference
   local-function)
 
+(defun ensure-xep-function-not-placeholder (fn)
+  (when (literal:general-entry-placeholder-p fn)
+    (error "~a must be a xep-function" fn))
+  fn)
+
 (defun xep-group-lookup (xep-group arity)
   (dolist (entry (xep-group-arities xep-group))
     (let ((entry-arity (xep-arity-arity entry)))

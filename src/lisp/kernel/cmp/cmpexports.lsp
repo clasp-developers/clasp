@@ -4,6 +4,7 @@
             with-debug-info-source-position
             with-interpreter
             module-report
+            transform-lambda-parts
             codegen-startup-shutdown
             jit-startup-shutdown-function-names
             irc-simple-function-create
@@ -29,6 +30,7 @@
             irc-make-function-description
             irc-local-function-create
             irc-xep-functions-create
+            xep-arity-arity
             xep-arity-function-or-placeholder
             xep-arity-entry-point-reference
             xep-group-lookup
@@ -135,6 +137,7 @@
             make-file-metadata
             make-function-metadata
             function-info
+            function-info-cleavir-lambda-list-analysis
             make-function-info
             generate-function-for-arity-p
 
@@ -299,6 +302,7 @@
             ensure-cleavir-lambda-list-analysis
             process-cleavir-lambda-list-analysis
             cleavir-lambda-list-analysis-cleavir-lambda-list
+            cleavir-lambda-list-analysis-rest
             process-bir-lambda-list
             treat-as-special-operator-p
             typeid-core-unwind

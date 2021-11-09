@@ -34,7 +34,12 @@
 
   )
 
-#+(or)
-(start-cleavir)
+
+
+#+(or)(start-cleavir)
+
 ;;; Start cleavir with no inline
 (load-cleavir-no-inline)
+
+
+(cleavir-compile-file "/tmp/foo.lisp")
