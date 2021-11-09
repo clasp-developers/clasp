@@ -39,7 +39,9 @@
 #+(or)(start-cleavir)
 
 ;;; Start cleavir with no inline
-(load-cleavir-no-inline)
+(progn
+  (load-cleavir-no-inline)
+  (format t "!!!!!!!!!!! Cleavir loaded~%"))
 
 
 (cleavir-compile-file "/tmp/foo.lisp")
