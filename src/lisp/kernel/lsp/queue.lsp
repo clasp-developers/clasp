@@ -40,7 +40,7 @@
   (setf *readtable* (copy-readtable nil)))
 
 (in-package :core)
-(export '(make-queue queue-p atomic-enqueue dequeue dequeue-timed queue-count queue-emptyp))
+(export '(make-queue queuep atomic-enqueue dequeue dequeue-timed queue-count queue-emptyp))
 
 (defstruct (queue
             (:constructor make-queue

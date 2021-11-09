@@ -1702,8 +1702,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, prev);
 
 namespace core {
 
-SYMBOL_EXPORT_SC_(CorePkg,generic_function_lambda_lists);
-
 CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function)
 CL_DECLARE();

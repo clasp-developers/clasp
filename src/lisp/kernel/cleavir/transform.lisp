@@ -409,7 +409,18 @@
                  ((arg-subtypep proto double) double)
                  #+(or)((arg-subtypep proto long) long)
                  (t (env:parse-type-specifier 'float nil *clasp-system*))))
-         (ctype:range 'single-float '* '* *clasp-system*)))
+         ;; FIXME: More sophisticated type operations would make this more
+         ;; precise. For example, it would be good to derive that if the
+         ;; argument is an (or single-float rational), the result is a
+         ;; single float.
+         (let ((arg (first args))
+               (float (env:parse-type-specifier 'float nil *clasp-system*))
+               (rat (env:parse-type-specifier 'rat nil *clasp-system*)))
+           (cond ((arg-subtypep arg float)
+                  (ctype:primary (bir:ctype arg) *clasp-system*))
+                 ((arg-subtypep arg rat)
+                  (ctype:range 'single-float '* '* *clasp-system*))
+                 (t float)))))
    *clasp-system*))
 
 (define-deriver float derive-float)

@@ -16,11 +16,9 @@
 #include <clasp/gctools/interrupt.h>
 
 SYMBOL_EXPORT_SC_(CorePkg,terminal_interrupt);
-SYMBOL_EXPORT_SC_(CorePkg,wake_up_thread);
 SYMBOL_EXPORT_SC_(ExtPkg,illegal_instruction);
 SYMBOL_EXPORT_SC_(ExtPkg,segmentation_violation);
 SYMBOL_EXPORT_SC_(ExtPkg,bus_error);
-SYMBOL_EXPORT_SC_(CorePkg,wait_for_all_processes);
 
 namespace gctools {
 

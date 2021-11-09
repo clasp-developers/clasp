@@ -191,6 +191,9 @@
 
 ;;; the above 4 fail, since (- -2305843009213693952) fails, put 2305843009213693952 instead
 
+;;; See bugs #399, #1205
+(test floor-mpf-1 (floor 2.305843e18) (2305843009213693952 0e0))
+
 (test-true negate-most-negative-fixnum-1 (plusp (- -2305843009213693952)))
 
 (test-type reciprocal-1 (/ -1) fixnum)

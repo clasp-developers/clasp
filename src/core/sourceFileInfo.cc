@@ -274,9 +274,6 @@ const char *FileScope_O::permanentFileName() {
   return this->_PermanentFileName;
 }
 
-
-SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
-
 CL_DOCSTRING(R"dx(Like make-pathname lets you build a source-pos-info object from scratch or by referencing a defaults source-pos-info that provides default information)dx")
 CL_LAMBDA(&key (filename "-nofile-" filenamep) (filepos 0 fileposp) (lineno 0 linenop) (column 0 columnp) (function-scope nil function_scope_p) (inlined-at nil inlined_at_p) (defaults nil defaults_p))
 DOCGROUP(clasp)
@@ -455,7 +452,5 @@ bool SourcePosInfo_O::equalp(T_sp other) const {
   return true;
 }
 #endif
-
-SYMBOL_EXPORT_SC_(CorePkg, lookupFileScope);
 
 };
