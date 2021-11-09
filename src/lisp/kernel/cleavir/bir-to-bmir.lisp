@@ -186,14 +186,14 @@
   (when (member phi *chasing-rtypes-of* :test #'eq)
     (return-from definition-rtype ()))
   (let ((*chasing-rtypes-of* (cons phi *chasing-rtypes-of*))
-        (rt nil))
+        rt (have-rt nil))
     (cleavir-set:doset (def (bir:definitions phi) rt)
       (etypecase def
         ((or bir:jump bir:unwind)
          (let* ((in (nth (position phi (bir:outputs def)) (bir:inputs def)))
                 (inrt (definition-rtype in)))
            (cond ((eq inrt :multiple-values) (return inrt)) ; nothing for it
-                 ((null rt) (setf rt inrt))
+                 ((not have-rt) (setf have-rt t rt inrt))
                  ((= (length rt) (length inrt))
                   (setf rt (mapcar #'max-vrtype rt inrt)))
                  ;; different value counts
