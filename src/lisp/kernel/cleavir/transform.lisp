@@ -666,3 +666,6 @@
 (deftransform elt ((seq list) n) '(nth n seq))
 (deftransform core:setf-elt ((seq list) n value) '(setf (nth n seq) value))
 )
+
+(deftransform reverse ((x list)) '(core:list-reverse x))
+(deftransform nreverse ((x list)) '(core:list-nreverse x))
