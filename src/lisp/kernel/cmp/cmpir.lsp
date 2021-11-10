@@ -1617,20 +1617,22 @@ function-description - for debugging."
 (defun irc-tsp-result (tsp result)
   (irc-t*-result (irc-smart-ptr-extract tsp) result))
 
+(defun irc-arity-index (arity)
+  (cond
+    ((eq arity :general-entry)
+     0)
+    ((fixnump arity)
+     (+ 1 arity))
+    (t (error "irc-arity-index Illegal arity ~a" arity))))
 
 (defun irc-calculate-entry (closure arity function-type &optional (label "ep-gep"))
   (let* ((global-entry-point** (c++-field-ptr info.%function% closure :global-entry-point "global-entry-point**"))
          (global-entry-point* (irc-load global-entry-point** "global-entry-point*"))
          (ep-i8** (c++-field-ptr info.%global-entry-point% global-entry-point* :entry-points "ep-i8**"))
-         (arity-index (cond
-                        ((eq arity :general-entry)
-                         0)
-                        ((fixnump arity)
-                         (+ 1 arity))
-                        (t (error "irc-calculate-entry Illegal arity ~a" arity))))
+         (arity-index (irc-arity-index arity))
          (ep-bc (irc-bit-cast ep-i8** %entry-point-vector*% "ep-bc"))
-         (ep-arity-i8** (irc-gep ep-bc (list 0 arity-index) "ep-arity-i8**"))
-         (ep-arity-i8*  (irc-load ep-arity-i8** "ep-arity-i8*")))
+         (ep-arity-i8** (irc-gep ep-bc (list 0 arity-index) (format nil "xep-~a-i8**" arity)))
+         (ep-arity-i8*  (irc-load ep-arity-i8** (format nil "xep-~a-i8*" arity))))
     (cmp-log "Got ep-arity-i8* -> %s%N" ep-arity-i8*)
     (prog1 (irc-bit-cast ep-arity-i8* function-type "ep")
       (cmp-log-dump-module *the-module*))))
@@ -1663,12 +1665,15 @@ function-description - for debugging."
   function-type
   function*-type)
 
+(defun irc-calculate-arity (arguments)
+  (cond
+    ((and (<= +entry-point-arity-begin+ (length arguments))
+          (< (length arguments) +entry-point-arity-end+))
+     (- (length arguments) +entry-point-arity-begin+))
+    (t :general-entry)))
+
 (defun irc-calculate-call-info (closure arguments)
-  (let* ((arity (cond
-                  ((and (<= (length arguments) +entry-point-arity-begin+)
-                        (< (length arguments) +entry-point-arity-end+))
-                   (- (length arguments) +entry-point-arity-begin+))
-                  (t :general-entry)))
+  (let* ((arity (irc-calculate-arity arguments))
          (function-type (fn-prototype arity))
          (function*-type (llvm-sys:type-get-pointer-to function-type))
          (entry-point (irc-calculate-entry closure arity function*-type))
