@@ -339,10 +339,15 @@
                   (inst next)
                   (assert (= (length (bir:inputs inst)) 2))
                   ;; NOTE: We do not have to cast to i64, as icmp works fine
-                  ;; on pointers directly.
-                  (let ((i1 (in (first (bir:inputs inst))))
-                        (i2 (in (second (bir:inputs inst)))))
-                    (cmp:irc-cond-br (,op i1 i2)
+                  ;; on pointers directly. However, LLVM doesn't seem to be
+                  ;; very intelligent about pointer comparisons, e.g. it
+                  ;; does not fold them even when both arguments are
+                  ;; inttoptr of constants. So we cast.
+                  (let* ((i1 (in (first (bir:inputs inst))))
+                         (i2 (in (second (bir:inputs inst))))
+                         (ii1 (cmp:irc-ptr-to-int i1 cmp:%i64%))
+                         (ii2 (cmp:irc-ptr-to-int i2 cmp:%i64%)))
+                    (cmp:irc-cond-br (,op ii1 ii2)
                                      (first next) (second next)))))))
   (def-fixnum-compare core::two-arg-fixnum-=  cmp:irc-icmp-eq)
   (def-fixnum-compare core::two-arg-fixnum-<  cmp:irc-icmp-slt)
