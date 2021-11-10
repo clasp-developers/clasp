@@ -107,7 +107,7 @@
     (primitive         "ltvc_make_random_state" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t*) :ltvc t)
     (primitive         "ltvc_make_float" :ltvc-return (list :gcroots-in-module* :i8 :size_t :single-float) :ltvc t)
     (primitive         "ltvc_make_double" :ltvc-return (list :gcroots-in-module* :i8 :size_t :double-float) :ltvc t)
-    (primitive         "ltvc_make_closurette" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t :size_t) :ltvc t)
+    (primitive         "ltvc_make_closurette" :ltvc-return (list :gcroots-in-module* :i8 :size_t #|:size_t|# :size_t) :ltvc t)
     (primitive-unwinds "ltvc_set_mlf_creator_funcall" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t :i8*) :ltvc t)
     (primitive-unwinds "ltvc_mlf_init_funcall" :ltvc-return (list :gcroots-in-module* :size_t :i8*) :ltvc t)
     (primitive-unwinds "ltvc_mlf_init_basic_call" :ltvc-return (list :gcroots-in-module* :t* :size_t) :varargs t :ltvc t)

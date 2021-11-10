@@ -158,9 +158,9 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 typedef void LtvcReturn;
 #define LTVCRETURN /* Nothing return for void */
 
-LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, size_t entry_point_index)
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, /*size_t functionIndex,*/ size_t entry_point_index)
 {NO_UNWIND_BEGIN();
-  printf("%s:%d:%s got functionIndex %lu change to entryPointIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
+//  printf("%s:%d:%s got functionIndex %lu change to entryPointIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
   core::GlobalEntryPoint_sp entryPoint(tentrypoint);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =

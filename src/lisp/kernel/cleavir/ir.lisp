@@ -21,21 +21,21 @@
   (declare (ignore label))
   (cmp:irc-load (%literal-ref value)))
 
-(defun %closurette-index (function function-description)
-  (unless (typep function 'llvm-sys:function)
-    (error "The first argument to %closurette-index must be a function - instead it is a ~s of class ~s" function (class-name (class-of function))))
-  (literal::reference-closure function function-description))
+(defun %closurette-index (function)
+  (unless (cmp:xep-group-p function)
+    (error "The first argument to %closurette-index must be a xep-group - instead it is a ~s of class ~s" function (class-name (class-of function))))
+  (literal::reference-closure function))
 
-(defun %closurette-ref (function function-description)
-  (let* ((index (%closurette-index function function-description))
+(defun %closurette-ref (function)
+  (let* ((index (%closurette-index function))
          (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
                                              (literal:ltv-global)
                                              0 index
                                              (bformat nil "values-table[%d]" index))))
     gep))
 
-(defun %closurette-value (function function-description)
-  (cmp:irc-load (%closurette-ref function function-description)))
+(defun %closurette-value (function)
+  (cmp:irc-load (%closurette-ref function)))
 
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
@@ -190,9 +190,10 @@ And convert everything to JIT constants."
 ;;;
 
 (defun closure-call-or-invoke (closure arguments &key (label ""))
-  (error "Handle number of arguments ~a" (length arguments))
+  (cmp:irc-funcall-results-in-registers closure arguments label)
+  #+(or)
   (let ((call-info (cmp:irc-calculate-call-info closure arguments)))
-    (cmp::irc-call-or-invoke (call-info-function-type call-info)
+    (cmp::irc-call-or-invoke (cmp:call-info-function-type call-info)
                              (call-info-entry-point call-info)
                              (call-info-real-args call-info)
                              cmp::*current-unwind-landing-pad-dest*

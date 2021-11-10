@@ -3,6 +3,7 @@
   (export '(
             with-debug-info-source-position
             with-interpreter
+            calculate-cleavir-lambda-list-analysis
             module-report
             transform-lambda-parts
             codegen-startup-shutdown
@@ -39,6 +40,7 @@
             xep-group-arities
             xep-group-name
             xep-group-entry-point-reference
+            xep-group-cleavir-lambda-list-analysis
             +c++-stamp-max+
             %opaque-fn-prototype*%
             fn-prototype
@@ -120,6 +122,7 @@
             %function-description%
             %function-description*%
             entry-point-reference-index
+            irc-funcall-results-in-registers
             function-type-create-on-the-fly
             evaluate-foreign-arguments
             jit-remove-module

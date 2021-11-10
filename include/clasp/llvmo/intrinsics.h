@@ -47,7 +47,7 @@ extern "C" {
 
 typedef void LtvcReturn;
 
-LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index, size_t function_info_index);
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, /*size_t function_index,*/ size_t entry_point_index);
 LtvcReturn ltvc_make_closurette_no_function_info(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index);
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index);
 LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, char tag, size_t index);
@@ -230,21 +230,6 @@ extern void unreachableError();
 core::T_O* makeCompiledFunction(core::T_O* tentrypoint,
                                 core::T_O* frameP);
 
-LCC_RETURN_RAW general_entry_point_redirect_0(core::T_O* closure );
-
-LCC_RETURN_RAW general_entry_point_redirect_1(core::T_O* closure, core::T_O* farg0 );
-
-LCC_RETURN_RAW general_entry_point_redirect_2(core::T_O* closure, core::T_O* farg0, core::T_O* farg1 );
-
-LCC_RETURN_RAW general_entry_point_redirect_3(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2 );
-
-LCC_RETURN_RAW general_entry_point_redirect_4(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3 );
-
-LCC_RETURN_RAW general_entry_point_redirect_5(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4 );
-
-LCC_RETURN_RAW general_entry_point_redirect_6(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4, core::T_O* farg5 );
-
-LCC_RETURN_RAW general_entry_point_redirect_7(core::T_O* closure, core::T_O* farg0, core::T_O* farg1, core::T_O* farg2, core::T_O* farg3,  core::T_O* farg4, core::T_O* farg5, core::T_O* farg6 );
 
 
 }

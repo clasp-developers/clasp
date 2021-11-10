@@ -211,11 +211,10 @@ public:
     core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
-    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::go(frame->arguments());
-//    int*** iii = WrapperType(); // Check the wrapper type
+    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::goFrame(frame->arguments());
     return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(returnValues,std::move(all_args));
   }
-    static inline LISP_ENTRY_0() {
+  static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);
   }
   static inline LISP_ENTRY_1() {

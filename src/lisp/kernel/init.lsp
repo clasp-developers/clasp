@@ -158,6 +158,10 @@
     nil
     (setq *compile-debug-dump-module* nil))
 (setq *debug-compile-file* (member :debug-compile-file *features*))
+(sys:*make-special '*debug-cclasp-cmp*)
+(setq *debug-cclasp-cmp* nil)
+(export '*debug-cclasp-cmp*)
+
 (export '(*compile-file-debug-dump-module* *compile-debug-dump-module* *use-human-readable-bitcode*))
 (use-package :core)
 

@@ -1,5 +1,10 @@
 (in-package :clasp-cleavir)
 
+;;#+(or)
+(eval-when (:execute)
+  (format t "Setting core:*echo-repl-read* to T~%")
+  (setq core:*echo-repl-read* t))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf cmp::*debug-create-call* nil))
 
@@ -1907,3 +1912,8 @@
 (defun posn-column (posn stream)
   (declare (type posn posn) (type pretty-stream stream))
   (index-column (posn-index posn stream) stream))
+
+;;#+(or)
+(eval-when (:execute)
+  (format t "Setting core:*echo-repl-read* to NIL~%")
+  (setq core:*echo-repl-read* nil))

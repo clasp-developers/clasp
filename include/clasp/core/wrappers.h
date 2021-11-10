@@ -82,17 +82,6 @@ namespace core {
     static inline LISP_ENTRY_5() {
       wrong_number_of_arguments(lcc_closure,5,1);
     };
-    
-#if 0
-    LISP_ENTRY_n() {wrong_number_of_arguments(closure,nargs,1);}
-    LISP_ENTRY_0() {wrong_number_of_arguments(closure,0,1);}
-    LISP_ENTRY_1() {
-      TranslationFunctor_O* closure = gctools::untag_general<TranslationFunctor_O*>((TranslationFunctor_O*)closure);
-      return gctools::return_type((closure->fptr)(farg0),1);
-    }
-    LISP_ENTRY_2() {wrong_number_of_arguments(closure,2,1);}
-    LISP_ENTRY_3() {wrong_number_of_arguments(closure,3,1);}
-#endif
   };
 
 };
@@ -142,7 +131,7 @@ public:
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT& oto = *gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::go(frame->arguments(0));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::goFrame(frame->arguments(0));
     return clbind::method_apply_and_return<RT,core::policy::clasp,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),std::move(oto),std::move(all_args));
   }
   static inline LISP_ENTRY_0() {
@@ -201,7 +190,7 @@ public:
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT& oto = *gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::go(frame->arguments(0));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::goFrame(frame->arguments(0));
     return clbind::method_apply_and_return<RT,core::policy::clasp,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),std::move(oto),std::move(all_args));
   }
     static inline LISP_ENTRY_0() {

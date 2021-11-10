@@ -44,4 +44,5 @@
   (format t "!!!!!!!!!!! Cleavir loaded~%"))
 
 
-(cleavir-compile-file "/tmp/foo.lisp")
+(load (let ((cmp:*debug-cclasp-cmp* t))
+  (cleavir-compile-file "/tmp/foo.lisp")))

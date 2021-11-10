@@ -513,9 +513,10 @@
 
 (defun enclose (code-info extent &optional (delay t))
   (let* ((environment (environment code-info))
-         (enclosed-function (xep-function code-info))
+         (enclosed-xep-group (xep-function code-info))
+         (entry-point-reference (cmp:xep-group-entry-point-reference enclosed-xep-group))
          (function-description (xep-function-description code-info)))
-    (when (eq enclosed-function :xep-unallocated)
+    (when (eq enclosed-xep-group :xep-unallocated)
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
     (if environment
         (let* ((ninputs (length environment))
@@ -528,12 +529,12 @@
                      (list (cmp:alloca-i8 (core:closure-with-slots-size ninputs)
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
-                           (literal:constants-table-value (cmp:entry-point-reference-index function-description))
+                           (literal:constants-table-value (cmp:entry-point-reference-index entry-point-reference))
                            sninputs)))
                    (:indefinite
                     (%intrinsic-invoke-if-landing-pad-or-call
                      "cc_enclose"
-                     (list (literal:constants-table-value (cmp:entry-point-reference-index function-description))
+                     (list (literal:constants-table-value (cmp:entry-point-reference-index entry-point-reference))
                            sninputs))))))
           ;; We may not initialize the closure immediately in case it partakes
           ;; in mutual reference.
@@ -552,7 +553,7 @@
           enclose)
         ;; When the function has no environment, it can be compiled and
         ;; referenced as literal.
-        (%closurette-value enclosed-function function-description))))
+        (%closurette-value enclosed-xep-group))))
 
 (defun gen-local-call (callee lisp-arguments)
   (let ((callee-info (find-llvm-function-info callee)))
@@ -1232,7 +1233,7 @@
 (defun calculate-function-info (irfunction lambda-name)
   (let* ((origin (bir:origin irfunction))
          (spi (origin-spi origin)))
-    (let ((cleavir-lambda-list-analysis (cmp:transform-lambda-parts (bir:lambda-list irfunction) nil #|declares|# nil #|code|#)))
+    (let ((cleavir-lambda-list-analysis (cmp:calculate-cleavir-lambda-list-analysis (bir:lambda-list irfunction))))
       (cmp:make-function-info
        :function-name lambda-name
        :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
@@ -1247,15 +1248,16 @@
         (string-downcase (symbol-name name))
         "iblock")))
 
-(defun layout-xep-function* (the-function ir calling-convention abi)
+(defun layout-xep-function* (xep-group arity the-function ir calling-convention abi)
   (declare (ignore abi))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
       ;; Parse lambda list.
-    (cmp:compile-lambda-list-code (ensure-cleavir-lambda-list-analysis (bir:lambda-list ir))
-                                  calling-convention
-                                  :general-entry
-                                  :argument-out #'out)
-    (error "Check result of compile-lambda-list-code - it may have returned NIL which means no args")
+    (let ((ret (cmp:compile-lambda-list-code (cmp:xep-group-cleavir-lambda-list-analysis xep-group)
+                                             calling-convention
+                                             arity
+                                             :argument-out #'out)))
+      (unless ret
+        (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
     ;; Import cells.
     (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
            (llvm-function-info (find-llvm-function-info ir))
@@ -1307,72 +1309,6 @@
     (cmp:irc-br body-block))
   the-function)
 
-(defun compute-rest-alloc (cleavir-lambda-list-analysis)
-  ;; FIXME: We seriously need to not reparse lambda lists a million times
-  (let ((rest-var (cmp:cleavir-lambda-list-analysis-rest cleavir-lambda-list-analysis)))
-    (cond ((not rest-var) nil)      ; don't care
-          ((bir:unused-p rest-var) 'ignore)
-          ;; TODO: Dynamic extent?
-          (t nil))))
-
-(defun layout-xep-function (function lambda-name abi)
-  (let* ((*datum-values* (make-hash-table :test #'eq))
-         (jit-function-name (cmp:jit-function-name lambda-name))
-         (cmp:*current-function-name* jit-function-name)
-         (cmp:*gv-current-function-name*
-           (cmp:module-make-global-string jit-function-name "fn-name"))
-         (llvm-function-info (find-llvm-function-info function))
-         (xep-group (xep-function llvm-function-info)))
-    (format t "layout-xep-function function-info: ~s~%" llvm-function-info)
-    (format t "layout-xep-function xep-group: ~s~%" xep-group)
-    (dolist (xep-arity (cmp:xep-group-arities xep-group))
-      (format t "layout-xep-function xep-arity: ~s~%" xep-arity)
-      (let* ((arity (cmp:xep-arity-arity xep-arity))
-             (xep-arity-function (cmp:xep-arity-function-or-placeholder xep-arity)))
-        (if (literal:general-entry-placeholder-p xep-arity-function)
-            (progn
-              (format t "layout-xep-function skipping arity ~a for ~a~%" arity xep-arity-function)
-              )
-            (progn
-              (format t "layout-xep-function xep-arity-function: ~s~%" xep-arity-function)
-              (let* ((llvm-function-type (cmp:fn-prototype arity))
-                     (cmp:*current-function* xep-arity-function)
-                     (entry-block (cmp:irc-basic-block-create "entry" xep-arity-function))
-                     (*function-current-multiple-value-array-address* nil)
-                     (cmp:*irbuilder-function-alloca*
-                       (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-                     (source-pos-info (function-source-pos-info function))
-                     (lineno (core:source-pos-info-lineno source-pos-info)))
-                (cmp:with-guaranteed-*current-source-pos-info* ()
-                  (cmp:with-dbg-function (:lineno lineno
-                                          :function-type llvm-function-type
-                                          :function xep-arity-function)
-                    (llvm-sys:set-personality-fn xep-arity-function
-                                                 (cmp:irc-personality-function))
-                    (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-uwtable)
-                    (unless (cleavir-policy:policy-value (bir:policy function)
-                                                         'perform-optimization)
-                      (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
-                      (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
-                    (cmp:irc-set-insert-point-basic-block entry-block
-                                                          cmp:*irbuilder-function-alloca*)
-                    (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-                      (cmp:with-debug-info-source-position (source-pos-info xep-arity-function)
-                        (let* ((fn-args (llvm-sys:get-argument-list xep-arity-function))
-                               (lambda-list (bir:lambda-list function))
-                               (cleavir-lambda-list-analysis (calculate-cleavir-lambda-list-analysis lambda-list))
-                               (calling-convention
-                                 (cmp:setup-calling-convention
-                                  xep-arity-function
-                                  :general-entry
-                                  :debug-on
-                                  (cleavir-policy:policy-value
-                                   (bir:policy function)
-                                   'save-register-args)
-                                  :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
-                                  :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
-                          (layout-xep-function* xep-arity-function function calling-convention abi)))))))))))))
-
 (defun layout-main-function (function lambda-name abi
                              &aux (linkage 'llvm-sys:internal-linkage)) ; llvm-sys:private-linkage
   (let* ((*tags* (make-hash-table :test #'eq))
@@ -1383,9 +1319,8 @@
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string jit-function-name "fn-name"))
          (llvm-function-info (find-llvm-function-info function))
-         (_ (error "Handle new call-info"))
-         (llvm-function-type (fn-prototype :general-arity))
          (the-function (main-function llvm-function-info))
+         (llvm-function-type (llvm-sys:get-function-type the-function))
          #+(or)(function-description (main-function-description llvm-function-info))
          (cmp:*current-function* the-function)
          (entry-block (cmp:irc-basic-block-create "entry" the-function))
@@ -1424,16 +1359,82 @@
           (cmp:with-debug-info-source-position (source-pos-info the-function)
             (cmp:with-dbg-lexical-block
                 (:lineno (core:source-pos-info-lineno source-pos-info))
-            
               (layout-main-function* the-function function
                                      body-irbuilder body-block
                                      abi :linkage linkage))))))))
+
+(defun compute-rest-alloc (cleavir-lambda-list-analysis)
+  ;; FIXME: We seriously need to not reparse lambda lists a million times
+  (let ((rest-var (cmp:cleavir-lambda-list-analysis-rest cleavir-lambda-list-analysis)))
+    (cond ((not rest-var) nil)      ; don't care
+          ((bir:unused-p rest-var) 'ignore)
+          ;; TODO: Dynamic extent?
+          (t nil))))
+
+(defun layout-xep-function (xep-arity xep-group function lambda-name abi)
+  (let* ((*datum-values* (make-hash-table :test #'eq))
+         (jit-function-name (cmp:jit-function-name lambda-name))
+         (cmp:*current-function-name* jit-function-name)
+         (cmp:*gv-current-function-name*
+           (cmp:module-make-global-string jit-function-name "fn-name")))
+    (let* ((arity (cmp:xep-arity-arity xep-arity))
+           (xep-arity-function (cmp:xep-arity-function-or-placeholder xep-arity)))
+      (if (literal:general-entry-placeholder-p xep-arity-function)
+          (progn
+            )
+          (progn
+            (let* ((llvm-function-type (cmp:fn-prototype arity))
+                   (cmp:*current-function* xep-arity-function)
+                   (entry-block (cmp:irc-basic-block-create "entry" xep-arity-function))
+                   (*function-current-multiple-value-array-address* nil)
+                   (cmp:*irbuilder-function-alloca*
+                     (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+                   (source-pos-info (function-source-pos-info function))
+                   (lineno (core:source-pos-info-lineno source-pos-info)))
+              (cmp:with-guaranteed-*current-source-pos-info* ()
+                (cmp:with-dbg-function (:lineno lineno
+                                        :function-type llvm-function-type
+                                        :function xep-arity-function)
+                  (llvm-sys:set-personality-fn xep-arity-function
+                                               (cmp:irc-personality-function))
+                  (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-uwtable)
+                  (unless (cleavir-policy:policy-value (bir:policy function)
+                                                       'perform-optimization)
+                    (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
+                    (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
+                  (cmp:irc-set-insert-point-basic-block entry-block
+                                                        cmp:*irbuilder-function-alloca*)
+                  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+                    (cmp:with-debug-info-source-position (source-pos-info xep-arity-function)
+                      (let* ((fn-args (llvm-sys:get-argument-list xep-arity-function))
+                             (lambda-list (bir:lambda-list function))
+                             (cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
+                             (calling-convention
+                               (cmp:setup-calling-convention xep-arity-function
+                                                             arity
+                                                             :debug-on
+                                                             (cleavir-policy:policy-value
+                                                              (bir:policy function)
+                                                              'save-register-args)
+                                                             :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
+                                                             :rest-alloc (compute-rest-alloc cleavir-lambda-list-analysis))))
+                        (layout-xep-function* xep-group arity xep-arity-function function calling-convention abi))))))))))))
+
+
+
+
+(defun layout-xep-group (function lambda-name abi)
+  (let* ((llvm-function-info (find-llvm-function-info function))
+         (xep-group (xep-function llvm-function-info)))
+    (dolist (xep-arity (cmp:xep-group-arities xep-group))
+      (layout-xep-function xep-arity xep-group function lambda-name abi))))
+
 
 (defun layout-procedure (function lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))
   (declare (ignore linkage))
   (when (xep-needed-p function)
-    (layout-xep-function function lambda-name abi))
+    (layout-xep-group function lambda-name abi))
   (layout-main-function function lambda-name abi))
 
 (defun get-or-create-lambda-name (bir)

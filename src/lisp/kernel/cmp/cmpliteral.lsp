@@ -710,10 +710,6 @@ rewrite the slot in the literal table to store a closure."
                             (list *gcroots-in-module*
                                   (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)
                                   (cmp:jit-constant-size_t index)
-                                  (cmp:jit-constant-size_t  (cond
-                                                              ((fixnump function-index)
-                                                               function-index)
-                                                              (t (error "The function-index is not a fixnum it's a ~s of class ~s" function-index (class-of function-index)))))
                                   (cmp:jit-constant-size_t (cmp:entry-point-reference-index entry-point-ref))))))
 
 (defparameter *ltv-trap* nil)
@@ -1036,15 +1032,19 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; We could also add the capability to dump actual closures, though
 ;;;  I'm not sure why we'd want to do so.
 
-(defun reference-closure (function entry-point-ref)
+(defun reference-closure (function)
+  (unless (cmp:xep-group-p function)
+    (error "In reference-closure function must be a xep-group - it's a ~s" function))
   (let* ((datum (new-datum t))
          (function-datum (entry-point-datum-for-xep-group function))
          (function-index (function-datum-index function-datum))
+         (entry-point-ref (cmp:xep-group-entry-point-reference function))
          (creator (make-literal-node-closure :datum datum
                                              :function-index function-index
                                              :function function
                                              :entry-point-ref entry-point-ref)))
-    (add-creator "ltvc_make_closurette" datum creator function-index (cmp:entry-point-reference-index entry-point-ref))
+    (let ((epi (cmp:entry-point-reference-index entry-point-ref)))
+      (add-creator "ltvc_make_closurette" datum creator epi))
     (datum-index datum)))
 
 #|  (register-function function entry-point))

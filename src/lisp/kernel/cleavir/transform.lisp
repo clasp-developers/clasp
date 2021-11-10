@@ -1,5 +1,10 @@
 (in-package #:clasp-cleavir)
 
+;;#+(or)
+(eval-when (:execute)
+  (format t "Setting core:*echo-repl-read* to T~%")
+  (setq core:*echo-repl-read* t))
+
 ;;;; TRANSFORMS are like compiler macros, but use the context (environment)
 ;;;; more heavily. They can access inferred types and other information about
 ;;;; their parameters (mostly just types so far).
@@ -666,3 +671,8 @@
 (deftransform elt ((seq list) n) '(nth n seq))
 (deftransform core:setf-elt ((seq list) n value) '(setf (nth n seq) value))
 )
+
+;;#+(or)
+(eval-when (:execute)
+  (format t "Setting core:*echo-repl-read* to NIL~%")
+  (setq core:*echo-repl-read* nil))

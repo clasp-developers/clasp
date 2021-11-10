@@ -427,32 +427,49 @@ struct prepare_argument {};
 template <int Index, typename Type>
 struct prepare_argument<Val<Index>,Type> {
   using type = translate::from_object<Type,std::true_type>;
-  static translate::from_object<Type,std::true_type> go(gctools::Frame::ElementType* frame) {
+  static translate::from_object<Type,std::true_type> goFrame(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
     return translate::from_object<Type,std::true_type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)(frame[Index])));
   }
+#if 0
+  static translate::from_object<Type,std::true_type> goArg(Type&& arg) {
+    // Return an initialized from_object for the argument
+    return translate::from_object<Type,std::true_type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)arg));
+  }
+#endif
 };
 
 template <typename Type>
 struct prepare_argument<Val<32767>,Type> {
   using type = translate::from_object<Type,std::false_type>;
-  static translate::from_object<Type,std::false_type> go(gctools::Frame::ElementType* frame) {
+  static translate::from_object<Type,std::false_type> goFrame(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
     return translate::from_object<Type,std::false_type>(nil<core::T_O>());
   }
+#if 0
+  static translate::from_object<Type,std::false_type> goFrame(Type arg) {
+    // Return an initialized from_object for the argument
+    return translate::from_object<Type,std::false_type>(nil<core::T_O>());
+  }
+#endif
 };
 
 namespace detail {
 
-template <typename MupleIndices, typename SequenceIndices, typename...Types>
+template <typename MupleIndices, typename SequenceIndices, typename...Args>
 struct arg_tuple_impl {};
 
-template <typename MupleIndices, size_t...Is, typename...Types>
-struct arg_tuple_impl<MupleIndices,std::integer_sequence<size_t,Is...>,Types...> {
-  using type = std::tuple<typename prepare_argument<typename muple_element<Is,MupleIndices>::type,Types>::type...>;
-  static type go(gctools::Frame::ElementType* frame) {
-    return { (prepare_argument<typename muple_element<Is,MupleIndices>::type,Types>::go(frame))... };
+template <typename MupleIndices, size_t...Is, typename...Args>
+struct arg_tuple_impl<MupleIndices,std::integer_sequence<size_t,Is...>,Args...> {
+  using type = std::tuple<typename prepare_argument<typename muple_element<Is,MupleIndices>::type,Args>::type...>;
+  static type goFrame(gctools::Frame::ElementType* frame) {
+    return { (prepare_argument<typename muple_element<Is,MupleIndices>::type,Args>::goFrame(frame))... };
   }
+#if 0
+  static type goArgs(Args&&...args) {
+    return { (prepare_argument<typename muple_element<Is,MupleIndices>::type,Args>::goArgs(std::forward<Args>(args)))... };
+  }
+#endif
 };
 };
 
@@ -463,11 +480,18 @@ struct arg_tuple {
   using type = typename detail::arg_tuple_impl<indexMuple,
                                                std::index_sequence_for<ARGS...>,
                                                ARGS...>::type;
-  static type go(gctools::Frame::ElementType* frame) {
+  static type goFrame(gctools::Frame::ElementType* frame) {
     return detail::arg_tuple_impl<indexMuple,
                                   std::index_sequence_for<ARGS...>,
-                                  ARGS...>::go(frame);
+                                  ARGS...>::goFrame(frame);
   };
+#if 0
+  static type goArgs(Args&&...args) {
+    return detail::arg_tuple_impl<indexMuple,
+                                  std::index_sequence_for<ARGS...>,
+                                  ARGS...>::goArgs(std::forward<Args>(args)...);
+  };
+#endif
 };
 };
 
