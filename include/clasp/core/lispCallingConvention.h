@@ -271,7 +271,7 @@ struct ClaspXepFunction {
   ClaspXepFunction(XepFilling f) : _Defined(true) {};
   template <typename Wrapper>
   void setup() {
-    assert(NUMBER_OF_ENTRY_POINTS==5);
+    assert(NUMBER_OF_ENTRY_POINTS==7);
     this->_Defined = true;
     this->_EntryPoints[0] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_n;
     this->_EntryPoints[1] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_0;
@@ -279,6 +279,7 @@ struct ClaspXepFunction {
     this->_EntryPoints[3] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_2;
     this->_EntryPoints[4] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_3;
     this->_EntryPoints[5] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_4;
+    this->_EntryPoints[6] = (ClaspXepAnonymousFunction)&Wrapper::entry_point_5;
   }
   ClaspXepAnonymousFunction operator[](int index) const { return this->_EntryPoints[index]; };
   inline LCC_RETURN invoke_0(T_O* closure) {

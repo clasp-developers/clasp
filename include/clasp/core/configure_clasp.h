@@ -239,8 +239,8 @@ typedef unsigned int  claspCharacter;
     This will be used for the calling convention.
     Arity from ENTRY_POINT_ARITY_BEGIN to (ENTRY_POINT_ARITY_END-1) are supported
 */
-#define ENTRY_POINT_ARITY_BEGIN 0
-#define ENTRY_POINT_ARITY_END 6
+#define ENTRY_POINT_ARITY_BEGIN 0 // MUST ALWAYS BE ZERO - Or I need to fix a few places in the code
+#define ENTRY_POINT_ARITY_END 6   // Must be one past the highest arity entry point
 //! One entry point for each arity and one for general
 #define NUMBER_OF_ENTRY_POINTS ENTRY_POINT_ARITY_END-ENTRY_POINT_ARITY_BEGIN+1
 #define STACKMAP_REGISTER_SAVE_AREA_MAGIC_NUMBER 0xDEAD0000
