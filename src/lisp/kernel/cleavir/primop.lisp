@@ -363,3 +363,16 @@
          (count (%intrinsic-call "llvm.ctpop.i64" (list iarg))))
     (cmp:irc-tag-fixnum count
                         (datum-name-as-string (first (bir:outputs inst))))))
+
+(defvprimop core::fixnum-ashr ((:object) :object :object) (inst)
+  (let* ((int (in (first (bir:inputs inst))))
+         (iint (cmp:irc-ptr-to-int int cmp:%i64%))
+         ;; NOTE: shift must be 0-63 inclusive or shifted is poison!
+         (shift (in (second (bir:inputs inst))))
+         (ushift (cmp:irc-untag-fixnum shift cmp:%i64%))
+         (shifted (cmp::irc-ashr iint ushift))
+         (demask (%i64 (ldb (byte 64 0) (lognot cmp:+fixnum-mask+))))
+         ;; zero the tag bits
+         (fixn (cmp:irc-and shifted demask)))
+    (cmp:irc-int-to-ptr fixn cmp:%t*%
+                        (datum-name-as-string (first (bir:outputs inst))))))

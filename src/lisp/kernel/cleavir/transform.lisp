@@ -627,6 +627,12 @@
                                               most-positive-fixnum
                                               *clasp-system*)))
 
+;; assuming 2's complement, most-negative-fixnum, uniquely among fixnums,
+;; has a bignum negation.
+(deftransform core:negate ((n (integer #.(1+ most-negative-fixnum)
+                                       #.most-positive-fixnum)))
+  '(the fixnum (core::primop core::fixnum-sub 0 n)))
+
 (macrolet ((define-fixnum-conditional (name primop)
              `(deftransform ,name ((x fixnum) (y fixnum))
                 '(if (core::primop ,primop x y) t nil))))
@@ -644,7 +650,11 @@
   '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
 
 (deftransform logcount ((n (and fixnum unsigned-byte)))
-  '(core::primop core::fixnum-positive-logcount n))
+  '(the fixnum (core::primop core::fixnum-positive-logcount n)))
+
+;; right shift of a fixnum
+(deftransform ash ((int fixnum) (count (integer * 0)))
+  '(the fixnum (core::primop core::fixnum-ashr int (min (- count) 63))))
 
 ;;;
 
