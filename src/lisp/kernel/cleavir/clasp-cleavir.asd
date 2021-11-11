@@ -29,17 +29,15 @@
                (:file "setup")
                (:file "fold")
                (:file "ir")
-               ;;		 (:file "arguments")
                (:file "compile-file-client")
-               ;; BIR
                (:file "translation-environment")
                (:file "bir")
                (:file "bmir")
                (:file "bir-to-bmir")
                (:file "landing-pad")
                (:file "primop")
+               (:file "transform")
                (:file "translate")
-               ;; end BIR
                ;;                (:file "satiation")
                (:file "fixup-eclector-readtables")
                (:file "activate-clasp-readtables-for-eclector")
