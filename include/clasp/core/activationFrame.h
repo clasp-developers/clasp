@@ -342,7 +342,7 @@ namespace core {
     }
   };
 
-  DONT_OPTIMIZE_WHEN_DEBUG_RELEASE inline T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  inline T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {

@@ -1206,6 +1206,7 @@ Attribute_sp Attribute_O::get(LLVMContext_sp context, core::Cons_sp attribute_sy
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNone);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeZExt);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeSExt);
+SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeInAlloca);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoReturn);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeInReg);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeStructRet);
@@ -1236,6 +1237,7 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeAddressSafety);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeEnum);
 CL_BEGIN_ENUM(llvm::Attribute::AttrKind,_sym_AttributeEnum, "Attribute");
 CL_VALUE_ENUM(_sym_AttributeNone, llvm::Attribute::None);
+CL_VALUE_ENUM(_sym_AttributeInAlloca, llvm::Attribute::InAlloca);
 CL_VALUE_ENUM(_sym_AttributeZExt, llvm::Attribute::ZExt);
 CL_VALUE_ENUM(_sym_AttributeSExt, llvm::Attribute::SExt);
 CL_VALUE_ENUM(_sym_AttributeNoReturn, llvm::Attribute::NoReturn);

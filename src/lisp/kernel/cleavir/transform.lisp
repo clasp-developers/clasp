@@ -1,6 +1,6 @@
 (in-package #:clasp-cleavir)
 
-;;#+(or)
+#+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to T~%")
   (setq core:*echo-repl-read* t))
@@ -672,7 +672,7 @@
 (deftransform core:setf-elt ((seq list) n value) '(setf (nth n seq) value))
 )
 
-;;#+(or)
+#+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to NIL~%")
   (setq core:*echo-repl-read* nil))

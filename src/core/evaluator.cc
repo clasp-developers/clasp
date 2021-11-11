@@ -1475,7 +1475,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   return Values0<T_O>();
 };
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
+T_mv sp_go(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   Symbol_sp tag = gc::As<Symbol_sp>(oCar(args));
   int depth = 0;
@@ -2270,7 +2270,6 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
         }
 
     
-        DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
         T_mv evaluate(T_sp exp, T_sp environment) {
 #ifdef DEBUG_EVALUATE
           if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {

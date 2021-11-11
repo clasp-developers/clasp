@@ -1443,7 +1443,13 @@ function-description - for debugging."
       (cmp-log "Creating xep function for %s%N" arity)
       (let* ((xep-function-name (concatenate 'string function-name (format nil "-xep~a" (if (eq arity :general-entry) "" arity))))
              (fn (if (generate-function-for-arity-p arity cleavir-lambda-list-analysis)
-                     (irc-function-create (fn-prototype arity) linkage xep-function-name module)
+                     (let* ((function-type (fn-prototype arity))
+                            (function (irc-function-create function-type linkage xep-function-name module)))
+                       #+(or)(when (eq arity :general-entry)
+                         (format t "About to add-param-attr for function: ~a~%" function)
+                         (llvm-sys:add-param-attr function 2 'llvm-sys:attribute-in-alloca))
+                       function)
+                     
                      (literal:make-general-entry-placeholder :arity arity
                                                              :name xep-function-name
                                                              :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)

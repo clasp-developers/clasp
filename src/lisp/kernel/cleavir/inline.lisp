@@ -1,6 +1,6 @@
 (in-package :clasp-cleavir)
 
-;;#+(or)
+#+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to T~%")
   (setq core:*echo-repl-read* t))
@@ -1913,7 +1913,7 @@
   (declare (type posn posn) (type pretty-stream stream))
   (index-column (posn-index posn stream) stream))
 
-;;#+(or)
+#+(or)
 (eval-when (:execute)
   (format t "Setting core:*echo-repl-read* to NIL~%")
   (setq core:*echo-repl-read* nil))

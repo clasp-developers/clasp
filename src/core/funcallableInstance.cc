@@ -278,12 +278,12 @@ CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_
 
 namespace core {
 
-#if 1 // for debugging
+#if 0 // for debugging
 #define DTILOG(x) { FILE* fout= monitor_file("dtree-interp"); fprintf( fout, "%s", (x).str().c_str()); fflush(fout); }
-#define DTIDO(x) { x; };
+#define DTIDO(x) do { x; } while(0)
 #else
 #define DTILOG(x)
-#define DTIDO(x)
+#define DTIDO(x) do {} while(0)
 #endif
 
 #define DTREE_OP_MISS 0
@@ -438,15 +438,15 @@ SYMBOL_EXPORT_SC_(ClosPkg, compile_discriminating_function);
 
 CL_LAMBDA(program gf args)
 DOCGROUP(clasp)
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
                                             Vaslist_sp pass_args) {
   DTILOG(BF("=============================== Entered clos__interpret_dtree_program\n"));
   DTILOG(BF("---- generic function: %s\n") % _safe_rep_(generic_function));
   DTILOG(BF("---- program length: %d\n") % program->length());
-  for ( size_t i=0; i<program->length(); ++i ) {
-    DTILOG(BF("[%3d] : %s\n") % i % _safe_rep_((*program)[i]));
-  }
+  DTIDO(
+      for ( size_t i=0; i<program->length(); ++i ) {
+          DTILOG(BF("[%3d] : %s\n") % i % _safe_rep_((*program)[i]));
+      });
   size_t argi(0);
 #if 0 // Compilation disabled for now because it increases build time
   // Increment the call count, and if it's high enough, compile the thing

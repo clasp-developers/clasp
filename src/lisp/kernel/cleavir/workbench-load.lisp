@@ -36,7 +36,7 @@
 
 
 
-#+(or)(start-cleavir)
+(start-cleavir)
 
 ;;; Start cleavir with no inline
 (progn
@@ -44,5 +44,7 @@
   (format t "!!!!!!!!!!! Cleavir loaded~%"))
 
 
-(load (let ((cmp:*debug-cclasp-cmp* t))
-  (cleavir-compile-file "/tmp/foo.lisp")))
+(cleavir-compile-file "/tmp/seqlib.lsp")
+
+
+441817
