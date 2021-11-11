@@ -84,6 +84,8 @@
             %i8**%
             %i8*%
             %i8%
+            %fixnum%
+            %word%
             %mv-struct%
             %size_t%
             %t*%

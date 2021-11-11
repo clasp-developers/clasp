@@ -254,8 +254,8 @@
                                               cmp:+fixnum00-tag+
                                               fixnum-block default)
                        (cmp:irc-begin-block fixnum-block)
-                       (cmp:irc-untag-fixnum input cmp:%i64% "switch-input"))
-                     (cmp:irc-ptr-to-int input cmp:%i64%)))
+                       (cmp:irc-untag-fixnum input cmp:%fixnum% "switch-input"))
+                     (cmp:irc-ptr-to-int input cmp:%fixnum%)))
          (switch (cmp:irc-switch rinput default ncases)))
     (loop for list in comparees
           for dest in dests
