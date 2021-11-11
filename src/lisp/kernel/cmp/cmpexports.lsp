@@ -330,7 +330,8 @@
           undefined-type-warning
           redefined-function-warning
           wrong-argcount-warning
-          compiler-macro-expansion-error-warning))
+          compiler-macro-expansion-error-warning
+          fold-failure))
 
 (in-package :literal)
 
