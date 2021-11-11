@@ -1,7 +1,6 @@
 (in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(
-            with-debug-info-source-position
+  (export '(with-debug-info-source-position
             with-interpreter
             calculate-cleavir-lambda-list-analysis
             module-report
@@ -20,7 +19,6 @@
             *default-linkage*
             *compile-file-parallel-write-bitcode*
             *default-compile-linkage*
-            *gcroots-in-module*
             quick-module-dump
             write-bitcode
             load-bitcode
@@ -47,29 +45,22 @@
             *cleavir-compile-file-hook*
             *cleavir-compile-hook*
             *compile-print*
-            *compile-counter*
-            *compile-duration-ns*
             *current-function*
             *current-function-name*
-            *current-function-description*
             *current-unwind-landing-pad-dest*
             *debug-compile-file*
             *debug-compile-file-counter*
             *generate-compile-file-load-time-values*
             module-literal-table
             *gv-current-function-name*
-            *gv-source-namestring*
             *implicit-compile-hook*
             *irbuilder*
-            llvm-context
             *thread-safe-context*
             thread-local-llvm-context
             *load-time-value-holder-global-var*
             *low-level-trace*
             *low-level-trace-print*
-            *run-time-literal-holder*
             *run-time-values-table-name*
-            ;;          *run-time-values-table*
             #+(or)*run-time-values-table-global-var*
             *the-module*
             +header-size+
@@ -79,12 +70,12 @@
             +fixnum-mask+
             +fixnum00-tag+
             +fixnum01-tag+
-            +fixnum10-tag+
-            +fixnum11-tag+
+            #+tag-bits4 +fixnum10-tag+
+            #+tag-bits4 +fixnum11-tag+
             +alignment+
-            +vaslist-ptag-mask+
+            #+tag-bits4 +vaslist-ptag-mask+
             +vaslist0-tag+
-            +vaslist1-tag+
+            #+tag-bits4 +vaslist1-tag+
             +single-float-tag+
             +character-tag+
             +general-tag+
@@ -125,15 +116,12 @@
             irc-funcall-results-in-registers
             function-type-create-on-the-fly
             evaluate-foreign-arguments
-            jit-remove-module
             calling-convention-closure
             calling-convention-args
             calling-convention-vaslist*
             calling-convention-vaslist.va-arg
             calling-convention-nargs
             calling-convention-register-args
-            calling-convention-write-registers-to-multiple-values
-            describe-constants-table
             cmp-log
             cmp-log-dump-module
             cmp-log-dump-function
@@ -145,7 +133,6 @@
             generate-function-for-arity-p
 
             irc-create-call-wft
-            irc-create-invoke
             irc-calculate-entry
             compile-file-to-module
             optimize-module-for-compile
@@ -161,9 +148,6 @@
             compiler-error
             compiler-warn
             compiler-style-warn
-            compiler-fatal-error
-            compiler-message-file
-            compiler-message-file-position
             define-primitive
             warn-undefined-global-variable
             warn-undefined-type
@@ -172,7 +156,6 @@
             warn-icsp-iesp-both-specified
             register-global-function-def
             register-global-function-ref
-            analyze-top-level-form
             safe-system
             jit-constant-uintptr_t
             irc-sext
@@ -212,12 +195,10 @@
             irc-bit-cast
             irc-pointer-cast
             irc-maybe-cast-integer-to-t*
-            irc-create-invoke
             irc-create-invoke-default-unwind
             irc-create-landing-pad
             irc-exception-typeid*
             irc-extract-value
-            irc-generate-terminate-code
             irc-gep
             irc-gep-variable
             irc-smart-ptr-extract
@@ -347,9 +328,7 @@
             %return-type%
             %vaslist%
             null-t-ptr
-            compile-error-if-wrong-number-of-arguments
             compile-error-if-too-many-arguments
-            compile-throw-if-excess-keyword-arguments
             *irbuilder-function-alloca*
             irc-get-terminate-landing-pad-block
             irc-function-cleanup-and-return

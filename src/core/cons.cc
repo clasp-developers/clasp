@@ -387,6 +387,12 @@ List_sp Cons_O::reverse() {
   return ((reversed));
 }
 
+DOCGROUP(clasp)
+CL_DEFUN List_sp core__list_reverse(List_sp list) {
+  if (list.nilp()) return list;
+  else return list.unsafe_cons()->reverse();
+}
+
 List_sp Cons_O::nreverse() {
   _OF();
   List_sp reversed = nil<T_O>();
@@ -399,6 +405,12 @@ List_sp Cons_O::nreverse() {
     cur = hold;
   }
   return ((reversed));
+}
+
+DOCGROUP(clasp)
+CL_DEFUN List_sp core__list_nreverse(List_sp list) {
+  if (list.nilp()) return list;
+  else return list.unsafe_cons()->nreverse();
 }
 
 List_sp Cons_O::revappend(T_sp tail) {
