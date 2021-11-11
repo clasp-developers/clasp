@@ -1143,8 +1143,8 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
 CL_DOCSTRING(R"dx((call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values))dx")
 DOCGROUP(clasp)
 CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
-  InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
-  (*mainFunctionPointer)(LCC_PASS_ARGS0_VASLIST_INITFNPTR());
+  ClaspXepGeneralFunction mainFunctionPointer = (ClaspXepGeneralFunction)addr->ptr();
+  (*mainFunctionPointer)(nil<core::T_O>().raw_(),0,NULL);
 }
 
 CL_DOCSTRING(R"dx((call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values))dx")
@@ -1456,7 +1456,7 @@ template <> char document<char*>() { return 'S'; };
 template <> char document<T_O*>() { return 'O'; };
 template <> char document<float>() { return 'f'; };
 template <> char document<double>() { return 'd'; };
-template <> char document<fnLispCallingConvention>() { return 'f'; };
+template <> char document<ClaspXepAnonymousFunction>() { return 'f'; };
 
 char ll_read_char(T_sp stream, bool log, size_t& index)
 {
@@ -1477,7 +1477,7 @@ char ll_read_char(T_sp stream, bool log, size_t& index)
   }
 }
 
-#if 1
+#if 0
 #define SELF_DOCUMENT(ty,stream,index) { char _xx = document<ty>(); clasp_write_char(_xx,stream); ++index; }
 #define SELF_CHECK(ty,stream,index) { char _xx = document<ty>(); claspCharacter _cc = ll_read_char(stream,log,index); ++index; if (_xx!=_cc) SIMPLE_ERROR(BF("Mismatch of ltvc read types read '%c' expected '%c'") % _cc % _xx );}
 #else

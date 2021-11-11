@@ -630,7 +630,7 @@ struct InterpretedClosureEntryPoint {
     LambdaListHandler_sp llh = gc::As_unsafe<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,lisp_lambdaListHandlerNumberOfSpecialVariables(llh));
     ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newValueEnvironment);
-    lambdaListHandler_createBindings(closure->asSmartPtr(), llh, &scope, LCC_PASS_ARGS_LLH);
+    lambdaListHandler_createBindings(closure->asSmartPtr(), llh, &scope, lcc_nargs, lcc_args );
     //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
     //  newValueEnvironment->dump();
     ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
