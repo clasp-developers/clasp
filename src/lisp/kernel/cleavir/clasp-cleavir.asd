@@ -34,6 +34,7 @@
                (:file "bir")
                (:file "bmir")
                (:file "bir-to-bmir")
+               (:file "representation-selection")
                (:file "landing-pad")
                (:file "primop")
                (:file "transform")
