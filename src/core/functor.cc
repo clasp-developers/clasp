@@ -913,11 +913,11 @@ void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void
   if ( snapshotSaveLoad::operation(fixup)==snapshotSaveLoad::SaveOp) {
     if ((uintptr_t)funcPtr[0] > 1024) {
       uintptr_t* ptrptr = (uintptr_t*)&funcPtr[0];
-      snapshotSaveLoad::registerLibraryFunctionPointer(fixup,ptrptr);
+      snapshotSaveLoad::encodeEntryPointInLibrary(fixup,ptrptr);
     }
   } else if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     if ((uintptr_t)funcPtr[0] > 1024) {
-      snapshotSaveLoad::decodeLibrarySaveAddress(fixup,(uintptr_t*)&funcPtr[0]);
+      snapshotSaveLoad::decodeEntryPointInLibrary(fixup,(uintptr_t*)&funcPtr[0]);
     }
   } else {
     SIMPLE_ERROR(BF("Illegal image save/load operation"));

@@ -94,6 +94,7 @@ namespace llvmo {
     CLASP_DEFAULT_CTOR CodeBase_O() {};
   public:
     virtual uintptr_t codeStart() const = 0;
+    virtual uintptr_t codeEnd() const = 0;
     virtual std::string filename() const = 0;
     virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point) {};
     virtual void validateEntryPoint(const core::ClaspLocalFunction& entry_point) {};
@@ -203,6 +204,7 @@ class Library_O : public CodeBase_O {
   static Library_sp make(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd, const std::string& name );
   std::string __repr__() const;
   uintptr_t codeStart() const { return (uintptr_t)this->_Start; };
+  uintptr_t codeEnd() const { return (uintptr_t)this->_End; };
   std::string filename() const;
 };
 };

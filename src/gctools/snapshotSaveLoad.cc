@@ -329,16 +329,23 @@ void check_dladdr(uintptr_t address) {
   // do nothing for now
 }
 
-void decodeRelocation(uintptr_t* ptrptr, uint8_t& firstByte, uintptr_t& libindex, uintptr_t& offset) {
-  uintptr_t codedAddress = *ptrptr;
-  offset = (uintptr_t)codedAddress & (((uintptr_t)1<<40) - 1);
-  libindex = ((uintptr_t)codedAddress>>32) & (uintptr_t)0xffff;
+void decodeRelocation_(uintptr_t codedAddress, uint8_t& firstByte, uintptr_t& libindex, uintptr_t& offset) {
+//  uintptr_t codedAddress = *ptrptr;
+  offset = (uintptr_t)codedAddress & (((uintptr_t)1<<32) - 1);
+  libindex = ((uintptr_t)codedAddress>>32) & (uintptr_t)0xff;
   firstByte = (uint8_t)(((uintptr_t)codedAddress>>48) & 0xff);
 }
 
-uintptr_t encodeRelocation(void* address, size_t libraryIndex, size_t relocationIndex ) {
-  uint8_t firstByte = *(uint8_t*)address;
-  uintptr_t result = ( (uintptr_t)1<<56 | (uintptr_t)firstByte << 48) | (libraryIndex << 32) | relocationIndex;
+uintptr_t encodeRelocation_( uint8_t firstByte, size_t libraryIndex, size_t relocationOrOffset ) {
+  if ((relocationOrOffset&(((uintptr_t)1<<32)-1)) != relocationOrOffset) {
+    printf("%s:%d:%s relocationOrOffset %lu is too large\n", __FILE__, __LINE__, __FUNCTION__, relocationOrOffset );
+    abort();
+  }
+  if (libraryIndex > 256) {
+    printf("%s:%d:%s libraryIndex %lu is too large\n", __FILE__, __LINE__, __FUNCTION__, libraryIndex );
+    abort();
+  }
+  uintptr_t result = ( (uintptr_t)1<<56 | (uintptr_t)firstByte << 48) | (libraryIndex << 32) | relocationOrOffset;
   return result;
 }
 
@@ -347,7 +354,8 @@ uintptr_t Fixup::fixedAddress(bool functionP, uintptr_t* ptrptr, const char* add
   uint8_t firstByte;
   uintptr_t libidx;
   uintptr_t pointerIndex;
-  decodeRelocation( ptrptr, firstByte, libidx, pointerIndex );
+  uintptr_t value = *ptrptr;
+  decodeRelocation_( value, firstByte, libidx, pointerIndex );
 //  printf("%s:%d:%s libidx = %lu pointerIndex = %lu\n", __FILE__, __LINE__, __FUNCTION__, libidx, pointerIndex );
   uintptr_t address = this->_libraries[libidx]._GroupedPointers[pointerIndex]._address;
 //  printf("%s:%d:%s address = %p @ %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, &this->_libraries[libidx]._GroupedPointers[pointerIndex]._address );
@@ -417,12 +425,54 @@ size_t Fixup::ensureLibraryRegistered(uintptr_t address) {
   return idx;
 };
   
-void registerLibraryFunctionPointer(Fixup* fixup, uintptr_t* ptrptr) {
+uintptr_t encodeEntryPointValue( uint8_t firstByte, uint8_t epType, uintptr_t offset ) {
+  uintptr_t result = encodeRelocation_( firstByte, epType, offset );
+  return result;
+}
+
+void decodeEntryPointValue( uintptr_t value, uint8_t& firstByte, uintptr_t& epType, uintptr_t& offset ) {
+  decodeRelocation_( value, firstByte, epType, offset );
+};
+
+uintptr_t decodeEntryPointAddress( uintptr_t offset, uintptr_t codeStart, uintptr_t codeEnd, llvmo::CodeBase_sp code ) {
+  if (!codeStart || !codeEnd || !(codeStart<codeEnd) ) {
+    printf("%s:%d:%s The start codeStart %p and codeEnd %p are not ascending values for code: %p!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)codeStart, (void*)codeEnd, (void*)code.raw_() );
+    abort();
+  }
+  if (!(offset<(codeEnd-codeStart)) ) {
+    printf("%s:%d:%s The offset %lu does not fall between codeStart %p and codeEnd %p (diff is %lu) for code: %p!!!\n", __FILE__, __LINE__, __FUNCTION__, offset, (void*) codeStart, (void*)codeEnd, (codeEnd-codeStart), (void*)code.raw_() );
+    abort();
+  }
+  uintptr_t result = offset + codeStart;
+  return result;
+}
+
+uintptr_t encodeEntryPointOffset( uintptr_t address, uintptr_t codeStart, uintptr_t codeEnd, llvmo::CodeBase_sp code ) {
+  if (!codeStart || !codeEnd || !(codeStart<codeEnd)) {
+    printf("%s:%d:%s The codeStart %p and codeEnd %p for code: %p do not have reasonable, ascending values\n", __FILE__, __LINE__, __FUNCTION__, (void*)codeStart, (void*)codeEnd, (void*)code.raw_() );
+    abort();
+  }
+  // Check if address falls outside of the code range
+  //   if this is so then it must be falling within a library
+  if (address<codeStart || codeEnd <= address ) return false;
+  uintptr_t offset = (address - codeStart);
+  if (offset > (codeEnd-codeStart)) {
+    printf("%s:%d:%s The offset %lu is too large for the codeStart %p to codeEnd %p (diff %lu)\n",
+           __FILE__, __LINE__, __FUNCTION__, offset, (void*)codeStart, (void*)codeEnd, (codeEnd-codeStart ) );
+  }
+  if (offset<0) {
+    printf("%s:%d:%s Generating a vaddress that is negative: %p address: %p codeStart: 0x%" PRIxPTR "\n", __FILE__, __LINE__, __FUNCTION__, (void*)offset, (void*)address, codeStart );
+    abort();
+  }
+  return offset;
+}
+
+void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr) {
   size_t libraryIndex = fixup->ensureLibraryRegistered(*ptrptr);
   fixup->registerFunctionPointer(libraryIndex,ptrptr);
 }
 
-void decodeLibrarySaveAddress(Fixup* fixup, uintptr_t* ptrptr ) {
+void decodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr ) {
   uintptr_t address = fixup->fixedAddress(true,ptrptr,"function-pointer");
   gctools::clasp_ptr_t ptr = (gctools::clasp_ptr_t)address;
 //  printf("%s:%d:%s Fixing @%p -> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)ptrptr, (void*)ptr );
@@ -431,40 +481,33 @@ void decodeLibrarySaveAddress(Fixup* fixup, uintptr_t* ptrptr ) {
 
 
 
-void encodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Code_sp code) {
+/* Return true if the entry point was encoded. 
+   Return false if the entry point doesn't fall within the code region because it points
+   into the executable - in that case we need to use encodeEntryPointForLibrary.
+*/
+bool encodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Code_sp code) {
   uintptr_t address = *ptrptr;
   uint8_t firstByte = *(uint8_t*)address;
   uintptr_t codeStart = (uintptr_t)code->codeStart();
-  if (!codeStart) {
-    printf("%s:%d:%s The start address for code: %p can not be zero!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() );
-    abort();
-  }
-  if (address<codeStart) {
-    printf("%s:%d:%s There is a problem - the function address %p falls before the codeStart %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, (void*)codeStart );
-    abort();
-  }
-  intptr_t offset = (address - codeStart);
-  if (offset<0) {
-    printf("%s:%d:%s Generating a vaddress that is negative: %p firstByte: 0x%x address: %p codeStart: 0x%" PRIxPTR "\n", __FILE__, __LINE__, __FUNCTION__, (void*)offset, firstByte, (void*)address, codeStart );
-    abort();
-  }
-  uintptr_t result = (((uintptr_t)firstByte<<56) | (uintptr_t)offset);
+  uintptr_t codeEnd = (uintptr_t)code->codeEnd();
+  if (address<codeStart || codeEnd <= address) return false;
+  uintptr_t offset = encodeEntryPointOffset( address, codeStart, codeEnd, code );
+  uintptr_t result = encodeEntryPointValue(firstByte,CODE_LIBRARY_ID,offset);
   DBG_SL_ENTRY_POINT(BF("base: %p encoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
   *ptrptr = result;
+  return true;
 }
 
-void decodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Code_sp code) {
+bool decodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Code_sp code) {
   uintptr_t vaddress = *ptrptr;
-  if ((intptr_t)vaddress<0) {
-    printf("%s:%d:%s Found a vaddress that was negative: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)vaddress);
-  }
-  uintptr_t address = (uintptr_t)(vaddress & (((uintptr_t)1<<56) - 1));
-  uint8_t firstByte = (uint8_t)(((uintptr_t)vaddress >> 56) & (uintptr_t)0xff);
+  uint8_t firstByte;
+  uintptr_t epType;
+  uintptr_t offset;
   uintptr_t codeStart = code->codeStart();
-  if (!codeStart) {
-    printf("%s:%d:%s The start address for code: %p can not be zero!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() );
-  }
-  uintptr_t result = (address + codeStart);
+  uintptr_t codeEnd = code->codeEnd();
+  decodeEntryPointValue( vaddress, firstByte, epType, offset );
+  if (epType != CODE_LIBRARY_ID ) return false; // it's not a COMPILED_CODE_EPTYPE it must be to a library
+  uintptr_t result = decodeEntryPointAddress( offset, codeStart, codeEnd, code );
   DBG_SL_ENTRY_POINT(BF("base: %p decoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
   if (*(uint8_t*)result != firstByte) {
     printf("%s:%d:%s during decode function pointer %p must be readable and point to 0x%x (first byte) - instead it points to 0x%x vaddress = %p  codeStart = %p\n",
@@ -474,15 +517,20 @@ void decodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Cod
     abort();
   }
   *ptrptr = result;
+  return true;
 }
 
 
 void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp codebase) {
   if (gc::IsA<llvmo::Code_sp>(codebase)) {
     llvmo::Code_sp code = gc::As_unsafe<llvmo::Code_sp>(codebase);
-    encodeEntryPointForCompiledCode(fixup,ptrptr,code);
+    if (!encodeEntryPointForCompiledCode(fixup,ptrptr,code)) {
+      // The entry point wasnt into the compiled code
+      //   so it must be to one of the libraries - apply that fixup.
+      encodeEntryPointInLibrary( fixup, ptrptr );
+    }
   } else if (gc::IsA<llvmo::Library_sp>(codebase)) {
-    registerLibraryFunctionPointer(fixup,ptrptr);
+    encodeEntryPointInLibrary(fixup,ptrptr);
   } else {
     SIMPLE_ERROR(BF("The codebase must be a Code_sp or a Library_sp it is %s") % _rep_(codebase) );
   }
@@ -491,10 +539,14 @@ void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp codeba
 void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp codebase) {
   if (gc::IsA<llvmo::Code_sp>(codebase)) {
     llvmo::Code_sp code = gc::As_unsafe<llvmo::Code_sp>(codebase);
-    decodeEntryPointForCompiledCode(fixup,ptrptr,code);
+    if (!decodeEntryPointForCompiledCode(fixup,ptrptr,code)) {
+      // The entry point wasnt into the compiled code
+      //   so it must be to one of the libraries - apply that fixup.
+      decodeEntryPointInLibrary( fixup, ptrptr );
+    }
   } else if (gc::IsA<llvmo::Library_sp>(codebase)) {
     llvmo::Library_sp library = gc::As_unsafe<llvmo::Library_sp>(codebase);
-    decodeLibrarySaveAddress(fixup,ptrptr);
+    decodeEntryPointInLibrary(fixup,ptrptr);
   } else {
     SIMPLE_ERROR(BF("The codebase must be a Code_sp or a Library_sp it is %s") % _rep_(codebase) );
   }
@@ -1083,7 +1135,7 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
 //        printf("%s:%d:%s save_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
         for ( size_t ii = 0; ii< edges->size(); ii++ ) {
 //          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
-          registerLibraryFunctionPointer(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
+          encodeEntryPointInLibrary(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
         }
       }
       // Handle them on a case by case basis
@@ -1417,7 +1469,7 @@ struct fixup_internals_t : public walker_callback_t {
 //        printf("%s:%d:%s load_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
         for ( size_t ii = 0; ii< edges->size(); ii++ ) {
 //          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
-          decodeLibrarySaveAddress(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
+          decodeEntryPointInLibrary(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
         }
       }
       if (header->preciseIsPolymorphic()) {
@@ -1692,7 +1744,8 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
         groupPointerIdx++;
       }
     // Now encode the relocation
-      *curLib._Pointers[ii]._ptrptr = encodeRelocation(*(void**)curLib._Pointers[ii]._ptrptr, idx, groupPointerIdx );
+      uint8_t firstByte = *(uint8_t*)(*(void**)curLib._Pointers[ii]._ptrptr);
+      *curLib._Pointers[ii]._ptrptr = encodeRelocation_( firstByte, idx, groupPointerIdx );
 //      printf("%s:%d:%s Wrote relocation @%p to %p\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers[ii]._ptrptr, *curLib._Pointers[ii]._ptrptr );
     }
 //    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
