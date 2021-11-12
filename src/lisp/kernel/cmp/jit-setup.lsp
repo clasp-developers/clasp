@@ -779,7 +779,7 @@ No DIBuilder is defined for the default module")
 ;;;(in-package :cmp)
 (defparameter *dump-compile-module* nil)
 (progn
-  (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
+  (export '(jit-add-module-return-function))
   (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
   (defun jit-add-module-return-function (original-module main-fn startup-shutdown-id literals-list
                                          &key output-path name)

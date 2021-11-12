@@ -1443,7 +1443,6 @@ CL_DEFUN T_sp core__handle_creator( T_sp object ) {
 
  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
  SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
- SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR);
  SYMBOL_SC_(CorePkg, dlopen);
  SYMBOL_SC_(CorePkg, dlsym);
  SYMBOL_SC_(CorePkg, dladdr);
