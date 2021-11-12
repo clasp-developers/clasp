@@ -170,6 +170,7 @@ names to offsets."
 
 (define-symbol-macro %fixnum% #+64-bit %i64%
                               #+32-bit %i32%)
+(define-symbol-macro %word% #+64-bit %i64% #+32-bit %i32%)
 (define-symbol-macro %uint% %i32%) ; FIXME: export from C++ probably
 
 (define-symbol-macro %float% (llvm-sys:type-get-float-ty (thread-local-llvm-context)))
