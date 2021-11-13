@@ -112,6 +112,7 @@ fields at the same offset as Instance_O.
    // Custom hash-tables need an equality and hashing function
    bool function_description_equal(T_sp other) const;
    Fixnum function_description_sxhash_equal() const;
+   std::string __repr__() const;
  };
 
 

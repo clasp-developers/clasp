@@ -505,6 +505,12 @@ CL_DEFMETHOD bool FunctionDescription_O::function_description_equal(T_sp other) 
   return false;
 }
 
+std::string FunctionDescription_O::__repr__() const {
+  stringstream ss;
+  ss << "#<FUNCTION-DESCRIPTION " << _rep_(this->_functionName) << ">";
+  return ss.str();
+}
+
 CL_LISPIFY_NAME(function-description-sxhash-equal);
 CL_DEFMETHOD Fixnum FunctionDescription_O::function_description_sxhash_equal() const {
   HashGenerator hg;
@@ -803,6 +809,30 @@ CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile,
 
 CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const {
   return Pointer_O::create((void*)this->entry());
+};
+
+SYMBOL_EXPORT_SC_(KeywordPkg, general_entry);
+SYMBOL_EXPORT_SC_(KeywordPkg, local_function);
+SYMBOL_EXPORT_SC_(KeywordPkg, trampoline);
+CL_DOCSTRING("Return an alist of (cons entry-label pointer-or-nil )");
+CL_DEFUN T_sp core__function_pointer_alist(Function_sp func) {
+  GlobalEntryPoint_sp gep = func->_EntryPoint.load();
+  ql::list res;
+  res << Cons_O::create( kw::_sym_general_entry, Pointer_O::create((void*)gep->_EntryPoints._EntryPoints[0]) );
+  for ( size_t ii=1; ii< NUMBER_OF_ENTRY_POINTS; ++ii ) {
+    void* ep = (void*)gep->_EntryPoints._EntryPoints[ii];
+    if (llvmo::general_entry_point_redirect_p(ep)) {
+      res << Cons_O::create(make_fixnum(ii-1+ENTRY_POINT_ARITY_BEGIN),nil<T_O>());
+    } else {
+      res << Cons_O::create(make_fixnum(ii-1+ENTRY_POINT_ARITY_BEGIN),Pointer_O::create((void*)ep));
+    }
+  }
+  T_sp tlep = gep->localEntryPoint();
+  if (tlep.notnilp()) {
+    LocalEntryPoint_sp lep = gc::As<LocalEntryPoint_sp>(tlep);
+    res << Cons_O::create(kw::_sym_local_function,Pointer_O::create((void*)lep->_EntryPoint));
+  }
+  return res.cons();
 };
 
 string Function_O::__repr__() const {

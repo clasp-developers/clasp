@@ -177,6 +177,8 @@ public:
   virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point);
 };
 
+bool general_entry_point_redirect_p(void* ep);
+
 };
 
 

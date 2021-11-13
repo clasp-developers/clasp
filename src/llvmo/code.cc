@@ -337,17 +337,26 @@ void dumpObjectFile(const char* start, size_t size, void* codeStart) {
 
 namespace llvmo {
 
+/*! Return true if the pointer is to a general entry-point redirect */
+bool general_entry_point_redirect_p(void* ep) {
+#if NUMBER_OF_ENTRY_POINTS>8
+  # error "Fix the code below if there are more than 8 entry points"
+#endif
+  if ( ep == (void*)general_entry_point_redirect_0 ||
+       ep == (void*)general_entry_point_redirect_1 ||
+       ep == (void*)general_entry_point_redirect_2 ||
+       ep == (void*)general_entry_point_redirect_3 ||
+       ep == (void*)general_entry_point_redirect_4 ||
+       ep == (void*)general_entry_point_redirect_5 ||
+       ep == (void*)general_entry_point_redirect_6 ||
+       ep == (void*)general_entry_point_redirect_7 ) return true;
+  return false;
+}
+  
 void Code_O::validateEntryPoint(const core::ClaspXepFunction& entryPoint) {
   for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ii++ ) {
     void* ep = (void*)entryPoint[ii];
-    if ( ep == general_entry_point_redirect_0 ||
-         ep == general_entry_point_redirect_1 ||
-         ep == general_entry_point_redirect_2 ||
-         ep == general_entry_point_redirect_3 ||
-         ep == general_entry_point_redirect_4 ||
-         ep == general_entry_point_redirect_5 ||
-         ep == general_entry_point_redirect_6 ||
-         ep == general_entry_point_redirect_7 ) continue;
+    if ( general_entry_point_redirect_p(ep) ) continue;
     if (!(this->codeStart()<=(uintptr_t)ep &&
           (uintptr_t)ep < this->codeEnd())) {
       printf("%s:%d:%s Entrypoint %p is not bounded by the codeStart %p and codeEnd %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint[ii], (void*)this->codeStart(), (void*)this->codeEnd() );
