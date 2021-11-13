@@ -84,6 +84,9 @@ struct ISLLibrary {
   
 };
 
+#define CODE_LIBRARY_ID 0xff
+#define LIBRARY_ID_MAX CODE_LIBRARY_ID
+
 struct Fixup {
   FixupOperation_           _operation;
   uintptr_t                 _memoryStart;
@@ -92,13 +95,17 @@ struct Fixup {
   Fixup( FixupOperation_ op ) : _operation(op) {};
 
   uintptr_t fixedAddress( bool functionP, uintptr_t* ptrptr, const char* addressName );
-  
   size_t ensureLibraryRegistered(uintptr_t address);
+  
   void registerVtablePointer(size_t libraryIndex, core::T_O* vtablePtrPtr) {
     this->_libraries[libraryIndex]._Pointers.emplace_back( VtablePointer, (uintptr_t*)vtablePtrPtr, *(uintptr_t*)vtablePtrPtr );
   };
 
   void registerFunctionPointer(size_t libraryIndex, uintptr_t* functionPtrPtr) {
+    if (libraryIndex>LIBRARY_ID_MAX) {
+      printf("%s:%d:%s The library id %lu is too large - change the pointer coding scheme to add more bits to the library id\n", __FILE__, __LINE__, __FUNCTION__, libraryIndex );
+      abort();
+    }
     this->_libraries[libraryIndex]._Pointers.emplace_back( FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr );
   };
 
@@ -113,8 +120,8 @@ int snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const st
 
 
 void clearLibraries();
-void registerLibraryFunctionPointer(Fixup* fixup, uintptr_t* ptrptr);
-void decodeLibrarySaveAddress(Fixup* fixup, uintptr_t* ptrptr);
+void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr);
+void decodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr);
 
 void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp code);
 void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp code);

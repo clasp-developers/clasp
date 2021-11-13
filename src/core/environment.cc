@@ -575,7 +575,9 @@ CL_DEFMETHOD List_sp Environment_O::classifyVariable(T_sp sym) const {
         return Cons_O::createList(ext::_sym_lexicalVar, sym, make_fixnum(depth), make_fixnum(index), result_env, _lisp->_boolean(crossesFunction));
     case specialValue:
         return Cons_O::create(ext::_sym_specialVar, sym);
-    case registerValue:
+    case allocaVal:
+        return value;
+    case llvmRegisterVal:
         return value;
     default:
       // Do nothing
@@ -906,8 +908,8 @@ T_sp ValueEnvironment_O::getActivationFrame() const {
 
 
 CL_LISPIFY_NAME("valueEnvironment_defineLexicalBinding");
-CL_DEFMETHOD void ValueEnvironment_O::defineLexicalBinding(Symbol_sp sym, int idx) {
-  this->augment(sym, make_fixnum(idx));
+CL_DEFMETHOD void ValueEnvironment_O::defineLexicalBinding(Symbol_sp sym, T_sp val) {
+  this->augment(sym, val );
 }
 
 CL_LISPIFY_NAME("valueEnvironment_defineSpecialBinding");
@@ -952,8 +954,12 @@ bool ValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool& cros
       return true;
     } else if (entry.consp()) {
       T_sp entryKind = CONS_CAR(entry);
-      if (entryKind == ext::_sym_registerVar) {
-        valueKind = registerValue;
+      if (entryKind == ext::_sym_allocaVar) {
+        valueKind = allocaVal;
+        value = entry;
+        return true;
+      } else if (entryKind == ext::_sym_llvmRegisterVar) {
+        valueKind = llvmRegisterVal;
         value = entry;
         return true;
       } else {

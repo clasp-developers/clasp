@@ -27,6 +27,25 @@ THE SOFTWARE.
 #if !defined( __CORE_CONFIG_H__ )
 #define __CORE_CONFIG_H__
 
+
+// ----------------------------------------------------------------------------
+// Set system wide debug flags here
+// ----------------------------------------------------------------------------
+#if 0
+/* 0 == no CHECK_FRAME, 1 == fast CHECK_FRAME, 2 == slow CHECK_FRAME */
+#define DEBUG_FRAME() 2
+//#define DEBUG_OBJECT_FILES 1
+//#define DEBUG_VALUES 1
+//#define DEBUG_VASLIST 1
+//#define DEBUG_EVALUATE 1
+//#define DEBUG_DTORS 1
+// If ANY flags above are set - then set this one to print a message at startup
+#define DEBUG_FLAGS_SET 1
+#else
+#define DEBUG_FRAME() 0
+#endif
+
+
 // ----------------------------------------------------------------------------
 //  SYSTEM INCLUDES
 // ----------------------------------------------------------------------------
@@ -162,6 +181,7 @@ typedef unsigned char claspChar;
 typedef unsigned int  claspCharacter;
 #define CLASP_CHAR(x) ((x)&0xff)
 
+
 // ----------------------------------------------------------------------------
 //  DIR SEP
 // ----------------------------------------------------------------------------
@@ -213,7 +233,19 @@ typedef unsigned int  claspCharacter;
 #define LCC_ARGS_IN_REGISTERS 4
 
 /*! Return 1 pointer in register */
-#define LCC_RETURN_VALUES_IN_REGISTERS 1
+#define LCC_RETURN_VALUES_IN_REGISTERS() 1
+
+/*! Range of fixed entry point aritys 
+    This will be used for the calling convention.
+    Arity from ENTRY_POINT_ARITY_BEGIN to (ENTRY_POINT_ARITY_END-1) are supported
+*/
+#define ENTRY_POINT_ARITY_BEGIN 0 // MUST ALWAYS BE ZERO - Or I need to fix a few places in the code
+#define ENTRY_POINT_ARITY_END 6   // Must be one past the highest arity entry point
+//! One entry point for each arity and one for general
+#define NUMBER_OF_ENTRY_POINTS ENTRY_POINT_ARITY_END-ENTRY_POINT_ARITY_BEGIN+1
+#define STACKMAP_REGISTER_SAVE_AREA_MAGIC_NUMBER 0xDEAD0000
+#define STACKMAP_REGISTER_SAVE_AREA_MASK         0xFFFF0000
+#define STACKMAP_ARITY_CODE_MASK                 0x0000000F
 
 /*! Maximum number of arguments that can be passed */
 #define CALL_ARGUMENTS_LIMIT 136
@@ -254,6 +286,5 @@ typedef unsigned int  claspCharacter;
 #define HAVE_MKDTEMP
 
 
-#define NUMBER_OF_ENTRY_POINTS 1
 
 #endif // __CORE_CONFIG_H__

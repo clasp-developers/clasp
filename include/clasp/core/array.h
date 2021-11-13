@@ -132,14 +132,14 @@ namespace core {
   [[noreturn]] void bitVectorDoesntSupportError();
   [[noreturn]] void missingValueListError(List_sp indices);
   [[noreturn]] void tooManyIndicesListError(List_sp indices);
-  [[noreturn]] void missingValueVaListError(VaList_sp indices);
-  [[noreturn]] void tooManyIndicesVaListError(VaList_sp indices);
+  [[noreturn]] void missingValueVaslistError(Vaslist_sp indices);
+  [[noreturn]] void tooManyIndicesVaslistError(Vaslist_sp indices);
   [[noreturn]] void badAxisNumberError(Symbol_sp fn_name, size_t rank, size_t axisNumber);
   [[noreturn]] void badIndexError(T_sp arr, size_t axis, size_t oneIndex, size_t curDimension);
   [[noreturn]] void badRMIndexError(T_sp arr, size_t oneIndex, size_t totalSize);
   [[noreturn]] void indexNotFixnumError(T_sp index);
   [[noreturn]] void insufficientIndexListError(List_sp indices);
-  [[noreturn]] void insufficientIndexVaListError(VaList_sp indices);
+  [[noreturn]] void insufficientIndexVaslistError(Vaslist_sp indices);
   [[noreturn]] void notStringError(T_sp obj);
   [[noreturn]] void cannotAdjustSizeOfSimpleArrays(T_sp obj);
   [[noreturn]] void notSequenceError(T_sp obj);
@@ -233,7 +233,7 @@ namespace core {
     virtual bool displacedToP() const { return false; };
   /*! As the CL function: Return the offset into a one-dimensional vector for the
       multidimensional indices in the (Va)List, using row-major ordering. */
-    size_t arrayRowMajorIndex(VaList_sp indices) const;
+    size_t arrayRowMajorIndex(Vaslist_sp indices) const;
     size_t arrayRowMajorIndex(List_sp indices) const;
     virtual Array_sp reverse() const = 0;
     virtual Array_sp nreverse() = 0;

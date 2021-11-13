@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/predicates.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/serialize.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/designators.h>
@@ -386,6 +387,12 @@ List_sp Cons_O::reverse() {
   return ((reversed));
 }
 
+DOCGROUP(clasp)
+CL_DEFUN List_sp core__list_reverse(List_sp list) {
+  if (list.nilp()) return list;
+  else return list.unsafe_cons()->reverse();
+}
+
 List_sp Cons_O::nreverse() {
   _OF();
   List_sp reversed = nil<T_O>();
@@ -398,6 +405,12 @@ List_sp Cons_O::nreverse() {
     cur = hold;
   }
   return ((reversed));
+}
+
+DOCGROUP(clasp)
+CL_DEFUN List_sp core__list_nreverse(List_sp list) {
+  if (list.nilp()) return list;
+  else return list.unsafe_cons()->nreverse();
 }
 
 List_sp Cons_O::revappend(T_sp tail) {
@@ -622,15 +635,15 @@ string Cons_O::__repr__() const {
   T_sp car = start->ocar();
   T_sp cdr = start->cdr();
   stringstream sout;
-  sout << "(" << _rep_(car);
+  sout << "(" << _safe_rep_(car);
   while (cdr.consp()) {
     Cons_sp p = gc::As<Cons_sp>(cdr);
     car = p->ocar();
-    sout << " " << _rep_(car);
+    sout << " " << _safe_rep_(car);
     cdr = oCdr(p);
   }
   if (cdr.notnilp()) {
-    sout << " . " << _rep_(cdr) << ")";
+    sout << " . " << _safe_rep_(cdr) << ")";
   } else {
     sout << ")";
   }

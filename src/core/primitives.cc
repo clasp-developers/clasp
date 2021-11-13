@@ -520,7 +520,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(values)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_mv cl__values(VaList_sp vargs) {
+CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
   // returns multiple values
   size_t nargs = vargs->remaining_nargs();
   SUPPRESS_GC();
@@ -531,8 +531,6 @@ CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   if (_sym_STARdebug_valuesSTAR &&
       _sym_STARdebug_valuesSTAR->boundP() &&
       _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
-    va_list debugl;
-    va_copy(debugl,vargs->_Args);
     for (size_t di(0); di<nargs; ++di) {
       T_sp dsp((gctools::Tagged)va_arg(debugl,T_O*));
       printf("%s:%d   VALUES[%lu] -> %s\n", __FILE__, __LINE__, di, _rep_(dsp).c_str());
@@ -546,7 +544,7 @@ CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   if (nargs > 0) {
     first = vargs->next_arg();
     for (size_t i(1); i< nargs; ++i ) {
-      T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+      T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
       T_sp csp((gctools::Tagged)tcsp);
       me.valueSet(i, csp);
     }
@@ -1196,22 +1194,23 @@ CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp 
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
   if (!sequences.consp()) goto FALLTHROUGH;
   {
-    MAKE_STACK_FRAME(frame,predicate.raw_(),sequences.unsafe_cons()->proper_list_length());
+    size_t nargs = sequences.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame,nargs);
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : sequences ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = oCar(top).raw_();
+        gctools::fill_frame_one( frame, idx, oCar(top).raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
-        VaList_sp valist(&valist_struct);
-        retVal = funcall_consume_valist_<core::Function_O>(predicate.tagged_(),valist);
+        Vaslist valist_struct(nargs,frame);
+        Vaslist_sp valist(&valist_struct);
+        retVal = funcall_general<core::Function_O>(predicate.tagged_(),nargs,frame->arguments());
         if (retVal.isTrue() == elementTest) {
           return elementReturn;
         }
@@ -1271,22 +1270,21 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     ql::list result;
-    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    size_t nargs = lists.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame,nargs);
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : lists ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = oCar(top).raw_();
+        gctools::fill_frame_one( frame, idx, oCar(top).raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
-        VaList_sp valist(&valist_struct);
-        result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+        result << funcall_general<core::Function_O>(func.tagged_(),nargs,frame->arguments(0));
       }
     }
     return result.cons();
@@ -1307,22 +1305,21 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     List_sp result = CONS_CAR(lists);
-    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    size_t nargs = lists.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame, nargs );
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : lists ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = oCar(top).raw_();
+        gctools::fill_frame_one( frame, idx, oCar(top).raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
-        VaList_sp valist(&valist_struct);
-        funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+        funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments(0));
       }
     }
     return result;
@@ -1338,22 +1335,21 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     ql::list result;
-    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    size_t nargs = lists.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame,nargs);
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : lists ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = top.raw_();
+        gctools::fill_frame_one( frame, idx, top.raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
-        VaList_sp valist(&valist_struct);
-        result << funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+        result << funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments() );
       }
     }
     return result.cons();
@@ -1369,22 +1365,21 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     List_sp result = CONS_CAR(lists);
-    MAKE_STACK_FRAME(frame,func.raw_(),lists.unsafe_cons()->proper_list_length());
+    size_t nargs = lists.unsafe_cons()->proper_list_length();
+    MAKE_STACK_FRAME(frame, nargs );
     bool atend = false;
     while (!atend) {
       atend = false;
       size_t idx = 0;
       for ( auto cur : lists ) {
         List_sp top = CONS_CAR(cur);
-        (*frame)[idx++] = top.raw_();
+        gctools::fill_frame_one( frame, idx, top.raw_() );
         if (top.consp()) {
           cur->rplaca(CONS_CDR(top));
         } else atend = true;
       }
       if (!atend) {
-        Vaslist valist_struct(frame);
-        VaList_sp valist(&valist_struct);
-        funcall_consume_valist_<core::Function_O>(func.tagged_(),valist);
+        funcall_general<core::Function_O>(func.tagged_(), nargs, frame->arguments(0));
       }
     }
     return result;
@@ -1425,12 +1420,12 @@ CL_LAMBDA(core:&va-rest lists)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(append as in clhs)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl__append(VaList_sp args) {
+CL_DEFUN T_sp cl__append(Vaslist_sp args) {
   ql::list list;
   LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
   size_t lenArgs = args->total_nargs();
   unlikely_if (lenArgs==0) return nil<T_O>();
-  T_O* lastArg = args->relative_indexed_arg(lenArgs-1);
+  T_O* lastArg = (*args)[lenArgs-1];
   for ( int i(0),iEnd(lenArgs-1);i<iEnd; ++i ) {
     T_sp curit = args->next_arg();
     LIKELY_if (curit.consp()) {

@@ -344,7 +344,10 @@ struct CxxFunctionInvocationLogger {
 
 #define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement function %s:%d %s") % __FILE__ % __LINE__ % __FUNCTION__)
 #define IMPLEMENT_MEF(msg) SIMPLE_ERROR(BF("Implement function %s:%s %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % msg)
- 
+
+#define WARN_IMPLEMENT_ME() printf("%s:%d:%s Implement function\n", __FILE__, __LINE__, __FUNCTION__ );
+#define WARN_IMPLEMENT_MEF(msg) printf("%s\n", (BF("Implement function %s:%s %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % (msg).str().c_str()).str().c_str());
+
 #define NOT_SUPPORTED() SIMPLE_ERROR(BF("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)") % this->className() % __FUNCTION__ % __FILE__ % __LINE__);
 
 
@@ -677,6 +680,7 @@ void core__reader_error_internal(const string &sourceFile, uint lineno,
 
 T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
 
+[[noreturn]] void file_libc_error(T_sp error_type, T_sp stream, const char *msg, int narg, ...);
 [[noreturn]] void FEerror(const string &fmt, int numArgs, ...);
 void FEtype_error_list(T_sp thing);
 void FElibc_error(const char *fmt, int nargs, ...);
@@ -689,6 +693,9 @@ void CEpackage_error(const char *fmt, const char *continue_message, T_sp package
 void Warn(T_sp datum, List_sp arguments);
 
 void clasp_internal_error(const char *error);
+
+[[noreturn]] void wrong_number_of_arguments(T_O* closure, std::size_t given, std::size_t expected );
+
 
 };
 

@@ -61,6 +61,7 @@
 (defvar *fn-flags* (make-hash-table :test #'equal))
 (defvar *fn-transforms* (make-hash-table :test #'equal))
 (defvar *derivers* (make-hash-table :test #'equal))
+(defvar *folds* (make-hash-table :test #'equal))
 
 (macrolet ((define-function-flags (name &rest attributes)
              `(setf (gethash ',name *fn-flags*)
@@ -188,7 +189,7 @@
     ((eq name 'core::atomic-vref) t)
     ((eq name 'core::atomic-vset) t)
     ((eq name 'core::vcas) t)
-    ((eq name 'core::bind-va-list) t)
+    ((eq name 'core::bind-vaslist) t)
     ((eq name 'core::primop) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
@@ -233,10 +234,12 @@
             (flags (gethash function-name *fn-flags*))
             (transforms (gethash function-name *fn-transforms*))
             (derivers (gethash function-name *derivers*))
-            (attributes (if (or flags transforms)
+            (folds (gethash function-name *folds*))
+            (attributes (if (or flags transforms folds)
                             (make-instance 'cleavir-attributes:attributes
                               :flags (or flags (cleavir-attributes:make-flags))
-                              :transforms transforms :derivers derivers)
+                              :transforms transforms :derivers derivers
+                              :folds folds)
                             (cleavir-attributes:default-attributes))))
        (make-instance 'env:global-function-info
          :name function-name

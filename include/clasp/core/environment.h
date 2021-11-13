@@ -53,7 +53,8 @@ public:
   typedef enum { undeterminedValue,
                  specialValue,
                  /*stackValue,*/ lexicalValue,
-                 registerValue
+                 allocaVal,
+                 llvmRegisterVal
   } ValueKind;
 public:
   static T_sp clasp_currentVisibleEnvironment(T_sp env,bool stopAtFunctionContainerEnvironment);
@@ -359,7 +360,7 @@ class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
   List_sp allLocalNamesAsCons() const;
 
   /*! Attach the lexical variable symbol to an index */
-  void defineLexicalBinding(Symbol_sp sym, int idx);
+  void defineLexicalBinding(Symbol_sp sym, T_sp value);
 
   /*! define a special variable symbol */
   void defineSpecialBinding(Symbol_sp sym);

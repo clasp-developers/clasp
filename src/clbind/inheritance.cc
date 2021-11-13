@@ -135,7 +135,6 @@ struct queue_entry {
 
 //#define DEBUG_CAST_GRAPH 1
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 std::pair<void *, int> cast_graph::impl::cast(
     void *const p, class_id src, class_id target, class_id dynamic_id, void const *dynamic_ptr) const {
 #ifdef DEBUG_CAST_GRAPH

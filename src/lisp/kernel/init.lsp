@@ -3,6 +3,10 @@
 ;;
 
 
+#+(or)
+(eval-when (:compile-toplevel :execute)
+  (setq core:*debug-eval* t))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
@@ -154,6 +158,10 @@
     nil
     (setq *compile-debug-dump-module* nil))
 (setq *debug-compile-file* (member :debug-compile-file *features*))
+(sys:*make-special '*debug-cclasp-cmp*)
+(setq *debug-cclasp-cmp* nil)
+(export '*debug-cclasp-cmp*)
+
 (export '(*compile-file-debug-dump-module* *compile-debug-dump-module* *use-human-readable-bitcode*))
 (use-package :core)
 
@@ -382,9 +390,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (core::export 'defun)
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
-(export 'bind-va-list)
+(export 'bind-vaslist)
 
-(defparameter *debug-bclasp* (member :debug-bclasp-lisp *features*))
+(defparameter *debug-bclasp* (if (member :debug-bclasp-lisp *features*) t nil))
 
 (defvar *special-init-defun-symbol* (gensym "special-init-defun-symbol"))
 

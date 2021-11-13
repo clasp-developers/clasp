@@ -3,24 +3,26 @@
 ;;; Make sure you run slime from clasp/src/main
 
 
-(require :asdf)
+(load "~/quicklisp/setup.lisp")
 (progn
-  (defparameter *clasp-home* #P"/Users/meister/Development/dev-clasp/")
+  (defparameter *clasp-home* #P"/home/meister/Development/clasp-ep/")
   (asdf:initialize-source-registry `(:source-registry (:directory ,(merge-pathnames "src/scraper/" *clasp-home*)) :ignore-inherited-configuration))
-  (load (merge-pathnames "src/scraper/dependencies/bundle.lisp" *clasp-home*))
+  (asdf:load-asd (merge-pathnames "src/scraper/dependencies/alexandria/alexandria.asd" *clasp-home*))
+  (asdf:load-asd (merge-pathnames "src/scraper/dependencies/esrap/esrap.asd" *clasp-home*))
+  (asdf:load-asd (merge-pathnames "src/scraper/dependencies/trivial-with-current-source-form/trivial-with-current-source-form.asd" *clasp-home*))
   (asdf:load-system :clasp-scraper)
   (swank:set-default-directory (merge-pathnames "build/boehm/" *clasp-home*)))
 (in-package :cscrape)
 
 (progn
   (sb-ext:gc :full t)
-  (sb-sprof:with-profiling ()
-    (time (cscrape:generate-sif-files '("/usr/lib/llvm-5.0/bin/clang++" "-E" "-DSCRAPING" "-I./" "-I/usr/lib/llvm-5.0/include" "-fno-omit-frame-pointer"
-                                        "-mno-omit-leaf-frame-pointer" "-std=c++11" "-flto=thin" "-Wno-macro-redefined" "-Wno-deprecated-register"
-                                        "-Wno-expansion-to-defined" "-Wno-return-type-c-linkage" "-Wno-invalid-offsetof" "-Wno-#pragma-messages"
-                                        "-Wno-inconsistent-missing-override" "-O3" "-g" "-I." "-I../.." "-I../../src/main" "-I../../include"
-                                        "-Igenerated" "-I/usr/lib/llvm-5.0/include" "-I/usr/include")
-                                      "/tmp/llvmoExpose.cc" "/tmp/llvmoExpose.sif"))))
+  (time (cscrape:generate-sif-files (namestring *clasp-home*)
+                                    '("/opt/clasp/bin/clang++" "-E" "-DSCRAPING" "-I./" "-I/usr/lib/llvm-5.0/include" "-fno-omit-frame-pointer"
+                                      "-mno-omit-leaf-frame-pointer" "-std=c++11" "-flto=thin" "-Wno-macro-redefined" "-Wno-deprecated-register"
+                                      "-Wno-expansion-to-defined" "-Wno-return-type-c-linkage" "-Wno-invalid-offsetof" "-Wno-#pragma-messages"
+                                      "-Wno-inconsistent-missing-override" "-O3" "-g" "-I." "-I../.." "-I../../src/main" "-I../../include"
+                                      "-Igenerated" "-I/usr/lib/llvm-5.0/include" "-I/usr/include")
+                                    "/tmp/llvmoExpose.cc" "/tmp/llvmoExpose.sif")))
 
 (apropos "parse-lambda-list")
 

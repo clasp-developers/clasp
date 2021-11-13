@@ -252,20 +252,78 @@ rewrite the slot in the literal table to store a closure."
     (run-all-add-node rase)
     rase))
 
-(defun register-function->function-datum (llvm-func)
+(defstruct (general-entry-placeholder (:type vector) :named)
+  arity
+  name
+  cleavir-lambda-list-analysis
+  )
+
+(defun ensure-not-placeholder (obj)
+  (when (general-entry-placeholder-p obj)
+    (error "The obj ~a must not be a general-entry-placeholder" obj))
+  obj)
+
+(defun entry-point-datum-for-xep-group (xep-group)
+  (unless (cmp:xep-group-p xep-group)
+    (error "The argument ~a must be a xep-group" xep-group))
+  (make-function-datum :index (cmp:entry-point-reference-index (cmp:xep-group-entry-point-reference xep-group))))
+  
+(defun register-function->function-datum-impl (function)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
-  (dotimes (idx (length (literal-machine-function-vector *literal-machine*)))
-    (when (eq llvm-func (elt (literal-machine-function-vector *literal-machine*) idx))
-      (return-from register-function->function-datum (make-function-datum :index idx))))
+  (unless (or (typep function 'llvm-sys:function)
+              (general-entry-placeholder-p function))
+    (error "In register-function->function-datum-impl function ~s of ~s must be a function or a general-entry-placeholder" function (class-of-function)))
+  (when (general-entry-placeholder-p function)
+    ;; Lookup a wrong-number-of-arguments function and use that
+    (let* ((wna-arity (general-entry-placeholder-arity function))
+           (wna-function-name (cmp:general-entry-point-redirect-name wna-arity))
+           (wna-function (cmp:get-or-declare-function-or-error cmp:*the-module* wna-function-name)))
+      (setf function wna-function)))
+  ;; Functions are laid out in linear order and xep-functions have all their entry points
+  ;; consecutive, one for each entry point
   (let ((function-index (length (literal-machine-function-vector *literal-machine*))))
-    (vector-push-extend llvm-func (literal-machine-function-vector *literal-machine*))
+    (vector-push-extend function (literal-machine-function-vector *literal-machine*))
     (make-function-datum :index function-index)))
 
-
-(defun register-function-index (llvm-func)
+(defun register-local-function->function-datum (local-fn)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
-  (let ((function-datum (register-function->function-datum llvm-func)))
-    (function-datum-index function-datum)))
+  (unless (typep local-fn 'llvm-sys:function)
+    (error "This ~a must be a llvm-sys:function - it is not" local-fn))
+  (register-function->function-datum-impl local-fn))
+
+
+(defun register-xep-function->function-datums (f-or-p-list)
+  "Add a function to the (literal-machine-function-vector *literal-machine*)"
+  (let ((rev-datums nil))
+    (dolist (xep-function-or-placeholder f-or-p-list)
+      (push (register-function->function-datum-impl xep-function-or-placeholder) rev-datums))
+    ;; Make sure that all function indices are consecutive
+    (let ((datums (nreverse rev-datums))
+          (prev-function-index nil))
+      (dolist (datum datums)
+        (let ((cur-function-index (function-datum-index datum)))
+          (when prev-function-index
+            (unless (= (1+ prev-function-index) cur-function-index)
+              (error "The function indices for a xep-function are not consecutive")))
+          (setf prev-function-index cur-function-index)))
+      datums)))
+
+(defun register-xep-function-indices (xep-arity-list)
+  "Add all functions in xep-function to the (literal-machine-function-vector *literal-machine*)"
+  (unless (listp xep-arity-list)
+    (error "Argument to register-xep-function-indices ~s must be a list" xep-arity-list))
+  (let ((f-or-p-list (mapcar 'cmp:xep-arity-function-or-placeholder xep-arity-list)))
+    (unless (every (lambda (f-or-p)
+                     (or (typep f-or-p 'llvm-sys:function)
+                         (general-entry-placeholder-p f-or-p)))
+                   f-or-p-list)
+      (error "The argument must be a list of functions or placeholders - it's a ~a" xep-arity-list))
+    (let ((function-datums (register-xep-function->function-datums f-or-p-list)))
+      (mapcar 'function-datum-index function-datums))))
+
+(defun register-local-function-index (local-function)
+  "Add a local function to the literal-machine-function-vector"
+  (function-datum-index (register-local-function->function-datum local-function)))
 
 ;;; Helper function: we write a few things out as base strings.
 ;;; FIXME: Use a more efficient representation.
@@ -410,10 +468,12 @@ rewrite the slot in the literal table to store a closure."
 
 (defun ltv/global-entry-point (entry-point index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  (let ((function-index (first (sys:global-entry-point-generator-entry-point-indices entry-point))))
+  (let ((function-index (first (sys:global-entry-point-generator-entry-point-indices entry-point)))
+        (local-entry-point-index (sys:global-entry-point-generator-local-entry-point-index entry-point)))
     (add-creator "ltvc_make_global_entry_point" index entry-point
                  function-index
-                 (load-time-reference-literal (sys:entry-point-base-function-description entry-point) read-only-p :toplevelp nil))))
+                 (load-time-reference-literal (sys:entry-point-base-function-description entry-point) read-only-p :toplevelp nil)
+                 local-entry-point-index #+(or)(load-time-reference-literal (sys:global-entry-point-local-entry-point entry-point) read-only-p :toplevelp nil))))
 
 (defun ltv/package (package index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
@@ -458,7 +518,7 @@ rewrite the slot in the literal table to store a closure."
           (t (let* ((fn (compile-form create))
                     (name (llvm-sys:get-name fn)))
                (add-creator "ltvc_set_mlf_creator_funcall"
-                            index object (register-function->function-datum fn) name))))
+                            index object (entry-point-datum-for-xep-group fn) name))))
       (when initialize
         ;; If the form is a call to a named function, with all constant arguments,
         ;; special case that to avoid the compiler. This covers e.g. the
@@ -475,7 +535,7 @@ rewrite the slot in the literal table to store a closure."
             ;; General case.
             (let* ((fn (compile-form initialize))
                    (name (llvm-sys:get-name fn)))
-              (add-side-effect-call "ltvc_mlf_init_funcall" (register-function->function-datum fn) name)))))))
+              (add-side-effect-call "ltvc_mlf_init_funcall" (entry-point-datum-for-xep-group fn) name)))))))
 
 (defun object-similarity-table-and-creator (literal-machine object read-only-p)
   ;; Note: If an object has modifiable sub-parts, if we are not read-only-p
@@ -589,7 +649,7 @@ rewrite the slot in the literal table to store a closure."
        ((literal-datum-p (literal-dnode-datum arg))
         (core:ltvc-write-object #\l (datum-index (literal-dnode-datum arg)) stream byte-index))
        (t (error "Illegal literal-dnode object ~s" arg))))
-    (t (error "Handle object ~s" arg))))
+    (t (error "write-argument-byte-code: handle object ~s" arg))))
 
 (defun write-arguments-byte-code (arguments stream byte-index)
   (dolist (arg arguments)
@@ -652,10 +712,6 @@ rewrite the slot in the literal table to store a closure."
                             (list *gcroots-in-module*
                                   (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)
                                   (cmp:jit-constant-size_t index)
-                                  (cmp:jit-constant-size_t  (cond
-                                                              ((fixnump function-index)
-                                                               function-index)
-                                                              (t (error "The function-index is not a fixnum it's a ~s of class ~s" function-index (class-of function-index)))))
                                   (cmp:jit-constant-size_t (cmp:entry-point-reference-index entry-point-ref))))))
 
 (defparameter *ltv-trap* nil)
@@ -664,15 +720,17 @@ rewrite the slot in the literal table to store a closure."
   "Arrange to evaluate the thunk into a load-time-value.
 Return the index of the load-time-value"
   (let ((datum (new-datum t)))
-    (add-creator "ltvc_set_ltv_funcall" datum nil (register-function->function-datum thunk) (llvm-sys:get-name thunk))
+    (add-creator "ltvc_set_ltv_funcall" datum nil (entry-point-datum-for-xep-group thunk) (cmp:xep-group-name thunk))
     (literal-datum-index datum)))
 
 (defun arrange-thunk-as-top-level (thunk)
   "Arrange to evaluate the thunk as the top-level form."
+  (unless (cmp:xep-group-p thunk)
+    (error "The thunk ~s must be a xep-group" thunk))
   (run-all-add-node (make-literal-node-toplevel-funcall
                      :arguments (list *gcroots-in-module*
-                                      (register-function->function-datum thunk)
-                                      (llvm-sys:get-name thunk)))))
+                                      (entry-point-datum-for-xep-group thunk)
+                                      (cmp:xep-group-name thunk)))))
 
 (defun setup-literal-machine-function-vectors (the-module &key (id 0))
   (let* ((function-vector-length (length (literal-machine-function-vector *literal-machine*)))
@@ -709,6 +767,7 @@ Return the index of the load-time-value"
         (cmp:*generate-compile-file-load-time-values* t)
         (real-name (next-value-table-holder-name (core:next-number))) ;; do we need to use a module-id???
         (*literal-machine* (make-literal-machine)))
+    (cmp:cmp-log "do-literal-table cmp:*load-time-value-holder-global-var* -> %s%N" cmp:*load-time-value-holder-global-var*)
     (llog "About to evaluate body-fn~%")
     (funcall body-fn)
     ;; Generate the run-all function here
@@ -747,6 +806,7 @@ Return the index of the load-time-value"
                                                                 "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
+            (cmp::cmp-log "Replaced all %s with %s%N" cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
             (multiple-value-bind (function-vector-length function-vector)
                 (setup-literal-machine-function-vectors cmp:*the-module* :id id)
               (cmp:with-run-all-entry-codegen
@@ -791,6 +851,7 @@ Return the index of the load-time-value"
                                           (core:bformat nil "%s%d" core:+gcroots-in-module-name+ module-id)))
          (*run-time-coalesce* (make-similarity-table #'eq))
          (*literal-machine* (make-literal-machine)))
+    (cmp:cmp-log "do-rtv cmp:*load-time-value-holder-global-var* -> %s%N" cmp:*load-time-value-holder-global-var*)
     (let* ((THE-REPL-FUNCTION (funcall body-fn))
            (run-time-values (coerce (literal-machine-run-all-objects *literal-machine*) 'list))
            (num-elements (length run-time-values))
@@ -809,9 +870,11 @@ Return the index of the load-time-value"
           (let ((bitcast-constant-table (cmp:irc-bit-cast constant-table cmp:%t*[0]*% "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-constant-table)
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
-            (multiple-value-bind (startup-shutdown-id ordered-raw-constant-list)
-                (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
-                (values ordered-raw-constant-list constant-table startup-shutdown-id))))))))
+            (let ((cmp:*load-time-value-holder-global-var* bitcast-constant-table))
+              (cmp::cmp-log "do-rtv Replaced all %s with %s%N" cmp:*load-time-value-holder-global-var* bitcast-constant-table)
+              (multiple-value-bind (startup-shutdown-id ordered-raw-constant-list)
+                  (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
+                (values ordered-raw-constant-list constant-table startup-shutdown-id)))))))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
@@ -896,22 +959,20 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;;
 
 (defun bclasp-compile-form (form)
-  (let ((fn (cmp:with-new-function (fn fn-env fn-result
-                                       :function-name 'bclasp-top-level-form
-                                       :parent-env nil
-                                       :function-info (cmp:make-function-info
-                                                       :function-name 'bclasp-top-level-form
-                                                       :lambda-list nil
-                                                       :docstring nil
-                                                       :declares nil
-                                                       :spi core:*current-source-pos-info*))
-              (let* ((given-name (llvm-sys:get-name fn)))
-                (declare (ignorable given-name))
-                ;; Map the function argument names
-                (cmp:cmp-log "Creating ltv thunk with name: %s%N" given-name)
-                (cmp:codegen fn-result form fn-env)))))
-    (cmp:cmp-log-dump-function fn)
-    (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function fn t))
+  (let ((fn (cmp:with-new-function (local-fn fn-env fn-result
+                                             :function-name 'bclasp-top-level-form
+                                             :parent-env nil
+                                             :function-info (cmp:make-function-info
+                                                             :function-name 'bclasp-top-level-form
+                                                             :lambda-list nil
+                                                             :docstring nil
+                                                             :declares nil
+                                                             :spi core:*current-source-pos-info*))
+              ;; Map the function argument names
+              (cmp:cmp-log "Creating ltv thunk with name: %s%N" (llvm-sys:get-name local-fn))
+              (cmp:codegen fn-result form fn-env)
+              (cmp:cmp-log-dump-function local-fn)
+              (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function local-fn t)))))
     fn))
 
 (defun compile-form (form)
@@ -973,15 +1034,19 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; We could also add the capability to dump actual closures, though
 ;;;  I'm not sure why we'd want to do so.
 
-(defun reference-closure (function entry-point-ref)
+(defun reference-closure (function)
+  (unless (cmp:xep-group-p function)
+    (error "In reference-closure function must be a xep-group - it's a ~s" function))
   (let* ((datum (new-datum t))
-         (function-datum (register-function->function-datum function))
+         (function-datum (entry-point-datum-for-xep-group function))
          (function-index (function-datum-index function-datum))
+         (entry-point-ref (cmp:xep-group-entry-point-reference function))
          (creator (make-literal-node-closure :datum datum
                                              :function-index function-index
                                              :function function
                                              :entry-point-ref entry-point-ref)))
-    (add-creator "ltvc_make_closurette" datum creator function-index (cmp:entry-point-reference-index entry-point-ref))
+    (let ((epi (cmp:entry-point-reference-index entry-point-ref)))
+      (add-creator "ltvc_make_closurette" datum creator epi))
     (datum-index datum)))
 
 #|  (register-function function entry-point))
@@ -1074,18 +1139,18 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;; Should be bclasp-compile-load-time-value-thunk
 (defun compile-load-time-value-thunk (form)
   "bclasp compile the form into an llvm function and return that function"
-  (let ((fn (cmp:with-new-function (fn fn-env fn-result
-                                       :function-name 'bclasp-top-level-form
-                                       :parent-env nil
-                                       :function-info (cmp:make-function-info
-                                                       :function-name 'bclasp-top-level-form
-                                                       :lambda-list nil
-                                                       :docstring nil
-                                                       :declares nil
-                                                       :spi core:*current-source-pos-info*))
-              (cmp:codegen fn-result form fn-env))))
-    (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function fn t))
-    (or (llvm-sys:valuep fn) (error "compile-load-time-value-thunk must return an llvm::Function object - it will return ~a" fn))
+  (let ((fn (cmp:with-new-function (local-fn fn-env fn-result
+                                             :function-name 'bclasp-top-level-form
+                                             :parent-env nil
+                                             :function-info (cmp:make-function-info
+                                                             :function-name 'bclasp-top-level-form
+                                                             :lambda-list nil
+                                                             :docstring nil
+                                                             :declares nil
+                                                             :spi core:*current-source-pos-info*))
+              (cmp:codegen fn-result form fn-env)
+              (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function local-fn t))
+              )))
     fn))
 
 ;;; ------------------------------------------------------------
@@ -1119,14 +1184,14 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 
 (defparameter *c++-info* (make-hash-table :test #'equal))
 (eval-when (:load-toplevel :execute)
-  (set-c++-info 'cmp:%i8% "char" "char")
-  (set-c++-info 'cmp:%size_t% "size_t" "size_t")
-  (set-c++-info 'cmp:%t*% "T_O*" "object" t)
-  (set-c++-info 'cmp:%i8*% "string" "string")
-  (set-c++-info 'cmp:%float% "float" "float")
-  (set-c++-info 'cmp:%double% "double" "double")
-  (set-c++-info 'cmp:%uintptr_t% "uintptr_t" "size_t")
-  (set-c++-info 'cmp::%bignum% "T_O*" "bignum")
+  (set-c++-info :i8 "char" "char")
+  (set-c++-info :size_t "size_t" "size_t")
+  (set-c++-info :t* "T_O*" "object" t)
+  (set-c++-info :i8* "string" "string")
+  (set-c++-info :single-float "float" "float")
+  (set-c++-info :double-float "double" "double")
+  (set-c++-info :uintptr_t "uintptr_t" "size_t")
+  (set-c++-info :bignum "T_O*" "bignum")
   (set-c++-info :unknown "UNKNOWN" "UNKNOWN")
   )
 

@@ -1206,6 +1206,7 @@ Attribute_sp Attribute_O::get(LLVMContext_sp context, core::Cons_sp attribute_sy
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNone);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeZExt);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeSExt);
+SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeInAlloca);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoReturn);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeInReg);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeStructRet);
@@ -1236,6 +1237,7 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeAddressSafety);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeEnum);
 CL_BEGIN_ENUM(llvm::Attribute::AttrKind,_sym_AttributeEnum, "Attribute");
 CL_VALUE_ENUM(_sym_AttributeNone, llvm::Attribute::None);
+CL_VALUE_ENUM(_sym_AttributeInAlloca, llvm::Attribute::InAlloca);
 CL_VALUE_ENUM(_sym_AttributeZExt, llvm::Attribute::ZExt);
 CL_VALUE_ENUM(_sym_AttributeSExt, llvm::Attribute::SExt);
 CL_VALUE_ENUM(_sym_AttributeNoReturn, llvm::Attribute::NoReturn);
@@ -3313,6 +3315,8 @@ CL_LISPIFY_NAME("setHasUWTable");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setHasUWTable);
 CL_LISPIFY_NAME("setDoesNotThrow");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setDoesNotThrow);
+CL_LISPIFY_NAME("isVarArg");
+CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::isVarArg);
 CL_LISPIFY_NAME("addFnAttr");
 CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(Attribute::AttrKind Kind))&llvm::Function::addFnAttr);
 CL_LISPIFY_NAME("removeFnAttr");
@@ -4850,37 +4854,13 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   }
 #endif
   void* replPtrRaw;
-#if 1
   // Run the startup code by looking up a symbol
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    About to runStartupCode name = %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
   Code_sp codeObject;
   replPtrRaw = jit->runStartupCode(jit->_LLJIT->getMainJITDylib(), startupName, initialData, codeObject );
-//  printf("%s:%d:%s codeObject = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(codeObject).c_str());
-#else
-  // This should run the static constructors
-  ExitOnErr(jit->_LLJIT->initialize(jit->_LLJIT->getMainJITDylib()));
-  // The static initializers registered a callback with the startup_functions facility
-  // at this point core::startup_functions_are_waiting() should return true and when we
-  // call core::startup_functions_invoke(initialData.raw_() - they should evaluate using
-  // the data in initialData.
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid;
-  if (core::startup_functions_are_waiting()) {
-//    printf("%s:%d:%s startup_functions_are_waiting\n", __FILE__, __LINE__, __FUNCTION__ );
-    replPtrRaw = core::startup_functions_invoke(initialData.raw_());
-  } else {
-    SIMPLE_ERROR(BF("There must be startup functions waiting to be invoked\n"));
-  }
-#endif    
-  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
-  core::Function_sp functoid = core::ClosureWithSlots_O::make_bclasp_closure( fname,
-                                                                              lisp_funcPtr,
-                                                                              kw::_sym_function,
-                                                                              nil<core::T_O>(),
-                                                                              nil<core::T_O>() );
-//  printf("%s:%d:%s writing into function-description@%p  functionName: %s codeObject = %s\n", __FILE__, __LINE__, __FUNCTION__, functoid->fdesc().raw_(), _rep_(functoid->fdesc()->_functionName).c_str(), _rep_(codeObject).c_str());
-  functoid->_EntryPoint.load()->_Code = codeObject;
+  core::T_O* closure = makeCompiledFunction((core::T_O*)replPtrRaw,nil<core::T_O>().raw_());
+  core::Function_sp functoid((gctools::Tagged)closure);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
-  
   return functoid;
 }
 
@@ -5083,10 +5063,10 @@ void ClaspJIT_O::addObjectFile(ObjectFile_sp of, bool print)
 /*
  * runLoadtimeCode 
  */
+__attribute__((optnone))
 void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject )
 {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
-#if 1
   void* ptr;
   bool found = this->do_lookup(dylib,startupName,ptr);
   if (!found) {
@@ -5095,12 +5075,9 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
   T_OStartUp startup = reinterpret_cast<T_OStartUp>(ptr);
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup));
-  core::T_O* replPtrRaw = startup(initialDataOrUnbound.unboundp() ? (core::T_O*)NULL : initialDataOrUnbound.raw_());
+  core::T_O* arg0 = initialDataOrUnbound.unboundp() ? (core::T_O*)NULL : initialDataOrUnbound.raw_();
+  core::T_O* replPtrRaw = startup(arg0);
   // If we load a bitcode file generated by clasp - then startup_functions will be waiting - so run them
-#else
-  llvm::ExitOnError ExitOnErr;
-  ExitOnErr(this->_LLJIT->initialize(dylib));
-#endif
   if (!initialDataOrUnbound.unboundp()) {
 //    printf("%s:%d:%s There is initialData -> %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(initialDataOrUnbound).c_str());
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from startup function with %p\n", __FILE__, __LINE__, __FUNCTION__, replPtrRaw ));

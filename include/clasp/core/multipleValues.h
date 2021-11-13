@@ -311,4 +311,30 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     return gctools::return_type(nil<T0>().raw_(), 0);
   }
 
+namespace gctools {
+
+
+inline void fill_frame_multiple_value_return( Frame* frame, size_t& idx, gctools::return_type ret ) {
+#if LCC_RETURN_VALUES_IN_REGISTERS() == 1
+  if (ret.nvals>0) {
+    fill_frame_one( frame, idx, (core::T_O*)ret.ret0[0] );
+    core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
+    if (ret.nvals>1) {
+      gctools::fill_frame_nargs_args( frame, idx, ret.nvals-1, &mvThreadLocal._Values[1] );
+    }
+  }
+#else
+# error "Code below should work for more than one register return value"
+  if (ret.nvals>0) {
+    gctools::fill_frame_nargs_args( frame, idx, LCC_RETURN_VALUES_IN_REGISTERS(), (core::T_O**)&ret.ret0[0] );
+    if (ret.nvals>LCC_RETURN_VALUES_IN_REGISTERS()) {
+      core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
+      gctools::fill_frame_nargs_args( frame, idx, ret.nvals-LCC_RETURN_VALUES_IN_REGISTERS(), &mvThreadLocal._Values[LCC_RETURN_VALUES_IN_REGISTERS()] );
+    }
+  }
+#endif
+}
+
+};
+
 #endif

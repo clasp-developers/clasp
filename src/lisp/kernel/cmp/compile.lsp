@@ -18,6 +18,7 @@
          (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
            ,@body)
        (cmp-log "About to optimize-module%N")
+       ;;(cmp-log-dump-module ,module)
        (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
 
 ;;; See NOTE on compile-in-env below.

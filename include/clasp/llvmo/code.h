@@ -70,36 +70,6 @@ typedef enum { SaveState, RunState } CodeState_t;
   }; // ObjectFile_O class def
 }; // llvmo
 
-
-
-/* from_object translators */
-
-#if 0
-namespace translate {
-template <>
-struct from_object<llvm::object::ObjectFile *, std::true_type> {
-  typedef llvm::object::ObjectFile *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::ObjectFile_sp>(object)->wrappedPtr()){};
-};
-
-};
-
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::object::ObjectFile *> {
-  static core::T_sp convert(llvm::object::ObjectFile *ptr) {
-    return core::RP_Create_wrapped<llvmo::ObjectFile_O, llvm::object::ObjectFile *>(ptr);
-  }
-};
-}; // namespace llvmo - ObjectFile_O done
-#endif
-
-
-
-
 namespace llvmo {
   FORWARD(Code);
   FORWARD(ObjectFile);
@@ -113,14 +83,7 @@ namespace llvmo {
   public:
     static LibraryFile_sp createLibrary(const std::string& libraryName);
   };
-
-
-
 };
-
-
-
-
 
 namespace llvmo {
   class CodeBase_O;
@@ -131,8 +94,10 @@ namespace llvmo {
     CLASP_DEFAULT_CTOR CodeBase_O() {};
   public:
     virtual uintptr_t codeStart() const = 0;
+    virtual uintptr_t codeEnd() const = 0;
     virtual std::string filename() const = 0;
-    virtual void validateEntryPoint(void* entry_point) {};
+    virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point) {};
+    virtual void validateEntryPoint(const core::ClaspLocalFunction& entry_point) {};
   };
  
 };
@@ -209,7 +174,7 @@ public:
   size_t TOLiteralsSize() const { return literalsSize()/sizeof(core::T_O*); }
   virtual std::string filename() const;
   core::T_sp codeLineTable() const;
-  virtual void validateEntryPoint(void* entry_point);
+  virtual void validateEntryPoint(const core::ClaspXepFunction& entry_point);
 };
 
 };
@@ -239,6 +204,7 @@ class Library_O : public CodeBase_O {
   static Library_sp make(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd, const std::string& name );
   std::string __repr__() const;
   uintptr_t codeStart() const { return (uintptr_t)this->_Start; };
+  uintptr_t codeEnd() const { return (uintptr_t)this->_End; };
   std::string filename() const;
 };
 };

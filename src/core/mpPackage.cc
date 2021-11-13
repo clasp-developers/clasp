@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
+#include <clasp/core/designators.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/lispList.h>
@@ -157,7 +158,7 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
     core::T_mv result_mv;
     {
       try {
-        result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
+        result_mv = core::core__apply0(core::coerce::functionDesignator(process->_Function),args);
       } catch (ExitProcess& e) {
         // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine,
         // and may have been set by mp:exit-process.

@@ -67,7 +67,10 @@ static bool
 test_compare(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  T_sp res = (*t->test_fn).entry()(LCC_PASS_ARGS2_ELLIPSIS(t->test_fn.raw_(),t->item_compared.raw_(), x.raw_()));
+  MAKE_STACK_FRAME( frame, 2 );
+  gctools::fill_frame_one_indexed( frame, 0, t->item_compared.raw_() );
+  gctools::fill_frame_one_indexed( frame, 1, x.raw_() );
+  T_sp res = (*t->test_fn).entry()(t->test_fn.raw_(),2,frame->arguments());
   return res.notnilp();
 }
 
@@ -75,7 +78,10 @@ static bool
 test_compare_not(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  T_sp res = (*t->test_fn).entry()(LCC_PASS_ARGS2_ELLIPSIS(t->test_fn.raw_(),t->item_compared.raw_(), x.raw_()));
+  MAKE_STACK_FRAME( frame, 2 );
+  gctools::fill_frame_one_indexed( frame, 0, t->item_compared.raw_() );
+  gctools::fill_frame_one_indexed( frame, 1, x.raw_() );
+  T_sp res = (*t->test_fn).entry()(t->test_fn.raw_(),2,frame->arguments());
   return res.nilp();
 }
 
@@ -103,7 +109,9 @@ static T_sp
 key_function(struct cl_test *t, T_sp x) {
   //t->env->function = t->key_function;
   T_mv result;
-  return (*t->key_fn).entry()(LCC_PASS_ARGS1_ELLIPSIS(t->key_fn.raw_(),x.raw_()));
+  MAKE_STACK_FRAME( frame, 1 );
+  gctools::fill_frame_one_indexed( frame, 0, x.raw_() );
+  return (*t->key_fn).entry()(t->key_fn.raw_(),1,frame->arguments(0));
 }
 
 static T_sp
@@ -330,19 +338,19 @@ CL_LAMBDA(core:&va-rest objects)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(list* see CLHS)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
+CL_DEFUN T_sp cl__listSTAR(Vaslist_sp vargs) {
   size_t nargs = vargs->remaining_nargs();
   if (nargs == 0) throwTooFewArgumentsError(nil<T_O>(),
                                             clasp_make_fixnum(0),
                                             clasp_make_fixnum(1));
   ql::list result;
   while (nargs > 1) {
-    T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+    T_O* tcsp = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
     T_sp csp((gctools::Tagged)tcsp);
     result << csp;
     nargs--;
   }
-  T_O* tailptr = ENSURE_VALID_OBJECT(vargs->next_arg_raw());
+  T_O* tailptr = ENSURE_VALID_OBJECT(vargs->next_arg().raw_());
   T_sp tail((gctools::Tagged)tailptr);
   result.dot(tail);
   return result.cons();

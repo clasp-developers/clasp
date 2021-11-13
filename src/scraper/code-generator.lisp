@@ -22,12 +22,12 @@
   (unless (stringp lambda-list)
     (error "Expected lambda-list ~s to be a string" lambda-list))
   (when (search "&va-rest" lambda-list)
-    (unless (search "VaList_" function-name)
-      (error "Possible core:&va-rest consistency problem!!!!!~% A lambda list ~s contains &va-rest but the function ~s doesn't take VaList_sp as an argument"
+    (unless (search "Vaslist_" function-name)
+      (error "Possible core:&va-rest consistency problem!!!!!~% A lambda list ~s contains &va-rest but the function ~s doesn't take Vaslist_sp as an argument"
              lambda-list function-name)))
-  (when (search "VaList_" function-name)
+  (when (search "Vaslist_" function-name)
     (when (search "&rest" lambda-list)
-      (error "Possible core:&va-rest consistency problem!!!!!~% A function-name ~s contains VaList_sp but the function takes a &rest argument"
+      (error "Possible core:&va-rest consistency problem!!!!!~% A function-name ~s contains Vaslist_sp but the function takes a &rest argument"
              function-name))))
 
 (defun partition-list (list parts &key (last-part-longer nil))

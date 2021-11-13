@@ -1,9 +1,10 @@
 (in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(
-            with-debug-info-source-position
+  (export '(with-debug-info-source-position
             with-interpreter
+            calculate-cleavir-lambda-list-analysis
             module-report
+            transform-lambda-parts
             codegen-startup-shutdown
             jit-startup-shutdown-function-names
             irc-simple-function-create
@@ -18,7 +19,6 @@
             *default-linkage*
             *compile-file-parallel-write-bitcode*
             *default-compile-linkage*
-            *gcroots-in-module*
             quick-module-dump
             write-bitcode
             load-bitcode
@@ -26,40 +26,41 @@
             *compile-file-unique-symbol-prefix*
             %ltv*%
             irc-function-create
-            irc-bclasp-function-create
-            irc-cclasp-local-function-create
-            irc-cclasp-function-create
+            irc-make-function-description
+            irc-local-function-create
+            irc-xep-functions-create
+            xep-arity-arity
+            xep-arity-function-or-placeholder
+            xep-arity-entry-point-reference
+            xep-group-lookup
+            xep-group
+            xep-group-p
+            xep-group-arities
+            xep-group-name
+            xep-group-entry-point-reference
+            xep-group-cleavir-lambda-list-analysis
             +c++-stamp-max+
             %opaque-fn-prototype*%
-            %fn-prototype%
-            +fn-prototype-argument-names+
-            %fn-prototype*%
+            fn-prototype
             *cleavir-compile-file-hook*
             *cleavir-compile-hook*
             *compile-print*
-            *compile-counter*
-            *compile-duration-ns*
             *current-function*
             *current-function-name*
-            *current-function-description*
             *current-unwind-landing-pad-dest*
             *debug-compile-file*
             *debug-compile-file-counter*
             *generate-compile-file-load-time-values*
             module-literal-table
             *gv-current-function-name*
-            *gv-source-namestring*
             *implicit-compile-hook*
             *irbuilder*
-            llvm-context
             *thread-safe-context*
             thread-local-llvm-context
             *load-time-value-holder-global-var*
             *low-level-trace*
             *low-level-trace-print*
-            *run-time-literal-holder*
             *run-time-values-table-name*
-            ;;          *run-time-values-table*
             #+(or)*run-time-values-table-global-var*
             *the-module*
             +header-size+
@@ -69,12 +70,12 @@
             +fixnum-mask+
             +fixnum00-tag+
             +fixnum01-tag+
-            +fixnum10-tag+
-            +fixnum11-tag+
+            #+tag-bits4 +fixnum10-tag+
+            #+tag-bits4 +fixnum11-tag+
             +alignment+
-            +vaslist-ptag-mask+
+            #+tag-bits4 +vaslist-ptag-mask+
             +vaslist0-tag+
-            +vaslist1-tag+
+            #+tag-bits4 +vaslist1-tag+
             +single-float-tag+
             +character-tag+
             +general-tag+
@@ -93,6 +94,8 @@
             %i8**%
             %i8*%
             %i8%
+            %fixnum%
+            %word%
             %mv-struct%
             %size_t%
             %t*%
@@ -112,30 +115,27 @@
             %function-description%
             %function-description*%
             entry-point-reference-index
+            irc-funcall-results-in-registers
             function-type-create-on-the-fly
             evaluate-foreign-arguments
-            jit-remove-module
             calling-convention-closure
-            calling-convention-use-only-registers
             calling-convention-args
-            calling-convention-args.va-arg
-            calling-convention-va-list*
-            calling-convention-register-save-area*
+            calling-convention-vaslist*
+            calling-convention-vaslist.va-arg
             calling-convention-nargs
             calling-convention-register-args
-            calling-convention-write-registers-to-multiple-values
-            describe-constants-table
             cmp-log
             cmp-log-dump-module
             cmp-log-dump-function
             make-file-metadata
             make-function-metadata
             function-info
+            function-info-cleavir-lambda-list-analysis
             make-function-info
+            generate-function-for-arity-p
+
             irc-create-call-wft
-            irc-create-invoke
             irc-calculate-entry
-            irc-calculate-real-args
             compile-file-to-module
             optimize-module-for-compile
             optimize-module-for-compile-file
@@ -144,15 +144,12 @@
             compile-in-env
             compile-lambda-function
             compile-lambda-list-code
-            make-calling-convention-impl
+            make-calling-convention
             bclasp-compile-form
             compile-form
             compiler-error
             compiler-warn
             compiler-style-warn
-            compiler-fatal-error
-            compiler-message-file
-            compiler-message-file-position
             define-primitive
             warn-undefined-global-variable
             warn-undefined-type
@@ -161,7 +158,6 @@
             warn-icsp-iesp-both-specified
             register-global-function-def
             register-global-function-ref
-            analyze-top-level-form
             safe-system
             jit-constant-uintptr_t
             irc-sext
@@ -183,9 +179,9 @@
             alloca-i32
             alloca-size_t
             alloca-return
-            alloca-va_list
+            alloca-vaslist
             alloca-temp-values
-            irc-lisp-function-type
+            alloca-arguments
             irc-and
             irc-or
             irc-xor
@@ -201,12 +197,10 @@
             irc-bit-cast
             irc-pointer-cast
             irc-maybe-cast-integer-to-t*
-            irc-create-invoke
             irc-create-invoke-default-unwind
             irc-create-landing-pad
             irc-exception-typeid*
             irc-extract-value
-            irc-generate-terminate-code
             irc-gep
             irc-gep-variable
             irc-smart-ptr-extract
@@ -235,6 +229,8 @@
             irc-store-atomic
             irc-cmpxchg
             irc-struct-gep
+            vaslist-start
+            vaslist-copy
             irc-read-slot
             irc-write-slot
             irc-make-tmv
@@ -265,8 +261,8 @@
             irc-array-total-size
             irc-array-rank
             gen-%array-dimension
-            irc-vaslist-va_list-address
-            irc-vaslist-remaining-nargs-address
+            irc-vaslist-vaslist-address
+            irc-vaslist-nargs-address
             gen-instance-rack
             gen-instance-rack-set
             gen-rack-ref
@@ -288,6 +284,12 @@
             load-bitcode
             setup-calling-convention
             initialize-calling-convention
+            ensure-cleavir-lambda-list
+            ensure-cleavir-lambda-list-analysis
+            process-cleavir-lambda-list-analysis
+            cleavir-lambda-list-analysis-cleavir-lambda-list
+            cleavir-lambda-list-analysis-rest
+            process-bir-lambda-list
             treat-as-special-operator-p
             typeid-core-unwind
             with-begin-end-catch
@@ -297,6 +299,7 @@
             *dbg-current-function-lineno*
             *dbg-current-scope*
             with-new-function
+            with-guaranteed-*current-source-pos-info*
             with-dbg-function
             with-dbg-lexical-block
             dbg-variable-alloca
@@ -320,21 +323,25 @@
             +cons-car-offset+
             +cons-cdr-offset+
             +simple-vector._length-offset+
+            +entry-point-arity-begin+
+            +entry-point-arity-end+
+            +number-of-entry-points+
             %uintptr_t%
             %return-type%
             %vaslist%
-            %register-save-area%
             null-t-ptr
-            compile-error-if-wrong-number-of-arguments
             compile-error-if-too-many-arguments
-            compile-throw-if-excess-keyword-arguments
             *irbuilder-function-alloca*
             irc-get-terminate-landing-pad-block
             irc-function-cleanup-and-return
+            irc-calculate-call-info
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
             compute-rest-alloc
             compile-tag-check
             compile-header-check
+            ensure-xep-function-not-placeholder
+            general-entry-point-redirect-name
+            get-or-declare-function-or-error
             )))
 
 ;;; exports for runall
@@ -356,7 +363,8 @@
           undefined-type-warning
           redefined-function-warning
           wrong-argcount-warning
-          compiler-macro-expansion-error-warning))
+          compiler-macro-expansion-error-warning
+          fold-failure))
 
 (in-package :literal)
 
@@ -364,12 +372,17 @@
           *byte-codes*
           add-creator
           next-value-table-holder-name
+          general-entry-placeholder
+          general-entry-placeholder-p
+          ensure-not-placeholder
+          make-general-entry-placeholder
           make-literal-node-call
           make-literal-node-creator
           setup-literal-machine-function-vectors
           run-all-add-node
-          register-function->function-datum
-          register-function-index
+          entry-point-datum-for-xep-group
+          register-local-function-index
+          register-xep-function-indices
           literal-node-runtime-p
           literal-node-runtime-index
           literal-node-runtime-object

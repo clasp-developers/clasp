@@ -308,13 +308,16 @@ core::T_O* startup_functions_invoke(T_O* literals)
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
-//      T_mv result = (fn)(LCC_PASS_MAIN());
       switch (startup._Type) {
       case StartUp::T_O_function:
           result = ((T_OStartUp)startup._Function)(literals); // invoke the startup function
+          if (result) {
+            printf("%s:%d:%s Returning a function pointer %p from startup_functions_invoke - we need to support this\n", __FILE__, __LINE__, __FUNCTION__, result );
+          }
           break;
       case StartUp::void_function:
           ((voidStartUp)startup._Function)();
+          printf("%s:%d:%s Returning NULL startup_functions_invoke\n", __FILE__, __LINE__, __FUNCTION__ );
           result = NULL;
       }
     }
@@ -749,7 +752,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bitcode_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
+  llvmo::llvm_sys__load_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
   return _lisp->_true();
 }
 
@@ -758,7 +761,7 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
 //  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
-  llvmo::llvm_sys__load_bitcode(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
+  llvmo::llvm_sys__load_bc(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,nil<core::T_O>());
   return _lisp->_true();
 }
 
@@ -1140,8 +1143,8 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
 CL_DOCSTRING(R"dx((call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values))dx")
 DOCGROUP(clasp)
 CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
-  InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
-  (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
+  ClaspXepGeneralFunction mainFunctionPointer = (ClaspXepGeneralFunction)addr->ptr();
+  (*mainFunctionPointer)(nil<core::T_O>().raw_(),0,NULL);
 }
 
 CL_DOCSTRING(R"dx((call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values))dx")
@@ -1179,7 +1182,7 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
                                                                         nil<T_O>(),
                                                                         code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
-  return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+  return (thunk->entry())(thunk.raw_(),0,NULL);
   //  return eval::funcall(thunk);
 };
 
@@ -1265,7 +1268,7 @@ CL_DOCSTRING(R"dx(Call THUNK with the given SYMBOL bound to to the given VALUE.)
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, Function_sp thunk) {
   DynamicScopeManager scope(sym, val);
-  return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+  return (thunk->entry_0())(thunk.raw_());
 }
 
 }
@@ -1277,7 +1280,7 @@ LCC_RETURN call_with_variable_bound(core::T_O* tsym, core::T_O* tval, core::T_O*
   core::T_sp val((gctools::Tagged)tval);
   core::Function_sp func((gctools::Tagged)tthunk);
   core::DynamicScopeManager scope(sym, val);
-  return (func->entry())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  return (func->entry_0())(func.raw_());
 }
 
 };
@@ -1291,7 +1294,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   try {
     Closure_sp closure = gc::As_unsafe<Closure_sp>(protected_fn);
     ASSERT(closure);
-    result = closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    result = closure->entry_0()(closure.raw_());
   }
   catch (...)
   {
@@ -1302,7 +1305,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     multipleValuesSaveToTemp(nvals, mv_temp);
     {
       Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+      closure->entry_0()(closure.raw_());
     }
     multipleValuesLoadFromTemp(nvals, mv_temp);
     throw;  // __cxa_rethrow
@@ -1314,7 +1317,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
   {
     Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-    closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    closure->entry()(closure.raw_(),0,NULL);
   }
   return returnTypeLoadFromTemp(nvals, mv_temp);
 }
@@ -1324,28 +1327,16 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(multipleValueFuncall)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
-  MAKE_STACK_FRAME(frame, fmv.raw_(), MultipleValues::MultipleValuesLimit);
+  MAKE_STACK_FRAME(frame, MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
-  MultipleValues& mv = lisp_multipleValues();
   for (auto cur : thunks) {
     Function_sp tfunc = gc::As<Function_sp>(oCar(cur));
-    T_mv result = (tfunc->entry())(LCC_PASS_ARGS0_ELLIPSIS(tfunc.raw_()));
+    auto result = (tfunc->entry_0()(tfunc.raw_()));
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
-    if (result.number_of_values() > 0  ) {
-        (*frame)[idx] = result.raw_();
-        ++idx;
-        for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
-          ASSERT(idx < MultipleValues::MultipleValuesLimit);
-          (*frame)[idx] = mv._Values[i];
-          ++idx;
-        }
-      }
+    gctools::fill_frame_multiple_value_return( frame, idx, result );
   }
-  frame->set_number_of_arguments(idx);
-  Vaslist valist_s(frame);
-  VaList_sp args(&valist_s);
-  return funcall_consume_valist_<Function_O>(fmv.tagged_(),args);
+  return funcall_general<Function_O>(fmv.tagged_(),idx,frame->arguments(0));
 }
 
 CL_LAMBDA(tag func)
@@ -1355,7 +1346,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   CLASP_BEGIN_CATCH(tag) {
-    result = thunk->entry()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+    result = thunk->entry_0()(thunk.raw_());
   } CLASP_END_CATCH(tag, result);
   return result;
 }
@@ -1368,7 +1359,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);
-  result = closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+  result = closure->entry_0()(closure.raw_());
   result.saveToMultipleValue0();
   clasp_throw(tag);
 }
@@ -1387,8 +1378,7 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
       return core__progv_function(CONS_CDR(symbols),nil<core::T_O>(),func);
     }
   } else {
-    T_mv result = (func->entry())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
-  // T_mv result = eval::funcall(func);
+    T_mv result = func->entry_0()(func.raw_());
     return result;
   }
 }
@@ -1415,13 +1405,13 @@ CL_DEFUN T_sp core__run_function( T_sp object ) {
   if (thandle.notnilp() && gc::IsA<Pointer_sp>(thandle)) {
     handle = (uintptr_t)gc::As_unsafe<Pointer_sp>(thandle)->ptr();
   }
-  claspFunction func = (claspFunction)dlsym((void*)handle,name.c_str());
+  ClaspXepGeneralFunction func = (ClaspXepGeneralFunction)dlsym((void*)handle,name.c_str());
 //  printf("%s:%d:%s running function %s  at %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)func);
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)func);
 #endif
   if( func != nullptr ) {
-    LCC_RETURN ret = func(LCC_PASS_ARGS0_VA_LIST(nil<T_O>().raw_()));
+    LCC_RETURN ret = func(nil<T_O>().raw_(),0,NULL);
     core::T_sp res((gctools::Tagged)ret.ret0[0]);
     core::T_sp val = res;
     return val;
@@ -1453,7 +1443,6 @@ CL_DEFUN T_sp core__handle_creator( T_sp object ) {
 
  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
  SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);
- SYMBOL_EXPORT_SC_(CompPkg, STARall_functions_for_one_compileSTAR);
  SYMBOL_SC_(CorePkg, dlopen);
  SYMBOL_SC_(CorePkg, dlsym);
  SYMBOL_SC_(CorePkg, dladdr);
@@ -1466,7 +1455,7 @@ template <> char document<char*>() { return 'S'; };
 template <> char document<T_O*>() { return 'O'; };
 template <> char document<float>() { return 'f'; };
 template <> char document<double>() { return 'd'; };
-template <> char document<fnLispCallingConvention>() { return 'f'; };
+template <> char document<ClaspXepAnonymousFunction>() { return 'f'; };
 
 char ll_read_char(T_sp stream, bool log, size_t& index)
 {
@@ -1487,7 +1476,7 @@ char ll_read_char(T_sp stream, bool log, size_t& index)
   }
 }
 
-#if 1
+#if 0
 #define SELF_DOCUMENT(ty,stream,index) { char _xx = document<ty>(); clasp_write_char(_xx,stream); ++index; }
 #define SELF_CHECK(ty,stream,index) { char _xx = document<ty>(); claspCharacter _cc = ll_read_char(stream,log,index); ++index; if (_xx!=_cc) SIMPLE_ERROR(BF("Mismatch of ltvc read types read '%c' expected '%c'") % _cc % _xx );}
 #else

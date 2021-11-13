@@ -60,16 +60,41 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp ep, VariablePtrType p) : core::BuiltinClosure_O(ep), _MemberPtr(p){
     trapGetterMethoid();
   };
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
+    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>(arg0)->cast<OT>();
     MemberType &orig = (*objPtr).*(closure->_MemberPtr);
     return Values(translate::to_object<MemberType, translate::dont_adopt_pointer>::convert(orig));
   }
+    static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
 };
 };
 
@@ -89,16 +114,41 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   
 public:
-  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp ep, VariablePtrType p) : BuiltinClosure_O(ep), _MemberPtr(p){
     trapGetterMethoid();
   };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
+    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>(arg0)->cast<OT>();
     MemberType *ptr = (*objPtr).*(closure->_MemberPtr);
     return translate::to_object<MemberType *, translate::dont_adopt_pointer>::convert(ptr);
   }
+    static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
 };
 };
 
@@ -128,17 +178,44 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(gep,entry_point)), _MemberPtr(p){
+  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : core::BuiltinClosure_O(gep), _MemberPtr(p){
   };
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG1()))->cast<OT>();
-    translate::from_object<MemberType> fvalue(LCC_ARG0());
+    ASSERT(lcc_nargs==2);
+    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+    core::T_sp arg1((gctools::Tagged)lcc_args[1]);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>(arg1)->cast<OT>();
+    translate::from_object<MemberType> fvalue(arg0);
     (*objPtr).*(closure->_MemberPtr) = fvalue._v;
-    gctools::return_type retv(LCC_ARG0().raw_(),1);
+    gctools::return_type retv(arg0.raw_(),1);
     return retv;
   }
+    static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
 };
 };
 
@@ -158,17 +235,43 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : BuiltinClosure_O(ENSURE_ENTRY_POINT(gep,entry_point)), _MemberPtr(p){
+  SetterMethoid(core::GlobalEntryPoint_sp gep, VariablePtrType p) : BuiltinClosure_O(gep), _MemberPtr(p){
   };
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG1()))->cast<OT>();
-    translate::from_object<MemberType> fvalue(LCC_ARG0());
+    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+    core::T_sp arg1((gctools::Tagged)lcc_args[1]);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>(arg1)->cast<OT>();
+    translate::from_object<MemberType> fvalue(arg0);
     (*objPtr).*(closure->_MemberPtr) = fvalue._v;
-    typename gctools::return_type ret(LCC_ARG0().raw_(),1);
+    typename gctools::return_type ret(arg0.raw_(),1);
     return ret;
   }
+    static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
 };
 };
 

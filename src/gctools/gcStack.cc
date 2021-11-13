@@ -28,14 +28,26 @@ THE SOFTWARE.
 namespace gctools {
 
 
-void Frame::dump() const {
-  size_t numElements = this->number_of_arguments();
-  printf("%s:%d dumping Frame with %lu elements\n", __FILE__, __LINE__, numElements);
-  core::Closure_sp closure((gctools::Tagged)this->_register_save_area[0]);
-  printf("%s:%d closure %s\n", __FILE__, __LINE__, _rep_(closure).c_str());
-  for ( size_t ii=0; ii<numElements; ++ii ) {
-    core::T_sp arg((gctools::Tagged)(*this)[ii]);
+void Frame::dumpFrame(size_t nargs) const {
+  printf("%s:%d dumping Frame with %lu elements\n", __FILE__, __LINE__, nargs);
+  for ( size_t ii=0; ii<nargs; ++ii ) {
+    core::T_sp arg((gctools::Tagged)this->_args[ii]);
     printf("%s:%d arg[%lu] -> %s\n", __FILE__, __LINE__, ii, _rep_(arg).c_str());
+  }
+}
+
+void Frame::debugEmptyFrame( size_t nargs) {
+#if DEBUG_FRAME() == 2
+  for ( size_t ii=0; ii<nargs; ++ii ) {
+    (*this)._args[ii] = gctools::tag_unbound<core::T_O*>();
+  }
+#endif
+}
+
+void Frame::checkFrame(size_t idx, size_t nargs) const {
+  if (idx!=nargs) {
+    printf("%s:%d:%s FRAME not filled %lu should be %lu\n", __FILE__, __LINE__, __FUNCTION__, idx, nargs );
+    abort();
   }
 }
 

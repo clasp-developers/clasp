@@ -8,7 +8,6 @@
   (let ((find (assoc name info)))
     (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
     (cdr find)))
-(defvar +register-save-area-size+ (get-cxx-data-structure-info :register-save-area-size))
 (defvar +multiple-values-limit+ (get-cxx-data-structure-info :multiple-values-limit))
 (defvar +sizeof-size_t+ (get-cxx-data-structure-info 'core:size-t))
 (defvar +optimized-slot-index-index+ (get-cxx-data-structure-info :optimized-slot-index-index))
@@ -16,11 +15,10 @@
 (defvar +value-frame-parent-offset+ (get-cxx-data-structure-info :value-frame-parent-offset))
 (defvar +closure-entry-point-offset+ (get-cxx-data-structure-info :closure-entry-point-offset))
 (defvar +global-entry-point-entry-points-offset+ (get-cxx-data-structure-info :global-entry-point-entry-points-offset))
-(defvar +vaslist-remaining-nargs-offset+ (get-cxx-data-structure-info :vaslist-remaining-nargs-offset))
 (defvar +unused-stamp+ (get-cxx-data-structure-info :unused-stamp))
 (defvar +fixnum-stamp+ (get-cxx-data-structure-info :fixnum-stamp))
 (defvar +cons-stamp+ (get-cxx-data-structure-info :cons-stamp))
-(defvar +vaslist-stamp+ (get-cxx-data-structure-info :va_list_s-stamp))
+(defvar +vaslist-stamp+ (get-cxx-data-structure-info :vaslist_s-stamp))
 (defvar +character-stamp+ (get-cxx-data-structure-info :character-stamp))
 (defvar +single-float-stamp+ (get-cxx-data-structure-info :single-float-stamp))
 (defvar +instance-rack-stamp-offset+ (get-cxx-data-structure-info :instance-rack-stamp-offset))
@@ -73,14 +71,15 @@
 (defvar +single-float-shift+ (get-cxx-data-structure-info :single-float-shift))
 (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
 (defvar +vaslist-size+ (get-cxx-data-structure-info :vaslist-size))
-(defvar +vaslist-valist-offset+ (get-cxx-data-structure-info :vaslist-valist-offset))
-(defvar +vaslist-remaining-nargs-offset+ (get-cxx-data-structure-info :vaslist-remaining-nargs-offset))
+(defvar +vaslist-args-offset+ (get-cxx-data-structure-info :vaslist-args-offset))
+(defvar +vaslist-nargs-offset+ (get-cxx-data-structure-info :vaslist-nargs-offset))
 (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
 (defvar +jmp-buf-size+ (get-cxx-data-structure-info :jmp-buf-size))
 (defvar +alignment+ (get-cxx-data-structure-info :alignment))
 (defvar +args-in-registers+ (get-cxx-data-structure-info :lcc-args-in-registers))
 (export '(+fixnum-mask+ +ptag-mask+ +immediate-mask+
-          +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
+          +cons-tag+
+          +character-tag+ +single-float-tag+
           +general-tag+ +vaslist-size+ +void*-size+ +alignment+ ))
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
@@ -89,3 +88,7 @@
 (defvar +simple-vector._length-offset+ (get-cxx-data-structure-info :simple-vector._length-offset))
 (defvar +simple-vector._data-offset+ (get-cxx-data-structure-info :simple-vector._data-offset))
 (defvar +size_t-bits+ (get-cxx-data-structure-info :size_t-bits))
+(defvar +entry-point-arity-begin+ (get-cxx-data-structure-info :entry-point-arity-begin))
+(defvar +entry-point-arity-end+ (get-cxx-data-structure-info :entry-point-arity-end))
+(defvar +number-of-entry-points+ (get-cxx-data-structure-info :number-of-entry-points))
+

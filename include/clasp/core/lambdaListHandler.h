@@ -42,8 +42,8 @@ namespace core {
 typedef enum { required,
                optional,
                dot_rest,
-               rest,
                va_rest,
+               rest,
                keyword,
                allowOtherKeys,
                aux } ArgumentMode;
@@ -199,9 +199,9 @@ public:
 	  context can be one of 'FUNCTION, 'MACRO and other values */
   virtual void parse_lambda_list_declares(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier);
 
-  void createBindingsInScopeVaList(core::T_sp closure,
-                                   size_t n_args, VaList_sp argArray,
-                                   ScopeManager &scope);
+  void createBindingsInScope(core::T_sp closure,
+                             size_t n_args, core::T_O** args,
+                             ScopeManager &scope);
 
   /*! Return a list of expressions that can be evaluated in (env) to generate a list of values that would
 	  be put into the classifiedSymbols */

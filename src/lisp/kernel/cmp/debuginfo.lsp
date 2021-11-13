@@ -170,9 +170,9 @@
    ))
 
 (defun do-dbg-function (closure lineno function-type function)
+  (unless *current-source-pos-info*
+    (warn "*current-source-pos-info* is undefined - this may cause problems - wrap with-dbg-function in with-guaranteed-*current-source-pos-info* to fix this"))
   (let ((linkage-name (llvm-sys:get-name function)))
-    (unless (llvm-sys:type-equal function-type %fn-prototype%)
-      (format t "!~%!~%!~%!~%!~%!~%    do-dbg-function called with function-type ~s that did not match %fn-prototype% ~s~%!~%!~%!~%!~%!~%!~%" function-type %fn-prototype%))
     (multiple-value-bind (file-scope file-handle)
         (core:file-scope (llvm-sys:get-path *dbg-current-file*))
       (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
@@ -184,7 +184,15 @@
             (funcall closure))
           (funcall closure)))))
 
+(defmacro with-guaranteed-*current-source-pos-info* (() &rest body)
+  `(let ((core:*current-source-pos-info* (if core:*current-source-pos-info*
+                                             core:*current-source-pos-info*
+                                             (core:make-source-pos-info :filename "dummy-filename"))))
+     (progn
+       ,@body)))
+                                             
 (defmacro with-dbg-function ((&key lineno function-type function) &rest body)
+  (cmp-log "Entered with-dbg-function%N")
   `(do-dbg-function
        (lambda () (progn ,@body))
      ,lineno ,function-type ,function))
@@ -232,7 +240,7 @@
                           function-scope-info
                         (make-function-metadata :linkage-name function-name
                                                 :lineno lineno
-                                                :function-type (if function-type function-type %fn-prototype%)
+                                                :function-type (if function-type function-type (fn-prototype :general-entry))
                                                 :file-metadata (cached-file-metadata file-handle))))
                 :created))))
 

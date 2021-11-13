@@ -1705,41 +1705,6 @@ public:
 }; // llvmo
 /* from_object translators */
 
-#if 0
-namespace translate {
-  // Since llvm3.8 there don't appear to be functions that
-  // take or return llvm::StructLayout* pointers.  So I am commenting out
-  // their converters and I changed the StructLayout_O class to store a llvm::StructLayout
-  template <>
-    struct from_object<llvm::StructLayout const &, std::true_type> {
-    typedef llvm::StructLayout const &DeclareType;
-    DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::StructLayout_sp>(object)->structLayout()) {};
-  };
-
-  // ----------   to_object converters
-  template <>
-    struct to_object<const llvm::StructLayout &> {
-    static core::T_sp convert(const llvm::StructLayout & ref) {
-      // Use the copy constructor to create a StructLayout_O
-      auto val = gctools::GC<llvmo::StructLayout_O>::allocate(ref);
-      return val;
-    }
-  };
-
-  /*! This copies the StructLayout so it doesn't deal with pointers at all */
-  template <>
-    struct to_object<llvm::StructLayout const, translate::dont_adopt_pointer> {
-    static core::T_sp convert(llvm::StructLayout orig) {
-      // Use the copy constructor to create a StructLayout_O
-      auto val = gctools::GC<llvmo::StructLayout_O>::allocate(orig);
-      return val;
-    }
-  };
-};
-#endif
-
-
 namespace llvmo {
 FORWARD(Constant);
 class Constant_O : public User_O {

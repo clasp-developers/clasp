@@ -231,7 +231,7 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, SharedMutex_O, "SharedMutex",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make-shared-mutex");
-    CL_LAMBDA(&optional (name "Anonymous Shared Mutex"));
+    CL_LAMBDA(&optional (name "Anonymous Read Mutex") (write-lock-name "Anonymous Write Mutex"));
     CL_DOCSTRING("Create and return a fresh shared mutex with the given name.")
     CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp readName,core::T_sp writeLockName) {
       auto l = gctools::GC<SharedMutex_O>::allocate(readName,writeLockName);

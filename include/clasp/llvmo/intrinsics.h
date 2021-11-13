@@ -47,7 +47,7 @@ extern "C" {
 
 typedef void LtvcReturn;
 
-LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index, size_t function_info_index);
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, /*size_t function_index,*/ size_t entry_point_index);
 LtvcReturn ltvc_make_closurette_no_function_info(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index);
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index);
 LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, char tag, size_t index);
@@ -76,7 +76,7 @@ LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char
 
 LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t );
 
-LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t );
+LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t, size_t localEntryPointIndex );
 
 
 
@@ -227,6 +227,11 @@ extern uint64_t cx_read_stamp(core::T_O* tagged_pointer, uint64_t new_stamp);
 extern core::T_O* cc_match(core::T_O* old_value, core::T_O* new_value );
 extern void unreachableError();
 [[noreturn]] void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis);
+core::T_O* makeCompiledFunction(core::T_O* tentrypoint,
+                                core::T_O* frameP);
+
+
+
 }
 namespace llvmo {
 

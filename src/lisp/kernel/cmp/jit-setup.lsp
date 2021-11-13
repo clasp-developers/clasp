@@ -128,10 +128,10 @@
      (if *use-human-readable-bitcode*
          (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
            (if print (core:bformat t "Loading %s%N" input-name))
-           (llvm-sys:load-bitcode-ll input-name (thread-local-llvm-context)))
+           (llvm-sys:load-ll input-name (thread-local-llvm-context)))
          (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
            (if print (core:bformat t "Loading %s%N" input-name))
-           (llvm-sys:load-bitcode input-name (thread-local-llvm-context)))))
+           (llvm-sys:load-bc input-name (thread-local-llvm-context)))))
     (t (error "Add support for load-bitcode with clasp-build-mode of ~a" clasp-build-mode))))
 
 (defun parse-bitcode (filename context &key print clasp-build-mode)
@@ -779,7 +779,7 @@ No DIBuilder is defined for the default module")
 ;;;(in-package :cmp)
 (defparameter *dump-compile-module* nil)
 (progn
-  (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
+  (export '(jit-add-module-return-function))
   (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
   (defun jit-add-module-return-function (original-module main-fn startup-shutdown-id literals-list
                                          &key output-path name)

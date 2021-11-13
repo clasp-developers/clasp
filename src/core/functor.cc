@@ -57,15 +57,6 @@ namespace core {
 // Keep track of how many interpreted closure calls there are
 std::atomic<uint64_t> global_interpreted_closure_calls;
 
-
-GlobalEntryPoint_sp ensureEntryPoint(GlobalEntryPoint_sp ep, claspFunction entry_point ) {
-  if (entry_point!=(claspFunction)ep->_EntryPoints[0]) {
-    printf("%s:%d The ep@%p entry_point %p does not match the one in ep %p (offset %lu)\n", __FILE__, __LINE__, (void*)ep.raw_(), (void*)entry_point, (void*)ep->_EntryPoints[0], offsetof(GlobalEntryPoint_O,_EntryPoints[0]));
-    SIMPLE_ERROR(BF("The entry_point %p does not match the one in ep %p") % (void*)entry_point % (void*)ep->_EntryPoints[0]);
-  }
-  return ep;
-}
-
 void CodeEntryPoint_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** ptr) {
 #ifdef USE_PRECISE_GC
   if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
@@ -85,16 +76,16 @@ CL_DEFMETHOD Pointer_sp EntryPointBase_O::defaultEntryAddress() const {
 }
 
 
-  GlobalEntryPoint_O::GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : CodeEntryPoint_O(fdesc, code), _EntryPoints{entry_point} {
+GlobalEntryPoint_O::GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, llvmo::CodeBase_sp code, T_sp lep ) : CodeEntryPoint_O(fdesc, code), _EntryPoints(entry_point), _localEntryPoint(lep) {
     code->validateEntryPoint(entry_point);
   };
   
-  LocalEntryPoint_O::LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {
+  LocalEntryPoint_O::LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, llvmo::CodeBase_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {
     code->validateEntryPoint(entry_point);
   };
   
   Pointer_sp GlobalEntryPoint_O::defaultEntryAddress() const {
-    return Pointer_O::create(this->_EntryPoints[0]);
+    return Pointer_O::create((void*)this->_EntryPoints[0]);
   };
 
 CL_LISPIFY_NAME("global-entry-point-code");
@@ -102,6 +93,12 @@ CL_DEFMETHOD
 llvmo::Code_sp GlobalEntryPoint_O::code() const {
   llvmo::Code_sp code = gc::As<llvmo::Code_sp>(this->_Code);
   return code;
+}
+
+CL_LISPIFY_NAME("global-entry-point-local-entry-point");
+CL_DEFMETHOD
+T_sp GlobalEntryPoint_O::localEntryPoint() const {
+  return this->_localEntryPoint;
 }
 
 CL_DEFMETHOD
@@ -142,7 +139,7 @@ T_sp GlobalEntryPoint_O::lineTable() const {
 
 
 Pointer_sp LocalEntryPoint_O::defaultEntryAddress() const {
-  return Pointer_O::create(this->_EntryPoint);
+  return Pointer_O::create((void*)this->_EntryPoint);
 };
 
 void GlobalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup ) {
@@ -153,7 +150,9 @@ void GlobalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fi
       abort();
     }
   }
-  this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints[0]);
+  for ( size_t ii=0; ii<ClaspXepFunction::Entries; ++ii ) {
+    this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints._EntryPoints[ii]);
+  }
 };
 
 
@@ -170,11 +169,12 @@ void LocalEntryPoint_O::fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fix
 
 
 
-CL_LAMBDA(&key function-description entry-point-functions)
+CL_LAMBDA(&key function-description entry-point-functions local-entry-point-index)
 DOCGROUP(clasp)
 CL_DEFUN GlobalEntryPointGenerator_sp core__makeGlobalEntryPointGenerator(FunctionDescription_sp fdesc,
-                                                                          T_sp entryPointIndices) {
-  auto entryPoint = gctools::GC<GlobalEntryPointGenerator_O>::allocate(fdesc,entryPointIndices);
+                                                                          T_sp entryPointIndices,
+                                                                          size_t localEntryPointIndex ) {
+  auto entryPoint = gctools::GC<GlobalEntryPointGenerator_O>::allocate(fdesc,entryPointIndices,localEntryPointIndex);
 //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
   return entryPoint;
 }
@@ -188,6 +188,50 @@ CL_DEFUN LocalEntryPointGenerator_sp core__makeLocalEntryPointGenerator(Function
   return entryPoint;
 }
 
+
+std::string LocalEntryPointGenerator_O::__repr__() const {
+  stringstream ss;
+  ss << "#<LOCAL-ENTRY-POINT-GENERATOR ";
+  ss << _rep_(this->_entry_point_indices) << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+std::string LocalEntryPoint_O::__repr__() const {
+  stringstream ss;
+  ss << "#<LOCAL-ENTRY-POINT ";
+  ss << (void*)this->_EntryPoint;
+  ss << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+std::string GlobalEntryPoint_O::__repr__() const {
+  stringstream ss;
+  ss << "#<Global-ENTRY-POINT ";
+  for ( size_t ii = 0; ii<NUMBER_OF_ENTRY_POINTS; ii++ ) {
+    if (ii==0) {
+      ss << "xep@";
+    } else {
+      ss << "xep" << (ii-1) << "@";
+    }
+    ss << (void*)this->_EntryPoints._EntryPoints[ii] << " ";
+  }
+  ss << " @" << (void*)this << ">";
+  return ss.str();
+}
+
+CL_LISPIFY_NAME("global-entry-point-generator-local-entry-point-index");
+CL_DEFMETHOD
+size_t GlobalEntryPointGenerator_O::localEntryPointIndex() const {
+  return this->_localEntryPointIndex;
+}
+
+  
+std::string GlobalEntryPointGenerator_O::__repr__() const {
+  stringstream ss;
+  ss << "#<GLOBAL-ENTRY-POINT-GENERATOR ";
+  ss << _rep_(this->_entry_point_indices) << " @" << (void*)this << ">";
+  return ss.str();
+}
 
 CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname (lineno 0) (column 0) (filepos 0))
 DOCGROUP(clasp)
@@ -209,8 +253,9 @@ CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
                                  filePos);
 }
 
+#if 0
 GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName,
-                                                               claspFunction entryPoint,
+                                                               const ClaspXepFunction& entryPoint,
                                                                T_sp lambda_list,
                                                                T_sp docstring,
                                                                T_sp declares,
@@ -228,6 +273,7 @@ GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName
                                                          filePos );
   return makeGlobalEntryPoint(fdesc,entryPoint);
 }
+#endif
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                T_sp lambda_list,
@@ -251,38 +297,41 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
 }
 
 LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
-                                       claspFunction entry_point) {
+                                       const ClaspLocalFunction& entry_point) {
   llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
     if (gc::IsA<llvmo::Library_sp>(code)) {
-      maybe_register_symbol_using_dladdr((void*)entry_point);
+      maybe_register_symbol_using_dladdr_ep((void*)entry_point);
     }
   }
-  auto  ep = gctools::GC<LocalEntryPoint_O>::allocate( fdesc, (void*)entry_point, code );
+  auto  ep = gctools::GC<LocalEntryPoint_O>::allocate( fdesc, entry_point, code );
   return ep;
 }
 GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp fdesc,
-                                         claspFunction entry_point) {
+                                         const ClaspXepFunction& entry_point,
+                                         T_sp lep) {
   llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
-  if (entry_point) {
-    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
+  if (entry_point._Defined) {
+    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
     if (gc::IsA<llvmo::Library_sp>(code)) {
-      maybe_register_symbol_using_dladdr((void*)entry_point);
+      for ( size_t ii=0; ii<ClaspXepFunction::Entries; ii++ ) {
+        maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii]);
+      }
     }
   }
-  auto  ep = gctools::GC<GlobalEntryPoint_O>::allocate( fdesc, (void*)entry_point, code );
+  auto  ep = gctools::GC<GlobalEntryPoint_O>::allocate( fdesc, entry_point, code, lep );
   return ep;
 }
 
 
 GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp entryPoint,
-                                             claspFunction entry_point) {
+                                             const ClaspXepFunction& entry_point) {
   llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
-  if (entry_point) {
-    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
+  if (entry_point._Defined) {
+    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
   }
-  auto  ep = gctools::GC<GlobalEntryPoint_O>::allocate( entryPoint->_FunctionDescription, (void*)entry_point, code );
+  auto  ep = gctools::GC<GlobalEntryPoint_O>::allocate( entryPoint->_FunctionDescription, entry_point, code, entryPoint->_localEntryPoint );
   return ep;
 }
 
@@ -295,31 +344,43 @@ LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp 
     SIMPLE_ERROR(BF("The FunctionDescriptionGenerator %s does not have entry-points indices") % _rep_(original));
   }
   size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
-  claspFunction entry_point = (claspFunction)(entry_points[entryPointIndex]);
+  ClaspLocalFunction entry_point = (ClaspLocalFunction)(entry_points[entryPointIndex]);
   llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
   }
-  auto  entryPoint = gctools::GC< LocalEntryPoint_O>::allocate( original->_FunctionDescription, (void*)entry_point, code);
+  auto entryPoint = gctools::GC< LocalEntryPoint_O>::allocate( original->_FunctionDescription, entry_point, code);
   return entryPoint;
 }
 
 
-GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp original, void** entry_points) {
+GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp original, gctools::GCRootsInModule* roots, void** entry_points ) {
   if (!original->_entry_point_indices.consp()){
     SIMPLE_ERROR(BF("The GlobalEntryPoint %s does not have entry-points") % _rep_(original));
   }
-  T_sp firstEntryPoint = CONS_CAR(original->_entry_point_indices);
-  if (!firstEntryPoint.fixnump()) {
-    SIMPLE_ERROR(BF("The FunctionDescriptionGenerator %s does not have entry-points indices") % _rep_(original));
+  List_sp epIndices = gc::As<List_sp>(original->_entry_point_indices);
+  size_t num = cl__length(epIndices);
+  if ( num != ClaspXepFunction::Entries) {
+    printf("%s:%d:%s %lu is not enough entry_points for a ClaspXepFunction expected %d\n", __FILE__, __LINE__, __FUNCTION__,
+           num, ClaspXepFunction::Entries );
+    abort();
   }
-  size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
-  claspFunction entry_point = (claspFunction)(entry_points[entryPointIndex]);
+  ClaspXepFunction xepFunction((XepFilling()));
+  size_t cur = 0;
+  for ( auto entry : epIndices ) {
+    T_sp oneEntryPointIndex = CONS_CAR(entry);
+    if (!oneEntryPointIndex.fixnump()) {
+      SIMPLE_ERROR(BF("The FunctionDescriptionGenerator %s does not have entry-points indices") % _rep_(original));
+    }
+    size_t entryPointIndex = oneEntryPointIndex.unsafe_fixnum();
+    ClaspXepAnonymousFunction entry_point = (ClaspXepAnonymousFunction)(entry_points[entryPointIndex]);
+    xepFunction._EntryPoints[cur] = entry_point;
+    cur++;
+  }
+  T_sp localEntryPoint((gctools::Tagged)roots->getLiteral(original->_localEntryPointIndex));
   llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
-  if (entry_point) {
-    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
-  }
-  auto globalEntryPoint = gctools::GC< GlobalEntryPoint_O>::allocate( original->_FunctionDescription, (void*)entry_point, code);
+  code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(xepFunction[0]));
+  auto globalEntryPoint = gctools::GC< GlobalEntryPoint_O>::allocate( original->_FunctionDescription, xepFunction, code, localEntryPoint ); 
   return globalEntryPoint;
 }
 
@@ -566,9 +627,10 @@ CL_DEFUN_SETF T_sp setf_function_docstring(T_sp doc, Function_sp func) {
 SYMBOL_SC_(CompPkg,vtable);
 SYMBOL_SC_(CompPkg,entry);
 SYMBOL_EXPORT_SC_(CorePkg,entry_point);
-SYMBOL_SC_(CompPkg,closure_type);
-SYMBOL_SC_(CompPkg,data_length);
-SYMBOL_SC_(CompPkg,data0);
+SYMBOL_EXPORT_SC_(CorePkg,object_file);
+SYMBOL_EXPORT_SC_(CompPkg,closure_type);
+SYMBOL_EXPORT_SC_(CompPkg,data_length);
+SYMBOL_EXPORT_SC_(CompPkg,data0);
 
 
 DOCGROUP(clasp)
@@ -580,25 +642,71 @@ CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
   expect_offset(comp::_sym_data0,alist,offsetof(ClosureWithSlots_O,_Slots._Data)-gctools::general_tag);
 }
 
-SYMBOL_EXPORT_SC_(CorePkg,function_description);
-SYMBOL_EXPORT_SC_(CorePkg,code);
+SYMBOL_EXPORT_SC_(KeywordPkg,function_description);
+SYMBOL_EXPORT_SC_(KeywordPkg,code);
+SYMBOL_EXPORT_SC_(KeywordPkg,entry_points);
+SYMBOL_EXPORT_SC_(KeywordPkg,defined);
 
 DOCGROUP(clasp)
 CL_DEFUN void core__verify_global_entry_point(T_sp alist)
 {
-  expect_offset(core::_sym_function_description,alist,offsetof(GlobalEntryPoint_O,_FunctionDescription)-gctools::general_tag);
-  expect_offset(core::_sym_code,alist,offsetof(GlobalEntryPoint_O,_Code)-gctools::general_tag);
-  expect_offset(comp::_sym_data0,alist,offsetof(GlobalEntryPoint_O,_EntryPoints)-gctools::general_tag);
+  expect_offset(kw::_sym_function_description,alist,offsetof(GlobalEntryPoint_O,_FunctionDescription)-gctools::general_tag);
+  expect_offset(kw::_sym_code,alist,offsetof(GlobalEntryPoint_O,_Code)-gctools::general_tag);
+  expect_offset(kw::_sym_entry_points,alist,offsetof(GlobalEntryPoint_O,_EntryPoints._EntryPoints)-gctools::general_tag);
+  expect_offset(kw::_sym_defined,alist,offsetof(GlobalEntryPoint_O,_EntryPoints._Defined)-gctools::general_tag);
 }
 
+struct InterpretedClosureEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    //  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    ++global_interpreted_closure_calls;
+    ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(gc::As<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]), (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT]);
+    //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
+    //  newValueEnvironment->dump();
+    LambdaListHandler_sp llh = gc::As_unsafe<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]);
+    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,lisp_lambdaListHandlerNumberOfSpecialVariables(llh));
+    ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newValueEnvironment);
+    lambdaListHandler_createBindings(closure->asSmartPtr(), llh, &scope, lcc_nargs, lcc_args );
+    //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
+    //  newValueEnvironment->dump();
+    ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
+    return eval::sp_progn((*closure)[INTERPRETED_CLOSURE_FORM_SLOT], newValueEnvironment).as_return_type();
+  };
+    static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
+};
+
     
-ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
+ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
   FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(name,interpretedClosureEntryPoint,lambda_list,docstring,declares,sfi,lineno,column,filePos );
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<InterpretedClosureEntryPoint>(name,nil<T_O>(),lambda_list,docstring,declares,sfi,lineno,column,filePos );
   ClosureWithSlots_sp closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               INTERPRETED_CLOSURE_SLOTS,
-                                                              &interpretedClosureEntryPoint,
                                                               entryPoint,
                                                               ClosureWithSlots_O::interpretedClosure);
   (*closure)[INTERPRETED_CLOSURE_FORM_SLOT] = form;
@@ -613,12 +721,12 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
   validateFunctionDescription(__FILE__,__LINE__,closure);
   return closure;
 }
-ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
-  core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(name,ptr,lambda_list);
+ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint ) {
+  FunctionDescription_sp fdesc = makeFunctionDescription(name,lambda_list);
+  core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPoint(fdesc,fn,localEntryPoint);
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               BCLASP_CLOSURE_SLOTS,
-                                                              ptr,
                                                               entryPoint,
                                                               ClosureWithSlots_O::bclaspClosure);
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
@@ -629,13 +737,13 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunc
   return closure;
 }
 
-ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
+ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, const ClaspXepFunction& fn, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column ) {
   printf("%s:%d:%s What are you going to do with an unbound Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
-  core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(name,ptr,lambda_list);
+  FunctionDescription_sp fdesc = makeFunctionDescription(name,lambda_list,nil<T_O>(),nil<T_O>(),nil<T_O>(),lineno,column);
+  core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPoint(fdesc,fn,localEntryPoint);
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               0,
-                                                              ptr,
                                                               entryPoint,
                                                               ClosureWithSlots_O::cclaspClosure);
   closure->setf_lambdaList(lambda_list);
@@ -834,12 +942,6 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   }
 }
 
-NEVER_OPTIMIZE LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
-  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
-  Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
-  ERROR_UNDEFINED_FUNCTION(symbol);
-}
-
 
 
 void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** funcPtr, size_t sizeofFuncPtr ) {
@@ -849,11 +951,11 @@ void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void
   if ( snapshotSaveLoad::operation(fixup)==snapshotSaveLoad::SaveOp) {
     if ((uintptr_t)funcPtr[0] > 1024) {
       uintptr_t* ptrptr = (uintptr_t*)&funcPtr[0];
-      snapshotSaveLoad::registerLibraryFunctionPointer(fixup,ptrptr);
+      snapshotSaveLoad::encodeEntryPointInLibrary(fixup,ptrptr);
     }
   } else if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     if ((uintptr_t)funcPtr[0] > 1024) {
-      snapshotSaveLoad::decodeLibrarySaveAddress(fixup,(uintptr_t*)&funcPtr[0]);
+      snapshotSaveLoad::decodeEntryPointInLibrary(fixup,(uintptr_t*)&funcPtr[0]);
     }
   } else {
     SIMPLE_ERROR(BF("Illegal image save/load operation"));
@@ -861,33 +963,9 @@ void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void
 #endif
 }
 
-LCC_RETURN unboundSetfFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
-  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
-  Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
-  List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
-  ERROR_UNDEFINED_FUNCTION(name);
-}
 
 //  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
-  ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
-//  printf("%s:%d    closure name -> %s\n", __FILE__, __LINE__, _rep_(closure->functionName()).c_str());
-  INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  INITIALIZE_VA_LIST();
-  ++global_interpreted_closure_calls;
-  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(gc::As<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]), (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT]);
-//  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
-//  newValueEnvironment->dump();
-  LambdaListHandler_sp llh = gc::As_unsafe<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]);
-  MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,llh->numberOfSpecialVariables());
-  ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newValueEnvironment);
-  lambdaListHandler_createBindings(closure->asSmartPtr(), llh, scope, LCC_PASS_ARGS_LLH);
-//  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
-//  newValueEnvironment->dump();
-  ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
-  return eval::sp_progn((*closure)[INTERPRETED_CLOSURE_FORM_SLOT], newValueEnvironment).as_return_type();
-};
 
 
 };

@@ -366,6 +366,7 @@ using deque = std::deque<X>;
 
 
 void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size=sizeof(void*), const std::string& name="");
+void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size=sizeof(void*), const std::string& name="");
 
 
 #ifdef WIN32
@@ -559,6 +560,7 @@ extern void clasp_mps_debug_container(const char *ctype, const char *name, int s
 #include <clasp/gctools/gcalloc.h>
 #include <clasp/gctools/containers.h>
 #include <clasp/gctools/threadLocalStacks.h>
+#include <clasp/gctools/gcStack.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/gctools/threadlocal.h>
@@ -884,7 +886,7 @@ uint64_t lisp_nameword(T_sp name);
   string lisp_classNameAsString(Instance_sp c);
   void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId);
   core::T_sp lisp_false();
-  T_sp lisp_va_list_toCons(va_list vargs);
+//  T_sp lisp_vaslist_toCons(vaslist vargs);
 //bool lisp_fixnumP(core::T_sp obj);
 //gctools::Fixnum lisp_asFixnum(core::T_sp obj);
 /*! Create a SourcePosInfo object for a C++ function */
@@ -936,7 +938,8 @@ uint64_t lisp_nameword(T_sp name);
   List_sp lisp_parse_arguments(const string &packageName, const string &args);
   List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
   LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
-size_t lisp_lambda_list_handler_number_of_specials(LambdaListHandler_sp lambda_list_handler);
+size_t lisp_lambdaListHandlerNumberOfSpecialVariables(LambdaListHandler_sp llh);
+
 
   void lisp_defineSingleDispatchMethod(T_sp name,
                                        Symbol_sp classSymbol,
@@ -1119,13 +1122,6 @@ inline void clasp_disable_interrupts_env(const cl_env_ptr){};
 inline void clasp_enable_interrupts_env(const cl_env_ptr){};
 //    inline void clasp_disable_interrupts() {};
 //    inline void clasp_enable_interrupts() {};
-};
-
-namespace core {
-typedef va_list clasp_va_list;
-#define clasp_va_start va_start
-List_sp clasp_grab_rest_args(va_list args, int nargs);
-#define clasp_va_end va_end
 };
 
 

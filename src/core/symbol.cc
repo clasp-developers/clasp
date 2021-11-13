@@ -210,29 +210,96 @@ CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
 
 namespace core {
 
+
+struct UnboundFunctionEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
+    ERROR_UNDEFINED_FUNCTION(symbol);
+  }
+    static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
+};
+
+struct UnboundSetfFunctionEntryPoint {
+  static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
+    Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
+    List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
+    ERROR_UNDEFINED_FUNCTION(name);
+  }
+  static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
+};
+
+
 ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
 {
   if (_lisp->_Roots._UnboundSymbolFunctionEntryPoint.unboundp()) {
-    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription(name,unboundFunctionEntryPoint);
+    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundFunctionEntryPoint>(name,nil<T_O>());
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,1,
-                                                              unboundFunctionEntryPoint,
                                                               _lisp->_Roots._UnboundSymbolFunctionEntryPoint,
                                                               ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
 }
 
+
+
 ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 {
   if (_lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint.unboundp()) {
     List_sp sname = Cons_O::createList(cl::_sym_setf,name);
-    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription(sname,unboundSetfFunctionEntryPoint);
+    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundSetfFunctionEntryPoint>(sname,nil<T_O>());
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, 1,
-                                                              unboundSetfFunctionEntryPoint,
                                                               _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint,
                                                               ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
@@ -303,7 +370,7 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
 }
 
 bool Symbol_O::fboundp() const {
-  return symbolFunction()->entry() != unboundFunctionEntryPoint;
+  return symbolFunction()->entry() != UnboundFunctionEntryPoint::entry_point_n;
 };
 
 void Symbol_O::fmakunbound()
@@ -312,7 +379,7 @@ void Symbol_O::fmakunbound()
 }
 
 bool Symbol_O::fboundp_setf() const {
-  return getSetfFdefinition()->entry() != unboundSetfFunctionEntryPoint;
+  return getSetfFdefinition()->entry() != UnboundSetfFunctionEntryPoint::entry_point_n;
 };
 
 void Symbol_O::fmakunbound_setf()
@@ -479,6 +546,20 @@ CL_DEFUN void core__setf_symbolFunction(Function_sp exec, Symbol_sp symbol){
 string Symbol_O::symbolNameAsString() const {
   return this->_Name->get_std_string();
 }
+
+
+string Symbol_O::safeFormattedName() const { //no guard
+  stringstream ss;
+  Package_sp pkg = gc::As_unsafe<Package_sp>(this->_HomePackage.load());
+  if (pkg.generalp() && gc::IsA<Package_sp>(pkg)) {
+    ss << pkg->_Name->get_std_string();
+  }
+  ss << "::";
+  if (this->_Name.generalp() && gc::IsA<String_sp>(this->_Name)) {
+    ss << this->_Name->get_std_string();
+  }
+  return ss.str();
+};
 
 string Symbol_O::formattedName(bool prefixAlways) const { //no guard
   stringstream ss;

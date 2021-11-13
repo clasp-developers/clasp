@@ -306,7 +306,7 @@ def update_dependencies(cfg):
     log.pprint('BLUE', 'update_dependencies()')
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
-                       "f5a9f2b10fad7689abbdb65229ede3386088e35d")
+                       "21cfcb9e3cc922a4bef8f9f830122df1196797a4")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
@@ -407,7 +407,15 @@ def test(cfg):
 
 def tests(cfg):
     test(cfg)
-    
+
+def test1(cfg):
+    log.debug("Execute regression tests\n")
+    run_program_echo("build/boehmprecise/iclasp-boehmprecise -t a",
+                     "--feature", "ignore-extensions",
+                     "--load",    "sys:regression-tests;run-one.lisp",
+                     "--eval",    "(progn (format t \"~%Test done~%\")(core:quit))")
+    log.debug("Done one regression test\n")
+
 def stage_value(ctx,s):
     if ( s == 'r' ):
         sval = -1

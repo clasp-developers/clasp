@@ -250,16 +250,21 @@ Compile a lisp source file into an LLVM module."
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
       (let (run-all-name)
+        (cmp-log "About to with-module%N")
         (with-module (:module module
                       :optimize (when optimize #'optimize-module-for-compile-file)
                       :optimize-level optimize-level)
           ;; (1) Generate the code
+          (cmp-log "About to with-debug-info-generator%N")
           (with-debug-info-generator (:module *the-module*
                                       :pathname *compile-file-source-debug-pathname*)
             (or module (error "module is NIL"))
+            (cmp-log "About to with-make-new-run-all%N")
             (with-make-new-run-all (run-all-function (namestring input-pathname))
+              (cmp-log "About to with-literal-table%N")
               (with-literal-table (:id 0)
-                  (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
+                (cmp-log "About to loop-read-and-compile-file-forms%N")
+                (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
               (setf run-all-name (llvm-sys:get-name run-all-function))))
           (cmp-log "About to verify the module%N")
           (cmp-log-dump-module *the-module*)

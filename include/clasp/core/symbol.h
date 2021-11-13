@@ -118,6 +118,7 @@ public:
 
  public:
   string formattedName(bool prefixAlways) const;
+  string safeFormattedName() const;;
  private:
   inline uint32_t getFlags() const { return _Flags.load(std::memory_order_relaxed); }
   inline void setFlag(bool flag, uint32_t n) {

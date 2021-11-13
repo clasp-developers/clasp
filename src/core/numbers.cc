@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <boost/format.hpp>
 
 #include <clasp/core/foundation.h>
-#include <clasp/core/primitives.h> // core__list_from_va_list
+#include <clasp/core/primitives.h> // core__list_from_vaslist
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/multipleValues.h>
@@ -981,7 +981,7 @@ T_sp numbers_monotonic(int s, int t, List_sp args) {
   return _lisp->_true();
 };
 
-T_sp numbers_monotonic_vaslist(int s, int t, VaList_sp args) {
+T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
   Real_sp c = gc::As<Real_sp>(args->next_arg());
   Real_sp d;
   int dir;
@@ -1020,7 +1020,7 @@ CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) {
 
 CL_LAMBDA(core:&va-rest args)
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl___LT_(VaList_sp args) {
+CL_DEFUN T_sp cl___LT_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
     SIMPLE_ERROR(BF("< needs at least one argument"));
   }
@@ -1029,7 +1029,7 @@ CL_DEFUN T_sp cl___LT_(VaList_sp args) {
 
 CL_LAMBDA(core:&va-rest args)
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl___GT_(VaList_sp args) {
+CL_DEFUN T_sp cl___GT_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
     SIMPLE_ERROR(BF("> needs at least one argument"));
   }
@@ -1038,7 +1038,7 @@ CL_DEFUN T_sp cl___GT_(VaList_sp args) {
 
 CL_LAMBDA(core:&va-rest args)
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl___LE_(VaList_sp args) {
+CL_DEFUN T_sp cl___LE_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
     SIMPLE_ERROR(BF("> needs at least one argument"));
   }
@@ -1047,7 +1047,7 @@ CL_DEFUN T_sp cl___LE_(VaList_sp args) {
 
 CL_LAMBDA(core:&va-rest args)
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl___GE_(VaList_sp args) {
+CL_DEFUN T_sp cl___GE_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
     SIMPLE_ERROR(BF(">= needs at least one argument"));
   }
@@ -1176,7 +1176,7 @@ CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(NE)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp cl___NE_(VaList_sp args) {
+CL_DEFUN T_sp cl___NE_(Vaslist_sp args) {
   /* Unlike variable-argument =, this takes a quadratic number of
    * comparisons, as every pair must be unequal. */
   switch (args->remaining_nargs()) {
@@ -1209,7 +1209,7 @@ CL_DEFUN T_sp cl___NE_(VaList_sp args) {
     /* General case is a nested loop.
      * We're going to iterate over the arguments several times,
      * so a valist isn't going to cut it. */
-    List_sp largs = core__list_from_va_list(args);
+    List_sp largs = core__list_from_vaslist(args);
     while (largs.consp()) {
       Number_sp n1 = gc::As<Number_sp>(oCar(largs));
       for (List_sp cur = oCdr(largs); cur.notnilp(); cur = oCdr(cur)) {

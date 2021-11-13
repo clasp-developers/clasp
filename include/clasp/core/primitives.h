@@ -64,8 +64,7 @@ T_sp core__every_list(T_sp predicate, List_sp sequences);
 
 T_sp cl__mapcar(T_sp func_desig, List_sp lists);
 
-//T_sp cl__append(List_sp lists);
-T_sp cl__append(VaList_sp lists);
+T_sp cl__append(Vaslist_sp lists);
 
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
 
@@ -105,7 +104,7 @@ T_sp core__valid_function_name_p(T_sp arg);
   T_sp cl__fdefinition(T_sp functionName);
   T_sp cl__special_operator_p(Symbol_sp sym);
   T_sp cl__sleep(Real_sp oseconds);
-  List_sp core__list_from_va_list(VaList_sp valist);
+  List_sp core__list_from_vaslist(Vaslist_sp valist);
 
 T_sp core__next_number();
 };

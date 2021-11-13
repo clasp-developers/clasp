@@ -4,11 +4,6 @@
 ;;; bclasp-compile* and compile-thunk are entries from compile and compile-file resp.
 ;;; codegen is the main event.
 
-
-
-
-
-
 (defun generate-llvm-function-from-code (
                                          ;; Symbol xxx or (setf xxx) name of the function that is
                                          ;; assigned to this code by
@@ -31,56 +26,60 @@ lambda-list, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
-  (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
+  (multiple-value-bind (cleavir-lambda-list-analysis new-body rest-alloc)
       (transform-lambda-parts lambda-list original-declares code)
     (let ((declares (core:canonicalize-declarations original-declares)))
       (cmp-log "generate-llvm-function-from-code%N")
-      (cmp-log "cleavir-lambda-list -> %s%N" cleavir-lambda-list)
+      (cmp-log "cleavir-lambda-list-analysis -> %s%N" cleavir-lambda-list-analysis)
       (cmp-log "new-body -> %s%N" new-body)
 ;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
 ;;;    (bformat *error-output* "new-body -> %s%N" new-body)
       (let ((name (core:extract-lambda-name-from-declares
                    declares (or given-name
                                 `(cl:lambda ,(lambda-list-for-name lambda-list))))))
-        (multiple-value-bind (fn function-description-reference)
-            (with-new-function (fn fn-env result
-                                   :function-name name
-                                   :parent-env env-around-lambda
-                                   :linkage linkage
-                                   :function-info (make-function-info
-                                                   :function-name name
-                                                   :lambda-list lambda-list
-                                                   :docstring docstring
-                                                   :declares declares
-                                                   :spi core:*current-source-pos-info*))
-              (cmp-log "Starting new function name: %s%N" name)
-              ;; The following injects a debugInspectT_sp at the start of the body
-              ;; it will print the address of the literal which must correspond to an entry in the
-              ;; load time values table
-              #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
-              (let* ((arguments      (llvm-sys:get-argument-list fn))
-                     (callconv       (setup-calling-convention
-                                      arguments
-                                      :debug-on core::*debug-bclasp*
-                                      :cleavir-lambda-list cleavir-lambda-list
-                                      :rest-alloc rest-alloc)))
-                (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
-                  (cmp-log "Created new register environment -> %s%N" new-env)
-                  ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
-                  ;; in which case the (with-try ...) can be removed
-                  ;; Christian Schafmeister June 2019
-                  (if (irc-environment-has-cleanup new-env)
-                      (with-try "TRY.func"
-                        (codegen-progn result (list new-body) new-env)
-                        ((cleanup)
-                         (irc-unwind-environment new-env)))
-                      (codegen-progn result (list new-body) new-env)))))
+        (let* ((xep-group 
+                 (with-new-function (local-fn fn-env result
+                                              :function-name name
+                                              :parent-env env-around-lambda
+                                              :linkage linkage
+                                              :function-info (make-function-info
+                                                              :function-name name
+                                                              :lambda-list lambda-list
+                                                              :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
+                                                              :docstring docstring
+                                                              :declares declares
+                                                              :spi core:*current-source-pos-info*))
+                   (cmp-log "Starting new function name: %s%N" name)
+                   ;; The following injects a debugInspectT_sp at the start of the body
+                   ;; it will print the address of the literal which must correspond to an entry in the
+                   ;; load time values table
+                   #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
+                   (let* ((arguments      (llvm-sys:get-argument-list local-fn))
+                          (callconv       :was-callconv ))
+                     (cmp-log "argument-list %s%N" arguments)
+                     (cmp-log "fn-env -> %s%N" fn-env)
+                     (let ((new-env fn-env)) ; (irc-make-unbound-value-environment-of-size fn-env:was-new-env-codegen #+(or)(bclasp-compile-lambda-list-code fn-env callconv)))
+                       (cmp-log "Created new register environment -> %s%N" new-env)
+                       ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
+                       ;; in which case the (with-try ...) can be removed
+                       ;; Christian Schafmeister June 2019
+                       (if (irc-environment-has-cleanup new-env)
+                           (with-try "TRY.func"
+                             (codegen-progn result (list new-body) new-env)
+                             ((cleanup)
+                              (irc-unwind-environment new-env)))
+                           (codegen-progn result (list new-body) new-env))))))
+               (local-fn (xep-group-local-function xep-group)))
           (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
-          (cmp-log-dump-function fn)
-          (unless *suppress-llvm-output* (irc-verify-function fn))
+          (cmp-log-dump-function local-fn)
+          (unless *suppress-llvm-output* (irc-verify-function local-fn))
           ;; Return the llvm Function and the symbol/setf name
           (if (null name) (error "The lambda name is nil"))
-          (values fn name lambda-list function-description-reference))))))
+          (when (null xep-group) (error "The xep-group is nil"))
+          (when (null local-fn) (error "The local-fn is nil"))
+          (make-bclasp-llvm-function-info :xep-function xep-group
+                                          :local-function local-fn
+                                          ))))))
 
 ;;; Given a lambda list, return a lambda list suitable for display purposes.
 ;;; This means only the external interface is required.
@@ -117,7 +116,7 @@ Return the same things that generate-llvm-function-from-code returns"
                                         code
                                         env
                                         :linkage linkage))))
-
+#+(or)
 (defun generate-llvm-function-from-interpreted-function (fn)
   "Extract everything necessary to compile an interpreted function and
 then compile it and return (values compiled-llvm-function lambda-name)"
@@ -158,44 +157,44 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun compile-to-module (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (with-lexical-variable-optimizer (t)
-    (multiple-value-bind (fn function-kind wrapped-env lambda-name function-description-reference)
+    (multiple-value-bind (fn function-kind wrapped-env)
         (with-debug-info-generator (:module *the-module* :pathname pathname)
-          (multiple-value-bind (llvm-function-from-lambda lambda-name function-description-reference)
-              (compile-lambda-function definition env :linkage linkage)
+          (let* ((function-info (compile-lambda-function definition env :linkage linkage))
+            ;; (multiple-value-bind (llvm-function-from-lambda lambda-name function-description-reference)
+                 (llvm-function-from-lambda (bclasp-llvm-function-info-xep-function function-info))
+                 (function-description-reference (bclasp-llvm-function-info-function-description-reference function-info)))
             (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
-            (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
-            (values llvm-function-from-lambda :function env lambda-name)))
-      (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
+            (values llvm-function-from-lambda :function env)))
       (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
       (potentially-save-module)
       (cmp-log "fn --> %s%N" fn)
       (cmp-log-dump-module *the-module*)
-      (values fn function-kind wrapped-env lambda-name function-description-reference))))
+      (values fn function-kind wrapped-env))))
 
 (defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (let* (fn function-kind wrapped-env lambda-name)
     (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
         (literal:with-rtv
-            (multiple-value-setq (fn function-kind wrapped-env lambda-name)
+            (multiple-value-setq (fn function-kind wrapped-env)
               (compile-to-module
                :definition definition
                :env env
                :pathname pathname
                :linkage linkage)))
-      (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-shutdown-id))))
+      (values fn function-kind wrapped-env ordered-raw-constants-list constants-table startup-shutdown-id))))
 
 (defun bclasp-compile* (definition env pathname
                         &key (linkage 'llvm-sys:internal-linkage) name)
   "Compile the definition using the bclasp compiler"
   (when core:*debug-startup*
     (core:monitor-write (core:bformat nil "startup bclasp-compile* form: %s%N" definition)))
-  (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-shutdown-id)
+  (multiple-value-bind (fn function-kind wrapped-env ordered-raw-constants-list constants-table startup-shutdown-id)
       (compile-to-module-with-run-time-table
        :definition definition
        :env env
        :pathname pathname
        :linkage linkage)
-    (declare (ignore function-kind wrapped-env lambda-name constants-table))
+    (declare (ignore function-kind wrapped-env constants-table))
     (quick-module-dump *the-module* "preoptimize")
     (let ((compiled-function (jit-add-module-return-function *the-module* fn startup-shutdown-id ordered-raw-constants-list :name name)))
       compiled-function)))
@@ -265,7 +264,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
          ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
          ((eq sym 'core:foreign-call) t)         ;; Call foreign function
-         ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
+         ((eq sym 'core:bind-vaslist) t)         ;; bind-vaslist
          ((eq sym 'core::vector-length) t)
          ((eq sym 'core::%array-dimension) t)
          ((eq sym 'core::fence) t)
@@ -354,7 +353,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun compile-thunk (name form env optimize)
   "Compile the form into an llvm function and return that function"
   (with-lexical-variable-optimizer (optimize)
-    (let ((top-level-func (with-new-function (fn
+    (let ((top-level-func (with-new-function (local-fn
                                               fn-env
                                               result
                                               :function-name name
@@ -367,8 +366,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                                               :declares nil
                                                               :spi core:*current-source-pos-info*))
                             ;; Map the function argument names
-                            (cmp-log "Creating repl function with name: %s%N"
-                                     (llvm-sys:get-name fn))
+                            (cmp-log "Creating repl function with name: %s%N" (llvm-sys:get-name local-fn))
                             ;;	(break "codegen repl form") 
                             (codegen result form fn-env))))
       (cmp-log "Dumping the repl function%N")

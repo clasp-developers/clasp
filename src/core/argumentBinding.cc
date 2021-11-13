@@ -27,12 +27,12 @@ THE SOFTWARE.
 
 /*! Define the following macros to configure this code for using ActivationFrames 
   or var-args...
-  Name				va_list
+  Name				vaslist
   PASS_FUNCTION_REQUIRED 	bind_required_var_args
   PASS_FUNCTION_OPTIONAL 	bind_optional_var_args
   PASS_FUNCTION_REST 		bind_rest_var_args
   PASS_FUNCTION_KEYWORD 	bind_keyword_var_args
-  PASS_ARGS  			'int n_args, va_list ap'	'ActivationFrame_sp args'
+  PASS_ARGS  			'int n_args, vaslist ap'	'ActivationFrame_sp args'
   PASS_ARGS_NUM 		'n_args'				'cl__length(args)'
   PASS_NEXT_ARG(arg_idx) 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */
@@ -40,7 +40,7 @@ THE SOFTWARE.
 int PASS_FUNCTION_REQUIRED(core::T_sp closure,
                            gctools::Vec0<RequiredArgument> const &reqs,
                            PASS_ARGS,
-                           int arg_idx,
+                           size_t arg_idx,
                            ScopeManager &scope) {
   // Fill required arguments
   LOG(BF("There are %d required arguments") % reqs.size());
@@ -55,7 +55,7 @@ int PASS_FUNCTION_REQUIRED(core::T_sp closure,
       T_sp value = PASS_NEXT_ARG(arg_idx);
 #ifdef DEBUG_EVALUATE
       if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-        printf("%s:%d required arg%d %s\n", __FILE__, __LINE__, arg_idx, _rep_(value).c_str());
+        printf("%s:%d required arg%lu %s\n", __FILE__, __LINE__, arg_idx, _rep_(value).c_str());
       }
 #endif      
       LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
@@ -74,7 +74,7 @@ int PASS_FUNCTION_REQUIRED(core::T_sp closure,
 int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
                            gctools::Vec0<OptionalArgument> const &optionals,
                            PASS_ARGS,
-                           int arg_idx,
+                           size_t arg_idx,
                            ScopeManager &scope) {
   int num_args(PASS_ARGS_NUM);
   // Fill required arguments
@@ -91,7 +91,7 @@ int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
       T_sp value = PASS_NEXT_ARG(arg_idx);
 #ifdef DEBUG_EVALUATE
       if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-        printf("%s:%d optional arg%d %s\n", __FILE__, __LINE__, arg_idx, _rep_(value).c_str());
+        printf("%s:%d optional arg%lu %s\n", __FILE__, __LINE__, arg_idx, _rep_(value).c_str());
       }
 #endif      
       LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
@@ -121,10 +121,11 @@ int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
 void PASS_FUNCTION_REST(core::T_sp closure,
                         RestArgument const &restarg,
                         PASS_ARGS,
-                        int arg_idx,
+                        size_t arg_idx,
                         ScopeManager &scope) {
   if (restarg.VaRest) {
-    scope.valist().set_from_other_Vaslist(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
+    Vaslist temp(n_args,arglist);
+    scope.valist().set_from_other_Vaslist(&temp,arg_idx); // _change_nargs(&*arglist, n_args - arg_idx);
     scope.va_rest_binding(restarg);
   } else if (arg_idx == PASS_ARGS_NUM) {
     scope.new_binding(restarg, nil<T_O>());
@@ -156,7 +157,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
                           gctools::Vec0<KeywordArgument> const &keyed_args,
                           T_sp allow_other_keys,
                           PASS_ARGS,
-                          int arg_idx,
+                          size_t arg_idx,
                           ScopeManager &scope) {
   int num_args(PASS_ARGS_NUM);
   int num_keyed_arguments = keyed_args.size();
@@ -179,7 +180,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
         int ik(0);
         for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {
           if (fi->_Keyword == keyword) {
-            if (!scope.lexicalElementBoundP(*fi)) {
+            if (!scope.lexicalElementBoundP_(*fi)) {
               scope.new_binding(*fi, value);
             }
             if (fi->_Sensor.isDefined()) {

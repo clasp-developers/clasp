@@ -75,6 +75,7 @@
  "core::ComplexVector_fixnum_O"
  "core::SymbolClassHolderPair"
  "mp::RecursiveMutex_O"
+ "core::Vaslist_dummy_O"
  "core::SimpleVector_float_O"
  "llvmo::MDString_O"
  "core::ShortFloat_O"
@@ -319,7 +320,6 @@
  "core::SingleDispatchGenericFunction_O"
  "llvmo::Pass_O"
  "core::ComplexVector_int32_t_O"
- "core::VaList_dummy_O"
  "core::BlockEnvironment_O"
  "core::ComplexVector_byte4_t_O"
  "mpip::Mpi_O"
@@ -355,7 +355,7 @@
  "core::TwoWayStream_O"
 ) ) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__T_O")(TAGS:STAMP-KEY . "core::T_O")(TAGS:PARENT-CLASS . "RootClass")(TAGS:LISP-CLASS-BASE . "RootClass")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "0")) }
-{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__VaList_dummy_O")(TAGS:STAMP-KEY . "core::VaList_dummy_O")(TAGS:PARENT-CLASS . "core::T_O")(TAGS:LISP-CLASS-BASE . "core::T_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "0")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__Vaslist_dummy_O")(TAGS:STAMP-KEY . "core::Vaslist_dummy_O")(TAGS:PARENT-CLASS . "core::T_O")(TAGS:LISP-CLASS-BASE . "core::T_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "0")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__Unused_dummy_O")(TAGS:STAMP-KEY . "core::Unused_dummy_O")(TAGS:PARENT-CLASS . "core::T_O")(TAGS:LISP-CLASS-BASE . "core::T_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "0")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__General_O")(TAGS:STAMP-KEY . "core::General_O")(TAGS:PARENT-CLASS . "core::T_O")(TAGS:LISP-CLASS-BASE . "core::T_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__ClassHolder_O")(TAGS:STAMP-KEY . "core::ClassHolder_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
@@ -1792,6 +1792,7 @@
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__GlobalEntryPointGenerator_O")(TAGS:STAMP-KEY . "core::GlobalEntryPointGenerator_O")(TAGS:PARENT-CLASS . "core::EntryPointBase_O")(TAGS:LISP-CLASS-BASE . "core::EntryPointBase_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::FunctionDescription_O>")( TAGS:OFFSET-BASE-CTYPE . "core::GlobalEntryPointGenerator_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_FunctionDescription")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::GlobalEntryPointGenerator_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_entry_point_indices")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ctype_unsigned_long")( TAGS:OFFSET-CTYPE . "unsigned long")( TAGS:OFFSET-BASE-CTYPE . "core::GlobalEntryPointGenerator_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_localEntryPointIndex")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__LocalEntryPointGenerator_O")(TAGS:STAMP-KEY . "core::LocalEntryPointGenerator_O")(TAGS:PARENT-CLASS . "core::EntryPointBase_O")(TAGS:LISP-CLASS-BASE . "core::EntryPointBase_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::FunctionDescription_O>")( TAGS:OFFSET-BASE-CTYPE . "core::LocalEntryPointGenerator_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_FunctionDescription")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::LocalEntryPointGenerator_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_entry_point_indices")) }
@@ -1801,6 +1802,8 @@
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__GlobalEntryPoint_O")(TAGS:STAMP-KEY . "core::GlobalEntryPoint_O")(TAGS:PARENT-CLASS . "core::CodeEntryPoint_O")(TAGS:LISP-CLASS-BASE . "core::CodeEntryPoint_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::FunctionDescription_O>")( TAGS:OFFSET-BASE-CTYPE . "core::GlobalEntryPoint_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_FunctionDescription")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<llvmo::CodeBase_O>")( TAGS:OFFSET-BASE-CTYPE . "core::GlobalEntryPoint_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Code")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ctype__Bool")( TAGS:OFFSET-CTYPE . "_Bool")( TAGS:OFFSET-BASE-CTYPE . "core::GlobalEntryPoint_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_EntryPoints._Defined")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::GlobalEntryPoint_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_localEntryPoint")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__LocalEntryPoint_O")(TAGS:STAMP-KEY . "core::LocalEntryPoint_O")(TAGS:PARENT-CLASS . "core::CodeEntryPoint_O")(TAGS:LISP-CLASS-BASE . "core::CodeEntryPoint_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::FunctionDescription_O>")( TAGS:OFFSET-BASE-CTYPE . "core::LocalEntryPoint_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_FunctionDescription")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<llvmo::CodeBase_O>")( TAGS:OFFSET-BASE-CTYPE . "core::LocalEntryPoint_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Code")) }

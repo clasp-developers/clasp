@@ -16,9 +16,6 @@
 ;;;;    See file '../Copyright' for full details.
 
 (in-package "CLOS")
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *echo-repl-read* t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -352,6 +349,52 @@ and cannot be added to ~A." method other-gf gf)))
   (update-dependents gf (list 'remove-method method))
   gf)
 
+#+(or)
+(progn
+  (sys:safe-trace instancep maybe-update-instance maybe-update-instances dispatch-miss)
+  (sys:safe-trace perform-outcome)
+  (sys:safe-trace check-gf-argcount dispatch-miss-info memoize-calls memoize-call force-dispatcher)
+  (sys:safe-trace function-to-method safe-gf-specializer-profile safe-gf-call-history
+                  specializer-call-history-generic-functions-push-new
+                  generic-function-call-history)
+  (sys:safe-trace std-compute-applicable-methods)
+  (sys:safe-trace applicable-method-list sort-applicable-methods class-of)
+  (sys:safe-trace generic-function-min-max-args)
+  (sys:safe-trace ensure-generic-function)
+  (sys:safe-trace make-%method-function-fast make-method add-method
+                  make-effective-method-outcome append-generic-function-call-history)
+  (sys:safe-trace setf-lambda-list setf-function-name)
+  (sys:safe-trace (setf fdefinition))
+  (sys:safe-trace invalidated-dispatch-function)
+  (sys:safe-trace initialize-instance)
+  (sys:safe-trace core:list-from-vaslist)
+  (sys:safe-trace apply))
+
+#+(or)
+(progn
+  (sys:safe-trace function-to-method)
+  (sys:safe-trace instancep)
+  (sys:safe-trace maybe-update-instance
+                  maybe-update-instances
+                  dispatch-miss
+                  invalidated-dispatch-function
+                  generate-discriminator-from-data
+                  clos:interpret-dtree-program
+                  interpreted-discriminator
+                  dispatch-miss-va
+                  core:apply0
+                  core:apply1
+                  core:apply2
+                  core:apply3
+                  core:apply4
+                  perform-outcome
+                  )
+  )
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (format t "Done remove-method ~a~%" (core:getpid))
+  (y-or-n-p "About to function-to-method")
+  )
 
 ;;(setq cmp:*debug-compiler* t)
 (function-to-method 'add-method '(gf method) '(standard-generic-function standard-method)

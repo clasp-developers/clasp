@@ -127,23 +127,22 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
 }
 
 
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nargs, Vaslist untagged_vargs_rest[2])
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(core::T_O* vas, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
-  va_copy(untagged_vargs_rest[0]._Args,vargs);
-  va_copy(untagged_vargs_rest[1]._Args,vargs);
-#ifdef DEBUG_ENSURE_VALID_OBJECT
-  // Validate the arguments in the va_list
-  va_list validate_vargs;
-  va_copy(validate_vargs,vargs);
-  for ( size_t i(0); i<nargs; ++i ) {
-    core::T_O* tobj = va_arg(validate_vargs,core::T_O*);
-    ENSURE_VALID_OBJECT(tobj);
-  }
-  va_end(validate_vargs);
-#endif
-  untagged_vargs_rest[0]._remaining_nargs = nargs;
-  untagged_vargs_rest[1]._remaining_nargs = nargs;
+  Vaslist* vaslist = (Vaslist*)gctools::untag_vaslist(vas);
+  untagged_vargs_rest[0]._args = vaslist->_args;
+  untagged_vargs_rest[1]._args = vaslist->_args;
+  untagged_vargs_rest[0]._nargs = nargs;
+  untagged_vargs_rest[1]._nargs = nargs;
   T_O* result = untagged_vargs_rest->asTaggedPtr();
+#ifdef DEBUG_VASLIST
+  if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s nargs = %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs );
+    for ( size_t ii=0; ii<nargs; ++ii ) {
+      printf("     vaslist[%lu] = %s\n", ii, _rep_(core::T_sp((gctools::Tagged)untagged_vargs_rest[0][ii])).c_str());
+    }
+  }
+#endif
   return result;
   NO_UNWIND_END();
 }
@@ -224,7 +223,6 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
-                                          fnLispCallingConvention llvm_func,
                                           core::T_O* entryPointInfo,
                                           std::size_t numCells)
 {NO_UNWIND_BEGIN();
@@ -238,10 +236,10 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 #else
   new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_header);
 #endif
-  core::GlobalEntryPoint_sp entryPoint((gctools::Tagged)entryPointInfo);
+  core::T_sp tentryPoint((gctools::Tagged)entryPointInfo);
+  core::GlobalEntryPoint_sp entryPoint = gc::As<GlobalEntryPoint_sp>(tentryPoint);
   auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
-                                                                           llvm_func,
                                                                            entryPoint,
                                                                            core::ClosureWithSlots_O::cclaspClosure);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
@@ -923,11 +921,13 @@ T_O* cc_match(T_O* old_value, T_O* new_value ) {
 
 
 
-
-void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
+#if 0
+void cc_rewind_vaslist(vaslist va_args, void** register_save_areaP)
 {
-  LCC_REWIND_VA_LIST(va_args,register_save_areaP);
+  LCC_REWIND_VASLIST(va_args,register_save_areaP);
 }
+#endif
+
 
 unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));

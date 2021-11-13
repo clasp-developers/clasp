@@ -47,7 +47,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, givenNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, minNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, maxNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
-
+SYMBOL_EXPORT_SC_(CorePkg, AMPva_rest );
 /*! Return true if the form represents a type
 */
 DOCGROUP(clasp)
@@ -177,7 +177,9 @@ CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 }
 
 
-void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager &scope, LCC_ARGS_LLH) {
+void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager *scope, size_t nargs, T_O** args ) {
+  ASSERT(NUMBER_OF_ENTRY_POINTS==1);
+#if 0
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
     if (numReq <= LCC_ARGS_IN_REGISTERS && numReq == lcc_nargs) {
@@ -230,8 +232,9 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
       return;
     }
   }
-  LOG(BF("About to createBindingsInScopeVaList with\n llh->%s\n    VaList->%s") % _rep_(llh) % _rep_(lcc_vargs));
-  llh->createBindingsInScopeVaList(closure,lcc_nargs, lcc_vargs, scope);
+#endif
+  LOG(BF("About to createBindingsInScopeVaslist with\n llh->%s\n    Vaslist->%s") % _rep_(llh) % _rep_(lcc_vargs));
+  llh->createBindingsInScope(closure, nargs, args, *scope);
   return;
 }
 
@@ -583,13 +586,13 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
   }
 }
 
-#define PASS_FUNCTION_REQUIRED bind_required_va_list
-#define PASS_FUNCTION_OPTIONAL bind_optional_va_list
-#define PASS_FUNCTION_REST bind_rest_va_list
-#define PASS_FUNCTION_KEYWORD bind_keyword_va_list
-#define PASS_ARGS size_t n_args, VaList_sp arglist
+#define PASS_FUNCTION_REQUIRED bind_required_vaslist
+#define PASS_FUNCTION_OPTIONAL bind_optional_vaslist
+#define PASS_FUNCTION_REST bind_rest_vaslist
+#define PASS_FUNCTION_KEYWORD bind_keyword_vaslist
+#define PASS_ARGS size_t n_args, T_O** arglist
 #define PASS_ARGS_NUM n_args
-#define PASS_NEXT_ARG(_ai) arglist->next_arg()
+#define PASS_NEXT_ARG(_ai) core::T_sp((gctools::Tagged)arglist[_ai])
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
@@ -616,40 +619,39 @@ void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, ScopeManager
   }
 }
 
-void LambdaListHandler_O::createBindingsInScopeVaList(core::T_sp closure,
-                                                      size_t nargs, VaList_sp va,
+void LambdaListHandler_O::createBindingsInScope(core::T_sp closure,
+                                                      size_t nargs, core::T_O** arglist,
                                                       ScopeManager &scope) {
-  if (UNLIKELY(!this->_CreatesBindings))
-    return;
-  Vaslist arglist_struct(*va);
-  VaList_sp arglist(&arglist_struct);
+  if (UNLIKELY(!this->_CreatesBindings)) return;
   int arg_idx = 0;
-  arg_idx = bind_required_va_list(closure,this->_RequiredArguments, nargs, arglist, arg_idx, scope);
+  arg_idx = bind_required_vaslist(closure,this->_RequiredArguments, nargs, arglist, arg_idx, scope);
   if (UNLIKELY(this->_OptionalArguments.size() != 0)) {
-    arg_idx = bind_optional_va_list(closure,this->_OptionalArguments, nargs, arglist, arg_idx, scope);
+    arg_idx = bind_optional_vaslist(closure,this->_OptionalArguments, nargs, arglist, arg_idx, scope);
   }
   if (UNLIKELY(arg_idx < nargs && !(this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
     throwTooManyArgumentsError(closure,nargs, this->numberOfLexicalVariables());
   }
   if (UNLIKELY(this->_RestArgument.isDefined())) {
     // Make and use a copy of the arglist so that keyword processing can parse the args as well
-    Vaslist copy_arglist(*arglist);
-    VaList_sp copy_arglist_sp(&copy_arglist);
-    bind_rest_va_list(closure,this->_RestArgument, nargs, copy_arglist_sp, arg_idx, scope);
+    bind_rest_vaslist(closure,this->_RestArgument, nargs, arglist, arg_idx, scope);
   }
   if (UNLIKELY(this->_KeywordArguments.size() != 0)) {
-    bind_keyword_va_list(closure,this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
+    for (auto fi = this->_KeywordArguments.begin(); fi != this->_KeywordArguments.end(); fi++)
+      scope.ensureLexicalElementUnbound(*fi);
+    bind_keyword_vaslist(closure,this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
   }
   if (UNLIKELY(this->_AuxArguments.size() != 0))
     bind_aux(closure,this->_AuxArguments, scope);
 }
 
+#if 0
 void LambdaListHandler_O::dump_keywords()
 {
   for ( int i = 0; i< this->_KeywordArguments.size(); ++i ) {
     printf("%s:%d Keyword: %s@%p\n", __FILE__, __LINE__, _rep_(this->_KeywordArguments[i]._Keyword).c_str(), this->_KeywordArguments[i]._Keyword.raw_());
   }
 }
+#endif
 
 string argument_mode_as_string(ArgumentMode mode) {
   switch (mode) {

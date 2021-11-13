@@ -739,11 +739,9 @@ Integer_sp clasp_boole(Fixnum op, Integer_sp i1, Integer_sp i2) {
 /*! Copied from ECL */
 DOCGROUP(clasp)
 CL_DEFUN bool cl__logbitp(Integer_sp index, Integer_sp i) {
-  if (clasp_minusp(index))
-      // Expected type for index is (integer 0) = unsigned-byte
-    TYPE_ERROR(index, cl::_sym_UnsignedByte);
   if (index.fixnump()) {
-    cl_index n = clasp_to_size(index);
+    gc::Fixnum n = index.unsafe_fixnum();
+    if (n < 0) goto NEGINDEX;
     if (i.fixnump()) {
       gc::Fixnum fi = i.unsafe_fixnum();
       if (n >= FIXNUM_BITS) return (fi < 0);
@@ -772,11 +770,14 @@ CL_DEFUN bool cl__logbitp(Integer_sp index, Integer_sp i) {
         return (len < 0);
     }
   } else {
+    if (clasp_minusp(index)) goto NEGINDEX;
     // Index is a bignum.
     // We don't support bignums with that many bits, so we're out of range.
     if (clasp_minusp(i)) return true;
     else return false;
   }
+ NEGINDEX:
+  TYPE_ERROR(index, cl::_sym_UnsignedByte); // (integer 0)
 }
 
 CL_LAMBDA(op arg1 arg2)

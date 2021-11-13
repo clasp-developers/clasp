@@ -46,7 +46,7 @@ command alias lprint-frame-env expr af_printCurrentIhsFrameEnvironment()
 command regex lgoto-frame 's/lgoto-frame ([0-9]+)/expr af_gotoIhsFrame(%1)/'
 
 
-command alias loader command script import lldb_loader.py
+command alias loader command script import "debugger-tools/lldb_loader.py"
 
 command alias signal-setup  process handle -p true -n false -s false SIGSEGV SIGUSR1 SIGXCPU SIGPWR
 

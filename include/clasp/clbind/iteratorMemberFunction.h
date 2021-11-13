@@ -47,7 +47,7 @@ public:
   typedef core::BuiltinClosure_O TemplatedBase;
 
 public:
-  IteratorMethoid(core::GlobalEntryPoint_sp ep, Begin begin, End end) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)), _begin(begin), _end(end){};
+  IteratorMethoid(core::GlobalEntryPoint_sp ep, Begin begin, End end) : core::BuiltinClosure_O(ep), _begin(begin), _end(end){};
 
 private:
   typedef typename BeginReturnType<OT, Begin>::type IteratorType;
@@ -66,13 +66,38 @@ public:
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     if (lcc_nargs != 1)
       core::wrongNumberOfArguments(core::T_sp((gctools::Tagged)lcc_closure),lcc_nargs, 1);
-    OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
+    core::T_sp arg0((gctools::Tagged)lcc_args[0]);
+    OT *objPtr = gc::As<core::WrappedPointer_sp>(arg0)->cast<OT>();
     IteratorType itBegin = ((*objPtr).*(closure->_begin))();
     IteratorType itEnd = ((*objPtr).*(closure->_end))();
     auto  smart_itBegin = gctools::GC<WrappedIteratorType>::allocate( itBegin);
     auto  smart_itEnd = gctools::GC<WrappedIteratorType>::allocate( itEnd);
     return Values(smart_itBegin, smart_itEnd);
   }
+    static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
 };
 };
 

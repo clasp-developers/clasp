@@ -148,7 +148,7 @@ namespace core {
       return res;
     }
 
-    static Cons_sp createFrom_va_list(va_list &va_args);
+    static Cons_sp createFrom_vaslist(Vaslist &va_args);
     static Cons_sp createList(T_sp o1);
     static Cons_sp createList(T_sp o1, T_sp o2);
     static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3);
@@ -483,8 +483,15 @@ CL_PKG_NAME(ClPkg,car);
 };
 
 
+namespace gctools {
 
-//TRANSLATE(core::Cons_O);
+inline void fill_frame_list(Frame* frame, size_t& idx, core::List_sp list) {
+  for ( auto val : list ) {
+    gctools::fill_frame_one( frame, idx, CONS_CAR(val).raw_() );;
+  }
+};
+
+};
 
 
 namespace core {

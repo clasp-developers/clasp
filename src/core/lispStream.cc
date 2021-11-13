@@ -360,7 +360,6 @@ static int file_listen(T_sp, int);
 //    static T_sp alloc_stream();
 
 static void cannot_close(T_sp stream) NO_RETURN;
-static void file_libc_error(T_sp error_type, T_sp stream, const char *msg, int narg, ...) NO_RETURN;
 static T_sp not_a_file_stream(T_sp fn) NO_RETURN;
 static void not_an_input_stream(T_sp fn) NO_RETURN;
 static void not_an_output_stream(T_sp fn) NO_RETURN;
@@ -5715,22 +5714,6 @@ not_a_binary_stream(T_sp s) {
 static void
 cannot_close(T_sp stream) {
   file_libc_error(core::_sym_simpleFileError, stream, "Stream cannot be closed", 0);
-}
-
-static void
-file_libc_error(T_sp error_type, T_sp stream,
-                const char *msg, int narg, ...) {
-  clasp_va_list args;
-  T_sp error = SimpleBaseString_O::make(std::string(strerror(errno)));
-  clasp_va_start(args, narg);
-  T_sp rest = clasp_grab_rest_args(args, narg);
-  clasp_va_end(args);
-
-  eval::funcall(core::_sym_signalSimpleError,
-                error_type, nil<T_O>(),
-                SimpleBaseString_O::make("~?~%C library explanation: ~A."),
-                Cons_O::createList(SimpleBaseString_O::make(std::string(msg)), rest,
-                                   error));
 }
 
 static void

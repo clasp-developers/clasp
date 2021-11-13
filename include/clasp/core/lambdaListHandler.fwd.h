@@ -31,6 +31,8 @@ namespace core {
 
 FORWARD(LambdaListHandler);
 
- extern void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager &scope, LCC_ARGS_LLH);
+struct ScopeManager;
+
+extern void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager* scope, std::size_t lcc_nargs, core::T_O** lcc_args );
 };
 #endif

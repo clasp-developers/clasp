@@ -214,6 +214,9 @@ def untag_general(tptr):
 def fixnump(tptr):
     return (tptr&info["ints"]["FIXNUM_MASK"]==0)
 
+def characterp(tptr):
+    return (flags(tptr)==info["ints"]["CHARACTER_TAG"])
+
 def consp(tptr):
     return (flags(tptr)==info["ints"]["CONS_TAG"])
 
@@ -316,44 +319,39 @@ class Fixnum:
     def consp(self):
         return False
 
+class Character:
+    def __init__(self,debugger,address):
+        if (characterp(address)):
+            val = address >> 3
+            self._Value = val
+            return
+        raise("%x is not a character" % address)
+    def value(self):
+        return self._Value
+    def __repr__(self):
+        return "#\[%s]" % str(self._Value)
+    def consp(self):
+        return False
+    
 class Vaslist:
     def __init__(self,debugger,address):
         if (vaslistp(address)):
             self._debugger = debugger
             self._Value = address
             self._address = untag_vaslist(address)
-            self._register_save_area = debugger.read_memory(self._address+16,8)
-            self._gp_offset_cur = debugger.read_memory(self._address+8,8)
-            nargs = self._debugger.read_memory(self._register_save_area+8,8)
-            self._gp_offset_start = self._gp_offset_cur - (8*(nargs-6))
+            self._args = debugger.read_memory(self._address+0,8)
+            self._nargs = debugger.read_memory(self._address+8,8)
             return
         raise("%x is not a vaslist" % address)
     def value(self):
         return self._Value
     def __repr__(self):
         out = StringIO()
-        out.write("Vaslist: 0x%x reg_save_area: 0x%x\n" % (self._Value,self._register_save_area))
-        closure = self._debugger.read_memory(self._register_save_area,8)
-        nargs = self._debugger.read_memory(self._register_save_area+8,8)
-        farg0 = self._debugger.read_memory(self._register_save_area+16,8)
-        farg1 = self._debugger.read_memory(self._register_save_area+24,8)
-        farg2 = self._debugger.read_memory(self._register_save_area+32,8)
-        farg3 = self._debugger.read_memory(self._register_save_area+40,8)
-        out.write("   closure = 0x%x\n" % closure )
-        out.write("     nargs = %d\n" % nargs )
-        if (nargs>2):
-            out.write("     farg0 = 0x%x\n" % farg0 )
-        if (nargs>3):
-            out.write("     farg1 = 0x%x\n" % farg1 )
-        if (nargs>4):
-            out.write("     farg2 = 0x%x\n" % farg2 )
-        if (nargs>5):
-            out.write("     farg3 = 0x%x\n" % farg3 )
-        if (nargs>6):
-            for index in range(0,(nargs-6)):
-                rgp = self._gp_offset_start+8*index
-                val = self._debugger.read_memory(rgp,8)
-                out.write("     farg%d = 0x%x\n" % (index+4,val))
+        out.write("Vaslist: 0x%x args: 0x%x  nargs: %d\n" % (self._Value,self._args, self._nargs))
+        for index in range(0,self._nargs):
+            rgp = self._args+8*index
+            val = self._debugger.read_memory(rgp,8)
+            out.write("     farg%d = 0x%x\n" % (index,val))
         return out.getvalue()
     
 class T_O:
@@ -636,6 +634,8 @@ def translate_tagged_ptr(debugger,tptr):
         return Cons_O(debugger,tptr)
     if (fixnump(tptr)):
         return Fixnum(debugger,tptr)
+    if (characterp(tptr)):
+        return Character(debugger,tptr)
     if (vaslistp(tptr)):
         return Vaslist(debugger,tptr)
 

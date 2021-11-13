@@ -55,9 +55,8 @@ namespace core {
     // in src/lisp/kernel/cmp/cmpintrinsics.lsp.
     // Changes to the structure here must be reflected there.
   public: // ctor/dtor for classes with shared virtual base
-    // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O(GlobalEntryPoint_sp fdesc) :
-      Base(ENSURE_ENTRY_POINT(fdesc,funcallable_entry_point))
+  FuncallableInstance_O(GlobalEntryPoint_sp ep) :
+      Base(ep)
       , _Class(nil<Instance_O>())
     , _CompiledDispatchFunction(nil<T_O>()) {}
     explicit FuncallableInstance_O(GlobalEntryPoint_sp fdesc,Instance_sp metaClass, size_t slots) :
@@ -133,8 +132,42 @@ namespace core {
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    static LCC_RETURN funcallable_entry_point(LCC_ARGS_ELLIPSIS);
-    
+    static inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      SETUP_CLOSURE(FuncallableInstance_O,closure);
+      INCREMENT_FUNCTION_CALL_COUNTER(closure);
+      // We need to be sure to load the GFUN_DISPATCHER only once.
+      // We used to load it twice, which caused a race condition in that other threads
+      // could call setFuncallableInstanceFunction between the loads, meaning we called
+      // the code for one function but pass it the closure object for another.
+      T_sp funcallable_closure = closure->GFUN_DISPATCHER();
+      // This is where we could decide to compile the dtree and switch the GFUN_DISPATCHER() or not
+      //  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
+      return funcall_general<core::Function_O>( funcallable_closure.tagged_(), lcc_nargs, lcc_args );
+    }
+      static inline LISP_ENTRY_0() {
+    return entry_point_n(lcc_closure,0,NULL);
+  }
+  static inline LISP_ENTRY_1() {
+    core::T_O* args[1] = {lcc_farg0};
+    return entry_point_n(lcc_closure,1,args);
+  }
+  static inline LISP_ENTRY_2() {
+    core::T_O* args[2] = {lcc_farg0,lcc_farg1};
+    return entry_point_n(lcc_closure,2,args);
+  }
+  static inline LISP_ENTRY_3() {
+    core::T_O* args[3] = {lcc_farg0,lcc_farg1,lcc_farg2};
+    return entry_point_n(lcc_closure,3,args);
+  }
+  static inline LISP_ENTRY_4() {
+    core::T_O* args[4] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3};
+    return entry_point_n(lcc_closure,4,args);
+  }
+  static inline LISP_ENTRY_5() {
+    core::T_O* args[5] = {lcc_farg0,lcc_farg1,lcc_farg2,lcc_farg3,lcc_farg4};
+    return entry_point_n(lcc_closure,5,args);
+  }
+
   }; // FuncallableInstance class
 
 }; // core namespace

@@ -7,7 +7,7 @@
 (core:defconstant-equal +special-operator-dispatch+
   '(
     (progn codegen-progn)
-    (core:bind-va-list codegen-bind-va-list)
+    (core:bind-vaslist codegen-bind-vaslist)
     (if codegen-if)
     (block  codegen-block)
     (core::local-block  codegen-local-block)
@@ -88,23 +88,18 @@
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
-  (multiple-value-bind (compiled-fn lambda-name lambda-list entry-point-ref)
-      (compile-lambda-function lambda-or-lambda-block env)
-    (declare (ignore lambda-list))
-    (if (null lambda-name) (error "The lambda doesn't have a name"))
+  (let* ((bclasp-llvm-function-info (compile-lambda-function lambda-or-lambda-block env))
+         (xep-group (bclasp-llvm-function-info-xep-function bclasp-llvm-function-info)))
+    (cmp-log "codegen-closure xep-group %s%N" xep-group)
     (if result
-        (let ((llvm-function-name (llvm-sys:get-name compiled-fn)))
-          (unless entry-point-ref
-            (error "Could not find entry-point-ref for function name: ~a lambda: ~a" llvm-function-name lambda-or-lambda-block))
-          ;; TODO:   Here walk the source code in lambda-or-lambda-block and
-          ;; get the line-number/column for makeCompiledFunction
-          (let* ((runtime-environment (irc-load (irc-renv env)))
-                 (fnptr (irc-intrinsic "makeCompiledFunction" 
-                                       compiled-fn
-                                       (literal:constants-table-value (cmp:entry-point-reference-index entry-point-ref)) 
-                                       runtime-environment)))
-            (irc-t*-result fnptr result))
-          (values compiled-fn lambda-name)))))
+        ;; TODO:   Here walk the source code in lambda-or-lambda-block and
+        ;; get the line-number/column for makeCompiledFunction
+        (let* ((runtime-environment (irc-load (irc-renv env)))
+               (fnptr (irc-intrinsic "makeCompiledFunction" 
+                                     (literal:constants-table-value (cmp:entry-point-reference-index (xep-group-entry-point-reference xep-group)))
+                                     runtime-environment)))
+          (irc-t*-result fnptr result)))
+    (values)))
 
 (defun codegen-global-function-lookup (result sym env)
   ;; Was symbolFunctionRead
@@ -1176,7 +1171,7 @@ jump to blocks within this tagbody."
 (defun gen-vaslist-length (vaslist)
   (irc-tag-fixnum
    (irc-load
-    (irc-vaslist-remaining-nargs-address vaslist))))
+    (irc-vaslist-nargs-address vaslist))))
 
 (defun codegen-vaslist-length (result rest env)
   (let ((form (car rest))
@@ -1191,13 +1186,18 @@ jump to blocks within this tagbody."
 
 (defun gen-vaslist-pop (vaslist)
   ;; We need to decrement the remaining nargs, then return va_arg.
-  (let* ((nargs* (irc-vaslist-remaining-nargs-address vaslist))
+  (let* ((nargs* (irc-vaslist-nargs-address vaslist))
          (nargs (irc-load nargs*))
          (nargs-- (irc-sub nargs (jit-constant-size_t 1))))
     ;; Decrement.
     (irc-store nargs-- nargs*)
-    ;; va_arg.
-    (irc-va_arg (irc-vaslist-va_list-address vaslist) %t*%)))
+    (let* ((args* (irc-vaslist-args-address vaslist))
+           (args (irc-load args*))
+           (args++ (irc-gep args (list 1))))
+      ;; Increment
+      (irc-store args++ args*)
+      ;; va_arg.
+      (irc-load args))))
 
 (defun codegen-vaslist-pop (result rest env)
   (let ((form (car rest))
@@ -1516,8 +1516,8 @@ jump to blocks within this tagbody."
   (declare (ignore fmt fargs))
   nil)
 
-;;; core:bind-va-list
-(defun codegen-bind-va-list (result form evaluate-env)
+;;; core:bind-vaslist
+(defun codegen-bind-vaslist (result form evaluate-env)
   (let ((lambda-list (first form))
         (vaslist     (second form))
         (body        (cddr form)))
@@ -1525,27 +1525,28 @@ jump to blocks within this tagbody."
     (multiple-value-bind (declares code)
         (process-declarations body t)
       (let ((canonical-declares (core:canonicalize-declarations declares)))
-        (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
+        (multiple-value-bind (cleavir-lambda-list-analysis new-body rest-alloc)
             (transform-lambda-parts lambda-list canonical-declares code)
-          (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
+          (blog "got cleavir-lambda-list-analysis -> %s%N" cleavir-lambda-list-analysis)
           (let ((eval-vaslist (alloca-t* "bind-vaslist")))
             (codegen eval-vaslist vaslist evaluate-env)
             (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
-                   (src-remaining-nargs* (irc-vaslist-remaining-nargs-address lvaslist))
-                   (src-va_list* (irc-vaslist-va_list-address lvaslist))
-                   (local-va_list* (alloca-va_list "local-va_list"))
-                   (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
-                                                                           (irc-pointer-cast src-va_list* %i8*%))))
-                   (callconv (make-calling-convention-impl :closure (llvm-sys:constant-pointer-null-get %i8*%)
-                                                           :nargs (irc-load src-remaining-nargs*)
-                                                           :va-list* local-va_list*
-                                                           :rest-alloc rest-alloc
-                                                           :cleavir-lambda-list cleavir-lambda-list)))
+                   (src-remaining-nargs* (irc-vaslist-nargs-address lvaslist))
+                   (src-args* (irc-vaslist-args-address lvaslist))
+                   (local-args* (alloca-vaslist :label "local-vaslist"))
+                   (local-args-v* (irc-tag-vaslist local-args*))
+                   (_ (vaslist-start local-args-v* (irc-load src-remaining-nargs*) (irc-load src-args*)))
+                   #+(or)(_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-vaslist* %i8*%)
+                                                                                 (irc-pointer-cast src-vaslist* %i8*%))))
+                   (callconv (make-calling-convention :closure (llvm-sys:constant-pointer-null-get %i8*%)
+                                                      :nargs (irc-load src-remaining-nargs*)
+                                                      :vaslist* local-args-v*
+                                                      :rest-alloc rest-alloc
+                                                      :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)))
               (declare (ignore _))
-              ;; See comment in cleavir bind-va-list w/r/t safep.
-              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil))
+              ;; See comment in cleavir bind-vaslist w/r/t safep.
+              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :general-entry :safep nil))
                     (*notinlines* (new-notinlines canonical-declares)))
-                (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
                 (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))
 
 ;;; MULTIPLE-VALUE-FOREIGN-CALL
@@ -1725,13 +1726,7 @@ jump to blocks within this tagbody."
                    ;; results-in-registers keeps things in the basic tmv format, because
                    ;; here we don't need the store/load values dance.
                    ;; (The C function only gets/needs/wants the primary value.)
-                   #+(or)(_ (format t "About to irc-funcall-results-in-registers-wft c-function-type -> ~s  closure-to-call -> ~s   cl-args -> ~s ~%"
-                                    c-function-type
-                                    closure-to-call
-                                    cl-args ))
-                   (closure-function-type (irc-lisp-function-type (length cl-args)))
-                   (cl-result (irc-funcall-results-in-registers-wft
-                               closure-function-type ; NOT c-function-type
+                   (cl-result (irc-funcall-results-in-registers
                                closure-to-call cl-args (core:bformat nil "%s_closure" c-name))))
               ;; Now generate a call the translator for the return value if applicable, then return.
               ;; NOTE: (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro

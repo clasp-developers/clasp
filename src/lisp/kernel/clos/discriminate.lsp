@@ -483,7 +483,7 @@
                    (.method-args.
                      (list* ,@required-args
                             ,(if more-args
-                                 `(core:list-from-va-list ,more-args)
+                                 `(core:list-from-vaslist ,more-args)
                                  nil))))
                ,(generate-discrimination
                  call-history specializer-profile

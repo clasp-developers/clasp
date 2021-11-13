@@ -117,6 +117,23 @@
              (format stream "~a~%(Using original form instead.)"
                      (original-condition condition)))))
 
+;; This condition is signaled when an attempt at constant folding fails
+;; due to the function being called signaling an error.
+;; A full warning might be okay since this should correspond to a runtime
+;; error, but SBCL signals a style warning and this is experimental, so it
+;; will only be a style warning for now.
+;; I can imagine some reasons, e.g. relating to the floating point env.
+(define-condition fold-failure (style-warning compiler-condition)
+  ((%operation :initarg :operation :reader fold-operation)
+   (%operands :initarg :operands :reader fold-operands)
+   (%original-condition :initarg :condition :reader original-condition))
+  (:report (lambda (condition stream)
+             (format stream "Lisp error during constant folding:~%~a
+Operation was (~s~{ ~s~})."
+                     (original-condition condition)
+                     (fold-operation condition)
+                     (fold-operands condition)))))
+
 (define-condition simple-compiler-warning
     (simple-warning compiler-condition)
   ())

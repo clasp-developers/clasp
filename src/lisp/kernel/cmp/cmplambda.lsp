@@ -80,9 +80,62 @@ Return (values cleavir-lambda-list wrapped-code rest-alloc)."
                    (cleavir-body `(let* (,@assignments)
                                     ,@(if declares (list `(declare ,@declares)) nil)
                                     ,@code)))
-              (values cleavir-lambda-list cleavir-body
+              (values (calculate-cleavir-lambda-list-analysis cleavir-lambda-list)
+                      cleavir-body
                       (compute-rest-alloc rest-var declares)))))))))
 
+
+#+(or)(defun cleavir-arguments (cleavir-lambda-list)
+  "Return the list of argument names for the cleavir-lambda-list"
+  (let ((arglist '()))
+    (dolist (item cleavir-lambda-list)
+               (unless (symbolp item)
+                 (if (consp item)
+                     (case (length item)
+                       (2
+                        (push (first item) arglist)
+                        (push (second item) arglist))
+                       (3
+                        (push (second item) arglist)
+                        (push (third item) arglist))
+                       (otherwise (error "Illegal length ~a" (length item))))
+                     (push item arglist))))
+    (nreverse arglist)))
+
+
+
+(defun lambda-list-arguments (lambda-list)
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
+      (core:process-lambda-list lambda-list 'function)
+    (cmp-log "reqargs = %s%N" reqargs)
+    (cmp-log "optargs = %s%N" optargs)
+    (cmp-log "rest-var = %s%N" rest-var)
+    (cmp-log "keyargs = %s%N" keyargs)
+    (let ((args '()))
+      (dolist (req (rest reqargs))
+        (cmp-log "req-name = %s%N" req)
+        (push req args))
+      (do ((cur (rest optargs) (cdddr cur)))
+          ((null cur) nil)
+        (let ((opt-name (car cur))
+              (opt-flag (cadr cur)))
+          (cmp-log "opt cur = %s%N" cur)
+          (cmp-log "opt-name = %s%N" opt-name)
+          (cmp-log "opt-flag = %s%N" opt-flag)
+          (push opt-name args)
+          (when opt-flag (push opt-flag args))))
+      (when rest-var (push rest-var args))
+      (do ((cur (rest keyargs) (cddddr cur)))
+          ((null cur) nil)
+        (let ((key-name (caddr cur))
+              (key-flag (cadddr cur)))
+          (cmp-log "key-name = %s%N" key-name)
+          (cmp-log "key-flag = %s%N" key-flag)
+          (push key-name args)
+          (when key-flag (push key-flag args))))
+      (nreverse args))))
+        
+  
 #| (#:REQ8085 #:REQ8086 &OPTIONAL (#:OPT8088 #:OPTP8089) &VA-REST #:REST8087 &KEY
  (:A #:KEY8090 #:KEYP8091) (:B #:KEY8092 #:KEYP8093) (:C #:KEY8094 #:KEYP8095))
 (LET ((X #:REQ8085) (Y #:REQ8086))

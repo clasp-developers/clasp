@@ -71,6 +71,8 @@ THE SOFTWARE.
 #include <clasp/core/bformat.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/sort.h>
+#include <clasp/core/package.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/designators.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -89,7 +91,7 @@ core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start,
 namespace core {
 
 DOCGROUP(clasp)
-CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
+CL_DEFUN Vaslist_sp core__vaslist_rewind(Vaslist_sp v)
 {
   Vaslist* vaslist0 = &*v;
   Vaslist* vaslist1 = &vaslist0[1];
@@ -98,16 +100,28 @@ CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
 }
 
 DOCGROUP(clasp)
-CL_DEFUN size_t core__vaslist_length(VaList_sp v)
+CL_DEFUN size_t core__vaslist_length(Vaslist_sp v)
 {
-//  printf("%s:%d va_list length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
+//  printf("%s:%d vaslist length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
   return v->remaining_nargs();
 }
 
 DOCGROUP(clasp)
-CL_DEFUN T_sp core__vaslist_pop(VaList_sp v)
+CL_DEFUN T_sp core__vaslist_pop(Vaslist_sp v)
 {
-  return v->next_arg();
+#ifdef DEBUG_VASLIST
+  if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s nargs: %lu  args: %p\n", __FILE__, __LINE__, __FUNCTION__, v->_nargs, v->_args );
+  }
+#endif
+  T_sp val = v->next_arg();
+#ifdef DEBUG_VASLIST
+  if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s Returning vaslist_pop-> @%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_() );
+    printf("%s:%d:%s Returning vaslist_pop->%s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(val).c_str());
+  }
+#endif
+  return val;
 }
 
 DOCGROUP(clasp)
@@ -117,16 +131,15 @@ CL_DEFUN bool core__vaslistp(T_sp o)
 }
 
 DOCGROUP(clasp)
-CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
+CL_DEFUN List_sp core__list_from_vaslist(Vaslist_sp vorig)
 {
   Vaslist valist_copy(*vorig);
-  VaList_sp valist(&valist_copy);
-
+  Vaslist_sp valist(&valist_copy);
   ql::list l;
   size_t nargs = valist->remaining_nargs();
 //  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
   for ( size_t i=0; i<nargs; ++i ) {
-    T_sp one = valist->next_arg();
+    T_sp one = valist->next_arg_indexed(i);
     l << one;
   }
   T_sp result = l.cons();
@@ -327,18 +340,18 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
                   nil<core::T_O>());
 }
 
-void dbg_VaList_sp_describe(T_sp obj) {
-    // Convert the T_sp object into a VaList_sp object
-  VaList_sp vl = VaList_sp((gc::Tagged)obj.raw_());
-  printf("Original va_list at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_Args);
-    // Create a copy of the Vaslist with a va_copy of the va_list
+void dbg_Vaslist_sp_describe(T_sp obj) {
+    // Convert the T_sp object into a Vaslist_sp object
+  Vaslist_sp vl = Vaslist_sp((gc::Tagged)obj.raw_());
+  printf("Original vaslist at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_args);
+    // Create a copy of the Vaslist with a va_copy of the vaslist
   Vaslist vlcopy_s(*vl);
-  VaList_sp vlcopy(&vlcopy_s);
+  Vaslist_sp vlcopy(&vlcopy_s);
   printf("Calling dump_Vaslist_ptr\n");
   bool atHead = dump_Vaslist_ptr(stdout,&vlcopy_s);
   if (atHead) {
     for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
-      T_sp v = vlcopy->next_arg();
+      T_sp v = vlcopy->next_arg_indexed(i);
       printf("entry@%p %3zu --> %s\n", v.raw_(), i, _rep_(v).c_str());
     }
   }
@@ -346,7 +359,7 @@ void dbg_VaList_sp_describe(T_sp obj) {
 
 void dbg_lowLevelDescribe(T_sp obj) {
   if (obj.valistp()) {
-    dbg_VaList_sp_describe(obj);
+    dbg_Vaslist_sp_describe(obj);
   } else if (obj.fixnump()) {
     printf("fixnum_tag: %" PFixnum "\n", obj.unsafe_fixnum());
   } else if (obj.single_floatp()) {
@@ -447,11 +460,9 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 
 }
 
-std::string dbg_safe_repr(uintptr_t raw);
-
-string _safe_rep_(core::T_sp obj) {
-  return dbg_safe_repr((uintptr_t)obj.raw_());
-}
+extern "C" {
+//#define REPR_ADDR(addr) << "@" << (void*)addr
+#define REPR_ADDR(addr)
 
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
@@ -461,14 +472,21 @@ std::string dbg_safe_repr(uintptr_t raw) {
   if (gc::tagged_generalp((gc::Tagged)raw) ||gc::tagged_consp((gc::Tagged)raw)) {
     // protect us from bad pointers
     if ( raw < 0x1000) {
-      ss << "BAD-TAGGED-POINTER(" << (void*)raw << ")";
+      ss << "BAD-TAGGED-POINTER(" REPR_ADDR(raw) << ")";
       return ss.str();
     }
   }
   if (obj.generalp() ) {
     if (gc::IsA<core::Symbol_sp>(obj)) {
       core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);
-      ss << sym->formattedName(true);
+      core::Package_sp pkg = gc::As_unsafe<core::Package_sp>(sym->_HomePackage.load());
+      if (pkg.generalp() && gc::IsA<core::Package_sp>(pkg)) {
+        ss << pkg->_Name->get_std_string();
+      }
+      ss << "::";
+      if (sym->_Name.generalp() && gc::IsA<core::String_sp>(sym->_Name)) {
+        ss << sym->_Name->get_std_string();
+      }
     } else if (gc::IsA<core::SimpleBaseString_sp>(obj)) {
       core::SimpleBaseString_sp sobj = gc::As_unsafe<core::SimpleBaseString_sp>(obj);
       ss << "\"" << sobj->get_std_string() << "\"";
@@ -478,15 +496,21 @@ std::string dbg_safe_repr(uintptr_t raw) {
       for ( size_t i=0, iEnd(svobj->length()); i<iEnd; ++i ) {
         ss << dbg_safe_repr((uintptr_t) ((*svobj)[i]).raw_()) << " ";
       }
-      ss << ")@" << (void*)raw;
+      ss << ")" REPR_ADDR(raw);
     } else if (gc::IsA<core::FuncallableInstance_sp>(obj)) {
       core::FuncallableInstance_sp fi = gc::As_unsafe<core::FuncallableInstance_sp>(obj);
       ss << "#<FUNCALLABLE-INSTANCE ";
       ss << _safe_rep_(fi->functionName());
-      ss << ">@" << (void*)raw;;
+      ss << " :class " << _safe_rep_(fi->_Class->_className());
+      ss << ">" REPR_ADDR(raw); 
+    } else if (gc::IsA<core::Instance_sp>(obj)) {
+      core::Instance_sp ii = gc::As_unsafe<core::Instance_sp>(obj);
+      ss << "#<INSTANCE :class ";
+      ss << _safe_rep_(ii->_Class->_className());
+      ss << ">" REPR_ADDR(raw);
     } else {
       core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
-      ss << "#<" << gen->className() << " " << (void*)gen.raw_() << ">";
+      ss << "#<" << gen->className() << " " REPR_ADDR(gen.raw_()) << ">";
     }
   } else if (obj.consp()) {
     ss << "(";
@@ -504,7 +528,22 @@ std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.nilp()) {
     ss << "NIL";
   } else if (obj.valistp()) {
-    ss << "#<VASLIST " << (void*)obj.raw_() << ">";
+    core::Vaslist_sp vaslist = gc::As_unsafe<core::Vaslist_sp>(obj);
+    ss << "#<VASLIST ";;
+#if 0
+    // difference during diff
+    ss << (void*)obj.raw_();
+#endif
+#if 0
+    ss  << " :args @" << (void*)vaslist->_args;
+    ;
+#endif
+    ss << ":nargs " << vaslist->remaining_nargs();
+    ss << " :contents (";
+    for ( size_t ii=0; ii<vaslist->remaining_nargs(); ii++ ) {
+      ss << dbg_safe_repr((uintptr_t)vaslist->relative_indexed_arg(ii)) << " ";
+    }
+    ss << ") >";
   } else if (obj.unboundp()) {
     ss << "#:UNBOUND";
   } else if (obj.characterp()) {
@@ -512,13 +551,19 @@ std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.single_floatp()) {
     ss << (float)obj.unsafe_single_float();
   } else {
-    ss << " #<RAW@" << (void*)obj.raw_() << ">";
+    ss << " #<RAW" REPR_ADDR(obj.raw_()) << ">";
   }
   if (ss.str().size() > 2048) {
     return ss.str().substr(0,2048);
   }
   return ss.str();
 }
+};
+
+string _safe_rep_(core::T_sp obj) {
+  return dbg_safe_repr((uintptr_t)obj.raw_());
+}
+
 
 extern "C" {
 

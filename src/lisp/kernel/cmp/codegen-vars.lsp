@@ -612,10 +612,14 @@
     (irc-t*-result val result))
   result)
 
-(defun codegen-register-var-lookup (result alloca)
-  ;; Read from a register
+(defun codegen-alloca-var-lookup (result alloca)
+  ;; Read from an alloca
   (let ((val (irc-load alloca)))
     (irc-t*-result val result)))
+
+(defun codegen-llvm-register-var-lookup (result register)
+  ;; Read from a register
+  (irc-t*-result register result))
 
 (defun codegen-var-lookup (result sym src-env)
   "Return IR code thsym returns the value of a symbol that is either lexical or special"
@@ -630,9 +634,12 @@
              (index (fourth classified))
              (dest-env (fifth classified)))
          (codegen-lexical-var-lookup result symbol depth index src-env dest-env)))
-      ((eq (car classified) 'ext:register-var)
-       (cv-log "classified  register-var -> %s%N" classified)
-       (codegen-register-var-lookup result (cdr classified)))
+      ((eq (car classified) 'ext:alloca-var)
+       (cv-log "classified  alloca-var -> %s%N" classified)
+       (codegen-alloca-var-lookup result (cdr classified)))
+      ((eq (car classified) 'ext:llvm-register-var)
+       (cv-log "classified  llvm-register-var -> %s%N" classified)
+       (codegen-llvm-register-var-lookup result (cdr classified)))
       (t (error "Handle codegen-var-lookup with ~s" classified)))))
 
 (defun codegen-symbol-value (result symbol env)

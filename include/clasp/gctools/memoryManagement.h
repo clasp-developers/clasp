@@ -142,12 +142,6 @@ extern void obj_dump_base(void *base);
 namespace gctools {
   extern int global_signalTrap;
   extern bool global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core__exit!
-#if 0
-  void do_pollSignals();
-
-#define SET_SIGNAL(s) { gctools::global_signalTrap = s; }
-  inline void poll_signals() { if (gctools::global_signalTrap) gctools::do_pollSignals();};
-#endif
 };
 
 namespace gctools {
@@ -175,7 +169,7 @@ namespace gctools {
   #undef GC_ENUM
  #endif
 #endif
-        STAMPWTAG_VA_LIST_S = STAMPWTAG_core__VaList_dummy_O, 
+        STAMPWTAG_VASLIST_S = STAMPWTAG_core__Vaslist_dummy_O, 
         STAMPWTAG_CONS = STAMPWTAG_core__Cons_O, 
         STAMPWTAG_CHARACTER = STAMPWTAG_core__Character_dummy_O, 
         STAMPWTAG_UNUSED = STAMPWTAG_core__Unused_dummy_O, 
@@ -657,35 +651,6 @@ namespace gctools {
 
     ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_stamp_wtag_mtag.shifted_stamp()); };
 
-#if 0    
-    bool invalidP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == invalid_mtag; };
-    bool stampP() const { return (this->_stamp_wtag_mtag._value & general_mtag_mask) == general_mtag; };
-    bool weakObjectP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == weak_mtag; };
-    bool consObjectP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == cons_mtag; };
-    bool fwdP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == fwd_mtag; };
-    bool padP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == pad_mtag; };
-    bool pad1P() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == pad1_mtag; };
-    bool anyPadP() const { return this->padP() || this->pad1P(); };
-  /*! No sanity checking done - this function assumes kindP == true */
-    ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_stamp_wtag_mtag._value); };
-      GCStampEnum stamp_wtag() const { return (GCStampEnum)(value_to_stamp(this->_stamp_wtag_mtag._value)); };
-    GCStampEnum stamp_() const { return (GCStampEnum)(value_to_stamp(this->_stamp_wtag_mtag._value)>>(mtag_width)); };
-  /*! No sanity checking done - this function assumes fwdP == true */
-    void *fwdPointer() const { return reinterpret_cast<void *>(this->_stamp_wtag_mtag._value & (~mtag_mask)); };
-  /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
-    void setFwdPointer(void *ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
-    uintptr_t fwdSize() const { return this->_header_data[1]; };
-  /*! This writes into the first tagged_stamp_t sized word of the client data. */
-    void setFwdSize(size_t sz) { this->_header_data[1] = sz; };
-  /*! Define the header as a pad, pass pad_tag or pad1_tag */
-    void setPad(tagged_stamp_t p) { this->_header_data[0] = p; };
-  /*! Return the pad1 size */
-    tagged_stamp_t pad1Size() const { return Alignment(); };
-  /*! Return the size of the pad block - without the header */
-    tagged_stamp_t padSize() const { return (this->_header_data[1]); };
-  /*! This writes into the first tagged_stamp_t sized word of the client data. */
-    void setPadSize(size_t sz) { this->_header_data[1] = sz; };
-#endif
     string description() const {
       if (this->_stamp_wtag_mtag.stampP()) {
         std::stringstream ss;
@@ -1007,7 +972,7 @@ namespace core {
   class Character_dummy_O;
   class CPointer_dummy_O;
   class Cons_O;
-  class VaList_dummy_O;
+  class Vaslist_dummy_O;
   class Instance_O;
   class FuncallableInstance_O;
 }

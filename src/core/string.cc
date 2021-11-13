@@ -1462,7 +1462,7 @@ SimpleBaseString_sp str_create(const char *str) { return SimpleBaseString_O::mak
 CL_LAMBDA(core:&va-rest args)
 CL_LISPIFY_NAME(base_string_concatenate);
 DOCGROUP(clasp)
-CL_DEFUN T_sp core__base_string_concatenate(VaList_sp vargs) {
+CL_DEFUN T_sp core__base_string_concatenate(Vaslist_sp vargs) {
   size_t nargs = vargs->remaining_nargs();
   stringstream ss;
   for (size_t i(0); i < nargs; ++i) {

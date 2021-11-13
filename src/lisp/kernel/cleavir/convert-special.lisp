@@ -464,26 +464,26 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE::BIND-VA-LIST
+;;; Converting CORE::BIND-VASLIST
 ;;;
 
-(defmethod cst-to-ast:convert-special ((symbol (eql 'core::bind-va-list)) cst
+(defmethod cst-to-ast:convert-special ((symbol (eql 'core::bind-vaslist)) cst
                                        environment (system clasp-cleavir:clasp))
-  ;; (bind-va-list lambda-list va . body)
+  ;; (bind-vaslist lambda-list va . body)
   ;; => `(apply (lambda ,lambda-list . ,body) ,va)
-  (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
+  (cst:db origin (op lambda-list-cst vaslist-cst . body-cst) cst
     (declare (ignore op))
     (cst-to-ast:convert
      (cst:quasiquote origin
                      (apply (lambda (cst:unquote lambda-list-cst)
                               (cst:unquote-splicing body-cst))
-                            (cst:unquote va-list-cst)))
+                            (cst:unquote vaslist-cst)))
      environment system)))
 
 #+(or) ;;#+cst
 (defmethod cst-to-ast:convert-special
-    ((symbol (eql 'core::bind-va-list)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
+    ((symbol (eql 'core::bind-vaslist)) cst environment (system clasp-cleavir:clasp))
+  (cst:db origin (op lambda-list-cst vaslist-cst . body-cst) cst
           (declare (ignore op))
           (let ((parsed-lambda-list
                   (cst:parse-ordinary-lambda-list system lambda-list-cst :error-p nil)))
@@ -516,9 +516,9 @@
                                  rdspecs
                                  (cst-to-ast::cst-for-body forms-cst nil origin))
                                 environment system)))
-                      (cc-ast:make-bind-va-list-ast
+                      (cc-ast:make-bind-vaslist-ast
                        lexical-lambda-list
-                       (cst-to-ast::convert va-list-cst environment system)
+                       (cst-to-ast::convert vaslist-cst environment system)
                        ast
                        nil ; FIXME: handle rest-alloc (parse &rest from lambda list)
                        :origin origin)))))))))
