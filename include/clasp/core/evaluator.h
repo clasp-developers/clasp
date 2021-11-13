@@ -78,50 +78,6 @@ extern void evaluateIntoActivationFrame(ActivationFrame_sp af, List_sp args, T_s
   (functionDesignator) can be a Symbol or an Function
 */
 
-
-#if 0
-/*! I want a variadic template function that does APPLY.  C++ variadic template parameter packs
-	  must be the last arguments of a function.   APPLY has as its last arguments argsPLUS.
-	  So we move argsPLUS up to be the second argument (after the function designator) and list
-	  the variadic arguments following it */
- 
-template <class... Args>
-inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
-  Function_sp func;
-  if (cl__functionp(fn)) {
-    func = gc::As_unsafe<Function_sp>(fn);
-  } else {
-    func = interpreter_lookup_function_or_error(fn, nil<T_O>());
-  }
-  int numArgsPassed = sizeof...(Args);
-  int numArgsPlus = argsPLUS.consp() ? argsPLUS.unsafe_cons()->proper_list_length() : 0;
-  int nargs = numArgsPassed + numArgsPlus;
-  MAKE_STACK_FRAME( frame, nargs);
-  size_t i(0);
-  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
-#if 1
-  gctools::fill_frame_templated( frame, i, args... );
-# if 0
-  // Initialize using args
-  using InitialContents = T_O*[sizeof...(Args)];
-  InitialContents* initialContents((InitialContents*)frame->arguments());
-  new (initialContents) InitialContents {args.raw_()...};
-  i = sizeof...(Args);
-# endif
-#else
-  // Also initialize using args but requires copying
-  T_sp initialContents[sizeof...(Args)] = {args...};
-  for ( ; i< sizeof...(Args); ++i ) {
-    (*frame)[i] = initialContents[i].raw_();
-  }
-#endif
-  gctools::fill_frame_list( frame, i, argsPLUS );
-  CHECK_FRAME( frame, i, nargs );
-  return funcall_general<core::T_O>( func.tagged_(), nargs, frame->arguments() );
-}
-#endif
-
-
 inline LCC_RETURN funcall(T_sp fn) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
@@ -184,84 +140,14 @@ inline LCC_RETURN funcall(T_sp fn, T_sp arg0, T_sp arg1, T_sp arg2, T_sp arg3, T
   return func->entry()(func.raw_(), nargs, &aargs[0] );
 }
 
-inline LCC_RETURN funcall_function(Function_sp func) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  ASSERT(gc::IsA<Function_sp>(func));
-  IMPLEMENT_MEF(BF("Handle 0 arg funcall_function"));
-#if 0
-  return func->entry0()(func.raw_());
-#endif
-}
-
-template <class ARG0>
-inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  ASSERT(gc::IsA<Function_sp>(func));
-  IMPLEMENT_MEF(BF("Handle 1 arg funcall_function"));
-#if 0
-  return func->entry1()(func.(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
-#endif
-}
-
-template <class ARG0, class ARG1>
-inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
-  ASSERT(gc::IsA<Function_sp>(func));
-  IMPLEMENT_MEF(BF("Handle 2 arg funcall_function"));
-#if 0
-  return func->entry()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
-#endif
-}
-
-template <class ARG0, class ARG1, class ARG2>
-inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  ASSERT(gc::IsA<Function_sp>(func));
-  IMPLEMENT_MEF(BF("Handle 3 arg funcall_function"));
-#if 0
-  return func->entry()(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
-#endif
-}
-
- template <class ARG0, class ARG1, class ARG2, class ARG3>
-   inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
-  /* If the following assertion fails then the funcall functions in this header
-     need to be made consistent with lispCallingConvention.h */
-  ASSERT(gc::IsA<Function_sp>(func));
-  IMPLEMENT_MEF(BF("Handle 4 arg funcall_function"));
-#if 0
-  return func->entry()(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
-#endif
-}
-
- template <class... ARGS>
-     inline LCC_RETURN funcall_function(Function_sp func, ARGS &&... args) {
-   /* If the following assertion fails then the funcall functions in this header
-      need to be made consistent with lispCallingConvention.h */
-   ASSERT(gc::IsA<Function_sp>(func));
-   size_t vnargs = sizeof...(ARGS);
-   IMPLEMENT_MEF(BF("Handle N arg funcall_function"));
-#if 0
-   return func->entry()(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
-#endif
- }
  
 };
 
- namespace eval {
+namespace eval {
  void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<String_sp> &documentation, List_sp &code, List_sp &specials);
  
  void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code);
  };
-
- /*! Funcall with a gctools::Frame of arguments */
- gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame);
-
 };
 
 

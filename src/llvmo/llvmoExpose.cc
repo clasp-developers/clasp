@@ -307,7 +307,11 @@ CL_LAMBDA(target-triple start-address end-address)CL_DEFUN void llvm_sys__disass
     const char* str = InsnStr.data();
     stringstream ss;
     ss << std::hex << (void*)addr << " <#" << std::dec << std::setw(3) << ii << "+" << offset <<  ">";
-    core::clasp_write_string(ss.str());
+    std::string sstr = ss.str();
+    core::clasp_write_string(sstr);
+    if (sstr.size() < 24) {
+      core::clasp_write_string(std::string("                      ").substr(0,24-sstr.size()));
+    }
     core::writestr_stream(str);
     core::clasp_terpri();
     if (sz==0) {

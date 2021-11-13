@@ -45,16 +45,24 @@
 size_t global_MaybeTraceDepth = 0;
 struct MaybeTrace {
   string _Msg;
+  size_t _depth;
 #ifdef DEBUG_BACKTRACE
-  MaybeTrace(const string& msg) :_Msg(msg)
+  MaybeTrace(const string& msg) :_Msg(msg), _depth(global_MaybeTraceDepth++)
   {
-    global_MaybeTraceDepth++;
-    printf("%lu> | %s\n", global_MaybeTraceDepth, msg.c_str());
+    printf("%s%2lu> %s\n", this->spaces().c_str(), this->_depth, msg.c_str());
   };
   ~MaybeTrace() {
-    printf("<%lu | %s\n", global_MaybeTraceDepth, this->_Msg.c_str());
+    printf("%s<%2lu %s\n", this->spaces().c_str(), this->_depth, this->_Msg.c_str());
     global_MaybeTraceDepth--;
   }
+  std::string spaces(size_t depth = global_MaybeTraceDepth) const {
+    std::string spcs = "|||||||||||||||||||||||||||||||||||||||";
+    if (this->_depth < spcs.size()) {
+      return spcs.substr(0,this->_depth);
+    }
+    return spcs;
+  }
+    
 #else
   MaybeTrace(const string& msg) {};
 #endif
@@ -136,14 +144,14 @@ static T_sp dwarf_ep(llvmo::ObjectFile_sp ofi,
                      void*& startAddress,
                      bool& XEPp,
                      int& arityCode) {
-  MaybeTrace(__FUNCTION__);
+  MaybeTrace trace(__FUNCTION__);
   startAddress = NULL;
   auto eranges = llvmo::getAddressRangesForAddressInner(dcontext, sa);
   if (eranges) {
     auto ranges = eranges.get();
     llvmo::Code_sp code = ofi->_Code;
     codeStart = (void*)code->codeStart();
-    D(printf("%s:%d:%s code_start = %p \n", __FILE__, __LINE__, __FUNCTION__, (void*)codeStart ); );
+    D(printf("%s%s:%d:%s code_start = %p \n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)codeStart ); );
     T_O** rliterals = code->TOLiteralsStart();
     size_t nliterals = code->TOLiteralsSize();
     for (size_t i = 0; i < nliterals; ++i) {
@@ -192,26 +200,26 @@ static bool args_from_offset(size_t fi, void* ip, const char* string,
                              T_sp& closure, T_sp& args, int64_t patch_point_id ) {
   MaybeTrace trace(__FUNCTION__);
   int64_t offset64 = static_cast<int64_t>(offset32);
-  D(printf("%s:%d:%s fi=%lu ip=%p fp = %p patch_point_id 0x%lx  offset64 = %ld\n", __FILE__, __LINE__, __FUNCTION__, fi, ip, frameptr, patch_point_id, offset64 ););
+  D(printf("%s%s:%d:%s fi=%lu ip=%p fp = %p patch_point_id 0x%lx  offset64 = %ld\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, fi, ip, frameptr, patch_point_id, offset64 ););
   int64_t arity_code;
   if ( frameptr && is_entry_point_arity(patch_point_id,arity_code) ) {
-    D(printf("%s:%d:%s entry_point arity_code %ld\n", __FILE__, __LINE__, __FUNCTION__, arity_code ););
+    D(printf("%s%s:%d:%s entry_point arity_code %ld\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, arity_code ););
     T_O** register_save_area = (T_O**)((intptr_t)frameptr + offset64);
-    D(printf("%s:%d:%s fi=%lu ip=%p fp %p arity_code %ld rsa=%p %s XEP(y=%d,a=%d) ", __FILE__, __LINE__, __FUNCTION__, fi, ip, frameptr, arity_code, register_save_area, _rep_(name).c_str(), XEPp, arityCode ););
+    D(printf("%s%s:%d:%s fi=%lu ip=%p fp %p arity_code %ld rsa=%p %s XEP(y=%d,a=%d) ", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, fi, ip, frameptr, arity_code, register_save_area, _rep_(name).c_str(), XEPp, arityCode ););
     D(if (string) printf("%s", string););
     D(printf("\n"););
     T_sp tclosure((gc::Tagged)register_save_area[LCC_CLOSURE_REGISTER]);
     if (!gc::IsA<Function_sp>(tclosure)) {
-      D(printf("%s:%d:%s bad tclosure %p\n", __FILE__, __LINE__, __FUNCTION__, tclosure.raw_()););
+      D(printf("%s%s:%d:%s bad tclosure %p\n", trace.spaces().c_str(),__FILE__, __LINE__, __FUNCTION__, tclosure.raw_()););
       fprintf(stderr, "%s:%d:%s When trying to get arguments from CL frame read what should be a closure %p but it isn't\n", __FILE__, __LINE__, __FUNCTION__, tclosure.raw_());
       return false;
     }
     closure = tclosure;
-    D(printf("%s:%d:%s closure = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure).c_str()););
+    D(printf("%s%s:%d:%s closure = %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(closure).c_str()););
     if (arity_code==0) {
       // For the general entry point the registers are (closure, nargs, arg_ptr)
       size_t nargs = (size_t)(register_save_area[LCC_NARGS_REGISTER]);
-      D(printf("%s:%d:%s nargs = %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs ););
+      D(printf("%s%s:%d:%s nargs = %lu\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs ););
       if (nargs>256) {
         fprintf(stderr, "%s:%d:%s  There are too many arguments %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
         return false;
@@ -220,37 +228,42 @@ static bool args_from_offset(size_t fi, void* ip, const char* string,
     // Get the arg ptr from the register save area
       T_O** arg_ptr = (T_O**)register_save_area[LCC_ARGS_PTR_REGISTER];
     // get the args from the arg_ptr
-      D(printf("%s:%d:%s About to read %lu xep args\n", __FILE__, __LINE__, __FUNCTION__, nargs ););
+      D(printf("%s%s:%d:%s About to read %lu xep args\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs ););
       for (size_t i = 0; i < nargs; ++i) {
         T_O* rarg = arg_ptr[i];
         T_sp temp((gctools::Tagged)rarg);
+        D(printf("%s%s:%d:%s     read xep(general) arg %lu -> %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, i, _rep_(temp).c_str() ););
         largs << temp;
       }
       args = largs.cons();
     } else {
       // for fixed arity entry points calculate the nargs from the arity_code
       size_t nargs = (arity_code-1)+ENTRY_POINT_ARITY_BEGIN;
-      D(printf("%s:%d:%s About to read %lu xep%lu args\n", __FILE__, __LINE__, __FUNCTION__, nargs, arity_code-1 ););
+      D(printf("%s%s:%d:%s About to read %lu xep%lu args\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs, arity_code-1 ););
     // Get the first args from the register save area
       ql::list largs;
       for (size_t i = 0; i < std::min(nargs, (size_t)LCC_ARGS_IN_REGISTERS); ++i) {
-        T_sp temp((gctools::Tagged)(register_save_area[i+2]));
+        T_sp temp((gctools::Tagged)(register_save_area[i+1]));
+        D(printf("%s%s:%d:%s     read xep%lu arg %lu -> %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs, i, _rep_(temp).c_str() ););
         largs << temp;
       }
     // and the rest from the stack frame
-      for (size_t i = LCC_ARGS_IN_REGISTERS; i < nargs; ++i) {
-        T_O* rarg = ((T_O**)frameptr)[i + 2 - LCC_ARGS_IN_REGISTERS];
-        T_sp temp((gctools::Tagged)rarg);
-        largs << temp;
+      if (LCC_ARGS_IN_REGISTERS<nargs) {
+        printf("%s:%d:%s Check if extraction of arguments from the stack works properly\n", __FILE__, __LINE__, __FUNCTION__ );
+        for (size_t i = LCC_ARGS_IN_REGISTERS; i < nargs; ++i) {
+          T_O* rarg = ((T_O**)frameptr)[i + 2];
+          T_sp temp((gctools::Tagged)rarg);
+          largs << temp;
+        }
       }
       args = largs.cons();
     }
     return true;
   } else {
-    D(printf("%s:%d:%s entry_point no stackmap entry\n", __FILE__, __LINE__, __FUNCTION__ ););
+    D(printf("%s%s:%d:%s entry_point no stackmap entry\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__ ););
     return false;
   }
-  D(printf("%s:%d:%s Extracted args: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(args).c_str() ););
+  D(printf("%s%s:%d:%s Extracted args: %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(args).c_str() ););
 }
 
 bool sanity_check_args(void* frameptr, int32_t offset32, int64_t patch_point_id ) {
@@ -302,11 +315,11 @@ static bool args_for_function(size_t fi, void* ip, const char* string,
   T_sp name = nil<T_O>();;
   if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil)) 
     name = gc::As_unsafe<FunctionDescription_sp>(functionDescriptionOrNil);
-  D(printf("%s:%d:%s startAddress FunctionDescription %s  code_start = %p  startAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(name).c_str(), (void*)code_start, startAddress ););
+  D(printf("%s%s:%d:%s startAddress FunctionDescription %s  code_start = %p  startAddress = %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(name).c_str(), (void*)code_start, startAddress ););
   auto thunk = [&](size_t _, const smStkSizeRecord& function, int32_t offsetOrSmallConstant, int64_t patchPointId) {
     if (function.FunctionAddress == (uintptr_t)startAddress ) {
       MaybeTrace tracel("startAddress_thunk");
-      D(printf("%s:%d:%s function.FunctionAddress = %p  startAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)function.FunctionAddress, startAddress ););
+      D(printf("%s%s:%d:%s function.FunctionAddress = %p  startAddress = %p\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, (void*)function.FunctionAddress, startAddress ););
       if (args_from_offset( fi, ip, string, name, XEPp, arityCode, frameptr, offsetOrSmallConstant, closure, args, patchPointId))
         args_available |= true;
       return;
@@ -316,7 +329,7 @@ static bool args_for_function(size_t fi, void* ip, const char* string,
     MaybeTrace tracew("walk_one_llvm_stackmap");
     walk_one_llvm_stackmap(thunk, stackmap_start, stackmap_end);
   }
-  D(printf("%s:%d:%s args_available = %d\n", __FILE__, __LINE__, __FUNCTION__, args_available ););
+  D(printf("%s%s:%d:%s args_available = %d\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, args_available ););
   return args_available;
 }
 
@@ -329,9 +342,9 @@ static DebuggerFrame_sp make_lisp_frame(size_t fi,
   MaybeTrace trace(__FUNCTION__);
   llvmo::SectionedAddress_sp sa = object_file_sectioned_address(ip, ofi, false);
   llvmo::DWARFContext_sp dcontext = llvmo::DWARFContext_O::createDWARFContext(ofi);
-  D(printf("%s:%d:%s sa= %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sa).c_str()););
+  D(printf("%s%s:%d:%s sa= %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(sa).c_str()););
   T_sp spi = dwarf_spi(dcontext, sa);
-  D(printf("%s:%d:%s spi= %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(spi).c_str()););
+  D(printf("%s%s:%d:%s spi= %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(spi).c_str()););
   bool XEPp = false;
   int arityCode;
   void* codeStart;
@@ -351,7 +364,7 @@ static DebuggerFrame_sp make_lisp_frame(size_t fi,
   T_sp fname = nil<T_O>();
   if (gc::IsA<FunctionDescription_sp>(functionDescriptionOrNil)) 
     fname = gc::As_unsafe<FunctionDescription_sp>(functionDescriptionOrNil)->functionName();
-  D(printf("%s:%d:%s fname = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fname).c_str()););
+  D(printf("%s%s:%d:%s fname = %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, _rep_(fname).c_str()););
   return DebuggerFrame_O::make(fname, Cons_O::create(sa,ofi), spi, functionDescriptionOrNil, closure, args, args_available,
                                INTERN_(kw, lisp), XEPp);
 }
@@ -427,7 +440,7 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring)
     // couldn't demangle, so just use the unadulterated string
     name = linkname;
   T_sp lname = SimpleBaseString_O::make(name);
-  D(printf("%s:%d:%s lname %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str() ););
+  D(printf("%s%s:%d:%s lname %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, name.c_str() ););
   return DebuggerFrame_O::make(lname, Pointer_O::create(ip),
                                nil<T_O>(), nil<T_O>(), nil<T_O>(),
                                nil<T_O>(), false, INTERN_(kw, c_PLUS__PLUS_),
@@ -596,7 +609,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func ) {
         // Subtract one from IPs in case they are just beyond the end of the
         // function, as happens with return instructions at times.
         void* ip = (void*)((uintptr_t)buffer[j] - 1);
-        D(printf("%s:%d:%s top-frame[%lu] ip = %p %s\n", __FILE__, __LINE__, __FUNCTION__, j, ip, strings[j] ););
+        D(printf("%s%s:%d:%s top-frame[%lu] ip = %p %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, j, ip, strings[j] ););
         DebuggerFrame_sp frame = make_frame(j, ip, strings[j], fbp);
         frame->down = prev;
         prev->up = frame;
@@ -604,7 +617,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func ) {
       }
       free(buffer);
       free(strings);
-      D(printf("%s:%d:%s Calling func with frame\n", __FILE__, __LINE__, __FUNCTION__ ););
+      D(printf("%s%s:%d:%s Calling func with frame\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__ ););
       return func(bot);
     }
     // realloc_array would be nice, but macs don't have it

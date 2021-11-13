@@ -37,11 +37,20 @@
                                      start end))
 
 (defun disassemble-function-to-asm (function)
-  (multiple-value-bind (symbol start end)
-      (core:lookup-address (core:function-pointer function))
-    (if symbol
-        (disassemble-assembly start end)
-        (format t "; could not locate code object (bug?)~%"))))
+  (let ((function-pointers (core:function-pointer-alist function)))
+    (dolist (fp function-pointers)
+      (let ((entry-point-name (car fp))
+            (address (cdr fp)))
+        (when address
+          (multiple-value-bind (symbol start end)
+              (core:lookup-address address)
+            (if symbol
+                (progn
+                  (format t "Entry point ~a~%" (if (fixnump entry-point-name)
+                                                   (format nil "xep~a" entry-point-name)
+                                                   (string entry-point-name)))
+                  (disassemble-assembly start end))
+                (format t "; could not locate code object (bug?)~%"))))))))
 
 ;;; should work for both lambda expressions and interpreted functions.
 (defun disassemble-to-ir (thing)
