@@ -2615,18 +2615,5 @@ SYMBOL_EXPORT_SC_(ClPkg, funcall);
 SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 
-gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
-{
-  IMPLEMENT_ME();
-#if 0
-  switch ((*frame).number_of_arguments()) {
-#define APPLY_TO_FRAME
-#include <clasp/core/applyToFrame.h>
-#undef APPLY_TO_FRAME
-  default:
-      SIMPLE_ERROR(BF("Function call with %lu arguments exceeded the call-arguments-limit %lu") % (*frame).number_of_arguments() % CALL_ARGUMENTS_LIMIT);
-  };
-#endif
-}
 
 };
