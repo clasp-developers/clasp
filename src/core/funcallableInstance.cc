@@ -80,7 +80,7 @@ CL_LAMBDA(class slot-count)
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
                                                            size_t slot_count) {
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda);
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda,nil<core::T_sp>());
   auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint);
   obj->_Class = cl;
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
@@ -90,7 +90,7 @@ CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
 DOCGROUP(clasp)
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl,
                                                                         Rack_sp rack) {
-  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda);
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<FuncallableInstance_O>(cl::_sym_lambda,nil<core::T_sp>());
   auto  obj = gctools::GC<FuncallableInstance_O>::allocate( entryPoint, cl, rack);
   return obj;
 }

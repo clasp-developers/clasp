@@ -179,7 +179,8 @@ void parse_ltvc_make_global_entry_point(gctools::GCRootsInModule* roots, T_sp fi
   size_t index = ltvc_read_size_t( fin, log, byte_index );
   size_t arg2 = ltvc_read_size_t( fin, log, byte_index );
   T_O* arg3 = ltvc_read_object(roots,  fin, log, byte_index );
-  ltvc_make_global_entry_point( roots, tag, index, arg2, arg3);
+  size_t arg4 = ltvc_read_size_t( fin, log, byte_index );
+  ltvc_make_global_entry_point( roots, tag, index, arg2, arg3, arg4);
 };
 void parse_ltvc_make_local_entry_point(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_make_local_entry_point\n", __FILE__, __LINE__, __FUNCTION__);
@@ -215,7 +216,7 @@ void parse_ltvc_make_closurette(gctools::GCRootsInModule* roots, T_sp fin, bool 
   char tag = ltvc_read_char( fin, log, byte_index );
   size_t index = ltvc_read_size_t( fin, log, byte_index );
   size_t arg2 = ltvc_read_size_t( fin, log, byte_index );
-  ltvc_make_closurette( roots, tag, index, arg2 );
+  ltvc_make_closurette( roots, tag, index, arg2);
 };
 void parse_ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_set_mlf_creator_funcall\n", __FILE__, __LINE__, __FUNCTION__);

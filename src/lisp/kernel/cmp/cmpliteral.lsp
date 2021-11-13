@@ -468,10 +468,12 @@ rewrite the slot in the literal table to store a closure."
 
 (defun ltv/global-entry-point (entry-point index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  (let ((function-index (first (sys:global-entry-point-generator-entry-point-indices entry-point))))
+  (let ((function-index (first (sys:global-entry-point-generator-entry-point-indices entry-point)))
+        (local-entry-point-index (sys:global-entry-point-generator-local-entry-point-index entry-point)))
     (add-creator "ltvc_make_global_entry_point" index entry-point
                  function-index
-                 (load-time-reference-literal (sys:entry-point-base-function-description entry-point) read-only-p :toplevelp nil))))
+                 (load-time-reference-literal (sys:entry-point-base-function-description entry-point) read-only-p :toplevelp nil)
+                 local-entry-point-index #+(or)(load-time-reference-literal (sys:global-entry-point-local-entry-point entry-point) read-only-p :toplevelp nil))))
 
 (defun ltv/package (package index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
@@ -1182,14 +1184,14 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 
 (defparameter *c++-info* (make-hash-table :test #'equal))
 (eval-when (:load-toplevel :execute)
-  (set-c++-info 'cmp:%i8% "char" "char")
-  (set-c++-info 'cmp:%size_t% "size_t" "size_t")
-  (set-c++-info 'cmp:%t*% "T_O*" "object" t)
-  (set-c++-info 'cmp:%i8*% "string" "string")
-  (set-c++-info 'cmp:%float% "float" "float")
-  (set-c++-info 'cmp:%double% "double" "double")
-  (set-c++-info 'cmp:%uintptr_t% "uintptr_t" "size_t")
-  (set-c++-info 'cmp::%bignum% "T_O*" "bignum")
+  (set-c++-info :i8 "char" "char")
+  (set-c++-info :size_t "size_t" "size_t")
+  (set-c++-info :t* "T_O*" "object" t)
+  (set-c++-info :i8* "string" "string")
+  (set-c++-info :single-float "float" "float")
+  (set-c++-info :double-float "double" "double")
+  (set-c++-info :uintptr_t "uintptr_t" "size_t")
+  (set-c++-info :bignum "T_O*" "bignum")
   (set-c++-info :unknown "UNKNOWN" "UNKNOWN")
   )
 

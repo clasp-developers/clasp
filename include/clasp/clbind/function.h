@@ -279,7 +279,7 @@ struct function_registration : registration {
     core::Symbol_sp symbol = core::lisp_intern(m_name, core::lisp_currentPackageName());
     using inValuePack = clbind::inValueTrueFalseMaskPack<FunctionArgCount<FunctionPointerType>::value,Policies>;
     using VariadicType = TEMPLATED_FUNCTION_VariadicFunctor<FunctionPointerType, Policies, typename inValuePack::type >;
-    core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol);
+    core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
     core::BuiltinClosure_sp functoid = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,functionPtr));
     core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
     core::validateFunctionDescription(__FILE__,__LINE__,functoid);

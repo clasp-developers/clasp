@@ -156,6 +156,7 @@ fields at the same offset as Instance_O.
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
+   string __repr__() const;
 };
 
 FORWARD(LocalEntryPointGenerator);
@@ -179,15 +180,18 @@ FORWARD(GlobalEntryPoint);
        The arity for each entry point from 1... starts with ENTRY_POINT_ARITY_BEGIN
    */
    ClaspXepFunction _EntryPoints;
+   T_sp _localEntryPoint;
  public:
   // Accessors
-   GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, llvmo::CodeBase_sp code);
+   GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, llvmo::CodeBase_sp code, T_sp localEntryPoint );
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
    T_mv sectionedEntryInfo() const;
    T_sp lineTable() const;
    llvmo::Code_sp code() const;
+   T_sp localEntryPoint() const;
+   string __repr__() const;
  };
 
 FORWARD(GlobalEntryPointGenerator);
@@ -195,10 +199,12 @@ class GlobalEntryPointGenerator_O : public EntryPointBase_O {
    LISP_CLASS(core,CorePkg,GlobalEntryPointGenerator_O,"GlobalEntryPointGenerator",EntryPointBase_O);
  public:
   T_sp _entry_point_indices;
+  size_t _localEntryPointIndex;
  public:
   // Accessors
-  GlobalEntryPointGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices) {};
+  GlobalEntryPointGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices, size_t lepIndex) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices), _localEntryPointIndex(lepIndex) {};
   std::string __repr__() const;
+  size_t localEntryPointIndex() const;
  };
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
@@ -216,14 +222,15 @@ LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
                                        );
 
 GlobalEntryPoint_sp makeGlobalEntryPoint( FunctionDescription_sp fdesc,
-                                          const ClaspXepFunction& entry_point
+                                          const ClaspXepFunction& entry_point,
+                                          T_sp lep
                                           );
 
 template <typename Wrapper>
-GlobalEntryPoint_sp templated_makeGlobalEntryPoint(FunctionDescription_sp fdesc) {
+GlobalEntryPoint_sp templated_makeGlobalEntryPoint(FunctionDescription_sp fdesc, T_sp lep) {
   ClaspXepFunction xep;
   xep.setup<Wrapper>();
-  return makeGlobalEntryPoint( fdesc, xep );
+  return makeGlobalEntryPoint( fdesc, xep, lep );
 }
 
 
@@ -239,6 +246,7 @@ GlobalEntryPoint_sp templated_makeGlobalEntryPointCopy(GlobalEntryPoint_sp origi
 
 template <typename Wrapper>
 GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName,
+                                                               T_sp localEntryPoint,
                                                                T_sp lambda_list=unbound<T_O>(),
                                                                T_sp docstring=nil<T_O>(),
                                                                T_sp declares=nil<T_O>(),
@@ -254,12 +262,12 @@ GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName
                                                          lineno,
                                                          column,
                                                          filePos );
-  return templated_makeGlobalEntryPoint<Wrapper>(fdesc);
+  return templated_makeGlobalEntryPoint<Wrapper>(fdesc,localEntryPoint);
 };
 
 
 
-GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp ep, void** fptrs);
+GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp ep, gctools::GCRootsInModule* roots, void** fptrs);
 LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp ep, void** fptrs);
 
 
@@ -408,8 +416,7 @@ public:
 
 
 namespace core {
-#define SOURCE_INFO core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column
-#define SOURCE_INFO_PASS sourceFileInfoHandle, filePos, lineno, column
+//#define SOURCE_INFO_PASS sourceFileInfoHandle, filePos, lineno, column
   
   class BuiltinClosure_O : public Closure_O {
     LISP_CLASS(core,CorePkg,BuiltinClosure_O,"BuiltinClosure",Closure_O);
@@ -461,11 +468,11 @@ namespace core {
       return gctools::sizeof_container<ClosureWithSlots_O>(this->_Slots.size());
     };
   public:
-    static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO);
+    static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column);
     
-    static ClosureWithSlots_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment);
+    static ClosureWithSlots_sp make_bclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp environment, T_sp localEntryPoint);
     
-    static ClosureWithSlots_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, SOURCE_INFO);
+    static ClosureWithSlots_sp make_cclasp_closure(T_sp name, const ClaspXepFunction& ptr, T_sp type, T_sp lambda_list, T_sp localEntryPoint, core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column );
   public:
     ClosureWithSlots_O(size_t capacity,
                        GlobalEntryPoint_sp ep,

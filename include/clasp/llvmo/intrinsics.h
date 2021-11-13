@@ -76,7 +76,7 @@ LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char
 
 LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t );
 
-LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t );
+LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t, size_t localEntryPointIndex );
 
 
 

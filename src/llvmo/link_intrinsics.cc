@@ -412,15 +412,15 @@ LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char ta
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex0, core::T_O* functionDescription_t )
+LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex0, core::T_O* functionDescription_t, size_t localEntryPointIndex )
 {NO_UNWIND_BEGIN();
-//  printf("%s:%d:%s got functionIndex0 %lu to index: %lu\n", __FILE__, __LINE__, __FUNCTION__, functionIndex0, index );
+  core::T_sp localEntryPoint((gctools::Tagged)holder->getLiteral(localEntryPointIndex));
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
   core::ClaspXepFunction xep((XepFilling()));
   for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
     xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex0+ii);
   }
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,xep);
+  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,xep,localEntryPoint);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
     SIMPLE_ERROR(BF("The object is not a GlobalEntryPoint %s") % core::_rep_(entryPoint));
@@ -487,7 +487,7 @@ LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char t
   for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
     xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
   }
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(),  nil<core::T_O>() );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(),  nil<core::T_O>(), nil<core::T_O>() );
   LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
@@ -502,7 +502,7 @@ LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t functi
   for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
     xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
   }
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>());
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>() );
   LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }

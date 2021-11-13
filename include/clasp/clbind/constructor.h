@@ -84,7 +84,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %lu\n", __FILE__, __LINE__, _rep_(className).c_str(), (uintptr_t)this->_HeaderValue._value);
-    core::GlobalEntryPoint_sp fdesc = core::makeGlobalEntryPointAndFunctionDescription<DefaultConstructorCreator_O<T,Pointer>>(nil<core::T_O>());
+    core::GlobalEntryPoint_sp fdesc = core::makeGlobalEntryPointAndFunctionDescription<DefaultConstructorCreator_O<T,Pointer>>(nil<core::T_O>(),nil<core::T_O>());
     core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(fdesc,className, this->_HeaderValue, this->_duplicationLevel + 1));
     return allocator;
   }
@@ -123,7 +123,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
 //    printf("%s:%d DerivableDefaultConstructorCreator_O  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_Kind);
-    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<DerivableDefaultConstructorCreator_O<T>>(nil<core::T_O>());
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<DerivableDefaultConstructorCreator_O<T>>(nil<core::T_O>(),nil<core::T_O>());
     return gc::As_unsafe<core::Creator_sp>(gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(entryPoint,className, this->_Header, this->_duplicationLevel + 1));
   }
 };

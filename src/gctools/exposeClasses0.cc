@@ -75,7 +75,7 @@ NOINLINE void set_one_static_class_Header() {
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(gctools::UnshiftedStamp theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<TheClass>(kw::_sym_create);
+  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<TheClass>(kw::_sym_create,nil<core::T_O>());
   auto cb = gctools::GC<TheClass>::allocate(entryPoint);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);
@@ -90,7 +90,7 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(gctools::Unshif
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>>(nil<core::T_O>());
+  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>>(nil<core::T_O>(),nil<core::T_O>());
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_ValueStampWtagMtag,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);

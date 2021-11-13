@@ -60,38 +60,40 @@
                         (push (third item) arglist)))
                      (push item arglist))))
              (nreverse arglist))))
-    (let* ((function-description (cmp:irc-make-function-description function-info))
-           (the-function (cmp:irc-local-function-create
-                          (llvm-sys:function-type-get
-                           cmp::%tmv%
-                           (make-list (+ (cleavir-set:size (bir:environment function))
-                                         (length arguments))
-                                      :initial-element cmp::%t*%))
-                          'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
-                          jit-function-name
-                          cmp:*the-module*
-                          function-description)))
-      (let ((xep-group (if (xep-needed-p function)
-                           (cmp:irc-xep-functions-create (cmp:function-info-cleavir-lambda-list-analysis function-info)
-                                                         linkage
-                                                         jit-function-name
-                                                         cmp:*the-module*
-                                                         function-description
-                                                         the-function)
-                           :xep-unallocated)))
-        (if (eq xep-group :xep-unallocated)
-            (make-instance 'llvm-function-info
-                           :environment (cleavir-set:set-to-list (bir:environment function))
-                           :main-function the-function
-                           :xep-function :xep-unallocated
-                           :xep-function-description :xep-unallocated
-                           :arguments arguments)
-            (make-instance 'llvm-function-info
-                           :environment (cleavir-set:set-to-list (bir:environment function))
-                           :main-function the-function
-                           :xep-function xep-group
-                           :xep-function-description function-description
-                           :arguments arguments))))))
+    (let ((function-description (cmp:irc-make-function-description function-info)))
+      (multiple-value-bind (the-function local-entry-point)
+          (cmp:irc-local-function-create
+           (llvm-sys:function-type-get
+            cmp::%tmv%
+            (make-list (+ (cleavir-set:size (bir:environment function))
+                          (length arguments))
+                       :initial-element cmp::%t*%))
+           'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
+           jit-function-name
+           cmp:*the-module*
+           function-description)
+        (let ((xep-group (if (xep-needed-p function)
+                             (cmp:irc-xep-functions-create (cmp:function-info-cleavir-lambda-list-analysis function-info)
+                                                           linkage
+                                                           jit-function-name
+                                                           cmp:*the-module*
+                                                           function-description
+                                                           the-function
+                                                           local-entry-point)
+                             :xep-unallocated)))
+          (if (eq xep-group :xep-unallocated)
+              (make-instance 'llvm-function-info
+                             :environment (cleavir-set:set-to-list (bir:environment function))
+                             :main-function the-function
+                             :xep-function :xep-unallocated
+                             :xep-function-description :xep-unallocated
+                             :arguments arguments)
+              (make-instance 'llvm-function-info
+                             :environment (cleavir-set:set-to-list (bir:environment function))
+                             :main-function the-function
+                             :xep-function xep-group
+                             :xep-function-description function-description
+                             :arguments arguments)))))))
 
 ;;; Return value is unspecified/irrelevant.
 (defgeneric translate-simple-instruction (instruction abi))

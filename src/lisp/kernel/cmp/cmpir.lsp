@@ -1212,7 +1212,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
            )
       (cmp-log "argument-names: %s%N" argument-names)
       (cmp-log "local-function-type: %s%N" local-function-type)
-      (multiple-value-bind (local-fn)  ;  local-entry-point-reference)
+      (multiple-value-bind (local-fn local-entry-point)
           (irc-local-function-create local-function-type linkage function-name *the-module* function-description)
         (llvm-sys:set-personality-fn local-fn (irc-personality-function))
         (let ((*current-function* local-fn)
@@ -1274,7 +1274,13 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                           (irc-ret-void)
                           (irc-ret (irc-load result)))))))))
           (cmp-log "ReturnB%N")
-          (let ((xep-group (irc-xep-functions-create cleavir-lambda-list-analysis linkage (string function-name) *the-module* function-description local-fn)))
+          (let ((xep-group (irc-xep-functions-create cleavir-lambda-list-analysis
+                                                     linkage
+                                                     (string function-name)
+                                                     *the-module*
+                                                     function-description
+                                                     local-fn
+                                                     local-entry-point)))
             (cmp-log "xep-group = %s%N" xep-group)
             (layout-xep-group function-info xep-group function-name parent-env)
             xep-group))))))
@@ -1410,11 +1416,12 @@ function-description - for debugging."
                                      :column column
                                      :filepos filepos))))
 
-(defun irc-create-global-entry-point-reference (xep-arity-list module function-description)
+(defun irc-create-global-entry-point-reference (xep-arity-list module function-description local-entry-point-reference)
   (let* ((entry-point-generator (let ((entry-point-indices (literal:register-xep-function-indices xep-arity-list)))
                                   (sys:make-global-entry-point-generator
                                    :entry-point-functions entry-point-indices
-                                   :function-description function-description)))
+                                   :function-description function-description
+                                   :local-entry-point-index (entry-point-reference-index local-entry-point-reference))))
          (index (literal:reference-literal entry-point-generator)))
     (make-entry-point-reference :index index :kind :global :function-description function-description)))
 
@@ -1431,11 +1438,11 @@ function-description - for debugging."
   "Create a local function and no function description is needed"
   (let* ((local-function-name (concatenate 'string function-name "-lcl"))
          (fn (irc-function-create llvm-function-type linkage local-function-name module))
-         (entry-point-reference (irc-create-local-entry-point-reference fn module function-description)))         
-    (values fn entry-point-reference)))
+         (local-entry-point-reference (irc-create-local-entry-point-reference fn module function-description)))         
+    (values fn local-entry-point-reference)))
 
 (defparameter *multiple-entry-points* nil)
-(defun irc-xep-functions-create (cleavir-lambda-list-analysis linkage function-name module function-description local-function)
+(defun irc-xep-functions-create (cleavir-lambda-list-analysis linkage function-name module function-description local-function local-entry-point-reference)
   "Create a function and a function description for a cclasp function"
   ;; MULTIPLE-ENTRY-POINT first return value is list of entry points
   (let ((rev-xep-aritys '()))
@@ -1449,7 +1456,6 @@ function-description - for debugging."
                          (format t "About to add-param-attr for function: ~a~%" function)
                          (llvm-sys:add-param-attr function 2 'llvm-sys:attribute-in-alloca))
                        function)
-                     
                      (literal:make-general-entry-placeholder :arity arity
                                                              :name xep-function-name
                                                              :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
@@ -1460,7 +1466,8 @@ function-description - for debugging."
     (let* ((xep-aritys (nreverse rev-xep-aritys))
            (entry-point-reference (irc-create-global-entry-point-reference xep-aritys
                                                                            module
-                                                                           function-description))
+                                                                           function-description
+                                                                           local-entry-point-reference))
            (entry-point-info (make-xep-group :name function-name
                                              :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
                                              :arities xep-aritys

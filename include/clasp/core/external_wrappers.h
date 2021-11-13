@@ -282,7 +282,7 @@ public:
     maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     using VariadicType = TEMPLATED_FUNCTION_VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...)>;
-    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol);
+    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
     BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     validateFunctionDescription(__FILE__,__LINE__,m);
@@ -295,7 +295,7 @@ public:
     maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     using VariadicType = TEMPLATED_FUNCTION_VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...) const>;
-    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol);
+    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
     BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     validateFunctionDescription(__FILE__,__LINE__,m);
@@ -308,7 +308,7 @@ public:
     maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     using VariadicType = TEMPLATED_FUNCTION_IndirectMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...)>;
-    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol);
+    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
     BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     validateFunctionDescription(__FILE__,__LINE__,m);
@@ -321,7 +321,7 @@ public:
     maybe_register_symbol_using_dladdr(*(void**)&mp,sizeof(mp),name);
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     using VariadicType = TEMPLATED_FUNCTION_IndirectMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...) const>;
-    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol);
+    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<VariadicType>(symbol,nil<core::T_O>());
     BuiltinClosure_sp m = gc::As<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     validateFunctionDescription(__FILE__,__LINE__,m);

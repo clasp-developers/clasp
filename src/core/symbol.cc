@@ -280,7 +280,7 @@ struct UnboundSetfFunctionEntryPoint {
 ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
 {
   if (_lisp->_Roots._UnboundSymbolFunctionEntryPoint.unboundp()) {
-    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundFunctionEntryPoint>(name);
+    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundFunctionEntryPoint>(name,nil<T_O>());
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,1,
@@ -296,7 +296,7 @@ ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 {
   if (_lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint.unboundp()) {
     List_sp sname = Cons_O::createList(cl::_sym_setf,name);
-    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundSetfFunctionEntryPoint>(sname);
+    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription<UnboundSetfFunctionEntryPoint>(sname,nil<T_O>());
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, 1,

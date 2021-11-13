@@ -102,7 +102,7 @@
     (primitive         "ltvc_make_base_string" :ltvc-return (list :gcroots-in-module* :i8 :size_t :i8*) :ltvc t)
     (primitive         "ltvc_make_pathname" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t* :t* :t* :t* :t* :t*) :ltvc t)
     (primitive         "ltvc_make_function_description" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t* :t* :t* :t* :t* :size_t :size_t :size_t) :ltvc t)
-    (primitive         "ltvc_make_global_entry_point" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t :t*) :ltvc t)
+    (primitive         "ltvc_make_global_entry_point" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t :t* :size_t) :ltvc t)
     (primitive         "ltvc_make_local_entry_point" :ltvc-return (list :gcroots-in-module* :i8 :size_t :size_t :t*) :ltvc t)
     (primitive         "ltvc_make_random_state" :ltvc-return (list :gcroots-in-module* :i8 :size_t :t*) :ltvc t)
     (primitive         "ltvc_make_float" :ltvc-return (list :gcroots-in-module* :i8 :size_t :single-float) :ltvc t)
