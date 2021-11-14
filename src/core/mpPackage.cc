@@ -232,7 +232,7 @@ void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
   process->thr_o = thr_o;
   process->root = root;
 #endif
-  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
+  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack,__builtin_frame_address(0));
   core::ThreadLocalState thread_local_state;
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;

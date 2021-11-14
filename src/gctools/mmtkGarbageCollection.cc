@@ -49,7 +49,7 @@ int initializeMmtk(MainFunctionType startupFn, int argc, char *argv[], bool mpiE
   my_mutator = bind_mutator(topOfStack);
 
     // ctor sets up my_thread
-  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(&topOfStack);
+  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(&topOfStack,__builtin_frame_address(0));
   core::ThreadLocalState thread_local_state(false); // special ctor that does not require _Nil be defined
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;

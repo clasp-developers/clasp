@@ -117,8 +117,9 @@ bool DynamicBindingStack::thread_local_boundp(const Symbol_O* sym) const {
 };
 
 namespace gctools {
-ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top) :
-  _DisableInterrupts(false)
+ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top, void* topFramePointer) :
+    _TopFramePointer(topFramePointer)
+    , _DisableInterrupts(false)
   ,  _StackTop(stack_top)
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   , _RecursiveAllocationCounter(0)

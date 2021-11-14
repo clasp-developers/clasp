@@ -96,6 +96,7 @@ namespace gctools {
 
 
   struct ThreadLocalStateLowLevel {
+    void*                  _TopFramePointer;
     void*                  _StackTop;
     int                    _DisableInterrupts;
     GlobalAllocationProfiler _Allocations;
@@ -106,7 +107,7 @@ namespace gctools {
     int                    _RecursiveAllocationCounter;
     size_t                 _RecursiveAllocationHeaderValue;
 #endif
-    ThreadLocalStateLowLevel(void* stack_top);
+    ThreadLocalStateLowLevel(void* stack_top, void* topFramePointer);
     ~ThreadLocalStateLowLevel();
   };
 };

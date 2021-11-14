@@ -1,5 +1,9 @@
 #include <signal.h>
 #include <xmmintrin.h>
+#include <execinfo.h> // backtrace
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbol.h>
@@ -259,7 +263,6 @@ void handle_signal_now(int sig) {
                      core::Cons_O::createList(kw::_sym_code, signal_code, kw::_sym_handler, handler));
   }
 }
-
 
 // This is both a signal handler and called by signal handlers.
 void handle_SIGUSR1(int sig) {
@@ -732,7 +735,177 @@ ext::_sym_information_interrupt is undefined
         ADD_SIGNAL( SIGTHR, "SIGTHR", nil<core::T_O>());
 #endif
 };
+
+
+};
+
+namespace gctools {
+
+int global_profile_fid;
+bool global_profiling = false;
+pid_t global_profiling_pid = 0;
+size_t global_interval;
+
+#define PROFILE_STACK_SIZE 5000
+void** global_profile_buffer = NULL;
+size_t global_profile_buffer_size = 0;
+void** global_previous_profile_buffer = NULL;
+size_t global_previous_profile_buffer_size = 0;
+
+
+void allocate_profile_buffers() {
+  global_profile_buffer = (void**)malloc( sizeof(void*) * PROFILE_STACK_SIZE );
+  global_previous_profile_buffer = (void**)malloc( sizeof(void*) * PROFILE_STACK_SIZE );
+}
+
+void free_profile_buffers() {
+  if (global_profile_buffer) free(global_profile_buffer);
+  if (global_previous_profile_buffer) free(global_previous_profile_buffer);
+  global_profile_buffer = NULL;
+  global_previous_profile_buffer = NULL;
+  global_profile_buffer_size = 0;
+  global_previous_profile_buffer_size = 0;
+}
+
+struct ProfileNode {
+  ProfileNode* _Next;
+  size_t _Count;
+  void*  _Backtrace[0];
+};
+
+ProfileNode* global_profile_list = NULL;
+
+void maybe_write_backtrace() {
+  if (global_profile_buffer_size == global_previous_profile_buffer_size
+      && memcmp( global_profile_buffer,
+                 global_previous_profile_buffer,
+                 sizeof(void*)*global_profile_buffer_size)==0 ) {
+    // The backtrace is a dup of the previous one so write 1
+    // printf("%s:%d:%s backtrace was a dup\n", __FILE__, __LINE__, __FUNCTION__ );
+    global_profile_list->_Count++;
+  } else {
+    ProfileNode* node = (ProfileNode*)malloc(sizeof(ProfileNode)+sizeof(void*)*global_profile_buffer_size);
+    node->_Count = 1;
+    node->_Next = global_profile_list;
+    memcpy( (void*)node->_Backtrace[0], global_profile_buffer, sizeof(void*)*global_profile_buffer_size );
+    global_profile_list = node;
+  }
+};
+
+
+struct stack_frame {
+  struct stack_frame* next;
+  void* ret;
+};
+int get_call_stack(void** retaddrs, int max_size) {
+  printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
+  /* x86/gcc-specific: this tells gcc that the fp
+     variable should be an alias to the %ebp register
+     which keeps the frame pointer */
+  stack_frame* fp = (stack_frame*)__builtin_frame_address(0);
+  /* the rest just walks through the linked list */
+  struct stack_frame* frame = fp;
+  int i = 0;
+  while(frame!=my_thread_low_level->_TopFramePointer) {
+    if(i < max_size) {
+      void** addr = &retaddrs[i];
+      printf("%s:%d:%s addr: %p frame %p - wrote entry %d\n", __FILE__, __LINE__, __FUNCTION__, addr, frame, i );
+      *addr = frame->ret;
+      i++;
+    }
+    frame = frame->next;
+  }
+  return i;
+}
+
+
+void record_backtrace() {
+  // Swap the buffers
+  void** temp_buffer = global_profile_buffer;
+  global_profile_buffer = global_previous_profile_buffer;
+  global_previous_profile_buffer = temp_buffer;
+  size_t temp_size = global_profile_buffer_size;
+  global_profile_buffer_size = global_previous_profile_buffer_size;
+  global_previous_profile_buffer_size = temp_size;
+  // Gather a backtrace
+  global_profile_buffer_size = get_call_stack( global_profile_buffer, PROFILE_STACK_SIZE );
+    //printf("%s:%d:%s Recorded backtrace with %lu entries\n", __FILE__, __LINE__, __FUNCTION__, global_profile_buffer_size );
+  // maybe_write_backtrace();
+}
+
+
   
+// This is both a signal handler and called by signal handlers.
+void handle_SIGUSR1_parent_profiler(int sig) {
+//   printf("%s:%d:%s The parent received a profiler signal\n", __FILE__, __LINE__, __FUNCTION__ );
+  record_backtrace();
+}
+
+void setup_SIGUSR1_parent_profiler() {
+  signal( SIGUSR1, handle_SIGUSR1_parent_profiler );
+}  
+
+// This is both a signal handler and called by signal handlers.
+void handle_SIGUSR1_child_profiler(int sig) {
+  global_profiling = false;
+}
+
+void setup_SIGUSR1_child_profiler() {
+  signal( SIGUSR1, handle_SIGUSR1_child_profiler );
+}  
+
+
+
+void startStatisticalProfiler(double perSecond) {
+  global_profiling = true;
+  pid_t pid = fork();
+  if (pid==0) {
+    setup_SIGUSR1_child_profiler();
+    pid_t ppid = getppid();
+    global_interval = 1000000/perSecond;
+    double elapsed = 0.0;
+    while (global_profiling) {
+      //printf("%s:%d:%s ppid %d sleeping for an interval\n", __FILE__, __LINE__, __FUNCTION__, ppid  );
+      usleep(global_interval);
+      if (global_profiling) {
+        kill( ppid, SIGUSR1 );
+        elapsed += 1.0/perSecond;
+      }
+    }
+    // printf("%s:%d:%s Done profiling\n", __FILE__, __LINE__, __FUNCTION__ );
+    exit(0);
+  } else {
+    // parent
+    setup_SIGUSR1_parent_profiler();
+    global_profiling_pid = pid;
+  }
+}
+
+
+
+CL_DEFUN void gctools__startStatisticalProfiler( double perSecond, const std::string& fileName ) {
+  global_profile_fid = open( fileName.c_str(), O_WRONLY|O_TRUNC, 0644 );
+  if (global_profile_fid <0 ) {
+    SIMPLE_ERROR(BF("Could not open file %s") % fileName );
+  }
+  if (perSecond < 1 || perSecond > 1000.0) {
+    SIMPLE_ERROR(BF("Bad rate %lf") % perSecond);
+  }
+  allocate_profile_buffers();
+  startStatisticalProfiler( perSecond );
+}
+
+CL_DEFUN void gctools__stopStatisticalProfiler() {
+  if (global_profiling) {
+    fsync(global_profile_fid);
+    close(global_profile_fid);
+    kill( global_profiling_pid, SIGUSR1 );
+    global_profiling = false;
+  }
+  usleep(2*global_interval); // wait for the child to stop
+  free_profile_buffers();
+}
+
 
 
 };

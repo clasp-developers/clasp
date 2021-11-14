@@ -58,7 +58,6 @@ typedef gctools::smart_ptr<Code_O> Code_sp;
 namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct ThreadLocalState {
-
     core::T_sp            _ObjectFiles;
     mp::Process_sp        _Process;
     DynamicBindingStack   _Bindings;
