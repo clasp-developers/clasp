@@ -793,6 +793,31 @@ void maybe_write_backtrace(ProfileInfo& prof) {
   }
 };
 
+
+struct stack_frame {
+  stack_frame* _next;
+  void* _return_address;
+};
+
+size_t get_stack_trace( void** buffer, size_t max_entries ) {
+#if 0
+  return backtrace( buffer, max_entries );
+#else
+  stack_frame* fp = (stack_frame*)__builtin_frame_address(1);
+  stack_frame* prev_fp = (stack_frame*)NULL;
+  size_t idx = 0;
+  while (fp > prev_fp ) {
+    printf("%s:%d:%s idx=%lu prev_fp=%p fp=%p\n", __FILE__, __LINE__, __FUNCTION__, idx, prev_fp, fp );
+    buffer[idx] = fp->_return_address;
+    prev_fp = fp;
+    fp = fp->_next;
+    idx++;
+  }
+  return idx;
+#endif
+}
+
+
 void record_backtrace(ProfileInfo& prof) {
   // Swap the buffers
   void** temp_buffer = prof._buffer;
@@ -802,7 +827,7 @@ void record_backtrace(ProfileInfo& prof) {
   prof._buffer_size = prof._previous_buffer_size;
   prof._previous_buffer_size = temp_size;
   // Gather a backtrace
-  prof._buffer_size = backtrace( prof._buffer, PROFILE_STACK_SIZE );
+  prof._buffer_size = get_stack_trace( prof._buffer, PROFILE_STACK_SIZE );
   printf("%s:%d:%s Recorded backtrace with %lu entries\n", __FILE__, __LINE__, __FUNCTION__, prof._buffer_size );
   //maybe_write_backtrace(prof);
 }
@@ -858,9 +883,9 @@ void startStatisticalProfiler(ProfileInfo& prof, double perSecond) {
 
 CL_DEFUN void gctools__startStatisticalProfiler( double perSecond, const std::string& fileName ) {
   ProfileInfo& prof = global_prof;
-  prof._fdes = open( fileName.c_str(), O_WRONLY|O_TRUNC, 0644 );
+  prof._fdes = open( fileName.c_str(), O_WRONLY|O_TRUNC|O_CREAT, 0644 );
   if (prof._fdes <0 ) {
-    SIMPLE_ERROR(BF("Could not open file %s") % fileName );
+    SIMPLE_ERROR(BF("Could not open file %s - error: %s") % fileName % strerror(errno) );
   }
   if (perSecond < 1 || perSecond > 1000.0) {
     SIMPLE_ERROR(BF("Bad rate %lf") % perSecond);
@@ -882,5 +907,22 @@ CL_DEFUN void gctools__stopStatisticalProfiler() {
   usleep(2*prof._interval); // wait for the child to stop
   free_buffers(prof);
 }
+
+CL_LAMBDA(job &key (per-second 10.0) file-name)
+CL_DEFUN std::string gctools__profile(core::T_sp job, double perSecond, core::T_sp tfileName ) {
+  std::string fileName;
+  if (tfileName.nilp()) {
+    stringstream ss;
+    ss << "/tmp/clasp-profile-" << getpid() << ".dat";
+    fileName = ss.str();
+  } else if (gc::IsA<core::String_sp>(tfileName)) {
+    fileName = gc::As_unsafe<core::String_sp>(tfileName)->get_std_string();
+  }
+  gctools__startStatisticalProfiler( perSecond, fileName );
+  core::eval::funcall(job);
+  gctools__stopStatisticalProfiler();
+  return fileName;
+};
+
 
 };
