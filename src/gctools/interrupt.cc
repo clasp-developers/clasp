@@ -798,6 +798,11 @@ struct stack_frame {
   void* ret;
 };
 int get_call_stack(void** retaddrs, int max_size) {
+#if 0
+  // backgrace doesn't work
+  return backtrace( retaddrs, max_size );
+#else
+  // Try walking the linked list of stack_frame's
   printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
   /* x86/gcc-specific: this tells gcc that the fp
      variable should be an alias to the %ebp register
@@ -806,7 +811,7 @@ int get_call_stack(void** retaddrs, int max_size) {
   /* the rest just walks through the linked list */
   struct stack_frame* frame = fp;
   int i = 0;
-  while(frame!=my_thread_low_level->_TopFramePointer) {
+  while(frame && (frame!=my_thread_low_level->_TopFramePointer)) {
     if(i < max_size) {
       void** addr = &retaddrs[i];
       printf("%s:%d:%s addr: %p frame %p - wrote entry %d\n", __FILE__, __LINE__, __FUNCTION__, addr, frame, i );
@@ -816,6 +821,7 @@ int get_call_stack(void** retaddrs, int max_size) {
     frame = frame->next;
   }
   return i;
+#endif
 }
 
 
@@ -829,7 +835,7 @@ void record_backtrace() {
   global_previous_profile_buffer_size = temp_size;
   // Gather a backtrace
   global_profile_buffer_size = get_call_stack( global_profile_buffer, PROFILE_STACK_SIZE );
-    //printf("%s:%d:%s Recorded backtrace with %lu entries\n", __FILE__, __LINE__, __FUNCTION__, global_profile_buffer_size );
+  //printf("%s:%d:%s Recorded backtrace with %lu entries\n", __FILE__, __LINE__, __FUNCTION__, global_profile_buffer_size );
   // maybe_write_backtrace();
 }
 
