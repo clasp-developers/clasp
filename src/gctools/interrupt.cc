@@ -744,7 +744,7 @@ namespace gctools {
 #define PROFILE_STACK_SIZE 5000
 
 struct ProfileInfo {
-  int _fdes;
+  int _fd;
   bool _profiling;
   bool _profiling_pid;
   size_t _interval;
@@ -752,10 +752,13 @@ struct ProfileInfo {
   void** _previous_buffer;
   size_t _buffer_size;
   size_t _previous_buffer_size;
+  sighandler_t _old_signal_handler;
+  
   ProfileInfo() :
-      _fdes(0)
+      _fd(0)
       , _profiling(false)
-  {};
+  {
+  };
 };
 
 ProfileInfo global_prof;
@@ -775,21 +778,24 @@ void free_buffers(ProfileInfo& prof) {
 }
 
 
-void maybe_write_backtrace(ProfileInfo& prof) {
-  if (prof._buffer_size == prof._previous_buffer_size
-      && memcmp( prof._buffer,
-                 prof._previous_buffer,
-                 sizeof(void*)*prof._buffer_size)==0 ) {
-    char cmd = 'd'; // duplicate frame
+void maybe_write_backtrace(ProfileInfo& prof, int res) {
+  if (res<0) {
+    size_t cmd = 'B';
+    write(prof._fd, &cmd, sizeof(cmd));
+  } else if (prof._buffer_size == prof._previous_buffer_size
+             && memcmp( prof._buffer,
+                        prof._previous_buffer,
+                        sizeof(void*)*prof._buffer_size)==0 ) {
+    size_t cmd = 'd'; // duplicate frame
     // The backtrace is a dup of the previous one so write 1
     // printf("%s:%d:%s backtrace was a dup\n", __FILE__, __LINE__, __FUNCTION__ );
-    write(prof._fdes, &cmd, sizeof(cmd) );
+    write(prof._fd, &cmd, sizeof(cmd) );
   } else {
-    char cmd = 'f'; // new frame
+    size_t cmd = 'f'; // new frame
     // printf("%s:%d:%s backtrace was new\n", __FILE__, __LINE__, __FUNCTION__ );
-    write(prof._fdes, &cmd, sizeof(cmd) );
-    write(prof._fdes, &prof._buffer_size, sizeof(size_t) );
-    write(prof._fdes, prof._buffer, sizeof(void*)*prof._buffer_size );
+    write(prof._fd, &cmd, sizeof(cmd) );
+    write(prof._fd, &prof._buffer_size, sizeof(size_t) );
+    write(prof._fd, prof._buffer, sizeof(void*)*prof._buffer_size );
   }
 };
 
@@ -799,24 +805,43 @@ struct stack_frame {
   void* _return_address;
 };
 
-size_t get_stack_trace( void** buffer, size_t max_entries ) {
+
+bool accessible_memory_p(void* ptr) {
+  int fd[2];
+  bool res;
+  if (pipe(fd) >= 0) {
+    if (write(fd[1], ptr, 128) > 0)
+      res = true;
+    else
+      res = false;
+    close(fd[0]);
+    close(fd[1]);
+  }
+  return res;
+}
+
+  
+
+int get_stack_trace( ProfileInfo& prof,  void** buffer, size_t max_entries ) {
+  if (!buffer) return 0;
 #if 0
   return backtrace( buffer, max_entries );
 #else
   stack_frame* fp = (stack_frame*)__builtin_frame_address(1);
   stack_frame* prev_fp = (stack_frame*)NULL;
   size_t idx = 0;
-  while (fp > prev_fp ) {
-    printf("%s:%d:%s idx=%lu prev_fp=%p fp=%p\n", __FILE__, __LINE__, __FUNCTION__, idx, prev_fp, fp );
+  while (fp > prev_fp) {
+    // Read the stack_frame - this may be a bad dereference
+    if (!accessible_memory_p((void*)fp)) break;
+    stack_frame* next_fp = fp->_next;
     buffer[idx] = fp->_return_address;
     prev_fp = fp;
-    fp = fp->_next;
+    fp = next_fp;
     idx++;
   }
   return idx;
 #endif
 }
-
 
 void record_backtrace(ProfileInfo& prof) {
   // Swap the buffers
@@ -827,20 +852,21 @@ void record_backtrace(ProfileInfo& prof) {
   prof._buffer_size = prof._previous_buffer_size;
   prof._previous_buffer_size = temp_size;
   // Gather a backtrace
-  prof._buffer_size = get_stack_trace( prof._buffer, PROFILE_STACK_SIZE );
-  printf("%s:%d:%s Recorded backtrace with %lu entries\n", __FILE__, __LINE__, __FUNCTION__, prof._buffer_size );
-  //maybe_write_backtrace(prof);
+  int res  = get_stack_trace( prof, prof._buffer, PROFILE_STACK_SIZE );
+  if (res>0) {
+    prof._buffer_size = res;
+    maybe_write_backtrace(prof,res);
+  } else {
+    maybe_write_backtrace(prof,res);
+  }
 }
 
-  
-// This is both a signal handler and called by signal handlers.
 void handle_SIGUSR1_parent_profiler(int sig) {
-  printf("%s:%d:%s The parent received a profiler signal\n", __FILE__, __LINE__, __FUNCTION__ );
   record_backtrace(global_prof);
 }
-
-void setup_SIGUSR1_parent_profiler() {
-  signal( SIGUSR1, handle_SIGUSR1_parent_profiler );
+  
+sighandler_t setup_SIGUSR1_parent_profiler() {
+  return signal( SIGUSR1, handle_SIGUSR1_parent_profiler );
 }  
 
 // This is both a signal handler and called by signal handlers.
@@ -848,8 +874,8 @@ void handle_SIGUSR1_child_profiler(int sig) {
   global_prof._profiling = false;
 }
 
-void setup_SIGUSR1_child_profiler() {
-  signal( SIGUSR1, handle_SIGUSR1_child_profiler );
+sighandler_t setup_SIGUSR1_child_profiler() {
+  return signal( SIGUSR1, handle_SIGUSR1_child_profiler );
 }  
 
 
@@ -858,7 +884,7 @@ void startStatisticalProfiler(ProfileInfo& prof, double perSecond) {
   prof._profiling = true;
   pid_t pid = fork();
   if (pid==0) {
-    setup_SIGUSR1_child_profiler();
+    sighandler_t old_signal = setup_SIGUSR1_child_profiler();
     pid_t ppid = getppid();
     prof._interval = 1000000/perSecond;
     double elapsed = 0.0;
@@ -870,11 +896,12 @@ void startStatisticalProfiler(ProfileInfo& prof, double perSecond) {
         elapsed += 1.0/perSecond;
       }
     }
+    signal( SIGUSR1, old_signal );
     // printf("%s:%d:%s Done profiling\n", __FILE__, __LINE__, __FUNCTION__ );
     exit(0);
   } else {
     // parent
-    setup_SIGUSR1_parent_profiler();
+    prof._old_signal_handler = setup_SIGUSR1_parent_profiler();
     prof._profiling_pid = pid;
   }
 }
@@ -883,8 +910,8 @@ void startStatisticalProfiler(ProfileInfo& prof, double perSecond) {
 
 CL_DEFUN void gctools__startStatisticalProfiler( double perSecond, const std::string& fileName ) {
   ProfileInfo& prof = global_prof;
-  prof._fdes = open( fileName.c_str(), O_WRONLY|O_TRUNC|O_CREAT, 0644 );
-  if (prof._fdes <0 ) {
+  prof._fd = open( fileName.c_str(), O_WRONLY|O_TRUNC|O_CREAT, 0644 );
+  if (prof._fd <0 ) {
     SIMPLE_ERROR(BF("Could not open file %s - error: %s") % fileName % strerror(errno) );
   }
   if (perSecond < 1 || perSecond > 1000.0) {
@@ -892,15 +919,16 @@ CL_DEFUN void gctools__startStatisticalProfiler( double perSecond, const std::st
   }
   allocate_buffers(prof);
   // warm up backtrace
-  prof._buffer_size = backtrace( prof._buffer, PROFILE_STACK_SIZE );
+  prof._buffer_size = get_stack_trace( prof, prof._buffer, PROFILE_STACK_SIZE );
   startStatisticalProfiler( prof, perSecond );
 }
 
 CL_DEFUN void gctools__stopStatisticalProfiler() {
   ProfileInfo& prof = global_prof;
   if (prof._profiling) {
-    fsync(prof._fdes);
-    close(prof._fdes);
+    signal( SIGUSR1, prof._old_signal_handler );
+    fsync(prof._fd);
+    close(prof._fd);
     kill( prof._profiling_pid, SIGUSR1 );
     prof._profiling = false;
   }
@@ -923,6 +951,5 @@ CL_DEFUN std::string gctools__profile(core::T_sp job, double perSecond, core::T_
   gctools__stopStatisticalProfiler();
   return fileName;
 };
-
 
 };
