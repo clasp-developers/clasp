@@ -5459,8 +5459,9 @@ CL_DEFUN T_sp cl__open(T_sp filename,
   if (byte_size != 0) {
     external_format = nil<T_O>();
   }
-  if (!cstream.nilp()) {
+  if (cstream.notnilp()) {
     flags |= CLASP_STREAM_C_STREAM;
+    flags |= CLASP_STREAM_LITTLE_ENDIAN;
   }
   strm = clasp_open_stream(filename, smm, if_exists, if_does_not_exist,
                            byte_size, flags, external_format);
