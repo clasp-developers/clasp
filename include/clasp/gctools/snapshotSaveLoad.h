@@ -119,7 +119,11 @@ struct Fixup {
 
   std::string lookupAddressName(void* address) {
     if (this->_trackAddressName) {
-      return this->_addressName[address];
+      auto it = this->_addressName.find(address);
+      if (it == this->_addressName.end()) {
+        return "no-address-name-map";
+      }
+      return *it;
     }
     return "";
   }
