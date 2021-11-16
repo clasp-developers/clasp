@@ -1135,7 +1135,13 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
 //        printf("%s:%d:%s save_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
         for ( size_t ii = 0; ii< edges->size(); ii++ ) {
 //          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
-          encodeEntryPointInLibrary(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
+          void** ptrptr = (void**)&(*edges)[ii].cast;
+          if (this->_fixup->_trackAddressName) {
+            stringstream ss;
+            ss << "vtable-stamp[" << header->_stamp_wtag_mtag._value << "]";
+            this->_fixup->addAddressName( *ptrptr, ss.str() );
+          }
+          encodeEntryPointInLibrary(this->_fixup,(uintptr_t*)ptrptr );
         }
       }
       // Handle them on a case by case basis
@@ -1577,7 +1583,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
   //
   // This generates a symbol table for the _Library
   //
-  void generateSymbolTable(SymbolLookup& symbolLookup) {
+  void generateSymbolTable(Fixup* fixup, SymbolLookup& symbolLookup) {
 //    printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
@@ -1587,7 +1593,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       std::string saveName("");
       uintptr_t saddr;
-      bool goodSymbol = symbolLookup.dladdr_(address,saveName,hitBadPointers,this->_Library._GroupedPointers[ii]._pointerType,saddr);
+      bool goodSymbol = symbolLookup.dladdr_(fixup,address,saveName,hitBadPointers,this->_Library._GroupedPointers[ii]._pointerType,saddr);
       if (goodSymbol) {
         uint addressOffset = (address - (uintptr_t)saddr);
         this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
@@ -1751,7 +1757,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
 //    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
-    thing.generateSymbolTable(symbolLookup);
+    thing.generateSymbolTable(fixup,symbolLookup);
 //    printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
     for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
       if (curLib._SymbolInfo[ii]._SymbolLength<0) {
