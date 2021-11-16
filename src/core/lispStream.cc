@@ -3519,13 +3519,32 @@ SYMBOL_EXPORT_SC_(KeywordPkg,us_ascii);
 SYMBOL_EXPORT_SC_(ExtPkg,make_encoding);
 
 static int
-parse_external_format(T_sp tstream, T_sp format, int flags) {
+parse_byte_external_format(T_sp tstream, T_sp format, int flags) {
+  if (format == kw::_sym_default) {
+    format = ext::_sym_STARdefault_byte_external_formatSTAR->symbolValue();
+  }
+  if ((format).consp()) {
+    flags = parse_byte_external_format(tstream, oCdr(format), flags);
+    format = oCar(format);
+  }
+  if (format == kw::_sym_littleEndian) {
+    return flags | CLASP_STREAM_LITTLE_ENDIAN;
+  } else /* if (format == kw::_sym_bigEndian) */ {
+    return flags & ~CLASP_STREAM_LITTLE_ENDIAN;
+/*  } else {
+    FEerror("Unknown or unsupported external format: ~A", 1, format.raw_());
+    return flags | CLASP_STREAM_LITTLE_ENDIAN; // default again */
+  }
+}
+
+static int
+parse_char_external_format(T_sp tstream, T_sp format, int flags) {
   Stream_sp stream = gc::As_unsafe<Stream_sp>(tstream);
   if (format == kw::_sym_default) {
     format = ext::_sym_STARdefault_external_formatSTAR->symbolValue();
   }
   if ((format).consp()) {
-    flags = parse_external_format(stream, oCdr(format), flags);
+    flags = parse_char_external_format(stream, oCdr(format), flags);
     format = oCar(format);
   }
   if (format == _lisp->_true()) {
@@ -3621,7 +3640,11 @@ set_stream_elt_type(T_sp tstream, gctools::Fixnum byte_size, int flags,
     flags &= ~CLASP_STREAM_SIGNED_BYTES;
     t = cl::_sym_UnsignedByte;
   }
-  flags = parse_external_format(stream, external_format, flags);
+  if (byte_size == 0) {
+    flags = parse_char_external_format(stream, external_format, flags);
+  } else {
+    flags = parse_byte_external_format(stream, external_format, flags);
+  }
   StreamOps(stream).read_char = eformat_read_char;
   StreamOps(stream).write_char = eformat_write_char;
   switch (flags & CLASP_STREAM_FORMAT) {
@@ -5456,9 +5479,6 @@ CL_DEFUN T_sp cl__open(T_sp filename,
     UNREACHABLE();
   }
   byte_size = clasp_normalize_stream_element_type(element_type);
-  if (byte_size != 0) {
-    external_format = nil<T_O>();
-  }
   if (!cstream.nilp()) {
     flags |= CLASP_STREAM_C_STREAM;
   }

@@ -367,6 +367,7 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARinspectorHookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, float_nan_string);
 SYMBOL_EXPORT_SC_(ExtPkg, float_infinity_string);
 SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_external_formatSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg, STARdefault_byte_external_formatSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, specialVar);
 SYMBOL_EXPORT_SC_(ExtPkg, allocaVar);
 SYMBOL_EXPORT_SC_(ExtPkg, llvmRegisterVar);
@@ -1184,6 +1185,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("clasprc"), _sym_loadSource), hooks);
   _sym_STARloadHooksSTAR->defparameter(hooks);
   ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());
+  ext::_sym_STARdefault_byte_external_formatSTAR->defparameter(kw::_sym_littleEndian);
   ext::_sym_STARinspectorHookSTAR->defparameter(nil<T_O>());
   core::_sym_STARsave_hookSTAR->defparameter(nil<T_O>());
   ext::_sym_STARclasp_clang_pathSTAR->defparameter(SimpleBaseString_O::make(CLASP_CLANG_PATH));
