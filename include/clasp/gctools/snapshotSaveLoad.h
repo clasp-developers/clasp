@@ -123,7 +123,7 @@ struct Fixup {
       if (it == this->_addressName.end()) {
         return "no-address-name-map";
       }
-      return *it;
+      return it->second;
     }
     return "";
   }
