@@ -203,7 +203,7 @@ struct SymbolLookup {
                "  Clasp runs 'nm --defined-only <executable>' to get symbol addresses/name mappings\n"
                "   This can also happen when there is an inlined function that needs a wrapper.  Then write a wrapper for that function.\n"
                "     The fixup name is %s\n"
-               "     The PointerType is %lu\n"
+               "     The PointerType is %" PRIuPTR "\n"
                "     The info.dli_fname -> %s\n"
                "     The info.dli_fbase -> %p\n"
                "     The info.dli_sname -> %p\n"
