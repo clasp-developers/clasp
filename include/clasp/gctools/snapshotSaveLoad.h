@@ -195,11 +195,13 @@ struct SymbolLookup {
         return true;
       } else {
         std::string fixupName = fixup->lookupAddressName((void*)address);
-        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
-               "  When this happens run 'nm <executable> | grep %p'\n"
-               "   Although it may not work - sorry\n"
-               "   Then write a wrapper for that function - it's probably an inlined function \n"
-               "       that dladdr doesn't like - I don't know any other way around this\n"
+        fprintf(stderr, "%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
+               "  Use the clasp --snapshot-symbols <filename> option to dump the symbols that clasp uses for its dladdr\n"
+               "   When this happens it's captureless lambdas that have been a problem - they have __invoke in their mangled\n"
+               "   symbol names.   If you see this problem on one OS but not another - look at the one that works to find symbols\n"
+               "   that are defined and not defined on the OS that doesn't work.\n"
+               "  Clasp runs 'nm --defined-only <executable>' to get symbol addresses/name mappings\n"
+               "   This can also happen when there is an inlined function that needs a wrapper.  Then write a wrapper for that function.\n"
                "     The fixup name is %s\n"
                "     The PointerType is %lu\n"
                "     The info.dli_fname -> %s\n"

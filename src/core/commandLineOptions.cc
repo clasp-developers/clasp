@@ -87,7 +87,9 @@ void process_clasp_arguments(CommandLineOptions* options)
              "--resource-dir       - Options directory is treated as the executable directory\n"
              "                       and it is used to start the search for resource directories\n"
              "-s/--verbose         - Print more info while booting\n"
-             "-y/--symbols {file}  - Accumulate symbols while starting up. These can be recovered calling (core:mangled-symbol-names <stream>).\n"
+             "-y/--snapshot-symbols {file} - Accumulate symbols while starting up and verify\n"
+             "                       that snapshot save will work. The symbols can be recovered\n"
+             "                       at runtime calling (core:mangled-symbol-names <stream>).\n"
              "                       They are written out to the {file} on exit.\n"
              "-f/--feature feature - Add the feature to *features*\n"
              "-e/--eval {form}     - Evaluate a form\n"
@@ -226,7 +228,7 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_NoRc = true;
     } else if (arg == "-w" || arg == "--wait") {
       options->_PauseForDebugger = true;
-    } else if (arg == "-y" || arg == "--symbols") {
+    } else if (arg == "-y" || arg == "--snapshot-symbols") {
       options->_ExportedSymbolsAccumulate = true;
       options->_ExportedSymbolsFilename = options->_RawArguments[iarg+1];
       iarg++;
@@ -335,7 +337,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     } else if (arg == "--verbose") {
       this->_SilentStartup = false;
       iarg++;
-    } else if (arg == "--symbols") {
+    } else if (arg == "--snapshot-symbols") {
       this->_ExportedSymbolsAccumulate = true;
       iarg++;
       this->_ExportedSymbolsFilename = this->_RawArguments[iarg];
