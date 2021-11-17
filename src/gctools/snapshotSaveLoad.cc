@@ -107,7 +107,8 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
 #define SEARCH_MAIN "_main"
 #define DLSYM_MAIN "__main"
   nm_cmd << "/usr/bin/nm -p --defined-only \"" << filename << "\"";
-#endif  
+#endif
+  if (fout) fprintf(fout, "# Symbols obtained by filtering: %s\n", nm_cmd.str().c_str() );
   FILE* fnm = popen( nm_cmd.str().c_str(), "r");
   if (fnm==NULL) {
     printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, nm_cmd.str().c_str());
@@ -197,6 +198,7 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
           highest_code_address = address;
         }
       } else {
+        if (fout) fprintf(fout, "# ignore: %p %c %s\n", (void*)address, type, sname.c_str());
         if (highest_code_address && address > highest_code_address) {
           if (address < lowest_other_address) {
             lowest_other_address = address;
