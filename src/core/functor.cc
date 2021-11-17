@@ -59,11 +59,13 @@ std::atomic<uint64_t> global_interpreted_closure_calls;
 
 void CodeEntryPoint_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void** ptr) {
 #ifdef USE_PRECISE_GC
-  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::InfoOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
     if (fixup->_trackAddressName) {
       fixup->addAddressName( (void*)*ptrptr, _rep_(this->_FunctionDescription->functionName()) );
     }
+  } else if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp) {
+    uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
     snapshotSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code);
   } else if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
@@ -981,12 +983,14 @@ void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void
 #ifdef USE_PRECISE_GC
     // Virtual method pointers look different from function pointers - they are small integers
     //  here we assume a virtual method is always < 1024
-  if ( snapshotSaveLoad::operation(fixup)==snapshotSaveLoad::SaveOp) {
+  if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::InfoOp ) {
+    uintptr_t* ptrptr = (uintptr_t*)&funcPtr[0];
+    if (fixup->_trackAddressName) {
+      fixup->addAddressName( *funcPtr, _rep_(this->_EntryPoint.load()->_FunctionDescription->functionName()) );
+    }
+  } else if ( snapshotSaveLoad::operation(fixup)==snapshotSaveLoad::SaveOp) {
     if ((uintptr_t)funcPtr[0] > 1024) {
       uintptr_t* ptrptr = (uintptr_t*)&funcPtr[0];
-      if (fixup->_trackAddressName) {
-        fixup->addAddressName( *funcPtr, _rep_(this->_EntryPoint.load()->_FunctionDescription->functionName()) );
-      }
       snapshotSaveLoad::encodeEntryPointInLibrary(fixup,ptrptr);
     }
   } else if ( snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::LoadOp) {

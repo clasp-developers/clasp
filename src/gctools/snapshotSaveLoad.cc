@@ -1121,6 +1121,29 @@ struct ensure_forward_t : public walker_callback_t {
 };
 
 
+
+struct gather_info_for_snapshot_save_t : public walker_callback_t {
+  Fixup* _fixup;
+  void callback(gctools::Header_s* header) {
+    // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
+    if (header->_stamp_wtag_mtag.stampP()) {
+      if (header->preciseIsPolymorphic()) {
+        core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
+        if (cast::Cast<core::General_O*,core::T_O*>::isA(client)) {
+          core::General_O* generalObject = (core::General_O*)client;
+          generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
+        }
+      }
+    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+      // Nothing
+    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+      // Nothing
+    }
+  }
+  gather_info_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup) {};
+};
+
+
 struct prepare_for_snapshot_save_t : public walker_callback_t {
   Fixup* _fixup;
   void callback(gctools::Header_s* header) {
@@ -1136,11 +1159,6 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
         for ( size_t ii = 0; ii< edges->size(); ii++ ) {
 //          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
           void** ptrptr = (void**)&(*edges)[ii].cast;
-          if (this->_fixup->_trackAddressName) {
-            stringstream ss;
-            ss << "vtable-stamp[" << header->_stamp_wtag_mtag._value << "]";
-            this->_fixup->addAddressName( *ptrptr, ss.str() );
-          }
           encodeEntryPointInLibrary(this->_fixup,(uintptr_t*)ptrptr );
         }
       }
@@ -1158,7 +1176,6 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
       // Nothing
     }
   }
-
   prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup) {};
 };
 
@@ -1860,12 +1877,28 @@ void* snapshot_save_impl(void* data) {
   // 18. Write table of contents and save-buffer
   // 19. DIE
 
-  //
-  // 1. First walk the objects in memory and sum their size.
-  //
-
   ISLInfo islInfo(SaveOp);
-  Fixup fixup(SaveOp);
+  Fixup fixup(InfoOp);
+  
+  //
+  // Walk the objects in memory and gather a map of function pointers to names
+  //
+  // Switch to InfoOp
+  //
+#if 1  
+  fixup._operation = InfoOp;
+  DBG_SL(BF("0. Get info on objects for snapshot save\n"));
+  gather_info_for_snapshot_save_t gather_info(&fixup,&islInfo);
+  walk_garbage_collected_objects(true,gather_info);
+#endif
+  //
+  // Switch to SaveOp
+  //
+  fixup._operation = SaveOp;
+
+  //
+  // First walk the objects in memory and sum their size.
+  //
 
 #if 0
   // I'm going to try this right before I fixup the vtables
