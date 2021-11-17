@@ -210,7 +210,6 @@ struct SymbolLookup {
                "     The info.dli_saddr -> %p\n"
                "     The lookupName -> %s\n",
                __FILE__, __LINE__, __FUNCTION__,
-               (void*)address, 
                (void*)address,
                fixupName.c_str(),
                (uintptr_t)pointerType,
