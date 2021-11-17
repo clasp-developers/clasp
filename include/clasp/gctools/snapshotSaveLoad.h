@@ -195,7 +195,7 @@ struct SymbolLookup {
         return true;
       } else {
         std::string fixupName = fixup->lookupAddressName((void*)address);
-        fprintf(stderr, "%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
+        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
                "  Use the clasp --snapshot-symbols <filename> option to dump the symbols that clasp uses for its dladdr\n"
                "   When this happens it's captureless lambdas that have been a problem - they have __invoke in their mangled\n"
                "   symbol names.   If you see this problem on one OS but not another - look at the one that works to find symbols\n"
