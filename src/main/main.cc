@@ -437,6 +437,13 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     llvmo::initialize_llvm();
 
     clbind::initializeCastGraph();
+    if (!core::global_options->_SilentStartup) {
+      if (start_of_snapshot) {
+        printf("Loading the snapshot from the executable starting at %p\n", (void*)start_of_snapshot );
+      } else {
+        printf("Loading the snapshot from %s\n", snapshotFileName.c_str() );
+      }
+    }
     exit_code = snapshotSaveLoad::snapshot_load( (void*)start_of_snapshot, (void*)end_of_snapshot, snapshotFileName );
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");

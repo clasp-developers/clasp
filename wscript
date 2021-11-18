@@ -146,7 +146,7 @@ CLANG_LIBRARIES = [
             'clangLex',
             'clangBasic'
  ]
-#CLANG_LIBRARIES = [ 'clang-cpp' ]
+CLANG_LIBRARIES = [ 'clang-cpp' ]
 # LLVM_LIBRARIES = [ 'LLVM' ]
 
 BOOST_LIBRARIES = []

@@ -77,35 +77,29 @@ struct MaybeTimeStartup {
 
 
 
-bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
+bool loadLibrarySymbolLookup(const std::string& filename, SymbolLookup& symbolLookup, FILE* fout ) {
 #define BUFLEN 2048
   int baddigit = 0;
   size_t lineno = 0;
-  std::string filename;
-  core::executablePath(filename);
-
   struct stat buf;
   if (stat(filename.c_str(),&buf)!=0) {
     return false;
   }
   stringstream nm_cmd;
   uintptr_t textRegionStart = 0;
-  uintptr_t main_search = 0;
+  bool gotSearchSymbol = false;
+  std::string searchSymbol;
+  uintptr_t searchAddress;
 #if defined(_TARGET_OS_LINUX)
-#define SEARCH_MAIN "_main"
-#define DLSYM_MAIN "_main"
   nm_cmd << "/usr/bin/nm -p --defined-only --no-sort \"" << filename << "\"";
 #elif defined(_TARGET_OS_DARWIN)
-#define SEARCH_MAIN "_main"
-#define DLSYM_MAIN "main"
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
   core::executableTextSectionRange( start, end );
   textRegionStart = (uintptr_t)start;
   nm_cmd << "/usr/bin/nm -p --defined-only \"" << filename << "\"";
 #else
-#define SEARCH_MAIN "_main"
-#define DLSYM_MAIN "__main"
+#error "Handle other operating systems - how is main found using dlsym and in the output of nm"
   nm_cmd << "/usr/bin/nm -p --defined-only \"" << filename << "\"";
 #endif
   if (fout) fprintf(fout, "# Symbols obtained by filtering: %s\n", nm_cmd.str().c_str() );
@@ -190,8 +184,13 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
           type == 'D' ||
           type == 's' ||
           type == 'S') {
+        if (!gotSearchSymbol && type == 'T') {
+          // Save the searchSymbol
+          searchSymbol = sname;
+          searchAddress = address;
+          gotSearchSymbol = true;
+        }
         if (fout) fprintf(fout, "%p %c %s\n", (void*)address, type, sname.c_str());
-        if (sname == SEARCH_MAIN) main_search = address;
         symbolLookup._symbolToAddress[sname] = address;
         symbolLookup._addressToSymbol[address] = sname;
         if (address>highest_code_address) {
@@ -213,23 +212,37 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
     pclose(fnm);
   }
 
-  uintptr_t main_dlsym = 0;
-#ifndef _TARGET_OS_LINUX  
-  if (main_search==0) {
-    printf("%s:%d:%s Could not find address of %s in nm output!!!\n", __FILE__, __LINE__, __FUNCTION__, SEARCH_MAIN );
+  // Now dlsym the searchSymbol
+  
+  uintptr_t search_dlsym = 0;
+
+  if (searchAddress==0) {
+    printf("%s:%d:%s Could not find address of %s in nm output - use the --addresses option \n"
+           "of clasp and search for the main function and change the code above to search for that!!!\n",
+           __FILE__, __LINE__, __FUNCTION__, searchSymbol.c_str() );
     abort();
   }
-  main_dlsym = (uintptr_t)dlsym(RTLD_DEFAULT,DLSYM_MAIN);
-  if (main_dlsym==0) {
-    printf("%s:%d:%s Could not find address of %s for dlsym!!!\n", __FILE__, __LINE__, __FUNCTION__, DLSYM_MAIN );
-    abort();
-  }
+  // We may need to fix up the searchSymbol on different OS - like macOS may need '_' prefix.
+#if defined(_TARGET_OS_DARWIN)
+# error "Handle name mangling for DARWIN"
+#elif defined(_TARGET_OS_LINUX)
+  std::string realSearchName = searchSymbol;
+#else
+# error "Handle name mangling for other OS"
 #endif
-  uintptr_t adjustAddress = main_dlsym - main_search;
+  search_dlsym = (uintptr_t)dlsym( RTLD_DEFAULT, realSearchName.c_str() );
+  if (search_dlsym==0) {
+    printf("%s:%d:%s Could not find address of %s for dlsym - what is the symbol for main using dlsym!!!\n", __FILE__, __LINE__, __FUNCTION__, realSearchName.c_str() );
+    abort();
+  }
+  
+  uintptr_t adjustAddress = search_dlsym - searchAddress;
   symbolLookup._adjustAddress = adjustAddress;
+  printf("%s:%d:%s symbolLookup._adjustAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)symbolLookup._adjustAddress ); 
   if (fout) {
     fprintf( fout, "# adjust address using %p\n", (void*)adjustAddress);
   }
+  
   return true;
 }
 
@@ -929,7 +942,10 @@ struct copy_buffer_t {
   ~copy_buffer_t() {
     delete this->_BufferStart;
   }
-
+  uintptr_t buffer_offset() {
+    return this->_buffer-this->_BufferStart;
+  }
+  
   char* write_buffer(char* source, size_t bytes ) {
     this->_WriteCount++;
     char* addr = this->_buffer;
@@ -1813,6 +1829,8 @@ void* snapshot_save_impl(void* data) {
   Snapshot_save_data* snapshot_data = (Snapshot_save_data*)data;
   std::string filename = snapshot_data->filename_;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
+  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
+  
   SymbolLookup lookup;
   loadExecutableSymbolLookup(lookup);
 
@@ -2040,11 +2058,9 @@ void* snapshot_save_impl(void* data) {
     memset(buffer,'\0',alignedLen);
     strcpy(buffer,lib._Name.c_str());
     ISLLibraryHeader_s libhead(Library,lib._Executable,lib.writeSize(), alignedLen, alignedLen+lib.symbolBufferSize(), fixup._libraries[idx]._SymbolInfo.size() );
-    snapshot._Libraries->write_buffer((char*)&libhead,sizeof(ISLLibraryHeader_s));
-    snapshot._Libraries->write_buffer(buffer,alignedLen);
-    snapshot._Libraries->write_buffer(lib._SymbolBuffer.data(),lib.symbolBufferSize());
-    snapshot._Libraries->write_buffer((char*)lib._SymbolInfo.data(), lib.symbolInfoSize() );
-#if 0
+#if 1
+    printf("%s:%d:%s ------ &libhead = %p\n", __FILE__, __LINE__, __FUNCTION__, &libhead );
+    printf("%s:%d:%s buffer_offset = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)snapshot._Libraries->buffer_offset() );
     printf("%s:%d:%s libhead._Size = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._Size );
     printf("%s:%d:%s libhead._SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolBufferOffset );
     printf("%s:%d:%s libhead._SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolInfoOffset );
@@ -2058,6 +2074,10 @@ void* snapshot_save_impl(void* data) {
     printf("%s:%d:%s first _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[0]._SymbolLength, lib._SymbolInfo[0]._SymbolOffset );
     printf("%s:%d:%s last _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolLength, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolOffset );
 #endif    
+    snapshot._Libraries->write_buffer((char*)&libhead,sizeof(ISLLibraryHeader_s));
+    snapshot._Libraries->write_buffer(buffer,alignedLen);
+    snapshot._Libraries->write_buffer(lib._SymbolBuffer.data(),lib.symbolBufferSize());
+    snapshot._Libraries->write_buffer((char*)lib._SymbolInfo.data(), lib.symbolInfoSize() );
     free(buffer);
   }
 
@@ -2239,9 +2259,7 @@ struct CodeFixup_t {
 int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
   {
     MaybeTimeStartup time1("Overall snapshot load time");
-    SymbolLookup lookup;
-    loadExecutableSymbolLookup(lookup);
-    //    printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s entered maybeStartOfSnapshot = %p   filename = %s\n", __FILE__, __LINE__, __FUNCTION__, maybeStartOfSnapshot, filename.c_str() );
     global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
     if (global_debugSnapshot) {
       if (maybeStartOfSnapshot) {
@@ -2299,15 +2317,22 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   // Setup the libraries
   //
 //  printf("%s:%d:%s Registering %lu globalISLLibraries from snapshot\n", __FILE__, __LINE__, __FUNCTION__, fileHeader->_NumberOfLibraries );
+    ISLLibraryHeader_s* libheaderStart = (ISLLibraryHeader_s*)((char*)fileHeader + fileHeader->_LibrariesOffset);
     ISLLibraryHeader_s* libheader;
     {
       MaybeTimeStartup time2("Adjust pointers");
       for ( size_t idx =0; idx<fileHeader->_NumberOfLibraries; idx++ ) {
+        SymbolLookup lookup;
+        loadExecutableSymbolLookup(lookup);
         if (idx==0) {
-          libheader = (ISLLibraryHeader_s*)((char*)fileHeader + fileHeader->_LibrariesOffset);
+          libheader = libheaderStart;
         } else {
       // advance to the next ISLLibraryHeader_s
-          libheader = (ISLLibraryHeader_s*)((const char*)(libheader + 1) + libheader->_Size);
+          libheader = (ISLLibraryHeader_s*)((const char*)(libheader/* + 1 */) + libheader->_Size);
+        }
+        if (libheader->_Kind != Library ) {
+          printf("%s:%d:%s The libheader(offset %p) libheader->_Kind is %p and it must be a Library but it is not - it is %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((uintptr_t)libheader-(uintptr_t)libheaderStart), (void*)Library, (void*)libheader->_Kind );
+          abort();
         }
         char* bufferStart = (char*)(libheader+1);
         std::string name(bufferStart);
@@ -2319,8 +2344,20 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         std::string libraryPath;
         core::library_with_name(name,isexec,libraryPath,start,end,vtableStart,vtableEnd);
         ISLLibrary lib(name,isexec,(gctools::clasp_ptr_t)start,(gctools::clasp_ptr_t)end,vtableStart,vtableEnd);
-//    printf("%s:%d:%s Registered library: %s @ %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)start );
+        printf("%s:%d:%s ------ Registered library: %s @ %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)start );
+#if 1
+        ISLLibraryHeader_s& libhead = *libheader;
+        printf("%s:%d:%s &libhead = %p\n", __FILE__, __LINE__, __FUNCTION__, &libhead );
+        printf("%s:%d:%s (&libhead - fileHeader) = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)((uintptr_t)libheader - (uintptr_t)fileHeader));
+        printf("%s:%d:%s libhead._Size = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._Size );
+        printf("%s:%d:%s libhead._SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolBufferOffset );
+        printf("%s:%d:%s libhead._SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libhead._SymbolInfoOffset );
+#endif
+        printf("%s:%d:%s libheader = %p\n", __FILE__, __LINE__, __FUNCTION__, libheader );
+        printf("%s:%d:%s libheader->_SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolInfoOffset );
+        printf("%s:%d:%s libheader->_SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolBufferOffset );
         size_t symbolBufferSize = libheader->_SymbolInfoOffset - libheader->_SymbolBufferOffset;
+        printf("%s:%d:%s symbolBufferSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, symbolBufferSize );
         lib._SymbolBuffer.resize(symbolBufferSize);
         const char* symbolBufferStart = (const char*)(libheader+1)+libheader->_SymbolBufferOffset;
         memcpy((char*)lib._SymbolBuffer.data(),symbolBufferStart,symbolBufferSize);
@@ -2330,17 +2367,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         lib._SymbolInfo.resize(libheader->_SymbolInfoCount);
         const char* symbolInfoStart = (const char*)(libheader+1)+libheader->_SymbolInfoOffset;
         memcpy((char*)lib._SymbolInfo.data(),symbolInfoStart,symbolInfoSize);
-#if 0
-        printf("%s:%d:%s libheader->_Size = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_Size );
-        printf("%s:%d:%s libheader->_SymbolBufferOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolBufferOffset );
-        printf("%s:%d:%s libheader->_SymbolInfoOffset = %lu\n", __FILE__, __LINE__, __FUNCTION__, libheader->_SymbolInfoOffset );
-        printf("%s:%d:%s lib.writeSize() -> %lu\n", __FILE__, __LINE__, __FUNCTION__, lib.writeSize() );
-        printf("%s:%d:%s first _SymbolBuffer name: %s\n", __FILE__, __LINE__, __FUNCTION__, (const char*)lib._SymbolBuffer.data());
-        printf("%s:%d:%s size _SymbolBuffer %lu\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolBuffer.size());
-        printf("%s:%d:%s num _SymbolInfo %lu\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo.size());
-        printf("%s:%d:%s first _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[0]._SymbolLength, lib._SymbolInfo[0]._SymbolOffset );
-        printf("%s:%d:%s last _SymbolInfo %u, %u\n", __FILE__, __LINE__, __FUNCTION__, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolLength, lib._SymbolInfo[lib._SymbolInfo.size()-1]._SymbolOffset );
-#endif
     //
     // Now lookup the pointers
     //

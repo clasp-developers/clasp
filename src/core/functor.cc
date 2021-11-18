@@ -313,19 +313,30 @@ LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
   auto  ep = gctools::GC<LocalEntryPoint_O>::allocate( fdesc, entry_point, code );
   return ep;
 }
-GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp fdesc,
+GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp tfdesc,
                                          const ClaspXepFunction& entry_point,
                                          T_sp lep) {
   llvmo::CodeBase_sp code = unbound<llvmo::CodeBase_O>();
   if (entry_point._Defined) {
+    std::string name = "unkfunc";
+    if (gc::IsA<FunctionDescription_sp>(tfdesc)) {
+      FunctionDescription_sp fdesc = gc::As_unsafe<FunctionDescription_sp>(tfdesc);
+//      printf("%s:%d:%s FunctionDescription is defined\n", __FILE__, __LINE__, __FUNCTION__ );
+      name = "namenil";
+      if (gc::IsA<Symbol_sp>(fdesc->functionName())) {
+//        printf("%s:%d:%s FunctionDescription name is defined\n", __FILE__, __LINE__, __FUNCTION__ );
+        Symbol_sp sname = gc::As_unsafe<Symbol_sp>(fdesc->functionName());
+        name = sname->safeFormattedName();
+      }
+    }
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point._EntryPoints[0]));
     if (gc::IsA<llvmo::Library_sp>(code)) {
       for ( size_t ii=0; ii<ClaspXepFunction::Entries; ii++ ) {
-        maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii]);
+        maybe_register_symbol_using_dladdr_ep((void*)entry_point._EntryPoints[ii],sizeof(void*),name,ii);
       }
     }
   }
-  auto  ep = gctools::GC<GlobalEntryPoint_O>::allocate( fdesc, entry_point, code, lep );
+  auto  ep = gctools::GC<GlobalEntryPoint_O>::allocate( tfdesc, entry_point, code, lep );
   return ep;
 }
 

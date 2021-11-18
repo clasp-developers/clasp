@@ -365,8 +365,8 @@ template <typename X>
 using deque = std::deque<X>;
 
 
-void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size=sizeof(void*), const std::string& name="");
-void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size=sizeof(void*), const std::string& name="");
+void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size=sizeof(void*), const std::string& name="", size_t arityCode=0);
+void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size=sizeof(void*), const std::string& name="", size_t arityCode=0);
 
 
 #ifdef WIN32

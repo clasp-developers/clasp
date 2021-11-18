@@ -195,8 +195,10 @@ struct SymbolLookup {
         return true;
       } else {
         std::string fixupName = fixup->lookupAddressName((void*)address);
-        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
-               "  Use the clasp --snapshot-symbols <filename> option to dump the symbols that clasp uses for its dladdr\n"
+        printf("%s:%d:%s During snapshot save the absolute address %p \n"
+               "(library relative address: %p Fixup->_adjustAddress: %p) \n"
+               " could not be resolved to a symbol name using dladdr \n"
+               "  Use the clasp --addresses <filename> option to dump the symbols that clasp uses for its dladdr\n"
                "   When this happens it's captureless lambdas that have been a problem - they have __invoke in their mangled\n"
                "   symbol names.   If you see this problem on one OS but not another - look at the one that works to find symbols\n"
                "   that are defined and not defined on the OS that doesn't work.\n"
@@ -211,6 +213,8 @@ struct SymbolLookup {
                "     The lookupName -> %s\n",
                __FILE__, __LINE__, __FUNCTION__,
                (void*)address,
+               (void*)(address - this->_adjustAddress),
+               (void*)this->_adjustAddress,
                fixupName.c_str(),
                (uintptr_t)pointerType,
                info.dli_fname,

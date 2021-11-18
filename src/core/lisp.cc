@@ -2387,6 +2387,9 @@ int Lisp::run() {
       } else {
         Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
         DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
+        if (!global_options->_SilentStartup) {
+          printf("Loading image %s\n", _rep_(initPathname).c_str() );
+        }
         T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
         if (result.nilp()) {
           T_sp err = result.second();
@@ -2400,6 +2403,9 @@ int Lisp::run() {
       {
         _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_InitFileName);
         Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(globals_->_InitFileName));
+        if (!global_options->_SilentStartup) {
+          printf("Loading image %s\n", _rep_(initPathname).c_str() );
+        }
         T_mv result = core__load_no_package_set(initPathname);
         if (result.nilp()) {
           T_sp err = result.second();

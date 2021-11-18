@@ -1655,7 +1655,16 @@ std::set<std::string> global_mangledSymbols;
 std::set<uintptr_t> global_addresses;
 snapshotSaveLoad::SymbolLookup* global_SymbolLookup = NULL;
 
-void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, const std::string& name ) {
+void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, const std::string& name, size_t arityCode ) {
+#if 0
+  if (name=="BUILD-ASTS") {
+    printf("%s:%d:%s Registering BUILD-ASTS function with %s:%lu functionPointer = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), arityCode, functionPointer );
+  } else if (name=="unkfunc" || name=="namenil") {
+    printf("%s:%d:%s Registering function with %s:%lu functionPointer = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), arityCode, functionPointer );
+  } else {
+    printf("%s:%d:%s name = |%s:%lu|  functionPointer = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), arityCode, functionPointer );
+  }
+#endif
   if (globals_->_ExportedSymbolsAccumulate) {
     if (!global_SymbolLookup) {
       global_SymbolLookup = new snapshotSaveLoad::SymbolLookup();
@@ -1701,8 +1710,8 @@ void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, c
   }
 }
 
-void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size, const std::string& name ) {
-  maybe_register_symbol_using_dladdr_ep(functionPointer,size,name);
+void maybe_register_symbol_using_dladdr(void* functionPointer, size_t size, const std::string& name, size_t arityCode ) {
+  maybe_register_symbol_using_dladdr_ep(functionPointer,size,name,arityCode);
 }
 
 namespace core {
