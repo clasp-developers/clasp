@@ -155,7 +155,7 @@ struct LibraryLookup {
   std::map<uintptr_t,std::string> _addressToSymbol;
 
   
-  bool lookupSymbol(const char* name, uintptr_t& address) {
+  bool lookupSymbol(const char* name, uintptr_t& address, bool verbose=false) {
     std::string sname(name);
     auto it = this->_symbolToAddress.find(sname);
     if (it == this->_symbolToAddress.end()) {
@@ -169,10 +169,12 @@ struct LibraryLookup {
       }
 #else
       address = 0;
+      if (verbose) printf("%s:%d:%s Could not find symbol %s\n", __FILE__, __LINE__, __FUNCTION__, name );
       return false;
 #endif
     }
     address = it->second+this->_loadAddress;
+    if (verbose) printf("%s:%d:%s Found symbol %s rel-address: %p abs-address: %p loadAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, name, (void*)it->second, (void*)address, (void*)this->_loadAddress );
     return true;
   }
   
@@ -225,12 +227,11 @@ struct SymbolLookup {
 
   void addAllLibraries(FILE* fout=NULL);
 
-  uintptr_t lookupSymbol( const std::string& name ) {
+  uintptr_t lookupSymbol( const std::string& name, bool verbose=false ) {
 //    printf("%s:%d:%s Looking to find symbol %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str() );
     uintptr_t address;
     for ( auto ii : this->_Libraries ) {
-      if (ii->lookupSymbol( name.c_str(), address)) {
-//        printf("%s:%d:%s found symbol %s -> %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)address );
+      if (ii->lookupSymbol( name.c_str(), address, verbose )) {
         return address;
       }
     }

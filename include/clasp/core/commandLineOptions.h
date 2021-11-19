@@ -51,6 +51,8 @@ struct CommandLineOptions {
   std::vector<std::string> _RawArguments;
   std::vector<std::string> _Features;
   std::vector<pair<LoadEvalEnum, std::string>> _LoadEvalList;
+  bool          _AddressesP;
+  std::string   _AddressesFileName;
   bool          _StartupFileP;
   ImageTypeEnum _StartupFileType;
   std::string   _StartupFile;
@@ -74,5 +76,9 @@ struct CommandLineOptions {
   std::vector<std::string> _Args;
   bool optionArgP(int& iarg,std::string& val, const std::string& default_);
 };
+
+
+void maybeHandleAddressesOption(CommandLineOptions* options);
+
 };
 #endif

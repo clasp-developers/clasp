@@ -189,11 +189,8 @@ void process_clasp_arguments(CommandLineOptions* options)
     else if (arg == "-a" || arg == "--addresses") {
       string filename = options->_RawArguments[iarg+1];
       iarg++;
-      FILE* fout = fopen(filename.c_str(),"w");
-      snapshotSaveLoad::SymbolLookup lookup;
-      lookup.addAllLibraries(fout);
-      // snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
-      fclose(fout);
+      options->_AddressesP = true;
+      options->_AddressesFileName = filename;
     } else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;
     } else if (arg == "--noinform") {
@@ -305,6 +302,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _DontLoadImage(false),
     _DontLoadInitLsp(false),
     _DisableMpi(false),
+    _AddressesP(false),
     _StartupFileP(false),
     _StartupFileType(cloDefault),
     _HasDescribeFile(false),
@@ -365,6 +363,17 @@ CL_DEFUN List_sp core__command_line_load_eval_sequence() {
   }
   return cl__nreverse(loadEvals);
 }
-  
+
+
+void maybeHandleAddressesOption(CommandLineOptions* options) {
+  if (options->_AddressesP) {
+    FILE* fout = fopen(options->_AddressesFileName.c_str(),"w");
+    fprintf(fout, "# Generating addresses from %s\n", __FUNCTION__ );
+    snapshotSaveLoad::SymbolLookup lookup;
+    lookup.addAllLibraries(fout);
+      // snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
+    fclose(fout);
+  }
+}
 
 };

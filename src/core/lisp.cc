@@ -2342,6 +2342,11 @@ void Lisp::dump_apropos(const char *part) const {
 }
 
 int Lisp::run() {
+  //
+  // If --addresses was passed as a command line option - dump the addresses here
+  //
+  maybeHandleAddressesOption(global_options);
+  
   int exit_code = 0;
   if ( initializer_functions_are_waiting() ) {
     initializer_functions_invoke();
