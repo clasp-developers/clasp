@@ -408,11 +408,20 @@
 ;;; above; this is because, if a constant is actually used as an object
 ;;; (passed to a general function, etc.) we don't want to box it every time.
 
-(defun constant-unboxable-p (value rt)
-  (ecase rt
-    ((nil :object) nil) ; not sure nil is actually possible, but hey
-    ((:single-float) (typep value 'single-float))
-    ((:double-float) (typep value 'double-float))))
+(defgeneric constant-unboxable-p (value rtype))
+(defmethod constant-unboxable-p (value (rt (eql :object)))
+  (declare (ignore value))
+  nil)
+(defmethod constant-unboxable-p (value (rt (eql nil)))
+  (declare (ignore value))
+  nil)
+(defmethod constant-unboxable-p ((value single-float) (rt (eql :single-float)))
+  t)
+(defmethod constant-unboxable-p ((value t) (rt (eql :single-float))) nil)
+(defmethod constant-unboxable-p ((value double-float) (rt (eql :double-float)))
+  t)
+(defmethod constant-unboxable-p ((value t) (rt (eql :double-float))) nil)
+
 (defun unbox-constant-reference (inst value)
   (let ((constant (bir:input inst)))
     (change-class inst 'cc-bmir:unboxed-constant-reference
