@@ -146,12 +146,16 @@ void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp code);
 void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, llvmo::CodeBase_sp code);
 
 
-struct SymbolLookup {
-  uintptr_t  _adjustAddress;
-  SymbolLookup() : _adjustAddress(0) {};
+struct LibraryLookup {
+  uintptr_t  _loadAddress;
+  std::string _libraryPath;
+  
+  LibraryLookup( const std::string libraryPath ) : _libraryPath(libraryPath), _loadAddress(0) {};
   std::map<std::string,uintptr_t> _symbolToAddress;
   std::map<uintptr_t,std::string> _addressToSymbol;
-  uintptr_t lookupSymbol(const char* name) {
+
+  
+  bool lookupSymbol(const char* name, uintptr_t& address) {
     std::string sname(name);
     auto it = this->_symbolToAddress.find(sname);
     if (it == this->_symbolToAddress.end()) {
@@ -160,18 +164,21 @@ struct SymbolLookup {
       sname_underscore << "_" << sname;
       it = this->_symbolToAddress.find(sname_underscore.str());
       if (it == this->_symbolToAddress.end()) {
-        return 0;
+        address = 0;
+        return false;
       }
 #else
-      return 0;
+      address = 0;
+      return false;
 #endif
     }
-    return it->second+this->_adjustAddress;
+    address = it->second+this->_loadAddress;
+    return true;
   }
   
   bool lookupAddr(uintptr_t addr, std::string& name) {
 //    printf("%s:%d:%s Lookup executable address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr );
-    std::map<std::uintptr_t,std::string>::iterator it = this->_addressToSymbol.find(addr-this->_adjustAddress);
+    std::map<std::uintptr_t,std::string>::iterator it = this->_addressToSymbol.find(addr-this->_loadAddress);
     if (it == this->_addressToSymbol.end()) {
       return false;
     }
@@ -193,36 +200,6 @@ struct SymbolLookup {
         name = lookupName;
         saddr = address;
         return true;
-      } else {
-        std::string fixupName = fixup->lookupAddressName((void*)address);
-        printf("%s:%d:%s During snapshot save the absolute address %p \n"
-               "(library relative address: %p Fixup->_adjustAddress: %p) \n"
-               " could not be resolved to a symbol name using dladdr \n"
-               "  Use the clasp --addresses <filename> option to dump the symbols that clasp uses for its dladdr\n"
-               "   When this happens it's captureless lambdas that have been a problem - they have __invoke in their mangled\n"
-               "   symbol names.   If you see this problem on one OS but not another - look at the one that works to find symbols\n"
-               "   that are defined and not defined on the OS that doesn't work.\n"
-               "  Clasp runs 'nm --defined-only <executable>' to get symbol addresses/name mappings\n"
-               "   This can also happen when there is an inlined function that needs a wrapper.  Then write a wrapper for that function.\n"
-               "     The fixup name is %s\n"
-               "     The PointerType is %" PRIuPTR "\n"
-               "     The info.dli_fname -> %s\n"
-               "     The info.dli_fbase -> %p\n"
-               "     The info.dli_sname -> %p\n"
-               "     The info.dli_saddr -> %p\n"
-               "     The lookupName -> %s\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               (void*)address,
-               (void*)(address - this->_adjustAddress),
-               (void*)this->_adjustAddress,
-               fixupName.c_str(),
-               (uintptr_t)pointerType,
-               info.dli_fname,
-               (void*)info.dli_fbase,
-               (void*)info.dli_sname,
-               (void*)info.dli_saddr,
-               lookupName.c_str());
-        hitBadPointers++;
       }
     } else {
       name = std::string(info.dli_sname);
@@ -233,7 +210,97 @@ struct SymbolLookup {
   }
 };
 
-bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout=NULL );
+
+struct SymbolLookup {
+  std::vector<LibraryLookup*> _Libraries;
+
+  SymbolLookup() {};
+  ~SymbolLookup() {
+    for ( auto ii : this->_Libraries ) {
+      delete ii;
+    }
+  }
+  
+  bool addLibrary(const std::string& libraryPath, FILE* fout=NULL );
+
+  void addAllLibraries(FILE* fout=NULL);
+
+  uintptr_t lookupSymbol( const std::string& name ) {
+//    printf("%s:%d:%s Looking to find symbol %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str() );
+    uintptr_t address;
+    for ( auto ii : this->_Libraries ) {
+      if (ii->lookupSymbol( name.c_str(), address)) {
+//        printf("%s:%d:%s found symbol %s -> %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)address );
+        return address;
+      }
+    }
+//    printf("%s:%d:%s Could not find symbol %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str() );
+    return 0;
+  }
+
+
+  bool lookupAddr( uintptr_t addr, std::string& name ) {
+    for ( auto ii : this->_Libraries ) {
+      if (ii->lookupAddr( addr, name ) ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool dladdr_(Fixup* fixup, uintptr_t address, std::string& name, size_t& hitBadPointers, PointerType pointerType,uintptr_t& saddr) {
+    Dl_info info;
+    int ret = dladdr( (void*)address, &info );
+    if ( ret == 0 ) {
+      printf("%s:%d:%s During snapshot save the address %p could not be resolved using dladdr\n",
+             __FILE__, __LINE__, __FUNCTION__,
+             (void*)address);
+      hitBadPointers++;
+    } else if (info.dli_sname != NULL ) {
+      name = std::string(info.dli_sname);
+      saddr = (uintptr_t)info.dli_saddr;
+      return true;
+    } else if (info.dli_sname == NULL) {
+      std::string lookupName;
+      for ( auto lib : this->_Libraries ) {
+        if (lib->lookupAddr(address,lookupName)) {
+          name = lookupName;
+          saddr = address;
+          return true;
+        }
+      }
+      std::string fixupName = fixup->lookupAddressName((void*)address);
+      printf("%s:%d:%s During snapshot save the absolute address %p \n"
+             " could not be resolved to a symbol name using dladdr \n"
+             "  Use the clasp --addresses <filename> option to dump the symbols that clasp uses for its dladdr\n"
+             "   When this happens it's captureless lambdas that have been a problem - they have __invoke in their mangled\n"
+             "   symbol names.   If you see this problem on one OS but not another - look at the one that works to find symbols\n"
+             "   that are defined and not defined on the OS that doesn't work.\n"
+             "  Clasp runs 'nm --defined-only <executable>' to get symbol addresses/name mappings\n"
+             "   This can also happen when there is an inlined function that needs a wrapper.  Then write a wrapper for that function.\n"
+             "     The fixup name is %s\n"
+             "     The PointerType is %" PRIuPTR "\n"
+             "     The info.dli_fname -> %s\n"
+             "     The info.dli_fbase -> %p\n"
+             "     The info.dli_sname -> %p\n"
+             "     The info.dli_saddr -> %p\n"
+             "     The lookupName -> %s\n",
+             __FILE__, __LINE__, __FUNCTION__,
+             (void*)address,
+             fixupName.c_str(),
+             (uintptr_t)pointerType,
+             info.dli_fname,
+             (void*)info.dli_fbase,
+             (void*)info.dli_sname,
+             (void*)info.dli_saddr,
+             lookupName.c_str());
+      hitBadPointers++;
+    }
+    return false;
+  }
+};
+
+bool loadLibrarySymbolLookup(const std::string& libraryPath, LibraryLookup& libraryLookup, FILE* fout=NULL );
 
 };
 

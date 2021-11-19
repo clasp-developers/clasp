@@ -191,7 +191,8 @@ void process_clasp_arguments(CommandLineOptions* options)
       iarg++;
       FILE* fout = fopen(filename.c_str(),"w");
       snapshotSaveLoad::SymbolLookup lookup;
-      snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
+      lookup.addAllLibraries(fout);
+      // snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
       fclose(fout);
     } else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;

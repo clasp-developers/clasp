@@ -1668,7 +1668,7 @@ void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, c
   if (globals_->_ExportedSymbolsAccumulate) {
     if (!global_SymbolLookup) {
       global_SymbolLookup = new snapshotSaveLoad::SymbolLookup();
-      snapshotSaveLoad::loadExecutableSymbolLookup( *global_SymbolLookup, NULL );
+      global_SymbolLookup->addAllLibraries();
     }
     if (global_addresses.count((uintptr_t)functionPointer) == 0 ) {
       if ((uintptr_t)functionPointer < 1024) return; // This means it's a virtual method.

@@ -76,8 +76,10 @@ struct MaybeTimeStartup {
 
 
 
-
-bool loadLibrarySymbolLookup(const std::string& filename, SymbolLookup& symbolLookup, FILE* fout ) {
+bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& libraryLookup, FILE* fout ) {
+  if (fout) {
+    fprintf( fout, "# Library %s\n", filename.c_str() );
+  }
 #define BUFLEN 2048
   int baddigit = 0;
   size_t lineno = 0;
@@ -89,7 +91,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, SymbolLookup& symbolLo
   uintptr_t textRegionStart = 0;
   bool gotSearchSymbol = false;
   std::string searchSymbol;
-  uintptr_t searchAddress;
+  uintptr_t searchAddress = 0;
 #if defined(_TARGET_OS_LINUX)
   nm_cmd << "/usr/bin/nm -p --defined-only --no-sort \"" << filename << "\"";
 #elif defined(_TARGET_OS_DARWIN)
@@ -184,15 +186,15 @@ bool loadLibrarySymbolLookup(const std::string& filename, SymbolLookup& symbolLo
           type == 'D' ||
           type == 's' ||
           type == 'S') {
-        if (!gotSearchSymbol && type == 'T') {
+        if (!gotSearchSymbol && type == 'T' && sname!="") {
           // Save the searchSymbol
           searchSymbol = sname;
           searchAddress = address;
           gotSearchSymbol = true;
         }
         if (fout) fprintf(fout, "%p %c %s\n", (void*)address, type, sname.c_str());
-        symbolLookup._symbolToAddress[sname] = address;
-        symbolLookup._addressToSymbol[address] = sname;
+        libraryLookup._symbolToAddress[sname] = address;
+        libraryLookup._addressToSymbol[address] = sname;
         if (address>highest_code_address) {
           highest_code_address = address;
         }
@@ -205,46 +207,63 @@ bool loadLibrarySymbolLookup(const std::string& filename, SymbolLookup& symbolLo
         }
       }
     }
-    symbolLookup._symbolToAddress["__TAIL_SYMBOL"] = lowest_other_address; // The last symbol is to define the size of the last code symbol
-    symbolLookup._addressToSymbol[lowest_other_address] = "__TAIL_SYMBOL";
-//    symbolLookup.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
+    libraryLookup._symbolToAddress["__TAIL_SYMBOL"] = lowest_other_address; // The last symbol is to define the size of the last code symbol
+    libraryLookup._addressToSymbol[lowest_other_address] = "__TAIL_SYMBOL";
+//    libraryLookup.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
     if (buf) free(buf);
     pclose(fnm);
   }
 
   // Now dlsym the searchSymbol
-  
-  uintptr_t search_dlsym = 0;
 
-  if (searchAddress==0) {
-    printf("%s:%d:%s Could not find address of %s in nm output - use the --addresses option \n"
-           "of clasp and search for the main function and change the code above to search for that!!!\n",
-           __FILE__, __LINE__, __FUNCTION__, searchSymbol.c_str() );
-    abort();
-  }
+  if (searchAddress == 0) {
+    if (fout) fprintf( fout, "%s:%d:%s Could not find any symbols in %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
+  } else {
+    uintptr_t search_dlsym = 0;
+    if (searchAddress==0) {
+      printf("%s:%d:%s Could not find address of \"%s\" in nm output - use the --addresses option \n"
+             "of clasp and search for the main function and change the code above to search for that!!!\n",
+             __FILE__, __LINE__, __FUNCTION__, searchSymbol.c_str() );
+      abort();
+    }
   // We may need to fix up the searchSymbol on different OS - like macOS may need '_' prefix.
 #if defined(_TARGET_OS_DARWIN)
 # error "Handle name mangling for DARWIN"
 #elif defined(_TARGET_OS_LINUX)
-  std::string realSearchName = searchSymbol;
+    std::string realSearchName = searchSymbol;
 #else
 # error "Handle name mangling for other OS"
 #endif
-  search_dlsym = (uintptr_t)dlsym( RTLD_DEFAULT, realSearchName.c_str() );
-  if (search_dlsym==0) {
-    printf("%s:%d:%s Could not find address of %s for dlsym - what is the symbol for main using dlsym!!!\n", __FILE__, __LINE__, __FUNCTION__, realSearchName.c_str() );
-    abort();
+    search_dlsym = (uintptr_t)dlsym( RTLD_DEFAULT, realSearchName.c_str() );
+    if (search_dlsym==0) {
+      printf("%s:%d:%s Could not find address of \"%s\" with dlsym !!!\n", __FILE__, __LINE__, __FUNCTION__, realSearchName.c_str() );
+      abort();
+    }
+    uintptr_t loadAddress = search_dlsym - searchAddress;
+    libraryLookup._loadAddress = loadAddress;
+    if (fout) fprintf( fout, "# %s:%d:%s realSearchName = \"%s\" searchAddress = %p search_dlsym = %p  libraryLookup._loadAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, realSearchName.c_str(), (void*)searchAddress, (void*)search_dlsym, (void*)libraryLookup._loadAddress ); 
+    if (fout) {
+      fprintf( fout, "# load address using %p\n", (void*)loadAddress);
+    }
   }
-  
-  uintptr_t adjustAddress = search_dlsym - searchAddress;
-  symbolLookup._adjustAddress = adjustAddress;
-  printf("%s:%d:%s symbolLookup._adjustAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)symbolLookup._adjustAddress ); 
-  if (fout) {
-    fprintf( fout, "# adjust address using %p\n", (void*)adjustAddress);
-  }
-  
   return true;
 }
+
+
+bool SymbolLookup::addLibrary( const std::string& libraryPath, FILE* fout ) {
+  LibraryLookup* lib = new LibraryLookup(libraryPath);
+  this->_Libraries.emplace_back(lib);
+  return loadLibrarySymbolLookup( libraryPath, *lib, fout );
+}
+
+
+void SymbolLookup::addAllLibraries(FILE* fout) {
+  for ( auto& entry : core::debugInfo()._OpenDynamicLibraryHandles ) {
+    if (fout) fprintf( fout, "%s:%d:%s entry.name = %s\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str() );
+    this->addLibrary( entry.second._Filename, fout );
+  }
+}
+
 
 };
 
@@ -1696,6 +1715,7 @@ struct LoadSymbolCallback : public core::SymbolCallback {
   virtual void callback( const char* name, uintptr_t start, uintptr_t end ) {
     size_t num = this->_Library._SymbolInfo.size();
     size_t namelen = strlen(name);
+    printf("%s:%d:%s Looking through %lu symbols\n", __FILE__, __LINE__, __FUNCTION__, num );
     if (this->_filter->contains(name,namelen)) {
       for (size_t ii = 0; ii<num; ++ii ) {
         size_t offset = this->_Library._SymbolInfo[ii]._SymbolOffset;
@@ -1727,6 +1747,7 @@ struct LoadSymbolCallback : public core::SymbolCallback {
 
   void loadSymbols(SymbolLookup& lookup) {
     size_t num = this->_Library._SymbolInfo.size();
+    printf("%s:%d:%s About to resolve %lu symbols\n", __FILE__, __LINE__, __FUNCTION__, num );
     for (size_t ii = 0; ii<num; ++ii ) {
       size_t symbolOffset = this->_Library._SymbolInfo[ii]._SymbolOffset;
       size_t gpindex = ii;
@@ -1768,6 +1789,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   };
   OrderByAddress orderer;
   for ( size_t idx = 0; idx< fixup->_libraries.size(); idx++ ) {
+    symbolLookup.addLibrary(fixup->_libraries[idx]._Name);
     auto pointersBegin = fixup->_libraries[idx]._Pointers.begin();
     auto pointersEnd = fixup->_libraries[idx]._Pointers.end();
     if ( pointersBegin < pointersEnd ) {
@@ -1810,7 +1832,7 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib,SymbolLookup& symbolLooku
 #else
   thing.loadSymbols(symbolLookup);
 #endif
-//  printf("%s:%d:%s  Library %s contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str(),curLib._GroupedPointers.size() );
+  printf("%s:%d:%s  Library %s contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str(),curLib._GroupedPointers.size() );
   for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
     if (curLib._GroupedPointers[ii]._address == 0) {
       printf("%s:%d:%s The _GroupedPointers[%lu] does not have an address\n", __FILE__, __LINE__, __FUNCTION__, ii );
@@ -1829,11 +1851,7 @@ void* snapshot_save_impl(void* data) {
   Snapshot_save_data* snapshot_data = (Snapshot_save_data*)data;
   std::string filename = snapshot_data->filename_;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
-  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
   
-  SymbolLookup lookup;
-  loadExecutableSymbolLookup(lookup);
-
   //
   // Start the snapshot save process
   //
@@ -2044,6 +2062,8 @@ void* snapshot_save_impl(void* data) {
   // Now generate libraries
   //
   // Calculate the size of the libraries section
+  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
+  SymbolLookup lookup;
   prepareRelocationTableForSave( &fixup, lookup );
   
   size_t librarySize = 0;
@@ -2321,9 +2341,8 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     ISLLibraryHeader_s* libheader;
     {
       MaybeTimeStartup time2("Adjust pointers");
+      SymbolLookup lookup;
       for ( size_t idx =0; idx<fileHeader->_NumberOfLibraries; idx++ ) {
-        SymbolLookup lookup;
-        loadExecutableSymbolLookup(lookup);
         if (idx==0) {
           libheader = libheaderStart;
         } else {
@@ -2344,6 +2363,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         std::string libraryPath;
         core::library_with_name(name,isexec,libraryPath,start,end,vtableStart,vtableEnd);
         ISLLibrary lib(name,isexec,(gctools::clasp_ptr_t)start,(gctools::clasp_ptr_t)end,vtableStart,vtableEnd);
+        lookup.addLibrary( name );
         printf("%s:%d:%s ------ Registered library: %s @ %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)start );
 #if 1
         ISLLibraryHeader_s& libhead = *libheader;
@@ -2370,7 +2390,9 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // Now lookup the pointers
     //
+        printf("%s:%d:%s About to updateRelocationTableAfterLoad\n", __FILE__, __LINE__, __FUNCTION__ );
         updateRelocationTableAfterLoad(lib,lookup);
+        printf("%s:%d:%s Done updateRelocationTableAfterLoad\n", __FILE__, __LINE__, __FUNCTION__ );
         fixup._libraries.push_back(lib);
       }
     }
