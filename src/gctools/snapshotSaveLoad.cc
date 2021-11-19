@@ -253,7 +253,8 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
           gotSearchSymbol = true;
   // We may need to fix up the searchSymbol on different OS - like macOS may need '_' prefix.
 #if defined(_TARGET_OS_DARWIN)
-# error "Handle name mangling for DARWIN"
+          std::string realSearchSymbol = searchSymbol.substr(1); // WHY DO WE NEED TO STRIP AN UNDERSCORE!!!!!!!
+          if (fout) fprintf( fout, "# DARWIN mangled name: %s\n", realSearchSymbol.c_str());
 #elif defined(_TARGET_OS_LINUX)
           std::string realSearchSymbol = searchSymbol;
 #else
