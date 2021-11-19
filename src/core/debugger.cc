@@ -623,4 +623,18 @@ CL_DEFUN Pointer_sp core__objectAddress(core::T_sp obj) {
 }
 
 
+DOCGROUP(clasp)
+CL_DEFUN void core__walk_loaded_objects()
+{
+  SymbolCallback symbol_callback;
+  symbol_callback._debug = true;
+  walk_loaded_objects_symbol_table(&symbol_callback);
+}
+
+#if 0
+CL_DEFUN void core__walk_loaded_objects_dwarf_context(T_sp fn) {
+  walk_loaded_objects_dwarf_context(fn);
+};
+#endif
+
 };

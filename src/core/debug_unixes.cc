@@ -327,13 +327,65 @@ void walk_loaded_objects_symbol_table(SymbolCallback* callback)
 }
 
 
-DOCGROUP(clasp)
-CL_DEFUN void core__walk_loaded_objects()
+
+int elf_walk_loaded_object_dwarf_context(struct dl_phdr_info *info, size_t size, void* data)
 {
-  SymbolCallback symbol_callback;
-  symbol_callback._debug = true;
-  walk_loaded_objects_symbol_table(&symbol_callback);
+  core::T_sp callback((gctools::Tagged)data);
+//  printf("%s:%d:%s Startup registering loaded object %s\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_name);
+  SymbolCallback* symbol_callback = (SymbolCallback*)data;
+  bool is_executable;
+  const char* libname;
+  if (!info->dlpi_name ||strlen(info->dlpi_name) == 0 ) {
+    libname = getExecutablePath();
+    is_executable = true;
+  } else {
+    libname = info->dlpi_name;
+    is_executable = false;
+  }
+  
+  printf("%s:%d:%s   libname = %s  is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libname, is_executable );
+  gctools::clasp_ptr_t text_start;
+  gctools::clasp_ptr_t text_end;
+  for (int j = 0; j < info->dlpi_phnum; j++) {
+    int p_type = info->dlpi_phdr[j].p_type;
+#if 1
+    const char* type;
+    type =  (p_type == PT_LOAD) ? "PT_LOAD" :
+      (p_type == PT_DYNAMIC) ? "PT_DYNAMIC" :
+      (p_type == PT_INTERP) ? "PT_INTERP" :
+      (p_type == PT_NOTE) ? "PT_NOTE" :
+      (p_type == PT_INTERP) ? "PT_INTERP" :
+      (p_type == PT_PHDR) ? "PT_PHDR" :
+      (p_type == PT_TLS) ? "PT_TLS" :
+      (p_type == PT_GNU_EH_FRAME) ? "PT_GNU_EH_FRAME" :
+      (p_type == PT_GNU_STACK) ? "PT_GNU_STACK" :
+      (p_type == PT_GNU_RELRO) ? "PT_GNU_RELRO" : NULL;
+    printf("    %2d: [%14p; memsz:%7jx; END: %14p] flags: %#jx; \n", j,
+           (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr),
+           (uintmax_t) info->dlpi_phdr[j].p_memsz,
+           (void*) ((char*)info->dlpi_addr + (uintptr_t)info->dlpi_phdr[j].p_vaddr + (uintptr_t)info->dlpi_phdr[j].p_memsz),
+           (uintmax_t) info->dlpi_phdr[j].p_flags);
+#endif
+    if (p_type==PT_LOAD && (info->dlpi_phdr[j].p_flags&0x1)) { // executable
+      text_start = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
+      text_end = (gctools::clasp_ptr_t)(text_start + info->dlpi_phdr[j].p_memsz);
+      printf("%s:%d:%s      text_start = %p     text_end = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)text_start, (void*)text_end );
+    }
+  }
+  walk_dynamic_library_impl(info,
+                            is_executable,
+                            libname,
+                            true,
+                            (uintptr_t)info->dlpi_addr, // origin
+                            symbol_callback
+                            );
+  return 0;
 }
+
+
+void walk_loaded_objects_dwarf_context(T_sp fn) {
+  dl_iterate_phdr( elf_walk_loaded_object_dwarf_context, fn.raw_() );
+};
 
 
 int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)

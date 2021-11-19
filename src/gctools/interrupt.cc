@@ -827,7 +827,7 @@ int get_stack_trace( ProfileInfo& prof,  void** buffer, size_t max_entries ) {
 #if 0
   return backtrace( buffer, max_entries );
 #else
-  stack_frame* fp = (stack_frame*)__builtin_frame_address(1);
+  stack_frame* fp = (stack_frame*)__builtin_frame_address(0);
   stack_frame* prev_fp = (stack_frame*)NULL;
   size_t idx = 0;
   while (fp > prev_fp) {
@@ -853,7 +853,9 @@ void record_backtrace(ProfileInfo& prof) {
   prof._previous_buffer_size = temp_size;
   // Gather a backtrace
   int res  = get_stack_trace( prof, prof._buffer, PROFILE_STACK_SIZE );
+//  printf("%s:%d:%s Got %d frames\n", __FILE__, __LINE__, __FUNCTION__, res );
   if (res>0) {
+    printf("%s:%d:%s Got %d frames ret0=%p\n", __FILE__, __LINE__, __FUNCTION__, res, prof._buffer[0] );
     prof._buffer_size = res;
     maybe_write_backtrace(prof,res);
   } else {
