@@ -335,12 +335,20 @@ in the generic function lambda-list to the generic function lambda-list"
                         ;; not allowed, but i'm not sure...
                         (specializer spec))))))
 
+;;; Given a list of specializer expressions, return something that can be
+;;; put in a function name.
 (defun fixup-specializers (specializers)
   (mapcar (lambda (spec)
-            (if (consp spec)
-                (if (or (symbolp (second spec)) (numberp (second spec)))
-                    spec
-                    `(eql ,(make-symbol (format nil "~s" (second spec)))))
+            (if (consp spec) ; eql specializer
+                (let ((form (second spec)))
+                  ;; try to display the most common case, (eql 'foo), nicely.
+                  (if (and (consp form) (eq (car form) 'quote)
+                           (consp (cdr form)) (null (cddr form)))
+                      (let ((val (ext:constant-form-value form)))
+                        (if (or (symbolp val) (numberp val))
+                            `(eql ',val)
+                            `(eql ,(make-symbol (prin1-to-string form)))))
+                      `(eql ,(make-symbol (prin1-to-string form)))))
                 spec))
           specializers))
 

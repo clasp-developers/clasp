@@ -291,7 +291,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebugByteCodeSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugSourcePosInfoSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugVaslistSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
-SYMBOL_EXPORT_SC_(CorePkg, bitArrayOp);
 SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
 SYMBOL_EXPORT_SC_(CorePkg, dump_module);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);

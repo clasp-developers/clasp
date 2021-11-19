@@ -107,7 +107,8 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
 #define SEARCH_MAIN "_main"
 #define DLSYM_MAIN "__main"
   nm_cmd << "/usr/bin/nm -p --defined-only \"" << filename << "\"";
-#endif  
+#endif
+  if (fout) fprintf(fout, "# Symbols obtained by filtering: %s\n", nm_cmd.str().c_str() );
   FILE* fnm = popen( nm_cmd.str().c_str(), "r");
   if (fnm==NULL) {
     printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, nm_cmd.str().c_str());
@@ -197,6 +198,7 @@ bool loadExecutableSymbolLookup(SymbolLookup& symbolLookup, FILE* fout ) {
           highest_code_address = address;
         }
       } else {
+        if (fout) fprintf(fout, "# ignore: %p %c %s\n", (void*)address, type, sname.c_str());
         if (highest_code_address && address > highest_code_address) {
           if (address < lowest_other_address) {
             lowest_other_address = address;
@@ -1121,6 +1123,29 @@ struct ensure_forward_t : public walker_callback_t {
 };
 
 
+
+struct gather_info_for_snapshot_save_t : public walker_callback_t {
+  Fixup* _fixup;
+  void callback(gctools::Header_s* header) {
+    // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
+    if (header->_stamp_wtag_mtag.stampP()) {
+      if (header->preciseIsPolymorphic()) {
+        core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
+        if (cast::Cast<core::General_O*,core::T_O*>::isA(client)) {
+          core::General_O* generalObject = (core::General_O*)client;
+          generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
+        }
+      }
+    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+      // Nothing
+    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+      // Nothing
+    }
+  }
+  gather_info_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup) {};
+};
+
+
 struct prepare_for_snapshot_save_t : public walker_callback_t {
   Fixup* _fixup;
   void callback(gctools::Header_s* header) {
@@ -1135,7 +1160,8 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
 //        printf("%s:%d:%s save_snapshot          edges->size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, edges->size() );
         for ( size_t ii = 0; ii< edges->size(); ii++ ) {
 //          printf("%s:%d:%s  [%lu] before   target: %lu   cast_function@%p: %p\n", __FILE__, __LINE__, __FUNCTION__, ii, (*edges)[ii].target, &(*edges)[ii].cast, (*edges)[ii].cast);
-          encodeEntryPointInLibrary(this->_fixup,(uintptr_t*)&(*edges)[ii].cast);
+          void** ptrptr = (void**)&(*edges)[ii].cast;
+          encodeEntryPointInLibrary(this->_fixup,(uintptr_t*)ptrptr );
         }
       }
       // Handle them on a case by case basis
@@ -1152,7 +1178,6 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
       // Nothing
     }
   }
-
   prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup) {};
 };
 
@@ -1577,7 +1602,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
   //
   // This generates a symbol table for the _Library
   //
-  void generateSymbolTable(SymbolLookup& symbolLookup) {
+  void generateSymbolTable(Fixup* fixup, SymbolLookup& symbolLookup) {
 //    printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
@@ -1587,7 +1612,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       std::string saveName("");
       uintptr_t saddr;
-      bool goodSymbol = symbolLookup.dladdr_(address,saveName,hitBadPointers,this->_Library._GroupedPointers[ii]._pointerType,saddr);
+      bool goodSymbol = symbolLookup.dladdr_(fixup,address,saveName,hitBadPointers,this->_Library._GroupedPointers[ii]._pointerType,saddr);
       if (goodSymbol) {
         uint addressOffset = (address - (uintptr_t)saddr);
         this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
@@ -1751,7 +1776,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
 //    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
-    thing.generateSymbolTable(symbolLookup);
+    thing.generateSymbolTable(fixup,symbolLookup);
 //    printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
     for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
       if (curLib._SymbolInfo[ii]._SymbolLength<0) {
@@ -1854,12 +1879,28 @@ void* snapshot_save_impl(void* data) {
   // 18. Write table of contents and save-buffer
   // 19. DIE
 
-  //
-  // 1. First walk the objects in memory and sum their size.
-  //
-
   ISLInfo islInfo(SaveOp);
-  Fixup fixup(SaveOp);
+  Fixup fixup(InfoOp);
+  
+  //
+  // Walk the objects in memory and gather a map of function pointers to names
+  //
+  // Switch to InfoOp
+  //
+#if 1  
+  fixup._operation = InfoOp;
+  DBG_SL(BF("0. Get info on objects for snapshot save\n"));
+  gather_info_for_snapshot_save_t gather_info(&fixup,&islInfo);
+  walk_garbage_collected_objects(true,gather_info);
+#endif
+  //
+  // Switch to SaveOp
+  //
+  fixup._operation = SaveOp;
+
+  //
+  // First walk the objects in memory and sum their size.
+  //
 
 #if 0
   // I'm going to try this right before I fixup the vtables

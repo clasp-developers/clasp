@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/fli.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/functor.h>
@@ -1652,9 +1653,14 @@ size_t global_pointerCount = 0;
 size_t global_goodPointerCount = 0;
 std::set<std::string> global_mangledSymbols;
 std::set<uintptr_t> global_addresses;
+snapshotSaveLoad::SymbolLookup* global_SymbolLookup = NULL;
 
 void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, const std::string& name ) {
   if (globals_->_ExportedSymbolsAccumulate) {
+    if (!global_SymbolLookup) {
+      global_SymbolLookup = new snapshotSaveLoad::SymbolLookup();
+      snapshotSaveLoad::loadExecutableSymbolLookup( *global_SymbolLookup, NULL );
+    }
     if (global_addresses.count((uintptr_t)functionPointer) == 0 ) {
       if ((uintptr_t)functionPointer < 1024) return; // This means it's a virtual method.
       global_pointerCount++;
@@ -1665,23 +1671,31 @@ void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, c
 #else
       int ret = dladdr( functionPointer, &info );
 #endif
+      bool system_dladdr_had_problem = false;
       if ( ret == 0 ) {
-        printf("%s:%d %lu/%lu FAIL dladdr returned 0x0 for %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, name.c_str());
-        return;
+        printf("%s:%d %lu/%lu FAIL system dladdr returned 0x0 for %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, name.c_str());
+        system_dladdr_had_problem = true;
+      } else if (!info.dli_sname) {
+        printf("%s:%d %lu/%lu FAIL system dladdr could not find a symbol to match %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, name.c_str());
+        system_dladdr_had_problem = true;
+      } else if (info.dli_saddr != functionPointer) {
+        printf("%s:%d %lu/%lu FAIL system dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, info.dli_saddr, name.c_str());
+        system_dladdr_had_problem = true;
+      } else if (dlsym( RTLD_DEFAULT, info.dli_sname ) == 0 ) {
+        printf("%s:%d %lu/%lu WARNING system dlsym could not find name %s - I'm going to add it anyway - if this works - remove this message\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
       }
-      if (!info.dli_sname) {
-        printf("%s:%d %lu/%lu FAIL dladdr could not find a symbol to match %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, name.c_str());
-        return;
+      std::string claspDladdrName;
+      if ( !global_SymbolLookup->lookupAddr((uintptr_t)functionPointer, claspDladdrName ) ) {
+        printf("%s:%d:%s FAIL Clasp's dladdr could not find a symbol for the address %p for name %s - THIS WILL BREAK save-lisp-and-die\n", __FILE__, __LINE__, __FUNCTION__, (void*)functionPointer, name.c_str());
+      } else {
+        if (system_dladdr_had_problem) {
+          printf("%s:%d:%s   The system dladdr had a problem but clasp's dladdr found the symbol - the clasp dladdr name is: %s\n", __FILE__, __LINE__, __FUNCTION__, claspDladdrName.c_str() );
+        }
       }
-      if (info.dli_saddr != functionPointer) {
-        printf("%s:%d %lu/%lu FAIL dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, info.dli_saddr, name.c_str());
-        return;
-      }
-      if (dlsym( RTLD_DEFAULT, info.dli_sname ) == 0 ) {
-        printf("%s:%d %lu/%lu WARNING dlsym could not find name %s - I'm going to add it anyway - if this works - remove this message\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
-      }
+      if (system_dladdr_had_problem) return;
       global_mangledSymbols.insert(info.dli_sname);
       global_goodPointerCount++;
+      global_addresses.insert((uintptr_t)functionPointer);
       return;
     }
   }

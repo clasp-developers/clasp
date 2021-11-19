@@ -91,7 +91,9 @@ struct Fixup {
   FixupOperation_           _operation;
   uintptr_t                 _memoryStart;
   std::vector<ISLLibrary>   _libraries;
- 
+  bool                      _trackAddressName;
+  map<void*,std::string>    _addressName;
+  
   Fixup( FixupOperation_ op ) : _operation(op) {};
 
   uintptr_t fixedAddress( bool functionP, uintptr_t* ptrptr, const char* addressName );
@@ -109,8 +111,25 @@ struct Fixup {
     this->_libraries[libraryIndex]._Pointers.emplace_back( FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr );
   };
 
+  void addAddressName(void* address, std::string name) {
+    if (this->_trackAddressName) {
+      this->_addressName[address] = name;
+    }
+  }
+
+  std::string lookupAddressName(void* address) {
+    if (this->_trackAddressName) {
+      auto it = this->_addressName.find(address);
+      if (it == this->_addressName.end()) {
+        return "no-address-name-map";
+      }
+      return it->second;
+    }
+    return "";
+  }
+  
 private:
-  Fixup(const Fixup& fixup, uintptr_t memoryStart) : _memoryStart(memoryStart) {};
+  Fixup(const Fixup& fixup, uintptr_t memoryStart) : _memoryStart(memoryStart), _trackAddressName(true) {};
 };
 
 
@@ -159,7 +178,7 @@ struct SymbolLookup {
     name = it->second;
     return true;
   }
-  bool dladdr_(uintptr_t address, std::string& name, size_t& hitBadPointers, PointerType pointerType,uintptr_t& saddr) {
+  bool dladdr_(Fixup* fixup, uintptr_t address, std::string& name, size_t& hitBadPointers, PointerType pointerType,uintptr_t& saddr) {
     Dl_info info;
     int ret = dladdr( (void*)address, &info );
     if ( ret == 0 ) {
@@ -175,20 +194,24 @@ struct SymbolLookup {
         saddr = address;
         return true;
       } else {
+        std::string fixupName = fixup->lookupAddressName((void*)address);
         printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr \n"
-               "  When this happens run 'nm <executable> | grep %p'\n"
-               "   Although it may not work - sorry\n"
-               "   Then write a wrapper for that function - it's probably an inlined function \n"
-               "       that dladdr doesn't like - I don't know any other way around this\n"
-               "     The PointerType is %lu\n"
+               "  Use the clasp --snapshot-symbols <filename> option to dump the symbols that clasp uses for its dladdr\n"
+               "   When this happens it's captureless lambdas that have been a problem - they have __invoke in their mangled\n"
+               "   symbol names.   If you see this problem on one OS but not another - look at the one that works to find symbols\n"
+               "   that are defined and not defined on the OS that doesn't work.\n"
+               "  Clasp runs 'nm --defined-only <executable>' to get symbol addresses/name mappings\n"
+               "   This can also happen when there is an inlined function that needs a wrapper.  Then write a wrapper for that function.\n"
+               "     The fixup name is %s\n"
+               "     The PointerType is %" PRIuPTR "\n"
                "     The info.dli_fname -> %s\n"
                "     The info.dli_fbase -> %p\n"
                "     The info.dli_sname -> %p\n"
                "     The info.dli_saddr -> %p\n"
                "     The lookupName -> %s\n",
                __FILE__, __LINE__, __FUNCTION__,
-               (void*)address, 
-               (void*)address, 
+               (void*)address,
+               fixupName.c_str(),
                (uintptr_t)pointerType,
                info.dli_fname,
                (void*)info.dli_fbase,
