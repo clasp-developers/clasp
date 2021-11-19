@@ -1098,7 +1098,16 @@
                (sdest (cmp:irc-gep-variable valvec (list spos)))
                ;; Add one, since we store the primary separately
                (dest (%gep cmp:%t**% sdest '(1)))
-               (source (%gep cmp:%t**% valvec '(1))))
+               (source (%gep cmp:%t**% valvec '(1)))
+               ;; Number of elements to copy out of the values vector.
+               ;; This is a bit tricky, in that we want to copy nvalues-1,
+               ;; unless nvalues is zero in which case we want zero.
+               ;; Therefore we use umax to turn a 0 into 1.
+               ;; We could alternately branch, but that's probably slower.
+               (adjusted-nvalues
+                 (%intrinsic-call "llvm.umax.i64"
+                                  (list size (%i64 1))))
+               (ncopy (cmp:irc-sub adjusted-nvalues (%size_t 1))))
           ;; Copy the rest
           (%intrinsic-call "llvm.memmove.p0i8.p0i8.i64"
                            (list (cmp:irc-bit-cast dest cmp:%i8*%)
@@ -1106,8 +1115,7 @@
                                  (cmp:irc-bit-cast source cmp:%i8*%)
                                  ;; Multiply size by sizeof(T_O*)
                                  ;; (subtract one for the primary, again)
-                                 (cmp::irc-shl
-                                  (cmp::irc-sub size (%size_t 1)) 3 :nuw t)
+                                 (cmp::irc-shl ncopy 3 :nuw t)
                                  ;; non volatile
                                  (%i1 0)))
           ;; Store the primary
