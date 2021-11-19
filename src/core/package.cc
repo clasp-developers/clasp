@@ -984,12 +984,12 @@ bool Package_O::unintern_unsafe(Symbol_sp sym) {
   }
   if (status == kw::_sym_internal) {
     this->_InternalSymbols->remhash(nameKey);
-    if (sym->getPackage().get() == this)
+    if (&*sym->getPackage() == this)
       sym->setPackage(nil<Package_O>());
     return true;
   } else if (status == kw::_sym_external) {
     this->_ExternalSymbols->remhash(nameKey);
-    if (sym->getPackage().get() == this)
+    if (&*sym->getPackage() == this)
       sym->setPackage(nil<Package_O>());
     return true;
   }

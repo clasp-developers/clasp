@@ -31,9 +31,7 @@
             irc-xep-functions-create
             xep-arity-arity
             xep-arity-function-or-placeholder
-            xep-arity-entry-point-reference
             xep-group-lookup
-            xep-group
             xep-group-p
             xep-group-arities
             xep-group-name
@@ -119,7 +117,6 @@
             function-type-create-on-the-fly
             evaluate-foreign-arguments
             calling-convention-closure
-            calling-convention-args
             calling-convention-vaslist*
             calling-convention-vaslist.va-arg
             calling-convention-nargs
@@ -145,8 +142,6 @@
             compile-lambda-function
             compile-lambda-list-code
             make-calling-convention
-            bclasp-compile-form
-            compile-form
             compiler-error
             compiler-warn
             compiler-style-warn
@@ -261,7 +256,6 @@
             irc-array-total-size
             irc-array-rank
             gen-%array-dimension
-            irc-vaslist-vaslist-address
             irc-vaslist-nargs-address
             gen-instance-rack
             gen-instance-rack-set
@@ -332,8 +326,6 @@
             null-t-ptr
             compile-error-if-too-many-arguments
             *irbuilder-function-alloca*
-            irc-get-terminate-landing-pad-block
-            irc-function-cleanup-and-return
             irc-calculate-call-info
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
             compute-rest-alloc
@@ -372,7 +364,6 @@
           *byte-codes*
           add-creator
           next-value-table-holder-name
-          general-entry-placeholder
           general-entry-placeholder-p
           ensure-not-placeholder
           make-general-entry-placeholder
@@ -384,11 +375,9 @@
           register-local-function-index
           register-xep-function-indices
           literal-node-runtime-p
-          literal-node-runtime-index
           literal-node-runtime-object
           literal-node-closure-p
           literal-node-creator-p
-          literal-node-creator-index
           literal-node-creator-object
           literal-node-creator-name
           literal-node-creator-arguments
@@ -399,7 +388,6 @@
           literal-node-call-function
           literal-node-call-source-pos-info
           literal-node-call-holder
-          number-of-entries
           lookup-literal-index
           reference-literal
           load-time-reference-literal
