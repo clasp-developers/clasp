@@ -59,7 +59,7 @@ size_t distance(core::T_sp other) const {
   }
 bool operator==(core::T_sp other) const {
     if (gctools::smart_ptr<Iterator> io = other.asOrNull<Iterator<IT>>()) {
-        IT& otherIterator = io.get()->_Iterator;
+        IT& otherIterator = io->_Iterator;
         return this->_Iterator == otherIterator;
     }
     SIMPLE_ERROR(BF("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") % _rep_(this->asSmartPtr()) % _rep_(other) % _rep_(core::instance_class(other)));

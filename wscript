@@ -146,7 +146,7 @@ CLANG_LIBRARIES = [
             'clangLex',
             'clangBasic'
  ]
-#CLANG_LIBRARIES = [ 'clang-cpp' ]
+# CLANG_LIBRARIES = [ 'clang-cpp' ]
 # LLVM_LIBRARIES = [ 'LLVM' ]
 
 BOOST_LIBRARIES = []
@@ -1431,6 +1431,7 @@ def configure(cfg):
     cfg.define("INHERITED_FROM_SRC",1)
     cfg.define("LLVM_VERSION_X100",(LLVM_VERSION*100))
     cfg.define("LLVM_VERSION",float(LLVM_VERSION))
+    cfg.define("LLVM_VERSION_INT",int(LLVM_VERSION))
     cfg.define("NDEBUG",1)
 #    cfg.define("READLINE",1)
 #    cfg.define("USE_EXPENSIVE_BACKTRACE",1)

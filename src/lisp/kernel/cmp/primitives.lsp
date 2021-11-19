@@ -249,6 +249,8 @@
          (primitive         "asinh" :double-float (list :double-float))
          (primitive         "acosh" :double-float (list :double-float))
          (primitive         "atanh" :double-float (list :double-float))
+
+         (primitive         "llvm.umax.i64" :i64 (list :i64 :i64))
          
          (primitive         "llvm.experimental.stackmap" :void (list :i64 :i32) :varargs t)
          (primitive         "llvm.va_copy" :void (list :i8* :i8*))

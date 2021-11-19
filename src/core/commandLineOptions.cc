@@ -87,7 +87,9 @@ void process_clasp_arguments(CommandLineOptions* options)
              "--resource-dir       - Options directory is treated as the executable directory\n"
              "                       and it is used to start the search for resource directories\n"
              "-s/--verbose         - Print more info while booting\n"
-             "-y/--symbols {file}  - Accumulate symbols while starting up. These can be recovered calling (core:mangled-symbol-names <stream>).\n"
+             "-y/--snapshot-symbols {file} - Accumulate symbols while starting up and verify\n"
+             "                       that snapshot save will work. The symbols can be recovered\n"
+             "                       at runtime calling (core:mangled-symbol-names <stream>).\n"
              "                       They are written out to the {file} on exit.\n"
              "-f/--feature feature - Add the feature to *features*\n"
              "-e/--eval {form}     - Evaluate a form\n"
@@ -187,10 +189,8 @@ void process_clasp_arguments(CommandLineOptions* options)
     else if (arg == "-a" || arg == "--addresses") {
       string filename = options->_RawArguments[iarg+1];
       iarg++;
-      FILE* fout = fopen(filename.c_str(),"w");
-      snapshotSaveLoad::SymbolLookup lookup;
-      snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
-      fclose(fout);
+      options->_AddressesP = true;
+      options->_AddressesFileName = filename;
     } else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;
     } else if (arg == "--noinform") {
@@ -226,7 +226,7 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_NoRc = true;
     } else if (arg == "-w" || arg == "--wait") {
       options->_PauseForDebugger = true;
-    } else if (arg == "-y" || arg == "--symbols") {
+    } else if (arg == "-y" || arg == "--snapshot-symbols") {
       options->_ExportedSymbolsAccumulate = true;
       options->_ExportedSymbolsFilename = options->_RawArguments[iarg+1];
       iarg++;
@@ -302,6 +302,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _DontLoadImage(false),
     _DontLoadInitLsp(false),
     _DisableMpi(false),
+    _AddressesP(false),
     _StartupFileP(false),
     _StartupFileType(cloDefault),
     _HasDescribeFile(false),
@@ -335,7 +336,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     } else if (arg == "--verbose") {
       this->_SilentStartup = false;
       iarg++;
-    } else if (arg == "--symbols") {
+    } else if (arg == "--snapshot-symbols") {
       this->_ExportedSymbolsAccumulate = true;
       iarg++;
       this->_ExportedSymbolsFilename = this->_RawArguments[iarg];
@@ -362,6 +363,17 @@ CL_DEFUN List_sp core__command_line_load_eval_sequence() {
   }
   return cl__nreverse(loadEvals);
 }
-  
+
+
+void maybeHandleAddressesOption(CommandLineOptions* options) {
+  if (options->_AddressesP) {
+    FILE* fout = fopen(options->_AddressesFileName.c_str(),"w");
+    fprintf(fout, "# Generating addresses from %s\n", __FUNCTION__ );
+    snapshotSaveLoad::SymbolLookup lookup;
+    lookup.addAllLibraries(fout);
+      // snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
+    fclose(fout);
+  }
+}
 
 };

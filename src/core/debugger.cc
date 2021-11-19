@@ -257,6 +257,7 @@ bool library_with_name( const std::string& name, bool isExecutable, std::string&
       end = (uintptr_t)(entry.second._TextEnd);
       vtableStart = (uintptr_t)entry.second._VtableSectionStart;
       vtableEnd = (uintptr_t)entry.second._VtableSectionEnd;
+//      printf("%s:%d:%s isExecutable = %d name = %s  libraryName = %s\n", __FILE__, __LINE__, __FUNCTION__, isExecutable, name.c_str(), libraryName.c_str());
       return true;
     }
   }
