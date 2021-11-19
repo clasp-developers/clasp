@@ -93,7 +93,9 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
   std::string searchSymbol;
   uintptr_t searchAddress = 0;
 #if defined(_TARGET_OS_LINUX)
-  nm_cmd << "/usr/bin/nm -p --defined-only --no-sort \"" << filename << "\"";
+  std::string dynamic = "";
+  if (filename.find(".so") != std::string::npos) dynamic = "-D ";
+  nm_cmd << "/usr/bin/nm " << dynamic << "-p --defined-only --no-sort \"" << filename << "\"";
 #elif defined(_TARGET_OS_DARWIN)
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
@@ -168,7 +170,7 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
       while (*cur==' ') ++cur;
       // Read the name
       size_t nameidx = 0;
-      while (nameidx<(BUFLEN-1)&&*cur!='\0'&&*cur>' ') {
+      while (nameidx<(BUFLEN-1)&&*cur!='\0'&&*cur!='@'&&*cur>' ') {
         name[nameidx] = *cur;
         ++cur;
         ++nameidx;
@@ -236,14 +238,21 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
 #endif
     search_dlsym = (uintptr_t)dlsym( RTLD_DEFAULT, realSearchName.c_str() );
     if (search_dlsym==0) {
-      printf("%s:%d:%s Could not find address of \"%s\" with dlsym !!!\n", __FILE__, __LINE__, __FUNCTION__, realSearchName.c_str() );
-      abort();
+      if (fout) fprintf( fout, "# Could not find address of \"%s\" with dlsym!!!\n", realSearchName.c_str() );
+      else {
+        printf("%s:%d:%s Could not find address of \"%s\" with dlsym !!!\n", __FILE__, __LINE__, __FUNCTION__, realSearchName.c_str() );
+        abort();
+      }
     }
-    uintptr_t loadAddress = search_dlsym - searchAddress;
-    libraryLookup._loadAddress = loadAddress;
-    if (fout) fprintf( fout, "# %s:%d:%s realSearchName = \"%s\" searchAddress = %p search_dlsym = %p  libraryLookup._loadAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, realSearchName.c_str(), (void*)searchAddress, (void*)search_dlsym, (void*)libraryLookup._loadAddress ); 
-    if (fout) {
-      fprintf( fout, "# load address using %p\n", (void*)loadAddress);
+    if (search_dlsym) {
+      uintptr_t loadAddress = search_dlsym - searchAddress;
+      libraryLookup._loadAddress = loadAddress;
+      if (fout) fprintf( fout, "# realSearchName = \"%s\" searchAddress = %p search_dlsym = %p  libraryLookup._loadAddress = %p\n", __FILE__, __LINE__, __FUNCTION__, realSearchName.c_str(), (void*)searchAddress, (void*)search_dlsym, (void*)libraryLookup._loadAddress ); 
+      if (fout) {
+        fprintf( fout, "# load address using %p\n", (void*)loadAddress);
+      }
+    } else {
+      if (fout) fprintf( fout, "# Could not find symbol with dlsym\n");
     }
   }
   return true;
@@ -259,7 +268,7 @@ bool SymbolLookup::addLibrary( const std::string& libraryPath, FILE* fout ) {
 
 void SymbolLookup::addAllLibraries(FILE* fout) {
   for ( auto& entry : core::debugInfo()._OpenDynamicLibraryHandles ) {
-    if (fout) fprintf( fout, "%s:%d:%s entry.name = %s\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str() );
+    if (fout) fprintf( fout, "#  entry.name = %s\n", entry.second._Filename.c_str() );
     this->addLibrary( entry.second._Filename, fout );
   }
 }
