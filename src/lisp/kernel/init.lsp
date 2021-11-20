@@ -752,7 +752,10 @@ the stage, the +application-name+ and the +bitcode-name+"
       (progn
         (mapcar #'(lambda (entry)
                     (if (eq (car entry) 'cl:load)
-                        (load (cadr entry))
+                        (let ((file (cadr entry)))
+                          (if (probe-file file)
+                              (load file)
+                              (bformat t "Extension file %s not present.%N" file)))
                         (let ((cmd (read-from-string (cdr entry))))
                           (apply (car cmd) (cdr cmd)))))
                 core:*extension-startup-loads*)
