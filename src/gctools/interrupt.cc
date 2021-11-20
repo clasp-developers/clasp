@@ -292,6 +292,10 @@ void wait_for_user_signal(const char* message) {
   printf("%s:%d:%s Received SIGUSR1\n", __FILE__, __LINE__, __FUNCTION__ );
   global_user_signal = false;
 }
+ 
+CL_DEFUN void gctools__wait_for_user_signal(const std::string& msg) {
+  wait_for_user_signal(msg.c_str());
+}
 
 
 void handle_or_queue_signal(int signo) {

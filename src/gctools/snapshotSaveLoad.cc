@@ -694,6 +694,7 @@ gctools::clasp_ptr_t headerPointerToGeneralPointer(gctools::Header_s* header)
 
 typedef gctools::clasp_ptr_t (*PointerFix)(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag, void* user_data);
 PointerFix globalPointerFix;
+const char* globalPointerFixStage;
 
 
 struct ISLInfo {
@@ -784,9 +785,10 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
     header = WEAK_PTR_TO_HEADER_PTR(client);
   }
   DBG_SL_FFWD(BF("    maybe_follow_forwarding_pointer client %p header: %p\n") % (void*)client % (void*)header );
-
   if (islInfo->_operation== SaveOp && ! is_forwarding_pointer(header,islInfo)) {
     printf("%s:%d:%s general header %p MUST BE A FORWARDING POINTER - got %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, *(void**)header);
+    printf("%s:%d:%s stage: %s Pausing for 1000000 seconds so you can connect a debugger to pid: %d\n", __FILE__, __LINE__, __FUNCTION__, globalPointerFixStage, getpid() );
+    sleep(1000000);
     abort();
   }
   if (is_forwarding_pointer(header,islInfo)) {
@@ -2075,6 +2077,7 @@ void* snapshot_save_impl(void* data) {
   {
     fixup_objects_t fixup_objects(SaveOp, (gctools::clasp_ptr_t)snapshot._Memory->_BufferStart, &islInfo );
     globalPointerFix = maybe_follow_forwarding_pointer;
+    globalPointerFixStage = "fixupObjects";
     walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart,fixup_objects);
   }
 
@@ -2085,6 +2088,7 @@ void* snapshot_save_impl(void* data) {
 
   {
     globalPointerFix = maybe_follow_forwarding_pointer;
+    globalPointerFixStage = "fixupRoots";
 //    printf("%s:%d:%s  Fixing roots snapshot._Memory->_BufferStart = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)snapshot._Memory->_BufferStart, (void*)((char*)snapshot._Memory->_BufferStart+snapshot._Memory->_Size ));
     gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)snapshot._Memory->_BufferStart + snapshot._FileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
     followForwardingPointersForRoots( lispRoot, snapshot._FileHeader->_LispRootCount, (void*)&islInfo );
@@ -3006,10 +3010,12 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
   // Walk all the objects and fixup all the pointers
   //
+    
     DBG_SL(BF("======================= fixup pointers\n"));
     {
       fixup_objects_t fixup_objects( LoadOp, (gctools::clasp_ptr_t)islbuffer, &islInfo );
       globalPointerFix = maybe_follow_forwarding_pointer;
+      globalPointerFixStage = "snapshot_load/fixupObjects";
       walk_temporary_root_objects(root_holder,fixup_objects);
     }
 
