@@ -609,7 +609,7 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
          :reader ext:unix-signal-received-code)
    (handler :initarg :handler
             :initform nil
-            :reader unix-signal-received-handler))
+            :reader ext:unix-signal-received-handler))
   (:report (lambda (condition stream)
              (format stream "Serious signal ~D caught."
                      (ext:unix-signal-received-code condition)))))
