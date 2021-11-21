@@ -10,7 +10,7 @@
 namespace snapshotSaveLoad {
 
 
-typedef enum { InfoOp, SaveOp, LoadOp } FixupOperation_;
+typedef enum { InfoOp, TestOp, SaveOp, LoadOp } FixupOperation_;
 
 struct Fixup;
 

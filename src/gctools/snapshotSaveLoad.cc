@@ -41,6 +41,9 @@
 #endif
 
 namespace snapshotSaveLoad {
+
+size_t memory_test(bool dosleep, FILE* fout, const char* message = NULL );
+
 FixupOperation_ operation(Fixup* fixup) { return fixup->_operation; };
 
 bool global_debugSnapshot = false;
@@ -701,75 +704,145 @@ struct ISLInfo {
   FixupOperation_ _operation;
   uintptr_t _islStart;
   uintptr_t _islEnd;
-  std::map<uintptr_t,uintptr_t> _forwarding;
+  std::map<gctools::Header_s*,core::T_O*> _forwarding;
   ISLInfo( FixupOperation_ op, uintptr_t s=0, uintptr_t e=0) :
     _operation(op),
     _islStart(s),
     _islEnd(e) {};
 };  
 
-//
-// If you don't want forwarding to stomp on the headers use the following
-//
-//#define NO_STOMP_FORWARDING 1
+struct MemoryTest_t {
+  ISLInfo islInfo;
+  FILE*   fout;
+  MemoryTest_t(FixupOperation_ fop, FILE* f) : islInfo(fop), fout(f) {};
+};
 
 //
-// If you want to test the stomp forwarding by comparing it to NO_STOMP_FORWARDING use this
+// Control how pointer forwarding works.
 //
-//#define TEST_STOMP_FORWARDING 1
+// The global_forwardingKind controls how pointer forwarding works.
+//   noStomp - forwarding uses a separate map of pointer -> forwarded-pointer.
+//                This is slow and is meant for snapshot_save and to facilitate debugging.
+//   stomp   - The forwarding pointer is written into the pointer address.
+//                This is fast and is meant for snapshot_load
+//   testStomp - maintain a map of pointer -> forwarded-pointer AND write the forwarding
+//               pointer into the pointer address and compare the two on every operation.
+//               This is to test stomp.
+//   undef - this means global_forwardingKind wasn't set yet.
+//
+typedef enum { undef, stomp, noStomp, testStomp } ForwardingEnum;
+ForwardingEnum global_forwardingKind = undef;
+
+[[noreturn]] void errorBadForwardingKind() {
+  printf("%s:%d:%s The global_forwardingKind wasn't set\n", __FILE__, __LINE__, __FUNCTION__ );
+  abort();
+}
+
 
 void set_forwarding_pointer(gctools::Header_s* header, char* new_client, ISLInfo* info ) {
-#if defined(TEST_STOMP_FORWARDING)
-  info->_forwarding[(uintptr_t)header] = (uintptr_t)new_client;
-  if ((intptr_t)new_client < 0) {
-    printf("%s:%d:%s Writing a bad forwarding pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)new_client);
+  if (global_forwardingKind == testStomp) {
+    info->_forwarding[header] = (core::T_O*)new_client;
+    if ((intptr_t)new_client < 0) {
+      printf("%s:%d:%s Writing a bad forwarding pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)new_client);
+    }
+    header->_stamp_wtag_mtag.setFwdPointer(new_client);
+    if ((uintptr_t)header->_stamp_wtag_mtag.fwdPointer() != (uintptr_t)new_client) {
+      printf("%s:%d:%s Forwarding pointer written and read don't match\n", __FILE__, __LINE__, __FUNCTION__);
+      abort();
+    }
+  } else if (global_forwardingKind == noStomp) {
+    info->_forwarding[header] = (core::T_O*)new_client;
+  } else if (global_forwardingKind == stomp) {
+    header->_stamp_wtag_mtag.setFwdPointer(new_client);
+  } else {
+    errorBadForwardingKind();
   }
-  header->_stamp_wtag_mtag.setFwdPointer(new_client);
-  if ((uintptr_t)header->_stamp_wtag_mtag.fwdPointer() != (uintptr_t)new_client) {
-    printf("%s:%d:%s Forwarding pointer written and read don't match\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
-  }
-#elif defined(NO_STOMP_FORWARDING)
-  info->_forwarding[(uintptr_t)header] = (uintptr_t)new_client;
-#else
-  header->_stamp_wtag_mtag.setFwdPointer(new_client);
-#endif
 }
 
 bool is_forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
-#if defined(TEST_STOMP_FORWARDING)
-  auto result = info->_forwarding.find((uintptr_t)header);
-  bool noStompResult = (result != info->_forwarding.end());
-  bool stompResult = header->_stamp_wtag_mtag.fwdP();
-  if (noStompResult!=stompResult) {
-    printf("%s:%d:%s results don't match\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
+  if (global_forwardingKind == testStomp) {
+    auto result = info->_forwarding.find(header);
+    bool noStompResult = (result != info->_forwarding.end());
+    bool stompResult = header->_stamp_wtag_mtag.fwdP();
+    if (noStompResult!=stompResult) {
+      printf("%s:%d:%s results don't match\n", __FILE__, __LINE__, __FUNCTION__);
+      abort();
+    }
+    return stompResult;
+  } else if (global_forwardingKind == noStomp) {
+    auto result = info->_forwarding.find(header);
+    bool noStompResult = (result != info->_forwarding.end());
+    return noStompResult;
+  } else if (global_forwardingKind == stomp) {
+    bool stompResult = header->_stamp_wtag_mtag.fwdP();
+    return stompResult;
+  } else {
+    errorBadForwardingKind();
   }
-  return stompResult;
-#elif defined(NO_STOMP_FORWARDING)
-  auto result = info->_forwarding.find((uintptr_t)header);
-  bool noStompResult = (result != info->_forwarding.end());
-  return noStompResult;
-#else
-  bool stompResult = header->_stamp_wtag_mtag.fwdP();
-  return stompResult;
-#endif
 }
 
 uintptr_t forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
-#if defined(TEST_STOMP_FORWARDING)
-  uintptr_t noStompResult =  info->_forwarding[(uintptr_t)header];
-  uintptr_t stompResult = (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
-  if (noStompResult!=stompResult) {
-    printf("%s:%d:%s results don't match\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
+  if (global_forwardingKind == testStomp) {
+    uintptr_t noStompResult =  (uintptr_t)info->_forwarding[header];
+    uintptr_t stompResult = (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
+    if (noStompResult!=stompResult) {
+      printf("%s:%d:%s results don't match\n", __FILE__, __LINE__, __FUNCTION__);
+      abort();
+    }
+    return stompResult;
+  } else if (global_forwardingKind == noStomp) {
+    return (uintptr_t)info->_forwarding[header];
+  } else if (global_forwardingKind == stomp) {
+    return (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
+  } else {
+    errorBadForwardingKind();
   }
-  return stompResult;
-#elif defined(NO_STOMP_FORWARDING)
-  return info->_forwarding[(uintptr_t)header];
-#else
-  return (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
-#endif
+}
+
+
+struct walker_callback_t {
+  bool     _debug;
+  ISLInfo* _info;
+  virtual void callback(gctools::Header_s* header) = 0;
+  walker_callback_t(ISLInfo* info) : _debug(false), _info(info) {};
+};
+
+
+struct test_objects_t : public walker_callback_t {
+  std::map<gctools::Header_s*,std::vector<uintptr_t>> _corruptObjects;
+public:  
+  test_objects_t( ISLInfo* info ) : walker_callback_t(info) {};
+  void callback(gctools::Header_s* header);
+};
+
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::clasp_ptr_t test_pointer(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag, void* user_data) {
+  DBG_SL_FFWD(BF("test_pointer clientAddress: %p client: %p\n") % (void*)clientAddress % (void*)client );
+  test_objects_t* test_objects = (test_objects_t*)user_data;
+  ISLInfo* islInfo = test_objects->_info;
+  gctools::Header_s* header;
+  if (tag==gctools::general_tag) {
+    header = GENERAL_PTR_TO_HEADER_PTR(client);
+  } else if (tag==gctools::cons_tag) {
+    header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(client);
+  } else {
+    header = WEAK_PTR_TO_HEADER_PTR(client);
+  }
+  auto found = islInfo->_forwarding.find(header);
+  if (found == islInfo->_forwarding.end()) {
+    gctools::Header_s* base = (gctools::Header_s*)GC_base(clientAddress);
+    printf("%s:%d:%s In Object base: %p at %p is a client %p that was not reached when we walked all of memory\n",
+           __FILE__, __LINE__, __FUNCTION__, (void*)base, (void*)clientAddress, (void*)client );
+    auto ii = test_objects->_corruptObjects.find(base);
+    if ( ii == test_objects->_corruptObjects.end() ) {
+      std::vector<uintptr_t> badPointers;
+      badPointers.push_back((uintptr_t)clientAddress);
+      test_objects->_corruptObjects[base] = badPointers;
+    } else {
+      std::vector<uintptr_t>& badPointers = ii->second;
+      badPointers.push_back((uintptr_t)clientAddress);
+    }
+  }
+  return gctools::clasp_ptr_t((uintptr_t)client|tag);
 }
 
 gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag, void* user_data) {
@@ -787,9 +860,11 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
   DBG_SL_FFWD(BF("    maybe_follow_forwarding_pointer client %p header: %p\n") % (void*)client % (void*)header );
   if (islInfo->_operation== SaveOp && ! is_forwarding_pointer(header,islInfo)) {
     printf("%s:%d:%s general header %p MUST BE A FORWARDING POINTER - got %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, *(void**)header);
-    printf("%s:%d:%s stage: %s Pausing for 1000000 seconds so you can connect a debugger to pid: %d\n", __FILE__, __LINE__, __FUNCTION__, globalPointerFixStage, getpid() );
+    printf("%s:%d:%s stage: %s connect a debugger to pid: %d\n", __FILE__, __LINE__, __FUNCTION__, globalPointerFixStage, getpid() );
+    printf("%s:%d:%s Running memory test\n", __FILE__, __LINE__, __FUNCTION__ );
+    memory_test( true, NULL, "Memory test after bad forwarding pointer was discovered" );
+    printf("%s:%d:%s stage: %s Sleeping to connect a debugger to pid: %d\n", __FILE__, __LINE__, __FUNCTION__, globalPointerFixStage, getpid() );
     sleep(1000000);
-    abort();
   }
   if (is_forwarding_pointer(header,islInfo)) {
     fwd_client = (uintptr_t)forwarding_pointer(header,islInfo);
@@ -1072,13 +1147,6 @@ struct Snapshot {
 
 
 
-struct walker_callback_t {
-  bool     _debug;
-  ISLInfo* _info;
-  virtual void callback(gctools::Header_s* header) = 0;
-  walker_callback_t(ISLInfo* info) : _debug(false), _info(info) {};
-};
-
 };
 
 extern "C" {
@@ -1215,6 +1283,7 @@ struct ensure_forward_t : public walker_callback_t {
 
 
 struct gather_info_for_snapshot_save_t : public walker_callback_t {
+  // Run fixupInternalsForSnapshotSaveLoad with fixup._operation = InfoOp;
   Fixup* _fixup;
   void callback(gctools::Header_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
@@ -1270,6 +1339,18 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
   }
   prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup) {};
 };
+
+
+struct prepare_test_t : public walker_callback_t {
+  std::set<gctools::Header_s*> _seen;
+  void callback(gctools::Header_s* header) {
+    this->_seen.insert(header);
+  }
+
+  prepare_test_t(ISLInfo* info) : walker_callback_t(info) {};
+};
+
+
 
 struct calculate_size_t : public walker_callback_t {
 
@@ -1347,28 +1428,13 @@ struct calculate_size_t : public walker_callback_t {
   {};
 };
 
-void* walk_garbage_collected_objects_with_alloc_lock(void* client_data) {
-  GC_enumerate_reachable_objects_inner(boehm_walker_callback, client_data );
-  return NULL;
-}
 
 template <typename Walker>
-void walk_garbage_collected_objects(bool saving, Walker& walker) {
-#if defined(USE_BOEHM)
-  if (saving) {
-    // We stopped the world - so I think we already have the lock
-    GC_enumerate_reachable_objects_inner(boehm_walker_callback, (void*)&walker);
-  } else {
-    GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock,
-                             (void*)&walker );
-  }    
-#elif defined(USE_MPS)
-  printf("%s:%d:%s  Walk MPS objects\n", __FILE__, __LINE__, __FUNCTION__ );
-#elif defined(USE_MMTK)
-  printf("%s:%d:%s  Walk MMTK objects\n", __FILE__, __LINE__, __FUNCTION__ );
-#endif
+void walk_gathered_objects(Walker& walker, const gctools::GatherObjects& objects ) {
+  for ( auto obj : objects._Marked ) {
+    walker.callback(obj);
+  }
 }
-
 
 size_t PageAlignUp(size_t size) {
   size_t pagesize = getpagesize();
@@ -1530,7 +1596,6 @@ void walk_snapshot_save_load_objects( ISLHeader_s* start, Walker& walker) {
     cur = cur->next(cur->_Kind);
   }
 }
-
 
 
 
@@ -1901,12 +1966,156 @@ struct Snapshot_save_data {
   Snapshot_save_data(const std::string& fn) : filename_(fn) {};
 };
 
+void dump_test_results(FILE* fout, const gctools::GatherObjects& gather )
+{
+  if (fout) {
+    fprintf( fout, "%s:%d:%s There are %lu objects in memory\n", __FILE__, __LINE__, __FUNCTION__, gather._Marked.size() );
+    fprintf( fout, "%s:%d:%s There are %lu corrupt objects\n",  __FILE__, __LINE__, __FUNCTION__, gather._corruptObjects.size() );
+    if (gather._corruptObjects.size()>0) {
+      size_t idx(0);
+      for ( auto cur : gather._corruptObjects ) {
+        std::vector<uintptr_t>& badPointers = cur.second;
+        gctools::Header_s* header = (gctools::Header_s*)cur.first;
+        gctools::GCStampEnum stamp = header->_stamp_wtag_mtag.stamp_();
+        std::string stampName = global_unshifted_nowhere_stamp_names[stamp];
+        fprintf( fout, "#%lu -> %p[stamp:%lu] %s\n -- addresses: ", idx, (void*)cur.first, (uintptr_t)stamp, stampName.c_str() );
+        idx++;
+        for ( auto ptr : badPointers ) {
+          fprintf( fout,  " [+%lu]%p(%p)", ((uintptr_t)ptr-((uintptr_t)cur.first+sizeof(void*))), (void*)ptr, *((void**)ptr) );
+        }
+        fprintf( fout, "\n");
+      }
+    }
+  }
+}
+
+#if 0
+void test_objects_t::callback(gctools::Header_s* header) {
+  if (header->_stamp_wtag_mtag.stampP()) {
+    gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
+    size_t objectSize;
+    isl_obj_skip(client,false,objectSize);
+    gctools::clasp_ptr_t client_limit = client + objectSize;
+      //
+      // This is where we would test pointers and entry-points
+      //
+      // 1. entry points to library code -> offset
+      // 2. entry points to Code_O objects -> offset
+
+    isl_obj_scan( 0, client, client_limit, (void*)this->_info );
+  } else if (header->_stamp_wtag_mtag.consObjectP()) {
+    gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
+    size_t consSkip;
+    gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client,consSkip);
+    isl_cons_scan( 0, client, client_limit, (void*)this->_info );
+  } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+    gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
+    size_t objectSize;
+    gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart,false,objectSize);
+    isl_weak_scan( 0, clientStart, client_limit, (void*)this->_info );
+  }
+}
+
+#endif
+
+
+
+size_t memory_test(bool dosleep, FILE* fout, const char* message ) {
+  //
+  // For saving we may want to save snapshots and not die - so use noStomp forwarding.
+  //
+  gctools::GatherObjects gather;
+  gctools::gatherAllObjects(gather);
+
+#if 0
+  // this will write out headers of ALL objects
+  if (fout) {
+    for ( auto xx : gather._Seen ) {
+      fprintf( fout, "obj %p\n", (void*)xx );
+    }
+  }
+#endif
+  if (fout) dump_test_results( fout, gather );
+
+  size_t result = gather._corruptObjects.size();
+  if (dosleep) {
+    if (result == 0) {
+      printf("!\n");
+      printf("!\n");
+      printf("!\n");
+      printf("! Passed the memory test with zero corrupt objects!\n");
+      if (message) {
+        printf("! %s\n", message);
+      }
+      printf("!\n");
+      printf("!\n");
+      printf("!\n");
+    } else if (result>0) {
+      printf("!\n");
+      printf("!\n");
+      printf("!\n");
+      printf("! Ran a memory test\n");
+      if (message) {
+        printf("! %s\n", message);
+      }
+      printf("! %lu corrupt objects were found in memory test - sleeping for 1000000 seconds\n", result );
+      dump_test_results(stdout,gather);
+      printf("!  Connect a debugger to pid %d\n", getpid() );
+      printf("!\n");
+      printf("!\n");
+      printf("!\n");
+      printf("!\n");
+      sleep(1000000);
+    }
+  }
+  return result;
+}
+
+
+CL_LAMBDA(&key filename)
+CL_DOCSTRING("Walk all objects in memory and determine how many contain pointers that are not to valid objects. Return the number of corrupt objects that were found.  If filename is provided then dump a report to that file.");
+CL_DEFUN size_t gctools__memory_test(core::T_sp filename)
+{
+  FILE* fout = NULL;
+  if (filename.notnilp()) {
+    if (gc::IsA<core::String_sp>(filename)) {
+      core::String_sp sfilename = gc::As_unsafe<core::String_sp>(filename);
+      std::string fname = sfilename->get_std_string();
+      fout = fopen(fname.c_str(),"w");
+      if (!fout) {
+        SIMPLE_ERROR(BF("Could not open %s") % fname);
+      }
+    } else {
+      SIMPLE_ERROR(BF("filename must be a string"));
+    }
+  }
+  //
+  // Collect twice to try and get the mark bits set properly
+  //
+  GC_gcollect();
+  GC_gcollect();
+  size_t result = memory_test(true,fout,NULL);
+  if (fout) fclose(fout);
+  return result;
+}
+
+
+
 
 /* This is not allowed to do any allocations. */
 void* snapshot_save_impl(void* data) {
   Snapshot_save_data* snapshot_data = (Snapshot_save_data*)data;
   std::string filename = snapshot_data->filename_;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
+
+
+  //
+  // Gather all objects in memory
+  //
+
+  gctools::GatherObjects allObjects;
+  gctools::gatherAllObjects(allObjects);
+
   
   //
   // Start the snapshot save process
@@ -1983,7 +2192,7 @@ void* snapshot_save_impl(void* data) {
   fixup._operation = InfoOp;
   DBG_SL(BF("0. Get info on objects for snapshot save\n"));
   gather_info_for_snapshot_save_t gather_info(&fixup,&islInfo);
-  walk_garbage_collected_objects(true,gather_info);
+  walk_gathered_objects( gather_info, allObjects );
 #endif
   //
   // Switch to SaveOp
@@ -1998,12 +2207,12 @@ void* snapshot_save_impl(void* data) {
   // I'm going to try this right before I fixup the vtables
   DBG_SL(BF("0. Prepare objects for snapshot save\n"));
   prepare_for_snapshot_save_t prepare(&islInfo);
-  walk_garbage_collected_objects(true,prepare);
+  walk_gathered_objects( prepare, allObjects );
 #endif
   
   DBG_SL(BF("1. Sum size of all objects\n"));
   calculate_size_t calc_size(&islInfo);
-  walk_garbage_collected_objects(true,calc_size);
+  walk_gathered_objects( calc_size, allObjects );
   printf("%s", (BF("   size = %lu\n") % calc_size._TotalSize).str().c_str());
   printf("%s", (BF("   general_count = %lu\n") % calc_size._general_count ).str().c_str());
   printf("%s", (BF("   cons_count = %lu\n") % calc_size._cons_count ).str().c_str());
@@ -2038,7 +2247,7 @@ void* snapshot_save_impl(void* data) {
   //
   DBG_SL(BF("  snapshot._Memory->_BufferStart = %p\n") % (void*)snapshot._Memory->_BufferStart );
   copy_objects_t copy_objects( snapshot._Memory, snapshot._ObjectFiles, &islInfo );
-  walk_garbage_collected_objects(true,copy_objects);
+  walk_gathered_objects( copy_objects, allObjects );
 
   snapshot._HeaderBuffer = new copy_buffer_t(getpagesize()); // enough room for header page aligned
   snapshot._FileHeader = (ISLFileHeader*)snapshot._HeaderBuffer->_BufferStart;
@@ -2206,7 +2415,25 @@ void* snapshot_save_impl(void* data) {
   return NULL;
 }
 
+  
 void snapshot_save(const std::string& filename) {
+  //
+  // Clear out a few things
+  //
+  gctools::gctools__garbage_collect();
+  gctools::gctools__garbage_collect();
+  gctools::cl__room(nil<core::T_O>());
+  //
+  // Test the memory before we do snapshot_save
+  //
+  gctools::gctools__garbage_collect();
+  memory_test( true, NULL, "In preparation for snapshot_save." );
+
+  //
+  // For saving we may want to save snapshots and not die - so use noStomp forwarding.
+  //
+  global_forwardingKind = noStomp;
+  printf("%s:%d:%s Using noStomp forwarding for snapshot_save\n", __FILE__, __LINE__, __FUNCTION__ );
   //
   // Call Common Lisp code to release things at snapshot-save time
   //
@@ -2214,13 +2441,6 @@ void snapshot_save(const std::string& filename) {
   if (comp::_sym_invoke_save_hooks->fboundp()) {
     core::eval::funcall( comp::_sym_invoke_save_hooks );
   }
-  //
-  // Clear out a few things
-  //
-  gctools::gctools__garbage_collect();
-  gctools::gctools__garbage_collect();
-  gctools::gctools__garbage_collect();
-  gctools::cl__room(nil<core::T_O>());
 
 #if defined(USE_BOEHM)
   Snapshot_save_data data(filename);
@@ -2335,6 +2555,12 @@ struct CodeFixup_t {
 
 
 int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename ) {
+
+  //
+  // For loading we need speed - so use stomp forwarding
+  //
+  global_forwardingKind = stomp;
+  
   {
     MaybeTimeStartup time1("Overall snapshot load time");
 //    printf("%s:%d:%s entered maybeStartOfSnapshot = %p   filename = %s\n", __FILE__, __LINE__, __FUNCTION__, maybeStartOfSnapshot, filename.c_str() );

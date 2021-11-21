@@ -397,7 +397,7 @@ static void OBJECT_FWD(ADDR_T old_client, ADDR_T new_client) {
   }
   gctools::Header_s *header = (gctools::Header_s*)(GENERAL_PTR_TO_HEADER_PTR(old_client));
   header->_stamp_wtag_mtag.setFwdSize(size);
-  header->_stamp_wtag_mtag.setFwdPointer(new_client);
+  header->_stamp_wtag_mtag.setFwdPointer((void*)new_client);
 }
 
 #endif // OBJECT_FWD

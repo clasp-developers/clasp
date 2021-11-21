@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include <clasp/gctools/memoryManagement.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/code.h>
 //#include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_LINUX
@@ -837,7 +838,177 @@ void* GCRootsInModule::lookup_function(size_t index) {
   abort();
 }
 
+
+
+};
+
+
+namespace gctools {
+
+PointerFix globalMemoryWalkPointerFix;
+
+DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
+void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* userData ) {
+  GatherObjects* gather = (GatherObjects*)userData;
+  Header_s* header;
+  if (tag == gctools::general_tag) {
+    header = (Header_s*)GeneralPtrToHeaderPtr((void*)client); // works for weak as well
+  } else if (tag==gctools::cons_tag) {
+    header = (Header_s*)ConsPtrToHeaderPtr((void*)client);
+  } else {
+    Header_s* base = (Header_s*)GC_base(clientAddress);
+    auto ii = gather->_corruptObjects.find(base);
+    if ( ii == gather->_corruptObjects.end() ) {
+      std::vector<uintptr_t> badPointers;
+      badPointers.push_back((uintptr_t)clientAddress);
+      gather->_corruptObjects[base] = badPointers;
+    } else {
+      std::vector<uintptr_t>& badPointers = ii->second;
+      badPointers.push_back((uintptr_t)clientAddress);
+    }
+    printf("%s:%d:%s Somehow a non general/cons object at %p value %p got into gatherObjects - this indicates memory corruption - figure out why\n",
+           __FILE__, __LINE__, __FUNCTION__, (void*)clientAddress, (void*)(client|tag));
+    return; // It's an immediate - it shouldn't have gotten here
+  }
+  // If it's marked already then return
+  if (gather->markedP(header)) return;
+  //
+  // It hasn't been seen - mark it for scanning
+  //
+  MarkNode* node = new MarkNode( clientAddress );
+  gather->pushMarkStack(node);
+}
+
+#define POINTER_FIX(_ptr_) {\
+    uintptr_t *taggedP = reinterpret_cast<uintptr_t *>(_ptr_);\
+    if (gctools::tagged_objectp(*taggedP)) {\
+      uintptr_t tagged_obj = *taggedP;\
+      if (gctools::tagged_objectp(*taggedP)) { \
+        uintptr_t obj = gctools::untag_object<uintptr_t>(tagged_obj);\
+        uintptr_t tag = (uintptr_t)gctools::ptag<uintptr_t>(tagged_obj);\
+        /*printf("%s:%d fixing taggedP@%p obj-> %p tag-> 0x%lx\n", __FILE__, __LINE__, (void*)taggedP, (void*)obj, (uintptr_t)tag);*/ \
+        (globalMemoryWalkPointerFix)(taggedP,obj,tag,user_data); \
+      };\
+    };\
+  }
+
+#define GENERAL_PTR_TO_HEADER_PTR(_general_) GeneralPtrToHeaderPtr((void*)_general_)
+//#define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
+#define WEAK_PTR_TO_HEADER_PTR(_general_) WeakPtrToHeaderPtr((void*)_general_)
+//#define HEADER_PTR_TO_WEAK_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
+
+
+#define SCAN_STRUCT_T int
+#define ADDR_T uintptr_t
+#define SCAN_BEGIN(ss)
+#define SCAN_END(ss)
+#define RESULT_TYPE    int
+#define RESULT_OK 1
+#define EXTRA_ARGUMENTS , void* user_data
+
+#undef DEBUG_MPS_SIZE
+#define OBJECT_SKIP_IN_OBJECT_SCAN blah_blah_blah_error
+#define OBJECT_SCAN mw_obj_scan
+#include "obj_scan.cc"
+#undef OBJECT_SCAN
+
+#define OBJECT_SKIP mw_obj_skip
+#include "obj_scan.cc"
+#undef OBJECT_SKIP
+
+#define OBJECT_SKIP_IN_OBJECT_FWD mw_obj_skip
+#define OBJECT_FWD mw_obj_fwd
+#include "obj_scan.cc"
+#undef OBJECT_FWD
+
+
+#define CONS_SCAN mw_cons_scan
+#define CONS_SKIP mw_cons_skip
+#define CONS_FWD mw_cons_fwd
+#define CONS_SKIP_IN_CONS_FWD mw_cons_skip
+#include "cons_scan.cc"
+#undef CONS_FWD
+#undef CONS_SKIP
+#undef CONS_SCAN
+
+
+#define WEAK_SCAN mw_weak_scan
+#define WEAK_SKIP mw_weak_skip
+#define WEAK_FWD mw_weak_fwd
+#define WEAK_SKIP_IN_WEAK_FWD mw_weak_skip
+#include "weak_scan.cc"
+#undef WEAK_FWD
+#undef WEAK_SKIP
+#undef WEAK_SCAN
+
+#undef SCAN_STRUCT_T
+#undef ADDR_T
+#undef SCAN_BEGIN
+#undef SCAN_END
+#undef RESULT_TYPE
+#undef RESULT_OK
+#undef EXTRA_ARGUMENTS
+
+
+void gatherAllObjects(GatherObjects& gather) {
+
+  globalMemoryWalkPointerFix = gatherObjects;
+  
+  // Add the roots to the mark stack
+  walkRoots( +[](gctools::Tagged* rootAddress, RootType rootType, size_t rootIndex, void* data ) {
+    GatherObjects* gather = (GatherObjects*)data;
+    bool forceGeneralRoot = false;
+    if (rootType == LispRoot) forceGeneralRoot = true;
+    else if (rootType == CoreSymbolRoot) forceGeneralRoot = true;
+    MarkNode* node = new MarkNode( rootAddress, forceGeneralRoot );
+    gather->pushMarkStack(node);
+  } , (void*)&gather );
+
+  // While there are objects on the mark stack scan 
+  while (gather._Stack) {
+    // Take one object off the mark stack
+    MarkNode* top = gather.popMarkStack();
+    gctools::Tagged* objAddr = top->_ObjectAddr;
+    gctools::Tagged tagged = *objAddr;
+    bool forceGeneralTag = top->_ForceGeneralRoot;
+    uintptr_t tag = tagged&ptag_mask;
+    uintptr_t client = tagged&ptr_mask;
+    delete top;
+
+    //
+    // Identify if the object is a general, cons or weak object
+    //  This uses a combination of inspecting the tag and the mtag of the header
+    //
+    if (forceGeneralTag || (tag == general_tag)) {
+      // It may be general or weak - we must check the header now
+      // GeneralPtrToHeaderPtr works for both general and weak objects because their
+      // headers are guaranteed to be the same size
+      Header_s* generalOrWeakHeader = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+      gather.mark(generalOrWeakHeader);
+      if (!generalOrWeakHeader->_stamp_wtag_mtag.weakObjectP()) {
+        // It's a general object - walk it
+        size_t objectSize;
+        mw_obj_skip( client, false, objectSize );
+        uintptr_t clientLimit = client + objectSize;
+        mw_obj_scan( 0, client, clientLimit, &gather );
+      } else {
+        // It's a weak object - walk it
+        size_t objectSize;
+        uintptr_t clientLimit = mw_weak_skip( client, false, objectSize );
+        mw_weak_scan( 0, client, clientLimit, &gather );
+      }
+    } else if (tag == cons_tag) {
+      // It's a cons object - get the header
+      Header_s* consHeader = (Header_s*)ConsPtrToHeaderPtr((void*)client);
+      gather.mark(consHeader);
+      size_t consSize;
+      uintptr_t clientLimit = mw_cons_skip(client,consSize);
+      mw_cons_scan( 0, client, clientLimit, &gather );
+    }
+  }
+}
     
+
 
 
 };

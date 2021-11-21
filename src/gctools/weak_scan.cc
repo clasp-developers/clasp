@@ -129,9 +129,9 @@ void WEAK_FWD(ADDR_T old_client, ADDR_T new_client) {
   size_t size = (char *)limit - (char *)old_client;
   assert(size >= Align(sizeof(weak_fwd2_s)));
   if (size == gctools::Align(sizeof(gctools::weak_fwd2_s))) {
-    header._stamp_wtag_mtag.setFwdPointer(new_client);
+    header._stamp_wtag_mtag.setFwdPointer((void*)new_client);
   } else {
-    header._stamp_wtag_mtag.setFwdPointer(new_client);
+    header._stamp_wtag_mtag.setFwdPointer((void*)new_client);
     header._stamp_wtag_mtag.setFwdSize(size);
   }
 }

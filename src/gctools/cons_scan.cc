@@ -47,7 +47,7 @@ RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUME
         //        printf("%s:%d It's a padP\n", __FILE__, __LINE__ );
         client = reinterpret_cast<ADDR_T>((char *)(client) + header->_stamp_wtag_mtag.padSize());
       } else {
-        printf("%s:%d CONS in cons_scan client=%p original_client=%p limit=%p\n(it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, client, original_client, limit, cons->ocar().raw_(), cons->cdr().raw_());
+        printf("%s:%d CONS in cons_scan client=%p original_client=%p limit=%p\n(it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, (void*)client, (void*)original_client, (void*)limit, cons->ocar().raw_(), cons->cdr().raw_());
         abort();
       }};
   } SCAN_END(ss);
@@ -88,7 +88,7 @@ static void CONS_FWD(ADDR_T old_client, ADDR_T new_client) {
   size_t size = (char *)limit - (char *)old_client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(old_client);
   gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(cons);
-  header->_stamp_wtag_mtag.setFwdPointer(new_client);
+  header->_stamp_wtag_mtag.setFwdPointer((void*)new_client);
   header->_stamp_wtag_mtag.setFwdSize(sizeof(core::Cons_O));
 }
 #endif // CONS_FWD

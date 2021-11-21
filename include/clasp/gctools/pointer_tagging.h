@@ -174,7 +174,7 @@ static const int fixnum_bits = 64-FIXNUM_SHIFT;
 /*! Pointer and immediate value tagging is set up here */
 /* FIXNUM's have the lsb x00 set to zero - this allows addition and comparison to be fast */
 /* The rest of the bits are the fixnum */
-  static const uintptr_t ptag_mask     = ZERO_TAG_MASK; // #b1111;
+  static const uintptr_t ptag_mask     = ZERO_TAG_MASK; // #b111;
   static const uintptr_t fixnum00_tag  = FIXNUM0_TAG; // x0000 means fixnum
   static const uintptr_t fixnum01_tag  = FIXNUM1_TAG; // x0100 means fixnum
 #if TAG_BITS==4

@@ -1331,8 +1331,12 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
     try {
       if (prompt) {
         stringstream prompts;
-        prompts << std::endl
-                << gc::As<Package_sp>(cl::_sym_STARpackageSTAR->symbolValue())->getName() << "> ";
+        prompts << std::endl;
+        Symbol_sp pkgSym = cl::_sym_STARpackageSTAR;
+        T_sp pkgVal = pkgSym->symbolValue();
+        Package_sp curPackage = gc::As<Package_sp>(pkgVal);
+        std::string name = curPackage->getName();
+        prompts << name << "> ";
         clasp_write_string(prompts.str(), stream);
       }
       T_sp expression = cl__read(stream, nil<T_O>(), unbound<T_O>(), nil<T_O>());

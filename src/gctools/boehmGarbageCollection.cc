@@ -434,6 +434,17 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
 }
 
 
+/* Walk all of the roots, passing the address of each root and what it represents */
+void walkRoots( RootWalkCallback callback, void* data ) {
+  callback( (Tagged*)&_lisp, LispRoot, 0, data);
+  for ( size_t ii=0; ii<NUMBER_OF_CORE_SYMBOLS; ++ii ) {
+    callback( (Tagged*)&global_core_symbols[ii], CoreSymbolRoot, ii, data );
+  }
+  for ( size_t jj=0; jj<global_symbol_count; ++jj ) {
+    callback( (Tagged*)&global_symbols[jj], SymbolRoot, jj, data );
+  }
+};
+
 
 
 size_t ReachableClass::print(const std::string& shortName) {

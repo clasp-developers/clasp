@@ -1168,6 +1168,22 @@ struct SafeGCPark {
 };
 };
 
+
+namespace gctools {
+
+typedef enum { LispRoot, CoreSymbolRoot, SymbolRoot } RootType;
+
+/* When walking root objects, this callback is called repeatedly
+   with the address of the root.
+*/
+typedef void (*RootWalkCallback)(Tagged* rootAddress, RootType rootType, size_t rootIndex, void* userData );
+
+/* walkRoots must be provided by any GC */
+void walkRoots(RootWalkCallback callback, void* userData);
+
+
+};
+
 ////////////////////////////////////////////////////////////
 /*!
  * dont_expose<xxx>
@@ -1206,6 +1222,52 @@ struct dont_expose {
   dont_expose(const Arg& val) : _value(val) {};
 };
 
+
+namespace gctools {
+
+typedef void (*PointerFix)(uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* user_data);
+extern PointerFix globalMemoryWalkPointerFix;
+
+struct MarkNode {
+  gctools::Tagged* _ObjectAddr;
+  bool             _ForceGeneralRoot;
+  MarkNode*        _Next;
+  MarkNode( gctools::Tagged* tt, bool forceGeneralRoot = false )
+      : _ObjectAddr(tt), _ForceGeneralRoot(forceGeneralRoot), _Next(NULL) {};
+};
+
+struct GatherObjects {
+  std::set<Header_s*> _Marked;
+  MarkNode*          _Stack;
+  std::map<Header_s*,std::vector<uintptr_t>> _corruptObjects;
+
+  GatherObjects() : _Stack(NULL) {};
+  
+  MarkNode* popMarkStack() {
+    if (this->_Stack) {
+      MarkNode* top = this->_Stack;
+      this->_Stack = top->_Next;
+      return top;
+    }
+    return NULL;
+  }
+  void pushMarkStack(MarkNode* node) {
+    node->_Next = this->_Stack;
+    this->_Stack = node;
+  }
+
+  void mark(Header_s* header) {
+    this->_Marked.insert(header);
+  }
+
+  bool markedP(Header_s* header) {
+    return this->_Marked.find(header)!=this->_Marked.end();
+  }
+};
+
+void gatherAllObjects(GatherObjects& gather);
+
+};
 //#endif // _clasp_memoryManagement_H
 
 /*
