@@ -486,6 +486,7 @@ namespace gctools {
       inline size_t mtag() const { return (size_t)(this->_value & mtag_mask);};
       bool invalidP() const { return (this->_value & mtag_mask) == invalid_mtag; };
       bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
+      bool generalObjectP() const { return this->stampP(); };
       bool weakObjectP() const { return (this->_value & mtag_mask) == weak_mtag; };
       bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
       bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
@@ -1266,6 +1267,7 @@ struct GatherObjects {
 };
 
 void gatherAllObjects(GatherObjects& gather);
+size_t objectSize(Header_s* header);
 
 };
 //#endif // _clasp_memoryManagement_H

@@ -60,17 +60,21 @@ static gctools::ReachableClassMap *static_ReachableClassKinds;
 static size_t invalidHeaderTotalSize = 0;
 
 extern "C" {
-void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
+void callback_reachable_object( gctools::Header_s* ptr, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
   gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
   if (!valid_stamp(stamp)) {
-    if (sz==sizeof(core::Cons_O)) {
+    printf("%s:%d:%s Invalid stamp\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0
+    if (h->_stamp_wtag_mtag.consP()) {
       stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
 //      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
     } else {
       stamp = (gctools::GCStampEnum)0; // unknown uses 0
     }
+#endif
   }
+  size_t sz = objectSize(h);
   gctools::ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
   if (it == static_ReachableClassKinds->end()) {
     gctools::ReachableClass reachableClass(stamp);
@@ -166,7 +170,11 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
 
 
 void* walk_garbage_collected_objects_with_alloc_lock(void* client_data) {
-  GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, client_data );
+  gctools::GatherObjects gather;
+  gatherAllObjects( gather );
+  for ( auto header : gather._Marked ) {
+    callback_reachable_object( header, client_data );
+  }
   return NULL;
 }
 

@@ -1007,8 +1007,29 @@ void gatherAllObjects(GatherObjects& gather) {
     }
   }
 }
-    
 
 
+/* Return the size of the object */
+size_t objectSize( Header_s* header ) {
+  if (header->_stamp_wtag_mtag.consObjectP() ) {
+      // It's a cons object
+    size_t consSize;
+    uintptr_t client = (uintptr_t)HeaderPtrToConsPtr(header);
+    uintptr_t clientLimit = mw_cons_skip(client,consSize);
+    return consSize;
+  } else if (header->_stamp_wtag_mtag.weakObjectP()) {
+         // It's a weak object
+    size_t objectSize;
+    uintptr_t client = (uintptr_t)HeaderPtrToWeakPtr(header);
+    uintptr_t clientLimit = mw_weak_skip( client, false, objectSize );
+    return objectSize;
+  } else {
+        // It's a general object - walk it
+    size_t objectSize;
+    uintptr_t client = (uintptr_t)HeaderPtrToGeneralPtr<void*>(header);
+    mw_obj_skip( client, false, objectSize );
+    return objectSize;
+  } 
+}
 
 };
