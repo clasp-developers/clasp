@@ -1812,9 +1812,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
     printf("%s:%d This is a big-endian architecture and the byte-code interpreter is set up for little-endian - fix this before proceeding\n", __FILE__, __LINE__ );
     abort();
   }
-    
-
-    size_t byte_index = 0;
+  size_t byte_index = 0;
   while(1) {
     if (log) {
       printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__ );
@@ -1829,7 +1827,10 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
 #undef DEFINE_SWITCH
     default: {
       printf("%s:%d illegal byte-code %d\n", __FILE__, __LINE__, c);
-      abort();
+      printf("%s:%d I need to get the filename into this error message and I may need to keep a linked list of files that I'm loading in the thread-local storage\n", __FILE__, __LINE__ );
+      printf("%s:%d  Pausing for 1000000 seconds so you can connect a debugger to pid %d and figure this out\n", __FILE__, __LINE__, getpid() );
+      sleep(1000000);
+      //SIMPLE_ERROR(BF("While loading a fasp file an illegal byte-code %d was detected. This usually happens when a fasp file is out of date and the byte code has changed in the meantime. I need to get the filename into ") % (int)c);
     }
     }
   }
