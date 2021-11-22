@@ -1834,10 +1834,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
         fasoFile = objectFile->_FasoName->get_std_string();
         fasoIndex = objectFile->_FasoIndex;
       }
-      printf("%s:%d illegal byte-code %d\n", __FILE__, __LINE__, c);
-      printf("%s:%d:%s In FasoName: %s FasoIndex %lu \n", __FILE__, __LINE__, __FUNCTION__, fasoFile.c_str(), fasoIndex );
-      printf("%s:%d  Pausing for 1000000 seconds so you can connect a debugger to pid %d and figure this out\n", __FILE__, __LINE__, getpid() );
-      SIMPLE_ERROR(BF("While loading the fasp file %s %d an illegal byte-code %d was detected. This usually happens when a fasp file is out of date and the byte code has changed in the meantime. ") % (int)c % fasoFile % fasoIndex );
+      SIMPLE_ERROR(BF("While loading the fasp file %s %d an illegal byte-code %d was detected. This usually happens when a fasp file is out of date and the byte code has changed in the meantime. ") % fasoFile % fasoIndex % (int)c );
     }
     }
   }
