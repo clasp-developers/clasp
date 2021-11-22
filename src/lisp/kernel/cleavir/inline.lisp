@@ -986,6 +986,9 @@
 ;;; MUST start with (&whole something ...) for things to work.
 ;;; This macro is a little janky in that it doesn't work with declarations.
 (defmacro define-cleavir-compiler-macro (name lambda-list &body body)
+  (unless (and (consp lambda-list)
+               (eq (first lambda-list) '&whole))
+    (warn "BUG: Bad ~a for ~a" 'define-cleavir-compiler-macro name))
   `(define-compiler-macro ,name (,@lambda-list)
      ;; I just picked this since it's the first variable in auto-compile.lisp.
      (unless (eq cmp:*cleavir-compile-hook* 'bir-compile)
@@ -1073,7 +1076,7 @@
          (error 'type-error :datum ,val :expected-type 'fixnum))
      ,else))
 
-(define-cleavir-compiler-macro cl:eq (x y)
+(define-cleavir-compiler-macro cl:eq (&whole form x y)
   `(if (cleavir-primop:eq ,x ,y) t nil))
 
 (declaim (ftype (function (t t) boolean) cl:eq eql))
@@ -1160,7 +1163,7 @@
                (error "BUG: See comment in inline.lisp DEFPRED"))
              `(progn
                 (debug-inline ,(symbol-name name))
-                (define-cleavir-compiler-macro ,name (object)
+                (define-cleavir-compiler-macro ,name (&whole form object)
                   `(if (cleavir-primop:typeq ,object ,',type) t nil))
                 (defun ,name (o)
                   (if (cleavir-primop:typeq o ,type) t nil))))
