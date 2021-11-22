@@ -94,7 +94,6 @@
                ;; helper macros
                dosequence
                with-sequence-iterator
-               with-simple-sequence-iterator
                ;; clasp extensions
                protocol-unimplemented
                protocol-unimplemented-operation
