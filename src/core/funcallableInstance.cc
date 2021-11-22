@@ -448,12 +448,19 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
           DTILOG(BF("[%3d] : %s\n") % i % _safe_rep_((*program)[i]));
       });
   size_t argi(0);
-#if 0 // Compilation disabled for now because it increases build time
+  
   // Increment the call count, and if it's high enough, compile the thing
   size_t calls = gc::As_unsafe<FuncallableInstance_sp>(generic_function)->increment_calls();
-  if (calls >= COMPILE_TRIGGER)
+  //
+  // if calls == COMPILE_TRIGGER then compile the discriminating function.
+  //  ONLY use == here - so that compilation is only triggered once and if
+  //  the GF is part of the compiler and it continues to be called while it is being
+  //  compiled then you avoid a recursive cycle of compilations that will hang the system.
+  //
+  if (calls == COMPILE_TRIGGER) {
     eval::funcall(clos::_sym_compile_discriminating_function, generic_function);
-#endif
+  }
+  
   // Regardless of whether we triggered the compile, we next
   // Dispatch
   DTILOG(BF("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n"));
