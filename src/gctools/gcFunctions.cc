@@ -367,18 +367,6 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 
 namespace gctools {
 
-CL_LAMBDA(&optional x (marker 0))
-DOCGROUP(clasp)
-CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
-#if defined(USE_MPS)
-  return Values(nil<core::T_O>());
-#elif defined(USE_BOEHM)
-  return Values(nil<core::T_O>());
-#elif defined(USE_MMTK)
-  MISSING_GC_SUPPORT();
-#endif
-};
-
 CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6))
 DOCGROUP(clasp)
 CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount, core::Fixnum_sp backtraceDepth) {
