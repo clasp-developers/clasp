@@ -2625,6 +2625,7 @@ class build_clasp_extension(waflib.Task.Task):
         print("In build_extension self.env.enable_jupyter -> %s" % self.env.enable_jupyter)
         cmd = [ self.inputs[0].abspath(), "-N"]
         saveFile = self.outputs[0].abspath()
+        cmd = cmd + [ "-e", "(clos:compile-all-generic-functions)" ]
         cmd = cmd + [ "-e", "(gctools:save-lisp-and-die \"%s\")" % saveFile ]
         cmd = cmd + [ "-e", "(core:quit)" ]
         print("build_extension cmd -> %s" % cmd)
