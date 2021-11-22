@@ -880,13 +880,13 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
         abort();
       }
     } else if (islInfo->_operation == LoadOp) {
-#ifdef DEBUG_SL
-      void* maybe_base = GC_base((void*)fwd_client);
-      if (!maybe_base) {
-        printf("%s:%d:%s We have a pointer %p that MUST be in GC memory - but it isn't\n", __FILE__, __LINE__, __FUNCTION__, (void*)fwd_client );
-        abort();
+      if (global_debugSnapshot) {
+        void* maybe_base = GC_base((void*)fwd_client);
+        if (!maybe_base) {
+          printf("%s:%d:%s We have a pointer %p that MUST be in GC memory - but it isn't\n", __FILE__, __LINE__, __FUNCTION__, (void*)fwd_client );
+          abort();
+        }
       }
-#endif
     }
     return (gctools::clasp_ptr_t)(fwd_client | tag);
   }
