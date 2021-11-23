@@ -46,6 +46,8 @@ THE SOFTWARE.
 
 namespace core {
 
+SYMBOL_EXPORT_SC_(CorePkg,eof);
+
 T_sp load_stream(T_sp strm, bool print) {
   while (true) {
     // Required to get source position correct. FIXME
@@ -53,9 +55,8 @@ T_sp load_stream(T_sp strm, bool print) {
     DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR,
                               clasp_simple_input_stream_source_pos_info(strm));
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
-    T_sp x = cl__read(strm, nil<T_O>(), unbound<T_O>(), nil<T_O>());
-    if (x.unboundp())
-      break;
+    T_sp x = cl__read(strm, nil<T_O>(), _sym_eof, nil<T_O>());
+    if (x == _sym_eof ) break;
     if (echoReplRead) {
       write_bf_stream(BF("Read: %s\n") % _rep_(x));
     }

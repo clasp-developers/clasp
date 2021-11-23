@@ -71,6 +71,7 @@
 (defvar +single-float-shift+ (get-cxx-data-structure-info :single-float-shift))
 (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
 (defvar +vaslist-size+ (get-cxx-data-structure-info :vaslist-size))
+(defvar +vaslist-alignment+ (get-cxx-data-structure-info :vaslist-alignment))
 (defvar +vaslist-args-offset+ (get-cxx-data-structure-info :vaslist-args-offset))
 (defvar +vaslist-nargs-offset+ (get-cxx-data-structure-info :vaslist-nargs-offset))
 (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
@@ -80,7 +81,7 @@
 (export '(+fixnum-mask+ +ptag-mask+ +immediate-mask+
           +cons-tag+
           +character-tag+ +single-float-tag+
-          +general-tag+ +vaslist-size+ +void*-size+ +alignment+ ))
+          +general-tag+ +vaslist-size+ +vaslist-alignment+ +void*-size+ +alignment+ ))
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
 (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))

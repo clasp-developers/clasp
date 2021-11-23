@@ -249,7 +249,7 @@ static bool args_from_offset(size_t fi, void* ip, const char* string,
       }
     // and the rest from the stack frame
       if (LCC_ARGS_IN_REGISTERS<nargs) {
-        printf("%s:%d:%s Check if extraction of arguments from the stack works properly\n", __FILE__, __LINE__, __FUNCTION__ );
+//        printf("%s:%d:%s Check if extraction of arguments from the stack works properly\n", __FILE__, __LINE__, __FUNCTION__ );
         for (size_t i = LCC_ARGS_IN_REGISTERS; i < nargs; ++i) {
           T_O* rarg = ((T_O**)frameptr)[i + 2];
           T_sp temp((gctools::Tagged)rarg);
@@ -576,8 +576,24 @@ static bool lu_sanity_check_backtrace() {
   } while (true);
 }
 
+
 #else // non-libunwind version
-__attribute__((optnone))
+
+bool accessible_memory_p(void* ptr) {
+  int fd[2];
+  bool res;
+  if (pipe(fd) >= 0) {
+    if (write(fd[1], ptr, 128) > 0)
+      res = true;
+    else
+      res = false;
+    close(fd[0]);
+    close(fd[1]);
+  }
+  return res;
+}
+
+
 static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func ) {
 #define START_BACKTRACE_SIZE 512
 #define MAX_BACKTRACE_SIZE_LOG2 20
@@ -595,15 +611,19 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func ) {
       DebuggerFrame_sp prev = bot;
       void* newfbp;
       for (size_t j = 1; j < returned; ++j) {
-        if (fbp) newfbp = *(void**)fbp;
-        if (newfbp && !(bplow<(uintptr_t)newfbp && (uintptr_t)newfbp<bphigh)) {  // newfbp is out of the stack.
+        if (!accessible_memory_p((void*)fbp)) {
+          newfbp = NULL;
+        } else if (fbp) {
+          newfbp = *(void**)fbp;
+          if (newfbp && !(bplow<(uintptr_t)newfbp && (uintptr_t)newfbp<bphigh)) {  // newfbp is out of the stack.
 //          fprintf(stderr, "%s:%d:%s The frame pointer walk went out of bounds bplow is %p bphigh is %p and newfbp is %p\n",
 //                 __FILE__, __LINE__, __FUNCTION__, (void*)bplow, (void*)bphigh, newfbp );
-          newfbp = NULL;
-        } else if (newfbp && !((uintptr_t)fbp < (uintptr_t)newfbp) ) {             // fbp < newfbp
-          fprintf(stderr, "%s:%d:%s The frame pointer is not monotonically increasing fbp is %p and newfbp is %p\n",
-                 __FILE__, __LINE__, __FUNCTION__, fbp, newfbp );
-          newfbp = NULL;
+            newfbp = NULL;
+          } else if (newfbp && !((uintptr_t)fbp < (uintptr_t)newfbp) ) {             // fbp < newfbp
+            fprintf(stderr, "%s:%d:%s The frame pointer is not monotonically increasing fbp is %p and newfbp is %p\n",
+                    __FILE__, __LINE__, __FUNCTION__, fbp, newfbp );
+            newfbp = NULL;
+          }
         }
         fbp = newfbp;
         // Subtract one from IPs in case they are just beyond the end of the

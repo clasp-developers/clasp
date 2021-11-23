@@ -105,8 +105,7 @@ void DynamicBindingStack::set_thread_local_value(T_sp value, const Symbol_O* sym
   *thread_local_reference(ensure_binding_index(sym)) = value;
 }
 
-bool DynamicBindingStack::thread_local_boundp(const Symbol_O* sym) const {
-  uint32_t index = sym->_BindingIdx.load(std::memory_order_relaxed);
+bool DynamicBindingStack::thread_local_boundp(int32_t index) const {
   if (index == NO_THREAD_LOCAL_BINDINGS) return false;
   else if (index >= this->_ThreadLocalBindings.size()) return false;
   else if (gctools::tagged_no_thread_local_bindingp(_ThreadLocalBindings[index].raw_()))

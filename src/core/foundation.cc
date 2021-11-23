@@ -793,7 +793,7 @@ string _rep_(T_sp obj) {
     List_sp l = core__list_from_vaslist(vobj);
     return _rep_(l);
   } else if (obj.unboundp()) {
-    return "!UNBOUND!";
+    return "#<UNBOUND>";
   }
   stringstream ss;
   ss << "WTF-object@" << (void*)obj.raw_();

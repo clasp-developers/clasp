@@ -2267,10 +2267,12 @@ void* snapshot_save_impl(void* data) {
   snapshot._FileHeader->_LispRootOffset = snapshot._Memory->write_buffer( (char*)&roots1 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
   snapshot._FileHeader->_LispRootCount = 1;
   snapshot._Memory->write_buffer( (char*)&_lisp ,  sizeof(void*));
+#if 0  
   ISLRootHeader_s roots2( Roots, sizeof(core::T_O*)*NUMBER_OF_CORE_SYMBOLS );
   snapshot._FileHeader->_CoreSymbolRootsOffset = snapshot._Memory->write_buffer( (char*)&roots2 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
   snapshot._FileHeader->_CoreSymbolRootsCount = NUMBER_OF_CORE_SYMBOLS;
   snapshot._Memory->write_buffer( (char*)&gctools::global_core_symbols[0] ,  sizeof(void*)*NUMBER_OF_CORE_SYMBOLS);
+#endif
   ISLRootHeader_s roots3( Roots, sizeof(core::T_O*)*global_symbol_count );
   snapshot._FileHeader->_SymbolRootsOffset = snapshot._Memory->write_buffer( (char*)&roots3 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
   snapshot._FileHeader->_SymbolRootsCount = global_symbol_count;
@@ -3255,9 +3257,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
 //    followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount, (void*)&islInfo );
 //    copyRoots((uintptr_t*)&_lisp, (uintptr_t*)lispRoot, fileHeader->_LispRootCount );
-      gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
-      followForwardingPointersForRoots( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
-      copyRoots((uintptr_t*)&gctools::global_core_symbols[0], (uintptr_t*)coreSymbolRoots, fileHeader->_CoreSymbolRootsCount );
       gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
       followForwardingPointersForRoots( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo );
       copyRoots((uintptr_t*)&global_symbols[0], (uintptr_t*)symbolRoots, fileHeader->_SymbolRootsCount );

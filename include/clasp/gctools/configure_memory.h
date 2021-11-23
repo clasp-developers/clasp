@@ -31,18 +31,28 @@
 // For MPS extensions can define custom allocation points - but only up to this many
 #define MAX_CUSTOM_ALLOCATION_POINTS 4
 
+#define LITTLE_ENDIAN       0
+#define BIG_ENDIAN          7
+#define ENDIANNESS          LITTLE_ENDIAN
+#define ENDIAN_LSB_OFFSET   LITTLE_ENDIAN
+
 // Match tags using (ptr&MATCH_TAG_MASK)==MATCH_TAG_EQ
 // These values are used in point
+//
+// When you add/remove tags you will need to change write_ugly_object so that it can print that
+// tagged object and you will need to change _rep_ in foundation.cc
+
 #define CONS_HEADER_SIZE    0   // CONS has no header
 #define FIXNUM_MASK         0x03
 #define FIXNUM0_TAG         0x00
+#define FIXNUM1_TAG         0x04 // fixnum means lower two bits are zero so two tags
 #define FIXNUM_SHIFT        2
 #define GENERAL_TAG         0x01
 #define CHARACTER_TAG       0x02
 #define CONS_TAG            0x03
-#define FIXNUM1_TAG         0x04
 #define VASLIST0_TAG        0x05
 #define SINGLE_FLOAT_TAG    0x06
+#define UNBOUND_TAG         0x07
 #define SINGLE_FLOAT_SHIFT  TAG_BITS
 #define CHARACTER_SHIFT     TAG_BITS
 # if TAG_BITS==3
@@ -50,15 +60,23 @@
 # define ZERO_TAG_MASK       0x07
 # define GC_TAG              0x07
 # define IMMEDIATE_MASK      0x07
+# define VASLIST_ALIGNMENT   8
+// The following are different unbound-like values that can be tested for by
+// comparing the least significant byte of a pointer to the following bytes.
+# define UNBOUND_MASK                         ((uintptr_t)0xFF)
+# define UNBOUND_BYTE                         ((uint8_t)(0x0|UNBOUND_TAG))
+# define NO_THREAD_LOCAL_BINDING_UNBOUND_BYTE ((uint8_t)(0x08|UNBOUND_TAG))
+# define NO_KEY_UNBOUND_BYTE                  ((uint8_t)(0x10|UNBOUND_TAG))
+# define DELETED_UNBOUND_BYTE                 ((uint8_t)(0x18|UNBOUND_TAG))
+# define SAME_AS_KEY_UNBOUND_BYTE             ((uint8_t)(0x20|UNBOUND_TAG))
 # else // TAG_BITS==4
 # define CLASP_ALIGNMENT     16
 # define ZERO_TAG_MASK       0x0F
 # define GC_TAG              0x0F
 # define IMMEDIATE_MASK      0x0F
-# define FIXNUM2_TAG         0x08
-# define VASLIST1_TAG        0x0D // Two vaslist tags because they will be 8-byte aligned
-# define VASLIST_TAG_MASK    0x7 // mask out the tag part of a VASLIST
-# define FIXNUM3_TAG         0x0C
+# define FIXNUM2_TAG         0x08 // fixnum means lower two bits are zero so four tags (if TAG_BITS==4)
+# define FIXNUM3_TAG         0x0C // fixnum means lower two bits are zero so four tags (if TAG_BITS==4)
+# define VASLIST_ALIGNMENT   16
 # endif
 
   /*! A test for pointers that MPS needs to fix/manage has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) 

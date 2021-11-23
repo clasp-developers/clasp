@@ -499,13 +499,15 @@ inline static smart_ptr<Type> make_tagged_other(Type *p) { return smart_ptr<Type
 template <typename Type>
 inline static smart_ptr<Type> make_tagged_nil() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_nil); };
 template <typename Type>
-inline static smart_ptr<Type> make_tagged_unbound() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_unbound); };
+inline static smart_ptr<Type> make_tagged_unbound() { return smart_ptr<Type>(tag_unbound<Tagged>()); };
 template <typename Type>
-inline static smart_ptr<Type> make_tagged_deleted() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_deleted); };
+inline static smart_ptr<Type> make_tagged_no_thread_local_binding() { return smart_ptr<Type>(tag_no_thread_local_binding<Tagged>()); };
 template <typename Type>
-inline static smart_ptr<Type> make_tagged_no_key() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_no_key); };
+inline static smart_ptr<Type> make_tagged_no_key() { return smart_ptr<Type>(tag_no_key<Tagged>()); };
 template <typename Type>
-inline static smart_ptr<Type> make_tagged_same_as_key() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_same_as_key); };
+inline static smart_ptr<Type> make_tagged_deleted() { return smart_ptr<Type>(tag_deleted<Tagged>()); };
+template <typename Type>
+inline static smart_ptr<Type> make_tagged_same_as_key() { return smart_ptr<Type>(tag_same_as_key<Tagged>()); };
 };
 
 namespace core {

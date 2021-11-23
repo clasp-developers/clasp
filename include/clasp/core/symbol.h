@@ -214,8 +214,10 @@ public:
   /*! Return the value slot of the symbol or UNBOUND if unbound */
   inline T_sp symbolValueUnsafe() const {
 #ifdef CLASP_THREADS
-    if (my_thread->_Bindings.thread_local_boundp(this))
-      return my_thread->_Bindings.thread_local_value(this);
+    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
+    auto& bindings = my_thread->_Bindings;
+    if (bindings.thread_local_boundp(index))
+      return bindings.thread_local_value(this);
     else
 #endif
       return globalValue();
@@ -231,7 +233,8 @@ public:
   // Above note on thread local bindings applies to these as well.
   inline T_sp atomicSymbolValue() const {
 #ifdef CLASP_THREADS
-    if (my_thread->_Bindings.thread_local_boundp(this))
+    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
+    if (my_thread->_Bindings.thread_local_boundp(index))
       return threadLocalSymbolValue();
 #endif
     return globalValueSeqCst();
@@ -239,7 +242,8 @@ public:
 
   inline void set_atomicSymbolValue(T_sp nv) {
 #ifdef CLASP_THREADS
-    if (my_thread->_Bindings.thread_local_boundp(this))
+    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
+    if (my_thread->_Bindings.thread_local_boundp(index))
       set_threadLocalSymbolValue(nv);
 #endif
     return set_globalValueSeqCst(nv);
@@ -247,7 +251,9 @@ public:
 
   inline T_sp casSymbolValue(T_sp cmp, T_sp new_value) {
 #ifdef CLASP_THREADS
-    if (my_thread->_Bindings.thread_local_boundp(this))
+    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
+    auto& bindings = my_thread->_Bindings;
+    if (bindings.thread_local_boundp(index))
       return cas_threadLocalSymbolValue(cmp, new_value);
     else
 #endif
@@ -279,7 +285,9 @@ public:
 
   inline T_sp setf_symbolValue(T_sp obj) {
 #ifdef CLASP_THREADS
-    if (my_thread->_Bindings.thread_local_boundp(this))
+    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
+    auto& bindings = my_thread->_Bindings;
+    if (bindings.thread_local_boundp(index))
       set_threadLocalSymbolValue(obj);
     else
 #endif
@@ -289,7 +297,9 @@ public:
 
   inline T_sp setf_symbolValueFromCell(T_sp val, Cons_sp cell) {
 #ifdef CLASP_THREADS
-    if (my_thread->_Bindings.thread_local_boundp(this))
+    uint32_t index = this->_BindingIdx.load(std::memory_order_relaxed);
+    auto& bindings = my_thread->_Bindings;
+    if (bindings.thread_local_boundp(index))
       set_threadLocalSymbolValue(val);
     else
 #endif

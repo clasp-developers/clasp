@@ -1520,11 +1520,11 @@ function-description - for debugging."
 
 ;;; ALLOCA functions
 
-(defun alloca (type size &optional (label ""))
+(defun alloca (type size &optional (label "") (alignment 8))
   (let ((alloca
           (llvm-sys:create-alloca *irbuilder-function-alloca*
                                   type (jit-constant-i32 size) label)))
-    (llvm-sys:set-alignment alloca 8) ; 8-byte alignment
+    (llvm-sys:set-alignment alloca alignment) ; 8-byte alignment
     alloca))
 
 (defun alloca-return (&optional (label "")) (alloca %return-type% 1 label))
@@ -1542,7 +1542,7 @@ function-description - for debugging."
 
 (defun alloca-i32 (&optional (label "i32-")) (alloca %i32% 1 label))
 (defun alloca-size_t (&optional (label "var")) (alloca %size_t% 1 label))
-(defun alloca-vaslist (&key (label "vaslist")) (alloca %vaslist% 2 label))
+(defun alloca-vaslist (&key (label "vaslist")) (alloca %vaslist% 2 label +vaslist-alignment+))
 
 (defun alloca-dx-list (&key length (label "dx-list"))
   ;; Unlike most allocas, we want dx object allocas to be done inline with the code,

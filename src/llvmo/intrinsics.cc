@@ -120,10 +120,8 @@ ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object)
 ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   T_O *sv = symP->symbolValueUnsafe().raw_();
-  if (sv == gctools::global_tagged_Symbol_OP_unbound) {
-    intrinsic_error(llvmo::unboundSymbolValue, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
-  }
-  return sv;
+  if (!gctools::tagged_unboundp(sv)) return sv;
+  intrinsic_error(llvmo::unboundSymbolValue, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
 }
 
 
@@ -1005,6 +1003,7 @@ core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
   return NULL;
 }
 
+#if 0
 void cc_validate_tagged_pointer(core::T_O* ptr)
 {
   unlikely_if ((((uintptr_t)ptr)&gctools::gc_tag)==gctools::gc_tag) {
@@ -1014,6 +1013,7 @@ void cc_validate_tagged_pointer(core::T_O* ptr)
     abort();
   }
 }
+#endif
 
 };
 

@@ -249,9 +249,11 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     for (int i(0); i < nargs; ++i) l << xa->next_arg_indexed(i);
     core::write_object(l.cons(),stream);
     clasp_write_string(">",stream);
+  } else if (x.unboundp()) {
+    clasp_write_string("#<UNBOUND>");
   } else {
     stringstream ss;
-    ss << "#<BAD-OBJECT! set break-point at " << __FILE__ << ":" << __LINE__ << " and check backtrace>";
+    ss << "#<BAD-OBJECT! value: " << x.raw_() << " set break-point at " << __FILE__ << ":" << __LINE__ << " and check backtrace>";
     clasp_write_string(ss.str());
   }
   return x;

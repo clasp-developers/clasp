@@ -292,11 +292,6 @@ void Lisp::setupSpecialSymbols() {
   Symbol_sp symbol_same_as_key = gctools::GC<Symbol_O>::allocate(name_same_as_key);
   //TODO: Ensure that these globals are updated by the garbage collector
   gctools::global_tagged_Symbol_OP_nil = reinterpret_cast<Symbol_O *>(symbol_nil.raw_());
-  gctools::global_tagged_Symbol_OP_unbound = reinterpret_cast<Symbol_O *>(symbol_unbound.raw_());
-  gctools::global_tagged_Symbol_OP_no_thread_local_binding = reinterpret_cast<Symbol_O *>(symbol_no_thread_local_binding.raw_());
-  gctools::global_tagged_Symbol_OP_no_key = reinterpret_cast<Symbol_O *>(symbol_no_key.raw_());
-  gctools::global_tagged_Symbol_OP_deleted = reinterpret_cast<Symbol_O *>(symbol_deleted.raw_());
-  gctools::global_tagged_Symbol_OP_same_as_key = reinterpret_cast<Symbol_O *>(symbol_same_as_key.raw_());
   symbol_unbound->_HomePackage = symbol_nil;
   symbol_no_thread_local_binding->_HomePackage = symbol_nil;
   symbol_no_key->_HomePackage = symbol_nil;
