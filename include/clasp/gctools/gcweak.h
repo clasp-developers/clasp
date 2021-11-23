@@ -220,8 +220,10 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
   }
 
   void set(size_t idx, const value_type &val) {
-    if (!val.objectp()) {
-      printf("%s:%d Only  objectp() objects can be added to Mapping\n", __FILE__, __LINE__);
+    if (!(val.objectp() ||
+          val.deletedp() ||
+          val.unboundp() )) {
+      printf("%s:%d Only  objectp() objects can be added to Mapping - tried to add %p\n", __FILE__, __LINE__, val.raw_() );
       abort();
     }
 #if defined(USE_BOEHM)
@@ -241,11 +243,8 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
       base = gctools::GeneralPtrToHeaderPtr(&*(val));
     } else if (val.consp()) {
       base = gctools::ConsPtrToHeaderPtr(&*(val));
-    } else {
-      printf("%s:%d:%s Add support to use %s as key\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(val).c_str());
-      base = (void*)&*val; // FIXME - this is wrong for Weak objects
-    };
-    GC_general_register_disappearing_link(reinterpret_cast<void **>(&this->bucket[idx].rawRef_()), base );
+    }
+    if (base) GC_general_register_disappearing_link(reinterpret_cast<void **>(&this->bucket[idx].rawRef_()), base );
 #elif defined(USE_MPS)
     GCWEAK_LOG(BF("Setting Buckets<T,U,WeakLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));
     this->bucket[idx] = val;
