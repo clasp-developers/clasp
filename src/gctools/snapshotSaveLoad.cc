@@ -1034,8 +1034,6 @@ struct ISLFileHeader {
   uintptr_t _SaveTimeMemoryAddress;
   size_t _LispRootOffset;
   size_t _LispRootCount;
-  size_t _CoreSymbolRootsOffset;
-  size_t _CoreSymbolRootsCount;
   size_t _SymbolRootsOffset;
   size_t _SymbolRootsCount;
 
@@ -1068,8 +1066,6 @@ struct ISLFileHeader {
     printf(" %30s -> %lu(0x%lx)\n", "uintptr_t _MemorySize", _MemorySize, _MemorySize  );
     printf(" %30s -> %lu\n", "size_t _LispRootOffset", _LispRootOffset );
     printf(" %30s -> %lu\n", "size_t _LispRootCount", _LispRootCount );
-    printf(" %30s -> %lu\n", "size_t _CoreSymbolRootsOffset", _CoreSymbolRootsOffset );
-    printf(" %30s -> %lu\n", "size_t _CoreSymbolRootsCount", _CoreSymbolRootsCount );
     printf(" %30s -> %lu\n", "size_t _SymbolRootsOffset", _SymbolRootsOffset );
     printf(" %30s -> %lu\n", "size_t _SymbolRootsCount", _SymbolRootsCount );
     printf(" %30s -> %lu(0x%lx)\n", "uintptr_t _ObjectFileStart", _ObjectFileStart, _ObjectFileStart  );
@@ -2267,12 +2263,6 @@ void* snapshot_save_impl(void* data) {
   snapshot._FileHeader->_LispRootOffset = snapshot._Memory->write_buffer( (char*)&roots1 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
   snapshot._FileHeader->_LispRootCount = 1;
   snapshot._Memory->write_buffer( (char*)&_lisp ,  sizeof(void*));
-#if 0  
-  ISLRootHeader_s roots2( Roots, sizeof(core::T_O*)*NUMBER_OF_CORE_SYMBOLS );
-  snapshot._FileHeader->_CoreSymbolRootsOffset = snapshot._Memory->write_buffer( (char*)&roots2 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
-  snapshot._FileHeader->_CoreSymbolRootsCount = NUMBER_OF_CORE_SYMBOLS;
-  snapshot._Memory->write_buffer( (char*)&gctools::global_core_symbols[0] ,  sizeof(void*)*NUMBER_OF_CORE_SYMBOLS);
-#endif
   ISLRootHeader_s roots3( Roots, sizeof(core::T_O*)*global_symbol_count );
   snapshot._FileHeader->_SymbolRootsOffset = snapshot._Memory->write_buffer( (char*)&roots3 ,  sizeof(ISLRootHeader_s)) - snapshot._Memory->_BufferStart;
   snapshot._FileHeader->_SymbolRootsCount = global_symbol_count;
@@ -2306,8 +2296,6 @@ void* snapshot_save_impl(void* data) {
 //    printf("%s:%d:%s  Fixing roots snapshot._Memory->_BufferStart = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)snapshot._Memory->_BufferStart, (void*)((char*)snapshot._Memory->_BufferStart+snapshot._Memory->_Size ));
     gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)snapshot._Memory->_BufferStart + snapshot._FileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
     followForwardingPointersForRoots( lispRoot, snapshot._FileHeader->_LispRootCount, (void*)&islInfo );
-    gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)snapshot._Memory->_BufferStart + snapshot._FileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( coreSymbolRoots, snapshot._FileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
     gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)snapshot._Memory->_BufferStart + snapshot._FileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
     followForwardingPointersForRoots( symbolRoots, snapshot._FileHeader->_SymbolRootsCount, (void*)&islInfo );
   }
@@ -2740,8 +2728,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   
     gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
     relocateLoadedRootPointers(lispRoot,1, (void*)&islInfo );
-    gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
-    relocateLoadedRootPointers( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
     gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
     relocateLoadedRootPointers( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo  );
     
