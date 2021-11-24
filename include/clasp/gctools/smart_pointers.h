@@ -782,7 +782,7 @@ template <>
 class smart_ptr<core::Symbol_O> : public base_ptr<core::Symbol_O> { 
 public:
   //Default constructor, set theObject to NULL
-  smart_ptr() noexcept : base_ptr<core::Symbol_O>((core::Symbol_O*)NULL){};
+  smart_ptr() noexcept : base_ptr<core::Symbol_O>(tag_unbound<Tagged>()) {};
   //    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
   //! Construct a FRAME object - I need to get rid of these
   //smart_ptr( core::T_O** p ) : theObject(tag_vaslist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
