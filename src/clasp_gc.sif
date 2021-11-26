@@ -316,6 +316,7 @@
  "core::Closure_O"
  "core::SymbolToEnumConverter_O"
  "llvmo::SwitchInst_O"
+ "llvmo::ClaspLinkerJIT_O"
  "core::ComplexVector_size_t_O"
  "core::SingleDispatchGenericFunction_O"
  "llvmo::Pass_O"
@@ -363,6 +364,10 @@
 { TAGS:TEMPLATED-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__WrappedPointer_O")(TAGS:STAMP-KEY . "core::WrappedPointer_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 2)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ctype_unsigned_long")( TAGS:OFFSET-CTYPE . "unsigned long")( TAGS:OFFSET-BASE-CTYPE . "core::WrappedPointer_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "ShiftedStamp_")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Instance_O>")( TAGS:OFFSET-BASE-CTYPE . "core::WrappedPointer_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "Class_")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_llvmo__ClaspLinkerJIT_O")(TAGS:STAMP-KEY . "llvmo::ClaspLinkerJIT_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "CXX_FIXUP_OFFSET")( TAGS:OFFSET-CTYPE . "std::unique_ptr<llvm::orc::ExecutorProcessControl,std::default_delete<llvm::orc::ExecutorProcessControl>>")( TAGS:OFFSET-BASE-CTYPE . "llvmo::ClaspLinkerJIT_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_TPC")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "CXX_FIXUP_OFFSET")( TAGS:OFFSET-CTYPE . "std::unique_ptr<llvm::orc::LLJIT,std::default_delete<llvm::orc::LLJIT>>")( TAGS:OFFSET-BASE-CTYPE . "llvmo::ClaspLinkerJIT_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_LLJIT")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "llvmo::ClaspLinkerJIT_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "LinkLayer")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__SymbolToEnumConverter_O")(TAGS:STAMP-KEY . "core::SymbolToEnumConverter_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::SimpleString_O>")( TAGS:OFFSET-BASE-CTYPE . "core::SymbolToEnumConverter_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_WhatTheEnumsRepresent")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::HashTableEql_O>")( TAGS:OFFSET-BASE-CTYPE . "core::SymbolToEnumConverter_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_EnumToSymbol")) }
@@ -2548,6 +2553,7 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._TrueObject")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._NilObject")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._ClaspJIT")) }
+{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._ClaspLinkerJIT")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._JITDylibs")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._AllLibraries")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "ATOMIC_SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::Lisp")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Roots._AllObjectFiles")) }

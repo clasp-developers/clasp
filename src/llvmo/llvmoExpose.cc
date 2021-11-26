@@ -134,6 +134,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <clasp/core/array.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/lightProfiler.h>
 #include <clasp/llvmo/insertPoint.h>
@@ -4294,42 +4295,7 @@ CL_DEFUN core::T_sp llvm_sys__vmmap()
 SYMBOL_EXPORT_SC_(LlvmoPkg,library);
 };
 
-#ifdef _TARGET_OS_DARWIN    
-#define TEXT_NAME "__TEXT,__text"
-#define DATA_NAME "__DATA,__data"
-#define EH_FRAME_NAME "__TEXT,__eh_frame"
-#define BSS_NAME  "__DATA,__bss"
-#define STACKMAPS_NAME "__LLVM_STACKMAPS,__llvm_stackmaps"
-#elif defined(_TARGET_OS_LINUX)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define DATA_NAME ".data"
-#define BSS_NAME  ".bss"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#elif defined(_TARGET_OS_FREEBSD)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define DATA_NAME ".data"
-#define BSS_NAME  ".bss"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#else
-#error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
-#endif
-
 namespace llvmo {
-
-#if defined(_TARGET_OS_DARWIN)
-  std::string gcroots_in_module_name = "_" GCROOTS_IN_MODULE_NAME;
-  std::string literals_name = "_" LITERALS_NAME;
-#endif
-#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-  std::string gcroots_in_module_name = GCROOTS_IN_MODULE_NAME;
-  std::string literals_name = LITERALS_NAME;
-#endif
-#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
-#error You need to decide here
-#endif
-
 
 
 class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
@@ -4638,55 +4604,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   }
 
 };
-
-std::atomic<size_t> global_object_file_number;
-
-
-uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf) {
-  for (llvm::object::SectionRef Sec : objf.sections()) {
-    if (!Sec.isText() || Sec.isVirtual()) continue;
-    if (Sec.getName()->str() == TEXT_NAME) {
-      return Sec.getIndex();
-    }
-  }
-  return llvm::object::SectionedAddress::UndefSection;
-}
-
-
-void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s You now OWN MemoryBuffer @%p  size: %lu\n",
-                      __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() ));
-#ifdef DEBUG_OBJECT_FILES
-  if (globalDebugObjectFiles == DebugObjectFilesPrintSave ) {
-    stringstream ss;
-    ss << "/tmp/clasp_repl_object_file_" << ++global_object_file_number << ".o";
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Writing object file to: %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
-    ObjectFile_O::writeToFile(ss.str(), buffer->getBufferStart(), buffer->getBufferSize());
-  }
-#endif
-  // Grab the buffer and put it in the current ObjectFile
-  my_thread->topObjectFile()->_MemoryBuffer = std::move(buffer);
-  if (snapshotSaveLoad::global_debugSnapshot) {
-    printf("%s:%d:%s   ObjectFile_sp %p start %p size %lu\n",
-           __FILE__, __LINE__, __FUNCTION__,
-           my_thread->topObjectFile().raw_(),
-           my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferStart(),
-           my_thread->topObjectFile()->_MemoryBuffer.get()->getBufferSize() );
-  }
-  auto objf = my_thread->topObjectFile()->getObjectFile();
-  llvm::object::ObjectFile& of = *objf->release();
-  Code_sp code = my_thread->topObjectFile()->_Code;
-#if defined(_TARGET_OS_LINUX)
-  uint64_t secId = getModuleSectionIndexForText( of );
-  code->_TextSectionId = secId;
-#elif defined(_TARGET_OS_DARWIN)
-  code->_TextSectionId = 0;
-#else
-  printf("%s:%d:%s Add support to set _TextSectionID for this os\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-  save_object_file_and_code_info(my_thread->topObjectFile());
-  buffer.reset();
-}
 
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
@@ -5112,7 +5029,6 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::getMainJITDylib() {
   SIMPLE_ERROR(BF("The main-jit-dylib of the JIT is not setup properly: raw -> %p\n") % (void*)this->_MainJITDylib.raw_());
 }
 
-std::atomic<size_t> global_JITDylibCounter;
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
   stringstream sname;
   sname << name << "-" << global_JITDylibCounter;

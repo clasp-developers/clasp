@@ -144,7 +144,7 @@ namespace core {
   SimpleCharacterString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static SimpleCharacterString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL,
                                          bool static_vector_p = false) {
-      auto bs = gctools::GC<SimpleCharacterString_O>::allocate_container(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<SimpleCharacterString_O>::allocate_container<gctools::RuntimeStage>(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
     static SimpleCharacterString_sp make(const std::string& str) {
@@ -234,7 +234,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleBaseString_O::make(dimension,initElement,initialElementSuppliedP);
       }
-      auto s = gctools::GC<Str8Ns_O>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto s = gctools::GC<Str8Ns_O>::allocate_container<gctools::RuntimeStage>(false,1/*CRANK*/,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return s;
     }
     static Str8Ns_sp make(size_t dimension, claspChar initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {
@@ -300,7 +300,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleCharacterString_O::make(dimension,initElement,initialElementSuppliedP);
       }
-      auto s = gctools::GC<StrWNs_O>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto s = gctools::GC<StrWNs_O>::allocate_container<gctools::RuntimeStage>(false,1/*CRANK*/,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return s;
     }
     static StrWNs_sp make(size_t dimension, claspCharacter initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {

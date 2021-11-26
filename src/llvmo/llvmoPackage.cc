@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoPackage.h>
 //#include "llvmoExpose.generated.h"
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/llvmoDwarf.h>
@@ -578,6 +579,8 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
 #endif
     auto jit_engine = gctools::GC<ClaspJIT_O>::allocate(false);
     _lisp->_Roots._ClaspJIT = jit_engine;
+    auto jit_linker_engine = gctools::GC<ClaspLinkerJIT_O>::allocate(false);
+    _lisp->_Roots._ClaspLinkerJIT = jit_linker_engine;
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_dumpObjectFiles));
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {

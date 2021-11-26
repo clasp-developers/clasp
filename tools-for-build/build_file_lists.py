@@ -193,6 +193,7 @@ def collect_clasp_c_source_files(bld):
                  'insertPoint',
                  'irtests',
                  'llvmoExpose',
+                 'jit',
                  'code',
                  'llvmoPackage',
                  'clbindLlvmExpose']) + \

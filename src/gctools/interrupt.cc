@@ -206,7 +206,8 @@ void handle_queued_signal_or_interrupt(core::T_sp signal_code) {
 }
 
 // Do all the queued actions, emptying the queue.
-void handle_all_queued_interrupts()
+template <>
+void handle_all_queued_interrupts<RuntimeStage>()
 {
   while (my_thread->_PendingInterrupts.consp()) {
     // printf("%s:%d:%s Handling a signal - there are pending interrupts\n", __FILE__, __LINE__, __FUNCTION__ );

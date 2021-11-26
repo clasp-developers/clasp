@@ -165,7 +165,11 @@ namespace core {
     inline
 #endif
   static Cons_sp create(T_sp car, T_sp cdr) {
-    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O,gctools::DoRegister>::allocate(car,cdr);
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<gctools::RuntimeStage,Cons_O,gctools::DoRegister>::allocate(car,cdr);
+    return ll;
+  };
+  static Cons_sp createInSnapshotLoad(T_sp car, T_sp cdr) {
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<gctools::SnapshotLoadStage,Cons_O,gctools::DoRegister>::allocate(car,cdr);
     return ll;
   };
   public:

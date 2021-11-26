@@ -1153,7 +1153,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Could not create scan root");
 #else
   mps_register_roots((void*)&_lisp,1);
-  mps_register_roots((void*)&global_core_symbols[0],NUMBER_OF_CORE_SYMBOLS);
   mps_register_roots((void*)&global_symbols[0],global_symbol_count);
   // printf("%s:%d UNDEF USE_main_thread_roots_scan NUMBER_OF_CORE_SYMBOLS[%d] global_symbol_count[%d]\n", __FILE__, __LINE__, NUMBER_OF_CORE_SYMBOLS, global_symbol_count );
 #endif  

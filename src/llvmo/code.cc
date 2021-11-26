@@ -155,10 +155,26 @@ CL_DEFUN Code_sp object_file_code(ObjectFile_sp object_file) {
 namespace llvmo {
 
 
+
+Code_sp Code_O::makeInSnapshotLoad(uintptr_t scanSize, uintptr_t totalSize) {
+//  printf("%s:%d:%s Creating Code_O for objectFile: %s %lu\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_FasoName->get_std_string().c_str(), objectFile->_StartupID );
+//  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
+  Code_sp code = gctools::GC<Code_O>::allocate_container<gctools::SnapshotLoadStage>(false,totalSize);
+  code->_ObjectFile = unbound<ObjectFile_O>();
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Allocated Code_O object and installed in objectFile->_Code %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() ));
+  // Don't put DEBUG_OBJECT_FILES_PRINT in here - this is called too early
+#if 0
+  printf("%s:%d:%s Allocated code object from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,
+         (void*)&code->_DataCode[0],
+         (void*)&code->_DataCode[code->_DataCode.size()]);
+#endif
+  return code;
+}
+
 Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize, ObjectFile_sp objectFile) {
 //  printf("%s:%d:%s Creating Code_O for objectFile: %s %lu\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_FasoName->get_std_string().c_str(), objectFile->_StartupID );
 //  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
-  Code_sp code = gctools::GC<Code_O>::allocate_container(false,totalSize);
+  Code_sp code = gctools::GC<Code_O>::allocate_container<gctools::RuntimeStage>(false,totalSize);
   code->_ObjectFile = objectFile;
   objectFile->_Code = code;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Allocated Code_O object and installed in objectFile->_Code %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() ));

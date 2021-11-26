@@ -130,7 +130,7 @@ public:
   template <class... ARGS>
   static ValueFrame_sp create_fill_capacity(int capacity, T_sp parent, ARGS &&... args) {
     ASSERT(sizeof...(ARGS) <= capacity);
-    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(false,capacity,parent,std::forward<ARGS>(args)...);
+    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container<gctools::RuntimeStage>(false,capacity,parent,std::forward<ARGS>(args)...);
     return vf;
   }
 
@@ -230,7 +230,7 @@ GCPRIVATE:
   gctools::GCArray_moveable<value_type> _Objects;
 public:
   static FunctionFrame_sp create(int numArgs, T_sp parent) {
-    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(false,numArgs,parent);
+    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container<gctools::RuntimeStage>(false,numArgs,parent);
     return vf;
   }
 

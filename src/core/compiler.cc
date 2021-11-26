@@ -72,6 +72,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/core/wrappers.h>
 
@@ -784,7 +785,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
   }
   close(fd); // Ok to close file descriptor after mmap
-  llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
+  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
   FasoHeader* header = (FasoHeader*)memory;
   llvmo::JITDylib_sp jitDylib;
   for (size_t fasoIndex = 0; fasoIndex<header->_NumberOfObjectFiles; ++fasoIndex) {
@@ -912,23 +913,39 @@ CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp pri
 }
 
 
+void startup_shutdown_names( size_t id, const std::string& prefix, std::string& start, std::string& shutdown ) {
+  stringstream sstart;
+  stringstream sshutdown;
+  if (prefix!="") {
+    sstart << prefix << "-";
+    sshutdown << prefix << "-";
+  }
+  sstart << MODULE_STARTUP_FUNCTION_NAME << "_" << id;
+  sshutdown << MODULE_SHUTDOWN_FUNCTION_NAME << "_" << id;
+  start = sstart.str();
+  shutdown = sshutdown.str();
+}
+  
 CL_DOCSTRING(R"dx(Return the startup function name and the linkage based on the current dynamic environment)dx")
 CL_DOCSTRING_LONG(R"dx(The name contains the id as part of itself. Return (values startup-name linkage shutdown-name).)dx")
 DOCGROUP(clasp)
-CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage_shutdown_names(size_t id, core::T_sp prefix)
+CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage_shutdown_names(size_t id, core::T_sp tprefix)
 {
   stringstream sstart;
   stringstream sshutdown;
-  if (gc::IsA<String_sp>(prefix)) {
-    sstart << gc::As<String_sp>(prefix)->get_std_string() << "-";
-    sshutdown << gc::As<String_sp>(prefix)->get_std_string() << "-";
-  } else if (prefix.notnilp()) {
-    SIMPLE_ERROR(BF("Illegal prefix for startup function name: %s") % _rep_(prefix));
+  std::string prefix = "";
+  if (gc::IsA<String_sp>(tprefix)) {
+    stringstream sprefix;
+    sprefix << gc::As<String_sp>(tprefix)->get_std_string() << "-";
+    prefix = sprefix.str();
+  } else if (tprefix.notnilp()) {
+    SIMPLE_ERROR(BF("Illegal prefix for startup function name: %s") % _rep_(tprefix));
   }    
-  sstart << MODULE_STARTUP_FUNCTION_NAME << "_" << id;
-  sshutdown << MODULE_SHUTDOWN_FUNCTION_NAME << "_" << id;
+  std::string start;
+  std::string shutdown;
+  startup_shutdown_names( id, prefix, start, shutdown );
   Symbol_sp linkage_type = llvmo::_sym_ExternalLinkage;
-  return Values(core::SimpleBaseString_O::make(sstart.str()),linkage_type,core::SimpleBaseString_O::make(sshutdown.str()));
+  return Values(core::SimpleBaseString_O::make(start),linkage_type,core::SimpleBaseString_O::make(shutdown));
 };
 
 

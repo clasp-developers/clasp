@@ -905,7 +905,7 @@ gctools::ShiftedStamp cc_read_derivable_cxx_stamp_untagged_object(core::T_O* unt
   core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(untagged_object);
   gctools::ShiftedStamp stamp = (gctools::ShiftedStamp)derivable_cxx_object_ptr->get_stamp_();
   ASSERT(gctools::Header_s::StampWtagMtag::is_derivable_shifted_stamp(stamp));
-  printf("%s:%d:%s returning stamp %lu - check if it is correct\n", __FILE__, __LINE__, __FUNCTION__, stamp);
+//  printf("%s:%d:%s returning stamp %lu - check if it is correct\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   return stamp;
 }
 

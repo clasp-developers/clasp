@@ -201,7 +201,9 @@ public:
 //
 Lisp::GCRoots::GCRoots() :
   _ClaspJIT(nil<T_O>()),
+  _ClaspLinkerJIT(nil<T_O>()),
   _AllObjectFiles(nil<T_O>()),
+  _AllSnapshotLoadCodes(nil<T_O>()),
   _AllLibraries(nil<T_O>()),
 #ifdef CLASP_THREADS
     _UnboundSymbolFunctionEntryPoint(unbound<GlobalEntryPoint_O>()),

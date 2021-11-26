@@ -60,7 +60,7 @@ public: // Functions here
   // (b) it would cause ambiguity with create(fixnum).
   static Bignum_sp create_from_limbs( int64_t signed_number_of_limbs, mp_limb_t initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const mp_limb_t* initialContents=NULL)
   {
-    auto b = gctools::GC<Bignum_O>::allocate_container(false/*static_vector_p*/,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+    auto b = gctools::GC<Bignum_O>::allocate_container<gctools::RuntimeStage>(false/*static_vector_p*/,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
     return b;
   };
   static Bignum_sp create(const mpz_class&);

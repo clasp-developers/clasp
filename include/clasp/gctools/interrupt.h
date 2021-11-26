@@ -7,7 +7,13 @@ namespace gctools {
 
 
   void handle_signal_now(int signo);
+template <typename Stage=RuntimeStage>
   void handle_all_queued_interrupts();
+
+template <>
+inline void handle_all_queued_interrupts<SnapshotLoadStage>() {
+  // Do nothing
+};
   
   void initialize_signals(int clasp_signal);
   void initialize_unix_signal_handlers();

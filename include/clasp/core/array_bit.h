@@ -88,7 +88,7 @@ namespace core {
     static BitVectorNs_sp make(size_t dimension, simple_element_type initialElement, bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset ) {
       LIKELY_if (dataOrDisplacedTo.nilp())
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,initialElementSuppliedP);
-      auto bv = gctools::GC<BitVectorNs_O>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto bv = gctools::GC<BitVectorNs_O>::allocate_container<gctools::RuntimeStage>(false,1/*CRANK*/,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return bv;
     }
   public:

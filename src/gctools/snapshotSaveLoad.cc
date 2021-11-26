@@ -34,6 +34,7 @@
 #include <clasp/core/sort.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_boot.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
 #ifdef _TARGET_OS_LINUX
@@ -2813,7 +2814,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // Initialize the ClaspJIT_O object
     //
-      llvmo::global_JITDylibCounter.store(fileHeader->_global_JITDylibCounter);
       core::core__update_max_jit_compile_counter(fileHeader->_global_JITCompileCounter);
       llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
       llvmo::JITDylib_O* mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(claspJIT->_MainJITDylib.raw_());
@@ -2822,6 +2822,15 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         printf("%s:%d:%s The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n", __FILE__, __LINE__, __FUNCTION__, mainJITDylib->_Id);
         abort();
       }
+      printf("%s:%d:%s Add the ClaspLinkerJIT\n", __FILE__, __LINE__, __FUNCTION__ );
+
+    //
+    // Initialize the ClaspLinkerJIT_O object
+    //
+      llvmo::global_JITDylibCounter.store(fileHeader->_global_JITDylibCounter);
+      llvmo::ClaspLinkerJIT_O* claspLinkerJIT = (llvmo::ClaspLinkerJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspLinkerJIT.raw_());
+      new (claspLinkerJIT) llvmo::ClaspLinkerJIT_O(true);
+      printf("%s:%d:%s Added the ClaspLinkerJIT\n", __FILE__, __LINE__, __FUNCTION__ );
 
     //
     // We need to handle the NIL object specially, we need to allocate it in GC memory first
@@ -2845,6 +2854,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         my_thread->finish_initialization_main_thread(nil);
       // Now we have NIL in 'nil' - use it to initialize a few things.
         _lisp->_Roots._AllObjectFiles.store(nil);
+        _lisp->_Roots._AllSnapshotLoadCodes.store(nil);
       }
     
     //
@@ -2852,10 +2862,11 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // We can't use gc::As<xxx>(...) at this point because we are working in the snapshot save/load buffer
     //  and the headers aren't the same as in main memory
     //
-      core::T_sp tjit = ::_lisp->_Roots._ClaspJIT;
-      llvmo::ClaspJIT_sp jit;
+      printf("%s:%d:%s Use the ClaspLinkerJIT\n", __FILE__, __LINE__, __FUNCTION__ );
+      core::T_sp tjit = ::_lisp->_Roots._ClaspLinkerJIT;
+      llvmo::ClaspLinkerJIT_sp jit;
       if (tjit.notnilp()) {
-        jit = gc::As_unsafe<llvmo::ClaspJIT_sp>(tjit);
+        jit = gc::As_unsafe<llvmo::ClaspLinkerJIT_sp>(tjit);
         core::T_sp cur = ::_lisp->_Roots._JITDylibs.load();
         while (cur.consp()) {
           llvmo::JITDylib_sp dy = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
@@ -2879,6 +2890,8 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       {
       // Link all the code objects
         MaybeTimeStartup time5("Object file linking");
+        llvm::ThreadPool pool{llvm::hardware_concurrency(10)};
+        printf("%s:%d:%s Starting thread pool\n", __FILE__, __LINE__, __FUNCTION__ );
         for ( cur_header = start_header; cur_header->_Kind != End; ) {
           DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );
           if (cur_header->_Kind == General) {
@@ -2893,6 +2906,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                             % generalHeader->_Size
                             % source_header->description().c_str());
             if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
+              printf("%s:%d:%s  cur_header = %p  cur_header->_Kind -> %p\n", __FILE__, __LINE__, __FUNCTION__, cur_header, (void*)cur_header->_Kind );
           // Handle the ObjectFile_O objects - pass them to the LLJIT
               llvmo::ObjectFile_O* loadedObjectFile = (llvmo::ObjectFile_O*)clientStart;
           //
@@ -2927,15 +2941,50 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                                         __FILE__, __LINE__, __FUNCTION__,
                                         (void*)allocatedObjectFile.raw_(),
                                         of_start, of_length ));
-              jit->addObjectFile(allocatedObjectFile->asSmartPtr(),false);
+              llvm::orc::JITDylib* jitdylibP = allocatedObjectFile->_JITDylib->wrappedPtr();
+              jit->addObjectFile( *jitdylibP, std::move(allocatedObjectFile->_MemoryBuffer), false );
               core::T_mv startupName = core::core__startup_linkage_shutdown_names(allocatedObjectFile->_ObjectId,nil<core::T_O>());
               core::String_sp str = gc::As<core::String_sp>(startupName);
               DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s I added the ObjectFile to the LLJIT - startupName: %s  --- what do I do to get the code\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(str).c_str() ));
-              void* ptr;
           //
           // Everything after this will have to change when we do multicore startup.
           // lookup will cause multicore linking and with multicore linking we have to do things after this in a thread safe way
-              bool found = jit->do_lookup( *allocatedObjectFile->_JITDylib->wrappedPtr(), str->get_std_string(), ptr );
+              size_t objectId = allocatedObjectFile->_ObjectId;
+#if 0
+              pool.async(
+                  [&jit, jitdylibP, objectId ]() {
+                    std::string start;
+                    std::string shutdown;
+                    core::startup_shutdown_names( objectId, "", start, shutdown );
+                    void* ptr;
+                    bool found = jit->do_lookup( *jitdylibP, start, ptr );
+                    printf("%s:%d:%s Running lookup in thread pool found = %d\n", __FILE__, __LINE__, __FUNCTION__, found );
+                  } );
+#else
+                    std::string startup;
+                    std::string shutdown;
+                    core::startup_shutdown_names( objectId, "", startup, shutdown );
+                    void* ptr;
+                    bool found = jit->do_lookup( *jitdylibP, startup, ptr );
+                    printf("%s:%d:%s Running lookup in thread pool found = %d\n", __FILE__, __LINE__, __FUNCTION__, found );
+#endif
+              
+            }
+          }
+          next_header = cur_header->next(cur_header->_Kind);
+          size_t size = cur_header->_Size;
+          DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
+          cur_header = next_header;
+        }
+        printf("%s:%d:%s Objects have all been added and linked - what do we do from here?\n", __FILE__, __LINE__, __FUNCTION__ );
+        gctools::setup_user_signal();
+        gctools::wait_for_user_signal("Paused at startup after object files added");
+        
+        
+#if 0
+        {
+          {
+            {
               if (!found) {
                 printf("%s:%d:%s Could not find startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str() );
                 abort();
@@ -2948,13 +2997,11 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                                         __FILE__, __LINE__, __FUNCTION__,
                                         oldCode.raw_(),
                                         allocatedObjectFile->_Code.raw_()));
-//          core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
               DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
                               % (void*) obj.raw_()
                               % (void*)fwd);
               objectFileForwards[source_header] = (char*)fwd;
-            // set_forwarding_pointer(source_header,((char*)fwd), &islInfo );
               root_holder.add((void*)allocatedObjectFile.raw_());
           //
           // Now set the new code pointer as the forward for the oldCode object
@@ -2984,22 +3031,18 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               objectFileCount++;
             }
           }
+          
           next_header = cur_header->next(cur_header->_Kind);
           size_t size = cur_header->_Size;
           DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
           cur_header = next_header;
         }
+#endif // objects added        
       }
       char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
       if (pause_startup) {
-#ifdef USE_USER_SIGNAL
         gctools::setup_user_signal();
         gctools::wait_for_user_signal("Paused at startup after object files added");
-#else
-        printf("%s:%d PID = %d  Paused at startup after object files added to JIT - press enter to continue: \n", __FILE__, __LINE__, getpid() );
-        fflush(stdout);
-        getchar();
-#endif
       }
       {
       // Allocate all other objects
@@ -3050,7 +3093,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
             gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
             gctools::Header_s* header = consHeader->header();
             core::Cons_O* cons = (core::Cons_O*)clientStart;
-            auto obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::snapshot_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
+            auto obj = gctools::ConsAllocator<gctools::RuntimeStage,core::Cons_O,gctools::DoRegister>::snapshot_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
             gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
             DBG_SL_ALLOCATE(BF("---- Allocated Cons %p copy from %p header: %p  set fwd to %p\n")
                             % (void*)obj.raw_()
@@ -3336,6 +3379,28 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
 
 };
 
+
+
+namespace snapshotSaveLoad {
+
+
+CL_DEFUN void gctools__test_thread_pool() {
+  llvm::ThreadPool pool{llvm::hardware_concurrency(10)};
+  printf("Starting thread pool\n");
+  for ( size_t ii = 0; ii< 100; ii++ ) {
+    pool.async(
+        [ii]() {
+          printf("Running %lu\n", ii);
+          sleep(1);
+        } );
+  }
+  pool.wait();
+  printf("Done thread pool\n");
+}
+
+
+
+};
 #endif // USE_PRECISE_GC
 
 

@@ -845,6 +845,17 @@ void* GCRootsInModule::lookup_function(size_t index) {
 
 namespace gctools {
 
+
+/* Walk all of the roots, passing the address of each root and what it represents */
+void walkRoots( RootWalkCallback callback, void* data ) {
+  callback( (Tagged*)&_lisp, LispRoot, 0, data);
+  for ( size_t jj=0; jj<global_symbol_count; ++jj ) {
+    callback( (Tagged*)&global_symbols[jj], SymbolRoot, jj, data );
+  }
+};
+
+
+
 PointerFix globalMemoryWalkPointerFix;
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
@@ -856,7 +867,11 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
   } else if (tag==gctools::cons_tag) {
     header = (Header_s*)ConsPtrToHeaderPtr((void*)client);
   } else {
+#ifndef RUNNING_PRECISEPREP
     Header_s* base = (Header_s*)GC_base(clientAddress);
+#else
+    Header_s* base = NULL;
+#endif
     auto ii = gather->_corruptObjects.find(base);
     if ( ii == gather->_corruptObjects.end() ) {
       std::vector<uintptr_t> badPointers;

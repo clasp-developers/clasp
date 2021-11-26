@@ -126,6 +126,7 @@ class Code_O : public CodeBase_O {
   LISP_CLASS(llvmo, LlvmoPkg, Code_O, "Code", CodeBase_O);
  public:
   static Code_sp make(uintptr_t scanSize, uintptr_t size, ObjectFile_sp of);
+  static Code_sp makeInSnapshotLoad(uintptr_t scanSize, uintptr_t size );
  public:
   typedef uint8_t value_type;
  public:

@@ -708,7 +708,7 @@ namespace core {
       size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
       LIKELY_if (dataOrDisplacedTo.nilp())
         dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
-      return gctools::GC<my_array_type>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      return gctools::GC<my_array_type>::template allocate_container<gctools::RuntimeStage>(false,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
   public:
     // Primary functions/operators for operator[] that handle displacement
@@ -929,7 +929,7 @@ namespace core {
       size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
       LIKELY_if (data.nilp())
         data = simple_type::make(arrayTotalSize,initialElement,true);
-      return gctools::GC<my_array_type>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(data));
+      return gctools::GC<my_array_type>::template allocate_container<gctools::RuntimeStage>(false,rank,dim_desig,gc::As<Array_sp>(data));
     }
   public:
     // Primary functions/operators for operator[] that handle displacement

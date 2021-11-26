@@ -132,9 +132,13 @@ namespace gctools {
 class DontRegister {};
 class DoRegister {};
 
-template <typename Cons,typename Register=DontRegister>
+template <int F>
+struct Foo {};
+
+template <typename Stage, typename Cons,typename Register=DontRegister>
 struct ConsSizeCalculator {
   static inline size_t value() {
+//    printf("%s:%d:%s AlignUp(sizeof(Cons) %lu +SizeofConsHeader() %lu) = %lu  must be 24\n", __FILE__, __LINE__, __FUNCTION__, sizeof(Cons),SizeofConsHeader(), AlignUp(sizeof(Cons)+SizeofConsHeader()) );
     static_assert(AlignUp(sizeof(Cons)+SizeofConsHeader()) == 24);
     size_t size = AlignUp(sizeof(Cons)+SizeofConsHeader());
     return size;
@@ -142,9 +146,9 @@ struct ConsSizeCalculator {
 };
 
 template <typename Cons>
-struct ConsSizeCalculator<Cons,DoRegister> {
+struct ConsSizeCalculator<gctools::RuntimeStage,Cons,DoRegister> {
   static inline size_t value() {
-    size_t size = ConsSizeCalculator<Cons,DontRegister>::value();
+    size_t size = ConsSizeCalculator<RuntimeStage,Cons,DontRegister>::value();
     my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS,size);
     return size;
   }
@@ -251,7 +255,7 @@ struct RootClassAllocator {
 };
 
 
-template <class Cons, class Register>
+template <class Stage, class Cons, class Register>
 struct ConsAllocator {
   template <class... ARGS>
 #ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
@@ -262,15 +266,15 @@ struct ConsAllocator {
   static smart_ptr<Cons> allocate(ARGS &&... args) {
 #if defined(USE_BOEHM)
     Cons* cons;
-    size_t cons_size = ConsSizeCalculator<Cons,Register>::value();
-    cons = do_boehm_cons_allocation<Cons,ARGS...>(cons_size,std::forward<ARGS>(args)...);
-    handle_all_queued_interrupts();
+    size_t cons_size = ConsSizeCalculator<Stage,Cons,Register>::value();
+    cons = do_boehm_cons_allocation<Stage,Cons,ARGS...>(cons_size,std::forward<ARGS>(args)...);
+    handle_all_queued_interrupts<Stage>();
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #elif defined(USE_MMTK)
     Cons* cons;
-    size_t cons_size = ConsSizeCalculator<Cons,Register>::value();
+    size_t cons_size = ConsSizeCalculator<Stage,Cons,Register>::value();
     cons = do_mmtk_cons_allocation<Cons,ARGS...>(cons_size,std::forward<ARGS>(args)...);
-    handle_all_queued_interrupts();
+    handle_all_queued_interrupts<Stage>();
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #elif defined(USE_MPS)
     mps_ap_t obj_ap = my_thread_allocation_points._cons_allocation_point;
@@ -308,10 +312,10 @@ namespace gctools {
       typedef OT value_type;
       typedef OT *pointer_type;
       typedef smart_ptr<OT> smart_pointer_type;
-      template <typename... ARGS>
+    template <typename Stage,typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
-        Header_s* base = do_boehm_general_allocation(the_header,size);
+        Header_s* base = do_boehm_general_allocation<Stage>(the_header,size);
         pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
         new (ptr) OT(std::forward<ARGS>(args)...);
         smart_pointer_type sp = smart_ptr<value_type>(ptr);
@@ -399,7 +403,7 @@ namespace gctools {
     typedef OT value_type;
     typedef OT *pointer_type;
     typedef smart_ptr<OT> smart_pointer_type;
-    template <typename... ARGS>
+    template <typename Stage,typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
     // Atomic objects (do not contain pointers) are allocated in separate pool
@@ -467,10 +471,10 @@ When would I ever want the GC to automatically collect objects but not move them
     typedef OT value_type;
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
-    template <typename... ARGS>
+    template <typename Stage,typename... ARGS>
     static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
-      Header_s* base = do_boehm_general_allocation(the_header,size);
+      Header_s* base = do_boehm_general_allocation<Stage>(the_header,size);
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(std::forward<ARGS>(args)...);
       smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
@@ -533,7 +537,7 @@ should not be managed by the GC */
     typedef OT value_type;
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
-    template <typename... ARGS>
+    template <typename Stage,typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #if defined(USE_BOEHM)
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
@@ -704,13 +708,13 @@ namespace gctools {
     };
 
 
-    template <typename... ARGS>
+    template <typename Stage,typename... ARGS>
       static smart_pointer_type allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::template allocate_in_appropriate_pool_kind<Stage>(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      handle_all_queued_interrupts();
+      handle_all_queued_interrupts<Stage>();
       return sp;
     };
 
@@ -726,7 +730,7 @@ namespace gctools {
     
     template <typename... ARGS>
     static smart_pointer_type static_allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::template allocate_in_appropriate_pool_kind<gctools::RuntimeStage>(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
       handle_all_queued_interrupts();
@@ -742,7 +746,7 @@ namespace gctools {
     static smart_pointer_type copy_kind(const Header_s::StampWtagMtag& the_header, size_t size, const OT &that) {
 #if defined(USE_BOEHM)
     // Copied objects must be allocated in the appropriate pool
-      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(  the_header, size, that);
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::template allocate_in_appropriate_pool_kind<gctools::RuntimeStage>(  the_header, size, that);
     // Copied objects are not initialized.
     // Copied objects are finalized if necessary
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
@@ -771,7 +775,7 @@ namespace gctools {
     struct GCObjectDefaultConstructorAllocator<OT,true> {
     static smart_ptr<OT> allocate(const Header_s::StampWtagMtag& kind) {
       // FIXSTAMP
-      return GCObjectAllocator<OT>::allocate_kind(kind, sizeof_with_header<OT>());
+      return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind, sizeof_with_header<OT>());
     }
   };
 
@@ -816,14 +820,14 @@ namespace gctools {
 
     template <typename... ARGS>
       static smart_pointer_type allocate_instance(const Header_s::StampWtagMtag& kind, size_t size, ARGS &&... args) {
-      return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind,size, std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
       static smart_pointer_type allocate( ARGS &&... args) {
       auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
       size_t size = sizeof_with_header<OT>();
-      return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::template allocate_kind<gctools::RuntimeStage>(kind,size, std::forward<ARGS>(args)...);
     }
 
     static smart_pointer_type allocate_with_default_constructor() {
@@ -835,12 +839,12 @@ namespace gctools {
     // Allocates an object with proper header and everything.
     // Uses the underlying constructor. Like, GC<SimpleVector_O>::allocate_container(...)
     // ends up passing the ... to the SimpleVector_O constructor.
-    template <typename... ARGS>
+    template <typename Stage,typename... ARGS>
     static smart_pointer_type allocate_container( bool static_container_p, int64_t length, ARGS &&... args) {
       size_t capacity = std::abs(length);
       size_t size = sizeof_container_with_header<OT>(capacity);
       if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
-      return GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
     }
 
 
@@ -853,7 +857,7 @@ namespace gctools {
         return GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
                                                            std::forward<ARGS>(args)...);
       else
-        return GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
+        return GCObjectAllocator<OT>::template allocate_kind<RuntimeStage>(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
                                                     std::forward<ARGS>(args)...);
     }
 
@@ -885,7 +889,7 @@ namespace gctools {
         result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),size,length,
                                                              std::forward<ARGS>(args)...);
       else
-        result = GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),size,length,
+        result = GCObjectAllocator<OT>::template allocate_kind<RuntimeStage>(Header_s::StampWtagMtag::make_Value<OT>(),size,length,
                                                       std::forward<ARGS>(args)...);
 #if DEBUG_BITUNIT_CONTAINER
       {

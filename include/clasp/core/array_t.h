@@ -28,7 +28,7 @@ namespace core {
   SimpleVector_O(size_t length, value_type initialElement=default_initial_element(), bool initialElementSupplied=true, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static SimpleVector_sp make(size_t length, T_sp initialElement=nil<T_O>(), bool initialElementSupplied=true, size_t initialContentsSize=0, const T_sp* initialContents=NULL,
                                 bool static_vector_p = false) {
-      auto bs = gctools::GC<SimpleVector_O>::allocate_container(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<SimpleVector_O>::allocate_container<gctools::RuntimeStage>(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
     // Used in one place in lisp.cc. FIXME: Maybe remove?
@@ -102,7 +102,7 @@ public: // make vector
   {
     LIKELY_if (dataOrDisplacedTo.nilp())
       dataOrDisplacedTo = SimpleVector_O::make(dimension,initialElement,true);
-    ComplexVector_T_sp array = gctools::GC<ComplexVector_T_O>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+    ComplexVector_T_sp array = gctools::GC<ComplexVector_T_O>::allocate_container<gctools::RuntimeStage>(false,1/*CRANK*/,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     return array;
   }
   static smart_ptr_type make(size_t dimension,

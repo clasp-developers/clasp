@@ -726,10 +726,10 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
   FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription<InterpretedClosureEntryPoint>(name,nil<T_O>(),lambda_list,docstring,declares,sfi,lineno,column,filePos );
   ClosureWithSlots_sp closure =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
-                                                              INTERPRETED_CLOSURE_SLOTS,
-                                                              entryPoint,
-                                                              ClosureWithSlots_O::interpretedClosure);
+      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,
+                                                                                       INTERPRETED_CLOSURE_SLOTS,
+                                                                                       entryPoint,
+                                                                                       ClosureWithSlots_O::interpretedClosure);
   (*closure)[INTERPRETED_CLOSURE_FORM_SLOT] = form;
   (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT] = environment;
   if (lambda_list_handler.nilp()) {
@@ -746,10 +746,10 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, const Cla
   FunctionDescription_sp fdesc = makeFunctionDescription(name,lambda_list);
   core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPoint(fdesc,fn,localEntryPoint);
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
-                                                              BCLASP_CLOSURE_SLOTS,
-                                                              entryPoint,
-                                                              ClosureWithSlots_O::bclaspClosure);
+      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,
+                                                                                       BCLASP_CLOSURE_SLOTS,
+                                                                                       entryPoint,
+                                                                                       ClosureWithSlots_O::bclaspClosure);
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
   closure->setf_sourcePathname(nil<T_O>());
   closure->setf_lambdaList(lambda_list);
@@ -763,10 +763,10 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, const Cla
   FunctionDescription_sp fdesc = makeFunctionDescription(name,lambda_list,nil<T_O>(),nil<T_O>(),nil<T_O>(),lineno,column);
   core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPoint(fdesc,fn,localEntryPoint);
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
-                                                              0,
-                                                              entryPoint,
-                                                              ClosureWithSlots_O::cclaspClosure);
+      gctools::GC<core::ClosureWithSlots_O>::allocate_container<gctools::RuntimeStage>(false,
+                                                                                       0,
+                                                                                       entryPoint,
+                                                                                       ClosureWithSlots_O::cclaspClosure);
   closure->setf_lambdaList(lambda_list);
   closure->setf_docstring(nil<T_O>());
   validateFunctionDescription(__FILE__,__LINE__,closure);

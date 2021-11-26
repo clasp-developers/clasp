@@ -122,6 +122,7 @@ typedef bool _Bool;
 
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/insertPoint.h>
@@ -133,9 +134,6 @@ typedef bool _Bool;
 #include <clasp/asttooling/example.h>
 
 #include <clasp/asttooling/translators.h>
-//#include <clasp/asttooling/Registry.h>
-//#include <clasp/asttooling/Diagnostics.h>
-//#include <clasp/asttooling/Marshallers.h>
 
 #ifdef BUILD_EXTENSION
 #define GC_INTERFACE_INCLUDES

@@ -321,9 +321,11 @@ class Lisp {
     T_sp                       _TrueObject; // The True object
     T_sp                       _NilObject; // The NIL object
     T_sp                       _ClaspJIT;
-    std::atomic<T_sp>           _JITDylibs; // Maintain a list of loaded JITDylibs 
+    T_sp                       _ClaspLinkerJIT;
+    std::atomic<T_sp>          _JITDylibs; // Maintain a list of loaded JITDylibs 
     std::atomic<T_sp>          _AllLibraries;
     std::atomic<T_sp>          _AllObjectFiles;
+    std::atomic<T_sp>          _AllSnapshotLoadCodes;
     GlobalEntryPoint_sp        _UnboundSymbolFunctionEntryPoint;
     GlobalEntryPoint_sp        _UnboundSetfSymbolFunctionEntryPoint;
     T_sp                       _TerminalIO;
