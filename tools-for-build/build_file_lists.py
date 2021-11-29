@@ -194,6 +194,7 @@ def collect_clasp_c_source_files(bld):
                  'irtests',
                  'llvmoExpose',
                  'jit',
+                 'runtimeJit',
                  'code',
                  'llvmoPackage',
                  'clbindLlvmExpose']) + \

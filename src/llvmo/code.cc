@@ -171,12 +171,11 @@ Code_sp Code_O::makeInSnapshotLoad(uintptr_t scanSize, uintptr_t totalSize) {
   return code;
 }
 
-Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize, ObjectFile_sp objectFile) {
+Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize, const std::string& objectFileName ) {
 //  printf("%s:%d:%s Creating Code_O for objectFile: %s %lu\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_FasoName->get_std_string().c_str(), objectFile->_StartupID );
 //  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
   Code_sp code = gctools::GC<Code_O>::allocate_container<gctools::RuntimeStage>(false,totalSize);
-  code->_ObjectFile = objectFile;
-  objectFile->_Code = code;
+  code->_ObjectFileName = objectFileName;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Allocated Code_O object and installed in objectFile->_Code %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() ));
   // Don't put DEBUG_OBJECT_FILES_PRINT in here - this is called too early
 #if 0
@@ -194,6 +193,7 @@ void* Code_O::allocateHead(uintptr_t size, uint32_t align) {
   if (headOffset > this->_TailOffset) {
     SIMPLE_ERROR(BF("There is not enough memory in the Code_O object - current size: %lu and we are over by %lu\n") % this->_DataCode.size() % (headOffset-this->_TailOffset));
   }
+  this->_HeadOffset = headOffset;
   const unsigned char* tail = this->_DataCode.data()+this->_TailOffset;
   if (tail<head) {
     printf("%s:%d Bad allocation tail@%p is less than head@%p\n", __FILE__, __LINE__, tail, head );

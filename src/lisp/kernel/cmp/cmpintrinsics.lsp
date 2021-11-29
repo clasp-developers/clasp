@@ -682,6 +682,8 @@ Boehm and MPS use a single pointer"
                (irc-store reg-i8* addr t)
                (when (llvm-sys:current-debug-location *irbuilder*)
                  (let ((var (dbg-parameter-var addr-name (1+ idx))))
+                   (unless var
+                     (error "maybe-spill-to-register-save-area var is NIL arity is ~a  idx is ~a" arity idx))
                    (%dbg-variable-value reg-i8* var)
                    (%dbg-variable-addr addr var)))
                addr)))
@@ -755,6 +757,8 @@ Boehm and MPS use a single pointer"
                            :lineno (core:source-pos-info-lineno spi)
                            :scope scope
                            :type type)))
+      (unless auto-variable
+        (error "maybe-spill-to-register-save-area auto-variable is NIL"))
       (%dbg-variable-value value auto-variable))))
 
 ;;; This is the normal C-style prototype for a function

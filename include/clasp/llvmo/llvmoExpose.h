@@ -4540,57 +4540,6 @@ namespace llvmo {
 
 //  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
 };
-
-// Don't allow the object to move, but maybe I'll need to collect it
-// if we create a ClaspJIT_O for each thread and need to collect it when
-// the thread is killed
-template <>
-struct gctools::GCInfo<llvmo::ClaspJIT_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = collectable_immobile;
-};
-
-namespace llvmo {
-
-FORWARD(ObjectFile);
-FORWARD(ClaspJIT);
-class ClaspJIT_O : public core::General_O {
-  LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
-public:
-  bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
-  core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
-  core::T_sp lookup_all_dylibs(const std::string& Name);
-  JITDylib_sp getMainJITDylib();
-  JITDylib_sp createAndRegisterJITDylib(const std::string& name);
-  void registerJITDylibAfterLoad(JITDylib_O* jitDylib);
-  
-  void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context, size_t startupID);
-  void addObjectFile(ObjectFile_sp of, bool print=false);
-  /*! Return a pointer to a function WHAT FUNCTION???????
-        llvm_sys__jitFinalizeReplFunction needs to build a closure over it
-   */
-  void* runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject );
-  ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib = NULL);
-  ~ClaspJIT_O();
-public:
-  JITDylib_sp _MainJITDylib;
-  std::unique_ptr<llvm::orc::ExecutorProcessControl> _TPC;
-  std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
-//  llvm::jitlink::JITLink* _LinkLayer;
-#if _TARGET_OS_DARWIN
-  llvm::orc::ObjectLinkingLayer *LinkLayer;
-#else
-  llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
-#endif
-};
-
-
-core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
-
-
-};
-
 namespace llvmo {
 class MDBuilder_O;
 };

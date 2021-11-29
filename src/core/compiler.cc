@@ -800,7 +800,8 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
     llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[fasoIndex]._ObjectId,jitDylib,filename,fasoIndex);
-    jit->addObjectFile(of,print.notnilp());
+    my_thread->pushObjectFile(of);
+    jit->addObjectFile(*jitDylib->wrappedPtr(),std::move(of->_MemoryBuffer),print.notnilp());
     T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId,nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));

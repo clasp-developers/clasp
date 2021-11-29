@@ -2829,7 +2829,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
       llvmo::global_JITDylibCounter.store(fileHeader->_global_JITDylibCounter);
       llvmo::ClaspLinkerJIT_O* claspLinkerJIT = (llvmo::ClaspLinkerJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspLinkerJIT.raw_());
-      new (claspLinkerJIT) llvmo::ClaspLinkerJIT_O(true);
+      new (claspLinkerJIT) llvmo::ClaspLinkerJIT_O(true,mainJITDylib);
       printf("%s:%d:%s Added the ClaspLinkerJIT\n", __FILE__, __LINE__, __FUNCTION__ );
 
     //
@@ -2862,11 +2862,18 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // We can't use gc::As<xxx>(...) at this point because we are working in the snapshot save/load buffer
     //  and the headers aren't the same as in main memory
     //
+#if 0
+      using Jit = llvmo::ClaspJIT_sp;
+      printf("%s:%d:%s Use the ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
+      core::T_sp tjit = ::_lisp->_Roots._ClaspJIT;
+#else
+      using Jit = llvmo::ClaspLinkerJIT_sp;
       printf("%s:%d:%s Use the ClaspLinkerJIT\n", __FILE__, __LINE__, __FUNCTION__ );
       core::T_sp tjit = ::_lisp->_Roots._ClaspLinkerJIT;
-      llvmo::ClaspLinkerJIT_sp jit;
+#endif
+      Jit jit;
       if (tjit.notnilp()) {
-        jit = gc::As_unsafe<llvmo::ClaspLinkerJIT_sp>(tjit);
+        jit = gc::As_unsafe<Jit>(tjit);
         core::T_sp cur = ::_lisp->_Roots._JITDylibs.load();
         while (cur.consp()) {
           llvmo::JITDylib_sp dy = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
@@ -2891,7 +2898,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       // Link all the code objects
         MaybeTimeStartup time5("Object file linking");
         llvm::ThreadPool pool{llvm::hardware_concurrency(10)};
-        printf("%s:%d:%s Starting thread pool\n", __FILE__, __LINE__, __FUNCTION__ );
+        printf("%s:%d:%s Started thread pool\n", __FILE__, __LINE__, __FUNCTION__ );
         for ( cur_header = start_header; cur_header->_Kind != End; ) {
           DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );
           if (cur_header->_Kind == General) {
@@ -2906,7 +2913,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                             % generalHeader->_Size
                             % source_header->description().c_str());
             if ( generalHeader->_Header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O) ) {
-              printf("%s:%d:%s  cur_header = %p  cur_header->_Kind -> %p\n", __FILE__, __LINE__, __FUNCTION__, cur_header, (void*)cur_header->_Kind );
+              // printf("%s:%d:%s  cur_header = %p  cur_header->_Kind -> %p\n", __FILE__, __LINE__, __FUNCTION__, cur_header, (void*)cur_header->_Kind );
           // Handle the ObjectFile_O objects - pass them to the LLJIT
               llvmo::ObjectFile_O* loadedObjectFile = (llvmo::ObjectFile_O*)clientStart;
           //
@@ -2950,7 +2957,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           // Everything after this will have to change when we do multicore startup.
           // lookup will cause multicore linking and with multicore linking we have to do things after this in a thread safe way
               size_t objectId = allocatedObjectFile->_ObjectId;
-#if 0
+#if 1
               pool.async(
                   [&jit, jitdylibP, objectId ]() {
                     std::string start;
@@ -2961,12 +2968,15 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                     printf("%s:%d:%s Running lookup in thread pool found = %d\n", __FILE__, __LINE__, __FUNCTION__, found );
                   } );
 #else
+              // Only to be used with ClaspJIT_O
                     std::string startup;
                     std::string shutdown;
                     core::startup_shutdown_names( objectId, "", startup, shutdown );
                     void* ptr;
+                    my_thread->pushObjectFile(allocatedObjectFile);
                     bool found = jit->do_lookup( *jitdylibP, startup, ptr );
-                    printf("%s:%d:%s Running lookup in thread pool found = %d\n", __FILE__, __LINE__, __FUNCTION__, found );
+                    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Ran lookup in main thread for %s found = %d\n", __FILE__, __LINE__, __FUNCTION__, startup.c_str(), found ));
+                    my_thread->popObjectFile();
 #endif
               
             }
@@ -2976,7 +2986,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
           cur_header = next_header;
         }
-        printf("%s:%d:%s Objects have all been added and linked - what do we do from here?\n", __FILE__, __LINE__, __FUNCTION__ );
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Objects have all been added and linked - what do we do from here?\n", __FILE__, __LINE__, __FUNCTION__ ));
         gctools::setup_user_signal();
         gctools::wait_for_user_signal("Paused at startup after object files added");
         

@@ -78,6 +78,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/code.h>
+#include <clasp/llvmo/jit.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/stackmap.h>
 

@@ -250,9 +250,9 @@ struct to_object<llvm::DINodeArray> {
 };
 template <>
 struct from_object<llvm::DINodeArray, std::true_type> {
-  typedef llvm::DINodeArray &DeclareType;
+  typedef llvm::DINodeArray DeclareType;
   DeclareType _v;
- from_object(T_P object) : _v(gc::As<llvmo::DINodeArray_sp>(object)->get()) {};
+  from_object(T_P object) : _v(object.nilp() ? nullptr : gc::As<llvmo::DINodeArray_sp>(object)->get()) {};
 };
 };
 
@@ -720,7 +720,7 @@ public:
     delete this->_ptr;
     this->_ptr = ptr;
   };
-  DINodeArray_sp getOrCreateArray(core::List_sp elements);
+  DINodeArray_sp getOrCreateArray(core::T_sp elements);
   DITypeRefArray_sp getOrCreateTypeArray(core::List_sp elements);
   DIBuilder_O() : Base(), _ptr(NULL){};
   virtual ~DIBuilder_O() {

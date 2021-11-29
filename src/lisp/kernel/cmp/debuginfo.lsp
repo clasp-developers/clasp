@@ -152,7 +152,7 @@
    nil ; 10 TParam = nullptr
    nil ; 11 Decl = nullptr
    nil ; 12 ThrownTypes = nullptr
-
+   nil ; 13 Annotations = nullptr
    #|
 (DIScope *Scope, ; 1
  StringRef Name, ; 2
@@ -205,15 +205,15 @@
           (unless *dbg-current-scope*
             (error "The *dbg-current-scope* is nil - it cannot be when create-lexical-block is called"))
           (let* ((*dbg-current-scope*
-                  (llvm-sys:create-lexical-block *the-module-dibuilder*
-                                                 *dbg-current-scope*
-                                                 *dbg-current-file*
-                                                 lineno
-                                                 0 ; column
-                                                 #| 0  -- not used anymore TODO: Dwarf path discriminator   |# )))
+                   (llvm-sys:create-lexical-block *the-module-dibuilder*
+                                                  *dbg-current-scope*
+                                                  *dbg-current-file*
+                                                  lineno
+                                                  0 
+                                                  )))
             (cmp-log "with-dbg-lexical-block%N")
             (funcall closure)))
-      (funcall closure))))
+        (funcall closure))))
   
 (defmacro with-dbg-lexical-block ((&key (lineno (core:source-pos-info-lineno core:*current-source-pos-info*))) &body body)
   `(do-dbg-lexical-block (lambda () ,@body) ,lineno))
@@ -286,20 +286,23 @@
                                         (file *dbg-current-file*)
                                         lineno
                                         type
-                                        always-preserve)
-  (unless (> argno 0)
-    (error "The argno for ~a must start at 1 - got ~a" name argno))
-  (llvm-sys:create-parameter-variable *the-module-dibuilder*
-                                      scope
-                                      name
-                                      argno
-                                      file
-                                      lineno
-                                      type
-                                      always-preserve
-                                      (core:enum-logical-or
-                                       llvm-sys:diflags-enum
-                                       '(llvm-sys:diflags-zero))))
+                                        always-preserve
+                                        annotations
+                                        )
+  (progn
+    (unless (> argno 0)
+      (error "The argno for ~a must start at 1 - got ~a" name argno))
+    (llvm-sys:create-parameter-variable *the-module-dibuilder*
+                                        scope
+                                        name
+                                        argno
+                                        file
+                                        lineno
+                                        type
+                                        always-preserve
+                                        (core:enum-logical-or llvm-sys:diflags-enum
+                                                              '(llvm-sys:diflags-zero))
+                                        annotations)))
 
 (defun set-instruction-source-position (origin function-metadata fn-scope)
   (when *dbg-generate-dwarf*

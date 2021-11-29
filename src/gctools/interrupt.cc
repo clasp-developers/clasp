@@ -395,8 +395,8 @@ void handle_bus(int signo, siginfo_t* info, void* context) {
 }
   
 
-void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
-  printf("%s:%d Hit a fatal error in llvm: %s\n", __FILE__, __LINE__, reason.c_str());
+void fatal_error_handler(void *user_data, const char* reason, bool gen_crash_diag) {
+  printf("%s:%d Hit a fatal error in llvm: %s\n", __FILE__, __LINE__, reason );
   printf("Clasp is sleeping for 1000 seconds in case you want to connect in with the debugger - after which it will abort().\n");
   printf("    Clasp pid -> %d\n", getpid());
   sleep(1000);

@@ -26,7 +26,7 @@ typedef bool _Bool;
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/Support/FormattedStream.h>
-#include <llvm/Support/TargetRegistry.h>
+#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Pass.h>
 #include <llvm/IR/LegacyPassManager.h>
