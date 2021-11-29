@@ -271,7 +271,11 @@
 ;;; Here, the rtype we want is what datum has, and the actual rtype is what
 ;;; instruction actually outputs. DATUM must be the output of INST.
 (defun maybe-cast-after (inst datum actual-rtype)
-  (unless (equal (cc-bmir:rtype datum) actual-rtype)
+  (unless (or (equal (cc-bmir:rtype datum) actual-rtype)
+              ;; Don't bother casting if the datum is unused.
+              ;; Inserting a cast anyway can result in BIR verification
+              ;; failure for certain special instructions; see #1224.
+              (not (bir:use datum)))
     (let* ((new (make-instance 'cc-bmir:output
                   :rtype actual-rtype :derived-type (bir:ctype datum)))
            (cast (make-instance 'cc-bmir:cast
