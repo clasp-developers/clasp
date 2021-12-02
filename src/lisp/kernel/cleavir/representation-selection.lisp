@@ -329,8 +329,18 @@
 
 ;;; Make sure we don't insert things infinitely
 (defmethod insert-casts ((instruction cc-bmir:cast)))
-;;; Doesn't need to do anything, and might not have all :object inputs
-(defmethod insert-casts ((instruction bir:thei)))
+
+;;; Might need to cast its input,
+;;; but doesn't necessarily need object inputs.
+;;; One situation in which a cast is required is when the input to THEI is
+;;; a function argument. In that situation, the argument can be forced to
+;;; have rtype (:OBJECT), while the output has some reduced rtype in
+;;; accordance with how it is actually used.
+;;; FIXME: Probably this could be more intelligent.
+(defmethod insert-casts ((instruction bir:thei))
+  (maybe-cast-before instruction
+                     (bir:input instruction)
+                     (cc-bmir:rtype (bir:output instruction))))
 
 (defun insert-jump-coercion (instruction)
   (loop for inp in (bir:inputs instruction)
