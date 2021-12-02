@@ -131,7 +131,7 @@
 (defmethod translate-terminator ((inst bir:values-save) abi next)
   (declare (ignore abi))
   (let* ((tmv (in (first (bir:inputs inst))))
-         (outp (first (bir:outputs inst)))
+         (outp (bir:output inst))
          (nvals (cmp:irc-tmv-nret tmv))
          (primary (cmp:irc-tmv-primary tmv))
          ;; NOTE: Must be done BEFORE the alloca.
@@ -203,7 +203,7 @@
   (let ((inputs (bir:inputs instruction)))
     (cmp:irc-cond-br
      (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs))
-                      (datum-name-as-string (first (bir:outputs instruction))))
+                      (datum-name-as-string (bir:output instruction)))
      (first next) (second next))))
 
 (defmacro define-tag-test (inst mask tag)
@@ -437,16 +437,13 @@
 
 (defmethod translate-simple-instruction ((instruction bir:thei) abi)
   (declare (ignore abi))
-  (let ((input (first (bir:inputs instruction)))
-        (output (first (bir:outputs instruction))))
-    (out (in input) output)))
+  (out (in (bir:input instruction)) (bir:output instruction)))
 
 (defmethod translate-simple-instruction ((instruction bir:enclose) abi)
   (declare (ignore abi))
-  (let ((output (first (bir:outputs instruction))))
-    (out (enclose (find-llvm-function-info (bir:code instruction))
-                  (bir:extent instruction))
-         output)))
+  (out (enclose (find-llvm-function-info (bir:code instruction))
+                (bir:extent instruction))
+       (bir:output instruction)))
 
 (defmethod translate-simple-instruction :before
     ((instruction bir:abstract-call) abi)
@@ -457,7 +454,7 @@
 ;; LETI is a subclass of WRITEVAR, so we use a :before to bind the var.
 (defmethod translate-simple-instruction :before ((instruction bir:leti) abi)
   (declare (ignore abi))
-  (bind-variable (first (bir:outputs instruction))))
+  (bind-variable (bir:output instruction)))
 
 (defmethod translate-simple-instruction ((instruction bir:writevar)
                                          abi)
@@ -478,8 +475,8 @@
 
 (defmethod translate-simple-instruction ((instruction bir:readvar) abi)
   (declare (ignore abi))
-  (out (variable-in (first (bir:inputs instruction)))
-       (first (bir:outputs instruction))))
+  (out (variable-in (bir:input instruction))
+       (bir:output instruction)))
 
 (defun gen-rest-list (present-arguments)
   (if (null present-arguments)
@@ -602,13 +599,13 @@
   (declare (ignore abi))
   (out (gen-local-call (bir:callee instruction)
                        (rest (bir:inputs instruction)))
-       (first (bir:outputs instruction))))
+       (bir:output instruction)))
 
 (defmethod translate-simple-instruction ((instruction bir:call) abi)
   (declare (ignore abi))
   (let* ((inputs (bir:inputs instruction))
          (iinputs (mapcar #'in inputs))
-         (output (first (bir:outputs instruction))))
+         (output (bir:output instruction)))
     (out (closure-call-or-invoke
           (first iinputs) (rest iinputs)
           :label (datum-name-as-string output))
@@ -711,7 +708,7 @@
 (defmethod translate-simple-instruction
     ((instruction bir:mv-local-call) abi)
   (declare (ignore abi))
-  (let* ((output (first (bir:outputs instruction)))
+  (let* ((output (bir:output instruction))
          (oname (datum-name-as-string output))
          (callee (bir:callee instruction))
          (callee-info (find-llvm-function-info callee))
@@ -727,7 +724,7 @@
 
 (defmethod translate-simple-instruction ((instruction bir:mv-call) abi)
   (declare (ignore abi))
-  (let ((output (first (bir:outputs instruction))))
+  (let ((output (bir:output instruction)))
     (out (%intrinsic-invoke-if-landing-pad-or-call
           "cc_call_multipleValueOneFormCallWithRet0"
           (list (in (first (bir:inputs instruction)))
@@ -737,7 +734,7 @@
 
 (defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
                                          abi)
-  (let ((output (first (bir:outputs instruction))))
+  (let ((output (bir:output instruction)))
     (out (unsafe-multiple-value-foreign-call
           (cc-bir:function-name instruction)
           (mapcar #'in (bir:inputs instruction)) abi
@@ -746,12 +743,11 @@
 
 (defmethod translate-simple-instruction
     ((instruction cc-bir:foreign-call-pointer) abi)
-  (let ((inputs (bir:inputs instruction))
-        (output (first (bir:outputs instruction))))
+  (let ((inputs (bir:inputs instruction)))
     (out (clasp-cleavir:unsafe-foreign-call-pointer
           :call (cc-bir:foreign-types instruction) (in (first inputs))
           (mapcar #'in (rest inputs)) abi)
-         output)))
+         (bir:output instruction))))
 
 (defmethod translate-simple-instruction
     ((instruction cc-bir:defcallback) (abi abi-x86-64))
@@ -765,7 +761,7 @@
 (defmethod translate-simple-instruction
     ((instruction bir:fixed-to-multiple) (abi abi-x86-64))
   (let* ((inputs (bir:inputs instruction))
-         (output (first (bir:outputs instruction)))
+         (output (bir:output instruction))
          (outputrt (cc-bmir:rtype output))
          (ninputs (length inputs)))
     (assert (equal (length outputrt) ninputs))
@@ -849,15 +845,15 @@
   (declare (ignore abi))
   (out (cmp::gen-memref-address (in (first (bir:inputs inst)))
                                 (cc-bmir:offset inst))
-       (first (bir:outputs inst))))
+       (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:load) abi)
   (declare (ignore abi))
   (out (cmp:irc-load-atomic (in (first (bir:inputs inst)))
                             :order (cmp::order-spec->order (cc-bir:order inst))
                             :label (datum-name-as-string
-                                    (first (bir:outputs inst))))
-       (first (bir:outputs inst))))
+                                    (bir:output inst)))
+       (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:store) abi)
   (declare (ignore abi))
@@ -876,9 +872,8 @@
                         (in (second (bir:inputs inst)))
                         (in (third (bir:inputs inst)))
                         :order (cmp::order-spec->order (cc-bir:order inst))
-                        :label (datum-name-as-string
-                                (first (bir:outputs inst))))
-       (first (bir:outputs inst))))
+                        :label (datum-name-as-string (bir:output inst)))
+       (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst bir:primop) abi)
   (declare (ignore abi))
@@ -982,7 +977,7 @@
   (out (cmp:gen-rack-ref (in (first (bir:inputs inst)))
                          (in (second (bir:inputs inst)))
                          :order (cmp::order-spec->order (cc-bir:order inst)))
-       (first (bir:outputs inst))))
+       (bir:output inst)))
 (defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-write) abi)
   (declare (ignore abi))
   (cmp:gen-rack-set (in (second (bir:inputs inst)))
@@ -999,9 +994,8 @@
                         (in (first (bir:inputs inst)))
                         (in (second (bir:inputs inst)))
                         :order (cmp::order-spec->order (cc-bir:order inst))
-                        :label (datum-name-as-string
-                                (first (bir:outputs inst))))
-       (first (bir:outputs inst))))
+                        :label (datum-name-as-string (bir:output inst)))
+       (bir:output inst)))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to
@@ -1022,7 +1016,7 @@
            (in (first inputs)) (in (second inputs)) (cc-bir:element-type inst)
            (%default-int-type abi))
           :order (cmp::order-spec->order (cc-bir:order inst)))
-         (first (bir:outputs inst)))))
+         (bir:output inst))))
 (defmethod translate-simple-instruction ((inst cc-bir:vset) abi)
   (let ((inputs (bir:inputs inst)))
     (cmp:irc-store-atomic
@@ -1040,7 +1034,7 @@
            (in (third inputs)) (in (fourth inputs)) et
            (%default-int-type abi))
           (in (first inputs)) (in (second inputs)))
-         (first (bir:outputs inst)))))
+         (bir:output inst))))
 
 (defun values-collect-multi (inst)
   ;; First, assert that there's only one input that isn't a values-save.
@@ -1153,19 +1147,19 @@
                (declare (ignore stackpos))
                (%intrinsic-call "cc_load_values" (list storage1 storage2))))
            (values-collect-multi inst))
-       (first (bir:outputs inst))))
+       (bir:output inst)))
 
 (defmethod translate-simple-instruction
     ((inst bir:load-time-value-reference) abi)
   (declare (ignore abi))
   (out (let* ((ltv (first (bir:inputs inst)))
               (index (gethash ltv *constant-values*))
-              (label (datum-name-as-string (first (bir:outputs inst)))))
+              (label (datum-name-as-string (bir:output inst))))
          (cmp:irc-load
           (cmp:irc-gep-variable (literal:ltv-global)
                                 (list (%size_t 0) (%i64 index))
                                 label)))
-       (first (bir:outputs inst))))
+       (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst bir:constant-reference)
                                          abi)
@@ -1186,7 +1180,7 @@
                                     label)
               label)
              immediate-or-index))
-       (first (bir:outputs inst))))
+       (bir:output inst)))
 
 (defmethod translate-simple-instruction
     ((inst cc-bmir:unboxed-constant-reference) abi)

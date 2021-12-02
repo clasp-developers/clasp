@@ -130,7 +130,7 @@
   ;; actual type tests, which need multiple values, should have been turned
   ;; into mv calls by this point. but out of an abundance of caution,
   (if (symbolp (bir:type-check-function inst))
-      (use-rtype (first (bir:outputs inst)))
+      (use-rtype (bir:output inst))
       :multiple-values))
 (defmethod %use-rtype ((inst bir:fixed-to-multiple) (datum bir:datum))
   ;; Use the destination rtype
