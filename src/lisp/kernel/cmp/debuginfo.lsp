@@ -245,7 +245,7 @@
                 :created))))
 
 (defparameter *trap-zero-lineno* nil)
-(defun get-dilocation (spi fn-scope dbg-current-scope)
+(defun get-dilocation (spi dbg-current-scope)
   (let ((file-handle (core:source-pos-info-file-handle spi))
         (lineno (core:source-pos-info-lineno spi))
         (col (core:source-pos-info-column spi))
@@ -258,15 +258,15 @@
                                  lineno
                                  col
                                  dbg-current-scope #+(or)(cached-function-scope (core:source-pos-info-function-scope spi))
-                                 (get-dilocation inlined-at fn-scope dbg-current-scope))
+                                 (get-dilocation inlined-at dbg-current-scope))
         (llvm-sys:get-dilocation (thread-local-llvm-context)
                                  lineno
                                  col
                                  dbg-current-scope))))
 
-(defun dbg-set-irbuilder-source-location (irbuilder spi &optional fn-scope)
+(defun dbg-set-irbuilder-source-location (irbuilder spi)
   (when *dbg-generate-dwarf*
-    (let ((diloc (get-dilocation spi fn-scope *dbg-current-scope*)))
+    (let ((diloc (get-dilocation spi *dbg-current-scope*)))
       (llvm-sys:set-current-debug-location irbuilder diloc))))
 
 (defun dbg-create-auto-variable (&key (scope *dbg-current-scope*)
@@ -301,20 +301,20 @@
                                        llvm-sys:diflags-enum
                                        '(llvm-sys:diflags-zero))))
 
-(defun set-instruction-source-position (origin function-metadata fn-scope)
+(defun set-instruction-source-position (origin function-metadata)
   (when *dbg-generate-dwarf*
     (if origin
         (let ((source-pos-info (if (consp origin) (car origin) origin))
               (*dbg-current-scope* function-metadata))
-          (dbg-set-irbuilder-source-location *irbuilder* source-pos-info fn-scope))
+          (dbg-set-irbuilder-source-location *irbuilder* source-pos-info))
         (dbg-clear-irbuilder-source-location *irbuilder*))))
 
-(defun do-debug-info-source-position (origin fn-scope body-lambda)
+(defun do-debug-info-source-position (origin body-lambda)
   (unwind-protect
        (progn
-         (set-instruction-source-position origin *dbg-current-function-metadata* fn-scope)
+         (set-instruction-source-position origin *dbg-current-function-metadata*)
          (funcall body-lambda))
-    (set-instruction-source-position nil *dbg-current-function-metadata* fn-scope)))
+    (set-instruction-source-position nil *dbg-current-function-metadata*)))
 
-(defmacro with-debug-info-source-position ((origin fn-scope) &body body)
-  `(do-debug-info-source-position ,origin ,fn-scope (lambda () ,@body)))
+(defmacro with-debug-info-source-position ((origin) &body body)
+  `(do-debug-info-source-position ,origin (lambda () ,@body)))

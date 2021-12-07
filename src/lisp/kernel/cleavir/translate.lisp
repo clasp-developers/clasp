@@ -107,16 +107,14 @@
   (declare (ignore abi))
   (cmp:with-debug-info-source-position ((ensure-origin
                                          (bir:origin instruction)
-                                         999902)
-                                        cmp:*current-function*)
+                                         999902))
     (call-next-method)))
 (defmethod translate-terminator :around
     ((instruction bir:instruction) abi next)
   (declare (ignore abi next))
   (cmp:with-debug-info-source-position ((ensure-origin
                                          (bir:origin instruction)
-                                         999903)
-                                        cmp:*current-function*)
+                                         999903))
     (call-next-method)))
 
 (defmethod translate-terminator ((instruction bir:unreachable)
@@ -1273,7 +1271,7 @@
                             (cmp::gen-memref-address closure-vec offset))))
            (source-pos-info (function-source-pos-info ir)))
       ;; Tail call the real function.
-      (cmp:with-debug-info-source-position (source-pos-info the-function)
+      (cmp:with-debug-info-source-position (source-pos-info)
         (cmp:irc-ret
          (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
                 (c
@@ -1360,7 +1358,7 @@
         (cmp:irc-set-insert-point-basic-block entry-block
                                               cmp:*irbuilder-function-alloca*)
         (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-          (cmp:with-debug-info-source-position (source-pos-info the-function)
+          (cmp:with-debug-info-source-position (source-pos-info)
             (cmp:with-dbg-lexical-block
                 (:lineno (core:source-pos-info-lineno source-pos-info))
               (layout-main-function* the-function function
@@ -1409,7 +1407,7 @@
                   (cmp:irc-set-insert-point-basic-block entry-block
                                                         cmp:*irbuilder-function-alloca*)
                   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-                    (cmp:with-debug-info-source-position (source-pos-info xep-arity-function)
+                    (cmp:with-debug-info-source-position (source-pos-info)
                       (let* ((fn-args (llvm-sys:get-argument-list xep-arity-function))
                              (lambda-list (bir:lambda-list function))
                              (cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
