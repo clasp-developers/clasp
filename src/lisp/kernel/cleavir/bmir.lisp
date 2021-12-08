@@ -33,6 +33,15 @@
   (list (cc-bmir:rtype (bir:input inst))
         (cc-bmir:rtype (bir:output inst))))
 
+;;; This instruction is lowered from bir:fixed-values-save.
+;;; It takes multiple values as input and outputs a list of objects.
+;;; Unlike a cast, it accepts only multiple values with a specific count.
+(defclass mtf (bir:one-input bir:one-output bir:instruction)
+  ((%nvalues :initarg :nvalues :reader bir:nvalues)))
+
+(defmethod bir::disassemble-instruction-extra append ((inst mtf))
+  (list (bir:nvalues inst)))
+
 ;;; This is a possible lowering of bir:constant-reference.
 ;;; We use an instruction because for unboxed constants we don't need the
 ;;; constant to be registered in the module or anything.

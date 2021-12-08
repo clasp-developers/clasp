@@ -37,6 +37,8 @@
   :multiple-values)
 (defmethod %definition-rtype ((inst bir:values-save) (datum bir:datum))
   (definition-rtype (bir:input inst)))
+(defmethod %definition-rtype ((inst cc-bmir:mtf) (datum bir:datum))
+  (loop repeat (bir:nvalues inst) collect :object))
 (defmethod %definition-rtype ((inst bir:values-collect) (datum bir:datum))
   (if (= (length (bir:inputs inst)) 1)
       (definition-rtype (first (bir:inputs inst)))
@@ -114,6 +116,8 @@
       :multiple-values '(:object)))
 (defmethod %use-rtype ((inst bir:returni) (datum bir:datum)) :multiple-values)
 (defmethod %use-rtype ((inst bir:values-save) (datum bir:datum))
+  (use-rtype (bir:output inst)))
+(defmethod %use-rtype ((inst cc-bmir:mtf) (datum bir:datum))
   (use-rtype (bir:output inst)))
 (defmethod %use-rtype ((inst bir:values-collect) (datum bir:datum))
   (if (= (length (bir:inputs inst)) 1)
@@ -390,6 +394,7 @@
            ;; We also don't merge iblocks because we're mostly done optimizing
            ;; at this point anyway.
            (bir:replace-uses input output)))))
+(defmethod insert-casts ((inst cc-bmir:mtf)))
 (defmethod insert-casts ((instruction bir:values-collect))
   (let* ((inputs (bir:inputs instruction)) (output (bir:output instruction))
          (outputrt (cc-bmir:rtype output)))

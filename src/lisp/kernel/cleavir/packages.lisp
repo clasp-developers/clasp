@@ -112,7 +112,7 @@
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store #:cas)
-  (:export #:cast #:unboxed-constant-reference)
+  (:export #:cast #:mtf #:unboxed-constant-reference)
   (:export #:datum #:output #:phi #:variable)
   (:export #:rtype)
   (:export #:cast-one))

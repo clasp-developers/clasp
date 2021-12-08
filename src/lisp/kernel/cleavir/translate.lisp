@@ -1034,6 +1034,27 @@
           (in (first inputs)) (in (second inputs)))
          (bir:output inst))))
 
+(defmethod translate-simple-instruction ((inst cc-bmir:mtf) abi)
+  (declare (ignore abi))
+  (let* ((input (bir:input inst)) (output (bir:output inst))
+         (irt (cc-bmir:rtype input)) (ort (cc-bmir:rtype output)))
+    (out
+     (cond ((listp irt)
+            (assert (equal irt ort))
+            (in input)) ; nop
+           ((eq irt :multiple-values)
+            (let ((nvalues (bir:nvalues inst)))
+              (case nvalues
+                ((0) nil)
+                ((1) (cmp:irc-tmv-primary (in input)))
+                (t (let ((inp (in input)))
+                     (cons (cmp:irc-tmv-primary inp)
+                           (loop for i from 1 below nvalues
+                                 collect (cmp:irc-load
+                                          (return-value-elt i)))))))))
+           (t (error "BUG: Bad rtype ~a" irt)))
+     output)))
+
 (defun values-collect-multi (inst)
   ;; First, assert that there's only one input that isn't a values-save.
   (loop with seen-non-save = nil
@@ -1139,11 +1160,28 @@
   (out (if (= (length (bir:inputs inst)) 1)
            (let* ((inp (first (bir:inputs inst)))
                   (vs (bir:definition inp)))
-             (check-type vs bir:values-save)
-             (destructuring-bind (stackpos storage1 storage2)
-                 (dynenv-storage vs)
-               (declare (ignore stackpos))
-               (%intrinsic-call "cc_load_values" (list storage1 storage2))))
+             (etypecase vs
+               (bir:values-save
+                (destructuring-bind (stackpos storage1 storage2)
+                    (dynenv-storage vs)
+                  (declare (ignore stackpos))
+                  (%intrinsic-call "cc_load_values"
+                                   (list storage1 storage2))))
+               (cc-bmir:mtf
+                (let* ((irt (cc-bmir:rtype inp))
+                       (lirt (length irt))
+                       (dat (in inp)))
+                  ;; FIXME: In safe code, we might want to check that the
+                  ;; values count is correct,
+                  ;; if the type tests do not do this already.
+                  (case lirt
+                    ((0) (cmp:irc-make-tmv (%size_t 0) (%nil)))
+                    ((1) (cmp:irc-make-tmv (%size_t 1) dat))
+                    (otherwise
+                     (loop for i from 1
+                           for idat in (rest dat)
+                           do (cmp:irc-store idat (return-value-elt i)))
+                     (cmp:irc-make-tmv (%size_t lirt) (first dat))))))))
            (values-collect-multi inst))
        (bir:output inst)))
 
