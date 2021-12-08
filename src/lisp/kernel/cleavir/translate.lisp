@@ -1577,8 +1577,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (ver module "optimize vars")
   (bir-transformations:meta-evaluate-module module system)
   (ver module "meta")
-  (cc-bir-to-bmir:reduce-module-typeqs module)
-  (cc-bir-to-bmir:reduce-module-primops module)
+  (cc-bir-to-bmir:reduce-module-instructions module)
   (bir-transformations:module-generate-type-checks module system)
   ;; These should happen after higher level optimizations since they are like
   ;; "post passes" which do not modify the flow graph.

@@ -102,8 +102,7 @@
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)
   (:local-nicknames (#:bir #:cleavir-bir))
-  (:export #:reduce-module-typeqs)
-  (:export #:reduce-module-primops)
+  (:export #:reduce-module-instructions)
   (:export #:assign-module-rtypes #:insert-casts-into-module))
 
 (defpackage #:clasp-cleavir-bmir
