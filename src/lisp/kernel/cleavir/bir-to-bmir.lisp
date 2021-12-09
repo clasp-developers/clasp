@@ -109,14 +109,11 @@
      :nvalues (bir:nvalues inst)
      :inputs (bir:inputs inst) :outputs (bir:outputs inst))
    inst)
-  (let ((nde (bir:dynamic-environment inst)))
-    (cleavir-set:doset (s (bir:scope inst))
-      (setf (bir:dynamic-environment s) nde))
-    (bir:replace-terminator
-     (make-instance 'bir:jump
-       :origin (bir:origin inst) :policy (bir:policy inst)
-       :inputs () :outputs () :next (bir:next inst))
-     inst)))
+  (bir:replace-terminator
+   (make-instance 'bir:jump
+     :origin (bir:origin inst) :policy (bir:policy inst)
+     :inputs () :outputs () :next (bir:next inst))
+   inst))
 
 (defun reduce-instructions (function)
   (bir:map-local-instructions #'reduce-instruction function))

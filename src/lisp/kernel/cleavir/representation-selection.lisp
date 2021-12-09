@@ -392,8 +392,6 @@
           (t
            ;; The number of values is fixed, so this is a nop to delete.
            (assert (equal inputrt outputrt))
-           (cleavir-set:doset (s (cleavir-bir:scope instruction))
-             (setf (cleavir-bir:dynamic-environment s) nde))
            (cleavir-bir:replace-terminator
             (make-instance 'bir:jump
               :origin (bir:origin instruction) :policy (bir:policy instruction)
