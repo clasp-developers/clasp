@@ -364,7 +364,15 @@
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:mv-call))
   (object-input instruction (first (bir:inputs instruction)))
-  (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
+  ;; If we have fixed values, we can use that, but need all objects.
+  ;; Otherwise make sure we have multiple values.
+  (let* ((args (second (bir:inputs instruction)))
+         (args-rtype (cc-bmir:rtype args)))
+    (if (listp args-rtype)
+        (maybe-cast-before instruction args
+                           (make-list (length args-rtype)
+                                      :initial-element :object))
+        (maybe-cast-before instruction args :multiple-values)))
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:local-call))
   (object-inputs instruction (rest (bir:inputs instruction)))

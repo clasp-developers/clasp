@@ -722,13 +722,23 @@
 
 (defmethod translate-simple-instruction ((instruction bir:mv-call) abi)
   (declare (ignore abi))
-  (let ((output (bir:output instruction)))
-    (out (%intrinsic-invoke-if-landing-pad-or-call
+  (let* ((fun (in (first (bir:inputs instruction))))
+         (bargs (second (bir:inputs instruction)))
+         (args-rtype (cc-bmir:rtype bargs))
+         (args (in bargs))
+         (output (bir:output instruction))
+         (label (datum-name-as-string output)))
+    (out
+     (if (listp args-rtype)
+         ;; fixed inputs - we can do a normal call
+         (let ((rargs (if (= (length args-rtype) 1) (list args) args)))
+           (closure-call-or-invoke fun rargs :label label))
+         ;; actual multiple value call
+         (%intrinsic-invoke-if-landing-pad-or-call
           "cc_call_multipleValueOneFormCallWithRet0"
-          (list (in (first (bir:inputs instruction)))
-                (in (second (bir:inputs instruction))))
-          (datum-name-as-string output))
-         output)))
+          (list fun args)
+          (datum-name-as-string output)))
+     output)))
 
 (defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
                                          abi)
