@@ -27,8 +27,8 @@
     (or key-flag varest-p)))
 
 (defun nontrivial-mv-local-call-p (call)
-  (and (typep call 'bir:mv-local-call)
-       (not (listp (cc-bmir:rtype (second (bir:inputs call)))))))
+  (typep call '(and bir:mv-local-call
+                (not cc-bmir:fixed-mv-local-call))))
 
 (defun xep-needed-p (function)
   (or (bir:enclose function)
@@ -715,23 +715,35 @@
          (callee-info (find-llvm-function-info callee))
          (mvarg (second (bir:inputs instruction)))
          (mvargrt (cc-bmir:rtype mvarg))
-         (mvargi (in mvarg)))
+         (mvargi (in mvarg))
+         (tmv (in (second (bir:inputs instruction)))))
+    (assert (eq mvargrt :multiple-values))
     (out
-     (if (listp mvargrt)
-         ;; Fixed value inputs, so just do a normal local call
-         (gen-local-call callee (if (= (length mvargrt) 1)
-                                    (list mvargi)
-                                    mvargi))
-         ;; Actual multiple value call
-         (let ((tmv (in (second (bir:inputs instruction)))))
-           (multiple-value-bind (req opt rest-var key-flag keyargs
-                                 aok aux varest-p)
-               (cmp::process-bir-lambda-list (bir:lambda-list callee))
-             (declare (ignore keyargs aok aux))
-             (if (or key-flag varest-p)
-                 (general-mv-local-call callee-info tmv oname)
-                 (direct-mv-local-call
-                  tmv callee-info (car req) (car opt) rest-var oname)))))
+     (multiple-value-bind (req opt rest-var key-flag keyargs
+                           aok aux varest-p)
+         (cmp::process-bir-lambda-list (bir:lambda-list callee))
+       (declare (ignore keyargs aok aux))
+       (if (or key-flag varest-p)
+           (general-mv-local-call callee-info tmv oname)
+           (direct-mv-local-call
+            tmv callee-info (car req) (car opt) rest-var oname)))
+     output)))
+
+(defmethod translate-simple-instruction
+    ((instruction cc-bmir:fixed-mv-local-call) abi)
+  (declare (ignore abi))
+  (let* ((output (bir:output instruction))
+         (oname (datum-name-as-string output))
+         (callee (bir:callee instruction))
+         (mvarg (second (bir:inputs instruction)))
+         (mvargrt (cc-bmir:rtype mvarg))
+         (mvargi (in mvarg)))
+    (assert (and (listp mvargrt)
+                 (= (length mvargrt) (bir:nvalues instruction))))
+    (out
+     (gen-local-call callee (if (= (length mvargrt) 1)
+                                (list mvargi)
+                                mvargi))
      output)))
 
 (defmethod translate-simple-instruction ((instruction bir:mv-call) abi)
@@ -742,16 +754,28 @@
          (args (in bargs))
          (output (bir:output instruction))
          (label (datum-name-as-string output)))
+    (assert (eq args-rtype :multiple-values))
     (out
-     (if (listp args-rtype)
-         ;; fixed inputs - we can do a normal call
-         (let ((rargs (if (= (length args-rtype) 1) (list args) args)))
-           (closure-call-or-invoke fun rargs :label label))
-         ;; actual multiple value call
-         (%intrinsic-invoke-if-landing-pad-or-call
-          "cc_call_multipleValueOneFormCallWithRet0"
-          (list fun args)
-          (datum-name-as-string output)))
+     (%intrinsic-invoke-if-landing-pad-or-call
+      "cc_call_multipleValueOneFormCallWithRet0"
+      (list fun args)
+      (datum-name-as-string output))
+     output)))
+
+(defmethod translate-simple-instruction ((instruction cc-bmir:fixed-mv-call)
+                                         abi)
+  (declare (ignore abi))
+  (let* ((fun (in (first (bir:inputs instruction))))
+         (bargs (second (bir:inputs instruction)))
+         (args-rtype (cc-bmir:rtype bargs))
+         (args (in bargs))
+         (output (bir:output instruction))
+         (label (datum-name-as-string output)))
+    (assert (= (and (listp args-rtype)
+                    (= (length args-rtype) (bir:nvalues instruction)))))
+    (out
+     (let ((rargs (if (= (length args-rtype) 1) (list args) args)))
+       (closure-call-or-invoke fun rargs :label label))
      output)))
 
 (defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)

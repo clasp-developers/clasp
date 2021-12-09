@@ -291,6 +291,19 @@
             (bir:outputs cast) (list datum))))
   (values))
 
+;;; This is different from above because MTF is not a cast, as mentioned
+;;; in bmir.lisp where it's defined.
+(defun insert-mtf-before (inst datum target)
+  (let* ((new (make-instance 'cc-bmir:output
+                :rtype target :derived-type (bir:ctype datum)))
+         (mtf (make-instance 'cc-bmir:mtf
+                :origin (bir:origin inst) :policy (bir:policy inst)
+                :nvalues (length target) :outputs (list new))))
+    (bir:insert-instruction-before mtf inst)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs mtf) (list datum)))
+  (values))
+
 (defgeneric insert-casts (instruction))
 
 (defun cast-inputs (instruction needed-rtype
@@ -364,28 +377,38 @@
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:mv-call))
   (object-input instruction (first (bir:inputs instruction)))
-  ;; If we have fixed values, we can use that, but need all objects.
-  ;; Otherwise make sure we have multiple values.
+  ;; NOTE: If for some reason the rtype here is a fixed number of values,
+  ;; we are working very suboptimally - this could have been a fixed-mv-call.
+  ;; Type inference is being stupid.
+  ;; This applies to mv-local-call, below, as well.
+  (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
+  (cast-output instruction :multiple-values))
+(defmethod insert-casts ((instruction cc-bmir:fixed-mv-call))
+  (object-input instruction (first (bir:inputs instruction)))
   (let* ((args (second (bir:inputs instruction)))
-         (args-rtype (cc-bmir:rtype args)))
-    (if (listp args-rtype)
-        (maybe-cast-before instruction args
-                           (make-list (length args-rtype)
-                                      :initial-element :object))
-        (maybe-cast-before instruction args :multiple-values)))
+         (args-rtype (cc-bmir:rtype args))
+         (nvalues (bir:nvalues instruction))
+         (target (make-list nvalues :initial-element :object)))
+    (cond ((listp args-rtype)
+           (assert (= (length args-rtype) nvalues))
+           (maybe-cast-before instruction args target))
+          (t (insert-mtf-before instruction args target))))
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:local-call))
   (object-inputs instruction (rest (bir:inputs instruction)))
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:mv-local-call))
-  ;; Ditto mv-call, above.
+  (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
+  (cast-output instruction :multiple-values))
+(defmethod insert-casts ((instruction cc-bmir:fixed-mv-local-call))
   (let* ((args (second (bir:inputs instruction)))
-         (args-rtype (cc-bmir:rtype args)))
-    (if (listp args-rtype)
-        (maybe-cast-before instruction args
-                           (make-list (length args-rtype)
-                                      :initial-element :object))
-        (maybe-cast-before instruction args :multiple-values)))
+         (args-rtype (cc-bmir:rtype args))
+         (nvalues (bir:nvalues instruction))
+         (target (make-list nvalues :initial-element :object)))
+    (cond ((listp args-rtype)
+           (assert (= (length args-rtype) nvalues))
+           (maybe-cast-before instruction args target))
+          (t (insert-mtf-before instruction args target))))
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction cc-bir:mv-foreign-call))
   (object-inputs instruction)

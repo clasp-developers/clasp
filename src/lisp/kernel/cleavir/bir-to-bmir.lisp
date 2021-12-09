@@ -115,6 +115,32 @@
      :inputs () :outputs () :next (bir:next inst))
    inst))
 
+(defmethod reduce-instruction ((inst bir:mv-call))
+  ;; Reduce to cc-bmir:fixed-mv-call if the type has a fixed # of values.
+  ;; FIXME: Is it a good idea to use type information this late? It
+  ;; ought to be harmless, but it's different.
+  (let* ((args (second (bir:inputs inst)))
+         (argsct (bir:ctype args))
+         (sys clasp-cleavir:*clasp-system*)
+         (req (cleavir-ctype:values-required argsct sys))
+         (opt (cleavir-ctype:values-optional argsct sys))
+         (rest (cleavir-ctype:values-rest argsct sys)))
+    (when (and (cleavir-ctype:bottom-p rest clasp-cleavir:*clasp-system*)
+               (null opt))
+      (change-class inst 'cc-bmir:fixed-mv-call :nvalues (length req)))))
+
+(defmethod reduce-instruction ((inst bir:mv-local-call))
+  (let* ((args (second (bir:inputs inst)))
+         (argsct (bir:ctype args))
+         (sys clasp-cleavir:*clasp-system*)
+         (req (cleavir-ctype:values-required argsct sys))
+         (opt (cleavir-ctype:values-optional argsct sys))
+         (rest (cleavir-ctype:values-rest argsct sys)))
+    (when (and (cleavir-ctype:bottom-p rest clasp-cleavir:*clasp-system*)
+               (null opt))
+      (change-class inst 'cc-bmir:fixed-mv-local-call
+                    :nvalues (length req)))))
+
 (defun reduce-instructions (function)
   (bir:map-local-instructions #'reduce-instruction function))
 

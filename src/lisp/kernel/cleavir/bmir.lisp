@@ -42,6 +42,17 @@
 (defmethod bir::disassemble-instruction-extra append ((inst mtf))
   (list (bir:nvalues inst)))
 
+;;; This instruction is lowered from bir:mv-call when the number of
+;;; arguments can be determined by the compiler. It is compiled into a
+;;; simple call instead of an actual mv-sensitive call.
+(defclass fixed-mv-call (bir:mv-call)
+  (;; The determined argument count.
+   (%nvalues :initarg :nvalues :reader bir:nvalues)))
+
+;;; Ditto, but for local calls.
+(defclass fixed-mv-local-call (bir:mv-local-call)
+  ((%nvalues :initarg :nvalues :reader bir:nvalues)))
+
 ;;; This is a possible lowering of bir:constant-reference.
 ;;; We use an instruction because for unboxed constants we don't need the
 ;;; constant to be registered in the module or anything.
