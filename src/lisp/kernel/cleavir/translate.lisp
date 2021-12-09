@@ -26,12 +26,16 @@
     (declare (ignore reqargs optargs rest-var keyargs aok aux))
     (or key-flag varest-p)))
 
+(defun nontrivial-mv-local-call-p (call)
+  (and (typep call 'bir:mv-local-call)
+       (not (listp (cc-bmir:rtype (second (bir:inputs call)))))))
+
 (defun xep-needed-p (function)
   (or (bir:enclose function)
       ;; We need a XEP for more involved lambda lists.
       (lambda-list-too-hairy-p (bir:lambda-list function))
       ;; or for mv-calls that might need to signal an error.
-      (and (cleavir-set:some (lambda (c) (typep c 'bir:mv-local-call))
+      (and (cleavir-set:some #'nontrivial-mv-local-call-p
                              (bir:local-calls function))
            (multiple-value-bind (req opt rest)
                (cmp:process-bir-lambda-list (bir:lambda-list function))
@@ -511,8 +515,7 @@
 (defun enclose (code-info extent &optional (delay t))
   (let* ((environment (environment code-info))
          (enclosed-xep-group (xep-function code-info))
-         (entry-point-reference (cmp:xep-group-entry-point-reference enclosed-xep-group))
-         (function-description (xep-function-description code-info)))
+         (entry-point-reference (cmp:xep-group-entry-point-reference enclosed-xep-group)))
     (when (eq enclosed-xep-group :xep-unallocated)
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
     (if environment
@@ -552,7 +555,7 @@
         ;; referenced as literal.
         (%closurette-value enclosed-xep-group))))
 
-(defun gen-local-call (callee lisp-arguments)
+(defun gen-local-call (callee arguments)
   (let ((callee-info (find-llvm-function-info callee)))
     (cond ((lambda-list-too-hairy-p (bir:lambda-list callee))
            ;; Has &key or something, so use the normal call protocol.
@@ -564,7 +567,7 @@
            ;;  FIXME we could use that instead?)
            (closure-call-or-invoke
             (enclose callee-info :dynamic nil)
-            (mapcar #'in lisp-arguments)))
+            arguments))
           (t
            ;; Call directly.
            ;; Note that Cleavir doesn't make local-calls if there's an
@@ -580,7 +583,7 @@
                     (subargs
                       (parse-local-call-arguments
                        (car req) (car opt) rest-id
-                       (mapcar #'in lisp-arguments)))
+                       arguments))
                     (args (append (mapcar #'variable-as-argument
                                           (environment callee-info))
                                   subargs))
@@ -596,7 +599,7 @@
                                          abi)
   (declare (ignore abi))
   (out (gen-local-call (bir:callee instruction)
-                       (rest (bir:inputs instruction)))
+                       (mapcar #'in (rest (bir:inputs instruction))))
        (bir:output instruction)))
 
 (defmethod translate-simple-instruction ((instruction bir:call) abi)
@@ -710,15 +713,26 @@
          (oname (datum-name-as-string output))
          (callee (bir:callee instruction))
          (callee-info (find-llvm-function-info callee))
-         (tmv (in (second (bir:inputs instruction)))))
-    (multiple-value-bind (req opt rest-var key-flag keyargs aok aux varest-p)
-        (cmp::process-bir-lambda-list (bir:lambda-list callee))
-      (declare (ignore keyargs aok aux))
-      (out (if (or key-flag varest-p)
-               (general-mv-local-call callee-info tmv oname)
-               (direct-mv-local-call
-                tmv callee-info (car req) (car opt) rest-var oname))
-           output))))
+         (mvarg (second (bir:inputs instruction)))
+         (mvargrt (cc-bmir:rtype mvarg))
+         (mvargi (in mvarg)))
+    (out
+     (if (listp mvargrt)
+         ;; Fixed value inputs, so just do a normal local call
+         (gen-local-call callee (if (= (length mvargrt) 1)
+                                    (list mvargi)
+                                    mvargi))
+         ;; Actual multiple value call
+         (let ((tmv (in (second (bir:inputs instruction)))))
+           (multiple-value-bind (req opt rest-var key-flag keyargs
+                                 aok aux varest-p)
+               (cmp::process-bir-lambda-list (bir:lambda-list callee))
+             (declare (ignore keyargs aok aux))
+             (if (or key-flag varest-p)
+                 (general-mv-local-call callee-info tmv oname)
+                 (direct-mv-local-call
+                  tmv callee-info (car req) (car opt) rest-var oname)))))
+     output)))
 
 (defmethod translate-simple-instruction ((instruction bir:mv-call) abi)
   (declare (ignore abi))
@@ -1473,9 +1487,7 @@
                                                         cmp:*irbuilder-function-alloca*)
                   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
                     (cmp:with-debug-info-source-position (source-pos-info)
-                      (let* ((fn-args (llvm-sys:get-argument-list xep-arity-function))
-                             (lambda-list (bir:lambda-list function))
-                             (cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
+                      (let* ((cleavir-lambda-list-analysis (cmp:xep-group-cleavir-lambda-list-analysis xep-group))
                              (calling-convention
                                (cmp:setup-calling-convention xep-arity-function
                                                              arity

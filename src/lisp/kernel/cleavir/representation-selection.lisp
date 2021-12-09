@@ -378,7 +378,14 @@
   (object-inputs instruction (rest (bir:inputs instruction)))
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:mv-local-call))
-  (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
+  ;; Ditto mv-call, above.
+  (let* ((args (second (bir:inputs instruction)))
+         (args-rtype (cc-bmir:rtype args)))
+    (if (listp args-rtype)
+        (maybe-cast-before instruction args
+                           (make-list (length args-rtype)
+                                      :initial-element :object))
+        (maybe-cast-before instruction args :multiple-values)))
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction cc-bir:mv-foreign-call))
   (object-inputs instruction)
