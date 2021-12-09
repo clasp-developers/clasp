@@ -1157,33 +1157,50 @@
 
 (defmethod translate-simple-instruction ((inst bir:values-collect) abi)
   (declare (ignore abi))
-  (out (if (= (length (bir:inputs inst)) 1)
-           (let* ((inp (first (bir:inputs inst)))
-                  (vs (bir:definition inp)))
-             (etypecase vs
-               (bir:values-save
-                (destructuring-bind (stackpos storage1 storage2)
-                    (dynenv-storage vs)
-                  (declare (ignore stackpos))
-                  (%intrinsic-call "cc_load_values"
-                                   (list storage1 storage2))))
-               (cc-bmir:mtf
-                (let* ((irt (cc-bmir:rtype inp))
-                       (lirt (length irt))
-                       (dat (in inp)))
-                  ;; FIXME: In safe code, we might want to check that the
+  (let ((output (bir:output inst)))
+    (out
+     (cond ((listp (cc-bmir:rtype output))
+            ;; Totally fixed values; we pretty much just alias.
+            (loop for inp in (bir:inputs inst)
+                  for rt = (cc-bmir:rtype inp)
+                  do (assert (listp rt))
+                  if (= (length rt) 1)
+                    collect (in inp) into result
+                  else
+                    append (in inp) into result
+                  finally (return (if (= (length result) 1)
+                                      (first result)
+                                      result))))
+           ;; Now output rtype must be :multiple-values.
+           ((= (length (bir:inputs inst)) 1)
+            ;; Simple case with no pasting together multiple inputs.
+            (let* ((inp (first (bir:inputs inst)))
+                   (vs (bir:definition inp)))
+              (etypecase vs
+                (bir:values-save
+                 (destructuring-bind (stackpos storage1 storage2)
+                     (dynenv-storage vs)
+                   (declare (ignore stackpos))
+                   (%intrinsic-call "cc_load_values"
+                                    (list storage1 storage2))))
+                (cc-bmir:mtf
+                 (let* ((irt (cc-bmir:rtype inp))
+                        (lirt (length irt))
+                        (dat (in inp)))
+                   ;; FIXME: In safe code, we might want to check that the
                   ;; values count is correct,
-                  ;; if the type tests do not do this already.
-                  (case lirt
-                    ((0) (cmp:irc-make-tmv (%size_t 0) (%nil)))
-                    ((1) (cmp:irc-make-tmv (%size_t 1) dat))
-                    (otherwise
-                     (loop for i from 1
-                           for idat in (rest dat)
+                   ;; if the type tests do not do this already.
+                   (case lirt
+                     ((0) (cmp:irc-make-tmv (%size_t 0) (%nil)))
+                     ((1) (cmp:irc-make-tmv (%size_t 1) dat))
+                     (otherwise
+                      (loop for i from 1
+                            for idat in (rest dat)
                            do (cmp:irc-store idat (return-value-elt i)))
-                     (cmp:irc-make-tmv (%size_t lirt) (first dat))))))))
-           (values-collect-multi inst))
-       (bir:output inst)))
+                      (cmp:irc-make-tmv (%size_t lirt) (first dat)))))))))
+           (t ; hard case
+            (values-collect-multi inst)))
+     output)))
 
 (defmethod translate-simple-instruction
     ((inst bir:load-time-value-reference) abi)

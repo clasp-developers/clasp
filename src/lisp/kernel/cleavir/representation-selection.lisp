@@ -40,9 +40,10 @@
 (defmethod %definition-rtype ((inst cc-bmir:mtf) (datum bir:datum))
   (loop repeat (bir:nvalues inst) collect :object))
 (defmethod %definition-rtype ((inst bir:values-collect) (datum bir:datum))
-  (if (= (length (bir:inputs inst)) 1)
-      (definition-rtype (first (bir:inputs inst)))
-      :multiple-values))
+  (let ((irts (mapcar #'definition-rtype (bir:inputs inst))))
+    (if (member :multiple-values irts)
+        :multiple-values
+        (reduce #'append irts))))
 (defmethod %definition-rtype ((inst cc-bir:mv-foreign-call) (datum bir:datum))
   :multiple-values)
 (defmethod %definition-rtype ((inst bir:thei) (datum bir:datum))
@@ -396,15 +397,20 @@
            (bir:replace-uses input output)))))
 (defmethod insert-casts ((inst cc-bmir:mtf)))
 (defmethod insert-casts ((instruction bir:values-collect))
-  (let* ((inputs (bir:inputs instruction)) (output (bir:output instruction))
+  (let* ((inputs (bir:inputs instruction))
+         (inputrts (mapcar #'cc-bmir:rtype inputs))
+         (output (bir:output instruction))
          (outputrt (cc-bmir:rtype output)))
     (cond ((and (= (length inputs) 1) (not (eq outputrt :multiple-values)))
            ;; fixed values, so this is a nop to delete.
            (setf (bir:inputs instruction) nil)
            (bir:replace-uses (first inputs) output)
            (bir:delete-instruction instruction))
-          (t
-           (cast-output instruction :multiple-values)))))
+          ;; If every input is fixed, we output fixed
+          ((every #'listp inputrts)
+           (cast-output instruction (reduce #'append inputrts)))
+          ;; we're outputting multiple values
+          (t (cast-output instruction :multiple-values)))))
 (defmethod insert-casts ((instruction bir:returni))
   (cast-inputs instruction :multiple-values))
 (defmethod insert-casts ((inst bir:primop))
