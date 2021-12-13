@@ -1107,10 +1107,8 @@
   ;; First, assert that there's only one input that isn't a values-save.
   (loop with seen-non-save = nil
         for input in (bir:inputs inst)
-        for outp = (typep input 'bir:output)
-        for inst = (and outp (bir:definition input))
-        if (not (or (typep inst 'bir:values-save)
-                    (listp (cc-bmir:rtype input))))
+        for rt = (cc-bmir:rtype input)
+        if (not (or (eq rt :valvec) (listp rt)))
           do (if seen-non-save
                  (error "BUG: Can only have one variable non-save-values input, but saw ~a and ~a!" inst seen-non-save)
                  (setf seen-non-save inst)))
@@ -1123,26 +1121,26 @@
          (data (loop for idx from 0
                      for input in (bir:inputs inst)
                      for in = (in input)
-                     for outputp = (typep input 'bir:output)
-                     for inst = (and outputp (bir:definition input))
-                     collect (cond ((typep inst 'bir:values-save)
+                     for irt = (cc-bmir:rtype input)
+                     collect (cond ((eq irt :valvec)
                                     (list :saved
                                           (llvm-sys:create-extract-value
                                            cmp:*irbuilder* in '(0) "nret")
                                           (llvm-sys:create-extract-value
                                            cmp:*irbuilder* in '(1) "mv")))
-                                   ((listp (cc-bmir:rtype input))
-                                    (let ((len (length (cc-bmir:rtype input))))
+                                   ((listp irt)
+                                    (let ((len (length irt)))
                                       (list :fixed
                                             (%size_t len)
                                             (list* len (if (= len 1)
                                                            (list in)
                                                            in)))))
-                                   (t
+                                   ((eq irt :multiple-values)
                                     (setf liven idx)
                                     (list :variable
                                           (cmp:irc-tmv-nret in)
-                                          (cmp:irc-tmv-primary in))))))
+                                          (cmp:irc-tmv-primary in)))
+                                   (t (error "BUG: Bad rtype ~a" irt)))))
          ;; Collect partial sums of the number of values.
          (partial-sums
            (loop for (_1 size _2) in data
@@ -1226,30 +1224,28 @@
             ;; Simple case with no pasting together multiple inputs.
             (let* ((inp (first (bir:inputs inst)))
                    (in (in inp))
-                   (vs (bir:definition inp)))
-              (etypecase vs
-                (bir:values-save
-                 (%intrinsic-call "cc_load_values"
-                                  (list
-                                   (llvm-sys:create-extract-value
-                                    cmp:*irbuilder* in '(0) "nret")
-                                   (llvm-sys:create-extract-value
-                                    cmp:*irbuilder* in '(1) "mv"))))
-                (cc-bmir:mtf
-                 (let* ((irt (cc-bmir:rtype inp))
-                        (lirt (length irt))
-                        (dat (in inp)))
-                   ;; FIXME: In safe code, we might want to check that the
-                  ;; values count is correct,
-                   ;; if the type tests do not do this already.
-                   (case lirt
-                     ((0) (cmp:irc-make-tmv (%size_t 0) (%nil)))
-                     ((1) (cmp:irc-make-tmv (%size_t 1) dat))
-                     (otherwise
-                      (loop for i from 1
-                            for idat in (rest dat)
-                           do (cmp:irc-store idat (return-value-elt i)))
-                      (cmp:irc-make-tmv (%size_t lirt) (first dat)))))))))
+                   (irt (cc-bmir:rtype inp)))
+              (cond ((eq irt :valvec)
+                     (%intrinsic-call "cc_load_values"
+                                      (list
+                                       (llvm-sys:create-extract-value
+                                        cmp:*irbuilder* in '(0) "nret")
+                                       (llvm-sys:create-extract-value
+                                        cmp:*irbuilder* in '(1) "mv"))))
+                    ((listp irt)
+                     (let* ((lirt (length irt)))
+                       ;; FIXME: In safe code, we might want to check that the
+                       ;; values count is correct,
+                       ;; if the type tests do not do this already.
+                       (case lirt
+                         ((0) (cmp:irc-make-tmv (%size_t 0) (%nil)))
+                         ((1) (cmp:irc-make-tmv (%size_t 1) in))
+                         (otherwise
+                          (loop for i from 1
+                                for idat in (rest in)
+                                do (cmp:irc-store idat (return-value-elt i)))
+                          (cmp:irc-make-tmv (%size_t lirt) (first in))))))
+                    (t (error "BUG: Bad rtype ~a" irt)))))
            (t ; hard case
             (values-collect-multi inst)))
      output)))

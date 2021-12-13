@@ -5,9 +5,13 @@
 ;;; Representation types ("rtypes")
 ;;;
 ;;; An rtype describes how a value or values is represented in the runtime.
-;;; An rtype is either :multiple-values, meaning several T_O*s stored in the
-;;; thread local multiple values vector, or a list of value rtypes. A value
-;;; rtype can be either
+;;; An rtype is either
+;;; * :multiple-values, meaning several T_O*s stored in the thread local
+;;;   multiple values vector
+;;; * :valvec, meaning several T_O*s stored in a transient vector. Output by
+;;;   e.g. values-save.
+;;; * a list of value rtypes.
+;;; A value rtype can be either
 ;;; * :object, meaning T_O*
 ;;; * :single-float, meaning an unboxed single float
 ;;; * :double-float, meaning an unboxed double float
@@ -36,12 +40,15 @@
 (defmethod %definition-rtype ((inst bir:abstract-call) (datum bir:datum))
   :multiple-values)
 (defmethod %definition-rtype ((inst bir:values-save) (datum bir:datum))
-  (definition-rtype (bir:input inst)))
+  (let ((def (definition-rtype (bir:input inst))))
+    (if (listp def)
+        def
+        :valvec)))
 (defmethod %definition-rtype ((inst cc-bmir:mtf) (datum bir:datum))
   (loop repeat (bir:nvalues inst) collect :object))
 (defmethod %definition-rtype ((inst bir:values-collect) (datum bir:datum))
   (let ((irts (mapcar #'definition-rtype (bir:inputs inst))))
-    (if (member :multiple-values irts)
+    (if (or (member :multiple-values irts) (member :valvec irts))
         :multiple-values
         (reduce #'append irts))))
 (defmethod %definition-rtype ((inst cc-bir:mv-foreign-call) (datum bir:datum))
@@ -206,9 +213,13 @@
                 ;; Shorten
                 (mapcar #'min-vrtype rt1 rt2))
                (t
-                (assert (member rt2 '(:multiple-values)))
+                (assert (member rt2 '(:valvec :multiple-values)))
                 rt1)))
         ((eq rt1 :multiple-values) rt2)
+        ((eq rt1 :valvec)
+         (if (eq rt2 :multiple-values)
+             rt1
+             rt2))
         (t (error "Bad rtype: ~a" rt1))))
 
 (defun phi-rtype (datum)
@@ -216,7 +227,7 @@
   ;; If not, then the phi could still be single-value, but only if EVERY
   ;; definition is, and otherwise we need to use multiple values.
   (let ((dest (use-rtype datum)))
-    (if (eq dest :multiple-values)
+    (if (member dest '(:valvec :multiple-values))
         (definition-rtype datum)
         dest)))
 
@@ -415,11 +426,10 @@
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:values-save))
   (let* ((input (bir:input instruction)) (output (bir:output instruction))
-         (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output))
-         (nde (bir:dynamic-environment instruction)))
+         (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output)))
     (cond ((eq outputrt :multiple-values)
            (cast-inputs instruction :multiple-values))
-          (t
+          ((listp outputrt)
            ;; The number of values is fixed, so this is a nop to delete.
            (assert (equal inputrt outputrt))
            (cleavir-bir:replace-terminator
