@@ -104,6 +104,7 @@
             %t**%
             %t*[DUMMY]%
             %t*[DUMMY]*%
+            %valvec%
             %symbol%
             %float%
             %double%

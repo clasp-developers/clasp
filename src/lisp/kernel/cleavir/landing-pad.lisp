@@ -255,17 +255,15 @@
                                           tags)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder
                         (cmp:thread-local-llvm-context)))
-    (destructuring-bind (stackpos storage1 storage2)
-        (dynenv-storage instruction)
-      (declare (ignore storage1 storage2))
-      (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
-        (cmp:irc-begin-block bb)
-        ;; Lose the saved values alloca.
-        (%intrinsic-call "llvm.stackrestore" (list stackpos))
-        ;; Continue
-        (cmp:irc-br
-         (maybe-entry-processor (cleavir-bir:parent instruction) tags))
-        bb))))
+    (let ((stackpos (dynenv-storage instruction))
+          (bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
+      (cmp:irc-begin-block bb)
+      ;; Lose the saved values alloca.
+      (%intrinsic-call "llvm.stackrestore" (list stackpos))
+      ;; Continue
+      (cmp:irc-br
+       (maybe-entry-processor (cleavir-bir:parent instruction) tags))
+      bb)))
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
                                           tags)

@@ -138,11 +138,16 @@
          (primary (cmp:irc-tmv-primary tmv))
          ;; NOTE: Must be done BEFORE the alloca.
          (save (%intrinsic-call "llvm.stacksave" nil))
-         (mv-temp (cmp:alloca-temp-values nvals)))
-    (setf (dynenv-storage inst) (list save nvals mv-temp))
-    (out (%intrinsic-call "cc_save_values" (list nvals primary mv-temp)
-                          (datum-name-as-string outp))
-         outp))
+         (mv-temp (cmp:alloca-temp-values nvals))
+         (s0 (llvm-sys:undef-value-get cmp:%valvec%))
+         (s1 (llvm-sys:create-insert-value cmp:*irbuilder* s0 nvals '(0)
+                                           "saved-values"))
+         (s2 (llvm-sys:create-insert-value cmp:*irbuilder* s1 mv-temp '(1)
+                                           "saved-values")))
+    (setf (dynenv-storage inst) save)
+    (%intrinsic-call "cc_save_values" (list nvals primary mv-temp)
+                     (datum-name-as-string outp))
+    (out s2 outp))
   ;; Continue
   (cmp:irc-br (first next)))
 
@@ -156,10 +161,7 @@
   (declare (ignore tmv)))
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
   (declare (ignore tmv))
-  (destructuring-bind (stackpos storage1 storage2)
-      (dynenv-storage dynenv)
-    (declare (ignore storage1 storage2))
-    (%intrinsic-call "llvm.stackrestore" (list stackpos))))
+  (%intrinsic-call "llvm.stackrestore" (list (dynenv-storage dynenv))))
 
 (defun translate-local-unwind (jump tmv)
   (loop with target = (bir:dynamic-environment
@@ -715,8 +717,7 @@
          (callee-info (find-llvm-function-info callee))
          (mvarg (second (bir:inputs instruction)))
          (mvargrt (cc-bmir:rtype mvarg))
-         (mvargi (in mvarg))
-         (tmv (in (second (bir:inputs instruction)))))
+         (mvargi (in mvarg)))
     (assert (eq mvargrt :multiple-values))
     (out
      (multiple-value-bind (req opt rest-var key-flag keyargs
@@ -724,16 +725,15 @@
          (cmp::process-bir-lambda-list (bir:lambda-list callee))
        (declare (ignore keyargs aok aux))
        (if (or key-flag varest-p)
-           (general-mv-local-call callee-info tmv oname)
+           (general-mv-local-call callee-info mvargi oname)
            (direct-mv-local-call
-            tmv callee-info (car req) (car opt) rest-var oname)))
+            mvargi callee-info (car req) (car opt) rest-var oname)))
      output)))
 
 (defmethod translate-simple-instruction
     ((instruction cc-bmir:fixed-mv-local-call) abi)
   (declare (ignore abi))
   (let* ((output (bir:output instruction))
-         (oname (datum-name-as-string output))
          (callee (bir:callee instruction))
          (mvarg (second (bir:inputs instruction)))
          (mvargrt (cc-bmir:rtype mvarg))
@@ -759,7 +759,7 @@
      (%intrinsic-invoke-if-landing-pad-or-call
       "cc_call_multipleValueOneFormCallWithRet0"
       (list fun args)
-      (datum-name-as-string output))
+      label)
      output)))
 
 (defmethod translate-simple-instruction ((instruction cc-bmir:fixed-mv-call)
@@ -1122,14 +1122,17 @@
          ;; separately)
          (data (loop for idx from 0
                      for input in (bir:inputs inst)
+                     for in = (in input)
                      for outputp = (typep input 'bir:output)
                      for inst = (and outputp (bir:definition input))
                      collect (cond ((typep inst 'bir:values-save)
-                                    (list* :saved
-                                           (rest (dynenv-storage inst))))
+                                    (list :saved
+                                          (llvm-sys:create-extract-value
+                                           cmp:*irbuilder* in '(0) "nret")
+                                          (llvm-sys:create-extract-value
+                                           cmp:*irbuilder* in '(1) "mv")))
                                    ((listp (cc-bmir:rtype input))
-                                    (let ((len (length (cc-bmir:rtype input)))
-                                          (in (in input)))
+                                    (let ((len (length (cc-bmir:rtype input))))
                                       (list :fixed
                                             (%size_t len)
                                             (list* len (if (= len 1)
@@ -1137,10 +1140,9 @@
                                                            in)))))
                                    (t
                                     (setf liven idx)
-                                    (let ((i (in input)))
-                                      (list :variable
-                                            (cmp:irc-tmv-nret i)
-                                            (cmp:irc-tmv-primary i)))))))
+                                    (list :variable
+                                          (cmp:irc-tmv-nret in)
+                                          (cmp:irc-tmv-primary in))))))
          ;; Collect partial sums of the number of values.
          (partial-sums
            (loop for (_1 size _2) in data
@@ -1223,14 +1225,16 @@
            ((= (length (bir:inputs inst)) 1)
             ;; Simple case with no pasting together multiple inputs.
             (let* ((inp (first (bir:inputs inst)))
+                   (in (in inp))
                    (vs (bir:definition inp)))
               (etypecase vs
                 (bir:values-save
-                 (destructuring-bind (stackpos storage1 storage2)
-                     (dynenv-storage vs)
-                   (declare (ignore stackpos))
-                   (%intrinsic-call "cc_load_values"
-                                    (list storage1 storage2))))
+                 (%intrinsic-call "cc_load_values"
+                                  (list
+                                   (llvm-sys:create-extract-value
+                                    cmp:*irbuilder* in '(0) "nret")
+                                   (llvm-sys:create-extract-value
+                                    cmp:*irbuilder* in '(1) "mv"))))
                 (cc-bmir:mtf
                  (let* ((irt (cc-bmir:rtype inp))
                         (lirt (length irt))

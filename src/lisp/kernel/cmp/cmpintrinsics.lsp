@@ -463,6 +463,12 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %tmv*% (llvm-sys:type-get-pointer-to %tmv%))
 (define-symbol-macro %tmv**% (llvm-sys:type-get-pointer-to %tmv*%))
 
+;;; Used in Cleavir compiler to represent saved values.
+(define-symbol-macro %valvec%
+  (llvm-sys:struct-type-get (thread-local-llvm-context)
+                            (list %size_t% %t**%)
+                            nil))
+
 (define-symbol-macro %gcvector-tsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %size_t% %size_t% %tsp%) nil))
 (define-symbol-macro %gcvector-symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %size_t% %size_t% %symsp%) nil))
 (define-symbol-macro %vec0-tsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %gcvector-tsp%) nil))
