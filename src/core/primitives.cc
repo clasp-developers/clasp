@@ -559,8 +559,19 @@ CL_LAMBDA(list)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(values_list)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_mv cl__values_list(List_sp list) {
-  return ValuesFromCons(list);
+CL_DEFUN T_mv cl__values_list(T_sp list) {
+  if (list.consp()) {
+    return ValuesFromCons(list);
+  } else if (list.nilp()) {
+    return Values0<T_O>();
+  } else if (gc::IsA<Vaslist_sp>(list)) {
+    Vaslist_sp vorig = gc::As_unsafe<Vaslist_sp>(list);
+    Vaslist valist_copy(*vorig);
+    Vaslist_sp valist(&valist_copy);
+    return cl__values(valist);
+  } else
+    // FIXME: Incorrect as vaslists are also allowed.
+    TYPE_ERROR(list, cl::_sym_list);
 }
 
 // Need to distinguish between nil as invalid-input and nil as the symbol found
