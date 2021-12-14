@@ -71,7 +71,7 @@
 (defclass output (datum bir:output) ())
 (defclass phi (datum bir:phi) ())
 (defclass variable (datum bir:variable) ())
+(defclass argument (datum bir:argument) ())
 
-(defmethod rtype ((datum bir:argument)) '(:object))
 (defmethod rtype ((datum bir:load-time-value)) '(:object))
 (defmethod rtype ((datum bir:constant)) '(:object))

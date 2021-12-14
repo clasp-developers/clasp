@@ -239,7 +239,6 @@
 (defmethod maybe-assign-rtype ((datum cc-bmir:output)))
 (defmethod maybe-assign-rtype ((datum cc-bmir:phi)))
 (defmethod maybe-assign-rtype ((datum cc-bmir:variable)))
-(defmethod maybe-assign-rtype ((datum bir:argument)))
 (defmethod maybe-assign-rtype ((datum bir:load-time-value)))
 (defmethod maybe-assign-rtype ((datum bir:constant)))
 (defmethod maybe-assign-rtype ((datum bir:output))
@@ -258,11 +257,28 @@
                 :rtype (if (eq (bir:extent datum) :local)
                            (variable-rtype datum)
                            '(:object))))
+(defmethod maybe-assign-rtype ((datum bir:argument))
+  (change-class datum 'cc-bmir:argument :rtype '(:object)))
 
 (defun assign-instruction-rtypes (inst)
   (mapc #'maybe-assign-rtype (bir:outputs inst)))
 
+(defun assign-lambda-list-rtypes (lambda-list)
+  (dolist (item lambda-list)
+    (typecase item
+      (symbol)
+      (cons
+       (ecase (length item)
+         ((2)
+          (maybe-assign-rtype (first item))
+          (maybe-assign-rtype (second item)))
+         ((3)
+          (maybe-assign-rtype (second item))
+          (maybe-assign-rtype (third item)))))
+      (t (maybe-assign-rtype item)))))
+
 (defun assign-function-rtypes (function)
+  (assign-lambda-list-rtypes (bir:lambda-list function))
   (bir:map-local-instructions #'assign-instruction-rtypes function))
 
 (defun assign-module-rtypes (module)
