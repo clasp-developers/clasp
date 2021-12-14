@@ -234,11 +234,12 @@
             (transforms (gethash function-name *fn-transforms*))
             (derivers (gethash function-name *derivers*))
             (folds (gethash function-name *folds*))
-            (attributes (if (or flags transforms folds)
+            (attributes (if (or flags transforms folds derivers)
                             (make-instance 'cleavir-attributes:attributes
                               :flags (or flags (cleavir-attributes:make-flags))
-                              :transforms transforms :derivers derivers
-                              :folds folds)
+                              :identities (if (or transforms folds derivers)
+                                              (list function-name)
+                                              nil))
                             (cleavir-attributes:default-attributes))))
        (make-instance 'env:global-function-info
          :name function-name

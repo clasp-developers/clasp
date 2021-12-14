@@ -118,11 +118,14 @@
                                            (progn ,@body)))))))
 
 (defmacro define-deriver (name deriver-name)
-  `(setf (gethash ',name *derivers*) '(,deriver-name)))
+  `(setf (gethash ',name *derivers*) ',deriver-name))
 
-(defmethod bir-transformations:derive-return-type ((inst bir:call) deriver
+(defmethod bir-transformations:derive-return-type ((inst bir:call) identity
                                                    (system clasp))
-  (funcall (fdefinition deriver) inst))
+  (let ((deriver (gethash identity *derivers*)))
+    (if deriver
+        (funcall deriver inst)
+        (call-next-method))))
 
 ;;;
 
