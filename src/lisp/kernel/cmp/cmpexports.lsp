@@ -234,6 +234,9 @@
             irc-tmv-nret
             irc-t*-result
             irc-tmv-result
+            irc-make-valvec
+            irc-valvec-nvals
+            irc-valvec-values
             irc-header-stamp
             irc-rack-stamp
             irc-wrapped-stamp

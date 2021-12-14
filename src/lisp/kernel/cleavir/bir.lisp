@@ -314,6 +314,13 @@
       (list out))))
 
 ;;;
+;;; valvec stuff
+
+(defclass cc-valvec:values-list (bir:one-input bir:one-output
+                                 bir:instruction)
+  ())
+
+;;;
 
 (macrolet ((defprimop (name ninputs out &rest rtype-info)
              `(progn

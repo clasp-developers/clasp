@@ -234,10 +234,12 @@
             (transforms (gethash function-name *fn-transforms*))
             (derivers (gethash function-name *derivers*))
             (folds (gethash function-name *folds*))
+            (valvecablep (cc-valvec:valvecablep function-name))
             (attributes (if (or flags transforms folds derivers)
                             (make-instance 'cleavir-attributes:attributes
                               :flags (or flags (cleavir-attributes:make-flags))
-                              :identities (if (or transforms folds derivers)
+                              :identities (if (or transforms folds
+                                                  derivers valvecablep)
                                               (list function-name)
                                               nil))
                             (cleavir-attributes:default-attributes))))

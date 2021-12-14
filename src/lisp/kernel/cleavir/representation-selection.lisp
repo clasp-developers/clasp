@@ -51,6 +51,8 @@
     (if (or (member :multiple-values irts) (member :valvec irts))
         :multiple-values
         (reduce #'append irts))))
+(defmethod %definition-rtype ((inst cc-valvec:values-list) (datum bir:datum))
+  :multiple-values)
 (defmethod %definition-rtype ((inst cc-bir:mv-foreign-call) (datum bir:datum))
   :multiple-values)
 (defmethod %definition-rtype ((inst bir:thei) (datum bir:datum))
@@ -131,6 +133,8 @@
   (if (= (length (bir:inputs inst)) 1)
       (use-rtype (bir:output inst))
       :multiple-values))
+(defmethod %use-rtype ((inst cc-valvec:values-list) (datum bir:datum))
+  :valvec)
 (defmethod %use-rtype ((inst bir:primop) (datum bir:datum))
   (list (nth (position datum (bir:inputs inst))
              (rest (clasp-cleavir:primop-rtype-info (bir:info inst))))))
@@ -473,6 +477,7 @@
            (cast-output instruction (reduce #'append inputrts)))
           ;; we're outputting multiple values
           (t (cast-output instruction :multiple-values)))))
+(defmethod insert-casts ((instruction cc-valvec:values-list)))
 (defmethod insert-casts ((instruction bir:returni))
   (cast-inputs instruction :multiple-values))
 (defmethod insert-casts ((inst bir:primop))

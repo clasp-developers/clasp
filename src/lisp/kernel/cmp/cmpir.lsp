@@ -1630,6 +1630,19 @@ function-description - for debugging."
 (defun irc-tsp-result (tsp result)
   (irc-t*-result (irc-smart-ptr-extract tsp) result))
 
+(defun irc-make-valvec (nvals vals &optional (label "saved-values"))
+  (let* ((undef (llvm-sys:undef-value-get %valvec%))
+         (s1 (llvm-sys:create-insert-value *irbuilder* undef nvals '(0)
+                                           label))
+         (s2 (llvm-sys:create-insert-value *irbuilder* s1 vals '(1) label)))
+    s2))
+
+(defun irc-valvec-nvals (valvec &optional (label "nvals"))
+  (irc-extract-value valvec '(0) label))
+
+(defun irc-valvec-values (valvec &optional (label "values"))
+  (irc-extract-value valvec '(1) label))
+
 (defun irc-arity-index (arity)
   (cond
     ((eq arity :general-entry)

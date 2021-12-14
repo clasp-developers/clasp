@@ -117,3 +117,13 @@
   (:export #:datum #:output #:phi #:variable #:argument)
   (:export #:rtype)
   (:export #:cast-one))
+
+(defpackage #:clasp-cleavir-valvec
+  (:nicknames #:cc-valvec)
+  (:local-nicknames (#:bir #:cleavir-bir)
+                    (#:set #:cleavir-set)
+                    (#:attributes #:cleavir-attributes))
+  (:shadow #:values-list)
+  (:export #:values-list)
+  (:export #:maybe-transform-module)
+  (:export #:valvecablep))

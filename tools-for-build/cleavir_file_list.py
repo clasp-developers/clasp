@@ -221,6 +221,7 @@ cleavir_file_list = [
     "src/lisp/kernel/cleavir/convert-special",
     "src/lisp/kernel/cleavir/ast-interpreter",
     "src/lisp/kernel/cleavir/toplevel",
+    "src/lisp/kernel/cleavir/valvec",
     "src/lisp/kernel/cleavir/setup",
     "src/lisp/kernel/cleavir/fold",
     "src/lisp/kernel/cleavir/ir",
