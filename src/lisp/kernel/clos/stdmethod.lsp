@@ -39,9 +39,8 @@
        do (error "Object ~A is not a valid specializer" s))))
 
 (defmethod shared-initialize :after
-    ((method standard-method) slot-names &rest initargs
-     &key (specializers nil spec-supplied-p)
-       (lambda-list nil lambda-supplied-p))
+    ((method standard-method) slot-names &rest initargs)
+  (declare (ignore slot-names initargs))
   (setf (values (method-keywords method) (method-allows-other-keys-p method))
         (compute-method-keywords (method-lambda-list method))))
 
