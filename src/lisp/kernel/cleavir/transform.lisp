@@ -49,7 +49,7 @@
           and return t))
 
 (defmethod cleavir-bir-transformations:transform-call
-    ((system clasp) key call)
+    ((system clasp) key (call bir:call))
   (let ((trans (gethash key *bir-transformers*)))
     (if trans
         (maybe-transform call trans)
