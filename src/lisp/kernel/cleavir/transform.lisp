@@ -121,7 +121,8 @@
   `(setf (gethash ',name *derivers*) ',deriver-name))
 
 (defmethod bir-transformations:derive-return-type ((inst bir:call) identity
-                                                   (system clasp))
+                                                   argstype (system clasp))
+  (declare (ignore argstype))
   (let ((deriver (gethash identity *derivers*)))
     (if deriver
         (funcall deriver inst)
