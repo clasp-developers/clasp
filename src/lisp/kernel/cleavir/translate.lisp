@@ -46,6 +46,11 @@
       ;; deleted as it is unreferenced otherwise.
       (cleavir-set:empty-set-p (bir:local-calls function))))
 
+(defun argument-rtype->llvm (arg)
+  (let ((rtype (cc-bmir:rtype arg)))
+    (assert (and (listp rtype) (= (length rtype) 1)))
+    (vrtype->llvm (first rtype))))
+
 (defun allocate-llvm-function-info (function &key (linkage 'llvm-sys:internal-linkage))
   (let* ((lambda-name (get-or-create-lambda-name function))
          (jit-function-name (cmp:jit-function-name lambda-name))
@@ -68,10 +73,11 @@
       (multiple-value-bind (the-function local-entry-point)
           (cmp:irc-local-function-create
            (llvm-sys:function-type-get
-            cmp::%tmv%
-            (make-list (+ (cleavir-set:size (bir:environment function))
-                          (length arguments))
-                       :initial-element cmp::%t*%))
+            cmp:%tmv%
+            (nconc
+             (loop repeat (cleavir-set:size (bir:environment function))
+                   collect cmp:%t*%)
+             (mapcar #'argument-rtype->llvm arguments)))
            'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
            jit-function-name
            cmp:*the-module*
