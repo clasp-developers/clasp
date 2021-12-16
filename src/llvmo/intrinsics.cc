@@ -125,9 +125,8 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
 }
 
 
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(core::T_O* vas, std::size_t nargs, Vaslist untagged_vargs_rest[2])
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(Vaslist* vaslist, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
-  Vaslist* vaslist = (Vaslist*)gctools::untag_vaslist(vas);
   untagged_vargs_rest[0]._args = vaslist->_args;
   untagged_vargs_rest[1]._args = vaslist->_args;
   untagged_vargs_rest[0]._nargs = nargs;

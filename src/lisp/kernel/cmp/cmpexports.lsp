@@ -227,7 +227,6 @@
             irc-cmpxchg
             irc-struct-gep
             vaslist-start
-            vaslist-copy
             irc-read-slot
             irc-write-slot
             irc-make-tmv

@@ -622,19 +622,16 @@ a_p = a_p_temp; a = a_temp;
     (cmp-log "    keyargs -> %s%N" keyargs)
     (cond
       ((eq arity :general-entry)
-       (progn
-         (compile-general-lambda-list-code reqargs 
-                                           optargs 
-                                           rest-var
-                                           varest-p
-                                           key-flag 
-                                           keyargs 
-                                           allow-other-keys
-                                           calling-conv
-                                           :argument-out argument-out
-                                           :safep safep)
-         (calling-convention-args.va-end calling-conv)
-         )
+       (compile-general-lambda-list-code reqargs 
+                                         optargs 
+                                         rest-var
+                                         varest-p
+                                         key-flag 
+                                         keyargs 
+                                         allow-other-keys
+                                         calling-conv
+                                         :argument-out argument-out
+                                         :safep safep)
        t ;; always successful for general lambda-list processing
        )
       ((and (fixnump arity)
@@ -650,18 +647,17 @@ a_p = a_p_temp; a = a_temp;
                 (arg-buffer (if (= nargs 0)
                                 nil
                                 (alloca-arguments nargs "ll-args")))
-                (vaslist (alloca-vaslist))
-                (vaslist-v* (irc-tag-vaslist vaslist))
+                (vaslist* (alloca-vaslist))
                 (idx 0))
            (dolist (arg register-args)
              (let ((arg-gep (irc-gep arg-buffer (list 0 idx))))
                (incf idx)
                (irc-store arg arg-gep)))
            (if (= nargs 0)
-               (vaslist-start vaslist-v* (jit-constant-i64 nargs))
-               (vaslist-start vaslist-v* (jit-constant-i64 nargs)
+               (vaslist-start vaslist* (jit-constant-i64 nargs))
+               (vaslist-start vaslist* (jit-constant-i64 nargs)
                               (irc-bit-cast arg-buffer %i8**%)))
-           (setf (calling-convention-vaslist* calling-conv) vaslist-v*)
+           (setf (calling-convention-vaslist* calling-conv) vaslist*)
            (compile-general-lambda-list-code reqargs 
                                              optargs 
                                              rest-var
@@ -672,7 +668,6 @@ a_p = a_p_temp; a = a_temp;
                                              calling-conv
                                              :argument-out argument-out
                                              :safep safep)
-           (calling-convention-args.va-end calling-conv)
            )
          t ;; always successful when using general lambda-list processing
          ))))

@@ -1534,13 +1534,10 @@ jump to blocks within this tagbody."
                    (src-remaining-nargs* (irc-vaslist-nargs-address lvaslist))
                    (src-args* (irc-vaslist-args-address lvaslist))
                    (local-args* (alloca-vaslist :label "local-vaslist"))
-                   (local-args-v* (irc-tag-vaslist local-args*))
-                   (_ (vaslist-start local-args-v* (irc-load src-remaining-nargs*) (irc-load src-args*)))
-                   #+(or)(_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-vaslist* %i8*%)
-                                                                                 (irc-pointer-cast src-vaslist* %i8*%))))
+                   (_ (vaslist-start local-args* (irc-load src-remaining-nargs*) (irc-load src-args*)))
                    (callconv (make-calling-convention :closure (llvm-sys:constant-pointer-null-get %i8*%)
                                                       :nargs (irc-load src-remaining-nargs*)
-                                                      :vaslist* local-args-v*
+                                                      :vaslist* local-args*
                                                       :rest-alloc rest-alloc
                                                       :cleavir-lambda-list-analysis cleavir-lambda-list-analysis)))
               (declare (ignore _))

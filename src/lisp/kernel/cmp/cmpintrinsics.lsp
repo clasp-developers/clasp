@@ -563,6 +563,11 @@ Boehm and MPS use a single pointer"
   (define-symbol-macro %fn-gf-arguments% (list "gf" "args"))
   )
 
+(defun vaslist*-args* (vaslist* &optional (label "args*"))
+  (irc-struct-gep %vaslist% vaslist* 0 label))
+(defun vaslist*-nargs* (vaslist* &optional (label "nargs*"))
+  (irc-struct-gep %vaslist% vaslist* 1 label))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Provide the arguments passed to the function in a convenient manner.
@@ -573,7 +578,7 @@ Boehm and MPS use a single pointer"
   closure
   nargs
   register-args ; The arguments that were passed in registers
-  vaslist*      ; The address of the args on the stack or NIL
+  vaslist*      ; The address of the vaslist, or NIL
   cleavir-lambda-list-analysis ; analysis of cleavir-lambda-list
   rest-alloc ; whether we can dx or ignore a &rest argument
   )
@@ -596,13 +601,12 @@ Boehm and MPS use a single pointer"
          (cmp-log "B%N")
          (let* ((nargs (second arguments))
                 (args (third arguments))
-                (vaslist (alloca-vaslist))
-                (vaslist-v* (irc-tag-vaslist vaslist)))
-           (vaslist-start vaslist-v* nargs args)
+                (vaslist* (alloca-vaslist)))
+           (vaslist-start vaslist* nargs args)
            (maybe-spill-to-register-save-area arity register-save-area* (list closure nargs args))
            (make-calling-convention :closure closure
                                     :nargs nargs
-                                    :vaslist* vaslist-v*
+                                    :vaslist* vaslist*
                                     :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
                                     :rest-alloc rest-alloc)))
         (t
@@ -615,33 +619,24 @@ Boehm and MPS use a single pointer"
                                     :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
                                     :rest-alloc rest-alloc)))))))
 
-(defun vaslist-start (vaslist-v nargs &optional args)
+(defun vaslist-start (vaslist* nargs &optional args)
   (when args
-      (irc-store args (c++-field-ptr info.%vaslist% vaslist-v :args)))
-  (irc-store nargs (c++-field-ptr info.%vaslist% vaslist-v :nargs))
-  )
-
-(defun vaslist-copy (vaslist-dst vaslist-src)
-  (let ((args (irc-load (c++-field-ptr info.%vaslist% vaslist-src :args)))
-        (nargs (irc-load (c++-field-ptr info.%vaslist% vaslist-src :nargs))))
-    (irc-store args (c++-field-ptr info.%vaslist% vaslist-dst :args))
-    (irc-store nargs (c++-field-ptr info.%vaslist% vaslist-dst :nargs))))
-
-(defun calling-convention-args.va-end (cc)
-  ;; Nothing
-  )
+    (irc-store args (vaslist*-args* vaslist*)))
+  (irc-store nargs (vaslist*-nargs* vaslist*)))
 
 ;;;
 ;;; Read the next argument from the vaslist
 (defun calling-convention-vaslist.va-arg (cc)
-  (let* ((vaslist (calling-convention-vaslist* cc))
-         (args (irc-load (c++-field-ptr info.%vaslist% vaslist :args)))
+  (let* ((vaslist* (calling-convention-vaslist* cc))
+         (args* (vaslist*-args* vaslist*))
+         (args (irc-load args*))
          (val (irc-load args))
          (args-next (irc-gep args (list (jit-constant-i64 1))))
-         (nargs (irc-load (c++-field-ptr info.%vaslist% vaslist :nargs)))
+         (nargs* (vaslist*-nargs* vaslist*))
+         (nargs (irc-load nargs*))
          (nargs-next (irc-sub nargs (jit-constant-i64 1))))
-    (irc-store args-next (c++-field-ptr info.%vaslist% vaslist :args))
-    (irc-store nargs-next (c++-field-ptr info.%vaslist% vaslist :nargs))
+    (irc-store args-next args*)
+    (irc-store nargs-next nargs*)
     val))
 
 (defun fn-prototype (arity)

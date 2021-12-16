@@ -184,9 +184,9 @@
 
          (primitive         "cc_list" :t* (list :size_t) :varargs t)
          (primitive         "cc_mvcGatherRest" :t* (list :size_t :t* :size_t))
-         (primitive         "cc_gatherRestArguments" :t* (list :t* :size_t))
-         (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :t* :size_t :t**))
-         (primitive         "cc_gatherVaRestArguments" :t* (list :t* :size_t :vaslist*))
+         (primitive         "cc_gatherRestArguments" :t* (list :vaslist* :size_t))
+         (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :vaslist* :size_t :t**))
+         (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
 
          (primitive         "initializeBlockClosure" :t* (list :t**))

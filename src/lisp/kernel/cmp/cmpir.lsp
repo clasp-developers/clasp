@@ -661,12 +661,6 @@ representing a tagged fixnum."
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
-(defun irc-tag-vaslist (ptr &optional (label "vaslist-v*"))
-  "Given a word aligned ptr, add the vaslist tag"
-  (let* ((ptr-i8* (irc-bit-cast ptr %i8*%))
-         (ptr-tagged (irc-gep ptr-i8* (list (jit-constant-i64 +vaslist0-tag+)) label)))
-    ptr-tagged))
-
 (defun irc-unbox-single-float (t* &optional (label "single-float"))
   (irc-intrinsic-call "cc_unbox_single_float" (list t*) label)
   ;; unsafe ver - cc_unbox_single_float type errors, but this will happily
