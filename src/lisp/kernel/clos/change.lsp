@@ -259,25 +259,11 @@
 		     direct-superclasses))
       (add-direct-subclass l class)))
 
-  ;; if there are no forward references, we can just finalize the class here.
-  ;; We keep a list of the old slots to compare with the new. If there's been
-  ;; no substantial change (meaning we have slots with the same names and
-  ;; allocations in the same order), we skip MAKE-INSTANCES-OBSOLETE.
-  ;; This is explicitly allowed (see CLHS M-I-O). It reduces needless
-  ;; compilation in fastgf dispatch, and is actually required to support
-  ;; evaluating defstruct forms with no :type multiple times.
-  (let* (;; Grab the slots before finalization (may) change them.
-         ;; Of course there have to BE old slots - with e.g. forward references
-         ;; this may not be so.
-         (old-slots-p (slot-boundp class 'slots))
-         (old-slots (when old-slots-p (class-slots class))))
-    (setf (%class-finalized-p class) nil)
-    (finalize-unless-forward class)
-
-    (unless (and old-slots-p
-                 (slot-boundp class 'slots) ; new-slots-p
-                 (slots-unchanged-p old-slots (class-slots class)))
-      (make-instances-obsolete class)))
+  ;; AMOP Ch. 5 "Reinitialization of class metaobjects" specifies that
+  ;; the class is unconditionally re-finalized. This means that the
+  ;; addition of forward referenced classes is an error.
+  (setf (%class-finalized-p class) nil)
+  (finalize-inheritance class)
 
   (update-dependents class initargs))
 

@@ -198,17 +198,13 @@
   (declare (ignore class canonicalized-slot))
   (find-class 'standard-effective-slot-definition nil))
 
-(defun has-forward-referenced-parents (class)
+(defun unfinalizablep (class)
   (or (forward-referenced-class-p class)
       (and (not (class-finalized-p class))
-           (some #'has-forward-referenced-parents
-                 (class-direct-superclasses class)))))
+           (some #'unfinalizablep (class-direct-superclasses class)))))
 
 (defun finalize-unless-forward (class)
-  (unless (or
-           ;; We used to have all forward-referenced classes "finalized", weirdly.
-           (forward-referenced-class-p class)
-           (find-if #'has-forward-referenced-parents (class-direct-superclasses class)))
+  (unless (unfinalizablep class)
     (finalize-inheritance class)))
 
 (defmethod make-instances-obsolete ((class class))
@@ -362,11 +358,24 @@ because it contains a reference to the undefined class~%  ~A"
 	(return-from finalize-inheritance
 	  (finalize-inheritance x))))
     (setf (%class-precedence-list class) cpl)
-    (let ((slots (compute-slots class)))
-      (setf (%class-slots class) slots
-	    (class-size class) (compute-instance-size slots)
+    (let* ((old-slots-p (slot-boundp class 'slots))
+           (old-slots (when old-slots-p (class-slots class)))
+           (new-slots (compute-slots class)))
+      (setf (%class-slots class) new-slots
+	    (class-size class) (compute-instance-size new-slots)
 	    (%class-default-initargs class) (compute-default-initargs class)
-	    (%class-finalized-p class) t)))
+	    (%class-finalized-p class) t)
+      ;; If there's been no substantial change to the slots, i.e. we have
+      ;; slots with the same names and allocations in the same order, we
+      ;; skip MAKE-INSTANCES-OBSOLETE. This is explicitly allowed
+      ;; (see CLHS M-I-O). It reduces needless compilation in fastgf
+      ;; dispatch, and is actually required to support evaluating defstruct
+      ;; forms with no :type multiple times.
+      ;; We also don't need to M-I-O if there were no slots previously,
+      ;; since that implies there are no instances to make obsolete.
+      (when (and old-slots-p
+                 (not (slots-unchanged-p old-slots new-slots)))
+        (make-instances-obsolete class))))
   ;;
   ;; We have to clear the different type caches
   ;; for type comparisons and so on.

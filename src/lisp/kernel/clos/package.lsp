@@ -138,8 +138,7 @@
           class-source-position)
         )
 #+clasp
-(export '(invalidate-generic-functions-with-class-selector
-          satiate
+(export '(satiate
           satiate-initialization
           apply-method
           ))

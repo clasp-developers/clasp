@@ -783,84 +783,48 @@ Return true iff a new entry was added; so for example it will return false if an
          (reduce #'append (mapcar #'subclasses*
                                   (class-direct-subclasses class))))))
 
-(defun call-history-entry-key-contains-specializers (key specializers)
-  (loop for specializer in specializers
-        when (find specializer key :test #'eq)
-          return t))
+(defun call-history-entry-key-contains-specializers-p (key specializer)
+  (find specializer key :test #'eq))
 
-(defun generic-function-call-history-separate-entries-with-specializers (gf call-history specializers)
+(defun generic-function-call-history-separate-entries-with-specializer
+    (call-history gf specializer)
   (declare (ignorable gf))
   (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: %s%N    specializers: %s%N" gf specializers)
-  #+debug-long-call-history
-  (when (> (length call-history) 16384)
-    (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" gf (length call-history)))
-  (let ((removed nil) (keep nil))
-    (loop for entry in call-history
-          for key = (car entry)
-          do (gf-log "         check if entry key: %s   contains specializer: %s%N" key specializers)
-          if (call-history-entry-key-contains-specializers key specializers)
-            do (progn
-                 (gf-log "       It does - removing entry%N")
-                 (push entry removed))
-          else do (progn
-                    (gf-log "       It does not - keeping entry%N")
-                    (push entry keep)))
-    #+debug-long-call-history
-    (progn
-      (unless (<= (length keep ) (length call-history))
-        (error "The number of call history entries to keep (~a) MUST be less than the number of call-history entries ~a~%" (length keep) (length call-history)))
-      (unless (<= (length removed ) (length call-history))
-        (error "The number of call history entries removed (~a) MUST be less than the number of call-history entries ~a~%" (length removed) (length call-history)))
-      (unless (= (+ (length removed) (length keep)) (length call-history))
-        (error "The sum of removed and kept entries (+ ~a ~a) -> ~a does not equal the number of call-history entries ~a~%" (length removed) (length keep) (+ (length removed) (length keep)) (length call-history))))
-    (values keep removed)))
+  (loop for entry in call-history
+        for key = (car entry)
+        do (gf-log "         check if entry key: %s   contains specializer: %s%N" key specializers)
+        if (call-history-entry-key-contains-specializers-p key specializer)
+          do (gf-log "       It does - removing entry%N")
+          and collect entry into removed
+        else
+          do (gf-log "       It does not - keeping entry%N")
+          and collect entry into keep
+        finally (return (values keep removed))))
 
-(defun invalidate-generic-functions-with-class-selector (top-class)
-  (gf-log "invalidate-generic-functions-with-class-specializer %s%N" top-class)
-  (let* ((all-subclasses (subclasses* top-class))
-         (_ (gf-log "  %d subclasses*%N" (length all-subclasses)))
-         (_1 (gf-log "        %s%N" all-subclasses))
-         (generic-functions
-           (loop for subclass in all-subclasses
-                 for spec-generic-functions = (specializer-call-history-generic-functions subclass)
-                 do (gf-log "   for subclass %s there are %d spec-generic-functions%N" subclass (length spec-generic-functions))
-                 do (gf-log "         spec-generic-functions -> %s%N" spec-generic-functions)
-                 append spec-generic-functions))
-         (_2 (gf-log "  %d generic-functions...%N" (length generic-functions)))
-         (_3 (gf-log "        %s%N" generic-functions))
-         (unique-generic-functions (remove-duplicates generic-functions))
-         (_4 (gf-log "  unique-generic-functions...%N"))
-         (_5 (gf-log "        %s%N" unique-generic-functions)))
-    (declare (ignore _ _1 _2 _3 _4 _5))
-    (gf-log "   subclasses* -> %s%N" all-subclasses)
-    ;;(when core:*debug-dispatch* (format t "    generic-functions: ~a~%" generic-functions))
-    (loop for gf in unique-generic-functions
+;; Remove all call entries referring directly to a class, and invalidate or
+;; force their discriminating functions.
+(defun invalidate-generic-functions-with-class-selector (class)
+  (gf-log "invalidate-generic-functions-with-class-selector %s%N" class)
+  (let ((generic-functions (specializer-call-history-generic-functions class)))
+    (gf-log "   for class %s there are %d generic functions%N"
+            class (length generic-functions))
+    (gf-log "         generic functions -> %s%N" generic-functions)
+    (loop for gf in generic-functions
           do (gf-log "generic function: %s%N" (clos:generic-function-name gf))
              (gf-log "    (clos:get-funcallable-instance-function gf) -> %s%N"
                      (clos:get-funcallable-instance-function gf))
-             (loop for call-history = (mp:atomic (safe-gf-call-history gf))
-                   for new-call-history
-                     = (generic-function-call-history-separate-entries-with-specializers
-                        gf call-history all-subclasses)
-                   for exchange
-                     = (mp:cas (safe-gf-call-history gf)
-                               call-history new-call-history)
-                   until (eq exchange call-history)
-                   finally (gf-log "    edited call history%N")
-                           (gf-log "%s%N" new-call-history)
-                           (gf-log "Generating a new discriminating function%N")
-                           (if new-call-history
-                               (force-dispatcher gf)
-                               (invalidate-discriminating-function gf)))
-          #+debug-fastgf
-           (let (log-output)  
-             (progn
-               (if (eq (class-of gf) (find-class 'standard-generic-function))
-                   (let ((generic-function-name (core:low-level-standard-generic-function-name gf)))
-                     (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
-                     (gf-log "Writing dispatcher to %s%N" log-output))
-                   (setf log-output (log-cmpgf-filename (generic-function-name gf) "func" "ll")))
-               (incf-debug-fastgf-didx))))))
+             (let ((new-call-history
+                     (mp:atomic-update (safe-gf-call-history gf)
+                                       #'generic-function-call-history-separate-entries-with-specializer
+                                       gf class)))
+               (declare (ignorable new-call-history))
+               (gf-log "    edited call history%N")
+               (gf-log "%s%N" new-call-history)
+               (gf-log "Invalidating discriminating function%N")
+               ;; We don't force the dispatcher, because whena class with
+               ;; subclasses is redefined, we may end up here repeatedly.
+               ;; Eagerness would result in pointless compilation.
+               (invalidate-discriminating-function gf)))))
 
 ;;; This is called by the dtree interpreter when it doesn't get enough arguments,
 ;;; because computing this stuff in C++ would be needlessly annoying.
