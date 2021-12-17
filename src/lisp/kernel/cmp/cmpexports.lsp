@@ -205,6 +205,10 @@
             irc-size_t-*current-source-pos-info*-column
             irc-size_t-*current-source-pos-info*-lineno
             irc-icmp-eq
+            irc-icmp-ule
+            irc-icmp-ult
+            irc-icmp-uge
+            irc-icmp-ugt
             irc-icmp-sle
             irc-icmp-slt
             irc-icmp-sge

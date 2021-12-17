@@ -56,6 +56,11 @@
 (defmethod use-ok-p ((inst bir:thei) (datum bir:datum))
   (datum-ok-p (bir:output inst)))
 
+(defmethod use-ok-p ((inst cc-bmir:consp) (datum bir:datum)) t)
+
+;; This arises e.g. from (null a-&rest-list).
+(defmethod use-ok-p ((inst bir:ifi) (datum bir:datum)) t)
+
 (defmethod use-ok-p ((inst bir:call) (datum bir:datum))
   (let ((name
           ;; KLUDGE
@@ -108,6 +113,20 @@
   (let ((input (bir:input use)))
     (bir:delete-thei use)
     (rewrite-use (bir:use input))))
+
+(defmethod rewrite-use ((use cc-bmir:consp))
+  (change-class use 'nendp))
+
+(defmethod rewrite-use ((use bir:ifi))
+  ;; Insert a nendp test.
+  (let* ((vaslist (bir:input use))
+         (new-out (make-instance 'bir:output
+                    :name '#:endp :derived-type (bir:ctype vaslist)))
+         (nendp (make-instance 'nendp
+                  :inputs (list vaslist) :outputs (list new-out)
+                  :origin (bir:origin use) :policy (bir:policy use))))
+    (bir:insert-instruction-before nendp use)
+    (setf (bir:inputs use) (list new-out))))
 
 (defmethod rewrite-use ((use bir:call))
   (let ((name

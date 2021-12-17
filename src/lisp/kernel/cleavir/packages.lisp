@@ -124,6 +124,6 @@
                     (#:set #:cleavir-set)
                     (#:attributes #:cleavir-attributes))
   (:shadow #:values-list)
-  (:export #:values-list)
+  (:export #:values-list #:nendp)
   (:export #:maybe-transform-module)
   (:export #:vaslistablep))

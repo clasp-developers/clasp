@@ -231,6 +231,12 @@
    (in (first (bir:inputs instruction)))
    (first next) (second next)))
 
+(defmethod translate-conditional-test ((inst cc-vaslist:nendp) next)
+  (cmp:irc-cond-br
+   (cmp:irc-icmp-ugt (cmp:irc-vaslist-nvals (in (bir:input inst)))
+                     (%size_t 0))
+   (first next) (second next)))
+
 (defmethod translate-conditional-test ((inst bir:primop) next)
   (translate-conditional-primop (cleavir-primop-info:name (bir:info inst))
                                 inst next))

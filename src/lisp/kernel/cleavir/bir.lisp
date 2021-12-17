@@ -320,6 +320,8 @@
                                  bir:instruction)
   ())
 
+(defclass cc-vaslist:nendp (bir:one-input bir:conditional-test) ())
+
 ;;;
 
 (macrolet ((defprimop (name ninputs out &rest rtype-info)
