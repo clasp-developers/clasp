@@ -236,6 +236,9 @@
             irc-make-vaslist
             irc-vaslist-nvals
             irc-vaslist-values
+            irc-vaslist-primary
+            irc-tag-vaslist
+            irc-unbox-vaslist
             irc-header-stamp
             irc-rack-stamp
             irc-wrapped-stamp

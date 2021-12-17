@@ -839,6 +839,11 @@
 (defmethod cast-one ((from (eql :object)) (to (eql :double-float)) value)
   (cmp:irc-unbox-double-float value))
 
+(defmethod cast-one ((from (eql :object)) (to (eql :vaslist)) value)
+  ;; We only generate these when we know for sure the input is a vaslist,
+  ;; so we don't do checking.
+  (cmp:irc-unbox-vaslist value))
+
 (defun %cast-some (inputrt outputrt inputv)
   (let ((Lin (length inputrt)) (Lout (length outputrt))
         (pref (mapcar #'cast-one inputrt outputrt inputv)))
@@ -861,6 +866,16 @@
                    (cast-one :object (first outputrt)
                              (cmp:irc-tmv-primary (in input))))
                   ((null outputrt) nil)
+                  (t (error "BUG: Cast from ~a to ~a" inputrt outputrt))))
+           ((eq inputrt :vaslist)
+            (cond ((eq outputrt :multiple-values)
+                   (let ((vaslist (in input)))
+                     (%intrinsic-call "cc_load_values"
+                                      (list (cmp:irc-vaslist-nvals vaslist)
+                                            (cmp:irc-vaslist-values vaslist)))))
+                  ((and (listp outputrt) (= (length outputrt) 1))
+                   (cast-one :object (first outputrt)
+                             (cmp:irc-vaslist-primary (in input))))
                   (t (error "BUG: Cast from ~a to ~a" inputrt outputrt))))
            ((= (length inputrt) 1)
             (cond ((eq outputrt :multiple-values)
@@ -926,11 +941,9 @@
 
 (defmethod translate-simple-instruction ((inst cc-vaslist:values-list) abi)
   (declare (ignore abi))
-  (let* ((in (in (bir:input inst)))
-         (nvals (cmp:irc-vaslist-nvals in))
-         (mv (cmp:irc-vaslist-values in)))
-    (out (%intrinsic-call "cc_load_values" (list nvals mv))
-         (bir:output inst))))
+  ;; This is just a change in rtype, from (:vaslist) to :vaslist,
+  ;; so it's really a nop.
+  (out (in (bir:input inst)) (bir:output inst)))
 
 (defmethod translate-simple-instruction ((inst bir:primop) abi)
   (declare (ignore abi))
@@ -1482,6 +1495,7 @@
   (let ((rest-var (cmp:cleavir-lambda-list-analysis-rest cleavir-lambda-list-analysis)))
     (cond ((not rest-var) nil)      ; don't care
           ((bir:unused-p rest-var) 'ignore)
+          #+(or)
           ((eq (cc-bmir:rtype rest-var) :vaslist) :vaslist)
           ;; TODO: Dynamic extent?
           (t nil))))

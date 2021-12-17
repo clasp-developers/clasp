@@ -136,6 +136,10 @@ switch (nargs) {
                                                 nremaining
                                                 (irc-bit-cast rrest %t**%)))))
                    (varest-p
+                    #+(or)
+                    (irc-tag-vaslist (cmp:calling-convention-vaslist* calling-conv)
+                                     "rest")
+                    ;;#+(or)
                     (let ((temp-vaslist (alloca-vaslist :label "rest")))
                       (irc-intrinsic-call "cc_gatherVaRestArguments" 
                                           (list (cmp:calling-convention-vaslist* calling-conv)

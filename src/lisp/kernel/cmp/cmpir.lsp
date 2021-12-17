@@ -661,6 +661,15 @@ representing a tagged fixnum."
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
+(defun irc-unbox-vaslist (t* &optional (label "vaslist-v*"))
+  ;; FIXME: Probably we should untag by masking instead of subttraction
+  (let* ((ptr-int (irc-ptr-to-int t* %uintptr_t%))
+         (ptr-adjusted (irc-sub ptr-int (jit-constant-i64 +vaslist0-tag+)))
+         (ptr-ptr (irc-int-to-ptr ptr-adjusted %vaslist*%)))
+    (irc-load ptr-ptr label)))
+
+;;; "tag" rather than "box" because we don't allocate here, just tag an
+;;; existing pointer.
 (defun irc-tag-vaslist (ptr &optional (label "vaslist-v*"))
   "Given a word aligned ptr, add the vaslist tag"
   (let* ((ptr-i8* (irc-bit-cast ptr %i8*%))
@@ -1070,6 +1079,30 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 (defun irc-vaslist-nvals (vaslist &optional (label "nvals"))
   (irc-extract-value vaslist '(1) label))
+
+;;; Get the primary value of a vaslist. This entails checking the number
+;;; of values and possibly returning a constant nil if needed.
+;;; This requires branching. We could alternately use the llvm select
+;;; instruction, but I'm not as sure how it works (especially the "MDFrom"
+;;; argument to CreateSelect).
+(defun irc-vaslist-primary (vaslist &optional (label "primary"))
+  (let ((novalues (irc-basic-block-create "vaslist-primary-no-values"))
+        (values (irc-basic-block-create "vaslist-primary-values"))
+        (merge (irc-basic-block-create "vaslist-primary-merge")))
+    (irc-cond-br
+     (irc-icmp-eq (irc-vaslist-nvals vaslist) (jit-constant-size_t 0))
+     novalues values)
+    (irc-begin-block novalues)
+    (let ((nil (irc-literal nil "NIL")))
+      (irc-br merge)
+      (irc-begin-block values)
+      (let ((primary (irc-load (irc-vaslist-values vaslist) "primary")))
+        (irc-br merge)
+        (irc-begin-block merge)
+        (let ((phi (irc-phi %t*% 2 label)))
+          (irc-phi-add-incoming phi nil novalues)
+          (irc-phi-add-incoming phi primary values)
+          phi)))))
 
 (defparameter *default-function-attributes*
   #+cclasp '(llvm-sys:attribute-uwtable
@@ -1801,10 +1834,10 @@ function-description - for debugging."
                               ((and landing-pad function-throws)
                                (irc-create-invoke-wft function-type the-function args landing-pad label))
                               (t
-                               (irc-create-call-wft function-type the-function args label))))
-           (_               (when (llvm-sys:does-not-return the-function)
-                              (irc-unreachable)
-                              (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))
+                               (irc-create-call-wft function-type the-function args label)))))
+      (when (llvm-sys:does-not-return the-function)
+        (irc-unreachable)
+        (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))
       #+(or)(warn "Does add-param-attr work yet")
       ;;; FIXME: Do I need to add attributes to the return value of the call
       (dolist (index-attributes (primitive-argument-attributes primitive-info))

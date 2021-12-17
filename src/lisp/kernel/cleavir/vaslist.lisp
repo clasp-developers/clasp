@@ -114,7 +114,7 @@
           (first (attributes:identities (bir:attributes use)))))
     (ecase name
       ((cl:values-list)
-       #+(or)
+       ;; FIXME: Flush fdefinition of values-list if possible
        (change-class use 'values-list
                      :inputs (rest (bir:inputs use)))))))
 

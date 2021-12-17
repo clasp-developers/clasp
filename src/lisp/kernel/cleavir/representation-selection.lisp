@@ -15,7 +15,13 @@
 ;;; * :object, meaning T_O*
 ;;; * :single-float, meaning an unboxed single float
 ;;; * :double-float, meaning an unboxed double float
+;;; * :vaslist, meaning an unboxed vaslist
 ;;; So e.g. (:object :object) means a pair of T_O*.
+
+;;; vaslists have both a "multiple value" rtype and a "single value" rtype
+;;; to reflect their translation from lists (in vaslist.lisp). (:vaslist)
+;;; means an "unboxed list" being passed around as a normal value, whereas
+;;; :vaslist is the output of values-save or cc-vaslist:values-list.
 
 ;;; TODO: While (re)writing this I've realized that cast placement here is not
 ;;; really optimal. It might have to be more sophisticated, e.g. moving it out
@@ -52,7 +58,7 @@
         :multiple-values
         (reduce #'append irts))))
 (defmethod %definition-rtype ((inst cc-vaslist:values-list) (datum bir:datum))
-  :multiple-values)
+  :vaslist)
 (defmethod %definition-rtype ((inst cc-bir:mv-foreign-call) (datum bir:datum))
   :multiple-values)
 (defmethod %definition-rtype ((inst bir:thei) (datum bir:datum))
@@ -134,7 +140,7 @@
       (use-rtype (bir:output inst))
       :multiple-values))
 (defmethod %use-rtype ((inst cc-vaslist:values-list) (datum bir:datum))
-  :vaslist)
+  '(:vaslist))
 (defmethod %use-rtype ((inst bir:primop) (datum bir:datum))
   (list (nth (position datum (bir:inputs inst))
              (rest (clasp-cleavir:primop-rtype-info (bir:info inst))))))
@@ -447,7 +453,19 @@
 (defmethod insert-casts ((instruction bir:values-save))
   (let* ((input (bir:input instruction)) (output (bir:output instruction))
          (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output)))
-    (cond ((eq outputrt :multiple-values)
+    (cond ((eq inputrt :vaslist)
+           ;; We're already getting a vaslist, so this is a nop to delete
+           (assert (eq outputrt :vaslist))
+           (cleavir-bir:replace-terminator
+            (make-instance 'bir:jump
+              :origin (bir:origin instruction) :policy (bir:policy instruction)
+              :inputs () :outputs () :next (bir:next instruction))
+            instruction)
+           ;; Don't need to recompute flow order since we haven't changed it.
+           ;; We also don't merge iblocks because we're mostly done optimizing
+           ;; at this point anyway.
+           (bir:replace-uses input output))
+          ((eq outputrt :multiple-values)
            (cast-inputs instruction :multiple-values))
           ((listp outputrt)
            ;; The number of values is fixed, so this is a nop to delete.
@@ -457,9 +475,6 @@
               :origin (bir:origin instruction) :policy (bir:policy instruction)
               :inputs () :outputs () :next (bir:next instruction))
             instruction)
-           ;; Don't need to recompute flow order since we haven't changed it.
-           ;; We also don't merge iblocks because we're mostly done optimizing
-           ;; at this point anyway.
            (bir:replace-uses input output)))))
 (defmethod insert-casts ((inst cc-bmir:mtf)))
 (defmethod insert-casts ((instruction bir:values-collect))
@@ -477,7 +492,9 @@
            (cast-output instruction (reduce #'append inputrts)))
           ;; we're outputting multiple values
           (t (cast-output instruction :multiple-values)))))
-(defmethod insert-casts ((instruction cc-vaslist:values-list)))
+(defmethod insert-casts ((instruction cc-vaslist:values-list))
+  (cast-inputs instruction '(:vaslist))
+  (cast-output instruction :vaslist))
 (defmethod insert-casts ((instruction bir:returni))
   (cast-inputs instruction :multiple-values))
 (defmethod insert-casts ((inst bir:primop))
