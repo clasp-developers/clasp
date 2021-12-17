@@ -8,7 +8,7 @@
 ;;; An rtype is either
 ;;; * :multiple-values, meaning several T_O*s stored in the thread local
 ;;;   multiple values vector
-;;; * :valvec, meaning several T_O*s stored in a transient vector. Output by
+;;; * :vaslist, meaning several T_O*s stored in a transient vector. Output by
 ;;;   e.g. values-save.
 ;;; * a list of value rtypes.
 ;;; A value rtype can be either
@@ -43,15 +43,15 @@
   (let ((def (definition-rtype (bir:input inst))))
     (if (listp def)
         def
-        :valvec)))
+        :vaslist)))
 (defmethod %definition-rtype ((inst cc-bmir:mtf) (datum bir:datum))
   (loop repeat (bir:nvalues inst) collect :object))
 (defmethod %definition-rtype ((inst bir:values-collect) (datum bir:datum))
   (let ((irts (mapcar #'definition-rtype (bir:inputs inst))))
-    (if (or (member :multiple-values irts) (member :valvec irts))
+    (if (or (member :multiple-values irts) (member :vaslist irts))
         :multiple-values
         (reduce #'append irts))))
-(defmethod %definition-rtype ((inst cc-valvec:values-list) (datum bir:datum))
+(defmethod %definition-rtype ((inst cc-vaslist:values-list) (datum bir:datum))
   :multiple-values)
 (defmethod %definition-rtype ((inst cc-bir:mv-foreign-call) (datum bir:datum))
   :multiple-values)
@@ -133,8 +133,8 @@
   (if (= (length (bir:inputs inst)) 1)
       (use-rtype (bir:output inst))
       :multiple-values))
-(defmethod %use-rtype ((inst cc-valvec:values-list) (datum bir:datum))
-  :valvec)
+(defmethod %use-rtype ((inst cc-vaslist:values-list) (datum bir:datum))
+  :vaslist)
 (defmethod %use-rtype ((inst bir:primop) (datum bir:datum))
   (list (nth (position datum (bir:inputs inst))
              (rest (clasp-cleavir:primop-rtype-info (bir:info inst))))))
@@ -217,10 +217,10 @@
                 ;; Shorten
                 (mapcar #'min-vrtype rt1 rt2))
                (t
-                (assert (member rt2 '(:valvec :multiple-values)))
+                (assert (member rt2 '(:vaslist :multiple-values)))
                 rt1)))
         ((eq rt1 :multiple-values) rt2)
-        ((eq rt1 :valvec)
+        ((eq rt1 :vaslist)
          (if (eq rt2 :multiple-values)
              rt1
              rt2))
@@ -231,7 +231,7 @@
   ;; If not, then the phi could still be single-value, but only if EVERY
   ;; definition is, and otherwise we need to use multiple values.
   (let ((dest (use-rtype datum)))
-    (if (member dest '(:valvec :multiple-values))
+    (if (member dest '(:vaslist :multiple-values))
         (definition-rtype datum)
         dest)))
 
@@ -477,7 +477,7 @@
            (cast-output instruction (reduce #'append inputrts)))
           ;; we're outputting multiple values
           (t (cast-output instruction :multiple-values)))))
-(defmethod insert-casts ((instruction cc-valvec:values-list)))
+(defmethod insert-casts ((instruction cc-vaslist:values-list)))
 (defmethod insert-casts ((instruction bir:returni))
   (cast-inputs instruction :multiple-values))
 (defmethod insert-casts ((inst bir:primop))

@@ -151,9 +151,9 @@
 (defun phi-out (value datum llvm-block)
   (check-type datum bir:phi)
   (let ((rt (cc-bmir:rtype datum)))
-    (cond ((or (member rt '(:multiple-values :valvec))
+    (cond ((or (member rt '(:multiple-values :vaslist))
                (and (listp rt) (= (length rt) 1)))
-           ;; datum is a T_mv or a valvec or a single value
+           ;; datum is a T_mv or a vaslist or a single value
            (llvm-sys:add-incoming (in datum) value llvm-block))
           ((listp rt)
            ;; Datum is a list of llvm data, and (in datum) is a list of phis.

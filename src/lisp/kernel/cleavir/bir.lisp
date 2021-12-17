@@ -314,9 +314,9 @@
       (list out))))
 
 ;;;
-;;; valvec stuff
+;;; vaslist stuff
 
-(defclass cc-valvec:values-list (bir:one-input bir:one-output
+(defclass cc-vaslist:values-list (bir:one-input bir:one-output
                                  bir:instruction)
   ())
 

@@ -1,4 +1,4 @@
-(in-package #:cc-valvec)
+(in-package #:cc-vaslist)
 
 ;;;; The code in this file is supposed to perform a transform on functions
 ;;;; with a &rest parameter such that no list actually needs to be consed.
@@ -11,17 +11,17 @@
 ;;;; common use of &rest parameters for APPLY.
 ;;;; In the future, the following operations should be available:
 
-;;; nth -> (valvec-nth n valvec)
-;;; (setf nth) -> (setf (valvec-nth n valvec) value)
-;;; nthcdr -> (valvec-nthcdr n valvec)
-;;; endp -> (valvec-endp valvec)
-;;; last -> (valvec-last valvec n)
-;;; butlast -> (valvec-butlast valvec n)
-;;; values-list -> (valvec-values-list valvec) ; done
+;;; nth -> (vaslist-nth n vaslist)
+;;; (setf nth) -> (setf (vaslist-nth n vaslist) value)
+;;; nthcdr -> (vaslist-nthcdr n vaslist)
+;;; endp -> (vaslist-endp vaslist)
+;;; last -> (vaslist-last vaslist n)
+;;; butlast -> (vaslist-butlast vaslist n)
+;;; values-list -> (vaslist-values-list vaslist) ; done
 
-(defparameter *valvecable* '(values-list))
+(defparameter *vaslistable* '(values-list))
 
-(defun valvecablep (fname) (member fname *valvecable*))
+(defun vaslistablep (fname) (member fname *vaslistable*))
 
 (defgeneric datum-ok-p (datum)
   (:method ((datum bir:datum)) nil))
@@ -123,7 +123,7 @@
   (cond ((bir:unused-p argument)) ; don't bother
         ((datum-ok-p argument)
          #+(or)
-         (change-class argument 'cc-bmir:argument :rtype :valvec)
+         (change-class argument 'cc-bmir:argument :rtype :vaslist)
          (rewrite-use (bir:use argument))
          t)
         (t nil)))

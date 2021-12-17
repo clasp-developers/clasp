@@ -105,7 +105,6 @@
             %t*[DUMMY]%
             %t*[DUMMY]*%
             %tmv%
-            %valvec%
             %symbol%
             %float%
             %double%
@@ -234,9 +233,9 @@
             irc-tmv-nret
             irc-t*-result
             irc-tmv-result
-            irc-make-valvec
-            irc-valvec-nvals
-            irc-valvec-values
+            irc-make-vaslist
+            irc-vaslist-nvals
+            irc-vaslist-values
             irc-header-stamp
             irc-rack-stamp
             irc-wrapped-stamp

@@ -146,7 +146,7 @@
          (save (%intrinsic-call "llvm.stacksave" nil))
          (mv-temp (cmp:alloca-temp-values nvals))
          (label (datum-name-as-string outp))
-         (s2 (cmp::irc-make-valvec nvals mv-temp label)))
+         (s2 (cmp::irc-make-vaslist nvals mv-temp label)))
     (setf (dynenv-storage inst) save)
     (%intrinsic-call "cc_save_values" (list nvals primary mv-temp)
                      (datum-name-as-string outp))
@@ -924,11 +924,11 @@
                         :label (datum-name-as-string (bir:output inst)))
        (bir:output inst)))
 
-(defmethod translate-simple-instruction ((inst cc-valvec:values-list) abi)
+(defmethod translate-simple-instruction ((inst cc-vaslist:values-list) abi)
   (declare (ignore abi))
   (let* ((in (in (bir:input inst)))
-         (nvals (cmp::irc-valvec-nvals in))
-         (mv (cmp::irc-valvec-values in)))
+         (nvals (cmp:irc-vaslist-nvals in))
+         (mv (cmp:irc-vaslist-values in)))
     (out (%intrinsic-call "cc_load_values" (list nvals mv))
          (bir:output inst))))
 
@@ -1119,7 +1119,7 @@
   (loop with seen-non-save = nil
         for input in (bir:inputs inst)
         for rt = (cc-bmir:rtype input)
-        if (not (or (eq rt :valvec) (listp rt)))
+        if (not (or (eq rt :vaslist) (listp rt)))
           do (if seen-non-save
                  (error "BUG: Can only have one variable non-save-values input, but saw ~a and ~a!" inst seen-non-save)
                  (setf seen-non-save inst)))
@@ -1133,10 +1133,10 @@
                      for input in (bir:inputs inst)
                      for in = (in input)
                      for irt = (cc-bmir:rtype input)
-                     collect (cond ((eq irt :valvec)
+                     collect (cond ((eq irt :vaslist)
                                     (list :saved
-                                          (cmp::irc-valvec-nvals in)
-                                          (cmp::irc-valvec-values in)))
+                                          (cmp:irc-vaslist-nvals in)
+                                          (cmp:irc-vaslist-values in)))
                                    ((listp irt)
                                     (let ((len (length irt)))
                                       (list :fixed
@@ -1234,11 +1234,11 @@
             (let* ((inp (first (bir:inputs inst)))
                    (in (in inp))
                    (irt (cc-bmir:rtype inp)))
-              (cond ((eq irt :valvec)
+              (cond ((eq irt :vaslist)
                      (%intrinsic-call "cc_load_values"
                                       (list
-                                       (cmp::irc-valvec-nvals in)
-                                       (cmp::irc-valvec-values in))))
+                                       (cmp:irc-vaslist-nvals in)
+                                       (cmp:irc-vaslist-values in))))
                     ((listp irt)
                      (let* ((lirt (length irt)))
                        ;; FIXME: In safe code, we might want to check that the
@@ -1313,8 +1313,8 @@
               for dat
                 = (cond ((eq rt :multiple-values)
                          (cmp:irc-phi cmp::%tmv% ndefinitions))
-                        ((eq rt :valvec)
-                         (cmp:irc-phi cmp:%valvec% ndefinitions))
+                        ((eq rt :vaslist)
+                         (cmp:irc-phi cmp:%vaslist% ndefinitions))
                         ((and (listp rt) (= (length rt) 1))
                          (cmp:irc-phi (vrtype->llvm (first rt))
                                       ndefinitions))
@@ -1482,7 +1482,7 @@
   (let ((rest-var (cmp:cleavir-lambda-list-analysis-rest cleavir-lambda-list-analysis)))
     (cond ((not rest-var) nil)      ; don't care
           ((bir:unused-p rest-var) 'ignore)
-          ((eq (cc-bmir:rtype rest-var) :valvec) :valvec)
+          ((eq (cc-bmir:rtype rest-var) :vaslist) :vaslist)
           ;; TODO: Dynamic extent?
           (t nil))))
 
@@ -1690,7 +1690,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (ver module "meta")
   (cc-bir-to-bmir:reduce-module-instructions module)
   (bir-transformations:module-generate-type-checks module system)
-  (cc-valvec:maybe-transform-module module)
+  (cc-vaslist:maybe-transform-module module)
   ;; These should happen after higher level optimizations since they are like
   ;; "post passes" which do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.

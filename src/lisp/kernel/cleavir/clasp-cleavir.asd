@@ -26,7 +26,7 @@
                (:file "convert-special")
                (:file "ast-interpreter")
                (:file "toplevel")
-               (:file "valvec")
+               (:file "vaslist")
                (:file "setup")
                (:file "fold")
                (:file "ir")

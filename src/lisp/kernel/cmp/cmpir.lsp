@@ -661,6 +661,12 @@ representing a tagged fixnum."
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
+(defun irc-tag-vaslist (ptr &optional (label "vaslist-v*"))
+  "Given a word aligned ptr, add the vaslist tag"
+  (let* ((ptr-i8* (irc-bit-cast ptr %i8*%))
+         (ptr-tagged (irc-gep ptr-i8* (list (jit-constant-i64 +vaslist0-tag+)) label)))
+    ptr-tagged))
+
 (defun irc-unbox-single-float (t* &optional (label "single-float"))
   (irc-intrinsic-call "cc_unbox_single_float" (list t*) label)
   ;; unsafe ver - cc_unbox_single_float type errors, but this will happily
@@ -1051,6 +1057,19 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-vaslist-nargs-address (vaslist-v
                                   &optional (label "vaslist_remaining_nargs_address"))
   (c++-field-ptr info.%vaslist% vaslist-v :nargs label))
+
+(defun irc-make-vaslist (nvals vals &optional (label "saved-values"))
+  (let* ((undef (llvm-sys:undef-value-get %vaslist%))
+         (s1 (llvm-sys:create-insert-value *irbuilder* undef vals '(0) label))
+         (s2 (llvm-sys:create-insert-value *irbuilder* s1 nvals '(1)
+                                           label)))
+    s2))
+
+(defun irc-vaslist-values (vaslist &optional (label "values"))
+  (irc-extract-value vaslist '(0) label))
+
+(defun irc-vaslist-nvals (vaslist &optional (label "nvals"))
+  (irc-extract-value vaslist '(1) label))
 
 (defparameter *default-function-attributes*
   #+cclasp '(llvm-sys:attribute-uwtable
@@ -1623,19 +1642,6 @@ function-description - for debugging."
 
 (defun irc-tsp-result (tsp result)
   (irc-t*-result (irc-smart-ptr-extract tsp) result))
-
-(defun irc-make-valvec (nvals vals &optional (label "saved-values"))
-  (let* ((undef (llvm-sys:undef-value-get %valvec%))
-         (s1 (llvm-sys:create-insert-value *irbuilder* undef nvals '(0)
-                                           label))
-         (s2 (llvm-sys:create-insert-value *irbuilder* s1 vals '(1) label)))
-    s2))
-
-(defun irc-valvec-nvals (valvec &optional (label "nvals"))
-  (irc-extract-value valvec '(0) label))
-
-(defun irc-valvec-values (valvec &optional (label "values"))
-  (irc-extract-value valvec '(1) label))
 
 (defun irc-arity-index (arity)
   (cond
