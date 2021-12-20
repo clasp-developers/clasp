@@ -1080,18 +1080,20 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-vaslist-nvals (vaslist &optional (label "nvals"))
   (irc-extract-value vaslist '(1) label))
 
-;;; Get the primary value of a vaslist. This entails checking the number
+;;; Get the nth value of a vaslist. This entails checking the number
 ;;; of values and possibly returning a constant nil if needed.
+;;; (That is, this works like CL:NTH. The "N" argument is treated as an
+;;;  unsigned untagged integer, and an upper out of bounds just results in NIL.)
 ;;; This requires branching. We could alternately use the llvm select
 ;;; instruction, but I'm not as sure how it works (especially the "MDFrom"
 ;;; argument to CreateSelect).
-(defun irc-vaslist-primary (vaslist &optional (label "primary"))
+(defun irc-vaslist-nth (n vaslist &optional (label "primary"))
   (let ((novalues (irc-basic-block-create "vaslist-primary-no-values"))
         (values (irc-basic-block-create "vaslist-primary-values"))
         (merge (irc-basic-block-create "vaslist-primary-merge")))
     (irc-cond-br
-     (irc-icmp-eq (irc-vaslist-nvals vaslist) (jit-constant-size_t 0))
-     novalues values)
+     (irc-icmp-ult n (irc-vaslist-nvals vaslist))
+     values novalues)
     (irc-begin-block novalues)
     (let ((nil (irc-literal nil "NIL")))
       (irc-br merge)
@@ -1103,6 +1105,17 @@ the type LLVMContexts don't match - so they were defined in different threads!"
           (irc-phi-add-incoming phi nil novalues)
           (irc-phi-add-incoming phi primary values)
           phi)))))
+
+;;; Given a vaslist, return a new vaslist with all values but the primary.
+;;; If the vaslist is already empty, it is returned.
+;;; N is treated as an untagged unsigned integer.
+(defun irc-vaslist-nthcdr (n vaslist &optional (label "rest"))
+  (let* ((nvals (irc-vaslist-nvals vaslist))
+         (real-n (irc-intrinsic "llvm.umin.i64" n nvals))
+         (new-nvals (irc-sub n real-n))
+         (vals (irc-vaslist-values vaslist))
+         (new-vals (irc-gep vals (list new-nvals))))
+    (irc-make-vaslist new-nvals new-vals label)))
 
 (defparameter *default-function-attributes*
   #+cclasp '(llvm-sys:attribute-uwtable

@@ -320,6 +320,7 @@
                                  bir:instruction)
   ())
 
+;;; This is (complement #'endp) for vaslists - i.e. "Not ENDP"
 (defclass cc-vaslist:nendp (bir:one-input bir:conditional-test) ())
 
 ;;;

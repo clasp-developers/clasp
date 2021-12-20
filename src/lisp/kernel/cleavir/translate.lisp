@@ -881,7 +881,7 @@
                                             (cmp:irc-vaslist-values vaslist)))))
                   ((and (listp outputrt) (= (length outputrt) 1))
                    (cast-one :object (first outputrt)
-                             (cmp:irc-vaslist-primary (in input))))
+                             (cmp:irc-vaslist-nth (%size_t 0) (in input))))
                   (t (error "BUG: Cast from ~a to ~a" inputrt outputrt))))
            ((= (length inputrt) 1)
             (cond ((eq outputrt :multiple-values)

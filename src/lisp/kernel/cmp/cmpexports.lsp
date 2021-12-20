@@ -240,7 +240,8 @@
             irc-make-vaslist
             irc-vaslist-nvals
             irc-vaslist-values
-            irc-vaslist-primary
+            irc-vaslist-nth
+            irc-vaslist-nthcdr
             irc-tag-vaslist
             irc-unbox-vaslist
             irc-header-stamp
