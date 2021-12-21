@@ -1770,6 +1770,18 @@ function-description - for debugging."
   (let ((result-in-registers (irc-funcall-results-in-registers closure args label)))
     (irc-tmv-result result-in-registers result)))
 
+;;; Given LLVM values for a closure, an argcount, and an array of arguments,
+;;; generate a call or invoke. This means calling the general entry point.
+(defun irc-apply (closure argcount args &optional (label ""))
+  (let* ((function-type (fn-prototype :general-entry))
+         (function*-type (llvm-sys:type-get-pointer-to function-type))
+         (entry-point
+           (irc-calculate-entry closure :general-entry function*-type))
+         (real-args (list closure argcount args)))
+    (irc-call-or-invoke function-type entry-point real-args
+                        *current-unwind-landing-pad-dest*
+                        label)))
+
 ;----------------------------------------------------------------------
 
 (defun get-primitives ()

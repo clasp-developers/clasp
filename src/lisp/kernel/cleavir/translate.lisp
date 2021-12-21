@@ -775,16 +775,18 @@
                                          abi)
   (declare (ignore abi))
   (let* ((fun (in (first (bir:inputs instruction))))
-         (bargs (second (bir:inputs instruction)))
-         (args-rtype (cc-bmir:rtype bargs))
-         (args (in bargs))
+         (args (rest (bir:inputs instruction)))
+         (rargs (loop for arg in args
+                      for rt = (cc-bmir:rtype arg)
+                      do (assert (listp rt))
+                      when (= (length rt) 1)
+                        collect (in arg)
+                      else append (in arg)))
          (output (bir:output instruction))
          (label (datum-name-as-string output)))
-    (assert (= (and (listp args-rtype)
-                    (= (length args-rtype) (bir:nvalues instruction)))))
+    (assert (= (length rargs) (bir:nvalues instruction)))
     (out
-     (let ((rargs (if (= (length args-rtype) 1) (list args) args)))
-       (closure-call-or-invoke fun rargs :label label))
+     (closure-call-or-invoke fun rargs :label label)
      output)))
 
 (defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
@@ -1131,6 +1133,38 @@
                                  collect (cmp:irc-load
                                           (return-value-elt i)))))))))
            (t (error "BUG: Bad rtype ~a" irt)))
+     output)))
+
+(defmethod translate-simple-instruction ((inst bir:values-restore) abi)
+  (declare (ignore abi))
+  (let ((input (bir:input inst))
+        (output (bir:output inst)))
+    (out
+     (if (listp (cc-bmir:rtype output))
+         ;; Totally fixed values; we just alias.
+         (in input)
+         ;; Now output rtype must be :multiple-values.
+         (let* ((in (in input))
+                (irt (cc-bmir:rtype input)))
+           (cond ((eq irt :vaslist)
+                  (%intrinsic-call "cc_load_values"
+                                   (list
+                                    (cmp:irc-vaslist-nvals in)
+                                    (cmp:irc-vaslist-values in))))
+                 ((listp irt)
+                  (let* ((lirt (length irt)))
+                    ;; FIXME: In safe code, we might want to check that the
+                    ;; values count is correct,
+                    ;; if the type tests do not do this already.
+                    (case lirt
+                      ((0) (cmp:irc-make-tmv (%size_t 0) (%nil)))
+                      ((1) (cmp:irc-make-tmv (%size_t 1) in))
+                      (otherwise
+                       (loop for i from 1
+                             for idat in (rest in)
+                             do (cmp:irc-store idat (return-value-elt i)))
+                       (cmp:irc-make-tmv (%size_t lirt) (first in))))))
+                 (t (error "BUG: Bad rtype ~a" irt)))))
      output)))
 
 (defun values-collect-multi (inst)
