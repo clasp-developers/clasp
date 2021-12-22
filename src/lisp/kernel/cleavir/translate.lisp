@@ -1272,21 +1272,9 @@
 (defmethod translate-terminator ((inst bir:values-collect) abi next)
   (declare (ignore abi))
   (let ((output (bir:output inst)))
+    (assert (eq (cc-bmir:rtype output) :multiple-values))
     (out
-     (cond ((listp (cc-bmir:rtype output))
-            ;; Totally fixed values; we pretty much just alias.
-            (loop for inp in (bir:inputs inst)
-                  for rt = (cc-bmir:rtype inp)
-                  do (assert (listp rt))
-                  if (= (length rt) 1)
-                    collect (in inp) into result
-                  else
-                    append (in inp) into result
-                  finally (return (if (= (length result) 1)
-                                      (first result)
-                                      result))))
-           ;; Now output rtype must be :multiple-values.
-           ((= (length (bir:inputs inst)) 1)
+     (cond ((= (length (bir:inputs inst)) 1)
             ;; Simple case with no pasting together multiple inputs.
             (let* ((inp (first (bir:inputs inst)))
                    (in (in inp))
@@ -1297,24 +1285,27 @@
                                        (cmp:irc-vaslist-nvals in)
                                        (cmp:irc-vaslist-values in))))
                     ((eq irt :multiple-values) in) ; already have mv, so nop
-                    ((listp irt)
-                     (let* ((lirt (length irt)))
-                       ;; FIXME: In safe code, we might want to check that the
-                       ;; values count is correct,
-                       ;; if the type tests do not do this already.
-                       (case lirt
-                         ((0) (cmp:irc-make-tmv (%size_t 0) (%nil)))
-                         ((1) (cmp:irc-make-tmv (%size_t 1) in))
-                         (otherwise
-                          (loop for i from 1
-                                for idat in (rest in)
-                                do (cmp:irc-store idat (return-value-elt i)))
-                          (cmp:irc-make-tmv (%size_t lirt) (first in))))))
+                    ;; Fixed values would have been lowered away in
+                    ;; insert-casts.
                     (t (error "BUG: Bad rtype ~a" irt)))))
            (t ; hard case
             (values-collect-multi inst)))
      output))
   (cmp:irc-br (first next)))
+
+(defmethod translate-simple-instruction ((inst cc-bmir:append-values) abi)
+  (out
+   (loop for inp in (bir:inputs inst)
+         for rt = (cc-bmir:rtype inp)
+         do (assert (listp rt))
+         if (= (length rt) 1)
+           collect (in inp) into result
+         else
+           append (in inp) into result
+         finally (return (if (= (length result) 1)
+                             (first result)
+                             result)))
+   (bir:output inst)))
 
 (defmethod translate-simple-instruction
     ((inst bir:load-time-value-reference) abi)

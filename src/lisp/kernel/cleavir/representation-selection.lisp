@@ -503,14 +503,22 @@
          (inputrts (mapcar #'cc-bmir:rtype inputs))
          (output (bir:output instruction))
          (outputrt (cc-bmir:rtype output)))
-    (when (and (= (length inputs) 1) (not (eq outputrt :multiple-values)))
-      ;; fixed values, so this is a nop to delete.
-      (bir:replace-uses (first inputs) output)
+    (when (listp outputrt)
+      (if (= (length inputs) 1)
+          ;; fixed values, so this is a nop to delete.
+          (bir:replace-uses (first inputs) output)
+          ;; lower to append-values.
+          (bir:insert-instruction-before
+           (make-instance 'cc-bmir:append-values
+             :origin (bir:origin instruction) :policy (bir:policy instruction)
+             :inputs inputs :outputs (list output))
+           instruction))
       (bir:replace-terminator
        (make-instance 'bir:jump
          :origin (bir:origin instruction) :policy (bir:policy instruction)
          :inputs () :outputs () :next (bir:next instruction))
        instruction))))
+          
 (defmethod insert-casts ((instruction cc-vaslist:values-list))
   (cast-inputs instruction '(:vaslist))
   (cast-output instruction :vaslist))
