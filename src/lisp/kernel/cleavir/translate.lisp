@@ -165,6 +165,9 @@
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
   (declare (ignore tmv))
   (%intrinsic-call "llvm.stackrestore" (list (dynenv-storage dynenv))))
+(defmethod undo-dynenv ((dynenv bir:values-collect) tmv)
+  ;; For the moment, a nop.
+  (declare (ignore tmv)))
 
 (defun translate-local-unwind (jump tmv)
   (loop with target = (bir:dynamic-environment
@@ -1265,7 +1268,7 @@
     ;; is technically slightly inefficient.
     (cmp:irc-make-tmv n-total-values (cmp:irc-load valvec))))
 
-(defmethod translate-simple-instruction ((inst bir:values-collect) abi)
+(defmethod translate-terminator ((inst bir:values-collect) abi next)
   (declare (ignore abi))
   (let ((output (bir:output inst)))
     (out
@@ -1292,6 +1295,7 @@
                                       (list
                                        (cmp:irc-vaslist-nvals in)
                                        (cmp:irc-vaslist-values in))))
+                    ((eq irt :multiple-values) in) ; already have mv, so nop
                     ((listp irt)
                      (let* ((lirt (length irt)))
                        ;; FIXME: In safe code, we might want to check that the
@@ -1308,7 +1312,8 @@
                     (t (error "BUG: Bad rtype ~a" irt)))))
            (t ; hard case
             (values-collect-multi inst)))
-     output)))
+     output))
+  (cmp:irc-br (first next)))
 
 (defmethod translate-simple-instruction
     ((inst bir:load-time-value-reference) abi)

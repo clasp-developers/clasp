@@ -264,6 +264,9 @@
       (cmp:irc-br
        (maybe-entry-processor (cleavir-bir:parent instruction) tags))
       bb)))
+(defmethod compute-maybe-entry-processor ((inst bir:values-collect) tags)
+  ;; NOP for the moment
+  (maybe-entry-processor (cleavir-bir:parent inst) tags))
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
                                           tags)
@@ -285,7 +288,7 @@
 (defun dynenv-may-enter-p (dynenv)
   (etypecase dynenv
     (cleavir-bir:function nil)
-    ((or cleavir-bir:leti cleavir-bir:values-save
+    ((or cleavir-bir:leti cleavir-bir:values-save bir:values-collect
          cc-bir:unwind-protect cc-bir:bind)
      (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
     (cleavir-bir:catch
@@ -313,7 +316,7 @@
               (never-entry-processor dynenv)
               (dynenv-needs-cleanup-p dynenv)
               (in dynenv))))
-        ((or cc-bir:bind cleavir-bir:values-save
+        ((or cc-bir:bind cleavir-bir:values-save bir:values-collect
              cleavir-bir:leti cc-bir:unwind-protect
              cleavir-bir:function)
          (generate-maybe-entry-landing-pad
@@ -353,6 +356,9 @@
   ;; This whole frame is being discarded,
   ;; so no smaller stack unwinding is necessary.
   (never-entry-processor (cleavir-bir:parent dynenv)))
+(defmethod compute-never-entry-processor ((dynenv bir:values-collect))
+  ;; ditto
+  (never-entry-processor (bir:parent dynenv)))
 
 (defmethod compute-never-entry-processor ((dynenv cleavir-bir:catch))
   (never-entry-processor (cleavir-bir:parent dynenv)))
@@ -377,7 +383,7 @@
     ;; Next might need a cleanup
     ((or cleavir-bir:catch
          ;; Cleanup only required for local exit.
-         cleavir-bir:leti cleavir-bir:values-save)
+         cleavir-bir:leti cleavir-bir:values-save bir:values-collect)
      (dynenv-needs-cleanup-p (cleavir-bir:parent dynenv)))
     ;; Definitive answers
     (cleavir-bir:function nil)
@@ -386,7 +392,8 @@
 
 (defun compute-never-entry-landing-pad (dynenv)
   (etypecase dynenv
-    ((or cleavir-bir:catch cleavir-bir:leti cleavir-bir:values-save)
+    ((or cleavir-bir:catch cleavir-bir:leti cleavir-bir:values-save
+         bir:values-collect)
      ;; We never catch, so just keep going up.
      (never-entry-landing-pad (cleavir-bir:parent dynenv)))
     ((or cc-bir:bind cc-bir:unwind-protect)
