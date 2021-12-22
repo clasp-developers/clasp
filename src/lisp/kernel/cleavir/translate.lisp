@@ -347,7 +347,8 @@
   (cond
     ((cleavir-set:empty-set-p (bir:unwinds instruction))
      (cmp:irc-br (first next)))
-    ((bir-transformations:simple-unwinding-p instruction)
+    ((bir-transformations:simple-unwinding-p instruction
+                                             *clasp-system*)
      (translate-sjlj-catch instruction next))
     (t
      ;; Assign the catch the continuation.
@@ -383,7 +384,7 @@
     (when rv (save-multiple-value-0 rrv))
     ;; unwind
     (if (bir-transformations:simple-unwinding-p
-         (bir:catch instruction))
+         (bir:catch instruction) *clasp-system*)
         ;; SJLJ
         ;; (Note: No landing pad because in order for SJLJ to occur,
         ;;  the dynamic environment must just be the function.)
