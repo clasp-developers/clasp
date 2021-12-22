@@ -407,3 +407,18 @@
                              :info (cleavir-primop-info:info 'fdefinition)
                              :inputs rv :outputs (list out)))
         (list out)))))
+
+;;; misc
+
+;;; longjmping through values allocas is no problem.
+
+(defmethod cleavir-bir-transformations:simple-dynenv-p
+    ((dynenv bir:values-save) (dest bir:dynamic-environment)
+     (system clasp-cleavir:clasp))
+  (cleavir-bir-transformations:simple-dynenv-p
+   (bir:parent dynenv) dest system))
+(defmethod cleavir-bir-transformations:simple-dynenv-p
+    ((dynenv bir:values-collect) (dest bir:dynamic-environment)
+     (system clasp-cleavir:clasp))
+  (cleavir-bir-transformations:simple-dynenv-p
+   (bir:parent dynenv) dest system))
