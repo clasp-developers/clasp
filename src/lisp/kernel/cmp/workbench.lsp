@@ -80,7 +80,7 @@
          cmp::c++-field-ptr
          cmp::calling-convention-vaslist.va-arg
          cmp::calling-convention-vaslist*
-         cmp::irc-load
+         cmp::irc-typed-load
          cmp::irc-add
          cmp::irc-sub
          cmp::irc-store

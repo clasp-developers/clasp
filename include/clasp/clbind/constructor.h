@@ -208,7 +208,7 @@ public:
     MAKE_STACK_FRAME(frame,2);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
+    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame,2);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::goFrame(frame->arguments());

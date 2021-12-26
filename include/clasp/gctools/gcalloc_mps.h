@@ -5,7 +5,7 @@ namespace gctools {
 #ifdef USE_MPS
 extern void bad_cons_mps_reserve_error();
 
-template <typename ConsType, typename Register, typename... ARGS>
+template <typename RuntimeStage, typename ConsType, typename Register, typename... ARGS>
 #ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
 __attribute__((always_inline))
 #else
@@ -20,7 +20,7 @@ smart_ptr<ConsType> do_cons_mps_allocation(mps_ap_t& allocation_point,
     // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
     mps_addr_t addr;
     ConsType* cons;
-    size_t cons_size = ConsSizeCalculator<ConsType,Register>::value();
+    size_t cons_size = ConsSizeCalculator<RuntimeStage,ConsType,Register>::value();
     do {
       mps_res_t res = mps_reserve(&addr, allocation_point, cons_size);
       if ( res != MPS_RES_OK ) bad_cons_mps_reserve_error();

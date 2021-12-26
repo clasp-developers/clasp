@@ -119,9 +119,9 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
           // Use new way with pointer bitmaps
           uintptr_t start_pointer_bitmap = stamp_layout.container_layout->container_field_pointer_bitmap;
-          if (header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O)) {
+          if (header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
 //            printf("%s:%d:%s obj_scan for Code_o object with header %p\n", __FILE__, __LINE__, __FUNCTION__, &header );
-            llvmo::Code_O* code = (llvmo::Code_O*)client;
+            llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
             core::T_O** addr = (core::T_O**)code->literalsStart();
             core::T_O** addrEnd = addr+(code->literalsSize()/sizeof(core::T_O*));
             for ( ; addr < addrEnd; addr++ ) {
@@ -238,6 +238,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 
 
 #ifdef OBJECT_SKIP
+__attribute__((optnone))
 ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
   ADDR_T oldClient = client;
   const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(GENERAL_PTR_TO_HEADER_PTR(client));
@@ -329,9 +330,9 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
         if (dbg) {LOG(BF("container_layout\n"));}
 #endif
         // special cases
-        if (stamp_wtag == gctools::STAMPWTAG_llvmo__Code_O) {
-          llvmo::Code_O* code = (llvmo::Code_O*)client;
-          obj_size = gctools::AlignUp(llvmo::Code_O::sizeofInState(code,code->_State));
+        if (stamp_wtag == gctools::STAMPWTAG_llvmo__ObjectFile_O) {
+          llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
+          obj_size = gctools::AlignUp(llvmo::ObjectFile_O::sizeofInState(code,code->_State));
         } else {
           gctools::Container_layout& container_layout = *container_layoutP;
         // For bignums we allow the _MaybeSignedLength(capacity) to be a negative value to represent negative bignums

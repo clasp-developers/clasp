@@ -138,7 +138,7 @@ names to offsets."
   
 (defun c++-field-ptr (struct-info tagged-object field-name &optional (label ""))
   (let* ((tagged-object-i8* (irc-bit-cast tagged-object %i8*%))
-         (field* (irc-gep tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
+         (field* (irc-gep %i8% tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
          (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
          (field-ptr (irc-bit-cast field* (funcall field-type-getter) label)))
     field-ptr))
@@ -150,7 +150,9 @@ names to offsets."
 (define-symbol-macro %i8% (llvm-sys:type-get-int8-ty (thread-local-llvm-context))) ;; -> CHAR / BYTE
 (define-symbol-macro %i8*% (llvm-sys:type-get-pointer-to %i8%))
 (define-symbol-macro %i8**% (llvm-sys:type-get-pointer-to %i8*%))
+(define-symbol-macro %i8***% (llvm-sys:type-get-pointer-to %i8**%))
 (define-symbol-macro %i8*[1]% (llvm-sys:array-type-get %i8*% 1))
+(define-symbol-macro %register-save-area% %t*[0]%)
 
 
 
@@ -191,7 +193,10 @@ names to offsets."
 
 (define-symbol-macro %vtable*% %i8*%)
 
-;;(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %i32%) "exception-struct" nil))
+;;(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %i32%) "exception-struct" nil)
+(define-symbol-macro %exn% %i8*%)
+(define-symbol-macro %ehselector% %i32%)
+(define-symbol-macro %go-index% %size_t%)
 (define-symbol-macro %exception-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %i32%) nil))
 (define-symbol-macro %{i32.i1}% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %i1%) nil))
 (define-symbol-macro %{i64.i1}% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i64% %i1%) nil))
@@ -279,6 +284,7 @@ Boehm and MPS use a single pointer"
 ;; alias for bignum dumping
 (define-symbol-macro %bignum% %t*%)
 (define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
+(define-symbol-macro %t***% (llvm-sys:type-get-pointer-to %t**%))
 (define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))
 (define-symbol-macro %t*[0]*% (llvm-sys:type-get-pointer-to %t*[0]%))
 (define-symbol-macro %t*[DUMMY]% (llvm-sys:array-type-get %t*% 64))
@@ -548,7 +554,7 @@ Boehm and MPS use a single pointer"
   ;; Tack on a size_t to store the number of remaining arguments
 
   (define-c++-struct %vaslist% +vaslist0-tag+  ;; TODO - there is going to be a problem here becaues of +vaslist1-tag+
-    ((%t**% :args)
+    ((%t**% :args)     ; This is a pointer to T*
      (%size_t% :nargs)))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
@@ -616,8 +622,8 @@ Boehm and MPS use a single pointer"
   )
 
 (defun vaslist-copy (vaslist-dst vaslist-src)
-  (let ((args (irc-load (c++-field-ptr info.%vaslist% vaslist-src :args)))
-        (nargs (irc-load (c++-field-ptr info.%vaslist% vaslist-src :nargs))))
+  (let ((args (irc-typed-load %t**% (c++-field-ptr info.%vaslist% vaslist-src :args)))
+        (nargs (irc-typed-load %size_t% (c++-field-ptr info.%vaslist% vaslist-src :nargs))))
     (irc-store args (c++-field-ptr info.%vaslist% vaslist-dst :args))
     (irc-store nargs (c++-field-ptr info.%vaslist% vaslist-dst :nargs))))
 
@@ -625,18 +631,22 @@ Boehm and MPS use a single pointer"
   ;; Nothing
   )
 
-;;;
-;;; Read the next argument from the vaslist
-(defun calling-convention-vaslist.va-arg (cc)
-  (let* ((vaslist (calling-convention-vaslist* cc))
-         (args (irc-load (c++-field-ptr info.%vaslist% vaslist :args)))
-         (val (irc-load args))
-         (args-next (irc-gep args (list (jit-constant-i64 1))))
-         (nargs (irc-load (c++-field-ptr info.%vaslist% vaslist :nargs)))
+(defun gen-vaslist-pop (vaslist)
+  (let* ((args* (c++-field-ptr info.%vaslist% vaslist :args))
+         (args (irc-typed-load %t**% args*))
+         (val (irc-t*-load args))
+         (args-next (irc-gep %t*% args (list 1)))
+         (nargs (irc-typed-load %size_t% (c++-field-ptr info.%vaslist% vaslist :nargs)))
          (nargs-next (irc-sub nargs (jit-constant-i64 1))))
     (irc-store args-next (c++-field-ptr info.%vaslist% vaslist :args))
     (irc-store nargs-next (c++-field-ptr info.%vaslist% vaslist :nargs))
     val))
+
+;;;
+;;; Read the next argument from the vaslist
+(defun calling-convention-vaslist.va-arg (cc)
+  (let* ((vaslist (calling-convention-vaslist* cc)))
+    (gen-vaslist-pop vaslist)))
 
 (defun fn-prototype (arity)
   (cond
@@ -672,29 +682,31 @@ Boehm and MPS use a single pointer"
   (cmp-log "maybe-spill-to-register-save-area register-save-area* -> %s%N" register-save-area*)
   (cmp-log "maybe-spill-to-register-save-area registers -> %s%N" registers)
   (when register-save-area*
-    (flet ((spill-reg (idx reg addr-name)
-             (let ((addr          (irc-gep register-save-area* (list 0 idx) addr-name))
-                   (reg-i8*       (cond
-                                    ((llvm-sys:type-equal (llvm-sys:get-type reg) %i64%)
-                                     (irc-int-to-ptr reg %i8*% "nargs-i8*"))
-                                    (t
-                                     (irc-bit-cast reg %i8*% "reg-i8*")))))
-               (irc-store reg-i8* addr t)
-               (when (llvm-sys:current-debug-location *irbuilder*)
-                 (let ((var (dbg-parameter-var addr-name (1+ idx))))
-                   (unless var
-                     (error "maybe-spill-to-register-save-area var is NIL arity is ~a  idx is ~a" arity idx))
-                   (%dbg-variable-value reg-i8* var)
-                   (%dbg-variable-addr addr var)))
-               addr)))
-      (let* ((names (if (eq arity :general-entry)
-                        (list "rsa-closure" "rsa-nargs" "rsa-args")
-                        (list "rsa-closure" "rsa-arg0" "rsa-arg1" "rsa-arg2" "rsa-arg3" "rsa-arg4" "rsa-arg5" "rsa-arg6" "rsa-arg7")))
-             (idx 0))
-        (mapc (lambda (reg name)
-                (spill-reg idx reg name)
-                (incf idx))
-              registers names)))))
+    (multiple-value-bind (words index)
+        (irc-arity-info arity)
+      (flet ((spill-reg (idx reg addr-name)
+               (let ((addr          (irc-gep (llvm-sys:array-type-get %t*% words) register-save-area* (list 0 idx) addr-name))
+                     (reg-i8*       (cond
+                                      ((llvm-sys:type-equal (llvm-sys:get-type reg) %i64%)
+                                       (irc-int-to-ptr reg %i8*% "nargs-i8*"))
+                                      (t
+                                       (irc-bit-cast reg %i8*% "reg-i8*")))))
+                 (irc-store reg-i8* addr t)
+                 (when (llvm-sys:current-debug-location *irbuilder*)
+                   (let ((var (dbg-parameter-var addr-name (1+ idx))))
+                     (unless var
+                       (error "maybe-spill-to-register-save-area var is NIL arity is ~a  idx is ~a" arity idx))
+                     (%dbg-variable-value reg-i8* var)
+                     (%dbg-variable-addr addr var)))
+                 addr)))
+        (let* ((names (if (eq arity :general-entry)
+                          (list "rsa-closure" "rsa-nargs" "rsa-args")
+                          (list "rsa-closure" "rsa-arg0" "rsa-arg1" "rsa-arg2" "rsa-arg3" "rsa-arg4" "rsa-arg5" "rsa-arg6" "rsa-arg7")))
+               (idx 0))
+          (mapc (lambda (reg name)
+                  (spill-reg idx reg name)
+                  (incf idx))
+                registers names))))))
 
 
 (defun %dbg-variable-addr (addr var)
@@ -1090,7 +1102,7 @@ and initialize it with an array consisting of one function pointer."
     (error "result must be an instance of llvm-sys:Value_O but instead it has the value ~s" result)))
 
 
-(defun codegen-startup-shutdown (module module-id THE-REPL-XEP-GROUP &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
+(defun codegen-startup-shutdown (module module-id THE-REPL-XEP-GROUP &optional gcroots-in-module array-type roots-array-or-nil (number-of-roots 0) ordered-literals array)
   (declare (ignore array))
   (multiple-value-bind (startup-shutdown-id startup-function-name shutdown-function-name)
       (jit-startup-shutdown-function-names module-id)
@@ -1112,11 +1124,9 @@ and initialize it with an array consisting of one function pointer."
         (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
           (let ((start (if roots-array-or-nil
-                           (irc-gep roots-array-or-nil
-                                    (list (jit-constant-size_t 0)
-                                          (jit-constant-size_t 0)))
+                           (irc-gep array-type roots-array-or-nil (list 0 0))
                            (llvm-sys:constant-pointer-null-get %t**%))))
-            (multiple-value-bind (function-vector-length function-vector)
+            (multiple-value-bind (function-vector-length function-vector function-vector-type)
                 (literal:setup-literal-machine-function-vectors cmp:*the-module*)
               (when gcroots-in-module
                 (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module ; holder
@@ -1127,9 +1137,9 @@ and initialize it with an array consisting of one function pointer."
                                                                             (jit-constant-size_t 0) ; transient_entries
                                                                             (jit-constant-size_t function-vector-length) ; function_pointer_count
                                                                             (irc-bit-cast
-                                                                             (cmp:irc-gep function-vector
-                                                                                          (list (cmp:jit-constant-size_t 0)
-                                                                                                (cmp:jit-constant-size_t 0)))
+                                                                             (cmp:irc-gep function-vector-type
+                                                                                          function-vector
+                                                                                          (list 0 0))
                                                                              %i8**%) ; fptrs
                                                                             ))))
             ;; If the constant/literal list is provided - then we may need to generate code for closurettes

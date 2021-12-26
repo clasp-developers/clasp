@@ -152,6 +152,10 @@ public:
 };
 
 
+typedef enum { undefined, snapshotFile, snapshotMemory, imageFile } StartupEnum;
+extern std::string global_startupSourceName;
+extern StartupEnum global_startupEnum;
+
 
 };
 

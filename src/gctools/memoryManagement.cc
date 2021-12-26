@@ -858,7 +858,6 @@ void walkRoots( RootWalkCallback callback, void* data ) {
 
 PointerFix globalMemoryWalkPointerFix;
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, void* userData ) {
   GatherObjects* gather = (GatherObjects*)userData;
   Header_s* header;

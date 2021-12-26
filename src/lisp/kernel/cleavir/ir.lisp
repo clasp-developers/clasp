@@ -1,41 +1,39 @@
-#+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq *echo-repl-read* t)
-  (setq cmp::*debug-compile-file* t)
-  (format t "About to compile-file ir.lsp~%"))
+#+(or)
+(eval-when (:compile-toplevel :execute :load-toplevel)
+        (setq *echo-repl-read* t)
+        (setq cmp::*print-implicit-compile-form* t)
+        (setq cmp::*debug-compile-file* t)
+        (format t "About to compile-file ir.lsp~%"))
 
 (in-package :clasp-cleavir)
-  
+
+(defun %indexed-literal-ref (index &optional (literal-label (bformat nil "values-table[%d]" index)) )
+  (multiple-value-bind (literals literals-type)
+      (literal:ltv-global)
+    (cmp:irc-const-gep2-64 literals-type
+                           literals
+                           0 index
+                           literal-label)))
+
 (defun %literal-ref (value &optional read-only-p)
   (multiple-value-bind (index in-array)
       (literal:reference-literal value read-only-p)
     (unless in-array
       (error "%literal-ref of immediate value ~s is illegal" value))
-    (let* ((literal-label (bformat nil "values-table[%d]" index))
-           (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
-                                               (literal:ltv-global)
-                                               0 index
-                                               literal-label)))
-      gep)))
+    (%indexed-literal-ref index)))
 
 (defun %literal-value (value &optional (label "literal"))
   (declare (ignore label))
-  (cmp:irc-load (%literal-ref value)))
-
-(defun %closurette-index (function)
-  (unless (cmp:xep-group-p function)
-    (error "The first argument to %closurette-index must be a xep-group - instead it is a ~s of class ~s" function (class-name (class-of function))))
-  (literal::reference-closure function))
+  (cmp:irc-t*-load (%literal-ref value)))
 
 (defun %closurette-ref (function)
-  (let* ((index (%closurette-index function))
-         (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
-                                             (literal:ltv-global)
-                                             0 index
-                                             (bformat nil "values-table[%d]" index))))
-    gep))
+  (unless (cmp:xep-group-p function)
+    (error "The first argument to %closurette-index must be a xep-group - instead it is a ~s of class ~s" function (class-name (class-of function))))
+  (let ((index (literal::reference-closure function)))
+    (%indexed-literal-ref index)))
 
 (defun %closurette-value (function)
-  (cmp:irc-load (%closurette-ref function)))
+  (cmp:irc-t*-load (%closurette-ref function)))
 
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
@@ -142,11 +140,7 @@
 (defun %gep (type object indices &optional (label "gep"))
   "Check the type against the object type and if they match return the GEP.
 And convert everything to JIT constants."
-  (unless (llvm-sys:type-equal type (llvm-sys:get-type object))
-    (error "%gep expected object of type ~a but got ~a of type ~a"
-           type object (llvm-sys:get-type object)))
-  (let ((converted-indices (mapcar (lambda (x) (%i32 x)) indices)))
-    (cmp:irc-gep-variable object converted-indices label)))
+    (cmp:irc-gep-variable type object indices label))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -172,7 +166,7 @@ And convert everything to JIT constants."
 (defun return-value-elt (idx)
   (assert (>= idx +pointers-returned-in-registers+))
   (let ((multiple-value-pointer (multiple-value-array-address)))
-    (%gep cmp:%t*[0]*% multiple-value-pointer (list 0 idx))))
+    (%gep cmp:%t*[0]% multiple-value-pointer (list 0 idx))))
 
 ;;; These functions are like cc_{save,restore}MultipleValue0
 ;; FIXME: we don't really need intrinsics for these - they're easy

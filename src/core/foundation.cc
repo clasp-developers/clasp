@@ -1602,22 +1602,23 @@ void throwIfClassesNotInitialized(const LispPtr &lisp) {
 
 namespace core {
 
-size_t lisp_general_badge(General_sp object) {
+uint32_t lisp_general_badge(General_sp object) {
   const gctools::Header_s* header = gctools::header_pointer(object.unsafe_general());
   return header->_stamp_wtag_mtag._header_badge;
 }
 
-size_t lisp_cons_badge(Cons_sp object) {
+uint32_t lisp_cons_badge(Cons_sp object) {
   const gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(object.unsafe_cons());
   return header->_stamp_wtag_mtag._header_badge;
 }
 
-size_t lisp_badge(T_sp object) {
+uint32_t lisp_badge(T_sp object) {
   if (object.consp()) {
     Cons_sp cobject = gc::As_unsafe<Cons_sp>(object);
     return lisp_cons_badge(cobject);
-  }
-  return lisp_general_badge(gc::As_unsafe<General_sp>(object));
+  } else if (object.generalp()) {
+    return lisp_general_badge(gc::As_unsafe<General_sp>(object));
+  } else return 0;
 }
 
 
@@ -1634,9 +1635,10 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::ConsPtrToHeaderPtr(object.unsafe_cons()));
     header->_stamp_wtag_mtag._header_badge = badge;
     return;
+  } else if (object.generalp()) {
+    gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
+    header->_stamp_wtag_mtag._header_badge = badge;
   }
-  gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
-  header->_stamp_wtag_mtag._header_badge = badge;
 }
 
 

@@ -1,4 +1,5 @@
-#+(or)(eval-when (:compile-toplevel :execute)
+#+(or)
+(eval-when (:compile-toplevel :execute)
   (setq *echo-repl-read* t))
 ;;
 ;; Clasp builder code
@@ -404,7 +405,9 @@ Return files."
                (let* ((filename (entry-filename entry))
                       (source-path (build-pathname filename :lisp))
                       (output-path (build-pathname filename output-type)))
-                 (format t "Compiling [~d of ~d (child-pid: ~d)] ~s~%    to ~s ~s~%" (1+ (entry-position entry)) total child-pid source-path output-type output-path)))
+                 (format t "Compiling [~d of ~d (child-pid: ~d)] ~s~%    to ~s ~s~%" (1+ (entry-position entry)) total child-pid source-path output-type output-path))
+               (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
+                 (format t "CLASP_PAUSE_FORKED_CHILD is set - will pause all children until they receive SIGUSR1~%")))
              (started-some (entries child-pid)
                (dolist (entry entries)
                  (started-one entry child-pid)))
@@ -517,11 +520,14 @@ Return files."
                      (child-stderr (core:mkstemp-fd "clasp-build-stderr")))
                  (multiple-value-bind (maybe-error pid-or-error child-stream)
                      (core:fork-redirect child-stdout child-stderr)
+                   (llvm-sys:create-lljit-thread-pool)
                    (if maybe-error
                        (error "Could not fork when trying to build ~a" entries)
                        (let ((pid pid-or-error))
                          (if (= pid 0)
                              (progn
+                               (when (ext:getenv "CLASP_PAUSE_FORKED_CHILD")
+                                 (gctools:wait-for-user-signal (format nil "Child with pid ~a is waiting for SIGUSR1" (core:getpid))))
                                #+(or)(progn
                                        (core:bformat t "A child started up with pid %d - sleeping for 10 seconds%N" (core:getpid))
                                        (sleep 10))

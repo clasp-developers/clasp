@@ -74,6 +74,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/primitives.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/clbind/clbindPackage.h>
@@ -335,18 +336,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   }
   
   
-  if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-    printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
-    stringstream ss;
-    char* username = getenv("USER");
-    if (!username) {
-      printf("Could not get USER environment variable\n");
-      exit(1);
-    }
-    ss << "/tmp/clasp_layout_" << getenv("USER") << ".py";
-    core::dumpDebuggingLayouts(ss.str());
-  }
-  
     // Create the one global CommandLineOptions object and do some minimal argument processing
   core::global_options = new core::CommandLineOptions(argc, argv);
   (core::global_options->_ProcessArguments)(core::global_options);
@@ -354,6 +343,8 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   globals_->_ExportedSymbolsAccumulate = core::global_options->_ExportedSymbolsAccumulate;
   globals_->_ExportedSymbolsFilename = core::global_options->_ExportedSymbolsFilename;
   globals_->_DebugStream = new core::DebugStream(mpiRank);
+  globals_->_Stage = core::global_options->_Stage;
+  printf("%s:%d:%s About to get start_of_snapshot\n", __FILE__, __LINE__, __FUNCTION__ );
 #ifdef USE_PRECISE_GC
 #  ifdef _TARGET_OS_DARWIN
   const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
@@ -372,8 +363,15 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   void* end_of_snapshot = NULL;
   extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_start;
   extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_end;
-  start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
-  end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
+  extern const char __attribute__((weak)) _binary_generated_clasp_snapshot_start;
+  extern const char __attribute__((weak)) _binary_generated_clasp_snapshot_end;
+  start_of_snapshot = (void*)&_binary_generated_clasp_snapshot_start;
+  end_of_snapshot = (void*)&_binary_generated_clasp_snapshot_end;
+  if (!start_of_snapshot) {
+    start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
+    end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
+  }
+  printf("%s:%d:%s  start_of_snapshot %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
   if (start_of_snapshot) {
       //printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
   } else {
@@ -437,12 +435,12 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     llvmo::initialize_llvm();
 
     clbind::initializeCastGraph();
-    if (!core::global_options->_SilentStartup) {
-      if (start_of_snapshot) {
-        printf("Loading the snapshot from the executable starting at %p\n", (void*)start_of_snapshot );
-      } else {
-        printf("Loading the snapshot from %s\n", snapshotFileName.c_str() );
-      }
+    if (start_of_snapshot) {
+      core::global_startupSourceName = "memory";
+      core::global_startupEnum = core::snapshotMemory;
+    } else {
+      core::global_startupSourceName = snapshotFileName;
+      core::global_startupEnum = core::snapshotFile;
     }
     exit_code = snapshotSaveLoad::snapshot_load( (void*)start_of_snapshot, (void*)end_of_snapshot, snapshotFileName );
 #else
@@ -492,6 +490,14 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     // __FILE__, __LINE__, (void*)&typeid(core::ExitProgram) );
     // RUN THIS LISP IMPLEMENTATION
     exit_code = _lisp->run();
+
+    _lisp->uninstallPackage(&AsttoolingPkg);
+    _lisp->uninstallPackage(&ServeEventPkg);
+    _lisp->uninstallPackage(&SocketsPkg);
+    _lisp->uninstallPackage(&llvmopkg);
+    _lisp->uninstallPackage(&ClbindPkg);
+    _lisp->uninstallPackage(&GcToolsPkg);
+
   }
   return exit_code;
 
@@ -606,6 +612,19 @@ int main( int argc, char *argv[] )
       fprintf(fout,"%d",getpid());
       fclose(fout);
     }
+    
+    if (getenv("CLASP_DEBUGGER_SUPPORT")) {
+      printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
+      stringstream ss;
+      char* username = getenv("USER");
+      if (!username) {
+        printf("Could not get USER environment variable\n");
+        exit(1);
+      }
+      ss << "/tmp/clasp_layout_" << getenv("USER") << ".py";
+      core::dumpDebuggingLayouts(ss.str());
+    }
+  
     char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
     if (pause_startup) {
 #ifdef USE_USER_SIGNAL

@@ -67,14 +67,16 @@ namespace core {
   public:
     // Always leave space for \0 at end
   SimpleBaseString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+    template <typename Stage = gctools::RuntimeStage>
     static SimpleBaseString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL, bool static_vector_p = false) {
       // For C/C++ interop make SimpleBaseString 1 character longer and append a \0
-      auto bs = gctools::GC<SimpleBaseString_O>::allocate_container_null_terminated_string(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<SimpleBaseString_O>::allocate_container_null_terminated_string<Stage>(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       bs->c_style_null_terminate(); // (*bs)[length] = '\0';
       return bs;
     }
+    template <typename Stage = gctools::RuntimeStage>
     static SimpleBaseString_sp make(const std::string& str) {
-      return SimpleBaseString_O::make(str.size(),'\0',true,str.size(),(const claspChar*)str.c_str());
+      return SimpleBaseString_O::make<Stage>(str.size(),'\0',true,str.size(),(const claspChar*)str.c_str());
     }
     static SimpleBaseString_sp make(const char* data, size_t len) {
       return SimpleBaseString_O::make(len,'\0',true,len,(const unsigned char*)data);

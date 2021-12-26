@@ -50,7 +50,7 @@ void dump_data_types(FILE* fout, const std::string& indent)
 {
 #define DTNAME(_type_,_name_,_sz_) fprintf(fout,"%sInit_data_type( data_type=%d, name=\"%s\",sizeof=%lu)\n", indent.c_str(), _type_, _name_, _sz_)
   DTNAME(SMART_PTR_OFFSET,"smart_ptr",sizeof(void*));
-  DTNAME(ATOMIC_SMART_PTR_OFFSET,"smart_ptr",sizeof(void*));
+  DTNAME(ATOMIC_SMART_PTR_OFFSET,"atomic_smart_ptr",sizeof(void*));
   DTNAME(TAGGED_POINTER_OFFSET,"tagged_ptr",sizeof(void*));
   DTNAME(ARRAY_OFFSET,"array",sizeof(void*));
   DTNAME(POINTER_OFFSET,"pointer",sizeof(void*));
@@ -180,6 +180,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
   size_t cur_container_info_idx = 0;
   int cur_stamp=0;
   idx = 0;
+  size_t fixed_index = 0;
+  size_t container_variable_index = 0;
 #define STAMP(_stamp_wtag_) (_stamp_wtag_>>(Header_s::wtag_width))
   for ( idx=0; idx<num_codes; ++idx ) {
 #ifdef DUMP_GC_BOOT
@@ -200,6 +202,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
       local_stamp_info[cur_stamp].name = codes[idx].description;
       local_stamp_info[cur_stamp].field_info_ptr = NULL;
       local_stamp_info[cur_stamp].container_info_ptr = NULL;
+      fixed_index = 0;
       if (walk == lldb_info) fprintf(fout, "%sInit_class_kind( stamp=%d, name=\"%s\", size=%d )\n",
                                      indent.c_str(),
                                      cur_stamp,
@@ -216,7 +219,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
           fprintf(fout,"%sInit__fixed_field( stamp=%d, index=%lu, data_type=%lu, field_name=\"%s\", field_offset=%lu)\n",
                   indent.c_str(),
                   cur_stamp,
-                  index,
+                  fixed_index++, // index,
                   data_type,
                   field_name,
                   field_offset
@@ -284,6 +287,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
       local_stamp_info[cur_stamp].name = codes[idx].description;
       local_stamp_info[cur_stamp].field_info_ptr = NULL;
       local_stamp_info[cur_stamp].container_info_ptr = NULL;
+      fixed_index = 0;
+      container_variable_index = 0;
       if (walk == lldb_info) fprintf(fout, "%sInit_container_kind( stamp=%d, name=\"%s\", size=%d )\n",
                                      indent.c_str(),
                                      cur_stamp,
@@ -305,6 +310,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
       local_stamp_info[cur_stamp].name = codes[idx].description;
       local_stamp_info[cur_stamp].field_info_ptr = NULL;
       local_stamp_info[cur_stamp].container_info_ptr = NULL;
+      fixed_index = 0;
+      container_variable_index = 0;
       if (walk == lldb_info) fprintf(fout, "%sInit_bitunit_container_kind( stamp=%d, name=\"%s\", size=%d, bits_per_bitunit=%d )\n",
                                      indent.c_str(),
                                      cur_stamp,
@@ -319,6 +326,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
       local_stamp_layout[cur_stamp].container_layout = &local_container_layout[cur_container_layout_idx++];
       GCTOOLS_ASSERT(cur_container_layout_idx<=number_of_containers);
       local_stamp_layout[cur_stamp].data_offset = codes[idx].data2;
+      container_variable_index = 0;
       if (walk == lldb_info) fprintf(fout, "%sInit__variable_array0( stamp=%d, name=\"%s\", offset=%d )\n",
                                      indent.c_str(),
                                      cur_stamp,
@@ -359,7 +367,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         if (walk == lldb_info) fprintf(fout, "%sInit__variable_field( stamp=%d, index=%lu, data_type=%lu, field_name=\"%s\", field_offset=%lu )\n",
                                        indent.c_str(),
                                        cur_stamp,
-                                       index,
+                                       container_variable_index++, // index,
                                        data_type,
                                        field_name,
                                        field_offset
@@ -418,6 +426,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         local_stamp_info[cur_stamp].name = codes[idx].description;
         local_stamp_info[cur_stamp].field_info_ptr = NULL;
         local_stamp_info[cur_stamp].container_info_ptr = NULL;
+        fixed_index = 0;
+        container_variable_index = 0;
       }
       break;
     case templated_class_jump_table_index:
@@ -466,7 +476,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_core__Lisp) ) {
           local_stamp_layout[cur_stamp].boehm._kind = global_lisp_kind;
           local_stamp_layout[cur_stamp].boehm._kind_defined = true;
-        } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_llvmo__Code_O) ) {
+        } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_llvmo__CodeBlock_O) ) {
           local_stamp_layout[cur_stamp].boehm._kind = global_code_kind;
           local_stamp_layout[cur_stamp].boehm._kind_defined = true;
         } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_core__Cons_O) ) {

@@ -47,7 +47,7 @@
 ;;; and if so, extract the go-index and jump table and so on in a catch block.
 ;;; Saves a landing pad and my comprehension.
 (defun generate-match-unwind (frame landing-pad-for-unwind-rethrow exn.slot)
-  (cmp:with-begin-end-catch ((cmp:irc-load exn.slot "exn") exception-ptr nil)
+  (cmp:with-begin-end-catch ((cmp:irc-typed-load cmp:%exn% exn.slot "exn") exception-ptr nil)
     ;; Check if frame is correct against tagbody and jump to jumpid
     (cmp:with-landing-pad landing-pad-for-unwind-rethrow
       (%intrinsic-invoke-if-landing-pad-or-call
@@ -59,21 +59,14 @@
   (let* ((ehbuilder       (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
          (ehresume        (cmp:irc-basic-block-create "ehresume"))
          (_               (cmp:irc-set-insert-point-basic-block ehresume ehbuilder))
-         (exn7            (llvm-sys:create-load-value-twine ehbuilder exn.slot "exn7"))
-         (sel             (llvm-sys:create-load-value-twine ehbuilder ehselector.slot "sel"))
+         (exn7            (llvm-sys:create-load-type-value-twine ehbuilder cmp:%exn% exn.slot "exn7"))
+         (sel             (llvm-sys:create-load-type-value-twine ehbuilder cmp:%ehselector% ehselector.slot "sel"))
          (undef           (llvm-sys:undef-value-get cmp:%exception-struct% ))
          (lpad.val        (llvm-sys:create-insert-value ehbuilder undef exn7 '(0) "lpad.val"))
          (lpad.val8       (llvm-sys:create-insert-value ehbuilder lpad.val sel '(1) "lpad.val8"))
          (_1              (llvm-sys:create-resume ehbuilder lpad.val8)))
     (declare (ignore _ _1))
     ehresume))
-
-(defun alloca-exn.slot ()
-  (cmp:alloca-i8* "exn.slot"))
-(defun alloca-ehselector.slot ()
-  (cmp:alloca-i32 "ehselector.slot"))
-(defun alloca-go-index.slot ()
-  (cmp:alloca-size_t "go-index.slot"))
 
 (defun generate-unbind (symbol old-value next)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
@@ -206,10 +199,9 @@
                              ((every (lambda (x) (eq x :object)) rt)
                               (list* (cmp:irc-tmv-primary tmv)
                                      (loop for i from 1 below (length rt)
-                                           collect (cmp:irc-load
-                                                    (return-value-elt i)))))
+                                           collect (cmp:irc-t*-load (return-value-elt i)))))
                              (t (error "BUG: Bad rtype ~a" rt))))))
-               (go-index (cmp:irc-load *go-index.slot*))
+               (go-index (cmp:irc-typed-load cmp:%go-index% *go-index.slot*))
                (sw (cmp:irc-switch go-index next ndestinations)))
           (declare (ignore _))
           (loop for dest in destinations
@@ -278,7 +270,7 @@
       (cmp:irc-begin-block err)
       (cmp:with-landing-pad nil
         (%intrinsic-invoke-if-landing-pad-or-call
-         "cc_error_bugged_catch" (list (cmp:irc-load *go-index.slot*))))
+         "cc_error_bugged_catch" (list (cmp:irc-typed-load cmp:%go-index% *go-index.slot*))))
       (cmp:irc-unreachable)
       err)))
 
@@ -404,9 +396,9 @@
          (*maybe-entry-processors* (make-hash-table :test #'eq))
          (*never-entry-landing-pads* (make-hash-table :test #'eq))
          (*never-entry-processors* (make-hash-table :test #'eq))
-         (*exn.slot* (alloca-exn.slot))
-         (*ehselector.slot* (alloca-ehselector.slot))
-         (*go-index.slot* (alloca-go-index.slot)))
+         (*exn.slot* (cmp:alloca-exn))
+         (*ehselector.slot* (cmp:alloca-ehselector))
+         (*go-index.slot* (cmp:alloca-go-index)))
      ,@body))
 
 (defun maybe-entry-landing-pad (location tags)

@@ -136,14 +136,14 @@ fields at the same offset as Instance_O.
  public:
    CLASP_DEFAULT_CTOR CodeEntryPoint_O() {};
  public:
-   llvmo::CodeBase_sp _Code;                       //  10 code
+   T_sp _Code;                       //  10 code
  public:
   // Accessors
-   CodeEntryPoint_O(FunctionDescription_sp fdesc, llvmo::CodeBase_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
+   CodeEntryPoint_O(FunctionDescription_sp fdesc, T_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(BF("Subclass must implement")); };
    void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
-   CL_DEFMETHOD llvmo::CodeBase_sp EntryPoint_code() const { return this->_Code; };
+   CL_DEFMETHOD T_sp EntryPoint_code() const { return this->_Code; };
  };
 
  FORWARD(LocalEntryPoint);
@@ -153,7 +153,7 @@ fields at the same offset as Instance_O.
    ClaspLocalFunction _EntryPoint;
  public:
   // Accessors
-   LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, llvmo::CodeBase_sp code );
+   LocalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspLocalFunction& entry_point, T_sp code );
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
@@ -184,13 +184,13 @@ FORWARD(GlobalEntryPoint);
    T_sp _localEntryPoint;
  public:
   // Accessors
-   GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, llvmo::CodeBase_sp code, T_sp localEntryPoint );
+   GlobalEntryPoint_O(FunctionDescription_sp fdesc, const ClaspXepFunction& entry_point, T_sp code, T_sp localEntryPoint );
  public:
    virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup );
    virtual Pointer_sp defaultEntryAddress() const;
    T_mv sectionedEntryInfo() const;
    T_sp lineTable() const;
-   llvmo::Code_sp code() const;
+   llvmo::ObjectFile_sp code() const;
    T_sp localEntryPoint() const;
    string __repr__() const;
  };
@@ -535,5 +535,11 @@ namespace core {
 #undef LCC_FUNCALL
 };
 
+
+namespace core {
+typedef gctools::return_type (*trampoline_function)(void* fn, core::T_O* closure, size_t nargs, core::T_O** args );
+extern trampoline_function interpreter_trampoline;
+
+};
 
 #endif

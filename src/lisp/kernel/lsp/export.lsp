@@ -98,7 +98,7 @@
 
 (let ((f #'(lambda (whole env)
              (declare (ignore env) (core:lambda-name do/do*-expand))
-             (let (do/do* control test result vl step let psetq body)
+             (let (do/do* control test result vlexport step let psetq body)
                (setq do/do* (first whole) body (rest whole))
                (if (eq do/do* 'do)
                    (setq let 'LET psetq 'PSETQ)
@@ -116,16 +116,16 @@
                  (when (symbolp c) (setq c (list c)))
                  (case (length c)
                    ((1 2)
-                    (setq vl (cons c vl)))
+                    (setq vlexport (cons c vlexport)))
                    (3
-                    (setq vl (cons (butlast c) vl)
+                    (setq vlexport (cons (butlast c) vlexport)
                           step (list* (third c) (first c) step)))
                    (t
                     (simple-program-error "Syntax error (length not 1,2,3 - its ~a and c is ~s) in ~A:~%~A" (length c) c do/do* whole))))
                (multiple-value-bind (declarations real-body)
                    (process-declarations body nil)
                  `(BLOCK NIL
-                    (,let ,(nreverse vl)
+                    (,let ,(nreverse vlexport)
                       (declare ,@declarations)
                       (sys::until ,test
                                   ,@real-body

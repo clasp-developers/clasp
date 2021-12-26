@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/allClSymbols.h>
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/exceptions.h>
+#include <clasp/core/primitives.h>
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/compiler.h>
@@ -201,9 +202,8 @@ public:
 //
 Lisp::GCRoots::GCRoots() :
   _ClaspJIT(nil<T_O>()),
-  _ClaspLinkerJIT(nil<T_O>()),
   _AllObjectFiles(nil<T_O>()),
-  _AllSnapshotLoadCodes(nil<T_O>()),
+  _AllCodeBlocks(nil<T_O>()),
   _AllLibraries(nil<T_O>()),
 #ifdef CLASP_THREADS
     _UnboundSymbolFunctionEntryPoint(unbound<GlobalEntryPoint_O>()),
@@ -299,6 +299,7 @@ void Lisp::setupSpecialSymbols() {
   symbol_no_key->_HomePackage = symbol_nil;
   symbol_deleted->_HomePackage = symbol_nil;
   symbol_same_as_key->_HomePackage = symbol_nil;
+  symbol_nil->_BindingIdx.store(NO_THREAD_LOCAL_BINDINGS);
 }
 
 void Lisp::finalizeSpecialSymbols() {
@@ -796,7 +797,6 @@ T_sp Lisp::specialFormOrNil(Symbol_sp sym) {
 }
 
 void Lisp::installPackage(const Exposer_O *pkg) {
-  _OF();
   LOG(BF("Installing package[%s]") % pkg->packageName());
   int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
   ChangePackage change(pkg->package());
@@ -820,6 +820,10 @@ void Lisp::installPackage(const Exposer_O *pkg) {
       (*ic)(_lisp);
     }
   }
+}
+
+void Lisp::uninstallPackage(Exposer_O *pkg) {
+  pkg->shutdown();
 }
 
 void Lisp::installGlobalInitializationCallback(InitializationCallback c) {
@@ -1310,6 +1314,8 @@ void Lisp::parseCommandLineArguments(int argc, char *argv[], const CommandLineOp
   globals_->_NoRc = options._NoRc;
   globals_->_ExportedSymbolsAccumulate = options._ExportedSymbolsAccumulate;
   globals_->_ExportedSymbolsFilename = options._ExportedSymbolsFilename;
+  printf("%s:%d:%s Setting globals_->_Stage to %c\n", __FILE__, __LINE__, __FUNCTION__, options._Stage );
+  globals_->_Stage = options._Stage;
   if (options._HasDescribeFile) {
     dumpDebuggingLayouts(options._DescribeFile);
   }
@@ -2396,10 +2402,17 @@ int Lisp::run() {
         if (!global_options->_SilentStartup) {
           printf("Loading image %s\n", _rep_(initPathname).c_str() );
         }
+        global_startupEnum = imageFile;
+        global_startupSourceName = gc::As<String_sp>(cl__namestring(initPathname))->get_std_string();
         T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
         if (result.nilp()) {
           T_sp err = result.second();
           printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+        }
+        char* pause_startup = getenv("CLASP_PAUSE_OBJECTS_ADDED");
+        if (pause_startup) {
+          gctools::setup_user_signal();
+          gctools::wait_for_user_signal("Paused at startup after object files added");
         }
       }
     } else if (!globals_->_IgnoreInitLsp) {

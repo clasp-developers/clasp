@@ -298,6 +298,9 @@ void ThreadLocalState::pushCatchTag(T_sp tag) {
 };
 
 
+uint32_t my_thread_random() {
+  return my_thread->random();
+}
 
 namespace gctools {
 

@@ -82,13 +82,20 @@ static void debugger_display_frame(DebuggerFrame_sp cur, int index) {
   clasp_write_string("\n", stream);
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,primitive_print_backtrace);
+
 static void debugger_backtrace(DebuggerFrame_sp cur, int index) {
-  while (1) {
-    debugger_display_frame(cur, index);
-    T_sp next = cur->up;
-    if (next.nilp()) break;
-    else cur = gc::As<DebuggerFrame_sp>(next);
-    ++index;
+  if (_sym_primitive_print_backtrace.boundp() && _sym_primitive_print_backtrace->fboundp()) {
+    printf("%s:%d:%s Calling sys:primitive-print-backtrace\n", __FILE__, __LINE__, __FUNCTION__ );
+    eval::funcall(_sym_primitive_print_backtrace);
+  } else {
+    while (1) {
+      debugger_display_frame(cur, index);
+      T_sp next = cur->up;
+      if (next.nilp()) break;
+      else cur = gc::As<DebuggerFrame_sp>(next);
+      ++index;
+    }
   }
 }
 

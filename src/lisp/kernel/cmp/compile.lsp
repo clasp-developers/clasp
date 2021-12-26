@@ -59,7 +59,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
          (multiple-value-bind (lambda-expression wrapped-env)
              (generate-lambda-expression-from-interpreted-function definition)
            (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s%N" name lambda-expression wrapped-env)
-           (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage name)))
+           (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:internal-linkage name)))
         ((functionp definition)
          (error "COMPILE doesn't know how to handle this type of function"))
         ((and (consp definition) (eq (car definition) 'lambda))

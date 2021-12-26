@@ -117,16 +117,16 @@
         (:local
          (let ((alloca (or (gethash variable *datum-values*)
                            (error "BUG: Variable missing: ~a" variable))))
-           (cmp:irc-load alloca)))
+           (cmp:irc-t*-load alloca)))
         (:dynamic
          (let ((alloca (or (gethash variable *datum-values*)
                            (error "BUG: DX cell missing: ~a" variable))))
-           (cmp:irc-load (cmp:irc-bit-cast alloca cmp:%t**%))))
+           (cmp:irc-t*-load (cmp:irc-bit-cast alloca cmp:%t**%))))
         (:indefinite
          (let ((cell (or (gethash variable *datum-values*)
                          (error "BUG: Cell missing: ~a" variable)))
                (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-           (cmp:irc-load-atomic (cmp::gen-memref-address cell offset)))))))
+           (cmp:irc-t*-load-atomic (cmp::gen-memref-address cell offset)))))))
 
 (defun out (value datum)
   (check-type datum bir:ssa)

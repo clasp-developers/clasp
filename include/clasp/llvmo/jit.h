@@ -105,56 +105,6 @@ namespace llvmo {
 //  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
 };
 
-// Don't allow the object to move, but maybe I'll need to collect it
-// if we create a ClaspJIT_O for each thread and need to collect it when
-// the thread is killed
-template <>
-struct gctools::GCInfo<llvmo::ClaspLinkerJIT_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = collectable_immobile;
-};
-
-namespace llvmo {
-
-FORWARD(ObjectFile);
-FORWARD(ClaspLinkerJIT);
-class ClaspLinkerJIT_O : public core::General_O {
-  LISP_CLASS(llvmo, LlvmoPkg, ClaspLinkerJIT_O, "clasp-linker-jit", core::General_O);
-public:
-  bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
-  core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
-  core::T_sp lookup_all_dylibs(const std::string& Name);
-  JITDylib_sp getMainJITDylib();
-  JITDylib_sp createAndRegisterJITDylib(const std::string& name);
-  void registerJITDylibAfterLoad(JITDylib_O* jitDylib);
-  
-  void addObjectFile( llvm::orc::JITDylib& jitdylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print );
-  /*! Return a pointer to a function WHAT FUNCTION???????
-        llvm_sys__jitFinalizeReplFunction needs to build a closure over it
-   */
-  void* runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject );
-  ClaspLinkerJIT_O(bool loading, JITDylib_O* mainJITDylib = NULL );
-  ~ClaspLinkerJIT_O();
-public:
-  JITDylib_sp _MainJITDylib;
-  std::unique_ptr<llvm::orc::ExecutorProcessControl> _TPC;
-  std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
-//  llvm::jitlink::JITLink* _LinkLayer;
-#if _TARGET_OS_DARWIN
-  llvm::orc::ObjectLinkingLayer *LinkLayer;
-#else
-  llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
-#endif
-};
-
-
-core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
-
-
-};
-
-
 
 
 // Don't allow the object to move, but maybe I'll need to collect it
@@ -174,31 +124,24 @@ FORWARD(ClaspJIT);
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
-  bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
-  core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
+  bool do_lookup(JITDylib_sp dylib, const std::string& Name, void*& pointer);
+  core::Pointer_sp lookup(JITDylib_sp dylib, const std::string& Name);
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib_sp getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
   void registerJITDylibAfterLoad(JITDylib_O* jitDylib);
   
   void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context, size_t startupID);
-  void addObjectFile( llvm::orc::JITDylib& jitdylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print );
+  void addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print );
   /*! Return a pointer to a function WHAT FUNCTION???????
         llvm_sys__jitFinalizeReplFunction needs to build a closure over it
    */
-  void* runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject );
+  void* runStartupCode(JITDylib_sp dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, ObjectFile_sp& codeObject );
   ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib = NULL);
   ~ClaspJIT_O();
 public:
   JITDylib_sp _MainJITDylib;
-  std::unique_ptr<llvm::orc::ExecutorProcessControl> _TPC;
   std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
-//  llvm::jitlink::JITLink* _LinkLayer;
-#if _TARGET_OS_DARWIN
-  llvm::orc::ObjectLinkingLayer *LinkLayer;
-#else
-  llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
-#endif
 };
 
 };
@@ -241,6 +184,8 @@ extern std::atomic<size_t> global_JITDylibCounter;
  void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer);
 
  uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf);
+ void llvm_sys__create_lljit_thread_pool();
+
 };
 
 #endif

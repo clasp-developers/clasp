@@ -654,7 +654,7 @@ a_p = a_p_temp; a = a_temp;
                 (vaslist-v* (irc-tag-vaslist vaslist))
                 (idx 0))
            (dolist (arg register-args)
-             (let ((arg-gep (irc-gep arg-buffer (list 0 idx))))
+             (let ((arg-gep (irc-gep (llvm-sys:array-type-get %t*% nargs) arg-buffer (list 0 idx))))
                (incf idx)
                (irc-store arg arg-gep)))
            (if (= nargs 0)

@@ -43,12 +43,13 @@ inline Cons* do_boehm_cons_allocation(size_t size,ARGS&&... args)
 
 
 #ifdef USE_BOEHM
+template <typename Stage = RuntimeStage>
 inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
 {
-  RAII_DISABLE_INTERRUPTS();
+  RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
 #ifdef DEBUG_GUARD
-  size_t tail_size = ((rand()%8)+1)*Alignment();
+  size_t tail_size = ((my_thread_random()%8)+1)*Alignment();
   true_size += tail_size;
 #endif
 #ifdef USE_PRECISE_GC
@@ -57,7 +58,7 @@ inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_h
 #else
   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
 #endif
-  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
+  stage.registerAllocation(the_header.unshifted_stamp(),true_size);
 #ifdef DEBUG_GUARD
   memset(header,0x00,true_size);
   new (header) Header_s(the_header,size,tail_size,true_size);
@@ -92,12 +93,12 @@ inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_hea
 
 #ifdef USE_BOEHM
 template <typename Stage = RuntimeStage>
-__attribute__((optnone)) inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_header,  size_t size) 
+inline Header_s* do_boehm_general_allocation(const Header_s::StampWtagMtag& the_header,  size_t size) 
 {
   RAIIAllocationStage<Stage> stage(my_thread_low_level);
   size_t true_size = size;
 #ifdef DEBUG_GUARD
-  size_t tail_size = ((rand()%8)+1)*Alignment();
+  size_t tail_size = ((my_thread_random()%8)+1)*Alignment();
   true_size += tail_size;
 #endif
 #ifdef USE_PRECISE_GC
@@ -125,7 +126,7 @@ inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag
   RAII_DISABLE_INTERRUPTS();
   size_t true_size = size;
 #ifdef DEBUG_GUARD
-  size_t tail_size = ((rand()%8)+1)*Alignment();
+  size_t tail_size = ((my_thread_random()%8)+1)*Alignment();
   true_size += tail_size;
 #endif
 #ifdef USE_PRECISE_GC

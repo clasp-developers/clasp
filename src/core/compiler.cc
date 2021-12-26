@@ -457,6 +457,9 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
 /*! Return the default snapshot name
  */
 std::string startup_snapshot_name(Bundle& bundle) {
+
+  stringstream sn;
+  sn << globals_->_Stage << "clasp-" << VARIANT_NAME;
   stringstream ss;
   std::string executablePath;
   core::executablePath(executablePath);
@@ -467,7 +470,7 @@ std::string startup_snapshot_name(Bundle& bundle) {
   } else {
     name = executablePath.substr(pos+1);
   }
-  ss << bundle._Directories->_FaslDir.string() << "/" << name << ".snapshot";
+  ss << bundle._Directories->_FaslDir.string() << "/" << sn.str() << ".snapshot";
   return ss.str();
 };
 
@@ -799,17 +802,23 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     std::string uniqueName = llvmo::uniqueMemoryBufferName("buffer",header->_ObjectFiles[fasoIndex]._ObjectId, fasoIndex);
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
-    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[fasoIndex]._ObjectId,jitDylib,filename,fasoIndex);
-    my_thread->pushObjectFile(of);
-    jit->addObjectFile(*jitDylib->wrappedPtr(),std::move(of->_MemoryBuffer),print.notnilp());
+//    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(uniqueName,std::move(memoryBuffer),header->_ObjectFiles[fasoIndex]._ObjectId,jitDylib,filename,fasoIndex);
+    jit->addObjectFile( jitDylib, std::move(memoryBuffer), print.notnilp());
     T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId,nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
-    llvmo::Code_sp codeObject;
-    jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string(), unbound<core::T_O>(), codeObject);
+    llvmo::ObjectFile_sp codeObject;
+    jit->runStartupCode(jitDylib, str->get_std_string(), unbound<core::T_O>(), codeObject);
   }
   return _lisp->_true();
 }
+
+
+
+CL_DEFUN void core__jit_register_symbol( const std::string& name, size_t size, void* address ) {
+  // Do nothing right now
+}
+
 
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)

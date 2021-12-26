@@ -88,6 +88,10 @@ THE SOFTWARE.
 
 namespace core {
 
+std::string global_startupSourceName = "";
+StartupEnum global_startupEnum = undefined;
+
+
 int clasp_musleep(double dsec, bool alertable) {
   double seconds = floor(dsec);
   double frac_seconds = dsec - seconds;
@@ -206,6 +210,31 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp cl__lisp_implementation_type() {
   return SimpleBaseString_O::make(program_name());
 };
+
+SYMBOL_EXPORT_SC_(KeywordPkg,image_file);
+SYMBOL_EXPORT_SC_(KeywordPkg,snapshot_memory);
+SYMBOL_EXPORT_SC_(KeywordPkg,snapshot_file);
+
+CL_DEFUN T_mv core__startup_source() {
+  T_sp kind;
+  std::string simpleSource;
+  if (global_startupEnum == imageFile) {
+    kind = kw::_sym_image_file;
+    simpleSource = "image";
+  } else if (global_startupEnum == snapshotFile) {
+    kind = kw::_sym_snapshot_file;
+    simpleSource = "snapshot";
+  } else if (global_startupEnum == snapshotMemory) {
+    kind = kw::_sym_snapshot_memory;
+    simpleSource = "snapshot";
+  } else {
+    SIMPLE_ERROR(BF("Illegal global_startupEnum value %d") % global_startupEnum );
+  }
+  SimpleBaseString_sp source = SimpleBaseString_O::make(global_startupSourceName);
+  SimpleBaseString_sp simpleSourceT = SimpleBaseString_O::make(simpleSource);
+  return Values(kind,source,simpleSourceT);
+}
+
 
 CL_LAMBDA()
 CL_DECLARE();

@@ -193,7 +193,6 @@ def collect_clasp_c_source_files(bld):
                  'insertPoint',
                  'irtests',
                  'llvmoExpose',
-                 'jit',
                  'runtimeJit',
                  'code',
                  'llvmoPackage',
@@ -221,7 +220,8 @@ def collect_aclasp_lisp_files(wrappers = True):
     # This is a problem if cc_push_InvocationHistoryFrame/cc_pull_InvocationHistoryFrame are used
     if wrappers:
         result = result + [
-            "src/lisp/kernel/lsp/direct-calls",
+            "src/lisp/kernel/lsp/direct-calls"
+            ,
             "generated/cl-wrappers"
         ]
     result = result + [

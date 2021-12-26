@@ -185,6 +185,9 @@ public:
   /* Evaluate the code that exposes the package Classes/Functions/Globals
 	 to Cando-lisp or to Python depending on the value of (what) */
   virtual void expose(core::LispPtr lisp, WhatToExpose what) const = 0;
+
+  virtual void shutdown() {};
+   
 };
 
 template <typename oclass>
@@ -205,16 +208,17 @@ namespace core {
 struct CommandLineOptions;
 
 struct globals_t {
-    mutable mp::SharedMutex _ActiveThreadsMutex; // _ActiveThreads
-    mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
-    mutable mp::SharedMutex _FinalizersMutex;
-    mutable mp::SharedMutex _SourceFilesMutex; // Protect _SourceFileIndices
-    mutable mp::SharedMutex _PackagesMutex; // Protect _PackageNameIndexMap
-    mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
-    mutable mp::SharedMutex _UnixSignalHandlersMutex; // Protect _UnixSignalHandlers
+  mutable mp::SharedMutex _ActiveThreadsMutex; // _ActiveThreads
+  mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
+  mutable mp::SharedMutex _FinalizersMutex;
+  mutable mp::SharedMutex _SourceFilesMutex; // Protect _SourceFileIndices
+  mutable mp::SharedMutex _PackagesMutex; // Protect _PackageNameIndexMap
+  mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
+  mutable mp::SharedMutex _UnixSignalHandlersMutex; // Protect _UnixSignalHandlers
+  mutable mp::SharedMutex _CodeBlocksMutex;
 #ifdef DEBUG_MONITOR_SUPPORT
-    mutable mp::SharedMutex _MonitorMutex;
-    std::ofstream _MonitorStream;
+  mutable mp::SharedMutex _MonitorMutex;
+  std::ofstream _MonitorStream;
 #endif
   uint           _StackWarnSize;
   uint           _StackSampleCount;
@@ -229,6 +233,7 @@ struct globals_t {
   DebugStream *_DebugStream;
   uint _SingleStepLevel;
   int _TraceLevel;
+  char _Stage;
   std::atomic<int> _DebuggerLevel;
   /*! Global environment initialization hooks can be added until
 	  the environment is started up.
@@ -251,7 +256,7 @@ struct globals_t {
   bool _IgnoreInitImage;
   bool _IgnoreInitLsp; // true if the startup shouldn't be loaded
 
- public:
+public:
   /*! Callbacks for making packages and exporting symbols */
   MakePackageCallback _MakePackageCallback;
   ExportSymbolCallback _ExportSymbolCallback;
@@ -275,12 +280,14 @@ struct globals_t {
 #endif
                 _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD),
                 _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD),
+                _CodeBlocksMutex(CODEBLOK_NAMEWORD),
                 _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                 _StackSampleCount(0),
                 _StackSampleSize(0),
                 _StackSampleMax(0),
                 _ExportedSymbolsAccumulate(false),
                 _Argc(0),
+                _Stage('c'),
                 _ReplCounter(1),
                 _Bundle(NULL),
                 _DebugStream(NULL),
@@ -296,7 +303,7 @@ struct globals_t {
     this->_DebuggerLevel = 0;
   };
 }
- ;
+  ;
 
 };
 
@@ -321,11 +328,10 @@ class Lisp {
     T_sp                       _TrueObject; // The True object
     T_sp                       _NilObject; // The NIL object
     T_sp                       _ClaspJIT;
-    T_sp                       _ClaspLinkerJIT;
     std::atomic<T_sp>          _JITDylibs; // Maintain a list of loaded JITDylibs 
     std::atomic<T_sp>          _AllLibraries;
     std::atomic<T_sp>          _AllObjectFiles;
-    std::atomic<T_sp>          _AllSnapshotLoadCodes;
+    std::atomic<T_sp>          _AllCodeBlocks;
     GlobalEntryPoint_sp        _UnboundSymbolFunctionEntryPoint;
     GlobalEntryPoint_sp        _UnboundSetfSymbolFunctionEntryPoint;
     T_sp                       _TerminalIO;
@@ -723,8 +729,9 @@ public:
   void pushRequireLevel() { this->_RequireLevel++; };
   void popRequireLevel() { this->_RequireLevel--; };
 
-  /*! Install a package using the newer Exposer idiom */
+  /*! Install a package */
   void installPackage(const Exposer_O *package);
+  void uninstallPackage(Exposer_O *package);
   /*! Create nils for all classes that don't have them yet */
   //	void	createNils();
   /*! When global initialization is locked then no more callbacks can be added

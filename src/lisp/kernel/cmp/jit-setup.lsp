@@ -233,13 +233,6 @@
       link-module)))
 (export 'link-bitcode-modules-together)
 
-(defvar *run-time-module-counter* 1)
-(defun next-run-time-module-name ()
-  "Return the next module name"
-  (prog1
-      (bformat nil "module%s" *run-time-module-counter*)
-    (setq *run-time-module-counter* (+ 1 *run-time-module-counter*))))
-
 #+(or)(defvar *the-system-data-layout*)
 (defun system-data-layout ()
   (multiple-value-bind (triple data-layout-str data-layout)
@@ -262,7 +255,7 @@
   "Run time modules are used by COMPILE - a new one needs to be created for every COMPILE.
 Return the module and the global variable that represents the load-time-value-holder as
 \(value module global-run-time-values function-pass-manager\)."
-  (llvm-create-module (next-run-time-module-name)))
+  (llvm-create-module "compile"))
 
 (llvm-sys:initialize-native-target)
 
@@ -379,7 +372,7 @@ No DIBuilder is defined for the default module")
   (let* ((str-gv (llvm-sys:get-or-create-uniqued-string-global-variable
                  *the-module* str
                  (bformat nil "str-%s" str))))
-    (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 label)))
+    (irc-const-gep2-64 %t*% str-gv 0 0 label)))
 
 
 (defun module-make-global-string (str &optional (label ""))
@@ -739,6 +732,7 @@ No DIBuilder is defined for the default module")
      (makunbound '*jit-pid*)
      (makunbound '*jit-log-stream*)))))
 
+#+(or) ;;; moved to compiler.cc
 (defun jit-register-symbol (symbol-name-string symbol-info)
   "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
   (core:hash-table-setf-gethash *jit-saved-symbol-info* symbol-name-string symbol-info)
@@ -809,7 +803,7 @@ No DIBuilder is defined for the default module")
                            (core:bformat t "Done dump module%N")
                            ))
                      (mp:get-lock *jit-lock*)
-                     #+(or)(llvm-sys:dump-module module)
+                     (if (member :dump-compile *features*) (llvm-sys:dump-module module))
                      (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context* startup-shutdown-id)
                      (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list name))
                 (progn

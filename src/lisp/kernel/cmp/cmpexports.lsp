@@ -55,6 +55,7 @@
             *irbuilder*
             *thread-safe-context*
             thread-local-llvm-context
+            *load-time-value-holder-global-var-type*
             *load-time-value-holder-global-var*
             *low-level-trace*
             *low-level-trace-print*
@@ -92,6 +93,9 @@
             %i8**%
             %i8*%
             %i8%
+            %exn%
+            %ehselector%
+            %go-index%
             %fixnum%
             %word%
             %mv-struct%
@@ -155,6 +159,7 @@
             register-global-function-ref
             safe-system
             jit-constant-uintptr_t
+            irc-const-gep2-64
             irc-sext
             irc-zext
             irc-int-to-ptr
@@ -169,6 +174,9 @@
             irc-add-clause
             alloca
             alloca-t*
+            alloca-exn
+            alloca-ehselector
+            alloca-go-index
             alloca-i8
             alloca-i8*
             alloca-i32
@@ -209,8 +217,10 @@
             irc-icmp-sge
             irc-icmp-sgt
             irc-intrinsic
-            irc-load
-            irc-load-atomic
+            irc-typed-load
+            irc-t*-load
+            irc-typed-load-atomic
+            irc-t*-load-atomic
             irc-low-level-trace
             irc-phi
             irc-personality-function
@@ -256,7 +266,6 @@
             irc-array-total-size
             irc-array-rank
             gen-%array-dimension
-            irc-vaslist-nargs-address
             gen-instance-rack
             gen-instance-rack-set
             gen-rack-ref

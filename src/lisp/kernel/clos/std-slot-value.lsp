@@ -12,10 +12,6 @@
 
 (in-package "CLOS")
 
-#-clasp
-(eval-when (:compile-toplevel :execute)
-  (load "src:clos;hierarchy.lsp"))
-
 ;;; ----------------------------------------------------------------------
 ;;; SLOTS READING AND WRITING
 ;;;
@@ -39,6 +35,36 @@
 ;;; for enforcing the use of SLOT-VALUE and not of accessors
 ;;; throughout the bootstrap code.
 ;;;
+
+#|
+;;; Test for a bug  with (etypecase x ((cons symbol (cons symbol null)) ... ))
+
+(eval-when (:compile-toplevel :execute)
+  (setf cmp::*debug-typeq* t)
+  (core::safe-trace cmp::compile-tag-check
+                    cmp::compile-header-check
+                    cmp::typep-expansion
+                    )
+  )
+
+(defun check-symbolp (x)
+  (etypecase x
+    (symbol (print "It's a symbol"))))
+
+
+(defun check-consp (x)
+  (etypecase x
+    (cons (print "It's a cons"))))
+(defun check-cons-cons (x)
+  (etypecase x
+    ((cons symbol (cons symbol null))  (print "It's a cons cons"))))
+
+(eval-when (:compile-toplevel :execute)
+  (check-symbolp 'foo)
+  (check-consp '(1 2 3))
+  (check-cons-cons '(a b)))
+|#
+
 (defmacro with-slots (slot-entries instance-form &body body)
   (let* ((temp (gensym))
 	 (accessors

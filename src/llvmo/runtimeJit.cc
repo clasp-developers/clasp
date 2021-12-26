@@ -102,10 +102,12 @@
 #include <llvm-c/Disassembler.h>
 //#include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
 
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/fli.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/external/thread-pool/thread_pool.h>
 #include <clasp/llvmo/jit.h>
 
 
@@ -113,8 +115,39 @@ namespace llvmo {
 
 using namespace llvm;
 using namespace llvm::jitlink;
-  
-class ClaspAllocator final : public JITLinkMemoryManager {
+
+std::atomic<size_t> global_object_file_number;
+std::atomic<size_t> global_JITDylibCounter;
+
+
+
+std::string gcroots_in_module_name = OS_GCROOTS_IN_MODULE_NAME;
+std::string literals_name = OS_LITERALS_NAME;
+
+
+
+core::SimpleBaseString_sp createSimpleBaseStringForStage(const std::string& sname) {
+  core::SimpleBaseString_sp name;
+  if (snapshotSaveLoad::global_InSnapshotLoad) {
+    name = core::SimpleBaseString_O::make<gctools::SnapshotLoadStage>(sname);
+  } else {
+    name = core::SimpleBaseString_O::make<gctools::RuntimeStage>(sname);
+  }
+  return name;
+}
+
+
+uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf) {
+  for (llvm::object::SectionRef Sec : objf.sections()) {
+    if (!Sec.isText() || Sec.isVirtual()) continue;
+    if (Sec.getName()->str() == TEXT_NAME) {
+      return Sec.getIndex();
+    }
+  }
+  return llvm::object::SectionedAddress::UndefSection;
+}
+
+class ClaspAllocator : public JITLinkMemoryManager {
 public:
   ClaspAllocator() {
     this->PageSize = *sys::Process::getPageSize();
@@ -131,7 +164,7 @@ public:
   }
 
   void allocate(const JITLinkDylib *JD, LinkGraph &G, OnAllocatedFunction OnAllocated ) {
-#if 1
+    
     typedef void* BoehmAllocHandle;
     
     struct MyOpaqueAlloc {
@@ -143,305 +176,170 @@ public:
     
     class MyInFlightAlloc : public JITLinkMemoryManager::InFlightAlloc {
     public:
-      MyInFlightAlloc(BasicLayout BL,
-                      BoehmAllocHandle StandardSegsMem,
-                      BoehmAllocHandle FinalizeSegsMem)
-          : BL(std::move(BL)),
-            A(std::make_unique<MyOpaqueAlloc>(std::move(StandardSegsMem))),
-            FinalizeSegsMem(std::move(FinalizeSegsMem)) {
+      MyInFlightAlloc(BasicLayout BL)
+          : BL(std::move(BL))
+      {
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s What do I do here?\n", __FILE__, __LINE__, __FUNCTION__ ));
       }
               
       void finalize(OnFinalizedFunction OnFinalized) override {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s What do I do here?\n", __FILE__, __LINE__, __FUNCTION__ ));
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
     // {1} Apply memory protections to A.DeallocSegsMem and FinalizedSegsMem.
+        if (auto Err = applyProtections()) {
+          OnFinalized(std::move(Err));
+          return;
+        }
     // (2) Scrape BL.getGraph().allocationActions() to run finalization actions
     //     and record dealloc actions in A->DeallocActions.
+        // I don't know what this is so I'm doing my own thing.
     // (3) Release FinalizeSegsMem.
-    // (4) Call OnFinalized(pointerToJITTargetAddress(A.release())); 
+        // I don't know what this is so I'm ignoring it.
+    // (4) Call OnFinalized(pointerToJITTargetAddress(A.release()));
+        void* execMemory = NULL;
+        for (auto &KV : BL.segments()) {
+          const auto &AG = KV.first;
+          auto &Seg = KV.second;
+          auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
+          if (Prot & sys::Memory::MF_EXEC)
+            execMemory = (void*)Seg.WorkingMem;
+        }
+        OnFinalized(llvm::jitlink::InProcessMemoryManager::FinalizedAlloc(pointerToJITTargetAddress((BoehmAllocHandle)execMemory)));
       }
       virtual void abandon(OnAbandonedFunction OnAbandoned) {
         printf("%s:%d:%s I have no idea what to do here\n", __FILE__, __LINE__, __FUNCTION__ );
       }
     private:
+      Error applyProtections() {
+        size_t PageSize = getpagesize();
+        for (auto &KV : BL.segments()) {
+          const auto &AG = KV.first;
+          auto &Seg = KV.second;
+#ifdef DEBUG_OBJECT_FILES
+          std::string back;
+          llvm::raw_string_ostream ss(back);
+          llvm::jitlink::operator<<(ss, AG);
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Applying Protections %s to range %p - %p\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str(), Seg.WorkingMem, (Seg.WorkingMem+Seg.ContentSize + Seg.ZeroFillSize) ));
+#endif
+          uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize );
+          auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
+          if ((Prot&sys::Memory::MF_RWE_MASK)==sys::Memory::MF_READ) {
+//            printf("%s:%d:%s Was going to set to R-- from %p to %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(Seg.WorkingMem), (void*)(Seg.WorkingMem+SegSize) );
+            Prot = (sys::Memory::ProtectionFlags)( sys::Memory::MF_READ | sys::Memory::MF_WRITE );
+          } else if ((Prot&sys::Memory::MF_EXEC)) {
+            Prot = (sys::Memory::ProtectionFlags)( sys::Memory::MF_READ | sys::Memory::MF_WRITE | sys::Memory::MF_EXEC );
+          }
+          sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Protecting memory from %p to %p with %x\n", __FILE__, __LINE__, __FUNCTION__, (void*)(Seg.WorkingMem), (void*)(Seg.WorkingMem+SegSize), Prot ));
+          if (auto EC = sys::Memory::protectMappedMemory(MB, Prot))
+            return errorCodeToError(EC);
+          if (Prot & sys::Memory::MF_EXEC)
+            sys::Memory::InvalidateInstructionCache(MB.base(), MB.allocatedSize());
+        }
+        return Error::success();
+      }
+    private:
       BasicLayout BL;
-      std::unique_ptr<MyOpaqueAlloc> A;
-      BoehmAllocHandle FinalizeSegsMem;
     };
-
-    BoehmAllocHandle Slab;
-    BoehmAllocHandle StandardSegsMem;
-    BoehmAllocHandle FinalizeSegsMem;
 
     //
     // New llvm-13.0.1 allocation code
     //
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ClaspAllocation allocate entered\n", __FILE__, __LINE__, __FUNCTION__ ));
-      
-    // Local class for allocation.
-    //
-    // What is this for?
-    //
     BasicLayout BL(G);
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s I have BasicLayout - what do I do with it?\n", __FILE__, __LINE__, __FUNCTION__ ));
-    auto SegsSizes = BL.getContiguousPageBasedLayoutSizes(PageSize);
-    if (!SegsSizes) {
-      OnAllocated(SegsSizes.takeError());
-      return;
+    size_t segmentCount = 0;
+    for ( auto& KV : BL.segments() ) {
+      segmentCount++;
     }
-    std::vector<BoehmAllocHandle> StandardSegmentsList;
-
-    //
-    // I don't check if the SegsSizes->total() > std::numeric_limits<size_t>::max()
-    //
     
     //
-    // Search the segments to find the RW segment that will contain data
-    //  Calculate the size (scanSize) of the data.
-    size_t scanSize;
-    size_t numSegments = 0;
-    for ( auto KV : BL.segments() ) {
-      auto allocGroup = KV.first;
-      std::string back;
-      llvm::raw_string_ostream ss(back);
-      llvm::jitlink::operator<<(ss, allocGroup);
-      uintptr_t protFlags = toSysMemoryProtectionFlags(allocGroup.getMemProt());
-      auto& Seg = KV.second;
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s vvv Analyzing BasicLayout allocGroup = %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
-      if ((llvm::sys::Memory::MF_RWE_MASK & protFlags) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
-        // We have to scan the entire RW data region (sigh) for pointers
-        uint64_t ZeroFillStart = Seg.ContentSize;
-        uint64_t SegmentSize = gctools::AlignUp((ZeroFillStart+Seg.ZeroFillSize),Seg.Alignment.value());
-        scanSize = SegmentSize;
-      }
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s vvv Analyzing BasicLayout allocGroup = %s Seg.ContentSize = %lu  Seg.ZeroFillSize = %lu Seg.Alignment.value() = %lu\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str(), Seg.ContentSize, Seg.ZeroFillSize, Seg.Alignment.value() ));
-      numSegments++;
-    }
-    bool allocatingCodeObject = numSegments>1;
-    if (!allocatingCodeObject) {
-      printf("%s:%d:%s  Not allocating code for some reason numSegments = %lu\n", __FILE__, __LINE__, __FUNCTION__, numSegments );
-    }
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  PageSize = %lu SegsSizes = %lu\n", __FILE__, __LINE__, __FUNCTION__, PageSize, SegsSizes->total() ));
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  BL.size() = %lu\n", __FILE__, __LINE__, __FUNCTION__, numSegments ));
-      
-    Code_sp codeObject(unbound<Code_O>());
-    if (allocatingCodeObject) { // It's the allocation that creates a Code object
-      //
-      // Here is where we allocate the slab that will contain the code and data
-      //
-      codeObject = Code_O::make( scanSize, SegsSizes->total(), G.getName() );
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s codeObject ptr %p\n", __FILE__, __LINE__, __FUNCTION__, codeObject.raw_() ));
+    // Find space in a CodeBlock and set Addr and WorkingMem of each Seg in BL.segments()
+    //   if the current CodeBlock doesn't have room then allocate another one.
+    //   Return the CodeBlock in codeBlock
+    //
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s I have BasicLayout - fill it in with allocateInCodeBlock ?\n", __FILE__, __LINE__, __FUNCTION__ ));
+    if (segmentCount>1) {
+      CodeBlock_sp codeBlock;
 
-      //
-      // Use CAS to push the new Code_sp into the list of AllSnapshotLoadCode
-      //
-      core::Cons_sp cell = core::Cons_O::createInSnapshotLoad(codeObject,nil<core::T_O>());
-      core::T_sp current;
-      core::T_sp expected;
-      do {
-        current = _lisp->_Roots._AllSnapshotLoadCodes.load();
-        expected = current;
-        cell->rplacd(current);
-        _lisp->_Roots._AllSnapshotLoadCodes.compare_exchange_strong(expected,gc::As_unsafe<core::T_sp>(cell));
-      } while (expected != current);
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s is associated with Code_sp at %p\n", __FILE__, __LINE__, __FUNCTION__, codeObject.raw_()));
-    }
-    // printf("%s:%d:%s ObjectFile_sp at %p is associated with Code_sp at %p\n", __FILE__, __LINE__, __FUNCTION__, my_thread->topObjectFile().raw_(), codeObject.raw_());
-
-    for ( auto KV : BL.segments() ) {
-      auto allocGroup = KV.first;
-      std::string back;
-      llvm::raw_string_ostream ss(back);
-      llvm::jitlink::operator<<(ss, allocGroup);
-      uintptr_t protFlags = toSysMemoryProtectionFlags(allocGroup.getMemProt());
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ------------- BL.segments() iteration AllocGroup = %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() ));
-      auto& Seg = KV.second;
-      uint64_t ZeroFillStart = Seg.ContentSize;
-      size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart+Seg.ZeroFillSize,Seg.Alignment.value());
-      void* base;
-      if (allocatingCodeObject) {
-        const char* allocKind = "unk";
-        if ((llvm::sys::Memory::MF_RWE_MASK & protFlags)
-            == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
-          base = codeObject->allocateHead(SegmentSize,Seg.Alignment.value());
-          allocKind = "head";
-        } else if ((llvm::sys::Memory::MF_RWE_MASK & protFlags)
-                   == (llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_EXEC) ) {
-          base = codeObject->allocateTail(SegmentSize,Seg.Alignment.value());
-          allocKind = "tail";
-        } else {
-          base = codeObject->allocateHead(SegmentSize,Seg.Alignment.value());
-          allocKind = "head";
-        }
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating at %s AllocGroup(%s) from the head base = %p - %p = %lu bytes \n", __FILE__, __LINE__, __FUNCTION__, allocKind, ss.str().c_str(), base, (void*)((uintptr_t)base+SegmentSize), SegmentSize ));
+      if (snapshotSaveLoad::global_InSnapshotLoad) {
+        allocateInCodeBlock<gctools::SnapshotLoadStage>( BL, codeBlock );
       } else {
-        base = aligned_alloc(Seg.Alignment.value(),SegmentSize);
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating AllocGroup(%s) using aligned_alloc base: %p - I'm not sure what we are allocating\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str(), base ));
+        allocateInCodeBlock<gctools::RuntimeStage>( BL, codeBlock );
       }
-        // Zero out the zero-fill memory
-      memset(static_cast<char*>(base)+ZeroFillStart, 0, SegmentSize );
-        // Record the block for this segment
-      // Blocks[KV.first] = std::move(SegMem);
-      Seg.WorkingMem = jitTargetAddressToPointer<char*>((llvm::JITTargetAddress)base);
-      Seg.Addr = (llvm::JITTargetAddress)base;
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s +++ Seg.WorkingMem = %p\n", __FILE__, __LINE__, __FUNCTION__, Seg.WorkingMem ));
-#if 0
-      // Do I need to do the equivalent of the following???
-      sys::MemoryBlock SegMem(base,SegmentSize);
-        // Zero out the zero-fill memory
-      memset(static_cast<char*>(SegMem.base())+ZeroFillStart, 0,
-             Seg.getZeroFillSize());
-        // Record the block for this segment
-      Blocks[KV.first] = std::move(SegMem);
+        
+    //
+    // Create the codeObject and add it to the global AllObjectFiles
+    //
+      core::SimpleBaseString_sp codeName = createSimpleBaseStringForStage(G.getName());
+      core::List_sp jitdylibs = _lisp->_Roots._JITDylibs.load();
+      JITDylib_sp theJITDylib = unbound<JITDylib_O>();
+      core::T_sp cur = jitdylibs;
+      while (cur.consp()) {
+        JITDylib_sp one = gc::As<JITDylib_sp>(CONS_CAR(cur));
+        JITDylib* jitdylib = one->wrappedPtr();
+        JITLinkDylib* jitlinkdylib = llvm::cast<JITLinkDylib>(jitdylib);
+        if (jitlinkdylib == JD) theJITDylib = one;
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s one JITDylib_sp = %p JITDylib* = %p JITLinkDylib* = %p\n", __FILE__, __LINE__, __FUNCTION__, one.raw_(), one->wrappedPtr(), llvm::cast<JITLinkDylib>(one->wrappedPtr()) ));
+        cur = gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(cur)->cdr();
+      }
+      if (theJITDylib.unboundp()) {
+        printf("%s:%d:%s Could not identify the JITDylib_sp for JITLinkDylib* %p\n", __FILE__, __LINE__, __FUNCTION__, JD );
+        abort();
+      }
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating JD = %p \n", __FILE__, __LINE__, __FUNCTION__, JD ));
+      ObjectFile_sp codeObject;
+      size_t objectId = objectIdFromName(G.getName());
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to allocate ObjectFile_sp with name %s  objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str(), objectId ));
+      if (snapshotSaveLoad::global_InSnapshotLoad) {
+//        codeObject = gc::GC<ObjectFile_O>::allocate<gctools::SnapshotLoadStage>( codeName, codeBlock, theJITDylib, objectId );
+//        registerObjectFile<gctools::SnapshotLoadStage>(codeObject);
+        codeObject = lookupObjectFile(G.getName());
+        codeObject->_CodeBlock = codeBlock;
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s looked up codeObject = %p with name: %s\n", __FILE__, __LINE__, __FUNCTION__, codeObject.raw_(), _rep_(codeName).c_str() ));
+      } else {
+        codeObject = gc::GC<ObjectFile_O>::allocate<gctools::RuntimeStage>( codeName, codeBlock, theJITDylib, objectId );
+        registerObjectFile<gctools::RuntimeStage>(codeObject);
+      }
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s codeObject ptr %p\n", __FILE__, __LINE__, __FUNCTION__, codeObject.raw_() ));
+    } else {
+      for ( auto& KV : BL.segments() ) {
+#ifdef DEBUG_OBJECT_FILES
+        auto allocGroup = KV.first;
+        std::string back;
+        llvm::raw_string_ostream ss(back);
+        llvm::jitlink::operator<<(ss, allocGroup);
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s single segment allocGroup = %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() ));
 #endif
+        auto &Seg = KV.second;
+        uint64_t ZeroFillStart = Seg.ContentSize;
+        size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart+Seg.ZeroFillSize,Seg.Alignment.value());
+        void* base;
+        base = aligned_alloc( Seg.Alignment.value(), SegmentSize );
+        Seg.Addr = (llvm::JITTargetAddress)base;
+        Seg.WorkingMem = jitTargetAddressToPointer<char*>((llvm::JITTargetAddress)base);
+      }
     }
-
-    Slab = (void*)gctools::GeneralPtrToHeaderPtr(gctools::untag_general<Code_O*>((Code_O*)codeObject.raw_()));
-    StandardSegsMem = Slab;
-    FinalizeSegsMem = NULL; // Set to NULL for now - I don't know what FinalizeSegsMem does
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Slab %p\n", __FILE__, __LINE__, __FUNCTION__, Slab ));
 
     if (auto Err = BL.apply()) {
       OnAllocated(std::move(Err));
       return;
     }
 
-    OnAllocated(std::make_unique<MyInFlightAlloc>( BL, StandardSegsMem, FinalizeSegsMem ));
+    OnAllocated(std::make_unique<MyInFlightAlloc>( BL ));
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from OnAllocated\n", __FILE__, __LINE__, __FUNCTION__ ));
-
-    //
-    // I'm not sure if the above is correct - it's derived from my previous slap allocator
-    //
-    // I'm trying to replicate what is done in:
-    // https://github.com/llvm/llvm-project/blob/main/llvm/lib/ExecutionEngine/JITLink/JITLinkMemoryManager.cpp#L368
-    //
-    
-#else
-    //
-    // Old llvm13 allocation code
-    //
-    
-    class IPMMAlloc : public Allocation {
-    public:
-      IPMMAlloc(ClaspAllocator &Parent, AllocationMap SegBlocks)
-          : Parent(Parent), SegBlocks(std::move(SegBlocks)) {}
-      MutableArrayRef<char> getWorkingMemory(ProtectionFlags Seg) override {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Seg = 0x%x base = %p  size = %lu\n", __FILE__, __LINE__, __FUNCTION__, Seg, static_cast<char *>(SegBlocks[Seg].base()), SegBlocks[Seg].allocatedSize() ));
-        assert(SegBlocks.count(Seg) && "No allocation for segment");
-        return {static_cast<char *>(SegBlocks[Seg].base()), SegBlocks[Seg].allocatedSize()};
-      }
-      JITTargetAddress getTargetMemory(ProtectionFlags Seg) override {
-        assert(SegBlocks.count(Seg) && "No allocation for segment");
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Seg = 0x%x Returning %p\n", __FILE__, __LINE__, __FUNCTION__, Seg, (void*)pointerToJITTargetAddress(SegBlocks[Seg].base()))); 
-        return pointerToJITTargetAddress(SegBlocks[Seg].base());
-      }
-      void finalizeAsync(FinalizeContinuation OnFinalize) override {
-        OnFinalize(applyProtections());
-      }
-      Error deallocate() override {
-        for (auto &KV : SegBlocks)
-          if (auto EC = sys::Memory::releaseMappedMemory(KV.second))
-            return errorCodeToError(EC);
-        return Error::success();
-      }
-
-    private:
-      Error applyProtections() {
-        for (auto &KV : SegBlocks) {
-          auto &Prot = KV.first;
-          auto &Block = KV.second;
-          if (Prot & sys::Memory::MF_EXEC)
-            if (auto EC = sys::Memory::protectMappedMemory(Block,sys::Memory::MF_RWE_MASK))
-              return errorCodeToError(EC);
-          sys::Memory::InvalidateInstructionCache(Block.base(),
-                                                  Block.allocatedSize());
-        }
-        return Error::success();
-      }
-      
-      ClaspAllocator &Parent;
-      AllocationMap SegBlocks;
-    };
-
-    AllocationMap Blocks;
-
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  Interating Request\n", __FILE__, __LINE__, __FUNCTION__ ));
-    size_t totalSize = 0;
-    size_t scanSize = 0;
-    for (auto &KV : Request) {
-      auto &Seg = KV.second;
-      uint64_t ZeroFillStart = Seg.getContentSize();
-      uint64_t SegmentSize = gctools::AlignUp((ZeroFillStart+Seg.getZeroFillSize()),Seg.getAlignment());
-//      printf("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, (unsigned long long)Seg.getAlignment(), Seg.getContentSize(), (unsigned long long)Seg.getZeroFillSize());
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, (unsigned long long)Seg.getAlignment(), Seg.getContentSize(), (unsigned long long)Seg.getZeroFillSize()));
-      // Add Seg.getAlignment() just in case we need a bit more space to make alignment.
-      if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
-        // We have to scan the entire RW data region (sigh) for pointers
-        scanSize = SegmentSize;
-      }
-      totalSize += gctools::AlignUp(Seg.getContentSize()+Seg.getZeroFillSize(),Seg.getAlignment())+Seg.getAlignment();
-    }
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocation scanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize));
-    bool allocatingCodeObject = (Request.size()>1);
-    Code_sp codeObject(unbound<Code_O>());
-    if (allocatingCodeObject) { // It's the allocation that creates a Code object
-    // Associate the Code object with the current ObjectFile
-      ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(my_thread->topObjectFile());
-      codeObject = Code_O::make( scanSize, totalSize, of );
-    // printf("%s:%d:%s ObjectFile_sp at %p is associated with Code_sp at %p\n", __FILE__, __LINE__, __FUNCTION__, my_thread->topObjectFile().raw_(), codeObject.raw_());
-    }
-    for (auto &KV : Request) {
-      auto &Seg = KV.second;
-      uint64_t ZeroFillStart = Seg.getContentSize();
-      size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart+Seg.getZeroFillSize(),Seg.getAlignment());
-      void* base;
-      if (allocatingCodeObject) {
-        if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
-          base = codeObject->allocateHead(SegmentSize,Seg.getAlignment());
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating Prot 0x%x from the head base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base ));
-        } else {
-          base = codeObject->allocateTail(SegmentSize,Seg.getAlignment());
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating Prot 0x%x from the tail base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base ));
-        }
-      } else {
-        base = aligned_alloc(Seg.getAlignment(),SegmentSize);
-      }
-      BoehmAllocHandle SegMem(base,SegmentSize);
-        // Zero out the zero-fill memory
-      memset(static_cast<char*>(SegMem.base())+ZeroFillStart, 0,
-             Seg.getZeroFillSize());
-        // Record the block for this segment
-      Blocks[KV.first] = std::move(SegMem);
-    }
-    return std::unique_ptr<InProcessMemoryManager::Allocation>(new IPMMAlloc(*this, std::move(Blocks)));
-#endif
   }
 
-
-  void  deallocate(std::vector<FinalizedAlloc> Allocs,
+  //
+  // deallocate only happens at shutdown - so I don't have a Mutex or much else to do
+  //
+  virtual void deallocate(std::vector<FinalizedAlloc> Allocs,
                    OnDeallocatedFunction OnDeallocated) {
-    printf("%s:%d:%s What do I do here?", __FILE__, __LINE__, __FUNCTION__ );
-#if 0    
-    std::vector<sys::MemoryBlock> StandardSegmentsList;
-    std::vector<std::vector<AllocActionCall>> DeallocActionsList;
-
-    {
-      std::lock_guard<std::mutex> Lock(FinalizedAllocsMutex);
-      for (auto &Alloc : Allocs) {
-        auto *FA =
-            jitTargetAddressToPointer<FinalizedAllocInfo *>(Alloc.release());
-        StandardSegmentsList.push_back(std::move(FA->StandardSegments));
-        if (!FA->DeallocActions.empty())
-          DeallocActionsList.push_back(std::move(FA->DeallocActions));
-        FA->~FinalizedAllocInfo();
-        FinalizedAllocInfos.Deallocate(FA);
-      }
+      //std::lock_guard<std::mutex> Lock(FinalizedAllocsMutex);
+    for (auto &Alloc : Allocs) {
+      Alloc.release();
     }
-#endif
+    Error DeallocErr = Error::success();
+    OnDeallocated(std::move(DeallocErr));
   };
-
 };
-
 
 };
 
@@ -479,20 +377,29 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                       }
                                       for (auto ssym : G.defined_symbols()) {
                                         std::string sname = ssym->getName().str();
-                                        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
+#ifdef DEBUG_OBJECT_FILES
+                                        if (ssym->getName().str()!="") {
+                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
+                                        }
+#endif
                                         bool keptAlive = false;
                                         if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
                                           keptAlive = true;
                                         } else if ( sname.find(literals_name) != std::string::npos ) {
                                           keptAlive = true;
-#if 1
-                                          // I'd like to do this on linux because jit symbols need to be exposed but it slows down startup enormously
+#if 0
+                                          // I'd like to do this on linux because jit symbols need to be exposed
+                                          // but it slows down startup enormously
                                         } else if ( sname.find("^^") != std::string::npos ) {
                                           // Keep alive mangled symbols that we care about
 //                                          keptAlive = true;
 #endif
                                         } 
-                                        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s preprune symbol: %s  alive: %d\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str(), keptAlive ));
+#ifdef DEBUG_OBJECT_FILES
+                                        if ( sname!="") {
+                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s preprune symbol: %s  alive: %d\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str(), keptAlive ));
+                                        }
+#endif
                                         if (keptAlive) ssym->setLive(true);
                                       }
                                       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %lu symbols\n", __FILE__, __LINE__, __FUNCTION__, count ));
@@ -523,7 +430,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   }
 
   llvm::Error notifyRemovingResources(ResourceKey K) {
-    printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
     return Error::success();
   }
 
@@ -543,12 +449,13 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
   }
-  
+
   void parseLinkGraph(llvm::jitlink::LinkGraph &G) {
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered with G.getName() = %s\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str() ));
     uintptr_t textStart = ~0;
     uintptr_t textEnd = 0;
     bool gotGcroots = false;
+    ObjectFile_sp currentCode = lookupObjectFile(G.getName());
     for (auto &S : G.sections()) {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  section: %s getOrdinal->%u \n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
       std::string sectionName = S.getName().str();
@@ -578,7 +485,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 	if ((uintptr_t)range.getStart() < textStart) textStart = (uintptr_t)range.getStart();
 	uintptr_t tend = (uintptr_t)range.getStart()+range.getSize();
 	if ( textEnd < tend ) textEnd = tend;
-        Code_sp currentCode = my_thread->topObjectFile()->_Code;
         currentCode->_TextSectionStart = (void*)range.getStart();
         currentCode->_TextSectionEnd = (void*)((char*)range.getStart()+range.getSize());
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
@@ -597,13 +503,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             std::string name = sym->getName().str();
             void* address = (void*)sym->getAddress();
             size_t size = sym->getSize();
-#ifdef DEBUG_JIT_LOG_SYMBOLS
-            core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)address));
-            if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
-              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Registering jit symbol %s address: %p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)address, size ));
-              core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
-            }
-#endif
+            core::core__jit_register_symbol( name, size, (void*)address );
           }
         }
       } else if (sectionName.find(EH_FRAME_NAME)!=string::npos) {
@@ -612,23 +512,21 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         uintptr_t size = range.getSize();
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
       } else if (sectionName.find(STACKMAPS_NAME)!=string::npos) {
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range in thread local storage\n", __FILE__, __LINE__, __FUNCTION__ ));
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range currentCode %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(currentCode).c_str() ));
         llvm::jitlink::SectionRange range(S);
-        my_thread->topObjectFile()->_Code->_StackmapStart = (void*)range.getStart();
-        my_thread->topObjectFile()->_Code->_StackmapSize = (size_t)range.getSize();
+        currentCode->_StackmapStart = (void*)range.getStart();
+        currentCode->_StackmapSize = (size_t)range.getSize();
       }
     }
     // Keep track of the executable region
     if (textStart) {
-      Code_sp currentCode = my_thread->topObjectFile()->_Code;
       //      printf("%s:%d:%s  textStart %p - textStop %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)textStart, (void*)textEnd );
       currentCode->_TextSectionStart = (void*)textStart;
       currentCode->_TextSectionEnd = (void*)textEnd;
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- Final TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- ObjectFile_sp %p badge: 0x%0x name: %s ---> final TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode.raw_(), lisp_badge(currentCode), _rep_(currentCode).c_str(), currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
       if (snapshotSaveLoad::global_debugSnapshot) {
-	printf("%s:%d:%s ---------- ObjectFile_sp %p Code_sp %p start %p  end %p\n",
+	printf("%s:%d:%s ---------- ObjectFile_sp %p text section start %p  end %p\n",
 	       __FILE__, __LINE__, __FUNCTION__,
-	       my_thread->topObjectFile().raw_(),
 	       currentCode.raw_(),
 	       currentCode->_TextSectionStart,
 	       currentCode->_TextSectionEnd );
@@ -641,7 +539,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     size_t literals_name_len = literals_name.size();
     bool found_gcroots_in_module = false;
     bool found_literals = false;
-    Code_sp currentCode = my_thread->topObjectFile()->_Code;
     for (auto ssym : G.defined_symbols()) {
       if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -651,12 +548,16 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
     for (auto ssym : G.defined_symbols()) {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n",
-                                __FILE__, __LINE__, __FUNCTION__,
-                                ssym->hasName(),
-                                ssym->getName().str().c_str(),
-                                (void*)ssym->getAddress(),
+#ifdef DEBUG_OBJECT_FILES
+      if (ssym->hasName()) {
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n",
+                                  __FILE__, __LINE__, __FUNCTION__,
+                                  ssym->hasName(),
+                                  ssym->getName().str().c_str(),
+                                  (void*)ssym->getAddress(),
                                 (size_t)ssym->getSize()));
+      }
+#endif
       if (ssym->hasName()) {
         std::string sname = ssym->getName().str();
         size_t pos = sname.find(gcroots_in_module_name);
@@ -755,38 +656,66 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 
 };
 
-
 namespace llvmo {
+
+thread_pool<ThreadManager>* global_thread_pool;
+
+
+/*! Call this after fork() to create a thread-pool for lljit
+ */
+CL_DEFUN void llvm_sys__create_lljit_thread_pool() {
+  unsigned int threads = std::thread::hardware_concurrency()/2;
+  if (threads == 0) threads = 1;
+  global_thread_pool = new thread_pool<ThreadManager>(threads);
+#if 0
+  ClaspJIT_O* jit = &*gctools::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
+  jit->_LLJIT->getExecutionSession().setDispatchTask([jit](std::unique_ptr<Task> T) {
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s pushing an LLJIT task\n", __FILE__, __LINE__, __FUNCTION__ ));
+      // FIXME: We should be able to use move-capture here, but ThreadPool's
+      // AsyncTaskTys are std::functions rather than unique_functions
+      // (because MSVC's std::packaged_tasks don't support move-only types).
+      // Fix this when all the above gets sorted out.
+    global_thread_pool->push_task([UnownedT = T.release()]() mutable {
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s A task %p is running in the thread-pool\n", __FILE__, __LINE__, __FUNCTION__, UnownedT ));
+      std::unique_ptr<Task> T(UnownedT);
+      T->run();
+    });
+  } );
+#endif
+  
+}
+
 
 
 ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
         llvm::ExitOnError ExitOnErr;
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Initializing ClaspJIT_O\n", __FILE__, __LINE__, __FUNCTION__));
         auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
+        TargetOptions to;
+        to.FunctionSections = false;
+        JTMB.setOptions(to);
         JTMB.setCodeModel(CodeModel::Small);
         JTMB.setRelocationModel(Reloc::Model::PIC_);
-        this->_TPC = ExitOnErr(orc::SelfExecutorProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
+        auto TPC = ExitOnErr(orc::SelfExecutorProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
         auto J = ExitOnErr(
-                           LLJITBuilder()
-                           .setExecutionSession(std::make_unique<ExecutionSession>(std::move(this->_TPC)))
-                           .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
-                           .setJITTargetMachineBuilder(std::move(JTMB))
-//                           .setPlatformSetUp(orc::setUpMachOPlatform)
-                           .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
-                       auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
-                       ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
-                       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
-                       ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
+            LLJITBuilder()
+            .setExecutionSession(std::make_unique<ExecutionSession>(std::move(TPC)))
+            .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
+            .setJITTargetMachineBuilder(std::move(JTMB))
+            .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
+              auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
+              ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
+              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
+              ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
                        // GDB registrar isn't working at the moment
-                       if (!getenv("CLASP_NO_JIT_GDB")) {
-//			 printf("%s:%d:%s CLASP_NO_JIT_GDB not defined Adding ObjLinkingLayer plugin for orc::createJITLoaderGDBRegistrar\n", __FILE__, __LINE__, __FUNCTION__ );
-                         ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
-                       }
-                       ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
-                       return ObjLinkingLayer;
-                     })
-                     .create());
-  this->_LLJIT =  std::move(J);
+              if (!getenv("CLASP_NO_JIT_GDB")) {
+                ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
+              }
+              ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
+              return ObjLinkingLayer;
+            })
+            .create());
+  this->_LLJIT = std::move(J);
   if (loading) {
     // Fixup the JITDylib_sp object in place
     JITDylib& dylib = this->_LLJIT->getMainJITDylib();
@@ -795,11 +724,16 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
       printf("%s:%d:%s the jitdylib @%p is null!\n", __FILE__, __LINE__, __FUNCTION__, &this->_MainJITDylib );
       abort();
     }
-    mainJITDylib->set_wrapped( &dylib );
+    core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(dylib.getName());
+    new (mainJITDylib) JITDylib_O(sname,&dylib);
     this->_MainJITDylib.rawRef_() = (llvmo::JITDylib_O*)gctools::tag_general<llvmo::JITDylib_O*>(mainJITDylib);
   } else {
     // Create a new JITDylib_sp object
-    this->_MainJITDylib = core::RP_Create_wrapped<JITDylib_O>(&this->_LLJIT->getMainJITDylib());
+    core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(this->_LLJIT->getMainJITDylib().getName());
+    this->_MainJITDylib = gc::GC<JITDylib_O>::allocate(sname,&this->_LLJIT->getMainJITDylib());
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Created MainJITDylib %p\n", __FILE__, __LINE__, __FUNCTION__, this->_MainJITDylib.raw_()));
+    core::Cons_sp pair = core::Cons_O::create(this->_MainJITDylib,nil<core::T_O>());
+    _lisp->_Roots._JITDylibs.store(pair);
   }
 //  printf("%s:%d Creating ClaspJIT_O  globalPrefix = %c\n", __FILE__, __LINE__, this->_LLJIT->getDataLayout().getGlobalPrefix());
   this->_LLJIT->getMainJITDylib().addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
@@ -808,11 +742,23 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
 
 ClaspJIT_O::~ClaspJIT_O()
 {
-  printf("%s:%d Shutdown the ClaspJIT\n", __FILE__, __LINE__);
+  // Remove all the CodeBlocks
+#if 0
+  _lisp->_Roots._AllCodeBlocks.store(nil<core::T_O>());
+  _lisp->_Roots._AllObjectFiles.store(nil<core::T_O>());
+  gctools::gctools__garbage_collect();
+  gctools::gctools__garbage_collect();
+  gctools::gctools__garbage_collect();
+  gctools::gctools__garbage_collect();
+  gctools::gctools__garbage_collect();
+  delete global_thread_pool;
+#endif
+  // printf("%s:%d Shutdown the ClaspJIT\n", __FILE__, __LINE__);
 }
 
-bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr) {
+bool ClaspJIT_O::do_lookup(JITDylib_sp dylibsp, const std::string& Name, void*& ptr) {
   llvm::ExitOnError ExitOnErr;
+  JITDylib& dylib = *dylibsp->wrappedPtr();
   std::string mangledName = Name;
 #if defined(_TARGET_OS_DARWIN)
   // gotta put a _ in front of the name on DARWIN but not Unixes? Why? Dunno.
@@ -821,6 +767,7 @@ bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr)
 #if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
 #error You need to decide here
 #endif
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s do_lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__, __FUNCTION__, mangledName.c_str(), dylibsp.raw_(), &dylib, llvm::cast<JITLinkDylib>(&dylib)));
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->_LLJIT->lookup(dylib,mangledName);
   if (!symbol) {
     // printf("%s:%d could not find external linkage symbol named: %s\n", __FILE__, __LINE__, mangledName.c_str() );
@@ -832,9 +779,9 @@ bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr)
   return true;
 }
 
- CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::string& Name) {
+ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib_sp dylibsp, const std::string& Name) {
      void* ptr;
-     bool found = this->do_lookup(dylib,Name,ptr);
+     bool found = this->do_lookup(dylibsp,Name,ptr);
      if (!found) {
        SIMPLE_ERROR(BF("Could not find pointer for name %s") % Name );
      }
@@ -843,61 +790,64 @@ bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr)
 
 
 CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
-    core::T_sp jcur = _lisp->_Roots._JITDylibs.load();
-    void* ptr;
-    while (jcur.consp()) {
-      JITDylib_sp jitdylib = gc::As<JITDylib_sp>(CONS_CAR(jcur));
-      JITDylib& jd = *jitdylib->wrappedPtr();
-        bool found = this->do_lookup(jd,name,ptr);
-        if (found) {
-            clasp_ffi::ForeignData_sp sp_sym = clasp_ffi::ForeignData_O::create(ptr);
-            sp_sym->set_kind( kw::_sym_clasp_foreign_data_kind_symbol_pointer );
-            return sp_sym;
-        }
-        jcur = CONS_CDR(jcur);
+  core::T_sp jcur = _lisp->_Roots._JITDylibs.load();
+  void* ptr;
+  while (jcur.consp()) {
+    JITDylib_sp jitdylib = gc::As<JITDylib_sp>(CONS_CAR(jcur));
+    bool found = this->do_lookup(jitdylib,name,ptr);
+    if (found) {
+      clasp_ffi::ForeignData_sp sp_sym = clasp_ffi::ForeignData_O::create(ptr);
+      sp_sym->set_kind( kw::_sym_clasp_foreign_data_kind_symbol_pointer );
+      return sp_sym;
     }
-    return nil<core::T_O>();
+    jcur = CONS_CDR(jcur);
+  }
+  return nil<core::T_O>();
 }
-            
+
         
     
 CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context, size_t startupID) {
-//  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
   std::unique_ptr<llvm::MemoryBuffer> empty;
-  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(empty), startupID, dylib,"REPL", 0);
-  my_thread->pushObjectFile(of);
+  stringstream ssname;
+  ssname << "Module" << startupID;
+  module->wrappedPtr()->setModuleIdentifier(ssname.str());
   ExitOnErr(this->_LLJIT->addIRModule( *dylib->wrappedPtr(), llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr()) ));
 }
 
 
-void ClaspJIT_O::addObjectFile(llvm::orc::JITDylib& jitdylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print)
+void ClaspJIT_O::addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print)
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
   //  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
   if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)objectFile->getBufferStart() % objectFile->getBufferSize() );
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
+  std::unique_ptr<llvm::MemoryBuffer> empty;
+//  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::createForObjectFile(objectFile->getBufferIdentifier().str(), dylib );
   llvm::ExitOnError ExitOnErr;
-  ExitOnErr(this->_LLJIT->addObjectFile(jitdylib,std::move(objectFile)));
+  ExitOnErr(this->_LLJIT->addObjectFile(*dylib->wrappedPtr(),std::move(objectFile)));
 }
 
 /*
  * runLoadtimeCode 
  */
 __attribute__((optnone))
-void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject )
+void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startupName, core::T_sp initialDataOrUnbound, ObjectFile_sp& codeObject )
 {
+  JITDylib& dylib = *dylibsp->wrappedPtr();
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
   void* ptr;
-  bool found = this->do_lookup(dylib,startupName,ptr);
+  bool found = this->do_lookup(dylibsp,startupName,ptr);
   if (!found) {
     SIMPLE_ERROR(BF("Could not find function %s - exit program and look at llvm::errs() stream") % startupName.c_str() );
   }
   T_OStartUp startup = reinterpret_cast<T_OStartUp>(ptr);
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to invoke startup @p=%p initialDataOrUnbound = %s\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup, (initialDataOrUnbound.unboundp() ? "unbound" : _rep_(initialDataOrUnbound).c_str())));
   core::T_O* arg0 = initialDataOrUnbound.unboundp() ? (core::T_O*)NULL : initialDataOrUnbound.raw_();
   core::T_O* replPtrRaw = startup(arg0);
   // If we load a bitcode file generated by clasp - then startup_functions will be waiting - so run them
@@ -905,9 +855,12 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
 //    printf("%s:%d:%s There is initialData -> %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(initialDataOrUnbound).c_str());
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from startup function with %p\n", __FILE__, __LINE__, __FUNCTION__, replPtrRaw ));
     // Clear out the current ObjectFile and Code
+    // printf("%s:%d:%s I need the name of the object file and then look it up\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0    
     codeObject= my_thread->topObjectFile()->_Code;
     codeObject->_gcroots = my_thread->_GCRootsInModule;
     my_thread->popObjectFile();
+#endif
     return (void*)replPtrRaw;
   }
   // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
@@ -916,9 +869,12 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
     void* result = core::startup_functions_invoke(NULL);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s The startup functions were INVOKED\n", __FILE__, __LINE__, __FUNCTION__ ));
     // Clear out the current ObjectFile and Code
+    //printf("%s:%d:%s I need the name of the object file and then look it up\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0    
     codeObject= my_thread->topObjectFile()->_Code;
     codeObject->_gcroots = my_thread->_GCRootsInModule;
     my_thread->popObjectFile();
+#endif
     return result;
   }
   SIMPLE_ERROR(BF("No startup functions are waiting after runInitializers\n"));
@@ -938,8 +894,8 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string
   auto dy = this->_LLJIT->createJITDylib(sname.str());
   JITDylib& dylib(*dy);
   dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-  JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
-  dylib_sp->_name = core::SimpleBaseString_O::make(sname.str());
+  core::SimpleBaseString_sp ssname = core::SimpleBaseString_O::make(sname.str());
+  JITDylib_sp dylib_sp = gc::GC<JITDylib_O>::allocate(ssname,&dylib);
   dylib_sp->_Id = ++global_JITDylibCounter;
   core::Cons_sp cell = core::Cons_O::create(dylib_sp,nil<core::T_O>());
   core::T_sp expected;
@@ -955,15 +911,52 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string
 }
 
 
+void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s You now OWN MemoryBuffer %s  buffer->getBufferStart() -> %p  size: %lu\n",
+                            __FILE__, __LINE__, __FUNCTION__, buffer->getBufferIdentifier().str().c_str(), buffer->getBufferStart(), buffer->getBufferSize() ));
+#ifdef DEBUG_OBJECT_FILES
+  if (globalDebugObjectFiles == DebugObjectFilesPrintSave ) {
+    stringstream ss;
+    ss << core::core__monitor_directory();
+    ss << buffer->getBufferIdentifier().str() << "-" << ++global_object_file_number << ".o";
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Writing object file to: %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
+    ObjectFile_O::writeToFile(ss.str(), buffer->getBufferStart(), buffer->getBufferSize());
+  }
+#endif
+  // Grab the buffer and put it in the current ObjectFile
+
+  ObjectFile_sp code = lookupObjectFile(buffer->getBufferIdentifier().str());
+  code->_MemoryBuffer = std::move(buffer);
+  auto objf = code->getObjectFile();
+  llvm::object::ObjectFile& of = *objf->get();
+#if defined(_TARGET_OS_LINUX)
+  uint64_t secId = getModuleSectionIndexForText( of );
+  code->_TextSectionId = secId;
+#elif defined(_TARGET_OS_DARWIN)
+  code->_TextSectionId = 0;
+#else
+  printf("%s:%d:%s Add support to set _TextSectionID for this os\n", __FILE__, __LINE__, __FUNCTION__);
+#endif
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s MemoryBuffer is %p\n", __FILE__, __LINE__, __FUNCTION__, code->_MemoryBuffer.get() ));
+}
+
+
 void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
+  
   core::SimpleBaseString_sp name = jitDylib->_name;
-  auto dy = this->_LLJIT->createJITDylib(name->get_std_string());
+  std::string sname = name->get_std_string();
+  auto dy = this->_LLJIT->getJITDylibByName(sname);
+  if (!dy) {
+    auto edy = this->_LLJIT->createJITDylib(sname);
+    if (edy) dy = &*edy;
+    else SIMPLE_ERROR(BF("Could not create JITDylib with name: %s") % sname );
+  }
   JITDylib& dylib(*dy);
   if ( jitDylib->_Id >= global_JITDylibCounter.load() ) {
     global_JITDylibCounter.store(jitDylib->_Id+1);
   }
   dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-  jitDylib->set_wrapped( &dylib );
+  new (jitDylib) JITDylib_O(name,&dylib);
 }
 
 
@@ -976,7 +969,6 @@ void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
 
 
 
-
 DOCGROUP(clasp)
 CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 {
@@ -984,6 +976,7 @@ CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
   auto cj = gctools::GC<ClaspJIT_O>::allocate(false);
   return cj;
 }
+
 
 };
 

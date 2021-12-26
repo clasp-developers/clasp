@@ -79,13 +79,14 @@
   (unless label
     (simple-reader-error stream "missing label for #=" label))
   (cond ((not *sharp-equal-final-table*)
+         #+(or)(format t "About to set *sharp-equal-final-table*~%")
          (setf *sharp-equal-final-table* (make-hash-table)))
         ((gethash label *sharp-equal-final-table*)
          (simple-reader-error stream "multiply defined label: #~D=" label)))
   (let ((tag (progn
                #+(or)(format t "{{{ Handling sharp-equal label: ~a~%" label)
                (setf (gethash label *sharp-equal-final-table*)
-                   (core:make-sharp-equal-wrapper label))))
+                     (core:make-sharp-equal-wrapper label))))
         (obj (read stream t nil t)))
     (when (eq obj tag)
       (simple-reader-error stream

@@ -194,6 +194,7 @@ namespace gctools {
 
 namespace gctools {
 constexpr size_t Alignment() {
+  static_assert(CLASP_ALIGNMENT==8);
   return CLASP_ALIGNMENT;
 };
 inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };

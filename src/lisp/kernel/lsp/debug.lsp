@@ -537,3 +537,7 @@ For example, for a function-name that is a symbol, returns that symbol's package
   (with-stack (stack :delimited delimited)
     (primitive-print-stack stack :stream stream :count count
                                  :source-positions source-positions)))
+
+(defun sys:primitive-print-backtrace ()
+  (clasp-debug::primitive-print-backtrace))
+

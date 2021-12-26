@@ -44,6 +44,7 @@ private:
 public:
  LlvmoExposer_O(core::LispPtr lisp) : Exposer_O(lisp,LlvmoPkg) {};
   virtual void expose(core::LispPtr lisp, WhatToExpose what) const;
+  virtual void shutdown();
 };
 
 FORWARD(ExecutionEngine);

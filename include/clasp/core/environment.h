@@ -327,7 +327,7 @@ class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
   List_sp _SymbolIndex_alist;
   ValueFrame_sp _ActivationFrame;
  public:
-  static ValueEnvironment_sp createSingleTopLevelEnvironment();
+  static ValueEnvironment_sp createSingleTopLevelEnvironment(size_t numberOfArguments);
 
   /*! Create an environment that extends a parent environment,
 	 Pass a Cons of 2-element conses that contain either `(lexical ,symbol-name) or `(special ,symbol-name) 

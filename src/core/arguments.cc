@@ -161,17 +161,6 @@ bool ValueEnvironmentDynamicScopeManager::lexicalElementBoundP_(const Argument &
   return ((this->_Environment->activationFrameElementBoundP(argument._ArgTargetFrameIndex)));
 }
 
-void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, T_sp val) {
-  if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
-    Symbol_sp sym = gc::As_unsafe<Symbol_sp>(argument._ArgTarget);
-    this->new_special_binding(sym, val);
-    return;
-  }
-  ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
-  T_sp argTarget = argument._ArgTarget;
-  this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, val);
-}
-
 void ValueEnvironmentDynamicScopeManager::va_rest_binding(const Argument &argument) {
   if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
     SIMPLE_ERROR(BF("You cannot bind &VA-REST argument to a special"));
@@ -204,6 +193,16 @@ void ValueEnvironmentDynamicScopeManager::new_special(List_sp classified) {
   this->_Environment->defineSpecialBinding(sym);
 }
 
+void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, T_sp val) {
+  if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
+    Symbol_sp sym = gc::As_unsafe<Symbol_sp>(argument._ArgTarget);
+    this->new_special_binding(sym, val);
+    return;
+  }
+  ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
+  T_sp argTarget = argument._ArgTarget;
+  this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, val);
+}
 
 void StackFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp val) {
   if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
@@ -213,6 +212,7 @@ void StackFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp v
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
   gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, val.raw_() );
+  this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val );
 }
 
 void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
@@ -222,6 +222,8 @@ void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
   Vaslist_sp valist(&this->valist());
   gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, valist.raw_() );
+  T_sp val((gctools::Tagged)valist.raw_());
+  this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val );
 }
 
 void StackFrameDynamicScopeManager::ensureLexicalElementUnbound( const Argument& argument) {
@@ -233,8 +235,4 @@ bool StackFrameDynamicScopeManager::lexicalElementBoundP_(const Argument &argume
   return !gctools::tagged_unboundp(this->frame.value_(argument._ArgTargetFrameIndex));
 }
 
-T_sp StackFrameDynamicScopeManager::lexenv() const {
-  //  printf("%s:%d Returning nil as the lexical environment for a StackFrameDynamicScopeManager\n", __FILE__, __LINE__);
-  return nil<core::T_O>();
-}
 };

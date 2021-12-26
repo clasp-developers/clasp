@@ -181,9 +181,18 @@ CL_DEFUN void llvm_sys__debugObjectFiles(core::Symbol_sp sym) {
 std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size) {
   stringstream ss;
   ss << prefix;
-  ss << "@" << start << "-" << size;
-//  printf("%s:%d uniqueMemoryBufferName -> %s\n", __FILE__, __LINE__, ss.str().c_str());
+  ss << "#" << start;
   return ss.str();
+}
+
+/*! Return the id from a name with the format xxxx#num
+ */
+size_t objectIdFromName(const std::string& name) {
+  size_t pos = name.find_first_of("0123456789");
+  size_t lpos = name.find_last_of("0123456789");
+  std::string snum = name.substr(pos,lpos+1);
+  size_t num = std::stoull(snum);
+  return num;
 }
 
 
@@ -975,10 +984,12 @@ CL_END_ENUM(_sym_ObjectFormatType);
 namespace llvmo {
 
 CL_LISPIFY_NAME(make-target-options);
+CL_LAMBDA(&key function-sections)
 DOCGROUP(clasp)
-CL_DEFUN TargetOptions_sp TargetOptions_O::make() {
+CL_DEFUN TargetOptions_sp TargetOptions_O::make(bool functionSections ) {
   auto  self = gctools::GC<TargetOptions_O>::allocate_with_default_constructor();
   self->_ptr = new llvm::TargetOptions();
+  self->_ptr->FunctionSections = functionSections;
   return self;
 };
 
@@ -1114,25 +1125,6 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
 
 
 DOCGROUP(clasp)
-CL_DEFUN Module_sp llvm_sys__parseIRString(core::T_sp llvm_ir_string, LLVMContext_sp context) {
-  core::String_sp source = gc::As<core::String_sp>(llvm_ir_string);
-  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getMemBufferCopy(source->get_std_string());
-  if (std::error_code ec = eo_membuf.getError()) {
-    SIMPLE_ERROR(BF("Could not read the string %s - error: %s") % source->get_std_string() % ec.message());
-  }
-  llvm::SMDiagnostic smd;
-  std::unique_ptr<llvm::Module> module =
-    llvm::parseIR(eo_membuf.get()->getMemBufferRef(), smd, *(context->wrappedPtr()));
-  llvm::Module* m = module.release();
-  if (!m) {
-    std::string message = smd.getMessage().str();
-    SIMPLE_ERROR(BF("Could not load llvm-ir from string %s - error: %s") % source->get_std_string() % message );
-  }
-  Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
-  return omodule;
-};
-
-DOCGROUP(clasp)
 CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp context) {
   if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
@@ -1147,6 +1139,24 @@ CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp co
   if (!m) {
     std::string message = smd.getMessage().str();
     SIMPLE_ERROR(BF("Could not load llvm-ir for file %s - error: %s") % spathname->get_std_string() % message );
+  }
+  Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
+  return omodule;
+};
+
+DOCGROUP(clasp)
+CL_DEFUN Module_sp llvm_sys__parseIRString(const std::string& llCode, LLVMContext_sp context, const std::string& bufferName ) {
+  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getMemBuffer(llCode, bufferName );
+  if (std::error_code ec = eo_membuf.getError()) {
+    SIMPLE_ERROR(BF("Could not construct a memory buffer for the string %s error: %s") % llCode % ec.message());
+  }
+  llvm::SMDiagnostic smd;
+  std::unique_ptr<llvm::Module> module =
+    llvm::parseIR(eo_membuf.get()->getMemBufferRef(), smd, *(context->wrappedPtr()));
+  llvm::Module* m = module.release();
+  if (!m) {
+    std::string message = smd.getMessage().str();
+    SIMPLE_ERROR(BF("Could not load llvm-ir for string %s - error: %s") % llCode % message );
   }
   Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
   return omodule;
@@ -1359,12 +1369,16 @@ void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type *> 
 }
 
 namespace llvmo {
-CL_PKG_NAME(LlvmoPkg,"make-Module");
+CL_PKG_NAME(LlvmoPkg,"make-module");
 CL_LAMBDA(module-name context)
 DOCGROUP(clasp)
-CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
+CL_DEFUN Module_sp Module_O::make(const std::string& namePrefix, LLVMContext_sp context) {
   auto  self = gctools::GC<Module_O>::allocate_with_default_constructor();
-  self->_ptr = new llvm::Module(module_name, *(context->wrappedPtr()));
+  self->_Id = core::core__next_jit_compile_counter();
+  stringstream uniqueName;
+  uniqueName << namePrefix << "-" << self->_Id;
+  self->_UniqueName = uniqueName.str();
+  self->_ptr = new llvm::Module(self->_UniqueName, *(context->wrappedPtr()));
   return self;
 };
 
@@ -1638,6 +1652,20 @@ CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getOrEmitGlobalVa
 
 }; // llvmo
 
+
+
+namespace llvmo {
+
+
+CL_DEFMETHOD llvm::Type* PointerType_O::getElementType() const {
+  return dyn_cast<llvm::PointerType>(this->wrappedPtr())->getElementType();
+}
+
+CL_DEFUN bool llvm_sys__isOpaqueOrPointeeTypeMatches(Type_sp ptrType, Type_sp ty) {
+  return dyn_cast<llvm::PointerType>(ptrType->wrappedPtr())->isOpaqueOrPointeeTypeMatches(ty->wrappedPtr());
+}  
+  
+};
 
 namespace llvmo {
 CL_LISPIFY_NAME("DataLayoutCopy");
@@ -2594,20 +2622,20 @@ CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateConstGEP2_32(llvm::Type* ty, llvm::
 }
 
 CL_LISPIFY_NAME(CreateConstGEP2_64);
-CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateConstGEP2_64(llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name) {
+CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateConstGEP2_64(llvm::Type* type, llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name) {
   size_t uidx0 = static_cast<size_t>(idx0);
   size_t uidx1 = static_cast<size_t>(idx1);
-  return this->wrappedPtr()->CreateConstGEP2_64(Ptr,uidx0, uidx1,Name);
+  return this->wrappedPtr()->CreateConstGEP2_64(type,Ptr,uidx0, uidx1,Name);
 }
 
 CL_LISPIFY_NAME("CreateInBoundsGEP");
-CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name) {
+CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateInBoundsGEP(llvm::Type* type, llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name) {
   vector<llvm::Value *> vector_IdxList;
   for (auto cur : IdxList) {
     vector_IdxList.push_back(gc::As<Value_sp>(oCar(cur))->wrappedPtr());
   }
   llvm::ArrayRef<llvm::Value *> array_ref_vector_IdxList(vector_IdxList);
-  return this->wrappedPtr()->CreateInBoundsGEP(Ptr, array_ref_vector_IdxList, Name);
+  return this->wrappedPtr()->CreateInBoundsGEP(type, Ptr, array_ref_vector_IdxList, Name);
 }
 
 CL_LISPIFY_NAME("CreateExtractValue");
@@ -3205,10 +3233,10 @@ CL_LISPIFY_NAME(CreateXor_value_apint);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateXor);
 CL_LISPIFY_NAME(CreateXor_value_uint64);
  CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateXor);
-CL_LISPIFY_NAME(CreateLoad_value_twine);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
-CL_LISPIFY_NAME(CreateLoad_value_bool_twine);
- CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, bool, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
+CL_LISPIFY_NAME(CreateLoad_type_value_twine);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Type* Ty, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
+CL_LISPIFY_NAME(CreateLoad_type_value_bool_twine);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Type* Ty, llvm::Value *, bool, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
 CL_DOCSTRING("The type must be equiv to firstValue->getType()->getScalarType()->getPointerElementType()");
 CL_LISPIFY_NAME(CreateGEP0);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Type*, llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
@@ -3525,6 +3553,8 @@ string Type_O::__repr__() const {
   return ss.str();
 }
 
+
+
 CL_LAMBDA((self llvm-sys::type) &optional (addressSpace 0))
 CL_DOCSTRING(R"dx(Return a PointerType to the llvm Type)dx")
 CL_LISPIFY_NAME("type-get-pointer-to");
@@ -3687,8 +3717,13 @@ CL_DEFUN ArrayType_sp ArrayType_O::get(Type_sp elementType, uint64_t numElements
 }
 
 
-
-;
+CL_DEFUN size_t llvm_sys__getNumElements(Type_sp ty) {
+  llvm::ArrayType* array = dyn_cast<llvm::ArrayType>(ty->wrappedPtr());
+  if (!array) {
+    SIMPLE_ERROR(BF("Could not cast %s to array") % _rep_(ty));
+  }
+  return array->getNumElements();
+}
 
 };
 
@@ -4476,8 +4511,9 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   void* replPtrRaw;
   // Run the startup code by looking up a symbol
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    About to runStartupCode name = %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
-  Code_sp codeObject;
-  replPtrRaw = jit->runStartupCode(jit->_LLJIT->getMainJITDylib(), startupName, initialData, codeObject );
+  ObjectFile_sp codeObject;
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str(), jit->getMainJITDylib().raw_(), jit->getMainJITDylib()->wrappedPtr(), llvm::cast<JITLinkDylib>(jit->getMainJITDylib()->wrappedPtr())));
+  replPtrRaw = jit->runStartupCode(jit->getMainJITDylib(), startupName, initialData, codeObject );
   core::T_O* closure = makeCompiledFunction((core::T_O*)replPtrRaw,nil<core::T_O>().raw_());
   core::Function_sp functoid((gctools::Tagged)closure);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -4514,7 +4550,7 @@ CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp d
   // always unique 
   core::Pointer_sp startupPtr;
   void* ptr;
-  bool found = jit->do_lookup(*dylib->wrappedPtr(),cxxName,ptr);
+  bool found = jit->do_lookup(dylib,cxxName,ptr);
   if (!found) {
     SIMPLE_ERROR(BF("Could not find function %s") % cxxName );
   }
@@ -4578,7 +4614,7 @@ std::string SectionedAddress_O::__repr__() const {
   stringstream ss;
   ss << "#<SECTIONED-ADDRESS ";
   ss << ":section-index " << this->_value.SectionIndex << " ";
-  ss << ":address " << this->_value.Address << ">";
+  ss << ":address " << (void*)this->_value.Address << ">";
   return ss.str();
 }
 

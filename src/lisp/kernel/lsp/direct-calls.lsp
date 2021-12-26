@@ -22,7 +22,7 @@
                ;; not the wrappers
                (core:function-source-pos (fdefinition ',lisp-name))
              (defun ,lisp-name ,lambda-list
-               (declare (optimize (debug 0)))
+               (declare (optimize (debug 0)) (core:lambda-name ,(intern c-name :keyword)))
                ,@(if declare-forms
                      (list `(declare ,@declare-forms))
                      nil)
@@ -50,7 +50,7 @@
           `(multiple-value-bind (pathname pos lineno column)
                (core:function-source-pos (fdefinition ',lisp-name))
              (defun ,lisp-name ,lambda-list
-               (declare (optimize (debug 0)))
+               (declare (optimize (debug 0)) (core:lambda-name (cl:setf ,(intern c-name :keyword))))
                ,@(if declare-forms
                      (list `(declare ,@declare-forms))
                      nil)

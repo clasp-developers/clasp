@@ -47,6 +47,9 @@ T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
 llvmo::ClaspJIT_sp compiler__jit_engine();
 
 void initialize_compiler_primitives(LispPtr lisp);
+
+void core__jit_register_symbol( const std::string& name, size_t size, void* address );
+
 };
 
 namespace core {
@@ -90,6 +93,7 @@ struct MaybeDebugStartup {
 
 void core__update_max_jit_compile_counter(size_t val);
 size_t core__get_jit_compile_counter();
+size_t core__next_jit_compile_counter();
 
 };
 

@@ -278,6 +278,18 @@ struct from_object<llvm::Linker &, std::true_type> {
     ;
 /* to_object translators */
 
+namespace llvmo {
+typedef enum {DebugObjectFilesOff, DebugObjectFilesPrint, DebugObjectFilesPrintSave } DebugObjectFilesEnum;
+extern DebugObjectFilesEnum globalDebugObjectFiles;
+
+
+};
+
+#ifdef DEBUG_OBJECT_FILES
+# define DEBUG_OBJECT_FILES_PRINT(msg) if ( llvmo::globalDebugObjectFiles != llvmo::DebugObjectFilesOff )  { printf msg; }
+#else
+# define DEBUG_OBJECT_FILES_PRINT(msg)
+#endif
 
 
 
@@ -289,6 +301,8 @@ class JITDylib_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::orc::JITDylib, JITDylib_O, "JITDylib", core::ExternalObject_O);
   typedef llvm::orc::JITDylib ExternalType;
   typedef llvm::orc::JITDylib *PointerToExternalType;
+private:
+  JITDylib_O() {};
 public:
   PointerToExternalType _ptr;
   size_t                _Id;
@@ -302,11 +316,15 @@ public:
   }
   void dump(core::T_sp stream);
 public:
+#if 0
   void set_wrapped(PointerToExternalType ptr) {
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  JITDylib_O() : Base(), _ptr(NULL){};
+#endif
+  JITDylib_O(core::SimpleBaseString_sp name, PointerToExternalType ptr) : Base(), _ptr(ptr), _name(name) {
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s name = %s  ptr = %p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(name).c_str(), ptr ));
+  };
   ~JITDylib_O() {
     /* delete _ptr;*/
     _ptr = NULL;
@@ -331,13 +349,17 @@ namespace translate {
 template <>
 struct to_object<llvm::orc::JITDylib *> {
   static core::T_sp convert(llvm::orc::JITDylib *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::JITDylib_O, llvm::orc::JITDylib *>(ptr)));
+    std::string name = ptr->getName();
+    core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(name);
+    return gctools::GC<llvmo::JITDylib_O>::allocate(sname,ptr);
   }
 };
 template <>
 struct to_object<llvm::orc::JITDylib&> {
   static core::T_sp convert(llvm::orc::JITDylib& jd) {
-    return ((core::RP_Create_wrapped<llvmo::JITDylib_O, llvm::orc::JITDylib *>(&jd)));
+    std::string name = jd.getName();
+    core::SimpleBaseString_sp sname = core::SimpleBaseString_O::make(name);
+    return gctools::GC<llvmo::JITDylib_O>::allocate(sname,&jd);
   }
 };
 };
@@ -555,7 +577,7 @@ protected:
   PointerToExternalType _ptr;
 
 public:
-  static TargetOptions_sp make();
+  static TargetOptions_sp make(bool functionSections);
 
 public:
   virtual void *externalObject() const {
@@ -2035,6 +2057,7 @@ class Module_O : public core::ExternalObject_O {
   void initialize();
 GCPROTECTED:
   size_t _Id;
+  std::string _UniqueName;
   PointerToExternalType _ptr;
   core::HashTableEqual_sp _UniqueGlobalVariableStrings;
 
@@ -2056,17 +2079,18 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
- Module_O() : Base(), _ptr(NULL), _Id(++global_NextModuleId) {};
+ Module_O() : Base(), _ptr(NULL) {};
   ~Module_O() {
     // delete _ptr;   // Don't delete the module Delete the module when it's not used
     _ptr = NULL;
   }
   std::string __repr__() const;
   CL_DEFMETHOD size_t module_id() const { return this->_Id;};
-  static Module_sp make(llvm::StringRef module_name, LLVMContext_sp context);
+  static Module_sp make( const std::string& namePrefix, LLVMContext_sp context);
   /*! Return true if the wrapped Module is defined */
   bool valid() const;
   llvm::DataLayout getDataLayout() const;
+  std::string getUniqueName() const { return this->_UniqueName; };
   
   /*! Return a Cons of all the globals for this module */
   core::List_sp getGlobalList() const;
@@ -2686,8 +2710,8 @@ public:
 public:
   llvm::InvokeInst *CreateInvoke(FunctionType_sp function_type, llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name = "");
   llvm::Value* CreateConstGEP2_32(llvm::Type* ty, llvm::Value *ptr, int idx0, int idx1, const llvm::Twine &Name);
-  llvm::Value* CreateConstGEP2_64(llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name);
-  llvm::Value *CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name = "");
+  llvm::Value* CreateConstGEP2_64(llvm::Type* ty, llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name);
+  llvm::Value *CreateInBoundsGEP(llvm::Type* ty, llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name = "");
 
   llvm::Value *CreateExtractValue(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name = "");
 
@@ -4297,6 +4321,8 @@ public: // static methods
 public: // static methods
   static PointerType_sp get(Type_sp elementType, uint addressSpace);
 
+  llvm::Type* getElementType() const;
+    
 }; // PointerType_O
 }; // llvmo
 /* from_object translators */
@@ -4339,6 +4365,7 @@ public:
 
 public: // static methods
   static ArrayType_sp get(Type_sp elementType, uint64_t numElements);
+  
 }; // ArrayType_O
 }; // llvmo
 /* from_object translators */
@@ -4523,6 +4550,7 @@ void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengi
 
   Module_sp llvm_sys__parseBitcodeFile(core::T_sp filename, LLVMContext_sp context);
   Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
+  Module_sp llvm_sys__parseIRString( const std::string& llCode, LLVMContext_sp context, const std::string& bufferName );
 
 void initialize_llvmo_expose();
 
@@ -4650,19 +4678,16 @@ void dump_objects_for_lldb(FILE* fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 
 std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size);
+size_t objectIdFromName(const std::string& name);
+
 llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream,llvm::SmallString<1024>& stringOutput,bool& stringOutputStream);
 
  
-typedef enum {DebugObjectFilesOff, DebugObjectFilesPrint, DebugObjectFilesPrintSave } DebugObjectFilesEnum;
-extern DebugObjectFilesEnum globalDebugObjectFiles;
+
+core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
+
 
 };
 
-
-#ifdef DEBUG_OBJECT_FILES
-# define DEBUG_OBJECT_FILES_PRINT(msg) if ( llvmo::globalDebugObjectFiles != llvmo::DebugObjectFilesOff )  { printf msg; }
-#else
-# define DEBUG_OBJECT_FILES_PRINT(msg)
-#endif
 
 #endif //]

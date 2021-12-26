@@ -125,7 +125,7 @@
          :macro-name macro-name :lambda-list vl :arguments current-form
          :problem :too-few))
 
-(defun sys::destructure (vl context &optional macro-name
+(defun sys::destructure (vldestructure context &optional macro-name
                          &aux dl arg-check (basis-form (gensym))
                            (destructure-symbols (list basis-form)))
   (labels ((tempsym ()
@@ -151,9 +151,9 @@
                               (cdr (the cons ,whole)))
                          ;; defmacro
                          `(cdr (the cons ,whole))))))
-	   (dm-vl (vl whole context)
+	   (dm-vl (vldestructure whole context)
 	     (multiple-value-bind (reqs opts rest key-flag keys allow-other-keys auxs)
-		 (si::process-lambda-list vl context)
+		 (si::process-lambda-list vldestructure context)
 	       (let* ((pointer (tempsym))
 		      (cons-pointer `(the cons ,pointer))
 		      (unsafe-car `(car ,cons-pointer))
@@ -167,7 +167,7 @@
 		   (dm-v v `(progn
 			      (if (null ,pointer)
 				  (dm-too-few-arguments
-                                   ,basis-form ',vl ',macro-name))
+                                   ,basis-form ',vldestructure ',macro-name))
 			      (prog1 ,unsafe-car ,unsafe-pop))))
 		 (dotimes (i (pop opts))
 		   (let* ((x (first opts))
@@ -211,7 +211,7 @@
 		       ((not no-check)
 			(push `(if ,pointer
                                    (dm-too-many-arguments
-                                    ,basis-form ',vl ',macro-name))
+                                    ,basis-form ',vldestructure ',macro-name))
 			      arg-check))))))
 	   (dm-v (v init)
 	     (cond ((and v (symbolp v))
@@ -234,17 +234,17 @@
 		      (push push-val dl)
 		      (dm-vl v temp 'destructuring-bind))))))
     (let ((whole basis-form))
-      (cond ((listp vl)
-	     (when (eq (first vl) '&whole)
-               (let ((named-whole (second vl)))
-                 (setq vl (cddr vl))
+      (cond ((listp vldestructure)
+	     (when (eq (first vldestructure) '&whole)
+               (let ((named-whole (second vldestructure)))
+                 (setq vldestructure (cddr vldestructure))
                  (if (listp named-whole)
                      (dm-vl named-whole whole context)
                      (setq dl (list (list named-whole whole)))))))
-	    ((symbolp vl)
-	     (setq vl (list '&rest vl)))
-	    (t (error "The destructuring-lambda-list ~s is not a list." vl)))
-      (dm-vl vl whole context)
+	    ((symbolp vldestructure)
+	     (setq vldestructure (list '&rest vldestructure)))
+	    (t (error "The destructuring-lambda-list ~s is not a list." vldestructure)))
+      (dm-vl vldestructure whole context)
       (values whole (nreverse dl) arg-check destructure-symbols))))
 
 ;;; valid lambda-list to DEFMACRO is:
@@ -295,24 +295,24 @@
 	    body doc)))
 
 ;; Optional argument CONTEXT can be deftype or defmacro (default)
-(defun expand-defmacro (name vl body &optional (context 'cl:defmacro))
+(defun expand-defmacro (name vledm body &optional (context 'cl:defmacro))
   (multiple-value-bind (decls body doc)
       (find-declarations body)
     ;; We turn (a . b) into (a &rest b)
     ;; This is required because MEMBER (used below) does not like improper lists
-    (let ((cell (last vl)))
+    (let ((cell (last vledm)))
       (when (rest cell)
-        (setq vl (nconc (butlast vl 0) (list '&rest (rest cell))))))
+        (setq vledm (nconc (butlast vledm 0) (list '&rest (rest cell))))))
     ;; If we find an &environment variable in the lambda list, we take note of the
     ;; name and remove it from the list so that DESTRUCTURE does not get confused
-    (let ((env-part (member '&environment vl :test #'eq)))
+    (let ((env-part (member '&environment vledm :test #'eq)))
       (if env-part
-          (setq vl (nconc (ldiff vl env-part) (cddr env-part))
+          (setq vledm (nconc (ldiff vledm env-part) (cddr env-part))
                 env-part (second env-part))
           (setq env-part (gensym)
                 decls (list* `(declare (ignore ,env-part)) decls)))
       (multiple-value-bind (whole dl arg-check ignorables)
-          (destructure vl context name)
+          (destructure vledm context name)
         (values
          `(lambda (,whole ,env-part &aux ,@dl)
             (declare (ignorable ,@ignorables) (core:lambda-name ,name))
@@ -328,35 +328,35 @@
           #'(lambda (def env)
               (declare (ignore env) (core:lambda-name defmacro))
 	      (let* ((name (second def))
-		     (vl (third def))
+		     (vldm (third def))
 		     (body (cdddr def))
 		     (function))
 		(multiple-value-bind (function doc)
-		    (sys::expand-defmacro name vl body)
+		    (sys::expand-defmacro name vldm body)
 		  (declare (ignore doc))
 		  (setq function `(function ,function))
 		  `(si::fset ',name ,function
                              t ; macro
-                             ',vl ; lambda-list
+                             ',vldm ; lambda-list
                              ))))
 	  t)
 
 ;;; Like EXPAND-DEFMACRO, but is slightly nicer about invalid arguments.
-(defun expand-define-compiler-macro (name vl body)
+(defun expand-define-compiler-macro (name vldm body)
   (multiple-value-bind (decls body doc)
       (find-declarations body)
-    (let ((cell (last vl)))
+    (let ((cell (last vldm)))
       (when (rest cell)
-        (setq vl (nconc (butlast vl 0) (list '&rest (rest cell))))))
+        (setq vldm (nconc (butlast vldm 0) (list '&rest (rest cell))))))
     (let ((block-name (function-block-name name))
-          (env-part (member '&environment vl :test #'eq)))
+          (env-part (member '&environment vldm :test #'eq)))
       (if env-part
-          (setq vl (nconc (ldiff vl env-part) (cddr env-part))
+          (setq vldm (nconc (ldiff vldm env-part) (cddr env-part))
                 env-part (second env-part))
           (setq env-part (gensym)
                 decls (list* `(declare (ignore ,env-part)) decls)))
       (multiple-value-bind (whole dl arg-check ignorables)
-          (destructure vl 'cl:define-compiler-macro name)
+          (destructure vldm 'cl:define-compiler-macro name)
         (values
          `(lambda (,whole ,env-part &aux ,@dl)
             (declare (ignorable ,@ignorables) (core:lambda-name ,name))
