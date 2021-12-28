@@ -675,9 +675,60 @@ void CodeBlock_O::describe() const {
   printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
 }
 
+size_t countObjectFileNames(const std::string& name) {
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Lookup name %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str() ));
+  size_t count = 0;
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+  while ( cur.consp() ) {
+    ObjectFile_sp of = gc::As<ObjectFile_sp>(CONS_CAR(cur));
+    const char* codeNameStart = (const char*)of->_CodeName->_Data.data();
+    if (of->_CodeName->length() == name.size()) {
+      if (memcmp(codeNameStart,name.data(),name.size())==0 ) {
+        count++;
+      }
+    }
+    cur = CONS_CDR(cur);
+  }
+  return count;
+};
+
+CL_DEFUN core::T_sp llvm_sys__allObjectFileNames() {
+  size_t count = 0;
+  core::T_sp result = nil<core::T_O>();
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+  while ( cur.consp() ) {
+    ObjectFile_sp of = gc::As<ObjectFile_sp>(CONS_CAR(cur));
+    result = core::Cons_O::create(of->_CodeName,result);
+    cur = CONS_CDR(cur);
+  }
+  return result;
+};
+
+std::string createIRModuleObjectFileName(size_t startupId, std::string& prefix) {
+  stringstream ss;
+  ss << "ClaspModule" << startupId;
+  prefix = ss.str();
+  ss << "-jitted-objectbuffer";
+  return ss.str();
+}
+
+bool verifyIRModuleObjectFileName(const std::string& name) {
+  if (name.size()<std::string("ClaspModule-jitted-objectbuffer").size()) return false;
+  if (name.substr(0,11) == "ClaspModule") {
+    if (name.find("jitted-objectbuffer") == std::string::npos) {
+      SIMPLE_ERROR(BF("The IRModule name %s must have the form ClaspModule#-jitted-objectbuffer...\n"
+                      "This is assembled in llvm CompileUtils.cpp SimpleCompiler::operator() where it appends -jitted-objectbuffer to the Module Identifier - if that changes then this test will fail and we need to update createIRModuleObjectFileName to mimic the new name construction") % name );
+    }
+    return true;
+  }
+  return false;
+}
+  
 ObjectFile_sp lookupObjectFile(const std::string& name ) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Lookup name %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str() ));
-  core::List_sp ofs = _lisp->_Roots._AllObjectFiles.load();
+  // If it matches an IRModule name then it must have a certain structure
+  verifyIRModuleObjectFileName(name);
+  core::T_sp ofs = _lisp->_Roots._AllObjectFiles.load();
   core::T_sp cur = ofs;
   while ( cur.consp() ) {
     ObjectFile_sp of = gc::As<ObjectFile_sp>(CONS_CAR(cur));

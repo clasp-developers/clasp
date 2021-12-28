@@ -70,6 +70,7 @@ Set this to other IRBuilders to make code go where you want")
   tag  ; The tag of the objects of this type
   type-getter ; A single argument lambda that when passed an (thread-local-llvm-context) returns the type
   field-type-getters ; An alist of name/type-getter-functions
+  field-pointee-type-getters ; An alist of name/pointee-type-getter-functions
   field-offsets
   field-indices) 
   
@@ -91,22 +92,28 @@ names to offsets."
                                             (cons (second ,gs-field) (- (llvm-sys:struct-layout-get-element-offset ,layout ,field-index) ,tag))
                                           (incf ,field-index)))
                                       ',fields)))
-            (field-indices `(let ((,field-index 0))    ;
+            (field-indices `(let ((,field-index 0))       ;
                               (mapcar (lambda (,gs-field) ;
-                                        (prog1         ;
+                                        (prog1            ;
                                             (cons (second ,gs-field) ,field-index) ;
                                           (incf ,field-index))) ;
                                       ',fields)))
             (field-type-getters-list (mapcar (lambda (type-name) ;
                                                #+(or)(format t "type-name -> ~s cadr -> ~s  ,car -> ~s~%" type-name (cadr type-name) (car type-name)) ;
                                                `(cons ',(cadr type-name) (lambda () (llvm-sys:type-get-pointer-to ,(macroexpand (car type-name))))))
-                                             fields)))
+                                             fields))
+            (field-pointee-type-getters-list (mapcar (lambda (type-name) ;
+                                                       #+(or)(format t "type-name -> ~s cadr -> ~s  ,car -> ~s~%" type-name (cadr type-name) (car type-name)) ;
+                                                       `(cons ',(cadr type-name) (lambda () ,(macroexpand (car type-name)))))
+                                                     fields)))
         #+(or)
         (progn
           (format t "define-symbol-macro = ~s~%" define-symbol-macro)
           (format t "field-offsets -> ~s~%" field-offsets)
           (format t "field-indices -> ~s~%" field-indices)
-          (format t "field-type-getters-list -> ~s~%" field-type-getters-list))
+          (format t "field-type-getters-list -> ~s~%" field-type-getters-list)
+          (format t "field-pointee-type-getters-list -> ~s~%" field-pointee-type-getters-list)
+          )
         (let ((final `(progn
                         ,define-symbol-macro
                         (defparameter ,(intern (core:bformat nil "INFO.%s" (string name)))
@@ -114,6 +121,7 @@ names to offsets."
                                            :tag ,tag
                                            :type-getter (lambda () (progn ,name))
                                            :field-type-getters (list ,@field-type-getters-list)
+                                           :field-pointee-type-getters (list ,@field-pointee-type-getters-list)
                                            :field-offsets ,field-offsets
                                            :field-indices ,field-indices)))))
           final)))))
@@ -143,6 +151,9 @@ names to offsets."
          (field-ptr (irc-bit-cast field* (funcall field-type-getter) label)))
     field-ptr))
 
+(defun c++-field-pointee-type (struct-info field-name)
+  (let ((field-pointee-type-getter (cdr (assoc field-name (c++-struct-field-pointee-type-getters struct-info)))))
+    (funcall field-pointee-type-getter)))
                                     
 (define-symbol-macro %i1% (llvm-sys:type-get-int1-ty (thread-local-llvm-context)))
 (define-symbol-macro %i3% (llvm-sys:type-get-int-nty (thread-local-llvm-context) 3))
@@ -371,7 +382,7 @@ Boehm and MPS use a single pointer"
    (%size_t% :Flags)
    (%size_t% :rank)
    (%size_t[0]% :dimensions)))
-
+(define-symbol-macro %mdarray-dimensions-type% %size_t%)
 (define-symbol-macro %mdarray*% (llvm-sys:type-get-pointer-to %mdarray%))
 
 (define-c++-struct %value-frame% +general-tag+

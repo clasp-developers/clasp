@@ -825,8 +825,9 @@ representing a tagged fixnum."
 
 (defun irc-array-dimension (tarray axis)
   (let* ((dims (c++-field-ptr info.%mdarray% tarray :dimensions))
-         (axisN* (irc-gep %size_t% dims (list 0 axis))))
-    (irc-t*-load-atomic axisN*)))
+         (type (c++-field-pointee-type info.%mdarray% :dimensions))
+         (axisN* (irc-gep type dims (list 0 axis))))
+    (irc-typed-load-atomic %mdarray-dimensions-type% axisN*)))
 
 (defun irc-header-stamp (object)
   (let* ((object* (irc-untag-general object))

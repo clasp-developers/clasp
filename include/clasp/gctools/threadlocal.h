@@ -154,20 +154,26 @@ namespace gctools {
 
 struct ThreadManager {
   struct Worker {
+#ifdef USE_BOEHM
     GC_stack_base _StackBase;
+#endif
     gctools::ThreadLocalStateLowLevel _StateLowLevel;
     core::ThreadLocalState _State;
     // Worker must be allocated at the top of the worker thread function
     // It uses RAII to register/deregister our thread
     Worker() : _StateLowLevel((void*)this), _State(false) {
 //      printf("%s:%d:%s Starting\n", __FILE__, __LINE__, __FUNCTION__ );
+#ifdef USE_BOEHM
       GC_get_stack_base(&this->_StackBase);
       GC_register_my_thread(&this->_StackBase);
       my_thread_low_level = &this->_StateLowLevel;
+#endif
     };
     ~Worker() {
 //      printf("%s:%d:%s Stopping\n", __FILE__, __LINE__, __FUNCTION__ );
+#ifdef USE_BOEHM
       GC_unregister_my_thread();
+#endif
     };
   };
   void register_thread(std::thread& th) {

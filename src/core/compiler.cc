@@ -783,6 +783,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd,0,SEEK_SET);
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
+  free(name_buffer);
   if (memory==MAP_FAILED) {
     close(fd);
     SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
@@ -799,16 +800,17 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
     if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % fasoIndex);
     llvm::StringRef sbuffer((const char*)of_start, of_length);
-    std::string uniqueName = llvmo::uniqueMemoryBufferName("buffer",header->_ObjectFiles[fasoIndex]._ObjectId, fasoIndex);
+    stringstream tryUniqueName;
+    tryUniqueName << filename << "-" << header->_ObjectFiles[fasoIndex]._ObjectId;
+    std::string uniqueName = llvmo::ensureUniqueMemoryBufferName(tryUniqueName.str());
     llvm::StringRef name(uniqueName);
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
-//    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(uniqueName,std::move(memoryBuffer),header->_ObjectFiles[fasoIndex]._ObjectId,jitDylib,filename,fasoIndex);
-    jit->addObjectFile( jitDylib, std::move(memoryBuffer), print.notnilp());
+    llvmo::ObjectFile_sp objectFile = jit->addObjectFile( jitDylib, std::move(memoryBuffer), print.notnilp(), header->_ObjectFiles[fasoIndex]._ObjectId );
+//    printf("%s:%d:%s addObjectFile objectFile = %p badge: 0x%0x jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__, objectFile.raw_(), lisp_badge(objectFile), jitDylib.raw_());
     T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[fasoIndex]._ObjectId,nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
-    llvmo::ObjectFile_sp codeObject;
-    jit->runStartupCode(jitDylib, str->get_std_string(), unbound<core::T_O>(), codeObject);
+    jit->runStartupCode(jitDylib, str->get_std_string(), unbound<core::T_O>());
   }
   return _lisp->_true();
 }

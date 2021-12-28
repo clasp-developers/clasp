@@ -574,8 +574,8 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
     #endif
 #endif
     auto jit_engine = gctools::GC<ClaspJIT_O>::allocate(false);
+    //llvm_sys__create_lljit_thread_pool();
     _lisp->_Roots._ClaspJIT = jit_engine;
-    llvm_sys__create_lljit_thread_pool();
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_dumpObjectFiles));
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {

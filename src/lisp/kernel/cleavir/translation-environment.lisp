@@ -115,9 +115,11 @@
           (error "BUG: Variable missing: ~a" variable))
       (ecase (bir:extent variable)
         (:local
-         (let ((alloca (or (gethash variable *datum-values*)
-                           (error "BUG: Variable missing: ~a" variable))))
-           (cmp:irc-t*-load alloca)))
+         (let* ((alloca (or (gethash variable *datum-values*)
+                            (error "BUG: Variable missing: ~a" variable)))
+                (rtype (first (cc-bmir:rtype variable)))
+                (alloca-type (vrtype->llvm rtype)))
+           (cmp:irc-typed-load alloca-type alloca)))
         (:dynamic
          (let ((alloca (or (gethash variable *datum-values*)
                            (error "BUG: DX cell missing: ~a" variable))))

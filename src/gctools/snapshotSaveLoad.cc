@@ -2795,7 +2795,6 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       gctools::clasp_ptr_t startVtables;
       gctools::clasp_ptr_t end;
       core::executableVtableSectionRange(startVtables,end);
-      DBG_SL(BF("7 allocate objects\n"));
       ISLHeader_s* next_header;
       ISLHeader_s* cur_header;
 
@@ -2806,7 +2805,9 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // Now we have the Lisp
     //
-    // Move the Lisp object into GC managed memory 
+    // Move the Lisp object into GC managed memory
+      DBG_SL(BF("7.1 Move lisp into main memory\n"));
+
       gctools::Header_s* lisp_source_header = NULL;
       {
         lisp_source_header = (gctools::Header_s*)GENERAL_PTR_TO_HEADER_PTR(theLoadedLisp);
@@ -2832,10 +2833,12 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // Initialize the ClaspJIT_O object
     //
+      DBG_SL(BF("7.2 Initialize ClaspJIT_O object\n"));
       core::core__update_max_jit_compile_counter(fileHeader->_global_JITCompileCounter);
       llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(_lisp->_Roots._ClaspJIT.raw_());
       llvmo::JITDylib_O* mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(claspJIT->_MainJITDylib.raw_());
       new (claspJIT) llvmo::ClaspJIT_O(true,mainJITDylib);
+      //llvm_sys__create_lljit_thread_pool();
       if (mainJITDylib->_Id != 0) {
         printf("%s:%d:%s The mainJITDylib _Id MUST be zero !!!  Instead it is: %lu\n", __FILE__, __LINE__, __FUNCTION__, mainJITDylib->_Id);
         abort();
@@ -2845,6 +2848,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     //
     // We need to handle the NIL object specially, we need to allocate it in GC memory first
     //
+      DBG_SL(BF("7.3 Handle NIL\n"));
       gctools::Header_s* nil_source_header = NULL;
       {
         core::T_sp theNil = ::_lisp->_Roots._NilObject;
@@ -2872,15 +2876,10 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     // We can't use gc::As<xxx>(...) at this point because we are working in the snapshot save/load buffer
     //  and the headers aren't the same as in main memory
     //
-#if 1
       using Jit = llvmo::ClaspJIT_sp;
 //      printf("%s:%d:%s Use the ClaspJIT\n", __FILE__, __LINE__, __FUNCTION__ );
       core::T_sp tjit = ::_lisp->_Roots._ClaspJIT;
-#else
-      using Jit = llvmo::ClaspLinkerJIT_sp;
-      printf("%s:%d:%s Use the ClaspLinkerJIT\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::T_sp tjit = ::_lisp->_Roots._ClaspLinkerJIT;
-#endif
+      DBG_SL(BF("7.4 Handle JITDylibs\n"));
       Jit jit;
       if (tjit.notnilp()) {
         jit = gc::As_unsafe<Jit>(tjit);
@@ -2888,6 +2887,13 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         while (cur.consp()) {
           llvmo::JITDylib_sp dy = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
           jit->registerJITDylibAfterLoad(&*dy);
+          DBG_OF(
+              printf("%s:%d:%s dy->_Id = %lu dy->_name = %s  dy.raw_() = %p\n",
+                     __FILE__, __LINE__, __FUNCTION__,
+                     dy->_Id,
+                     _rep_(dy->_name).c_str(),
+                     dy.raw_() );
+                 );
           if (dy->_Id == 0 && dy->_name->get_std_string() != "main") {
             printf("%s:%d:%s The JITDylib _Id must NOT be zero - that is reserved for the main JITDylib - name is %s!!\n", __FILE__, __LINE__, __FUNCTION__, _rep_(dy->_name).c_str() );
             abort();
@@ -2900,6 +2906,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       }
 
       std::vector<CodeFixup_t> codeFixups;
+      DBG_SL(BF("7.5 Link all the ObjectFiles\n"));
     
       size_t countNullObjects = 0;
       size_t objectFileCount = 0;
@@ -2940,18 +2947,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               char* of_start = (char*)malloc(loadedObjectFile->_ObjectFileSize);
               memcpy((void*)of_start, loadedObjectFileStart, objectFileSize );
               llvm::StringRef sbuffer((const char*)of_start, objectFileSize);
-              std::string uniqueName = loadedObjectFile->_CodeName->get_std_string(); //llvmo::uniqueMemoryBufferName("of",loadedObjectFile->_ObjectId, loadedObjectFile->_ObjectFileSize );
-              DBG_OF(
-                  printf("%s:%d:%s About to pass LLJIT ObjectFile_O @ %p name: %s\n      loadedObjectFile->_Name: %s\n        startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
-                         __FILE__, __LINE__, __FUNCTION__,
-                         loadedObjectFile,
-                         uniqueName.c_str(),
-                         _rep_(loadedObjectFile->_CodeName).c_str(),
-                         loadedObjectFile->_ObjectId,
-                         loadedObjectFile->_ObjectFileOffset,
-                         loadedObjectFile->_ObjectFileSize,
-                         of_start );
-                     );
+              std::string uniqueName = llvmo::ensureUniqueMemoryBufferName(loadedObjectFile->_CodeName->get_std_string());
               llvm::StringRef name(uniqueName);
               std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
               loadedObjectFile->_MemoryBuffer.reset();
@@ -2966,23 +2962,40 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               core::T_sp tallocatedObjectFile = gctools::GCObjectAllocator<core::General_O>::snapshot_save_load_allocate(&init);
               llvmo::ObjectFile_sp allocatedObjectFile = gc::As<llvmo::ObjectFile_sp>(tallocatedObjectFile);
               allocatedObjectFile->_State = llvmo::RunState;
+              DBG_OF(
+                  printf("%s:%d:%s About to pass LLJIT ObjectFile_O @ %p name: %s\n      loadedObjectFile->_Name: %s\n        startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
+                         __FILE__, __LINE__, __FUNCTION__,
+                         loadedObjectFile,
+                         uniqueName.c_str(),
+                         _rep_(loadedObjectFile->_CodeName).c_str(),
+                         loadedObjectFile->_ObjectId,
+                         loadedObjectFile->_ObjectFileOffset,
+                         loadedObjectFile->_ObjectFileSize,
+                         of_start );
+                     );
               registerObjectFile<gctools::SnapshotLoadStage>(allocatedObjectFile);
               codeFixups.emplace_back(CodeFixup_t(loadedObjectFile,&*allocatedObjectFile));
+              llvmo::JITDylib_sp jitdylib = allocatedObjectFile->_TheJITDylib;
               DBG_OF(
                   printf("%s:%d:%s About to pass a freshly allocated ObjectFile_O %p  name: %s  to the LLJIT\n"
                          "    loadedObjectFile %p\n"
-                         "    The unix object file is at %p size: %lu\n"
-                         "   - when we get it back in ClaspReturnObjectBuffer will it be at the same place?\n"
-                         "     Turn on DEBUG_OBJECT_FILES to find out where ClaspReturnObjectBuffer sees the object file\n"
-                         ,
+                         "    JITDylib = %p\n"
+                         "    The unix object file is at %p size: %lu\n",
                          __FILE__, __LINE__, __FUNCTION__,
                          (void*)&*allocatedObjectFile,
                          uniqueName.c_str(),
                          (void*)loadedObjectFile,
+                         jitdylib.raw_(),
                          of_start, objectFileSize );
                      );
-              llvmo::JITDylib_sp jitdylib = allocatedObjectFile->_TheJITDylib;
-              jit->addObjectFile( allocatedObjectFile->_TheJITDylib, std::move(allocatedObjectFile->_MemoryBuffer), false );
+              llvm::ExitOnError ExitOnErr;
+              llvm::orc::JITDylib* jd = jitdylib->wrappedPtr();
+              if (!jd) {
+                printf("%s:%d:%s JITDylib* is NULL\n", __FILE__, __LINE__, __FUNCTION__ );
+                abort();
+              }
+              ExitOnErr(jit->_LLJIT->addObjectFile( *jd, std::move(allocatedObjectFile->_MemoryBuffer)) );
+              
               gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
               DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p  for source_header: %p\n")
                               % (void*) obj.raw_()
@@ -2996,11 +3009,19 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               objectFileForwards[source_header] = (char*)fwd;
               root_holder.add((void*)allocatedObjectFile.raw_());
               objectFileCount++;
-              
+              if (loadedObjectFile->_ObjectId != allocatedObjectFile->_ObjectId) {
+                printf("%s:%d:%s The loadedObjectFile->_ObjectId %lu does not match the allocatedObjectFile->_ObjectId %lu\n",
+                       __FILE__, __LINE__, __FUNCTION__,
+                       loadedObjectFile->_ObjectId, allocatedObjectFile->_ObjectId);
+                abort();
+              }
               core::T_mv startupName = core::core__startup_linkage_shutdown_names(allocatedObjectFile->_ObjectId,nil<core::T_O>());
               core::String_sp str = gc::As<core::String_sp>(startupName);
               DBG_OF(
-                  printf("%s:%d:%s I added the ObjectFile to the LLJIT - startupName: %s  --- what do I do to get the code\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(str).c_str() );
+                  printf("%s:%d:%s I added the ObjectFile to the LLJIT  loadedObjectFile->_ObjectId = %lu startupName: %s  --- JITDylib %p\n",
+                         __FILE__, __LINE__, __FUNCTION__,
+                         loadedObjectFile->_ObjectId,
+                         core::_rep_(str).c_str(), jitdylib.raw_() );
                      );
           //
           // Everything after this will have to change when we do multicore startup.
@@ -3265,14 +3286,20 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       // This is where we move the literals and change the state of the new code
       //
         DBG_OF(
-            printf("%s:%d:%s  Fixup code old: %p new: %p  new literals start %p  size: %lu\n",
+            printf("%s:%d:%s\n"
+                   "     Fixup oldCodeClient: %p newCodeClient: %p\n"
+                   "       newCodeClient state = %s\n"
+                   "       new literals start %p  size: %lu\n",
                    __FILE__, __LINE__, __FUNCTION__,
-                   oldCodeClient, newCodeClient,
+                   oldCodeClient,
+                   newCodeClient,
+                   (newCodeClient->_State==llvmo::SaveState) ? "SaveState" : "LoadState",
                    (void*)newCodeClient->literalsStart(),
                    newCodeClient->literalsSize() );
                );
         DBG_OF(
             printf("%s:%d:%s This is where I would copy the literals from the oldCodeClient to the newCodeClient\n", __FILE__, __LINE__, __FUNCTION__ );
+            printf("%s:%d:%s   oldCodeClient->_CodeName -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(oldCodeClient->_CodeName).c_str() );
                );
         if (oldCodeClient->_State != llvmo::SaveState) {
           printf("%s:%d:%s The oldCodeClient at %p must be in SaveState\n", __FILE__, __LINE__, __FUNCTION__, oldCodeClient );

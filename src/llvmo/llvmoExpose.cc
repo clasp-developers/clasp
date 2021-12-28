@@ -178,11 +178,13 @@ CL_DEFUN void llvm_sys__debugObjectFiles(core::Symbol_sp sym) {
 
     
 
-std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size) {
-  stringstream ss;
-  ss << prefix;
-  ss << "#" << start;
-  return ss.str();
+std::string ensureUniqueMemoryBufferName(const std::string& name) {
+  if (countObjectFileNames(name)>0) {
+    stringstream ss;
+    ss << name << "-" << core::core__next_jit_compile_counter();
+    return ensureUniqueMemoryBufferName(ss.str());
+  }
+  return name;
 }
 
 /*! Return the id from a name with the format xxxx#num
@@ -4513,7 +4515,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    About to runStartupCode name = %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
   ObjectFile_sp codeObject;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Lookup %s in JITDylib_sp %p JITDylib* %p JITLINKDylib* %p\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str(), jit->getMainJITDylib().raw_(), jit->getMainJITDylib()->wrappedPtr(), llvm::cast<JITLinkDylib>(jit->getMainJITDylib()->wrappedPtr())));
-  replPtrRaw = jit->runStartupCode(jit->getMainJITDylib(), startupName, initialData, codeObject );
+  replPtrRaw = jit->runStartupCode(jit->getMainJITDylib(), startupName, initialData );
   core::T_O* closure = makeCompiledFunction((core::T_O*)replPtrRaw,nil<core::T_O>().raw_());
   core::Function_sp functoid((gctools::Tagged)closure);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));

@@ -305,8 +305,6 @@ using namespace llvm::jitlink;
 
 //void dumpObjectFile(const char* start, size_t size, void* codeStart = NULL );
 
- void registerObjectFile( ObjectFile_sp of );
-
 };
 
 namespace llvmo {
@@ -370,28 +368,18 @@ inline void allocateInCodeBlock( BasicLayout& BL, CodeBlock_sp& codeBlock ) {
 
 namespace llvmo {
 
-template <typename Stage = gctools::RuntimeStage>
-void registerObjectFile(ObjectFile_sp ofi)
-{
-//  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
-  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Adding to _lisp->_Roots._AllObjectFiles  %p \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (void*)ofi.raw_(), core::_rep_(ofi->_FasoName).c_str()));
-  if (ofi->_CodeName->length()==0) {
-    printf("%s:%d:%s Got zero length ObjectFile code name\n", __FILE__, __LINE__, __FUNCTION__ );
-  }
-  core::T_sp expected;
-  core::Cons_sp entry = core::Cons_O::createAtStage<Stage>(ofi,nil<core::T_O>());
-//  printf("%s:%d:%s Registering object file with name %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(ofi->_CodeName).c_str());
-  do {
-    expected = _lisp->_Roots._AllObjectFiles.load();
-    entry->rplacd(expected);
-  } while (!_lisp->_Roots._AllObjectFiles.compare_exchange_weak(expected,entry));
-}
-
 };
 
 
 namespace llvmo {
 core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point);
+
+
+
+size_t countObjectFileNames(const std::string& name);
+
+std::string createIRModuleObjectFileName(size_t startupId, std::string& prefix);
+bool verifyIRModuleObjectFileStartupSymbol(const std::string& name);
 
 ObjectFile_sp lookupObjectFile(const std::string& name );
 
@@ -402,6 +390,29 @@ void validateEntryPoint(core::T_sp code, const core::ClaspXepFunction& entry_poi
 void validateEntryPoint(core::T_sp code, const core::ClaspLocalFunction& entry_point );
 
 uintptr_t codeStart(core::T_sp codeOrLibrary);
+
+template <typename Stage = gctools::RuntimeStage>
+void registerObjectFile(ObjectFile_sp ofi)
+{
+  std::string name = ofi->_CodeName->get_std_string();
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Adding to _lisp->_Roots._AllObjectFiles  %p ofi->_CodeName = \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, (void*)ofi.raw_(), name.c_str()));
+  if (ofi->_CodeName->length()==0) {
+    printf("%s:%d:%s Got zero length ObjectFile code name\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
+  size_t count = countObjectFileNames(name);
+  if (count>0) {
+    printf("%s:%d:%s The object-file name %s is present %lu times\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), count );
+  }
+  core::T_sp expected;
+  core::Cons_sp entry = core::Cons_O::createAtStage<Stage>(ofi,nil<core::T_O>());
+//  printf("%s:%d:%s Registering object file with name %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(ofi->_CodeName).c_str());
+  do {
+    expected = _lisp->_Roots._AllObjectFiles.load();
+    entry->rplacd(expected);
+  } while (!_lisp->_Roots._AllObjectFiles.compare_exchange_weak(expected,entry));
+}
+
+
 };
 
 #endif // code_H

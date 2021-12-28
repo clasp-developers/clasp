@@ -277,7 +277,7 @@ public:
         JITDylib* jitdylib = one->wrappedPtr();
         JITLinkDylib* jitlinkdylib = llvm::cast<JITLinkDylib>(jitdylib);
         if (jitlinkdylib == JD) theJITDylib = one;
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s one JITDylib_sp = %p JITDylib* = %p JITLinkDylib* = %p\n", __FILE__, __LINE__, __FUNCTION__, one.raw_(), one->wrappedPtr(), llvm::cast<JITLinkDylib>(one->wrappedPtr()) ));
+        //DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s one JITDylib_sp = %p JITDylib* = %p JITLinkDylib* = %p\n", __FILE__, __LINE__, __FUNCTION__, one.raw_(), one->wrappedPtr(), llvm::cast<JITLinkDylib>(one->wrappedPtr()) ));
         cur = gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(cur)->cdr();
       }
       if (theJITDylib.unboundp()) {
@@ -288,17 +288,9 @@ public:
       ObjectFile_sp codeObject;
       size_t objectId = objectIdFromName(G.getName());
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to allocate ObjectFile_sp with name %s  objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str(), objectId ));
-      if (snapshotSaveLoad::global_InSnapshotLoad) {
-//        codeObject = gc::GC<ObjectFile_O>::allocate<gctools::SnapshotLoadStage>( codeName, codeBlock, theJITDylib, objectId );
-//        registerObjectFile<gctools::SnapshotLoadStage>(codeObject);
-        codeObject = lookupObjectFile(G.getName());
-        codeObject->_CodeBlock = codeBlock;
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s looked up codeObject = %p with name: %s\n", __FILE__, __LINE__, __FUNCTION__, codeObject.raw_(), _rep_(codeName).c_str() ));
-      } else {
-        codeObject = gc::GC<ObjectFile_O>::allocate<gctools::RuntimeStage>( codeName, codeBlock, theJITDylib, objectId );
-        registerObjectFile<gctools::RuntimeStage>(codeObject);
-      }
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s codeObject ptr %p\n", __FILE__, __LINE__, __FUNCTION__, codeObject.raw_() ));
+      codeObject = lookupObjectFile(G.getName());
+      codeObject->_CodeBlock = codeBlock;
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s looked up codeObject = %p with name: %s\n", __FILE__, __LINE__, __FUNCTION__, &*codeObject, _rep_(codeName).c_str() ));
     } else {
       for ( auto& KV : BL.segments() ) {
 #ifdef DEBUG_OBJECT_FILES
@@ -456,6 +448,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     uintptr_t textEnd = 0;
     bool gotGcroots = false;
     ObjectFile_sp currentCode = lookupObjectFile(G.getName());
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     currentCode: %p\n", __FILE__, __LINE__, __FUNCTION__, &*currentCode ));
     for (auto &S : G.sections()) {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  section: %s getOrdinal->%u \n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
       std::string sectionName = S.getName().str();
@@ -575,6 +568,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         if (pos != std::string::npos) {
           found_literals = true;
           currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress();
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode = %p  _LiteralVectorStart -> %p\n",
+                                    __FILE__, __LINE__, __FUNCTION__,
+                                    &*currentCode, (void*)currentCode->_LiteralVectorStart ));
           size_t symbolSize = (size_t)ssym->getSize();
           if (symbolSize==1) {
             // A symbol of size 1 is really zero
@@ -664,9 +660,16 @@ thread_pool<ThreadManager>* global_thread_pool;
 /*! Call this after fork() to create a thread-pool for lljit
  */
 CL_DEFUN void llvm_sys__create_lljit_thread_pool() {
-  unsigned int threads = std::thread::hardware_concurrency()/2;
-  if (threads == 0) threads = 1;
-  global_thread_pool = new thread_pool<ThreadManager>(threads);
+  size_t num_threads = 0;
+  const char* jit_threads = getenv("CLASP_JIT_THREADS");
+  if (jit_threads) {
+    num_threads = atoi(jit_threads);
+    printf("%s:%d:%s Set JIT num_threads to %lu\n", __FILE__, __LINE__, __FUNCTION__, num_threads );
+  } else {
+    num_threads = std::thread::hardware_concurrency()/2;
+    if (num_threads==0) num_threads = 1;
+  }
+  global_thread_pool = new thread_pool<ThreadManager>(num_threads);
 #if 0
   ClaspJIT_O* jit = &*gctools::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
   jit->_LLJIT->getExecutionSession().setDispatchTask([jit](std::unique_ptr<Task> T) {
@@ -737,6 +740,8 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
   }
 //  printf("%s:%d Creating ClaspJIT_O  globalPrefix = %c\n", __FILE__, __LINE__, this->_LLJIT->getDataLayout().getGlobalPrefix());
   this->_LLJIT->getMainJITDylib().addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
+  llvm_sys__create_lljit_thread_pool();
+
 }
 
 
@@ -805,21 +810,28 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
   return nil<core::T_O>();
 }
 
-        
+ObjectFile_sp prepareObjectFileForMaterialization(JITDylib_sp dylib, const std::string& uniqueObjectFileName, size_t objectId ) {
+  core::SimpleBaseString_sp sbs = core::SimpleBaseString_O::make(uniqueObjectFileName);
+  ObjectFile_sp codeObject = gc::GC<ObjectFile_O>::allocate<gctools::RuntimeStage>( sbs, unbound<CodeBlock_O>(), dylib, objectId );
+  registerObjectFile<gctools::RuntimeStage>(codeObject);
+  return codeObject;
+};
     
-CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context, size_t startupID) {
+CL_DEFMETHOD ObjectFile_sp ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context, size_t startupID) {
 //  printf("%s:%d:%s module = %p\n", __FILE__, __LINE__, __FUNCTION__, module.raw_() );
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
   std::unique_ptr<llvm::MemoryBuffer> empty;
-  stringstream ssname;
-  ssname << "Module" << startupID;
-  module->wrappedPtr()->setModuleIdentifier(ssname.str());
+  std::string prefix;
+  std::string futureName = createIRModuleObjectFileName(startupID,prefix);
+  module->wrappedPtr()->setModuleIdentifier(prefix);
+  ObjectFile_sp codeObject = prepareObjectFileForMaterialization( dylib, futureName, startupID );
   ExitOnErr(this->_LLJIT->addIRModule( *dylib->wrappedPtr(), llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr()) ));
+  return codeObject;
 }
 
 
-void ClaspJIT_O::addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print)
+ObjectFile_sp ClaspJIT_O::addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print, size_t startupId )
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
   //  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
@@ -829,14 +841,16 @@ void ClaspJIT_O::addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm::MemoryB
   std::unique_ptr<llvm::MemoryBuffer> empty;
 //  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::createForObjectFile(objectFile->getBufferIdentifier().str(), dylib );
   llvm::ExitOnError ExitOnErr;
+  ObjectFile_sp codeObject = prepareObjectFileForMaterialization( dylib, objectFile->getBufferIdentifier().str(), startupId );
   ExitOnErr(this->_LLJIT->addObjectFile(*dylib->wrappedPtr(),std::move(objectFile)));
+  return codeObject;
 }
 
 /*
  * runLoadtimeCode 
  */
 __attribute__((optnone))
-void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startupName, core::T_sp initialDataOrUnbound, ObjectFile_sp& codeObject )
+void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startupName, core::T_sp initialDataOrUnbound )
 {
   JITDylib& dylib = *dylibsp->wrappedPtr();
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
@@ -856,11 +870,6 @@ void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startup
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from startup function with %p\n", __FILE__, __LINE__, __FUNCTION__, replPtrRaw ));
     // Clear out the current ObjectFile and Code
     // printf("%s:%d:%s I need the name of the object file and then look it up\n", __FILE__, __LINE__, __FUNCTION__ );
-#if 0    
-    codeObject= my_thread->topObjectFile()->_Code;
-    codeObject->_gcroots = my_thread->_GCRootsInModule;
-    my_thread->popObjectFile();
-#endif
     return (void*)replPtrRaw;
   }
   // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
@@ -870,11 +879,6 @@ void* ClaspJIT_O::runStartupCode(JITDylib_sp dylibsp, const std::string& startup
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s The startup functions were INVOKED\n", __FILE__, __LINE__, __FUNCTION__ ));
     // Clear out the current ObjectFile and Code
     //printf("%s:%d:%s I need the name of the object file and then look it up\n", __FILE__, __LINE__, __FUNCTION__ );
-#if 0    
-    codeObject= my_thread->topObjectFile()->_Code;
-    codeObject->_gcroots = my_thread->_GCRootsInModule;
-    my_thread->popObjectFile();
-#endif
     return result;
   }
   SIMPLE_ERROR(BF("No startup functions are waiting after runInitializers\n"));
@@ -942,7 +946,6 @@ void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
 
 
 void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
-  
   core::SimpleBaseString_sp name = jitDylib->_name;
   std::string sname = name->get_std_string();
   auto dy = this->_LLJIT->getJITDylibByName(sname);

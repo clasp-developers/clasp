@@ -148,6 +148,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "export CLASP_FEATURES=clasp-builder-repl  # Set *features* (separate multiple features with spaces)\n"
              "export CLASP_FEATURES=dump-repl-object-files  # Dump all repl object files to /tmp/clasp_repl_xxx.o\n"
              "export CLASP_FEATURES=debug-object-files  # Dump lots of info on object file creation\n"
+             "export CLASP_JIT_THREADS=1... # Define the number of threads the JIT will use\n"
              "export CLASP_MEMORY_PROFILE <size-threshold> <number-theshold> # Options means call \n"
              "                      # HitAllocationSizeThreshold every time 16000000 bytes are allocated\n"
              "                      # and call HitAllocationNumberThreshold every time 1024 allocations take place\n"

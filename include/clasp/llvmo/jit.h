@@ -131,12 +131,12 @@ public:
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
   void registerJITDylibAfterLoad(JITDylib_O* jitDylib);
   
-  void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context, size_t startupID);
-  void addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print );
+  ObjectFile_sp addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context, size_t startupID);
+  ObjectFile_sp addObjectFile( JITDylib_sp dylib, std::unique_ptr<llvm::MemoryBuffer> objectFile, bool print, size_t startupId );
   /*! Return a pointer to a function WHAT FUNCTION???????
         llvm_sys__jitFinalizeReplFunction needs to build a closure over it
    */
-  void* runStartupCode(JITDylib_sp dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, ObjectFile_sp& codeObject );
+  void* runStartupCode(JITDylib_sp dylib, const std::string& startupName, core::T_sp initialDataOrUnbound );
   ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib = NULL);
   ~ClaspJIT_O();
 public:

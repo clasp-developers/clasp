@@ -533,7 +533,7 @@ CL_DEFUN DWARFContext_sp DWARFContext_O::createDWARFContext(ObjectFile_sp ofi) {
   llvm::StringRef sbuffer((const char*)ofi->_MemoryBuffer->getBufferStart(), ofi->_MemoryBuffer->getBufferSize());
   stringstream ss;
   ss << "DWARFContext/" << ofi->_FasoName;
-  std::string uniqueName = uniqueMemoryBufferName(ss.str(),ofi->_ObjectId, ofi->_FasoIndex);
+  std::string uniqueName = ensureUniqueMemoryBufferName(ss.str());
   llvm::StringRef name(uniqueName);
 //  printf("%s:%d uniqueName = %s\n", __FILE__, __LINE__, uniqueName.c_str());
   std::unique_ptr<llvm::MemoryBuffer> mbuf = llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false);
