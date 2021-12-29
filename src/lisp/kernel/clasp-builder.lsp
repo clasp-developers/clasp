@@ -520,7 +520,6 @@ Return files."
                      (child-stderr (core:mkstemp-fd "clasp-build-stderr")))
                  (multiple-value-bind (maybe-error pid-or-error child-stream)
                      (core:fork-redirect child-stdout child-stderr)
-                   (llvm-sys:create-lljit-thread-pool)
                    (if maybe-error
                        (error "Could not fork when trying to build ~a" entries)
                        (let ((pid pid-or-error))
@@ -531,6 +530,7 @@ Return files."
                                #+(or)(progn
                                        (core:bformat t "A child started up with pid %d - sleeping for 10 seconds%N" (core:getpid))
                                        (sleep 10))
+                               (llvm-sys:create-lljit-thread-pool)
                                (ext:disable-debugger)
                                (let ((new-sigset (core:make-cxx-object 'core:sigset))
                                      (old-sigset (core:make-cxx-object 'core:sigset)))

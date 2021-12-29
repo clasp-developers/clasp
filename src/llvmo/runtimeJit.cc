@@ -660,16 +660,7 @@ thread_pool<ThreadManager>* global_thread_pool;
 /*! Call this after fork() to create a thread-pool for lljit
  */
 CL_DEFUN void llvm_sys__create_lljit_thread_pool() {
-  size_t num_threads = 0;
-  const char* jit_threads = getenv("CLASP_JIT_THREADS");
-  if (jit_threads) {
-    num_threads = atoi(jit_threads);
-    printf("%s:%d:%s Set JIT num_threads to %lu\n", __FILE__, __LINE__, __FUNCTION__, num_threads );
-  } else {
-    num_threads = std::thread::hardware_concurrency()/2;
-    if (num_threads==0) num_threads = 1;
-  }
-  global_thread_pool = new thread_pool<ThreadManager>(num_threads);
+  global_thread_pool = new thread_pool<ThreadManager>(thread_pool<ThreadManager>::sane_number_of_threads());
 #if 0
   ClaspJIT_O* jit = &*gctools::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
   jit->_LLJIT->getExecutionSession().setDispatchTask([jit](std::unique_ptr<Task> T) {

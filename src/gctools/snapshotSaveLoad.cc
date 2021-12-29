@@ -2915,7 +2915,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       // Link all the code objects
         MaybeTimeStartup time5("Object file linking");
         using TP = thread_pool<ThreadManager>;
-        TP pool(TP::half_hardware_concurrency());
+        TP pool(TP::sane_number_of_threads());
 //        printf("%s:%d:%s Started thread pool\n", __FILE__, __LINE__, __FUNCTION__ );
         for ( cur_header = start_header; cur_header->_Kind != End; ) {
           DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );
@@ -3501,7 +3501,7 @@ namespace snapshotSaveLoad {
 
 CL_DEFUN void gctools__test_thread_pool() {
   using TP = thread_pool<ThreadManager>;
-  TP pool(TP::half_hardware_concurrency());
+  TP pool(TP::sane_number_of_threads());
   printf("Starting thread pool\n");
   for ( size_t ii = 0; ii< 100; ii++ ) {
     pool.push_task(

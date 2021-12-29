@@ -52,7 +52,7 @@ class thread_pool
   thread_pool(const ui32 &_thread_count = std::thread::hardware_concurrency())
      : thread_count(_thread_count ? _thread_count : std::thread::hardware_concurrency()), threads(new std::thread[_thread_count ? _thread_count : std::thread::hardware_concurrency()])
   {
-    // printf("%s:%d:%s Starting up\n", __FILE__, __LINE__, __FUNCTION__ );
+    printf("%s:%d:%s Starting up with thread_count = %u\n", __FILE__, __LINE__, __FUNCTION__, thread_count );
     create_threads();
     for ( ui32 i = 0; i < thread_count; i++ ) {
       this->manager.register_thread(threads[i]);
@@ -87,10 +87,17 @@ class thread_pool
     return tasks.size();
   }
 
-  static ui32 half_hardware_concurrency() {
-    ui32 num = std::thread::hardware_concurrency()/2;
-    if (num==0) num = 1;
-    return num;
+  static ui32 sane_number_of_threads() {
+    size_t num_threads = 0;
+    const char* jit_threads = getenv("CLASP_JIT_THREADS");
+    if (jit_threads) {
+      num_threads = atoi(jit_threads);
+      printf("%s:%d:%s Set JIT num_threads using CLASP_JIT_THREADS to %lu\n", __FILE__, __LINE__, __FUNCTION__, num_threads );
+    } else {
+      num_threads = std::thread::hardware_concurrency()/2;
+      if (num_threads==0) num_threads = 1;
+    }
+    return num_threads;
   }
     
     /**
