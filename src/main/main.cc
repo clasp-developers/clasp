@@ -525,6 +525,10 @@ int main( int argc, char *argv[] )
       llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrint;
     }
   }
+  const char* jls = getenv("CLASP_JIT_LOG_SYMBOLS");
+  if (jls) {
+    core::global_jit_log_symbols = true;
+  }
   
   // Do not touch debug log until after MPI init
 

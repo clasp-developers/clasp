@@ -111,7 +111,7 @@ void transfer_StartupInfo_to_my_thread();
 T_mv core__startup_linkage_shutdown_names(size_t id=0, core::T_sp prefix=nil<core::T_O>());
 void clasp_unpack_faso(const std::string& path_designator);
 void startup_shutdown_names( size_t id, const std::string& prefix, std::string& start, std::string& shutdown );
-
+extern bool global_jit_log_symbols;
 }
 
 #endif /* _compiler_H_ */

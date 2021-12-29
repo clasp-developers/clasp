@@ -40,6 +40,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcFunctions.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/cxxObject.h>
@@ -816,9 +817,34 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
 }
 
 
+int global_jit_pid = -1;
+FILE* global_jit_log_stream = NULL;
+bool global_jit_log_symbols = false;
+
+void jit_register_symbol( const std::string& name, size_t size, void* address ) {
+  WITH_READ_WRITE_LOCK(globals_->_JITLogMutex);
+  int gpid = getpid();
+  if (global_jit_log_stream && (global_jit_pid!=gpid)) {
+    fclose(global_jit_log_stream);
+    global_jit_log_stream = NULL;
+    global_jit_pid = -1;
+  }
+  if (global_jit_pid == -1) {
+    global_jit_pid = gpid;
+    stringstream filename;
+    filename << "/tmp/perf-" << gpid << ".map";
+    global_jit_log_stream = fopen(filename.str().c_str(),"w");
+  }
+  if (global_jit_log_stream) {
+    fprintf( global_jit_log_stream, "%0lx %lx %s\n", (uintptr_t)address, size, name.c_str() );
+    fflush(global_jit_log_stream);
+  }
+}
 
 CL_DEFUN void core__jit_register_symbol( const std::string& name, size_t size, void* address ) {
-  // Do nothing right now
+  if (global_jit_log_symbols) {
+    jit_register_symbol( name, size, address );
+  }
 }
 
 

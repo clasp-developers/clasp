@@ -214,6 +214,7 @@ struct globals_t {
   mutable mp::SharedMutex _SourceFilesMutex; // Protect _SourceFileIndices
   mutable mp::SharedMutex _PackagesMutex; // Protect _PackageNameIndexMap
   mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
+  mutable mp::SharedMutex _JITLogMutex; // Protect _jit logging
   mutable mp::SharedMutex _UnixSignalHandlersMutex; // Protect _UnixSignalHandlers
   mutable mp::SharedMutex _CodeBlocksMutex;
 #ifdef DEBUG_MONITOR_SUPPORT
@@ -279,6 +280,7 @@ public:
                 _MonitorMutex(LOGMUTEX_NAMEWORD),
 #endif
                 _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD),
+                _JITLogMutex(JITLOG___NAMEWORD),
                 _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD),
                 _CodeBlocksMutex(CODEBLOK_NAMEWORD),
                 _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings

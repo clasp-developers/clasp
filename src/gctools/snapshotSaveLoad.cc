@@ -3487,6 +3487,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
   //
 
   global_InSnapshotLoad = false;
+ 
   return exitCode;
 }
 
