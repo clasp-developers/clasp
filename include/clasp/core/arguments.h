@@ -184,7 +184,7 @@ public:
   Vaslist VaRest;
 
 public:
-  StackFrameDynamicScopeManager(LambdaListHandler_sp llh, size_t numberOfSpecialBindings, SpecialBinding* bindings, gc::Frame* fP, size_t totalBindings) : ValueEnvironmentDynamicScopeManager(numberOfSpecialBindings,bindings,(lisp_LambdaListHandlerIsTrivial(llh) ? nil<ValueEnvironment_O>() : ValueEnvironment_O::createSingleTopLevelEnvironment(totalBindings))), frame(*fP) {};
+  StackFrameDynamicScopeManager(LambdaListHandler_sp llh, size_t numberOfSpecialBindings, SpecialBinding* bindings, gc::Frame* fP, size_t totalBindings) : ValueEnvironmentDynamicScopeManager(numberOfSpecialBindings,bindings,( lisp_lambdaListHandlerNeedsValueEnvironment(llh) ? ValueEnvironment_O::createSingleTopLevelEnvironment(totalBindings) : nil<ValueEnvironment_O>() )), frame(*fP) {};
 public:
   virtual void va_rest_binding(const Argument &argument);
   virtual void new_binding(const Argument &argument, T_sp val);

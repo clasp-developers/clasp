@@ -1242,10 +1242,10 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
 /*! Trivial initializers are atomic values that aren't non-keyword symbols
 */
 bool initializerIsTrivial(T_sp initializer) {
-  if (it->_Default.consp()) {
+  if (initializer.consp()) {
     return false;
-  } else if (gc::IsA<Symbol_sp>(it->_Default)) {
-    Symbol_sp sdefault = gc::As_unsafe<Symbol_sp>(it->_Default);
+  } else if (gc::IsA<Symbol_sp>(initializer)) {
+    Symbol_sp sdefault = gc::As_unsafe<Symbol_sp>(initializer);
     if (!sdefault->isKeywordSymbol()) {
       return false;
     }
@@ -1293,7 +1293,7 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
   { // auxes arguments   auxs = (num aux1 init1 ...)
     for ( auto it = this->_AuxArguments.begin();
           it != this->_AuxArguments.end(); it++) {
-      if (!initializerIsTrivial(it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
+      if (!initializerIsTrivial(it->_Expression)) goto NEEDS_VALUE_ENVIRONMENT;
     }
   }
   return;

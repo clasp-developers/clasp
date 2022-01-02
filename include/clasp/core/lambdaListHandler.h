@@ -129,7 +129,7 @@ GCPROTECTED: // instance variables
   int _NumberOfLexicalVariables;
   bool _RequiredLexicalArgumentsOnly;
   T_sp _LexicalVariableNamesForDebugging;
-
+  bool _NeedsValueEnvironment;
 public:
   typedef gctools::Vec0<RequiredArgument>::iterator requiredArgumentIterator;
   typedef gctools::Vec0<RequiredArgument>::const_iterator const_requiredArgumentIterator;
@@ -140,7 +140,7 @@ public:
 
 public:
   //! Return true if the lambda-list handler doesn't need a ValueEnvironment_O when it is applied
-  bool trivialp() const { return true; };
+  bool needsValueEnvironmentP() const { return this->_NeedsValueEnvironment; };
 public:
   /*! The context can be 'ORDINARY, 'MACRO and other values - see throw_if_invalid_context */
   static LambdaListHandler_sp makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context);

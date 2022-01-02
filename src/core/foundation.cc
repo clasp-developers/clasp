@@ -156,8 +156,8 @@ union NW {
   char name[8];
 };
 
-bool lisp_LambdaListHandlerIsTrivial(LambdaListHandler_sp llh) {
-  return llh->trivialp();
+bool lisp_lambdaListHandlerNeedsValueEnvironment(LambdaListHandler_sp llh) {
+  return llh->needsValueEnvironmentP();
 }
 
 uint64_t lisp_nameword(core::T_sp name)
