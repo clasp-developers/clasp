@@ -1569,7 +1569,7 @@ clos_stream_column(T_sp strm) {
   /* FIXME! The Gray streams specifies NIL is a valid
 	 * value but means "unknown". Should we make it
 	 * zero? */
-  return col.nilp() ? 0 : clasp_to_integral<int>(col);
+  return col.nilp() ? -1 : clasp_to_integral<int>(clasp_floor1(gc::As<Real_sp>(col)));
 }
 
 static T_sp

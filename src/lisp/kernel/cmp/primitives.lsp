@@ -184,9 +184,9 @@
 
          (primitive         "cc_list" :t* (list :size_t) :varargs t)
          (primitive         "cc_mvcGatherRest" :t* (list :size_t :t* :size_t))
-         (primitive         "cc_gatherRestArguments" :t* (list :t* :size_t))
-         (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :t* :size_t :t**))
-         (primitive         "cc_gatherVaRestArguments" :t* (list :t* :size_t :vaslist*))
+         (primitive         "cc_gatherRestArguments" :t* (list :vaslist* :size_t))
+         (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :vaslist* :size_t :t**))
+         (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
 
          (primitive         "initializeBlockClosure" :t* (list :t**))
@@ -250,6 +250,7 @@
          (primitive         "acosh" :double-float (list :double-float))
          (primitive         "atanh" :double-float (list :double-float))
 
+         (primitive         "llvm.umin.i64" :i64 (list :i64 :i64))
          (primitive         "llvm.umax.i64" :i64 (list :i64 :i64))
          
          (primitive         "llvm.experimental.stackmap" :void (list :i64 :i32) :varargs t)
@@ -308,6 +309,8 @@
          (primitive         "cc_remove_gcroots_in_module" :void (list :gcroots-in-module* ))
          (primitive-unwinds "cc_invoke_sub_run_all_function" :void (list :fn-start-up*))
          (primitive-unwinds "cc_invoke_byte_code_interpreter" :void (list :gcroots-in-module* :i8* :size_t))
+
+         (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
 
          (primitive-unwinds "cc_enclose" :t* (list
                                               :t*

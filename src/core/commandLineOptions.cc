@@ -109,6 +109,8 @@ void process_clasp_arguments(CommandLineOptions* options)
              " debug-run-clang     - Print every clang invocation\n"
              " compile-file-debug-dump-module - Dump compile-file modules\n"
              " compile-debug-dump-module - Dump compile modules\n"
+             " check-tags          - Generate code where runtime tag checks are inserted\n"
+             " check-word-aligned-loads - Generate code where word aligned load checks are inserted\n"
              " exit-backtrace      - Print a backtrace if a non-zero exit code is used to exit\n"
              " pause-pid           - Print the PID and pause at startup for a debugger to attach\n"
              " ignore-extensions   - Ignore any extensions startup scripts\n"

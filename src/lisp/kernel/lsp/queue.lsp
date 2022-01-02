@@ -33,6 +33,10 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
+#+(or)
+(eval-when (:execute)
+  (format t "Setting core:*echo-repl-read* to T~%")
+  (setq core:*echo-repl-read* t))
 
 
 #+(or)
@@ -41,6 +45,11 @@
 
 (in-package :core)
 (export '(make-queue queuep atomic-enqueue dequeue dequeue-timed queue-count queue-emptyp))
+
+#+(or)
+(eval-when (:compile-toplevel :execute)
+  (gctools:wait-for-user-signal "About to crash"))
+
 
 (defstruct (queue
             (:constructor make-queue

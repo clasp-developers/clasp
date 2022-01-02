@@ -33,6 +33,7 @@
                (:file "translation-environment")
                (:file "bir")
                (:file "bmir")
+               (:file "vaslist")
                (:file "bir-to-bmir")
                (:file "representation-selection")
                (:file "landing-pad")

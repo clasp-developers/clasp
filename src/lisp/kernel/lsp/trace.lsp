@@ -245,9 +245,9 @@ all functions."
 (defun trace-print (direction fname vals &rest extras)
   (let ((indent (min (* (1- *trace-level*) 2) *trace-max-indent*))
         (*print-circle* t))
+    (fresh-line *trace-output*)
     (princ
      (with-output-to-string (*trace-output*)
-       (fresh-line *trace-output*)
        (case direction
          (ENTER
           (multiple-value-bind (bars rem)

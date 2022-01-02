@@ -102,8 +102,7 @@
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)
   (:local-nicknames (#:bir #:cleavir-bir))
-  (:export #:reduce-module-typeqs)
-  (:export #:reduce-module-primops)
+  (:export #:reduce-module-instructions)
   (:export #:assign-module-rtypes #:insert-casts-into-module))
 
 (defpackage #:clasp-cleavir-bmir
@@ -113,7 +112,18 @@
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store #:cas)
-  (:export #:cast #:unboxed-constant-reference)
-  (:export #:datum #:output #:phi #:variable)
+  (:export #:cast #:unboxed-constant-reference
+           #:mtf #:fixed-mv-call #:fixed-mv-local-call)
+  (:export #:datum #:output #:phi #:variable #:argument)
   (:export #:rtype)
   (:export #:cast-one))
+
+(defpackage #:clasp-cleavir-vaslist
+  (:nicknames #:cc-vaslist)
+  (:local-nicknames (#:bir #:cleavir-bir)
+                    (#:set #:cleavir-set)
+                    (#:attributes #:cleavir-attributes))
+  (:shadow #:values-list)
+  (:export #:values-list #:nendp)
+  (:export #:maybe-transform-module)
+  (:export #:vaslistablep))

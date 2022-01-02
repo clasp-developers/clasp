@@ -212,7 +212,7 @@ void StackFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp v
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
   gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, val.raw_() );
-  this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val );
+  if (this->_Environment.notnilp()) this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val );
 }
 
 void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
@@ -223,7 +223,7 @@ void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
   Vaslist_sp valist(&this->valist());
   gctools::fill_frame_one_indexed( &this->frame, argument._ArgTargetFrameIndex, valist.raw_() );
   T_sp val((gctools::Tagged)valist.raw_());
-  this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val );
+  if (this->_Environment.notnilp()) this->_Environment->new_binding(gc::As<Symbol_sp>(argument._ArgTarget), argument._ArgTargetFrameIndex, val );
 }
 
 void StackFrameDynamicScopeManager::ensureLexicalElementUnbound( const Argument& argument) {

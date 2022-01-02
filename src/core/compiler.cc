@@ -82,6 +82,7 @@ namespace core {
 
 
 std::atomic<size_t> global_jit_compile_counter;
+std::atomic<size_t> global_jit_unique_counter;
 
 DOCGROUP(clasp)
 CL_DEFUN size_t core__get_jit_compile_counter() {
@@ -101,6 +102,11 @@ CL_DEFUN void core__update_max_jit_compile_counter(size_t val) {
 DOCGROUP(clasp)
 CL_DEFUN size_t core__next_jit_compile_counter() {
   return ++global_jit_compile_counter;
+}
+
+DOCGROUP(clasp)
+CL_DEFUN size_t core__next_jit_unique_counter() {
+  return ++global_jit_unique_counter;
 }
 
 

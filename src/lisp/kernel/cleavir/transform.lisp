@@ -49,7 +49,7 @@
           and return t))
 
 (defmethod cleavir-bir-transformations:transform-call
-    ((system clasp) key call)
+    ((system clasp) key (call bir:call))
   (let ((trans (gethash key *bir-transformers*)))
     (if trans
         (maybe-transform call trans)
@@ -118,11 +118,15 @@
                                            (progn ,@body)))))))
 
 (defmacro define-deriver (name deriver-name)
-  `(setf (gethash ',name *derivers*) '(,deriver-name)))
+  `(setf (gethash ',name *derivers*) ',deriver-name))
 
-(defmethod bir-transformations:derive-return-type ((inst bir:call) deriver
-                                                   (system clasp))
-  (funcall (fdefinition deriver) inst))
+(defmethod bir-transformations:derive-return-type ((inst bir:call) identity
+                                                   argstype (system clasp))
+  (declare (ignore argstype))
+  (let ((deriver (gethash identity *derivers*)))
+    (if deriver
+        (funcall deriver inst)
+        (call-next-method))))
 
 ;;;
 

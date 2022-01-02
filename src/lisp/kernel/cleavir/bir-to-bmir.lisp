@@ -1,5 +1,14 @@
 (in-package #:cc-bir-to-bmir)
 
+;;; This file handles miscellaneous bir-to-bmir reductions.
+;;; So far they all operate on the level of single instructions,
+;;; though they may also add a few instructions in place.
+
+;;; Transform an instruction. Called for effect.
+(defgeneric reduce-instruction (instruction)
+  ;; Default instruction: Do nothing.
+  (:method ((instruction bir:instruction))))
+
 (defun process-typeq-type (ts)
   ;; Undo some parsing. KLUDGE.
   (cond
@@ -29,7 +38,7 @@
      'function)
     (t ts)))
 
-(defun replace-typeq (typeq)
+(defmethod reduce-instruction ((typeq bir:typeq-test))
   (let ((ts (process-typeq-type (bir:test-ctype typeq))))
     (case ts
       ((fixnum) (change-class typeq 'cc-bmir:fixnump))
@@ -43,22 +52,7 @@
                   (change-class typeq 'cc-bmir:headerq :info header-info))
                  (t (error "BUG: Typeq for unknown type: ~a" ts))))))))
 
-(defun reduce-local-typeqs (function)
-  (bir:map-iblocks
-   (lambda (ib)
-     (let ((term (bir:end ib)))
-       (when (typep term 'bir:ifi)
-         (let ((test-out (bir:input term)))
-           (when (typep test-out 'bir:output)
-             (let ((test (bir:definition test-out)))
-               (when (typep test 'bir:typeq-test)
-                 (replace-typeq test))))))))
-   function))
-
-(defun reduce-module-typeqs (module)
-  (cleavir-bir:map-functions #'reduce-local-typeqs module))
-
-(defun maybe-replace-primop (primop)
+(defmethod reduce-instruction ((primop bir:primop))
   (case (cleavir-primop-info:name (bir:info primop))
     ((cleavir-primop:car)
      (let ((in (bir:inputs primop))
@@ -105,12 +99,50 @@
          (bir:insert-instruction-before mr primop)
          (setf (bir:inputs primop) (list (second in) nout)))))))
 
-(defun reduce-primops (function)
-  (bir:map-local-instructions
-   (lambda (i)
-     (when (typep i 'bir:primop)
-       (maybe-replace-primop i)))
-   function))
+(defmethod reduce-instruction ((inst bir:fixed-values-save))
+  ;; Reduce to MTF.
+  ;; We don't bother merging iblocks because we're done with optimizations
+  ;; that would use that information anyway.
+  (bir:insert-instruction-before
+   (make-instance 'cc-bmir:mtf
+     :origin (bir:origin inst) :policy (bir:policy inst)
+     :nvalues (bir:nvalues inst)
+     :inputs (bir:inputs inst) :outputs (bir:outputs inst))
+   inst)
+  (bir:replace-terminator
+   (make-instance 'bir:jump
+     :origin (bir:origin inst) :policy (bir:policy inst)
+     :inputs () :outputs () :next (bir:next inst))
+   inst))
 
-(defun reduce-module-primops (module)
-  (cleavir-set:mapset nil #'reduce-primops (bir:functions module)))
+(defmethod reduce-instruction ((inst bir:mv-call))
+  ;; Reduce to cc-bmir:fixed-mv-call if the type has a fixed # of values.
+  ;; FIXME: Is it a good idea to use type information this late? It
+  ;; ought to be harmless, but it's different.
+  (let* ((args (second (bir:inputs inst)))
+         (argsct (bir:ctype args))
+         (sys clasp-cleavir:*clasp-system*)
+         (req (cleavir-ctype:values-required argsct sys))
+         (opt (cleavir-ctype:values-optional argsct sys))
+         (rest (cleavir-ctype:values-rest argsct sys)))
+    (when (and (cleavir-ctype:bottom-p rest clasp-cleavir:*clasp-system*)
+               (null opt))
+      (change-class inst 'cc-bmir:fixed-mv-call :nvalues (length req)))))
+
+(defmethod reduce-instruction ((inst bir:mv-local-call))
+  (let* ((args (second (bir:inputs inst)))
+         (argsct (bir:ctype args))
+         (sys clasp-cleavir:*clasp-system*)
+         (req (cleavir-ctype:values-required argsct sys))
+         (opt (cleavir-ctype:values-optional argsct sys))
+         (rest (cleavir-ctype:values-rest argsct sys)))
+    (when (and (cleavir-ctype:bottom-p rest clasp-cleavir:*clasp-system*)
+               (null opt))
+      (change-class inst 'cc-bmir:fixed-mv-local-call
+                    :nvalues (length req)))))
+
+(defun reduce-instructions (function)
+  (bir:map-local-instructions #'reduce-instruction function))
+
+(defun reduce-module-instructions (module)
+  (cleavir-set:mapset nil #'reduce-instructions (bir:functions module)))

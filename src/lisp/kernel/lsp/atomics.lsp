@@ -229,6 +229,7 @@ sense for fences and will be rejected."
   "Perform an atomic update of PLACE. In more detail, the value of PLACE is
 set to (funcall UPDATE-FN VALUE ARGUMENTS...), where VALUE is the old value of
 PLACE. This is analogous to what DEFINE-MODIFY-MACRO expansions do.
+As with DEFINE-MODIFY-MACRO, the new value is returned.
 Evaluation order is left to right as specified in CLHS 5.1.1.1. Note that this
 is different from the SBCL macro of the same name, which may perform multiple
 evaluations of the update-fn and arguments, and passes arguments to the update

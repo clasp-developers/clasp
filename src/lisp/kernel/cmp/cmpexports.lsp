@@ -108,6 +108,7 @@
             %t**%
             %t*[DUMMY]%
             %t*[DUMMY]*%
+            %tmv%
             %symbol%
             %float%
             %double%
@@ -212,6 +213,10 @@
             irc-size_t-*current-source-pos-info*-column
             irc-size_t-*current-source-pos-info*-lineno
             irc-icmp-eq
+            irc-icmp-ule
+            irc-icmp-ult
+            irc-icmp-uge
+            irc-icmp-ugt
             irc-icmp-sle
             irc-icmp-slt
             irc-icmp-sge
@@ -235,7 +240,6 @@
             irc-cmpxchg
             irc-struct-gep
             vaslist-start
-            vaslist-copy
             irc-read-slot
             irc-write-slot
             irc-make-tmv
@@ -243,6 +247,11 @@
             irc-tmv-nret
             irc-t*-result
             irc-tmv-result
+            irc-make-vaslist
+            irc-vaslist-nvals
+            irc-vaslist-values
+            irc-vaslist-nth
+            irc-vaslist-nthcdr
             irc-header-stamp
             irc-rack-stamp
             irc-wrapped-stamp
@@ -255,6 +264,9 @@
             irc-untag-fixnum
             irc-untag-general
             irc-untag-cons
+            irc-untag-vaslist
+            irc-tag-vaslist
+            irc-unbox-vaslist
             irc-unbox-single-float
             irc-box-single-float
             irc-unbox-double-float

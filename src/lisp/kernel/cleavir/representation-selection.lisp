@@ -5,13 +5,23 @@
 ;;; Representation types ("rtypes")
 ;;;
 ;;; An rtype describes how a value or values is represented in the runtime.
-;;; An rtype is either :multiple-values, meaning several T_O*s stored in the
-;;; thread local multiple values vector, or a list of value rtypes. A value
-;;; rtype can be either
+;;; An rtype is either
+;;; * :multiple-values, meaning several T_O*s stored in the thread local
+;;;   multiple values vector
+;;; * :vaslist, meaning several T_O*s stored in a transient vector. Output by
+;;;   e.g. values-save.
+;;; * a list of value rtypes.
+;;; A value rtype can be either
 ;;; * :object, meaning T_O*
 ;;; * :single-float, meaning an unboxed single float
 ;;; * :double-float, meaning an unboxed double float
+;;; * :vaslist, meaning an unboxed vaslist
 ;;; So e.g. (:object :object) means a pair of T_O*.
+
+;;; vaslists have both a "multiple value" rtype and a "single value" rtype
+;;; to reflect their translation from lists (in vaslist.lisp). (:vaslist)
+;;; means an "unboxed list" being passed around as a normal value, whereas
+;;; :vaslist is the output of values-save or cc-vaslist:values-list.
 
 ;;; TODO: While (re)writing this I've realized that cast placement here is not
 ;;; really optimal. It might have to be more sophisticated, e.g. moving it out
@@ -36,11 +46,19 @@
 (defmethod %definition-rtype ((inst bir:abstract-call) (datum bir:datum))
   :multiple-values)
 (defmethod %definition-rtype ((inst bir:values-save) (datum bir:datum))
-  (definition-rtype (bir:input inst)))
+  (let ((def (definition-rtype (bir:input inst))))
+    (if (listp def)
+        def
+        :vaslist)))
+(defmethod %definition-rtype ((inst cc-bmir:mtf) (datum bir:datum))
+  (loop repeat (bir:nvalues inst) collect :object))
 (defmethod %definition-rtype ((inst bir:values-collect) (datum bir:datum))
-  (if (= (length (bir:inputs inst)) 1)
-      (definition-rtype (first (bir:inputs inst)))
-      :multiple-values))
+  (let ((irts (mapcar #'definition-rtype (bir:inputs inst))))
+    (if (or (member :multiple-values irts) (member :vaslist irts))
+        :multiple-values
+        (reduce #'append irts))))
+(defmethod %definition-rtype ((inst cc-vaslist:values-list) (datum bir:datum))
+  :vaslist)
 (defmethod %definition-rtype ((inst cc-bir:mv-foreign-call) (datum bir:datum))
   :multiple-values)
 (defmethod %definition-rtype ((inst bir:thei) (datum bir:datum))
@@ -115,10 +133,16 @@
 (defmethod %use-rtype ((inst bir:returni) (datum bir:datum)) :multiple-values)
 (defmethod %use-rtype ((inst bir:values-save) (datum bir:datum))
   (use-rtype (bir:output inst)))
+(defmethod %use-rtype ((inst cc-bmir:mtf) (datum bir:datum))
+  (use-rtype (bir:output inst)))
 (defmethod %use-rtype ((inst bir:values-collect) (datum bir:datum))
   (if (= (length (bir:inputs inst)) 1)
       (use-rtype (bir:output inst))
       :multiple-values))
+(defmethod %use-rtype ((inst cc-vaslist:values-list) (datum bir:datum))
+  '(:vaslist))
+(defmethod %use-rtype ((inst cc-vaslist:nendp) (datum bir:datum))
+  '(:vaslist))
 (defmethod %use-rtype ((inst bir:primop) (datum bir:datum))
   (list (nth (position datum (bir:inputs inst))
              (rest (clasp-cleavir:primop-rtype-info (bir:info inst))))))
@@ -130,7 +154,7 @@
   ;; actual type tests, which need multiple values, should have been turned
   ;; into mv calls by this point. but out of an abundance of caution,
   (if (symbolp (bir:type-check-function inst))
-      (use-rtype (first (bir:outputs inst)))
+      (use-rtype (bir:output inst))
       :multiple-values))
 (defmethod %use-rtype ((inst bir:fixed-to-multiple) (datum bir:datum))
   ;; Use the destination rtype
@@ -201,9 +225,13 @@
                 ;; Shorten
                 (mapcar #'min-vrtype rt1 rt2))
                (t
-                (assert (member rt2 '(:multiple-values)))
+                (assert (member rt2 '(:vaslist :multiple-values)))
                 rt1)))
         ((eq rt1 :multiple-values) rt2)
+        ((eq rt1 :vaslist)
+         (if (eq rt2 :multiple-values)
+             rt1
+             rt2))
         (t (error "Bad rtype: ~a" rt1))))
 
 (defun phi-rtype (datum)
@@ -211,7 +239,7 @@
   ;; If not, then the phi could still be single-value, but only if EVERY
   ;; definition is, and otherwise we need to use multiple values.
   (let ((dest (use-rtype datum)))
-    (if (eq dest :multiple-values)
+    (if (member dest '(:vaslist :multiple-values))
         (definition-rtype datum)
         dest)))
 
@@ -223,7 +251,6 @@
 (defmethod maybe-assign-rtype ((datum cc-bmir:output)))
 (defmethod maybe-assign-rtype ((datum cc-bmir:phi)))
 (defmethod maybe-assign-rtype ((datum cc-bmir:variable)))
-(defmethod maybe-assign-rtype ((datum bir:argument)))
 (defmethod maybe-assign-rtype ((datum bir:load-time-value)))
 (defmethod maybe-assign-rtype ((datum bir:constant)))
 (defmethod maybe-assign-rtype ((datum bir:output))
@@ -242,11 +269,28 @@
                 :rtype (if (eq (bir:extent datum) :local)
                            (variable-rtype datum)
                            '(:object))))
+(defmethod maybe-assign-rtype ((datum bir:argument))
+  (change-class datum 'cc-bmir:argument :rtype '(:object)))
 
 (defun assign-instruction-rtypes (inst)
   (mapc #'maybe-assign-rtype (bir:outputs inst)))
 
+(defun assign-lambda-list-rtypes (lambda-list)
+  (dolist (item lambda-list)
+    (typecase item
+      (symbol)
+      (cons
+       (ecase (length item)
+         ((2)
+          (maybe-assign-rtype (first item))
+          (maybe-assign-rtype (second item)))
+         ((3)
+          (maybe-assign-rtype (second item))
+          (maybe-assign-rtype (third item)))))
+      (t (maybe-assign-rtype item)))))
+
 (defun assign-function-rtypes (function)
+  (assign-lambda-list-rtypes (bir:lambda-list function))
   (bir:map-local-instructions #'assign-instruction-rtypes function))
 
 (defun assign-module-rtypes (module)
@@ -271,7 +315,11 @@
 ;;; Here, the rtype we want is what datum has, and the actual rtype is what
 ;;; instruction actually outputs. DATUM must be the output of INST.
 (defun maybe-cast-after (inst datum actual-rtype)
-  (unless (equal (cc-bmir:rtype datum) actual-rtype)
+  (unless (or (equal (cc-bmir:rtype datum) actual-rtype)
+              ;; Don't bother casting if the datum is unused.
+              ;; Inserting a cast anyway can result in BIR verification
+              ;; failure for certain special instructions; see #1224.
+              (not (bir:use datum)))
     (let* ((new (make-instance 'cc-bmir:output
                   :rtype actual-rtype :derived-type (bir:ctype datum)))
            (cast (make-instance 'cc-bmir:cast
@@ -280,6 +328,19 @@
       (bir:insert-instruction-after cast inst)
       (setf (bir:outputs inst) (list new)
             (bir:outputs cast) (list datum))))
+  (values))
+
+;;; This is different from above because MTF is not a cast, as mentioned
+;;; in bmir.lisp where it's defined.
+(defun insert-mtf-before (inst datum target)
+  (let* ((new (make-instance 'cc-bmir:output
+                :rtype target :derived-type (bir:ctype datum)))
+         (mtf (make-instance 'cc-bmir:mtf
+                :origin (bir:origin inst) :policy (bir:policy inst)
+                :nvalues (length target) :outputs (list new))))
+    (bir:insert-instruction-before mtf inst)
+    (bir:replace-uses new datum)
+    (setf (bir:inputs mtf) (list datum)))
   (values))
 
 (defgeneric insert-casts (instruction))
@@ -325,8 +386,18 @@
 
 ;;; Make sure we don't insert things infinitely
 (defmethod insert-casts ((instruction cc-bmir:cast)))
-;;; Doesn't need to do anything, and might not have all :object inputs
-(defmethod insert-casts ((instruction bir:thei)))
+
+;;; Might need to cast its input,
+;;; but doesn't necessarily need object inputs.
+;;; One situation in which a cast is required is when the input to THEI is
+;;; a function argument. In that situation, the argument can be forced to
+;;; have rtype (:OBJECT), while the output has some reduced rtype in
+;;; accordance with how it is actually used.
+;;; FIXME: Probably this could be more intelligent.
+(defmethod insert-casts ((instruction bir:thei))
+  (maybe-cast-before instruction
+                     (bir:input instruction)
+                     (cc-bmir:rtype (bir:output instruction))))
 
 (defun insert-jump-coercion (instruction)
   (loop for inp in (bir:inputs instruction)
@@ -345,7 +416,22 @@
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:mv-call))
   (object-input instruction (first (bir:inputs instruction)))
+  ;; NOTE: If for some reason the rtype here is a fixed number of values,
+  ;; we are working very suboptimally - this could have been a fixed-mv-call.
+  ;; Type inference is being stupid.
+  ;; This applies to mv-local-call, below, as well.
   (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
+  (cast-output instruction :multiple-values))
+(defmethod insert-casts ((instruction cc-bmir:fixed-mv-call))
+  (object-input instruction (first (bir:inputs instruction)))
+  (let* ((args (second (bir:inputs instruction)))
+         (args-rtype (cc-bmir:rtype args))
+         (nvalues (bir:nvalues instruction))
+         (target (make-list nvalues :initial-element :object)))
+    (cond ((listp args-rtype)
+           (assert (= (length args-rtype) nvalues))
+           (maybe-cast-before instruction args target))
+          (t (insert-mtf-before instruction args target))))
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:local-call))
   (object-inputs instruction (rest (bir:inputs instruction)))
@@ -353,20 +439,25 @@
 (defmethod insert-casts ((instruction bir:mv-local-call))
   (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
   (cast-output instruction :multiple-values))
+(defmethod insert-casts ((instruction cc-bmir:fixed-mv-local-call))
+  (let* ((args (second (bir:inputs instruction)))
+         (args-rtype (cc-bmir:rtype args))
+         (nvalues (bir:nvalues instruction))
+         (target (make-list nvalues :initial-element :object)))
+    (cond ((listp args-rtype)
+           (assert (= (length args-rtype) nvalues))
+           (maybe-cast-before instruction args target))
+          (t (insert-mtf-before instruction args target))))
+  (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction cc-bir:mv-foreign-call))
   (object-inputs instruction)
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:values-save))
   (let* ((input (bir:input instruction)) (output (bir:output instruction))
-         (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output))
-         (nde (bir:dynamic-environment instruction)))
-    (cond ((eq outputrt :multiple-values)
-           (cast-inputs instruction :multiple-values))
-          (t
-           ;; The number of values is fixed, so this is a nop to delete.
-           (assert (equal inputrt outputrt))
-           (cleavir-set:doset (s (cleavir-bir:scope instruction))
-             (setf (cleavir-bir:dynamic-environment s) nde))
+         (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output)))
+    (cond ((eq inputrt :vaslist)
+           ;; We're already getting a vaslist, so this is a nop to delete
+           (assert (eq outputrt :vaslist))
            (cleavir-bir:replace-terminator
             (make-instance 'bir:jump
               :origin (bir:origin instruction) :policy (bir:policy instruction)
@@ -375,17 +466,40 @@
            ;; Don't need to recompute flow order since we haven't changed it.
            ;; We also don't merge iblocks because we're mostly done optimizing
            ;; at this point anyway.
+           (bir:replace-uses input output))
+          ((eq outputrt :multiple-values)
+           (cast-inputs instruction :multiple-values))
+          ((listp outputrt)
+           ;; The number of values is fixed, so this is a nop to delete.
+           (assert (equal inputrt outputrt))
+           (cleavir-bir:replace-terminator
+            (make-instance 'bir:jump
+              :origin (bir:origin instruction) :policy (bir:policy instruction)
+              :inputs () :outputs () :next (bir:next instruction))
+            instruction)
            (bir:replace-uses input output)))))
+(defmethod insert-casts ((inst cc-bmir:mtf)))
 (defmethod insert-casts ((instruction bir:values-collect))
-  (let* ((inputs (bir:inputs instruction)) (output (bir:output instruction))
+  (let* ((inputs (bir:inputs instruction))
+         (inputrts (mapcar #'cc-bmir:rtype inputs))
+         (output (bir:output instruction))
          (outputrt (cc-bmir:rtype output)))
     (cond ((and (= (length inputs) 1) (not (eq outputrt :multiple-values)))
            ;; fixed values, so this is a nop to delete.
            (setf (bir:inputs instruction) nil)
            (bir:replace-uses (first inputs) output)
            (bir:delete-instruction instruction))
-          (t
-           (cast-output instruction :multiple-values)))))
+          ;; If every input is fixed, we output fixed
+          ((every #'listp inputrts)
+           (cast-output instruction (reduce #'append inputrts)))
+          ;; we're outputting multiple values
+          (t (cast-output instruction :multiple-values)))))
+(defmethod insert-casts ((instruction cc-vaslist:values-list))
+  (cast-inputs instruction '(:vaslist))
+  (cast-output instruction :vaslist))
+(defmethod insert-casts ((instruction cc-vaslist:nendp))
+  (cast-inputs instruction '(:vaslist))
+  (object-output instruction))
 (defmethod insert-casts ((instruction bir:returni))
   (cast-inputs instruction :multiple-values))
 (defmethod insert-casts ((inst bir:primop))

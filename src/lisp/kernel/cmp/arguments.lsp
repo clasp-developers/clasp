@@ -136,6 +136,10 @@ switch (nargs) {
                                                 nremaining
                                                 (irc-bit-cast rrest %t**%)))))
                    (varest-p
+                    #+(or)
+                    (irc-tag-vaslist (cmp:calling-convention-vaslist* calling-conv)
+                                     "rest")
+                    ;;#+(or)
                     (let ((temp-vaslist (alloca-vaslist :label "rest")))
                       (irc-intrinsic-call "cc_gatherVaRestArguments" 
                                           (list (cmp:calling-convention-vaslist* calling-conv)
@@ -159,7 +163,7 @@ tstar bad_keyword = undef;
 bool seen_bad_keyword = false;
 t_star a_temp = undef, a_p_temp = [nil], allow_other_keys_temp = [nil], allow_other_keys_p_temp = [nil];
 for (; remaining_nargs != 0; remaining_nargs -= 2) {
-  tstar key = va_arg(valist), value = va_arg(valist);
+  tstar key = va_arg(vaslist), value = va_arg(vaslist);
   if (key == [:a]) {
     if (a_p_temp == [nil]) {
       a_p_temp = [t]; a_temp = value; continue;
@@ -622,19 +626,16 @@ a_p = a_p_temp; a = a_temp;
     (cmp-log "    keyargs -> %s%N" keyargs)
     (cond
       ((eq arity :general-entry)
-       (progn
-         (compile-general-lambda-list-code reqargs 
-                                           optargs 
-                                           rest-var
-                                           varest-p
-                                           key-flag 
-                                           keyargs 
-                                           allow-other-keys
-                                           calling-conv
-                                           :argument-out argument-out
-                                           :safep safep)
-         (calling-convention-args.va-end calling-conv)
-         )
+       (compile-general-lambda-list-code reqargs 
+                                         optargs 
+                                         rest-var
+                                         varest-p
+                                         key-flag 
+                                         keyargs 
+                                         allow-other-keys
+                                         calling-conv
+                                         :argument-out argument-out
+                                         :safep safep)
        t ;; always successful for general lambda-list processing
        )
       ((and (fixnump arity)
@@ -650,18 +651,17 @@ a_p = a_p_temp; a = a_temp;
                 (arg-buffer (if (= nargs 0)
                                 nil
                                 (alloca-arguments nargs "ll-args")))
-                (vaslist (alloca-vaslist))
-                (vaslist-v* (irc-tag-vaslist vaslist))
+                (vaslist* (alloca-vaslist))
                 (idx 0))
            (dolist (arg register-args)
              (let ((arg-gep (irc-gep (llvm-sys:array-type-get %t*% nargs) arg-buffer (list 0 idx))))
                (incf idx)
                (irc-store arg arg-gep)))
            (if (= nargs 0)
-               (vaslist-start vaslist-v* (jit-constant-i64 nargs))
-               (vaslist-start vaslist-v* (jit-constant-i64 nargs)
+               (vaslist-start vaslist* (jit-constant-i64 nargs))
+               (vaslist-start vaslist* (jit-constant-i64 nargs)
                               (irc-bit-cast arg-buffer %i8**%)))
-           (setf (calling-convention-vaslist* calling-conv) vaslist-v*)
+           (setf (calling-convention-vaslist* calling-conv) vaslist*)
            (compile-general-lambda-list-code reqargs 
                                              optargs 
                                              rest-var
@@ -672,7 +672,6 @@ a_p = a_p_temp; a = a_temp;
                                              calling-conv
                                              :argument-out argument-out
                                              :safep safep)
-           (calling-convention-args.va-end calling-conv)
            )
          t ;; always successful when using general lambda-list processing
          ))))

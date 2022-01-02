@@ -1026,6 +1026,18 @@
     (core:coerce-fdesignator ,function)
     ,@arguments))
 
+;;; We do this so that the compiler only has one form of variadic call to
+;;; worry about. Also, perhaps counterintuitively, mv-call is actually
+;;; easier for the compiler to work with than APPLY is, and more general
+;;; besides.
+(define-cleavir-compiler-macro apply (&whole form function &rest arguments)
+  (if (null arguments)
+      form ; invalid, let runtime handle the error
+      `(multiple-value-call ,function
+         ,@(loop for arg in (butlast arguments)
+                 collect `(values ,arg))
+         (values-list ,(first (last arguments))))))
+
 (define-cleavir-compiler-macro values (&whole form &rest values)
   `(cleavir-primop:values ,@values))
 

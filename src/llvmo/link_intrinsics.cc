@@ -647,9 +647,8 @@ T_O* cc_list(size_t nargs, ...) {
 
 /* Conses up a &rest argument from the passed valist.
  * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
-__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(core::T_O* vas, std::size_t nargs)
+__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(Vaslist* vaslist, std::size_t nargs)
 {NO_UNWIND_BEGIN();
-  Vaslist* vaslist = (Vaslist*)gctools::untag_vaslist(vas);
   ql::list result;
   for (int i = 0; i < nargs; ++i) {
     core::T_O* tagged_obj = ENSURE_VALID_OBJECT((*vaslist)[i]);
@@ -662,9 +661,8 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(core::T
 
 /* Like cc_gatherRestArguments, but uses a vector of conses provided by the caller-
  * intended to be stack space, for &rest parameters declared dynamic-extent. */
-__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(core::T_O* vas, std::size_t nargs, core::Cons_O* cur)
+__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(Vaslist* vaslist, std::size_t nargs, core::Cons_O* cur)
 {NO_UNWIND_BEGIN();
-  Vaslist* vaslist = (Vaslist*)gctools::untag_vaslist(vas);
   core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
   if (nargs) {
     for (int i = 0; i<nargs-1; ++i ) {
@@ -859,8 +857,8 @@ void debugSymbolValue(core::Symbol_sp sym) {
 
 void debugPrintI32(int i32)
 {NO_UNWIND_BEGIN();
-  printf("+++DBG-I32[%d]\n", i32);
-  fflush(stdout);
+  //printf("+++DBG-I32[%d]\n", i32);
+  //fflush(stdout);
   NO_UNWIND_END();
 }
 
@@ -901,6 +899,13 @@ void debugPrint_size_t(size_t v)
 {NO_UNWIND_BEGIN();
   printf("+++DBG-size_t[%lu/%lx]\n", v, v);
   NO_UNWIND_END();
+}
+
+void cc_verify_tag(size_t uid, core::T_O* ptr, size_t tag) {
+  if (((uintptr_t)ptr&0x7)!=tag) {
+    printf("%s:%d:%s id: %lu - the ptr %p does not have the necessary tag 0x%lx - aborting\n", __FILE__, __LINE__, __FUNCTION__, uid, ptr, tag );
+    abort();
+  }
 }
 
 void debug_memory(size_t num, core::T_O** vector)

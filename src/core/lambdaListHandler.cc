@@ -1239,6 +1239,20 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   this->_RequiredLexicalArgumentsOnly = this->requiredLexicalArgumentsOnlyP_();
 }
 
+/*! Trivial initializers are atomic values that aren't non-keyword symbols
+*/
+bool initializerIsTrivial(T_sp initializer) {
+  if (it->_Default.consp()) {
+    return false;
+  } else if (gc::IsA<Symbol_sp>(it->_Default)) {
+    Symbol_sp sdefault = gc::As_unsafe<Symbol_sp>(it->_Default);
+    if (!sdefault->isKeywordSymbol()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_sp declareSpecifierList, T_sp context, TargetClassifier &classifier) {
   _OF();
   T_sp whole;
@@ -1261,6 +1275,31 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
   } else {
     this->_ClassifiedSymbolList = nil<T_O>();
   }
+  //
+  // Calculate if the LambdaListHandler will need a ValueEnvironment_O for evaluation or not.
+  //
+  { // optional arguments   opts = (num opt1 init1 flag1 ...)
+    for (auto it = this->_OptionalArguments.begin();
+         it != this->_OptionalArguments.end(); it++) {
+      if (!initializerIsTrivial(it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
+    }
+  }
+  { // optional arguments   keys = (num key1 var1 init1 flag1 ...)
+    for ( auto it = this->_KeywordArguments.begin();
+          it != this->_KeywordArguments.end(); it++) {
+      if (!initializerIsTrivial(it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
+    }
+  }
+  { // auxes arguments   auxs = (num aux1 init1 ...)
+    for ( auto it = this->_AuxArguments.begin();
+          it != this->_AuxArguments.end(); it++) {
+      if (!initializerIsTrivial(it->_Default)) goto NEEDS_VALUE_ENVIRONMENT;
+    }
+  }
+  return;
+ NEEDS_VALUE_ENVIRONMENT:
+  this->_NeedsValueEnvironment = true;
+  return;
 }
 
 CL_LISPIFY_NAME("single-dispatch-on-argument");

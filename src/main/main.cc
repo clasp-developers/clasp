@@ -335,8 +335,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     core::global_initialize_builtin_classes = false;
   }
   
-  
-    // Create the one global CommandLineOptions object and do some minimal argument processing
+  // Create the one global CommandLineOptions object and do some minimal argument processing
   core::global_options = new core::CommandLineOptions(argc, argv);
   (core::global_options->_ProcessArguments)(core::global_options);
   ::globals_ = new core::globals_t();
@@ -344,7 +343,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   globals_->_ExportedSymbolsFilename = core::global_options->_ExportedSymbolsFilename;
   globals_->_DebugStream = new core::DebugStream(mpiRank);
   globals_->_Stage = core::global_options->_Stage;
-  printf("%s:%d:%s About to get start_of_snapshot\n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s About to get start_of_snapshot\n", __FILE__, __LINE__, __FUNCTION__ );
 #ifdef USE_PRECISE_GC
 #  ifdef _TARGET_OS_DARWIN
   const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
@@ -371,12 +370,13 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
     end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
   }
-  printf("%s:%d:%s  start_of_snapshot %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
+#   if 0 
   if (start_of_snapshot) {
-      //printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
+      printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
   } else {
-//      printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
+      printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
   }
+#   endif
 #  endif
 #else
   void* start_of_snapshot = NULL;
@@ -399,6 +399,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
   //
   // Figure out if we are starting up with a snapshot or an image
+  //  Set loadSnapshotFile = true if we load a snapshot
   //
   bool loadSnapshotFile = false;
 #ifdef USE_PRECISE_GC  
@@ -426,7 +427,10 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 #endif
   if ( loadSnapshotFile ||          // We want to load a snapshot
        (start_of_snapshot != NULL) // We found an embedded snapshot
-      ) {
+       ) {
+    //
+    // Load a snapshot from a file (loadSnapshotFile=true) or from memory (start_of_snapshot!=NULL)
+    //
 #ifdef USE_PRECISE_GC
     if (loadSnapshotFile && core::startup_snapshot_is_stale(snapshotFileName)) {
       printf("The startup snapshot file \"%s\" is stale - remove it or create a new one\n", snapshotFileName.c_str() );
@@ -447,8 +451,10 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     printf("Core image loading is not supported unless precise GC is turned on\n");
 #endif
   } else {
+    //
+    // Startup clasp using an image and running all toplevel forms
+    //
     core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
-
     gctools::GcToolsExposer_O GcToolsPkg(_lisp);
     clbind::ClbindExposer_O ClbindPkg(_lisp);
     llvmo::LlvmoExposer_O llvmopkg(_lisp);
@@ -465,6 +471,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     _lisp->installPackage(&SocketsPkg);
     _lisp->installPackage(&ServeEventPkg);
     _lisp->installPackage(&AsttoolingPkg);
+
 #ifndef SCRAPING
 # define ALL_EXPOSES_CALLS
 # include EXPOSE_INC_H
@@ -485,12 +492,15 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
       core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
     }
 #endif
-  
-    // printf("%s:%d About to _lisp->run() - ExitProgram typeid %p;\n",
-    // __FILE__, __LINE__, (void*)&typeid(core::ExitProgram) );
-    // RUN THIS LISP IMPLEMENTATION
+
+    //
+    // Run lisp
+    //
     exit_code = _lisp->run();
 
+    //
+    // Shutdown lisp
+    //
     _lisp->uninstallPackage(&AsttoolingPkg);
     _lisp->uninstallPackage(&ServeEventPkg);
     _lisp->uninstallPackage(&SocketsPkg);
@@ -500,17 +510,12 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
   }
   return exit_code;
-
-} // STARTUP
+}
 
 // -------------------------------------------------------------------------
 //     M A I N
 // -------------------------------------------------------------------------
 
-
-void* to_fixnum(int8_t v) {
-    return reinterpret_cast<void*>(((Fixnum)v) << 2);
-}
 
 #define clasp_desired_stack_cur 16 * 1024 * 1024
 
@@ -561,14 +566,12 @@ int main( int argc, char *argv[] )
   if (rl.rlim_cur < clasp_desired_stack_cur) {
     rl.rlim_cur = clasp_desired_stack_cur;      
     int rc = setrlimit(RLIMIT_STACK, &rl);
-    if (rc != 0)
-    {
+    if (rc != 0) {
       fprintf(stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d errno %d - rlim_cur %lu- rlim_max= %lu) !\n",
               exe_name().c_str(), __FILE__, __LINE__, rc, errno, (unsigned long) rl.rlim_cur, (unsigned long) rl.rlim_max);
     }
   }
   getrlimit(RLIMIT_STACK, &rl);
-  //printf("%s:%d cur: %lu max %lu\n", __FILE__, __LINE__ , (unsigned long) rl.rlim_cur, (unsigned long) rl.rlim_max);
   
   // - COMMAND LINE OPTONS HANDLING
 
@@ -596,57 +599,43 @@ int main( int argc, char *argv[] )
 
   fflush( stderr );
 
-  // Pause before any allocations take place
-  {
-
-    if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-      printf("%s:%d:%s  Setting up clasp for debugging - writing PID to /tmp/clasp_pid\n", __FILE__, __LINE__, __FUNCTION__);
-      stringstream ss;
-      char* username = getenv("USER");
-      if (!username) {
-        printf("%s:%d:%s Could not get USER environment variable\n", __FILE__, __LINE__, __FUNCTION__ );
-        exit(1);
-      }
-      ss << "/tmp/clasp_pid_" << getenv("USER");
-      FILE* fout = fopen(ss.str().c_str(),"w");
-      if (!fout) {
-        printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
-        exit(1);
-      }
-      fprintf(fout,"%d",getpid());
-      fclose(fout);
+  if (getenv("CLASP_DEBUGGER_SUPPORT")) {
+    printf("%s:%d:%s  Setting up clasp for debugging - writing PID to /tmp/clasp_pid\n", __FILE__, __LINE__, __FUNCTION__);
+    stringstream ss;
+    char* username = getenv("USER");
+    if (!username) {
+      printf("%s:%d:%s Could not get USER environment variable\n", __FILE__, __LINE__, __FUNCTION__ );
+      exit(1);
     }
+    ss << "/tmp/clasp_pid_" << getenv("USER");
+    FILE* fout = fopen(ss.str().c_str(),"w");
+    if (!fout) {
+      printf("%s:%d:%s Could not open %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
+      exit(1);
+    }
+    fprintf(fout,"%d",getpid());
+    fclose(fout);
     
-    if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-      printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
-      stringstream ss;
-      char* username = getenv("USER");
-      if (!username) {
-        printf("Could not get USER environment variable\n");
-        exit(1);
-      }
-      ss << "/tmp/clasp_layout_" << getenv("USER") << ".py";
-      core::dumpDebuggingLayouts(ss.str());
-    }
+    printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
+    stringstream su;
+    su << "/tmp/clasp_layout_" << getenv("USER") << ".py";
+    core::dumpDebuggingLayouts(su.str());
+  }
   
-    char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
-    if (pause_startup) {
-#ifdef USE_USER_SIGNAL
-      gctools::setup_user_signal();
-      gctools::wait_for_user_signal("Paused at startup before all initialization");
-#else
-      printf("%s:%d PID = %d  Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
-      fflush(stdout);
-      getchar();
-#endif
-    }
+  //
+  // Pause before any allocations take place
+  //
+  char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+  if (pause_startup) {
+    gctools::setup_user_signal();
+    gctools::wait_for_user_signal("Paused at startup before all initialization");
   }
-
+  
+  //
   // Startup the garbage collector and the lisp system
+  //  
   int exit_code;
-  {
-    exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_cur, mpiEnabled, mpiRank, mpiSize );
-  }
+  exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_cur, mpiEnabled, mpiRank, mpiSize );
   
 #ifdef USE_MPI
   if (!options._DisableMpi) {

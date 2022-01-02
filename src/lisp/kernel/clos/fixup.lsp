@@ -552,7 +552,6 @@ and cannot be added to ~A." method other-gf gf)))
 ;; After this, update-dependents will work
 (setf *clos-booted* 'map-dependents)
 
-
 (defclass initargs-updater ()
   ())
 

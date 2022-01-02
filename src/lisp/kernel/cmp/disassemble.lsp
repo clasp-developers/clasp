@@ -32,7 +32,7 @@
 
 ;;; Used by debugger - see clasp-debug:disassemble-frame
 (defun disassemble-assembly (start end)
-  (format t "; disassemble-assembly Size: ~s Origin: ~s~%" (- (core:pointer-integer end) (core:pointer-integer start)) start)
+  (format t "~&; disassemble-assembly Size: ~s Origin: ~s~%" (- (core:pointer-integer end) (core:pointer-integer start)) start)
   (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
                                      start end))
 
@@ -58,7 +58,7 @@
          (cmp:*saved-module-from-clasp-jit* nil))
     (compile nil thing)
     (if cmp:*saved-module-from-clasp-jit*
-        (format t "Disassembly: ~a~%" cmp:*saved-module-from-clasp-jit*)
+        (format t "~&Disassembly: ~a~%" cmp:*saved-module-from-clasp-jit*)
         (error "Could not recover jitted module for ~a" thing)))
   (values))
 

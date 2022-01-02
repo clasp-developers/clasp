@@ -156,6 +156,10 @@ union NW {
   char name[8];
 };
 
+bool lisp_LambdaListHandlerIsTrivial(LambdaListHandler_sp llh) {
+  return llh->trivialp();
+}
+
 uint64_t lisp_nameword(core::T_sp name)
 {
   NW nw;

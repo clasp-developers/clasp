@@ -75,8 +75,7 @@
 (defun make-type-check-form (required system)
   (let ((vars (loop repeat (length required)
                     collect (gensym "CHECKED"))))
-    `(lambda (,@vars &rest ignore)
-       (declare (ignore ignore))
+    `(lambda (,@vars &rest rest)
        ;; We don't want to insert type checks for typep and error, or
        ;; else we risk getting trapped in an infinite recursion.
        (declare (optimize (safety 0)))
@@ -89,7 +88,7 @@
                               (error 'type-error
                                      :datum ,var
                                      :expected-type ',ty)))
-       (values ,@vars))))
+       (apply #'values ,@vars rest))))
 
 (defmethod cst-to-ast:type-wrap
     (ast ctype origin env (system clasp-cleavir:clasp))

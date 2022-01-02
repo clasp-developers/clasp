@@ -211,3 +211,17 @@
          1 (return nil)
          2 (return t)))
       (t))
+
+(test test-issue-1226-a
+      (funcall (compile nil '(lambda (c d) (values (values d c c))))
+               18 19)
+      (19))
+
+(test test-issue-1226-b
+      (funcall (compile nil '(lambda (x c d)
+                              (if x
+                                  (setf c 19)
+                                  (setf c 23))
+                              (values (values d c c))))
+               t 18 19)
+      (19))

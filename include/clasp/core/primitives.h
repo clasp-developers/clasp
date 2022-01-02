@@ -96,7 +96,7 @@ T_sp core__valid_function_name_p(T_sp arg);
   void core__exception_stack_dump();
   T_sp core__create_tagged_immediate_value_or_nil(T_sp object);
   bool cl__constantp(T_sp obj, T_sp env = nil<T_O>());
-  T_mv cl__values_list(List_sp list);
+  T_mv cl__values_list(T_sp list);
   T_sp cl__compiler_macro_function(core::T_sp name, core::T_sp env);
   bool cl__fboundp(T_sp functionName);
   T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env);

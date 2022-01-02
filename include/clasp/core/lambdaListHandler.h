@@ -139,6 +139,9 @@ public:
   const_requiredArgumentIterator endRequiredArguments() const { return this->_RequiredArguments.end(); };
 
 public:
+  //! Return true if the lambda-list handler doesn't need a ValueEnvironment_O when it is applied
+  bool trivialp() const { return true; };
+public:
   /*! The context can be 'ORDINARY, 'MACRO and other values - see throw_if_invalid_context */
   static LambdaListHandler_sp makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context);
 

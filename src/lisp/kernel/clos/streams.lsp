@@ -275,7 +275,7 @@
 				     column)
   (let ((current-column (stream-line-column stream)))
     (when current-column
-      (let ((fill (- column current-column)))
+      (let ((fill (floor (- column current-column))))
 	(dotimes (i fill)
 	  (stream-write-char stream #\Space)))
       T)))

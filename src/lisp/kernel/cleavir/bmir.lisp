@@ -33,6 +33,26 @@
   (list (cc-bmir:rtype (bir:input inst))
         (cc-bmir:rtype (bir:output inst))))
 
+;;; This instruction is lowered from bir:fixed-values-save.
+;;; It takes multiple values as input and outputs a list of objects.
+;;; Unlike a cast, it accepts only multiple values with a specific count.
+(defclass mtf (bir:one-input bir:one-output bir:instruction)
+  ((%nvalues :initarg :nvalues :reader bir:nvalues)))
+
+(defmethod bir::disassemble-instruction-extra append ((inst mtf))
+  (list (bir:nvalues inst)))
+
+;;; This instruction is lowered from bir:mv-call when the number of
+;;; arguments can be determined by the compiler. It is compiled into a
+;;; simple call instead of an actual mv-sensitive call.
+(defclass fixed-mv-call (bir:mv-call)
+  (;; The determined argument count.
+   (%nvalues :initarg :nvalues :reader bir:nvalues)))
+
+;;; Ditto, but for local calls.
+(defclass fixed-mv-local-call (bir:mv-local-call)
+  ((%nvalues :initarg :nvalues :reader bir:nvalues)))
+
 ;;; This is a possible lowering of bir:constant-reference.
 ;;; We use an instruction because for unboxed constants we don't need the
 ;;; constant to be registered in the module or anything.
@@ -51,7 +71,7 @@
 (defclass output (datum bir:output) ())
 (defclass phi (datum bir:phi) ())
 (defclass variable (datum bir:variable) ())
+(defclass argument (datum bir:argument) ())
 
-(defmethod rtype ((datum bir:argument)) '(:object))
 (defmethod rtype ((datum bir:load-time-value)) '(:object))
 (defmethod rtype ((datum bir:constant)) '(:object))

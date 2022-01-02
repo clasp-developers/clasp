@@ -270,21 +270,22 @@ local-function - the lcl function that all of the xep functions call."
                                indices)))
     fixed-indices))
 
-(defun ensure-valid-type (type ptr)
+(defun ensure-opaque-or-pointee-type-matches (ptr type)
   (unless (llvm-sys:is-opaque-or-pointee-type-matches (llvm-sys:get-type ptr) type)
-    (error "irc-gep is-opaque-or-pointee-type-matches failed for type -> ~a value -> ~a (llvm-sys:get-type value) -> ~a" type ptr (llvm-sys:get-type ptr))))
+    (error "irc-gep is-opaque-or-pointee-type-matches failed for type -> ~a value -> ~a (llvm-sys:get-type value) -> ~a"
+           type ptr (llvm-sys:get-type ptr))))
   
 (defun irc-gep (type ptr indices &optional (name "gep"))
-  (ensure-valid-type type ptr)
+  (ensure-opaque-or-pointee-type-matches ptr type)
   (let ((fixed-indices (irc-fix-gep-indices indices)))
     (llvm-sys:create-in-bounds-gep *irbuilder* type ptr fixed-indices name )))
 
 (defun irc-const-gep2-64 (type ptr idx0 idx1 label)
-  (ensure-valid-type type ptr)
+  (ensure-opaque-or-pointee-type-matches ptr type)
   (llvm-sys:create-const-gep2-64 *irbuilder* type ptr idx0 idx1 label))
 
 (defun irc-typed-in-bounds-gep (type ptr indices &optional (label "gep"))
-  (ensure-valid-type type ptr)
+  (ensure-opaque-or-pointee-type-matches ptr type)
   (let ((fixed-indices (irc-fix-gep-indices indices)))
     (llvm-sys:create-in-bounds-geptype *irbuilder* type ptr fixed-indices label)))
 
@@ -646,17 +647,29 @@ local-function - the lcl function that all of the xep functions call."
   (irc-t*-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)
                    :label label))
 
+(defun irc-maybe-check-tag (tagged-ptr tag)
+  (if (member :check-tags *features*)
+      (irc-intrinsic "cc_verify_tag" (jit-constant-i64 (core:next-jit-unique-counter)) tagged-ptr (jit-constant-i64 tag))))
+
 (defun irc-untag-general (tagged-ptr &optional (type %t**%))
   #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
                (ptr-untagged (irc-gep %i8*% ptr-i8* (list (- +general-tag+)))))
           (irc-bit-cast ptr-untagged type))
+  (irc-maybe-check-tag tagged-ptr +general-tag+)
   (let* ((ptr-int (irc-ptr-to-int tagged-ptr %uintptr_t%))
          (ptr-adjusted (irc-sub ptr-int (jit-constant-i64 1))))
     (irc-int-to-ptr ptr-adjusted type)))
 
 (defun irc-untag-cons (tagged-ptr &optional (type %cons*%))
+  (irc-maybe-check-tag tagged-ptr +cons-tag+)
   (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
          (ptr-untagged (irc-gep %i8% ptr-i8* (list (- +cons-tag+)))))
+    (irc-bit-cast ptr-untagged type)))
+
+(defun irc-untag-vaslist (tagged-ptr &optional (type %vaslist*%))
+  (irc-maybe-check-tag tagged-ptr +vaslist0-tag+)
+  (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
+         (ptr-untagged (irc-gep %i8% ptr-i8* (list (- +vaslist0-tag+)))))
     (irc-bit-cast ptr-untagged type)))
 
 (defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
@@ -684,6 +697,13 @@ representing a tagged fixnum."
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
+(defun irc-unbox-vaslist (t* &optional (label "vaslist-v*"))
+  ;; FIXME: Probably we should untag by masking instead of subttraction
+  (let* ((vaslist* (irc-untag-vaslist t*)))
+    (irc-typed-load %vaslist% vaslist* label)))
+
+;;; "tag" rather than "box" because we don't allocate here, just tag an
+;;; existing pointer.
 (defun irc-tag-vaslist (ptr &optional (label "vaslist-v*"))
   "Given a word aligned ptr, add the vaslist tag"
   (let* ((ptr-i8* (irc-bit-cast ptr %i8*%))
@@ -949,12 +969,22 @@ Otherwise do a variable shift."
   (llvm-sys:create-fence *irbuilder* order 1 #+(or)'llvm-sys:system label))
 
 
+(defun irc-maybe-check-word-aligned-load (pointee-type source)
+  (when (member :check-word-aligned-loads *features*)
+    (when (>= (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) pointee-type) 8)
+      (irc-intrinsic "cc_verify_tag"
+                     (jit-constant-i64 (core:next-jit-unique-counter))
+                     (irc-bit-cast source %i8*%)
+                     (jit-constant-i64 0)))))
+
 (defun irc-typed-load (pointee-type source &optional (label ""))
-  (ensure-valid-type pointee-type source)
+  (ensure-opaque-or-pointee-type-matches source pointee-type)
+  (irc-maybe-check-word-aligned-load pointee-type source)
+  ;; If :check-alignment is on and the pointee-type is a word or larger then it must be aligned
   (llvm-sys:create-load-type-value-twine *irbuilder* pointee-type source label))
 
 (defun irc-t*-load (source &optional (label ""))
-  (ensure-valid-type %t*% source)
+  (ensure-opaque-or-pointee-type-matches source %t*%)
   (let ((source-type (llvm-sys:get-type source)))
     (cond
       ((llvm-sys:type-equal source-type %t**%)
@@ -1100,8 +1130,71 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   ;; a XOR with an all-1s constant, which amounts to the same.
   (llvm-sys:create-not *irbuilder* x label))
 
-(defun irc-va_arg (valist* type &optional (name "vaarg"))
-  (llvm-sys:create-vaarg *irbuilder* valist* type name))
+(defun irc-va_arg (vaslist* type &optional (name "vaarg"))
+  (llvm-sys:create-vaarg *irbuilder* vaslist* type name))
+
+(defun irc-vaslist-args-address (vaslist-v &optional (label "vaslist_address"))
+  (c++-field-ptr info.%vaslist% vaslist-v :args label))
+
+(defun irc-vaslist-nargs-address (vaslist-v
+                                  &optional (label "vaslist_remaining_nargs_address"))
+  (c++-field-ptr info.%vaslist% vaslist-v :nargs label))
+
+(defun irc-make-vaslist (nvals vals &optional (label "saved-values"))
+  (let* ((undef (llvm-sys:undef-value-get %vaslist%))
+         (s1 (llvm-sys:create-insert-value *irbuilder* undef vals '(0) label))
+         (s2 (llvm-sys:create-insert-value *irbuilder* s1 nvals '(1)
+                                           label)))
+    (unless (llvm-sys:type-equal (llvm-sys:get-type s2) %vaslist%)
+      (error "s2 is a ~a and it must be a %vaslist%" s2))
+    s2))
+
+(defun irc-vaslist-values (vaslist &optional (label "values"))
+  (unless (llvm-sys:type-equal (llvm-sys:get-type vaslist) %vaslist%)
+    (error "You must pass a %vaslist% to irc-vaslist-values - you passed a ~a" vaslist))
+  (irc-extract-value vaslist '(0) label))
+
+(defun irc-vaslist-nvals (vaslist &optional (label "nvals"))
+  (unless (llvm-sys:type-equal (llvm-sys:get-type vaslist) %vaslist%)
+    (error "You must pass a %vaslist% to irc-vaslist-nvals - you passed a ~a" vaslist))
+  (irc-extract-value vaslist '(1) label))
+
+;;; Get the nth value of a vaslist. This entails checking the number
+;;; of values and possibly returning a constant nil if needed.
+;;; (That is, this works like CL:NTH. The "N" argument is treated as an
+;;;  unsigned untagged integer, and an upper out of bounds just results in NIL.)
+;;; This requires branching. We could alternately use the llvm select
+;;; instruction, but I'm not as sure how it works (especially the "MDFrom"
+;;; argument to CreateSelect).
+(defun irc-vaslist-nth (n vaslist &optional (label "primary"))
+  (let ((novalues (irc-basic-block-create "vaslist-primary-no-values"))
+        (values (irc-basic-block-create "vaslist-primary-values"))
+        (merge (irc-basic-block-create "vaslist-primary-merge")))
+    (irc-cond-br
+     (irc-icmp-ult n (irc-vaslist-nvals vaslist))
+     values novalues)
+    (irc-begin-block novalues)
+    (let ((nil (irc-literal nil "NIL")))
+      (irc-br merge)
+      (irc-begin-block values)
+      (let ((primary (irc-t*-load (irc-vaslist-values vaslist) "primary")))
+        (irc-br merge)
+        (irc-begin-block merge)
+        (let ((phi (irc-phi %t*% 2 label)))
+          (irc-phi-add-incoming phi nil novalues)
+          (irc-phi-add-incoming phi primary values)
+          phi)))))
+
+;;; Given a vaslist, return a new vaslist with all values but the primary.
+;;; If the vaslist is already empty, it is returned.
+;;; N is treated as an untagged unsigned integer.
+(defun irc-vaslist-nthcdr (n vaslist &optional (label "rest"))
+  (let* ((nvals (irc-vaslist-nvals vaslist))
+         (real-n (irc-intrinsic "llvm.umin.i64" n nvals))
+         (new-nvals (irc-sub n real-n))
+         (vals (irc-vaslist-values vaslist))
+         (new-vals (irc-gep %t*% vals (list new-nvals))))
+    (irc-make-vaslist new-nvals new-vals label)))
 
 (defparameter *default-function-attributes*
   #+cclasp '(llvm-sys:attribute-uwtable
@@ -1840,10 +1933,10 @@ function-description - for debugging."
                               ((and landing-pad function-throws)
                                (irc-create-invoke-wft function-type the-function args landing-pad label))
                               (t
-                               (irc-create-call-wft function-type the-function args label))))
-           (_               (when (llvm-sys:does-not-return the-function)
-                              (irc-unreachable)
-                              (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))
+                               (irc-create-call-wft function-type the-function args label)))))
+      (when (llvm-sys:does-not-return the-function)
+        (irc-unreachable)
+        (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))
       #+(or)(warn "Does add-param-attr work yet")
       ;;; FIXME: Do I need to add attributes to the return value of the call
       (dolist (index-attributes (primitive-argument-attributes primitive-info))

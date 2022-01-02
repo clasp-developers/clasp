@@ -65,7 +65,11 @@
 
 (macrolet ((define-function-flags (name &rest attributes)
              `(setf (gethash ',name *fn-flags*)
-                    (cleavir-attributes:make-flags ,@attributes))))
+                    (cleavir-attributes:make-flags ,@attributes)))
+           (define-flushable (name) `(define-function-flags ,name :flushable))
+           (define-flushables (&rest names)
+             `(progn
+                ,@(loop for name in names collect `(define-flushable ,name)))))
   ;; FIXME: Can't do DX-call for many things like APPLY, FUNCALL, etc.
   ;; because we don't distinguish between *which* functional argument
   ;; is DX.
@@ -147,25 +151,6 @@
   (define-function-flags sort :dx-call)
   (define-function-flags stable-sort :dx-call)
 
-  (define-function-flags core:two-arg-+ :flushable)
-  (define-function-flags core:two-arg-- :flushable)
-  (define-function-flags core:two-arg-* :flushable)
-  (define-function-flags core:two-arg-/ :flushable)
-  (define-function-flags core:two-arg-< :flushable)
-  (define-function-flags core:two-arg-> :flushable)
-  (define-function-flags core:two-arg-<= :flushable)
-  (define-function-flags core:two-arg->= :flushable)
-  (define-function-flags core:two-arg-= :flushable)
-  (define-function-flags core:two-arg-char-equal :flushable)
-  (define-function-flags core:two-arg-char-greaterp :flushable)
-  (define-function-flags core:two-arg-char-lessp :flushable)
-  (define-function-flags core:two-arg-char-not-greaterp :flushable)
-  (define-function-flags core:two-arg-char-not-lessp :flushable)
-  (define-function-flags core:two-arg-char< :flushable)
-  (define-function-flags core:two-arg-char<= :flushable)
-  (define-function-flags core:two-arg-char> :flushable)
-  (define-function-flags core:two-arg-char>= :flushable)
-
   (define-function-flags core::map-into-sequence :dyn-call :dx-call)
   (define-function-flags core::map-into-sequence/1 :dyn-call :dx-call)
   (define-function-flags core::map-for-effect :dyn-call :dx-call)
@@ -173,7 +158,21 @@
   (define-function-flags core::map-to-list :dyn-call :dx-call)
   (define-function-flags core::map-to-list/1 :dyn-call :dx-call)
   (define-function-flags core::every/1 :dyn-call :dx-call)
-  (define-function-flags core::some/1 :dyn-call :dx-call))
+  (define-function-flags core::some/1 :dyn-call :dx-call)
+
+  ;; FIXME: Many functions are only "unsafely" flushable - in safe code, we
+  ;; would like them to signal errors on incorrect inputs, even if actually
+  ;; calling the function is pointless. Most interesting flushable functions
+  ;; are of this type, so only a few are really always flushable, mostly
+  ;; functions that accept any kind of object.
+  ;; (Note that incorrect argument counts are warned about regardless, so we
+  ;;  shouldn't need to sweat those errors.)
+  (define-flushables type-of functionp compiled-function-p not eq eql equal
+    equalp identity constantly values symbolp keywordp packagep
+    random-state-p numberp complexp realp rationalp integerp floatp
+    characterp list list* listp acons endp null arrayp simple-vector-p
+    vectorp bit-vector-p simple-bit-vector-p simple-string-p stringp
+    hash-table-p sxhash))
 
 (defun treat-as-special-operator-p (name)
   (cond
@@ -235,11 +234,14 @@
             (transforms (gethash function-name *fn-transforms*))
             (derivers (gethash function-name *derivers*))
             (folds (gethash function-name *folds*))
-            (attributes (if (or flags transforms folds)
+            (vaslistablep (cc-vaslist:vaslistablep function-name))
+            (attributes (if (or flags transforms folds derivers)
                             (make-instance 'cleavir-attributes:attributes
                               :flags (or flags (cleavir-attributes:make-flags))
-                              :transforms transforms :derivers derivers
-                              :folds folds)
+                              :identities (if (or transforms folds
+                                                  derivers vaslistablep)
+                                              (list function-name)
+                                              nil))
                             (cleavir-attributes:default-attributes))))
        (make-instance 'env:global-function-info
          :name function-name

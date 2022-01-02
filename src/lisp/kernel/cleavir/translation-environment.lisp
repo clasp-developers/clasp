@@ -55,6 +55,7 @@
 (defmethod vrtype->llvm ((vrtype (eql :object))) cmp:%t*%)
 (defmethod vrtype->llvm ((vrtype (eql :single-float))) cmp:%float%)
 (defmethod vrtype->llvm ((vrtype (eql :double-float))) cmp:%double%)
+(defmethod vrtype->llvm ((vrtype (eql :vaslist))) cmp:%vaslist%)
 
 (defun bind-variable (var)
   (if (bir:immutablep var)
@@ -68,17 +69,23 @@
                (let* ((name (datum-name-as-string var))
                       #+(or)
                       (fname (full-datum-name-as-string var))
-                      ;; FIXME: Seems broken for an rtype of (); what should we
-                      ;; do in that situation?
-                      (vrtype (first (cc-bmir:rtype var)))
-                      (alloca (cmp:alloca (vrtype->llvm vrtype) 1 name))
-                      #+(or)
-                      (spi (origin-spi (bir:origin var))))
-                 ;; set up debug info
-                 ;; Disable for now - FIXME and get it working
-                 #+(or)(cmp:dbg-variable-alloca alloca fname spi)
-                 ;; return
-                 alloca))
+                      (rtype (cc-bmir:rtype var)))
+                 (if (null rtype)
+                     ;; Variable is unused: bind nothing
+                     ()
+                     ;; More usual case
+                     (let* ((vrtype
+                              (cond ((listp rtype)
+                                     (first (cc-bmir:rtype var)))
+                                    (t (error "BUG: Bad rtype ~a" rtype))))
+                            (alloca (cmp:alloca (vrtype->llvm vrtype) 1 name))
+                            #+(or)
+                            (spi (origin-spi (bir:origin var))))
+                       ;; set up debug info
+                       ;; Disable for now - FIXME and get it working
+                       #+(or)(cmp:dbg-variable-alloca alloca fname spi)
+                       ;; return
+                       alloca))))
               ((:indefinite)
                ;; make a cell
                (%intrinsic-invoke-if-landing-pad-or-call
@@ -111,24 +118,30 @@
 (defun variable-in (variable)
   (check-type variable bir:variable)
   (if (bir:immutablep variable)
-      (or (gethash variable *datum-values*)
-          (error "BUG: Variable missing: ~a" variable))
-      (ecase (bir:extent variable)
-        (:local
-         (let* ((alloca (or (gethash variable *datum-values*)
-                            (error "BUG: Variable missing: ~a" variable)))
-                (rtype (first (cc-bmir:rtype variable)))
-                (alloca-type (vrtype->llvm rtype)))
-           (cmp:irc-typed-load alloca-type alloca)))
-        (:dynamic
-         (let ((alloca (or (gethash variable *datum-values*)
-                           (error "BUG: DX cell missing: ~a" variable))))
-           (cmp:irc-t*-load (cmp:irc-bit-cast alloca cmp:%t**%))))
-        (:indefinite
-         (let ((cell (or (gethash variable *datum-values*)
-                         (error "BUG: Cell missing: ~a" variable)))
-               (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-           (cmp:irc-t*-load-atomic (cmp::gen-memref-address cell offset)))))))
+      (multiple-value-bind (dat presentp) (gethash variable *datum-values*)
+        (if presentp
+            dat
+            (error "BUG: Variable missing: ~a" variable)))
+      ;; NOTE: In the future when we need type loads for LLVM, the rtype will
+      ;; have the type information.
+      (if (null (cc-bmir:rtype variable))
+          nil
+          (ecase (bir:extent variable)
+            (:local
+             (let* ((alloca (or (gethash variable *datum-values*)
+                                (error "BUG: Variable missing: ~a" variable)))
+                    (rtype (first (cc-bmir:rtype variable)))
+                    (alloca-type (vrtype->llvm rtype)))
+               (cmp:irc-typed-load alloca-type alloca)))
+            (:dynamic
+             (let ((alloca (or (gethash variable *datum-values*)
+                               (error "BUG: DX cell missing: ~a" variable))))
+               (cmp:irc-t*-load (cmp:irc-bit-cast alloca cmp:%t**%))))
+            (:indefinite
+             (let ((cell (or (gethash variable *datum-values*)
+                             (error "BUG: Cell missing: ~a" variable)))
+                   (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
+               (cmp:irc-t*-load-atomic (cmp::gen-memref-address cell offset))))))))
 
 (defun out (value datum)
   (check-type datum bir:ssa)
@@ -141,9 +154,9 @@
 (defun phi-out (value datum llvm-block)
   (check-type datum bir:phi)
   (let ((rt (cc-bmir:rtype datum)))
-    (cond ((or (eq rt :multiple-values)
+    (cond ((or (member rt '(:multiple-values :vaslist))
                (and (listp rt) (= (length rt) 1)))
-           ;; datum is a T_mv or a single value
+           ;; datum is a T_mv or a vaslist or a single value
            (llvm-sys:add-incoming (in datum) value llvm-block))
           ((listp rt)
            ;; Datum is a list of llvm data, and (in datum) is a list of phis.
@@ -160,22 +173,25 @@
         #+(or)(cmp:dbg-variable-value
                value (full-datum-name-as-string variable)
                (origin-spi (bir:origin variable))))
-      (ecase (bir:extent variable)
-        (:local
-         (let ((alloca (or (gethash variable *datum-values*)
-                           (error "BUG: Variable missing: ~a" variable))))
-           (cmp:irc-store value alloca)))
-        (:dynamic
-         (let ((alloca (or (gethash variable *datum-values*)
-                           (error "BUG: DX cell missing: ~a" variable))))
-           (cmp:irc-store value (cmp:irc-bit-cast alloca cmp:%t**%))))
-        (:indefinite
-         (let ((cell (or (gethash variable *datum-values*)
-                         (error "BUG: Cell missing: ~a" variable)))
-               (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-           (cmp:irc-store-atomic
-            value
-            (cmp::gen-memref-address cell offset)))))))
+      (if (null (cc-bmir:rtype variable))
+          value
+          ;; NOTE: For typed loads in the future, use the rtype
+          (ecase (bir:extent variable)
+            (:local
+             (let ((alloca (or (gethash variable *datum-values*)
+                               (error "BUG: Variable missing: ~a" variable))))
+               (cmp:irc-store value alloca)))
+            (:dynamic
+             (let ((alloca (or (gethash variable *datum-values*)
+                               (error "BUG: DX cell missing: ~a" variable))))
+               (cmp:irc-store value (cmp:irc-bit-cast alloca cmp:%t**%))))
+            (:indefinite
+             (let ((cell (or (gethash variable *datum-values*)
+                             (error "BUG: Cell missing: ~a" variable)))
+                   (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
+               (cmp:irc-store-atomic
+                value
+                (cmp::gen-memref-address cell offset))))))))
 
 (defun dynenv-storage (dynenv)
   (check-type dynenv bir:dynamic-environment)

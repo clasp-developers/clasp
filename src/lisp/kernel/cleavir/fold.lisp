@@ -6,16 +6,19 @@
                                           operator
                                           (call bir:abstract-call)
                                           arguments)
-  (multiple-value-call #'values
-    t
-    (handler-case (apply operator arguments)
-      (serious-condition (c)
-        (warn 'cmp:fold-failure :operation operator :operands arguments
-                                :condition c :origin (bir:origin call))
-        (return-from bir-transformations:fold-call nil)))))
+  (let ((folder (gethash operator *folds*)))
+    (if folder
+        (multiple-value-call #'values
+          t
+          (handler-case (apply folder arguments)
+            (serious-condition (c)
+              (warn 'cmp:fold-failure :operation operator :operands arguments
+                                      :condition c :origin (bir:origin call))
+              (return-from bir-transformations:fold-call nil))))
+        nil)))
 
 (macrolet ((deffold (name)
-             `(setf (gethash ',name *folds*) '(,name)))
+             `(setf (gethash ',name *folds*) ',name))
            (deffolds (&rest names)
              `(progn ,@(loop for name in names
                              collect `(deffold ,name)))))

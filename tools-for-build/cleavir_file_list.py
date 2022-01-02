@@ -228,6 +228,7 @@ cleavir_file_list = [
     "src/lisp/kernel/cleavir/translation-environment",
     "src/lisp/kernel/cleavir/bir",
     "src/lisp/kernel/cleavir/bmir",
+    "src/lisp/kernel/cleavir/vaslist",
     "src/lisp/kernel/cleavir/bir-to-bmir",
     "src/lisp/kernel/cleavir/representation-selection",
     "src/lisp/kernel/cleavir/landing-pad",

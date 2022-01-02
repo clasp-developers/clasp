@@ -52,7 +52,6 @@ class thread_pool
   thread_pool(const ui32 &_thread_count = std::thread::hardware_concurrency())
      : thread_count(_thread_count ? _thread_count : std::thread::hardware_concurrency()), threads(new std::thread[_thread_count ? _thread_count : std::thread::hardware_concurrency()])
   {
-    printf("%s:%d:%s Starting up with thread_count = %u\n", __FILE__, __LINE__, __FUNCTION__, thread_count );
     create_threads();
     for ( ui32 i = 0; i < thread_count; i++ ) {
       this->manager.register_thread(threads[i]);

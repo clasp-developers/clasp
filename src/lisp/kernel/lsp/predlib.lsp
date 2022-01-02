@@ -59,6 +59,22 @@ Builds a new function which accepts any number of arguments but always outputs N
   (subtypep-clear-cache)
   function)
 
+(export 'ext::typexpand-1 "EXT")
+(defun ext:typexpand-1 (type-specifier &optional env)
+  (let ((expander (ext:type-expander (if (consp type-specifier)
+                                         (first type-specifier)
+                                         type-specifier))))
+    (if expander
+        (values (funcall expander type-specifier env) t)
+        (values type-specifier nil))))
+
+(export 'ext::typexpand "EXT")
+(defun ext:typexpand (type-specifier &optional env)
+  (multiple-value-bind (expansion expandedp)
+      (ext:typexpand-1 type-specifier env)
+    (if expandedp
+        (values (ext:typexpand expansion env) t)
+        (values type-specifier nil))))
 
 ;;; DEFTYPE macro.
 (defmacro deftype (name lambda-list &rest body &environment env)
@@ -568,23 +584,11 @@ Returns T if X belongs to TYPE; NIL otherwise."
 ;; The result is a pair of values
 ;;  VALUE-1 = normalized type name or object
 ;;  VALUE-2 = normalized type arguments or nil
-(defun normalize-type (type &optional env &aux tp i fd)
-  ;; Loops until the car of type has no DEFTYPE definition.
-  (cond ((symbolp type)
-	 (if (setq fd (ext:type-expander type))
-             (normalize-type (funcall fd type env))
-             (values type nil)))
-	#+clos
-	((clos::classp type) (values type nil))
-	((atom type)
-	 (error-type-specifier type))
-	((progn
-	   (setq tp (car type) i (cdr type))
-	   (setq fd (ext:type-expander tp)))
-	 (normalize-type (funcall fd type env)))
-	((and (eq tp 'INTEGER) (consp (cadr i)))
-	 (values tp (list (car i) (1- (caadr i)))))
-	(t (values tp i))))
+(defun normalize-type (type &optional env)
+  (let ((type (ext:typexpand type env)))
+    (if (consp type)
+        (values (first type) (rest type))
+        (values type nil))))
 
 ;;************************************************************
 ;;			COERCE

@@ -19,9 +19,10 @@
 (defmethod function-keywords ((method standard-method))
   (values (method-keywords method) (method-allows-other-keys-p method)))
 
-(defmethod shared-initialize ((method standard-method) slot-names &rest initargs
-			      &key (specializers nil spec-supplied-p)
-			      (lambda-list nil lambda-supplied-p))
+(defmethod shared-initialize :before
+    ((method standard-method) slot-names &rest initargs
+     &key (specializers nil spec-supplied-p)
+       (lambda-list nil lambda-supplied-p))
   (declare (ignore initargs))
   (when slot-names
     (unless spec-supplied-p
@@ -35,12 +36,13 @@
   (when spec-supplied-p
     (loop for s in specializers
        unless (typep s 'specializer)
-       do (error "Object ~A is not a valid specializer" s)))
-  (setf method
-        (call-next-method)
-	(values (method-keywords method) (method-allows-other-keys-p method))
-        (compute-method-keywords (method-lambda-list method)))
-  method)
+       do (error "Object ~A is not a valid specializer" s))))
+
+(defmethod shared-initialize :after
+    ((method standard-method) slot-names &rest initargs)
+  (declare (ignore slot-names initargs))
+  (setf (values (method-keywords method) (method-allows-other-keys-p method))
+        (compute-method-keywords (method-lambda-list method))))
 
 #+threads
 (defparameter *eql-specializer-lock* (mp:make-lock :name 'eql-specializer))

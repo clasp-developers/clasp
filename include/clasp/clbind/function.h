@@ -132,7 +132,7 @@ public:
     MAKE_STACK_FRAME(frame,sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame,sizeof...(ARGS));
+    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler, numSpecialBindings,specialBindingsVLA,frame,sizeof...(ARGS));
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope, lcc_nargs, lcc_args  );
     core::MultipleValues& returnValues = core::lisp_multipleValues();
 #ifdef DEBUG_EVALUATE
@@ -199,7 +199,7 @@ public:
     MAKE_STACK_FRAME(frame,sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambdaListHandlerNumberOfSpecialVariables(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame,sizeof...(ARGS));
+    core::StackFrameDynamicScopeManager scope(closure->_lambdaListHandler,numSpecialBindings,specialBindingsVLA,frame,sizeof...(ARGS));
 //    printf("%s:%d About to create bindings for closure->_lambdaListHandler->%s\n", __FILE__, __LINE__, _rep_(closure->_lambdaListHandler).c_str());
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,&scope,lcc_nargs, lcc_args );
 #ifdef DEBUG_EVALUATE
