@@ -228,7 +228,7 @@ And convert everything to JIT constants."
                     'llvm-sys::External-linkage
                     foreign-name
                     cmp:*the-module*)))
-         (function-type (llvm-sys:function-type func)))
+         (function-type (llvm-sys:get-function-type func)))
     ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn
