@@ -170,11 +170,13 @@
    ))
 
 (defun do-dbg-function (closure lineno function-type function)
+  (declare (ignore function-type))
   (unless *current-source-pos-info*
     (warn "*current-source-pos-info* is undefined - this may cause problems - wrap with-dbg-function in with-guaranteed-*current-source-pos-info* to fix this"))
   (let ((linkage-name (llvm-sys:get-name function)))
     (multiple-value-bind (file-scope file-handle)
         (core:file-scope (llvm-sys:get-path *dbg-current-file*))
+      (declare (ignore file-scope))
       (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
           (let* ((current-subprogram (cached-function-scope (list linkage-name lineno file-handle)))
                  (*dbg-current-function-metadata* current-subprogram)
@@ -250,6 +252,7 @@
         (lineno (core:source-pos-info-lineno spi))
         (col (core:source-pos-info-column spi))
         (inlined-at (core:source-pos-info-inlined-at spi)))
+    (declare (ignore file-handle))
     (when (and *trap-zero-lineno* (zerop lineno))
       (format *error-output* "In get-dilocation lineno was zero! Setting to ~d~%"
               (setf lineno 666666)))
