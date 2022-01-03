@@ -69,7 +69,7 @@
                         (push (third item) arglist)))
                      (push item arglist))))
              (nreverse arglist))))
-    (let ((function-description (cmp:irc-make-function-description function-info)))
+    (let ((function-description (cmp:irc-make-function-description function-info jit-function-name)))
       (multiple-value-bind (the-function local-entry-point)
           (cmp:irc-local-function-create
            (llvm-sys:function-type-get

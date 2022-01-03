@@ -272,7 +272,7 @@ rewrite the slot in the literal table to store a closure."
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
   (unless (or (typep function 'llvm-sys:function)
               (general-entry-placeholder-p function))
-    (error "In register-function->function-datum-impl function ~s of ~s must be a function or a general-entry-placeholder" function (class-of-function)))
+    (error "In register-function->function-datum-impl function ~s of ~s must be a function or a general-entry-placeholder" function (class-of function)))
   (when (general-entry-placeholder-p function)
     ;; Lookup a wrong-number-of-arguments function and use that
     (let* ((wna-arity (general-entry-placeholder-arity function))
@@ -708,6 +708,7 @@ rewrite the slot in the literal table to store a closure."
          (datum (literal-dnode-datum closurette-object))
          (index (datum-index datum))
          (entry-point-ref (literal-node-closure-entry-point-ref closurette-object)))
+    (declare (ignore function-index))
     (cmp:irc-intrinsic-call "ltvc_make_closurette"
                             (list *gcroots-in-module*
                                   (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)

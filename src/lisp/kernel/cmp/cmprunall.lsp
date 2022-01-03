@@ -78,6 +78,9 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 (defmacro with-make-new-run-all ((run-all-fn &optional (name-suffix '(core:bformat nil "*%d" (core:next-number)))) &body body)
   "Set up a run-all function in the current module, return the run-all-fn"
   `(do-make-new-run-all (lambda (,run-all-fn name-suffix)
+                          (declare (ignorable ,run-all-fn name-suffix))
+                          ;; for sure it was not meant to define name-suffix here
+                          ;; but putting ,name-suffix is not right either
                           (progn
                             ,@body))
      ,name-suffix))
