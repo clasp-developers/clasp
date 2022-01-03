@@ -55,7 +55,7 @@
   ((%name :reader undefined-warning-name :initarg :name)
    (%kind :reader undefined-warning-kind :allocation :class))
   (:report (lambda (condition stream)
-             (format stream "Undefined ~(~a~) ~a"
+             (format stream "Undefined ~(~a~) ~s"
                      (undefined-warning-kind condition)
                      (undefined-warning-name condition)))))
 
