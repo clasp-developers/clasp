@@ -1302,8 +1302,10 @@
                      for irt = (cc-bmir:rtype input)
                      collect (cond ((eq irt :vaslist)
                                     (list :saved
-                                          (cmp:irc-vaslist-nvals in)
-                                          (cmp:irc-vaslist-values in)))
+                                          (cmp:irc-vaslist-nvals
+                                           in "nret-saved")
+                                          (cmp:irc-vaslist-values
+                                           in "values-saved")))
                                    ((listp irt)
                                     (let ((len (length irt)))
                                       (list :fixed
@@ -1314,18 +1316,27 @@
                                    ((eq irt :multiple-values)
                                     (setf liven idx)
                                     (list :variable
-                                          (cmp:irc-tmv-nret in)
+                                          (cmp:irc-tmv-nret in "nret-variable")
                                           (cmp:irc-tmv-primary in)))
                                    (t (error "BUG: Bad rtype ~a" irt)))))
          ;; Collect partial sums of the number of values.
          (partial-sums
            (loop for (_1 size _2) in data
-                 for n = size then (cmp:irc-add n size)
+                 for n = size then (cmp:irc-add n size "sum-nret")
                  collect n))
          (n-total-values (first (last partial-sums)))
-         (stacksave (%intrinsic-call "llvm.stacksave" nil))
+         (stacksave (%intrinsic-call "llvm.stacksave" nil "values-collect"))
+         (tv-size
+           ;; In order to store the primary value unconditionally below, we
+           ;; need to allocate one extra word. This is important for the
+           ;; situation (mv-call ... (foo)) where FOO returns no values.
+           ;; Without this extra word, the primary could be written to just
+           ;; beyond the allocated memory, which would cause problems.
+           (if liven
+               (cmp:irc-add n-total-values (%size_t 1))
+               n-total-values))
          ;; LLVM type is t**, i.e. this is a pointer to the 0th value.
-         (valvec (cmp:alloca-temp-values n-total-values)))
+         (valvec (cmp:alloca-temp-values tv-size "values-collect-temp")))
     (setf (dynenv-storage inst) stacksave)
     ;; Generate code to copy all the values into the temp storage.
     ;; First we need to move any live values, since otherwise they could be
@@ -1336,11 +1347,11 @@
         (let* ((spos (nth (1- liven) partial-sums))
                ;; LLVM type is t**, i.e. this is a pointer to the 0th value.
                (mvalues (%gep cmp:%t*[0]*% (multiple-value-array-address)
-                              '(0 0)))
-               (sdest (cmp:irc-gep-variable valvec (list spos)))
+                              '(0 0) "multiple-values"))
+               (sdest (cmp:irc-gep-variable valvec (list spos) "var-dest"))
                ;; Add one, since we store the primary separately
-               (dest (%gep cmp:%t**% sdest '(1)))
-               (source (%gep cmp:%t**% mvalues '(1)))
+               (dest (%gep cmp:%t**% sdest '(1) "var-dest-subsequent"))
+               (source (%gep cmp:%t**% mvalues '(1) "var-source-subsequent"))
                ;; Number of elements to copy out of the values vector.
                ;; This is a bit tricky, in that we want to copy nvalues-1,
                ;; unless nvalues is zero in which case we want zero.
@@ -1349,16 +1360,20 @@
                ;; and definitely more of a pain to generate.
                (adjusted-nvalues
                  (%intrinsic-call "llvm.umax.i64"
-                                  (list size (%i64 1))))
-               (ncopy (cmp:irc-sub adjusted-nvalues (%size_t 1))))
+                                  (list size (%i64 1))
+                                  "adjusted-nret-variable"))
+               (ncopy (cmp:irc-sub adjusted-nvalues (%size_t 1) "ntocopy")))
           ;; Copy the rest
-          (%intrinsic-call "llvm.memmove.p0i8.p0i8.i64"
-                           (list (cmp:irc-bit-cast dest cmp:%i8*%)
+          (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
+                           (list (cmp:irc-bit-cast dest cmp:%i8*%
+                                                   "var-dest-subsequent")
                                  ;; read from the 1st value of the mv vector
-                                 (cmp:irc-bit-cast source cmp:%i8*%)
+                                 (cmp:irc-bit-cast source cmp:%i8*%
+                                                   "var-source-subsequent")
                                  ;; Multiply size by sizeof(T_O*)
                                  ;; (subtract one for the primary, again)
-                                 (cmp::irc-shl ncopy 3 :nuw t)
+                                 (cmp::irc-shl ncopy 3 :nuw t
+                                               :label "real-ntocopy")
                                  ;; non volatile
                                  (%i1 0)))
           ;; Store the primary
@@ -1367,21 +1382,24 @@
     (loop for (key size extra) in data
           for startn = (%size_t 0) then finishn
           for finishn in partial-sums
-          for dest = (cmp:irc-gep-variable valvec (list startn))
+          for dest = (cmp:irc-gep-variable valvec (list startn) "dest")
           do (ecase key
                ((:saved)
                 (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
-                                 (list (cmp:irc-bit-cast dest cmp:%i8*%)
-                                       (cmp:irc-bit-cast extra cmp:%i8*%)
+                                 (list (cmp:irc-bit-cast dest cmp:%i8*% "dest")
+                                       (cmp:irc-bit-cast extra cmp:%i8*%
+                                                         "source")
                                        ;; Multiply by sizeof(T_O*)
-                                       (cmp::irc-shl size 3 :nuw t)
+                                       (cmp::irc-shl size 3 :nuw t
+                                                     :label "real-ntocopy")
                                        (%i1 0))))
                ((:fixed)
                 (loop for i below (first extra) ; size
                       for v in (rest extra)
-                      do (cmp:irc-store v (%gep cmp:%t**% dest (list i)))))
+                      do (cmp:irc-store v (%gep cmp:%t**% dest (list i)
+                                                "fixed-dest"))))
                ((:variable)))) ; done already
-    (cmp:irc-make-vaslist n-total-values valvec)))
+    (cmp:irc-make-vaslist n-total-values valvec "values-collected")))
 
 (defmethod translate-terminator ((inst bir:values-collect) abi next)
   (declare (ignore abi))
