@@ -167,10 +167,9 @@
   (%intrinsic-call "llvm.stackrestore" (list (dynenv-storage dynenv))))
 (defmethod undo-dynenv ((dynenv bir:values-collect) tmv)
   (declare (ignore tmv))
-  (when *new-apply*
-    (let ((storage (dynenv-storage dynenv)))
-      (when storage
-        (%intrinsic-call "llvm.stackrestore" (list storage))))))
+  (let ((storage (dynenv-storage dynenv)))
+    (when storage
+      (%intrinsic-call "llvm.stackrestore" (list storage)))))
 
 (defun translate-local-unwind (jump tmv)
   (loop with target = (bir:dynamic-environment
@@ -828,30 +827,17 @@
          (mvarg (second (bir:inputs instruction)))
          (mvargrt (cc-bmir:rtype mvarg))
          (mvargi (in mvarg)))
-    (cond (*new-apply*
-           (assert (eq mvargrt :vaslist))
-           (out
-            (multiple-value-bind (req opt rest-var key-flag keyargs
-                                  aok aux varest-p)
-                (cmp::process-bir-lambda-list (bir:lambda-list callee))
-              (declare (ignore keyargs aok aux))
-              (if (or key-flag varest-p)
-                  (general-mv-local-call-vas callee-info mvargi oname)
-                  (direct-mv-local-call-vas
-                   mvargi callee-info (car req) (car opt) rest-var oname)))
-            output))
-          (t
-           (assert (eq mvargrt :multiple-values))
-           (out
-            (multiple-value-bind (req opt rest-var key-flag keyargs
-                                  aok aux varest-p)
-                (cmp::process-bir-lambda-list (bir:lambda-list callee))
-              (declare (ignore keyargs aok aux))
-              (if (or key-flag varest-p)
-                  (general-mv-local-call callee-info mvargi oname)
-                  (direct-mv-local-call
-                   mvargi callee-info (car req) (car opt) rest-var oname)))
-            output)))))
+    (assert (eq mvargrt :vaslist))
+    (out
+     (multiple-value-bind (req opt rest-var key-flag keyargs
+                           aok aux varest-p)
+         (cmp::process-bir-lambda-list (bir:lambda-list callee))
+       (declare (ignore keyargs aok aux))
+       (if (or key-flag varest-p)
+           (general-mv-local-call-vas callee-info mvargi oname)
+           (direct-mv-local-call-vas
+            mvargi callee-info (car req) (car opt) rest-var oname)))
+     output)))
 
 (defmethod translate-simple-instruction
     ((instruction cc-bmir:fixed-mv-local-call) abi)
@@ -877,18 +863,11 @@
          (args (in bargs))
          (output (bir:output instruction))
          (label (datum-name-as-string output)))
+    (assert (eq args-rtype :vaslist))
     (out
-     (cond (*new-apply*
-            (assert (eq args-rtype :vaslist))
-            (cmp:irc-apply fun (cmp:irc-vaslist-nvals args)
-                           (cmp:irc-vaslist-values args)
-                           label))
-           (t
-            (assert (eq args-rtype :multiple-values))
-            (%intrinsic-invoke-if-landing-pad-or-call
-             "cc_call_multipleValueOneFormCallWithRet0"
-             (list fun args)
-             label)))
+     (cmp:irc-apply fun (cmp:irc-vaslist-nvals args)
+                    (cmp:irc-vaslist-values args)
+                    label)
      output)))
 
 (defmethod translate-simple-instruction ((instruction cc-bmir:fixed-mv-call)
@@ -1302,104 +1281,6 @@
                  (t (error "BUG: Bad rtype ~a" irt)))))
      output)))
 
-(defun values-collect-multi (inst)
-  ;; First, assert that there's only one input that isn't a values-save.
-  (loop with seen-non-save = nil
-        for input in (bir:inputs inst)
-        for rt = (cc-bmir:rtype input)
-        if (not (or (eq rt :vaslist) (listp rt)))
-          do (if seen-non-save
-                 (error "BUG: Can only have one variable non-save-values input, but saw ~a and ~a!" inst seen-non-save)
-                 (setf seen-non-save inst)))
-  (let* ((liven nil) ; index for the :variable storage.
-         ;; Collect the form of each input.
-         ;; Each datum is (symbol nvalues extra).
-         ;; For saved values, the extra is the storage for it. For the current
-         ;; values the extra is the primary value (since it's stored
-         ;; separately)
-         (data (loop for idx from 0
-                     for input in (bir:inputs inst)
-                     for in = (in input)
-                     for irt = (cc-bmir:rtype input)
-                     collect (cond ((eq irt :vaslist)
-                                    (list :saved
-                                          (cmp:irc-vaslist-nvals in)
-                                          (cmp:irc-vaslist-values in)))
-                                   ((listp irt)
-                                    (let ((len (length irt)))
-                                      (list :fixed
-                                            (%size_t len)
-                                            (list* len (if (= len 1)
-                                                           (list in)
-                                                           in)))))
-                                   ((eq irt :multiple-values)
-                                    (setf liven idx)
-                                    (list :variable
-                                          (cmp:irc-tmv-nret in)
-                                          (cmp:irc-tmv-primary in)))
-                                   (t (error "BUG: Bad rtype ~a" irt)))))
-         ;; Collect partial sums of the number of values.
-         (partial-sums
-           (loop for (_1 size _2) in data
-                 for n = size then (cmp:irc-add n size)
-                 collect n))
-         (n-total-values (first (last partial-sums)))
-         ;; LLVM type is t**, i.e. this is a pointer to the 0th value.
-         (valvec (%gep cmp:%t*[0]*% (multiple-value-array-address) '(0 0))))
-    ;; Generate code to copy all the values into the temp storage.
-    ;; First we need to move any live values, since otherwise they could be
-    ;; overridden, unless they're at zero position since then they're already
-    ;; in place. (in practice, this never happens right now, but maybe later?)
-    (when (and liven (not (zerop liven)))
-      (destructuring-bind (size primary) (rest (nth liven data))
-        (let* ((spos (nth (1- liven) partial-sums))
-               (sdest (cmp:irc-gep-variable valvec (list spos)))
-               ;; Add one, since we store the primary separately
-               (dest (%gep cmp:%t**% sdest '(1)))
-               (source (%gep cmp:%t**% valvec '(1)))
-               ;; Number of elements to copy out of the values vector.
-               ;; This is a bit tricky, in that we want to copy nvalues-1,
-               ;; unless nvalues is zero in which case we want zero.
-               ;; Therefore we use umax to turn a 0 into 1.
-               ;; We could alternately branch, but that's probably slower.
-               (adjusted-nvalues
-                 (%intrinsic-call "llvm.umax.i64"
-                                  (list size (%i64 1))))
-               (ncopy (cmp:irc-sub adjusted-nvalues (%size_t 1))))
-          ;; Copy the rest
-          (%intrinsic-call "llvm.memmove.p0i8.p0i8.i64"
-                           (list (cmp:irc-bit-cast dest cmp:%i8*%)
-                                 ;; read from the 1st value of the mv vector
-                                 (cmp:irc-bit-cast source cmp:%i8*%)
-                                 ;; Multiply size by sizeof(T_O*)
-                                 ;; (subtract one for the primary, again)
-                                 (cmp::irc-shl ncopy 3 :nuw t)
-                                 ;; non volatile
-                                 (%i1 0)))
-          ;; Store the primary
-          (cmp:irc-store primary sdest))))
-    ;; Now copy the rest
-    (loop for (key size extra) in data
-          for startn = (%size_t 0) then finishn
-          for finishn in partial-sums
-          for dest = (cmp:irc-gep-variable valvec (list startn))
-          do (ecase key
-               ((:saved)
-                (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
-                                 (list (cmp:irc-bit-cast dest cmp:%i8*%)
-                                       (cmp:irc-bit-cast extra cmp:%i8*%)
-                                       ;; Multiply by sizeof(T_O*)
-                                       (cmp::irc-shl size 3 :nuw t)
-                                       (%i1 0))))
-               ((:fixed)
-                (loop for i below (first extra) ; size
-                      for v in (rest extra)
-                      do (cmp:irc-store v (%gep cmp:%t**% dest (list i)))))
-               ((:variable)))) ; done already
-    ;; Now just return a T_mv. We load the primary from the vector again, which
-    ;; is technically slightly inefficient.
-    (cmp:irc-make-tmv n-total-values (cmp:irc-load valvec))))
-
 (defun values-collect-multi-vas (inst)
   ;; First, assert that there's only one input that isn't a values-save.
   (loop with seen-non-save = nil
@@ -1505,48 +1386,31 @@
 (defmethod translate-terminator ((inst bir:values-collect) abi next)
   (declare (ignore abi))
   (let ((output (bir:output inst)))
+    (assert (eq (cc-bmir:rtype output) :vaslist))
     (out
-     (cond (*new-apply*
-            (assert (eq (cc-bmir:rtype output) :vaslist))
-            (cond ((= (length (bir:inputs inst)) 1)
-                   (let* ((inp (first (bir:inputs inst)))
-                          (in (in inp))
-                          (irt (cc-bmir:rtype inp)))
-                     (cond ((eq irt :vaslist)
-                            (setf (dynenv-storage inst) nil)
-                            in)
-                           ((eq irt :multiple-values)
-                            (let* ((nret (cmp:irc-tmv-nret in))
-                                   (save (%intrinsic-call "llvm.stacksave" nil))
-                                   (values (cmp:alloca-temp-values nret)))
-                              (setf (dynenv-storage inst) save)
-                              (%intrinsic-call "cc_save_values"
-                                               (list
-                                                nret
-                                                (cmp:irc-tmv-primary in)
-                                                values))
-                              (cmp:irc-make-vaslist nret values)))
-                           ;; Fixed values would have been lowered away in
-                           ;; insert-casts.
-                           (t (error "BUG: Bad rtype ~a" irt)))))
-                  (t ; hard case
-                   (values-collect-multi-vas inst))))
-          (t
-           (assert (eq (cc-bmir:rtype output) :multiple-values))
-           (cond ((= (length (bir:inputs inst)) 1)
-                  ;; Simple case with no pasting together multiple inputs.
-                  (let* ((inp (first (bir:inputs inst)))
-                         (in (in inp))
-                         (irt (cc-bmir:rtype inp)))
-                    (cond ((eq irt :vaslist)
-                           (%intrinsic-call "cc_load_values"
-                                            (list
-                                             (cmp:irc-vaslist-nvals in)
-                                             (cmp:irc-vaslist-values in))))
-                          ((eq irt :multiple-values) in) ; already have mv, so nop
-                          (t (error "BUG: Bad rtype ~a" irt)))))
-                 (t ; hard case
-                  (values-collect-multi inst)))))
+     (cond ((= (length (bir:inputs inst)) 1)
+            (let* ((inp (first (bir:inputs inst)))
+                   (in (in inp))
+                   (irt (cc-bmir:rtype inp)))
+              (cond ((eq irt :vaslist)
+                     (setf (dynenv-storage inst) nil)
+                     in)
+                    ((eq irt :multiple-values)
+                     (let* ((nret (cmp:irc-tmv-nret in))
+                            (save (%intrinsic-call "llvm.stacksave" nil))
+                            (values (cmp:alloca-temp-values nret)))
+                       (setf (dynenv-storage inst) save)
+                       (%intrinsic-call "cc_save_values"
+                                        (list
+                                         nret
+                                         (cmp:irc-tmv-primary in)
+                                         values))
+                       (cmp:irc-make-vaslist nret values)))
+                    ;; Fixed values would have been lowered away in
+                    ;; insert-casts.
+                    (t (error "BUG: Bad rtype ~a" irt)))))
+           (t ; hard case
+            (values-collect-multi-vas inst)))
      output))
   (cmp:irc-br (first next)))
 
@@ -1978,7 +1842,6 @@ COMPILE-FILE will use the default *clasp-env*."
   (cleavir-ast-to-bir:compile-toplevel ast system))
 
 (defvar *dis* nil)
-(defvar *new-apply* t)
 
 (defun ver (module msg)
   (handler-bind

@@ -265,22 +265,19 @@
        (maybe-entry-processor (cleavir-bir:parent instruction) tags))
       bb)))
 (defmethod compute-maybe-entry-processor ((inst bir:values-collect) tags)
-  (if *new-apply*
-      (let ((stackpos (dynenv-storage inst)))
-        (if stackpos
-            (cmp:with-irbuilder ((llvm-sys:make-irbuilder
-                                  (cmp:thread-local-llvm-context)))
-              (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
-                (cmp:irc-begin-block bb)
-                ;; Lose the saved values alloca.
-                (%intrinsic-call "llvm.stackrestore" (list stackpos))
-                ;; Continue
-                (cmp:irc-br
-                 (maybe-entry-processor (cleavir-bir:parent inst) tags))
-                bb))
-            (maybe-entry-processor (cleavir-bir:parent inst) tags)))
-      ;; NOP for the moment
-      (maybe-entry-processor (cleavir-bir:parent inst) tags)))
+  (let ((stackpos (dynenv-storage inst)))
+    (if stackpos
+        (cmp:with-irbuilder ((llvm-sys:make-irbuilder
+                              (cmp:thread-local-llvm-context)))
+          (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
+            (cmp:irc-begin-block bb)
+            ;; Lose the saved values alloca.
+            (%intrinsic-call "llvm.stackrestore" (list stackpos))
+            ;; Continue
+            (cmp:irc-br
+             (maybe-entry-processor (cleavir-bir:parent inst) tags))
+            bb))
+        (maybe-entry-processor (cleavir-bir:parent inst) tags))))
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
                                           tags)
