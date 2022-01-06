@@ -704,11 +704,9 @@ rewrite the slot in the literal table to store a closure."
 (defun generate-run-time-code-for-closurette (node)
   ;; Generate calls to ltvc_make_closurette for closurettes that are created at JIT startup time
   (let* ((closurette-object (literal-node-creator-object node))
-         (function-index (literal-node-closure-function-index closurette-object))
          (datum (literal-dnode-datum closurette-object))
          (index (datum-index datum))
          (entry-point-ref (literal-node-closure-entry-point-ref closurette-object)))
-    (declare (ignore function-index))
     (cmp:irc-intrinsic-call "ltvc_make_closurette"
                             (list *gcroots-in-module*
                                   (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)

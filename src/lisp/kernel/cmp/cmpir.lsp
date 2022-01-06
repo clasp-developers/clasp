@@ -1134,10 +1134,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 (defun layout-xep-function* (arity function-info xep-group calling-convention func-env)
   (let* ((local-function (xep-group-local-function xep-group))
-         (pass-args '())
          (cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info))
          (variables (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis)))
-    (declare (ignorable pass-args))
     (cmp-log "lambda list variables = %s%N" variables)
     (let ((rev-output-bindings '()))
       (with-irbuilder (*irbuilder-function-alloca*)
@@ -1167,7 +1165,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                (let ((call-block (irc-basic-block-create "docall")))
                  (irc-br call-block)
                  (irc-begin-block call-block))
-               (cmp-log "pass-args %s%N" pass-args)
                (let* ((cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info))
                       (cleavir-arguments (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis))
                       (new-env (irc-new-unbound-value-environment-of-size
