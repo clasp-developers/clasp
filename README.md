@@ -45,7 +45,7 @@ Clasp supports the following major components:
 Post on the issues or [contact us](#irc) if you're interested in changing that.
 
 ## Contributing to Clasp
-We very much welcome any kind of contribution to Clasp, even if it is just bug finding and testing. A lot can be done all around the project, if you want to dive into something large. See the [CONTRIBUTING](https://github.com/clasp-developers/clasp/blob/dev/CONTRIBUTING.md) file for the few guidelines we've set up around contributions.
+We very much welcome any kind of contribution to Clasp, even if it is just bug finding and testing. A lot can be done all around the project, if you want to dive into something large. See the [CONTRIBUTING](https://github.com/clasp-developers/clasp/blob/main/CONTRIBUTING.md) file for the few guidelines we've set up around contributions.
 
 ## Reporting Problems
 Generally you can report problems in two fashions, either by [opening an issue ticket](https://github.com/clasp-developers/clasp/issues/new) or by [chatting with us directly](#irc). In both cases, though, you should have the following pieces handy in order for us to be able to help you out as quickly and painlessly as possible:
