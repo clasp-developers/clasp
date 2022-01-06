@@ -193,8 +193,10 @@
 
 (defun dynenv-storage (dynenv)
   (check-type dynenv bir:dynamic-environment)
-  (or (gethash dynenv *dynenv-storage*)
-      (error "BUG: Missing dynenv storage for ~a" dynenv)))
+  (multiple-value-bind (value presentp) (gethash dynenv *dynenv-storage*)
+    (if presentp
+        value
+        (error "BUG: Missing dynenv storage for ~a" dynenv))))
 
 (defun (setf dynenv-storage) (new dynenv)
   (setf (gethash dynenv *dynenv-storage*) new))

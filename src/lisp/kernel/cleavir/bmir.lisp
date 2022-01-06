@@ -42,6 +42,11 @@
 (defmethod bir::disassemble-instruction-extra append ((inst mtf))
   (list (bir:nvalues inst)))
 
+;;; This instruction is lowered from bir:values-collect when the rtypes of
+;;; all inputs are a fixed number of values. This instruction appends those
+;;; values together (i.e. has no runtime existence).
+(defclass append-values (bir:one-output bir:instruction) ())
+
 ;;; This instruction is lowered from bir:mv-call when the number of
 ;;; arguments can be determined by the compiler. It is compiled into a
 ;;; simple call instead of an actual mv-sensitive call.

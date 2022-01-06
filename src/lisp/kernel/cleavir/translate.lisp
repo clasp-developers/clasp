@@ -165,6 +165,11 @@
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
   (declare (ignore tmv))
   (%intrinsic-call "llvm.stackrestore" (list (dynenv-storage dynenv))))
+(defmethod undo-dynenv ((dynenv bir:values-collect) tmv)
+  (declare (ignore tmv))
+  (let ((storage (dynenv-storage dynenv)))
+    (when storage
+      (%intrinsic-call "llvm.stackrestore" (list storage)))))
 
 (defun translate-local-unwind (jump tmv)
   (loop with target = (bir:dynamic-environment
@@ -344,7 +349,8 @@
   (cond
     ((cleavir-set:empty-set-p (bir:unwinds instruction))
      (cmp:irc-br (first next)))
-    ((bir-transformations:simple-unwinding-p instruction)
+    ((bir-transformations:simple-unwinding-p instruction
+                                             *clasp-system*)
      (translate-sjlj-catch instruction next))
     (t
      ;; Assign the catch the continuation.
@@ -380,7 +386,7 @@
     (when rv (save-multiple-value-0 rrv))
     ;; unwind
     (if (bir-transformations:simple-unwinding-p
-         (bir:catch instruction))
+         (bir:catch instruction) *clasp-system*)
         ;; SJLJ
         ;; (Note: No landing pad because in order for SJLJ to occur,
         ;;  the dynamic environment must just be the function.)
@@ -629,6 +635,12 @@
    (list (enclose callee-info :dynamic nil) tmv)
    label))
 
+(defun general-mv-local-call-vas (callee-info vaslist label)
+  (cmp:irc-apply (enclose callee-info :dynamic nil)
+                 (cmp:irc-vaslist-nvals vaslist)
+                 (cmp:irc-vaslist-values vaslist)
+                 label))
+
 (defun direct-mv-local-call (tmv callee-info nreq nopt rest-var label)
   (let* ((rnret (cmp:irc-tmv-nret tmv))
          (rprimary (cmp:irc-tmv-primary tmv))
@@ -711,9 +723,97 @@
              (function (main-function callee-info))
              (function-type (llvm-sys:get-function-type function))
              (call
-               (cmp::irc-call-or-invoke function-type function arguments
-                                        cmp:*current-unwind-landing-pad-dest*
-                                        label)))
+               (cmp:irc-call-or-invoke function-type function arguments
+                                       cmp:*current-unwind-landing-pad-dest*
+                                       label)))
+        #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
+        call)))))
+
+(defun direct-mv-local-call-vas (vaslist callee-info nreq nopt rest-var label)
+  (let* ((rnret (cmp:irc-vaslist-nvals vaslist))
+         (rvalues (cmp:irc-vaslist-values vaslist))
+         (nfixed (+ nreq nopt))
+         (mismatch
+           (unless (and (zerop nreq) rest-var)
+             (cmp:irc-basic-block-create "lmvc-arg-mismatch")))
+         (mte (if rest-var
+                  (cmp:irc-basic-block-create "lmvc-more-than-enough")
+                  mismatch))
+         (merge (cmp:irc-basic-block-create "lmvc-after"))
+         (sw (cmp:irc-switch rnret mte (+ 1 nreq nopt)))
+         (environment (environment callee-info)))
+    (labels ((load-return-value (n)
+               (cmp:irc-load (cmp:irc-gep rvalues (list n))))
+             (load-return-values (low high)
+               (loop for i from low below high
+                     collect (load-return-value i)))
+             (optionals (n)
+               (parse-local-call-optional-arguments
+                nopt (load-return-values nreq (+ nreq n)))))
+      ;; Generate phis for the merge block's call.
+      (cmp:irc-begin-block merge)
+      (let ((opt-phis
+              (loop for i below nopt
+                    collect (cmp:irc-phi cmp:%t*% (1+ nopt))
+                    collect (cmp:irc-phi cmp:%t*% (1+ nopt))))
+            (rest-phi
+              (cond ((null rest-var) nil)
+                    ((bir:unused-p rest-var)
+                     (cmp:irc-undef-value-get cmp:%t*%))
+                    (t (cmp:irc-phi cmp:%t*% (1+ nopt))))))
+        ;; Generate the mismatch block, if it exists.
+        (when mismatch
+          (cmp:irc-begin-block mismatch)
+          (cmp::irc-intrinsic-call-or-invoke
+           "cc_wrong_number_of_arguments"
+           (list (enclose callee-info :indefinite nil) rnret
+                 (%size_t nreq) (%size_t nfixed)))
+          (cmp:irc-unreachable))
+        ;; Generate not-enough-args cases.
+        (loop for i below nreq
+              do (cmp:irc-add-case sw (%size_t i) mismatch))
+        ;; Generate optional arg cases, including the exactly-enough case.
+        (loop for i upto nopt
+              for b = (cmp:irc-basic-block-create
+                       (format nil "lmvc-optional-~d" i))
+              do (cmp:irc-add-case sw (%size_t (+ nreq i)) b)
+                 (cmp:irc-begin-block b)
+                 (loop for phi in opt-phis
+                       for val in (optionals i)
+                       do (cmp:irc-phi-add-incoming phi val b))
+                 (when (and rest-var
+                            (not (bir:unused-p rest-var)))
+                   (cmp:irc-phi-add-incoming rest-phi (%nil) b))
+                 (cmp:irc-br merge))
+        ;; If there's a &rest, generate the more-than-enough arguments case.
+        (when rest-var
+          (cmp:irc-begin-block mte)
+          (loop for phi in opt-phis
+                for val in (optionals nopt)
+                do (cmp:irc-phi-add-incoming phi val mte))
+          (unless (bir:unused-p rest-var)
+            (cmp:irc-phi-add-incoming
+             rest-phi
+             (%intrinsic-invoke-if-landing-pad-or-call
+              "cc_mvcGatherRest2"
+              (list (cmp:irc-gep rvalues (list nfixed))
+                    (cmp:irc-sub rnret (%size_t nfixed))))
+           mte))
+        (cmp:irc-br merge))
+      ;; Generate the call, in the merge block.
+      (cmp:irc-begin-block merge)
+      (let* ((arguments
+               (nconc
+                (mapcar #'variable-as-argument environment)
+                (loop for j below nreq collect (load-return-value j))
+                opt-phis
+                (when rest-var (list rest-phi))))
+             (function (main-function callee-info))
+             (function-type (llvm-sys:get-function-type function))
+             (call
+               (cmp:irc-call-or-invoke function-type function arguments
+                                       cmp:*current-unwind-landing-pad-dest*
+                                       label)))
         #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
         call)))))
 
@@ -727,15 +827,15 @@
          (mvarg (second (bir:inputs instruction)))
          (mvargrt (cc-bmir:rtype mvarg))
          (mvargi (in mvarg)))
-    (assert (eq mvargrt :multiple-values))
+    (assert (eq mvargrt :vaslist))
     (out
      (multiple-value-bind (req opt rest-var key-flag keyargs
                            aok aux varest-p)
          (cmp::process-bir-lambda-list (bir:lambda-list callee))
        (declare (ignore keyargs aok aux))
        (if (or key-flag varest-p)
-           (general-mv-local-call callee-info mvargi oname)
-           (direct-mv-local-call
+           (general-mv-local-call-vas callee-info mvargi oname)
+           (direct-mv-local-call-vas
             mvargi callee-info (car req) (car opt) rest-var oname)))
      output)))
 
@@ -763,28 +863,29 @@
          (args (in bargs))
          (output (bir:output instruction))
          (label (datum-name-as-string output)))
-    (assert (eq args-rtype :multiple-values))
+    (assert (eq args-rtype :vaslist))
     (out
-     (%intrinsic-invoke-if-landing-pad-or-call
-      "cc_call_multipleValueOneFormCallWithRet0"
-      (list fun args)
-      label)
+     (cmp:irc-apply fun (cmp:irc-vaslist-nvals args)
+                    (cmp:irc-vaslist-values args)
+                    label)
      output)))
 
 (defmethod translate-simple-instruction ((instruction cc-bmir:fixed-mv-call)
                                          abi)
   (declare (ignore abi))
   (let* ((fun (in (first (bir:inputs instruction))))
-         (bargs (second (bir:inputs instruction)))
-         (args-rtype (cc-bmir:rtype bargs))
-         (args (in bargs))
+         (args (rest (bir:inputs instruction)))
+         (rargs (loop for arg in args
+                      for rt = (cc-bmir:rtype arg)
+                      do (assert (listp rt))
+                      when (= (length rt) 1)
+                        collect (in arg)
+                      else append (in arg)))
          (output (bir:output instruction))
          (label (datum-name-as-string output)))
-    (assert (= (and (listp args-rtype)
-                    (= (length args-rtype) (bir:nvalues instruction)))))
+    (assert (= (length rargs) (bir:nvalues instruction)))
     (out
-     (let ((rargs (if (= (length args-rtype) 1) (list args) args)))
-       (closure-call-or-invoke fun rargs :label label))
+     (closure-call-or-invoke fun rargs :label label)
      output)))
 
 (defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
@@ -883,11 +984,15 @@
                    (cast-one :object (first outputrt)
                              (cmp:irc-vaslist-nth (%size_t 0) (in input))))
                   (t (error "BUG: Cast from ~a to ~a" inputrt outputrt))))
+           ((not (listp inputrt)) (error "BUG: Bad rtype ~a" inputrt))
+           ;; inputrt must be a list (fixed values)
            ((= (length inputrt) 1)
             (cond ((eq outputrt :multiple-values)
                    (cmp:irc-make-tmv (%size_t 1)
                                      (cast-one (first inputrt) :object
                                                (in input))))
+                  ((not (listp outputrt))
+                   (error "BUG: Cast from ~a to ~a" inputrt outputrt))
                   ((null outputrt) nil)
                   ((= (length outputrt) 1)
                    (cast-one (first inputrt) (first outputrt) (in input)))
@@ -901,6 +1006,8 @@
                    (%cast-to-mv
                     (loop for inv in (in input) for irt in inputrt
                           collect (cast-one irt :object inv))))
+                  ((not (listp outputrt))
+                   (error "BUG: Cast from ~a to ~a" inputrt outputrt))
                   ((= (length outputrt) 1)
                    (cond ((null inputrt)
                           (assert (equal outputrt '(:object)))
@@ -1130,10 +1237,51 @@
                            (loop for i from 1 below nvalues
                                  collect (cmp:irc-load
                                           (return-value-elt i)))))))))
+           ((eq irt :vaslist)
+            (let ((ls
+                    (loop with vals = (cmp:irc-vaslist-values (in input))
+                          for i below (bir:nvalues inst)
+                          for ptr = (cmp:irc-gep vals (list i))
+                          collect (cmp:irc-load ptr))))
+              (if (= (bir:nvalues inst) 1)
+                  (first ls)
+                  ls)))
            (t (error "BUG: Bad rtype ~a" irt)))
      output)))
 
-(defun values-collect-multi (inst)
+(defmethod translate-simple-instruction ((inst bir:values-restore) abi)
+  (declare (ignore abi))
+  (let ((input (bir:input inst))
+        (output (bir:output inst)))
+    (out
+     (if (listp (cc-bmir:rtype output))
+         ;; Totally fixed values; we just alias.
+         (in input)
+         ;; Now output rtype must be :multiple-values.
+         (let* ((in (in input))
+                (irt (cc-bmir:rtype input)))
+           (cond ((eq irt :vaslist)
+                  (%intrinsic-call "cc_load_values"
+                                   (list
+                                    (cmp:irc-vaslist-nvals in)
+                                    (cmp:irc-vaslist-values in))))
+                 ((listp irt)
+                  (let* ((lirt (length irt)))
+                    ;; FIXME: In safe code, we might want to check that the
+                    ;; values count is correct,
+                    ;; if the type tests do not do this already.
+                    (case lirt
+                      ((0) (cmp:irc-make-tmv (%size_t 0) (%nil)))
+                      ((1) (cmp:irc-make-tmv (%size_t 1) in))
+                      (otherwise
+                       (loop for i from 1
+                             for idat in (rest in)
+                             do (cmp:irc-store idat (return-value-elt i)))
+                       (cmp:irc-make-tmv (%size_t lirt) (first in))))))
+                 (t (error "BUG: Bad rtype ~a" irt)))))
+     output)))
+
+(defun values-collect-multi-vas (inst)
   ;; First, assert that there's only one input that isn't a values-save.
   (loop with seen-non-save = nil
         for input in (bir:inputs inst)
@@ -1154,8 +1302,10 @@
                      for irt = (cc-bmir:rtype input)
                      collect (cond ((eq irt :vaslist)
                                     (list :saved
-                                          (cmp:irc-vaslist-nvals in)
-                                          (cmp:irc-vaslist-values in)))
+                                          (cmp:irc-vaslist-nvals
+                                           in "nret-saved")
+                                          (cmp:irc-vaslist-values
+                                           in "values-saved")))
                                    ((listp irt)
                                     (let ((len (length irt)))
                                       (list :fixed
@@ -1166,17 +1316,28 @@
                                    ((eq irt :multiple-values)
                                     (setf liven idx)
                                     (list :variable
-                                          (cmp:irc-tmv-nret in)
+                                          (cmp:irc-tmv-nret in "nret-variable")
                                           (cmp:irc-tmv-primary in)))
                                    (t (error "BUG: Bad rtype ~a" irt)))))
          ;; Collect partial sums of the number of values.
          (partial-sums
            (loop for (_1 size _2) in data
-                 for n = size then (cmp:irc-add n size)
+                 for n = size then (cmp:irc-add n size "sum-nret")
                  collect n))
          (n-total-values (first (last partial-sums)))
+         (stacksave (%intrinsic-call "llvm.stacksave" nil "values-collect"))
+         (tv-size
+           ;; In order to store the primary value unconditionally below, we
+           ;; need to allocate one extra word. This is important for the
+           ;; situation (mv-call ... (foo)) where FOO returns no values.
+           ;; Without this extra word, the primary could be written to just
+           ;; beyond the allocated memory, which would cause problems.
+           (if liven
+               (cmp:irc-add n-total-values (%size_t 1))
+               n-total-values))
          ;; LLVM type is t**, i.e. this is a pointer to the 0th value.
-         (valvec (%gep cmp:%t*[0]*% (multiple-value-array-address) '(0 0))))
+         (valvec (cmp:alloca-temp-values tv-size "values-collect-temp")))
+    (setf (dynenv-storage inst) stacksave)
     ;; Generate code to copy all the values into the temp storage.
     ;; First we need to move any live values, since otherwise they could be
     ;; overridden, unless they're at zero position since then they're already
@@ -1184,27 +1345,35 @@
     (when (and liven (not (zerop liven)))
       (destructuring-bind (size primary) (rest (nth liven data))
         (let* ((spos (nth (1- liven) partial-sums))
-               (sdest (cmp:irc-gep-variable valvec (list spos)))
+               ;; LLVM type is t**, i.e. this is a pointer to the 0th value.
+               (mvalues (%gep cmp:%t*[0]*% (multiple-value-array-address)
+                              '(0 0) "multiple-values"))
+               (sdest (cmp:irc-gep-variable valvec (list spos) "var-dest"))
                ;; Add one, since we store the primary separately
-               (dest (%gep cmp:%t**% sdest '(1)))
-               (source (%gep cmp:%t**% valvec '(1)))
+               (dest (%gep cmp:%t**% sdest '(1) "var-dest-subsequent"))
+               (source (%gep cmp:%t**% mvalues '(1) "var-source-subsequent"))
                ;; Number of elements to copy out of the values vector.
                ;; This is a bit tricky, in that we want to copy nvalues-1,
                ;; unless nvalues is zero in which case we want zero.
                ;; Therefore we use umax to turn a 0 into 1.
-               ;; We could alternately branch, but that's probably slower.
+               ;; We could alternately branch, but that's probably slower,
+               ;; and definitely more of a pain to generate.
                (adjusted-nvalues
                  (%intrinsic-call "llvm.umax.i64"
-                                  (list size (%i64 1))))
-               (ncopy (cmp:irc-sub adjusted-nvalues (%size_t 1))))
+                                  (list size (%i64 1))
+                                  "adjusted-nret-variable"))
+               (ncopy (cmp:irc-sub adjusted-nvalues (%size_t 1) "ntocopy")))
           ;; Copy the rest
-          (%intrinsic-call "llvm.memmove.p0i8.p0i8.i64"
-                           (list (cmp:irc-bit-cast dest cmp:%i8*%)
+          (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
+                           (list (cmp:irc-bit-cast dest cmp:%i8*%
+                                                   "var-dest-subsequent")
                                  ;; read from the 1st value of the mv vector
-                                 (cmp:irc-bit-cast source cmp:%i8*%)
+                                 (cmp:irc-bit-cast source cmp:%i8*%
+                                                   "var-source-subsequent")
                                  ;; Multiply size by sizeof(T_O*)
                                  ;; (subtract one for the primary, again)
-                                 (cmp::irc-shl ncopy 3 :nuw t)
+                                 (cmp::irc-shl ncopy 3 :nuw t
+                                               :label "real-ntocopy")
                                  ;; non volatile
                                  (%i1 0)))
           ;; Store the primary
@@ -1213,68 +1382,70 @@
     (loop for (key size extra) in data
           for startn = (%size_t 0) then finishn
           for finishn in partial-sums
-          for dest = (cmp:irc-gep-variable valvec (list startn))
+          for dest = (cmp:irc-gep-variable valvec (list startn) "dest")
           do (ecase key
                ((:saved)
                 (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
-                                 (list (cmp:irc-bit-cast dest cmp:%i8*%)
-                                       (cmp:irc-bit-cast extra cmp:%i8*%)
+                                 (list (cmp:irc-bit-cast dest cmp:%i8*% "dest")
+                                       (cmp:irc-bit-cast extra cmp:%i8*%
+                                                         "source")
                                        ;; Multiply by sizeof(T_O*)
-                                       (cmp::irc-shl size 3 :nuw t)
+                                       (cmp::irc-shl size 3 :nuw t
+                                                     :label "real-ntocopy")
                                        (%i1 0))))
                ((:fixed)
                 (loop for i below (first extra) ; size
                       for v in (rest extra)
-                      do (cmp:irc-store v (%gep cmp:%t**% dest (list i)))))
+                      do (cmp:irc-store v (%gep cmp:%t**% dest (list i)
+                                                "fixed-dest"))))
                ((:variable)))) ; done already
-    ;; Now just return a T_mv. We load the primary from the vector again, which
-    ;; is technically slightly inefficient.
-    (cmp:irc-make-tmv n-total-values (cmp:irc-load valvec))))
+    (cmp:irc-make-vaslist n-total-values valvec "values-collected")))
 
-(defmethod translate-simple-instruction ((inst bir:values-collect) abi)
+(defmethod translate-terminator ((inst bir:values-collect) abi next)
   (declare (ignore abi))
   (let ((output (bir:output inst)))
+    (assert (eq (cc-bmir:rtype output) :vaslist))
     (out
-     (cond ((listp (cc-bmir:rtype output))
-            ;; Totally fixed values; we pretty much just alias.
-            (loop for inp in (bir:inputs inst)
-                  for rt = (cc-bmir:rtype inp)
-                  do (assert (listp rt))
-                  if (= (length rt) 1)
-                    collect (in inp) into result
-                  else
-                    append (in inp) into result
-                  finally (return (if (= (length result) 1)
-                                      (first result)
-                                      result))))
-           ;; Now output rtype must be :multiple-values.
-           ((= (length (bir:inputs inst)) 1)
-            ;; Simple case with no pasting together multiple inputs.
+     (cond ((= (length (bir:inputs inst)) 1)
             (let* ((inp (first (bir:inputs inst)))
                    (in (in inp))
                    (irt (cc-bmir:rtype inp)))
               (cond ((eq irt :vaslist)
-                     (%intrinsic-call "cc_load_values"
-                                      (list
-                                       (cmp:irc-vaslist-nvals in)
-                                       (cmp:irc-vaslist-values in))))
-                    ((listp irt)
-                     (let* ((lirt (length irt)))
-                       ;; FIXME: In safe code, we might want to check that the
-                       ;; values count is correct,
-                       ;; if the type tests do not do this already.
-                       (case lirt
-                         ((0) (cmp:irc-make-tmv (%size_t 0) (%nil)))
-                         ((1) (cmp:irc-make-tmv (%size_t 1) in))
-                         (otherwise
-                          (loop for i from 1
-                                for idat in (rest in)
-                                do (cmp:irc-store idat (return-value-elt i)))
-                          (cmp:irc-make-tmv (%size_t lirt) (first in))))))
+                     (setf (dynenv-storage inst) nil)
+                     in)
+                    ((eq irt :multiple-values)
+                     (let* ((nret (cmp:irc-tmv-nret in))
+                            (save (%intrinsic-call "llvm.stacksave" nil))
+                            (values (cmp:alloca-temp-values nret)))
+                       (setf (dynenv-storage inst) save)
+                       (%intrinsic-call "cc_save_values"
+                                        (list
+                                         nret
+                                         (cmp:irc-tmv-primary in)
+                                         values))
+                       (cmp:irc-make-vaslist nret values)))
+                    ;; Fixed values would have been lowered away in
+                    ;; insert-casts.
                     (t (error "BUG: Bad rtype ~a" irt)))))
            (t ; hard case
-            (values-collect-multi inst)))
-     output)))
+            (values-collect-multi-vas inst)))
+     output))
+  (cmp:irc-br (first next)))
+
+(defmethod translate-simple-instruction ((inst cc-bmir:append-values) abi)
+  (declare (ignore abi))
+  (out
+   (loop for inp in (bir:inputs inst)
+         for rt = (cc-bmir:rtype inp)
+         do (assert (listp rt))
+         if (= (length rt) 1)
+           collect (in inp) into result
+         else
+           append (in inp) into result
+         finally (return (if (= (length result) 1)
+                             (first result)
+                             result)))
+   (bir:output inst)))
 
 (defmethod translate-simple-instruction
     ((inst bir:load-time-value-reference) abi)
@@ -1708,8 +1879,8 @@ COMPILE-FILE will use the default *clasp-env*."
   (ver module "optimize vars")
   (bir-transformations:meta-evaluate-module module system)
   (ver module "meta")
-  (cc-bir-to-bmir:reduce-module-instructions module)
   (bir-transformations:module-generate-type-checks module system)
+  (cc-bir-to-bmir:reduce-module-instructions module)
   (cc-vaslist:maybe-transform-module module)
   ;; These should happen after higher level optimizations since they are like
   ;; "post passes" which do not modify the flow graph.

@@ -1244,6 +1244,19 @@ T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
   }
 }
 
+T_O* cc_mvcGatherRest2(T_O** values, size_t nvalues) {
+  if (nvalues == 0)
+    return nil<T_O>().raw_();
+  else {
+    ql::list result;
+    for (size_t i = 0; i < nvalues; ++i) {
+      T_O* tagged_obj = ENSURE_VALID_OBJECT(values[i]);
+      result << gc::smart_ptr<T_O>((gc::Tagged)tagged_obj);
+    }
+    return result.result().raw_();
+  }
+}
+
 void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
   T_sp functionName = closure->functionName();

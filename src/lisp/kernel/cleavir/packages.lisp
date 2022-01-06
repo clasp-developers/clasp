@@ -113,7 +113,7 @@
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store #:cas)
   (:export #:cast #:unboxed-constant-reference
-           #:mtf #:fixed-mv-call #:fixed-mv-local-call)
+           #:mtf #:append-values #:fixed-mv-call #:fixed-mv-local-call)
   (:export #:datum #:output #:phi #:variable #:argument)
   (:export #:rtype)
   (:export #:cast-one))
