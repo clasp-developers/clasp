@@ -31,16 +31,21 @@
        (consp (cdr form))
        (null (cddr form))))
 
-;;; Collapse (coerce-fdesignator #'foo) to #'foo, and
-;;; (coerce-fdesignator 'foo) to (fdefinition 'foo).
+;;; Collapse (coerce-fdesignator #'foo) to #'foo,
+;;; (coerce-fdesignator 'foo) to (fdefinition 'foo),
+;;; and (coerce-fdesignator (lambda ...)) to (lambda ...).
+;;; Note that cclasp should have more sophisticated IR-level analyses
+;;; expanding on this.
 (define-compiler-macro core:coerce-fdesignator (&whole form designator
                                                        &environment env)
-  (cond ((function-form-p designator) designator)
-        ((constantp designator env)
-         (if (symbolp (ext:constant-form-value designator env))
-             `(fdefinition ,designator)
-             form))
-        (t form)))
+  ;; In order to cover (lambda ...), among other possibilities, macroexpand.
+  (let ((designator (macroexpand designator env)))
+    (cond ((function-form-p designator) designator)
+          ((constantp designator env)
+           (if (symbolp (ext:constant-form-value designator env))
+               `(fdefinition ,designator)
+               form))
+          (t form))))
 
 (define-compiler-macro not (objectf)
   ;; Take care of (not (not x)), which code generates sometimes.
