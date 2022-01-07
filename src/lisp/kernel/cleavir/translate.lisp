@@ -629,105 +629,11 @@
           :label (datum-name-as-string output))
          output)))
 
-(defun general-mv-local-call (callee-info tmv label)
-  (%intrinsic-invoke-if-landing-pad-or-call
-   "cc_call_multipleValueOneFormCallWithRet0"
-   (list (enclose callee-info :dynamic nil) tmv)
-   label))
-
 (defun general-mv-local-call-vas (callee-info vaslist label)
   (cmp:irc-apply (enclose callee-info :dynamic nil)
                  (cmp:irc-vaslist-nvals vaslist)
                  (cmp:irc-vaslist-values vaslist)
                  label))
-
-(defun direct-mv-local-call (tmv callee-info nreq nopt rest-var label)
-  (let* ((rnret (cmp:irc-tmv-nret tmv))
-         (rprimary (cmp:irc-tmv-primary tmv))
-         (nfixed (+ nreq nopt))
-         (mismatch
-           (unless (and (zerop nreq) rest-var)
-             (cmp:irc-basic-block-create "lmvc-arg-mismatch")))
-         (mte (if rest-var
-                  (cmp:irc-basic-block-create "lmvc-more-than-enough")
-                  mismatch))
-         (merge (cmp:irc-basic-block-create "lmvc-after"))
-         (sw (cmp:irc-switch rnret mte (+ 1 nreq nopt)))
-         (environment (environment callee-info)))
-    (labels ((load-return-value (n)
-               (if (zerop n)
-                   rprimary
-                   (cmp:irc-load (return-value-elt n))))
-             (load-return-values (low high)
-               (loop for i from low below high
-                     collect (load-return-value i)))
-             (optionals (n)
-               (parse-local-call-optional-arguments
-                nopt (load-return-values nreq (+ nreq n)))))
-      ;; Generate phis for the merge block's call.
-      (cmp:irc-begin-block merge)
-      (let ((opt-phis
-              (loop for i below nopt
-                    collect (cmp:irc-phi cmp:%t*% (1+ nopt))
-                    collect (cmp:irc-phi cmp:%t*% (1+ nopt))))
-            (rest-phi
-              (cond ((null rest-var) nil)
-                    ((bir:unused-p rest-var)
-                     (cmp:irc-undef-value-get cmp:%t*%))
-                    (t (cmp:irc-phi cmp:%t*% (1+ nopt))))))
-        ;; Generate the mismatch block, if it exists.
-        (when mismatch
-          (cmp:irc-begin-block mismatch)
-          (cmp::irc-intrinsic-call-or-invoke
-           "cc_wrong_number_of_arguments"
-           (list (enclose callee-info :indefinite nil) rnret
-                 (%size_t nreq) (%size_t nfixed)))
-          (cmp:irc-unreachable))
-        ;; Generate not-enough-args cases.
-        (loop for i below nreq
-              do (cmp:irc-add-case sw (%size_t i) mismatch))
-        ;; Generate optional arg cases, including the exactly-enough case.
-        (loop for i upto nopt
-              for b = (cmp:irc-basic-block-create
-                       (format nil "lmvc-optional-~d" i))
-              do (cmp:irc-add-case sw (%size_t (+ nreq i)) b)
-                 (cmp:irc-begin-block b)
-                 (loop for phi in opt-phis
-                       for val in (optionals i)
-                       do (cmp:irc-phi-add-incoming phi val b))
-                 (when (and rest-var
-                            (not (bir:unused-p rest-var)))
-                   (cmp:irc-phi-add-incoming rest-phi (%nil) b))
-                 (cmp:irc-br merge))
-        ;; If there's a &rest, generate the more-than-enough arguments case.
-        (when rest-var
-          (cmp:irc-begin-block mte)
-          (loop for phi in opt-phis
-                for val in (optionals nopt)
-                do (cmp:irc-phi-add-incoming phi val mte))
-          (unless (bir:unused-p rest-var)
-            (cmp:irc-phi-add-incoming
-             rest-phi
-             (%intrinsic-invoke-if-landing-pad-or-call
-              "cc_mvcGatherRest" (list rnret rprimary (%size_t nfixed)))
-           mte))
-        (cmp:irc-br merge))
-      ;; Generate the call, in the merge block.
-      (cmp:irc-begin-block merge)
-      (let* ((arguments
-               (nconc
-                (mapcar #'variable-as-argument environment)
-                (loop for j below nreq collect (load-return-value j))
-                opt-phis
-                (when rest-var (list rest-phi))))
-             (function (main-function callee-info))
-             (function-type (llvm-sys:get-function-type function))
-             (call
-               (cmp:irc-call-or-invoke function-type function arguments
-                                       cmp:*current-unwind-landing-pad-dest*
-                                       label)))
-        #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
-        call)))))
 
 (defun direct-mv-local-call-vas (vaslist callee-info nreq nopt rest-var label)
   (let* ((rnret (cmp:irc-vaslist-nvals vaslist))
