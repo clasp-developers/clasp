@@ -23,8 +23,8 @@
 (defun lambda-list-too-hairy-p (lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs aok aux varest-p)
       (cmp:process-bir-lambda-list lambda-list)
-    (declare (ignore reqargs optargs rest-var keyargs aok aux))
-    (or key-flag varest-p)))
+    (declare (ignore reqargs optargs keyargs aok aux))
+    (or key-flag (and varest-p (not (bir:unused-p rest-var))))))
 
 (defun nontrivial-mv-local-call-p (call)
   (typep call '(and bir:mv-local-call
@@ -593,7 +593,8 @@
                                  varest-p)
                (cmp:process-bir-lambda-list (bir:lambda-list callee))
              (declare (ignore keyargs aok aux))
-             (assert (and (not key-flag) (not varest-p)))
+             (assert (and (not key-flag)
+                          (or (not varest-p) (bir:unused-p rest-var))))
              (let* ((rest-id (cond ((null rest-var) nil)
                                    ((bir:unused-p rest-var) :unused)
                                    (t t)))
@@ -739,7 +740,7 @@
                            aok aux varest-p)
          (cmp::process-bir-lambda-list (bir:lambda-list callee))
        (declare (ignore keyargs aok aux))
-       (if (or key-flag varest-p)
+       (if (or key-flag (and varest-p (not (bir:unused-p rest-var))))
            (general-mv-local-call-vas callee-info mvargi oname)
            (direct-mv-local-call-vas
             mvargi callee-info (car req) (car opt) rest-var oname)))
