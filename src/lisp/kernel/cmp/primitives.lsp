@@ -13,7 +13,7 @@
   (let ((props (primitive-properties prim)))
     (getf props :varargs)))
 
-(defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return ltvc)
+(defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return returns-twice ltvc)
   (declare (ignore name))
   (let (reversed-argument-types
         return-attributes
@@ -40,10 +40,11 @@
        :properties (list :varargs varargs
                          :does-not-throw does-not-throw
                          :does-not-return does-not-return
+                         :returns-twice returns-twice
                          :ltvc ltvc)))))
 
-(defun define-primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return ltvc)
-  (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return ltvc)))
+(defun define-primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return returns-twice ltvc)
+  (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return returns-twice ltvc)))
     (core::hash-table-setf-gethash *primitives* name info)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,13 +57,13 @@
 ;;; + primitive-unwinds means that the intrinsic can throw an exception and should be called with INVOKE
 ;;; + unless it is cc_throw or cc_unwind - then it should be called with CALL.
 ;;;
-(defun primitive-unwinds (name return-ty args-ty &key varargs does-not-return ltvc )
+(defun primitive-unwinds (name return-ty args-ty &key varargs does-not-return returns-twice ltvc )
   "Define primitives that can unwind the stack, either directly or through transitive calls"
-  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw nil :does-not-return does-not-return :ltvc ltvc))
+  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw nil :does-not-return does-not-return :returns-twice returns-twice :ltvc ltvc))
 
-(defun primitive         (name return-ty args-ty &key varargs does-not-return ltvc)
+(defun primitive         (name return-ty args-ty &key varargs does-not-return returns-twice ltvc)
   "Define primitives that do NOT unwind the stack directly or through transitive calls"
-  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :ltvc ltvc))
+  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :returns-twice returns-twice :ltvc ltvc))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -329,7 +330,14 @@
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" :return-type (list :t* :return-type))
          (primitive-unwinds "cc_oddKeywordException" :void (list :t*))
          (primitive         "cc_multipleValuesArrayAddress" :t*[0]* nil)
-         (primitive         "_setjmp" :i32 (list :jmp-buf-tag*))
+         ;; Marking setjmp as returns_twice is EXTREMELY IMPORTANT.
+         ;; Without this attribute, LLVM will apply invalid optimizations.
+         ;; For example, it will reuse stack space allocated before a setjmp
+         ;; call after the setjmp call, meaning that when a longjmp occurs,
+         ;; variables it expects to be there are replaced with whatever other
+         ;; value. This can cause very difficult to debug problems!
+         ;; - Bike, who's spent a solid two days staring at IR incomprehendingly
+         (primitive         "_setjmp" :i32 (list :jmp-buf-tag*) :returns-twice t)
          (primitive-unwinds "_longjmp" :void (list :jmp-buf-tag* :i32))
          (primitive-unwinds "cc_unwind" :void (list :t* :size_t))
 ;;         (primitive-unwinds "cc_throw" :void (list :t*) :does-not-return t)

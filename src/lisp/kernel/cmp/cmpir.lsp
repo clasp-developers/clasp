@@ -1927,9 +1927,11 @@ function-description - for debugging."
         (varargs (getf (primitive-properties primitive-info) :varargs))
         (does-not-throw (getf (primitive-properties primitive-info) :does-not-throw))
         (does-not-return (getf (primitive-properties primitive-info) :does-not-return))
+        (returns-twice (getf (primitive-properties primitive-info) :returns-twice))
         function-attributes)
     (when does-not-throw (push 'llvm-sys:attribute-no-unwind function-attributes))
     (when does-not-return (push 'llvm-sys:attribute-no-return function-attributes))
+    (when returns-twice (push 'llvm-sys:attribute-returns-twice function-attributes))
     (push '("frame-pointer" "all") function-attributes)
     (let ((function (irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
                                              'llvm-sys::External-linkage
