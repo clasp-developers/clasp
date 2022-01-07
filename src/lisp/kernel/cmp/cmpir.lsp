@@ -1094,7 +1094,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
      (irc-icmp-ult n (irc-vaslist-nvals vaslist))
      values novalues)
     (irc-begin-block novalues)
-    (let ((nil (irc-literal nil "NIL")))
+    (let ((null (irc-literal nil "NIL")))
       (irc-br merge)
       (irc-begin-block values)
       (let ((primary (irc-load (cmp:irc-gep (irc-vaslist-values vaslist)
@@ -1103,7 +1103,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
         (irc-br merge)
         (irc-begin-block merge)
         (let ((phi (irc-phi %t*% 2 label)))
-          (irc-phi-add-incoming phi nil novalues)
+          (irc-phi-add-incoming phi null novalues)
           (irc-phi-add-incoming phi primary values)
           phi)))))
 
