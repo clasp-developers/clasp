@@ -26,7 +26,7 @@ lambda-list, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
-  (multiple-value-bind (cleavir-lambda-list-analysis new-body rest-alloc)
+  (multiple-value-bind (cleavir-lambda-list-analysis new-body)
       (transform-lambda-parts lambda-list original-declares code)
     (let ((declares (core:canonicalize-declarations original-declares)))
       (cmp-log "generate-llvm-function-from-code%N")
@@ -56,6 +56,7 @@ Could return more functions that provide lambda-list for swank for example"
                    #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                    (let* ((arguments      (llvm-sys:get-argument-list local-fn))
                           (callconv       :was-callconv ))
+                     (declare (ignorable arguments) (ignore callconv))
                      (cmp-log "argument-list %s%N" arguments)
                      (cmp-log "fn-env -> %s%N" fn-env)
                      (let ((new-env fn-env)) ; (irc-make-unbound-value-environment-of-size fn-env:was-new-env-codegen #+(or)(bclasp-compile-lambda-list-code fn-env callconv)))
@@ -161,8 +162,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
         (with-debug-info-generator (:module *the-module* :pathname pathname)
           (let* ((function-info (compile-lambda-function definition env :linkage linkage))
             ;; (multiple-value-bind (llvm-function-from-lambda lambda-name function-description-reference)
-                 (llvm-function-from-lambda (bclasp-llvm-function-info-xep-function function-info))
-                 (function-description-reference (bclasp-llvm-function-info-function-description-reference function-info)))
+                 (llvm-function-from-lambda (bclasp-llvm-function-info-xep-function function-info)))
             (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
             (values llvm-function-from-lambda :function env)))
       (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
@@ -172,7 +172,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       (values fn function-kind wrapped-env))))
 
 (defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
-  (let* (fn function-kind wrapped-env lambda-name)
+  (let* (fn function-kind wrapped-env)
     (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
         (literal:with-rtv
             (multiple-value-setq (fn function-kind wrapped-env)

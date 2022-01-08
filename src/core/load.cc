@@ -46,7 +46,7 @@ THE SOFTWARE.
 
 namespace core {
 
-SYMBOL_EXPORT_SC_(CorePkg,eof);
+SYMBOL_SC_(CorePkg,eof);
 
 T_sp load_stream(T_sp strm, bool print) {
   while (true) {

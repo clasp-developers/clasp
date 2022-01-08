@@ -137,8 +137,7 @@ If nil then insert a general_entry_point_redirect_x function"
   (if (eq arity :general-entry)
       t
       (if (cleavir-lambda-list-analysis-req-opt-only-p cll-analysis)
-          (let* ((nargs arity)
-                 (nreq (car (cleavir-lambda-list-analysis-required cll-analysis)))
+          (let* ((nreq (car (cleavir-lambda-list-analysis-required cll-analysis)))
                  (nopt (car (cleavir-lambda-list-analysis-optional cll-analysis))))
             (not (or (< arity nreq)
                      (< (+ nreq nopt) arity))))
@@ -1174,14 +1173,14 @@ the type LLVMContexts don't match - so they were defined in different threads!"
      (irc-icmp-ult n (irc-vaslist-nvals vaslist))
      values novalues)
     (irc-begin-block novalues)
-    (let ((nil (irc-literal nil "NIL")))
+    (let ((null (irc-literal nil "NIL")))
       (irc-br merge)
       (irc-begin-block values)
-      (let ((primary (irc-t*-load (irc-vaslist-values vaslist) "primary")))
+      (let ((primary (irc-t*-load (cmp:irc-gep %t*% (irc-vaslist-values vaslist) (list n)) "primary")))
         (irc-br merge)
         (irc-begin-block merge)
         (let ((phi (irc-phi %t*% 2 label)))
-          (irc-phi-add-incoming phi nil novalues)
+          (irc-phi-add-incoming phi null novalues)
           (irc-phi-add-incoming phi primary values)
           phi)))))
 
@@ -1206,12 +1205,12 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun setup-wrong-number-of-arguments-xep (arity xep-group calling-convention)
   ;; Remove the xep corresponding to the arity from the xep-group and replace it with a place-holder that the literal compiler will recognize
   ;; Do nothing for now.
+  (declare (ignore arity xep-group calling-convention))
   )
 
 
 (defun layout-xep-function* (arity function-info xep-group calling-convention func-env)
   (let* ((local-function (xep-group-local-function xep-group))
-         (pass-args '())
          (cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info))
          (variables (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis)))
     (cmp-log "lambda list variables = %s%N" variables)
@@ -1243,13 +1242,13 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                (let ((call-block (irc-basic-block-create "docall")))
                  (irc-br call-block)
                  (irc-begin-block call-block))
-               (cmp-log "pass-args %s%N" pass-args)
                (let* ((cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info))
                       (cleavir-arguments (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis))
                       (new-env (irc-new-unbound-value-environment-of-size
                                 func-env
                                 :number-of-arguments (length output-bindings)
                                 :label "arguments-env")))
+                 (declare (ignore cleavir-arguments new-env))
                  ;; Now generate llvm registers for each argument
                  (let ((rev-call-args '()))
                    (push (calling-convention-closure calling-convention) rev-call-args)
@@ -1273,8 +1272,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                  (cmp-log "layout-xep-group* xep-group: %s%N" xep-group))))))))))
 
 (defun layout-xep-function (xep-arity function-info xep-group function-name parent-env)
-  (let* ((local-fn (xep-group-local-function xep-group))
-         (arity (xep-arity-arity xep-arity))
+  (let* ((arity (xep-arity-arity xep-arity))
          (xep-fn (xep-arity-function-or-placeholder xep-arity)))
     (cmp-log "xep-fn = %s%N" xep-fn)
     (if (literal:general-entry-placeholder-p xep-fn)
@@ -1284,7 +1282,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
         (let ((*current-function* xep-fn)
               (func-env (make-function-container-environment
                          parent-env (car (llvm-sys:get-argument-list xep-fn)) xep-fn))
-              traceid
               (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
               (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
               (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
@@ -1319,6 +1316,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                     (let ((*current-unwind-landing-pad-dest* nil))
                       (cmp-log "xep-fn2 = %s%N" xep-fn)
                       (let ((arguments      (llvm-sys:get-argument-list xep-fn)))
+                        (declare (ignorable arguments))
                         (cmp-log "arguments -> %s%N" arguments)
                         (let* ((rest-alloc     (alloca-t* "rest"))
                                (callconv       (setup-calling-convention
@@ -1337,6 +1335,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 
 (defun do-new-function (body-fn function-symbol parent-env function-attributes linkage return-void function-info)
+  (declare (ignore function-attributes))
   (let ((cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info)))
     (cmp-log "Entered do-new-function %s%N" (function-info-cleavir-lambda-list-analysis function-info))
     (cmp-log "     (lambda-list-arguments cleavir-lambda-list) -> %s%N" (cleavir-lambda-list-analysis-lambda-list-arguments (function-info-cleavir-lambda-list-analysis function-info)))
@@ -1346,7 +1345,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                  (lookup-type :tmv)
                                  (make-list num-args :initial-element (lookup-type :t*))))
            (function-name (jit-function-name (jit-function-name function-symbol)))
-           (function-description (irc-make-function-description function-info))
+           (function-description (irc-make-function-description function-info function-name))
            )
       (cmp-log "argument-names: %s%N" argument-names)
       (cmp-log "local-function-type: %s%N" local-function-type)
@@ -1355,7 +1354,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
         (llvm-sys:set-personality-fn local-fn (irc-personality-function))
         (let ((*current-function* local-fn)
               (func-env (make-function-container-environment parent-env (car (llvm-sys:get-argument-list local-fn)) local-fn))
-              traceid
               (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
               (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
               (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
@@ -1454,6 +1452,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   "Create a new function with {function-name} and {parent-env} - return the function"
   (declare (ignore function-attributes-p))
   `(do-new-function (lambda (,local-fn ,fn-env ,fn-result)
+                      (declare (ignorable ,local-fn))
                       (progn
                         ,@body))
      ,function-name
@@ -1525,9 +1524,9 @@ function-description - for debugging."
   function function-name source-pathname lambda-list docstring declares lineno column filepos
   )
 
-(defun irc-make-function-description (function-info)
+(defun irc-make-function-description (function-info &optional llvm-function-name)
   (unless function-info
-    (error "function info is NIL for ~a" llvm-function-name))
+    (error "function info is NIL for ~a" (or llvm-function-name "undefined")))
   (let ((function-name (function-info-function-name function-info))
         (source-pathname (function-info-source-pathname function-info))
         source-info-name
@@ -1555,6 +1554,7 @@ function-description - for debugging."
                                      :filepos filepos))))
 
 (defun irc-create-global-entry-point-reference (xep-arity-list module function-description local-entry-point-reference)
+  (declare (ignore module))
   (let* ((entry-point-generator (let ((entry-point-indices (literal:register-xep-function-indices xep-arity-list)))
                                   (sys:make-global-entry-point-generator
                                    :entry-point-functions entry-point-indices
@@ -1564,6 +1564,7 @@ function-description - for debugging."
     (make-entry-point-reference :index index :kind :global :function-description function-description)))
 
 (defun irc-create-local-entry-point-reference (local-fn module function-description)
+  (declare (ignore module))
   (let* ((entry-point-generator (let ((entry-point-index (literal:register-local-function-index local-fn)))
                                  (sys:make-local-entry-point-generator
                                   :entry-point-functions (list entry-point-index)
@@ -1784,6 +1785,7 @@ function-description - for debugging."
     (t (error "irc-arity-index Illegal arity ~a" arity))))
 
 (defun irc-calculate-entry (closure arity function-type &optional (label "ep-gep"))
+  (declare (ignore label))
   (let* ((global-entry-point** (c++-field-ptr info.%function% closure :global-entry-point "global-entry-point**"))
          (global-entry-point* (irc-typed-load %global-entry-point*% global-entry-point** "global-entry-point*"))
          (ep-i8** (c++-field-ptr info.%global-entry-point% global-entry-point* :entry-points "ep-i8**"))
@@ -1842,6 +1844,7 @@ function-description - for debugging."
                     :real-args real-args)))
 
 (defun irc-funcall-results-in-registers (closure args &optional (label ""))
+  (declare (ignore label))
   ;; (bformat t "irc-funcall-results-in-register-wft closure: %s%N" closure)
   (let ((call-info (irc-calculate-call-info closure args)))
     (let ((result-in-registers (irc-call-or-invoke (call-info-function-type call-info)
@@ -1855,6 +1858,18 @@ function-description - for debugging."
     (setf label "unlabeled-function"))
   (let ((result-in-registers (irc-funcall-results-in-registers closure args label)))
     (irc-tmv-result result-in-registers result)))
+
+;;; Given LLVM values for a closure, an argcount, and an array of arguments,
+;;; generate a call or invoke. This means calling the general entry point.
+(defun irc-apply (closure argcount args &optional (label ""))
+  (let* ((function-type (fn-prototype :general-entry))
+         (function*-type (llvm-sys:type-get-pointer-to function-type))
+         (entry-point
+           (irc-calculate-entry closure :general-entry function*-type))
+         (real-args (list closure argcount args)))
+    (irc-call-or-invoke function-type entry-point real-args
+                        *current-unwind-landing-pad-dest*
+                        label)))
 
 ;----------------------------------------------------------------------
 
@@ -1996,9 +2011,11 @@ function-description - for debugging."
         (varargs (getf (primitive-properties primitive-info) :varargs))
         (does-not-throw (getf (primitive-properties primitive-info) :does-not-throw))
         (does-not-return (getf (primitive-properties primitive-info) :does-not-return))
+        (returns-twice (getf (primitive-properties primitive-info) :returns-twice))
         function-attributes)
     (when does-not-throw (push 'llvm-sys:attribute-no-unwind function-attributes))
     (when does-not-return (push 'llvm-sys:attribute-no-return function-attributes))
+    (when returns-twice (push 'llvm-sys:attribute-returns-twice function-attributes))
     (push '("frame-pointer" "all") function-attributes)
     (let ((function (irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
                                              'llvm-sys::External-linkage

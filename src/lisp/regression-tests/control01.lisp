@@ -21,13 +21,12 @@
         (values (boundp 'x) (boundp 'y) (boundp 'z) (boundp 'w)))
       (t nil nil nil))
 
+;; Test for mv-call problem fixed in 69d0ed83
 (test multiple-value-call.1
-      ;; this is intended to test the three ways we save values for mv-call
-      (multiple-value-call #'list
-        (values-list '(1 2)) ; temp storage
-        (values 9 8) ; fixed # of values
-        (values-list '(3 4))) ; last form
-      ((1 2 9 8 3 4)))
+      (locally
+          (declare (notinline values))
+        (multiple-value-call #'values (values 4) 5 (values)))
+      (4 5))
 
 ;;; To fix this, I would have to "unbind" a or set its binding to undefined
 (test-expect-error progv-2

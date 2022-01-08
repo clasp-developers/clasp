@@ -107,6 +107,7 @@ Return (values cleavir-lambda-list wrapped-code rest-alloc)."
 (defun lambda-list-arguments (lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
       (core:process-lambda-list lambda-list 'function)
+    (declare (ignore auxargs allow-other-keys varest-p key-flag))
     (cmp-log "reqargs = %s%N" reqargs)
     (cmp-log "optargs = %s%N" optargs)
     (cmp-log "rest-var = %s%N" rest-var)

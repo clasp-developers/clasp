@@ -52,10 +52,15 @@
         :vaslist)))
 (defmethod %definition-rtype ((inst cc-bmir:mtf) (datum bir:datum))
   (loop repeat (bir:nvalues inst) collect :object))
+(defmethod %definition-rtype ((inst bir:values-restore) (datum bir:datum))
+  (let ((irt (definition-rtype (bir:input inst))))
+    (if (member irt '(:multiple-values :vaslist))
+        :multiple-values
+        irt)))
 (defmethod %definition-rtype ((inst bir:values-collect) (datum bir:datum))
   (let ((irts (mapcar #'definition-rtype (bir:inputs inst))))
     (if (or (member :multiple-values irts) (member :vaslist irts))
-        :multiple-values
+        :vaslist
         (reduce #'append irts))))
 (defmethod %definition-rtype ((inst cc-vaslist:values-list) (datum bir:datum))
   :vaslist)
@@ -68,7 +73,7 @@
   ;; pass through without alteration
   (loop for inp in (bir:inputs inst)
         for rt = (definition-rtype inp)
-        collect (cond ((eq rt :multiple-values) :object)
+        collect (cond ((member rt '(:vaslist :multiple-values)) :object)
                       ((null rt) :object)
                       (t (first rt)))))
 (defmethod %definition-rtype ((inst bir:primop) (datum bir:datum))
@@ -97,6 +102,8 @@
                 (inrt (definition-rtype in)))
            (cond ((eq inrt :multiple-values) (return inrt)) ; nothing for it
                  ((not have-rt) (setf have-rt t rt inrt))
+                 ((not (listp inrt))
+                  (error "BUG: Bad rtype ~a" rt))
                  ((= (length rt) (length inrt))
                   (setf rt (mapcar #'max-vrtype rt inrt)))
                  ;; different value counts
@@ -112,7 +119,8 @@
       (let* ((next-rt (%definition-rtype writer var))
              (real-next-rt
                (cond ((null next-rt) (if (null rt) nil '(:object)))
-                     ((eq next-rt :multiple-values) '(:object))
+                     ((member next-rt '(:vaslist :multiple-values))
+                      '(:object))
                      (t (list (first next-rt))))))
         (setf rt (if (null rt) real-next-rt (min-rtype real-next-rt rt)))))))
 
@@ -126,19 +134,19 @@
   '(:object))
 (defmethod %use-rtype ((inst bir:mv-call) (datum bir:datum))
   (if (member datum (rest (bir:inputs inst)))
-      :multiple-values '(:object)))
+      :vaslist '(:object)))
 (defmethod %use-rtype ((inst bir:mv-local-call) (datum bir:datum))
   (if (member datum (rest (bir:inputs inst)))
-      :multiple-values '(:object)))
+      :vaslist '(:object)))
 (defmethod %use-rtype ((inst bir:returni) (datum bir:datum)) :multiple-values)
 (defmethod %use-rtype ((inst bir:values-save) (datum bir:datum))
   (use-rtype (bir:output inst)))
 (defmethod %use-rtype ((inst cc-bmir:mtf) (datum bir:datum))
   (use-rtype (bir:output inst)))
+(defmethod %use-rtype ((inst bir:values-restore) (datum bir:datum))
+  (use-rtype (bir:output inst)))
 (defmethod %use-rtype ((inst bir:values-collect) (datum bir:datum))
-  (if (= (length (bir:inputs inst)) 1)
-      (use-rtype (bir:output inst))
-      :multiple-values))
+  :multiple-values)
 (defmethod %use-rtype ((inst cc-vaslist:values-list) (datum bir:datum))
   '(:vaslist))
 (defmethod %use-rtype ((inst cc-vaslist:nendp) (datum bir:datum))
@@ -159,7 +167,7 @@
 (defmethod %use-rtype ((inst bir:fixed-to-multiple) (datum bir:datum))
   ;; Use the destination rtype
   (let ((ort (use-rtype (bir:output inst))))
-    (cond ((eq ort :multiple-values) '(:object))
+    (cond ((member ort '(:vaslist :multiple-values)) '(:object))
           ((null ort) '())
           (t (let ((pos (position datum (bir:inputs inst))))
                (assert pos)
@@ -190,7 +198,7 @@
       (let* ((next-rt (use-rtype (bir:output reader)))
              (real-next-rt
                (cond ((null next-rt) (if (null rt) nil '(:object)))
-                     ((eq next-rt :multiple-values) '(:object))
+                     ((member next-rt '(:vaslist :multiple-values)) '(:object))
                      (t (list (first next-rt))))))
         (setf rt (if (null rt) real-next-rt (min-rtype real-next-rt rt)))))))
 
@@ -415,13 +423,24 @@
   (object-inputs instruction)
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:mv-call))
-  (object-input instruction (first (bir:inputs instruction)))
-  ;; NOTE: If for some reason the rtype here is a fixed number of values,
+  ;; NOTE: If for some reason the arguments here is a fixed number of values,
   ;; we are working very suboptimally - this could have been a fixed-mv-call.
   ;; Type inference is being stupid.
   ;; This applies to mv-local-call, below, as well.
-  (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
-  (cast-output instruction :multiple-values))
+  ;; TODO: Output a note? But it's really not the user's fault.
+  ;; Anyway, if this is the case, make us a fixed-mv-call, since the normal
+  ;; mv-call cannot handle fixed inputs.
+  (let* ((inputs (bir:inputs instruction))
+         (fun (first inputs))
+         (args (second inputs)))
+    (cond ((listp (cc-bmir:rtype args))
+           (change-class instruction 'cc-bmir:fixed-mv-call
+                         :nvalues (length (cc-bmir:rtype args)))
+           (insert-casts instruction))
+          (t
+           (object-input instruction fun)
+           (cast-inputs instruction :vaslist (rest (bir:inputs instruction)))
+           (cast-output instruction :multiple-values)))))
 (defmethod insert-casts ((instruction cc-bmir:fixed-mv-call))
   (object-input instruction (first (bir:inputs instruction)))
   (let* ((args (second (bir:inputs instruction)))
@@ -437,8 +456,15 @@
   (object-inputs instruction (rest (bir:inputs instruction)))
   (cast-output instruction :multiple-values))
 (defmethod insert-casts ((instruction bir:mv-local-call))
-  (cast-inputs instruction :multiple-values (rest (bir:inputs instruction)))
-  (cast-output instruction :multiple-values))
+  (let* ((inputs (bir:inputs instruction))
+         (args (second inputs)))
+    (cond ((listp (cc-bmir:rtype args))
+           (change-class instruction 'cc-bmir:fixed-mv-local-call
+                         :nvalues (length (cc-bmir:rtype args)))
+           (insert-casts instruction))
+          (t
+           (cast-inputs instruction :vaslist (rest (bir:inputs instruction)))
+           (cast-output instruction :multiple-values)))))
 (defmethod insert-casts ((instruction cc-bmir:fixed-mv-local-call))
   (let* ((args (second (bir:inputs instruction)))
          (args-rtype (cc-bmir:rtype args))
@@ -479,21 +505,38 @@
             instruction)
            (bir:replace-uses input output)))))
 (defmethod insert-casts ((inst cc-bmir:mtf)))
-(defmethod insert-casts ((instruction bir:values-collect))
-  (let* ((inputs (bir:inputs instruction))
-         (inputrts (mapcar #'cc-bmir:rtype inputs))
+(defmethod insert-casts ((instruction bir:values-restore))
+  (let* ((input (bir:input instruction))
+         (inputrt (cc-bmir:rtype input))
          (output (bir:output instruction))
          (outputrt (cc-bmir:rtype output)))
-    (cond ((and (= (length inputs) 1) (not (eq outputrt :multiple-values)))
+    (cond ((not (eq outputrt :multiple-values))
            ;; fixed values, so this is a nop to delete.
-           (setf (bir:inputs instruction) nil)
-           (bir:replace-uses (first inputs) output)
+           (bir:replace-uses input output)
            (bir:delete-instruction instruction))
-          ;; If every input is fixed, we output fixed
-          ((every #'listp inputrts)
-           (cast-output instruction (reduce #'append inputrts)))
-          ;; we're outputting multiple values
+          ((listp inputrt)
+           (cast-output instruction inputrt))
           (t (cast-output instruction :multiple-values)))))
+(defmethod insert-casts ((instruction bir:values-collect))
+  (let* ((inputs (bir:inputs instruction))
+         (output (bir:output instruction))
+         (outputrt (cc-bmir:rtype output)))
+    (when (listp outputrt)
+      (if (= (length inputs) 1)
+          ;; fixed values, so this is a nop to delete.
+          (bir:replace-uses (first inputs) output)
+          ;; lower to append-values.
+          (bir:insert-instruction-before
+           (make-instance 'cc-bmir:append-values
+             :origin (bir:origin instruction) :policy (bir:policy instruction)
+             :inputs inputs :outputs (list output))
+           instruction))
+      (bir:replace-terminator
+       (make-instance 'bir:jump
+         :origin (bir:origin instruction) :policy (bir:policy instruction)
+         :inputs () :outputs () :next (bir:next instruction))
+       instruction))))
+          
 (defmethod insert-casts ((instruction cc-vaslist:values-list))
   (cast-inputs instruction '(:vaslist))
   (cast-output instruction :vaslist))

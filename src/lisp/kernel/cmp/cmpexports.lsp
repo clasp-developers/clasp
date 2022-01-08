@@ -119,6 +119,7 @@
             %function-description*%
             entry-point-reference-index
             irc-funcall-results-in-registers
+            irc-apply
             function-type-create-on-the-fly
             evaluate-foreign-arguments
             calling-convention-closure

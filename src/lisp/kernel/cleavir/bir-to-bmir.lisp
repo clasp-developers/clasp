@@ -115,19 +115,25 @@
      :inputs () :outputs () :next (bir:next inst))
    inst))
 
+;;; Given a values ctype, is the number of values fixed?
+(defun fixed-values-type-p (argsct)
+  (let ((sys clasp-cleavir:*clasp-system*))
+    (and (null (cleavir-ctype:values-optional argsct sys))
+         (cleavir-ctype:bottom-p (cleavir-ctype:values-rest argsct sys) sys))))
+
 (defmethod reduce-instruction ((inst bir:mv-call))
-  ;; Reduce to cc-bmir:fixed-mv-call if the type has a fixed # of values.
+  ;; Reduce to cc-bmir:fixed-mv-call if the arguments have fixed #s of values.
   ;; FIXME: Is it a good idea to use type information this late? It
   ;; ought to be harmless, but it's different.
-  (let* ((args (second (bir:inputs inst)))
-         (argsct (bir:ctype args))
-         (sys clasp-cleavir:*clasp-system*)
-         (req (cleavir-ctype:values-required argsct sys))
-         (opt (cleavir-ctype:values-optional argsct sys))
-         (rest (cleavir-ctype:values-rest argsct sys)))
-    (when (and (cleavir-ctype:bottom-p rest clasp-cleavir:*clasp-system*)
-               (null opt))
-      (change-class inst 'cc-bmir:fixed-mv-call :nvalues (length req)))))
+  (let ((arg-types (mapcar #'bir:ctype (rest (bir:inputs inst)))))
+    (when (every #'fixed-values-type-p arg-types)
+      (let* ((sys clasp-cleavir:*clasp-system*)
+             (nvalues
+               (reduce #'+ arg-types
+                       :key (lambda (vct)
+                              (length
+                               (cleavir-ctype:values-required vct sys))))))
+        (change-class inst 'cc-bmir:fixed-mv-call :nvalues nvalues)))))
 
 (defmethod reduce-instruction ((inst bir:mv-local-call))
   (let* ((args (second (bir:inputs inst)))

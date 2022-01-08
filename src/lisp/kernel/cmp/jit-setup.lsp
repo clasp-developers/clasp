@@ -237,6 +237,7 @@
 (defun system-data-layout ()
   (multiple-value-bind (triple data-layout-str data-layout)
       (get-builtin-target-triple-and-data-layout)
+    (declare (ignore triple data-layout-str))
     data-layout))
 
 (export 'system-data-layout)
@@ -494,6 +495,7 @@ No DIBuilder is defined for the default module")
 (defun jit-startup-shutdown-function-names (module-id)
   (multiple-value-bind (startup-name linkage shutdown-name)
       (core:startup-linkage-shutdown-names module-id)
+    (declare (ignore linkage))
     (values module-id startup-name shutdown-name))
   #+(or)(values module-id
                 (sys:bformat nil "%s-%d" sys:*module-startup-function-name* module-id)
@@ -601,6 +603,7 @@ No DIBuilder is defined for the default module")
 
 
 (defun code-model (&key jit (target-faso-file *default-object-type*))
+  (declare (ignore jit target-faso-file))
   "Return the code-model for the compilation mode"
   #+target-os-darwin 'llvm-sys:code-model-small
   #+(or target-os-freebsd target-os-linux) 'llvm-sys:code-model-small)
@@ -789,6 +792,7 @@ No DIBuilder is defined for the default module")
       (let ((jit-engine (llvm-sys:clasp-jit)))
         (multiple-value-bind (dummy-id startup-name shutdown-name)
             (jit-startup-shutdown-function-names startup-shutdown-id)
+          (declare (ignore dummy-id))
           (let ((function (llvm-sys:get-function module startup-name)))
             (if (null function)
                 (error "Could not obtain the startup function ~s by name" startup-name)))

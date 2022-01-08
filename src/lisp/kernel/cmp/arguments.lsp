@@ -443,6 +443,7 @@ a_p = a_p_temp; a = a_temp;
       ;; goes to an error block and too-many goes to another. then we'll only have one test on
       ;; the argument count. llvm might reduce it to that anyway, though.
       (flet ((ensure-register (registers undef &optional name)
+               (declare (ignore name))
                (let ((register (car registers)))
                  (if register
                      register

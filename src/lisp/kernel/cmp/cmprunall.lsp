@@ -73,15 +73,13 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
                 (with-irbuilder (irbuilder-body)
                   (progn
                     (cmp-log "running body do-make-new-run-all%N")
-                    (funcall body run-all-fn name-suffix))
+                    (funcall body run-all-fn))
                   (irc-ret-null-t*))))))))
     (values run-all-fn)))
 
 (defmacro with-make-new-run-all ((run-all-fn &optional (name-suffix '(core:bformat nil "*%d" (core:next-number)))) &body body)
   "Set up a run-all function in the current module, return the run-all-fn"
-  `(do-make-new-run-all (lambda (,run-all-fn name-suffix)
-                          (progn
-                            ,@body))
+  `(do-make-new-run-all (lambda (,run-all-fn) (progn ,@body))
      ,name-suffix))
 
 (defmacro with-run-all-entry-codegen (&body form)

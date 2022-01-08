@@ -673,7 +673,7 @@ Boehm and MPS use a single pointer"
   (cond
     ((eq arity :general-entry)
      (list "closure" "nargs" "args"))
-    ((and (fixnump arity) (< arith 9))
+    ((and (fixnump arity) (< arity 9))
      (subseq (list "closure" "arg0" "arg1" "arg2" "arg3" "arg4" "arg5" "arg6" "arg7" "arg8")
              0 (+ 1 arity)))
     ((fixnump arity)
@@ -1036,6 +1036,7 @@ and initialize it with an array consisting of one function pointer."
          (gcroots-in-module-size (llvm-sys:data-layout-get-type-alloc-size data-layout %gcroots-in-module%))
          (global-entry-point-size (llvm-sys:data-layout-get-type-alloc-size data-layout %global-entry-point%))
          (function-description-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)))
+    (declare (ignore global-entry-point-layout global-entry-point-size))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
                                                   :tmv tmv-size
                                                   :symbol symbol-size

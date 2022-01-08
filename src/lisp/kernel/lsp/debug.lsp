@@ -303,13 +303,13 @@ The delimiters and visibility may be ignored by using the lower level FRAME-UP, 
 (defun up (frame &optional (n 1))
   "Return the nth visible frame above the given frame, or if there are not that many visible frames above, return the topmost frame."
   (dotimes (i n frame)
-    (declare (ignore i))
+    (declare (ignorable i))
     (setf frame (up1 frame *stack-top*))))
 
 (defun down (frame &optional (n 1))
   "Return the nth visible frame below the given frame, or if there are not that many visible frames above, return the bottommost frame."
   (dotimes (i n frame)
-    (declare (ignore i))
+    (declare (ignorable i))
     (setf frame (down1 frame *stack-bot*))))
 
 ;; Return the frame if it's visible, or else the next
@@ -372,7 +372,7 @@ Note that as with MAP-STACK, only visible frames are used with respect to the CO
   "Return the frame I up from the base frame, where I is an index as in MAP-INDEXED-STACK.
 Note that as such, the frame returned may not be visible."
   (dotimes (n i base)
-    (declare (ignore n))
+    (declare (ignorable n))
     (if (eq (frame-up base) *stack-top*)
         (return base)
         (setf base (frame-up base)))))
