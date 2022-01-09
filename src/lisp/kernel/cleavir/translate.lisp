@@ -703,7 +703,7 @@
              rest-phi
              (%intrinsic-invoke-if-landing-pad-or-call
               "cc_mvcGatherRest2"
-              (list (cmp:irc-gep rvalues (list nfixed))
+              (list (cmp:irc-gep cmp:%t*% rvalues (list nfixed))
                     (cmp:irc-sub rnret (%size_t nfixed))))
              mte))
           (cmp:irc-br merge))
