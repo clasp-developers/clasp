@@ -45,6 +45,7 @@ struct CommandLineOptions {
   process_arguments_callback _ProcessArguments;
   int _EndArg;
   std::string _ExecutableName;
+  bool _JITLogSymbols;
   bool _DontLoadImage;
   bool _DontLoadInitLsp;
   bool _DisableMpi {false};

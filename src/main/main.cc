@@ -343,6 +343,12 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   globals_->_ExportedSymbolsFilename = core::global_options->_ExportedSymbolsFilename;
   globals_->_DebugStream = new core::DebugStream(mpiRank);
   globals_->_Stage = core::global_options->_Stage;
+
+  const char* jls = getenv("CLASP_JIT_LOG_SYMBOLS");
+  if (jls || core::global_options->_JITLogSymbols) {
+    core::global_jit_log_symbols = true;
+  }
+  
 //  printf("%s:%d:%s About to get start_of_snapshot\n", __FILE__, __LINE__, __FUNCTION__ );
 #ifdef USE_PRECISE_GC
 #  ifdef _TARGET_OS_DARWIN
@@ -530,11 +536,6 @@ int main( int argc, char *argv[] )
       llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrint;
     }
   }
-  const char* jls = getenv("CLASP_JIT_LOG_SYMBOLS");
-  if (jls) {
-    core::global_jit_log_symbols = true;
-  }
-  
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;

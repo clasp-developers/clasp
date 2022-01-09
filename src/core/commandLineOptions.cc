@@ -68,6 +68,7 @@ void process_clasp_arguments(CommandLineOptions* options)
     string arg = options->_RawArguments[iarg];
     if (arg == "-h" || arg == "--help") {
       printf("clasp options\n"
+             "-j/--jit-log-symbols - Turn on generation of /tmp/perf-<pid>.map file (same as CLASP_JIT_LOG_SYMBOLS elow)\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image. If file ends in .snapshot then treat as a snapshot.\n"
              "-T/--type (default|snapshot|image) - Set the type of the default startup file to use (default means snapshot->image).\n"
@@ -199,6 +200,8 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_AddressesFileName = filename;
     } else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;
+    } else if (arg == "-j" || arg == "--jit-log-symbols") {
+      options->_JITLogSymbols = true;
     } else if (arg == "--noinform") {
       options->_NoInform = true;
     } else if (arg == "--noprint") {
@@ -305,6 +308,7 @@ void process_clasp_arguments(CommandLineOptions* options)
 
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
   : _ProcessArguments(process_clasp_arguments),
+    _JITLogSymbols(false),
     _DontLoadImage(false),
     _DontLoadInitLsp(false),
     _DisableMpi(false),
