@@ -97,3 +97,16 @@
                        return :bad)
              :bad)
       (:good))
+
+;;; did segfault previously
+(test-expect-error
+ issue-1212
+ (loop for x in '(a . b) collect x)
+ :type type-error)
+
+;;; did segfault previously
+(test-expect-error
+ issue-1239
+ (loop for x in 42
+        do (format t "x = ~a~%" x))
+ :type type-error)
