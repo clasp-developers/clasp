@@ -340,8 +340,8 @@
          ;; value. This can cause very difficult to debug problems!
          ;; - Bike, who's spent a solid two days staring at IR incomprehendingly
          (primitive         "_setjmp" :i32 (list :jmp-buf-tag*) :returns-twice t)
-         (primitive-unwinds "_longjmp" :void (list :jmp-buf-tag* :i32))
-         (primitive-unwinds "cc_unwind" :void (list :t* :size_t))
+         (primitive-unwinds "_longjmp" :void (list :jmp-buf-tag* :i32) :does-not-return t)
+         (primitive-unwinds "cc_unwind" :void (list :t* :size_t) :does-not-return t)
 ;;         (primitive-unwinds "cc_throw" :void (list :t*) :does-not-return t)
          (primitive         "cc_saveMultipleValue0" :void (list :tmv))
          (primitive         "cc_restoreMultipleValue0" :return-type nil)
