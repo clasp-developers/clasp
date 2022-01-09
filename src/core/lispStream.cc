@@ -6681,6 +6681,16 @@ CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
 };
 
 
+CL_DOCSTRING(R"dx(Read 4 bytes and interpret them as a single float))dx")
+DOCGROUP(clasp)
+CL_DEFUN T_sp core__read_binary_single_float(T_sp stream) {
+  unsigned char buffer[4];
+  if (StreamOps(stream).read_byte8(stream, buffer, 4)<4) return nil<T_O>();
+  float val = *(float*)buffer;
+  return make_single_float(val);
+}
+
+
 CL_DOCSTRING(R"dx(Set filedescriptor to nonblocking)dx")
 DOCGROUP(clasp)
 CL_DEFUN void core__fcntl_non_blocking(int filedes) {
