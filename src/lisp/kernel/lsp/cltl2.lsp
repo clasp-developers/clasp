@@ -1,6 +1,7 @@
 (defpackage #:clasp-cltl2
   (:use #:cl)
   (:documentation "Implementation of CLTL2's environment access functions in section 8.5.")
+  (:local-nicknames (#:env #:cleavir-env))
   (:export #:variable-information #:function-information
            #:declaration-information)
   (:export #:augment-environment)
@@ -14,61 +15,63 @@
 (defun variable-information (variable &optional env)
   "Retrieve information about the interpretation of a symbolic variable in an environment. See CLTL2 8.5 for more detailed information.
 Known bug: Clasp's implementation may not determine whether symbol macros are local correctly."
-  (let ((info (cleavir-env:variable-info env variable)))
+  (let ((info (env:variable-info clasp-cleavir:*clasp-system*
+                                 env variable)))
     (etypecase info
       (null (values nil nil nil))
-      (cleavir-env:constant-variable-info (values :constant nil nil))
-      (cleavir-env:symbol-macro-info
+      (env:constant-variable-info (values :constant nil nil))
+      (env:symbol-macro-info
        ;; KLUDGE/FIXME: Cleavir does not report whether a symbol macro binding
        ;; is local or global, so we have to hack it. This is not completely
        ;; correct, as if a binding shadows another global macro binding,
        ;; we'll just report the global.
        (values :symbol-macro (not (nth-value 1 (macroexpand-1 variable env)))
-               `((type . ,(cleavir-env:type info)))))
-      (cleavir-env:special-variable-info
+               `((type . ,(env:type info)))))
+      (env:special-variable-info
        (values :special
-               (not (cleavir-env:global-p info))
+               (not (env:global-p info))
                ;; CLTL2 says the ignore value is T "if the variable has been
                ;; declared ignore", so I guess ignorable isn't reported.
                ;; Cleavir doesn't record dynamic-extent of specials.
-               `((ignore . ,(eq (cleavir-env:ignore info) 'ignore))
-                 (type . ,(cleavir-env:type info)))))
-      (cleavir-env:lexical-variable-info
+               `((ignore . ,(eq (env:ignore info) 'ignore))
+                 (type . ,(env:type info)))))
+      (env:lexical-variable-info
        (values :lexical t
-               `((ignore . ,(eq (cleavir-env:ignore info) 'ignore))
-                 (type . ,(cleavir-env:type info))
-                 (dynamic-extent . ,(cleavir-env:dynamic-extent info))))))))
+               `((ignore . ,(eq (env:ignore info) 'ignore))
+                 (type . ,(env:type info))
+                 (dynamic-extent . ,(env:dynamic-extent info))))))))
 
 (defun function-information (function-name &optional env)
   "Retrieve information about the function name in an environment. See CLTL2 8.5 for more information.
 Clasp reports IGNORE declarations on local functions analogously to variables."
-  (let ((info (cleavir-env:function-info env function-name)))
+  (let ((info (env:function-info clasp-cleavir:*clasp-system*
+                                 env function-name)))
     (etypecase info
       (null (values nil nil nil))
-      (cleavir-env:special-operator-info (values :special-form nil nil))
-      (cleavir-env:global-macro-info
-       (values :macro nil `((inline . ,(cleavir-env:inline info)))))
-      (cleavir-env:local-macro-info
-       (values :macro t `((inline . ,(cleavir-env:inline info)))))
-      (cleavir-env:global-function-info
+      (env:special-operator-info (values :special-form nil nil))
+      (env:global-macro-info
+       (values :macro nil `((inline . ,(env:inline info)))))
+      (env:local-macro-info
+       (values :macro t `((inline . ,(env:inline info)))))
+      (env:global-function-info
        (values :function nil
-               `((inline . ,(cleavir-env:inline info))
-                 (ftype . ,(cleavir-env:type info)))))
-      (cleavir-env:local-function-info
+               `((inline . ,(env:inline info))
+                 (ftype . ,(env:type info)))))
+      (env:local-function-info
        (values :function t
-               `((inline . ,(cleavir-env:inline info))
-                 (ftype . ,(cleavir-env:type info))
-                 (dynamic-extent . ,(cleavir-env:dynamic-extent info))
+               `((inline . ,(env:inline info))
+                 (ftype . ,(env:type info))
+                 (dynamic-extent . ,(env:dynamic-extent info))
                  ;; CLTL2 doesn't mandate ignore declarations are reported,
                  ;; presumably since in CLTL2 they could not apply to function
                  ;; bindings. But it seems like the nice thing to do.
-                 (ignore . ,(eq (cleavir-env:ignore info) 'ignore))))))))
+                 (ignore . ,(eq (env:ignore info) 'ignore))))))))
 
 (defun declaration-information (decl-name &optional env)
   "Retrieve information about a declaration in an environment. See CLTL2 8.5 for more information. Only the OPTIMIZE and DECLARATION declarations are supported."
   (ecase decl-name
-    ((optimize) (cleavir-env:optimize (cleavir-env:optimize-info env)))
-    ((declaration) (cleavir-env:declarations env))))
+    ((optimize) (env:optimize (env:optimize-info env)))
+    ((declaration) (env:declarations env))))
 
 ;;; TAG and BLOCK are provided as extensions to CLTL2.
 (defun augment-environment (env &key variable symbol-macro function macro
@@ -89,38 +92,39 @@ As an extension, the TAG and BLOCK keyword may be used to provide lists of tag o
 
 (defun augment-environment-with-blocks (env blocknames)
   (loop for blockname in blocknames
-        do (setf env (cleavir-env:add-block env blockname)))
+        do (setf env (env:add-block env blockname)))
   env)
 
 (defun augment-environment-with-tags (env tagnames)
   (loop for tagname in tagnames
-        do (setf env (cleavir-env:add-tag env tagname))))
+        do (setf env (env:add-tag env tagname))))
 
 (defun augment-environment-with-macros (env macrodefs)
   (loop for (name expander) in macrodefs
-        do (setf env (cleavir-env:add-local-macro env name expander)))
+        do (setf env (env:add-local-macro env name expander)))
   env)
 
 (defun augment-environment-with-symbol-macros (env smdefs)
   (loop for (name expansion) in smdefs
         ;; Make sure we're not doing an illegal shadow.
-        for info = (cleavir-env:variable-info env name)
+        for info = (env:variable-info clasp-cleavir:*clasp-system*
+                                      env name)
         do (etypecase info
-             (cleavir-env:constant-variable-info
+             (env:constant-variable-info
               (cerror "Bind it anyway."
                       'cleavir-cst-to-ast::symbol-macro-names-constant
                       :cst (cst:cst-from-expression name)))
-             (cleavir-env:special-variable-info
-              (when (cleavir-env:global-p info)
+             (env:special-variable-info
+              (when (env:global-p info)
                 (cerror "Bind it anyway."
                         'cleavir-cst-to-ast::symbol-macro-names-global-special
                         :cst (cst:cst-from-expression name)))))
-           (setf env (cleavir-env:add-local-symbol-macro env name expansion)))
+           (setf env (env:add-local-symbol-macro env name expansion)))
   env)
 
 (defun augment-environment-with-functions (env fnames)
   (loop for fname in fnames
-        do (setf env (cleavir-env:add-local-function env fname)))
+        do (setf env (env:add-local-function env fname)))
   env)
 
 ;; e.g. turns ((dynamic-extent x) (integer y z)) into
@@ -174,12 +178,13 @@ As an extension, the TAG and BLOCK keyword may be used to provide lists of tag o
 
 ;; Returns two values: if it's special, and if it's globally special.
 (defun variable-is-special-p (env varname idspecs)
-  (let* ((existing-info (cleavir-env:variable-info env varname))
+  (let* ((existing-info (env:variable-info clasp-cleavir:*clasp-system*
+                                           env varname))
          (special-var-p
-           (typep existing-info 'cleavir-env:special-variable-info)))
+           (typep existing-info 'env:special-variable-info)))
     (cond ((member 'special idspecs :key #'car)
-           (values t (and special-var-p (cleavir-env:global-p existing-info))))
-          ((and special-var-p (cleavir-env:global-p existing-info))
+           (values t (and special-var-p (env:global-p existing-info))))
+          ((and special-var-p (env:global-p existing-info))
            (values t t))
           (t (values nil nil)))))
 
@@ -188,20 +193,20 @@ As an extension, the TAG and BLOCK keyword may be used to provide lists of tag o
       (variable-is-special-p env varname idspecs)
     (cond (globalp) ; no need to "rebind"
           (specialp
-           (setf env (cleavir-env:add-special-variable env varname)))
+           (setf env (env:add-special-variable env varname)))
           (t
-           (setf env (cleavir-env:add-lexical-variable env varname)))))
+           (setf env (env:add-lexical-variable env varname)))))
   ;; Now run through the declarations.
   (loop for (id maybe-type) in idspecs
         do (ecase id
              ((dynamic-extent)
-              (setf env (cleavir-env:add-variable-dynamic-extent env varname)))
+              (setf env (env:add-variable-dynamic-extent env varname)))
              ((ignore ignorable)
-              (setf env (cleavir-env:add-variable-ignore env varname id)))
+              (setf env (env:add-variable-ignore env varname id)))
              ((special)) ; already handled above
              ((type)
               (setf env
-                    (cleavir-env:add-variable-type env varname maybe-type)))))
+                    (env:add-variable-type env varname maybe-type)))))
   env)
 
 (defun function-form-p (form)
@@ -217,37 +222,38 @@ As an extension, the TAG and BLOCK keyword may be used to provide lists of tag o
        (loop for thing in data
              do (setf env
                       (cond ((symbolp thing)
-                             (cleavir-env:add-variable-dynamic-extent
+                             (env:add-variable-dynamic-extent
                               env thing))
                             ((function-form-p thing)
-                             (cleavir-env:add-function-dynamic-extent
+                             (env:add-function-dynamic-extent
                               env (second thing)))
                             (t (error "Malformed declaration ~a" dspec))))))
       ((type)
        (destructuring-bind (type . names) data
          (loop for name in names
-               do (setf env (cleavir-env:add-variable-type env name type)))))
+               do (setf env (env:add-variable-type env name type)))))
       ((ftype)
        (destructuring-bind (type . names) data
          (loop for name in names
-               do (setf env (cleavir-env:add-function-type env name type)))))
+               do (setf env (env:add-function-type env name type)))))
       ((ignore ignorable)
        (loop for thing in data
              do (setf env
                       (cond ((symbolp thing)
-                             (cleavir-env:add-variable-ignore env thing id))
+                             (env:add-variable-ignore env thing id))
                             ((function-form-p thing)
-                             (cleavir-env:add-function-ignore
+                             (env:add-function-ignore
                               env (second thing) id))
                             (t (error "Malformed declaration ~a" dspec))))))
       ((inline notinline)
        (loop for name in data
-             do (setf env (cleavir-env:add-inline env name id))))
+             do (setf env (env:add-inline env name id))))
       ((special)
        (loop for name in data
-             do (unless (typep (cleavir-env:variable-info env name)
-                               'cleavir-env:special-variable-info)
-                  (setf env (cleavir-env:add-special-variable env name)))))
+             do (unless (typep (env:variable-info clasp-cleavir:*clasp-system*
+                                                  env name)
+                               'env:special-variable-info)
+                  (setf env (env:add-special-variable env name)))))
       ((optimize)
        (setf env (cleavir-cst-to-ast::augment-environment-with-optimize
                   data env))))))
@@ -257,7 +263,7 @@ As an extension, the TAG and BLOCK keyword may be used to provide lists of tag o
   (multiple-value-bind (var-dspecs other-dspecs)
       (itemize-declaration-specifiers variables
                                       (canonicalize-declarations
-                                       (cleavir-env:declarations env)
+                                       (env:declarations env)
                                        declarations))
     (loop for var in variables for idspecs in var-dspecs
           do (setf env
@@ -275,4 +281,4 @@ Clasp does not implement this functionality yet."
 (defun enclose (lambda-expression &optional env)
   "Given a lambda expression and a syntactic environment, return a function object. See CLTL2 8.5 for more information.
 Clasp will discard any non-syntactic information in the environment."
-  (cmp:compile-in-env lambda-expression (cleavir-env:compile-time env)))
+  (cmp:compile-in-env lambda-expression (env:compile-time env)))
