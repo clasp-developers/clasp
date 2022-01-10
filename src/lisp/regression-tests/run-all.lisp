@@ -21,6 +21,7 @@
 (load-if-compiled-correctly "sys:regression-tests;sequences01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;clos.lisp")
 (load-if-compiled-correctly "sys:regression-tests;mop.lisp")
+(load-if-compiled-correctly "sys:regression-tests;update-instance-abort.lisp")
 (load-if-compiled-correctly "sys:regression-tests;numbers.lisp")
 (load-if-compiled-correctly "sys:regression-tests;ehkiller.lisp")
 (load-if-compiled-correctly "sys:regression-tests;package.lisp")
