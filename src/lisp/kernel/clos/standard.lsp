@@ -220,38 +220,50 @@
   (static-gfs:invalidate-class-reinitializers* class)
   class)
 
-(defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
+(defmethod initialize-instance :after
+    ((class class) &rest initargs &key direct-slots)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
-  (dbg-standard "standard.lsp:196  initialize-instance class->~a~%" class)
-  ;; convert the slots from lists to direct slots
-  (apply #'call-next-method class
-         :direct-slots
-         (loop for s in direct-slots
-            collect (canonical-slot-to-direct-slot class s))
-         initargs)
+  (dbg-standard "standard.lsp:226  initialize-instance class->~a~%" class)
   (finalize-unless-forward class)
   ;; In this case we are assigning the stamp for the first time.
-  (core:class-new-stamp class)
-  class)
+  (core:class-new-stamp class))
 
 (defmethod shared-initialize ((class class) slot-names
-                              &rest initargs &key direct-superclasses)
+                              &rest initargs
+                              &key (direct-superclasses () dscp)
+                                (direct-slots nil direct-slots-p))
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   ;; verify that the inheritance list makes sense
-  (dbg-standard "standard.lsp:200 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
-  (let* ((class (apply #'call-next-method class slot-names
-		       :direct-superclasses
-		       (if (slot-boundp class 'direct-superclasses)
-			   (slot-value class 'direct-superclasses)
-			   nil)
-		       initargs))
-	 (direct-superclasses (check-direct-superclasses class direct-superclasses)))
-    (loop for c in (class-direct-superclasses class)
-          unless (member c direct-superclasses :test #'eq)
-            do (remove-direct-subclass c class))
-    (setf (%class-direct-superclasses class) direct-superclasses)
-    (loop for c in direct-superclasses
-          do (add-direct-subclass c class))
+  (dbg-standard "standard.lsp:238 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
+  ;;; Convert the list of direct slots into actual slot definitions.
+  (when direct-slots-p
+    (setf initargs
+          (list* :direct-slots
+                 (loop for s in direct-slots
+                       collect (canonical-slot-to-direct-slot class s))
+                 initargs)))
+  (let* ((old-direct-superclasses
+           (when dscp
+             (if (slot-boundp class 'direct-superclasses)
+                 (class-direct-superclasses class)
+                 nil)))
+         ;; validate superclasses or provide default
+         (direct-superclasses
+           (when dscp
+             (check-direct-superclasses class direct-superclasses)))
+         (initargs (if dscp
+                       (list* :direct-superclasses direct-superclasses
+                              initargs)
+                       initargs))
+         (class (apply #'call-next-method class slot-names initargs)))
+    ;; Call add/remove-direct-subclass appropriately
+    (when dscp
+      (loop for c in old-direct-superclasses
+            unless (member c direct-superclasses :test #'eq)
+              do (remove-direct-subclass c class))
+      (loop for c in direct-superclasses
+            unless (member c old-direct-superclasses :test #'eq)
+              do (add-direct-subclass c class)))
 
     ;; initialize the default allocator for the new class
     ;; It is inherited from the direct-superclasses - if they are all 
