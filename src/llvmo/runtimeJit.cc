@@ -9,6 +9,8 @@
 #include <dlfcn.h>
 #include <iomanip>
 #include <string>
+#include <llvm/ExecutionEngine/Orc/DebuggerSupportPlugin.h>
+#include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <clasp/core/foundation.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
@@ -203,7 +205,8 @@ public:
           if (Prot & sys::Memory::MF_EXEC)
             execMemory = (void*)Seg.WorkingMem;
         }
-        OnFinalized(llvm::jitlink::InProcessMemoryManager::FinalizedAlloc(pointerToJITTargetAddress((BoehmAllocHandle)execMemory)));
+        llvm::orc::ExecutorAddr ea((uintptr_t)execMemory);
+        OnFinalized(llvm::jitlink::InProcessMemoryManager::FinalizedAlloc(ea));
       }
       virtual void abandon(OnAbandonedFunction OnAbandoned) {
         printf("%s:%d:%s I have no idea what to do here\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -305,7 +308,8 @@ public:
         size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart+Seg.ZeroFillSize,Seg.Alignment.value());
         void* base;
         base = aligned_alloc( Seg.Alignment.value(), SegmentSize );
-        Seg.Addr = (llvm::JITTargetAddress)base;
+        llvm::orc::ExecutorAddr eabase((uintptr_t)base);
+        Seg.Addr = eabase;
         Seg.WorkingMem = jitTargetAddressToPointer<char*>((llvm::JITTargetAddress)base);
       }
     }
@@ -458,7 +462,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         llvm::jitlink::SectionRange range(S);
         for ( auto& sym : S.symbols() ) {
           std::string name = sym->getName().str();
-          void* address = (void*)sym->getAddress();
+          void* address = (void*)sym->getAddress().getValue();
           size_t size = sym->getSize();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
         }
@@ -475,11 +479,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       else if ( Prot & llvm::sys::Memory::MF_EXEC ) {
 	// Text section
         llvm::jitlink::SectionRange range(S);
-	if ((uintptr_t)range.getStart() < textStart) textStart = (uintptr_t)range.getStart();
-	uintptr_t tend = (uintptr_t)range.getStart()+range.getSize();
+	if ((uintptr_t)range.getStart().getValue() < textStart) textStart = (uintptr_t)range.getStart().getValue();
+	uintptr_t tend = (uintptr_t)range.getStart().getValue()+range.getSize();
 	if ( textEnd < tend ) textEnd = tend;
-        currentCode->_TextSectionStart = (void*)range.getStart();
-        currentCode->_TextSectionEnd = (void*)((char*)range.getStart()+range.getSize());
+        currentCode->_TextSectionStart = (void*)range.getStart().getValue();
+        currentCode->_TextSectionEnd = (void*)((char*)range.getStart().getValue()+range.getSize());
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s --- TextSectionStart - TextSectionEnd = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, currentCode->_TextSectionStart, currentCode->_TextSectionEnd ));
 #if 0
         if (snapshotSaveLoad::global_debugSnapshot) {
@@ -494,20 +498,20 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         for ( auto& sym : S.symbols() ) {
           if (sym->isCallable()&&sym->hasName()) {
             std::string name = sym->getName().str();
-            void* address = (void*)sym->getAddress();
+            void* address = (void*)sym->getAddress().getValue();
             size_t size = sym->getSize();
             core::core__jit_register_symbol( name, size, (void*)address );
           }
         }
       } else if (sectionName.find(EH_FRAME_NAME)!=string::npos) {
         llvm::jitlink::SectionRange range(S);
-        void* start = (void*)range.getStart();
+        void* start = (void*)range.getStart().getValue();
         uintptr_t size = range.getSize();
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
       } else if (sectionName.find(STACKMAPS_NAME)!=string::npos) {
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   Saving stackmaps range currentCode %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(currentCode).c_str() ));
         llvm::jitlink::SectionRange range(S);
-        currentCode->_StackmapStart = (void*)range.getStart();
+        currentCode->_StackmapStart = (void*)range.getStart().getValue();
         currentCode->_StackmapSize = (size_t)range.getSize();
       }
     }
@@ -547,7 +551,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                   __FILE__, __LINE__, __FUNCTION__,
                                   ssym->hasName(),
                                   ssym->getName().str().c_str(),
-                                  (void*)ssym->getAddress(),
+                                  (void*)ssym->getAddress().getValue(),
                                 (size_t)ssym->getSize()));
       }
 #endif
@@ -556,7 +560,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         size_t pos = sname.find(gcroots_in_module_name);
         if (pos!=std::string::npos) {
           found_gcroots_in_module = true;
-          void* address = (void*)ssym->getAddress();
+          void* address = (void*)ssym->getAddress().getValue();
           size_t size = ssym->getSize();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
                                     gcroots_in_module_name.c_str(),
@@ -567,7 +571,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         pos = sname.find(literals_name);
         if (pos != std::string::npos) {
           found_literals = true;
-          currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress();
+          currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress().getValue();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode = %p  _LiteralVectorStart -> %p\n",
                                     __FILE__, __LINE__, __FUNCTION__,
                                     &*currentCode, (void*)currentCode->_LiteralVectorStart ));
@@ -625,9 +629,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         ss << ":\n";
         if (B->isZeroFill())
           continue;
-        llvm::JITTargetAddress InitAddr = B->getAddress() & ~(LineWidth - 1);
-        llvm::JITTargetAddress StartAddr = B->getAddress();
-        llvm::JITTargetAddress EndAddr = B->getAddress() + B->getSize();
+        llvm::JITTargetAddress InitAddr = B->getAddress().getValue() & ~(LineWidth - 1);
+        llvm::JITTargetAddress StartAddr = B->getAddress().getValue();
+        llvm::JITTargetAddress EndAddr = B->getAddress().getValue() + B->getSize();
         auto *Data = reinterpret_cast<const uint8_t *>(B->getContent().data());
         for (llvm::JITTargetAddress CurAddr = InitAddr; CurAddr != EndAddr;
              ++CurAddr) {
@@ -696,7 +700,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
             .setExecutionSession(std::make_unique<ExecutionSession>(std::move(TPC)))
             .setNumCompileThreads(0)  // <<<<<<< In May 2021 a path will open to use multicores for LLJIT.
             .setJITTargetMachineBuilder(std::move(JTMB))
-            .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
+            .setObjectLinkingLayerCreator([this,&ExitOnErr,mainJITDylib](ExecutionSession &ES, const Triple &TT) {
               auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
               ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
               DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -704,6 +708,9 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
                        // GDB registrar isn't working at the moment
               if (!getenv("CLASP_NO_JIT_GDB")) {
                 ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
+                if (TT.isOSBinFormatMachO()) {
+                  ObjLinkingLayer->addPlugin(std::make_unique<GDBJITDebugInfoRegistrationPlugin>(llvm::orc::ExecutorAddr::fromPtr(&llvm_orc_registerJITLoaderGDBWrapper)));
+                }
               }
               ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
               return ObjLinkingLayer;
@@ -729,10 +736,8 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
     core::Cons_sp pair = core::Cons_O::create(this->_MainJITDylib,nil<core::T_O>());
     _lisp->_Roots._JITDylibs.store(pair);
   }
-//  printf("%s:%d Creating ClaspJIT_O  globalPrefix = %c\n", __FILE__, __LINE__, this->_LLJIT->getDataLayout().getGlobalPrefix());
   this->_LLJIT->getMainJITDylib().addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
   llvm_sys__create_lljit_thread_pool();
-
 }
 
 

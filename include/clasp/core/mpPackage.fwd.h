@@ -288,7 +288,7 @@ namespace mp {
     }
  
   private:
-    std::atomic_flag lck = ATOMIC_FLAG_INIT;
+    std::atomic_flag lck;
   };
   struct SafeSpinLock {
     SpinLock& _SpinLock;

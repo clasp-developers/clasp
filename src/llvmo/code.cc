@@ -625,7 +625,7 @@ bool CodeBlock_O::calculate(BasicLayout& BL) {
       allocKind = "head";
     }
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s calculated %s from the head base = %p - %p = %lu bytes \n", __FILE__, __LINE__, __FUNCTION__, allocKind, base, (void*)((uintptr_t)base+SegmentSize), SegmentSize ));
-    Seg.Addr = (llvm::JITTargetAddress)base;
+    Seg.Addr = (llvm::orc::ExecutorAddr)(uintptr_t)base;
     Seg.WorkingMem = jitTargetAddressToPointer<char*>((llvm::JITTargetAddress)base);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     wrote into Seg @ %p\n", __FILE__, __LINE__, __FUNCTION__, &Seg ));
   }
