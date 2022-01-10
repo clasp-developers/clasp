@@ -225,3 +225,12 @@
                               (values (values d c c))))
                t 18 19)
       (19))
+
+(test issue-1240
+      (funcall (compile nil '(lambda (iter)
+                              (loop (multiple-value-bind (node morep)
+                                        (funcall iter)
+                                      (unless morep (return (values)))
+                                      node))))
+               (lambda () (values nil nil)))
+      ())

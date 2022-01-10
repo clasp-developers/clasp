@@ -371,7 +371,7 @@
                   (cond ((equal rt '(:object))
                          (cmp:irc-make-tmv (%size_t 1) (in rv)))
                         ((eq rt :multiple-values) (in rv))
-                        ((null rt) (error "BUG: Bad rtype ~a" rt))
+                        ((null rt) (cmp:irc-make-tmv (%size_t 0) (%nil)))
                         ((every (lambda (x) (eq x :object)) rt)
                          (let ((vals (in rv))
                                (nvals (length rt)))
