@@ -927,8 +927,8 @@ Otherwise do a variable shift."
 (defun irc-fence (order &optional (label ""))
   (llvm-sys:create-fence *irbuilder* order 1 #+(or)'llvm-sys:system label))
 
-(defun irc-load (source &optional (label ""))
-  (llvm-sys:create-load-value-twine *irbuilder* source label))
+(defun irc-load (source &optional (label "") is-volatile)
+  (llvm-sys:create-load-value-bool-twine *irbuilder* source is-volatile label))
 
 (defun irc-load-atomic (source
                         &key (label "") (align 8) (order 'llvm-sys:monotonic))

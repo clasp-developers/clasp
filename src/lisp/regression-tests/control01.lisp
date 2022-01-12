@@ -147,3 +147,20 @@
 
 (test-true equalp-11
       (not (equalp 1.0s0 2.0d0)))
+
+;;; #1187 and related nonlocal exit optimization madness
+;;; See also needs-volatile-load-p in cleavir/translation-environment.lisp
+;;; (debug 1) is so that llvm optimization does take place
+(test volatile-nlx
+      (locally
+          (declare (optimize (debug 1)))
+        (let ((item 4)
+              (flag t)
+              (result 17))
+          (loop (multiple-value-call
+                    (lambda (val)
+                      (unless flag (return nil))
+                      (setf result val flag nil))
+                  item))
+          result))
+      (4))
