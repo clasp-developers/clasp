@@ -318,6 +318,7 @@ struct Mutex;
 void debug_mutex_lock(Mutex* m);
 void debug_mutex_unlock(Mutex* m);
 
+#define DEFAULT__NAMEWORD 0x0045454545454545
 #define PACKAGE__NAMEWORD 0x004547414b434150
 #define INTRFUNC_NAMEWORD 0x004e554652544e49
 #define STRTFUNC_NAMEWORD 0x004e554654525453
@@ -343,13 +344,11 @@ void debug_mutex_unlock(Mutex* m);
 #define MPSMESSG_NAMEWORD 0x005353454d53504d     // MPSMESSG
 
 struct Mutex {
-  Mutex() {};
   uint64_t _NameWord;
   pthread_mutex_t _Mutex;
   gctools::Fixnum _Counter;
   bool _Recursive;
   Mutex(uint64_t nameword, bool recursive=false) : _NameWord(nameword), _Counter(0), _Recursive(recursive) {
-    
     if (!recursive) {
       pthread_mutex_init(&this->_Mutex,NULL);
     } else {
@@ -359,6 +358,9 @@ struct Mutex {
       pthread_mutex_init(&this->_Mutex, &Attr);
       pthread_mutexattr_destroy(&Attr);
     }
+  };
+  Mutex() : _NameWord(DEFAULT__NAMEWORD), _Counter(0), _Recursive(false) {
+    pthread_mutex_init(&this->_Mutex,NULL);
   };
   bool lock(bool waitp=true) {
 #ifdef DEBUG_THREADS

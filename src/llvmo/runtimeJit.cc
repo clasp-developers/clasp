@@ -12,6 +12,9 @@
 #include <llvm/ExecutionEngine/Orc/DebuggerSupportPlugin.h>
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/mpPackage.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/llvmo/jit.h>
@@ -152,10 +155,12 @@ uint64_t getModuleSectionIndexForText(llvm::object::ObjectFile& objf) {
 class ClaspAllocator : public JITLinkMemoryManager {
 public:
   ClaspAllocator() {
-    this->PageSize = *sys::Process::getPageSize();
   }
+  ClaspAllocator( ClaspAllocator&& ) = delete;
+  ~ClaspAllocator() {}
 public:
-  uint64_t PageSize;
+  mp::Mutex MyMapMutex;
+  std::map<void*,std::vector<orc::shared::WrapperFunctionCall>> MyMap;
 public:
   static Expected<std::unique_ptr<ClaspAllocator>>
   Create() {
@@ -178,8 +183,10 @@ public:
     
     class MyInFlightAlloc : public JITLinkMemoryManager::InFlightAlloc {
     public:
-      MyInFlightAlloc(BasicLayout BL)
-          : BL(std::move(BL))
+      ClaspAllocator* MyAllocator;
+    public:
+      MyInFlightAlloc(ClaspAllocator* MA, BasicLayout BL)
+          : MyAllocator(MA), BL(std::move(BL))
       {
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s What do I do here?\n", __FILE__, __LINE__, __FUNCTION__ ));
       }
@@ -204,6 +211,12 @@ public:
           auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
           if (Prot & sys::Memory::MF_EXEC)
             execMemory = (void*)Seg.WorkingMem;
+        }
+        if (auto DeallocActions = runFinalizeActions(BL.getGraph().allocActions())) {
+          RAIILock lock(this->MyAllocator->MyMapMutex);
+          this->MyAllocator->MyMap[execMemory] = std::move(*DeallocActions);
+        } else {
+          return OnFinalized(DeallocActions.takeError());
         }
         llvm::orc::ExecutorAddr ea((uintptr_t)execMemory);
         OnFinalized(llvm::jitlink::InProcessMemoryManager::FinalizedAlloc(ea));
@@ -319,7 +332,7 @@ public:
       return;
     }
 
-    OnAllocated(std::make_unique<MyInFlightAlloc>( BL ));
+    OnAllocated(std::make_unique<MyInFlightAlloc>( this, BL ));
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from OnAllocated\n", __FILE__, __LINE__, __FUNCTION__ ));
   }
 
@@ -327,12 +340,18 @@ public:
   // deallocate only happens at shutdown - so I don't have a Mutex or much else to do
   //
   virtual void deallocate(std::vector<FinalizedAlloc> Allocs,
-                   OnDeallocatedFunction OnDeallocated) {
-      //std::lock_guard<std::mutex> Lock(FinalizedAllocsMutex);
-    for (auto &Alloc : Allocs) {
-      Alloc.release();
-    }
+                          OnDeallocatedFunction OnDeallocated) {
+    //std::lock_guard<std::mutex> Lock(FinalizedAllocsMutex);
     Error DeallocErr = Error::success();
+    RAIILock lock(this->MyMapMutex);
+    for (auto &Alloc : Allocs) {
+      // See if there are any dealloc actions to run.
+      auto I = this->MyMap.find((void*)Alloc.release().getValue());
+      if (I != this->MyMap.end()) {
+        DeallocErr = joinErrors(std::move(DeallocErr), runDeallocActions(I->second));
+        this->MyMap.erase(I);
+      }
+    }
     OnDeallocated(std::move(DeallocErr));
   };
 };
