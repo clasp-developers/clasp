@@ -17,15 +17,8 @@
                             (car (cdr (cst:raw lambda-name-info)))))
              (cmp:*track-inlinee-name* (cons lambda-name cmp:*track-inlinee-name*))
              (original-lambda-list (if lambda-list (cst:raw lambda-list) nil)))
-        ;; Define the function-scope-info object and bind it to
-        ;; the *current-function-scope-info* object
-        (let ((origin (let ((source (cst:source body)))
-                        (cond ((consp source) (car source))
-                              ((null source) core:*current-source-pos-info*)
-                              (t source))))
-              (function-ast (call-next-method)))
-          (setf (ast:origin function-ast) origin
-                (ast:name function-ast)
+        (let ((function-ast (call-next-method)))
+          (setf (ast:name function-ast)
                 (or lambda-name ; from declaration
                     (ast:name function-ast) ; local functions named by cleavir
                     (list 'lambda (cmp::lambda-list-for-name original-lambda-list))))
