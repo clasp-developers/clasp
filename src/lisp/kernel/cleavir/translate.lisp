@@ -154,8 +154,7 @@
          (label (datum-name-as-string outp))
          (s2 (cmp::irc-make-vaslist nvals mv-temp label)))
     (setf (dynenv-storage inst) save)
-    (%intrinsic-call "cc_save_values" (list nvals primary mv-temp)
-                     (datum-name-as-string outp))
+    (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
     (out s2 outp))
   ;; Continue
   (cmp:irc-br (first next)))
