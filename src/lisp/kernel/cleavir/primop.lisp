@@ -27,7 +27,7 @@
       :argument-asts (cst-to-ast::convert-sequence
                       (cst:rest (cst:rest cst))
                       env system)
-      :origin (cst:source cst))))
+      :origin cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
