@@ -1452,7 +1452,8 @@
 (defun calculate-function-info (irfunction lambda-name)
   (let* ((origin (loop for origin = (bir:origin irfunction)
                          then (cst:source origin)
-                       while (typep origin 'cst:cst)))
+                       while (typep origin 'cst:cst)
+                       finally (return origin)))
          (spi (origin-spi origin)))
     (let ((cleavir-lambda-list-analysis (cmp:calculate-cleavir-lambda-list-analysis (bir:lambda-list irfunction))))
       (cmp:make-function-info
