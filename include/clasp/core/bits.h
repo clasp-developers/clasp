@@ -25,6 +25,7 @@ typedef enum { boole_clr = 0,
 void initialize_bits();
 
 Integer_sp cl__logior(List_sp integers);
+Integer_sp core__logior_2op(Integer_sp, Integer_sp);
 Integer_sp cl__logand(List_sp integers);
 
 };
