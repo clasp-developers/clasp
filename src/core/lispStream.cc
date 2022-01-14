@@ -596,6 +596,10 @@ generic_write_byte_signed8(T_sp byte, T_sp strm) {
   StreamOps(strm).write_byte8(strm, (unsigned char *)&c, 1);
 }
 
+// Max number of bits we can read without bignums; 64 for 64-bit machines
+// see clasp_normalize_stream_element_type below
+#define BYTE_STREAM_FAST_MAX_BITS 64
+
 static T_sp
 generic_read_byte_le(T_sp strm) {
   cl_index b, bs = StreamByteSize(strm) / 8;
@@ -663,6 +667,49 @@ generic_write_byte(T_sp c, T_sp strm) {
     rb = bs - b - 1;
     bytes[rb] = word & 0xFF;
     word >>= 8;
+  }
+  StreamOps(strm).write_byte8(strm, bytes, bs);
+}
+
+// Routines for reading and writing >64 bit integers.
+// We have to use bignum arithmetic, so they're distinguished and slower.
+static T_sp generic_read_byte_long(T_sp strm) {
+  Integer_sp result = make_fixnum(0);
+  cl_index b, rb, bs = StreamByteSize(strm) / 8;
+  unsigned char bytes[bs];
+  StreamOps(strm).read_byte8(strm, bytes, bs);
+  if (StreamFlags(strm) & CLASP_STREAM_LITTLE_ENDIAN) {
+    for (b = 0; b < bs; ++b) {
+      Integer_sp by = make_fixnum(bytes[b]);
+      result = core__logior_2op(result, clasp_ash(by, b * 8));
+    }
+  } else {
+    for (b = 0; b < bs; ++b) {
+      Integer_sp by = make_fixnum(bytes[b]);
+      rb = bs - b - 1;
+      result = core__logior_2op(result, clasp_ash(by, rb * 8));
+    }
+  }
+  return result;
+}
+
+static void
+generic_write_byte_long(T_sp c, T_sp strm) {
+  cl_index b, rb, bs = StreamByteSize(strm) / 8;
+  unsigned char bytes[bs];
+  Integer_sp w = gc::As<Integer_sp>(c);
+  Integer_sp mask = make_fixnum(0xFF);
+  if (StreamFlags(strm) & CLASP_STREAM_LITTLE_ENDIAN) {
+    for (b = 0; b < bs; ++b) {
+      bytes[b] = core__logand_2op(w, mask).unsafe_fixnum();
+      w = clasp_ash(w, -8);
+    }
+  } else {
+    for (b = 0; b < bs; ++b) {
+      rb = bs - b - 1;
+      bytes[rb] = core__logand_2op(w, mask).unsafe_fixnum();
+      w = clasp_ash(w, -8);
+    }
   }
   StreamOps(strm).write_byte8(strm, bytes, bs);
 }
@@ -3741,6 +3788,10 @@ set_stream_elt_type(T_sp tstream, gctools::Fixnum byte_size, int flags,
         read_byte = generic_read_byte_unsigned8;
         write_byte = generic_write_byte_unsigned8;
       }
+    } else if ((byte_size > BYTE_STREAM_FAST_MAX_BITS)
+               || (byte_size < -BYTE_STREAM_FAST_MAX_BITS)) {
+      read_byte = generic_read_byte_long;
+      write_byte = generic_write_byte_long;
     } else if (flags & CLASP_STREAM_LITTLE_ENDIAN) {
       read_byte = generic_read_byte_le;
       write_byte = generic_write_byte_le;
@@ -5232,6 +5283,9 @@ CL_DEFUN bool cl__streamp(T_sp strm) {
  * FILE OPENING AND CLOSING
  */
 
+// Max number of bits in the element type for a byte stream. Arbitrary.
+#define BYTE_STREAM_MAX_BITS 1024
+
 gctools::Fixnum
 clasp_normalize_stream_element_type(T_sp element_type) {
   gctools::Fixnum sign = 0;
@@ -5258,17 +5312,17 @@ clasp_normalize_stream_element_type(T_sp element_type) {
       gc::Fixnum writ = clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
       // Upgrade
       if (writ < 0) goto err;
-      for (size = 8; size <= 64; size += 8)
+      for (size = 8; size <= BYTE_STREAM_MAX_BITS; size += 8)
         if (writ <= size) return writ;
       // continue to subtypep check
     } else if (oCar(element_type) == cl::_sym_SignedByte) {
       gc::Fixnum writ = clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
       if (writ < 0) goto err;
-      for (size = 8; size <= 64; size += 8)
+      for (size = 8; size <= BYTE_STREAM_MAX_BITS; size += 8)
         if (writ <= size) return writ;
     }
   }
-  for (size = 8; size <= 64; size += 8) {
+  for (size = 8; size <= BYTE_STREAM_MAX_BITS; size += 8) {
     T_sp type;
     type = Cons_O::createList(sign > 0 ? cl::_sym_UnsignedByte : cl::_sym_SignedByte,
                               make_fixnum(size));
