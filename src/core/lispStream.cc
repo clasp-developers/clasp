@@ -5258,21 +5258,17 @@ clasp_normalize_stream_element_type(T_sp element_type) {
       gc::Fixnum writ = clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
       // Upgrade
       if (writ < 0) goto err;
-      else if (writ <= 8) return 8;
-      else if (writ <= 16) return 16;
-      else if (writ <= 32) return 32;
-      else if (writ <= 64) return 64;
+      for (size = 8; size <= 64; size += 8)
+        if (writ <= size) return writ;
       // continue to subtypep check
     } else if (oCar(element_type) == cl::_sym_SignedByte) {
       gc::Fixnum writ = clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
       if (writ < 0) goto err;
-      else if (writ <= 8) return -8;
-      else if (writ <= 16) return -16;
-      else if (writ <= 32) return -32;
-      else if (writ <= 64) return -64;
+      for (size = 8; size <= 64; size += 8)
+        if (writ <= size) return writ;
     }
   }
-  for (size = 8; size <= 64; size <<= 1) {
+  for (size = 8; size <= 64; size += 8) {
     T_sp type;
     type = Cons_O::createList(sign > 0 ? cl::_sym_UnsignedByte : cl::_sym_SignedByte,
                               make_fixnum(size));
