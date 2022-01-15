@@ -205,12 +205,14 @@ public:
         // I don't know what this is so I'm ignoring it.
     // (4) Call OnFinalized(pointerToJITTargetAddress(A.release()));
         void* execMemory = NULL;
+        size_t numSegments = 0;
         for (auto &KV : BL.segments()) {
           const auto &AG = KV.first;
           auto &Seg = KV.second;
           auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
           if (Prot & sys::Memory::MF_EXEC)
             execMemory = (void*)Seg.WorkingMem;
+          ++numSegments;
         }
         if (auto DeallocActions = runFinalizeActions(BL.getGraph().allocActions())) {
           RAIILock lock(this->MyAllocator->MyMapMutex);
@@ -397,7 +399,12 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
                                         }
 #endif
+
                                         bool keptAlive = false;
+#ifdef _TARGET_OS_LINUX
+                                        keptAlive = true;
+//                                        if (ssym->getName().str() != "") {printf("%s:%d:%s Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str() ); };
+#endif
                                         if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
                                           keptAlive = true;
                                         } else if ( sname.find(literals_name) != std::string::npos ) {
