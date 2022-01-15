@@ -1314,7 +1314,6 @@ void Lisp::parseCommandLineArguments(int argc, char *argv[], const CommandLineOp
   globals_->_NoRc = options._NoRc;
   globals_->_ExportedSymbolsAccumulate = options._ExportedSymbolsAccumulate;
   globals_->_ExportedSymbolsFilename = options._ExportedSymbolsFilename;
-  printf("%s:%d:%s Setting globals_->_Stage to %c\n", __FILE__, __LINE__, __FUNCTION__, options._Stage );
   globals_->_Stage = options._Stage;
   if (options._HasDescribeFile) {
     dumpDebuggingLayouts(options._DescribeFile);
