@@ -85,7 +85,7 @@
       (precedence-list :reader class-precedence-list
                        :accessor %class-precedence-list :location 7)
       (direct-slots :initarg :direct-slots :reader class-direct-slots :location 8
-                    :accessor %class-direct-slots)
+                    :initform nil :accessor %class-direct-slots)
       (direct-default-initargs :initarg :direct-default-initargs :location 9
 			       :initform nil :reader class-direct-default-initargs)
       (default-initargs :reader class-default-initargs
