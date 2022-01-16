@@ -121,3 +121,5 @@
 (defmethod q ((true (eql t))) t)
 (defmethod q ((n (eql nil))) t)
 (test-true eql-specializers-from-irc (q t))
+
+(test-true issue-1244 (typep (CLOS:ENSURE-CLASS-USING-CLASS NIL (gentemp)) 'standard-class))

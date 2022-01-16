@@ -236,12 +236,13 @@
   ;; verify that the inheritance list makes sense
   (dbg-standard "standard.lsp:238 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
   ;;; Convert the list of direct slots into actual slot definitions.
-  (when direct-slots-p
-    (setf initargs
-          (list* :direct-slots
-                 (loop for s in direct-slots
-                       collect (canonical-slot-to-direct-slot class s))
-                 initargs)))
+  (if direct-slots-p
+      (setf initargs
+            (list* :direct-slots
+                   (loop for s in direct-slots
+                         collect (canonical-slot-to-direct-slot class s))
+                   initargs))
+      (setf initargs (cons :direct-slots (cons nil initargs))))
   (let* ((old-direct-superclasses
            (when dscp
              (if (slot-boundp class 'direct-superclasses)
