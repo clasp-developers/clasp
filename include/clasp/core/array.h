@@ -750,11 +750,11 @@ namespace core {
       LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
         sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
         start = this->_DisplacedIndexOffset;
-        end = this->length() + this->_DisplacedIndexOffset;
+        end = start + this->length();
       } else {
         this->_Data->asAbstractSimpleVectorRange(sv,start,end);
         start += this->_DisplacedIndexOffset;
-        end = this->length()+this->_DisplacedIndexOffset;
+        end = start + this->length();
       }
     }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
@@ -844,11 +844,11 @@ namespace core {
       LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
         sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
         start = this->_DisplacedIndexOffset;
-        end = this->length()+this->_DisplacedIndexOffset;
+        end = start + this->length();
       } else {
         this->_Data->asAbstractSimpleVectorRange(sv, start, end);
         start += this->_DisplacedIndexOffset;
-        end = this->length()+this->_DisplacedIndexOffset;
+        end = start + this->length();
         return;
       }
     }

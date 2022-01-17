@@ -488,6 +488,14 @@ BBBBCCCC**DDDD"))
                  (with-output-to-string (stream)
                    (write-string string stream :start from :end to)))))
 
+(test print-nested-displacement
+      (let* ((s1 "11 22")
+             (s2 (make-array 2 :element-type 'character
+                               :displaced-to s1 :displaced-index-offset 3))
+             (s3 (make-array 2 :element-type 'character :displaced-to s2)))
+        (write-to-string s3 :escape nil))
+      ("22"))
+
 (test ansi-test-format-e
       (FORMAT NIL "~,2,,2e" 0.05)
       ("50.0e-3"))
