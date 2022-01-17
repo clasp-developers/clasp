@@ -95,8 +95,7 @@ LLVM_VERSION = 13
 SBCL_VERSION = (2, 0)
 SBCL_VERSION_STRING = "2.1"
 CLANG_SPECIFIC_VERSION = "13.0.0git"
-#LLVM_HASH = "972b6a3a3471c2a742c5c5d8ec004ff640d544c4"
-XCODE_SDK_DEFAULT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk"
+XCODE_SDK_DEFAULT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 
 # valid values "libgcc_s", "gnu/libunwind", "llvm/libunwind"
 DEFAULT = "default"
