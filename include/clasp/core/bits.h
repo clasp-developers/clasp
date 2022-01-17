@@ -28,6 +28,9 @@ Integer_sp cl__logior(List_sp integers);
 Integer_sp core__logior_2op(Integer_sp, Integer_sp);
 Integer_sp cl__logand(List_sp integers);
 Integer_sp core__logand_2op(Integer_sp, Integer_sp);
+Integer_sp cl__logandc2(Integer_sp, Integer_sp);
+Integer_sp cl__lognot(Integer_sp);
+bool cl__logbitp(Integer_sp, Integer_sp);
 
 };
 
