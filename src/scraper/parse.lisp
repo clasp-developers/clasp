@@ -137,15 +137,18 @@ if there were an empty string between them."
   "* Arguments
 - type-name :: A string.
 * Description
-Split a string like \"const string &b\" into (values \"const string &\" \"b\") pair.
-Trim whitespace from each member of the pair."
+Split a C++ parameter specification string like \"const string &b\" into (values \"const string &\" \"b\") pair.
+Trim whitespace from each member of the pair.
+Rudimentarily detects and skips initializers."
   (declare (optimize (speed 3)))
-  (let* ((name-start (position-if #'(lambda (c)
+  (let* ((initializer-start (position #\= type-name :from-end t))
+         (name-start (position-if #'(lambda (c)
                                       (not (or (alphanumericp c) (char= c #\_))))
                                   type-name
+                                  :end initializer-start
                                   :from-end t))
          (first (subseq type-name 0 (1+ name-start)))
-         (second (subseq type-name (1+ name-start))))
+         (second (subseq type-name (1+ name-start) initializer-start)))
     (values (string-trim +white-space+ first) (string-trim +white-space+ second))))
 
 (defun extract-lambda-list-from-c++-arguments (typed-arguments)
