@@ -14,7 +14,7 @@ A clear and concise description of what the bug is.
 A clear and concise description of what you expected to happen.
 
 **Actual behavior**
-A clear and concise description of what happened instead.
+A clear and concise description of what happened instead. This should include error messages and backtraces if there are any. If that would be more than a few dozen lines, please attach it in a file instead.
 
 **Code at issue**
 
@@ -23,6 +23,8 @@ If applicable, example code that can be evaluated or compiled to reproduce the p
 Ideally, this is short and self contained.
 If it is not practicable to eliminate dependencies, please at least try to reduce them.
 ```
+
+If the code is more than a few dozen lines, please attach a source file instead.
 
 **Other steps to reproduce**
 If the problem cannot be reproduced from just a code sample, include other steps here.
