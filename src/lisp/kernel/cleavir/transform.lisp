@@ -36,8 +36,12 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *bir-transformers* (make-hash-table :test #'equal)))
 
+(defun asserted-ctype (datum)
+  (ctype:values-conjoin *clasp-system*
+                        (bir:ctype datum) (bir:asserted-type datum)))
+
 (defun arg-subtypep (arg ctype)
-  (ctype:subtypep (ctype:primary (bir:ctype arg) *clasp-system*)
+  (ctype:subtypep (ctype:primary (asserted-ctype arg) *clasp-system*)
                   ctype *clasp-system*))
 
 (defun maybe-transform (call transforms)
@@ -102,20 +106,42 @@
 (defun cstify-transformer (origin expression)
   (cst:cst-from-expression expression :source origin))
 
+;; Useful below for inserting checks on arguments.
+(defmacro ensure-the (type form)
+  `(cleavir-primop:ensure-the (values ,type &rest t)
+                              (lambda (&optional value &rest ign)
+                                ;; This is going right into a primop,
+                                ;; so the other values can be ignored
+                                (declare (ignore ign))
+                                (unless (typep value ',type)
+                                  (error 'type-error :datum value
+                                                     :expected-type ',type))
+                                value)
+                              ,form))
+
 ;;; FIXME: Only required parameters permitted here
 (defmacro deftransform (name typed-lambda-list &body body)
   (let* ((params (loop for entry in typed-lambda-list
                        collect (if (consp entry) (first entry) entry)))
          (typespecs (loop for entry in typed-lambda-list
                           collect (if (consp entry) (second entry) 't)))
+         (insurances
+           (mapcar (lambda (param typespec)
+                     (if (ctype:top-p typespec *clasp-system*)
+                         `(,param ,param)
+                         `(,param (ensure-the ,typespec ,param))))
+                   params typespecs))
          (csym (gensym "CALL")))
     `(%deftransform ,name (,csym) (,@typespecs)
         (replace-callee-with-lambda ,csym
                                     (cstify-transformer
                                      (bir:origin ,csym)
                                      (list 'lambda '(,@params)
-                                           '(declare (ignorable ,@params))
-                                           (progn ,@body)))))))
+                                           (list 'let
+                                                 '(,@insurances)
+                                                 '(declare
+                                                   (ignorable ,@params))
+                                                 (progn ,@body))))))))
 
 (defmacro define-deriver (name deriver-name)
   `(setf (gethash ',name *derivers*) ',deriver-name))
@@ -507,7 +533,8 @@
                                  (ctype:range 'double-float '* '*
                                               *clasp-system*)))
 
-(deftransform aref ((arr vector) (index t)) '(row-major-aref arr index))
+(deftransform aref ((arr vector) (index t))
+  '(row-major-aref arr index))
 (deftransform (setf aref) ((val t) (arr vector) (index t))
   '(setf (row-major-aref arr index) val))
 
@@ -640,7 +667,8 @@
 ;; has a bignum negation.
 (deftransform core:negate ((n (integer #.(1+ most-negative-fixnum)
                                        #.most-positive-fixnum)))
-  '(the fixnum (core::primop core::fixnum-sub 0 n)))
+  '(cleavir-primop:truly-the (values fixnum &rest nil)
+    (core::primop core::fixnum-sub 0 n)))
 
 (macrolet ((define-fixnum-conditional (name primop)
              `(deftransform ,name ((x fixnum) (y fixnum))
@@ -659,18 +687,20 @@
   '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
 
 (deftransform logcount ((n (and fixnum unsigned-byte)))
-  '(the fixnum (core::primop core::fixnum-positive-logcount n)))
+  '(cleavir-primop:truly-the (values fixnum &rest nil)
+    (core::primop core::fixnum-positive-logcount n)))
 
 ;; right shift of a fixnum
 (deftransform ash ((int fixnum) (count (integer * 0)))
-  '(the fixnum (core::primop core::fixnum-ashr int (min (- count) 63))))
+  '(cleavir-primop:truly-the (values fixnum &rest nil)
+    (core::primop core::fixnum-ashr int (min (- count) 63))))
 
 ;;;
 
-(%deftransform car (call) (cons)
-  (replace-call-with-vprimop call 'cleavir-primop:car))
-(%deftransform cdr (call) (cons)
-  (replace-call-with-vprimop call 'cleavir-primop:cdr))
+(deftransform car ((cons cons))
+  '(cleavir-primop:car cons))
+(deftransform cdr ((cons cons))
+  '(cleavir-primop:cdr cons))
 
 (deftransform length ((x null)) 0)
 (deftransform length ((x cons)) '(core:cons-length x))
