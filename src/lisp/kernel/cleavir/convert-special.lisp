@@ -124,9 +124,8 @@
 
 (defmethod cst-to-ast:type-wrap-argument
     (ast ctype origin env (system clasp-cleavir:clasp))
-  ;; Insert an externally checked THE and insert type checks as well
-  ;; on high safety, unless the type is top in which case we do
-  ;; nothing.
+  ;; Insert an untrusted THE at non-high safety and insert type checks
+  ;; on high safety, unless the type is top in which case we do nothing.
   ;; NOTE that the type check doesn't check &optional and &rest. FIXME?
   (let ((insert-type-checks
           (cleavir-policy:policy-value
@@ -152,7 +151,7 @@
                      (make-type-check-form ctype system))
                     env system)))
              (cleavir-ast:make-the-ast ast ctype check :origin origin)))
-          (t (cleavir-ast:make-the-ast ast ctype :external :origin origin)))))
+          (t (cleavir-ast:make-the-ast ast ctype nil :origin origin)))))
 
 (defmethod cst-to-ast:type-wrap-return-values
     (ast ctype origin env (system clasp-cleavir:clasp))
