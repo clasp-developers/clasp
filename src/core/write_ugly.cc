@@ -222,6 +222,12 @@ void write_character(T_sp strm, T_sp chr) {
   }
 }
 
+DONT_OPTIMIZE_ALWAYS void write_bad_object(T_sp x) {
+  stringstream ss;
+  ss << "#<BAD-OBJECT! value: " << x.raw_() << " set break-point on " << __FUNCTION__ << " and check backtrace>";
+  clasp_write_string(ss.str());
+}
+
 T_sp write_ugly_object(T_sp x, T_sp stream) {
   if (x.fixnump()) {
     write_fixnum(stream, x);
@@ -252,9 +258,7 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
   } else if (x.unboundp()) {
     clasp_write_string("#<UNBOUND>");
   } else {
-    stringstream ss;
-    ss << "#<BAD-OBJECT! value: " << x.raw_() << " set break-point at " << __FILE__ << ":" << __LINE__ << " and check backtrace>";
-    clasp_write_string(ss.str());
+    write_bad_object(x);
   }
   return x;
 }
