@@ -198,17 +198,21 @@
              `(progn
                 (define-two-arg-f ,name ,sf-primop ,df-primop)
                 (deftransform ,name ((x fixnum) (y single-float))
-                  '(core::primop ,sf-primop
-                    (core::primop core::fixnum-to-single x) y))
+                  '(truly-the single-float
+                    (core::primop ,sf-primop
+                     (core::primop core::fixnum-to-single x) y)))
                 (deftransform ,name ((x single-float) (y fixnum))
-                  '(core::primop ,sf-primop
-                    x (core::primop core::fixnum-to-single y)))
+                  '(truly-the single-float
+                    (core::primop ,sf-primop
+                     x (core::primop core::fixnum-to-single y))))
                 (deftransform ,name ((x fixnum) (y double-float))
-                  '(core::primop ,df-primop
-                    (core::primop core::fixnum-to-double x) y))
+                  '(truly-the double-float
+                    (core::primop ,df-primop
+                     (core::primop core::fixnum-to-double x) y)))
                 (deftransform ,name ((x double-float) (y fixnum))
-                  '(core::primop ,df-primop
-                    x (core::primop core::fixnum-to-double y))))))
+                  '(truly-the double-float
+                    (core::primop ,df-primop
+                     x (core::primop core::fixnum-to-double y)))))))
   (define-two-arg-ff core:two-arg-+ core::two-arg-sf-+ core::two-arg-df-+)
   (define-two-arg-ff core:two-arg-- core::two-arg-sf-- core::two-arg-df--)
   (define-two-arg-ff core:two-arg-* core::two-arg-sf-* core::two-arg-df-*)
@@ -314,18 +318,18 @@
 (deftransform float ((v single-float) (proto single-float)) 'v)
 (deftransform float ((v double-float) (proto double-float)) 'v)
 (deftransform float ((v single-float) (proto double-float))
-  '(core::primop core::single-to-double v))
+  '(truly-the double-float (core::primop core::single-to-double v)))
 (deftransform float ((v double-float) (proto single-float))
-  '(core::primop core::double-to-single v))
+  '(truly-the single-float (core::primop core::double-to-single v)))
 (deftransform float ((v double-float))
-  '(core::primop core::double-to-single v))
+  '(truly-the double-float (core::primop core::double-to-single v)))
 
 (deftransform float ((num fixnum) (proto single-float))
-  `(core::primop core::fixnum-to-single num))
+  '(truly-the single-float (core::primop core::fixnum-to-single num)))
 (deftransform float ((num fixnum))
-  `(core::primop core::fixnum-to-single num))
+  '(truly-the single-float (core::primop core::fixnum-to-single num)))
 (deftransform float ((num fixnum) (proto double-float))
-  `(core::primop core::fixnum-to-double num))
+  '(truly-the double-float (core::primop core::fixnum-to-double num)))
 
 (defun derive-float (call)
   (cleavir-ctype:single-value
@@ -370,6 +374,7 @@
 (deftransform rational ((r rational)) 'r)
 (deftransform rationalize ((r rational)) 'r)
 
+(deftransform equal ((x number) (y number)) '(eql x y))
 (deftransform equalp ((x number) (y number)) '(= x y))
 
 ;;;
@@ -390,12 +395,10 @@
 
 (deftransform core:row-major-aset ((arr (simple-array single-float (*)))
                                    idx value)
-  '(truly-the single-float
-    (core::primop core::sf-vset value arr idx)))
+  '(truly-the single-float (core::primop core::sf-vset value arr idx)))
 (deftransform core:row-major-aset ((arr (simple-array double-float (*)))
                                    idx value)
-  '(truly-the double-float
-    (core::primop core::df-vset value arr idx)))
+  '(truly-the double-float (core::primop core::df-vset value arr idx)))
 
 (deftransform (setf aref) (value (arr (simple-array single-float (*))) idx)
   '(truly-the single-float
@@ -437,6 +440,14 @@
 
 ;;;
 
+;;; FIXME: Maybe should be a compiler macro not specializing on fixnum.
+;;;        And maybe should use LOGTEST, but I'm not sure what the best way
+;;;        to optimize that is yet.
+(deftransform evenp ((f fixnum))
+  '(zerop (truly-the fixnum (core::primop core::fixnum-logand f 1))))
+(deftransform oddp ((f fixnum))
+  '(not (zerop (truly-the fixnum (core::primop core::fixnum-logand f 1)))))
+
 (deftransform lognot ((f fixnum))
   '(truly-the fixnum (core::primop core::fixnum-lognot f)))
 
@@ -446,35 +457,6 @@
   (deflog2 core:logand-2op core::fixnum-logand)
   (deflog2 core:logior-2op core::fixnum-logior)
   (deflog2 core:logxor-2op core::fixnum-logxor))
-
-(defun lognot-before (before datum)
-  (let* ((fix (ctype:single-value
-               (ctype:range 'integer most-negative-fixnum
-                            most-positive-fixnum *clasp-system*)
-               *clasp-system*))
-         (new (make-instance 'bir:output :derived-type fix))
-         (not (make-instance 'bir:primop
-                :origin (bir:origin before) :policy (bir:policy before)
-                :info (cleavir-primop-info:info 'core::fixnum-lognot)
-                :outputs (list new))))
-    (bir:insert-instruction-before not before)
-    (bir:replace-uses new datum)
-    (setf (bir:inputs not) (list datum)))
-  (values))
-(defun lognot-after (after datum)
-  (let* ((fix (ctype:single-value
-               (ctype:range 'integer most-negative-fixnum
-                            most-positive-fixnum *clasp-system*)
-               *clasp-system*))
-         (new (make-instance 'bir:output :derived-type fix))
-         (not (make-instance 'bir:primop
-                :origin (bir:origin after) :policy (bir:policy after)
-                :info (cleavir-primop-info:info 'core::fixnum-lognot)
-                :outputs (list new))))
-    (bir:insert-instruction-after not after)
-    (bir:replace-uses new datum)
-    (setf (bir:inputs not) (list datum)))
-  (values))
 
 (deftransform logandc1 ((n fixnum) (b fixnum))
   '(truly-the fixnum (core::primop core::fixnum-logand
@@ -528,20 +510,16 @@
   '(if (core::primop core::two-arg-fixnum-< n 0) t nil))
 
 (deftransform logcount ((n (and fixnum unsigned-byte)))
-  '(cleavir-primop:truly-the (values fixnum &rest nil)
-    (core::primop core::fixnum-positive-logcount n)))
+  '(truly-the fixnum (core::primop core::fixnum-positive-logcount n)))
 
 ;; right shift of a fixnum
 (deftransform ash ((int fixnum) (count (integer * 0)))
-  '(cleavir-primop:truly-the (values fixnum &rest nil)
-    (core::primop core::fixnum-ashr int (min (- count) 63))))
+  '(truly-the fixnum (core::primop core::fixnum-ashr int (min (- count) 63))))
 
 ;;;
 
-(deftransform car ((cons cons))
-  '(cleavir-primop:car cons))
-(deftransform cdr ((cons cons))
-  '(cleavir-primop:cdr cons))
+(deftransform car ((cons cons)) '(cleavir-primop:car cons))
+(deftransform cdr ((cons cons)) '(cleavir-primop:cdr cons))
 
 (deftransform length ((x null)) 0)
 (deftransform length ((x cons)) '(core:cons-length x))
