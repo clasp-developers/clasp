@@ -675,13 +675,9 @@ representing a tagged fixnum."
          (ptr-tagged (irc-gep ptr-i8* (list (jit-constant-i64 +vaslist0-tag+)) label)))
     ptr-tagged))
 
+;;; NOTE: Unsafe. Cleavir inserts this only after type checks on safety > 0.
 (defun irc-unbox-single-float (t* &optional (label "single-float"))
   (irc-intrinsic-call "cc_unbox_single_float" (list t*) label)
-  ;; unsafe ver - cc_unbox_single_float type errors, but this will happily
-  ;; proceed if given garbage. FIXME: Could use on safety 0.
-  ;; Also, we could inline this plus a tag check with branch to error, which
-  ;; might be faster than calling the unboxer but would mean bigger code.
-  #+(or)
   (irc-bit-cast
    (irc-trunc (irc-lshr (irc-ptr-to-int t* %i64%) +single-float-shift+) %i32%)
    %float% label))
@@ -695,7 +691,9 @@ representing a tagged fixnum."
     +single-float-tag+ "")
    %t*% label))
 
-;;; FIXME: Inline this - it's just a memory load, unlike boxing
+;;; TODO: Should be unsafe for the same reason as above.
+;;;       Checking here is redundant.
+;;; TODO: Inline this - it's just a memory load, unlike boxing
 (defun irc-unbox-double-float (t* &optional (label "double-float"))
   (irc-intrinsic-call "cc_unbox_double_float" (list t*) label))
 (defun irc-box-double-float (double &optional (label "double-float"))

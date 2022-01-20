@@ -1741,19 +1741,19 @@ COMPILE-FILE will use the default *clasp-env*."
       ((cst-to-ast:no-variable-info
          (lambda (condition)
            (cmp:warn-undefined-global-variable
-            (origin-spi (cleavir-conditions:origin condition))
+            (origin-spi (cmp:compiler-condition-origin condition))
             (cst-to-ast:name condition))
            (invoke-restart 'cst-to-ast:consider-special)))
        (cst-to-ast:no-function-info
          (lambda (condition)
            (cmp:register-global-function-ref
             (cst-to-ast:name condition)
-            (origin-spi (cleavir-conditions:origin condition)))
+            (origin-spi (cmp:compiler-condition-origin condition)))
            (invoke-restart 'cst-to-ast:consider-global)))
        (cst-to-ast:compiler-macro-expansion-error
          (lambda (condition)
            (warn 'cmp:compiler-macro-expansion-error-warning
-                 :origin (origin-spi (cst:source (cst-to-ast:cst condition)))
+                 :origin (origin-spi (cmp:compiler-condition-origin condition))
                  :condition condition)
            (continue condition)))
        ((and cst-to-ast:compilation-program-error
