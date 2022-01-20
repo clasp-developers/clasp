@@ -95,8 +95,7 @@ LLVM_VERSION = 13
 SBCL_VERSION = (2, 0)
 SBCL_VERSION_STRING = "2.1"
 CLANG_SPECIFIC_VERSION = "13.0.0git"
-LLVM_HASH = "972b6a3a3471c2a742c5c5d8ec004ff640d544c4"
-XCODE_SDK = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk"
+XCODE_SDK_DEFAULT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 
 # valid values "libgcc_s", "gnu/libunwind", "llvm/libunwind"
 DEFAULT = "default"
@@ -214,7 +213,9 @@ VALID_OPTIONS = [
     # Turn on address sanitizer
     "THREAD_SANITIZER",
     # Link libraries statically vs dynamically
-    "LINK_STATIC"
+    "LINK_STATIC",
+    #Path to xcode sdk
+    "XCODE_SDK"
 ]
 
 DEBUG_OPTIONS = [
@@ -1055,6 +1056,11 @@ def configure(cfg):
         log.info("cfg.env['CPPFLAGS'] = %s" % cfg.env['CPPFLAGS'])
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            if (cfg.env['XCODE_SDK'] == []):
+                XCODE_SDK = XCODE_SDK_DEFAULT
+            else:
+                XCODE_SDK = cfg.env['XCODE_SDK']
+            log.info("XCODE_SDK = %s" % XCODE_SDK)
             if ("-isysroot" in cfg.env['CPPFLAGS'] ):
                 if (XCODE_SDK in cfg.env['CPPFLAGS']):
                     pass
