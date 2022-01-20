@@ -161,7 +161,9 @@ static void clasp_truncate(Real_sp dividend, Real_sp divisor,
   case_Fixnum_v_Fixnum: {
       Fixnum a = dividend.unsafe_fixnum();
       Fixnum b = divisor.unsafe_fixnum();
-      quotient = clasp_make_fixnum(a / b);
+      // Uniquely, (truncate most-negative-fixnum -1) is a bignum, so
+      // we can't just use clasp_make_fixnum for the quotient.
+      quotient = Integer_O::create(a / b);
       remainder = clasp_make_fixnum(a % b);
       return;
     }
