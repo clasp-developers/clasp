@@ -300,10 +300,17 @@
                 (deftransform ,name ((arg single-float))
                   '(truly-the single-float (core::primop ,sf-primop arg)))
                 (deftransform ,name ((arg double-float))
-                  '(truly-the double-float (core::primop ,df-primop arg))))))
+                  '(truly-the double-float (core::primop ,df-primop arg)))
+                (deftransform ,name ((arg fixnum))
+                  '(truly-the single-float
+                    (core::primop ,sf-primop
+                     (core::primop core::fixnum-to-single arg)))))))
   (define-one-arg-f abs         core::sf-abs    core::df-abs)
   (define-one-arg-f sqrt        core::sf-sqrt   core::df-sqrt)
   (define-one-arg-f exp         core::sf-exp    core::df-exp)
+  ;; Only transform the one-argument case.
+  ;; The compiler macro in opt-number.lsp should reduce two-arg to one-arg.
+  (define-one-arg-f log         core::sf-log    core::df-log)
   ;; there's probably some weird floating point reason to explain why
   ;; llvm has an fneg instruction but not a reciprocal, but i don't know it.
   (define-one-arg-f core:negate core::sf-negate core::df-negate)
@@ -323,13 +330,6 @@
   '(truly-the single-float (core::two-arg-sf-/ 1f0 v)))
 (deftransform core:reciprocal ((v double-float))
   '(truly-the double-float (core::two-arg-df-/ 1d0 v)))
-
-;;; Transform log, but only one-argument log (which can be derived from the
-;;; two argument case by the compiler macro in opt-number.lsp)
-(deftransform log ((v single-float))
-  '(truly-the single-float (core::primop core::sf-log v)))
-(deftransform log ((v double-float))
-  '(truly-the double-float (core::primop core::df-log v)))
 
 (deftransform float ((v single-float)) 'v)
 (deftransform float ((v single-float) (proto single-float)) 'v)
