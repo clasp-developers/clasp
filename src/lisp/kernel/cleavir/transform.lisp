@@ -160,12 +160,11 @@
 
 ;;;
 
-(defun replace-callee-with-lambda (call lambda-expression-cst)
+(defun lambda->birfun (module lambda-expression-cst)
   (let* (;; FIXME: We should be harsher with errors than cst->ast is here,
          ;; since deftransforms are part of the compiler, and not the
          ;; user's fault.
          (ast (cst->ast lambda-expression-cst))
-         (module (bir:module (bir:function call)))
          (bir (cleavir-ast-to-bir:compile-into-module ast module
                                                       *clasp-system*)))
     ;; Run the first few transformations.
@@ -173,10 +172,28 @@
     (bir-transformations:eliminate-catches bir)
     (bir-transformations:find-module-local-calls module)
     (bir-transformations:function-optimize-variables bir)
+    bir))
+
+(defun replace-callee-with-lambda (call lambda-expression-cst)
+  (let ((bir (lambda->birfun (bir:module (bir:function call))
+                             lambda-expression-cst)))
     ;; Now properly insert it.
     (change-class call 'bir:local-call
                   :inputs (list* bir (rest (bir:inputs call))))
     (bir-transformations:maybe-interpolate bir)))
+
+(defmethod cleavir-bir-transformations:generate-type-check-function
+    ((module bir:module) origin ctype (system clasp))
+  (lambda->birfun module
+                  (cstify-transformer origin
+                                      `(lambda (&optional v &rest ign)
+                                         (declare (ignore ign))
+                                         (if (typep v ',(discrimination-type
+                                                         ctype))
+                                             v
+                                             (error 'type-error
+                                                    :datum v
+                                                    :expected-type ',ctype))))))
 
 (macrolet ((define-two-arg-f (name sf-primop df-primop)
              `(progn
