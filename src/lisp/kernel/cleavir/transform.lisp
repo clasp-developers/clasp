@@ -135,17 +135,23 @@
                          `(,param ,param)
                          `(,param (ensure-the ,typespec ,param))))
                    params typespecs))
-         (csym (gensym "CALL")))
+         (csym (gensym "CALL")) (bodysym (gensym "BODY")))
     `(%deftransform ,name (,csym) (,@typespecs)
-        (replace-callee-with-lambda ,csym
-                                    (cstify-transformer
-                                     (bir:origin ,csym)
-                                     (list 'lambda '(,@params)
-                                           (list 'let
-                                                 '(,@insurances)
-                                                 '(declare
-                                                   (ignorable ,@params))
-                                                 (progn ,@body))))))))
+       (let ((,bodysym (progn ,@body)))
+         (replace-callee-with-lambda
+          ,csym
+          (cstify-transformer
+           (bir:origin ,csym)
+           ;; double backquotes carefully designed piece by piece
+           (if (cleavir-policy:policy-value (bir:policy ,csym)
+                                            'insert-minimum-type-checks)
+               `(lambda (,@',params)
+                  (let (,@',insurances)
+                    (declare (ignorable ,@',params))
+                    ,,bodysym))
+               `(lambda (,@',params)
+                  (declare (ignorable ,@',params))
+                  ,,bodysym))))))))
 
 (defmacro define-deriver (name deriver-name)
   `(setf (gethash ',name *derivers*) ',deriver-name))
