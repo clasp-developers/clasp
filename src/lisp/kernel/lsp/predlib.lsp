@@ -318,6 +318,10 @@ and is not adjustable."
 (deftype ext:array-index ()
   '(integer 0 #.(1- array-dimension-limit)))
 
+;; Used in +built-in-type-list+ below.
+(deftype %simple-mdarray (element-type)
+  `(and (not vector) (simple-array ,element-type *)))
+
 ;;************************************************************
 ;;			TYPEP
 ;;************************************************************
@@ -1122,9 +1126,6 @@ if not possible."
       (SIMPLE-BIT-VECTOR (SIMPLE-ARRAY BIT (*)))
       (VECTOR (ARRAY * (*)))
 
-      ;;; FIXME?: The simple-mdarray types are not exact -
-      ;;; simple-mdarrays are never vectors.
-      ;;; (mdarrays are superclasses of complex vectors, tho.)
       (core:simple-vector-byte2-t (simple-array ext:byte2 (*)))
       (core:simple-vector-byte4-t (simple-array ext:byte4 (*)))
       (core:simple-vector-byte8-t (simple-array ext:byte8 (*)))
@@ -1175,28 +1176,28 @@ if not possible."
       (core:MDARRAY-INT32-T (array ext:integer32 *))
       (core:MDARRAY-INT64-T (array ext:integer64 *))
       (core:MDARRAY-T (array T *))
-      (core:SIMPLE-MDARRAY-BASE-CHAR (simple-array base-char *))
-      (core:SIMPLE-MDARRAY-BIT (simple-array bit *))
-      (core:simple-mdarray-byte2-t (simple-array ext:byte2 *))
-      (core:simple-mdarray-byte4-t (simple-array ext:byte4 *))
-      (core:SIMPLE-MDARRAY-BYTE8-T (simple-array ext:BYTE8 *))
-      (core:SIMPLE-MDARRAY-BYTE16-T (simple-array ext:byte16 *))
-      (core:SIMPLE-MDARRAY-BYTE32-T (simple-array ext:BYTE32 *))
-      (core:SIMPLE-MDARRAY-BYTE64-T (simple-array ext:BYTE64 *))
-      (core:SIMPLE-MDARRAY-CHARACTER (simple-array CHARACTER *))
-      (core:SIMPLE-MDARRAY-DOUBLE (simple-array DOUBLE-FLOAT *))
-      (core:SIMPLE-MDARRAY-FIXNUM (simple-array fixnum *))
-      (core:SIMPLE-MDARRAY-FLOAT (simple-array SINGLE-FLOAT *))
-      (core:simple-mdarray-int2-t (simple-array  ext:integer2 *))
-      (core:simple-mdarray-int4-t (simple-array  ext:integer4 *))
-      (core:SIMPLE-MDARRAY-INT8-T (simple-array  ext:INTEGER8 *))
-      (core:SIMPLE-MDARRAY-INT16-T (simple-array ext:INTEGER16 *))
-      (core:SIMPLE-MDARRAY-INT32-T (simple-array ext:INTEGER32 *))
-      (core:SIMPLE-MDARRAY-INT64-T (simple-array ext:INTEGER64 *))
-      (core:SIMPLE-MDARRAY-T (simple-array T *))
+      (core:SIMPLE-MDARRAY-BASE-CHAR (%simple-mdarray base-char))
+      (core:SIMPLE-MDARRAY-BIT (%simple-mdarray bit))
+      (core:simple-mdarray-byte2-t (simple-array ext:byte2))
+      (core:simple-mdarray-byte4-t (%simple-mdarray ext:byte4))
+      (core:SIMPLE-MDARRAY-BYTE8-T (%simple-mdarray ext:BYTE8))
+      (core:SIMPLE-MDARRAY-BYTE16-T (%simple-mdarray ext:byte16))
+      (core:SIMPLE-MDARRAY-BYTE32-T (%simple-mdarray ext:BYTE32))
+      (core:SIMPLE-MDARRAY-BYTE64-T (%simple-mdarray ext:BYTE64))
+      (core:SIMPLE-MDARRAY-CHARACTER (%simple-mdarray CHARACTER))
+      (core:SIMPLE-MDARRAY-DOUBLE (%simple-mdarray DOUBLE-FLOAT))
+      (core:SIMPLE-MDARRAY-FIXNUM (%simple-mdarray fixnum))
+      (core:SIMPLE-MDARRAY-FLOAT (%simple-mdarray SINGLE-FLOAT))
+      (core:simple-mdarray-int2-t (%simple-mdarray  ext:integer2))
+      (core:simple-mdarray-int4-t (%simple-mdarray  ext:integer4))
+      (core:SIMPLE-MDARRAY-INT8-T (%simple-mdarray  ext:INTEGER8))
+      (core:SIMPLE-MDARRAY-INT16-T (%simple-mdarray ext:INTEGER16))
+      (core:SIMPLE-MDARRAY-INT32-T (%simple-mdarray ext:INTEGER32))
+      (core:SIMPLE-MDARRAY-INT64-T (%simple-mdarray ext:INTEGER64))
+      (core:SIMPLE-MDARRAY-T (%simple-mdarray T))
 
       (core:abstract-simple-vector (simple-array * (*)))
-      (core:simple-mdarray (simple-array * *))
+      (core:simple-mdarray (%simple-mdarray *))
       (core:complex-vector (complex-array * (*)))
       (core:mdarray (array * *))
 
