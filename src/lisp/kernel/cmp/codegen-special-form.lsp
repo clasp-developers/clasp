@@ -206,7 +206,7 @@
 
 (defun codegen-multiple-value-call (result rest env)
   (with-dbg-lexical-block ()
-    (let* ((function-form (car rest))
+    (let* ((function-form `(core:coerce-fdesignator ,(car rest)))
            (forms (cdr rest)))
       (if (= (length forms) 1)
           (let ((temp-mv-result (alloca-tmv "temp-mv-result"))
@@ -221,7 +221,7 @@
               (irc-tmv-result register-ret result)))
           (codegen result
                    `(core:multiple-value-funcall
-                     (core:coerce-fdesignator ,function-form)
+                     ,function-form
                      ,@(mapcar (lambda (x)
                                  `#'(lambda ()
                                       (declare (core:lambda-name core::mvc-argument-lambda))
