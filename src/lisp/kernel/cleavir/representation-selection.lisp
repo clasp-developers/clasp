@@ -110,19 +110,32 @@
                  (t (return :multiple-values)))))))))
 
 (defmethod definition-rtype ((var bir:variable))
-  ;; See the use-rtype for variables below for logic
+  ;; The rtype of a variable can only be exactly zero or one values.
+  ;; With this constraint, we take the maximum rtype among writers.
+  ;; For example, if one rtype is a single float but another is object,
+  ;; we have to use object so that the other write can complete. This
+  ;; is the case even if it happens that the use-rtype ends up as
+  ;; single-float, because it is not an error as long as the first write
+  ;; is always overwritten by another (though keeping the write is then
+  ;; suboptimal of previous compiler stages).
   (when (member var *chasing-rtypes-of* :test #'eq)
     (return-from definition-rtype ()))
   (let ((*chasing-rtypes-of* (cons var *chasing-rtypes-of*))
         (rt nil))
+    (declare (type (or null (cons t null)) rt)) ; single value rt at most.
     (cleavir-set:doset (writer (bir:writers var) rt)
       (let* ((next-rt (%definition-rtype writer var))
+             ;; Take the primary value, or no values.
              (real-next-rt
-               (cond ((null next-rt) (if (null rt) nil '(:object)))
+               (cond ((null next-rt) nil)
                      ((member next-rt '(:vaslist :multiple-values))
                       '(:object))
                      (t (list (first next-rt))))))
-        (setf rt (if (null rt) real-next-rt (min-rtype real-next-rt rt)))))))
+        (declare (type (or null (cons t null)) real-next-rt))
+        (setf rt (cond ((null rt) real-next-rt)
+                       ((null real-next-rt) rt)
+                       (t (list (max-vrtype (first rt)
+                                            (first real-next-rt))))))))))
 
 ;;; Given a datum, determine what rtype its use requires.
 (defgeneric use-rtype (datum))
