@@ -887,7 +887,9 @@ representing a tagged fixnum."
 (defun irc-sub (lhs rhs &optional (label ""))
   (llvm-sys:create-sub *irbuilder* lhs rhs label nil nil))
 
-(defun irc-srem (lhs rhs &optional (label ""))
+(defun irc-sdiv (lhs rhs &key (label "") exact)
+  (llvm-sys:create-sdiv *irbuilder* lhs rhs label exact))
+(defun irc-srem (lhs rhs &key (label ""))
   (llvm-sys:create-srem *irbuilder* lhs rhs label))
 
 (defun irc-udiv (dividend divisor &key (label "") exact)

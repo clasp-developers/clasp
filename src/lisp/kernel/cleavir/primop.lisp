@@ -333,6 +333,19 @@
          (sum (cmp:irc-sub cast1 cast2)))
     (cmp:irc-int-to-ptr sum cmp:%t*%)))
 
+;; For division we don't need to untag the inputs but do need to
+;; tag the quotient.
+(defvprimop core::fixnum-truncate ((:object :object) :object :object) (inst)
+  (let* ((arg1 (in (first (bir:inputs inst))))
+         (arg2 (in (second (bir:inputs inst))))
+         (cast1 (cmp:irc-ptr-to-int arg1 cmp:%fixnum%))
+         (cast2 (cmp:irc-ptr-to-int arg2 cmp:%fixnum%))
+         (quo (cmp:irc-sdiv cast1 cast2))
+         (tquo (cmp:irc-tag-fixnum quo))
+         (rem (cmp:irc-srem cast1 cast2))
+         (trem (cmp:irc-int-to-ptr rem cmp:%t*%)))
+    (list tquo trem)))
+
 (macrolet ((def-fixnum-compare (name op)
              `(progn
                 (deftprimop ,name (:object :object)
