@@ -150,12 +150,25 @@
 (defmacro define-deriver (name deriver-name)
   `(setf (gethash ',name *derivers*) ',deriver-name))
 
-(defmethod bir-transformations:derive-return-type ((inst bir:call) identity
-                                                   argstype (system clasp))
-  (declare (ignore argstype))
+;; Given a values ctype, returns three values:
+;; 1) a list of fixed argument types
+;; 2) type of any further arguments
+;; 3) minimum number of arguments
+(defun parse-vct (vct)
+  (let* ((sys *clasp-system*)
+         (req (ctype:values-required vct sys))
+         (opt (ctype:values-optional vct sys))
+         (rest (ctype:values-rest vct sys))
+         (min (length req)))
+    (values (append req opt) rest min)))
+
+(defmethod bir-transformations:derive-return-type ((inst bir:abstract-call)
+                                                   identity argstype
+                                                   (system clasp))
   (let ((deriver (gethash identity *derivers*)))
     (if deriver
-        (funcall deriver inst)
+        (multiple-value-bind (fixed rest min) (parse-vct argstype)
+          (funcall deriver fixed rest min))
         (call-next-method))))
 
 ;;;
@@ -348,7 +361,8 @@
 (deftransform float ((num fixnum) (proto double-float))
   '(truly-the double-float (core::primop core::fixnum-to-double num)))
 
-(defun derive-float (call)
+#+(or)
+(defun derive-float-old (call)
   (cleavir-ctype:single-value
    (let ((args (rest (bir:inputs call))))
      (if (rest args)
@@ -377,6 +391,50 @@
                   (ctype:range 'single-float '* '* *clasp-system*))
                  (t float)))))
    *clasp-system*))
+
+(defun derive-float (args rest min)
+  (declare (ignore min))
+  (let* ((sys *clasp-system*)
+         ;; We only really care about the first two arguments, since anything
+         ;; more will be an error. So we just pop the rest type on the end.
+         (args (if (ctype:bottom-p rest sys)
+                   args
+                   (append args (list rest)))))
+    (cleavir-ctype:single-value
+     (if (rest args)
+         (let ((proto (second args))
+               #+(or) ; nonexistent
+               (short (ctype:range 'short-float '* '* *clasp-system*))
+               (single (ctype:range 'single-float '* '* *clasp-system*))
+               (double (ctype:range 'double-float '* '* *clasp-system*))
+               #+(or) ; nonexistent
+               (long (ctype:range 'long-float '* '* *clasp-system*)))
+           (cond #+(or)((arg-subtypep proto short) short)
+                 ((ctype:subtypep proto single sys) single)
+                 ((ctype:subtypep proto double sys) double)
+                 #+(or)((arg-subtypep proto long) long)
+                 (t (env:parse-type-specifier 'float nil *clasp-system*))))
+         ;; FIXME: More sophisticated type operations would make this more
+         ;; precise. For example, it would be good to derive that if the
+         ;; argument is an (or single-float rational), the result is a
+         ;; single float.
+         (let ((arg (first args))
+               (float (env:parse-type-specifier 'float nil *clasp-system*))
+               (rat (env:parse-type-specifier 'rational nil *clasp-system*)))
+           (cond ((ctype:subtypep arg float sys) arg)
+                 ((ctype:subtypep arg rat sys)
+                  (ctype:range 'single-float '* '* sys))
+                 (t float))))
+     sys)))
+
+#+(or)
+(defun derive-float (call args rest min)
+  (let ((a (derive-float-old call))
+        (b (derive-float-new args rest min)))
+    (unless (equal a b)
+      (error "!!! FLOAT DERIVATION MISMATCH~%old ~a~%new ~a~%on ~a ~a ~a ~a~%"
+             a b call args rest min))
+    a))
 
 (define-deriver float derive-float)
 
@@ -435,7 +493,8 @@
 (deftransform length ((arr vector))
   '(truly-the valid-array-dimension (core::primop core::vector-length arr)))
 
-(defun derive-aref (call)
+#+(or)
+(defun derive-aref-old (call)
   (let* ((aarg (first (rest (bir:inputs call))))
          (ct (ctype:primary (bir:ctype aarg) *clasp-system*)))
     (ctype:single-value
@@ -445,6 +504,27 @@
          (second ct)
          (ctype:top *clasp-system*))
      *clasp-system*)))
+
+(defun derive-aref (args rest min)
+  (declare (ignore min))
+  (let ((sys *clasp-system*)
+        (ct (if (null args) rest (first args))))
+    (ctype:single-value
+     (if (and (consp ct)
+              (member (first ct) '(array simple-array vector))
+              (consp (cdr ct)))
+         (second ct)
+         (ctype:top sys))
+     sys)))
+
+#+(or)
+(defun derive-aref (call args rest min)
+  (let ((old (derive-aref-old call))
+        (new (derive-aref-new args rest min)))
+    (unless (equal old new)
+      (error "!!! AREF DERIVATION MISMATCH~%old ~a~%new ~a~%on ~a ~a ~a ~a~%"
+             old new call args rest min))
+    old))
 
 (define-deriver aref derive-aref)
 (define-deriver row-major-aref derive-aref)
