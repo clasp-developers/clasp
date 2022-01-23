@@ -378,7 +378,7 @@
               ;; and metaclass. This would let us just serialize and check the CPL,
               ;; but to be a little flexible we only assume that it will still be a
               ;; class (i.e. so users can do technically-illegal redefinitions easier).
-              `(subclassp (class-of object) (find-class ',type)))
+              `(subclassp (class-of object) (find-class ',head)))
              ;; Could be a literal class?
              ((and (null args) (clos::classp head))
               `(subclassp (class-of object) ,type))
