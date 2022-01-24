@@ -59,3 +59,10 @@
 
 (test-true issue-1252
            (semaphore-p (make-%semaphore)))
+
+(deftype gesture-name ()
+  'symbol)
+
+(test-true issue-1252a
+           (let ((name :abort))
+             (typep name 'gesture-name)))
