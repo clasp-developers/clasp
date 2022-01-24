@@ -287,7 +287,7 @@ void StrWNs_O::__writeString (size_t istart, size_t iend, T_sp stream) const {
   AbstractSimpleVector_sp str;
   this->asAbstractSimpleVectorRange(str,start,end);
   SimpleCharacterString_sp sc = gc::As<SimpleCharacterString_sp>(str);
-  sc->__writeString(istart, iend, stream);
+  sc->__writeString(start + istart, start + iend, stream);
 }
 
 void Str8Ns_O::__writeString (size_t istart, size_t iend, T_sp stream) const {
@@ -295,7 +295,7 @@ void Str8Ns_O::__writeString (size_t istart, size_t iend, T_sp stream) const {
   AbstractSimpleVector_sp str;
   this->asAbstractSimpleVectorRange(str,start,end);
   SimpleBaseString_sp sb = gc::As<SimpleBaseString_sp>(str);
-  sb->__writeString(istart, iend, stream);
+  sb->__writeString(start + istart, start + iend, stream);
 }
 
 void SimpleBaseString_O::__writeString (size_t start, size_t end, T_sp stream) const {

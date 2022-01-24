@@ -496,6 +496,25 @@ BBBBCCCC**DDDD"))
         (write-to-string s3 :escape nil))
       ("22"))
 
+(test write-displacement-base
+      (let* ((str (coerce "+10_000" 'simple-base-string))
+             (str2 (make-array 6 :element-type 'base-char
+                                 :displaced-to str
+                                 :displaced-index-offset 1)))
+        (with-output-to-string (s)
+          (write-string str2 s :start 0 :end 2)
+          (write-string str2 s :start 3 :end 6)))
+      ("10000"))
+(test write-displacement-char
+      (let* ((str (coerce "+10_000" '(vector character)))
+             (str2 (make-array 6 :element-type 'character
+                                 :displaced-to str
+                                 :displaced-index-offset 1)))
+        (with-output-to-string (s)
+          (write-string str2 s :start 0 :end 2)
+          (write-string str2 s :start 3 :end 6)))
+      ("10000"))
+
 (test ansi-test-format-e
       (FORMAT NIL "~,2,,2e" 0.05)
       ("50.0e-3"))
