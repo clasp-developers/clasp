@@ -404,27 +404,6 @@
   (declare (ignore environment errorp))
   name)
 
-(defmethod env:has-extended-char-p ((environment clasp-global-environment))
-  #+unicode t #-unicode nil)
-(defmethod env:has-extended-char-p ((environment null))
-  (env:has-extended-char-p clasp-cleavir:*clasp-env*))
-
-(defmethod env:float-types ((environment clasp-global-environment))
-  '(#+short-float short-float single-float double-float #+long-float long-float))
-(defmethod env:float-types ((environment null))
-  (env:float-types clasp-cleavir:*clasp-env*))
-
-(defmethod env:upgraded-complex-part-types ((environment clasp-global-environment))
-  ;; "ECL does not have specialized complex part types" according to upgraded-complex-part-type source.
-  '(real))
-(defmethod env:upgraded-complex-part-types ((environment null))
-  (env:upgraded-complex-part-types clasp-cleavir:*clasp-env*))
-
-(defmethod env:upgraded-array-element-types ((environment clasp-global-environment))
-  core::+upgraded-array-element-types+)
-(defmethod env:upgraded-array-element-types ((environment null))
-  (env:upgraded-array-element-types clasp-cleavir:*clasp-env*))
-
 (defun cleavir-env->interpreter (env)
   ;; Convert a cleavir ENTRY (or null) into an environment clasp's interpreter can use.
   ;; Only for compile time environments, so it's symbol macros, macros, and declarations.
