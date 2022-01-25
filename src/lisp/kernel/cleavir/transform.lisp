@@ -314,7 +314,7 @@
 (deftransform minusp ((n double-float))
   '(if (core::primop core::two-arg-df-< n 0d0) t nil))
 
-(macrolet ((define-one-arg-f (name sf-primop df-primop)
+(macrolet ((define-irratf (name sf-primop df-primop)
              `(progn
                 (deftransform ,name ((arg single-float))
                   '(truly-the single-float (core::primop ,sf-primop arg)))
@@ -324,26 +324,32 @@
                   '(truly-the single-float
                     (core::primop ,sf-primop
                      (core::primop core::fixnum-to-single arg)))))))
-  (define-one-arg-f abs         core::sf-abs    core::df-abs)
-  (define-one-arg-f sqrt        core::sf-sqrt   core::df-sqrt)
-  (define-one-arg-f exp         core::sf-exp    core::df-exp)
+  (define-irratf sqrt        core::sf-sqrt   core::df-sqrt)
+  (define-irratf exp         core::sf-exp    core::df-exp)
   ;; Only transform the one-argument case.
   ;; The compiler macro in opt-number.lsp should reduce two-arg to one-arg.
-  (define-one-arg-f log         core::sf-log    core::df-log)
-  ;; there's probably some weird floating point reason to explain why
-  ;; llvm has an fneg instruction but not a reciprocal, but i don't know it.
-  (define-one-arg-f core:negate core::sf-negate core::df-negate)
-  (define-one-arg-f cos         core::sf-cos    core::df-cos)
-  (define-one-arg-f sin         core::sf-sin    core::df-sin)
-  (define-one-arg-f tan         core::sf-tan    core::df-tan)
-  (define-one-arg-f acos        core::sf-acos   core::df-acos)
-  (define-one-arg-f asin        core::sf-asin   core::df-asin)
-  (define-one-arg-f cosh        core::sf-cosh   core::df-cosh)
-  (define-one-arg-f sinh        core::sf-sinh   core::df-sinh)
-  (define-one-arg-f tanh        core::sf-tanh   core::df-tanh)
-  (define-one-arg-f acosh       core::sf-acosh  core::df-acosh)
-  (define-one-arg-f asinh       core::sf-asinh  core::df-asinh)
-  (define-one-arg-f atanh       core::sf-atanh  core::df-atanh))
+  (define-irratf log         core::sf-log    core::df-log)
+  (define-irratf cos         core::sf-cos    core::df-cos)
+  (define-irratf sin         core::sf-sin    core::df-sin)
+  (define-irratf tan         core::sf-tan    core::df-tan)
+  (define-irratf acos        core::sf-acos   core::df-acos)
+  (define-irratf asin        core::sf-asin   core::df-asin)
+  (define-irratf cosh        core::sf-cosh   core::df-cosh)
+  (define-irratf sinh        core::sf-sinh   core::df-sinh)
+  (define-irratf tanh        core::sf-tanh   core::df-tanh)
+  (define-irratf acosh       core::sf-acosh  core::df-acosh)
+  (define-irratf asinh       core::sf-asinh  core::df-asinh)
+  (define-irratf atanh       core::sf-atanh  core::df-atanh))
+
+(deftransform abs ((arg single-float))
+  '(truly-the single-float (core::primop core::sf-abs arg)))
+(deftransform abs ((arg double-float))
+  '(truly-the double-float (core::primop core::df-abs arg)))
+
+(deftransform core:negate ((arg single-float))
+  '(truly-the single-float (core::primop core::sf-negate arg)))
+(deftransform core:negate ((arg double-float))
+  '(truly-the double-float (core::primop core::df-negate arg)))
 
 (deftransform core:reciprocal ((v single-float))
   '(truly-the single-float (core::two-arg-sf-/ 1f0 v)))
