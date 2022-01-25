@@ -364,7 +364,7 @@
            (cond
              ;; Is there a simple predicate?
              ((and (null args) (simple-type-predicate head))
-              `(,(simple-type-predicate type) object))
+              `(,(simple-type-predicate head) object))
              ;; Could be a C++ class kind of thing.
              ;; NOTE: This is a static header check, so it shouldn't be used
              ;; for anything that could be subclassed. The most likely candidate
@@ -387,6 +387,7 @@
               ;; NOTE: In cclasp cleavir will wrap this with better source info.
               (cmp:warn-undefined-type nil type)
               (default)))))))))
+
 
 (define-compiler-macro typep (&whole whole object type &optional environment
                                      &environment macro-env)
