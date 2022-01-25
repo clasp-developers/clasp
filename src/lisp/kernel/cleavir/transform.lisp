@@ -373,37 +373,6 @@
 (deftransform float ((num fixnum) (proto double-float))
   '(truly-the double-float (core::primop core::fixnum-to-double num)))
 
-#+(or)
-(defun derive-float-old (call)
-  (cleavir-ctype:single-value
-   (let ((args (rest (bir:inputs call))))
-     (if (rest args)
-         (let ((proto (second args))
-               #+(or) ; nonexistent
-               (short (ctype:range 'short-float '* '* *clasp-system*))
-               (single (ctype:range 'single-float '* '* *clasp-system*))
-               (double (ctype:range 'double-float '* '* *clasp-system*))
-               #+(or) ; nonexistent
-               (long (ctype:range 'long-float '* '* *clasp-system*)))
-           (cond #+(or)((arg-subtypep proto short) short)
-                 ((arg-subtypep proto single) single)
-                 ((arg-subtypep proto double) double)
-                 #+(or)((arg-subtypep proto long) long)
-                 (t (env:parse-type-specifier 'float nil *clasp-system*))))
-         ;; FIXME: More sophisticated type operations would make this more
-         ;; precise. For example, it would be good to derive that if the
-         ;; argument is an (or single-float rational), the result is a
-         ;; single float.
-         (let ((arg (first args))
-               (float (env:parse-type-specifier 'float nil *clasp-system*))
-               (rat (env:parse-type-specifier 'rat nil *clasp-system*)))
-           (cond ((arg-subtypep arg float)
-                  (ctype:primary (bir:ctype arg) *clasp-system*))
-                 ((arg-subtypep arg rat)
-                  (ctype:range 'single-float '* '* *clasp-system*))
-                 (t float)))))
-   *clasp-system*))
-
 (defun derive-float (args rest min)
   (declare (ignore min))
   (let* ((sys *clasp-system*)
@@ -438,15 +407,6 @@
                   (ctype:range 'single-float '* '* sys))
                  (t float))))
      sys)))
-
-#+(or)
-(defun derive-float (call args rest min)
-  (let ((a (derive-float-old call))
-        (b (derive-float-new args rest min)))
-    (unless (equal a b)
-      (error "!!! FLOAT DERIVATION MISMATCH~%old ~a~%new ~a~%on ~a ~a ~a ~a~%"
-             a b call args rest min))
-    a))
 
 (define-deriver float derive-float)
 
