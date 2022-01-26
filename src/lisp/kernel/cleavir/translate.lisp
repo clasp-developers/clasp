@@ -1782,26 +1782,39 @@ COMPILE-FILE will use the default *clasp-env*."
 (defun ast->bir (ast system)
   (cleavir-ast-to-bir:compile-toplevel ast system))
 
-(defvar *dis* nil)
+;;; These variables can be bound to debug the bir transformations.
+;;; T means they apply after every transformation. Or, you can bind
+;;; them to a list (of the keys in bir-transformations below), in
+;;; which case they'll happen after the given transformation.
+;;; *verify-transformations* will just run the verifier.
+;;; *display-transformations* will dump a BIR disassembly and BREAK.
+(defvar *verify-transformations* t)
+(defvar *display-transformations* nil)
 
-(defun ver (module msg)
-  (handler-bind
-      ((error
-         (lambda (e)
-           (declare (ignore e))
-           (warn msg))))
-    (cleavir-bir:verify module)))
+(defun maybe-debug-transformation (module key)
+  (when (or (eq *verify-transformations* t)
+            (member key *verify-transformations*))
+    (handler-bind
+        ((error
+           (lambda (e)
+             (declare (ignore e))
+             (warn "Verification failed after ~a" key))))
+      (cleavir-bir:verify module)))
+  (when (or (eq *display-transformations* t)
+            (member key *display-transformations*))
+    (cleavir-bir-disassembler:display module :show-ctype nil)
+    (break)))
 
 (defun bir-transformations (module system)
-  (ver module "start")
+  (maybe-debug-transformation module :start)
   (bir-transformations:module-eliminate-catches module)
-  (ver module "elim catches")
+  (maybe-debug-transformation module :eliminate-catches)
   (bir-transformations:find-module-local-calls module)
-  (ver module "local calls")
+  (maybe-debug-transformation module :local-calls)
   (bir-transformations:module-optimize-variables module)
-  (ver module "optimize vars")
+  (maybe-debug-transformation module :optimize-vars)
   (bir-transformations:meta-evaluate-module module system)
-  (ver module "meta")
+  (maybe-debug-transformation module :meta-evaluate)
   (bir-transformations:module-generate-type-checks module system)
   (cc-bir-to-bmir:reduce-module-instructions module)
   (cc-vaslist:maybe-transform-module module)
@@ -1816,9 +1829,7 @@ COMPILE-FILE will use the default *clasp-env*."
   ;; these can be before them?
   (cc-bir-to-bmir:assign-module-rtypes module)
   (cc-bir-to-bmir:insert-casts-into-module module)
-  (when *dis*
-    (cleavir-bir-disassembler:display module :show-ctype nil)
-    (break))
+  (maybe-debug-transformation module :final)
   (values))
 
 (defun translate-ast (ast &key (abi *abi-x86-64*)
