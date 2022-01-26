@@ -297,9 +297,14 @@
 
 (defvprimop core::fixnum-lognot ((:fixnum) :fixnum) (inst)
   (let* ((arg (in (first (bir:inputs inst))))
-         ;; Make the tag bits 1, so they are negated to zero in the result
-         (ior (cmp:irc-or arg (%i64 cmp:+fixnum-mask+) "unmasked")))
-    (cmp:irc-not ior)))
+         ;; LLVM does not have a dedicated lognot, and instead
+         ;; represents it as xor whatever, -1.
+         ;; We want to keep the tag bits zero, so we skip the rigamarole
+         ;; by just XORing directly with -4 (or whatever, based on how
+         ;; many tag bits we use).
+         (other (%i64 (ldb (byte 64 0) (ash -1 cmp:+fixnum-shift+))))
+         (label (datum-name-as-string (first (bir:outputs inst)))))
+    (cmp:irc-xor arg other label)))
 
 ;;; NOTE: 0 & 0, 0 | 0, and 0 ^ 0 are all zero, so these operations all
 ;;; preserve the zero fixnum tag without any issue.
