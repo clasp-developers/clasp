@@ -858,6 +858,11 @@
 (defmethod cast-one ((from (eql :object)) (to (eql :double-float)) value)
   (cmp:irc-unbox-double-float value))
 
+(defmethod cast-one ((from (eql :fixnum)) (to (eql :object)) value)
+  (cmp:irc-int-to-ptr value cmp:%t*%))
+(defmethod cast-one ((from (eql :object)) (to (eql :fixnum)) value)
+  (cmp:irc-ptr-to-int value cmp:%fixnum%))
+
 (defmethod cast-one ((from (eql :object)) (to (eql :vaslist)) value)
   ;; We only generate these when we know for sure the input is a vaslist,
   ;; so we don't do checking.
