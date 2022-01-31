@@ -1802,7 +1802,7 @@ COMPILE-FILE will use the default *clasp-env*."
       (cleavir-bir:verify module)))
   (when (or (eq *display-transformations* t)
             (member key *display-transformations*))
-    (cleavir-bir-disassembler:display module :show-ctype nil)
+    (cleavir-bir-disassembler:display module)
     (break)))
 
 (defun bir-transformations (module system)
