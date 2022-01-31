@@ -2441,7 +2441,7 @@ void snapshot_save(const std::string& filename) {
   // For saving we may want to save snapshots and not die - so use noStomp forwarding.
   //
   global_forwardingKind = noStomp;
-  printf("%s:%d:%s Using noStomp forwarding for snapshot_save\n", __FILE__, __LINE__, __FUNCTION__ );
+  printf("%s:%d:%s Updated with noStomp forwarding for snapshot_save\n", __FILE__, __LINE__, __FUNCTION__ );
   //
   // Call Common Lisp code to release things at snapshot-save time
   //
