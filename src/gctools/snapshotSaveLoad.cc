@@ -327,13 +327,13 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 
 // #define DEBUG_SL 1
 #if 0
-#define DBG_SL(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#define DBG_SL(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str()); fflush(); }
 #else
 #define DBG_SL(_fmt_)
 #endif
 
 #if 1
-#define DBG_SLS(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#define DBG_SLS(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str()); fflush(); }
 #else
 #define DBG_SLS(_fmt_)
 #endif
@@ -1916,10 +1916,12 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   OrderByAddress orderer;
   DBG_SLS(BF("Step1\n" ));
   for ( size_t idx = 0; idx< fixup->_libraries.size(); idx++ ) {
+    DBG_SLS(BF("Adding library #%lu: %s\n") % idx % fixup->_libraries[idx]._Name);
     symbolLookup.addLibrary(fixup->_libraries[idx]._Name);
     auto pointersBegin = fixup->_libraries[idx]._Pointers.begin();
     auto pointersEnd = fixup->_libraries[idx]._Pointers.end();
     if ( pointersBegin < pointersEnd ) {
+      DBG_SLS(BF("About to quickSortFirstCheckOrder\n"));
       sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer);
     }
   }
