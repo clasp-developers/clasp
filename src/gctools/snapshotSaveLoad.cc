@@ -327,13 +327,13 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 
 // #define DEBUG_SL 1
 #if 0
-#define DBG_SL(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str()); fflush(); }
+#define DBG_SL(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str()); fflush(stdout); }
 #else
 #define DBG_SL(_fmt_)
 #endif
 
 #if 1
-#define DBG_SLS(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str()); fflush(); }
+#define DBG_SLS(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str()); fflush(stdout); }
 #else
 #define DBG_SLS(_fmt_)
 #endif
