@@ -331,6 +331,12 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #else
 #define DBG_SL(_fmt_)
 #endif
+
+#if 1
+#define DBG_SLS(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#else
+#define DBG_SLS(_fmt_)
+#endif
 #if 0
 #define DBG_SL1(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
@@ -1908,6 +1914,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
     }
   };
   OrderByAddress orderer;
+  DBG_SLS(BF("Step1\n" ));
   for ( size_t idx = 0; idx< fixup->_libraries.size(); idx++ ) {
     symbolLookup.addLibrary(fixup->_libraries[idx]._Name);
     auto pointersBegin = fixup->_libraries[idx]._Pointers.begin();
@@ -1916,6 +1923,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
       sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer);
     }
   }
+  DBG_SLS(BF("Step2\n" ));
   for ( size_t idx=0; idx<fixup->_libraries.size(); idx++ ) {
     int groupPointerIdx = -1;
     ISLLibrary& curLib = fixup->_libraries[idx];
@@ -1942,6 +1950,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
       }
     }
   }
+  DBG_SLS(BF("Step done\n" ));
 }
 
 void updateRelocationTableAfterLoad(ISLLibrary& curLib,SymbolLookup& symbolLookup) {
@@ -2107,6 +2116,7 @@ void* snapshot_save_impl(void* data) {
   std::string filename = snapshot_data->filename_;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
 
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
 
   //
   // Gather all objects in memory
@@ -2134,7 +2144,7 @@ void* snapshot_save_impl(void* data) {
            __FILE__, __LINE__, __FUNCTION__ );
     abort();
   }
-  DBG_SL(BF(" Entered\n" ));
+  DBG_SLS(BF(" Entered\n" ));
   //
   // For real save-lisp-and-die do the following (a simple 19 step plan)
   //
@@ -2189,7 +2199,7 @@ void* snapshot_save_impl(void* data) {
   //
 #if 1  
   fixup._operation = InfoOp;
-  DBG_SL(BF("0. Get info on objects for snapshot save\n"));
+  DBG_SLS(BF("0. Get info on objects for snapshot save\n"));
   gather_info_for_snapshot_save_t gather_info(&fixup,&islInfo);
   walk_gathered_objects( gather_info, allObjects );
 #endif
@@ -2204,12 +2214,12 @@ void* snapshot_save_impl(void* data) {
 
 #if 0
   // I'm going to try this right before I fixup the vtables
-  DBG_SL(BF("0. Prepare objects for snapshot save\n"));
+  DBG_SLS(BF("0. Prepare objects for snapshot save\n"));
   prepare_for_snapshot_save_t prepare(&islInfo);
   walk_gathered_objects( prepare, allObjects );
 #endif
   
-  DBG_SL(BF("1. Sum size of all objects\n"));
+  DBG_SLS(BF("1. Sum size of all objects\n"));
   calculate_size_t calc_size(&islInfo);
   walk_gathered_objects( calc_size, allObjects );
   printf("%s", (BF("   size = %lu\n") % calc_size._TotalSize).str().c_str());
@@ -2244,7 +2254,7 @@ void* snapshot_save_impl(void* data) {
   //     (a) copy them to next position in intermediate-buffer
   //     (b) Set a forwarding pointer in the original object
   //
-  DBG_SL(BF("  snapshot._Memory->_BufferStart = %p\n") % (void*)snapshot._Memory->_BufferStart );
+  DBG_SLS(BF("  snapshot._Memory->_BufferStart = %p\n") % (void*)snapshot._Memory->_BufferStart );
   copy_objects_t copy_objects( snapshot._Memory, snapshot._ObjectFiles, &islInfo );
   walk_gathered_objects( copy_objects, allObjects );
 
@@ -2277,7 +2287,7 @@ void* snapshot_save_impl(void* data) {
   //
   // 5. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
   //
-  DBG_SL(BF("  Fixing objects starting at %p\n") % (void*)snapshot._Memory->_BufferStart);
+  DBG_SLS(BF("  Fixing objects starting at %p\n") % (void*)snapshot._Memory->_BufferStart);
   {
     fixup_objects_t fixup_objects(SaveOp, (gctools::clasp_ptr_t)snapshot._Memory->_BufferStart, &islInfo );
     globalPointerFix = maybe_follow_forwarding_pointer;
@@ -2304,12 +2314,12 @@ void* snapshot_save_impl(void* data) {
   // Last thing - fixup vtables
   //
   // I'm going to try this right before I fixup the vtables
-  DBG_SL(BF("0. Prepare objects for snapshot save\n"));
+  DBG_SLS(BF("0. Prepare objects for snapshot save\n"));
   prepare_for_snapshot_save_t prepare(&fixup,&islInfo);
   walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart,prepare);
 
   {
-    DBG_SL(BF(" snapshot_save fixing up vtable pointers\n"));
+    DBG_SLS(BF(" snapshot_save fixing up vtable pointers\n"));
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
     core::executableVtableSectionRange(start,end);
@@ -2322,14 +2332,17 @@ void* snapshot_save_impl(void* data) {
   // Now generate libraries
   //
   // Calculate the size of the libraries section
-//  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
+  //  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
   SymbolLookup lookup;
+  DBG_SLS(BF(" prepareRelocationTableForSave\n"));
   prepareRelocationTableForSave( &fixup, lookup );
   
+  DBG_SLS(BF("done prepareRelocationTableForSave\n"));
   size_t librarySize = 0;
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     librarySize += fixup._libraries[idx].writeSize();
   }
+  DBG_SLS(BF("copy_buffer_t\n"));
   snapshot._Libraries = new copy_buffer_t(librarySize);
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     size_t alignedLen = fixup._libraries[idx].nameSize();
@@ -2361,6 +2374,7 @@ void* snapshot_save_impl(void* data) {
     free(buffer);
   }
 
+  DBG_SLS(BF(" Generating fileHeader\n"));
   
   ISLFileHeader* fileHeader = snapshot._FileHeader;
   uintptr_t offset = snapshot._HeaderBuffer->_Size;
@@ -2387,6 +2401,7 @@ void* snapshot_save_impl(void* data) {
   snapshot._Memory->write_to_stream(wf);
   snapshot._ObjectFiles->write_to_stream(wf);
   wf.close();
+  DBG_SLS(BF(" Done snapshot_save_impl\n"));
   
   printf("%s:%d:%s Wrote file %s - leaving snapshot_save\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
 
@@ -2434,6 +2449,8 @@ void snapshot_save(const std::string& filename) {
   if (comp::_sym_invoke_save_hooks->fboundp()) {
     core::eval::funcall( comp::_sym_invoke_save_hooks );
   }
+
+  printf("%s:%d:%s Finished invoking cmp:invoke-save-hooks\n", __FILE__, __LINE__, __FUNCTION__ );
 
 #if defined(USE_BOEHM)
   Snapshot_save_data data(filename);
@@ -3317,6 +3334,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       core::eval::funcall(fn);
     } else {
       _lisp->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
+      _lisp->print(BF("ext:*snapshot-save-load-startup* is nil so dropping into a simple repl\n"));
       _lisp->print(BF("Low level repl\n"));
       _lisp->readEvalPrintInteractive();
       _lisp->print(BF("\n"));
