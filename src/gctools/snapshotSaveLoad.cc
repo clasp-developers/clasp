@@ -1921,7 +1921,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
     auto pointersBegin = fixup->_libraries[idx]._Pointers.begin();
     auto pointersEnd = fixup->_libraries[idx]._Pointers.end();
     if ( pointersBegin < pointersEnd ) {
-      DBG_SLS(BF("About to quickSortFirstCheckOrder\n"));
+      DBG_SLS(BF("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n") % fixup->_libraries[idx]._Pointers.size());
       sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer);
     }
   }
