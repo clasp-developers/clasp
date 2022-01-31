@@ -740,7 +740,8 @@ No DIBuilder is defined for the default module")
    (function (lambda ()
      (format t "makunbound for *jit-pid* and *jit-log-stream*~%")
      (makunbound '*jit-pid*)
-     (makunbound '*jit-log-stream*)))))
+     (makunbound '*jit-log-stream*)
+     (format t "Finished makunbound of some symbols~%")))))
 
 (defun jit-register-symbol (symbol-name-string symbol-info)
   "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
