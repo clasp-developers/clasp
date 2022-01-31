@@ -2218,7 +2218,8 @@ void* snapshot_save_impl(void* data) {
   prepare_for_snapshot_save_t prepare(&islInfo);
   walk_gathered_objects( prepare, allObjects );
 #endif
-  
+
+  core::write_bf_stream(BF("bf Sum size of all objects\n"));
   DBG_SLS(BF("1. Sum size of all objects\n"));
   calculate_size_t calc_size(&islInfo);
   walk_gathered_objects( calc_size, allObjects );

@@ -740,7 +740,9 @@ No DIBuilder is defined for the default module")
   (register-save-hook
    (function (lambda ()
      (format t "makunbound for *jit-pid* and *jit-log-stream*~%")
+     (format t "makunbound for *jit-pid*~%")
      (makunbound '*jit-pid*)
+     (format t "makunbound for *jit-log-stream*~%")
      (makunbound '*jit-log-stream*)
      (format t "Finished makunbound of some symbols~%")))))
 
