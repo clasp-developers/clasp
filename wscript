@@ -308,7 +308,7 @@ def update_dependencies(cfg):
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
                        label = "main",
-                       revision = "131c2f546f85cbc3d4e671478563a557906f9095")
+                       revision = "3304243f054d5ee8ea417e690b86c7b03c354e59")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
