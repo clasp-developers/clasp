@@ -1910,7 +1910,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   public:
     OrderByAddress() {}
     bool operator()(const PointerBase& x, const PointerBase& y) {
-      return x._address <= y._address;
+        return x._address <= y._address;
     }
   };
   OrderByAddress orderer;
@@ -1918,10 +1918,10 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   for ( size_t idx = 0; idx< fixup->_libraries.size(); idx++ ) {
     DBG_SLS(BF("Adding library #%lu: %s\n") % idx % fixup->_libraries[idx]._Name);
     symbolLookup.addLibrary(fixup->_libraries[idx]._Name);
-    auto pointersBegin = fixup->_libraries[idx]._Pointers.begin();
-    auto pointersEnd = fixup->_libraries[idx]._Pointers.end();
+    auto pointersBegin = fixup->_libraries[idx]._InternalPointers.begin();
+    auto pointersEnd = fixup->_libraries[idx]._InternalPointers.end();
     if ( pointersBegin < pointersEnd ) {
-      DBG_SLS(BF("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n") % fixup->_libraries[idx]._Pointers.size());
+      DBG_SLS(BF("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n") % fixup->_libraries[idx]._InternalPointers.size());
       sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer);
     }
   }
@@ -1931,14 +1931,14 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
     ISLLibrary& curLib = fixup->_libraries[idx];
 //    printf("%s:%d:%s  Dealing with library: %s\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str() );
 //    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers.size() );
-    for ( size_t ii=0; ii<curLib._Pointers.size(); ii++ ) {
-      if (groupPointerIdx < 0 || curLib._Pointers[ii]._address != curLib._Pointers[ii-1]._address ) {
-        curLib._GroupedPointers.emplace_back( curLib._Pointers[ii]._pointerType, curLib._Pointers[ii]._address );
+    for ( size_t ii=0; ii<curLib._InternalPointers.size(); ii++ ) {
+      if (groupPointerIdx < 0 || curLib._InternalPointers[ii]._address != curLib._InternalPointers[ii-1]._address ) {
+        curLib._GroupedPointers.emplace_back( curLib._InternalPointers[ii]._pointerType, curLib._InternalPointers[ii]._address );
         groupPointerIdx++;
       }
     // Now encode the relocation
-      uint8_t firstByte = *(uint8_t*)(*(void**)curLib._Pointers[ii]._ptrptr);
-      *curLib._Pointers[ii]._ptrptr = encodeRelocation_( firstByte, idx, groupPointerIdx );
+      uint8_t firstByte = *(uint8_t*)(*(void**)curLib._InternalPointers[ii]._ptrptr);
+      *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_( firstByte, idx, groupPointerIdx );
 //      printf("%s:%d:%s Wrote relocation @%p to %p\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers[ii]._ptrptr, *curLib._Pointers[ii]._ptrptr );
     }
 //    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );

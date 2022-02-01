@@ -58,7 +58,7 @@ struct ISLLibrary {
   uintptr_t                _VtableEnd;
   std::vector<char>        _SymbolBuffer;
   size_t                   _SymbolIndex;
-  std::vector<PointerBase> _Pointers;
+  std::vector<PointerBase> _InternalPointers;
   std::vector<GroupedPointer> _GroupedPointers;
   std::vector<SymbolInfo>     _SymbolInfo;
   ISLLibrary(const std::string& name, bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd )
@@ -100,7 +100,7 @@ struct Fixup {
   size_t ensureLibraryRegistered(uintptr_t address);
   
   void registerVtablePointer(size_t libraryIndex, core::T_O* vtablePtrPtr) {
-    this->_libraries[libraryIndex]._Pointers.emplace_back( VtablePointer, (uintptr_t*)vtablePtrPtr, *(uintptr_t*)vtablePtrPtr );
+    this->_libraries[libraryIndex]._InternalPointers.emplace_back( VtablePointer, (uintptr_t*)vtablePtrPtr, *(uintptr_t*)vtablePtrPtr );
   };
 
   void registerFunctionPointer(size_t libraryIndex, uintptr_t* functionPtrPtr) {
@@ -108,7 +108,7 @@ struct Fixup {
       printf("%s:%d:%s The library id %lu is too large - change the pointer coding scheme to add more bits to the library id\n", __FILE__, __LINE__, __FUNCTION__, libraryIndex );
       abort();
     }
-    this->_libraries[libraryIndex]._Pointers.emplace_back( FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr );
+    this->_libraries[libraryIndex]._InternalPointers.emplace_back( FunctionPointer, (uintptr_t*)functionPtrPtr, *functionPtrPtr );
   };
 
   void addAddressName(void* address, std::string name) {
