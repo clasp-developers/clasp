@@ -332,7 +332,7 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #define DBG_SL(_fmt_)
 #endif
 
-#if 1
+#if 0
 #define DBG_SLS(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str()); fflush(stdout); }
 #else
 #define DBG_SLS(_fmt_)
@@ -1922,7 +1922,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
     auto pointersEnd = fixup->_libraries[idx]._InternalPointers.end();
     if ( pointersBegin < pointersEnd ) {
       DBG_SLS(BF("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n") % fixup->_libraries[idx]._InternalPointers.size());
-      sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer);
+      sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer );
     }
   }
   DBG_SLS(BF("Step2\n" ));
