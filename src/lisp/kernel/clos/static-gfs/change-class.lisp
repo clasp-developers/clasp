@@ -75,8 +75,13 @@
                               from-class shared-slotnames)
        (setf (core:instance-rack ,iform) new-rack
              (core:instance-class ,iform) ,to-class)
-       ,(uifdc-form from-class to-class 'copy iform
-                    added-slotnames keys params)
+       (let ((aborted t))
+         (unwind-protect
+              (progn ,(uifdc-form from-class to-class 'copy iform
+                                  added-slotnames keys params)
+                     (setf aborted nil))
+           (when aborted (setf (core:instance-rack ,iform) old-rack
+                               (core:instance-class ,iform) ,from-class))))
        instance)))
 
 (defun change-class-form (from-class to-class iform keys params)

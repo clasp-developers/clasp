@@ -747,15 +747,15 @@ namespace core {
     const_iterator end() const { return &(*this)[this->length()]; };
   public:
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
-      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
+      LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
+        sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
+        start = this->_DisplacedIndexOffset;
+        end = start + this->length();
+      } else {
         this->_Data->asAbstractSimpleVectorRange(sv,start,end);
         start += this->_DisplacedIndexOffset;
-        end = this->length()+this->_DisplacedIndexOffset;
-        return;
+        end = start + this->length();
       }
-      sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
-      start = this->_DisplacedIndexOffset;
-      end = this->length()+this->_DisplacedIndexOffset;
     }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
@@ -841,15 +841,16 @@ namespace core {
     const_iterator end() const { return &(*this)[this->length()]; };
   public:
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
-      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
+      LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
+        sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
+        start = this->_DisplacedIndexOffset;
+        end = start + this->length();
+      } else {
         this->_Data->asAbstractSimpleVectorRange(sv, start, end);
         start += this->_DisplacedIndexOffset;
-        end = this->length()+this->_DisplacedIndexOffset;
+        end = start + this->length();
         return;
       }
-      sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
-      start = this->_DisplacedIndexOffset;
-      end = this->length()+this->_DisplacedIndexOffset;
     }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };

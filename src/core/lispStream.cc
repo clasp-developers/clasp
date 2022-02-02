@@ -596,82 +596,137 @@ generic_write_byte_signed8(T_sp byte, T_sp strm) {
   StreamOps(strm).write_byte8(strm, (unsigned char *)&c, 1);
 }
 
+// Max number of bits we can read without bignums; 64 for 64-bit machines
+// see clasp_normalize_stream_element_type below
+#define BYTE_STREAM_FAST_MAX_BITS 64
+
 static T_sp
 generic_read_byte_le(T_sp strm) {
-  cl_index (*read_byte8)(T_sp, unsigned char *, cl_index);
-  unsigned char c;
-  cl_index nb, bs;
-  T_sp output = make_fixnum(0);
-  read_byte8 = StreamOps(strm).read_byte8;
-  bs = StreamByteSize(strm);
-  for (nb = 0; bs >= 8; bs -= 8, nb += 8) {
-    Fixnum_sp aux;
-    if (read_byte8(strm, &c, 1) < 1)
-      return nil<T_O>();
-    if (bs <= 8 && (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES))
-      aux = make_fixnum((signed char)c);
-    else
-      aux = make_fixnum((unsigned char)c);
-    output = cl__logior(Cons_O::createList(output, clasp_ash(aux, nb)));
-  }
-  return output;
+  cl_index b, bs = StreamByteSize(strm) / 8;
+  unsigned char bytes[bs];
+  StreamOps(strm).read_byte8(strm, bytes, bs);
+  uint64_t result = 0;
+  for (b = 0; b < bs; ++b)
+    result |= (uint64_t)(bytes[b]) << (b * 8);
+  if (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES) {
+    // If the most significant bit (sign bit) is set, negate.
+    // signmask is the MSB and all higher bits
+    // (for when bs < 8. uint64_t is still 8 bytes)
+    uint64_t signmask = ~((1 << (bs * 8 - 1)) - 1);
+    if (result & signmask) {
+      uint64_t uresult = ~(result | signmask) + 1;
+      int64_t sresult = -uresult;
+      return Integer_O::create(sresult);
+    } else return Integer_O::create(result);
+  } else return Integer_O::create(result);
 }
 
 static void
 generic_write_byte_le(T_sp c, T_sp strm) {
-  cl_index (*write_byte8)(T_sp strm, unsigned char *c, cl_index n);
-  cl_index bs;
-  write_byte8 = StreamOps(strm).write_byte8;
-  bs = StreamByteSize(strm);
-  do {
-    T_sp b = cl__logand(Cons_O::createList(c, make_fixnum(0xFF)));
-    ASSERT(b.fixnump());
-    unsigned char aux = (unsigned char)(unbox_fixnum(b));
-    if (write_byte8(strm, &aux, 1) < 1)
-      break;
-    c = clasp_ash(gc::As<Integer_sp>(c), -8);
-    bs -= 8;
-  } while (bs);
+  cl_index b, bs = StreamByteSize(strm) / 8;
+  unsigned char bytes[bs];
+  uint64_t word;
+  if (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES)
+    // C++ defines signed to unsigned conversion to work mod 2^nbits,
+    // which we leverage here.
+    word = clasp_to_integral<int64_t>(c);
+  else
+    word = clasp_to_integral<uint64_t>(c);
+  for (b = 0; b < bs; ++b) {
+    bytes[b] = word & 0xFF;
+    word >>= 8;
+  }
+  StreamOps(strm).write_byte8(strm, bytes, bs);
 }
 
 static T_sp
 generic_read_byte(T_sp strm) {
-  cl_index (*read_byte8)(T_sp, unsigned char *, cl_index);
-  unsigned char c;
-  T_sp output;
-  cl_index bs;
-  read_byte8 = StreamOps(strm).read_byte8;
-  bs = StreamByteSize(strm);
-  for (; bs >= 8; bs -= 8) {
-    if (read_byte8(strm, &c, 1) < 1)
-      return nil<T_O>();
-    if (output.notnilp()) {
-      output = cl__logior(Cons_O::createList(make_fixnum(c),
-                                             clasp_ash(gc::As<Integer_sp>(output), 8)));
-    } else if (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES) {
-      output = make_fixnum((signed char)c);
-    } else {
-      output = make_fixnum((unsigned char)c);
-    }
+  cl_index b, rb, bs = StreamByteSize(strm) / 8;
+  unsigned char bytes[bs];
+  StreamOps(strm).read_byte8(strm, bytes, bs);
+  uint64_t result = 0;
+  for (b = 0; b < bs; ++b) {
+    rb = bs - b - 1;
+    result |= (uint64_t)(bytes[b]) << (rb * 8);
   }
-  return output;
+  if (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES) {
+    uint64_t signmask = ~((1 << (bs * 8 - 1)) - 1);
+    if (result & signmask) {
+      uint64_t uresult = ~(result | signmask) + 1;
+      int64_t sresult = -uresult;
+      return Integer_O::create(sresult);
+    } else return Integer_O::create(result);
+  } else return Integer_O::create(result);
 }
 
 static void
 generic_write_byte(T_sp c, T_sp strm) {
-  cl_index (*write_byte8)(T_sp strm, unsigned char *c, cl_index n);
-  cl_index bs;
-  write_byte8 = StreamOps(strm).write_byte8;
-  bs = StreamByteSize(strm);
-  do {
-    unsigned char aux;
-    T_sp b;
-    bs -= 8;
-    b = cl__logand(Cons_O::createList(make_fixnum(0xFF), bs ? gc::As<T_sp>(clasp_ash(gc::As<Integer_sp>(c), -bs)) : c));
-    aux = (unsigned char)b.unsafe_fixnum();
-    if (write_byte8(strm, &aux, 1) < 1)
-      break;
-  } while (bs);
+  cl_index b, rb, bs = StreamByteSize(strm) / 8;
+  unsigned char bytes[bs];
+  uint64_t word;
+  if (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES)
+    word = clasp_to_integral<int64_t>(c);
+  else
+    word = clasp_to_integral<uint64_t>(c);    
+  for (b = 0; b < bs; ++b) {
+    rb = bs - b - 1;
+    bytes[rb] = word & 0xFF;
+    word >>= 8;
+  }
+  StreamOps(strm).write_byte8(strm, bytes, bs);
+}
+
+// Routines for reading and writing >64 bit integers.
+// We have to use bignum arithmetic, so they're distinguished and slower.
+static T_sp generic_read_byte_long(T_sp strm) {
+  Integer_sp result = make_fixnum(0);
+  cl_index b, rb, bs = StreamByteSize(strm) / 8;
+  unsigned char bytes[bs];
+  StreamOps(strm).read_byte8(strm, bytes, bs);
+  if (StreamFlags(strm) & CLASP_STREAM_LITTLE_ENDIAN) {
+    for (b = 0; b < bs; ++b) {
+      Integer_sp by = make_fixnum(bytes[b]);
+      result = core__logior_2op(result, clasp_ash(by, b * 8));
+    }
+  } else {
+    for (b = 0; b < bs; ++b) {
+      Integer_sp by = make_fixnum(bytes[b]);
+      rb = bs - b - 1;
+      result = core__logior_2op(result, clasp_ash(by, rb * 8));
+    }
+  }
+  if (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES) {
+    cl_index nbits = StreamByteSize(strm);
+    if (cl__logbitp(make_fixnum(nbits-1), result)) { // sign bit set
+      // (dpb result (byte (* 8 bs) 0) -1)
+      Integer_sp mask = cl__lognot(clasp_ash(make_fixnum(-1), nbits));
+      Integer_sp a = cl__logandc2(make_fixnum(-1), mask);
+      Integer_sp b = core__logand_2op(result, mask);
+      return core__logior_2op(a, b);
+    } else return result;
+  } else return result;
+}
+
+static void
+generic_write_byte_long(T_sp c, T_sp strm) {
+  // NOTE: This is insensitive to sign, as logand works in 2's comp already.
+  cl_index b, rb, bs = StreamByteSize(strm) / 8;
+  unsigned char bytes[bs];
+  Integer_sp w = gc::As<Integer_sp>(c);
+  Integer_sp mask = make_fixnum(0xFF);
+  if (StreamFlags(strm) & CLASP_STREAM_LITTLE_ENDIAN) {
+    for (b = 0; b < bs; ++b) {
+      bytes[b] = core__logand_2op(w, mask).unsafe_fixnum();
+      w = clasp_ash(w, -8);
+    }
+  } else {
+    for (b = 0; b < bs; ++b) {
+      rb = bs - b - 1;
+      bytes[rb] = core__logand_2op(w, mask).unsafe_fixnum();
+      w = clasp_ash(w, -8);
+    }
+  }
+  StreamOps(strm).write_byte8(strm, bytes, bs);
 }
 
 static claspCharacter
@@ -3748,6 +3803,9 @@ set_stream_elt_type(T_sp tstream, gctools::Fixnum byte_size, int flags,
         read_byte = generic_read_byte_unsigned8;
         write_byte = generic_write_byte_unsigned8;
       }
+    } else if (byte_size > BYTE_STREAM_FAST_MAX_BITS) {
+      read_byte = generic_read_byte_long;
+      write_byte = generic_write_byte_long;
     } else if (flags & CLASP_STREAM_LITTLE_ENDIAN) {
       read_byte = generic_read_byte_le;
       write_byte = generic_write_byte_le;
@@ -5239,6 +5297,9 @@ CL_DEFUN bool cl__streamp(T_sp strm) {
  * FILE OPENING AND CLOSING
  */
 
+// Max number of bits in the element type for a byte stream. Arbitrary.
+#define BYTE_STREAM_MAX_BITS 1024
+
 gctools::Fixnum
 clasp_normalize_stream_element_type(T_sp element_type) {
   gctools::Fixnum sign = 0;
@@ -5261,12 +5322,23 @@ clasp_normalize_stream_element_type(T_sp element_type) {
     FEerror("Not a valid stream element type: ~A", 1, element_type.raw_());
   }
   if ((element_type).consp()) {
-    if (oCar(element_type) == cl::_sym_UnsignedByte)
-      return clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
-    if (oCar(element_type) == cl::_sym_SignedByte)
-      return -clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
+    if (oCar(element_type) == cl::_sym_UnsignedByte) {
+      gc::Fixnum writ = clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
+      // Upgrade
+      if (writ < 0) goto err;
+      for (size = 8; size <= BYTE_STREAM_MAX_BITS; size += 8)
+        if (writ <= size) return size;
+      // Too big
+      goto err;
+    } else if (oCar(element_type) == cl::_sym_SignedByte) {
+      gc::Fixnum writ = clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
+      if (writ < 0) goto err;
+      for (size = 8; size <= BYTE_STREAM_MAX_BITS; size += 8)
+        if (writ <= size) return -size;
+      goto err;
+    }
   }
-  for (size = 8; 1; size++) {
+  for (size = 8; size <= BYTE_STREAM_MAX_BITS; size += 8) {
     T_sp type;
     type = Cons_O::createList(sign > 0 ? cl::_sym_UnsignedByte : cl::_sym_SignedByte,
                               make_fixnum(size));
@@ -5274,6 +5346,7 @@ clasp_normalize_stream_element_type(T_sp element_type) {
       return size * sign;
     }
   }
+ err:
   FEerror("Not a valid stream element type: ~A", 1, element_type.raw_());
 }
 

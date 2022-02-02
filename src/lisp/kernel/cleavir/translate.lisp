@@ -111,19 +111,25 @@
 ;;; Ditto
 (defgeneric translate-terminator (instruction abi next))
 
+(defun inst-source (inst)
+  (let ((origin (bir:origin inst)))
+    (loop while (typep origin 'cst:cst)
+          do (setf origin (cst:source origin)))
+    origin))
+
 ;;; Put in source info.
 (defmethod translate-simple-instruction :around
     ((instruction bir:instruction) abi)
   (declare (ignore abi))
   (cmp:with-debug-info-source-position ((ensure-origin
-                                         (bir:origin instruction)
+                                         (inst-source instruction)
                                          999902))
     (call-next-method)))
 (defmethod translate-terminator :around
     ((instruction bir:instruction) abi next)
   (declare (ignore abi next))
   (cmp:with-debug-info-source-position ((ensure-origin
-                                         (bir:origin instruction)
+                                         (inst-source instruction)
                                          999903))
     (call-next-method)))
 
@@ -148,10 +154,7 @@
          (label (datum-name-as-string outp))
          (s2 (cmp::irc-make-vaslist nvals mv-temp label)))
     (setf (dynenv-storage inst) save)
-    (%intrinsic-call "cc_save_values" (list nvals primary mv-temp)
-                     (datum-name-as-string outp))
-    (unless (llvm-sys:type-equal (llvm-sys:get-type s2) cmp:%vaslist%)
-      (error "s2 is a ~a of type ~a and it must be a cmp:%vaslist%" s2 (llvm-sys:get-type s2)))
+    (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
     (out s2 outp))
   ;; Continue
   (cmp:irc-br (first next)))
@@ -1493,10 +1496,16 @@
                        (mapcar #'iblock-tag (bir:next end))))))))
 
 (defun function-source-pos-info (irfunction)
-  (ensure-origin (origin-spi (bir:origin irfunction)) 999909))
+  (let ((origin (bir:origin irfunction)))
+    (loop while (typep origin 'cst:cst)
+          do (setf origin (cst:source origin)))
+    (ensure-origin (origin-spi origin) 999909)))
 
 (defun calculate-function-info (irfunction lambda-name)
-  (let* ((origin (bir:origin irfunction))
+  (let* ((origin (loop for origin = (bir:origin irfunction)
+                         then (cst:source origin)
+                       while (typep origin 'cst:cst)
+                       finally (return origin)))
          (spi (origin-spi origin)))
     (let ((cleavir-lambda-list-analysis (cmp:calculate-cleavir-lambda-list-analysis (bir:lambda-list irfunction))))
       (cmp:make-function-info
@@ -1784,19 +1793,19 @@ COMPILE-FILE will use the default *clasp-env*."
       ((cst-to-ast:no-variable-info
          (lambda (condition)
            (cmp:warn-undefined-global-variable
-            (origin-spi (cleavir-conditions:origin condition))
+            (origin-spi (cmp:compiler-condition-origin condition))
             (cst-to-ast:name condition))
            (invoke-restart 'cst-to-ast:consider-special)))
        (cst-to-ast:no-function-info
          (lambda (condition)
            (cmp:register-global-function-ref
             (cst-to-ast:name condition)
-            (origin-spi (cleavir-conditions:origin condition)))
+            (origin-spi (cmp:compiler-condition-origin condition)))
            (invoke-restart 'cst-to-ast:consider-global)))
        (cst-to-ast:compiler-macro-expansion-error
          (lambda (condition)
            (warn 'cmp:compiler-macro-expansion-error-warning
-                 :origin (origin-spi (cst:source (cst-to-ast:cst condition)))
+                 :origin (origin-spi (cmp:compiler-condition-origin condition))
                  :condition condition)
            (continue condition)))
        ((and cst-to-ast:compilation-program-error
@@ -1874,6 +1883,11 @@ COMPILE-FILE will use the default *clasp-env*."
   (bir-compile-cst (cst:cst-from-expression form) env pathname
                    :linkage linkage :name name))
 
+(defun cleavir-compile (name &optional definition)
+  (let ((cmp:*cleavir-compile-hook* #'bir-compile)
+        (core:*use-cleavir-compiler* t))
+    (compile name definition)))
+
 (defun bir-compile-cst (cst env pathname
                         &key (linkage 'llvm-sys:internal-linkage) name)
   (declare (ignore linkage))
@@ -1934,3 +1948,10 @@ COMPILE-FILE will use the default *clasp-env*."
               (when *compile-print* (cmp::describe-form (cst:raw cst)))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
                 (compile-file-cst cst environment))))))))
+
+(defun cleavir-compile-file (input-file &rest kwargs)
+  (let ((core:*use-cleavir-compiler* t)
+        (cmp:*cleavir-compile-file-hook*
+          'bir-loop-read-and-compile-file-forms)
+        (cmp:*cleavir-compile-hook* 'bir-compile))
+    (apply #'compile-file input-file kwargs)))

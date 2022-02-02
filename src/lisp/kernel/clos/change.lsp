@@ -98,8 +98,18 @@
     (change-class-aux old-rack new-rack old-class copy)
     (setf (core:instance-rack instance) new-rack
           (core:instance-class instance) new-class)
-    (apply #'update-instance-for-different-class
-           copy instance initargs)
+    ;; If U-I-F-D-C signals an error or otherwise nonlocally exits, roll back
+    ;; the instance. This does not seem to be required by the standard, but
+    ;; is a nice thing to do for the rare user that actually specializes
+    ;; U-I-F-D-C.
+    (let ((aborted t))
+      (unwind-protect
+           (progn (apply #'update-instance-for-different-class
+                         copy instance initargs)
+                  (setf aborted nil))
+        (when aborted
+          (setf (core:instance-rack instance) old-rack
+                (core:instance-class instance) old-class))))
     instance))
 
 (defmethod change-class ((instance funcallable-standard-object)
@@ -112,8 +122,14 @@
     (change-class-aux old-rack new-rack old-class copy)
     (setf (core:instance-rack instance) new-rack
           (core:instance-class instance) new-class)
-    (apply #'update-instance-for-different-class
-           copy instance initargs)
+    (let ((aborted t))
+      (unwind-protect
+           (progn (apply #'update-instance-for-different-class
+                         copy instance initargs)
+                  (setf aborted nil))
+        (when aborted
+          (setf (core:instance-rack instance) old-rack
+                (core:instance-class instance) old-class))))
     instance))
 
 ;;;
@@ -198,12 +214,22 @@
 ;;; Used for both instances and funcallable instances due to their
 ;;; identical rack locations.
 (defun update-instance (instance)
-  (let ((new-rack (make-rack-for-class (class-of instance))))
+  (let ((old-rack (si:instance-rack instance))
+        (new-rack (make-rack-for-class (class-of instance))))
     (multiple-value-bind (added-slots discarded-slots property-list)
         (update-instance-aux (si:instance-rack instance) new-rack)
       (setf (si:instance-rack instance) new-rack)
-      (update-instance-for-redefined-class instance added-slots
-                                           discarded-slots property-list))))
+      ;; If U-I-F-R-C signals an error or otherwise nonlocally exits, roll back
+      ;; the instance. This does not seem to be required by the standard, but
+      ;; is a nice thing to do for the rare user that actually specializes
+      ;; U-I-F-R-C.
+      (let ((aborted t))
+        (unwind-protect
+             (progn (update-instance-for-redefined-class
+                     instance added-slots discarded-slots property-list)
+                    (setf aborted nil))
+          (when aborted
+            (setf (si:instance-rack instance) old-rack)))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; CLASS REDEFINITION PROTOCOL
@@ -238,27 +264,8 @@
                  (= (slot-definition-location slot1) (slot-definition-location slot2))))
               old-slots new-slots)))
 
-(defmethod reinitialize-instance :after ((class class) &rest initargs
-                                         &key (direct-superclasses () direct-superclasses-p)
-                                           (direct-slots nil direct-slots-p))
+(defmethod reinitialize-instance :after ((class class) &rest initargs)
   (declare (dynamic-extent initargs))
-  ;; the list of direct slots is converted to direct-slot-definitions
-  (when direct-slots-p
-    (setf (%class-direct-slots class)
-	  (loop for s in direct-slots
-		collect (canonical-slot-to-direct-slot class s))))
-
-  ;; set up inheritance checking that it makes sense
-  (when direct-superclasses-p
-    (setf direct-superclasses 
-          (check-direct-superclasses class direct-superclasses))
-    (dolist (l (class-direct-superclasses class))
-      (unless (member l direct-superclasses)
-        (remove-direct-subclass l class)))
-    (dolist (l (setf (%class-direct-superclasses class)
-		     direct-superclasses))
-      (add-direct-subclass l class)))
-
   ;; AMOP Ch. 5 "Reinitialization of class metaobjects" specifies that
   ;; the class is unconditionally re-finalized. This means that the
   ;; addition of forward referenced classes is an error.

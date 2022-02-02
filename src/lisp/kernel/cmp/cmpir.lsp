@@ -709,13 +709,9 @@ representing a tagged fixnum."
          (ptr-tagged (irc-gep %i8% ptr-i8* (list (jit-constant-i64 +vaslist0-tag+)) label)))
     ptr-tagged))
 
+;;; NOTE: Unsafe. Cleavir inserts this only after type checks on safety > 0.
 (defun irc-unbox-single-float (t* &optional (label "single-float"))
   (irc-intrinsic-call "cc_unbox_single_float" (list t*) label)
-  ;; unsafe ver - cc_unbox_single_float type errors, but this will happily
-  ;; proceed if given garbage. FIXME: Could use on safety 0.
-  ;; Also, we could inline this plus a tag check with branch to error, which
-  ;; might be faster than calling the unboxer but would mean bigger code.
-  #+(or)
   (irc-bit-cast
    (irc-trunc (irc-lshr (irc-ptr-to-int t* %i64%) +single-float-shift+) %i32%)
    %float% label))
@@ -729,7 +725,9 @@ representing a tagged fixnum."
     +single-float-tag+ "")
    %t*% label))
 
-;;; FIXME: Inline this - it's just a memory load, unlike boxing
+;;; TODO: Should be unsafe for the same reason as above.
+;;;       Checking here is redundant.
+;;; TODO: Inline this - it's just a memory load, unlike boxing
 (defun irc-unbox-double-float (t* &optional (label "double-float"))
   (irc-intrinsic-call "cc_unbox_double_float" (list t*) label))
 (defun irc-box-double-float (double &optional (label "double-float"))
@@ -929,7 +927,9 @@ representing a tagged fixnum."
 (defun irc-sub (lhs rhs &optional (label ""))
   (llvm-sys:create-sub *irbuilder* lhs rhs label nil nil))
 
-(defun irc-srem (lhs rhs &optional (label ""))
+(defun irc-sdiv (lhs rhs &key (label "") exact)
+  (llvm-sys:create-sdiv *irbuilder* lhs rhs label exact))
+(defun irc-srem (lhs rhs &key (label ""))
   (llvm-sys:create-srem *irbuilder* lhs rhs label))
 
 (defun irc-udiv (dividend divisor &key (label "") exact)
@@ -967,7 +967,6 @@ Otherwise do a variable shift."
 (defun irc-fence (order &optional (label ""))
   (llvm-sys:create-fence *irbuilder* order 1 #+(or)'llvm-sys:system label))
 
-
 (defun irc-maybe-check-word-aligned-load (pointee-type source)
   (when (member :check-word-aligned-loads *features*)
     (when (>= (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) pointee-type) 8)
@@ -976,11 +975,11 @@ Otherwise do a variable shift."
                      (irc-bit-cast source %i8*%)
                      (jit-constant-i64 0)))))
 
-(defun irc-typed-load (pointee-type source &optional (label ""))
+(defun irc-typed-load (pointee-type source &optional (label "") is-volatile)
   (ensure-opaque-or-pointee-type-matches source pointee-type)
   (irc-maybe-check-word-aligned-load pointee-type source)
   ;; If :check-alignment is on and the pointee-type is a word or larger then it must be aligned
-  (llvm-sys:create-load-type-value-twine *irbuilder* pointee-type source label))
+  (llvm-sys:create-load-type-value-bool-twine *irbuilder* pointee-type source is-volatile label))
 
 (defun irc-t*-load (source &optional (label ""))
   (ensure-opaque-or-pointee-type-matches source %t*%)

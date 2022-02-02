@@ -173,6 +173,8 @@
             with-track-llvm-time
             irc-add
             irc-sub
+            irc-sdiv irc-srem
+            irc-udiv irc-urem
             irc-add-clause
             alloca
             alloca-t*

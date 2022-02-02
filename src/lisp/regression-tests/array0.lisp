@@ -86,6 +86,19 @@
    (or  (search "expected 0-2" message)
         (search "(INTEGER 0 (3))" message))))
 
+;;; Issue #1242:
+;;; StrWNs_O etc have custom methods on __write__ to write out as a string.
+;;; They use asAbstractSimpleVector.
+;;; The template_Vector implementation of asAbstractSimpleVector was not
+;;; prepared for the displaced array to be multidimensional (i.e not another
+;;; complex vector), so this signaled an error.
+(test-true complex-displacement-asv
+           (let ((displaced (make-array '(2 2) :element-type 'character
+                                               :initial-contents '((#\a #\b)
+                                                                   (#\c #\d)))))
+             (print (make-array 4 :element-type 'character
+                                :displaced-to displaced))))
+
 ;;; Drmeister on #clasp
 ;;; Bike: (make-array '(nil 5)) doesn't generate an error but it should
 

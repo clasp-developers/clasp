@@ -35,16 +35,10 @@
   )
 
 
-
+#+(or)
 (start-cleavir)
 
 ;;; Start cleavir with no inline
 (progn
   (load-cleavir-no-inline)
   (format t "!!!!!!!!!!! Cleavir loaded~%"))
-
-
-(cleavir-compile-file "/tmp/seqlib.lsp")
-
-
-441817

@@ -1,11 +1,23 @@
 (in-package :clasp-cleavir)
 
+;;; With this policy on, the compiler tries to treat type declarations as
+;;; assertions. They will be checked carefully and somewhat slowly.
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'insert-type-checks))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety)
      (cleavir-policy:optimize-value optimize 'speed)))
+
+;;; This policy is used in transform.lisp to determine whether to insert
+;;; type checks enforcing basic safety. Without these checks, low level
+;;; operators that do not check their inputs will be used unprotected, so
+;;; very bad problems can occur (segfaults, crashes, etc.)
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'insert-minimum-type-checks))
+     optimize
+     (environment clasp-global-environment))
+  (> (cleavir-policy:optimize-value optimize 'safety) 0))
 
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'type-check-ftype-arguments))
@@ -27,6 +39,7 @@
   '((save-register-args boolean t)
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
+    (insert-minimum-type-checks boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
@@ -38,6 +51,7 @@
   '((save-register-args boolean t)
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
+    (insert-minimum-type-checks boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)

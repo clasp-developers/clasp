@@ -39,7 +39,7 @@
                          for s in syms
                          collect i
                          collect `(cst-to-ast:convert ,s env system))
-                 :origin origin)))))
+                 :origin cst)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -124,9 +124,8 @@
 
 (defmethod cst-to-ast:type-wrap-argument
     (ast ctype origin env (system clasp-cleavir:clasp))
-  ;; Insert an externally checked THE and insert type checks as well
-  ;; on high safety, unless the type is top in which case we do
-  ;; nothing.
+  ;; Insert an untrusted THE at non-high safety and insert type checks
+  ;; on high safety, unless the type is top in which case we do nothing.
   ;; NOTE that the type check doesn't check &optional and &rest. FIXME?
   (let ((insert-type-checks
           (cleavir-policy:policy-value
@@ -152,7 +151,7 @@
                      (make-type-check-form ctype system))
                     env system)))
              (cleavir-ast:make-the-ast ast ctype check :origin origin)))
-          (t (cleavir-ast:make-the-ast ast ctype :external :origin origin)))))
+          (t (cleavir-ast:make-the-ast ast ctype nil :origin origin)))))
 
 (defmethod cst-to-ast:type-wrap-return-values
     (ast ctype origin env (system clasp-cleavir:clasp))
@@ -174,7 +173,7 @@
   (assert (typep (cst:raw (cst:second cst)) 'string))
   (make-instance 'clasp-cleavir-ast:debug-message-ast
     :debug-message (cst:raw (cst:second cst))
-    :origin (cst:source cst)))
+    :origin cst))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -187,8 +186,7 @@
     ((symbol (eql 'core:debug-break)) cst environment
      (system clasp-cleavir:clasp))
   (declare (ignore environment))
-  (make-instance 'clasp-cleavir-ast:debug-break-ast
-    :origin (cst:source cst)))
+  (make-instance 'clasp-cleavir-ast:debug-break-ast :origin cst))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -204,7 +202,7 @@
   (make-instance 'clasp-cleavir-ast:multiple-value-foreign-call-ast
     :function-name (cst:raw (cst:second cst))
     :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
-    :origin (cst:source cst)))
+    :origin cst))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -222,7 +220,7 @@
     :foreign-types (cst:raw (cst:second cst))
     :function-name (cst:raw (cst:third cst))
     :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest (cst:rest cst))) environment system)
-    :origin (cst:source cst)))
+    :origin cst))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -237,7 +235,7 @@
   (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
     :foreign-types (cst:raw (cst:second cst))
     :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
-    :origin (cst:source cst)))
+    :origin cst))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -255,7 +253,7 @@
             (make-instance 'cc-ast:defcallback-ast
               :args args
               :callee (cst-to-ast:convert lisp-callback env system)
-              :origin origin))))
+              :origin form))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -281,28 +279,28 @@
   (declare (ignore env))
   (cst:db origin (f order) cst
     (declare (ignore f))
-    (make-instance 'cc-ast:fence-ast :order (cst:raw order) :origin origin)))
+    (make-instance 'cc-ast:fence-ast :order (cst:raw order) :origin cst)))
 
 (defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::car-atomic)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (cr order cons) cst
     (declare (ignore cr))
     (make-instance 'cc-ast:atomic-car-ast
-      :order (cst:raw order) :origin origin
+      :order (cst:raw order) :origin cst
       :cons-ast (cst-to-ast:convert cons env system))))
 (defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::cdr-atomic)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (cr order cons) cst
     (declare (ignore cr))
     (make-instance 'cc-ast:atomic-cdr-ast
-      :order (cst:raw order) :origin origin
+      :order (cst:raw order) :origin cst
       :cons-ast (cst-to-ast:convert cons env system))))
 (defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::rplaca-atomic)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (rp order nv cons) cst
     (declare (ignore rp))
     (make-instance 'cc-ast:atomic-rplaca-ast
-      :order (cst:raw order) :origin origin
+      :order (cst:raw order) :origin cst
       :object-ast (cst-to-ast:convert nv env system)
       :cons-ast (cst-to-ast:convert cons env system))))
 (defmethod cst-to-ast:convert-special
@@ -310,7 +308,7 @@
   (cst:db origin (rp order nv cons) cst
     (declare (ignore rp))
     (make-instance 'cc-ast:atomic-rplacd-ast
-      :order (cst:raw order) :origin origin
+      :order (cst:raw order) :origin cst
       :object-ast (cst-to-ast:convert nv env system)
       :cons-ast (cst-to-ast:convert cons env system))))
 (defmethod cst-to-ast:convert-special
@@ -318,7 +316,7 @@
   (cst:db origin (cas order cmp value cons) cst
     (declare (ignore cas))
     (make-instance 'cc-ast:cas-car-ast
-      :order (cst:raw order) :origin origin
+      :order (cst:raw order) :origin cst
       :cmp-ast (cst-to-ast:convert cmp env system)
       :value-ast (cst-to-ast:convert value env system)
       :cons-ast (cst-to-ast:convert cons env system))))
@@ -327,7 +325,7 @@
   (cst:db origin (cas order cmp value cons) cst
     (declare (ignore cas))
     (make-instance 'cc-ast:cas-cdr-ast
-      :order (cst:raw order) :origin origin
+      :order (cst:raw order) :origin cst
       :cmp-ast (cst-to-ast:convert cmp env system)
       :value-ast (cst-to-ast:convert value env system)
       :cons-ast (cst-to-ast:convert cons env system))))
@@ -338,7 +336,7 @@
   (cst:db origin (read order rack index) cst
     (declare (ignore read))
     (make-instance 'cc-ast:atomic-rack-read-ast
-      :order (cst:raw order) :origin origin
+      :order (cst:raw order) :origin cst
       :rack-ast (cst-to-ast:convert rack env system)
       :slot-number-ast (cst-to-ast:convert index env system))))
 (defmethod cst-to-ast:convert-special
@@ -347,7 +345,7 @@
   (cst:db origin (wr order nv rack index) cst
     (declare (ignore wr))
     (make-instance 'cc-ast:atomic-rack-write-ast
-      :order (cst:raw order) :origin origin
+      :order (cst:raw order) :origin cst
       :value-ast (cst-to-ast:convert nv env system)
       :rack-ast (cst-to-ast:convert rack env system)
       :slot-number-ast (cst-to-ast:convert index env system))))
@@ -356,7 +354,7 @@
   (cst:db origin (cas order cmp new rack index) cst
     (declare (ignore cas))
     (make-instance 'cc-ast:cas-rack-ast
-      :order (cst:raw order) :origin origin
+      :order (cst:raw order) :origin cst
       :cmp-ast (cst-to-ast:convert cmp env system)
       :value-ast (cst-to-ast:convert new env system)
       :rack-ast (cst-to-ast:convert rack env system)
@@ -367,7 +365,7 @@
   (cst:db origin (vr order uaet vector index) cst
     (declare (ignore vr))
     (make-instance 'cc-ast:atomic-vref-ast
-      :order (cst:raw order) :element-type (cst:raw uaet) :origin origin
+      :order (cst:raw order) :element-type (cst:raw uaet) :origin cst
       :array-ast (cst-to-ast:convert vector env system)
       :index-ast (cst-to-ast:convert index env system))))
 (defmethod cst-to-ast:convert-special
@@ -375,7 +373,7 @@
   (cst:db origin (vr order uaet nv vector index) cst
     (declare (ignore vr))
     (make-instance 'cc-ast:atomic-vset-ast
-      :order (cst:raw order) :element-type (cst:raw uaet) :origin origin
+      :order (cst:raw order) :element-type (cst:raw uaet) :origin cst
       :value-ast (cst-to-ast:convert nv env system)
       :array-ast (cst-to-ast:convert vector env system)
       :index-ast (cst-to-ast:convert index env system))))
@@ -384,7 +382,7 @@
   (cst:db origin (vr order uaet cmp nv vector index) cst
     (declare (ignore vr))
     (make-instance 'cc-ast:vcas-ast
-      :order (cst:raw order) :element-type (cst:raw uaet) :origin origin
+      :order (cst:raw order) :element-type (cst:raw uaet) :origin cst
       :cmp-ast (cst-to-ast:convert cmp env system)
       :value-ast (cst-to-ast:convert nv env system)
       :array-ast (cst-to-ast:convert vector env system)
@@ -402,12 +400,12 @@
     (cleavir-ast:make-branch-ast
      (clasp-cleavir-ast:make-header-stamp-case-ast
       (cst-to-ast:convert stamp env system)
-      origin)
+      cst)
      (list (cst-to-ast:convert derivable env system)
            (cst-to-ast:convert rack env system)
            (cst-to-ast:convert wrapped env system))
      (cst-to-ast:convert header env system)
-     :origin origin)))
+     :origin cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -442,7 +440,7 @@
     (clasp-cleavir-ast:make-throw-ast
      (cst-to-ast:convert tag environment system)
      (cst-to-ast:convert result-cst environment system)
-     origin)))
+     cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -459,7 +457,7 @@
                                     (lambda ()
                                       (cst:unquote-splicing cleanup)))
                     env system)
-      :origin origin)))
+      :origin cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -525,19 +523,18 @@
 (defmethod cst-to-ast:convert-global-function-reference
     (cst info global-env (system clasp-cleavir:clasp))
   (declare (ignore global-env))
-  (let ((name (cleavir-env:name info))
-        (source (cst:source cst)))
+  (let ((name (cleavir-env:name info)))
     (cond
       ((and (consp name) (eq (car name) 'cl:setf))
        (clasp-cleavir-ast:make-setf-fdefinition-ast
-        (cleavir-ast:make-constant-ast (cadr name) :origin source)
-        :attributes (cleavir-env:attributes info) :origin source))
+        (cleavir-ast:make-constant-ast (cadr name) :origin cst)
+        :attributes (cleavir-env:attributes info) :origin cst))
       ((consp name)
        (error "Illegal name for function - must be (setf xxx)"))
       (t
        (cleavir-ast:make-fdefinition-ast
-        (cleavir-ast:make-constant-ast name :origin (cst:source cst))
-        :attributes (cleavir-env:attributes info) :origin source)))))
+        (cleavir-ast:make-constant-ast name :origin cst)
+        :attributes (cleavir-env:attributes info) :origin cst)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -568,7 +565,7 @@
     :name-ast (cst-to-ast:convert-constant variable-cst env system)
     :value-ast value-ast
     :body-ast next-ast
-    :origin (cst:source variable-cst)))
+    :origin variable-cst))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

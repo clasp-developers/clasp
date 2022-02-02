@@ -66,6 +66,8 @@
 ;;; or NIL if there's no source info.
 (defun compute-fsi (ast)
   (let ((orig (let ((orig (cleavir-ast:origin ast)))
+                (loop while (typep orig 'cst:cst)
+                      do (setf orig (cst:source orig)))
                 (cond ((consp orig) (car orig))
                       ((null orig)
                        ;; KLUDGE: If no source info, make one up
@@ -88,6 +90,8 @@
       (core:setf-source-pos-info-function-scope spi fsi)))
 (defun insert-function-scope-info-into-ast (ast fsi)
   (let ((orig (cleavir-ast:origin ast)))
+    (loop while (typep orig 'cst:cst)
+          do (setf orig (cst:source orig)))
     (cond ((consp orig)
            (insert-function-scope-info-into-spi (car orig) fsi)
            (insert-function-scope-info-into-spi (cdr orig) fsi))
@@ -173,6 +177,51 @@
                      inlined-at)))
               clone))))
 
+(defun %allocate-copy (origin inlined-at table)
+  (etypecase origin
+    (null nil)
+    (cst:cons-cst (make-instance 'cst:cons-cst :raw (cst:raw origin)))
+    (cst:atom-cst (make-instance 'cst:atom-cst :raw (cst:raw origin)))
+    (cons
+     (cons (copy-origin-fixing-sources (car origin) inlined-at table)
+           (copy-origin-fixing-sources (cdr origin) inlined-at table)))
+    (core:source-pos-info
+     (let ((clone (core:source-pos-info-copy origin)))
+       (core:setf-source-pos-info-inlined-at
+        clone
+        (let ((next (core:source-pos-info-inlined-at clone)))
+          (if next
+              (copy-origin-fixing-sources next inlined-at table)
+              inlined-at)))
+       clone))))
+
+(defun %initialize-copy (origin copy inlined-at table)
+  (typecase origin
+    (cst:cons-cst
+     (let ((car (copy-origin-fixing-sources (cst:first origin)
+                                            inlined-at table))
+           (cdr (copy-origin-fixing-sources (cst:rest origin)
+                                            inlined-at table))
+           (source (copy-origin-fixing-sources (cst:source origin)
+                                               inlined-at table)))
+       (reinitialize-instance copy :first car :rest cdr :source source)))
+    (cst:atom-cst
+     (let ((source (copy-origin-fixing-sources (cst:source origin)
+                                               inlined-at table)))
+       (reinitialize-instance copy :source source)))))
+
+(defun copy-origin-fixing-sources (origin inlined-at table)
+  (multiple-value-bind (copy presentp)
+      (gethash origin table)
+    (if presentp
+        copy
+        (let ((copy (%allocate-copy origin inlined-at table)))
+          (setf (gethash origin table) copy)
+          ;; For CSTs, initialize the copy now that subforms can refer to the
+          ;; existing entry (done this way in case of cycles)
+          (%initialize-copy origin copy inlined-at table)
+          copy))))
+
 (defun fix-inline-source-positions (ast inlined-at)
   (let ((new-origins (make-hash-table :test #'eq)))
     ;; NEW-ORIGINS is a memoization table.
@@ -180,14 +229,7 @@
      (lambda (ast)
        (let ((orig (cleavir-ast:origin ast)))
          (setf (cleavir-ast:origin ast)
-               (cond ((consp orig)
-                      (cons (fix-inline-source-position
-                             (car orig) inlined-at new-origins)
-                            (fix-inline-source-position
-                             (cdr orig) inlined-at new-origins)))
-                     ((null orig) nil)
-                     (t (fix-inline-source-position
-                         orig inlined-at new-origins))))))
+               (copy-origin-fixing-sources orig inlined-at new-origins))))
      ast))
   ast)
 
@@ -218,6 +260,8 @@
            (fix-inline-source-positions
             (cleavir-ast-transformations:clone-ast ast)
             (let ((source (cst:source cst)))
+              (loop while (typep source 'cst:cst)
+                    do (setf source (cst:source source)))
               (cond ((consp source) (car source))
                     ((null source) core:*current-source-pos-info*)
                     (t source)))))))))

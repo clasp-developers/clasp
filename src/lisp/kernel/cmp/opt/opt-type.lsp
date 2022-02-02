@@ -363,30 +363,31 @@
            ;; Last ditch efforts.
            (cond
              ;; Is there a simple predicate?
-             ((simple-type-predicate type)
-              `(,(simple-type-predicate type) object))
+             ((and (null args) (simple-type-predicate head))
+              `(,(simple-type-predicate head) object))
              ;; Could be a C++ class kind of thing.
              ;; NOTE: This is a static header check, so it shouldn't be used
              ;; for anything that could be subclassed. The most likely candidate
              ;; for this problem is STREAM, but it's caught by the previous case.
-             ((gethash type core:+type-header-value-map+)
+             ((and (null args) (gethash head core:+type-header-value-map+))
               `(if (cleavir-primop:typeq object ,type) t nil))
              ;; Maybe it's a class name? (See also, comment in clos/defclass.lsp.)
-             ((and (symbolp type) (class-info type env))
+             ((and (null args) (symbolp head) (class-info head env))
               ;; By semantic constraints, classes that are defined at compile time
               ;; must still be defined at load time, and have the same superclasses
               ;; and metaclass. This would let us just serialize and check the CPL,
               ;; but to be a little flexible we only assume that it will still be a
               ;; class (i.e. so users can do technically-illegal redefinitions easier).
-              `(subclassp (class-of object) (find-class ',type)))
+              `(subclassp (class-of object) (find-class ',head)))
              ;; Could be a literal class?
-             ((clos::classp type)
+             ((and (null args) (clos::classp head))
               `(subclassp (class-of object) ,type))
              ;; We know nothing.
              (t
               ;; NOTE: In cclasp cleavir will wrap this with better source info.
               (cmp:warn-undefined-type nil type)
               (default)))))))))
+
 
 (define-compiler-macro typep (&whole whole object type &optional environment
                                      &environment macro-env)

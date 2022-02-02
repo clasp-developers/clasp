@@ -115,6 +115,23 @@
         (error "BUG: No variable for datum: ~a defined by ~a"
                datum (bir:definitions datum)))))
 
+;;; The C standard says that, after setjmp returns subsequently, the state of
+;;; local variables is indeterminate unless they are of volatile type.
+;;; Practically speaking, this means that without the loads being marked
+;;; volatile, LLVM will optimize them away if the binding function gives it no
+;;; reason not to; for example (let ((x 0)) ... x) could be optimized into
+;;; simply returning a literal 0, even if the "..." calls a function that
+;;; modifies x and then returns nonlocally.
+;;; I don't believe we need to mark the stores volatile, or to mark the atomic
+;;; loads volatile, since LLVM won't really optimize those away.
+;;; But I'm not sure.
+;;; Non-volatility seems to be the cause of #1183.
+(defun needs-volatile-loads-p (function)
+  (cleavir-set:some
+   (lambda (inst)
+     (bir-transformations:simple-unwinding-p inst *clasp-system*))
+   (bir:catches function)))
+
 (defun variable-in (variable)
   (check-type variable bir:variable)
   (if (bir:immutablep variable)
@@ -135,8 +152,10 @@
                (cmp:irc-typed-load alloca-type alloca)))
             (:dynamic
              (let ((alloca (or (gethash variable *datum-values*)
-                               (error "BUG: DX cell missing: ~a" variable))))
-               (cmp:irc-t*-load (cmp:irc-bit-cast alloca cmp:%t**%))))
+                               (error "BUG: DX cell missing: ~a" variable)))
+                   (volatile (needs-volatile-loads-p
+                              (bir:function (bir:binder variable)))))
+               (cmp:irc-t*-load (cmp:irc-bit-cast alloca cmp:%t**%) "" volatile)))
             (:indefinite
              (let ((cell (or (gethash variable *datum-values*)
                              (error "BUG: Cell missing: ~a" variable)))

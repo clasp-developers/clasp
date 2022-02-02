@@ -96,7 +96,7 @@ SBCL_VERSION = (2, 0)
 SBCL_VERSION_STRING = "2.1"
 CLANG_SPECIFIC_VERSION = "14.0.0git"
 LLVM_HASH = "972b6a3a3471c2a742c5c5d8ec004ff640d544c4"
-XCODE_SDK = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk"
+XCODE_SDK_DEFAULT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 
 # valid values "libgcc_s", "gnu/libunwind", "llvm/libunwind"
 DEFAULT = "default"
@@ -214,7 +214,9 @@ VALID_OPTIONS = [
     # Turn on address sanitizer
     "THREAD_SANITIZER",
     # Link libraries statically vs dynamically
-    "LINK_STATIC"
+    "LINK_STATIC",
+    #Path to xcode sdk
+    "XCODE_SDK"
 ]
 
 DEBUG_OPTIONS = [
@@ -307,7 +309,7 @@ def update_dependencies(cfg):
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
                        label = "main",
-                       revision = "12207aeb7224624e75ba25d4afea9a72ea058430")
+                       revision = "ba1be7f3f45165c8c0f09e863db80259557a2fb7")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
@@ -351,7 +353,7 @@ def update_dependencies(cfg):
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
 #                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
-                        label = "master", revision = "3.3.3.5")
+                        label = "master", revision = "3.3.5")
     os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
     log.pprint('BLUE', "About to recurse into extensions update_dependencies ()")
     cfg.recurse("extensions",name="update_dependencies")
@@ -1055,6 +1057,11 @@ def configure(cfg):
         log.info("cfg.env['CPPFLAGS'] = %s" % cfg.env['CPPFLAGS'])
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            if (cfg.env['XCODE_SDK'] == []):
+                XCODE_SDK = XCODE_SDK_DEFAULT
+            else:
+                XCODE_SDK = cfg.env['XCODE_SDK']
+            log.info("XCODE_SDK = %s" % XCODE_SDK)
             if ("-isysroot" in cfg.env['CPPFLAGS'] ):
                 if (XCODE_SDK in cfg.env['CPPFLAGS']):
                     pass

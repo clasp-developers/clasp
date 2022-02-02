@@ -43,3 +43,26 @@
 (test-subtypep subtypep-bug-979
                't '(cons (and standard-char (member #\@)) real)
                nil nil)
+
+
+(defstruct %semaphore
+  lock
+  condition-variable
+  counter)
+
+(deftype semaphore ()
+  '%semaphore)
+
+(defun semaphore-p (object)
+  "Returns T if OBJECT is a semaphore; returns NIL otherwise."
+  (typep object 'semaphore))
+
+(test-true issue-1252
+           (semaphore-p (make-%semaphore)))
+
+(deftype gesture-name ()
+  'symbol)
+
+(test-true issue-1252a
+           (let ((name :abort))
+             (typep name 'gesture-name)))

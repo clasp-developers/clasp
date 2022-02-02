@@ -212,6 +212,9 @@
                     collect `(quote ,keyword)
                     collect `(quote ,value)))))
 
+(defmethod make-load-form ((cst cst:cst) &optional environment)
+  (make-load-form-saving-slots cst :environment environment))
+
 (defmethod env:function-info ((sys clasp)
                               (environment clasp-global-environment)
                               function-name)
@@ -490,4 +493,6 @@
     ((condition cleavir-conditions:program-condition))
   ;; FIXME: ignore-errors is a bit paranoid
   (let ((origin (cleavir-conditions:origin condition)))
+    (loop while (typep origin 'cst:cst)
+          do (setf origin (cst:source origin)))
     (ignore-errors (if (consp origin) (car origin) origin))))

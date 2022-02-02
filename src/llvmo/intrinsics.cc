@@ -939,7 +939,8 @@ void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, unsigned char v) {
 float cc_simpleFloatVectorAref(core::T_O* array, core::T_O* index) {
   T_sp tarray((gctools::Tagged)array);
   T_sp tindex((gctools::Tagged)index);
-  SimpleVector_float_sp svarray = gc::As<SimpleVector_float_sp>(tarray);
+  // type has already been checked by lisp compiler
+  SimpleVector_float_sp svarray = gc::As_unsafe<SimpleVector_float_sp>(tarray);
   if (tindex.fixnump()) {
     Fixnum findex = tindex.unsafe_fixnum();
     if ((0 <= findex) && (findex < svarray->length()))
@@ -953,7 +954,8 @@ float cc_simpleFloatVectorAref(core::T_O* array, core::T_O* index) {
 double cc_simpleDoubleVectorAref(core::T_O* array, core::T_O* index) {
   T_sp tarray((gctools::Tagged)array);
   T_sp tindex((gctools::Tagged)index);
-  SimpleVector_double_sp svarray = gc::As<SimpleVector_double_sp>(tarray);
+  // type has already been checked by lisp compiler
+  SimpleVector_double_sp svarray = gc::As_unsafe<SimpleVector_double_sp>(tarray);
   if (tindex.fixnump()) {
     Fixnum findex = tindex.unsafe_fixnum();
     if ((0 <= findex) && (findex < svarray->length()))
@@ -967,7 +969,7 @@ double cc_simpleDoubleVectorAref(core::T_O* array, core::T_O* index) {
 void cc_simpleFloatVectorAset(float v, core::T_O* array, core::T_O* index) {
   T_sp tarray((gctools::Tagged)array);
   T_sp tindex((gctools::Tagged)index);
-  SimpleVector_float_sp svarray = gc::As<SimpleVector_float_sp>(tarray);
+  SimpleVector_float_sp svarray = gc::As_unsafe<SimpleVector_float_sp>(tarray);
   if (tindex.fixnump()) {
     Fixnum findex = tindex.unsafe_fixnum();
     if ((0 <= findex) && (findex < svarray->length()))
@@ -981,7 +983,7 @@ void cc_simpleFloatVectorAset(float v, core::T_O* array, core::T_O* index) {
 void cc_simpleDoubleVectorAset(double v, core::T_O* array, core::T_O* index) {
   T_sp tarray((gctools::Tagged)array);
   T_sp tindex((gctools::Tagged)index);
-  SimpleVector_double_sp svarray = gc::As<SimpleVector_double_sp>(tarray);
+  SimpleVector_double_sp svarray = gc::As_unsafe<SimpleVector_double_sp>(tarray);
   if (tindex.fixnump()) {
     Fixnum findex = tindex.unsafe_fixnum();
     if ((0 <= findex) && (findex < svarray->length()))
