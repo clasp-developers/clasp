@@ -981,21 +981,21 @@ Otherwise do a variable shift."
   ;; If :check-alignment is on and the pointee-type is a word or larger then it must be aligned
   (llvm-sys:create-load-type-value-bool-twine *irbuilder* pointee-type source is-volatile label))
 
-(defun irc-t*-load (source &optional (label ""))
+(defun irc-t*-load (source &optional (label "") is-volatile)
   (ensure-opaque-or-pointee-type-matches source %t*%)
   (let ((source-type (llvm-sys:get-type source)))
     (cond
       ((llvm-sys:type-equal source-type %t**%)
-       (irc-typed-load %t*% source label))
+       (irc-typed-load %t*% source label is-volatile))
       ((llvm-sys:type-equal source-type %i8***%)
        (error "Not t* - load from %i8***%")
-       (irc-typed-load %i8**% source label))
+       (irc-typed-load %i8**% source label is-volatile))
       ((llvm-sys:type-equal source-type %tsp*%)
        (error "Not t* - load from %tsp*%")
-       (irc-typed-load %tsp*% source label))
+       (irc-typed-load %tsp*% source label is-volatile))
       ((llvm-sys:type-equal source-type %i64*%)
        (error "Not t* - load from %64*%")
-       (irc-typed-load %i64% source label))
+       (irc-typed-load %i64% source label is-volatile))
       (t
        (error "Wrong type for irc-t*-load - it was ~a" source)))))
 
