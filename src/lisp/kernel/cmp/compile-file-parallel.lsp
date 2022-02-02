@@ -281,7 +281,11 @@ multithreaded performance that we should explore."
                (cfp-log "Process-join of thread ~a~%" (mp:process-name thread))))
     (dolist (job ast-jobs)
       (let ((*default-condition-origin*
-              (ignore-errors (cleavir-ast:origin (ast-job-ast job)))))
+              (ignore-errors
+               (loop for origin = (cleavir-ast:origin (ast-job-ast job))
+                       then (cst:source origin)
+                     while (typep origin 'cst:cst)
+                     finally (return origin)))))
         (mapc #'signal (ast-job-other-conditions job))
         ;; The WARN calls here never actually print warnings - the
         ;; with-compilation-results handlers do, and then muffle the warnings

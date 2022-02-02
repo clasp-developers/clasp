@@ -67,6 +67,7 @@
             +header-stamp-offset+
             +cons-tag+
             +fixnum-mask+
+            +fixnum-shift+
             +fixnum00-tag+
             +fixnum01-tag+
             #+tag-bits4 +fixnum10-tag+
@@ -175,6 +176,7 @@
             irc-sub
             irc-sdiv irc-srem
             irc-udiv irc-urem
+            irc-shl irc-lshr irc-ashr
             irc-add-clause
             alloca
             alloca-t*

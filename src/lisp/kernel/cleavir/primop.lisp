@@ -262,16 +262,16 @@
     (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%double%))
     (%fptrunc arg cmp:%float%)))
 
-(defvprimop core::fixnum-to-single ((:single-float) :object) (inst)
+(defvprimop core::fixnum-to-single ((:single-float) :fixnum) (inst)
   (assert (= 1 (length (bir:inputs inst))))
   (let* ((arg (in (first (bir:inputs inst))))
-         (fix (cmp:irc-untag-fixnum arg cmp:%fixnum%)))
+         (fix (cmp:irc-ashr arg cmp:+fixnum-shift+ :exact t)))
     (%sitofp fix cmp:%float%
              (datum-name-as-string (first (bir:outputs inst))))))
-(defvprimop core::fixnum-to-double ((:double-float) :object) (inst)
+(defvprimop core::fixnum-to-double ((:double-float) :fixnum) (inst)
   (assert (= 1 (length (bir:inputs inst))))
   (let* ((arg (in (first (bir:inputs inst))))
-         (fix (cmp:irc-untag-fixnum arg cmp:%fixnum%)))
+         (fix (cmp:irc-ashr arg cmp:+fixnum-shift+ :exact t)))
     (%sitofp fix cmp:%double%
              (datum-name-as-string (first (bir:outputs inst))))))
 
@@ -295,60 +295,51 @@
 
 ;;;
 
-(defvprimop core::fixnum-lognot ((:object) :object) (inst)
+(defvprimop core::fixnum-lognot ((:fixnum) :fixnum) (inst)
   (let* ((arg (in (first (bir:inputs inst))))
-         (cast (cmp:irc-ptr-to-int arg cmp:%fixnum%))
-         ;; Make the tag bits 1, so they are negated to zero in the result
-         (ior (cmp:irc-or cast (%i64 cmp:+fixnum-mask+) "unmasked"))
-         (not (cmp:irc-not ior)))
-    (cmp:irc-int-to-ptr not cmp:%t*%)))
+         ;; LLVM does not have a dedicated lognot, and instead
+         ;; represents it as xor whatever, -1.
+         ;; We want to keep the tag bits zero, so we skip the rigamarole
+         ;; by just XORing directly with -4 (or whatever, based on how
+         ;; many tag bits we use).
+         (other (%i64 (ldb (byte 64 0) (ash -1 cmp:+fixnum-shift+))))
+         (label (datum-name-as-string (first (bir:outputs inst)))))
+    (cmp:irc-xor arg other label)))
 
 ;;; NOTE: 0 & 0, 0 | 0, and 0 ^ 0 are all zero, so these operations all
 ;;; preserve the zero fixnum tag without any issue.
 (macrolet ((deflog2 (name op)
-             `(defvprimop ,name ((:object) :object :object) (inst)
-                (let* ((arg1 (in (first (bir:inputs inst))))
-                       (arg2 (in (second (bir:inputs inst))))
-                       (cast1 (cmp:irc-ptr-to-int arg1 cmp:%fixnum%))
-                       (cast2 (cmp:irc-ptr-to-int arg2 cmp:%fixnum%))
-                       (and (,op cast1 cast2)))
-                  (cmp:irc-int-to-ptr and cmp:%t*%)))))
+             `(defvprimop ,name ((:fixnum) :fixnum :fixnum) (inst)
+                (let ((arg1 (in (first (bir:inputs inst))))
+                      (arg2 (in (second (bir:inputs inst)))))
+                  (,op arg1 arg2)))))
   (deflog2 core::fixnum-logand cmp:irc-and)
   (deflog2 core::fixnum-logior cmp:irc-or)
   (deflog2 core::fixnum-logxor cmp:irc-xor))
 
 ;; Wrapping addition of tagged fixnums.
-(defvprimop core::fixnum-add ((:object) :object :object) (inst)
-  (let* ((arg1 (in (first (bir:inputs inst))))
-         (arg2 (in (second (bir:inputs inst))))
-         (cast1 (cmp:irc-ptr-to-int arg1 cmp:%fixnum%))
-         (cast2 (cmp:irc-ptr-to-int arg2 cmp:%fixnum%))
-         (sum (cmp:irc-add cast1 cast2)))
-    (cmp:irc-int-to-ptr sum cmp:%t*%)))
-(defvprimop core::fixnum-sub ((:object) :object :object) (inst)
-  (let* ((arg1 (in (first (bir:inputs inst))))
-         (arg2 (in (second (bir:inputs inst))))
-         (cast1 (cmp:irc-ptr-to-int arg1 cmp:%fixnum%))
-         (cast2 (cmp:irc-ptr-to-int arg2 cmp:%fixnum%))
-         (sum (cmp:irc-sub cast1 cast2)))
-    (cmp:irc-int-to-ptr sum cmp:%t*%)))
+(defvprimop core::fixnum-add ((:fixnum) :fixnum :fixnum) (inst)
+  (let ((arg1 (in (first (bir:inputs inst))))
+        (arg2 (in (second (bir:inputs inst)))))
+    (cmp:irc-add arg1 arg2)))
+(defvprimop core::fixnum-sub ((:fixnum) :fixnum :fixnum) (inst)
+  (let ((arg1 (in (first (bir:inputs inst))))
+        (arg2 (in (second (bir:inputs inst)))))
+    (cmp:irc-sub arg1 arg2)))
 
 ;; For division we don't need to untag the inputs but do need to
-;; tag the quotient.
-(defvprimop core::fixnum-truncate ((:object :object) :object :object) (inst)
+;; shift the quotient.
+(defvprimop core::fixnum-truncate ((:fixnum :fixnum) :fixnum :fixnum) (inst)
   (let* ((arg1 (in (first (bir:inputs inst))))
          (arg2 (in (second (bir:inputs inst))))
-         (cast1 (cmp:irc-ptr-to-int arg1 cmp:%fixnum%))
-         (cast2 (cmp:irc-ptr-to-int arg2 cmp:%fixnum%))
-         (quo (cmp:irc-sdiv cast1 cast2))
-         (tquo (cmp:irc-tag-fixnum quo))
-         (rem (cmp:irc-srem cast1 cast2))
-         (trem (cmp:irc-int-to-ptr rem cmp:%t*%)))
-    (list tquo trem)))
+         (quo (cmp:irc-sdiv arg1 arg2))
+         (tquo (cmp:irc-shl quo cmp:+fixnum-shift+ :nsw t))
+         (rem (cmp:irc-srem arg1 arg2)))
+    (list tquo rem)))
 
 (macrolet ((def-fixnum-compare (name op)
              `(progn
-                (deftprimop ,name (:object :object)
+                (deftprimop ,name (:fixnum :fixnum)
                   (inst next)
                   (assert (= (length (bir:inputs inst)) 2))
                   ;; NOTE: We do not HAVE to cast to an integer type,
@@ -356,12 +347,10 @@
                   ;; However, LLVM doesn't seem to be very intelligent
                   ;; about pointer comparisons, e.g. it does not fold
                   ;; them even when both arguments are inttoptr of
-                  ;; constants. So we cast.
-                  (let* ((i1 (in (first (bir:inputs inst))))
-                         (i2 (in (second (bir:inputs inst))))
-                         (ii1 (cmp:irc-ptr-to-int i1 cmp:%fixnum%))
-                         (ii2 (cmp:irc-ptr-to-int i2 cmp:%fixnum%)))
-                    (cmp:irc-cond-br (,op ii1 ii2)
+                  ;; constants. So we use the fixnum rtype.
+                  (let ((i1 (in (first (bir:inputs inst))))
+                        (i2 (in (second (bir:inputs inst)))))
+                    (cmp:irc-cond-br (,op i1 i2)
                                      (first next) (second next)))))))
   (def-fixnum-compare core::two-arg-fixnum-=  cmp:irc-icmp-eq)
   (def-fixnum-compare core::two-arg-fixnum-<  cmp:irc-icmp-slt)
@@ -369,24 +358,23 @@
   (def-fixnum-compare core::two-arg-fixnum->  cmp:irc-icmp-sgt)
   (def-fixnum-compare core::two-arg-fixnum->= cmp:irc-icmp-sge))
 
-(defvprimop core::fixnum-positive-logcount ((:object) :object) (inst)
+(defvprimop core::fixnum-positive-logcount ((:fixnum) :fixnum) (inst)
   (let* ((arg (in (first (bir:inputs inst))))
-         ;; NOTE we do not need to untag the argument: the tag is all zero
+         (label (datum-name-as-string (first (bir:outputs inst))))
+         ;; NOTE we do not need to shift the argument: the tag is all zero
          ;; so it won't affect the population count.
-         (iarg (cmp:irc-ptr-to-int arg cmp:%fixnum%))
-         (count (%intrinsic-call "llvm.ctpop.i64" (list iarg))))
-    (cmp:irc-tag-fixnum count
-                        (datum-name-as-string (first (bir:outputs inst))))))
+         (count (%intrinsic-call "llvm.ctpop.i64" (list arg))))
+    (cmp:irc-shl count cmp:+fixnum-shift+ :label label :nsw t)))
 
-(defvprimop core::fixnum-ashr ((:object) :object :object) (inst)
+(defvprimop core::fixnum-ashr ((:fixnum) :fixnum :fixnum) (inst)
   (let* ((int (in (first (bir:inputs inst))))
-         (iint (cmp:irc-ptr-to-int int cmp:%fixnum%))
          ;; NOTE: shift must be 0-63 inclusive or shifted is poison!
          (shift (in (second (bir:inputs inst))))
-         (ushift (cmp:irc-untag-fixnum shift cmp:%fixnum%))
-         (shifted (cmp::irc-ashr iint ushift))
+         (ushift (cmp:irc-ashr shift cmp:+fixnum-shift+ :exact t))
+         (shifted (cmp:irc-ashr int ushift))
          (demask (%i64 (ldb (byte 64 0) (lognot cmp:+fixnum-mask+))))
          ;; zero the tag bits
-         (fixn (cmp:irc-and shifted demask)))
-    (cmp:irc-int-to-ptr fixn cmp:%t*%
-                        (datum-name-as-string (first (bir:outputs inst))))))
+         (fixn (cmp:irc-and shifted demask
+                            (datum-name-as-string
+                             (first (bir:outputs inst))))))
+    fixn))

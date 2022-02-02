@@ -333,6 +333,12 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 #else
 #define DBG_SL(_fmt_)
 #endif
+
+#if 0
+#define DBG_SLS(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str()); fflush(stdout); }
+#else
+#define DBG_SLS(_fmt_)
+#endif
 #if 0
 #define DBG_SL1(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
@@ -1920,31 +1926,35 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
   public:
     OrderByAddress() {}
     bool operator()(const PointerBase& x, const PointerBase& y) {
-      return x._address <= y._address;
+        return x._address <= y._address;
     }
   };
   OrderByAddress orderer;
+  DBG_SLS(BF("Step1\n" ));
   for ( size_t idx = 0; idx< fixup->_libraries.size(); idx++ ) {
+    DBG_SLS(BF("Adding library #%lu: %s\n") % idx % fixup->_libraries[idx]._Name);
     symbolLookup.addLibrary(fixup->_libraries[idx]._Name);
-    auto pointersBegin = fixup->_libraries[idx]._Pointers.begin();
-    auto pointersEnd = fixup->_libraries[idx]._Pointers.end();
+    auto pointersBegin = fixup->_libraries[idx]._InternalPointers.begin();
+    auto pointersEnd = fixup->_libraries[idx]._InternalPointers.end();
     if ( pointersBegin < pointersEnd ) {
-      sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer);
+      DBG_SLS(BF("About to quickSortFirstCheckOrder _Pointers.size(): %lu\n") % fixup->_libraries[idx]._InternalPointers.size());
+      sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer );
     }
   }
+  DBG_SLS(BF("Step2\n" ));
   for ( size_t idx=0; idx<fixup->_libraries.size(); idx++ ) {
     int groupPointerIdx = -1;
     ISLLibrary& curLib = fixup->_libraries[idx];
 //    printf("%s:%d:%s  Dealing with library: %s\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str() );
 //    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers.size() );
-    for ( size_t ii=0; ii<curLib._Pointers.size(); ii++ ) {
-      if (groupPointerIdx < 0 || curLib._Pointers[ii]._address != curLib._Pointers[ii-1]._address ) {
-        curLib._GroupedPointers.emplace_back( curLib._Pointers[ii]._pointerType, curLib._Pointers[ii]._address );
+    for ( size_t ii=0; ii<curLib._InternalPointers.size(); ii++ ) {
+      if (groupPointerIdx < 0 || curLib._InternalPointers[ii]._address != curLib._InternalPointers[ii-1]._address ) {
+        curLib._GroupedPointers.emplace_back( curLib._InternalPointers[ii]._pointerType, curLib._InternalPointers[ii]._address );
         groupPointerIdx++;
       }
     // Now encode the relocation
-      uint8_t firstByte = *(uint8_t*)(*(void**)curLib._Pointers[ii]._ptrptr);
-      *curLib._Pointers[ii]._ptrptr = encodeRelocation_( firstByte, idx, groupPointerIdx );
+      uint8_t firstByte = *(uint8_t*)(*(void**)curLib._InternalPointers[ii]._ptrptr);
+      *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_( firstByte, idx, groupPointerIdx );
 //      printf("%s:%d:%s Wrote relocation @%p to %p\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers[ii]._ptrptr, *curLib._Pointers[ii]._ptrptr );
     }
 //    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
@@ -1958,6 +1968,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
       }
     }
   }
+  DBG_SLS(BF("Step done\n" ));
 }
 
 void updateRelocationTableAfterLoad(ISLLibrary& curLib,SymbolLookup& symbolLookup) {
@@ -2123,6 +2134,7 @@ void* snapshot_save_impl(void* data) {
   std::string filename = snapshot_data->filename_;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
 
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
 
   //
   // Gather all objects in memory
@@ -2205,7 +2217,7 @@ void* snapshot_save_impl(void* data) {
   //
 #if 1  
   fixup._operation = InfoOp;
-  DBG_SL(BF("2 Get info on objects for snapshot save\n"));
+  DBG_SLS(BF("0. Get info on objects for snapshot save\n"));
   gather_info_for_snapshot_save_t gather_info(&fixup,&islInfo);
   walk_gathered_objects( gather_info, allObjects );
 #endif
@@ -2338,14 +2350,17 @@ void* snapshot_save_impl(void* data) {
   // Now generate libraries
   //
   // Calculate the size of the libraries section
-//  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
+  //  printf("%s:%d:%s Setting up SymbolLookup\n", __FILE__, __LINE__, __FUNCTION__ );
   SymbolLookup lookup;
+  DBG_SLS(BF(" prepareRelocationTableForSave\n"));
   prepareRelocationTableForSave( &fixup, lookup );
   
+  DBG_SLS(BF("done prepareRelocationTableForSave\n"));
   size_t librarySize = 0;
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     librarySize += fixup._libraries[idx].writeSize();
   }
+  DBG_SLS(BF("copy_buffer_t\n"));
   snapshot._Libraries = new copy_buffer_t(librarySize);
   for (size_t idx=0; idx<fixup._libraries.size(); idx++ ) {
     size_t alignedLen = fixup._libraries[idx].nameSize();
@@ -2377,6 +2392,7 @@ void* snapshot_save_impl(void* data) {
     free(buffer);
   }
 
+  DBG_SLS(BF(" Generating fileHeader\n"));
   
   ISLFileHeader* fileHeader = snapshot._FileHeader;
   uintptr_t offset = snapshot._HeaderBuffer->_Size;
@@ -2404,6 +2420,7 @@ void* snapshot_save_impl(void* data) {
   snapshot._Memory->write_to_stream(wf);
   snapshot._ObjectFiles->write_to_stream(wf);
   wf.close();
+  DBG_SLS(BF(" Done snapshot_save_impl\n"));
   
   printf("%s:%d:%s Wrote file %s - leaving snapshot_save\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
 
@@ -2443,7 +2460,7 @@ void snapshot_save(const std::string& filename) {
   // For saving we may want to save snapshots and not die - so use noStomp forwarding.
   //
   global_forwardingKind = noStomp;
-  printf("%s:%d:%s Using noStomp forwarding for snapshot_save\n", __FILE__, __LINE__, __FUNCTION__ );
+  printf("%s:%d:%s Updated with noStomp forwarding for snapshot_save\n", __FILE__, __LINE__, __FUNCTION__ );
   //
   // Call Common Lisp code to release things at snapshot-save time
   //
@@ -2451,6 +2468,8 @@ void snapshot_save(const std::string& filename) {
   if (comp::_sym_invoke_save_hooks->fboundp()) {
     core::eval::funcall( comp::_sym_invoke_save_hooks );
   }
+
+  printf("%s:%d:%s Finished invoking cmp:invoke-save-hooks\n", __FILE__, __LINE__, __FUNCTION__ );
 
 #if defined(USE_BOEHM)
   Snapshot_save_data data(filename);
@@ -3473,6 +3492,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       core::eval::funcall(fn);
     } else {
       _lisp->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
+      _lisp->print(BF("ext:*snapshot-save-load-startup* is nil so dropping into a simple repl\n"));
       _lisp->print(BF("Low level repl\n"));
       _lisp->readEvalPrintInteractive();
       _lisp->print(BF("\n"));

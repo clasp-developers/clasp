@@ -377,7 +377,8 @@
           (format t "Closing foreign libraries~%")
           (loop for lib in (funcall list-foreign-libraries-symbol)
                 do (format t "Closing foreign library: ~s~%" lib)
-                do (funcall close-foreign-library-symbol lib)))))))
+                do (funcall close-foreign-library-symbol lib))))))
+  (format t "Finished closing foreign libraries~%"))
 
 (eval-when (:load-toplevel :execute)
   (cmp:register-save-hook 'close-foreign-libraries-on-save))

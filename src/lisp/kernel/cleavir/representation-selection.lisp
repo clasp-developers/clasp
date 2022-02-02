@@ -15,6 +15,7 @@
 ;;; * :object, meaning T_O*
 ;;; * :single-float, meaning an unboxed single float
 ;;; * :double-float, meaning an unboxed double float
+;;; * :fixnum, meaning a tagged fixnum
 ;;; * :vaslist, meaning an unboxed vaslist
 ;;; So e.g. (:object :object) means a pair of T_O*.
 
@@ -22,6 +23,10 @@
 ;;; to reflect their translation from lists (in vaslist.lisp). (:vaslist)
 ;;; means an "unboxed list" being passed around as a normal value, whereas
 ;;; :vaslist is the output of values-save or cc-vaslist:values-list.
+
+;;; the :fixnum rtype is indistinguishable from :object at runtime. it
+;;; exists anyway in order to avoid repeated inttoptr/ptrtoint instructions
+;;; which LLVM doesn't seem to remove itself.
 
 ;;; TODO: While (re)writing this I've realized that cast placement here is not
 ;;; really optimal. It might have to be more sophisticated, e.g. moving it out
@@ -517,7 +522,14 @@
               :inputs () :outputs () :next (bir:next instruction))
             instruction)
            (bir:replace-uses input output)))))
-(defmethod insert-casts ((inst cc-bmir:mtf)))
+(defmethod insert-casts ((inst cc-bmir:mtf))
+  (let* ((input (bir:input inst)) (output (bir:output inst))
+         (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output)))
+    (assert (listp outputrt))
+    (when (listp inputrt)
+      ;; Inputs may not already be objects, so possibly cast.
+      (assert (= (length inputrt) (length outputrt)))
+      (maybe-cast-before inst input outputrt))))
 (defmethod insert-casts ((instruction bir:values-restore))
   (let* ((input (bir:input instruction))
          (inputrt (cc-bmir:rtype input))
@@ -591,6 +603,8 @@
 (defmethod constant-unboxable-p ((value double-float) (rt (eql :double-float)))
   t)
 (defmethod constant-unboxable-p ((value t) (rt (eql :double-float))) nil)
+;; no point since they're just integers anyway
+(defmethod constant-unboxable-p ((value t) (rt (eql :fixnum))) nil)
 
 (defun unbox-constant-reference (inst value)
   (let ((constant (bir:input inst)))

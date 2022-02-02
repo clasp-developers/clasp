@@ -78,7 +78,8 @@
 (defun invoke-save-hooks ()
   (format t "Running ~d sys:*save-hooks*~%" (length sys:*save-hook*))
   (dolist (entry sys:*save-hook*)
-    (funcall entry)))
+    (funcall entry))
+  (format t "Finished cmp:invoke-save-hooks~%"))
 
 (defun snapshot-load-restore ()
   )
@@ -732,8 +733,11 @@ No DIBuilder is defined for the default module")
   (register-save-hook
    (function (lambda ()
      (format t "makunbound for *jit-pid* and *jit-log-stream*~%")
+     (format t "makunbound for *jit-pid*~%")
      (makunbound '*jit-pid*)
-     (makunbound '*jit-log-stream*)))))
+     (format t "makunbound for *jit-log-stream*~%")
+     (makunbound '*jit-log-stream*)
+     (format t "Finished makunbound of some symbols~%")))))
 
 #+(or) ;;; moved to compiler.cc
 (defun jit-register-symbol (symbol-name-string symbol-info)
