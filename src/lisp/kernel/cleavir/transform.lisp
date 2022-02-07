@@ -374,38 +374,37 @@
   '(truly-the double-float (core::primop core::fixnum-to-double num)))
 
 (defun derive-float (args rest min)
-  (declare (ignore min))
   (let* ((sys *clasp-system*)
          ;; We only really care about the first two arguments, since anything
          ;; more will be an error. So we just pop the rest type on the end.
-         (args (if (ctype:bottom-p rest sys)
-                   args
-                   (append args (list rest)))))
+         (args (append args (list rest)))
+         (float (env:parse-type-specifier 'float nil *clasp-system*))
+         (rat (env:parse-type-specifier 'rational nil *clasp-system*))
+         #+(or) ; nonexistent
+         (short (ctype:range 'short-float '* '* *clasp-system*))
+         (single (ctype:range 'single-float '* '* *clasp-system*))
+         (double (ctype:range 'double-float '* '* *clasp-system*))
+         #+(or) ; nonexistent
+         (long (ctype:range 'long-float '* '* *clasp-system*)))
+    ;; FIXME: More sophisticated type operations would make this more
+    ;; precise. For example, it would be good to derive that if the
+    ;; argument is an (or single-float rational), the result is a
+    ;; single float.
     (cleavir-ctype:single-value
-     (if (rest args)
-         (let ((proto (second args))
-               #+(or) ; nonexistent
-               (short (ctype:range 'short-float '* '* *clasp-system*))
-               (single (ctype:range 'single-float '* '* *clasp-system*))
-               (double (ctype:range 'double-float '* '* *clasp-system*))
-               #+(or) ; nonexistent
-               (long (ctype:range 'long-float '* '* *clasp-system*)))
-           (cond #+(or)((arg-subtypep proto short) short)
-                 ((ctype:subtypep proto single sys) single)
-                 ((ctype:subtypep proto double sys) double)
-                 #+(or)((arg-subtypep proto long) long)
-                 (t (env:parse-type-specifier 'float nil *clasp-system*))))
-         ;; FIXME: More sophisticated type operations would make this more
-         ;; precise. For example, it would be good to derive that if the
-         ;; argument is an (or single-float rational), the result is a
-         ;; single float.
-         (let ((arg (first args))
-               (float (env:parse-type-specifier 'float nil *clasp-system*))
-               (rat (env:parse-type-specifier 'rational nil *clasp-system*)))
-           (cond ((ctype:subtypep arg float sys) arg)
-                 ((ctype:subtypep arg rat sys)
-                  (ctype:range 'single-float '* '* sys))
-                 (t float))))
+     (cond ((> min 1)
+            (let ((proto (second args)))
+              (cond #+(or)((arg-subtypep proto short) short)
+                    ((ctype:subtypep proto single sys) single)
+                    ((ctype:subtypep proto double sys) double)
+                    #+(or)((arg-subtypep proto long) long)
+                    (t float))))
+           ((and (= min 1)
+                 (ctype:bottom-p (second args) sys))
+            (let ((arg (first args)))
+              (cond ((ctype:subtypep arg float sys) arg)
+                    ((ctype:subtypep arg rat sys) single)
+                    (t float))))
+           (t float))
      sys)))
 
 (define-deriver float derive-float)
