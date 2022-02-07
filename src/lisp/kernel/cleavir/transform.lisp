@@ -587,6 +587,39 @@
 
 ;;;
 
+(defun derive-cons (args rest min)
+  (declare (ignore args rest min))
+  ;; We can't forward the argument types into the cons type, since we don't
+  ;; know if this cons will be mutated. So we just return the CONS type.
+  ;; This is useful so that the compiler understands that CONS definitely
+  ;; returns a CONS and it does not need to insert any runtime checks.
+  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value (ctype:cons top top sys) sys)))
+(define-deriver cons derive-cons)
+
+(defun derive-list (args rest min)
+  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value
+     (cond ((> min 0) (ctype:cons top top sys))
+           ((and (= min 0) (null args) (ctype:bottom-p rest sys))
+            (ctype:member sys nil))
+           (t (ctype:disjoin sys (ctype:member sys nil)
+                             (ctype:cons top top sys))))
+     sys)))
+(define-deriver list derive-list)
+
+(defun derive-list* (args rest min)
+  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value
+     (cond ((> min 1) (ctype:cons top top sys))
+           ((and (= min 1) (null (rest args)) (ctype:bottom-p rest sys))
+            (first args))
+           (t
+            (ctype:disjoin sys (if args (first args) rest)
+                           (ctype:cons top top sys))))
+     sys)))
+(define-deriver list* derive-list*)
+
 (deftransform car ((cons cons)) '(cleavir-primop:car cons))
 (deftransform cdr ((cons cons)) '(cleavir-primop:cdr cons))
 
