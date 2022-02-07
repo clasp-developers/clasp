@@ -464,18 +464,6 @@
 (deftransform length ((arr vector))
   '(truly-the valid-array-dimension (core::primop core::vector-length arr)))
 
-#+(or)
-(defun derive-aref-old (call)
-  (let* ((aarg (first (rest (bir:inputs call))))
-         (ct (ctype:primary (bir:ctype aarg) *clasp-system*)))
-    (ctype:single-value
-     (if (and (consp ct)
-              (member (first ct) '(array simple-array vector))
-              (consp (cdr ct)))
-         (second ct)
-         (ctype:top *clasp-system*))
-     *clasp-system*)))
-
 (defun derive-aref (args rest min)
   (declare (ignore min))
   (let ((sys *clasp-system*)
@@ -488,17 +476,41 @@
          (ctype:top sys))
      sys)))
 
-#+(or)
-(defun derive-aref (call args rest min)
-  (let ((old (derive-aref-old call))
-        (new (derive-aref-new args rest min)))
-    (unless (equal old new)
-      (error "!!! AREF DERIVATION MISMATCH~%old ~a~%new ~a~%on ~a ~a ~a ~a~%"
-             old new call args rest min))
-    old))
-
 (define-deriver aref derive-aref)
 (define-deriver row-major-aref derive-aref)
+
+(macrolet ((def (fname etype)
+             (let ((derivename
+                     (make-symbol (concatenate 'string
+                                               (symbol-name '#:derive-)
+                                               (symbol-name fname)))))
+               `(progn
+                  (defun ,derivename (args rest min)
+                    (declare (ignore args rest min))
+                    (let ((sys *clasp-system*))
+                      (ctype:single-value
+                       (ctype:array ',etype '(*) 'simple-array sys)
+                       sys)))
+                  (define-deriver ,fname ,derivename)))))
+  (def core:make-simple-vector-t t)
+  (def core:make-simple-vector-bit bit)
+  (def core:make-simple-vector-base-char base-char)
+  (def core:make-simple-vector-character character)
+  (def core:make-simple-vector-single-float single-float)
+  (def core:make-simple-vector-double-float double-float)
+  (def core:make-simple-vector-int2 ext:integer2)
+  (def core:make-simple-vector-byte2 ext:byte2)
+  (def core:make-simple-vector-int4 ext:integer4)
+  (def core:make-simple-vector-byte4 ext:byte4)
+  (def core:make-simple-vector-int8 ext:integer8)
+  (def core:make-simple-vector-byte8 ext:byte8)
+  (def core:make-simple-vector-int16 ext:integer16)
+  (def core:make-simple-vector-byte16 ext:byte16)
+  (def core:make-simple-vector-int32 ext:integer32)
+  (def core:make-simple-vector-byte32 ext:byte32)
+  (def core:make-simple-vector-int64 ext:integer64)
+  (def core:make-simple-vector-byte64 ext:byte64)
+  (def core:make-simple-vector-fixnum fixnum))
 
 #+(or) ; string= is actually slower atm due to keyword etc processing
 (deftransform equal ((x string) (y string)) '(string= x y))
