@@ -369,7 +369,7 @@
 ;;; Get the attributes into the output of the setf-definition,
 ;;; and mark it as being of type FUNCTION.
 ;;; Also get the name if it's there.
-(cleavir-primop-info:defprimop setf-fdefinition 1 :value)
+(cleavir-primop-info:defprimop setf-fdefinition 1 :value :flushable)
 (defmethod ast-to-bir:compile-ast
     ((ast cc-ast:setf-fdefinition-ast) inserter (system clasp-cleavir:clasp))
   (let ((name (cleavir-ast:name-ast ast))
