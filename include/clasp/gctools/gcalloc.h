@@ -1214,7 +1214,7 @@ struct StrongWeakAllocationPoint<WeakLinks> {
     new (myAddress) container_type(init);
     return gctools::tagged_pointer<container_type>(myAddress);
 #elif defined(USE_MPS)
-    printf("%s:%d:%s Handle allocation in MPS\n");
+    printf("%s:%d:%s Handle allocation in MPS\n", __FILE__, __LINE__, __FUNCTION__);
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     printf("%s:%d:%s Handle weak object allocation properly - I added normal headers\n", __FILE__, __LINE__, __FUNCTION__ );
