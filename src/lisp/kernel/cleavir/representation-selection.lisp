@@ -526,7 +526,9 @@
   (let* ((input (bir:input inst)) (output (bir:output inst))
          (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output)))
     (assert (listp outputrt))
-    (when (listp inputrt)
+    (when (and (listp inputrt)
+               ;; no need to cast if unused
+               (not (null outputrt)))
       ;; Inputs may not already be objects, so possibly cast.
       (assert (= (length inputrt) (length outputrt)))
       (maybe-cast-before inst input outputrt))))

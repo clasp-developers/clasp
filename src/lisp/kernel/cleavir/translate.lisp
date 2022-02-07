@@ -1142,8 +1142,11 @@
          (irt (cc-bmir:rtype input)) (ort (cc-bmir:rtype output)))
     (out
      (cond ((listp irt)
-            (assert (equal irt ort))
-            (in input)) ; nop
+            (cond (ort ; nop
+                   (assert (equal irt ort))
+                   (in input))
+                  ;; unused
+                  (t nil)))
            ((eq irt :multiple-values)
             (let ((nvalues (bir:nvalues inst)))
               (case nvalues
