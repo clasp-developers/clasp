@@ -33,11 +33,45 @@
 
 (defun vaslistablep (fname) (member fname *vaslistable*))
 
+(defun origin (origin)
+  (loop for org = origin then (cst:source org)
+        while (typep org 'cst:cst)
+        finally (return org)))
+
+(defgeneric format-reason (reason))
+(defmethod format-reason (reason) (format nil "Can't handle ~a" reason))
+(defmethod format-reason ((reason bir:variable))
+  (format nil "variable ~a is mutated" (bir:name reason)))
+(defmethod format-reason ((reason bir:returni))
+  (format nil "it is returned from a function"))
+(defmethod format-reason ((reason bir:abstract-call))
+  (format nil "it is passed to a function"))
+
+(defun format-reasons (reasons)
+  (mapcar #'format-reason (remove-duplicates reasons)))
+
+(define-condition consing-&rest (ext:compiler-note)
+  ((%parameter :initarg :parameter :reader parameter)
+   (%reasons :initarg :reasons :reader reasons))
+  (:report
+   (lambda (condition stream)
+     (format stream "Unable to avoid consing &rest parameter ~a, because:
+~{* ~a~%~}"
+             (bir:name (parameter condition))
+             (format-reasons (reasons condition))))))
+
+(defvar *record-failures* nil)
+(defvar *failure-reasons*)
+
 (defgeneric datum-ok-p (datum)
-  (:method ((datum bir:datum)) nil))
+  (:method ((datum bir:datum))
+    (when *record-failures* (push datum *failure-reasons*))
+    nil))
 
 (defgeneric use-ok-p (user datum)
-  (:method ((user bir:instruction) (datum bir:datum)) nil)
+  (:method ((user bir:instruction) (datum bir:datum))
+    (when *record-failures* (push user *failure-reasons*))
+    nil)
   (:method ((user null) (datum bir:datum)) t))
 
 (defmethod datum-ok-p ((datum bir:linear-datum))
@@ -45,13 +79,21 @@
 
 (defmethod datum-ok-p ((datum bir:variable))
   ;; TODO: loosen
-  (and (bir:immutablep datum)
-       (let* ((def (bir:binder datum))
-              (fun (bir:function def)))
-         (set:doset (reader (bir:readers datum) t)
-           (unless (and (eq (bir:function reader) fun)
-                        (use-ok-p reader datum))
-             (return nil))))))
+  (let ((imm (bir:immutablep datum))
+        (record *record-failures*))
+    (when (and (not imm) record)
+      (push datum *failure-reasons*))
+    (and (or imm record)
+         (let* ((def (bir:binder datum))
+                (fun (bir:function def))
+                (success imm))
+           (set:doset (reader (bir:readers datum) success)
+             (unless (and (eq (bir:function reader) fun)
+                          (use-ok-p reader datum))
+               (if record
+                   (setf success nil)
+                   ;; we're not recording all failures, so quit immediately
+                   (return nil))))))))
 
 (defmethod use-ok-p ((inst bir:writevar) (datum bir:datum))
   (datum-ok-p (bir:output inst)))
@@ -60,8 +102,9 @@
   (datum-ok-p (bir:output inst)))
 
 (defmethod use-ok-p ((inst bir:fixed-to-multiple) (datum bir:datum))
-  (and (= (length (bir:inputs inst)) 1)
-       (datum-ok-p (bir:output inst))))
+  (cond ((= (length (bir:inputs inst)) 1) (datum-ok-p (bir:output inst)))
+        (*record-failures* (push inst *failure-reasons*) nil)
+        (t nil)))
 
 (defmethod use-ok-p ((inst bir:thei) (datum bir:datum))
   (datum-ok-p (bir:output inst)))
@@ -82,52 +125,55 @@
                      sys))))
 
 (defmethod use-ok-p ((inst bir:call) (datum bir:datum))
-  (let ((name
-          ;; KLUDGE
-          (first (attributes:identities (bir:attributes inst))))
-        (args (rest (bir:inputs inst)))
-        (out (bir:output inst)))
-    (declare (ignorable out))
-    (case name
-      ((cl:car) (and (= (length args) 1)
-                     (eq datum (first args))))
-      ((cl:cdr) (and (= (length args) 1)
-                     (eq datum (first args))
-                     (datum-ok-p out)))
-      ((cl:nth) (and (= (length args) 2)
-                     (eq datum (second args))
-                     (nonnegative-fixnum-p (first args))))
-      ((cl:nthcdr) (and (= (length args) 2)
-                        (eq datum (second args))
-                        (nonnegative-fixnum-p (first args))
-                        (datum-ok-p out)))
-      ((cl:elt) (and (= (length args) 2)
-                     (eq datum (first args))
-                     (nonnegative-fixnum-p (second args))))
-      #+(or)
-      ((endp) (and (= (length args) 1)
-                   (eq datum (first args))))
-      ((cl:last) (and (<= 1 (length args) 2)
-                      (eq datum (first args))
-                      (if (second args)
-                          (nonnegative-fixnum-p (second args))
-                          t)
-                      (datum-ok-p out)))
-      ;; the description of nbutlast kind of makes it sound like it
-      ;; _must_ modify the list, which would rule out this transformation,
-      ;; since no modification will take place and any modification could
-      ;; be noticed elsewhere.
-      ;; but we consider it to mean that it _may_ modify the list.
-      ((cl:butlast cl:nbutlast)
-       (and (<= 1 (length args) 2)
-            (eq datum (first args))
-            (if (second args)
-                (nonnegative-fixnum-p (second args))
-                t)
-            (datum-ok-p out)))
-      ((cl:values-list) (and (= (length args) 1)
-                             (eq datum (first args))))
-      (otherwise nil))))
+  (let* ((name
+           ;; KLUDGE
+           (first (attributes:identities (bir:attributes inst))))
+         (args (rest (bir:inputs inst)))
+         (out (bir:output inst))
+         (result
+           (case name
+             ((cl:car) (and (= (length args) 1)
+                            (eq datum (first args))))
+             ((cl:cdr) (and (= (length args) 1)
+                            (eq datum (first args))
+                            (datum-ok-p out)))
+             ((cl:nth) (and (= (length args) 2)
+                            (eq datum (second args))
+                            (nonnegative-fixnum-p (first args))))
+             ((cl:nthcdr) (and (= (length args) 2)
+                               (eq datum (second args))
+                               (nonnegative-fixnum-p (first args))
+                               (datum-ok-p out)))
+             ((cl:elt) (and (= (length args) 2)
+                            (eq datum (first args))
+                            (nonnegative-fixnum-p (second args))))
+             #+(or)
+             ((endp) (and (= (length args) 1)
+                          (eq datum (first args))))
+             ((cl:last) (and (<= 1 (length args) 2)
+                             (eq datum (first args))
+                             (if (second args)
+                                 (nonnegative-fixnum-p (second args))
+                                 t)
+                             (datum-ok-p out)))
+             ;; the description of nbutlast kind of makes it sound like it
+             ;; _must_ modify the list which would rule out this transformation,
+             ;; since no modification will take place and any modification could
+             ;; be noticed elsewhere.
+             ;; but we consider it to mean that it _may_ modify the list.
+             ((cl:butlast cl:nbutlast)
+              (and (<= 1 (length args) 2)
+                   (eq datum (first args))
+                   (if (second args)
+                       (nonnegative-fixnum-p (second args))
+                       t)
+                   (datum-ok-p out)))
+             ((cl:values-list) (and (= (length args) 1)
+                                    (eq datum (first args))))
+             (otherwise nil))))
+    (when (and *record-failures* (not result))
+      (push inst *failure-reasons*))
+    result))
 
 (defgeneric rewrite-use (use))
 
@@ -247,10 +293,22 @@
 (defun maybe-transform-function (function)
   (let* ((llrest (member '&rest (bir:lambda-list function)))
          (rest (second llrest)))
-    (cond ((and rest (maybe-transform rest))
-           (setf (first llrest) 'core:&va-rest)
-           t)
-          (t nil))))
+    (if rest
+        (let ((*record-failures*
+                (cleavir-policy:policy-value
+                 (bir:policy function)
+                 'clasp-cleavir::note-consing-&rest))
+              (*failure-reasons* nil))
+          (cond ((maybe-transform rest)
+                 (setf (first llrest) 'core:&va-rest)
+                 t)
+                (*record-failures*
+                 (cmp:note 'consing-&rest
+                           :origin (origin (bir:origin function))
+                           :parameter rest
+                           :reasons *failure-reasons*))
+                (t nil)))
+        nil)))
 
 (defun maybe-transform-module (module)
   (set:mapset nil #'maybe-transform-function (bir:functions module)))
