@@ -19,6 +19,15 @@
      (environment clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety) 0))
 
+;;; This policy indicates that the compiler should note calls that could be
+;;; transformed (i.e. eliminated by inlining, replacement with a primop, etc.)
+;;; but couldn't be due to lack of information.
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'note-untransformed-calls))
+     optimize
+     (environment clasp-global-environment))
+  (= (cleavir-policy:optimize-value optimize 'speed) 3))
+
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'type-check-ftype-arguments))
      optimize
@@ -40,6 +49,7 @@
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (note-untransformed-calls boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
@@ -52,6 +62,7 @@
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (note-untransformed-calls boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)

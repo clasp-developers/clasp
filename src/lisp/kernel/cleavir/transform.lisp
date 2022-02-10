@@ -59,6 +59,44 @@
         (maybe-transform call trans)
         nil)))
 
+(define-condition failed-transform (ext:compiler-note)
+  ((%call :initarg :call :reader failed-transform-call)
+   (%opname :initarg :opname :reader failed-transform-opname)
+   ;; A list of transform "criteria". For now, a criterion is just the list
+   ;; of types a transform can require. In the future there may be other
+   ;; criteria, such as being a constant.
+   (%available :initarg :available :reader failed-transform-available))
+  (:report (lambda (condition stream)
+             (format stream "Unable to optimize call to ~s:
+The compiler only knows the arguments to be of types ~a.
+Optimizations are available for any of:
+~{~s~%~}"
+                     (failed-transform-opname condition)
+                     (loop with call = (failed-transform-call condition)
+                           with sys = *clasp-system*
+                           for arg in (rest (bir:inputs call))
+                           for vtype = (asserted-ctype arg)
+                           for svtype = (ctype:primary vtype sys)
+                           collect svtype)
+                     (mapcar #'cdr (failed-transform-available condition))))))
+
+;;; Note a missed optimization to the programmer.
+;;; called in translate, not here, since transform-call may be called
+;;; multiple times during meta-evaluation.
+(defun maybe-note-failed-transforms (call)
+  (when (cleavir-policy:policy-value (bir:policy call)
+                                     'note-untransformed-calls)
+    (let ((identities (cleavir-attributes:identities (bir:attributes call))))
+      (dolist (id identities)
+        (let ((trans (gethash id *bir-transformers*)))
+          (when trans
+            (cmp:note 'failed-transform
+                      :call call :opname id :available trans
+                      :origin (loop for origin = (bir:origin call)
+                                      then (cst:source origin)
+                                    while (typep origin 'cst:cst)
+                                    finally (return origin)))))))))
+
 (defmacro %deftransformation (name)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (setf (gethash ',name *bir-transformers*) nil)

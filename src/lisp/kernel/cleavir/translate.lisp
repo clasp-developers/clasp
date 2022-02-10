@@ -627,6 +627,7 @@
 
 (defmethod translate-simple-instruction ((instruction bir:call) abi)
   (declare (ignore abi))
+  (maybe-note-failed-transforms instruction)
   (let* ((inputs (bir:inputs instruction))
          (iinputs (mapcar #'in inputs))
          (output (bir:output instruction)))
