@@ -26,6 +26,13 @@
     ((quality (eql 'note-untransformed-calls))
      optimize
      (environment clasp-global-environment))
+  (declare (ignorable optimize))
+  ;; at present, type inference is not good enough to handle actually
+  ;; optimizable code (e.g. (and (consp x) (... (car x) ...))). as such, for
+  ;; the time being at least, you have to manually request this policy
+  ;; as by (declare (optimize clasp-cleavir::note-untransformed-calls))
+  nil
+  #+(or)
   (= (cleavir-policy:optimize-value optimize 'speed) 3))
 
 (defmethod cleavir-policy:compute-policy-quality
