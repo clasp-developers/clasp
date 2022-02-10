@@ -187,9 +187,26 @@
   (change-class inst 'nthcdr :inputs (list index arg))
   (rewrite-use (bir:use (bir:output inst))))
 
+;;; Delete the now unused constant ref->fdefinition
+;;; FIXME: again, with flow analysis, remove-unused-instruction would handle
+;;; this properly
+(defun delete-callee (callee)
+  (when (bir:unused-p callee)
+    (let* ((fdef (and (typep callee 'bir:output) (bir:definition callee)))
+           (pname (and (typep fdef 'bir:primop)
+                       (cleavir-primop-info:name (bir:info fdef)))))
+      (when (member pname '(fdefinition cc-bir::setf-fdefinition))
+        (let ((sym (first (bir:inputs fdef))))
+          (bir:delete-instruction fdef)
+          (when (bir:unused-p sym)
+            (let ((cref (and (typep sym 'bir:output) (bir:definition sym))))
+              (when cref (bir:delete-instruction cref))))))))
+  (values))
+
 (defmethod rewrite-use ((use bir:call))
   (let ((name
           (first (attributes:identities (bir:attributes use))))
+        (callee (bir:callee use))
         (args (rest (bir:inputs use))))
     (ecase name
       ((cl:car)
@@ -214,7 +231,8 @@
          (rewrite-use (bir:use (bir:output use)))))
       ((cl:values-list)
        ;; FIXME: Flush fdefinition of values-list if possible
-       (change-class use 'values-list :inputs args)))))
+       (change-class use 'values-list :inputs args)))
+    (delete-callee callee)))
 
 (defun maybe-transform (argument)
   (check-type argument bir:argument)
