@@ -39,7 +39,8 @@
         finally (return org)))
 
 (defgeneric format-reason (reason))
-(defmethod format-reason (reason) (format nil "Can't handle ~a" reason))
+(defmethod format-reason (reason)
+  (format nil "Can't handle use in ~a" reason))
 (defmethod format-reason ((reason bir:variable))
   (format nil "variable ~a is mutated" (bir:name reason)))
 (defmethod format-reason ((reason bir:returni))
@@ -107,12 +108,24 @@
         (t nil)))
 
 (defmethod use-ok-p ((inst bir:thei) (datum bir:datum))
-  (datum-ok-p (bir:output inst)))
+  ;; type checks should be gone at this point, so this is paranoia
+  (and (symbolp (bir:type-check-function inst))
+       (datum-ok-p (bir:output inst))))
+
+(defmethod use-ok-p ((inst bir:typeq-test) (datum bir:datum))
+  (let ((type (bir:test-ctype inst)))
+    (or (eq type 'cons) (equal type '(cons t t)))))
 
 (defmethod use-ok-p ((inst cc-bmir:consp) (datum bir:datum)) t)
 
 ;; This arises e.g. from (null a-&rest-list).
 (defmethod use-ok-p ((inst bir:ifi) (datum bir:datum)) t)
+
+(defmethod use-ok-p ((inst bir:primop) (datum bir:datum))
+  (case (cleavir-primop-info:name (bir:info inst))
+    ((cleavir-primop:car) t)
+    ((cleavir-primop:cdr) (datum-ok-p (first (bir:outputs inst))))
+    (otherwise nil)))
 
 ;;; FIXME: This function only looks for existing derivations, rather than
 ;;; prompting any new ones. More reason this whole file should be part of
@@ -202,6 +215,8 @@
 
 (defmethod rewrite-use ((use cc-bmir:consp))
   (change-class use 'nendp))
+(defmethod rewrite-use ((use bir:typeq-test))
+  (change-class use 'nendp))
 
 (defmethod rewrite-use ((use bir:ifi))
   ;; Insert a nendp test.
@@ -232,6 +247,17 @@
 (defun rewrite-nthcdr (inst index arg)
   (change-class inst 'nthcdr :inputs (list index arg))
   (rewrite-use (bir:use (bir:output inst))))
+
+(defmethod rewrite-use ((use bir:primop))
+  (let ((name (cleavir-primop-info:name (bir:info use)))
+        (args (bir:inputs use)))
+    (ecase name
+      ((cleavir-primop:car)
+       (let ((index (insert-constant-before 0 use)))
+         (rewrite-nth use index (first args))))
+      ((cleavir-primop:cdr)
+       (let ((index (insert-constant-before 1 use)))
+         (rewrite-nthcdr use index (first args)))))))
 
 ;;; Delete the now unused constant ref->fdefinition
 ;;; FIXME: again, with flow analysis, remove-unused-instruction would handle

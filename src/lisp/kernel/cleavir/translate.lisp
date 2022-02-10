@@ -1852,8 +1852,8 @@ COMPILE-FILE will use the default *clasp-env*."
   (bir-transformations:meta-evaluate-module module system)
   (maybe-debug-transformation module :meta-evaluate)
   (bir-transformations:module-generate-type-checks module system)
-  (cc-bir-to-bmir:reduce-module-instructions module)
   (cc-vaslist:maybe-transform-module module)
+  (cc-bir-to-bmir:reduce-module-instructions module)
   ;; These should happen after higher level optimizations since they are like
   ;; "post passes" which do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.
