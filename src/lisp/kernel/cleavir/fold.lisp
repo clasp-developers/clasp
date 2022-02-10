@@ -107,7 +107,7 @@
     first second third fourth fifth sixth seventh eighth ninth tenth ; *
     nth nthcdr ; *
     endp null
-    last tailp get-properties getf ; *
+    butlast last tailp get-properties getf ; *
     ;; 15
     adjustable-array-p array-element-type
     aref array-dimension array-dimensions array-has-fill-pointer-p ; *

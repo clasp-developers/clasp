@@ -5,19 +5,29 @@
 ;;;; Essentially, if a &rest parameter is only used in certain limited ways,
 ;;;; such as the last argument to APPLY, or for iteration, it can be
 ;;;; represented more cheaply as a simple "vector" of values.
-;;;; Currently, the only use allowed in this transformation is as the
-;;;; argument to VALUES-LIST. Since we transform (apply x y z) into
-;;;; (multiple-value-call x (values y) (values-list z)), this covers the
-;;;; common use of &rest parameters for APPLY.
-;;;; In the future, the following operations should be available:
 
-;;; nth -> (vaslist-nth n vaslist)
-;;; (setf nth) -> (setf (vaslist-nth n vaslist) value)
-;;; nthcdr -> (vaslist-nthcdr n vaslist)
-;;; endp -> (vaslist-endp vaslist)
-;;; last -> (vaslist-last vaslist n)
-;;; butlast -> (vaslist-butlast vaslist n)
-;;; values-list -> (vaslist-values-list vaslist) ; done
+;;;; The following operations are available; that is, if a &rest parameter is
+;;;; only ever passed as the list argument to these functions, the compiler
+;;;; can perform the transformation and avoid actual consing.
+
+;;;; (if x y z) -> (if (vaslist-endp x) z y)
+;;;; (typeq x cons) -> (if (vaslist-endp x) nil t)
+;;;; nth -> (vaslist-nth n vaslist) ; with (car x) = (nth 0 x)
+;;;; nthcdr -> (vaslist-nthcdr n vaslist) ; with (cdr x) = (nthcdr 0 x)
+;;;; last -> (vaslist-last vaslist n)
+;;;; butlast -> (vaslist-butlast vaslist n)
+;;;; values-list -> (vaslist-values-list vaslist)
+
+;;;; Note that this last is how APPLY works, since (apply x y z) is compiler-
+;;;; macroexpanded into (mv-call x (values y) (values-list z)).
+
+;;;; At the moment, the transform will not take place if a vaslist would be
+;;;; stored in a variable with multiple assignments. Working on that.
+;;;; Also at the moment, car and cdr actually inhibit the transformation since
+;;;; they inline into complicated stuff. Working on that too.
+;;;; Other TODOs include expanding to other sources of lists,
+;;;; and allowing passing vaslists to/returning them from functions as long as
+;;;; they do not escape the dynamic extent.
 
 (defparameter *vaslistable* '(values-list))
 
@@ -97,14 +107,24 @@
       #+(or)
       ((endp) (and (= (length args) 1)
                    (eq datum (first args))))
-      #+(or)
-      ((last) (and (= (length args) 2)
-                   (eq datum (first args))
-                   (datum-ok-p out)))
-      #+(or)
-      ((butlast) (and (= (length args) 2)
+      ((cl:last) (and (<= 1 (length args) 2)
                       (eq datum (first args))
+                      (if (second args)
+                          (nonnegative-fixnum-p (second args))
+                          t)
                       (datum-ok-p out)))
+      ;; the description of nbutlast kind of makes it sound like it
+      ;; _must_ modify the list, which would rule out this transformation,
+      ;; since no modification will take place and any modification could
+      ;; be noticed elsewhere.
+      ;; but we consider it to mean that it _may_ modify the list.
+      ((cl:butlast cl:nbutlast)
+       (and (<= 1 (length args) 2)
+            (eq datum (first args))
+            (if (second args)
+                (nonnegative-fixnum-p (second args))
+                t)
+            (datum-ok-p out)))
       ((cl:values-list) (and (= (length args) 1)
                              (eq datum (first args))))
       (otherwise nil))))
@@ -184,6 +204,14 @@
        (rewrite-nthcdr use (first args) (second args)))
       ((cl:elt)
        (rewrite-nth use (second args) (first args)))
+      ((cl:last)
+       (let ((index (or (second args) (insert-constant-before 1 use))))
+         (change-class use 'last :inputs (list index (first args)))
+         (rewrite-use (bir:use (bir:output use)))))
+      ((cl:butlast cl:nbutlast)
+       (let ((index (or (second args) (insert-constant-before 1 use))))
+         (change-class use 'butlast :inputs (list index (first args)))
+         (rewrite-use (bir:use (bir:output use)))))
       ((cl:values-list)
        ;; FIXME: Flush fdefinition of values-list if possible
        (change-class use 'values-list :inputs args)))))

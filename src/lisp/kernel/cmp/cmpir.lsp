@@ -1119,6 +1119,23 @@ the type LLVMContexts don't match - so they were defined in different threads!"
          (new-vals (irc-gep vals (list real-n))))
     (irc-make-vaslist new-nvals new-vals label)))
 
+;;; Ditto the above, but it's LAST instead of NTHCDR.
+(defun irc-vaslist-last (n vaslist &optional (label "rest"))
+  (let* ((nvals (irc-vaslist-nvals vaslist))
+         (new-nvals (irc-intrinsic "llvm.umin.i64" n nvals))
+         (skip (irc-sub nvals new-nvals))
+         (vals (irc-vaslist-values vaslist))
+         (new-vals (irc-gep vals (list skip))))
+    (irc-make-vaslist new-nvals new-vals label)))
+
+;;; ...and finally, BUTLAST, which is actually the simplest.
+(defun irc-vaslist-butlast (n vaslist &optional (label "rest"))
+  (let* ((nvals (irc-vaslist-nvals vaslist))
+         (real-n (irc-intrinsic "llvm.umin.i64" n nvals))
+         (new-nvals (irc-sub nvals real-n))
+         (new-vals (irc-vaslist-values vaslist)))
+    (irc-make-vaslist new-nvals new-vals label)))
+
 (defparameter *default-function-attributes*
   #+cclasp '(llvm-sys:attribute-uwtable
              ("frame-pointer" "all"))

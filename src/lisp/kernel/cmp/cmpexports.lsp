@@ -248,6 +248,8 @@
             irc-vaslist-values
             irc-vaslist-nth
             irc-vaslist-nthcdr
+            irc-vaslist-last
+            irc-vaslist-butlast
             irc-tag-vaslist
             irc-unbox-vaslist
             irc-header-stamp
