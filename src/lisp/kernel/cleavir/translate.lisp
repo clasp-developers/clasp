@@ -975,6 +975,22 @@
   ;; This is just a change in rtype, from (:vaslist) to :vaslist,
   ;; so it's really a nop.
   (out (in (bir:input inst)) (bir:output inst)))
+(defmethod translate-simple-instruction ((inst cc-vaslist:nth) abi)
+  (declare (ignore abi))
+  (let* ((inputs (bir:inputs inst))
+         (index (in (first inputs))) (vaslist (in (second inputs)))
+         (uindex (cmp:irc-untag-fixnum index cmp:%fixnum%))
+         (output (bir:output inst))
+         (label (datum-name-as-string output)))
+    (out (cmp:irc-vaslist-nth uindex vaslist label) output)))
+(defmethod translate-simple-instruction ((inst cc-vaslist:nthcdr) abi)
+  (declare (ignore abi))
+  (let* ((inputs (bir:inputs inst))
+         (index (in (first inputs))) (vaslist (in (second inputs)))
+         (uindex (cmp:irc-untag-fixnum index cmp:%fixnum%))
+         (output (bir:output inst))
+         (label (datum-name-as-string output)))
+    (out (cmp:irc-vaslist-nthcdr uindex vaslist label) output)))
 
 (defmethod translate-simple-instruction ((inst bir:primop) abi)
   (declare (ignore abi))

@@ -1109,13 +1109,14 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 ;;; Given a vaslist, return a new vaslist with all values but the primary.
 ;;; If the vaslist is already empty, it is returned.
-;;; N is treated as an untagged unsigned integer.
+;;; N is treated as an untagged unsigned integer, and if it's above the upper
+;;; bound an empty vaslist, NIL is returned.
 (defun irc-vaslist-nthcdr (n vaslist &optional (label "rest"))
   (let* ((nvals (irc-vaslist-nvals vaslist))
          (real-n (irc-intrinsic "llvm.umin.i64" n nvals))
-         (new-nvals (irc-sub n real-n))
+         (new-nvals (irc-sub nvals real-n))
          (vals (irc-vaslist-values vaslist))
-         (new-vals (irc-gep vals (list new-nvals))))
+         (new-vals (irc-gep vals (list real-n))))
     (irc-make-vaslist new-nvals new-vals label)))
 
 (defparameter *default-function-attributes*

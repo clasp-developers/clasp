@@ -30,7 +30,7 @@
   (:method ((user bir:instruction) (datum bir:datum)) nil)
   (:method ((user null) (datum bir:datum)) t))
 
-(defmethod datum-ok-p ((datum bir:ssa))
+(defmethod datum-ok-p ((datum bir:linear-datum))
   (use-ok-p (bir:use datum) datum))
 
 (defmethod datum-ok-p ((datum bir:variable))
@@ -69,6 +69,11 @@
         (out (bir:output inst)))
     (declare (ignorable out))
     (case name
+      ((cl:car) (and (= (length args) 1)
+                     (eq datum (first args))))
+      ((cl:cdr) (and (= (length args) 1)
+                     (eq datum (first args))
+                     (datum-ok-p out)))
       #+(or)
       ((nth) (and (= (length args) 2)
                   (eq datum (second args))))
@@ -92,6 +97,8 @@
       (otherwise nil))))
 
 (defgeneric rewrite-use (use))
+
+(defmethod rewrite-use ((use null)))
 
 (defmethod rewrite-use ((use bir:writevar))
   (let ((var (bir:output use)))
@@ -132,6 +139,35 @@
   (let ((name
           (first (attributes:identities (bir:attributes use)))))
     (ecase name
+      ((cl:car)
+       (let* ((arg (second (bir:inputs use)))
+              (const (bir:constant-in-module 0 (bir:module (bir:function use))))
+              (sys clasp-cleavir:*clasp-system*)
+              (type (cleavir-ctype:member sys 0))
+              (vtype (cleavir-ctype:single-value type sys))
+              (cout (make-instance 'bir:output
+                      :name '#:index :derived-type vtype))
+              (cref (make-instance 'bir:constant-reference
+                      :inputs (list const) :outputs (list cout)
+                      :origin (bir:origin use) :policy (bir:policy use))))
+         (bir:insert-instruction-before cref use)
+         (change-class use 'nth
+                       :inputs (list cout arg))))
+      ((cl:cdr)
+       (let* ((arg (second (bir:inputs use)))
+              (const (bir:constant-in-module 1 (bir:module (bir:function use))))
+              (sys clasp-cleavir:*clasp-system*)
+              (type (cleavir-ctype:member sys 1))
+              (vtype (cleavir-ctype:single-value type sys))
+              (cout (make-instance 'bir:output
+                      :name '#:index :derived-type vtype))
+              (cref (make-instance 'bir:constant-reference
+                      :inputs (list const) :outputs (list cout)
+                      :origin (bir:origin use) :policy (bir:policy use))))
+         (bir:insert-instruction-before cref use)
+         (change-class use 'nthcdr
+                       :inputs (list cout arg))
+         (rewrite-use (bir:use (bir:output use)))))
       ((cl:values-list)
        ;; FIXME: Flush fdefinition of values-list if possible
        (change-class use 'values-list
