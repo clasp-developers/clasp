@@ -121,6 +121,7 @@
 (defpackage #:clasp-cleavir-vaslist
   (:nicknames #:cc-vaslist)
   (:local-nicknames (#:bir #:cleavir-bir)
+                    (#:ctype #:cleavir-ctype)
                     (#:set #:cleavir-set)
                     (#:attributes #:cleavir-attributes))
   (:shadow #:values-list #:nth #:nthcdr)

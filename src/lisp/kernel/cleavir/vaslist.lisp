@@ -61,6 +61,16 @@
 ;; This arises e.g. from (null a-&rest-list).
 (defmethod use-ok-p ((inst bir:ifi) (datum bir:datum)) t)
 
+;;; FIXME: This function only looks for existing derivations, rather than
+;;; prompting any new ones. More reason this whole file should be part of
+;;; the data flow analysis proper.
+(defun nonnegative-fixnum-p (arg)
+  (let ((sys clasp-cleavir:*clasp-system*))
+    (values
+     (ctype:subtypep (ctype:primary (bir:ctype arg) sys)
+                     (ctype:range 'integer 0 most-positive-fixnum sys)
+                     sys))))
+
 (defmethod use-ok-p ((inst bir:call) (datum bir:datum))
   (let ((name
           ;; KLUDGE
@@ -74,13 +84,16 @@
       ((cl:cdr) (and (= (length args) 1)
                      (eq datum (first args))
                      (datum-ok-p out)))
-      #+(or)
-      ((nth) (and (= (length args) 2)
-                  (eq datum (second args))))
-      #+(or)
-      ((nthcdr) (and (= (length args) 2)
+      ((cl:nth) (and (= (length args) 2)
                      (eq datum (second args))
-                     (datum-ok-p out)))
+                     (nonnegative-fixnum-p (first args))))
+      ((cl:nthcdr) (and (= (length args) 2)
+                        (eq datum (second args))
+                        (nonnegative-fixnum-p (first args))
+                        (datum-ok-p out)))
+      ((cl:elt) (and (= (length args) 2)
+                     (eq datum (first args))
+                     (nonnegative-fixnum-p (second args))))
       #+(or)
       ((endp) (and (= (length args) 1)
                    (eq datum (first args))))
@@ -135,43 +148,45 @@
     (bir:insert-instruction-before nendp use)
     (setf (bir:inputs use) (list new-out))))
 
+(defun insert-constant-before (constant inst)
+  (let* ((const
+           (bir:constant-in-module constant (bir:module (bir:function inst))))
+         (sys clasp-cleavir:*clasp-system*)
+         (type (ctype:member sys constant))
+         (vtype (ctype:single-value type sys))
+         (cout (make-instance 'bir:output
+                 :name '#:index :derived-type vtype))
+         (cref (make-instance 'bir:constant-reference
+                 :inputs (list const) :outputs (list cout))))
+    (bir:insert-instruction-before cref inst)
+    cout))
+
+(defun rewrite-nth (inst index arg)
+  (change-class inst 'nth :inputs (list index arg)))
+(defun rewrite-nthcdr (inst index arg)
+  (change-class inst 'nthcdr :inputs (list index arg))
+  (rewrite-use (bir:use (bir:output inst))))
+
 (defmethod rewrite-use ((use bir:call))
   (let ((name
-          (first (attributes:identities (bir:attributes use)))))
+          (first (attributes:identities (bir:attributes use))))
+        (args (rest (bir:inputs use))))
     (ecase name
       ((cl:car)
-       (let* ((arg (second (bir:inputs use)))
-              (const (bir:constant-in-module 0 (bir:module (bir:function use))))
-              (sys clasp-cleavir:*clasp-system*)
-              (type (cleavir-ctype:member sys 0))
-              (vtype (cleavir-ctype:single-value type sys))
-              (cout (make-instance 'bir:output
-                      :name '#:index :derived-type vtype))
-              (cref (make-instance 'bir:constant-reference
-                      :inputs (list const) :outputs (list cout)
-                      :origin (bir:origin use) :policy (bir:policy use))))
-         (bir:insert-instruction-before cref use)
-         (change-class use 'nth
-                       :inputs (list cout arg))))
+       (let ((index (insert-constant-before 0 use)))
+         (rewrite-nth use index (first args))))
       ((cl:cdr)
-       (let* ((arg (second (bir:inputs use)))
-              (const (bir:constant-in-module 1 (bir:module (bir:function use))))
-              (sys clasp-cleavir:*clasp-system*)
-              (type (cleavir-ctype:member sys 1))
-              (vtype (cleavir-ctype:single-value type sys))
-              (cout (make-instance 'bir:output
-                      :name '#:index :derived-type vtype))
-              (cref (make-instance 'bir:constant-reference
-                      :inputs (list const) :outputs (list cout)
-                      :origin (bir:origin use) :policy (bir:policy use))))
-         (bir:insert-instruction-before cref use)
-         (change-class use 'nthcdr
-                       :inputs (list cout arg))
-         (rewrite-use (bir:use (bir:output use)))))
+       (let ((index (insert-constant-before 1 use)))
+         (rewrite-nthcdr use index (first args))))
+      ((cl:nth)
+       (rewrite-nth use (first args) (second args)))
+      ((cl:nthcdr)
+       (rewrite-nthcdr use (first args) (second args)))
+      ((cl:elt)
+       (rewrite-nth use (second args) (first args)))
       ((cl:values-list)
        ;; FIXME: Flush fdefinition of values-list if possible
-       (change-class use 'values-list
-                     :inputs (rest (bir:inputs use)))))))
+       (change-class use 'values-list :inputs args)))))
 
 (defun maybe-transform (argument)
   (check-type argument bir:argument)
