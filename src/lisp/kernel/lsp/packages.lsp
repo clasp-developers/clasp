@@ -145,6 +145,8 @@
             all-encodings
             make-encoding
             assume-right-type
+            compiler-note
+            muffle-note
             segmentation-violation
             stack-overflow
             stack-overflow-size

@@ -23,7 +23,7 @@
   form-index   ; Uses (core:next-startup-position) to keep count
   form-counter ; Counts from zero
   module
-  (serious-condition nil) (warnings nil) (other-conditions nil)
+  (serious-condition nil) (warnings nil) (notes nil) (other-conditions nil)
   current-source-pos-info startup-function-name form-output-path)
 
 
@@ -144,7 +144,12 @@
                                  (push w (ast-job-warnings ast-job))
                                  ;; Will be reported in the main thread instead.
                                  (muffle-warning w)))
-                             ((not (or serious-condition warning))
+                             (ext:compiler-note
+                               (lambda (n)
+                                 (push n (ast-job-notes ast-job))
+                                 (muffle-note n)))
+                             ((not (or ext:compiler-note
+                                       serious-condition warning))
                                (lambda (c)
                                  (push c (ast-job-other-conditions ast-job)))))
                           (funcall compile-func ast-job
@@ -291,12 +296,13 @@ multithreaded performance that we should explore."
         ;; with-compilation-results handlers do, and then muffle the warnings
         ;; (which is why we use WARN and not SIGNAL). Kind of ugly.
         (mapc #'warn (ast-job-warnings job))
+        (mapc #'cmp:note (ast-job-notes job))
         (when (ast-job-serious-condition job)
           ;; We use SIGNAL rather than ERROR although the condition is serious.
           ;; This is because the AST job has already exited and therefore there
           ;; is no way to debug the problem. with-compilation-results will
           ;; still understand that it's an error and report compilation failure.
-          ;; It's possible we coudl save the original backtrace and so on, but
+          ;; It's possible we could save the original backtrace and so on, but
           ;; if you want to debug problems, it would probably be easier to
           ;; use the serial compiler and debug them as they appear.
           (signal (ast-job-serious-condition job)))))

@@ -148,6 +148,7 @@
             compiler-error
             compiler-warn
             compiler-style-warn
+            note
             define-primitive
             warn-undefined-global-variable
             warn-undefined-type
