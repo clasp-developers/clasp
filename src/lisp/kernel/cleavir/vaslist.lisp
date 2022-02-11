@@ -40,13 +40,21 @@
 
 (defgeneric format-reason (reason))
 (defmethod format-reason (reason)
-  (format nil "Can't handle use in ~a" reason))
+  (when (typep reason 'bir:values-collect) (break "~a" reason))
+  (format nil "used in unhandled instruction ~a" reason))
 (defmethod format-reason ((reason bir:variable))
-  (format nil "variable ~a is mutated" (bir:name reason)))
+  (format nil "stored in variable ~a, which is mutated" (bir:name reason)))
+(defmethod format-reason ((reason bir:thei))
+  (format nil "type checked against ~s"
+          (ctype:primary (bir:asserted-type reason)
+                         clasp-cleavir:*clasp-system*)))
 (defmethod format-reason ((reason bir:returni))
-  (format nil "it is returned from a function"))
+  (format nil "returned from a function"))
 (defmethod format-reason ((reason bir:abstract-call))
-  (format nil "it is passed to a function"))
+  (let* ((attr (bir:attributes reason))
+         (name (first (attributes:identities attr))))
+    (format nil "passed to ~:[a function~;~:*~a~]~@[: ~a~]"
+            name (bir:name (bir:callee reason)))))
 
 (defun format-reasons (reasons)
   (mapcar #'format-reason (remove-duplicates reasons)))
@@ -56,7 +64,7 @@
    (%reasons :initarg :reasons :reader reasons))
   (:report
    (lambda (condition stream)
-     (format stream "Unable to avoid consing &rest parameter ~a, because:
+     (format stream "Unable to avoid consing &rest parameter ~a, because it is:
 ~{* ~a~%~}"
              (bir:name (parameter condition))
              (format-reasons (reasons condition))))))
@@ -109,8 +117,24 @@
 
 (defmethod use-ok-p ((inst bir:thei) (datum bir:datum))
   ;; type checks should be gone at this point, so this is paranoia
-  (and (symbolp (bir:type-check-function inst))
-       (datum-ok-p (bir:output inst))))
+  (cond ((symbolp (bir:type-check-function inst))
+         (datum-ok-p (bir:output inst)))
+        ((let ((type (ctype:primary (bir:asserted-type inst)
+                                    clasp-cleavir:*clasp-system*)))
+           ;; This can happen when we've passed through a cdr/nthcdr-
+           ;; because we do not have a proper list type, the type of the
+           ;; result of cdr cannot be derived as LIST, even though for a
+           ;; proper list like &rest parameters it necessarily is.
+           ;; FIXME: Add a proper list type instead of doing this?
+           ;; FIXME: Not sure this is correct with values types, e.g.
+           ;; if subsequent types to be checked would fail.
+           (member type '(list (or cons null) (or null cons)
+                          (or (cons t t) (member nil))
+                          (or (member nil) (cons t t)))
+                   :test #'equal))
+         (datum-ok-p (bir:output inst)))
+        (*record-failures* (push inst *failure-reasons*) nil)
+        (t nil)))
 
 (defmethod use-ok-p ((inst bir:typeq-test) (datum bir:datum))
   (let ((type (bir:test-ctype inst)))
