@@ -237,6 +237,9 @@ Optimizations are available for any of:
     ;; Now properly insert it.
     (change-class call 'bir:local-call
                   :inputs (list* bir (rest (bir:inputs call))))
+    ;; KLUDGEish: maybe-interpolate misbehaves when the flow order is invalid.
+    ;; See #1260.
+    (bir:compute-iblock-flow-order (bir:function call))
     (bir-transformations:maybe-interpolate bir)))
 
 (defmethod cleavir-bir-transformations:generate-type-check-function
