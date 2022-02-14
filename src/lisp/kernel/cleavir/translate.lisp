@@ -27,8 +27,15 @@
     (or key-flag (and varest-p (not (bir:unused-p rest-var))))))
 
 (defun nontrivial-mv-local-call-p (call)
-  (typep call '(and bir:mv-local-call
-                (not cc-bmir:fixed-mv-local-call))))
+  (cond ((typep call 'cc-bmir:fixed-mv-local-call)
+         ;; Could still be nontrivial if the number of arguments is wrong
+         (multiple-value-bind (req opt rest)
+             (cmp:process-bir-lambda-list (bir:lambda-list (bir:callee call)))
+           (let ((lreq (length (cc-bmir:rtype (second (bir:inputs call))))))
+             (or (< lreq (car req))
+                 (and (not rest) (> lreq (+ (car req) (car opt))))))))
+        ((typep call 'bir:mv-local-call) t)
+        (t nil)))
 
 (defun xep-needed-p (function)
   (or (bir:enclose function)
@@ -600,6 +607,16 @@
              (declare (ignore keyargs aok aux))
              (assert (and (not key-flag)
                           (or (not varest-p) (bir:unused-p rest-var))))
+             (let ((largs (length arguments)))
+               (when (or (< largs (car req))
+                         (and (not rest-var)
+                              (> largs (+ (car req) (car opt)))))
+                 ;; too many or too few args; we can get here from
+                 ;; fixed-mv-local-calls for instance.
+                 (return-from gen-local-call
+                   (closure-call-or-invoke
+                    (enclose callee-info :dynamic nil)
+                    arguments))))
              (let* ((rest-id (cond ((null rest-var) nil)
                                    ((bir:unused-p rest-var) :unused)
                                    (t t)))
