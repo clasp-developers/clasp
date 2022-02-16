@@ -1347,6 +1347,8 @@
           p)
         (error 'type-error :datum p :expected-type 'cons))))
 
+(define-cleavir-compiler-macro endp (&whole form list &environment env)
+  `(if ,(list-check-form list env) nil t))
 
 (debug-inline "primop")
 
