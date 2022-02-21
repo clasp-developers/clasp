@@ -1347,6 +1347,9 @@
           p)
         (error 'type-error :datum p :expected-type 'cons))))
 
+;;; This overrides the compiler macro defined in cmp/opt/opt-cons.lisp.
+;;; That compiler macro must work in bclasp, so it doesn't have access to
+;;; the same type-checking cooperation with the compiler that we do here.
 (define-cleavir-compiler-macro endp (&whole form list &environment env)
   `(if ,(list-check-form list env) nil t))
 
