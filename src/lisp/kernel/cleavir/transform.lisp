@@ -419,19 +419,19 @@ Optimizations are available for any of:
          ;; We only really care about the first two arguments, since anything
          ;; more will be an error. So we just pop the rest type on the end.
          (args (append args (list rest)))
-         (float (env:parse-type-specifier 'float nil *clasp-system*))
-         (rat (env:parse-type-specifier 'rational nil *clasp-system*))
+         (float (env:parse-type-specifier 'float nil sys))
+         (rat (env:parse-type-specifier 'rational nil sys))
          #+(or) ; nonexistent
-         (short (ctype:range 'short-float '* '* *clasp-system*))
-         (single (ctype:range 'single-float '* '* *clasp-system*))
-         (double (ctype:range 'double-float '* '* *clasp-system*))
+         (short (ctype:range 'short-float '* '* sys))
+         (single (ctype:range 'single-float '* '* sys))
+         (double (ctype:range 'double-float '* '* sys))
          #+(or) ; nonexistent
          (long (ctype:range 'long-float '* '* *clasp-system*)))
     ;; FIXME: More sophisticated type operations would make this more
     ;; precise. For example, it would be good to derive that if the
     ;; argument is an (or single-float rational), the result is a
     ;; single float.
-    (cleavir-ctype:single-value
+    (ctype:single-value
      (cond ((> min 1)
             (let ((proto (second args)))
               (cond #+(or)((arg-subtypep proto short) short)
@@ -449,6 +449,24 @@ Optimizations are available for any of:
      sys)))
 
 (define-deriver float derive-float)
+
+(defun derive-random (args rest min)
+  (declare (ignore min))
+  (let* ((sys *clasp-system*)
+         (max (or (first args) rest))
+         (fixnum (ctype:range 'integer
+                              most-negative-fixnum most-positive-fixnum
+                              sys))
+         (single (ctype:range 'single-float '* '* sys))
+         (double (ctype:range 'double-float '* '* sys)))
+    (ctype:single-value
+     (cond ((subtypep max fixnum)
+            (ctype:range 'integer 0 most-positive-fixnum sys))
+           ((subtypep max single) (ctype:range 'single-float 0f0 '* sys))
+           ((subtypep max double) (ctype:range 'double-float 0d0 '* sys))
+           (t (env:parse-type-specifier '(real 0) nil sys)))
+     sys)))
+(define-deriver random derive-random)
 
 ;;;
 
