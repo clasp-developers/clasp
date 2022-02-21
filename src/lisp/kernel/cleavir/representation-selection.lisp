@@ -260,7 +260,7 @@
 (defmethod max-vrtype (vrt1 vrt2)
   (if (eql vrt1 vrt2)
       vrt1
-      (error "BUG: ~a not defined on ~a ~a" 'max-vrtype vrt1 vrt2)))
+      :object))
 (defmethod max-vrtype ((vrt1 (eql :object)) vrt2)
   (declare (ignore vrt2))
   vrt1)
