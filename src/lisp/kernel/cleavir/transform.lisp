@@ -709,3 +709,14 @@ Optimizations are available for any of:
 
 (deftransform reverse ((x list)) '(core:list-reverse x))
 (deftransform nreverse ((x list)) '(core:list-nreverse x))
+
+;;;
+
+;;; WRITE et al. just return their first argument.
+(defun derive-write (args rest min)
+  (declare (ignore min))
+  (ctype:single-value (or (first args) rest) *clasp-system*))
+(define-deriver write derive-write)
+(define-deriver prin1 derive-write)
+(define-deriver print derive-write)
+(define-deriver princ derive-write)
