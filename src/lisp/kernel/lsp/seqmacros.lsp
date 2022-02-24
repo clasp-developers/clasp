@@ -178,6 +178,9 @@
               `(do ((,%uindex (+ ,%offset ,end))
                     (,%limit (+ ,%offset ,start)))
                    ((= ,%uindex ,%limit) ,output)
+                 ;; FIXME: Not sure if these can't be slightly more exact
+                 ;; (e.g. max of array-dimension-limit)
+                 (declare (type (and unsigned-byte fixnum) ,%uindex ,%limit))
                  (let ((,elt (vref ,%vector (decf ,%uindex))))
                    ;; The index is bound in coordinates of the original array.
                    ;; ...but since in actual uses of do-subvector we don't
@@ -187,6 +190,7 @@
               `(do ((,%uindex (+ ,%offset ,start) (1+ ,%uindex))
                     (,%limit (+ ,%offset ,end)))
                    ((= ,%uindex ,%limit) ,output)
+                 (declare (type (and unsigned-byte fixnum) ,%uindex ,%limit))
                  (let ((,elt (vref ,%vector ,%uindex)))
                    (symbol-macrolet ((,index (- ,%uindex ,%offset)))
                      ,@body))))))))

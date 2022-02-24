@@ -234,3 +234,11 @@
                                       node))))
                (lambda () (values nil nil)))
       ())
+
+(test issue-1265
+      (funcall (compile nil '(lambda (x y)
+                              (if x
+                                  (sqrt (the single-float y))
+                                  (sqrt (the double-float y)))))
+               nil 4d0)
+      (2d0))

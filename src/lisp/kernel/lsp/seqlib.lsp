@@ -783,7 +783,8 @@ subsequence is found.  Returns NIL otherwise."
 (defun search-vector (sequence1 start1 end1 sequence2 start2 end2
                       test test-not key from-end)
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0))
-           (vector sequence1 sequence2))
+           (type vector sequence1 sequence2)
+           (type fixnum start1 end1 start2 end2))
   (with-tests (test test-not key)
     (do* ((last-index -1)
           (last (let* ((l (- end1 start1))
@@ -879,7 +880,8 @@ evaluates to NIL.  See STABLE-SORT."
 
 (defun list-merge-sort (l predicate key)
   (declare (optimize (safety 0) (speed 3))
-	   (function predicate key))
+	   (type function predicate key)
+           (type list l))
   (prog ((i 0) left right l0 l1 key-left key-right)
      (declare (fixnum i))
      (setq i (length l))

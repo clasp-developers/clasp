@@ -19,6 +19,33 @@
      (environment clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety) 0))
 
+;;; This policy indicates that the compiler should note calls that could be
+;;; transformed (i.e. eliminated by inlining, replacement with a primop, etc.)
+;;; but couldn't be due to lack of information.
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'note-untransformed-calls))
+     optimize
+     (environment clasp-global-environment))
+  (declare (ignorable optimize))
+  ;; at present, type inference is not good enough to handle actually
+  ;; optimizable code (e.g. (and (consp x) (... (car x) ...))). as such, for
+  ;; the time being at least, you have to manually request this policy
+  ;; as by (declare (optimize clasp-cleavir::note-untransformed-calls))
+  nil
+  #+(or)
+  (= (cleavir-policy:optimize-value optimize 'speed) 3))
+
+;;; This policy tells the compiler to note when a &rest parameter must
+;;; be consed into a list (i.e. the optimization in vaslist.lisp does not fire).
+;;; It must also be specifically requested.
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'note-consing-&rest))
+     optimize
+     (environment clasp-global-environment))
+  (declare (ignorable optimize))
+  ;; Must be specifically requested. In the future, maybe note on SPACE 3?
+  nil)
+
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'type-check-ftype-arguments))
      optimize
@@ -40,6 +67,8 @@
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (note-untransformed-calls boolean t)
+    (note-consing-&rest boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
@@ -52,6 +81,8 @@
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (note-untransformed-calls boolean t)
+    (note-consing-&rest boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)

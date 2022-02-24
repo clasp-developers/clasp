@@ -27,8 +27,15 @@
     (or key-flag (and varest-p (not (bir:unused-p rest-var))))))
 
 (defun nontrivial-mv-local-call-p (call)
-  (typep call '(and bir:mv-local-call
-                (not cc-bmir:fixed-mv-local-call))))
+  (cond ((typep call 'cc-bmir:fixed-mv-local-call)
+         ;; Could still be nontrivial if the number of arguments is wrong
+         (multiple-value-bind (req opt rest)
+             (cmp:process-bir-lambda-list (bir:lambda-list (bir:callee call)))
+           (let ((lreq (length (cc-bmir:rtype (second (bir:inputs call))))))
+             (or (< lreq (car req))
+                 (and (not rest) (> lreq (+ (car req) (car opt))))))))
+        ((typep call 'bir:mv-local-call) t)
+        (t nil)))
 
 (defun xep-needed-p (function)
   (or (bir:enclose function)
@@ -599,6 +606,16 @@
              (declare (ignore keyargs aok aux))
              (assert (and (not key-flag)
                           (or (not varest-p) (bir:unused-p rest-var))))
+             (let ((largs (length arguments)))
+               (when (or (< largs (car req))
+                         (and (not rest-var)
+                              (> largs (+ (car req) (car opt)))))
+                 ;; too many or too few args; we can get here from
+                 ;; fixed-mv-local-calls for instance.
+                 (return-from gen-local-call
+                   (closure-call-or-invoke
+                    (enclose callee-info :dynamic nil)
+                    arguments))))
              (let* ((rest-id (cond ((null rest-var) nil)
                                    ((bir:unused-p rest-var) :unused)
                                    (t t)))
@@ -626,6 +643,7 @@
 
 (defmethod translate-simple-instruction ((instruction bir:call) abi)
   (declare (ignore abi))
+  (maybe-note-failed-transforms instruction)
   (let* ((inputs (bir:inputs instruction))
          (iinputs (mapcar #'in inputs))
          (output (bir:output instruction)))
@@ -1019,10 +1037,39 @@
   (declare (ignore abi))
   ;; This is just a change in rtype, from (:vaslist) to :vaslist,
   ;; so it's really a nop.
-  (let ((vaslist (in (bir:input inst))))
-    (unless (llvm-sys:type-equal (llvm-sys:get-type vaslist) cmp:%vaslist%)
-      (error "The object ~a must be a cmp:%vaslist%" vaslist))
-    (out vaslist (bir:output inst))))
+  (out (in (bir:input inst)) (bir:output inst)))
+(defmethod translate-simple-instruction ((inst cc-vaslist:nth) abi)
+  (declare (ignore abi))
+  (let* ((inputs (bir:inputs inst))
+         (index (in (first inputs))) (vaslist (in (second inputs)))
+         (uindex (cmp:irc-untag-fixnum index cmp:%fixnum%))
+         (output (bir:output inst))
+         (label (datum-name-as-string output)))
+    (out (cmp:irc-vaslist-nth uindex vaslist label) output)))
+(defmethod translate-simple-instruction ((inst cc-vaslist:nthcdr) abi)
+  (declare (ignore abi))
+  (let* ((inputs (bir:inputs inst))
+         (index (in (first inputs))) (vaslist (in (second inputs)))
+         (uindex (cmp:irc-untag-fixnum index cmp:%fixnum%))
+         (output (bir:output inst))
+         (label (datum-name-as-string output)))
+    (out (cmp:irc-vaslist-nthcdr uindex vaslist label) output)))
+(defmethod translate-simple-instruction ((inst cc-vaslist:last) abi)
+  (declare (ignore abi))
+  (let* ((inputs (bir:inputs inst))
+         (index (in (first inputs))) (vaslist (in (second inputs)))
+         (uindex (cmp:irc-untag-fixnum index cmp:%fixnum%))
+         (output (bir:output inst))
+         (label (datum-name-as-string output)))
+    (out (cmp:irc-vaslist-last uindex vaslist label) output)))
+(defmethod translate-simple-instruction ((inst cc-vaslist:butlast) abi)
+  (declare (ignore abi))
+  (let* ((inputs (bir:inputs inst))
+         (index (in (first inputs))) (vaslist (in (second inputs)))
+         (uindex (cmp:irc-untag-fixnum index cmp:%fixnum%))
+         (output (bir:output inst))
+         (label (datum-name-as-string output)))
+    (out (cmp:irc-vaslist-butlast uindex vaslist label) output)))
 
 (defmethod translate-simple-instruction ((inst bir:primop) abi)
   (declare (ignore abi))
@@ -1193,8 +1240,11 @@
          (irt (cc-bmir:rtype input)) (ort (cc-bmir:rtype output)))
     (out
      (cond ((listp irt)
-            (assert (equal irt ort))
-            (in input)) ; nop
+            (cond (ort ; nop
+                   (assert (equal irt ort))
+                   (in input))
+                  ;; unused
+                  (t nil)))
            ((eq irt :multiple-values)
             (let ((nvalues (bir:nvalues inst)))
               (case nvalues
@@ -1867,9 +1917,9 @@ COMPILE-FILE will use the default *clasp-env*."
   (maybe-debug-transformation module :optimize-vars)
   (bir-transformations:meta-evaluate-module module system)
   (maybe-debug-transformation module :meta-evaluate)
+  (cc-vaslist:maybe-transform-module module)
   (bir-transformations:module-generate-type-checks module system)
   (cc-bir-to-bmir:reduce-module-instructions module)
-  (cc-vaslist:maybe-transform-module module)
   ;; These should happen after higher level optimizations since they are like
   ;; "post passes" which do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.

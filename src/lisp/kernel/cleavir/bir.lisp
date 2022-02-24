@@ -319,6 +319,10 @@
 (defclass cc-vaslist:values-list (bir:one-input bir:one-output
                                  bir:instruction)
   ())
+(defclass cc-vaslist:nth (bir:one-output bir:instruction) ())
+(defclass cc-vaslist:nthcdr (bir:one-output bir:instruction) ())
+(defclass cc-vaslist:last (bir:one-output bir:instruction) ())
+(defclass cc-vaslist:butlast (bir:one-output bir:instruction) ())
 
 ;;; This is (complement #'endp) for vaslists - i.e. "Not ENDP"
 (defclass cc-vaslist:nendp (bir:one-input bir:conditional-test) ())
@@ -369,7 +373,7 @@
 ;;; Get the attributes into the output of the setf-definition,
 ;;; and mark it as being of type FUNCTION.
 ;;; Also get the name if it's there.
-(cleavir-primop-info:defprimop setf-fdefinition 1 :value)
+(cleavir-primop-info:defprimop setf-fdefinition 1 :value :flushable)
 (defmethod ast-to-bir:compile-ast
     ((ast cc-ast:setf-fdefinition-ast) inserter (system clasp-cleavir:clasp))
   (let ((name (cleavir-ast:name-ast ast))

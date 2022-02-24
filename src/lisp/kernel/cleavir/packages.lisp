@@ -121,9 +121,10 @@
 (defpackage #:clasp-cleavir-vaslist
   (:nicknames #:cc-vaslist)
   (:local-nicknames (#:bir #:cleavir-bir)
+                    (#:ctype #:cleavir-ctype)
                     (#:set #:cleavir-set)
                     (#:attributes #:cleavir-attributes))
-  (:shadow #:values-list)
-  (:export #:values-list #:nendp)
+  (:shadow #:values-list #:nth #:nthcdr #:last #:butlast)
+  (:export #:values-list #:nth #:nthcdr #:last #:butlast #:nendp)
   (:export #:maybe-transform-module)
   (:export #:vaslistablep))

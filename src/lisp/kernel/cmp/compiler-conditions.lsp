@@ -27,7 +27,7 @@
 ;;;
 ;;; Condition classes.
 
-;;; This class is signaled AT RUNTIME if the compiler (at COMPILE TIME)
+;;; This condition is signaled AT RUNTIME if the compiler (at COMPILE TIME)
 ;;; signaled an error while compiling some form. So e.g.
 ;;; (compile nil '(lambda () (progv))) gets you a function, but if you
 ;;; call that function, this error is signaled.
@@ -142,6 +142,31 @@ Operation was (~s~{ ~s~})."
     (core::simple-style-warning compiler-condition)
   ())
 
+;;; These conditions are signaled when the compiler wants to tell the
+;;; programmer something, but that something doesn't warrant even a style
+;;; warning. For example, a note that the compiler cannot optimize something
+;;; could be a note, since this inability is not a problem per se with the
+;;; code, and it may just be that the compiler is inadequate.
+(define-condition ext:compiler-note (compiler-condition)
+  ())
+
+(defun note (datum &rest arguments)
+  ;; We don't use coerce-to-condition because there is no simple-note type
+  ;; for cleanliness reasons.
+  (let ((note (if (typep datum 'ext:compiler-note)
+                  datum
+                  (apply #'make-condition datum arguments))))
+    (restart-case (signal note)
+      (muffle-note ()
+        :report "Silence note."
+        (return-from note nil)))
+    (format *error-output* "~&;;; Note: ~a~%" note)))
+
+(defun muffle-note (&optional condition)
+  ;; We use c-r-d instead of find-restart so that an error is signaled if
+  ;; somehow the restart is not active (this would be a bug)
+  (invoke-restart (si::coerce-restart-designator 'muffle-note condition)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Redefining some earlier error-noting calls, so that they
@@ -225,6 +250,8 @@ Operation was (~s~{ ~s~})."
   (format-compiler-condition 'warning condition))
 (defmethod print-compiler-condition ((condition style-warning))
   (format-compiler-condition 'style-warning condition))
+(defmethod print-compiler-condition ((condition ext:compiler-note))
+  (format *error-output* "note:~%~@<  ~@;~a~:>" condition))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -233,6 +260,7 @@ Operation was (~s~{ ~s~})."
 (defvar *compiler-error-count*)
 (defvar *compiler-warning-count*)
 (defvar *compiler-style-warning-count*)
+(defvar *compiler-note-count*)
 
 ;;; Let errors through - lower level code should handle them if able, and otherwise
 ;;; it's a compiler bug and we ought to enter the debugger.
@@ -259,6 +287,11 @@ Operation was (~s~{ ~s~})."
   (setf *warnings-p* t)
   (print-compiler-condition condition)
   (muffle-warning condition))
+(defun compiler-note-handler (condition)
+  (signal condition)
+  (incf *compiler-note-count*)
+  (print-compiler-condition condition)
+  (muffle-note condition))
 
 ;;; Redefinition. Used in e.g. compile-file.
 (defun call-with-compilation-results (thunk &rest options)
@@ -268,7 +301,8 @@ Operation was (~s~{ ~s~})."
      (handler-bind
          ((error #'compiler-error-handler)
           (style-warning #'compiler-style-warning-handler)
-          (warning #'compiler-warning-handler))
+          (warning #'compiler-warning-handler)
+          (ext:compiler-note #'compiler-note-handler))
        (funcall thunk))
      *warnings-p* *failure-p*)))
 
@@ -285,6 +319,7 @@ Operation was (~s~{ ~s~})."
             (*compiler-error-count* 0)
             (*compiler-warning-count* 0)
             (*compiler-style-warning-count* 0)
+            (*compiler-note-count* 0)
             (abortedp t))
         (unwind-protect
              (multiple-value-prog1 (funcall thunk) (setf abortedp nil))
@@ -310,15 +345,18 @@ Operation was (~s~{ ~s~})."
   (unless (and (not abortedp)
                (zerop *compiler-error-count*)
                (zerop *compiler-warning-count*)
-               (zerop *compiler-style-warning-count*))
+               (zerop *compiler-style-warning-count*)
+               (zerop *compiler-note-count*))
     (pprint-logical-block (*error-output* nil :per-line-prefix "; ")
       (format *error-output* "~&compilation unit ~:[finished~;aborted~]"
               abortedp)
       (format *error-output* "~[~:;~:*~&  caught ~w ERROR condition~:P~]~
                               ~[~:;~:*~&  caught ~w WARNING condition~:P~]~
-                              ~[~:;~:*~&  caught ~w STYLE-WARNING condition~:P~]"
+                              ~[~:;~:*~&  caught ~w STYLE-WARNING condition~:P~]
+                              ~[~:;~:*~&  ~w note~:P~]"
               *compiler-error-count*
               *compiler-warning-count*
-              *compiler-style-warning-count*))
+              *compiler-style-warning-count*
+              *compiler-note-count*))
     (terpri *error-output*)
     (force-output *error-output*)))

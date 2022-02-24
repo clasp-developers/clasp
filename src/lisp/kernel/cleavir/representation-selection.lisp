@@ -69,6 +69,12 @@
         (reduce #'append irts))))
 (defmethod %definition-rtype ((inst cc-vaslist:values-list) (datum bir:datum))
   :vaslist)
+(defmethod %definition-rtype ((inst cc-vaslist:nthcdr) (datum bir:datum))
+  '(:vaslist))
+(defmethod %definition-rtype ((inst cc-vaslist:last) (datum bir:datum))
+  '(:vaslist))
+(defmethod %definition-rtype ((inst cc-vaslist:butlast) (datum bir:datum))
+  '(:vaslist))
 (defmethod %definition-rtype ((inst cc-bir:mv-foreign-call) (datum bir:datum))
   :multiple-values)
 (defmethod %definition-rtype ((inst bir:thei) (datum bir:datum))
@@ -169,6 +175,22 @@
   '(:vaslist))
 (defmethod %use-rtype ((inst cc-vaslist:nendp) (datum bir:datum))
   '(:vaslist))
+(defmethod %use-rtype ((inst cc-vaslist:nth) (datum bir:datum))
+  (if (eq datum (second (bir:inputs inst)))
+      '(:vaslist)
+      '(:object)))
+(defmethod %use-rtype ((inst cc-vaslist:nthcdr) (datum bir:datum))
+  (if (eq datum (second (bir:inputs inst)))
+      '(:vaslist)
+      '(:object)))
+(defmethod %use-rtype ((inst cc-vaslist:last) (datum bir:datum))
+  (if (eq datum (second (bir:inputs inst)))
+      '(:vaslist)
+      '(:object)))
+(defmethod %use-rtype ((inst cc-vaslist:butlast) (datum bir:datum))
+  (if (eq datum (second (bir:inputs inst)))
+      '(:vaslist)
+      '(:object)))
 (defmethod %use-rtype ((inst bir:primop) (datum bir:datum))
   (list (nth (position datum (bir:inputs inst))
              (rest (clasp-cleavir:primop-rtype-info (bir:info inst))))))
@@ -206,19 +228,21 @@
 (defmethod use-rtype ((datum bir:argument)) (basic-use-rtype datum))
 
 (defmethod use-rtype ((datum bir:variable))
-  ;; Take the minimum of all uses, except we only get () if every reader has
-  ;; it, and otherwise always return a single value type.
+  ;; Take the maximum of all uses. This is to minimize boxing: if we have
+  ;; one use :double-float and one use :object, if our variable is :double-float
+  ;; the latter use will cons every time.
+  ;; We always return a single value type, unless the variable is unused.
   (when (member datum *chasing-rtypes-of* :test #'eq)
-    (return-from use-rtype ()))
+    (return-from use-rtype '()))
   (let ((*chasing-rtypes-of* (cons datum *chasing-rtypes-of*))
         (rt nil))
     (cleavir-set:doset (reader (bir:readers datum) rt)
       (let* ((next-rt (use-rtype (bir:output reader)))
              (real-next-rt
-               (cond ((null next-rt) (if (null rt) nil '(:object)))
+               (cond ((null next-rt) nil)
                      ((member next-rt '(:vaslist :multiple-values)) '(:object))
                      (t (list (first next-rt))))))
-        (setf rt (if (null rt) real-next-rt (min-rtype real-next-rt rt)))))))
+        (setf rt (max-rtype real-next-rt rt))))))
 
 (defmethod use-rtype ((datum cc-bmir:datum)) (cc-bmir:rtype datum))
 
@@ -236,7 +260,7 @@
 (defmethod max-vrtype (vrt1 vrt2)
   (if (eql vrt1 vrt2)
       vrt1
-      (error "BUG: ~a not defined on ~a ~a" 'max-vrtype vrt1 vrt2)))
+      :object))
 (defmethod max-vrtype ((vrt1 (eql :object)) vrt2)
   (declare (ignore vrt2))
   vrt1)
@@ -260,6 +284,23 @@
              rt2))
         (t (error "Bad rtype: ~a" rt1))))
 
+;;; ...and least.
+(defun max-rtype (rt1 rt2)
+  (cond ((listp rt1)
+         (cond ((listp rt2)
+                ;; Lengthen
+                (let ((longer (if (< (length rt1) (length rt2)) rt2 rt1)))
+                  (map-into (copy-list longer) #'max-vrtype rt1 rt2)))
+               (t
+                (assert (member rt2 '(:vaslist :multiple-values)))
+                rt2)))
+        ((eq rt1 :multiple-values) rt1)
+        ((eq rt1 :vaslist)
+         (if (eq rt2 :multiple-values)
+             rt2
+             rt1))
+        (t (error "Bad rtype: ~a" rt1))))
+
 (defun phi-rtype (datum)
   ;; PHIs are trickier. If the destination is single-value, the phi can be too.
   ;; If not, then the phi could still be single-value, but only if EVERY
@@ -270,7 +311,7 @@
         dest)))
 
 (defun variable-rtype (datum)
-  ;; Just take the minimum of the writers and readers.
+  ;; Just take the minimum of the writers and readers. FIXME: Think harder.
   (min-rtype (definition-rtype datum) (use-rtype datum)))
 
 (defgeneric maybe-assign-rtype (datum))
@@ -526,7 +567,9 @@
   (let* ((input (bir:input inst)) (output (bir:output inst))
          (inputrt (cc-bmir:rtype input)) (outputrt (cc-bmir:rtype output)))
     (assert (listp outputrt))
-    (when (listp inputrt)
+    (when (and (listp inputrt)
+               ;; no need to cast if unused
+               (not (null outputrt)))
       ;; Inputs may not already be objects, so possibly cast.
       (assert (= (length inputrt) (length outputrt)))
       (maybe-cast-before inst input outputrt))))
@@ -568,6 +611,27 @@
 (defmethod insert-casts ((instruction cc-vaslist:nendp))
   (cast-inputs instruction '(:vaslist))
   (object-output instruction))
+(defmethod insert-casts ((instruction cc-vaslist:nth))
+  (let ((inputs (bir:inputs instruction)))
+    (maybe-cast-before instruction (first inputs) '(:object))
+    (maybe-cast-before instruction (second inputs) '(:vaslist)))
+  (object-output instruction))
+(defmethod insert-casts ((instruction cc-vaslist:nthcdr))
+  (let ((inputs (bir:inputs instruction)))
+    (maybe-cast-before instruction (first inputs) '(:object))
+    (maybe-cast-before instruction (second inputs) '(:vaslist)))
+  (cast-output instruction '(:vaslist)))
+(defmethod insert-casts ((instruction cc-vaslist:last))
+  (let ((inputs (bir:inputs instruction)))
+    (maybe-cast-before instruction (first inputs) '(:object))
+    (maybe-cast-before instruction (second inputs) '(:vaslist)))
+  (cast-output instruction '(:vaslist)))
+(defmethod insert-casts ((instruction cc-vaslist:butlast))
+  (let ((inputs (bir:inputs instruction)))
+    (maybe-cast-before instruction (first inputs) '(:object))
+    (maybe-cast-before instruction (second inputs) '(:vaslist)))
+  (cast-output instruction '(:vaslist)))
+
 (defmethod insert-casts ((instruction bir:returni))
   (cast-inputs instruction :multiple-values))
 (defmethod insert-casts ((inst bir:primop))

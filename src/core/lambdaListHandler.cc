@@ -98,7 +98,15 @@ List_sp maybe_canonicalize_optimize_declaration( List_sp decl, List_sp canon )
 {
   for ( auto cur : (List_sp)(oCdr(decl)) ) {
     T_sp d = oCar(cur);
-    if ( cl__symbolp(d) ) {
+    if (cl__symbolp(d)
+        // We only canonicalize standard qualities in this way. With Cleavir
+        // we define additional qualities which we want to leave to it.
+        // See src/lisp/kernel/cleavir/policy.lisp
+        && ((d == cl::_sym_speed)
+            || (d == cl::_sym_space)
+            || (d == cl::_sym_safety)
+            || (d == cl::_sym_debug)
+            || (d == cl::_sym_compilation_speed))) {
       canon = Cons_O::create(Cons_O::createList(cl::_sym_optimize,Cons_O::createList(d,core::clasp_make_fixnum(3))),canon);
     } else {
       canon = Cons_O::create(Cons_O::createList(cl::_sym_optimize,d),canon);

@@ -115,10 +115,11 @@
 	   (direct-slots (loop for slotd in slots
                                collect (apply #'make-simple-slotd direct-slot-class slotd)))
            (effective-slot-class (find-class 'standard-effective-slot-definition nil))
-	   (effective-slots (loop for i from 0
+	   (effective-slots (loop for i fixnum from 0
                                   for slotd in slots
                                   for name = (getf slotd :name)
-                                  for declared-location = (getf slotd :location)
+                                  for declared-location fixnum
+                                    = (getf slotd :location)
                                   for s = (apply #'make-simple-slotd effective-slot-class slotd)
                                   do (setf (slot-definition-location s) i
                                            (gethash name location-table) i)

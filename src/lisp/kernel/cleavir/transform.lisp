@@ -59,6 +59,44 @@
         (maybe-transform call trans)
         nil)))
 
+(define-condition failed-transform (ext:compiler-note)
+  ((%call :initarg :call :reader failed-transform-call)
+   (%opname :initarg :opname :reader failed-transform-opname)
+   ;; A list of transform "criteria". For now, a criterion is just the list
+   ;; of types a transform can require. In the future there may be other
+   ;; criteria, such as being a constant.
+   (%available :initarg :available :reader failed-transform-available))
+  (:report (lambda (condition stream)
+             (format stream "Unable to optimize call to ~s:
+The compiler only knows the arguments to be of types ~a.
+Optimizations are available for any of:
+~{~s~%~}"
+                     (failed-transform-opname condition)
+                     (loop with call = (failed-transform-call condition)
+                           with sys = *clasp-system*
+                           for arg in (rest (bir:inputs call))
+                           for vtype = (asserted-ctype arg)
+                           for svtype = (ctype:primary vtype sys)
+                           collect svtype)
+                     (mapcar #'cdr (failed-transform-available condition))))))
+
+;;; Note a missed optimization to the programmer.
+;;; called in translate, not here, since transform-call may be called
+;;; multiple times during meta-evaluation.
+(defun maybe-note-failed-transforms (call)
+  (when (cleavir-policy:policy-value (bir:policy call)
+                                     'note-untransformed-calls)
+    (let ((identities (cleavir-attributes:identities (bir:attributes call))))
+      (dolist (id identities)
+        (let ((trans (gethash id *bir-transformers*)))
+          (when trans
+            (cmp:note 'failed-transform
+                      :call call :opname id :available trans
+                      :origin (loop for origin = (bir:origin call)
+                                      then (cst:source origin)
+                                    while (typep origin 'cst:cst)
+                                    finally (return origin)))))))))
+
 (defmacro %deftransformation (name)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (setf (gethash ',name *bir-transformers*) nil)
@@ -199,6 +237,9 @@
     ;; Now properly insert it.
     (change-class call 'bir:local-call
                   :inputs (list* bir (rest (bir:inputs call))))
+    ;; KLUDGEish: maybe-interpolate misbehaves when the flow order is invalid.
+    ;; See #1260.
+    (bir:compute-iblock-flow-order (bir:function call))
     (bir-transformations:maybe-interpolate bir)))
 
 (defmethod cleavir-bir-transformations:generate-type-check-function
@@ -374,41 +415,58 @@
   '(truly-the double-float (core::primop core::fixnum-to-double num)))
 
 (defun derive-float (args rest min)
-  (declare (ignore min))
   (let* ((sys *clasp-system*)
          ;; We only really care about the first two arguments, since anything
          ;; more will be an error. So we just pop the rest type on the end.
-         (args (if (ctype:bottom-p rest sys)
-                   args
-                   (append args (list rest)))))
-    (cleavir-ctype:single-value
-     (if (rest args)
-         (let ((proto (second args))
-               #+(or) ; nonexistent
-               (short (ctype:range 'short-float '* '* *clasp-system*))
-               (single (ctype:range 'single-float '* '* *clasp-system*))
-               (double (ctype:range 'double-float '* '* *clasp-system*))
-               #+(or) ; nonexistent
-               (long (ctype:range 'long-float '* '* *clasp-system*)))
-           (cond #+(or)((arg-subtypep proto short) short)
-                 ((ctype:subtypep proto single sys) single)
-                 ((ctype:subtypep proto double sys) double)
-                 #+(or)((arg-subtypep proto long) long)
-                 (t (env:parse-type-specifier 'float nil *clasp-system*))))
-         ;; FIXME: More sophisticated type operations would make this more
-         ;; precise. For example, it would be good to derive that if the
-         ;; argument is an (or single-float rational), the result is a
-         ;; single float.
-         (let ((arg (first args))
-               (float (env:parse-type-specifier 'float nil *clasp-system*))
-               (rat (env:parse-type-specifier 'rational nil *clasp-system*)))
-           (cond ((ctype:subtypep arg float sys) arg)
-                 ((ctype:subtypep arg rat sys)
-                  (ctype:range 'single-float '* '* sys))
-                 (t float))))
+         (args (append args (list rest)))
+         (float (env:parse-type-specifier 'float nil sys))
+         (rat (env:parse-type-specifier 'rational nil sys))
+         #+(or) ; nonexistent
+         (short (ctype:range 'short-float '* '* sys))
+         (single (ctype:range 'single-float '* '* sys))
+         (double (ctype:range 'double-float '* '* sys))
+         #+(or) ; nonexistent
+         (long (ctype:range 'long-float '* '* *clasp-system*)))
+    ;; FIXME: More sophisticated type operations would make this more
+    ;; precise. For example, it would be good to derive that if the
+    ;; argument is an (or single-float rational), the result is a
+    ;; single float.
+    (ctype:single-value
+     (cond ((> min 1)
+            (let ((proto (second args)))
+              (cond #+(or)((arg-subtypep proto short) short)
+                    ((ctype:subtypep proto single sys) single)
+                    ((ctype:subtypep proto double sys) double)
+                    #+(or)((arg-subtypep proto long) long)
+                    (t float))))
+           ((and (= min 1)
+                 (ctype:bottom-p (second args) sys))
+            (let ((arg (first args)))
+              (cond ((ctype:subtypep arg float sys) arg)
+                    ((ctype:subtypep arg rat sys) single)
+                    (t float))))
+           (t float))
      sys)))
 
 (define-deriver float derive-float)
+
+(defun derive-random (args rest min)
+  (declare (ignore min))
+  (let* ((sys *clasp-system*)
+         (max (or (first args) rest))
+         (fixnum (ctype:range 'integer
+                              most-negative-fixnum most-positive-fixnum
+                              sys))
+         (single (ctype:range 'single-float '* '* sys))
+         (double (ctype:range 'double-float '* '* sys)))
+    (ctype:single-value
+     (cond ((subtypep max fixnum)
+            (ctype:range 'integer 0 most-positive-fixnum sys))
+           ((subtypep max single) (ctype:range 'single-float 0f0 '* sys))
+           ((subtypep max double) (ctype:range 'double-float 0d0 '* sys))
+           (t (env:parse-type-specifier '(real 0) nil sys)))
+     sys)))
+(define-deriver random derive-random)
 
 ;;;
 
@@ -465,18 +523,6 @@
 (deftransform length ((arr vector))
   '(truly-the valid-array-dimension (core::primop core::vector-length arr)))
 
-#+(or)
-(defun derive-aref-old (call)
-  (let* ((aarg (first (rest (bir:inputs call))))
-         (ct (ctype:primary (bir:ctype aarg) *clasp-system*)))
-    (ctype:single-value
-     (if (and (consp ct)
-              (member (first ct) '(array simple-array vector))
-              (consp (cdr ct)))
-         (second ct)
-         (ctype:top *clasp-system*))
-     *clasp-system*)))
-
 (defun derive-aref (args rest min)
   (declare (ignore min))
   (let ((sys *clasp-system*)
@@ -489,17 +535,41 @@
          (ctype:top sys))
      sys)))
 
-#+(or)
-(defun derive-aref (call args rest min)
-  (let ((old (derive-aref-old call))
-        (new (derive-aref-new args rest min)))
-    (unless (equal old new)
-      (error "!!! AREF DERIVATION MISMATCH~%old ~a~%new ~a~%on ~a ~a ~a ~a~%"
-             old new call args rest min))
-    old))
-
 (define-deriver aref derive-aref)
 (define-deriver row-major-aref derive-aref)
+
+(macrolet ((def (fname etype)
+             (let ((derivename
+                     (make-symbol (concatenate 'string
+                                               (symbol-name '#:derive-)
+                                               (symbol-name fname)))))
+               `(progn
+                  (defun ,derivename (args rest min)
+                    (declare (ignore args rest min))
+                    (let ((sys *clasp-system*))
+                      (ctype:single-value
+                       (ctype:array ',etype '(*) 'simple-array sys)
+                       sys)))
+                  (define-deriver ,fname ,derivename)))))
+  (def core:make-simple-vector-t t)
+  (def core:make-simple-vector-bit bit)
+  (def core:make-simple-vector-base-char base-char)
+  (def core:make-simple-vector-character character)
+  (def core:make-simple-vector-single-float single-float)
+  (def core:make-simple-vector-double-float double-float)
+  (def core:make-simple-vector-int2 ext:integer2)
+  (def core:make-simple-vector-byte2 ext:byte2)
+  (def core:make-simple-vector-int4 ext:integer4)
+  (def core:make-simple-vector-byte4 ext:byte4)
+  (def core:make-simple-vector-int8 ext:integer8)
+  (def core:make-simple-vector-byte8 ext:byte8)
+  (def core:make-simple-vector-int16 ext:integer16)
+  (def core:make-simple-vector-byte16 ext:byte16)
+  (def core:make-simple-vector-int32 ext:integer32)
+  (def core:make-simple-vector-byte32 ext:byte32)
+  (def core:make-simple-vector-int64 ext:integer64)
+  (def core:make-simple-vector-byte64 ext:byte64)
+  (def core:make-simple-vector-fixnum fixnum))
 
 #+(or) ; string= is actually slower atm due to keyword etc processing
 (deftransform equal ((x string) (y string)) '(string= x y))
@@ -587,6 +657,39 @@
 
 ;;;
 
+(defun derive-cons (args rest min)
+  (declare (ignore args rest min))
+  ;; We can't forward the argument types into the cons type, since we don't
+  ;; know if this cons will be mutated. So we just return the CONS type.
+  ;; This is useful so that the compiler understands that CONS definitely
+  ;; returns a CONS and it does not need to insert any runtime checks.
+  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value (ctype:cons top top sys) sys)))
+(define-deriver cons derive-cons)
+
+(defun derive-list (args rest min)
+  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value
+     (cond ((> min 0) (ctype:cons top top sys))
+           ((and (= min 0) (null args) (ctype:bottom-p rest sys))
+            (ctype:member sys nil))
+           (t (ctype:disjoin sys (ctype:member sys nil)
+                             (ctype:cons top top sys))))
+     sys)))
+(define-deriver list derive-list)
+
+(defun derive-list* (args rest min)
+  (let* ((sys clasp-cleavir:*clasp-system*) (top (ctype:top sys)))
+    (ctype:single-value
+     (cond ((> min 1) (ctype:cons top top sys))
+           ((and (= min 1) (null (rest args)) (ctype:bottom-p rest sys))
+            (first args))
+           (t
+            (ctype:disjoin sys (if args (first args) rest)
+                           (ctype:cons top top sys))))
+     sys)))
+(define-deriver list* derive-list*)
+
 (deftransform car ((cons cons)) '(cleavir-primop:car cons))
 (deftransform cdr ((cons cons)) '(cleavir-primop:cdr cons))
 
@@ -606,3 +709,14 @@
 
 (deftransform reverse ((x list)) '(core:list-reverse x))
 (deftransform nreverse ((x list)) '(core:list-nreverse x))
+
+;;;
+
+;;; WRITE et al. just return their first argument.
+(defun derive-write (args rest min)
+  (declare (ignore min))
+  (ctype:single-value (or (first args) rest) *clasp-system*))
+(define-deriver write derive-write)
+(define-deriver prin1 derive-write)
+(define-deriver print derive-write)
+(define-deriver princ derive-write)

@@ -105,9 +105,9 @@
     cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar cddddr ; *
     listp
     first second third fourth fifth sixth seventh eighth ninth tenth ; *
-    nth ; *
+    nth nthcdr ; *
     endp null
-    last tailp get-properties getf ; *
+    butlast last tailp get-properties getf ; *
     ;; 15
     adjustable-array-p array-element-type
     aref array-dimension array-dimensions array-has-fill-pointer-p ; *

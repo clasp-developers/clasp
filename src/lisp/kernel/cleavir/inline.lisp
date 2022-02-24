@@ -1235,25 +1235,44 @@
 (declaim (ftype (function (t t) cons) cons))
 
 (declaim (ftype (function (list) t) car cdr))
-(progn
-  (debug-inline "car")
-  (declaim (inline cl:car))
-  (defun cl:car (x)
-    (if (cleavir-primop:typeq x cons)
-        (cleavir-primop:car x)
-        (if (cleavir-primop:the (not cons) x)
-            (error 'type-error :datum x :expected-type 'list)
-            nil))))
-
-(progn
-  (debug-inline "cdr")
-  (declaim (inline cl:cdr))
-  (defun cl:cdr (x)
-    (if (cleavir-primop:typeq x cons) ;; (consp x)
-        (cleavir-primop:cdr x)
-        (if (cleavir-primop:the (not cons) x)
-            (error 'type-error :datum x :expected-type 'list)
-            nil))))
+;;; We define CAR and CDR to be (if (ensure-the list x) (primop:car x) x).
+;;; Using an ensure-the lets the compiler understand the type through relatively
+;;; simple data flow analysis. For example, it can delete the check if it can
+;;; prove X is a list. Tests, like typep/typeq, are not as understandable to it
+;;; because leveraging them means understanding control flow as well.
+;;; This does mean that if the test can't be eliminated, there is a bit of a
+;;; redundant test, but checking if something is NIL is pretty cheap anyway.
+;;; Returning a constant NIL in the else branch is important for similar
+;;; reasons - with (if ,s ... ,s), the compiler wouldn't be able to determine
+;;; that ,s is NIL without an understanding of control flow.
+;;; FIXME: These should be done as transforms.
+(defun minimal-safety-p (env)
+  (cleavir-policy:policy-value
+   (env:policy (env:optimize-info env))
+   'insert-minimum-type-checks))
+(defun list-check-form (form env)
+  (if (minimal-safety-p env)
+      `(cleavir-primop:ensure-the (values list &rest t)
+                                  (lambda (&optional value &rest ign)
+                                    (declare (ignore ign))
+                                    (unless (typep value 'list)
+                                      (error 'type-error :datum value
+                                                         :expected-type 'list))
+                                    value)
+                                  ,form)
+      `(cleavir-primop:truly-the (values list &rest t) ,form)))
+(define-cleavir-compiler-macro car (&whole form x &environment env)
+  (let ((s (gensym "X")))
+    `(let ((,s ,(list-check-form x env)))
+       (if ,s
+           (cleavir-primop:car ,s)
+           nil))))
+(define-cleavir-compiler-macro cdr (&whole form x &environment env)
+  (let ((s (gensym "X")))
+    `(let ((,s ,x))
+       (if ,(list-check-form s env)
+           (cleavir-primop:cdr ,s)
+           nil))))
 
 (defmacro defcr (name &rest ops)
   `(progn
@@ -1328,6 +1347,11 @@
           p)
         (error 'type-error :datum p :expected-type 'cons))))
 
+;;; This overrides the compiler macro defined in cmp/opt/opt-cons.lisp.
+;;; That compiler macro must work in bclasp, so it doesn't have access to
+;;; the same type-checking cooperation with the compiler that we do here.
+(define-cleavir-compiler-macro endp (&whole form list &environment env)
+  `(if ,(list-check-form list env) nil t))
 
 (debug-inline "primop")
 

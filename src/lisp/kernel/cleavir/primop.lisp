@@ -66,18 +66,24 @@
 ;;;              = (defvprimop foo ((:object) :object :object))
 ;;; The BODY is used as a translate-primop method, where the call instruction
 ;;; is available bound to INSTPARAM.
+;;; The NAME can be a symbol or a list (SYMBOL ...) where ... are options,
+;;; sort of like defstruct. So far the only option is :flags.
 (defmacro defvprimop (name param-info (instparam) &body body)
-  (let ((param-info (if (integerp param-info)
+  (let ((name (if (consp name) (first name) name))
+        (options (if (consp name) (rest name) nil))
+        (param-info (if (integerp param-info)
                         (list* '(:object) (make-list param-info
                                                      :initial-element :object))
                         param-info))
         (nsym (gensym "NAME")))
-    `(progn
-       (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) :value)
-       (setf (gethash ',name *primop-rtypes*) '(,@param-info))
-       (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
-         (out (progn ,@body) (first (bir:outputs ,instparam))))
-       ',name)))
+    (destructuring-bind (&key flags) options
+      `(progn
+         (cleavir-primop-info:defprimop ,name ,(length (rest param-info))
+           :value ,@flags)
+         (setf (gethash ',name *primop-rtypes*) '(,@param-info))
+         (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
+           (out (progn ,@body) (first (bir:outputs ,instparam))))
+         ',name))))
 
 ;;; Like defvprimop for the case where the body is just an intrinsic.
 (defmacro defvprimop-intrinsic (name param-info intrinsic)
@@ -90,38 +96,46 @@
 ;;; Define a primop called for effect.
 ;;; Here param-info is parameters only.
 (defmacro defeprimop (name param-info (instparam) &body body)
-  (let ((param-info
+  (let ((name (if (consp name) (first name) name))
+        (options (if (consp name) (rest name) nil))
+        (param-info
           (list* () (if (integerp param-info)
                         (make-list param-info :initial-element :object)
                         param-info)))
         (nsym (gensym "NAME")))
-    `(progn
-       (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) :effect)
-       (setf (gethash ',name *primop-rtypes*) '(,@param-info))
-       (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
-         ,@body)
-       ',name)))
+    (destructuring-bind (&key flags) options
+      `(progn
+         (cleavir-primop-info:defprimop ,name ,(length (rest param-info))
+           :effect ,@flags)
+         (setf (gethash ',name *primop-rtypes*) '(,@param-info))
+         (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
+           ,@body)
+         ',name))))
 
 ;;; Define a primop used as a conditional test.
 ;;; Here param-info is parameters only.
 ;;; The body is used for translate-conditional-primop, which is expected to
 ;;; return an LLVM i1 Value.
 (defmacro deftprimop (name param-info (instparam nextparam) &body body)
-  (let ((param-info
+  (let ((name (if (consp name) (first name) name))
+        (options (if (consp name) (rest name) nil))
+        (param-info
           (list* '(:object)
                  (if (integerp param-info)
                      (make-list param-info :initial-element :object)
                      param-info)))
         (nsym (gensym "NAME")))
-    `(progn
-       (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) 2)
-       (setf (gethash ',name *primop-rtypes*) '(,@param-info))
-       (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
-         (declare (ignore ,instparam)))
-       (defmethod translate-conditional-primop ((,nsym (eql ',name))
-                                                ,instparam ,nextparam)
-         ,@body)
-       ',name)))
+    (destructuring-bind (&key flags) options
+      `(progn
+         (cleavir-primop-info:defprimop ,name ,(length (rest param-info)) 2
+           ,@flags)
+         (setf (gethash ',name *primop-rtypes*) '(,@param-info))
+         (defmethod translate-primop ((,nsym (eql ',name)) ,instparam)
+           (declare (ignore ,instparam)))
+         (defmethod translate-conditional-primop ((,nsym (eql ',name))
+                                                  ,instparam ,nextparam)
+           ,@body)
+         ',name))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -162,9 +176,13 @@
 
 (macrolet ((def-float-unop (sfname sfintrinsic dfname dfintrinsic)
              `(progn
-                (defvprimop-intrinsic ,sfname ((:single-float) :single-float)
+                ;; NOTE: marking these flushable might change fp exception
+                ;; behavior - do we care? not sure.
+                (defvprimop-intrinsic (,sfname :flags (:flushable))
+                    ((:single-float) :single-float)
                   ,sfintrinsic)
-                (defvprimop-intrinsic ,dfname ((:double-float) :double-float)
+                (defvprimop-intrinsic (,dfname :flags (:flushable))
+                    ((:double-float) :double-float)
                   ,dfintrinsic))))
   (def-float-unop core::sf-abs   "llvm.fabs.f32" core::df-abs   "llvm.fabs.f64")
   (def-float-unop core::sf-sqrt  "llvm.sqrt.f32" core::df-sqrt  "llvm.sqrt.f64")
@@ -184,7 +202,8 @@
 
 (macrolet ((def-float-binop-op (sfname dfname ircop)
              `(progn
-                (defvprimop ,sfname ((:single-float) :single-float :single-float)
+                (defvprimop (,sfname :flags (:flushable))
+                    ((:single-float) :single-float :single-float)
                   (inst)
                   (assert (= 2 (length (bir:inputs inst))))
                   (let ((i1 (in (first (bir:inputs inst))))
@@ -194,7 +213,8 @@
                     (assert (llvm-sys:type-equal (llvm-sys:get-type i2)
                                                  cmp:%float%))
                     (,ircop i1 i2)))
-                (defvprimop ,dfname ((:double-float) :double-float :double-float)
+                (defvprimop (,dfname :flags (:flushable))
+                    ((:double-float) :double-float :double-float)
                   (inst)
                   (assert (= 2 (length (bir:inputs inst))))
                   (let ((i1 (in (first (bir:inputs inst))))
@@ -218,8 +238,8 @@
   (def-float-binop-op core::two-arg-sf-/ core::two-arg-df-/ %fdiv)
   (def-float-binop-i core::sf-expt "llvm.pow.f32" core::df-expt "llvm.pow.f64"))
 
-(defvprimop core::sf-ftruncate ((:single-float :single-float)
-                                :single-float :single-float)
+(defvprimop (core::sf-ftruncate :flags (:flushable))
+    ((:single-float :single-float) :single-float :single-float)
   (inst)
   (assert (= 2 (length (bir:inputs inst))))
   (let ((i1 (in (first (bir:inputs inst))))
@@ -229,8 +249,8 @@
     ;; I think this is the best instruction sequence, but I am not sure.
     (list (%intrinsic-call "llvm.trunc.f32" (list (%fdiv i1 i2)))
           (%frem i1 i2))))
-(defvprimop core::df-ftruncate ((:double-float :double-float)
-                                :double-float :double-float)
+(defvprimop (core::df-ftruncate :flags (:flushable))
+    ((:double-float :double-float) :double-float :double-float)
   (inst)
   (assert (= 2 (length (bir:inputs inst))))
   (let ((i1 (in (first (bir:inputs inst))))
@@ -240,44 +260,52 @@
     (list (%intrinsic-call "llvm.trunc.f64" (list (%fdiv i1 i2)))
           (%frem i1 i2))))
 
-(defvprimop core::sf-negate ((:single-float) :single-float) (inst)
+(defvprimop (core::sf-negate :flags (:flushable))
+    ((:single-float) :single-float) (inst)
   (assert (= 1 (length (bir:inputs inst))))
   (let ((arg (in (first (bir:inputs inst)))))
     (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%float%))
     (%fneg arg)))
-(defvprimop core::df-negate ((:double-float) :double-float) (inst)
+(defvprimop (core::df-negate :flags (:flushable))
+    ((:double-float) :double-float) (inst)
   (assert (= 1 (length (bir:inputs inst))))
   (let ((arg (in (first (bir:inputs inst)))))
     (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%double%))
     (%fneg arg)))
 
-(defvprimop core::single-to-double ((:double-float) :single-float) (inst)
+(defvprimop (core::single-to-double :flags (:flushable))
+    ((:double-float) :single-float) (inst)
   (assert (= 1 (length (bir:inputs inst))))
   (let ((arg (in (first (bir:inputs inst)))))
     (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%float%))
     (%fpext arg cmp:%double%)))
-(defvprimop core::double-to-single ((:single-float) :double-float) (inst)
+(defvprimop (core::double-to-single :flags (:flushable))
+    ((:single-float) :double-float) (inst)
   (assert (= 1 (length (bir:inputs inst))))
   (let ((arg (in (first (bir:inputs inst)))))
     (assert (llvm-sys:type-equal (llvm-sys:get-type arg) cmp:%double%))
     (%fptrunc arg cmp:%float%)))
 
-(defvprimop core::fixnum-to-single ((:single-float) :fixnum) (inst)
+(defvprimop (core::fixnum-to-single :flags (:flushable))
+    ((:single-float) :fixnum) (inst)
   (assert (= 1 (length (bir:inputs inst))))
   (let* ((arg (in (first (bir:inputs inst))))
          (fix (cmp:irc-ashr arg cmp:+fixnum-shift+ :exact t)))
     (%sitofp fix cmp:%float%
              (datum-name-as-string (first (bir:outputs inst))))))
-(defvprimop core::fixnum-to-double ((:double-float) :fixnum) (inst)
+(defvprimop (core::fixnum-to-double :flags (:flushable))
+    ((:double-float) :fixnum) (inst)
   (assert (= 1 (length (bir:inputs inst))))
   (let* ((arg (in (first (bir:inputs inst))))
          (fix (cmp:irc-ashr arg cmp:+fixnum-shift+ :exact t)))
     (%sitofp fix cmp:%double%
              (datum-name-as-string (first (bir:outputs inst))))))
 
-(defvprimop-intrinsic core::sf-vref ((:single-float) :object :object)
+(defvprimop-intrinsic (core::sf-vref :flags (:flushable))
+    ((:single-float) :object :object)
   "cc_simpleFloatVectorAref")
-(defvprimop-intrinsic core::df-vref ((:double-float) :object :object)
+(defvprimop-intrinsic (core::df-vref :flags (:flushable))
+    ((:double-float) :object :object)
   "cc_simpleDoubleVectorAref")
 
 ;;; These return the new value because it's a bit involved to rewrite BIR to use
@@ -295,7 +323,7 @@
 
 ;;;
 
-(defvprimop core::fixnum-lognot ((:fixnum) :fixnum) (inst)
+(defvprimop (core::fixnum-lognot :flags (:flushable)) ((:fixnum) :fixnum) (inst)
   (let* ((arg (in (first (bir:inputs inst))))
          ;; LLVM does not have a dedicated lognot, and instead
          ;; represents it as xor whatever, -1.
@@ -309,7 +337,8 @@
 ;;; NOTE: 0 & 0, 0 | 0, and 0 ^ 0 are all zero, so these operations all
 ;;; preserve the zero fixnum tag without any issue.
 (macrolet ((deflog2 (name op)
-             `(defvprimop ,name ((:fixnum) :fixnum :fixnum) (inst)
+             `(defvprimop (,name :flags (:flushable))
+                  ((:fixnum) :fixnum :fixnum) (inst)
                 (let ((arg1 (in (first (bir:inputs inst))))
                       (arg2 (in (second (bir:inputs inst)))))
                   (,op arg1 arg2)))))
@@ -318,18 +347,21 @@
   (deflog2 core::fixnum-logxor cmp:irc-xor))
 
 ;; Wrapping addition of tagged fixnums.
-(defvprimop core::fixnum-add ((:fixnum) :fixnum :fixnum) (inst)
+(defvprimop (core::fixnum-add :flags (:flushable))
+    ((:fixnum) :fixnum :fixnum) (inst)
   (let ((arg1 (in (first (bir:inputs inst))))
         (arg2 (in (second (bir:inputs inst)))))
     (cmp:irc-add arg1 arg2)))
-(defvprimop core::fixnum-sub ((:fixnum) :fixnum :fixnum) (inst)
+(defvprimop (core::fixnum-sub :flags (:flushable))
+    ((:fixnum) :fixnum :fixnum) (inst)
   (let ((arg1 (in (first (bir:inputs inst))))
         (arg2 (in (second (bir:inputs inst)))))
     (cmp:irc-sub arg1 arg2)))
 
 ;; For division we don't need to untag the inputs but do need to
 ;; shift the quotient.
-(defvprimop core::fixnum-truncate ((:fixnum :fixnum) :fixnum :fixnum) (inst)
+(defvprimop (core::fixnum-truncate :flags (:flushable))
+    ((:fixnum :fixnum) :fixnum :fixnum) (inst)
   (let* ((arg1 (in (first (bir:inputs inst))))
          (arg2 (in (second (bir:inputs inst))))
          (quo (cmp:irc-sdiv arg1 arg2))
@@ -358,7 +390,8 @@
   (def-fixnum-compare core::two-arg-fixnum->  cmp:irc-icmp-sgt)
   (def-fixnum-compare core::two-arg-fixnum->= cmp:irc-icmp-sge))
 
-(defvprimop core::fixnum-positive-logcount ((:fixnum) :fixnum) (inst)
+(defvprimop (core::fixnum-positive-logcount :flags (:flushable))
+    ((:fixnum) :fixnum) (inst)
   (let* ((arg (in (first (bir:inputs inst))))
          (label (datum-name-as-string (first (bir:outputs inst))))
          ;; NOTE we do not need to shift the argument: the tag is all zero
@@ -366,7 +399,8 @@
          (count (%intrinsic-call "llvm.ctpop.i64" (list arg))))
     (cmp:irc-shl count cmp:+fixnum-shift+ :label label :nsw t)))
 
-(defvprimop core::fixnum-ashr ((:fixnum) :fixnum :fixnum) (inst)
+(defvprimop (core::fixnum-ashr :flags (:flushable))
+    ((:fixnum) :fixnum :fixnum) (inst)
   (let* ((int (in (first (bir:inputs inst))))
          ;; NOTE: shift must be 0-63 inclusive or shifted is poison!
          (shift (in (second (bir:inputs inst))))

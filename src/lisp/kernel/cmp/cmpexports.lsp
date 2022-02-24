@@ -152,6 +152,7 @@
             compiler-error
             compiler-warn
             compiler-style-warn
+            note
             define-primitive
             warn-undefined-global-variable
             warn-undefined-type
@@ -257,6 +258,10 @@
             irc-vaslist-values
             irc-vaslist-nth
             irc-vaslist-nthcdr
+            irc-vaslist-last
+            irc-vaslist-butlast
+            irc-tag-vaslist
+            irc-unbox-vaslist
             irc-header-stamp
             irc-rack-stamp
             irc-wrapped-stamp
