@@ -161,7 +161,7 @@ class clasp_task(Task.Task):
             return type(self).__name__
 
     def exec_command(self, cmd, **kw):
-        maybe_dump_command(cmd, type(self).__name__)
+        # maybe_dump_command(cmd, type(self).__name__)
         kw['stdout'] = sys.stdout        # to redirect the stdout of the spawned executable to ours
         return super(clasp_task, self).exec_command(cmd, **kw)
 
