@@ -665,7 +665,7 @@ CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
 #elif defined(USE_BOEHM)
   if (stamp.fixnump()) {
     gctools::FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
-# if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+# if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
     GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_stamps, (void*)&findStamp);
 # else
     SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
@@ -695,7 +695,7 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
   if (obj.fixnump()) {
     void* base = GC_base((void*)obj.unsafe_fixnum());
     gctools::FindOwner findOwner(base);
-# if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+# if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
     GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_owners, (void*)&findOwner);
 # else
     SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
@@ -761,7 +761,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 #if defined(USE_MPS)
   mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
 #elif defined(USE_BOEHM)
-# if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+# if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_start);
 # endif
 #elif defined(USE_MMTK)
@@ -771,7 +771,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 #if defined(USE_MPS)
   mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
 #elif defined(USE_BOEHM)
-# if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+# if GC_VERSION_MAJOR >= 7 && GC_VERSION_MINOR >= 6
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_end);
 # endif
 #endif
