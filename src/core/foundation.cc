@@ -750,6 +750,8 @@ Instance_sp lisp_instance_class(T_sp o) {
     tc = go->_instanceClass();
   } else if (o.valistp()) {
     tc = core::Vaslist_dummy_O::staticClass();
+  } else if (o.unboundp()) {
+    SIMPLE_ERROR(BF("lisp_instance_class called on #<UNBOUND>"));
   } else {
     SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") % (void*)(o.raw_()));
   }
