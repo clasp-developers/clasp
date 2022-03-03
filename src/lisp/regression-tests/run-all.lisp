@@ -11,6 +11,7 @@
 ;;; Run tests
 (reset-clasp-tests)
 (load-if-compiled-correctly "sys:regression-tests;defcallback-native.lisp")
+(load-if-compiled-correctly "sys:regression-tests;lowlevel.lisp")
 (load-if-compiled-correctly "sys:regression-tests;fastgf.lisp")
 (load-if-compiled-correctly "sys:regression-tests;stamps.lisp")
 (load-if-compiled-correctly "sys:regression-tests;array0.lisp")
