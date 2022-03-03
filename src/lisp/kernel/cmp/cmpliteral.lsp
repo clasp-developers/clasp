@@ -516,7 +516,7 @@ rewrite the slot in the literal table to store a closure."
                           (rest create))))
           ;; General case
           (t (let* ((fn (compile-form create))
-                    (name (llvm-sys:get-name fn)))
+                    (name (cmp:xep-group-name fn)))
                (add-creator "ltvc_set_mlf_creator_funcall"
                             index object (entry-point-datum-for-xep-group fn) name))))
       (when initialize
@@ -534,7 +534,7 @@ rewrite the slot in the literal table to store a closure."
                             (rest initialize))))
             ;; General case.
             (let* ((fn (compile-form initialize))
-                   (name (llvm-sys:get-name fn)))
+                   (name (cmp:xep-group-name fn)))
               (add-side-effect-call "ltvc_mlf_init_funcall" (entry-point-datum-for-xep-group fn) name)))))))
 
 (defun object-similarity-table-and-creator (literal-machine object read-only-p)
