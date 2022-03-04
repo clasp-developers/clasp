@@ -2260,10 +2260,8 @@ Symbol_mv Lisp::intern(const string &name, T_sp optionalPackageDesignator) {
   Package_sp package;
   string symbolName;
   bool exported, packageDefined;
-  this->parseStringIntoPackageAndSymbolName(name, packageDefined, package, symbolName, exported);
-  if (!packageDefined) {
-    package = coerce::packageDesignator(optionalPackageDesignator);
-  }
+  symbolName = name;
+  package = coerce::packageDesignator(optionalPackageDesignator);
   ASSERTNOTNULL(package);
   ASSERT(package.notnilp());
   SimpleBaseString_sp sname = SimpleBaseString_O::make(symbolName);

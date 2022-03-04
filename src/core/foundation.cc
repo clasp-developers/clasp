@@ -399,7 +399,21 @@ void colon_split(const string& name, string& package_str, string& symbol_str)
   std::size_t found = name.find(":");
   if ( found != std::string::npos ) {
     package_str = name.substr(0,found);
+    transform( package_str.begin(), package_str.end(), package_str.begin(), ::toupper );
     symbol_str = name.substr(found+1,std::string::npos);
+    size_t first = 0;
+    for ( first=0; first<symbol_str.size(); first++ ) {
+      if (!isspace(symbol_str[first])) break;
+    }
+    size_t last;
+    for ( last=symbol_str.size()-1; last>=0; last-- ) {
+      if (!isspace(symbol_str[last])) break;
+    }
+    symbol_str = symbol_str.substr(first,last-first+1);
+    if (symbol_str[0] == '|' &&
+        symbol_str[symbol_str.size()-1] == '|') {
+      symbol_str = symbol_str.substr(0,symbol_str.size()-2);
+    }
     return;
   }
   SIMPLE_ERROR(BF("Could not convert %s into package:symbol_name") % name);
