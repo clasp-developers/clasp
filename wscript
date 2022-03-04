@@ -326,14 +326,14 @@ def update_dependencies(cfg):
 #"66cf5e2370eef4be659212269272a5e79a82fa1c")
 #                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
     fetch_git_revision("src/lisp/kernel/contrib/alexandria",
-                       "https://github.com/clasp-developers/alexandria.git",
-                       "e5c54bc30b0887c237bde2827036d17315f88737")
+                       "https://gitlab.common-lisp.net/alexandria/alexandria.git",
+                       label = "master", revision = "v1.4")
     # This duplicate copy is used by the scraper. It's possible we could
     # use the same Alexandria for both, but for the moment I'm keeping them
     # separated, in case Clasp and the scraper ever need different versions.
     fetch_git_revision("src/scraper/dependencies/alexandria",
-                       "https://github.com/clasp-developers/alexandria.git",
-                       "e5c54bc30b0887c237bde2827036d17315f88737")
+                       "https://gitlab.common-lisp.net/alexandria/alexandria.git",
+                       label = "master", revision = "v1.4")
     fetch_git_revision("src/scraper/dependencies/esrap",
                        "https://github.com/scymtym/esrap.git",
                        "c99c33a33ff58ca85e8ba73912eba45d458eaa72")

@@ -155,10 +155,10 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 
 // Define what ltvc_xxxx functions return - this must match what is
 //  in cmpintrinsics.lsp
-typedef void LtvcReturn;
+typedef void LtvcReturnVoid;
 #define LTVCRETURN /* Nothing return for void */
 
-LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, /*size_t functionIndex,*/ size_t entry_point_index)
+LtvcReturnVoid ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, /*size_t functionIndex,*/ size_t entry_point_index)
 {NO_UNWIND_BEGIN();
 //  printf("%s:%d:%s got functionIndex %lu change to entryPointIndex\n", __FILE__, __LINE__, __FUNCTION__, functionIndex );
   gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
@@ -171,7 +171,7 @@ LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index)
+LtvcReturnVoid ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index)
 {
   NO_UNWIND_BEGIN();
   core::T_sp val = nil<core::T_O>();
@@ -179,7 +179,7 @@ LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t inde
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, char tag, size_t index)
+LtvcReturnVoid ltvc_make_t(gctools::GCRootsInModule* holder, char tag, size_t index)
 {
   NO_UNWIND_BEGIN();
   core::T_sp val = _lisp->_true();
@@ -196,7 +196,7 @@ T_O* ltvc_lookup_transient(gctools::GCRootsInModule* holder, char tag, size_t in
 }
 
 
-LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* num, core::T_O* denom )
+LtvcReturnVoid ltvc_make_ratio(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* num, core::T_O* denom )
 {NO_UNWIND_BEGIN();
   Integer_sp inum((gc::Tagged)num);
   Integer_sp idenom((gc::Tagged)denom);
@@ -205,7 +205,7 @@ LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, char tag, size_t in
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* real, core::T_O* imag)
+LtvcReturnVoid ltvc_make_complex(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* real, core::T_O* imag)
 {NO_UNWIND_BEGIN();
   core::Real_sp nreal((gctools::Tagged)real);
   core::Real_sp nimag((gctools::Tagged)imag);
@@ -216,14 +216,14 @@ LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, char tag, size_t 
 }
 
 
-LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index)
+LtvcReturnVoid ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index)
 {NO_UNWIND_BEGIN();
   core::T_sp val = core::Cons_O::create(nil<core::T_O>(), nil<core::T_O>());
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_rplaca(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* car_t)
+LtvcReturnVoid ltvc_rplaca(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* car_t)
 {NO_UNWIND_BEGIN();
   core::T_sp tcons((gctools::Tagged)cons_t);
   core::Cons_sp cons = gc::As<core::Cons_sp>(tcons);
@@ -231,7 +231,7 @@ LtvcReturn ltvc_rplaca(gctools::GCRootsInModule* holder, core::T_O* cons_t, core
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_rplacd(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* cdr_t)
+LtvcReturnVoid ltvc_rplacd(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* cdr_t)
 {NO_UNWIND_BEGIN();
   core::T_sp tcons((gctools::Tagged)cons_t);
   core::Cons_sp cons = gc::As<core::Cons_sp>(tcons);
@@ -239,7 +239,7 @@ LtvcReturn ltvc_rplacd(gctools::GCRootsInModule* holder, core::T_O* cons_t, core
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t index, size_t len)
+LtvcReturnVoid ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t index, size_t len)
 {NO_UNWIND_BEGIN();
   // Makes a list of length LEN where all elements are NIL.
   // (ltvc_fill_list will be immediately after, so they could be undefined just as well.)
@@ -249,7 +249,7 @@ LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t ind
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_fill_list(gctools::GCRootsInModule* holder, core::T_O* list, size_t len, ...)
+LtvcReturnVoid ltvc_fill_list(gctools::GCRootsInModule* holder, core::T_O* list, size_t len, ...)
 {NO_UNWIND_BEGIN();
   core::T_sp cur((gctools::Tagged)list);
   va_list va;
@@ -262,7 +262,7 @@ LtvcReturn ltvc_fill_list(gctools::GCRootsInModule* holder, core::T_O* list, siz
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_array(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* telement_type, core::T_O* tdimensions )
+LtvcReturnVoid ltvc_make_array(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* telement_type, core::T_O* tdimensions )
 {NO_UNWIND_BEGIN();
   core::T_sp element_type(telement_type);
   core::List_sp dimensions((gctools::Tagged)tdimensions);
@@ -285,7 +285,7 @@ void ltvc_setf_row_major_aref(gctools::GCRootsInModule* holder, core::T_O* array
   NO_UNWIND_END();
 }
   
-LtvcReturn ltvc_make_hash_table(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* test_t )
+LtvcReturnVoid ltvc_make_hash_table(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* test_t )
 {NO_UNWIND_BEGIN();
   LTVCRETURN holder->setTaggedIndex(tag,index,core::HashTable_O::create(core::T_sp(test_t)).tagged_());
   NO_UNWIND_END();
@@ -300,21 +300,21 @@ void ltvc_setf_gethash(gctools::GCRootsInModule* holder, core::T_O* hash_table_t
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_fixnum(gctools::GCRootsInModule* holder, char tag, size_t index, int64_t val)
+LtvcReturnVoid ltvc_make_fixnum(gctools::GCRootsInModule* holder, char tag, size_t index, int64_t val)
 {NO_UNWIND_BEGIN();
   core::T_sp v = clasp_make_fixnum(val);
   LTVCRETURN holder->setTaggedIndex(tag,index,v.tagged_());
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_next_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, T_O* bignum)
+LtvcReturnVoid ltvc_make_next_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, T_O* bignum)
 {NO_UNWIND_BEGIN();
   core::T_sp val = core::T_sp(bignum);
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_bitvector(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bitvector_string_t)
+LtvcReturnVoid ltvc_make_bitvector(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bitvector_string_t)
 {NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp bitvector_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bitvector_string_t));
   core::T_sp val = core::SimpleBitVector_O::make(bitvector_string->get_std_string());
@@ -322,7 +322,7 @@ LtvcReturn ltvc_make_bitvector(gctools::GCRootsInModule* holder, char tag, size_
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_symbol(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* name_t, core::T_O* package_t )
+LtvcReturnVoid ltvc_make_symbol(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* name_t, core::T_O* package_t )
 {NO_UNWIND_BEGIN();
   core::T_sp package((gctools::Tagged)package_t);
   core::SimpleString_sp symbol_name((gctools::Tagged)name_t);
@@ -337,14 +337,14 @@ LtvcReturn ltvc_make_symbol(gctools::GCRootsInModule* holder, char tag, size_t i
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, char tag, size_t index, uintptr_t val)
+LtvcReturnVoid ltvc_make_character(gctools::GCRootsInModule* holder, char tag, size_t index, uintptr_t val)
 {NO_UNWIND_BEGIN();
   core::T_sp v = clasp_make_character(val);
   LTVCRETURN holder->setTaggedIndex(tag,index,v.tagged_());
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, char tag, size_t index, const char* str) \
+LtvcReturnVoid ltvc_make_base_string(gctools::GCRootsInModule* holder, char tag, size_t index, const char* str) \
 {NO_UNWIND_BEGIN();
   core::T_sp v = core::SimpleBaseString_O::make(str);
   LTVCRETURN holder->setTaggedIndex(tag,index,v.tagged_());
@@ -355,7 +355,7 @@ LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, char tag, siz
 extern "C" {
 
 
-LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* host_t, core::T_O* device_t, core::T_O* directory_t, core::T_O* name_t, core::T_O* type_t, core::T_O* version_t )
+LtvcReturnVoid ltvc_make_pathname(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* host_t, core::T_O* device_t, core::T_O* directory_t, core::T_O* name_t, core::T_O* type_t, core::T_O* version_t )
 {NO_UNWIND_BEGIN();
   core::T_sp val = core::Pathname_O::makePathname(core::T_sp(host_t),
                                         core::T_sp(device_t),
@@ -370,7 +370,7 @@ LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, char tag, size_t
 }
 
 
-LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t,core::T_O* declares_t, size_t lineno, size_t column, size_t filepos)
+LtvcReturnVoid ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t,core::T_O* declares_t, size_t lineno, size_t column, size_t filepos)
 {NO_UNWIND_BEGIN();
   core::FunctionDescription_sp val = core::makeFunctionDescription(core::T_sp(functionName_t),
                                                                    core::T_sp(lambdaList_t),
@@ -393,7 +393,7 @@ LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t )
+LtvcReturnVoid ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t )
 {NO_UNWIND_BEGIN();
 //  printf("%s:%d:%s got functionIndex %lu to index: %lu\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, index );
   ClaspLocalFunction llvm_func = (ClaspLocalFunction)holder->lookup_function(functionIndex);
@@ -412,7 +412,7 @@ LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char ta
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex0, core::T_O* functionDescription_t, size_t localEntryPointIndex )
+LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex0, core::T_O* functionDescription_t, size_t localEntryPointIndex )
 {NO_UNWIND_BEGIN();
   core::T_sp localEntryPoint((gctools::Tagged)holder->getLiteral(localEntryPointIndex));
   core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
@@ -435,7 +435,7 @@ LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char t
 }
 
 
-LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* package_name_t )
+LtvcReturnVoid ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* package_name_t )
 {
   NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp package_name((gctools::Tagged)package_name_t);
@@ -451,7 +451,7 @@ LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t 
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* random_state_string_t)
+LtvcReturnVoid ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* random_state_string_t)
 {NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp random_state_string((gctools::Tagged)random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
@@ -461,14 +461,14 @@ LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag, si
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_float(gctools::GCRootsInModule* holder, char tag, size_t index, float f)
+LtvcReturnVoid ltvc_make_float(gctools::GCRootsInModule* holder, char tag, size_t index, float f)
 {NO_UNWIND_BEGIN();
   core::T_sp val = clasp_make_single_float(f);
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_double(gctools::GCRootsInModule* holder, char tag, size_t index, double f)
+LtvcReturnVoid ltvc_make_double(gctools::GCRootsInModule* holder, char tag, size_t index, double f)
 {NO_UNWIND_BEGIN();
   core::T_sp val = clasp_make_double_float(f);
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
@@ -479,39 +479,19 @@ gctools::Tagged ltvc_lookup_literal( gctools::GCRootsInModule* holder, size_t in
   return holder->getTaggedIndex(LITERAL_TAG_CHAR,index);
 }
 
-LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, const char* name) {
-  printf("%s:%d:%s make entry-point-index  got functionIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, name );
-  core::T_O *lcc_arglist = nil<core::T_O>().raw_();
-  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClaspXepFunction xep((XepFilling()));
-  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
-    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
-  }
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(),  nil<core::T_O>(), nil<core::T_O>() );
-  LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
-  core::T_sp res((gctools::Tagged)ret.ret0[0]);
-  core::T_sp val = res;
-  LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
+LtvcReturnVoid ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t entryPointIndex, const char* name) {
+  return ltvc_set_ltv_funcall(holder, tag, index, entryPointIndex, name );
 }
 
-LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t functionIndex, const char* name) {
-  printf("%s:%d:%s make entry-point-index got functionIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, name );
-  core::T_O *lcc_arglist = nil<core::T_O>().raw_();
-  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClaspXepFunction xep((XepFilling()));
-  for ( size_t ii=0; ii<core::ClaspXepFunction::Entries; ++ii ) {
-    xep._EntryPoints[ii] = (ClaspXepAnonymousFunction)holder->lookup_function(functionIndex+ii);
-  }
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, xep, kw::_sym_function, nil<core::T_O>(), nil<core::T_O>(), nil<core::T_O>() );
-  LCC_RETURN ret = xep.invoke_0(toplevel_closure.raw_());
-//  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
+LtvcReturnVoid ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t entryPointIndex, const char* name) {
+//  printf("%s:%d:%s make entry-point-index got entryPointIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, entryPointIndex, name );
+  core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
+  LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
 }
 
 // Similar to the above, but puts value in the table.
-LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t entryPointIndex, const char* name) {\
-//  printf("%s:%d:%s make entry-point-index got functionIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, functionIndex, name );
-  core::T_O *lcc_arglist = nil<core::T_O>().raw_();
-  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
+LtvcReturnVoid ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t entryPointIndex, const char* name) {\
   core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
@@ -523,16 +503,13 @@ LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
 }
 
-LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t entryPointIndex, const char* name) {
-//  printf("%s:%d:%s got entryPointIndex %lu name: %s\n", __FILE__, __LINE__, __FUNCTION__, entryPointIndex, name );
-  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
+LtvcReturnVoid ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t entryPointIndex, const char* name) {
   core::GlobalEntryPoint_sp ep((gctools::Tagged)holder->getLiteral(entryPointIndex));
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)ep->_EntryPoints[1],name);
 #endif
   core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_sp((gc::Tagged)makeCompiledFunction(ep.raw_(),nil<core::T_O>().raw_()));
   LCC_RETURN ret = toplevel_closure->entry()(toplevel_closure.raw_(),0,NULL);
-//  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
 };
