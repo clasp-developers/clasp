@@ -149,7 +149,7 @@ INDEXes must be equal to the rank of ARRAY."
                (fixnum i r))
       (let* ((d (array-dimension array i))
              (o (cons-car s))
-             ndx)
+             (ndx 0))
         (declare (ext:array-index ndx))
         (unless (and (typep o 'fixnum)
                      (<= 0 (setf ndx o))
