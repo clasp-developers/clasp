@@ -235,6 +235,22 @@
                (lambda () (values nil nil)))
       ())
 
+(test-true issue-1251
+           (and
+            (numberp
+             (let ((x nil))
+               (setq x (- (FLOAT (FLOAT-RADIX 1.0) 1.0)))))
+            (numberp
+             (let ((x #\a))
+               (setq x (- (FLOAT (FLOAT-RADIX 1.0) 1.0)))))))
+
+(test-true issue-1262
+           (numberp
+            (funcall
+             (LAMBDA (A)
+               (BLOCK B6 (MULTIPLE-VALUE-PROG1 A (RETURN-FROM B6 0))))
+            :boo)))
+            
 (test issue-1265
       (funcall (compile nil '(lambda (x y)
                               (if x
