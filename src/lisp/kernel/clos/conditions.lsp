@@ -682,7 +682,7 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
    (arguments :initarg :arguments :reader no-applicable-method-arguments))
   (:report
    (lambda (condition stream)
-     (format stream "No applicable method for ~A with ~
+     (format stream "No applicable method for ~S with ~
                   ~:[no arguments.~;arguments~%~t~:*(~{~S~^ ~})~]"
              (clos:generic-function-name
               (no-applicable-method-generic-function condition))
