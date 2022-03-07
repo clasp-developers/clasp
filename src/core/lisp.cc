@@ -351,7 +351,7 @@ std::string ensure_monitor_directory_exists_no_lock() {
 }
 #endif
 
-#if DEBUG_MONITOR_SUPPORT
+#ifdef DEBUG_MONITOR_SUPPORT
 DOCGROUP(clasp)
 CL_DEFUN std::string core__monitor_directory() {
   WITH_READ_WRITE_LOCK(globals_->_MonitorMutex);

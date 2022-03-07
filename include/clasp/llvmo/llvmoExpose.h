@@ -4579,7 +4579,7 @@ public:
   std::unique_ptr<llvm::orc::ExecutorProcessControl> _TPC;
   std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
 //  llvm::jitlink::JITLink* _LinkLayer;
-#if _TARGET_OS_DARWIN
+#ifdef _TARGET_OS_DARWIN
   llvm::orc::ObjectLinkingLayer *LinkLayer;
 #else
   llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
