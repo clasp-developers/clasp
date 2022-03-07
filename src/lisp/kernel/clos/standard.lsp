@@ -222,8 +222,9 @@
 
 (defmethod initialize-instance :after
     ((class class) &rest initargs &key direct-slots)
-  (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
-  (dbg-standard "standard.lsp:226  initialize-instance class->~a~%" class)
+  (declare (dynamic-extent initargs) ; see NOTE in reinitialize-instance/T
+           (ignore initargs direct-slots))
+  (dbg-standard "standard.lsp:227  initialize-instance class->~a~%" class)
   (finalize-unless-forward class)
   ;; In this case we are assigning the stamp for the first time.
   (core:class-new-stamp class))
