@@ -82,3 +82,14 @@
 
 (test-expect-error LIST-LENGTH-SYMBOL (LIST-LENGTH 'A) :type type-error)
 (test-expect-error LIST-LENGTH.ERROR.1 (list-length '(1 . 2)) :type type-error)
+
+(test-expect-error ENDP.ERROR.6 (locally
+                                    (declare (optimize (safety 3)))
+                                  (let ()(endp (random 12))))
+                   :type type-error)
+(test ENDP.a (endp (list (random 10))) (nil))
+(test endp.b (endp (cons 1 2)) (nil))
+(test-true endp.c (endp (cdr (cons 1 nil))))
+(test ENDP.a.1 (let ()(endp (list (random 10)))) (nil))
+(test endp.b.1 (let ()(endp (cons 1 2))) (nil))
+(test-true endp.c.1 (let ()(endp (cdr (cons 1 nil)))))

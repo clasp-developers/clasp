@@ -714,4 +714,21 @@
       (zerop (random least-positive-double-float)))
 
 (test-true random-long
-      (zerop (random least-positive-long-float)))
+           (zerop (random least-positive-long-float)))
+
+(defun abs-fixnum (obj)
+  (declare  (fixnum obj))
+  (abs obj))
+
+(test-true issue-1257
+           (typep (abs-fixnum 23) 'fixnum))
+
+(test-true issue-1258
+           (numberp
+            (funcall 
+             (lambda (end)
+               (declare (fixnum end))
+               (let* ((integer-factor (floor 1.05d0)))
+                 (declare (fixnum integer-factor))
+                 (the fixnum (* integer-factor end))))
+             13)))
