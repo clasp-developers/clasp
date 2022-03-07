@@ -143,7 +143,7 @@ to NIL) and returns all values."
         (princ "  has value: "))
     (prin1 (symbol-value symbol)))
         ((ext:specialp symbol)
-         (princ "  Global variable (unbound): ")))
+         (princ "  Global variable (unbound)")))
   (when (find-class symbol nil)
     (princ "  Class"))
   (when (ext:type-expander symbol)
