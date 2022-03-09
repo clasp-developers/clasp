@@ -49,7 +49,7 @@ struct CleanupFunctionNode {
 namespace llvmo {
 class ObjectFile_O;
 typedef gctools::smart_ptr<ObjectFile_O> ObjectFile_sp;
-class CodeBae_O;
+class CodeBase_O;
 typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 class Code_O;
 typedef gctools::smart_ptr<Code_O> Code_sp;
