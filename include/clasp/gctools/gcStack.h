@@ -123,7 +123,7 @@ It must always be allocated on the Stack.
 */
 struct Vaslist {
   /* WARNING WARNING WARNING WARNING
-DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vaslist+ in cmpintrinsics.lsp
+DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +vaslist+ in cmpintrinsics.lisp
 */
   mutable T_O**   _args;
   mutable size_t  _nargs;

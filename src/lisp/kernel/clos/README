@@ -10,7 +10,7 @@ Classes and instances
 
 Defined in the conventional way, basically a pointer to the class, and a "rack", the vector of slots. Plus some other crap. Defined in core/instance.h. (FYI the rack is a separate vector rather than a stretchy part of the instance so that change-class can swap it out.)
 
-After package.lsp, hierarchy.lsp is loaded. It defines variables containing specifications for the slot definitions of important standard classes. For example,
+After package.lisp, hierarchy.lisp is loaded. It defines variables containing specifications for the slot definitions of important standard classes. For example,
 
 (defparameter +method-combination-slots+
  `((name :initarg :name :accessor method-combination-name)
@@ -32,9 +32,9 @@ WITH-EARLY-MAKE-INSTANCE similarly makes instances without calling generic funct
 
 Some of the slot definitions are a little funny. standard-class has "class-id": this is unexported and nonstandard, but basically equivalent to class-name. I believe we don't use class-name because (setf class-name) is defined to call reinitialize-instance, which is inoperative during boot.
 
-boot.lsp actually creates the classes in hierarchy.lsp - again, directly, using core:allocate-raw-class and with-early-accessors. It does this by looking at +class-hierarchy+ in hierarchy.lsp. Some classes are in there more than once - they are redefined.
+boot.lisp actually creates the classes in hierarchy.lisp - again, directly, using core:allocate-raw-class and with-early-accessors. It does this by looking at +class-hierarchy+ in hierarchy.lisp. Some classes are in there more than once - they are redefined.
 
-After boot.lsp all standard classes are in their final states, i.e. no further bootstrap weirdness.
+After boot.lisp all standard classes are in their final states, i.e. no further bootstrap weirdness.
 
 Generic functions
 -----------------
@@ -49,7 +49,7 @@ The generic dispatch uses the currently new technique we have optimistically cal
 
 To set the system up, everything is defined with normal functions which we then convert into generics/methods/etc.
 
-kernel.lsp defines a few important functions, some of which are used indefinitely, and some of which are redefined later.
+kernel.lisp defines a few important functions, some of which are used indefinitely, and some of which are redefined later.
 
  * ENSURE-GENERIC-FUNCTION will be redefined. This version uses with-early-make-instance.
  * The final standard method of COMPUTE-DISCRIMINATING-FUNCTION is defined here as a non-generic function. It only seems to be called as such by set-generic-function-dispatch, also in this file.
@@ -60,17 +60,17 @@ kernel.lsp defines a few important functions, some of which are used indefinitel
 
 method.lsp defines the final definition of DEFMETHOD. It also defines the final standard method of MAKE-METHOD-LAMBDA as a function, and defines early, non-generic versions of GENERIC-FUNCTION-METHOD-CLASS and ADD-METHOD. An early version of the internal function MAKE-METHOD (no relation to the local macro - it makes a method, like make-instance) is defined here. FIND-METHOD's final standard method is here defined as a function.
 
-The early add-method stores information in *early-methods* for use in fixup.lsp. An alist (function-name . list-of-methods).
+The early add-method stores information in *early-methods* for use in fixup.lisp. An alist (function-name . list-of-methods).
 
 Note that all this adds up so that until these functions are redefined, DEFMETHOD forms don't require generic function calls at any time.
 
-combin.lsp defines various early versions of COMPUTE-EFFECTIVE-METHOD and FIND-METHOD-COMBINATION. Also it installs the DEFINE-METHOD-COMBINATION macro, and all the simple standard ones.
+combin.lisp defines various early versions of COMPUTE-EFFECTIVE-METHOD and FIND-METHOD-COMBINATION. Also it installs the DEFINE-METHOD-COMBINATION macro, and all the simple standard ones.
 
-slotvalue.lsp starts using DEFMETHOD, and thus defining generic functions as well.
+slotvalue.lisp starts using DEFMETHOD, and thus defining generic functions as well.
 
-standard.lsp defines (final) methods for most of the instance creation and initialization protocol. change.lsp does CHANGE-CLASS and REINITIALIZE-INSTANCE. stdmethod.lsp defines a few methods and stuff for methods.
+standard.lisp defines (final) methods for most of the instance creation and initialization protocol. change.lisp does CHANGE-CLASS and REINITIALIZE-INSTANCE. stdmethod.lisp defines a few methods and stuff for methods.
 
-generic.lsp defines DEFGENERIC and a few related things like ENSURE-GENERIC-FUNCTION-USING-CLASS.
+generic.lisp defines DEFGENERIC and a few related things like ENSURE-GENERIC-FUNCTION-USING-CLASS.
 
 fixup.lsp is what puts the system into the final mode, redefining early functions as methods, etc. Up to this point no generic functions have been called. First, fixup converts a few critical functions into methods early - the ones needed to compute a discriminating function. Then, all existing generic functions have a "specializer profile" set up. This is part of fastgf, and is simply a sequence indicating which required arguments are currently specialized on, and whether they are eql specialized.
 

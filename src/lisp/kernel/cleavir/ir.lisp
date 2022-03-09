@@ -1,7 +1,7 @@
 #+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
   (setq *echo-repl-read* t)
   (setq cmp::*debug-compile-file* t)
-  (format t "About to compile-file ir.lsp~%"))
+  (format t "About to compile-file ir.lisp~%"))
 
 (in-package :clasp-cleavir)
   

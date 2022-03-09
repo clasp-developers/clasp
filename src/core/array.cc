@@ -53,13 +53,13 @@ Look at the specialized array for uint32_t as an example.
 2.  Add the #include <clasp/core/array-<new-type>.h> to the body of array.h after the rest of them
 3.  Add an enum to clasp_elttype for the specialized type
 4.  Add a CL_VALUE_ENUM entry to array.h  after CL_BEGIN_ENUM(clasp_elttype,_sym_clasp_elttype,"clasp_elttype");
-5.  Add a new deftype definition to predlib.lsp 
-6.  Edit arraylib.lsp and add the type to +upgraded-array-element-types+
+5.  Add a new deftype definition to predlib.lisp 
+6.  Edit arraylib.lisp and add the type to +upgraded-array-element-types+
     Make sure you add it in the right place - if it's an integer type
     it needs to go before any larger integer types so that the smallest
     necessary upgraded-array-element-type is chosen every time.
 7.  Add the type test and make_xxxx calls to array.cc make_vector and make_mdarray
-8.  Add the class to hierarchy.lsp
+8.  Add the class to hierarchy.lisp
 
 Check the following...
 1.  Maybe change these methods in array_<new-type>.h

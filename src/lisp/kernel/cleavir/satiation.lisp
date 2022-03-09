@@ -13,7 +13,7 @@
 (eval-when (:load-toplevel)
   (macrolet ((frob ()
                `(clos:satiate-initialization
-                 ;; KLUDGE: We incorporate all the classes satiated in clos/satiation.lsp
+                 ;; KLUDGE: We incorporate all the classes satiated in clos/satiation.lisp
                  ;; here so that the discriminating function still includes them etc.
                  'standard-generic-function
                  'standard-method

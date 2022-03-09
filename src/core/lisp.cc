@@ -1282,7 +1282,7 @@ void Lisp::parseCommandLineArguments(int argc, char *argv[], const CommandLineOp
   }
 
   //	this->_FunctionName = execName;
-  globals_->_InitFileName = "sys:" KERNEL_NAME ";init.lsp";
+  globals_->_InitFileName = "sys:" KERNEL_NAME ";init.lisp";
 
   globals_->_IgnoreInitImage = options._DontLoadImage;
   globals_->_IgnoreInitLsp = options._DontLoadInitLsp;

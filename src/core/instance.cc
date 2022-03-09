@@ -121,7 +121,7 @@ void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
 
 // NOT called by regular CL allocate instance. FIXME, find a way to remove this if possible.
 void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
-  // Should match clos/hierarchy.lsp
+  // Should match clos/hierarchy.lisp
   ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
   SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
   SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
@@ -787,7 +787,7 @@ CL_DEFUN bool ext__class_unboundp(ClassHolder_sp holder) {
 DOCGROUP(clasp)
 CL_DEFUN void core__verify_instance_layout(size_t instance_size, size_t instance_rack_offset)
 {
-  if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp instance_size %lu does not match sizeof(Instance_O) %lu") % instance_size % sizeof(Instance_O));
+  if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lisp instance_size %lu does not match sizeof(Instance_O) %lu") % instance_size % sizeof(Instance_O));
   if (instance_rack_offset!=offsetof(Instance_O,_Rack))
     SIMPLE_ERROR(BF("instance_rack_offset %lu does not match offsetof(_Rack,Instance_O) %lu") % instance_rack_offset % offsetof(Instance_O,_Rack));
 }

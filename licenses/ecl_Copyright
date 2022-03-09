@@ -22,9 +22,9 @@
   PLEASE NOTE THAT:
 
   This license covers all of the ECL program except for the files
-	src/lisp/kernel/lsp/loop2.lsp	; Symbolic's LOOP macro
-	src/lisp/kernel/lsp/pprint.lsp	; CMUCL's pretty printer
-	src/lisp/kernel/lsp/format.lsp	; CMUCL's format
+	src/lisp/kernel/lsp/loop2.lisp	; Symbolic's LOOP macro
+	src/lisp/kernel/lsp/pprint.lisp	; CMUCL's pretty printer
+	src/lisp/kernel/lsp/format.lisp	; CMUCL's format
   and the directories
 	src/lisp/kernel/contrib/		; User contributed extensions
 	src/clx/		; portable CLX library from Telent

@@ -368,7 +368,7 @@ Optimizations are available for any of:
   (define-irratf sqrt        core::sf-sqrt   core::df-sqrt)
   (define-irratf exp         core::sf-exp    core::df-exp)
   ;; Only transform the one-argument case.
-  ;; The compiler macro in opt-number.lsp should reduce two-arg to one-arg.
+  ;; The compiler macro in opt-number.lisp should reduce two-arg to one-arg.
   (define-irratf log         core::sf-log    core::df-log)
   (define-irratf cos         core::sf-cos    core::df-cos)
   (define-irratf sin         core::sf-sin    core::df-sin)

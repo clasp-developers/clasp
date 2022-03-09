@@ -1,5 +1,5 @@
 ;;;
-;;;    File: auto-compile.lsp
+;;;    File: auto-compile.lisp
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
@@ -27,7 +27,7 @@
 ;; Insert the compiler into the repl
 ;;
 ;; Don't use FORMAT here use BFORMAT 
-;; otherwise you will have problems when format.lsp is bootstrapped
+;; otherwise you will have problems when format.lisp is bootstrapped
 
 (in-package :clasp-cleavir)
 
@@ -53,7 +53,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set up the core:*use-cleavir-compiler*
-;; so that walk-method-lambda in method.lsp uses the cleavir compiler.
+;; so that walk-method-lambda in method.lisp uses the cleavir compiler.
 ;;
 (eval-when (:execute :load-toplevel)
   (setq core:*use-cleavir-compiler* t))

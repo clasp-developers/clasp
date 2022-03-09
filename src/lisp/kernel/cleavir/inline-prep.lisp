@@ -73,7 +73,7 @@
                        ;; KLUDGE: If no source info, make one up
                        (core:make-source-pos-info))
                       (t orig)))))
-    ;; See usage in cmp/debuginfo.lsp
+    ;; See usage in cmp/debuginfo.lisp
     (list (cmp:jit-function-name (cleavir-ast:name ast))
           (core:source-pos-info-lineno orig)
           (core:source-pos-info-file-handle orig))))
@@ -130,7 +130,7 @@
          child-ast))))
   ast)
 
-;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lsp)
+;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lisp)
 (defun defun-inline-hook (name function-form env)
   (declare (ignore env))
   (when (core:declared-global-inline-p name)
