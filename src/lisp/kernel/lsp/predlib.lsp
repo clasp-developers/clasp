@@ -742,7 +742,7 @@ if not possible."
 	 (disjoint-tag 0)
 	 (supertype-tag (if minimize-super -1 0)))
     (dolist (i *elementary-types*)
-      (declare (cons i))
+      (declare (type list i))
       (let ((other-type (car i))
 	    (other-tag (cdr i)))
 	(when (funcall in-our-family-p other-type)
@@ -826,7 +826,7 @@ if not possible."
 
 (defun push-type (type tag)
   (dolist (i *member-types*)
-    (declare (cons i))
+    (declare (type list i))
     (when (typep (car i) type)
       (setq tag (logior tag (cdr i)))))
   (push (cons type tag) *elementary-types*)
