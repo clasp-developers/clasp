@@ -109,12 +109,12 @@ The implementation of the FLI is realized with the following files:
 
     This is the C++ source file of the FLI. It represents the main parts of the FLI in C++ land.
 
-3. `src/lisp/kernel/lsp/fli.lsp`
-<br>Links to source:  [Github: drmeister, branch dev, fli.lsp][] / [Github: dg1sbg, branch dev-cffi, fli.lsp][]
+3. `src/lisp/kernel/lsp/fli.lisp`
+<br>Links to source:  [Github: drmeister, branch dev, fli.lisp][] / [Github: dg1sbg, branch dev-cffi, fli.lisp][]
 
-[Github: dg1sbg, branch dev-cffi, fli.lsp]: https://github.com/dg1sbg/clasp/blob/dev-cffi/src/lisp/kernel/lsp/fli.lsp
+[Github: dg1sbg, branch dev-cffi, fli.lisp]: https://github.com/dg1sbg/clasp/blob/dev-cffi/src/lisp/kernel/lsp/fli.lisp
 
-[Github: drmeister, branch dev, fli.lsp]: https://github.com/drmeister/clasp/blob/dev/src/lisp/kernel/lsp/fli.lsp
+[Github: drmeister, branch dev, fli.lisp]: https://github.com/drmeister/clasp/blob/dev/src/lisp/kernel/lsp/fli.lisp
 
     This is the Common Lisp source file of the FLI. It represents the main parts of the FLI in Common Lisp land.
 
@@ -127,16 +127,16 @@ The implementation of the FLI is realized with the following files:
 
     This file holds those functions of the FLI that need to be speed optimized, using techniques like inlining and link time optimization.
 
-5. `src/lisp/kernel/cmp/cmpintrinsics.lsp`
-<br>Links to source:  [Github: drmeister, branch dev, cmpintrinsics.lsp][] / [Github: dg1sbg, branch dev-cffi, cmpintrinsics.lsp][]
+5. `src/lisp/kernel/cmp/cmpintrinsics.lisp`
+<br>Links to source:  [Github: drmeister, branch dev, cmpintrinsics.lisp][] / [Github: dg1sbg, branch dev-cffi, cmpintrinsics.lisp][]
 
-[Github: dg1sbg, branch dev-cffi, cmpintrinsics.lsp]: https://github.com/dg1sbg/clasp/blob/dev-cffi/src/lisp/kernel/cmp/cmpintrinsics.lsp
+[Github: dg1sbg, branch dev-cffi, cmpintrinsics.lisp]: https://github.com/dg1sbg/clasp/blob/dev-cffi/src/lisp/kernel/cmp/cmpintrinsics.lisp
 
-[Github: drmeister, branch dev, cmpintrinsics.lsp]: https://github.com/drmeister/clasp/blob/dev/src/lisp/kernel/cmp/cmpintrinsics.lsp
+[Github: drmeister, branch dev, cmpintrinsics.lisp]: https://github.com/drmeister/clasp/blob/dev/src/lisp/kernel/cmp/cmpintrinsics.lisp
 
     This file contains - as part of function `#'define-primitives-in-module` - the primitve definitions for all data value type translator functions that are beung called when defining a C++ to Lisp callback function ([line 813][]).
 
-[line 813]: https://github.com/dg1sbg/clasp/blob/dev-cffi/src/lisp/kernel/cmp/cmpintrinsics.lsp#L813
+[line 813]: https://github.com/dg1sbg/clasp/blob/dev-cffi/src/lisp/kernel/cmp/cmpintrinsics.lisp#L813
 
 <div id="id-ii.1.2">
 ### II.1.2 Source Code Integration ###

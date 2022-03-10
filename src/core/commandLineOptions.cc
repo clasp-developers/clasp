@@ -68,7 +68,7 @@ void process_clasp_arguments(CommandLineOptions* options)
     string arg = options->_RawArguments[iarg];
     if (arg == "-h" || arg == "--help") {
       printf("clasp options\n"
-             "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
+             "-I/--ignore-image    - Don't load the boot image/start with init.lisp\n"
              "-i/--image file      - Use the file as the boot image. If file ends in .snapshot then treat as a snapshot.\n"
              "-T/--type (default|snapshot|image) - Set the type of the default startup file to use (default means snapshot->image).\n"
              "-L/--llvm-debug (options) - Pass arg to llvm::cl::ParseCommandLineOptions --debug-only. Lets you debug llvm with LLVM_DEBUG(...).\n"
@@ -96,7 +96,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-l/--load {file}     - LOAD the file\n"
              "--rc {file}          - Specify name of the RC file (default .clasprc)\n"
              "-r/--norc            - Don't load the RC file\n"
-             "-n/--noinit          - Don't load the init.lsp (very minimal environment)\n"
+             "-n/--noinit          - Don't load the init.lisp (very minimal environment)\n"
              "-S/--seed #          - Seed the random number generator\n"
              "-w/--wait            - Print the PID and wait for the user to hit a key\n"
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"

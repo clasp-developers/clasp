@@ -66,7 +66,7 @@ namespace core {
   
 extern char* global_dump_functions;
   
-  /* The following MUST MATCH %function-description% in cmpintrinsics.lsp
+  /* The following MUST MATCH %function-description% in cmpintrinsics.lisp
 Each thread maintains a current GCRootsInModule structure that stores roots
 used by the FunctionDescription objects.  Every time a Function_O object is created
 a FunctionDescription is allocated using 'new' and if the GCRootsInModule can still fit
@@ -312,7 +312,7 @@ extern std::atomic<uint64_t> global_interpreted_closure_calls;
     ClaspXep5Function entry_5() const { return (ClaspXep5Function)(this->_EntryPoint.load()->_EntryPoints[6]); }
 
     virtual FunctionDescription_sp fdesc() const { return this->_EntryPoint.load()->_FunctionDescription; };
-    // Rewrite the function-description pointer - used in direct-calls.lsp
+    // Rewrite the function-description pointer - used in direct-calls.lisp
     
 //    virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
 

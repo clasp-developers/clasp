@@ -1717,7 +1717,7 @@ def build(bld):
     bld.clasp_cclasp = collect_cclasp_lisp_files()
 
     def find_lisp(bld,x):
-        find = bld.path.find_node("%s.lsp"%x)
+        find = bld.path.find_node("%s.lisp"%x)
         if (find):
             return find.abspath()
         find = bld.path.find_node("%s.lisp"%x)
@@ -1779,7 +1779,7 @@ def build(bld):
     install('lib/clasp/', clasp_c_source_files)
     install('lib/clasp/', collect_waf_nodes(bld, 'include/clasp/', suffix = ".h"))
     # Gather lisp source files - but don't only use files with these extensions or we will miss lisp assets
-    install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/')) # , suffix = [".lsp", ".lisp", ".asd"]))
+    install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/')) # , suffix = [".lisp", ".lisp", ".asd"]))
 
     # If the bld.variant_name is not in bld.all_envs then we have a legal command but the bld.variant_name wasn't configured
     #   this currently only happens if the user used: ./waf configure    without --enable-mp
@@ -2042,8 +2042,8 @@ class link_fasl(clasp_task):
                                           image = False,
                                           features = ["clasp-min"],
                                           forms = [ '(setq *features* (cons :aclasp *features*))',
-                                                    '(load "sys:kernel;clasp-builder.lsp")',
-                                                    '(load "sys:kernel;cmp;jit-setup.lsp")',
+                                                    '(load "sys:kernel;clasp-builder.lisp")',
+                                                    '(load "sys:kernel;cmp;jit-setup.lisp")',
                                                     '(core:link-fasl :output-file #P"%s")' % output_file,
                                                     '(core:exit)'],
                                           *faso_files)
@@ -2122,7 +2122,7 @@ class run_aclasp(clasp_task):
                                       features = ["no-implicit-compilation",
                                                   "jit-log-symbols",
                                                   "clasp-min"],
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(load "sys:kernel;clasp-builder.lisp")',
                                                '(load-aclasp)'],
                                       *self.bld.clasp_aclasp)
         return self.exec_command(cmd)
@@ -2136,7 +2136,7 @@ class compile_aclasp(clasp_task):
                                       image = False,
                                       features = ["clasp-min"],
                                       forms = ['(setq *features* (cons :aclasp *features*))',
-                                               '(load "sys:kernel;clasp-builder.lsp")',
+                                               '(load "sys:kernel;clasp-builder.lisp")',
                                                #'(load-aclasp)',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-aclasp :output-file #P"%s")' % output_file,
@@ -2155,7 +2155,7 @@ class compile_bclasp(clasp_task):
                                       image = image_file,
                                       features = [],
                                       forms = ['(setq *features* (cons :bclasp *features*))',
-                                               '(load "sys:kernel;clasp-builder.lsp")',
+                                               '(load "sys:kernel;clasp-builder.lisp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-bclasp :output-file #P"%s")' % output_file,
                                                '(core:exit)'],
@@ -2170,7 +2170,7 @@ class compile_cclasp(clasp_task):
         output_file = self.outputs[0].abspath()
         log.debug("In compile_cclasp %s --image %s -> %s", executable, image_file, output_file)
         forms = ['(setq *features* (cons :cclasp *features*))',
-                 '(load "sys:kernel;clasp-builder.lsp")',
+                 '(load "sys:kernel;clasp-builder.lisp")',
                  '(setq core::*number-of-jobs* %d)' % self.bld.jobs]
         if (self.bld.options.LOAD_CCLASP):
             forms += ['(load-cclasp)']
@@ -2199,7 +2199,7 @@ class recompile_cclasp(clasp_task):
                                       features = ['ignore-extensions'],
                                       resource_dir = os.path.join(self.bld.path.abspath(), out, self.bld.variant_obj.variant_dir()),
                                       forms = ['(setq *features* (cons :cclasp *features*))',
-                                               '(load "sys:kernel;clasp-builder.lsp")',
+                                               '(load "sys:kernel;clasp-builder.lisp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:recompile-cclasp :output-file #P"%s")' % output_file,
                                                '(core:quit)'],

@@ -74,7 +74,7 @@ class Symbol_O : public General_O {
   struct metadata_gc_do_not_move {};
 
  public: // FIXME: Probably oughta be private.
-  // This MUST match the layout for %sym% in cmpintrinsics.lsp and the sanity check core__verify_symbol_layout
+  // This MUST match the layout for %sym% in cmpintrinsics.lisp and the sanity check core__verify_symbol_layout
   SimpleString_sp _Name; // offset 8
   std::atomic<T_sp> _HomePackage; // offset=16 NIL or Package
   std::atomic<T_sp> _GlobalValue; // offset=24

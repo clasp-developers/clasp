@@ -31,7 +31,7 @@
 19:41 <drmeister> Look at these files:
 19:41 <drmeister> clasp/build/boehmdc/generated/c-wrappers.h
 19:41 <drmeister> clasp/build/boehmdc/generated/cl-wrappers.lisp
-19:42 <drmeister> You also need clasp/src/lisp/kernel/lsp/direct-calls.lsp
+19:42 <drmeister> You also need clasp/src/lisp/kernel/lsp/direct-calls.lisp
                   for the 'generate-direct-call-defun' macro.
 19:42 <drmeister> It expands to an INTRINSIC-CALL invocation.
 19:43 <drmeister> %foreign-call  is a CL macro that has to do everything

@@ -41,7 +41,7 @@ THE SOFTWARE.
 // The complete FLI is comprised of the following files:
 // .../src/core/fli.cc            - this file, main API for FLI
 // .../include/clasp/core/fli.h   - corresponding .h file
-// .../src/lisp/kernel/fli.lsp    - Lisp land macros and functions
+// .../src/lisp/kernel/fli.lisp    - Lisp land macros and functions
 // .../src/llvmo/intrinsics.cc    - translators: to/from Lisp objects
 //
 // --- END OF IMPLEMEMTATION NOTES ---
@@ -56,7 +56,7 @@ THE SOFTWARE.
 //
 // II. MISSING FEATURES
 //
-// 1. File fli.lsp:
+// 1. File fli.lisp:
 //
 // a) LLVM Type Symbol Fn Initialization:
 //   ;; (%set-llvm-type-symbol-fn (%lisp-type->type-spec :time) (lambda () cmp::+time_t+))

@@ -42,7 +42,7 @@ THE SOFTWARE.
 // The complete FLI is comprised of the following files:
 // .../src/core/fli.cc            - corresponding .cc file
 // .../include/clasp/core/fli.h   - this file
-// .../src/lisp/kernel/fli.lsp    - Lisp land macros and functions
+// .../src/lisp/kernel/fli.lisp    - Lisp land macros and functions
 //
 // --- END OF IMPLEMEMTATION NOTES ---
 

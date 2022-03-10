@@ -46,8 +46,8 @@ The implementation of the FLI is realized in the following files:
 
 [Github: drmeister, branch dev]: https://github.com/drmeister/clasp/blob/dev/src/core/fli.cc
 
-3. `src/lisp/kernel/lsp/fli.lsp`
+3. `src/lisp/kernel/lsp/fli.lisp`
 
 4. `src/llvmo/intrinsics.cxx`
 
-5. `src/lisp/kernel/cmp/cmpintrinsics.lsp`
+5. `src/lisp/kernel/cmp/cmpintrinsics.lisp`
