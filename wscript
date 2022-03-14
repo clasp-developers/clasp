@@ -1804,9 +1804,6 @@ def build(bld):
         task.set_outputs([bld.path.find_or_declare("scraper-precompile-done")])
         bld.add_to_group(task)
 
-    make_pump_tasks(bld, 'src/core/header-templates/', 'clasp/core/')
-#    make_pump_tasks(bld, 'src/clbind/header-templates/', 'clasp/clbind/')
-
     task = generate_extension_headers_h(env=bld.env)
     task.set_inputs(bld.extensions_gcinterface_include_files)
     task.set_outputs([bld.path.find_or_declare("generated/extension_headers.h")])
@@ -2321,7 +2318,7 @@ class scraper_task(clasp_task):
 
 class precompile_scraper(scraper_task):
     weight = 5    # Tell waf to run this early among the equal tasks because it will take long
-    before = ['expand_pump_template']
+    before = ['generate_sif_files']
 
     def run(self):
         cmd = self.scraper_command_line(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
@@ -2329,7 +2326,6 @@ class precompile_scraper(scraper_task):
 
 class generate_sif_files(scraper_task):
     ext_out = ['.sif']    # this affects the task execution order
-    after = ['expand_pump_template']
     waf_print_keyword = "Scraping"
 
     def run(self):
@@ -2376,34 +2372,6 @@ class generate_headers_from_all_sifs(scraper_task):
     def display(self):
         return "generate_headers_from_all_sifs.display() would be VERY long - remove display() to display\n"
     
-def make_pump_tasks(bld, template_dir, output_dir):
-    log.debug("Building pump tasks: %s -> %s", template_dir, output_dir)
-    templates = collect_waf_nodes(bld, template_dir, suffix = '.pmp')
-    assert len(templates) > 0
-    for template_node in templates:
-        template_name = template_node.name
-        output_path = os.path.join("generated/", output_dir, template_name.replace(".pmp", ".h"))
-        output_node = bld.path.find_or_declare(output_path)
-        log.debug("Creating expand_pump_template: %s -> %s", template_node.abspath(), output_node.abspath())
-        assert output_node
-        task = expand_pump_template(env = bld.env)
-        task.set_inputs([template_node])
-        task.set_outputs([output_node])
-        bld.add_to_group(task)
-        bld.install_files('${PREFIX}/lib/clasp/', [output_node], relative_trick = True, cwd = bld.path)
-    log.info("Created %s pump template tasks found in dir: %s", len(templates), template_dir)
-
-class expand_pump_template(clasp_task):
-    ext_out  = ['.h']      # this affects the task execution order
-
-    def run(self):
-        assert len(self.inputs) == len(self.outputs) == 1
-        cmd = ['python',
-               os.path.join(self.bld.path.abspath(), "tools-for-build/pump.py"),
-               self.inputs[0].abspath(),
-               self.outputs[0].abspath()]
-        return self.exec_command(cmd)
-
 #
 #
 # TaskGen's
