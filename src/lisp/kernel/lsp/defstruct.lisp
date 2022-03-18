@@ -393,8 +393,9 @@
                  (push slotd mentioned-slots)
                  (if (endp (rest name)) ; like &optional (x)
                      (unless aux
-                       (setf (rest name)
-                             (list (getf (rest slotd) :initform)))
+                       (setf (first sublist)
+                             `(,(first name)
+                               ,(getf (rest slotd) :initform)))
                        (push slotd initialized-slots))
                      (push slotd initialized-slots)))))))
     ;; OK, we have our lambda list set up... except anything with an :initform
