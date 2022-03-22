@@ -856,7 +856,11 @@ void gatherObjects( uintptr_t* clientAddress, uintptr_t client, uintptr_t tag, v
   } else if (tag==gctools::cons_tag) {
     header = (Header_s*)ConsPtrToHeaderPtr((void*)client);
   } else {
+#ifdef RUNNING_PRECISEPREP
+    Header_s* base = NULL;
+#else
     Header_s* base = (Header_s*)GC_base(clientAddress);
+#endif
     auto ii = gather->_corruptObjects.find(base);
     if ( ii == gather->_corruptObjects.end() ) {
       std::vector<uintptr_t> badPointers;
