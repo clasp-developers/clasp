@@ -37,7 +37,7 @@
     (unless (= (length specs) spec-length)
       (error "Mismatch in length of specializers ~a~@[ while compiling ~a~]"
              specs name))
-    (when (find specs seen-specs :test #'equal)
+    #+(or)(when (find specs seen-specs :test #'equal)
       (error "Duplicate specializer sequence ~a in ~a~@[ while compiling ~a~]"
              specs seen-specs name))
     specs))
@@ -50,8 +50,9 @@
       default
       ;; Verify things are hunky dory, then pass to %basic-tree.
       (loop for clause in clauses
-            collect (check-clause clause spec-length seen-specs name)
-              into seen-specs
+            when (not (find (car clause) seen-specs :test #'equal))
+              collect (check-clause clause spec-length seen-specs name)
+                into seen-specs
             finally (return (%basic-tree clauses spec-length)))))
 
 ;; Each clause is a cons (specializer-sequence . leaf),
