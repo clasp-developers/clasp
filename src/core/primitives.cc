@@ -942,7 +942,7 @@ CL_DEFUN_SETF T_sp setf_symboL_constantp(T_sp value, Symbol_sp symbol) {
   return value;
 }
 
-// Must be synced with constant-form-value in source-transformations.lsp
+// Must be synced with constant-form-value in source-transformations.lisp
 CL_LAMBDA(obj &optional env)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(constantp)dx")

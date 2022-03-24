@@ -1718,7 +1718,7 @@ def build(bld):
     bld.clasp_cclasp = collect_cclasp_lisp_files()
 
     def find_lisp(bld,x):
-        find = bld.path.find_node("%s.lsp"%x)
+        find = bld.path.find_node("%s.lisp"%x)
         if (find):
             return find.abspath()
         find = bld.path.find_node("%s.lisp"%x)
@@ -1780,7 +1780,7 @@ def build(bld):
     install('lib/clasp/', clasp_c_source_files)
     install('lib/clasp/', collect_waf_nodes(bld, 'include/clasp/', suffix = ".h"))
     # Gather lisp source files - but don't only use files with these extensions or we will miss lisp assets
-    install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/')) # , suffix = [".lsp", ".lisp", ".asd"]))
+    install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/')) # , suffix = [".lisp", ".lisp", ".asd"]))
 
     # If the bld.variant_name is not in bld.all_envs then we have a legal command but the bld.variant_name wasn't configured
     #   this currently only happens if the user used: ./waf configure    without --enable-mp
@@ -1804,14 +1804,6 @@ def build(bld):
         # TODO set the inputs to be all of the scraper dir? this would enable proper dependency tracking and recompilation.
         task.set_outputs([bld.path.find_or_declare("scraper-precompile-done")])
         bld.add_to_group(task)
-
-    make_pump_tasks(bld, 'src/core/header-templates/', 'clasp/core/')
-#    make_pump_tasks(bld, 'src/clbind/header-templates/', 'clasp/clbind/')
-
-    task = generate_extension_headers_h(env=bld.env)
-    task.set_inputs(bld.extensions_gcinterface_include_files)
-    task.set_outputs([bld.path.find_or_declare("generated/extension_headers.h")])
-    bld.add_to_group(task)
 
     bld.set_group('compiling/c++')
 
@@ -2043,8 +2035,8 @@ class link_fasl(clasp_task):
                                           image = False,
                                           features = ["clasp-min"],
                                           forms = [ '(setq *features* (cons :aclasp *features*))',
-                                                    '(load "sys:kernel;clasp-builder.lsp")',
-                                                    '(load "sys:kernel;cmp;jit-setup.lsp")',
+                                                    '(load "sys:kernel;clasp-builder.lisp")',
+                                                    '(load "sys:kernel;cmp;jit-setup.lisp")',
                                                     '(core:link-fasl :output-file #P"%s")' % output_file,
                                                     '(core:exit)'],
                                           *faso_files)
@@ -2123,7 +2115,7 @@ class run_aclasp(clasp_task):
                                       features = ["no-implicit-compilation",
                                                   "jit-log-symbols",
                                                   "clasp-min"],
-                                      forms = ['(load "sys:kernel;clasp-builder.lsp")',
+                                      forms = ['(load "sys:kernel;clasp-builder.lisp")',
                                                '(load-aclasp)'],
                                       *self.bld.clasp_aclasp)
         return self.exec_command(cmd)
@@ -2137,7 +2129,7 @@ class compile_aclasp(clasp_task):
                                       image = False,
                                       features = ["clasp-min"],
                                       forms = ['(setq *features* (cons :aclasp *features*))',
-                                               '(load "sys:kernel;clasp-builder.lsp")',
+                                               '(load "sys:kernel;clasp-builder.lisp")',
                                                #'(load-aclasp)',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-aclasp :output-file #P"%s")' % output_file,
@@ -2156,7 +2148,7 @@ class compile_bclasp(clasp_task):
                                       image = image_file,
                                       features = [],
                                       forms = ['(setq *features* (cons :bclasp *features*))',
-                                               '(load "sys:kernel;clasp-builder.lsp")',
+                                               '(load "sys:kernel;clasp-builder.lisp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-bclasp :output-file #P"%s")' % output_file,
                                                '(core:exit)'],
@@ -2171,7 +2163,7 @@ class compile_cclasp(clasp_task):
         output_file = self.outputs[0].abspath()
         log.debug("In compile_cclasp %s --image %s -> %s", executable, image_file, output_file)
         forms = ['(setq *features* (cons :cclasp *features*))',
-                 '(load "sys:kernel;clasp-builder.lsp")',
+                 '(load "sys:kernel;clasp-builder.lisp")',
                  '(setq core::*number-of-jobs* %d)' % self.bld.jobs]
         if (self.bld.options.LOAD_CCLASP):
             forms += ['(load-cclasp)']
@@ -2200,7 +2192,7 @@ class recompile_cclasp(clasp_task):
                                       features = ['ignore-extensions'],
                                       resource_dir = os.path.join(self.bld.path.abspath(), out, self.bld.variant_obj.variant_dir()),
                                       forms = ['(setq *features* (cons :cclasp *features*))',
-                                               '(load "sys:kernel;clasp-builder.lsp")',
+                                               '(load "sys:kernel;clasp-builder.lisp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:recompile-cclasp :output-file #P"%s")' % output_file,
                                                '(core:quit)'],
@@ -2228,26 +2220,6 @@ class compile_module(clasp_task):
                                           '(compile-file #P"%s" :output-file #P"%s" :output-type %s)' % (source_file, fasl_file, output_type),
                                                '(core:quit)'])
         return self.exec_command(cmd)
-
-class generate_extension_headers_h(clasp_task):
-    def run(self):
-        log.debug("generate_extension_headers_h running, inputs: %s", self.inputs)
-        output_file = self.outputs[0].abspath()
-        new_contents = "// Generated by the wscript generate_extension_headers_h task - Editing it is unwise!\n"
-        old_contents = ""
-        for x in self.inputs[1:]:
-            new_contents += ("#include \"%s\"\n" % x.abspath())
-        if os.path.isfile(output_file):
-            fin = open(output_file, "r")
-            old_contents = fin.read()
-            fin.close()
-        if old_contents != new_contents:
-            log.debug("Writing to %s", output_file)
-            fout = open(output_file, "w")
-            fout.write(new_contents)
-            fout.close()
-        else:
-            log.debug("NOT writing to %s - it is unchanged", output_file)
 
 def write_source_file_list_for_doxygen(source_files):
     fout = open("build/doxygen-source-files.list","w")
@@ -2322,7 +2294,7 @@ class scraper_task(clasp_task):
 
 class precompile_scraper(scraper_task):
     weight = 5    # Tell waf to run this early among the equal tasks because it will take long
-    before = ['expand_pump_template']
+    before = ['generate_sif_files']
 
     def run(self):
         cmd = self.scraper_command_line(["--eval", '(with-open-file (stream "%s" :direction :output :if-exists :supersede) (terpri stream))' % self.outputs[0].abspath()])
@@ -2330,7 +2302,6 @@ class precompile_scraper(scraper_task):
 
 class generate_sif_files(scraper_task):
     ext_out = ['.sif']    # this affects the task execution order
-    after = ['expand_pump_template']
     waf_print_keyword = "Scraping"
 
     def run(self):
@@ -2377,34 +2348,6 @@ class generate_headers_from_all_sifs(scraper_task):
     def display(self):
         return "generate_headers_from_all_sifs.display() would be VERY long - remove display() to display\n"
     
-def make_pump_tasks(bld, template_dir, output_dir):
-    log.debug("Building pump tasks: %s -> %s", template_dir, output_dir)
-    templates = collect_waf_nodes(bld, template_dir, suffix = '.pmp')
-    assert len(templates) > 0
-    for template_node in templates:
-        template_name = template_node.name
-        output_path = os.path.join("generated/", output_dir, template_name.replace(".pmp", ".h"))
-        output_node = bld.path.find_or_declare(output_path)
-        log.debug("Creating expand_pump_template: %s -> %s", template_node.abspath(), output_node.abspath())
-        assert output_node
-        task = expand_pump_template(env = bld.env)
-        task.set_inputs([template_node])
-        task.set_outputs([output_node])
-        bld.add_to_group(task)
-        bld.install_files('${PREFIX}/lib/clasp/', [output_node], relative_trick = True, cwd = bld.path)
-    log.info("Created %s pump template tasks found in dir: %s", len(templates), template_dir)
-
-class expand_pump_template(clasp_task):
-    ext_out  = ['.h']      # this affects the task execution order
-
-    def run(self):
-        assert len(self.inputs) == len(self.outputs) == 1
-        cmd = ['python',
-               os.path.join(self.bld.path.abspath(), "tools-for-build/pump.py"),
-               self.inputs[0].abspath(),
-               self.outputs[0].abspath()]
-        return self.exec_command(cmd)
-
 #
 #
 # TaskGen's

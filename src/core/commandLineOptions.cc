@@ -97,7 +97,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-l/--load {file}     - LOAD the file\n"
              "--rc {file}          - Specify name of the RC file (default .clasprc)\n"
              "-r/--norc            - Don't load the RC file\n"
-             "-n/--noinit          - Don't load the init.lsp (very minimal environment)\n"
+             "-n/--noinit          - Don't load the init.lisp (very minimal environment)\n"
              "-S/--seed #          - Seed the random number generator\n"
              "-w/--wait            - Print the PID and wait for the user to hit a key\n"
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"

@@ -5,11 +5,11 @@
 ;;;
 ;;;     cleavir tests
 ;;;
-;;; Running slime from bclasp+cleavir - don't load inline.lsp or auto-compile
+;;; Running slime from bclasp+cleavir - don't load inline.lisp or auto-compile
 ;;;  --- Testing defun-inline-hook
 (print "Starting")
 (progn
-  (load "sys:kernel;clasp-builder.lsp")
+  (load "sys:kernel;clasp-builder.lisp")
   (flet ((build-module (source-file)
            (core:compile-kernel-file source-file :force-recompile t)
            (cmp:llvm-link (core:build-pathname source-file :fasl)
@@ -51,12 +51,12 @@
 
 (let ((clasp-cleavir::*save-compile-file-info* t))
 ;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp" :print nil))
+  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp" :print nil))
 
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;prologue.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;prologue.lisp")
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;tc.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:tests;tc.lisp")
 
 
 clasp-cleavir::*saved-compile-file-info*
@@ -88,7 +88,7 @@ clasp-cleavir::*saved-compile-file-info*
 (let ((clasp-cleavir::*save-compile-file-info* t)
       (cst::*recursively-set-source* t))
 ;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp" :print t))
+  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp" :print t))
 
 (cleavir-ast-graphviz:draw-ast (second (car clasp-cleavir::*saved-compile-file-info*)) "/tmp/after.dot")
 
@@ -139,22 +139,22 @@ clasp-cleavir::*saved-compile-file-info*
 
 
 ;;; ------   Compile using forms
-(clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp")
 
 ;;; ------   Compile using CSTs
 (let ((clasp-cleavir::*interactive-debug* nil)
       (clasp-cleavir::*use-cst* t))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp"))
+  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp"))
 
 
 ;;; ------   Compile using CSTs
 (let ((clasp-cleavir::*interactive-debug* nil)
       (clasp-cleavir::*use-cst* t))
-  (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lsp"))
+  (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lisp"))
 
 (let ((clasp-cleavir::*interactive-debug* nil)
       (clasp-cleavir::*use-cst* t))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;tc.lsp"))
+  (clasp-cleavir:cleavir-compile-file "sys:tests;tc.lisp"))
 
 
 (let ((clasp-cleavir::*interactive-debug* nil)
@@ -185,7 +185,7 @@ clasp-cleavir::*saved-compile-file-info*
 (trace cleavir-cst-to-ast:convert-code)
 (trace cleavir-cst-to-ast:convert)
 (trace cleavir-ast:make-load-time-value-ast)
-(defparameter *csts* (read-one-file-return-list-of-csts #P"sys:tests;ta.lsp"))
+(defparameter *csts* (read-one-file-return-list-of-csts #P"sys:tests;ta.lisp"))
 
 *csts*
 (length *csts*)
@@ -199,7 +199,7 @@ clasp-cleavir::*saved-compile-file-info*
 
 
 
-(make-pathname :type "fasl" :defaults "~/Development/cst-clasp/src/lisp/kernel/tag/min-start.lsp")
+(make-pathname :type "fasl" :defaults "~/Development/cst-clasp/src/lisp/kernel/tag/min-start.lisp")
 
 (progn
   (defun compile-one (fn)
@@ -210,120 +210,120 @@ clasp-cleavir::*saved-compile-file-info*
    (let ((clasp-cleavir::*use-cst* t))
      (mapc (lambda (fn) (compile-one fn))
            '(
-             "~/Development/cst-clasp/src/lisp/kernel/tag/min-start.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/init.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/tag/after-init.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/runtime-info.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/jit-setup.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clsymbols.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/packages.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/foundation.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/export.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/defmacro.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/helpfile.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/evalmacros.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/claspmacros.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/source-transformations.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/testing.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/arraylib.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/setf.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/listlib.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/mislib.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/defstruct.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/predlib.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/cdr-5.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/seq.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/cmuutil.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/seqmacros.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/seqlib.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/iolib.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/logging.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/sharpmacros.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/trace.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/backtrace.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpexports.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpsetup.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpglobals.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmputil.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpintrinsics.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/primitives.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpir.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpeh.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/debuginfo.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-vars.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/arguments.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmplambda.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmprunall.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpliteral.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/typeq.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpfastgf.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-special-form.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/compile.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-toplevel.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/compile-file.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/disassemble.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/external-clang.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpname.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpbundle.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmprepl.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/tag/min-pre-epilogue.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/epilogue-aclasp.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/tag/min-end.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/tag/bclasp-start.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpwalk.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/assert.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/numlib.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/describe.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/module.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/loop2.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-type.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-sequence.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-cons.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/shiftf-rotatef.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/assorted.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/packlib.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/defpackage.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/format.lsp" 
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/mp.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/package.lsp"                             
-             "~/Development/cst-clasp/src/lisp/kernel/clos/hierarchy.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/cpl.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/std-slot-value.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/slot.lsp"
-           ;;                             "~/Development/cst-clasp/src/lisp/kernel/clos/boot.lsp" ;
-             "~/Development/cst-clasp/src/lisp/kernel/clos/kernel.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/closfastgf.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/satiation.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/method.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/combin.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/std-accessors.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/defclass.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/slotvalue.lsp"
+             "~/Development/cst-clasp/src/lisp/kernel/tag/min-start.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/init.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/tag/after-init.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/runtime-info.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/jit-setup.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clsymbols.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/packages.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/foundation.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/export.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/defmacro.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/helpfile.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/evalmacros.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/claspmacros.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/source-transformations.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/testing.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/arraylib.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/setf.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/listlib.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/mislib.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/defstruct.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/predlib.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/cdr-5.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/seq.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/cmuutil.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/seqmacros.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/seqlib.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/iolib.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/logging.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/sharpmacros.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/trace.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/backtrace.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpexports.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpsetup.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpglobals.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmputil.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpintrinsics.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/primitives.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpir.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpeh.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/debuginfo.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-vars.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/arguments.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmplambda.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmprunall.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpliteral.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/typeq.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpfastgf.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-special-form.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/compile.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-toplevel.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/compile-file.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/disassemble.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/external-clang.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpname.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpbundle.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmprepl.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/tag/min-pre-epilogue.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/epilogue-aclasp.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/tag/min-end.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/tag/bclasp-start.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpwalk.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/assert.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/numlib.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/describe.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/module.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/loop2.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-type.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-sequence.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-cons.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/shiftf-rotatef.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/assorted.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/packlib.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/defpackage.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/format.lisp" 
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/mp.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/package.lisp"                             
+             "~/Development/cst-clasp/src/lisp/kernel/clos/hierarchy.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/cpl.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/std-slot-value.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/slot.lisp"
+           ;;                             "~/Development/cst-clasp/src/lisp/kernel/clos/boot.lisp" ;
+             "~/Development/cst-clasp/src/lisp/kernel/clos/kernel.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/closfastgf.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/satiation.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/method.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/combin.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/std-accessors.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/defclass.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/slotvalue.lisp"
 
-             "~/Development/cst-clasp/src/lisp/kernel/clos/standard.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/builtin.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/change.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/stdmethod.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/generic.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/fixup.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/extraclasses.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/source-location.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/defvirtual.lsp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/standard.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/builtin.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/change.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/stdmethod.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/generic.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/fixup.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/extraclasses.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/source-location.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/defvirtual.lisp"
              ||#
-             "~/Development/cst-clasp/src/lisp/kernel/clos/conditions.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/print.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/streams.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/pprint.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/clos/inspect.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/fli.lsp"
-             "~/Development/cst-clasp/src/lisp/modules/sockets/sockets.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/top.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/cmp/export-to-cleavir.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/tag/pre-epilogue-bclasp.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/lsp/epilogue-bclasp.lsp"
-             "~/Development/cst-clasp/src/lisp/kernel/tag/bclasp.lsp")))))
+             "~/Development/cst-clasp/src/lisp/kernel/clos/conditions.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/print.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/streams.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/pprint.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/clos/inspect.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/fli.lisp"
+             "~/Development/cst-clasp/src/lisp/modules/sockets/sockets.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/top.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/cmp/export-to-cleavir.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/tag/pre-epilogue-bclasp.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/lsp/epilogue-bclasp.lisp"
+             "~/Development/cst-clasp/src/lisp/kernel/tag/bclasp.lisp")))))
 
 
 
@@ -378,13 +378,13 @@ clasp-cleavir::*use-cst*
 
 
 (let ((*package* (find-package :clos)))
-  (read-one-file "sys:kernel;clos;hierarchy2.lsp"))
+  (read-one-file "sys:kernel;clos;hierarchy2.lisp"))
 
 (defun read-one-cst (pn)
   (with-open-file (fin pn)
     (eclector.concrete-syntax-tree:cst-read fin nil :eof)))
 
-(defparameter *cst* (read-one-cst "sys:tests;ta.lsp"))
+(defparameter *cst* (read-one-cst "sys:tests;ta.lisp"))
 (defun describe-source (cst)
   (let ((*print-pretty* nil))
     (describe-source-impl cst)))
@@ -409,125 +409,125 @@ clasp-cleavir::*use-cst*
     (format t "Reading file: ~a~%" f)
     (clasp-cleavir:cleavir-compile-file f)))
 
-(time (read-multiple-files '("~/Development/cst-clasp/src/lisp/kernel/tag/min-start.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/init.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/tag/after-init.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/runtime-info.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/jit-setup.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clsymbols.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/packages.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/foundation.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/export.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/defmacro.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/helpfile.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/evalmacros.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/claspmacros.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/source-transformations.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/testing.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/arraylib.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/setf.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/listlib.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/mislib.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/defstruct.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/predlib.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/cdr-5.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/seq.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/cmuutil.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/seqmacros.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/seqlib.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/iolib.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/logging.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/sharpmacros.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/trace.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/backtrace.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpexports.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpsetup.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpglobals.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmputil.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpintrinsics.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/primitives.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpir.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpeh.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/debuginfo.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-vars.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/arguments.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmplambda.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmprunall.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpliteral.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/typeq.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpfastgf.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-special-form.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/compile.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-toplevel.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/compile-file.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/disassemble.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/external-clang.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpname.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpbundle.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmprepl.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/tag/min-pre-epilogue.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/epilogue-aclasp.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/tag/min-end.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/tag/bclasp-start.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpwalk.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/assert.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/numlib.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/describe.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/module.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/loop2.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-type.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-sequence.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-cons.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/shiftf-rotatef.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/assorted.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/packlib.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/defpackage.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/format.lsp" 
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/mp.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/package.lsp"                             
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/hierarchy.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/cpl.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/std-slot-value.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/slot.lsp"
-;;                             "~/Development/cst-clasp/src/lisp/kernel/clos/boot.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/kernel.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/closfastgf.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/satiation.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/method.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/combin.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/std-accessors.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/defclass.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/slotvalue.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/standard.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/builtin.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/change.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/stdmethod.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/generic.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/fixup.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/extraclasses.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/source-location.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/defvirtual.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/conditions.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/print.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/streams.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/pprint.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/clos/inspect.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/fli.lsp"
-                             "~/Development/cst-clasp/src/lisp/modules/sockets/sockets.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/top.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/cmp/export-to-cleavir.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/tag/pre-epilogue-bclasp.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/lsp/epilogue-bclasp.lsp"
-                             "~/Development/cst-clasp/src/lisp/kernel/tag/bclasp.lsp")))
+(time (read-multiple-files '("~/Development/cst-clasp/src/lisp/kernel/tag/min-start.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/init.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/tag/after-init.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/runtime-info.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/jit-setup.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clsymbols.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/packages.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/foundation.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/export.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/defmacro.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/helpfile.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/evalmacros.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/claspmacros.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/source-transformations.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/testing.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/arraylib.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/setf.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/listlib.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/mislib.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/defstruct.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/predlib.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/cdr-5.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/seq.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/cmuutil.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/seqmacros.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/seqlib.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/iolib.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/logging.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/sharpmacros.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/trace.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/backtrace.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpexports.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpsetup.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpglobals.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmputil.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpintrinsics.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/primitives.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpir.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpeh.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/debuginfo.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-vars.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/arguments.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmplambda.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmprunall.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpliteral.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/typeq.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpfastgf.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-special-form.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/compile.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/codegen-toplevel.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/compile-file.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/disassemble.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/external-clang.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpname.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpbundle.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmprepl.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/tag/min-pre-epilogue.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/epilogue-aclasp.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/tag/min-end.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/tag/bclasp-start.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/cmpwalk.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/assert.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/numlib.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/describe.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/module.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/loop2.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-type.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-sequence.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/opt-cons.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/shiftf-rotatef.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/assorted.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/packlib.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/defpackage.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/format.lisp" 
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/mp.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/package.lisp"                             
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/hierarchy.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/cpl.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/std-slot-value.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/slot.lisp"
+;;                             "~/Development/cst-clasp/src/lisp/kernel/clos/boot.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/kernel.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/closfastgf.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/satiation.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/method.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/combin.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/std-accessors.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/defclass.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/slotvalue.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/standard.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/builtin.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/change.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/stdmethod.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/generic.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/fixup.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/extraclasses.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/source-location.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/defvirtual.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/conditions.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/print.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/streams.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/pprint.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/clos/inspect.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/fli.lisp"
+                             "~/Development/cst-clasp/src/lisp/modules/sockets/sockets.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/top.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/cmp/export-to-cleavir.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/tag/pre-epilogue-bclasp.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/lsp/epilogue-bclasp.lisp"
+                             "~/Development/cst-clasp/src/lisp/kernel/tag/bclasp.lisp")))
 
 
 
 (load "sys:tests;tt-00001-preoptimize.ll")
 (core::foo)
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp")
 (trace clasp-cleavir::layout-procedure)
 (trace clasp-cleavir::layout-basic-block)
 (trace clasp-cleavir::translate-simple-instruction)
@@ -538,17 +538,17 @@ clasp-cleavir::*use-cst*
 
 
 (let ((cmp:*compile-file-debug-dump-module* t))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;tt.lsp"
+  (clasp-cleavir:cleavir-compile-file "sys:tests;tt.lisp"
                                       :optimize nil))
 
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;mislib.lsp" :debug t)
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;mislib.lisp" :debug t)
 
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
 
 
 
-(time (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;predlib.lsp"))
+(time (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;predlib.lisp"))
 
 (let ((clos::*monitor-dispatch* t)
       (clos::*dispatch-log* nil))
@@ -584,14 +584,14 @@ clasp-cleavir::*use-cst*
 
 
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp" :print t)
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lisp" :print t)
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lisp")
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;tc.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:tests;tc.lisp")
 
 clasp-cleavir::*pvi*
-(let ((clasp-cleavir:*debug-cleavir* t) (compiler:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lsp"))
+(let ((clasp-cleavir:*debug-cleavir* t) (compiler:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lisp"))
 (load "sys:tests;td.fasl")
 (foo 0)
 
@@ -611,7 +611,7 @@ clasp-cleavir::*pvi*
 
 
 (apropos "compile-file-debug-dump")
-(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lsp"))
+(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lisp"))
 (load "sys:tests;td.fasl")
 
 (foo 123)
@@ -656,7 +656,7 @@ clasp-cleavir::*pvi*
 
 (time (asdf:load-system "clasp-cleavir"))
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;td.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:tests;td.lisp")
 
 
 (time (require :clasp-cleavir))
@@ -676,7 +676,7 @@ clasp-cleavir::*pvi*
 
 (foo 1 2)
 
-(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp"))
+(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp"))
 (load "sys:tests;ta.fasl")
 (foo)
 
@@ -745,7 +745,7 @@ clasp-cleavir::*hir-types*
                        20)))))
 
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;tt.lsp" :print t)
+(clasp-cleavir:cleavir-compile-file "sys:tests;tt.lisp" :print t)
 
 
 

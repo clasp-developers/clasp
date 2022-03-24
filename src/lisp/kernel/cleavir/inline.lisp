@@ -1638,7 +1638,7 @@
   `(cleavir-primop:let-uninitialized (z)
      (if (cleavir-primop:fixnum-add ,a ,b z) z z)))
 
-;; FIXME: Duplicate code from seqmacros.lsp.
+;; FIXME: Duplicate code from seqmacros.lisp.
 #+(or)
 (defmacro with-array-data ((arrayname offsetname array) &body body)
   `(multiple-value-bind (,arrayname ,offsetname)
@@ -1944,7 +1944,7 @@
 
 ;;; ------------------------------------------------------------
 ;;;
-;;;  Copied from clasp/src/lisp/kernel/lsp/pprint.lsp
+;;;  Copied from clasp/src/lisp/kernel/lsp/pprint.lisp
 ;;;    and put here so that the inline definition is available
 ;;;
 (in-package "SI")

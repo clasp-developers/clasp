@@ -765,6 +765,10 @@ size_t processMpsMessages(size_t& finalizations) {
 
 namespace gctools {
 
+void walkRoots( RootWalkCallback, void* data ) {
+  // Do nothing
+};
+
 void test_mps_allocation() {
   int numAllocations = 10000;
   printf("Starting test_mps_allocation -> allocating %d objects\n", numAllocations);

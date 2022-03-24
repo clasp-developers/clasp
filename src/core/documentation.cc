@@ -42,7 +42,7 @@ namespace core {
 
 CL_LAMBDA(record key sub-key)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(record_cons - see ECL helpfile.lsp>>record-cons)dx")
+CL_DOCSTRING(R"dx(record_cons - see ECL helpfile.lisp>>record-cons)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
   Cons_sp cons = Cons_O::create(key, sub_key);
@@ -56,7 +56,7 @@ CL_DEFUN T_sp core__record_cons(List_sp record, T_sp key, T_sp sub_key) {
 
 CL_LAMBDA(record key sub-key)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(record_field see ecl>>helpfile.lsp>>record-field)dx")
+CL_DOCSTRING(R"dx(record_field see ecl>>helpfile.lisp>>record-field)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__record_field(List_sp record, T_sp key, T_sp sub_key) {
   List_sp cons = core__record_cons(record, key, sub_key);
@@ -100,7 +100,7 @@ CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
 
 CL_LAMBDA(object key sub-key value)
 CL_DECLARE();
-CL_DOCSTRING(R"dx(annotate - see ecl>>helpfile.lsp>>annotate; **key** is either 'documentation or 'setf-documentation **object** must be a symbol)dx")
+CL_DOCSTRING(R"dx(annotate - see ecl>>helpfile.lisp>>annotate; **key** is either 'documentation or 'setf-documentation **object** must be a symbol)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value) {
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));

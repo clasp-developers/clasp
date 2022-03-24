@@ -52,7 +52,7 @@ namespace core {
   class FuncallableInstance_O : public Function_O {
     LISP_CLASS(core, CorePkg, FuncallableInstance_O, "FuncallableInstance",Function_O);
     // This structure is known to the compiler,
-    // in src/lisp/kernel/cmp/cmpintrinsics.lsp.
+    // in src/lisp/kernel/cmp/cmpintrinsics.lisp.
     // Changes to the structure here must be reflected there.
   public: // ctor/dtor for classes with shared virtual base
   FuncallableInstance_O(GlobalEntryPoint_sp ep) :

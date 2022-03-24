@@ -418,7 +418,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 #endif // USE_MPS
 
 //
-// We don't want the static analyzer gc-builder.lsp to see the generated scanners
+// We don't want the static analyzer gc-builder.lisp to see the generated scanners
 //
 #ifdef USE_MPS
   #ifndef RUNNING_PRECISEPREP

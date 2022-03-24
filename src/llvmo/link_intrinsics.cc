@@ -154,7 +154,7 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 }
 
 // Define what ltvc_xxxx functions return - this must match what is
-//  in cmpintrinsics.lsp
+//  in cmpintrinsics.lisp
 typedef void LtvcReturnVoid;
 #define LTVCRETURN /* Nothing return for void */
 
@@ -585,7 +585,7 @@ NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nar
   Function_sp function((gctools::Tagged)tfunction);
   /* This is kind of a KLUDGE, but we use a smaller max to indicate there is no
    * limit on the number of arguments (i.e., &rest or &key).
-   * Check how calls to this function are generated in cmp/arguments.lsp. */
+   * Check how calls to this function are generated in cmp/arguments.lisp. */
   if (max < min)
     core::eval::funcall(cl::_sym_error,
                         core::_sym_wrongNumberOfArguments,
@@ -623,7 +623,7 @@ T_O* cc_list(size_t nargs, ...) {
 }
 
 /* Conses up a &rest argument from the passed valist.
- * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
+ * Used in cmp/arguments.lisp for the general case of functions with a &rest in their lambda list. */
 __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(Vaslist* vaslist, std::size_t nargs)
 {NO_UNWIND_BEGIN();
   ql::list result;

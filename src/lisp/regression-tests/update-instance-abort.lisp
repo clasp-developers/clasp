@@ -2,7 +2,7 @@
 ;;;;
 ;;;; As a slight extension, when an error in user-provided methods on these
 ;;;; functions is signaled, Clasp rolls back the instance into validity
-;;;; before any nonlocal exit completes. See clos/change.lsp.
+;;;; before any nonlocal exit completes. See clos/change.lisp.
 
 ;;;; This test file is copied with modifications from
 ;;;; SBCL's mop-32 and mop-33.impure.lisp.

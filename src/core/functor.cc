@@ -406,7 +406,7 @@ FunctionDescription_sp makeFunctionDescriptionFromFunctionInfo(T_sp information,
                                                                claspFunction entry_point)
 {
 #define POP(rrr,lll) T_sp rrr = oCar(lll); lll = oCdr(lll);
-  // THE order of entries MUST match cmpir.lsp function-info
+  // THE order of entries MUST match cmpir.lisp function-info
   POP(function_info_name, information);
   POP(functionName, information);
   POP(lambdaList, information);

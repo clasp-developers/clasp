@@ -277,10 +277,10 @@ def waf_nodes_for_lisp_files(bld, paths):
     nodes = []
     for path in paths:
         if path[:4] == "src/":
-            waf_node = bld.path.find_resource("%s.lsp" % path)
+            waf_node = bld.path.find_resource("%s.lisp" % path)
             if (waf_node == None):
                 waf_node = bld.path.find_resource("%s.lisp" % path)
-            #log.debug("Looking for lisp file with .lsp or .lisp: %s --> %s", path, waf_node)
+            #log.debug("Looking for lisp file with .lisp or .lisp: %s --> %s", path, waf_node)
         else: # generated files
             waf_node = bld.path.find_or_declare("%s.lisp" % path)
             #log.debug("Looking for generated lisp file with .lisp: %s --> %s", path, waf_node)

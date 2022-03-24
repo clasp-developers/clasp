@@ -914,7 +914,7 @@ void checkTargetArgument(T_sp arg) {
 
 /*! Process the arguments and return the components
  * context may be: ordinary, macro, destructuring, deftype,
- * define_method_combination, defsetf  HOWEVER ECL>>clos/method.lsp:line 402 passes T!!!!
+ * define_method_combination, defsetf  HOWEVER ECL>>clos/method.lisp:line 402 passes T!!!!
  * and determines the
  * valid sytax. The output is made of several values:
  *

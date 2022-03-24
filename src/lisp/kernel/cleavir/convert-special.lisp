@@ -571,7 +571,7 @@
 ;;;
 ;;; Enhance source locations.
 
-;;; Called by ext::special-operator-source-locations in source-location.lsp
+;;; Called by ext::special-operator-source-locations in source-location.lisp
 (defun special-operator-source-locations (name)
   ;; We check for explicit specialization rather than using
   ;; compute-applicable-methods so that general around methods etc. are not
