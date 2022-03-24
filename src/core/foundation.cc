@@ -412,7 +412,7 @@ void colon_split(const string& name, string& package_str, string& symbol_str)
     symbol_str = symbol_str.substr(first,last-first+1);
     if (symbol_str[0] == '|' &&
         symbol_str[symbol_str.size()-1] == '|') {
-      symbol_str = symbol_str.substr(0,symbol_str.size()-2);
+      symbol_str = symbol_str.substr(1,symbol_str.size()-2);
     }
     return;
   }
