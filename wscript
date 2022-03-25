@@ -451,6 +451,7 @@ def configure_common(cfg,variant_obj):
     log.info("cfg.env.PREFIX is %s" % cfg.env.PREFIX)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
     cfg.define("APP_NAME",APP_NAME)
+    cfg.define("VARIANT_DIR",variant_obj.variant_dir())
     cfg.define("BITCODE_NAME",variant_obj.bitcode_name())
     cfg.define("VARIANT_NAME",variant_obj.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags_as_string(cfg.env.STLIB_ST,cfg.env.STLIB))
