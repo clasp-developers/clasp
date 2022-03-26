@@ -7,6 +7,13 @@
   for loading and fast startup later. Our most complex environment Cando starts 
   up in ~4 seconds, which is 10x faster than the old startup that loaded 
   libraries.
+* Atomics interface for lock-free concurrent programming, in the `mp:` package.
+* Garbage collection hooks including finalizers.
+* Specialized arrays for sub-byte integer types (int2, int4, etc.)
+* Source tracking: Code locations are associated with source locations via
+  DWARF, to aid in debugging and project navigation.
+* `clasp-debug` interface so that IDEs like SLIME can retrieve backtracces and
+  more to present during debugging.
 
 # Version 0.5.0
 
