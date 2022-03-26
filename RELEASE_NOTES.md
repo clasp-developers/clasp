@@ -1,5 +1,7 @@
 # Version 1.0.0 (LLVM13) 2022-03-26
 
+* Add ed hooks functionality for `ed` function. Accessible via `*ed-functions*`
+  dynamic variable.
 * New compiled library format called FASP - it uses concatenated object files.
 * Implemented `save-lisp-and-die`. This saves the state of a running environment 
   for loading and fast startup later. Our most complex environment Cando starts 
