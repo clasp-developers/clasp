@@ -12,7 +12,7 @@
 * Specialized arrays for sub-byte integer types (int2, int4, etc.)
 * Source tracking: Code locations are associated with source locations via
   DWARF, to aid in debugging and project navigation.
-* `clasp-debug` interface so that IDEs like SLIME can retrieve backtracces and
+* `clasp-debug` interface so that IDEs like SLIME can retrieve backtraces and
   more to present during debugging.
 
 # Version 0.5.0
