@@ -19,6 +19,8 @@
   DWARF, to aid in debugging and project navigation.
 * `clasp-debug` interface so that IDEs like SLIME can retrieve backtraces and
   more to present during debugging.
+* Fixed many errors identified by the ansi-test-suite [ANSI][]
+* Fully integrated the customizable reader [ECLECTOR][]
 
 # Version 0.5.0
 
@@ -75,3 +77,5 @@
   files from Common Lisp source. The "ld" linker does need to be accessible.
 
 [SICL]: https://github.com/robert-strandh/SICL
+[ANSI]: https://gitlab.common-lisp.net/ansi-test/ansi-test
+[ECLECTOR]: https://github.com/s-expressionists/Eclector
