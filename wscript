@@ -120,7 +120,7 @@ CLANG_LIBRARIES = [
             'clangIndex',
             'clangTooling',
             'clangFormat',
-    'clangToolingInclusions',
+            'clangToolingInclusions',
             'clangToolingCore',
             'clangBasic',
             'clangCodeGen',
@@ -145,7 +145,7 @@ CLANG_LIBRARIES = [
             'clangLex',
             'clangBasic'
  ]
-# CLANG_LIBRARIES = [ 'clang-cpp' ]
+CLANG_CPP_LIBRARIES = [ 'clang-cpp' ]
 # LLVM_LIBRARIES = [ 'LLVM' ]
 
 BOOST_LIBRARIES = []
@@ -1380,14 +1380,12 @@ def configure(cfg):
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
     llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
-#dynamic llvm/clang
-    cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
+    try:
+        cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
+    except ConfigurationError:
+        cfg.check_cxx(lib=CLANG_CPP_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
     cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )
 
-
-    #static llvm/clang
-#    cfg.check_cxx(stlib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
-#    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
 # This was includes - but that doesn't put it in the right place when building home built llvm
     llvm_include_dir = "%s/../include" % run_llvm_config_for_libs(cfg, "--bindir") 
     log.debug("llvm_include_dir = %s", llvm_include_dir)
