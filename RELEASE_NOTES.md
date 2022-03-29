@@ -1,3 +1,8 @@
+# Version 1.1.0 Pending
+
+* Replace hard coded paths to `nm` in snapshot code with NM_BINARY macro value
+  set by configure.
+
 # Version 1.0.0 (LLVM13) 2022-03-26
 
 * Add ed hooks functionality for `ed` function. Accessible via `*ed-functions*`
