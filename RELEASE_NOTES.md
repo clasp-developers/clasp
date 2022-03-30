@@ -2,6 +2,7 @@
 
 * Replace hard coded paths to `nm` in snapshot code with NM_BINARY macro value
   set by configure.
+* Enhancement: `make-instance` and CLOS slot access functions can be used with structure objects.
 
 # Version 1.0.0 (LLVM13) 2022-03-26
 

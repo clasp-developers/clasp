@@ -228,3 +228,27 @@
              (= (struct-test-56-c55 s) 3)
              (= (struct-test-56-d56 s) 4)
              (= (struct-test-56-e56 s) 5))))
+
+;;; Test our extension that lets MAKE-INSTANCE and SLOT-VALUE be used with
+;;; structure objects. Note that specializing SHARED-INITIALIZE and so on is
+;;; NOT supported and should not be tested. Also note that we don't specify
+;;; that a slot with no initform will be unbound, so don't test that.
+
+(defstruct struct-clos foo (bar 4))
+
+(test struct-make-instance
+      (progn (make-instance 'struct-clos) (values))
+      ())
+
+(test struct-slot-value.1
+      (let ((obj (make-instance 'struct-clos :bar 7)))
+        (slot-value obj 'bar))
+      (7))
+
+;; This also tests that the BAR slot is properly initialized when MAKE-INSTANCE
+;; is used.
+(test struct-slot-value.2
+      (let ((obj (make-instance 'struct-clos)))
+        (setf (slot-value obj 'foo) 5)
+        (values (slot-value obj 'foo) (slot-value obj 'bar)))
+      (5 4))

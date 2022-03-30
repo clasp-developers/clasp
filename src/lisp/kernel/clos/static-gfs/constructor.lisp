@@ -126,12 +126,6 @@ a constructor ought to be computed, before make-instance.
            (loop for key in keys for arg in args
                  collect key collect arg))))
 
-(defun structure-class-constructor (class)
-  (lambda (&rest args)
-    (declare (core:lambda-name structure-class-constructor))
-    (declare (ignore args))
-    (error "The structure-class ~a cannot be instantiated" class)))
-
 (defun built-in-class-constructor (class)
   (lambda (&rest args)
     (declare (core:lambda-name built-in-class-constructor))

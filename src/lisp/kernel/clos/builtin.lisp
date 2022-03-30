@@ -73,17 +73,69 @@
 ;;; ======================================================================
 ;;; STRUCTURES
 ;;;
+;;; As an extension, we allow the use of MAKE-INSTANCE, as well as SLOT-VALUE
+;;; and sundry, on structure objects and classes.
+;;; However, at least for now we do not go through SHARED-INITIALIZE or
+;;; INITIALIZE-INSTANCE when using constructors instead, so specializing those
+;;; on structure classes has undefined behavior.
+;;; Also note that we don't define whether uninitialized slots are bound, or
+;;; what they are bound to if they are bound.
+;;; Most of the methods in standard.lsp work fine for structures and don't need
+;;; to be specialized here.
 
 (defmethod allocate-instance ((class structure-class) &rest initargs)
   (declare (ignore initargs))
   (core:allocate-raw-instance class (make-rack-for-class class)))
 
-;;; structure-classes cannot be instantiated (but could be, as an extension)
-(defmethod make-instance ((class structure-class) &rest initargs)
-  (declare (ignore initargs))
-  (error "The structure-class (~A) cannot be instantiated" class))
+;;; The slot methods do need to be specialized. FIXME: Could possibly be
+;;; cleaned up by making structure-class a subclass of std-class, but with
+;;; an improved structure runtime we'd probably need to do something special
+;;; here regardless.
+(defmethod slot-value-using-class ((class structure-class) self slotd)
+  (let* ((location (slot-definition-location slotd))
+	 (value (standard-instance-access self location)))
+    (if (si:sl-boundp value)
+	value
+	(values (slot-unbound class self (slot-definition-name slotd))))))
 
-(export 'make-instance)
+(defmethod slot-boundp-using-class ((class structure-class) self slotd)
+  (declare (ignore class))
+  (si:sl-boundp (standard-instance-access self
+                                          (slot-definition-location slotd))))
+
+(defmethod (setf slot-value-using-class) (val (class structure-class)
+                                          self slotd)
+  (declare (ignore class))
+  (setf (standard-instance-access self (slot-definition-location slotd)) val))
+
+(defmethod slot-makunbound-using-class ((class structure-class) instance slotd)
+  (declare (ignore class))
+  (setf (standard-instance-access instance (slot-definition-location slotd))
+        (si:unbound))
+  instance)
+
+#+threads
+(defmethod cas-slot-value-using-class
+    (old new (class structure-class) object
+     (slotd standard-effective-slot-definition))
+  (let ((loc (slot-definition-location slotd)))
+    (mp:cas (standard-instance-access object loc) old new)))
+
+#+threads
+(defmethod atomic-slot-value-using-class
+    ((class structure-class) object (slotd standard-effective-slot-definition))
+  (let* ((loc (slot-definition-location slotd))
+         (v (mp:atomic (standard-instance-access object loc))))
+    (if (si:sl-boundp v)
+        v
+        (values (slot-unbound class object (slot-definition-name slotd))))))
+
+#+threads
+(defmethod (setf atomic-slot-value-using-class)
+    (new-value (class structure-class) object
+     (slotd standard-effective-slot-definition))
+  (let ((loc (slot-definition-location slotd)))
+    (setf (mp:atomic (standard-instance-access object loc)) new-value)))
 
 (defmethod finalize-inheritance ((class structure-class))
   (call-next-method)
