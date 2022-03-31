@@ -41,3 +41,8 @@ f0
 /dependencies/
 config.sexp
 extensions/*/
+.debhelper
+debhelper-build-stamp
+clasp.substvars
+debian/clasp
+debian/files

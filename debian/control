@@ -1,0 +1,27 @@
+Source: clasp
+Section: lisp
+Priority: optional
+Maintainer: Tarn W. Burton <twburton@gmail.com>
+Build-Depends: debhelper-compat (= 13), libbsd-dev, libelf-dev, libffi-dev,
+	libgc-dev, libgmp-dev, libncurses-dev, llvm-13, clang-13, python3,
+	python-is-python3, sbcl, zlib1g-dev, llvm-13-dev, libclang-13-dev,
+	ninja-build
+Standards-Version: 4.5.1
+Homepage: https://github.com/clasp-developers/clasp
+Vcs-Browser: https://github.com/clasp-developers/clasp
+Vcs-Git: https://github.com/clasp-developers/clasp.git
+Rules-Requires-Root: no
+
+Package: clasp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libbsd0, libelf1, libffi-dev,
+	libgmp10, libgmpxx4ldbl, libncurses6, llvm-13, clang-13, python3,
+	python-is-python3, zlib1g
+Description: Common Lisp implementation that brings Common Lisp and C++ Together
+	Clasp is a new Common Lisp implementation that seamlessly interoperates
+	with C++ libraries and programs using LLVM for compilation to native
+	code. This allows Clasp to take advantage of a vast array of preexisting
+	libraries and programs, such as out of the scientific computing
+	ecosystem. Embedding them in a Common Lisp environment allows you to
+	make use of rapid prototyping, incremental development, and other
+	capabilities that make it a powerful language.
