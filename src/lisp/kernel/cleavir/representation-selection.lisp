@@ -50,6 +50,11 @@
   '(:object))
 (defmethod %definition-rtype ((inst bir:abstract-call) (datum bir:datum))
   :multiple-values)
+(defmethod %definition-rtype ((inst bir:abstract-local-call) (datum bir:datum))
+  (let ((returni (bir:returni (bir:callee inst))))
+    (if returni
+        :multiple-values #+(or)(definition-rtype (bir:input returni))
+        '())))
 (defmethod %definition-rtype ((inst bir:values-save) (datum bir:datum))
   (let ((def (definition-rtype (bir:input inst))))
     (if (listp def)
@@ -162,7 +167,8 @@
 (defmethod %use-rtype ((inst bir:mv-local-call) (datum bir:datum))
   (if (member datum (rest (bir:inputs inst)))
       :vaslist '(:object)))
-(defmethod %use-rtype ((inst bir:returni) (datum bir:datum)) :multiple-values)
+(defmethod %use-rtype ((inst bir:returni) (datum bir:datum))
+  :multiple-values #+(or)(return-use-rtype (bir:function inst) datum))
 (defmethod %use-rtype ((inst bir:values-save) (datum bir:datum))
   (use-rtype (bir:output inst)))
 (defmethod %use-rtype ((inst cc-bmir:mtf) (datum bir:datum))
@@ -216,7 +222,7 @@
                      (list rt)
                      ;; out of range of ort: unused
                      nil)))))))
-             
+
 (defun basic-use-rtype (datum)
   (let ((use (bir:use datum)))
     (if (null use)
@@ -313,6 +319,25 @@
 (defun variable-rtype (datum)
   ;; Just take the minimum of the writers and readers. FIXME: Think harder.
   (min-rtype (definition-rtype datum) (use-rtype datum)))
+
+;;; Determine the use rtype of the return value of a function.
+(defun return-use-rtype (function returni-input)
+  ;; We have to watch out for loops since the return value of a call could
+  ;; be used as an argument to another call of the same function.
+  (when (member returni-input *chasing-rtypes-of* :test #'eq)
+    (return-from return-use-rtype '()))
+  (let ((*chasing-rtypes-of* (cons returni-input *chasing-rtypes-of*))
+        (rt nil)
+        (local-calls (bir:local-calls function)))
+    (if (or (bir:enclose function) (cleavir-set:empty-set-p local-calls))
+        ;; The function is enclosed, so it could be called from anywhere, and
+        ;; we need to use the pessimistic protocol. No enclose and no local
+        ;; calls means it's the top level function, so the same situation.
+        :multiple-values
+        ;; No enclose, so we can look at all the call sites, and if they're
+        ;; amenable, do something smarter.
+        (cleavir-set:doset (call local-calls rt)
+          (setf rt (max-rtype rt (use-rtype (bir:output call))))))))
 
 (defgeneric maybe-assign-rtype (datum))
 (defmethod maybe-assign-rtype ((datum cc-bmir:output)))
@@ -500,6 +525,7 @@
            (object-input instruction fun)
            (cast-inputs instruction :vaslist (rest (bir:inputs instruction)))
            (cast-output instruction :multiple-values)))))
+
 (defmethod insert-casts ((instruction cc-bmir:fixed-mv-call))
   (object-input instruction (first (bir:inputs instruction)))
   (let* ((args (second (bir:inputs instruction)))
@@ -507,13 +533,26 @@
          (nvalues (bir:nvalues instruction))
          (target (make-list nvalues :initial-element :object)))
     (cond ((listp args-rtype)
-           (assert (= (length args-rtype) nvalues))
+           ;; Null rtype can happen e.g. if the input is a local call that is
+           ;; known to not return. But in that case this call really should
+           ;; have been eliminated, so, FIXME. I see it running the numerics
+           ;; regression tests.
+           (assert (or (null args-rtype) (= (length args-rtype) nvalues)))
            (maybe-cast-before instruction args target))
           (t (insert-mtf-before instruction args target))))
   (cast-output instruction :multiple-values))
+
+(defun cast-local-call-output (instruction)
+  (let* ((fun (bir:callee instruction))
+         (returni (bir:returni fun))
+         (actual-rt (if returni
+                        :multiple-values #+(or)(cc-bmir:rtype (bir:input returni))
+                        '())))
+    (cast-output instruction actual-rt)))
+
 (defmethod insert-casts ((instruction bir:local-call))
   (object-inputs instruction (rest (bir:inputs instruction)))
-  (cast-output instruction :multiple-values))
+  (cast-local-call-output instruction))
 (defmethod insert-casts ((instruction bir:mv-local-call))
   (let* ((inputs (bir:inputs instruction))
          (args (second inputs)))
@@ -523,7 +562,7 @@
            (insert-casts instruction))
           (t
            (cast-inputs instruction :vaslist (rest (bir:inputs instruction)))
-           (cast-output instruction :multiple-values)))))
+           (cast-local-call-output instruction)))))
 (defmethod insert-casts ((instruction cc-bmir:fixed-mv-local-call))
   (let* ((args (second (bir:inputs instruction)))
          (args-rtype (cc-bmir:rtype args))
@@ -533,7 +572,7 @@
            (assert (= (length args-rtype) nvalues))
            (maybe-cast-before instruction args target))
           (t (insert-mtf-before instruction args target))))
-  (cast-output instruction :multiple-values))
+  (cast-local-call-output instruction))
 (defmethod insert-casts ((instruction cc-bir:mv-foreign-call))
   (object-inputs instruction)
   (cast-output instruction :multiple-values))
@@ -632,6 +671,7 @@
     (maybe-cast-before instruction (second inputs) '(:vaslist)))
   (cast-output instruction '(:vaslist)))
 
+;; returni just passes out whatever it's given. (or will)
 (defmethod insert-casts ((instruction bir:returni))
   (cast-inputs instruction :multiple-values))
 (defmethod insert-casts ((inst bir:primop))

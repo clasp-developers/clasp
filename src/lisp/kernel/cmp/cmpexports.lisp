@@ -85,6 +85,7 @@
             +header-where-tag+
             +literal-tag-char-code+
             *startup-primitives-as-list*
+            %void%
             %i1%
             %exception-struct%
             %i32%
@@ -202,6 +203,7 @@
             irc-create-invoke-default-unwind
             irc-create-landing-pad
             irc-exception-typeid*
+            irc-insert-value
             irc-extract-value
             irc-gep
             irc-gep-variable
