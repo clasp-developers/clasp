@@ -616,7 +616,7 @@
         ;; referenced as literal.
         (%closurette-value enclosed-xep-group))))
 
-(defun gen-local-call (callee arguments)
+(defun gen-local-call (callee arguments outputrt)
   (let ((callee-info (find-llvm-function-info callee)))
     (cond ((lambda-list-too-hairy-p (bir:lambda-list callee))
            ;; Has &key or something, so use the normal call protocol.
@@ -626,9 +626,10 @@
            ;; (If we local-call a self-referencing closure, the closure cell
            ;;  will get its value from some enclose.
            ;;  FIXME we could use that instead?)
-           (closure-call-or-invoke
-            (enclose callee-info :dynamic nil)
-            arguments))
+           (translate-cast (closure-call-or-invoke
+                            (enclose callee-info :dynamic nil)
+                            arguments)
+                           :multiple-values outputrt))
           (t
            ;; Call directly.
            ;; Note that Cleavir doesn't make local-calls if there's an
@@ -646,9 +647,10 @@
                  ;; too many or too few args; we can get here from
                  ;; fixed-mv-local-calls for instance.
                  (return-from gen-local-call
-                   (closure-call-or-invoke
-                    (enclose callee-info :dynamic nil)
-                    arguments))))
+                   (translate-cast (closure-call-or-invoke
+                                    (enclose callee-info :dynamic nil)
+                                    arguments)
+                                   :multiple-values outputrt))))
              (let* ((rest-id (cond ((null rest-var) nil)
                                    ((bir:unused-p rest-var) :unused)
                                    (t t)))
@@ -665,20 +667,16 @@
                       (cmp::irc-call-or-invoke function-type function args)))
                #+(or)
                (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
-               result-in-registers))))))
+               (local-call-rv->inputs result-in-registers outputrt)))))))
 
 (defmethod translate-simple-instruction ((instruction bir:local-call)
                                          abi)
   (declare (ignore abi))
   (let* ((callee (bir:callee instruction))
          (args (mapcar #'in (rest (bir:inputs instruction))))
-         (call (gen-local-call callee args)))
-    (out (if (bir:returni callee)
-             call
-             ;; The function doesn't actually return, so the return type is
-             ;; void, aka rtype nil.
-             nil)
-         (bir:output instruction))))
+         (output (bir:output instruction))
+         (call (gen-local-call callee args (cc-bmir:rtype output))))
+    (out call output)))
 
 (defmethod translate-simple-instruction ((instruction bir:call) abi)
   (declare (ignore abi))
@@ -691,13 +689,15 @@
           :label (datum-name-as-string output))
          output)))
 
-(defun general-mv-local-call-vas (callee-info vaslist label)
-  (cmp:irc-apply (enclose callee-info :dynamic nil)
-                 (cmp:irc-vaslist-nvals vaslist)
-                 (cmp:irc-vaslist-values vaslist)
-                 label))
+(defun general-mv-local-call-vas (callee-info vaslist label outputrt)
+  (translate-cast (cmp:irc-apply (enclose callee-info :dynamic nil)
+                                 (cmp:irc-vaslist-nvals vaslist)
+                                 (cmp:irc-vaslist-values vaslist)
+                                 label)
+                  :multiple-values outputrt))
 
-(defun direct-mv-local-call-vas (vaslist callee-info nreq nopt rest-var label)
+(defun direct-mv-local-call-vas (vaslist callee-info nreq nopt rest-var
+                                 label outputrt)
   (let* ((rnret (cmp:irc-vaslist-nvals vaslist))
          (rvalues (cmp:irc-vaslist-values vaslist))
          (nfixed (+ nreq nopt))
@@ -783,12 +783,13 @@
                                        cmp:*current-unwind-landing-pad-dest*
                                        label)))
         #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
-        call)))))
+        (local-call-rv->inputs call outputrt))))))
 
 (defmethod translate-simple-instruction
     ((instruction bir:mv-local-call) abi)
   (declare (ignore abi))
   (let* ((output (bir:output instruction))
+         (outputrt (cc-bmir:rtype output))
          (oname (datum-name-as-string output))
          (callee (bir:callee instruction))
          (callee-info (find-llvm-function-info callee))
@@ -801,16 +802,10 @@
                            aok aux varest-p)
          (cmp::process-bir-lambda-list (bir:lambda-list callee))
        (declare (ignore keyargs aok aux))
-       (cond ((or key-flag (and varest-p (not (bir:unused-p rest-var))))
-              (general-mv-local-call-vas callee-info mvargi oname))
-             ((bir:returni callee)
-              (direct-mv-local-call-vas
-               mvargi callee-info (car req) (car opt) rest-var oname))
-             (t
-              ;; Function does not return, so rtype is nil.
-              (direct-mv-local-call-vas
-               mvargi callee-info (car req) (car opt) rest-var oname)
-              '())))
+       (if (or key-flag (and varest-p (not (bir:unused-p rest-var))))
+           (general-mv-local-call-vas callee-info mvargi oname outputrt)
+           (direct-mv-local-call-vas
+            mvargi callee-info (car req) (car opt) rest-var oname outputrt)))
      output)))
 
 (defmethod translate-simple-instruction
@@ -824,11 +819,10 @@
     (assert (and (listp mvargrt)
                  (= (length mvargrt) (bir:nvalues instruction))))
     (out
-     (let ((call
-             (gen-local-call callee (if (= (length mvargrt) 1)
-                                        (list mvargi)
-                                        mvargi))))
-       (if (bir:returni callee) call nil))
+     (gen-local-call callee (if (= (length mvargrt) 1)
+                                (list mvargi)
+                                mvargi)
+                     (cc-bmir:rtype output))
      output)))
 
 (defmethod translate-simple-instruction ((instruction bir:mv-call) abi)
@@ -948,11 +942,17 @@
                 ;; A NOP like this isn't generated within code, but the
                 ;; translate-cast in layout-xep can end up here.
                 inputv)
-               ((and (listp outputrt) (= (length outputrt) 1))
+               ((not (listp outputrt)) (error "BUG: Bad rtype ~a" outputrt))
+               ((= (length outputrt) 1)
                 (cast-one :object (first outputrt)
                           (cmp:irc-tmv-primary inputv)))
                ((null outputrt) nil)
-               (t (error "BUG: Cast from ~a to ~a" inputrt outputrt))))
+               (t (cons (cast-one :object (first outputrt)
+                                  (cmp:irc-tmv-primary inputv))
+                        (loop for i from 1
+                              for ort in (rest outputrt)
+                              for val = (cmp:irc-load (return-value-elt i))
+                              collect (cast-one :object ort val))))))
         ((eq inputrt :vaslist)
          (cond ((eq outputrt :multiple-values)
                 (%intrinsic-call "cc_load_values"
@@ -1576,10 +1576,12 @@
 
 (defun local-call-rv->inputs (llvm-value rtype)
   (cond ((eq rtype :multiple-values) llvm-value)
-        ((not (listp rtype)) (error "Bad rtype ~a" rtype))
+        ((not (listp rtype)) (error "BUG: Bad rtype ~a" rtype))
         ((null rtype) nil)
         ((null (rest rtype)) llvm-value)
-        (t (loop for i from 0
+        ((cc-bir-to-bmir::too-big-return-rtype-p rtype)
+         (translate-cast llvm-value :multiple-values rtype))
+        (t (loop for i from 0 below (length rtype)
                  collect (cmp:irc-extract-value llvm-value (list i))))))
 
 (defun layout-xep-function* (xep-group arity the-function ir calling-convention abi)
