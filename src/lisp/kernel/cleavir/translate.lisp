@@ -550,22 +550,24 @@
        "cc_list" (list* (%size_t (length present-arguments))
                         present-arguments))))
 
-(defun parse-local-call-optional-arguments (nopt arguments)
-  (loop repeat nopt
+(defun parse-local-call-optional-arguments (opt arguments)
+  (loop for (op) on (rest opt) by #'cdddr
         if arguments
-          collect (pop arguments)
+          collect (translate-cast (pop arguments) '(:object)
+                                  (cc-bmir:rtype op))
           and collect (cmp::irc-t)
         else
-          collect (cmp:irc-undef-value-get cmp:%t*%)
+          collect (cmp:irc-undef-value-get (argument-rtype->llvm op))
           and collect (%nil)))
 
 ;; Create than argument list for a local call by parsing the callee's
 ;; lambda list and filling in the correct values at compile time. We
 ;; assume that we have already checked the validity of this call.
-(defun parse-local-call-arguments (nreq nopt rest arguments)
-  (let* ((reqargs (subseq arguments 0 nreq))
+(defun parse-local-call-arguments (req opt rest arguments)
+  (let* ((nreq (car req)) (nopt (car opt))
+         (reqargs (subseq arguments 0 nreq))
          (more (nthcdr nreq arguments))
-         (optargs (parse-local-call-optional-arguments nopt more))
+         (optargs (parse-local-call-optional-arguments opt more))
          (rest
            (cond ((not rest) nil)
                  ((eq rest :unused)
@@ -656,8 +658,7 @@
                                    (t t)))
                     (subargs
                       (parse-local-call-arguments
-                       (car req) (car opt) rest-id
-                       arguments))
+                       req opt rest-id arguments))
                     (args (append (mapcar #'variable-as-argument
                                           (environment callee-info))
                                   subargs))
@@ -696,9 +697,11 @@
                                  label)
                   :multiple-values outputrt))
 
-(defun direct-mv-local-call-vas (vaslist callee-info nreq nopt rest-var
+(defun direct-mv-local-call-vas (vaslist callee-info req opt rest-var
                                  label outputrt)
-  (let* ((rnret (cmp:irc-vaslist-nvals vaslist))
+  (let* ((nreq (car req))
+         (nopt (car opt))
+         (rnret (cmp:irc-vaslist-nvals vaslist))
          (rvalues (cmp:irc-vaslist-values vaslist))
          (nfixed (+ nreq nopt))
          (mismatch
@@ -717,18 +720,21 @@
                      collect (load-return-value i)))
              (optionals (n)
                (parse-local-call-optional-arguments
-                nopt (load-return-values nreq (+ nreq n)))))
+                opt (load-return-values nreq (+ nreq n)))))
       ;; Generate phis for the merge block's call.
       (cmp:irc-begin-block merge)
       (let ((opt-phis
-              (loop for i below nopt
-                    collect (cmp:irc-phi cmp:%t*% (1+ nopt))
-                    collect (cmp:irc-phi cmp:%t*% (1+ nopt))))
+              (loop for (op s-p) on (rest opt) by #'cdddr
+                    for op-ty = (argument-rtype->llvm op)
+                    for s-p-ty = (argument-rtype->llvm s-p)
+                    collect (cmp:irc-phi op-ty (1+ nopt))
+                    collect (cmp:irc-phi s-p-ty (1+ nopt))))
             (rest-phi
               (cond ((null rest-var) nil)
                     ((bir:unused-p rest-var)
                      (cmp:irc-undef-value-get cmp:%t*%))
-                    (t (cmp:irc-phi cmp:%t*% (1+ nopt))))))
+                    (t (cmp:irc-phi (argument-rtype->llvm rest-var)
+                                    (1+ nopt))))))
         ;; Generate the mismatch block, if it exists.
         (when mismatch
           (cmp:irc-begin-block mismatch)
@@ -773,7 +779,10 @@
       (let* ((arguments
                (nconc
                 (mapcar #'variable-as-argument environment)
-                (loop for j below nreq collect (load-return-value j))
+                (loop for r in (rest req)
+                      for j from 0
+                      collect (translate-cast (load-return-value j) '(:object)
+                                              (cc-bmir:rtype r)))
                 opt-phis
                 (when rest-var (list rest-phi))))
              (function (main-function callee-info))
@@ -805,7 +814,7 @@
        (if (or key-flag (and varest-p (not (bir:unused-p rest-var))))
            (general-mv-local-call-vas callee-info mvargi oname outputrt)
            (direct-mv-local-call-vas
-            mvargi callee-info (car req) (car opt) rest-var oname outputrt)))
+            mvargi callee-info req opt rest-var oname outputrt)))
      output)))
 
 (defmethod translate-simple-instruction
@@ -1607,13 +1616,17 @@
       ;; Tail call the real function.
       (cmp:with-debug-info-source-position (source-pos-info)
         (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
+               (arguments
+                 (mapcar (lambda (arg)
+                           (translate-cast (in arg)
+                                           '(:object) (cc-bmir:rtype arg)))
+                         (arguments llvm-function-info)))
                (c
                  (cmp:irc-create-call-wft
                   function-type
                   (main-function llvm-function-info)
                   ;; Augment the environment lexicals as a local call would.
-                  (nconc environment-values
-                         (mapcar #'in (arguments llvm-function-info)))))
+                  (nconc environment-values arguments)))
                (returni (bir:returni ir))
                (rrtype (and returni (cc-bmir:rtype (bir:input returni)))))
           #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)

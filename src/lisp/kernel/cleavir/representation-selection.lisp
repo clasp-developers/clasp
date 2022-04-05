@@ -63,11 +63,28 @@
   (if (too-big-return-rtype-p def-rtype)
       :multiple-values
       def-rtype))
+(defun return-definition-rtype (returni)
+  ;; KLUDGE: We need to avoid infinite recursion on return inputs of type
+  ;; OUTPUT, which aren't otherwise put in chasing-rtypes-of. But if the input
+  ;; is a PHI, which happens often, the method on definition-rtype will also
+  ;; do the chasing-rtypes-of rigamarole. Therefore,
+  (fixup-return-rtype
+   (let ((datum (bir:input returni)))
+     (etypecase datum
+       (bir:phi (definition-rtype datum))
+       (bir:linear-datum
+        (if (member datum *chasing-rtypes-of* :test #'eq)
+            '()
+            (let ((*chasing-rtypes-of* (cons datum *chasing-rtypes-of*)))
+              (definition-rtype datum))))))))
 (defmethod %definition-rtype ((inst bir:abstract-local-call) (datum bir:datum))
   (let ((returni (bir:returni (bir:callee inst))))
     (if returni
         (if *unboxed-return*
+            #+(or)
             (fixup-return-rtype (definition-rtype (bir:input returni)))
+            ;;#+(or)
+            (return-definition-rtype returni)
             :multiple-values)
         '())))
 (defmethod %definition-rtype ((inst bir:values-save) (datum bir:datum))
@@ -119,7 +136,43 @@
 
 (defmethod definition-rtype ((datum bir:output))
   (%definition-rtype (bir:definition datum) datum))
-(defmethod definition-rtype ((datum bir:argument)) '(:object))
+(defun argument-definition-rtype (arg)
+  ;; For now, only does required parameters.
+  (let* ((fun (bir:function arg))
+         (calls (bir:local-calls fun))
+         (ll (bir:lambda-list fun))
+         (pos (position arg ll :test #'eq)))
+    (cond ((or (bir:enclose fun) ; XEP
+               (cleavir-set:empty-set-p calls) ; entry to module
+               ;; FIXME: We could handle fixed mv calls
+               (cleavir-set:some (lambda (call)
+                                   (typep call 'bir:mv-local-call))
+                                 calls))
+           '(:object))
+          (pos ; required parameter
+           ;; similar to a variable, we only care about primaries.
+           (let ((rt '()))
+             (cleavir-set:doset (call calls rt)
+               (let* ((call-arg (nth pos (rest (bir:inputs call))))
+                      (next-rt (definition-rtype call-arg))
+                      (real-next-rt
+                        (cond ((null next-rt) nil)
+                              ((member next-rt '(:vaslist
+                                                 :multiple-values))
+                               '(:object))
+                              (t (list (first next-rt))))))
+                 (setf rt (cond ((null rt) real-next-rt)
+                                ((null real-next-rt) rt)
+                                (t
+                                 (list
+                                  (max-vrtype
+                                   (first rt)
+                                   (first real-next-rt))))))))))
+          (t '(:object)))))
+(defmethod definition-rtype ((datum bir:argument))
+  '(:object)
+  #+(or)
+  (argument-definition-rtype datum))
 
 (defmethod definition-rtype ((phi bir:phi))
   (when (member phi *chasing-rtypes-of* :test #'eq)
@@ -377,7 +430,13 @@
                            (variable-rtype datum)
                            '(:object))))
 (defmethod maybe-assign-rtype ((datum bir:argument))
-  (change-class datum 'cc-bmir:argument :rtype '(:object)))
+  (change-class datum 'cc-bmir:argument
+                :rtype
+                #+(or)'(:object)
+                (let ((use (use-rtype datum)))
+                         (if (null use)
+                             '(:object)
+                             (min-rtype use '(:object))))))
 
 (defun assign-instruction-rtypes (inst)
   (mapc #'maybe-assign-rtype (bir:outputs inst)))
@@ -568,7 +627,16 @@
     (cast-output instruction actual-rt)))
 
 (defmethod insert-casts ((instruction bir:local-call))
-  (object-inputs instruction (rest (bir:inputs instruction)))
+  ;; KLUDGE: For now, we only consider required arguments as being
+  ;; possible to pass unboxed.
+  (loop with requiredp = t
+        for item in (bir:lambda-list (bir:callee instruction))
+        for arg in (rest (bir:inputs instruction))
+        unless (typep item 'bir:argument)
+          do (setf requiredp nil)
+        do (maybe-cast-before instruction arg (if requiredp
+                                                  (cc-bmir:rtype item)
+                                                  '(:object))))
   (cast-local-call-output instruction))
 (defmethod insert-casts ((instruction bir:mv-local-call))
   (let* ((inputs (bir:inputs instruction))
@@ -584,7 +652,15 @@
   (let* ((args (second (bir:inputs instruction)))
          (args-rtype (cc-bmir:rtype args))
          (nvalues (bir:nvalues instruction))
-         (target (make-list nvalues :initial-element :object)))
+         (target
+           (loop with requiredp = t
+                 repeat nvalues
+                 for item in (bir:lambda-list (bir:callee instruction))
+                 unless (typep item 'bir:argument)
+                   do (setf requiredp nil)
+                 collect (if requiredp
+                             (first (cc-bmir:rtype item))
+                             :object))))
     (cond ((listp args-rtype)
            (assert (= (length args-rtype) nvalues))
            (maybe-cast-before instruction args target))
