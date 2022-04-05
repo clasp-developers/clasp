@@ -1,7 +1,5 @@
 (in-package #:cc-bir-to-bmir)
 
-(defvar *unboxed-return* t)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Representation types ("rtypes")
@@ -80,12 +78,7 @@
 (defmethod %definition-rtype ((inst bir:abstract-local-call) (datum bir:datum))
   (let ((returni (bir:returni (bir:callee inst))))
     (if returni
-        (if *unboxed-return*
-            #+(or)
-            (fixup-return-rtype (definition-rtype (bir:input returni)))
-            ;;#+(or)
-            (return-definition-rtype returni)
-            :multiple-values)
+        (return-definition-rtype returni)
         '())))
 (defmethod %definition-rtype ((inst bir:values-save) (datum bir:datum))
   (let ((def (definition-rtype (bir:input inst))))
@@ -236,7 +229,7 @@
   (if (member datum (rest (bir:inputs inst)))
       :vaslist '(:object)))
 (defmethod %use-rtype ((inst bir:returni) (datum bir:datum))
-  (if *unboxed-return* (return-use-rtype (bir:function inst) datum) :multiple-values))
+  (return-use-rtype (bir:function inst) datum))
 (defmethod %use-rtype ((inst bir:values-save) (datum bir:datum))
   (use-rtype (bir:output inst)))
 (defmethod %use-rtype ((inst cc-bmir:mtf) (datum bir:datum))
@@ -431,9 +424,7 @@
                            '(:object))))
 (defmethod maybe-assign-rtype ((datum bir:argument))
   (change-class datum 'cc-bmir:argument
-                :rtype
-                #+(or)'(:object)
-                (let ((use (use-rtype datum)))
+                :rtype (let ((use (use-rtype datum)))
                          (if (null use)
                              '(:object)
                              (min-rtype use '(:object))))))
@@ -620,9 +611,7 @@
   (let* ((fun (bir:callee instruction))
          (returni (bir:returni fun))
          (actual-rt (if returni
-                        (if *unboxed-return*
-                            (cc-bmir:rtype (bir:input returni))
-                            :multiple-values)
+                        (cc-bmir:rtype (bir:input returni))
                         '())))
     (cast-output instruction actual-rt)))
 
@@ -766,8 +755,7 @@
 
 ;; returni just passes out whatever it's given. (or will)
 (defmethod insert-casts ((instruction bir:returni))
-  (when (or (not *unboxed-return*)
-            (too-big-return-rtype-p (cc-bmir:rtype (bir:input instruction))))
+  (when (too-big-return-rtype-p (cc-bmir:rtype (bir:input instruction)))
     (cast-inputs instruction :multiple-values)))
 (defmethod insert-casts ((inst bir:primop))
   (let* ((info (bir:info inst))
