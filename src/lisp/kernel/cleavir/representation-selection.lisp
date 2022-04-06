@@ -129,8 +129,11 @@
 
 (defmethod definition-rtype ((datum bir:output))
   (%definition-rtype (bir:definition datum) datum))
+
+;;; TODO: This is somewhat limited. It gives up on multiple value calls, even
+;;; for fixed- calls where we can probably come up with a more specific rtype.
+;;; And it only allows required parameters to be unboxed.
 (defun argument-definition-rtype (arg)
-  ;; For now, only does required parameters.
   (let* ((fun (bir:function arg))
          (calls (bir:local-calls fun))
          (ll (bir:lambda-list fun))
