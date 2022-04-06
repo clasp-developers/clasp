@@ -134,7 +134,10 @@
   (let* ((fun (bir:function arg))
          (calls (bir:local-calls fun))
          (ll (bir:lambda-list fun))
-         (pos (position arg ll :test #'eq)))
+         ;; Somewhat grungy way of ignoring non-required parameters.
+         (kll (member-if (lambda (o) (member o lambda-list-keywords)) ll))
+         (mll (ldiff ll kll))
+         (pos (position arg mll :test #'eq)))
     (cond ((or (bir:enclose fun) ; XEP
                (cleavir-set:empty-set-p calls) ; entry to module
                ;; FIXME: We could handle fixed mv calls
@@ -163,8 +166,9 @@
                                    (first real-next-rt))))))))))
           (t '(:object)))))
 (defmethod definition-rtype ((datum bir:argument))
-  '(:object)
   #+(or)
+  '(:object)
+  ;;#+(or)
   (argument-definition-rtype datum))
 
 (defmethod definition-rtype ((phi bir:phi))
@@ -424,10 +428,17 @@
                            '(:object))))
 (defmethod maybe-assign-rtype ((datum bir:argument))
   (change-class datum 'cc-bmir:argument
-                :rtype (let ((use (use-rtype datum)))
-                         (if (null use)
+                :rtype (let* ((use (use-rtype datum))
+                              (def (definition-rtype datum))
+                              (rt (min-rtype use def)))
+                         ;; FIXME: We force arguments to be represented even
+                         ;; if they are unused. It would be possible, if a
+                         ;; bit convoluted, to in this case instead alter the
+                         ;; local function parameters to lack the argument
+                         ;; entirely.
+                         (if (null rt)
                              '(:object)
-                             (min-rtype use '(:object))))))
+                             (min-rtype rt '(:object))))))
 
 (defun assign-instruction-rtypes (inst)
   (mapc #'maybe-assign-rtype (bir:outputs inst)))
