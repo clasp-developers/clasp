@@ -209,39 +209,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     printf("%s:%d The ContentsDir could not be found\n", __FILE__, __LINE__ );
     abort();
   }
-#if defined(USE_BOEHM)
-  #if defined(_DEBUG_BUILD)
-    #if defined(USE_PRECISE_GC)
-       std::string target = "boehmprecise_d";
-    #else
-       std::string target = "boehm_d";
-    #endif
-  #else
-    #if defined(USE_PRECISE_GC)
-       std::string target = "boehmprecise";
-    #else
-       std::string target = "boehm";
-    #endif
-  #endif
-#elif defined(USE_MPS)
-  #if defined(_DEBUG_BUILD)
-    std::string target = "mps_d";
-  #else
-    std::string target = "mps";
-  #endif
-#elif defined(USE_MMTK)
-  #if defined(_DEBUG_BUILD)
-    std::string target = "mmtk_d";
-  #else
-    std::string target = "mmtk";
-  #endif
-#else
-#error "There must be a target - only (boehm | mmtk ) are supported"
-#endif
-#ifdef USE_MPI
-    target = target + "_mpi";
-#endif
-  this->_Directories->_LibDir = this->_Directories->_ContentsDir / "build" / target / "fasl";
+  this->_Directories->_LibDir = this->_Directories->_ContentsDir / "build" / VARIANT_DIR / "fasl";
   if (verbose) {
     printf("%s:%d   Set _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
   }
@@ -252,7 +220,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   if (verbose) printf("%s:%d Setting up _IncludeDir = %s\n", __FILE__, __LINE__, this->_Directories->_IncludeDir.string().c_str());
   this->_Directories->_LispSourceDir = this->_Directories->_ContentsDir / "src" / "lisp";
   if (verbose) printf("%s:%d Setting up _LispSourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_LispSourceDir.string().c_str());
-  this->_Directories->_GeneratedDir = this->_Directories->_ContentsDir / "build" / target / "generated";
+  this->_Directories->_GeneratedDir = this->_Directories->_ContentsDir / "build" / VARIANT_DIR / "generated";
   if (verbose) {printf("%s:%d Setting up _GeneratedDir = %s\n", __FILE__, __LINE__, this->_Directories->_GeneratedDir.string().c_str());}
   this->_Directories->_FaslDir = this->_Directories->_LibDir;
   if (verbose) {printf("%s:%d Setting up _FaslDir = %s\n", __FILE__, __LINE__, this->_Directories->_FaslDir.string().c_str());}

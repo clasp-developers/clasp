@@ -30,7 +30,6 @@ wscript.config
 boost_build_v2/engine/bin.linuxx86_64
 boost_build_v2/engine/bootstrap
 # ensure the build directory exists on checkout
-extensions/cando
 build/*
 !build/.gitkeep
 projects/
@@ -39,3 +38,11 @@ build2/
 local.config
 tools-for-build/waf
 f0
+/dependencies/
+config.sexp
+extensions/*/
+.debhelper
+debhelper-build-stamp
+clasp.substvars
+debian/clasp
+debian/files
