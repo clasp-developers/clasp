@@ -18,8 +18,12 @@
                         :ldflags_fasl (if (uiop:os-macosx-p)
                                           "-flat_namespace -undefined dynamic_lookup -bundle"
                                           "-shared")
-                        :objcopy (objcopy configuration))
+                        :objcopy (objcopy configuration)
+                        :etags (etags configuration))
   (terpri output-stream)
+  (ninja:write-rule output-stream :etags
+                    :command "$etags -o $tags $in"
+                    :description "Creating etags")
   (ninja:write-rule output-stream :install-file
                     :command #+bsd "install -C --mode=644 $in $out"
                              #+linux "install -CT --mode=644 $in $out"
@@ -35,6 +39,10 @@
                              #+linux "install -CT --mode=755 $in $out && ln -s -f $target $link"
                     :restat 1
                     :description "Installing $in to $out")
+  (ninja:write-rule output-stream :symbolic-link
+                    :command "ln -s -f $target $link"
+                    :restat 1
+                    :description "Linking $in to $out")
   (ninja:write-rule output-stream :scrape-pp
                     :command "$cxx $variant-cppflags $cppflags -MD -MF $out.d -o$out -E -DSCRAPING $in"
                     :description "Preprocess $in for scraping"
@@ -105,6 +113,23 @@
   (ninja:write-rule output-stream :make-snapshot-object
                     :command "$objcopy --input-target binary --output-target elf64-x86-64 --binary-architecture i386 $in $out --redefine-sym _binary_${mangled-name}_end=_binary_snapshot_end  --redefine-sym _binary_${mangled-name}_start=_binary_snapshot_start  --redefine-sym _binary_${mangled-name}_size=_binary_snapshot_size"
                     :description "Creating object from snapshot $in"))
+
+(defmethod print-variant-target-sources
+    (configuration (name (eql :ninja)) output-stream (target (eql :etags)) sources
+     &key &allow-other-keys)
+  (when (etags configuration)
+    (ninja:write-build output-stream :etags
+                       :inputs (append (remove-if (lambda (source)
+                                                    (not (or (typep source 'h-source)
+                                                             (typep source 'c-source)
+                                                             (typep source 'cc-source))))
+                                                  sources)
+                                       (if *variant-precise*
+                                           (scraper-precise-headers configuration)
+                                           (scraper-headers configuration))
+                                       (list (make-source "config.h" :variant)))
+                       :tags (make-source "TAGS" :code)
+                       :outputs (list (build-name "tags")))))
 
 (defmethod print-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :install-code)) source
@@ -212,7 +237,11 @@
                                  (scraper-precise-headers configuration)
                                  (scraper-headers configuration))
                              (scraper-lisp-sources configuration)))
-          (outputs (list (make-source (build-name target) :variant))))
+          (exe (make-source (build-name target) :variant))
+          (symlink (make-source (if (member :cando (extensions configuration))
+                                    "cando"
+                                    "clasp")
+                                :variant)))
   (ninja:write-build output-stream :generate-headers
                      :inputs (sort sifs
                                    (lambda (x y)
@@ -231,9 +260,15 @@
                      :variant-ldflags *variant-ldflags*
                      :variant-ldlibs *variant-ldlibs*
                      :inputs objects
-                     :outputs outputs)
+                     :outputs (list exe))
+  (ninja:write-build output-stream :symbolic-link
+                     :inputs (list exe)
+                     :target (source-path exe)
+                     :outputs (list symlink))
   (ninja:write-build output-stream :phony
-                     :inputs outputs
+                     :inputs (list* exe symlink
+                                    (when (etags configuration)
+                                      (list (build-name "tags"))))
                      :outputs (list (build-name target))))
 
 (defmethod print-variant-target-source
@@ -591,5 +626,8 @@
                          :outputs (list (build-name "install"))))))
 
 (defmethod print-epilogue (configuration (name (eql :ninja)) output-stream)
-  (ninja:write-default output-stream (default-target configuration)))
+  (ninja:write-default output-stream (or (default-target configuration)
+                                         (if (member :cando (extensions configuration))
+                                             "dclasp-boehmprecise"
+                                             "cclasp-boehmprecise"))))
 

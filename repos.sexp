@@ -1,50 +1,66 @@
-((:repository "https://github.com/scymtym/esrap.git"
+((:name :esrap
+  :repository "https://github.com/scymtym/esrap.git"
   :directory "dependencies/esrap/"
   :branch "master")
- (:repository "https://github.com/yitzchak/shasht.git"
+ (:name :shasht
+  :repository "https://github.com/yitzchak/shasht.git"
   :directory "dependencies/shasht/"
   :branch "master")
- (:repository "https://github.com/yitzchak/trivial-do.git"
+ (:name :trivial-do
+  :repository "https://github.com/yitzchak/trivial-do.git"
   :directory "dependencies/trivial-do/"
   :branch "master")
- (:repository "https://github.com/trivial-features/trivial-features.git"
+ (:name :trivial-features
+  :repository "https://github.com/trivial-features/trivial-features.git"
   :directory "dependencies/trivial-features/"
   :branch "master")
- (:repository "https://github.com/trivial-gray-streams/trivial-gray-streams.git"
+ (:name :trivial-gray-streams
+  :repository "https://github.com/trivial-gray-streams/trivial-gray-streams.git"
   :directory "dependencies/trivial-gray-streams/"
   :branch "master")
- (:repository "https://github.com/scymtym/trivial-with-current-source-form.git"
+ (:name :trivial-with-current-source-form
+  :repository "https://github.com/scymtym/trivial-with-current-source-form.git"
   :directory "dependencies/trivial-with-current-source-form/"
   :branch "master")
- (:repository "https://github.com/robert-strandh/Acclimation.git"
+ (:name :acclimation
+  :repository "https://github.com/robert-strandh/Acclimation.git"
   :directory "src/lisp/kernel/contrib/Acclimation/"
   :commit "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
- (:repository "https://gitlab.common-lisp.net/alexandria/alexandria.git"
+ (:name :alexandria
+  :repository "https://gitlab.common-lisp.net/alexandria/alexandria.git"
   :directory "src/lisp/kernel/contrib/alexandria/"
   :commit "v1.4")
- (:repository "https://github.com/s-expressionists/Cleavir.git"
+ (:name :cleavir
+  :repository "https://github.com/s-expressionists/Cleavir.git"
   :directory "src/lisp/kernel/contrib/Cleavir/"
   :commit "b6b610fc2ec6acf32a83bd636f94985e1be05950")
- (:repository "https://github.com/pcostanza/closer-mop.git"
+ (:name :closer-mop
+  :repository "https://github.com/pcostanza/closer-mop.git"
   :directory "src/lisp/kernel/contrib/closer-mop/"
   :commit "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
- (:repository "https://github.com/s-expressionists/Concrete-Syntax-Tree.git"
+ (:name :concrete-syntax-tree
+  :repository "https://github.com/s-expressionists/Concrete-Syntax-Tree.git"
   :directory "src/lisp/kernel/contrib/Concrete-Syntax-Tree/"
   :commit "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
- (:repository "https://github.com/s-expressionists/Eclector.git"
+ (:name :eclector
+  :repository "https://github.com/s-expressionists/Eclector.git"
   :directory "src/lisp/kernel/contrib/Eclector/"
   :commit "dddb4d8af3eae78017baae7fb9b99e73d2a56e6b")
- (:repository "https://gitlab.common-lisp.net/asdf/asdf.git"
+ (:name :asdf
+  :repository "https://gitlab.common-lisp.net/asdf/asdf.git"
   :directory "src/lisp/modules/asdf/"
   :commit "3.3.5")
- (:repository "https://github.com/Ravenbrook/mps.git"
+ (:name :mps
+  :repository "https://github.com/Ravenbrook/mps.git"
   :directory "src/mps/"
   :commit "b8a05a3846430bc36c8200f24d248c8293801503")
- (:repository "https://github.com/cando-developers/cando.git"
+ (:name :cando
+  :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
   :branch "main"
-  :extension :cando)
- (:repository "https://github.com/clasp-developers/seqan-clasp.git"
+  :extension t)
+ (:name :seqan-clasp
+  :repository "https://github.com/clasp-developers/seqan-clasp.git"
   :directory "extensions/seqan-clasp/"
   :branch "main"
-  :extension :seqan-clasp))
+  :extension t))

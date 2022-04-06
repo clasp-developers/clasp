@@ -107,3 +107,8 @@
 (gctools:save-lisp-and-die (elt core:*command-line-arguments* 0))
 (core:quit)" output-stream))
 
+(defmethod print-prologue (configuration (name (eql :clasp-sh)) output-stream)
+  (declare (ignore configuration))
+  (format output-stream "#!/usr/bin/env bash
+CLASP_FEATURES=ignore-extensions exec ~a \"$@\""
+          (build-name :iclasp)))

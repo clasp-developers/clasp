@@ -463,7 +463,7 @@
         :documentation "The cxx binary to use. If not set then llvm-config will be used to find clang++.")
    (git :accessor git
         :initarg :git
-        :initform #P"git"
+        :initform nil
         :type (or null pathname)
         :documentation "The git binary to use.")
    (llvm-config :accessor llvm-config
@@ -479,7 +479,7 @@ find a compatible one.")
        :documentation "The nm binary to use. If not set then llvm-config will be used to find llvm-nm.")
    (objcopy :accessor objcopy
             :initarg :objcopy
-            :initform #P"objcopy"
+            :initform nil
             :type (or null pathname)
             :documentation "The objcopy binary to use. This must be the GNU objcopy on Linux. llvm-objcopy
 is not compatible with snapshots.")
@@ -488,18 +488,24 @@ is not compatible with snapshots.")
                :initarg :pkg-config
                :type (or null pathname)
                :documentation "The pkg-config binary to use.")
+   (etags :accessor etags
+          :initform nil
+          :initarg :etags
+          :type (or null pathname)
+          :documentation "The etags binary to use.")
    (jupyter :accessor jupyter
             :initform nil
             :initarg :jupyter
             :type boolean
             :documentation "Enable Jupyter and create Jupyter kernels.")
    (default-target :accessor default-target
-                   :initform "dclasp-boehmprecise"
+                   :initform nil
                    :initarg :default-target
-                   :type string
+                   :type (or null string)
                    :documentation "Default build target for Ninja")
    (units :accessor units
-          :initform '(:cpu-count :base :pkg-config :clang :llvm)
+          :initform '(:cpu-count :base :pkg-config :clang :llvm :ar :cc :cxx :nm :etags :objcopy
+                      :git)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
@@ -525,7 +531,7 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"build.ninja" :build)
                                                                :bitcode :iclasp :aclasp :bclasp
                                                                :cclasp :modules :extension-load
-                                                               :dclasp :install-code :clasp)
+                                                               :dclasp :install-code :clasp :etags)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
                                                                :extension-load)
@@ -577,7 +583,10 @@ is not compatible with snapshots.")
   (declare (ignore initargs))
   (when (package-path instance)
     (setf (package-path instance)
-          (uiop:ensure-directory-pathname (package-path instance)))))
+          (uiop:ensure-directory-pathname (package-path instance))))
+  (when (member :cando (extensions instance))
+    (setf (gethash :clasp-sh (outputs instance))
+          (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant)))))
 
 (defun build-name (name
                    &key common
@@ -728,7 +737,9 @@ the function to the overall configuration."
 -d suffix if debugging is enabled."
   (format nil "~a~:[~;-d~]" (variant-name variant) (variant-debug variant)))
 
-(defun configure-library (configuration library &rest rest &key required min-version max-version &allow-other-keys)
+(defun configure-library (configuration library &rest rest
+                          &key required min-version max-version &allow-other-keys)
+  "Configure a library"
   (message :info "Configuring library ~a" library)
   (flet ((failure (control-string &rest args)
            (apply #'message (if required :err :warn) control-string args)
@@ -764,3 +775,23 @@ the function to the overall configuration."
         (*code-path* (make-pathname :directory '(:relative :up))))
     (append-cflags *configuration*
                    (format nil "~{-I~a~^ ~}" (mapcar #'resolve-source paths)))))
+
+(defun configure-program (name candidates &key major-version (version-flag "--version") required)
+  "Configure a program by looking through a list of candidate and checking the version number
+if provided."
+  (loop for candidate in (if (listp candidates) candidates (list candidates))
+        for path = (if (stringp candidate)
+                       (format nil candidate major-version)
+                       candidate)
+        for version = (run-program-capture (list path version-flag))
+        when (and version
+                  (or (null major-version)
+                      (= major-version
+                         (first (uiop:parse-version version)))))
+          do (message :info "Found ~a program with path ~a ~:[~;and version ~a~]"
+                            name path major-version version)
+             (return (values path version))
+        finally (message (if required :err :warn)
+                         "Unable to find ~a program~@[ compatible with major version ~a~]."
+                         name major-version)
+                (values nil nil)))

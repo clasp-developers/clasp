@@ -2,6 +2,10 @@
 
 (defparameter *git* nil)
 
+(defun check-repo (&key directory repository &allow-other-keys)
+  (format t "~:[Did not find~;Found~] ~A clone in ~A, assuming everything is okay.~%"
+          (probe-file directory) repository directory))
+
 (defun sync-repo (&key directory repository branch commit &allow-other-keys)
   (cond ((probe-file directory)
          (format t "Fetching ~A~%" repository)
@@ -27,14 +31,6 @@
                       :error-output :output
                       :directory directory)))
 
-(defun remove-repo (&key directory repository &allow-other-keys)
-  (cond ((probe-file directory)
-         (format t "Removing clone of ~A at ~A~%" repository directory)
-         (uiop:delete-directory-tree (truename directory)
-                                     :validate t))
-        (t
-         (format t "Nothing to be done for ~A~%" repository))))
-
 (defun split-keywords (value)
   (if (stringp value)
       (loop with end = (length value)
@@ -45,7 +41,8 @@
       value))
 
 (defparameter +option-parsers+
-  (list :extensions #'split-keywords))
+  (list :extensions #'split-keywords
+        :no-sync #'split-keywords))
 
 (defun optionp (arg)
   (and (plusp (length arg))
@@ -85,16 +82,18 @@
        (*git* (getf initargs :git "git"))
        (build (getf initargs :build-path "build/"))
        (extensions (getf initargs :extensions))
+       (no-sync (getf initargs :no-sync))
        (code (uiop:getcwd)))
   ;; Get all the external dependencies
   (format t "Synchronizing external repositories~%~%")
   (loop for source in (uiop:read-file-form #P"repos.sexp")
+        for name = (getf source :name)
         for extension = (getf source :extension)
-        if (or (not extension)
-               (member extension extensions))
+        if (member name no-sync)
+          do (apply #'check-repo source)
+        else if (or (not extension)
+                    (member name extensions))
           do (apply #'sync-repo source)
-        else
-          do (apply #'remove-repo source)
         do (terpri))
   ;; Do the absolute minimum to inform ASDF about the location of systems
   ;; in order to find the clasp root and the desired build directory.

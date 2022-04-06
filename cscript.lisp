@@ -1,5 +1,4 @@
-(k:recurse #P"extensions/*/"
-           #P"include/"
+(k:recurse #P"include/"
            #P"src/")
 
 (k:includes #~"")
