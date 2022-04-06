@@ -104,6 +104,58 @@ public:
 
   template <typename OT>
   void field(Symbol_sp name, gc::smart_ptr<OT> &value) {
+    switch (this->stage()) {
+    case saving: {
+      if (!value.unboundp()) {
+        Cons_sp apair = Cons_O::create(name, value);
+        this->_alist = Cons_O::create(apair, this->_alist);
+      }
+    } break;
+    case initializing: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
+      if (!find.consp())
+        value = unbound<OT>();
+      else {
+        Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
+        value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
+        if (!gc::IsA<gc::smart_ptr<OT>>(value)) {
+          class_id expected_typ = reg::registered_class<OT>::id;
+          lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(value.raw_()));
+        }
+        this->flagSeen(apair);
+      }
+    } break;
+    case loading: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
+      if (!find.consp())
+        value = unbound<OT>();
+      else {
+        Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
+        // When loading the object oCdr(apair) may not be of the
+        // same type as value - it may be a symbol - used for patching
+        // use As_unsafe for this.
+        value = gc::As_unsafe<gc::smart_ptr<OT>>(CONS_CDR(apair));
+      }
+    } break;
+    case patching: {
+      if (!value.unboundp()) {
+        gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
+        T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
+        if (patch != orig)
+          value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
+      }
+    } break;
+    }
+  }
+
+  // Use field above that was copied from field_if_not_unbound
+#if 0
+  template <typename OT>
+  void field(Symbol_sp name, gc::smart_ptr<OT> &value) {
     RECORD_LOG(BF("field(Symbol_sp name, gc::smart_ptr<OT>& value ) name: %s") % _rep_(name));
     switch (this->stage()) {
     case saving: {
@@ -151,6 +203,7 @@ public:
       break;
     };
   }
+#endif
 
   template <typename OT>
   void field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>> &value) {
@@ -441,6 +494,55 @@ public:
 
   template <typename SK, typename SV, typename CMP>
   void field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>,CMP>& value ) {
+    RECORD_LOG(BF("field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s") % _rep_(name));
+    switch (this->stage()) {
+    case saving: {
+      Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
+      size_t idx(0);
+      for (auto it : value)
+        vec_value->rowMajorAset(idx++,Cons_O::create(it.first, it.second));
+      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      Cons_sp apair = core::Cons_O::create(name, vec_value);
+      this->_alist = core::Cons_O::create(apair, this->_alist);
+    } break;
+    case initializing:
+    case loading: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
+      if (!find.consp())
+        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+      Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
+      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
+      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      value.clear();
+      for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
+        T_sp val = vec_value->rowMajorAref(i);
+        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        value.push_back(std::make_pair<gctools::smart_ptr<SK>,
+                        gctools::smart_ptr<SV>>(gc::As_unsafe<gctools::smart_ptr<SK>>(oCar(val)),
+                                                gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
+      }
+      if (this->stage() == initializing)
+        this->flagSeen(apair);
+    } break;
+    case patching: {
+      RECORD_LOG(BF("Patching"));
+      for ( auto&& pairi : value ) {
+        gc::smart_ptr<T_O> orig_key = pairi.first;
+        gc::smart_ptr<T_O> orig_value = pairi.second;
+        T_sp patch_key = record_circle_subst( this->asSmartPtr(), orig_key);
+        T_sp patch_value = record_circle_subst( this->asSmartPtr(), orig_value);
+        if (patch_key != orig_key) pairi.first = gc::As_unsafe<gctools::smart_ptr<SK>>(patch_key);
+        if (patch_value != orig_value) pairi.second = gc::As_unsafe<gctools::smart_ptr<SV>>(patch_value);
+      }
+    } break;
+    }
+  };
+
+  template <typename SK, typename SV, typename CMP>
+  void field(Symbol_sp name, gctools::SmallMultimap_uncopyable<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>,CMP>& value ) {
     RECORD_LOG(BF("field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s") % _rep_(name));
     switch (this->stage()) {
     case saving: {

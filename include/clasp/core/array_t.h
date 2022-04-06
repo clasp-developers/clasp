@@ -115,7 +115,7 @@ public: // make vector
     (void)initialElementSuppliedP;
     return make(dimension, initialElement, fillPointer, dataOrDisplacedTo, displacedToP, displacedIndexOffset);
   }
-  static ComplexVector_T_sp make(size_t dimension, T_sp initialElement) {
+  static ComplexVector_T_sp make(size_t dimension, T_sp initialElement=nil<T_O>()) {
     return make(dimension,initialElement,nil<T_O>(),nil<T_O>(),false,clasp_make_fixnum(0));
   }
   static ComplexVector_T_sp make(size_t dimension, T_sp initialElement, T_sp fillPointer ) {

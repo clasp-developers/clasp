@@ -99,6 +99,7 @@
    #:cl-defun-tag
    #:cl-defun-setf-tag
    #:cl-defmethod-tag
+   #:clasp-defmethod-tag
    #:cl-def-class-method-tag
    #:cl-extern-defun-tag
    #:cl-extern-defmethod-tag

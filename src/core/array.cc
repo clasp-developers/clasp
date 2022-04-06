@@ -448,7 +448,7 @@ Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
   unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
     cl_index new_size = this->_ArrayTotalSize+extension;
-    this->internalAdjustSize_(new_size);
+    this->resize(new_size);
   }
   this->_Data->rowMajorAset(idx+this->_DisplacedIndexOffset,newElement);
   ++this->_FillPointerOrLengthOrDummy;

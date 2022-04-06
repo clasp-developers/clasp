@@ -385,7 +385,7 @@ namespace core {
       }
       return dims;
     }
-    virtual void internalAdjustSize_(size_t size, T_sp init_element=nil<T_O>(), bool initElementSupplied=false ) = 0;
+    virtual void resize(size_t size, T_sp init_element=nil<T_O>(), bool initElementSupplied=false ) = 0;
     virtual void unsafe_fillArrayWithElt(T_sp element, size_t start, size_t end) final
     {
       this->_Data->unsafe_fillArrayWithElt(element,start+this->_DisplacedIndexOffset,end+this->_DisplacedIndexOffset);
@@ -759,7 +759,7 @@ namespace core {
     }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
-    virtual void internalAdjustSize_(size_t size, T_sp initElement=nil<T_O>(), bool initElementSupplied=false ) final {
+    virtual void resize(size_t size, T_sp initElement=nil<T_O>(), bool initElementSupplied=false ) final {
       if (size == this->_ArrayTotalSize) return;
       AbstractSimpleVector_sp basesv;
       size_t start, end;
@@ -854,7 +854,7 @@ namespace core {
     }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
-    virtual void internalAdjustSize_(size_t size, T_sp initElement=nil<T_O>(), bool initElementSupplied=false ) final {
+    virtual void resize(size_t size, T_sp initElement=nil<T_O>(), bool initElementSupplied=false ) final {
       if (size == this->_ArrayTotalSize) return;
       AbstractSimpleVector_sp basesv;
       size_t start, end;
@@ -886,7 +886,7 @@ namespace core {
         if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
         cl_index new_size = this->_ArrayTotalSize+extension;
         unlikely_if (!cl::_sym_adjust_array || !lisp_boundp(cl::_sym_adjust_array)) {
-          this->internalAdjustSize_(new_size);
+          this->resize(new_size);
         } else {
           lisp_adjust_array(this->asSmartPtr(),clasp_make_fixnum(new_size),clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
         }
@@ -952,7 +952,7 @@ namespace core {
   public:
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
-    virtual void internalAdjustSize_(size_t size, T_sp initElement=nil<T_O>(), bool initElementSupplied=false ) final {cannotAdjustSizeOfSimpleArrays(this->asSmartPtr());};
+    virtual void resize(size_t size, T_sp initElement=nil<T_O>(), bool initElementSupplied=false ) final {cannotAdjustSizeOfSimpleArrays(this->asSmartPtr());};
 public:
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
       ASSERT(gc::IsA<AbstractSimpleVector_sp>(this->_Data));

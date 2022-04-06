@@ -207,7 +207,7 @@ namespace core {
     void ensureSpaceAfterFillPointer(T_sp init_element, size_t size) {
       size_t min = this->fillPointer() + size;
       if (min > this->_ArrayTotalSize)
-        this->internalAdjustSize_(min, init_element, true);
+        this->resize(min, init_element, true);
     }
   };
 };

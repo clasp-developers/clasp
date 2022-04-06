@@ -48,7 +48,7 @@ namespace core {
 
   public:
     virtual bool eql_(T_sp obj) const;
-    CL_DEFMETHOD virtual bool isUndefined() const { return this->externalObject() == NULL; };
+    CLASP_DEFMETHOD virtual bool isUndefined() const { return this->externalObject() == NULL; };
     virtual void *externalObject() const {
       SUBCLASS_MUST_IMPLEMENT();
     };
@@ -124,10 +124,10 @@ They can be passed to C++ functions and and then passed back to clasp code and u
     };
 
   public:
-    CL_DEFMETHOD T_sp getHead() const { return this->_Head; };
-    CL_DEFMETHOD T_sp getTail() const { return this->_Tail; };
-    CL_DEFMETHOD void setHead(T_sp head) { this->_Head = head; };
-    CL_DEFMETHOD void setTail(T_sp tail) { this->_Tail = tail; };
+    CLASP_DEFMETHOD T_sp getHead() const { return this->_Head; };
+    CLASP_DEFMETHOD T_sp getTail() const { return this->_Tail; };
+    CLASP_DEFMETHOD void setHead(T_sp head) { this->_Head = head; };
+    CLASP_DEFMETHOD void setTail(T_sp tail) { this->_Tail = tail; };
     explicit ImmobileObject_O(T_sp head, T_sp tail) : _Head(head), _Tail(tail) {};
     virtual ~ImmobileObject_O(){};
   };

@@ -261,7 +261,7 @@ namespace core {
     List_sp nreconc(T_sp tail);
 
 //    CL_LISPIFY_NAME("core:cons-setf-cdr");
-//    CL_DEFMETHOD
+//    CLASP_DEFMETHOD
     T_sp setf_cdr(T_sp o) {
       this->setCdr(o);
       return o;

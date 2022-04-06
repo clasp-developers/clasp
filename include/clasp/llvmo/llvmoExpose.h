@@ -199,8 +199,8 @@ class FunctionCallee_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, FunctionCallee_O, "FunctionCallee", core::CxxObject_O);
  public:
   dont_expose<llvm::FunctionCallee> _Info;
-  CL_DEFMETHOD llvm::FunctionType * 	getFunctionType () {return this->_Info._value.getFunctionType();};
-  CL_DEFMETHOD llvm::Value * 	getCallee () {return this->_Info._value.getCallee(); };
+  CLASP_DEFMETHOD llvm::FunctionType * 	getFunctionType () {return this->_Info._value.getFunctionType();};
+  CLASP_DEFMETHOD llvm::Value * 	getCallee () {return this->_Info._value.getCallee(); };
  FunctionCallee_O(llvm::FunctionType* ft, llvm::Value* v) : _Info(llvm::FunctionCallee(ft,v)) {};
 };
 };
@@ -1630,7 +1630,7 @@ class DataLayout_O : public core::General_O {
   llvm::DataLayout* _DataLayout;
 public:
   CL_LISPIFY_NAME("getStringRepresentation");
-  CL_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout->getStringRepresentation(); };
+  CLASP_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout->getStringRepresentation(); };
   size_t getTypeAllocSize(llvm::Type* ty);
   const llvm::DataLayout& dataLayout() { return *(this->_DataLayout); };
   StructLayout_sp getStructLayout(StructType_sp ty) const;
@@ -2085,7 +2085,7 @@ public:
     _ptr = NULL;
   }
   std::string __repr__() const;
-  CL_DEFMETHOD size_t module_id() const { return this->_Id;};
+  CLASP_DEFMETHOD size_t module_id() const { return this->_Id;};
   static Module_sp make( const std::string& namePrefix, LLVMContext_sp context);
   /*! Return true if the wrapped Module is defined */
   bool valid() const;
@@ -2389,8 +2389,8 @@ public:
     this->_ptr = ptr;
   }
 CL_LISPIFY_NAME("error_string");
-CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
-// CL_DEFMETHOD void setUseOrcMCJITReplacement(bool use);
+CLASP_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
+// CLASP_DEFMETHOD void setUseOrcMCJITReplacement(bool use);
 
   EngineBuilder_O() : Base(), _ptr(NULL){};
   ~EngineBuilder_O() {
@@ -2655,7 +2655,7 @@ public:
   /*! Set the current debug location by building a DebugLoc on the fly */
   void SetCurrentDebugLocationToLineColumnScope(int line, int col, DINode_sp scope);
 CL_LISPIFY_NAME("CurrentDebugLocation");
-CL_DEFMETHOD   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
+CLASP_DEFMETHOD   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
 /* from_object translators */
@@ -2740,8 +2740,8 @@ public:
   core::T_sp getNextNode(); // instruction or nil
   core::T_sp getPrevNode(); // instruction or nil
   core::T_sp getParent(); // basic block or nil
-  CL_DEFMETHOD bool CallInstP() const { return llvm::isa<llvm::CallInst>(this->wrappedPtr()); };
-  CL_DEFMETHOD bool InvokeInstP() const { return llvm::isa<llvm::InvokeInst>(this->wrappedPtr()); };
+  CLASP_DEFMETHOD bool CallInstP() const { return llvm::isa<llvm::CallInst>(this->wrappedPtr()); };
+  CLASP_DEFMETHOD bool InvokeInstP() const { return llvm::isa<llvm::InvokeInst>(this->wrappedPtr()); };
   Instruction_O() : Base(){};
   ~Instruction_O() {}
 
@@ -3041,7 +3041,7 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  CL_DEFMETHOD bool CallInstP() const { return true; };
+  CLASP_DEFMETHOD bool CallInstP() const { return true; };
   CallInst_O() : Base(){};
   ~CallInst_O() {}
 
@@ -3396,7 +3396,7 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  CL_DEFMETHOD bool InvokeInstP() const { return true; };
+  CLASP_DEFMETHOD bool InvokeInstP() const { return true; };
   InvokeInst_O() : Base(){};
   ~InvokeInst_O() {}
 
@@ -3906,7 +3906,7 @@ public:
   llvm::MDNode *getOperand(uint i) { return this->_ptr->getOperand(i); };
   uint getNumOperands() { return this->_ptr->getNumOperands(); };
 CL_LISPIFY_NAME("addOperand");
-CL_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
+CLASP_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
   string getName() { return this->_ptr->getName().str(); };
 
 }; // NamedMDNode_O
@@ -4599,7 +4599,7 @@ public:
   };
 public:
 
-  CL_DEFMETHOD MDNode* createBranchWeightsTrueFalse(uint32_t trueWeight, uint32_t falseWeight)
+  CLASP_DEFMETHOD MDNode* createBranchWeightsTrueFalse(uint32_t trueWeight, uint32_t falseWeight)
   {
     return this->_Builder->createBranchWeights(trueWeight,falseWeight);
   };

@@ -845,7 +845,6 @@ void* GCRootsInModule::lookup_function(size_t index) {
 
 namespace gctools {
 
-
 /* Walk all of the roots, passing the address of each root and what it represents */
 void walkRoots( RootWalkCallback callback, void* data ) {
   callback( (Tagged*)&_lisp, LispRoot, 0, data);
@@ -853,7 +852,6 @@ void walkRoots( RootWalkCallback callback, void* data ) {
     callback( (Tagged*)&global_symbols[jj], SymbolRoot, jj, data );
   }
 };
-
 
 
 PointerFix globalMemoryWalkPointerFix;

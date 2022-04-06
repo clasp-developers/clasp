@@ -765,9 +765,12 @@ size_t processMpsMessages(size_t& finalizations) {
 
 namespace gctools {
 
+#ifndef RUNNING_PRECISEPREP
 void walkRoots( RootWalkCallback, void* data ) {
   // Do nothing
 };
+#endif
+
 
 void test_mps_allocation() {
   int numAllocations = 10000;

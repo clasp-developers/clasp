@@ -578,6 +578,58 @@ Compare the symbol against previous definitions of symbols - if there is a misma
         (state-cur-priority state) nil
         (state-cur-name state) nil))
 
+(defmethod interpret-tag ((tag tags:clasp-defmethod-tag) state)
+  (error-if-bad-expose-info-setup tag
+                                  (state-cur-name state)
+                                  (state-cur-lambda state)
+                                  (state-cur-declare state)
+                                  (state-cur-docstring state)
+                                  (state-cur-docstring-long state))
+  (multiple-value-bind (tag-class-name method-name)
+      (cscrape:extract-method-name-from-signature (tags:signature-text% tag))
+    (let* ((class-name (or tag-class-name (tags:name% (state-cur-class state))))
+           (class-key
+             (make-class-key (state-cur-namespace-tag state) class-name))
+           (class (gethash class-key (state-classes state)))
+           (packaged-method-name (maybe-override-name
+                                  (state-cur-namespace-tag state)
+                                  (state-cur-name state)
+                                  (packaged-name (state-cur-namespace-tag state)
+                                                 method-name
+                                                 (state-packages state))
+                                  (state-packages state)))
+           (signature-text (tags:signature-text% tag))
+           (lambda-list (or (tags:maybe-lambda-list (state-cur-lambda state))
+                            (parse-lambda-list-from-signature signature-text
+                                                              :class class)))
+           (declare-form (tags:maybe-declare (state-cur-declare state)))
+           (docstring (tags:maybe-docstring (state-cur-docstring state)))
+           (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))           
+           )
+      (unless class (error "For clasp-defmethod-tag couldn't find class ~a"
+                           class-key))
+      (pushnew (make-instance 'expose-defmethod
+                 :class% class
+                 :lisp-name% packaged-method-name
+                 :method-name% method-name
+                 :file% (tags:file% tag)
+                 :line% (tags:line% tag)
+                 :character-offset% (tags:character-offset% tag)
+                 :lambda-list% lambda-list
+                 :declare% declare-form
+                 :docstring% docstring
+                 :docstring-long% docstring-long                 
+                 )
+               (methods% class)
+               :test #'string=
+               :key #'lisp-name%)))
+  (setf (state-cur-lambda state) nil
+        (state-cur-declare state) nil
+        (state-cur-docstring state) nil
+        (state-cur-docstring-long state) nil        
+        (state-cur-priority state) nil
+        (state-cur-name state) nil))
+
 (defmethod interpret-tag ((tag tags:cl-def-class-method-tag) state)
   (error-if-bad-expose-info-setup tag
                                   (state-cur-name state)
