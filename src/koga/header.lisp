@@ -9,7 +9,7 @@
   (write-line "#endif" output-stream))
 
 (defun write-defines (output-stream &rest rest)
-  "Write a C define preprocessor instructions from a plist. Values that arre NIL
+  "Write a C define preprocessor instructions from a plist. Values that are NIL
 will be skipped. Values that are eq to T will defined with no value. Symbol values
 will be serialized without quotes. All other values will be serialized using
 WRITE-TO-STRING."

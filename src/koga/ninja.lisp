@@ -37,12 +37,12 @@
                     :description "Installing $in to $out")
   (ninja:write-rule output-stream :scrape-pp
                     :command "$cxx $variant-cppflags $cppflags -MD -MF $out.d -o$out -E -DSCRAPING $in"
-                    :description "Preprocess $in for scrapping"
+                    :description "Preprocess $in for scraping"
                     :depfile "$out.d")
   (ninja:write-rule output-stream :generate-sif
                     :command "$lisp --script generate-sif.lisp $out $in"
                     :restat 1
-                    :description "Scrapping $in")
+                    :description "Scraping $in")
   (ninja:write-rule output-stream :generate-headers
                     :command "$lisp --script generate-headers.lisp $precise $variant-path $in"
                     :restat 1
