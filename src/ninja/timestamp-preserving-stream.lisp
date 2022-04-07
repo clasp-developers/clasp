@@ -70,7 +70,9 @@
              (cond (replace-old
                     (when (probe-file old-path)
                       (delete-file old-path))
-                    (rename-file new-path (file-namestring old-path)))
+                    (rename-file new-path
+                                 (make-pathname :name (pathname-name old-path)
+                                                :type (pathname-type old-path))))
                    (t
                     (delete-file new-path)))
               t)))))

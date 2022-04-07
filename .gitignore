@@ -4,6 +4,7 @@ src/mps/
 GPATH
 GRTAGS
 GTAGS
+TAGS
 .lock-waf_darwin_build
 .waf*/
 .svn/

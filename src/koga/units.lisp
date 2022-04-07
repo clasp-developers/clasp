@@ -42,34 +42,18 @@
                    (nm nm))
       configuration
     (message :emph "Configuring LLVM")
-    (if llvm-config
-        (setf llvm-version (run-program-capture (list llvm-config "--version")))
-        (setf llvm-config
-              (loop for candidate in +llvm-config-candidates+
-                    for name = (format nil candidate +llvm-major-version+)
-                    for version = (run-program-capture (list name "--version"))
-                    when (and version
-                              (= +llvm-major-version+
-                                 (first (uiop:parse-version version))))
-                      do (setf llvm-version version)
-                         (return name))))
-    (unless llvm-config
-      (message :err "Unable to find llvm-config compatible with major version ~a." +llvm-major-version+))
-    (message :info "Using llvm-config binary: ~a" llvm-config)
+    (multiple-value-setq (llvm-config llvm-version)
+                         (configure-program "llvm-config"
+                                            (or llvm-config
+                                                +llvm-config-candidates+)
+                                            :major-version +llvm-major-version+
+                                            :required t))
     (unless llvm-bindir
       (setf llvm-bindir
             (uiop:ensure-directory-pathname (run-program-capture (list llvm-config "--bindir")))))
     (unless llvm-includedir
       (setf llvm-includedir
             (uiop:ensure-directory-pathname (run-program-capture (list llvm-config "--includedir")))))
-    (unless ar
-      (setf ar (merge-pathnames #P"llvm-ar" llvm-bindir)))
-    (unless cc
-      (setf cc (merge-pathnames #P"clang" llvm-bindir)))
-    (unless cxx
-      (setf cxx (merge-pathnames #P"clang++" llvm-bindir)))
-    (unless nm
-      (setf nm (merge-pathnames #P"llvm-nm" llvm-bindir)))
     (append-cflags configuration (format nil "-I~a" llvm-includedir))
     (append-ldflags configuration (run-program-capture (list llvm-config "--ldflags")))
     (append-ldlibs configuration (run-program-capture (list llvm-config "--system-libs")))
@@ -77,6 +61,46 @@
     (when (ld configuration)
       (append-ldflags configuration (format nil "-fuse-ld=~(~a~)" (ld configuration))))
     (append-ldflags configuration "-pthread -lstdc++ -fvisibility=default -rdynamic")))
+
+(defmethod configure-unit (configuration (unit (eql :ar)))
+  "Find the ar binary."
+  (with-accessors ((ar ar)
+                   (llvm-bindir llvm-bindir))
+      configuration
+    (message :emph "Configuring ar")
+    (setf ar (configure-program "ar"
+                                (or ar (merge-pathnames #P"llvm-ar" llvm-bindir))
+                                :required t))))
+
+(defmethod configure-unit (configuration (unit (eql :cc)))
+  "Find the cc binary."
+  (with-accessors ((cc cc)
+                   (llvm-bindir llvm-bindir))
+      configuration
+    (message :emph "Configuring cc")
+    (setf cc (configure-program "cc"
+                                (or cc (merge-pathnames #P"clang" llvm-bindir))
+                                :required t))))
+
+(defmethod configure-unit (configuration (unit (eql :cxx)))
+  "Find the cxx binary."
+  (with-accessors ((cxx cxx)
+                   (llvm-bindir llvm-bindir))
+      configuration
+    (message :emph "Configuring cxx")
+    (setf cxx (configure-program "cxx"
+                                 (or cxx (merge-pathnames #P"clang++" llvm-bindir))
+                                 :required t))))
+
+(defmethod configure-unit (configuration (unit (eql :nm)))
+  "Find the nm binary."
+  (with-accessors ((nm nm)
+                   (llvm-bindir llvm-bindir))
+      configuration
+    (message :emph "Configuring nm")
+    (setf nm (configure-program "nm"
+                                (or nm (merge-pathnames #P"llvm-nm" llvm-bindir))
+                                :required t))))
 
 ;; TODO This needs to be improved and made more automatic.
 (defmethod configure-unit (configuration (unit (eql :clang)))
@@ -92,23 +116,40 @@
 -lclangStaticAnalyzerCheckers -lclangStaticAnalyzerCore -lclangAnalysis -lclangAST -lclangRewrite ~
 -lclangLex -lclangBasic"))))
 
-(defparameter +pkg-config-candidates+
-  '("pkg-config"))
-
 (defmethod configure-unit (configuration (unit (eql :pkg-config)))
   "Find the pkg-config binary."
   (with-accessors ((pkg-config pkg-config))
       configuration
     (message :emph "Configuring pkg-config")
-    (unless pkg-config
-      (setf pkg-config
-            (loop for candidate in +pkg-config-candidates+
-                  for version = (run-program-capture (list candidate "--version"))
-                  when version
-                    do (return candidate))))
-    (unless pkg-config
-      (message :err "Unable to find pkg-config."))
-    (message :info "Using pkg-config binary: ~a" pkg-config)))
+    (setf pkg-config (configure-program "pkg-config"
+                                        (or pkg-config #P"pkg-config")
+                                        :required t))))
+
+(defmethod configure-unit (configuration (unit (eql :git)))
+  "Find the git binary."
+  (with-accessors ((git git))
+      configuration
+    (message :emph "Configuring git")
+    (setf git (configure-program "git"
+                                 (or git #P"git")
+                                 :required t))))
+
+(defmethod configure-unit (configuration (unit (eql :objcopy)))
+  "Find the objcopy binary."
+  (with-accessors ((objcopy objcopy))
+      configuration
+    (message :emph "Configuring objcopy")
+    (setf objcopy (configure-program "objcopy"
+                                     (or objcopy #P"objcopy")
+                                     :required t))))
+
+(defmethod configure-unit (configuration (unit (eql :etags)))
+  "Find the etags binary."
+  (with-accessors ((etags etags))
+      configuration
+    (message :emph "Configuring etags")
+    (setf etags (configure-program "etags"
+                                   (or etags #P"etags")))))
 
 (defmethod configure-unit (configuration (unit (eql :base))
                            &aux (app-config (cscrape:read-application-config #P"include/clasp/main/application.config")))
