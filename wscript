@@ -454,6 +454,7 @@ def configure_common(cfg,variant_obj):
     cfg.define("VARIANT_DIR",variant_obj.variant_dir())
     cfg.define("SNAPSHOT_START","_binary_extensions_cando_generated_cando_snapshot_start",quote=False)
     cfg.define("SNAPSHOT_END","_binary_extensions_cando_generated_cando_snapshot_end",quote=False)
+    cfg.define("SNAPSHOT_SIZE","_binary_extensions_cando_generated_cando_snapshot_size",quote=False)
     cfg.define("BITCODE_NAME",variant_obj.bitcode_name())
     cfg.define("VARIANT_NAME",variant_obj.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags_as_string(cfg.env.STLIB_ST,cfg.env.STLIB))

@@ -4,6 +4,7 @@
 (defparameter *code-path* nil)
 (defparameter *script-path* nil)
 (defparameter *variant-path* nil)
+(defparameter *install-path* nil)
 (defparameter *install-bin-path* nil)
 (defparameter *install-clasp-path* nil)
 (defparameter *install-variant-path* nil)
@@ -13,12 +14,13 @@
          :initarg :path)
    (root :accessor source-root
          :initarg :root
-         :type (member :current :code :build :install-bin
+         :type (member :current :code :build :install :install-bin
                        :install-clasp :install-variant :variant))))
 
 (defun resolve-source-root (source)
   (case (source-root source)
     (:build *build-path*)
+    (:install *install-path*)
     (:install-bin *install-bin-path*)
     (:install-clasp *install-clasp-path*)
     (:install-variant *install-variant-path*)

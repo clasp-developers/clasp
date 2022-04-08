@@ -1,3 +1,5 @@
+#!/usr/bin/env -S sbcl --script
+
 (require :asdf)
 
 (defparameter *git* nil)

@@ -194,6 +194,26 @@
                   (make-source (gethash key app-config) :variant))
                 +scraper-lisp-sources+)))
 
+(defmethod configure-unit (configuration (unit (eql :default-target)))
+  "Configure default target."
+  (message :emph "Configuring the default target")
+  (with-accessors ((default-target default-target)
+                   (default-stage default-stage))
+      configuration
+    (unless default-target
+      (setf default-target
+            (if (member :cando (extensions configuration))
+                "dclasp-boehmprecise"
+                "cclasp-boehmprecise")))
+    (loop with bitcode-name = (subseq default-target (1+ (position #\- default-target)))
+          for variant in (variants configuration)
+          when (equal bitcode-name (variant-bitcode-name variant))
+           do (setf (variant-default variant) t))
+    (setf default-stage
+          (find (subseq default-target 0 (position #\- default-target))
+                '(:iclasp :aclasp :bclasp :cclasp :dclasp)
+                :test #'string-equal))))
+
 (defmethod configure-unit (configuration (unit (eql :cpu-count)))
   "Use sysctl or nproc to determine the number of CPU cores and set the job count if it
 has not been set."

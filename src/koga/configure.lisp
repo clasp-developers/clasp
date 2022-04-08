@@ -20,6 +20,10 @@
   nil
   "Is the current variant a debug build?")
 
+(defparameter *variant-default*
+  nil
+  "Is the current variant the default variant?")
+
 (defparameter *variant-name*
   nil
   "The name of the current variant (without debugging suffix).")
@@ -95,7 +99,11 @@
           :initarg :debug
           :initform nil
           :type boolean
-          :documentation "Is the variant a debug build?"))
+          :documentation "Is the variant a debug build?")
+   (default :accessor variant-default
+            :initform nil
+            :type boolean
+            :documentation "Is the variant the default?"))
   (:documentation "Class that represents a variant."))
 
 (defclass configuration (flags)
@@ -503,9 +511,13 @@ is not compatible with snapshots.")
                    :initarg :default-target
                    :type (or null string)
                    :documentation "Default build target for Ninja")
+   (default-stage :accessor default-stage
+                  :initform :cclasp
+                  :type (member :iclasp :aclasp :bclasp :cclasp :dclasp)
+                  :documentation "Default stage for installation")
    (units :accessor units
-          :initform '(:cpu-count :base :pkg-config :clang :llvm :ar :cc :cxx :nm :etags :objcopy
-                      :git)
+          :initform '(:cpu-count :base :default-target :pkg-config :clang :llvm :ar :cc :cxx :nm
+                      :etags :objcopy :git)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
@@ -527,11 +539,15 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"static-analyzer.lisp" :variant))
                                                          :snapshot
                                                          (list (make-source #P"snapshot.lisp" :build))
+                                                         :jupyter-kernel
+                                                         (list (make-source #P"jupyter-kernel.lisp" :build))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
                                                                :bitcode :iclasp :aclasp :bclasp
                                                                :cclasp :modules :extension-load
-                                                               :dclasp :install-code :clasp :etags)
+                                                               :dclasp :install-code :clasp
+                                                               :regression-tests
+                                                               :static-analyzer :etags)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
                                                                :extension-load)
