@@ -63,6 +63,20 @@
             (with-open-file (fout sif-file :direction :output :if-exists :supersede :external-format :utf-8)
               (prin1 tags fout))))))))
 
+(defun generate-sif (out in)
+  (let* ((input (alexandria:read-file-into-string in))
+         (previous-output (when (probe-file out)
+                            (alexandria:read-file-into-string out :external-format :utf-8)))
+         (buffer-stream (make-instance 'buffer-stream
+                                       :buffer input
+                                       :buffer-pathname out
+                                       :buffer-stream (make-string-input-stream input)))
+         (new-output (write-to-string (process-all-recognition-elements buffer-stream)
+                                      :escape t)))
+    (unless (equal previous-output new-output)
+      (with-open-file (stream out :direction :output :if-exists :supersede :external-format :utf-8)
+        (write-string new-output stream)))))
+
 (defun generate-headers-from-all-sifs (&optional use-precise)
   (destructuring-bind
         (build-path clasp-home-path &rest sif-files)
@@ -74,5 +88,13 @@
       (assert (every 'uiop:directory-pathname-p (list clasp-home-path build-path)))
       (assert sif-files)
       (process-all-sif-files clasp-home-path build-path sif-files :use-precise use-precise))))
+
+(defun generate-headers (use-precise build-path clasp-home-path &rest sif-files)
+  (format t "clasp-home-path             -> ~a~%" clasp-home-path)
+  (format t "build-path                  -> ~a~%" build-path)
+  (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
+  (assert (every 'uiop:directory-pathname-p (list clasp-home-path build-path)))
+  (assert sif-files)
+  (process-all-sif-files clasp-home-path build-path sif-files :use-precise use-precise))
 
 (export '(generate-sif-files generate-headers-from-all-sifs))

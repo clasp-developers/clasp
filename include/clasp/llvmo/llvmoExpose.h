@@ -4569,6 +4569,7 @@ namespace llvmo {
 
 //  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
 };
+
 namespace llvmo {
 class MDBuilder_O;
 };

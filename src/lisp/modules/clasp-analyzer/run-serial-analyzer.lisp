@@ -17,4 +17,3 @@
              (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
               (pathname *compile-commands*)))
          :output-file (translate-logical-pathname output-filename))))
-

@@ -1,6 +1,6 @@
 (defpackage "CSCRAPE"
   (:use :cl)
-  (:import-from :alexandria
+  (:import-from #:alexandria
                 #:define-constant
                 #:starts-with-subseq)
   (:export
@@ -16,7 +16,10 @@
    #:read-string-to-white-space
    #:next-tag-name
    #:read-string-to-tag
+   #:read-application-config
    #:gather-source-files
+   #:generate-sif
+   #:generate-headers
    #:extract-function-name-from-signature
    #:maybe-remove-one-prefix-from-start
    #:extract-class-method-name-from-signature

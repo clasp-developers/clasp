@@ -366,23 +366,15 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 #  ifdef _TARGET_OS_LINUX
   void* start_of_snapshot = NULL;
   void* end_of_snapshot = NULL;
-  extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_start;
-  extern const char __attribute__((weak)) _binary_extensions_cando_generated_cando_snapshot_end;
-  extern const char __attribute__((weak)) _binary_generated_clasp_snapshot_start;
-  extern const char __attribute__((weak)) _binary_generated_clasp_snapshot_end;
-  start_of_snapshot = (void*)&_binary_generated_clasp_snapshot_start;
-  end_of_snapshot = (void*)&_binary_generated_clasp_snapshot_end;
-  if (!start_of_snapshot) {
-    start_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_start;
-    end_of_snapshot = (void*)&_binary_extensions_cando_generated_cando_snapshot_end;
-  }
-#   if 0 
+  extern const char __attribute__((weak)) SNAPSHOT_START;
+  extern const char __attribute__((weak)) SNAPSHOT_END;
+  start_of_snapshot = (void*)&SNAPSHOT_START;
+  end_of_snapshot = (void*)&SNAPSHOT_END;
   if (start_of_snapshot) {
       printf("%s:%d:%s embedded snapshot %p *snapshot -> %p\n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot, *(void**)start_of_snapshot );
   } else {
       printf("%s:%d:%s embedded snapshot %p \n", __FILE__, __LINE__, __FUNCTION__, start_of_snapshot );
   }
-#   endif
 #  endif
 #else
   void* start_of_snapshot = NULL;
