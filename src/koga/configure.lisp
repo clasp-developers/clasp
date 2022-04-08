@@ -535,6 +535,9 @@ is not compatible with snapshots.")
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
                                                                :extension-load)
+                                                         :version-h
+                                                         (list (make-source #P"version.h" :variant)
+                                                               :extension-load)
                                                          :compile-commands
                                                          (list (make-source #P"compile_commands.json" :variant)
                                                                :iclasp)))

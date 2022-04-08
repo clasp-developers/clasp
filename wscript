@@ -616,6 +616,11 @@ class variant(object):
         configure_common(cfg, self)
         print("Writing the config.h header")
         cfg.write_config_header("%s/config.h"%self.variant_dir(),remove=True)
+        cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
+        cfg.define("CLASP_GIT_FULL_COMMIT",get_git_full_commit(cfg))
+        cfg.define("CLASP_VERSION",get_clasp_version(cfg))
+        print("Writing the version.h header")
+        cfg.write_config_header("%s/version.h"%self.variant_dir(),remove=True)
 
 class boehm_base(variant):
     enable_mpi = False
@@ -1425,9 +1430,6 @@ def configure(cfg):
         cfg.env.append_value('INCLUDES',[mmtk_path.abspath()])
     cfg.define("PROGRAM_CLASP",1)
     cfg.define("CLASP_THREADS",1)
-    cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
-    cfg.define("CLASP_GIT_FULL_COMMIT",get_git_full_commit(cfg))
-    cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
     cfg.define("DEFINE_CL_SYMBOLS",1)
     cfg.define("USE_SOURCE_DATABASE",1)

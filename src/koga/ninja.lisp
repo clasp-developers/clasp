@@ -127,7 +127,8 @@
                                        (if *variant-precise*
                                            (scraper-precise-headers configuration)
                                            (scraper-headers configuration))
-                                       (list (make-source "config.h" :variant)))
+                                       (list (make-source "config.h" :variant)
+                                             (make-source "version.h" :variant)))
                        :tags (make-source "TAGS" :code)
                        :outputs (list (build-name "tags")))))
 

@@ -81,7 +81,7 @@ THE SOFTWARE.
 #include <clasp/core/lispReader.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/wrappers.h>
-
+#include <version.h>
 
 #define DEBUG_LEVEL_NONE
 
