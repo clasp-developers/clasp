@@ -35,6 +35,18 @@
   #+(or)
   (= (cleavir-policy:optimize-value optimize 'speed) 3))
 
+;;; This policy indicates that the compiler should note when it's forced
+;;; to emit expensive boxing instructions. Note that this does not result
+;;; in notes for calling functions that may box internally - FIXME?
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'note-boxing))
+     optimize
+     (environment clasp-global-environment))
+  (declare (ignorable optimize))
+  nil
+  #+(or)
+  (= (cleavir-policy:optimize-value optimize 'speed) 3))
+
 ;;; This policy tells the compiler to note when a &rest parameter must
 ;;; be consed into a list (i.e. the optimization in vaslist.lisp does not fire).
 ;;; It must also be specifically requested.
@@ -68,6 +80,7 @@
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
     (note-untransformed-calls boolean t)
+    (note-boxing boolean t)
     (note-consing-&rest boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
@@ -82,6 +95,7 @@
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
     (note-untransformed-calls boolean t)
+    (note-boxing boolean t)
     (note-consing-&rest boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)

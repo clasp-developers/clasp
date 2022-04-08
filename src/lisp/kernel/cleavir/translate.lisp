@@ -943,6 +943,37 @@
            (assert (every (lambda (r) (eq r :object)) (subseq outputrt Lin)))
            (nconc pref (loop repeat (- Lout Lin) collect (%nil)))))))
 
+(define-condition box-emitted (ext:compiler-note)
+  ((%name :initarg :name :reader name)
+   (%inputrt :initarg :inputrt :reader inputrt)
+   (%outputrt :initarg :outputrt :reader outputrt))
+  (:report (lambda (condition stream)
+             (format stream "Emitting box~@[ of ~a~] from ~a to ~a"
+                     (name condition)
+                     (inputrt condition) (outputrt condition)))))
+
+(defun notable-cast-p (inputrt outputrt)
+  ;; Is this cast expensive enough to alert the optimization-focused
+  ;; user? For now our answer is essentially that a cast is only
+  ;; notable if it involves boxing.
+  (flet ((box-from-p (ivrt)
+           (member ivrt '(:single-float :double-float))))
+    (and (listp inputrt)
+         (if (listp outputrt)
+             (some (lambda (i o)
+                     (and (eq o :object) (box-from-p i)))
+                   inputrt outputrt)
+             (some #'box-from-p inputrt)))))
+
+(defun maybe-note-box (policy name origin inputrt outputrt)
+  (when (cleavir-policy:policy-value policy 'note-boxing)
+    (cmp:note 'box-emitted
+              :inputrt inputrt :outputrt outputrt
+              :name name :origin (loop for org = origin
+                                         then (cst:source org)
+                                       while (typep org 'cst:cst)
+                                       finally (return org)))))
+
 (defun translate-cast (inputv inputrt outputrt)
   ;; most of this is special casing crap due to 1-value values not being
   ;; passed around as lists.
@@ -1006,6 +1037,9 @@
 (defmethod translate-simple-instruction ((instr cc-bmir:cast) (abi abi-x86-64))
   (let* ((input (bir:input instr)) (inputrt (cc-bmir:rtype input))
          (output (bir:output instr)) (outputrt (cc-bmir:rtype output)))
+    (maybe-note-box (bir:policy instr)
+                    (or (bir:name output) (bir:name input))
+                    (bir:origin instr) inputrt outputrt)
     (out (translate-cast (in input) inputrt outputrt) output)))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:memref2) abi)
@@ -1632,8 +1666,9 @@
           #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
           ;; Box/etc. results of the local call.
           (if returni
-              (cmp:irc-ret (translate-cast (local-call-rv->inputs c rrtype)
-                                           rrtype :multiple-values))
+              (cmp:irc-ret (translate-cast
+                            (local-call-rv->inputs c rrtype)
+                            rrtype :multiple-values))
               (cmp:irc-unreachable))))))
   the-function)
 
@@ -1782,12 +1817,26 @@
 
 
 
+(defun maybe-note-return-cast (function)
+  (let ((returni (bir:returni function)))
+    (when returni
+      (let* ((inp (bir:input returni))
+             (inrt (cc-bmir:rtype inp))
+             (name (or (bir:name inp)
+                       (format nil "<values returned from ~a>"
+                               (bir:name function))))
+             (policy (bir:policy function)))
+        (maybe-note-box policy name (bir:origin function)
+                        inrt :multiple-values)))))
+
 (defun layout-xep-group (function lambda-name abi)
+  ;; This goes way up here because we want it only noted once, not
+  ;; once for each arity we happen to emit.
+  (maybe-note-return-cast function)
   (let* ((llvm-function-info (find-llvm-function-info function))
          (xep-group (xep-function llvm-function-info)))
     (dolist (xep-arity (cmp:xep-group-arities xep-group))
       (layout-xep-function xep-arity xep-group function lambda-name abi))))
-
 
 (defun layout-procedure (function lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))
