@@ -6,7 +6,6 @@
 (defun compute-constructor-for-class (class class-form keys)
   ;; FIXME: Better types?
   (etypecase class
-    (structure-class (structure-class-constructor class))
     (built-in-class (built-in-class-constructor class))
     (class
      (unless (clos:class-finalized-p class)

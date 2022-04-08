@@ -50,6 +50,36 @@
   '(:object))
 (defmethod %definition-rtype ((inst bir:abstract-call) (datum bir:datum))
   :multiple-values)
+;; The ABI can only handle aggregates of a certain size before it starts
+;; hitting assertion failures (specifically: in X86RegisterInfo.cpp,
+;; "Expected the FPP as base register"). So for big returns we punt back to
+;; multiple values. Empirically, the limit seems to be four, but - FIXME -
+;; this will change based on ABI and target, and we should reflect that here,
+;; or perhaps use LLVM's sret arguments instead.
+(defun too-big-return-rtype-p (rtype) (and (listp rtype) (> (length rtype) 4)))
+(defun fixup-return-rtype (def-rtype)
+  (if (too-big-return-rtype-p def-rtype)
+      :multiple-values
+      def-rtype))
+(defun return-definition-rtype (returni)
+  ;; KLUDGE: We need to avoid infinite recursion on return inputs of type
+  ;; OUTPUT, which aren't otherwise put in chasing-rtypes-of. But if the input
+  ;; is a PHI, which happens often, the method on definition-rtype will also
+  ;; do the chasing-rtypes-of rigamarole. Therefore,
+  (fixup-return-rtype
+   (let ((datum (bir:input returni)))
+     (etypecase datum
+       (bir:phi (definition-rtype datum))
+       (bir:linear-datum
+        (if (member datum *chasing-rtypes-of* :test #'eq)
+            '()
+            (let ((*chasing-rtypes-of* (cons datum *chasing-rtypes-of*)))
+              (definition-rtype datum))))))))
+(defmethod %definition-rtype ((inst bir:abstract-local-call) (datum bir:datum))
+  (let ((returni (bir:returni (bir:callee inst))))
+    (if returni
+        (return-definition-rtype returni)
+        '())))
 (defmethod %definition-rtype ((inst bir:values-save) (datum bir:datum))
   (let ((def (definition-rtype (bir:input inst))))
     (if (listp def)
@@ -99,7 +129,50 @@
 
 (defmethod definition-rtype ((datum bir:output))
   (%definition-rtype (bir:definition datum) datum))
-(defmethod definition-rtype ((datum bir:argument)) '(:object))
+
+;;; TODO: This is somewhat limited. It gives up on multiple value calls, even
+;;; for fixed- calls where we can probably come up with a more specific rtype.
+;;; And it only allows required parameters to be unboxed.
+(defun argument-definition-rtype (arg)
+  (let* ((fun (bir:function arg))
+         (calls (bir:local-calls fun))
+         (ll (bir:lambda-list fun))
+         ;; Somewhat grungy way of ignoring non-required parameters.
+         (kll (member-if (lambda (o) (member o lambda-list-keywords)) ll))
+         (mll (ldiff ll kll))
+         (pos (position arg mll :test #'eq)))
+    (cond ((or (bir:enclose fun) ; XEP
+               (cleavir-set:empty-set-p calls) ; entry to module
+               ;; FIXME: We could handle fixed mv calls
+               (cleavir-set:some (lambda (call)
+                                   (typep call 'bir:mv-local-call))
+                                 calls))
+           '(:object))
+          (pos ; required parameter
+           ;; similar to a variable, we only care about primaries.
+           (let ((rt '()))
+             (cleavir-set:doset (call calls rt)
+               (let* ((call-arg (nth pos (rest (bir:inputs call))))
+                      (next-rt (definition-rtype call-arg))
+                      (real-next-rt
+                        (cond ((null next-rt) nil)
+                              ((member next-rt '(:vaslist
+                                                 :multiple-values))
+                               '(:object))
+                              (t (list (first next-rt))))))
+                 (setf rt (cond ((null rt) real-next-rt)
+                                ((null real-next-rt) rt)
+                                (t
+                                 (list
+                                  (max-vrtype
+                                   (first rt)
+                                   (first real-next-rt))))))))))
+          (t '(:object)))))
+(defmethod definition-rtype ((datum bir:argument))
+  #+(or)
+  '(:object)
+  ;;#+(or)
+  (argument-definition-rtype datum))
 
 (defmethod definition-rtype ((phi bir:phi))
   (when (member phi *chasing-rtypes-of* :test #'eq)
@@ -162,7 +235,8 @@
 (defmethod %use-rtype ((inst bir:mv-local-call) (datum bir:datum))
   (if (member datum (rest (bir:inputs inst)))
       :vaslist '(:object)))
-(defmethod %use-rtype ((inst bir:returni) (datum bir:datum)) :multiple-values)
+(defmethod %use-rtype ((inst bir:returni) (datum bir:datum))
+  (return-use-rtype (bir:function inst) datum))
 (defmethod %use-rtype ((inst bir:values-save) (datum bir:datum))
   (use-rtype (bir:output inst)))
 (defmethod %use-rtype ((inst cc-bmir:mtf) (datum bir:datum))
@@ -216,7 +290,7 @@
                      (list rt)
                      ;; out of range of ort: unused
                      nil)))))))
-             
+
 (defun basic-use-rtype (datum)
   (let ((use (bir:use datum)))
     (if (null use)
@@ -314,6 +388,25 @@
   ;; Just take the minimum of the writers and readers. FIXME: Think harder.
   (min-rtype (definition-rtype datum) (use-rtype datum)))
 
+;;; Determine the use rtype of the return value of a function.
+(defun return-use-rtype (function returni-input)
+  ;; We have to watch out for loops since the return value of a call could
+  ;; be used as an argument to another call of the same function.
+  (when (member returni-input *chasing-rtypes-of* :test #'eq)
+    (return-from return-use-rtype '()))
+  (let ((*chasing-rtypes-of* (cons returni-input *chasing-rtypes-of*))
+        (rt nil)
+        (local-calls (bir:local-calls function)))
+    (if (or (bir:enclose function) (cleavir-set:empty-set-p local-calls))
+        ;; The function is enclosed, so it could be called from anywhere, and
+        ;; we need to use the pessimistic protocol. No enclose and no local
+        ;; calls means it's the top level function, so the same situation.
+        :multiple-values
+        ;; No enclose, so we can look at all the call sites, and if they're
+        ;; amenable, do something smarter.
+        (cleavir-set:doset (call local-calls rt)
+          (setf rt (max-rtype rt (use-rtype (bir:output call))))))))
+
 (defgeneric maybe-assign-rtype (datum))
 (defmethod maybe-assign-rtype ((datum cc-bmir:output)))
 (defmethod maybe-assign-rtype ((datum cc-bmir:phi)))
@@ -337,7 +430,18 @@
                            (variable-rtype datum)
                            '(:object))))
 (defmethod maybe-assign-rtype ((datum bir:argument))
-  (change-class datum 'cc-bmir:argument :rtype '(:object)))
+  (change-class datum 'cc-bmir:argument
+                :rtype (let* ((use (use-rtype datum))
+                              (def (definition-rtype datum))
+                              (rt (min-rtype use def)))
+                         ;; FIXME: We force arguments to be represented even
+                         ;; if they are unused. It would be possible, if a
+                         ;; bit convoluted, to in this case instead alter the
+                         ;; local function parameters to lack the argument
+                         ;; entirely.
+                         (if (null rt)
+                             '(:object)
+                             (min-rtype rt '(:object))))))
 
 (defun assign-instruction-rtypes (inst)
   (mapc #'maybe-assign-rtype (bir:outputs inst)))
@@ -500,6 +604,7 @@
            (object-input instruction fun)
            (cast-inputs instruction :vaslist (rest (bir:inputs instruction)))
            (cast-output instruction :multiple-values)))))
+
 (defmethod insert-casts ((instruction cc-bmir:fixed-mv-call))
   (object-input instruction (first (bir:inputs instruction)))
   (let* ((args (second (bir:inputs instruction)))
@@ -507,13 +612,35 @@
          (nvalues (bir:nvalues instruction))
          (target (make-list nvalues :initial-element :object)))
     (cond ((listp args-rtype)
-           (assert (= (length args-rtype) nvalues))
+           ;; Null rtype can happen e.g. if the input is a local call that is
+           ;; known to not return. But in that case this call really should
+           ;; have been eliminated, so, FIXME. I see it running the numerics
+           ;; regression tests.
+           (assert (or (null args-rtype) (= (length args-rtype) nvalues)))
            (maybe-cast-before instruction args target))
           (t (insert-mtf-before instruction args target))))
   (cast-output instruction :multiple-values))
+
+(defun cast-local-call-output (instruction)
+  (let* ((fun (bir:callee instruction))
+         (returni (bir:returni fun))
+         (actual-rt (if returni
+                        (cc-bmir:rtype (bir:input returni))
+                        '())))
+    (cast-output instruction actual-rt)))
+
 (defmethod insert-casts ((instruction bir:local-call))
-  (object-inputs instruction (rest (bir:inputs instruction)))
-  (cast-output instruction :multiple-values))
+  ;; KLUDGE: For now, we only consider required arguments as being
+  ;; possible to pass unboxed.
+  (loop with requiredp = t
+        for item in (bir:lambda-list (bir:callee instruction))
+        for arg in (rest (bir:inputs instruction))
+        unless (typep item 'bir:argument)
+          do (setf requiredp nil)
+        do (maybe-cast-before instruction arg (if requiredp
+                                                  (cc-bmir:rtype item)
+                                                  '(:object))))
+  (cast-local-call-output instruction))
 (defmethod insert-casts ((instruction bir:mv-local-call))
   (let* ((inputs (bir:inputs instruction))
          (args (second inputs)))
@@ -523,17 +650,25 @@
            (insert-casts instruction))
           (t
            (cast-inputs instruction :vaslist (rest (bir:inputs instruction)))
-           (cast-output instruction :multiple-values)))))
+           (cast-local-call-output instruction)))))
 (defmethod insert-casts ((instruction cc-bmir:fixed-mv-local-call))
   (let* ((args (second (bir:inputs instruction)))
          (args-rtype (cc-bmir:rtype args))
          (nvalues (bir:nvalues instruction))
-         (target (make-list nvalues :initial-element :object)))
+         (target
+           (loop with requiredp = t
+                 repeat nvalues
+                 for item in (bir:lambda-list (bir:callee instruction))
+                 unless (typep item 'bir:argument)
+                   do (setf requiredp nil)
+                 collect (if requiredp
+                             (first (cc-bmir:rtype item))
+                             :object))))
     (cond ((listp args-rtype)
            (assert (= (length args-rtype) nvalues))
            (maybe-cast-before instruction args target))
           (t (insert-mtf-before instruction args target))))
-  (cast-output instruction :multiple-values))
+  (cast-local-call-output instruction))
 (defmethod insert-casts ((instruction cc-bir:mv-foreign-call))
   (object-inputs instruction)
   (cast-output instruction :multiple-values))
@@ -632,8 +767,10 @@
     (maybe-cast-before instruction (second inputs) '(:vaslist)))
   (cast-output instruction '(:vaslist)))
 
+;; returni just passes out whatever it's given. (or will)
 (defmethod insert-casts ((instruction bir:returni))
-  (cast-inputs instruction :multiple-values))
+  (when (too-big-return-rtype-p (cc-bmir:rtype (bir:input instruction)))
+    (cast-inputs instruction :multiple-values)))
 (defmethod insert-casts ((inst bir:primop))
   (let* ((info (bir:info inst))
          (rt-info (clasp-cleavir:primop-rtype-info info))

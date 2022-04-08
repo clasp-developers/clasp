@@ -121,7 +121,7 @@ CLANG_LIBRARIES = [
             'clangIndex',
             'clangTooling',
             'clangFormat',
-    'clangToolingInclusions',
+            'clangToolingInclusions',
             'clangToolingCore',
             'clangBasic',
             'clangCodeGen',
@@ -146,7 +146,7 @@ CLANG_LIBRARIES = [
             'clangLex',
             'clangBasic'
  ]
-# CLANG_LIBRARIES = [ 'clang-cpp' ]
+CLANG_CPP_LIBRARIES = [ 'clang-cpp' ]
 # LLVM_LIBRARIES = [ 'LLVM' ]
 
 BOOST_LIBRARIES = []
@@ -1169,8 +1169,6 @@ def configure(cfg):
     update_exe_search_path(cfg)
     run_llvm_config(cfg, "--version") # make sure we fail early
     check_externals_clasp_version(cfg)
-    if (cfg.env['DEST_OS'] == DARWIN_OS):
-        cfg.find_program("llvm-nm",var='LLVM_NM')
     if (cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS):
         log.warn("Using a separate llvm-config binary for linking with the LLVM libs: %s", cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
     else:
@@ -1191,7 +1189,8 @@ def configure(cfg):
         cfg.define("USE_BUILD_FORK_REDIRECT_OUTPUT",1)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
-#    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
+    cfg.env["NM_BINARY"] = "%s/llvm-nm" % cfg.env.LLVM_BIN_DIR
+    cfg.define("NM_BINARY", cfg.env["NM_BINARY"])
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
     # apply the default
@@ -1382,14 +1381,12 @@ def configure(cfg):
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
     llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
-#dynamic llvm/clang
-    cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
+    try:
+        cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
+    except ConfigurationError:
+        cfg.check_cxx(lib=CLANG_CPP_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
     cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )
 
-
-    #static llvm/clang
-#    cfg.check_cxx(stlib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
-#    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
 # This was includes - but that doesn't put it in the right place when building home built llvm
     llvm_include_dir = "%s/../include" % run_llvm_config_for_libs(cfg, "--bindir") 
     log.debug("llvm_include_dir = %s", llvm_include_dir)
@@ -2537,38 +2534,6 @@ def runCmdLargeOutput(cmd):
         print("Errors running %s" % cmd )
         print("%s" % strerr )
     return outf.getvalue()
-
-# class export_symbols_list(Task.Task):
-#     def run(self):
-#         # Get everything already external
-#         cando_sym_name = "%s_cando" % self.outputs[0].abspath()
-#         cmd = [ self.inputs[0].abspath(), "-y", cando_sym_name, "-N" ]
-#         result = runCmdLargeOutput(cmd);
-#         cando_sym_file = open(cando_sym_name,"r")
-#         externals = cando_sym_file.read().splitlines()
-#         cando_sym_file.close();
-#         # Get the vtables
-#         for obj in self.inputs[2:]:
-#             if (self.bld.env["DEST_OS"] == DARWIN_OS):
-#                 cmd = self.bld.env.LLVM_NM + [ "-Ugj", "--quiet", obj.abspath() ]
-#             else:
-#                 cmd = [ 'nm', '--defined-only', obj.abspath() ]
-#             result = runCmdLargeOutput(cmd);
-#             nm_lines = result.splitlines()
-#             for line in nm_lines:
-#                 symbol = line.split()[-1]
-#                 if ( symbol.find("__ZTV")>=0 ):
-#                     externals.append(symbol)
-#                 elif (symbol.find("_wrapped_") >= 0):
-#                     externals.append(symbol)
-#         externals_set = set(externals)
-#         text_file = open(self.outputs[0].abspath(),"w+")
-#         for entry in sorted(externals_set):
-#             text_file.write(entry)
-#             text_file.write('\n')
-#         text_file.close()
-#         cmd = [ "echo", "Ignore \"no symbols\" above" ]
-#         return self.exec_command(cmd)
 
 class build_clasp_extension(waflib.Task.Task):
     def run(self):

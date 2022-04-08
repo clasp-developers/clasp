@@ -1751,7 +1751,15 @@ function-description - for debugging."
   (let ((struct-type (llvm-sys:get-type struct)))
     (when (or (llvm-sys:type-equal struct-type %t*%)
               (llvm-sys:type-equal struct-type %t**%))
-      (error "You cannot extract from simple type ~s value ~s" struct-type struct)))
+      (error "You cannot extract from simple type ~s value ~s" struct-type struct))
+    ;; Sanity check which is unfortunately necessary because without it, an
+    ;; out of bounds extraction will get you an LLVM assert failure like
+    ;; llvm/lib/IR/Value.cpp:49: llvm::Type* checkType(llvm::Type*):
+    ;; Assertion `Ty && "Value defined with a null type: Error!"' failed.
+    (when (and (> (length idx-list) 0)
+               (integerp (first idx-list))
+               (not (llvm-sys:index-valid struct-type (first idx-list))))
+      (error "Out of bounds extractvalue ~a with index ~d" struct-type (first idx-list))))
   (llvm-sys:create-extract-value *irbuilder* struct idx-list label))
 
 (defun irc-smart-ptr-extract (smart-ptr &optional (label ""))

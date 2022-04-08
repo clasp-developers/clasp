@@ -3703,6 +3703,17 @@ CL_DEFMETHOD void StructType_O::setBody(core::T_sp elements, core::T_sp isPacked
   }
 }
 
+// Takes a Type rather than a StructType because we frequently deal with
+// un-downcasted Types in the compiler (e.g., from get-type)
+CL_LISPIFY_NAME("indexValid");
+CL_DEFUN bool indexValid(Type_sp type, unsigned idx) {
+  llvm::StructType *st = dyn_cast<llvm::StructType>(type->wrappedPtr());
+  if (st)
+    return st->indexValid(idx);
+  else
+    SIMPLE_ERROR(BF("Could not cast %s to struct type") % _rep_(type));
+}
+
 ;
 
 };

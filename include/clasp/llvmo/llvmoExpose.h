@@ -4276,6 +4276,7 @@ public: // static methods
 
 public:
   void setBody(core::T_sp elements, core::T_sp isPacked);
+  bool indexValid(unsigned idx);
 }; // StructType_O
 }; // llvmo
 /* from_object translators */

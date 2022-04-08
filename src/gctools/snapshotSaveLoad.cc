@@ -108,16 +108,16 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
 #if defined(_TARGET_OS_LINUX)
   std::string dynamic = "";
   if (filename.find(".so") != std::string::npos) dynamic = "--dynamic ";
-  nm_cmd << "/usr/bin/nm " << dynamic << "-p --defined-only --no-sort \"" << filename << "\"";
+  nm_cmd << NM_BINARY << " " << dynamic << "-p --defined-only --no-sort \"" << filename << "\"";
 #elif defined(_TARGET_OS_DARWIN)
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
   core::executableTextSectionRange( start, end );
   textRegionStart = (uintptr_t)start;
-  nm_cmd << "/usr/bin/nm -p --defined-only \"" << filename << "\"";
+  nm_cmd << NM_BINARY << " -p --defined-only \"" << filename << "\"";
 #else
 #error "Handle other operating systems - how is main found using dlsym and in the output of nm"
-  nm_cmd << "/usr/bin/nm -p --defined-only \"" << filename << "\"";
+  nm_cmd << NM_BINARY << " -p --defined-only \"" << filename << "\"";
 #endif
   if (fout) fprintf(fout, "# Symbols obtained by filtering: %s\n", nm_cmd.str().c_str() );
   FILE* fnm = popen( nm_cmd.str().c_str(), "r");
