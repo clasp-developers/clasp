@@ -959,7 +959,7 @@
                                   (cmp:irc-tmv-primary inputv))
                         (loop for i from 1
                               for ort in (rest outputrt)
-                              for val = (cmp:irc-load (return-value-elt i))
+                              for val = (cmp:irc-t*-load (return-value-elt i))
                               collect (cast-one :object ort val))))))
         ((eq inputrt :vaslist)
          (cond ((eq outputrt :multiple-values)
