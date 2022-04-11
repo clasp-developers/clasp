@@ -415,10 +415,10 @@
 
 ;;; Primops for debugging
 
-(defeprimop core::set-breakstep () (inst)
+(defeprimop core:set-breakstep () (inst)
   (declare (ignore inst))
   (%intrinsic-call "cc_set_breakstep" ()))
 
-(defeprimop core::unset-breakstep () (inst)
+(defeprimop core:unset-breakstep () (inst)
   (declare (ignore inst))
   (%intrinsic-call "cc_unset_breakstep" ()))

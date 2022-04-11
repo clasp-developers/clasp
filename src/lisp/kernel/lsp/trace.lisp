@@ -368,12 +368,8 @@ all functions."
 Evaluates FORM in the Stepper mode and returns all its values."
   `(unwind-protect
         (progn
-          #+cclasp
-          (core::primop core::set-breakstep)
+          (core:set-breakstep)
           (locally
               #+cclasp (declare (optimize clasp-cleavir::insert-step-conditions))
               ,form))
-     #+cclasp
-     (core::primop core::unset-breakstep)
-     ;; Necessary because unset-breakstep is a for-effect primop (KLUDGE)
-     nil))
+     (core:unset-breakstep)))

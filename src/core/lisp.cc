@@ -2153,6 +2153,22 @@ CL_DEFUN T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   return nil<T_O>();
 }
 
+CL_LAMBDA()
+CL_DECLARE();
+CL_DOCSTRING(R"dx(Turn on the stepper.)dx")
+DOCGROUP(clasp)
+CL_DEFUN void core__set_breakstep() {
+  my_thread->_Breakstep = true;
+}
+
+CL_LAMBDA()
+CL_DECLARE();
+CL_DOCSTRING(R"dx(Turn off the stepper.)dx")
+DOCGROUP(clasp)
+CL_DEFUN void core__unset_breakstep() {
+  my_thread->_Breakstep = false;
+}
+
 CL_LAMBDA(arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return a string representation of the object)dx")

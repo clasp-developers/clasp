@@ -499,10 +499,9 @@ format string."
         (let ((*debugger-hook* nil))
           (invoke-debugger
            (make-condition 'step-form :source source)))
-      #+cclasp
       (continue ()
         :report "Resume normal, unstepped execution."
-        (core::primop core::unset-breakstep)
+        (core:unset-breakstep)
         (return-from breakstep (values)))
       (step-into ()
         :report "Step into form."
