@@ -585,10 +585,37 @@ void cc_unset_breakstep() {
   my_thread->_Breakstep = false;
 }
 
-NOINLINE void cc_breakstep(core::T_O* source) {
+NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
   unlikely_if (my_thread->_Breakstep) {
-    core::eval::funcall(core::_sym_breakstep,
-                        T_sp((gctools::Tagged)source));
+    void* frame = lframe;
+    void* bframe = my_thread->_BreakstepFrame;
+    // If bframe is NULL, we are doing step-into.
+    // Otherwise, we are doing step-over, and we need to check
+    // if we've returned yet. bframe is the frame step-over was initiated
+    // from, and lframe/frame is the caller frame.
+    // We have to check here because a function being stepped over may
+    // nonlocally exit past the caller, and in that situation we want to
+    // resume stepping.
+    // FIXME: We assume stack growth direction here.
+    if (!bframe || (frame >= bframe)) {
+      T_sp res = core::eval::funcall(core::_sym_breakstep,
+                                     T_sp((gctools::Tagged)source));
+      // If res is false, step-into.
+      if (res.nilp()) my_thread->_BreakstepFrame = NULL;
+      // Otherwise, step-over.
+      else my_thread->_BreakstepFrame = frame;
+    }
+  }
+}
+
+NOINLINE void cc_breakstep_after(core::T_O* lframe) {
+  unlikely_if (my_thread->_Breakstep) {
+    void* frame = lframe;
+    void* bframe = my_thread->_BreakstepFrame;
+    // If we just stepped over, and are back after the call, switch back
+    // into step-into mode. Otherwise do nothing.
+    if (bframe && (frame >= bframe))
+      my_thread->_BreakstepFrame = NULL;
   }
 }
 

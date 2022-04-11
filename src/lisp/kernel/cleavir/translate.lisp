@@ -505,12 +505,14 @@
                 (bir:extent instruction))
        (bir:output instruction)))
 
-(defun maybe-insert-step (inst)
+(defun maybe-insert-step-before (inst)
   (when (cleavir-policy:policy-value (bir:policy inst)
                                      'insert-step-conditions)
     (let ((origin (bir:origin inst)))
       (when (typep origin 'cst:cst)
-        (let* ((raw (cst:raw origin))
+        (let* ((frame (%intrinsic-call "llvm.frameaddress.p0i8"
+                                       (list (%i32 0)) "stepper-frame"))
+               (raw (cst:raw origin))
                (index (literal:reference-literal raw t))
                (lit
                  (cmp:irc-load
@@ -518,15 +520,32 @@
                                         (list (%size_t 0) (%i64 index))
                                         "step-source"))))
           (%intrinsic-invoke-if-landing-pad-or-call
-           "cc_breakstep" (list lit)))))))
+           "cc_breakstep" (list lit frame)))))))
 
 (defmethod translate-simple-instruction :before
     ((instruction bir:abstract-call) abi)
-  (declare (ignore instruction abi))
+  (declare (ignore abi))
   ;; We must force all closure initializers to run before a call.
   (force-initializers)
   ;; Cooperation with the stepper
-  (maybe-insert-step instruction))
+  (maybe-insert-step-before instruction))
+
+(defun maybe-insert-step-after (inst)
+  (when (and (cleavir-policy:policy-value (bir:policy inst)
+                                          'insert-step-conditions)
+             (typep (bir:origin inst) 'cst:cst))
+    ;; OK, we inserted a cc_breakstep call in the above method,
+    ;; so now we need to put in the cc_breakstep_after to support
+    ;; the step-over facility.
+    (%intrinsic-call "cc_breakstep_after"
+                     (list (%intrinsic-call "llvm.frameaddress.p0i8"
+                                            (list (%i32 0))
+                                            "stepper-frame")))))
+
+(defmethod translate-simple-instruction :after
+    ((instruction bir:abstract-call) abi)
+  (declare (ignore abi))
+  (maybe-insert-step-after instruction))
 
 ;; LETI is a subclass of WRITEVAR, so we use a :before to bind the var.
 (defmethod translate-simple-instruction :before ((instruction bir:leti) abi)

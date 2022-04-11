@@ -83,6 +83,8 @@ namespace core {
     gctools::GCRootsInModule*  _GCRootsInModule;
     StartupInfo       _Startup;
     bool              _Breakstep; // Should we check for breaks?
+    // What frame are we stepping over? NULL means step-into mode.
+    void*             _BreakstepFrame;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

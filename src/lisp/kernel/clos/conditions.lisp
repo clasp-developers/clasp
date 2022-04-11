@@ -499,13 +499,18 @@ format string."
         (let ((*debugger-hook* nil))
           (invoke-debugger
            (make-condition 'step-form :source source)))
+      ;; cc_breakstep interprets nil as indication to step-into, and
+      ;; non-nil to step-over.
       (continue ()
         :report "Resume normal, unstepped execution."
         (core:unset-breakstep)
-        (return-from breakstep (values)))
+        nil)
       (step-into ()
-        :report "Step into form."
-        (return-from breakstep (values))))))
+        :report "Step into call."
+        nil)
+      (step-over ()
+        :report "Step over call."
+        t))))
 
 (defun warn (datum &rest arguments)
   "Args: (format-string &rest args)

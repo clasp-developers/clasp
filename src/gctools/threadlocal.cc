@@ -144,6 +144,7 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   ,_BufferStr8NsPool()
   ,_BufferStrWNsPool()
   ,_Breakstep(false)
+  ,_BreakstepFrame(NULL)
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
