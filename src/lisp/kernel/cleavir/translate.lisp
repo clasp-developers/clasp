@@ -513,7 +513,11 @@
         (let* ((frame (%intrinsic-call "llvm.frameaddress.p0i8"
                                        (list (%i32 0)) "stepper-frame"))
                (raw (cst:raw origin))
-               (index (literal:reference-literal raw t))
+               (index
+                 (handler-case (literal:reference-literal raw t)
+                   (serious-condition ()
+                     (literal:reference-literal
+                      "<error dumping form>" t))))
                (lit
                  (cmp:irc-load
                   (cmp:irc-gep-variable (literal:ltv-global)
