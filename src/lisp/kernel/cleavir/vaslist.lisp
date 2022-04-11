@@ -33,7 +33,7 @@
 
 (defun vaslistablep (fname) (member fname *vaslistable*))
 
-(defun origin (origin)
+(defun origin-source (origin)
   (loop for org = origin then (cst:source org)
         while (typep org 'cst:cst)
         finally (return org)))
@@ -354,7 +354,7 @@
                  t)
                 (*record-failures*
                  (cmp:note 'consing-&rest
-                           :origin (origin (bir:origin function))
+                           :origin (origin-source (bir:origin function))
                            :parameter rest
                            :reasons *failure-reasons*))
                 (t nil)))

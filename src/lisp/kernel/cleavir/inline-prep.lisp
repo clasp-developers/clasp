@@ -65,9 +65,7 @@
 ;;; Given a FUNCTION-AST, return the function-scope-info to insert into its body ASTs.
 ;;; or NIL if there's no source info.
 (defun compute-fsi (ast)
-  (let ((orig (let ((orig (cleavir-ast:origin ast)))
-                (loop while (typep orig 'cst:cst)
-                      do (setf orig (cst:source orig)))
+  (let ((orig (let ((orig (origin-source (cleavir-ast:origin ast))))
                 (cond ((consp orig) (car orig))
                       ((null orig)
                        ;; KLUDGE: If no source info, make one up
@@ -89,9 +87,7 @@
           (insert-function-scope-info-into-spi next fsi)))
       (core:setf-source-pos-info-function-scope spi fsi)))
 (defun insert-function-scope-info-into-ast (ast fsi)
-  (let ((orig (cleavir-ast:origin ast)))
-    (loop while (typep orig 'cst:cst)
-          do (setf orig (cst:source orig)))
+  (let ((orig (origin-source (cleavir-ast:origin ast))))
     (cond ((consp orig)
            (insert-function-scope-info-into-spi (car orig) fsi)
            (insert-function-scope-info-into-spi (cdr orig) fsi))
@@ -259,9 +255,7 @@
           (eval-load-time-value-asts
            (fix-inline-source-positions
             (cleavir-ast-transformations:clone-ast ast)
-            (let ((source (cst:source cst)))
-              (loop while (typep source 'cst:cst)
-                    do (setf source (cst:source source)))
+            (let ((source (origin-source cst)))
               (cond ((consp source) (car source))
                     ((null source) core:*current-source-pos-info*)
                     (t source)))))))))

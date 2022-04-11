@@ -471,7 +471,5 @@
 (defmethod cmp:compiler-condition-origin
     ((condition cleavir-conditions:program-condition))
   ;; FIXME: ignore-errors is a bit paranoid
-  (let ((origin (cleavir-conditions:origin condition)))
-    (loop while (typep origin 'cst:cst)
-          do (setf origin (cst:source origin)))
+  (let ((source (origin-source (cleavir-conditions:origin condition))))
     (ignore-errors (if (consp origin) (car origin) origin))))

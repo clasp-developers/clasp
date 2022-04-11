@@ -92,10 +92,7 @@ Optimizations are available for any of:
           (when trans
             (cmp:note 'failed-transform
                       :call call :opname id :available trans
-                      :origin (loop for origin = (bir:origin call)
-                                      then (cst:source origin)
-                                    while (typep origin 'cst:cst)
-                                    finally (return origin)))))))))
+                      :origin (origin-source (bir:origin call)))))))))
 
 (defmacro %deftransformation (name)
   `(eval-when (:compile-toplevel :load-toplevel :execute)

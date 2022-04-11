@@ -139,10 +139,7 @@
 (defgeneric translate-terminator (instruction abi next))
 
 (defun inst-source (inst)
-  (let ((origin (bir:origin inst)))
-    (loop while (typep origin 'cst:cst)
-          do (setf origin (cst:source origin)))
-    origin))
+  (origin-source (bir:origin inst)))
 
 ;;; Put in source info.
 (defmethod translate-simple-instruction :around
@@ -969,10 +966,7 @@
   (when (cleavir-policy:policy-value policy 'note-boxing)
     (cmp:note 'box-emitted
               :inputrt inputrt :outputrt outputrt
-              :name name :origin (loop for org = origin
-                                         then (cst:source org)
-                                       while (typep org 'cst:cst)
-                                       finally (return org)))))
+              :name name :origin (origin-source origin))))
 
 (defun translate-cast (inputv inputrt outputrt)
   ;; most of this is special casing crap due to 1-value values not being
@@ -1592,15 +1586,10 @@
 
 (defun function-source-pos-info (irfunction)
   (let ((origin (bir:origin irfunction)))
-    (loop while (typep origin 'cst:cst)
-          do (setf origin (cst:source origin)))
-    (ensure-origin (origin-spi origin) 999909)))
+    (ensure-origin (origin-spi (origin-source origin)) 999909)))
 
 (defun calculate-function-info (irfunction lambda-name)
-  (let* ((origin (loop for origin = (bir:origin irfunction)
-                         then (cst:source origin)
-                       while (typep origin 'cst:cst)
-                       finally (return origin)))
+  (let* ((origin (origin-source (bir:origin irfunction)))
          (spi (origin-spi origin)))
     (let ((cleavir-lambda-list-analysis (cmp:calculate-cleavir-lambda-list-analysis (bir:lambda-list irfunction))))
       (cmp:make-function-info
@@ -1906,7 +1895,7 @@
   (signal condition)
   (let* ((cst (cst-to-ast:cst condition))
          (form (cst:raw cst))
-         (origin (cst:source cst)))
+         (origin (origin-source cst)))
     (invoke-restart 'cst-to-ast:substitute-cst
                     (cst:reconstruct
                      `(error 'cmp:compiled-program-error
