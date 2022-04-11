@@ -566,6 +566,7 @@ SYMBOL_EXPORT_SC_(ClPkg, STARdebuggerHookSTAR);
 
 SYMBOL_EXPORT_SC_(ClPkg, break);
 SYMBOL_EXPORT_SC_(ClPkg, STARbreakOnSignalsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, breakstep);
 SYMBOL_SC_(CorePkg, STARnestedErrorDepthSTAR);
 SYMBOL_SC_(CorePkg, universalErrorHandler);
 SYMBOL_EXPORT_SC_(KeywordPkg, type_error);

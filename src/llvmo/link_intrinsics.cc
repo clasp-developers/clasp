@@ -578,6 +578,20 @@ void dumpLowLevelTrace(int numLowLevels) {
 
 extern "C" {
 
+void cc_set_breakstep() {
+  my_thread->_Breakstep = true;
+}
+void cc_unset_breakstep() {
+  my_thread->_Breakstep = false;
+}
+
+NOINLINE void cc_breakstep(core::T_O* source) {
+  unlikely_if (my_thread->_Breakstep) {
+    core::eval::funcall(core::_sym_breakstep,
+                        T_sp((gctools::Tagged)source));
+  }
+}
+
 // FIXME: This should be [[noreturn]], but I'm not sure how to communicate to clang that the
 // error calls won't return, so it complains if that's declared.
 NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,

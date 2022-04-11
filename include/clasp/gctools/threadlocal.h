@@ -82,6 +82,7 @@ namespace core {
     size_t            _object_file_size;
     gctools::GCRootsInModule*  _GCRootsInModule;
     StartupInfo       _Startup;
+    bool              _Breakstep; // Should we check for breaks?
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

@@ -492,6 +492,22 @@ format string."
                          :FORMAT-ARGUMENTS format-arguments)))))
   nil)
 
+(defun breakstep (source)
+  "Pause due to stepping or a breakpoint."
+  (clasp-debug:with-truncated-stack ()
+    (restart-case
+        (let ((*debugger-hook* nil))
+          (invoke-debugger
+           (make-condition 'step-form :source source)))
+      #+cclasp
+      (continue ()
+        :report "Resume normal, unstepped execution."
+        (core::primop core::unset-breakstep)
+        (return-from breakstep (values)))
+      (step-into ()
+        :report "Step into form."
+        (return-from breakstep (values))))))
+
 (defun warn (datum &rest arguments)
   "Args: (format-string &rest args)
 Formats FORMAT-STRING and ARGs to *ERROR-OUTPUT* as a warning message.  Enters
@@ -1230,6 +1246,13 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 	(values-list (loop for place-name in place-names
 			   for value in values
 			   collect (assert-prompt place-name value)))))))
+
+(define-condition step () ())
+
+(define-condition step-form (step)
+  ((%source :initarg :source :reader source))
+  (:report (lambda (condition stream)
+             (format stream "Evaluating form: ~s" (source condition)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Unicode, initially forgotten in clasp

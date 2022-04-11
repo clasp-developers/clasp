@@ -19,6 +19,14 @@
      (environment clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety) 0))
 
+;;; Should the compiler insert code to signal step conditions? This has
+;;; some overhead, so it's only done at debug 3.
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'insert-step-conditions))
+     optimize
+     (environment clasp-global-environment))
+  (>= (cleavir-policy:optimize-value optimize 'debug) 3))
+
 ;;; This policy indicates that the compiler should note calls that could be
 ;;; transformed (i.e. eliminated by inlining, replacement with a primop, etc.)
 ;;; but couldn't be due to lack of information.
@@ -79,6 +87,7 @@
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (insert-step-conditions boolean t)
     (note-untransformed-calls boolean t)
     (note-boxing boolean t)
     (note-consing-&rest boolean t)
@@ -94,6 +103,7 @@
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (insert-step-conditions boolean t)
     (note-untransformed-calls boolean t)
     (note-boxing boolean t)
     (note-consing-&rest boolean t)

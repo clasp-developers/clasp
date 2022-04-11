@@ -505,11 +505,28 @@
                 (bir:extent instruction))
        (bir:output instruction)))
 
+(defun maybe-insert-step (inst)
+  (when (cleavir-policy:policy-value (bir:policy inst)
+                                     'insert-step-conditions)
+    (let ((origin (bir:origin inst)))
+      (when (typep origin 'cst:cst)
+        (let* ((raw (cst:raw origin))
+               (index (literal:reference-literal raw t))
+               (lit
+                 (cmp:irc-load
+                  (cmp:irc-gep-variable (literal:ltv-global)
+                                        (list (%size_t 0) (%i64 index))
+                                        "step-source"))))
+          (%intrinsic-invoke-if-landing-pad-or-call
+           "cc_breakstep" (list lit)))))))
+
 (defmethod translate-simple-instruction :before
     ((instruction bir:abstract-call) abi)
   (declare (ignore instruction abi))
   ;; We must force all closure initializers to run before a call.
-  (force-initializers))
+  (force-initializers)
+  ;; Cooperation with the stepper
+  (maybe-insert-step instruction))
 
 ;; LETI is a subclass of WRITEVAR, so we use a :before to bind the var.
 (defmethod translate-simple-instruction :before ((instruction bir:leti) abi)
