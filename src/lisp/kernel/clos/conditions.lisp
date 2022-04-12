@@ -498,17 +498,17 @@ format string."
     (restart-case
         (let ((*debugger-hook* nil))
           (invoke-debugger
-           (make-condition 'step-form :source source)))
+           (make-condition 'clasp-debug:step-form :source source)))
       ;; cc_breakstep interprets nil as indication to step-into, and
       ;; non-nil to step-over.
       (continue ()
         :report "Resume normal, unstepped execution."
         (core:unset-breakstep)
         nil)
-      (step-into ()
+      (clasp-debug:step-into ()
         :report "Step into call."
         nil)
-      (step-over ()
+      (clasp-debug:step-over ()
         :report "Step over call."
         t))))
 
@@ -1253,7 +1253,7 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 
 (define-condition step () ())
 
-(define-condition step-form (step)
+(define-condition clasp-debug:step-form (step)
   ((%source :initarg :source :reader source))
   (:report (lambda (condition stream)
              (format stream "Evaluating form: ~s" (source condition)))))

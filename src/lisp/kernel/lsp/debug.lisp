@@ -39,7 +39,9 @@
     (%export '(#:hide-package #:unhide-package
                #:hide #:unhide #:unhide-all))
     ;; misc
-    (%export '(#:function-name-package))))
+    (%export '(#:function-name-package))
+    ;; stepper
+    (%export '(#:step-form #:step-into #:step-over))))
 
 ;;; Low level interface
 
