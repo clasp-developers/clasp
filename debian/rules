@@ -9,16 +9,16 @@ DEB_BUILD_MAINT_OPTIONS=nocheck nostrip
 	dh $@
 
 override_dh_auto_clean:
-	echo rm -rf build
+	rm -rf build
 
 override_dh_auto_test:
 	echo ninja -C build test-boehmprecise
 
 override_dh_auto_configure:
-	sbcl --script configure.lisp --package-path $$(pwd)/debian/clasp/
+	./koga --package-path $$(pwd)/debian/clasp/
 
 override_dh_auto_build:
-	ninja -C build cclasp-boehmprecise
+	ninja -C build
 
 override_dh_auto_install:
-	ninja -C build install_cclasp-boehmprecise
+	ninja -C build install
