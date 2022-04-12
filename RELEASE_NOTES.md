@@ -6,6 +6,7 @@
 * Optimization: Arguments to and return values from local functions (e.g. from FLET) are passed unboxed in some common cases.
 * Added Lisp based koga metabuilder that outputs Ninja build files.
 * Added basic Debian packaging files.
+* Enhancement: The stepper, accessible through `step`, now has basic functionality.
 
 # Version 1.0.0 (LLVM13) 2022-03-26
 
