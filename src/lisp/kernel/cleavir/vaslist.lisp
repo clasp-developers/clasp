@@ -345,7 +345,7 @@
          (rest (second llrest)))
     (if rest
         (let ((*record-failures*
-                (cleavir-policy:policy-value
+                (policy:policy-value
                  (bir:policy function)
                  'clasp-cleavir::note-consing-&rest))
               (*failure-reasons* nil))

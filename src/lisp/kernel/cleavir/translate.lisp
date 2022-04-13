@@ -506,7 +506,7 @@
        (bir:output instruction)))
 
 (defun maybe-insert-step-before (inst)
-  (when (cleavir-policy:policy-value (bir:policy inst)
+  (when (policy:policy-value (bir:policy inst)
                                      'insert-step-conditions)
     (let ((origin (bir:origin inst)))
       (when (typep origin 'cst:cst)
@@ -535,7 +535,7 @@
   (maybe-insert-step-before instruction))
 
 (defun maybe-insert-step-after (inst)
-  (when (and (cleavir-policy:policy-value (bir:policy inst)
+  (when (and (policy:policy-value (bir:policy inst)
                                           'insert-step-conditions)
              (typep (bir:origin inst) 'cst:cst))
     ;; OK, we inserted a cc_breakstep call in the above method,
@@ -1003,7 +1003,7 @@
              (some #'box-from-p inputrt)))))
 
 (defun maybe-note-box (policy name origin inputrt outputrt)
-  (when (cleavir-policy:policy-value policy 'note-boxing)
+  (when (policy:policy-value policy 'note-boxing)
     (cmp:note 'box-emitted
               :inputrt inputrt :outputrt outputrt
               :name name :origin (origin-source origin))))
@@ -1761,7 +1761,7 @@
         (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
         (when (null (bir:returni function))
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-return))
-        (unless (cleavir-policy:policy-value (bir:policy function)
+        (unless (policy:policy-value (bir:policy function)
                                              'perform-optimization)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
@@ -1823,7 +1823,7 @@
                   (when (null (bir:returni function))
                     (llvm-sys:add-fn-attr xep-arity-function
                                           'llvm-sys:attribute-no-return))
-                  (unless (cleavir-policy:policy-value (bir:policy function)
+                  (unless (policy:policy-value (bir:policy function)
                                                        'perform-optimization)
                     (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
                     (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
@@ -1836,7 +1836,7 @@
                                (cmp:setup-calling-convention xep-arity-function
                                                              arity
                                                              :debug-on
-                                                             (cleavir-policy:policy-value
+                                                             (policy:policy-value
                                                               (bir:policy function)
                                                               'save-register-args)
                                                              :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
