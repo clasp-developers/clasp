@@ -94,7 +94,7 @@
                     :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image --feature ignore-extensions --load compile-module.lisp -- $out $in"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
-                    :command "$clasp --non-interactive --feature ignore-extensions --load \"sys:regression-tests;run-all.lisp\""
+                    :command "$clasp --feature ignore-extensions --load \"sys:regression-tests;run-all.lisp\" --quit"
                     :description "Running regression tests"
                     :pool "console")
   (ninja:write-rule output-stream :link-fasl
