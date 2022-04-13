@@ -294,7 +294,7 @@
                        :target (file-namestring (source-path exe-installed))
                        :outputs (list symlink-installed))
     (when (member :cando (extensions configuration))
-      (ninja:write-build output-stream :install-file
+      (ninja:write-build output-stream :install-binary
                                        :inputs (list clasp-sh)
                                        :outputs (list clasp-sh-installed)))
     (ninja:write-build output-stream :phony
