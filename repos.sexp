@@ -2,6 +2,10 @@
   :repository "https://github.com/scymtym/esrap.git"
   :directory "dependencies/esrap/"
   :branch "master")
+ (:name :quicklisp-client
+  :repository "https://github.com/quicklisp/quicklisp-client.git"
+  :directory "dependencies/quicklisp-client/"
+  :commit "version-2021-02-13")
  (:name :shasht
   :repository "https://github.com/yitzchak/shasht.git"
   :directory "dependencies/shasht/"

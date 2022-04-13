@@ -6,6 +6,7 @@
 
 (defmethod print-prologue (configuration (name (eql :ninja)) output-stream)
   (ninja:write-bindings output-stream
+                        :quicklisp-client (make-source "dependencies/quicklisp-client/" :code)
                         :cflags (cflags configuration)
                         :cppflags (cppflags configuration)
                         :cxxflags (cxxflags configuration)
@@ -104,10 +105,10 @@
                     :command "$cxx $variant-ldflags $ldflags $ldflags-fasl -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
   (ninja:write-rule output-stream :jupyter-kernel
-                    :command "$clasp --non-interactive --load jupyter-kernel.lisp -- $name $bin-path $load-system $system"
+                    :command "CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --non-interactive --load jupyter-kernel.lisp -- $name $bin-path $load-system $system"
                     :description "Installing jupyter kernel for $name")
   (ninja:write-rule output-stream :make-snapshot
-                    :command "$clasp --non-interactive $arguments --load snapshot.lisp -- $out"
+                    :command "CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --non-interactive $arguments --load snapshot.lisp -- $out"
                     :description "Creating snapshot $out")
   (ninja:write-rule output-stream :make-snapshot-object
                     :command "$objcopy --input-target binary --output-target elf64-x86-64 --binary-architecture i386 $in $out --redefine-sym _binary_${mangled-name}_end=_binary_snapshot_end  --redefine-sym _binary_${mangled-name}_start=_binary_snapshot_start  --redefine-sym _binary_${mangled-name}_size=_binary_snapshot_size"
