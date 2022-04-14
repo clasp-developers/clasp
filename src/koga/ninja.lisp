@@ -94,7 +94,7 @@
                     :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image --feature ignore-extensions --load compile-module.lisp -- $out $in"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
-                    :command "$clasp --non-interactive --feature ignore-extensions --load \"sys:regression-tests;run-all.lisp\""
+                    :command "$clasp --norc --non-interactive --feature ignore-extensions --load \"sys:regression-tests;run-all.lisp\""
                     :description "Running regression tests"
                     :pool "console")
   (ninja:write-rule output-stream :link-fasl
@@ -111,7 +111,7 @@
                     :command "CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --non-interactive $arguments --load snapshot.lisp -- $out"
                     :description "Creating snapshot $out")
   (ninja:write-rule output-stream :make-snapshot-object
-                    :command "$objcopy --input-target binary --output-target elf64-x86-64 --binary-architecture i386 $in $out --redefine-sym _binary_${mangled-name}_end=_binary_snapshot_end  --redefine-sym _binary_${mangled-name}_start=_binary_snapshot_start  --redefine-sym _binary_${mangled-name}_size=_binary_snapshot_size"
+                    :command "$objcopy --input-target binary --output-target elf64-x86-64 --binary-architecture i386 $in $out --redefine-sym _binary_${mangled-name}_end=_binary_snapshot_end --redefine-sym _binary_${mangled-name}_start=_binary_snapshot_start --redefine-sym _binary_${mangled-name}_size=_binary_snapshot_size"
                     :description "Creating object from snapshot $in"))
 
 (defmethod print-variant-target-sources
@@ -630,7 +630,11 @@
   (ninja:write-build output-stream :regression-tests
                      :clasp (make-source (build-name :iclasp) :variant)
                      :inputs (list (build-name "cclasp"))
-                     :outputs (list (build-name "test"))))
+                     :outputs (list (build-name "test")))
+  (when *variant-default*
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "test"))
+                       :outputs (list "test"))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :static-analyzer)) sources
@@ -645,7 +649,11 @@
                        :implicit-inputs (list (build-name "cclasp")
                                               (build-name "generated" :prep t :gc :mps))
                        :outputs (list (build-name "analyze"))
-                       :sif (make-source "src/clasp_gc.sif" :code))))
+                       :sif (make-source "src/clasp_gc.sif" :code))
+    (unless *variant-debug*
+      (ninja:write-build output-stream :phony
+                         :inputs (list (build-name "analyze"))
+                         :outputs (list "analyze")))))
 
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :dclasp))
