@@ -218,6 +218,8 @@
   (invalidate-generic-functions-with-class-selector class)
   #+static-gfs
   (static-gfs:invalidate-class-reinitializers* class)
+  #+static-gfs
+  (static-gfs:invalidate-changers* class)
   class)
 
 (defmethod initialize-instance :after
@@ -409,7 +411,7 @@ because it contains a reference to the undefined class~%  ~A"
   #+static-gfs
   (static-gfs:invalidate-class-constructors class)
   #+static-gfs
-  (static-gfs:invalidate-class-changers class)
+  (static-gfs:invalidate-changers* class)
   #+static-gfs
   (static-gfs:invalidate-class-reinitializers* class)
   (std-class-generate-accessors class))
