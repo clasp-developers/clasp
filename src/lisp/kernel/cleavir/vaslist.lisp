@@ -335,7 +335,7 @@
   (cond ((bir:unused-p argument)) ; don't bother
         ((datum-ok-p argument)
          #+(or)
-         (change-class argument 'cc-bmir:argument :rtype :vaslist)
+         (setf (cc-bmir:rtype argument) :vaslist)
          (rewrite-use (bir:use argument))
          t)
         (t nil)))

@@ -70,13 +70,13 @@
 
 ;;;
 
-(defclass datum (bir:datum)
-  ((%rtype :initarg :rtype :accessor rtype)))
+(cleavir-stealth-mixins:define-stealth-mixin datum () bir:datum
+  ((%rtype :initarg :rtype :initform :unassigned :accessor rtype)))
 
-(defclass output (datum bir:output) ())
-(defclass phi (datum bir:phi) ())
-(defclass variable (datum bir:variable) ())
-(defclass argument (datum bir:argument) ())
+(cleavir-stealth-mixins:define-stealth-mixin
+    load-time-value (datum) bir:load-time-value
+  ((%rtype :initform '(:object))))
 
-(defmethod rtype ((datum bir:load-time-value)) '(:object))
-(defmethod rtype ((datum bir:constant)) '(:object))
+(cleavir-stealth-mixins:define-stealth-mixin
+    constant (datum) bir:constant
+  ((%rtype :initform '(:object))))
