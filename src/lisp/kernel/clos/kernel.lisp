@@ -333,16 +333,27 @@
 ;;; Add one method to the specializer profile.
 (defun update-gf-specializer-profile (gf specializers)
   (with-early-accessors (+standard-generic-function-slots+)
-    (let* ((sv (generic-function-specializer-profile gf))
-           (to-update (or sv (make-array (length specializers)
-                                         :initial-element nil))))
-      (update-specializer-profile to-update specializers))))
+    ;; Although update-specializer-profile mutates the vector,
+    ;; we still need this setf for the case in which the existing sp
+    ;; was NIL (see compute-gf-specializer-profile below for how this
+    ;; can arise).
+    (setf (generic-function-specializer-profile gf)
+          (let* ((sv (generic-function-specializer-profile gf))
+                 (to-update (or sv (make-array (length specializers)
+                                               :initial-element nil))))
+            (update-specializer-profile to-update specializers)))))
 
 ;;; Recompute the specializer profile entirely.
 ;;; Needed if a method has been removed.
 (defun compute-gf-specializer-profile (gf)
   (with-early-accessors (+standard-generic-function-slots+)
     (setf (generic-function-specializer-profile gf)
+          ;; NOTE: If the gf has no methods, this results in a
+          ;; specializer profile of NIL, which is not a vector.
+          ;; This can cause errors in code that expects the sp to be
+          ;; a vector, but the sp being NIL in code like that indicates
+          ;; some kind of bug. We could use #() here instead, but that
+          ;; would just mask such bugs.
           (let ((sp nil))
             (dolist (method (generic-function-methods gf))
               (let ((specializers (safe-method-specializers method)))
