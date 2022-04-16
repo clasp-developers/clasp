@@ -1253,53 +1253,63 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebug_dtree_interpreterSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_symbol_lookupSTAR->defparameter(nil<core::T_O>());
 #if defined(__x86_64__)
+# error "__x86_64__ is defined"
   SYMBOL_EXPORT_SC_(KeywordPkg, 64_bit);
   Symbol_sp address_model = kw::_sym_64_bit;
 
-#if defined(__APPLE__) && defined(__MACH__)
-#include <TargetConditionals.h>
+# if defined(__APPLE__) && defined(__MACH__)
+#  include <TargetConditionals.h>
 
-#if TARGET_OS_IPHONE == 1
-#error Currently iPhone simulator and iOS are not supported
-#elif TARGET_OS_MAC == 1
+#  if TARGET_OS_IPHONE == 1
+#   error Currently iPhone simulator and iOS are not supported
+#  elif TARGET_OS_MAC == 1
 
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_darwin);
   Symbol_sp target_os = kw::_sym_target_os_darwin;
 
-#else
-#error Your TargetConditionals.h file says you are not a Mac or iPhone?????
-#endif
+#  else
+#   error Your TargetConditionals.h file says you are not a Mac or iPhone?????
+#  endif
 
-#elif defined(__linux__)
+# elif defined(__linux__)
 
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
-#elif defined(__FreeBSD__)
+# elif defined(__FreeBSD__)
 
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_freebsd);
   Symbol_sp target_os = kw::_sym_target_os_freebsd;
 
-#else
-#error Currently only MacOSX, linux and FreeBSD are supported for x86_64
-#endif
+# elif defined(__arm__)
+#  error "__arm__ is defined"
+# else
+#  error Currently only MacOSX, linux and FreeBSD are supported for x86_64
+# endif
 
 #elif defined(__i386__)
 
   SYMBOL_EXPORT_SC_(KeywordPkg, 32_bit);
   Symbol_sp address_model = kw::_sym_32_bit;
 
-#if defined(__linux__)
+# if defined(__linux__)
 
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
-#else
-#error Currently only linux is supported for i386
-#endif
+# else
+#  error Currently only linux is supported for i386
+# endif
+
+#elif defined(__arm64__) || defined(arm64)
+
+  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_darwin);
+  Symbol_sp target_os = kw::_sym_target_os_darwin;
+  SYMBOL_EXPORT_SC_(KeywordPkg, 64_bit);
+  Symbol_sp address_model = kw::_sym_64_bit;
 
 #else
-#error Currently only x86_64 and i386 is supported
+# error Currently only x86_64 and i386 is supported
 #endif
 
   ql::list features;

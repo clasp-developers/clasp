@@ -1290,8 +1290,8 @@ def configure(cfg):
 ### Without these checks the following error happens: AttributeError: 'BuildContext' object has no attribute 'variant_obj'
 #    cfg.env.append_value('INCLUDES', "/opt/clasp-support/include")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
-        cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
-        cfg.env.append_value('INCLUDES', "/usr/local/include" )
+        cfg.env.append_value('LINKFLAGS', "-L/opt/homebrew/lib");
+        cfg.env.append_value('INCLUDES', "/opt/homebrew/include" )
     if (UNWINDER == DEFAULT):
         if (cfg.env['DEST_OS'] == LINUX_OS ):
             cfg.env.append_value('LINKFLAGS',"--unwindlib=libgcc")

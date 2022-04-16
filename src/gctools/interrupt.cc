@@ -1,5 +1,9 @@
+
+
 #include <signal.h>
-#include <xmmintrin.h>
+#if defined(__i386__)
+# include <xmmintrin.h>
+#endif
 #include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbol.h>
@@ -321,7 +325,11 @@ int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 
 DOCGROUP(clasp)
 CL_DEFUN void core__disable_all_fpe_masks() {
+#if defined(__i386__)
   _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
+#else
+  printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
 }
 
 CL_LAMBDA(&key underflow overflow inexact invalid divide-by-zero denormalized-operand)
@@ -331,6 +339,7 @@ DOCGROUP(clasp)
 CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, core::T_sp inexact, core::T_sp invalid, core::T_sp divide_by_zero, core::T_sp denormalized_operand) {
   // See https://doc.rust-lang.org/stable/core/arch/x86_64/fn._mm_setcsr.html
   // mask all -> no fpe-exceptions
+#if defined(__i386__)
   _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
   if (underflow.notnilp())
     _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_UNDERFLOW));
@@ -344,18 +353,30 @@ CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, 
     _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DIV_ZERO));
   if (denormalized_operand.notnilp())
     _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DENORM));
+#else
+  printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
 }
 
 DOCGROUP(clasp)
 CL_DEFUN core::Fixnum_sp core__get_current_fpe_mask() {
+#if defined(__i386__)
   unsigned int before = _MM_GET_EXCEPTION_MASK ();
   return core::clasp_make_fixnum(before);
+#else
+  printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
+  abort();
+#endif
 }
 
 DOCGROUP(clasp)
 CL_DEFUN void core__set_current_fpe_mask(core::Fixnum_sp mask) {
   Fixnum value = core::unbox_fixnum(mask);
+#if defined(__i386__)
   _MM_SET_EXCEPTION_MASK(value);
+#else
+  printf("%s:%d:%s Add support for FPE masks for this architecture\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
 }
   
 void handle_fpe(int signo, siginfo_t* info, void* context) {
