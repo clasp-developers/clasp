@@ -55,7 +55,30 @@
                                                             " "
                                                             (cxxflags configuration)))
                  "EXECUTABLE_NAME" (build-name :iclasp)
-                 "PREFIX" (namestring (prefix configuration))
+                 "CLASP_DEV_TEST_PATH" "src"
+                 "CLASP_DEV_SOURCE_PATH" "../.."
+                 "CLASP_DEV_BITCODE_PATH" (namestring (merge-pathnames (root :variant-bitcode)
+                                                                       (build-path configuration)))
+                 "CLASP_DEV_FASL_PATH" (namestring (merge-pathnames (root :variant-fasl)
+                                                                    (build-path configuration)))
+                 "CLASP_DEV_LIB_PATH" (namestring (merge-pathnames (root :variant-lib)
+                                                                   (build-path configuration)))
+                 "CLASP_DEV_GENERATED_PATH" (namestring (merge-pathnames (root :variant-generated)
+                                                                         (build-path configuration)))
+                 "CLASP_DEV_STARTUP_PATH" (namestring (merge-pathnames (root :variant-startup)
+                                                                       (build-path configuration)))
+                 "CLASP_DEV_INCLUDE_PATH" "include"
+                 "CLASP_DEV_SYS_PATH" "src/lisp"
+                 "CLASP_INSTALL_SOURCE_PATH" (namestring (root :install-share))
+                 "CLASP_INSTALL_BITCODE_PATH" (namestring (root :install-bitcode))
+                 "CLASP_INSTALL_FASL_PATH" (namestring (root :install-fasl))
+                 "CLASP_INSTALL_LIB_PATH" (namestring (root :install-lib))
+                 "CLASP_INSTALL_GENERATED_PATH" (namestring (root :install-generated))
+                 "CLASP_INSTALL_STARTUP_PATH" (namestring (root :install-startup))
+                 "CLASP_INSTALL_INCLUDE_PATH" (namestring (merge-pathnames (make-pathname :directory '(:relative "include"))
+                                                                           (share-path configuration)))
+                 "CLASP_INSTALL_SYS_PATH" (namestring (merge-pathnames (make-pathname :directory '(:relative "src" "lisp"))
+                                                                       (share-path configuration)))
                  "APP_NAME" "CLASP"
                  "BITCODE_NAME" *variant-bitcode-name*
                  "VARIANT_NAME" *variant-name*
@@ -144,7 +167,7 @@
   (write-defines output-stream
                  "BUILD_EXTENSION" (and sources t)
                  "CLASP_EXTENSION_STARTUP_LOADS"
-                 (format nil "[~{'~a'~^, ~}]" (mapcar (lambda (source)
+                 (format nil "~{startup:~a~^,~}" (mapcar (lambda (source)
                                                         (file-namestring (source-path source)))
                                                       sources))))
 

@@ -118,7 +118,7 @@
   This is probably not as fast as bitcode (maybe a few percent slower)
   but it links fast.
 - :faso generates faso files. This is good for development.")
-   (build-path :reader build-path
+   (build-path :accessor build-path
                :initarg :build-path
                :initform #P"build/"
                :type pathname
@@ -133,11 +133,21 @@
                    :initform t
                    :type boolean
                    :documentation "Build clasp in parallel")
-   (prefix :accessor prefix
-           :initform #P"/usr/local/"
-           :initarg :prefix
-           :type pathname
-           :documentation "The directory under which to install Clasp.")
+   (bin-path :accessor bin-path
+             :initform #P"/usr/local/bin/"
+             :initarg :bin-path
+             :type pathname
+             :documentation "The directory under which to install binaries.")
+   (lib-path :accessor lib-path
+             :initform #P"/usr/local/lib/clasp/"
+             :initarg :lib-path
+             :type pathname
+             :documentation "The directory under which to install the Clasp libraries.")
+   (share-path :accessor share-path
+               :initform #P"/usr/local/share/clasp/"
+               :initarg :share-path
+               :type pathname
+               :documentation "The directory under which to install shared Clasp files.")
    (package-path :accessor package-path
                  :initform nil
                  :initarg :package-path
@@ -608,6 +618,14 @@ is not compatible with snapshots.")
   (when (package-path instance)
     (setf (package-path instance)
           (uiop:ensure-directory-pathname (package-path instance))))
+  (setf (build-path instance)
+        (uiop:ensure-directory-pathname (build-path instance))
+        (bin-path instance)
+        (uiop:ensure-directory-pathname (bin-path instance))
+        (lib-path instance)
+        (uiop:ensure-directory-pathname (lib-path instance))
+        (share-path instance)
+        (uiop:ensure-directory-pathname (share-path instance)))
   (when (member :cando (extensions instance))
     (setf (gethash :clasp-sh (outputs instance))
           (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant)))))
@@ -656,10 +674,10 @@ then they will overide the current variant's corresponding property."
     (:fasoll "faspll")
     (otherwise "fasl")))
 
-(defun image-source (configuration target &optional (root :variant))
+(defun image-source (configuration target &optional (root :variant-fasl))
   "Return the name of an image based on a target name, the bitcode name
 and the build mode."
-  (make-source (format nil "fasl/~(~a~)-~a-image.~a"
+  (make-source (format nil "~(~a~)-~a-image.~a"
                        target *variant-bitcode-name*
                        (image-fasl-extension configuration))
                root))
@@ -795,8 +813,9 @@ the function to the overall configuration."
 
 (defun includes (&rest paths)
   "Add C include directories to the current configuration."
-  (let ((*build-path* #P"")
-        (*code-path* (make-pathname :directory '(:relative :up))))
+  (let ((*root-paths* (list* :build #P""
+                             :code (make-pathname :directory '(:relative :up))
+                             *root-paths*)))
     (append-cflags *configuration*
                    (format nil "~{-I~a~^ ~}" (mapcar #'resolve-source paths)))))
 
