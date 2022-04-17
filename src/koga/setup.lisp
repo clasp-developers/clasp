@@ -162,6 +162,11 @@ writing the build and variant outputs."
                              (prefix *configuration*)))
          (*install-bin-path* (merge-pathnames #P"bin/" *install-path*))
          (*install-clasp-path* (merge-pathnames #P"lib/clasp/" *install-path*)))
+    (when (clean *configuration*)
+      (message :emph "~%Cleaning up previous build")
+      (uiop:delete-directory-tree (build-path *configuration*)
+                                  :validate t
+                                  :if-does-not-exist :ignore))
     (ensure-directories-exist (build-path *configuration*))
     (message :emph "~%Configuring the build")
     (loop for unit in (units *configuration*)

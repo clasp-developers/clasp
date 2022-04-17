@@ -141,7 +141,7 @@
     (message :emph "Configuring objcopy")
     (setf objcopy (configure-program "objcopy"
                                      (or objcopy #P"objcopy")
-                                     :required t))))
+                                     :required #-darwin t #+darwin nil))))
 
 (defmethod configure-unit (configuration (unit (eql :etags)))
   "Find the etags binary."
@@ -170,7 +170,10 @@
   (append-cflags configuration "-std=c++20" :type :cxxflags)
   #+darwin (append-cflags configuration "-stdlib=libc++" :type :cxxflags)
   #+darwin (append-cflags configuration "-I/usr/local/include/")
-  #+linux (append-cflags configuration "-stdlib=libstdc++" :type :cxxflags)
+  #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -stdlib=libstdc++"
+                                       :type :cxxflags)
+  #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+                                       :type :cflags)
   (when (address-sanitizer configuration)
     (append-cflags configuration "-fsanitize=address" :type :cxxflags)
     (append-ldflags configuration "-fsanitize=address"))

@@ -123,6 +123,11 @@
                :initform #P"build/"
                :type pathname
                :documentation "The directory where build files are to be put.")
+   (clean :reader clean
+          :initarg :clean
+          :initform nil
+          :type boolean
+          :documentation "Clean up from previous builds before configuring the build.")
    (parallel-build :accessor parallel-build
                    :initarg :parallel-build
                    :initform t

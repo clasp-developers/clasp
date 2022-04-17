@@ -62,7 +62,8 @@
                  "VARIANT_DIR" *variant-bitcode-name*
                  "CLASP_CLANG_PATH" (namestring (cc configuration))
                  "NM_BINARY" (namestring (nm configuration))
-                 "OBJCOPY_BINARY" (namestring (objcopy configuration)))
+                 "OBJCOPY_BINARY" (and (objcopy configuration)
+                                       (namestring (objcopy configuration))))
   (loop for os in +os-features+
         when (member os *features*)
           do (write-defines output-stream
