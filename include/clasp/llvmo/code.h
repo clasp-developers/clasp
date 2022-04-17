@@ -8,9 +8,9 @@
 
 #ifndef code_H //[
 #define code_H
-
 #include <clasp/core/common.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <llvm/ExecutionEngine/JITLink/JITLinkMemoryManager.h>
 
 template <>
 struct gctools::GCInfo<llvmo::ObjectFile_O> {
@@ -20,6 +20,21 @@ struct gctools::GCInfo<llvmo::ObjectFile_O> {
 };
 
 
+
+namespace llvmo {
+
+/* On Apple Silicon switch this thread so that it can and then cannot write into MEM_JIT memory.
+   On other processors, do nothing. */
+void JITDataReadWriteMaybeExecute();
+void JITDataReadExecute();
+
+/* On Apple Silicon switch this thread so that it can and then cannot write into MEM_JIT memory.
+   On other processors switch between RWX and R-X.
+   Refresh instruction cache if architecture (arm64) requires it. */
+void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL);
+void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& bl);
+
+};
 
 // ObjectFile_O
 namespace llvmo {
@@ -55,7 +70,7 @@ typedef enum { SaveState, RunState } CodeState_t;
     //
     // Code data
     //
-    gctools::GCRootsInModule* _gcroots;
+    gctools::GCRootsInModule* _gcRoots;
     void*         _TextSectionStart;
     void*         _TextSectionEnd;
     uintptr_t     _TextSectionId;
@@ -76,7 +91,7 @@ typedef enum { SaveState, RunState } CodeState_t;
         _TheJITDylib(jitdylib),
         _FasoName(fasoName),
         _FasoIndex(fasoIndex),
-        _gcroots(NULL),
+        _gcRoots(NULL),
         _CodeBlock(unbound<CodeBlock_O>() ) {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   objectId = %lu\n", __FILE__, __LINE__, __FUNCTION__, objectId));
     };
@@ -84,7 +99,7 @@ typedef enum { SaveState, RunState } CodeState_t;
         _State(RunState),
         _CodeName(codename),
         _TheJITDylib(jitdylib),
-        _gcroots(NULL),
+        _gcRoots(NULL),
         _CodeBlock(unbound<CodeBlock_O>()),
         _ObjectId(objectId) {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   codename = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(codename).c_str() ));
@@ -93,7 +108,7 @@ typedef enum { SaveState, RunState } CodeState_t;
         _State(RunState),
         _CodeName(codename),
         _TheJITDylib(dylib),
-        _gcroots(NULL),
+        _gcRoots(NULL),
         _CodeBlock(codeBlock),
         _TextSectionStart(0),
         _TextSectionEnd(0),
@@ -190,6 +205,11 @@ namespace llvmo {
    * The layout is | RWData | ROData | Code 
    * We place the RWData at the top of the object so we can scan it for GC managed pointers.
    */
+#if defined (CLASP_APPLE_SILICON)
+# define USE_MMAP_CODEBLOCK 1
+# include <sys/mman.h>
+#endif
+
 FORWARD(CodeBlock);
 class CodeBlock_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, CodeBlock_O, "CodeBlock", core::CxxObject_O);
@@ -201,11 +221,33 @@ public:
   uintptr_t     _HeadOffset;
   uintptr_t     _TailOffset;
   uintptr_t     _TotalSize;
+#ifdef USE_MMAP_CODEBLOCK
+  void*         _mmapBlock;
+  uintptr_t     _mmapSize;
+#else
   gctools::GCArray_moveable<uint8_t> _DataCode;
+#endif
   static constexpr size_t DefaultSize = 8*1024*1024;
 public:
   template <typename Stage>
   static CodeBlock_sp make(uintptr_t size) {
+#ifdef USE_MMAP_CODEBLOCK
+    CodeBlock_sp codeblock = gctools::GC<CodeBlock_O>::allocate<Stage>(size);
+    void* mmappedBlock = mmap( NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC,
+                               MAP_ANON | MAP_PRIVATE | MAP_JIT, -1, 0);
+    if (mmappedBlock==MAP_FAILED || !mmappedBlock ) {
+      printf("%s:%d:%s mmap failed\n", __FILE__, __LINE__, __FUNCTION__ );
+      abort();
+    }
+    uintptr_t top = (uintptr_t)mmappedBlock;
+    uintptr_t bottom = (uintptr_t)mmappedBlock+size;
+    codeblock->_TailOffset = size;
+    codeblock->_HeadOffset = 0;
+    codeblock->_mmapBlock = mmappedBlock;
+    codeblock->_mmapSize = size;
+    return codeblock;
+#else
+    // When we can gc code allocate entire block in GC memory
     CodeBlock_sp codeblock = gctools::GC<CodeBlock_O>::allocate_container<Stage>(false,size);
     uintptr_t top = (uintptr_t)&codeblock->_DataCode[0];
     uintptr_t bottom = (uintptr_t)&codeblock->_DataCode[size];
@@ -214,13 +256,33 @@ public:
     codeblock->_TailOffset = bottom-top;
     codeblock->_HeadOffset = 0;
     return codeblock;
+#endif
   };
 public:
   /*! Calculate the BasicLayout based on the sizes. 
    *  Return false if it won't fit and true if it will and then lock in the allocation
    */
-  void* dataStart() const { return (void*)&this->_DataCode[0]; };
-  void* dataEnd() const { return (void*)&this->_DataCode[this->_HeadOffset]; };
+  void* dataStart() const {
+#ifdef USE_MMAP_CODEBLOCK
+    return (void*)this->_mmapBlock;
+#else
+    return (void*)&this->_DataCode[0];
+#endif
+  };
+  void* dataEnd() const {
+#ifdef USE_MMAP_CODEBLOCK
+    return (void*)((uintptr_t)this->_mmapBlock+this->_HeadOffset);
+#else
+    return (void*)&this->_DataCode[this->_HeadOffset];
+#endif
+  };
+  unsigned char* address(uintptr_t index) const {
+#ifdef USE_MMAP_CODEBLOCK
+    return (unsigned char*)((uintptr_t)this->_mmapBlock+index);
+#else
+    return (unsigned char*)&this->_DataCode[index];
+#endif
+  };
   bool calculate(llvm::jitlink::BasicLayout& BL);
   void* calculateHead( uintptr_t size, uint32_t align, uintptr_t& headOffset );
   void* calculateTail( uintptr_t size, uint32_t align, uintptr_t& tailOffset );
@@ -231,7 +293,13 @@ public:
   CodeBlock_O(uintptr_t totalSize ) :
       _HeadOffset(0)
       , _TailOffset(totalSize)
-      , _DataCode(totalSize,0,true) {};
+#ifdef USE_MMAP_CODEBLOCK
+      , _mmapBlock(NULL)
+      , _mmapSize(totalSize)
+#else
+      , _DataCode(totalSize,0,true)
+#endif
+  {};
 
   ~CodeBlock_O();
 };
@@ -350,18 +418,9 @@ inline void allocateInCodeBlock( BasicLayout& BL, CodeBlock_sp& codeBlock ) {
     }
   }
   //
-  // Set memory permissions to RWX temporarily
+  // Temporarily set memory permissions to RW- (current thread) or RWX (all threads), depending on OS
   //
-  auto rwxProt = llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE | llvm::sys::Memory::MF_EXEC;
-  for (auto &KV : BL.segments()) {
-    const auto &AG = KV.first;
-    auto &Seg = KV.second;
-    uint64_t SegSize =
-        alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize );
-    sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
-    sys::Memory::protectMappedMemory( MB, rwxProt );
-    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Temporarily Applying Protections (RWX) to range %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)Seg.WorkingMem, (void*)(Seg.WorkingMem+SegSize) ));
-  }
+  JITMemoryReadWriteMaybeExecute(BL);
 };
 
 };

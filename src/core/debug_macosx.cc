@@ -77,7 +77,7 @@ THE SOFTWARE.
 #include <mach/mach_vm.h>
 #endif
 
-#if defined(__arm64__)
+#if defined(CLASP_APPLE_SILICON)
 #include <mach/mach_vm.h>
 #endif
 

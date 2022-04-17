@@ -229,30 +229,7 @@ public:
     private:
       Error applyProtections() {
         size_t PageSize = getpagesize();
-        for (auto &KV : BL.segments()) {
-          const auto &AG = KV.first;
-          auto &Seg = KV.second;
-#ifdef DEBUG_OBJECT_FILES
-          std::string back;
-          llvm::raw_string_ostream ss(back);
-          llvm::jitlink::operator<<(ss, AG);
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Applying Protections %s to range %p - %p\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str(), Seg.WorkingMem, (Seg.WorkingMem+Seg.ContentSize + Seg.ZeroFillSize) ));
-#endif
-          uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize );
-          auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
-          if ((Prot&sys::Memory::MF_RWE_MASK)==sys::Memory::MF_READ) {
-//            printf("%s:%d:%s Was going to set to R-- from %p to %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(Seg.WorkingMem), (void*)(Seg.WorkingMem+SegSize) );
-            Prot = (sys::Memory::ProtectionFlags)( sys::Memory::MF_READ | sys::Memory::MF_WRITE );
-          } else if ((Prot&sys::Memory::MF_EXEC)) {
-            Prot = (sys::Memory::ProtectionFlags)( sys::Memory::MF_READ | sys::Memory::MF_WRITE | sys::Memory::MF_EXEC );
-          }
-          sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
-          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Protecting memory from %p to %p with %x\n", __FILE__, __LINE__, __FUNCTION__, (void*)(Seg.WorkingMem), (void*)(Seg.WorkingMem+SegSize), Prot ));
-          if (auto EC = sys::Memory::protectMappedMemory(MB, Prot))
-            return errorCodeToError(EC);
-          if (Prot & sys::Memory::MF_EXEC)
-            sys::Memory::InvalidateInstructionCache(MB.base(), MB.allocatedSize());
-        }
+        JITMemoryReadExecute(BL);
         return Error::success();
       }
     private:
@@ -591,7 +568,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
                                     gcroots_in_module_name.c_str(),
                                     address, size ));
-          currentCode->_gcroots = (gctools::GCRootsInModule*)address;
+          currentCode->_gcRoots = (gctools::GCRootsInModule*)address;
           continue;
         }
         pos = sname.find(literals_name);
@@ -627,13 +604,14 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     // Later when we run the code we will check that the gcroots structure
     //  has the correct values
     //
-    currentCode->_gcroots->_module_memory = (void*)currentCode->_LiteralVectorStart;
-    currentCode->_gcroots->_num_entries = currentCode->_LiteralVectorSizeBytes/sizeof(void*);
+    void* literalStart = (void*)currentCode->_LiteralVectorStart;
+    size_t literalCount = currentCode->_LiteralVectorSizeBytes/sizeof(void*);
+    currentCode->_gcRoots->_module_memory = literalStart;
+    currentCode->_gcRoots->_num_entries = literalCount;
+    gctools::clasp_gc_registerRoots( literalStart, literalCount );
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-			      (gctools::GCRootsInModule*)currentCode->_gcroots,
-			      currentCode->_gcroots->_module_memory,
-                              currentCode->_gcroots->_num_entries ));
-
+			      (gctools::GCRootsInModule*)currentCode->_gcRoots,
+                              literalStart, literalCount ));
 #ifdef DEBUG_OBJECT_FILES
     for (auto *Sym : G.external_symbols())
       if (Sym->getName() == "DW.ref.__gxx_personality_v0") {

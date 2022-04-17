@@ -1281,7 +1281,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_freebsd);
   Symbol_sp target_os = kw::_sym_target_os_freebsd;
 
-# elif defined(__arm__)
+# elif defined(CLASP_APPLE_SILICON)
 #  error "__arm__ is defined"
 # else
 #  error Currently only MacOSX, linux and FreeBSD are supported for x86_64
@@ -1301,7 +1301,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #  error Currently only linux is supported for i386
 # endif
 
-#elif defined(__arm64__) || defined(arm64)
+#elif defined(CLASP_APPLE_SILICON)
 
   SYMBOL_EXPORT_SC_(KeywordPkg, target_os_darwin);
   Symbol_sp target_os = kw::_sym_target_os_darwin;

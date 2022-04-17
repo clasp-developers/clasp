@@ -1370,6 +1370,12 @@ void clasp_gc_room(std::ostringstream& OutputStream) {
   OutputStream << std::setw(12) << global_TotalRootTableSize.load() << " words - total module root table size\n";
 }
 
+void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots)
+{
+  // Do nothing
+  printf("%s:%d:%s Implement clasp_gc_registerRoots\n", __FILE__, __LINE__, __FUNCTION__ );
+  abort();
+}
 
 
 };

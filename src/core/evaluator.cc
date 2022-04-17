@@ -1646,12 +1646,22 @@ T_mv sp_go(List_sp args, T_sp env) {
             return (Values(nil<T_O>()));
         }
 
+    struct MonitorBlock {
+      T_O* _tag;
+      MonitorBlock(T_O* tag) : _tag(tag) {
+        printf("%s:%d:%s Entered BLOCK %p\n", __FILE__, __LINE__, __FUNCTION__, tag );
+      }
+      ~MonitorBlock() {
+        printf("%s:%d:%s Leaving BLOCK %p\n", __FILE__, __LINE__, __FUNCTION__, this->_tag );
+      }
+    };
         T_mv sp_block(List_sp args, T_sp environment) {
             ASSERT(environment.generalp());
             Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
             BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
             ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             Cons_sp handle = Cons_O::create(nil<T_O>(),nil<T_O>());
+            // MonitorBlock mb(handle.raw_()); // For debugging BLOCK/RETURN-FROM
             vframe->operator[](0) = handle;
             LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__());
             T_mv result;
@@ -1679,7 +1689,9 @@ T_mv sp_go(List_sp args, T_sp env) {
             T_mv result = Values(nil<T_O>());
             if (oCdr(args).notnilp()) result = eval::evaluate(oCadr(args), environment);
             result.saveToMultipleValue0();
-            ReturnFrom returnFrom(gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0).raw_());
+            T_O* tag = gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0).raw_();
+//            printf("%s:%d:%s returnPtr -> %p\n", __FILE__, __LINE__, __FUNCTION__, tag );
+            ReturnFrom returnFrom(tag);
             throw returnFrom;
         }
 

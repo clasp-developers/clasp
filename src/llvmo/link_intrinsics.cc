@@ -143,7 +143,9 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
 
 void cc_finish_gcroots_in_module(gctools::GCRootsInModule* holder)
 {NO_UNWIND_BEGIN();
+  llvmo::JITDataReadWriteMaybeExecute();
   holder->_TransientAlloca = NULL;
+  llvmo::JITDataReadExecute();
   NO_UNWIND_END();
 }
 

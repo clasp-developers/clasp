@@ -596,12 +596,14 @@ void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, 
 
 GCRootsInModule::GCRootsInModule(void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+(sizeof(core::T_O*)*num_entries)));
+  llvmo::JITDataReadWriteMaybeExecute();
   this->_function_pointer_count = function_pointer_count;
   this->_function_pointers = fptrs;
   this->_num_entries = num_entries;
   this->_capacity = num_entries;
   this->_module_memory = module_mem;
   this->setup_transients(transient_alloca, transient_entries);
+  llvmo::JITDataReadExecute();
 }
 
 
@@ -738,7 +740,9 @@ Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
          __FILE__, __LINE__, __FUNCTION__,
          raw_index, (void*)this->_module_memory );
 #endif
+  llvmo::JITDataReadWriteMaybeExecute();
   reinterpret_cast<core::T_O**>(this->_module_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
+  llvmo::JITDataReadExecute();
   return val;
 }
 Tagged GCRootsInModule::getLiteral(size_t raw_index) {

@@ -19,6 +19,90 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 
+namespace llvmo {
+
+
+void JITDataReadWriteMaybeExecute() {
+#if defined(CLASP_APPLE_SILICON)
+  // On Apple Silicon we turn off MEM_JIT memory write protect for this thread
+  pthread_jit_write_protect_np(false);
+#else
+  // Nothing for now - assume memory must be RWX
+#endif
+}
+
+void JITDataReadExecute() {
+#if defined(CLASP_APPLE_SILICON)
+  // On Apple Silicon we turn off MEM_JIT memory write protect for this thread
+  pthread_jit_write_protect_np(true);
+#else
+  // Nothing for now - assume memory must be RWX
+#endif
+}
+
+void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& bl) {
+#if defined(CLASP_APPLE_SILICON)
+  // On Apple Silicon we turn off MEM_JIT memory write protect for this thread
+  pthread_jit_write_protect_np(false);
+#else
+  auto rwxProt = llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE | llvm::sys::Memory::MF_EXEC;
+  for (auto &KV : BL.segments()) {
+    const auto &AG = KV.first;
+    auto &Seg = KV.second;
+    uint64_t SegSize =
+        alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize );
+    sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
+    sys::Memory::protectMappedMemory( MB, rwxProt );
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Temporarily Applying Protections (RWX/%x) to range %p - %p\n", __FILE__, __LINE__, __FUNCTION__, rwxProt, (void*)Seg.WorkingMem, (void*)(Seg.WorkingMem+SegSize) ));
+  }
+#endif
+}
+
+void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
+#if defined(CLASP_APPLE_SILICON)
+  size_t PageSize = getpagesize();
+  pthread_jit_write_protect_np(true);
+  for (auto &KV : BL.segments()) {
+    const auto &AG = KV.first;
+    auto &Seg = KV.second;
+    uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, Seg.Alignment.value() );
+    auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
+    sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
+    if (Prot & sys::Memory::MF_EXEC)
+      sys::Memory::InvalidateInstructionCache(MB.base(), MB.allocatedSize());
+  }
+#else
+  for (auto &KV : BL.segments()) {
+    const auto &AG = KV.first;
+    auto &Seg = KV.second;
+#ifdef DEBUG_OBJECT_FILES
+    std::string back;
+    llvm::raw_string_ostream ss(back);
+    llvm::jitlink::operator<<(ss, AG);
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Applying Protections %s to range %p - %p\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str(), Seg.WorkingMem, (Seg.WorkingMem+Seg.ContentSize + Seg.ZeroFillSize) ));
+#endif
+    uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize );
+    auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
+    if ((Prot&sys::Memory::MF_RWE_MASK)==sys::Memory::MF_READ) {
+//            printf("%s:%d:%s Was going to set to R-- from %p to %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)(Seg.WorkingMem), (void*)(Seg.WorkingMem+SegSize) );
+      Prot = (sys::Memory::ProtectionFlags)( sys::Memory::MF_READ | sys::Memory::MF_WRITE );
+    } else if ((Prot&sys::Memory::MF_EXEC)) {
+      Prot = (sys::Memory::ProtectionFlags)( sys::Memory::MF_READ | sys::Memory::MF_WRITE | sys::Memory::MF_EXEC );
+    }
+    sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Protecting memory from %p to %p with %x\n", __FILE__, __LINE__, __FUNCTION__, (void*)(Seg.WorkingMem), (void*)(Seg.WorkingMem+SegSize), Prot ));
+    if (auto EC = sys::Memory::protectMappedMemory(MB, Prot))
+      return errorCodeToError(EC);
+    if (Prot & sys::Memory::MF_EXEC)
+      sys::Memory::InvalidateInstructionCache(MB.base(), MB.allocatedSize());
+  }
+#endif
+}
+
+
+
+
+};
 
 namespace llvmo { // ObjectFile_O
 
@@ -601,13 +685,14 @@ bool CodeBlock_O::calculate(BasicLayout& BL) {
   for ( auto& KV : BL.segments() ) {
     auto allocGroup = KV.first;
     uintptr_t protFlags = toSysMemoryProtectionFlags(allocGroup.getMemProt());
-#if 0    
+    auto& Seg = KV.second;
+#ifdef DEBUG_OBJECT_FILES    
     std::string back;
     llvm::raw_string_ostream ss(back);
     llvm::jitlink::operator<<(ss, allocGroup);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ------------- BL.segments() iteration AllocGroup = %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() ));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    Seg.ContentSize -> %lu  Seg.ZeroFillSize -> %lu Seg.Alignment.value() -> %lu\n", __FILE__, __LINE__, __FUNCTION__, Seg.ContentSize, (unsigned long)Seg.ZeroFillSize, (unsigned long)Seg.Alignment.value() ));
 #endif
-    auto& Seg = KV.second;
     uint64_t ZeroFillStart = Seg.ContentSize;
     size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart+Seg.ZeroFillSize,Seg.Alignment.value());
     void* base;
@@ -629,8 +714,8 @@ bool CodeBlock_O::calculate(BasicLayout& BL) {
     Seg.WorkingMem = jitTargetAddressToPointer<char*>((llvm::JITTargetAddress)base);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     wrote into Seg @ %p\n", __FILE__, __LINE__, __FUNCTION__, &Seg ));
   }
-  uintptr_t headAddress = (uintptr_t)&this->_DataCode[headOffset];
-  uintptr_t tailAddress = (uintptr_t)&this->_DataCode[tailOffset];
+  uintptr_t headAddress = (uintptr_t)this->address(headOffset);
+  uintptr_t tailAddress = (uintptr_t)this->address(tailOffset);
   //
   // If the head overruns the tail then we don't have enough memory for this code.
   //
@@ -652,16 +737,16 @@ bool CodeBlock_O::calculate(BasicLayout& BL) {
 
 
 void* CodeBlock_O::calculateHead(uintptr_t size, uint32_t align, uintptr_t& headOffset ) {
-  const unsigned char* head = this->_DataCode.data()+headOffset;
+  const unsigned char* head = this->address(0)+headOffset;
   head = (const unsigned char*)gctools::AlignUp((uintptr_t)head,align);
-  headOffset = (uintptr_t)head-(uintptr_t)this->_DataCode.data()+size;
+  headOffset = (uintptr_t)head-(uintptr_t)this->address(0)+size;
   return (void*)head;
 }
 
 void* CodeBlock_O::calculateTail(uintptr_t size, uint32_t align, uintptr_t& tailOffset) {
-  const unsigned char* tail = this->_DataCode.data()+tailOffset;
+  const unsigned char* tail = this->address(0)+tailOffset;
   tail = (const unsigned char*)gctools::AlignDown((uintptr_t)tail-size,align);
-  tailOffset = (uintptr_t)tail-(uintptr_t)this->_DataCode.data();
+  tailOffset = (uintptr_t)tail-(uintptr_t)this->address(0);
   return (void*)tail;
 }
 
