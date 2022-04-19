@@ -4,7 +4,8 @@
   (declare (ignore configuration name))
   (ninja:make-line-wrapping-stream (ninja:make-timestamp-preserving-stream path)))
 
-(defmethod print-prologue (configuration (name (eql :ninja)) output-stream)
+(defmethod print-prologue (configuration (name (eql :ninja)) output-stream
+                           &aux (clasp-quicklisp-directory (uiop:getenvp "CLASP_QUICKLISP_DIRECTORY")))
   (ninja:write-bindings output-stream
                         :quicklisp-client (make-source "dependencies/quicklisp-client/" :code)
                         :cflags (cflags configuration)
@@ -105,10 +106,14 @@
                     :command "$cxx $variant-ldflags $ldflags $ldflags-fasl -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
   (ninja:write-rule output-stream :jupyter-kernel
-                    :command "CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --non-interactive --load jupyter-kernel.lisp -- $name $bin-path $load-system $system"
+                    :command (format nil
+                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --non-interactive --load jupyter-kernel.lisp -- $name $bin-path $load-system $system"
+                                     clasp-quicklisp-directory)
                     :description "Installing jupyter kernel for $name")
   (ninja:write-rule output-stream :make-snapshot
-                    :command "CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --non-interactive $arguments --load snapshot.lisp -- $out"
+                    :command (format nil
+                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --non-interactive $arguments --load snapshot.lisp -- $out"
+                                     clasp-quicklisp-directory)
                     :description "Creating snapshot $out")
   (ninja:write-rule output-stream :make-snapshot-object
                     :command "$objcopy --input-target binary --output-target elf64-x86-64 --binary-architecture i386 $in $out --redefine-sym _binary_${mangled-name}_end=_binary_snapshot_end --redefine-sym _binary_${mangled-name}_start=_binary_snapshot_start --redefine-sym _binary_${mangled-name}_size=_binary_snapshot_size"
@@ -484,20 +489,23 @@
                                        bimage-installed)
                          :outputs (list "install_bclasp")))))
 
-(defun jupyter-kernel-path (configuration name &key system)
+(defun jupyter-kernel-path (configuration name &key system
+                            &aux (jupyter-path (uiop:getenvp "JUPYTER_PATH")))
   (merge-pathnames (make-pathname :directory (list :relative
-                                                   #+darwin "Jupyter"
-                                                   #-darwin "jupyter"
                                                    "kernels"
                                                    name)
                                   :name "kernel"
                                   :type "json")
-                   (if system
-                       (merge-pathnames (make-pathname :directory '(:relative :up))
-                                        (share-path configuration))
-                       #+darwin (merge-pathnames (make-pathname :directory '(:relative "Library"))
-                                                 (uiop:getenv-pathname "HOME" :ensure-directory t))
-                       #-darwin (uiop:xdg-data-home))))
+                   (cond ((not system)
+                          #+darwin (merge-pathnames (make-pathname :directory '(:relative "Library" "Jupyter"))
+                                                    (uiop:getenv-pathname "HOME" :ensure-directory t))
+                          #-darwin (merge-pathnames (make-pathname :directory '(:relative "jupyter"))
+                                                    (uiop:xdg-data-home)))
+                         (jupyter-path
+                          (uiop:ensure-directory-pathname jupyter-path))
+                         (t
+                          (merge-pathnames (make-pathname :directory '(:relative :up "jupyter"))
+                                           (share-path configuration))))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :cclasp)) sources
