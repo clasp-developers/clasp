@@ -44,54 +44,50 @@
 
 (defparameter +option-parsers+
   (list :extensions #'split-keywords
-        :no-sync #'split-keywords))
+        :skip-sync #'split-keywords))
 
-(defun optionp (arg)
-  (and (plusp (length arg))
-       (char= #\- (char arg 0))))
+(defun parse-string-option (arg start eq-pos)
+  (let ((name (intern (string-upcase (subseq arg start eq-pos))
+                      "KEYWORD")))
+    (list name (funcall (getf +option-parsers+
+                               name
+                               #'identity)
+                        (subseq arg (1+ eq-pos))))))
 
-(defun option-name (arg)
-  (intern (string-upcase (subseq arg
-                                 (position-if (lambda (x)
-                                                (not (char= #\- x)))
-                                              arg)))
-          "KEYWORD"))
+(defun parse-boolean-option (arg start)
+  (if (and (>= (length arg) (+ 3 start))
+           (char= #\n (char arg start))
+           (char= #\o (char arg (1+ start)))
+           (char= #\- (char arg (+ 2 start))))
+    (list (intern (string-upcase (subseq arg (+ 3 start))) "KEYWORD")
+          nil)
+    (list (intern (string-upcase (subseq arg start)) "KEYWORD")
+          t)))
 
 (defun parse-command-line-arguments ()
-  (loop with previous-option = nil
-        for arg in (uiop:command-line-arguments)
-        for optionp = (optionp arg)
-        when previous-option
-          collect (or optionp (funcall (getf +option-parsers+
-                                             previous-option
-                                             #'identity)
-                                       arg))
-            into options
-        if optionp
-          do (setf previous-option (option-name arg)) and
-          collect previous-option into options
-        else if previous-option
-          do (setf previous-option nil)
+  (loop for arg in (uiop:command-line-arguments)
+        for start = (position-if (lambda (x)
+                                   (not (char= #\- x)))
+                                 arg)
+        for eq-pos = (position #\= arg)
+        when eq-pos
+          append (parse-string-option arg start eq-pos)
         else
-          collect arg into parameters
-        finally (return (values (if (evenp (length options))
-                                    options
-                                    (nconc options (list t)))
-                                parameters))))
+          append (parse-boolean-option arg start)))
 
 (let* ((initargs (nconc (parse-command-line-arguments)
                         (ignore-errors (uiop:read-file-form #P"config.sexp"))))
        (*git* (getf initargs :git "git"))
        (build (getf initargs :build-path "build/"))
        (extensions (getf initargs :extensions))
-       (no-sync (getf initargs :no-sync))
+       (skip-sync (getf initargs :skip-sync))
        (code (uiop:getcwd)))
   ;; Get all the external dependencies
   (format t "Synchronizing external repositories~%~%")
   (loop for source in (uiop:read-file-form #P"repos.sexp")
         for name = (getf source :name)
         for extension = (getf source :extension)
-        if (member name no-sync)
+        if (member name skip-sync)
           do (apply #'check-repo source)
         else if (or (not extension)
                     (member name extensions))
