@@ -400,7 +400,7 @@
         (aimage-installed (image-source configuration :aclasp :package-fasl))
         (*root-paths* (list* :variant-stage-bitcode (merge-pathnames (make-pathname :directory (list :relative
                                                                                                      (format nil "aclasp-~a-bitcode"
-                                                                                                                 *variant-bitcode-name*)))
+                                                                                                                 *variant-name*)))
                                                                      (root :variant-lib))
                              *root-paths*)))
     (ninja:write-build output-stream :compile-aclasp
@@ -449,7 +449,7 @@
         (iclasp (make-source (build-name :iclasp) :variant))
         (*root-paths* (list* :variant-stage-bitcode (merge-pathnames (make-pathname :directory (list :relative
                                                                                                      (format nil "bclasp-~a-bitcode"
-                                                                                                                 *variant-bitcode-name*)))
+                                                                                                                 *variant-name*)))
                                                                      (root :variant-bitcode))
                              *root-paths*)))
     (ninja:write-build output-stream :compile-bclasp
@@ -516,7 +516,7 @@
         (iclasp (make-source (build-name :iclasp) :variant))
         (*root-paths* (list* :variant-stage-bitcode (merge-pathnames (make-pathname :directory (list :relative
                                                                                                      (format nil "cclasp-~a-bitcode"
-                                                                                                                 *variant-bitcode-name*)))
+                                                                                                                 *variant-name*)))
                                                                      (root :variant-bitcode))
                              *root-paths*)))
     (ninja:write-build output-stream :compile-cclasp
@@ -612,7 +612,7 @@
   (let* ((image (image-source configuration :cclasp))
          (name (pathname-name (source-path source)))
          (module-name (format nil "cclasp-~a-bitcode/src/lisp/modules/~a/~a.~a"
-                              *variant-bitcode-name* name name
+                              *variant-name* name name
                               (module-fasl-extension configuration)))
          (output (make-source module-name :variant-lib))
          (install-output (make-source module-name :package-lib))
