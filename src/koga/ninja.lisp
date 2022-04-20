@@ -103,6 +103,10 @@
                     :command "$clasp --norc --non-interactive --feature ignore-extensions --load \"sys:regression-tests;run-all.lisp\""
                     :description "Running regression tests"
                     :pool "console")
+  (ninja:write-rule output-stream :ansi-test
+                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
+                    :description "Running ANSI tests"
+                    :pool "console")
   (ninja:write-rule output-stream :link-fasl
                     :command "$clasp --norc --type image --disable-mpi --ignore-image --feature clasp-min --load link-fasl.lisp -- $out $in"
                     :restat 1
@@ -672,10 +676,17 @@
                      :clasp (make-source (build-name :iclasp) :variant)
                      :inputs (list (build-name "cclasp"))
                      :outputs (list (build-name "test")))
+  (ninja:write-build output-stream :ansi-test
+                     :clasp (make-source (build-name :iclasp) :variant)
+                     :inputs (list (build-name "cclasp"))
+                     :outputs (list (build-name "ansi-test")))
   (when *variant-default*
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test"))
-                       :outputs (list "test"))))
+                       :outputs (list "test"))
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "ansi-test"))
+                       :outputs (list "ansi-test"))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :static-analyzer)) sources
