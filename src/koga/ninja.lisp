@@ -28,12 +28,12 @@
                     :restat 1
                     :description "Creating etags")
   (ninja:write-rule output-stream :install-file
-                    :command #+bsd "install -C --mode=644 $in $out"
+                    :command #+bsd "install -C -m 644 $in $out"
                              #+linux "install -CT --mode=644 $in $out"
                     :restat 1
                     :description "Installing $in to $out")
   (ninja:write-rule output-stream :install-binary
-                    :command #+bsd "install -C --mode=755 $in $out"
+                    :command #+bsd "install -C -m 755 $in $out"
                              #+linux "install -CT --mode=755 $in $out"
                     :restat 1
                     :description "Installing $in to $out")

@@ -176,7 +176,7 @@
   (write-ifndef output-stream "CLASP_VERSION_H")
   (write-defines output-stream
                  "CLASP_VERSION_H" t
-                 "CLASP_GIT_COMMIT" (git-commit configuration :short t)
-                 "CLASP_GIT_FULL_COMMIT" (git-commit configuration)
-                 "CLASP_VERSION" (git-describe configuration))
+                 "CLASP_GIT_COMMIT" (commit-short configuration)
+                 "CLASP_GIT_FULL_COMMIT" (commit-full configuration)
+                 "CLASP_VERSION" (version configuration))
   (write-endif output-stream))

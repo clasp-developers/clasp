@@ -526,13 +526,33 @@ is not compatible with snapshots.")
                    :initarg :default-target
                    :type (or null string)
                    :documentation "Default build target for Ninja")
+   (commit-short :accessor commit-short
+                 :initform nil
+                 :initarg :commit-short
+                 :type (or null string)
+                 :documentation "The short commit hash of the source code.")
+   (commit-full :accessor commit-full
+                :initform nil
+                :initarg :commit-full
+                :type (or null string)
+                :documentation "The full commit hash of the source code.")
+   (version :accessor version
+            :initform nil
+            :initarg :version
+            :type (or null string)
+            :documentation "The version of the source code.")
+   (update-version :accessor update-version
+                   :initform nil
+                   :initarg :update-version
+                   :type boolean
+                   :documentation "Use git describe to update the version and commit values in the config.sexp file and then exit.")
    (default-stage :accessor default-stage
                   :initform :cclasp
                   :type (member :iclasp :aclasp :bclasp :cclasp :dclasp)
                   :documentation "Default stage for installation")
    (units :accessor units
-          :initform '(:cpu-count :base :default-target :pkg-config :clang :llvm :ar :cc :cxx :nm
-                      :etags :objcopy :git)
+          :initform '(:git :describe :cpu-count :base :default-target :pkg-config :clang :llvm :ar
+                      :cc :cxx :nm :etags :objcopy)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
