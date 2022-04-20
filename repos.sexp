@@ -1,4 +1,8 @@
-((:name :esrap
+((:name :ansi-test
+  :repository "https://gitlab.common-lisp.net/kpoeck/ansi-test.git"
+  :directory "dependencies/ansi-test/"
+  :branch "feature-clasp-changes")
+ (:name :esrap
   :repository "https://github.com/scymtym/esrap.git"
   :directory "dependencies/esrap/"
   :branch "master")
