@@ -2528,8 +2528,9 @@ void LispHolder::startup(CommandLineOptions* global_options,
     globals_->_Argv.push_back(string(argv[i]));
   }
   // Call the initializers here so that they can edit the global_options structure
-  Bundle *bundle = new Bundle(argv0,global_options->_ResourceDir);
-  globals_->_Bundle = bundle;
+  if (!globals_->_Bundle) {
+    globals_->_Bundle = new Bundle(argv0,global_options->_ResourceDir);
+  }
   // Start up lisp
   this->lisp_->startupLispEnvironment();
 

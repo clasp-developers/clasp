@@ -231,3 +231,18 @@ has not been set."
                (return)
           finally (message :warn "Unknown number of cpu cores. Setting the number of jobs to ~a."
                            (setf (jobs configuration) 4))))) 
+
+(defmethod configure-unit (configuration (unit (eql :describe)))
+  "Update version number."
+  (with-accessors ((version version)
+                   (commit-short commit-short)
+                   (commit-full commit-full))
+      configuration
+    (cond ((git-working-tree-p configuration)
+           (message :emph "Updating version number.")
+           (setf version (git-describe configuration)
+                 commit-short (git-commit configuration :short t)
+                 commit-full (git-commit configuration)))
+          ((not version)
+           (message :err "Clasp version number is not defined and we are not in a git working tree!")))))
+

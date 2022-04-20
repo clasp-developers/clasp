@@ -40,12 +40,11 @@ namespace core {
 
 struct BundleDirectories {
   std::filesystem::path _StartupWorkingDir;
-  std::filesystem::path _InstallDir;
   std::filesystem::path _ExecutableDir;
-  std::filesystem::path _ContentsDir;
   std::filesystem::path _ResourcesDir;
-  std::filesystem::path _LispSourceDir;
+  std::filesystem::path _SysDir;
   std::filesystem::path _GeneratedDir;
+  std::filesystem::path _StartupDir;
   std::filesystem::path _SourceDir;
   std::filesystem::path _IncludeDir;
   std::filesystem::path _LibDir;
@@ -67,24 +66,11 @@ public:
   bool _Initialized;
   BundleDirectories* _Directories;
 
-public:
-  /*! Initialize the bundle and set up all the paths
-     */
 private:
   std::filesystem::path findAppDir(const string &argv0, const string &cwd, bool verbose=false);
-  void findContentSubDirectories(std::filesystem::path p, bool verbose=false);
-  void fillInMissingPaths(bool verbose=false);
 
 public:
   void initializeStartupWorkingDirectory(bool verbose=false);
-
-  Pathname_sp getRootPathname();
-  Pathname_sp getExecutablePathname();
-  Pathname_sp getSysPathname();
-  Pathname_sp getIncludePathname();
-  Pathname_sp getSourcePathname();
-  Pathname_sp getAppContentsPathname();
-  Pathname_sp getAppContentsResourcesPathname();
 
   string describe();
   Bundle(const string &argv0, const string &appPath);

@@ -1,31 +1,50 @@
 # Version 1.1.0 Pending
 
+# Added
+* Lisp based koga metabuilder that outputs Ninja build files.
+* basic Debian packaging files.
+
+# Changed
+* `core:lisp-implementation-id` and `core:clasp-git-full-commit` only return
+  non-`NIL` values if Clasp was built in a git working tree.
+
+# Enhancements
+* `make-instance` and CLOS slot access functions can be used with structure 
+  objects.
+* The stepper, accessible through `step`, now has basic functionality.
+
+# Optimizations
+* Arguments to and return values from local functions (e.g. from FLET) are 
+  passed unboxed in some common cases.
+  
+# Fixes
 * Replace hard coded paths to `nm` in snapshot code with NM_BINARY macro value
   set by configure.
-* Enhancement: `make-instance` and CLOS slot access functions can be used with structure objects.
-* Optimization: Arguments to and return values from local functions (e.g. from FLET) are passed unboxed in some common cases.
-* Added Lisp based koga metabuilder that outputs Ninja build files.
-* Added basic Debian packaging files.
-* Enhancement: The stepper, accessible through `step`, now has basic functionality.
+* Clasp can now be built directly from source. Resolves issue [#175][].
 
 # Version 1.0.0 (LLVM13) 2022-03-26
 
-* Add ed hooks functionality for `ed` function. Accessible via `*ed-functions*`
+# Added
+* ed hooks functionality for `ed` function. Accessible via `*ed-functions*`
   dynamic variable.
-* New compiled library format called FASP - it uses concatenated object files.
 * Implemented `save-lisp-and-die`. This saves the state of a running environment 
   for loading and fast startup later. Our most complex environment Cando starts 
   up in ~4 seconds, which is 10x faster than the old startup that loaded 
   libraries.
 * Atomics interface for lock-free concurrent programming, in the `mp:` package.
 * Garbage collection hooks including finalizers.
+* `clasp-debug` interface so that IDEs like SLIME can retrieve backtraces and
+  more to present during debugging.
+
+# Enhancements
+* New compiled library format called FASP - it uses concatenated object files.
 * Specialized arrays for sub-byte integer types (int2, int4, etc.)
 * Source tracking: Code locations are associated with source locations via
   DWARF, to aid in debugging and project navigation.
-* `clasp-debug` interface so that IDEs like SLIME can retrieve backtraces and
-  more to present during debugging.
-* Fixed many errors identified by the ansi-test-suite [ANSI][]
 * Fully integrated the customizable reader [ECLECTOR][]
+
+# Fixes
+* Fixed many errors identified by the ansi-test-suite [ANSI][]
 
 # Version 0.5.0
 
@@ -84,3 +103,4 @@
 [SICL]: https://github.com/robert-strandh/SICL
 [ANSI]: https://gitlab.common-lisp.net/ansi-test/ansi-test
 [ECLECTOR]: https://github.com/s-expressionists/Eclector
+[#175]: https://github.com/clasp-developers/clasp/issues/175

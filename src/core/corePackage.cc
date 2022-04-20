@@ -903,35 +903,13 @@ void testFeatures() {
 
 
 List_sp generateStartupLoads(std::string str) {
-  std::string noBracket = str.substr(1,str.size()-2);
-//  printf("%s:%d:%s noBracket = %s\n", __FILE__, __LINE__, __FUNCTION__, noBracket.c_str());
-  vector<string> parts = split(noBracket,",");
-  std::string executablePath;
-  core::executablePath(executablePath);
-//  printf("%s:%d:%s executablePath = %s\n", __FILE__, __LINE__, __FUNCTION__, executablePath.c_str());
-  int lastSlash = executablePath.find_last_of('/');
-  std::string executableDir;
-  if (lastSlash == std::string::npos) {
-    executableDir = "";
-  } else {
-    executableDir = executablePath.substr(0,lastSlash+1);
-  }
-//  printf("%s:%d:%s executableDir = %s\n", __FILE__, __LINE__, __FUNCTION__, executableDir.c_str());
+  vector<string> parts = split(str,",");
   ql::list result;
   for ( auto part : parts ) {
-//    printf("%s:%d:%s part: %s\n", __FILE__, __LINE__, __FUNCTION__, part.c_str());
-    int quote0 = part.find_first_of('\'');
-    int quote1 = part.find_last_of('\'');
-    std::string name = part.substr(quote0+1,(quote1-quote0)-1);
-//    printf("%s:%d:%s name: %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
-    stringstream ss;
-    ss << executableDir << "extension-startup-loads/" << name;
-//    printf("%s:%d:%s load: %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str());
     ql::list one;
-    one << cl::_sym_load << SimpleBaseString_O::make(ss.str());
+    one << cl::_sym_load << SimpleBaseString_O::make(part);
     result << one.result();
   }
-//  printf("%s:%d:%s result: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(result.result()).c_str());
   return result.result();
 }
 

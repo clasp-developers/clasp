@@ -12,15 +12,14 @@
   (pprint '(require :asdf) output-stream)
   (pprint `(asdf:initialize-source-registry
              (list :source-registry
-                (list :tree (merge-pathnames ,*code-path* (uiop:getcwd)))
+                (list :tree (merge-pathnames ,(root :code) (uiop:getcwd)))
                 :inherit-configuration))
            output-stream)
   (pprint `(asdf:initialize-output-translations
              (list :output-translations
                 (list t (list (merge-pathnames ,(if host
                                                     (make-pathname :directory '(:relative "host-fasl"))
-                                                    (merge-pathnames (make-pathname :directory '(:relative "fasl"))
-                                                                     *variant-path*))
+                                                    (root :variant-fasl))
                                                (uiop:getcwd))
                               :implementation))
                 :inherit-configuration))
@@ -41,7 +40,7 @@
              (apply #'uiop:symbol-call "CSCRAPE" "GENERATE-HEADERS"
                     (equal "1" cl-user::precise)
                     cl-user::variant-path
-                    ,*code-path*
+                    (make-pathname :directory '(:relative :up))
                     cl-user::args))
            output-stream)))
 
@@ -133,6 +132,6 @@ CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
     :prefix (when system ~s) :load-system load-system))"
             candop
             candop
-            (equal (prefix configuration) #P"/usr/local/")
+            (equal (bin-path configuration) #P"/usr/local/bin/")
             (package-path configuration))))
           
