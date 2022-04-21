@@ -65,17 +65,12 @@
 
 (defun generate-sif (out in)
   (let* ((input (alexandria:read-file-into-string in))
-         (previous-output (when (probe-file out)
-                            (alexandria:read-file-into-string out :external-format :utf-8)))
          (buffer-stream (make-instance 'buffer-stream
                                        :buffer input
                                        :buffer-pathname out
-                                       :buffer-stream (make-string-input-stream input)))
-         (new-output (write-to-string (process-all-recognition-elements buffer-stream)
-                                      :escape t)))
-    (unless (equal previous-output new-output)
-      (with-open-file (stream out :direction :output :if-exists :supersede :external-format :utf-8)
-        (write-string new-output stream)))))
+                                       :buffer-stream (make-string-input-stream input))))
+    (ninja:with-timestamp-preserving-stream (stream out :external-format :utf-8)
+      (write (process-all-recognition-elements buffer-stream) :escape t :stream stream))))
 
 (defun generate-headers-from-all-sifs (&optional use-precise)
   (destructuring-bind
