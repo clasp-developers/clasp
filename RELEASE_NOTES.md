@@ -1,30 +1,30 @@
 # Version 1.1.0 Pending
 
-# Added
+## Added
 * Lisp based koga metabuilder that outputs Ninja build files.
 * basic Debian packaging files.
 
-# Changed
+## Changed
 * `core:lisp-implementation-id` and `core:clasp-git-full-commit` only return
   non-`NIL` values if Clasp was built in a git working tree.
 
-# Enhancements
+## Enhancements
 * `make-instance` and CLOS slot access functions can be used with structure 
   objects.
 * The stepper, accessible through `step`, now has basic functionality.
 
-# Optimizations
+## Optimizations
 * Arguments to and return values from local functions (e.g. from FLET) are 
   passed unboxed in some common cases.
   
-# Fixes
+## Fixes
 * Replace hard coded paths to `nm` in snapshot code with NM_BINARY macro value
   set by configure.
 * Clasp can now be built directly from source. Resolves issue [#175][].
 
 # Version 1.0.0 (LLVM13) 2022-03-26
 
-# Added
+## Added
 * ed hooks functionality for `ed` function. Accessible via `*ed-functions*`
   dynamic variable.
 * Implemented `save-lisp-and-die`. This saves the state of a running environment 
@@ -36,14 +36,14 @@
 * `clasp-debug` interface so that IDEs like SLIME can retrieve backtraces and
   more to present during debugging.
 
-# Enhancements
+## Enhancements
 * New compiled library format called FASP - it uses concatenated object files.
 * Specialized arrays for sub-byte integer types (int2, int4, etc.)
 * Source tracking: Code locations are associated with source locations via
   DWARF, to aid in debugging and project navigation.
 * Fully integrated the customizable reader [ECLECTOR][]
 
-# Fixes
+## Fixes
 * Fixed many errors identified by the ansi-test-suite [ANSI][]
 
 # Version 0.5.0

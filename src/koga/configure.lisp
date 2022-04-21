@@ -148,6 +148,11 @@
                :initarg :share-path
                :type pathname
                :documentation "The directory under which to install shared Clasp files.")
+   (jupyter-path :accessor jupyter-path
+                 :initform nil
+                 :initarg :jupyter-path
+                 :type (or null pathname)
+                 :documentation "The directory under which to install Jupyter files.")
    (package-path :accessor package-path
                  :initform nil
                  :initarg :package-path
@@ -552,7 +557,7 @@ is not compatible with snapshots.")
                   :documentation "Default stage for installation")
    (units :accessor units
           :initform '(:git :describe :cpu-count :base :default-target :pkg-config :clang :llvm :ar
-                      :cc :cxx :nm :etags :objcopy)
+                      :cc :cxx :nm :etags :objcopy :jupyter)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
@@ -560,6 +565,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"generate-sif.lisp" :build))
                                                          :generate-headers
                                                          (list (make-source #P"generate-headers.lisp" :build))
+                                                         :run-aclasp
+                                                         (list (make-source #P"run-aclasp.lisp" :build))
                                                          :compile-aclasp
                                                          (list (make-source #P"compile-aclasp.lisp" :build))
                                                          :compile-bclasp
@@ -646,6 +653,9 @@ is not compatible with snapshots.")
         (uiop:ensure-directory-pathname (lib-path instance))
         (share-path instance)
         (uiop:ensure-directory-pathname (share-path instance)))
+  (when (jupyter-path instance)
+    (setf (jupyter-path instance)
+          (uiop:ensure-directory-pathname (jupyter-path instance))))
   (when (member :cando (extensions instance))
     (setf (gethash :clasp-sh (outputs instance))
           (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant)))))

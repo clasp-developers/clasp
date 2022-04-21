@@ -246,3 +246,18 @@ has not been set."
           ((not version)
            (message :err "Clasp version number is not defined and we are not in a git working tree!")))))
 
+(defmethod configure-unit (configuration (unit (eql :jupyter)))
+  "Configure Jupyter"
+  (let ((jupyter-path-env (uiop:getenvp "JUPYTER_PATH")))
+    (message :emph "Configuring Jupyter")
+    (cond ((jupyter-path configuration)
+           (message :info "Jupyter path already initialized."))
+          (jupyter-path-env
+           (message :info "Using JUPYTER_PATH environment variable to set Jupyter path.")
+           (setf (jupyter-path configuration)
+                 (uiop::ensure-directory-pathname jupyter-path-env)))
+          (t
+           (message :info "Deducing Jupyter path from share path.")
+           (setf (jupyter-path configuration)
+                 (merge-pathnames (make-pathname :directory '(:relative :up "jupyter"))
+                                  (share-path configuration)))))))

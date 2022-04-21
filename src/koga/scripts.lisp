@@ -64,6 +64,11 @@
 (core:compile-aclasp)
 (core:quit)" (jobs configuration)))
 
+(defmethod print-prologue (configuration (name (eql :run-aclasp)) output-stream)
+  (format output-stream "(load #P\"sys:kernel;clasp-builder.lisp\")
+(setq core::*number-of-jobs* ~a)
+(core:load-aclasp)" (jobs configuration)))
+
 (defmethod print-prologue (configuration (name (eql :compile-bclasp)) output-stream)
   (format output-stream "(setq *features* (cons :bclasp *features*))
 (load #P\"sys:kernel;clasp-builder.lisp\")
@@ -98,7 +103,9 @@
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
   (declare (ignore configuration))
   (when (jupyter configuration)
-    (format output-stream "~:[~;#-ignore-extensions (ql:quickload :cando-jupyter)~%#+ignore-extensions ~](ql:quickload :common-lisp-jupyter)~%"
+    (format output-stream "(unless (find-package \"QL\")
+  (load \"quicklisp:setup.lisp\"))
+(uiop/package:symbol-call \"QL\" \"QUICKLOAD\"~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)~%"
             (member :cando (extensions configuration))))
   (format output-stream "(setf ext:*snapshot-save-load-startup*
       ~:[~;#-ignore-extensions 'cl-user:start-cando-user-from-snapshot
@@ -118,20 +125,25 @@ CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
   (declare (ignore configuration))
   (let ((candop (member :cando (extensions configuration))))
     (format output-stream "
+~:[~;#+ignore-extensions~] (require :asdf)
 (let ((name (first (uiop:command-line-arguments)))
       (bin-path (second (uiop:command-line-arguments)))
       (load-system (equal \"1\" (third (uiop:command-line-arguments))))
       (system (equal \"1\" (fourth (uiop:command-line-arguments)))))
   (when load-system
-    (ql:quickload ~:[~;#-ignore-extensions :cando-jupyter #+ignore-extensions ~]:common-lisp-jupyter))
+    (unless (find-package \"QL\")
+      (load \"quicklisp:setup.lisp\"))
+    (uiop/package:symbol-call \"QL\" \"QUICKLOAD\" ~:[~;#-ignore-extensions :cando-jupyter #+ignore-extensions ~]:common-lisp-jupyter))
   (uiop/package:symbol-call ~:[~;#-ignore-extensions \"CANDO-JUPYTER\" #+ignore-extensions ~]\"CL-JUPYTER\" \"INSTALL\"
     :system system :local ~s :implementation name
     :bin-path (if system
                   bin-path
                   (merge-pathnames bin-path (uiop:getcwd)))
-    :prefix (when system ~s) :load-system load-system))"
+    :prefix (when system ~s) :jupyter (when system ~s) :load-system load-system))"
+            candop
             candop
             candop
             (equal (bin-path configuration) #P"/usr/local/bin/")
-            (package-path configuration))))
-          
+            (package-path configuration)
+            (jupyter-path configuration))))
+
