@@ -585,6 +585,18 @@ void cc_unset_breakstep() {
   my_thread->_Breakstep = false;
 }
 
+// RAII thing to toggle breakstep while respecting nonlocal exit.
+struct BreakstepToggle {
+  ThreadLocalState* mthread;
+  bool old_breakstep;
+  BreakstepToggle(ThreadLocalState* thread, bool new_breakstep) {
+    mthread = thread;
+    old_breakstep = thread->_Breakstep;
+    thread->_Breakstep = new_breakstep;
+  }
+  ~BreakstepToggle() { mthread->_Breakstep = old_breakstep; }
+};
+
 NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
   unlikely_if (my_thread->_Breakstep) {
     void* frame = lframe;
@@ -598,13 +610,29 @@ NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
     // resume stepping.
     // FIXME: We assume stack growth direction here.
     if (!bframe || (frame >= bframe)) {
+      // Make sure we don't invoke the stepper recursively,
+      // but can do so again once we're out of the Lisp interaction.
+      BreakstepToggle tog(my_thread, false);
       T_sp res = core::eval::funcall(core::_sym_breakstep,
                                      T_sp((gctools::Tagged)source));
-      // If res is false, step-into.
-      if (res.nilp()) my_thread->_BreakstepFrame = NULL;
-      // Otherwise, step-over.
-      else my_thread->_BreakstepFrame = frame;
-    }
+      if (res.fixnump()) {
+        switch (res.unsafe_fixnum()) {
+        case 0: goto stop_stepping;
+        case 1:
+            my_thread->_BreakstepFrame = NULL;
+            return;
+        case 2:
+            my_thread->_BreakstepFrame = frame;
+            return;
+        }
+      }
+      SIMPLE_ERROR(BF("BUG: Unknown return value from %s: %s")
+                   % _rep_(core::_sym_breakstep)
+                   % _rep_(res));
+    } else return;
+  stop_stepping: // outside the scope of tog
+    my_thread->_Breakstep = false;
+    return;
   }
 }
 

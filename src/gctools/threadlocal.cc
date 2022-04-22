@@ -191,6 +191,8 @@ ThreadLocalState::ThreadLocalState() :
   , _CatchTags(nil<core::T_O>())
   , _ObjectFiles(nil<core::T_O>())
   , _CleanupFunctions(NULL)
+  , _Breakstep(false)
+  , _BreakstepFrame(NULL)
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN

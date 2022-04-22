@@ -2169,6 +2169,14 @@ CL_DEFUN void core__unset_breakstep() {
   my_thread->_Breakstep = false;
 }
 
+CL_LAMBDA ()
+CL_DECLARE();
+CL_DOCSTRING(R"dx(Return whether we are stepping or not.)dx")
+DOCGROUP(clasp)
+CL_DEFUN bool core__breakstepping_p() {
+  return my_thread->_Breakstep;
+}
+
 CL_LAMBDA(arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return a string representation of the object)dx")

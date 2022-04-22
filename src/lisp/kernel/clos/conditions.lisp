@@ -499,18 +499,20 @@ format string."
         (let ((*debugger-hook* nil))
           (invoke-debugger
            (make-condition 'clasp-debug:step-form :source source)))
-      ;; cc_breakstep interprets nil as indication to step-into, and
-      ;; non-nil to step-over.
+      ;; cc_breakstep interprets our return value as follows:
+      ;; 0: continue without stepping
+      ;; 1: step-into
+      ;; 2: step-over
+      ;; anything else: bug error
       (continue ()
         :report "Resume normal, unstepped execution."
-        (core:unset-breakstep)
-        nil)
+        0)
       (clasp-debug:step-into ()
         :report "Step into call."
-        nil)
+        1)
       (clasp-debug:step-over ()
         :report "Step over call."
-        t))))
+        2))))
 
 (defun warn (datum &rest arguments)
   "Args: (format-string &rest args)
