@@ -226,13 +226,13 @@ void unsafe_write_SimpleBaseString(SimpleBaseString_sp str, size_t start, size_t
   cl_index ndx;
   if (!clasp_print_escape() && !clasp_print_readably()) {
     for (ndx = start; ndx < end; ndx++) {
-      claspCharacter c = (*str)[ndx];
+      claspChar c = (*str)[ndx];
       clasp_write_char(c, stream);
     }
   } else {
     clasp_write_char('"', stream);
     for (ndx = start; ndx < end; ndx++) {
-      claspCharacter c = (*str)[ndx];
+      claspChar c = (*str)[ndx];
       if (c == '"' || c == '\\')
         clasp_write_char('\\', stream);
       clasp_write_char(c, stream);
