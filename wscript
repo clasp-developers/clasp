@@ -336,6 +336,9 @@ def update_dependencies(cfg):
     fetch_git_revision("src/scraper/dependencies/esrap",
                        "https://github.com/scymtym/esrap.git",
                        "c99c33a33ff58ca85e8ba73912eba45d458eaa72")
+    fetch_git_revision("src/scraper/dependencies/trivial-gray-streams",
+                       "https://github.com/trivial-gray-streams/trivial-gray-streams.git",
+                       label = "master")
     fetch_git_revision("src/scraper/dependencies/trivial-with-current-source-form",
                        "https://github.com/scymtym/trivial-with-current-source-form.git",
                        "3898e09f8047ef89113df265574ae8de8afa31ac")
@@ -2299,7 +2302,7 @@ class scraper_task(clasp_task):
     def scraper_command_line(self, extraCommands = [], scraperArgs = []):
         env = self.env
         bld = self.generator.bld
-        scraper_home = os.path.join(env.BUILD_ROOT, "src/scraper/")
+        scraper_home = os.path.join(env.BUILD_ROOT, "src/")
         fasl_dir = os.path.join(bld.path.abspath(), out, "host-fasl/")
         cmd = [] + env.SCRAPER_LISP + [
             "--eval", "(require :asdf)",
