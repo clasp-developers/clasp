@@ -111,7 +111,7 @@
       ~:[~;#-ignore-extensions 'cl-user:start-cando-user-from-snapshot
       #+ignore-extensions ~]'sys::cclasp-snapshot-load-top-level)
 (clos:compile-all-generic-functions)
-(gctools:save-lisp-and-die (elt core:*command-line-arguments* 0))
+(gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)
 (core:quit)"
           (member :cando (extensions configuration))))
 
