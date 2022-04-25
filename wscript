@@ -405,6 +405,7 @@ def analyze_test(cfg):
 def test(cfg):
     log.debug("Execute regression tests\n")
     run_program_echo("build/clasp",
+                     "--norc",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:regression-tests;run-all.lisp",
                      "--eval",    "(progn (format t \"~%Test done~%\")(core:quit))")
@@ -416,6 +417,7 @@ def tests(cfg):
 def test1(cfg):
     log.debug("Execute regression tests\n")
     run_program_echo("build/boehmprecise/iclasp-boehmprecise -t a",
+                     "--norc",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:regression-tests;run-one.lisp",
                      "--eval",    "(progn (format t \"~%Test done~%\")(core:quit))")
