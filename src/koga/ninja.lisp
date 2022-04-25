@@ -120,10 +120,7 @@
                                      "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --non-interactive $arguments --load snapshot.lisp -- $out"
                                      clasp-quicklisp-directory)
                     :pool "console"
-                    :description "Creating snapshot $out")
-  (ninja:write-rule output-stream :make-snapshot-object
-                    :command "$objcopy --input-target binary --output-target elf64-x86-64 --binary-architecture i386 $in $out --redefine-sym _binary_${mangled-name}_end=_binary_snapshot_end --redefine-sym _binary_${mangled-name}_start=_binary_snapshot_start --redefine-sym _binary_${mangled-name}_size=_binary_snapshot_size"
-                    :description "Creating object from snapshot $in"))
+                    :description "Creating snapshot $out"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :etags)) sources
@@ -249,6 +246,8 @@
                             generated))
           (exe (make-source (build-name target) :variant))
           (exe-installed (make-source (build-name target) :package-bin))
+          (lib (make-source "libclasp.a" :variant-lib))
+          (lib-installed (make-source "libclasp.a" :package-lib))
           (symlink (make-source (if (member :cando (extensions configuration))
                                     "cando"
                                     "clasp")
@@ -276,6 +275,9 @@
   (ninja:write-build output-stream :phony
                      :outputs (list (build-name "generated"))
                      :inputs generated)
+  (ninja:write-build output-stream :ar
+                     :inputs objects
+                     :outputs (list lib))
   (ninja:write-build output-stream :link
                      :variant-ldflags *variant-ldflags*
                      :variant-ldlibs *variant-ldlibs*
@@ -286,7 +288,7 @@
                      :target (file-namestring (source-path exe))
                      :outputs (list symlink))
   (ninja:write-build output-stream :phony
-                     :inputs (list* exe symlink
+                     :inputs (list* exe symlink lib
                                     (when (and *variant-default*
                                                (etags configuration))
                                       (list (make-source "TAGS" :code))))
@@ -300,6 +302,9 @@
     (ninja:write-build output-stream :install-binary
                        :inputs (list exe)
                        :outputs (list exe-installed))
+    (ninja:write-build output-stream :install-file
+                       :inputs (list lib)
+                       :outputs (list lib-installed))
     (ninja:write-build output-stream :symbolic-link
                        :inputs (list exe-installed)
                        :target (file-namestring (source-path exe-installed))
@@ -313,6 +318,7 @@
                                                            "install_code"
                                                            "install_load"
                                                            exe-installed
+                                                           lib-installed
                                                            symlink-installed)
                                                      (when (member :cando (extensions configuration))
                                                        (list clasp-sh-installed))
@@ -708,9 +714,7 @@
      &aux (cclasp (build-name :cclasp))
           (iclasp (make-source (build-name :iclasp) :variant)))
   (flet ((snapshot (name &key ignore-extensions)
-           (let* ((snapshot (make-source (format nil "generated/~a.snapshot" name) :variant))
-                  (object (make-source (format nil "generated/~a.o" name) :variant))
-                  (executable (make-source (build-name name) :variant))
+           (let* ((executable (make-source (build-name name) :variant))
                   (symlink (make-source name :variant))
                   (symlink-installed (make-source name :package-bin))
                   (installed (make-source (build-name name) :package-bin))
@@ -736,25 +740,6 @@
                                 :arguments (when ignore-extensions
                                              "--feature ignore-extensions")
                                 :inputs (list cclasp)
-                                :outputs (list snapshot))
-             #+darwin (ninja:write-build output-stream :link
-                                :variant-ldflags (format nil "-sectcreate __CLASP __clasp ~a ~a"
-                                                         snapshot
-                                                         *variant-ldflags*)
-                                :variant-ldlibs *variant-ldlibs*
-                                :inputs objects
-                                :implicit-inputs (list snapshot)
-                                :outputs (list executable))
-             #-darwin (ninja:write-build output-stream :make-snapshot-object
-                                         :mangled-name (substitute-if #\_
-                                                                      (complement #'alphanumericp)
-                                                                      (namestring (resolve-source snapshot)))
-                                         :inputs (list snapshot)
-                                         :outputs (list object))
-             #-darwin (ninja:write-build output-stream :link
-                                :variant-ldflags *variant-ldflags*
-                                :variant-ldlibs *variant-ldlibs*
-                                :inputs (cons object objects)
                                 :outputs (list executable))
              (ninja:write-build output-stream :symbolic-link
                                 :inputs (list executable)

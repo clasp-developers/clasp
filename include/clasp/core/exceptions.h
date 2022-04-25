@@ -207,7 +207,7 @@ class DebugStream;
 
 /*! To exit the program throw this exception
  */
- class ExitProgramException : public std::exception{
+class ExitProgramException : public std::exception{
 private:
   int _ExitResult;
 
@@ -217,8 +217,10 @@ public:
 };
 
 struct SaveLispAndDie {
-   string _FileName;
- SaveLispAndDie(const std::string& filename) : _FileName(filename) {};
+  string _FileName;
+  bool _Executable;
+  string _LibDir;
+  SaveLispAndDie(const std::string& filename, bool executable, const std::string& libDir) : _FileName(filename), _Executable(executable), _LibDir(libDir) {};
  };
  
 /*! To exit the program throw this exception

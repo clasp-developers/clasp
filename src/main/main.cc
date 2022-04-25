@@ -359,8 +359,8 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   const struct mach_header_64 * exec_header = (const struct mach_header_64 *)dlsym(RTLD_DEFAULT,"_mh_execute_header");
   size_t size;
   void* start_of_snapshot = getsectiondata(exec_header,
-                                           "__CLASP",
-                                           "__clasp",
+                                           SNAPSHOT_SEGMENT,
+                                           SNAPSHOT_SECTION,
                                            &size);
   void* end_of_snapshot = NULL;
   if (start_of_snapshot) {

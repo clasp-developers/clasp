@@ -454,6 +454,7 @@ def configure_common(cfg,variant_obj):
     assert os.path.isdir(cfg.env.LLVM_BIN_DIR)
     log.info("cfg.env.PREFIX is %s" % cfg.env.PREFIX)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
+    cfg.define("CXX_BINARY", os.path.join(cfg.env.LLVM_BIN_DIR, "clang++"))
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("CLASP_DEV_TEST_PATH", "src")
     cfg.define("CLASP_DEV_SOURCE_PATH", "../..")
@@ -472,6 +473,8 @@ def configure_common(cfg,variant_obj):
     cfg.define("CLASP_INSTALL_STARTUP_PATH", "%s/bin/extension-startup-loads/" % (cfg.env.PREFIX))
     cfg.define("CLASP_INSTALL_INCLUDE_PATH", "%s/include/" % (cfg.env.PREFIX))
     cfg.define("CLASP_INSTALL_SYS_PATH","%s/src/lisp/" % (cfg.env.PREFIX))
+    cfg.define("SNAPSHOT_SEGMENT","__CLASP")
+    cfg.define("SNAPSHOT_SECTION","__clasp")
     cfg.define("SNAPSHOT_START","_binary_extensions_cando_generated_cando_snapshot_start",quote=False)
     cfg.define("SNAPSHOT_END","_binary_extensions_cando_generated_cando_snapshot_end",quote=False)
     cfg.define("SNAPSHOT_SIZE","_binary_extensions_cando_generated_cando_snapshot_size",quote=False)
@@ -1220,6 +1223,11 @@ def configure(cfg):
     cfg.env["NM_BINARY"] = "%s/llvm-nm" % cfg.env.LLVM_BIN_DIR
     cfg.define("NM_BINARY", cfg.env["NM_BINARY"])
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
+    if (cfg.env['DEST_OS'] == DARWIN_OS ):
+        pass
+    else:
+        cfg.find_program("objcopy")
+        cfg.define("OBJCOPY_BINARY", cfg.env["OBJCOPY"])
     log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
     # apply the default
     if (cfg.env['CLASP_BUILD_MODE']==[]):

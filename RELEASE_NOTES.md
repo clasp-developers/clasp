@@ -12,6 +12,8 @@
 * `make-instance` and CLOS slot access functions can be used with structure 
   objects.
 * The stepper, accessible through `step`, now has basic functionality.
+* `gctools:save-lisp-and-die` now accepts a key `:executable` which can be used
+  to create an executable binary with the snapshot embedded in the binary.
 
 ## Optimizations
 * Arguments to and return values from local functions (e.g. from FLET) are 
