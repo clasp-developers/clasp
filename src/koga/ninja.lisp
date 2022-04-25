@@ -59,8 +59,8 @@
                     :restat 1
                     :pool "console")
   (ninja:write-rule output-stream :ar
-                    :command "$ar ru $out $in"
-                    :description "Creating archive for $in")
+                    :command "$ar rcsu $out $in"
+                    :description "Creating archive $out")
   (ninja:write-rule output-stream :cc
                     :command "$cc $variant-cflags $cflags -c -MD -MF $out.d -o$out $in"
                     :description "Compiling $in"
@@ -76,6 +76,11 @@
                     :command "$cxx $variant-cxxflags $cxxflags -emit-llvm -c -MD -MF $out.d -o$out $in"
                     :description "Creating bitcode for $in"
                     :depfile "$out.d")
+  (ninja:write-rule output-stream :run-aclasp
+                    :command "$clasp --norc --type image --disable-mpi --ignore-image --feature clasp-min --feature jit-log-symbols --load run-aclasp.lisp -- $source"
+                    :description "Compiling aclasp"
+                    :restat 1
+                    :pool "console")
   (ninja:write-rule output-stream :compile-aclasp
                     :command "$clasp --norc --type image --disable-mpi --ignore-image --feature clasp-min --load compile-aclasp.lisp -- $source"
                     :description "Compiling aclasp"
@@ -114,6 +119,7 @@
                     :command (format nil
                                      "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --non-interactive $arguments --load snapshot.lisp -- $out"
                                      clasp-quicklisp-directory)
+                    :pool "console"
                     :description "Creating snapshot $out")
   (ninja:write-rule output-stream :make-snapshot-object
                     :command "$objcopy --input-target binary --output-target elf64-x86-64 --binary-architecture i386 $in $out --redefine-sym _binary_${mangled-name}_end=_binary_snapshot_end --redefine-sym _binary_${mangled-name}_start=_binary_snapshot_start --redefine-sym _binary_${mangled-name}_size=_binary_snapshot_size"
@@ -403,6 +409,17 @@
                                                                                                                  *variant-name*)))
                                                                      (root :variant-lib))
                              *root-paths*)))
+    (ninja:write-build output-stream :run-aclasp
+                       :clasp iclasp
+                       :source (format nil "~{~/ninja:escape/~^ ~}"
+                                       (mapcar (lambda (source)
+                                                 (merge-pathnames (make-pathname :type :unspecific)
+                                                                  (source-path source)))
+                                               sources))
+                       :inputs sources
+                       :implicit-inputs (list iclasp
+                                              (build-name "bitcode"))
+                       :outputs (list (build-name "rclasp")))
     (ninja:write-build output-stream :compile-aclasp
                        :clasp iclasp
                        :source (format nil "~{~/ninja:escape/~^ ~}"
@@ -489,23 +506,18 @@
                                        bimage-installed)
                          :outputs (list "install_bclasp")))))
 
-(defun jupyter-kernel-path (configuration name &key system
-                            &aux (jupyter-path (uiop:getenvp "JUPYTER_PATH")))
+(defun jupyter-kernel-path (configuration name &key system)
   (merge-pathnames (make-pathname :directory (list :relative
                                                    "kernels"
                                                    name)
                                   :name "kernel"
                                   :type "json")
-                   (cond ((not system)
-                          #+darwin (merge-pathnames (make-pathname :directory '(:relative "Library" "Jupyter"))
-                                                    (uiop:getenv-pathname "HOME" :ensure-directory t))
-                          #-darwin (merge-pathnames (make-pathname :directory '(:relative "jupyter"))
-                                                    (uiop:xdg-data-home)))
-                         (jupyter-path
-                          (uiop:ensure-directory-pathname jupyter-path))
-                         (t
-                          (merge-pathnames (make-pathname :directory '(:relative :up "jupyter"))
-                                           (share-path configuration))))))
+                   (if system
+                       (jupyter-path configuration)
+                       #+darwin (merge-pathnames (make-pathname :directory '(:relative "Library" "Jupyter"))
+                                                 (uiop:getenv-pathname "HOME" :ensure-directory t))
+                       #-darwin (merge-pathnames (make-pathname :directory '(:relative "jupyter"))
+                                                 (uiop:xdg-data-home)))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :cclasp)) sources
@@ -579,7 +591,9 @@
                              :outputs (list (build-name "jupyter"))))))
     (when *variant-default*
       (let ((kernels (when (jupyter configuration)
-                       (loop for name in (if (member :cando (extensions configuration))
+                       (loop with system = (not (uiop:subpathp (share-path configuration)
+                                                               (uiop:getenv-absolute-directory "HOME")))
+                             for name in (if (member :cando (extensions configuration))
                                              (list "clasp" "cando")
                                              (list "clasp"))
                              for clasp = (make-source name :variant)
@@ -587,14 +601,14 @@
                                                                (if (equal name "clasp")
                                                                    "common-lisp_clasp"
                                                                    "cando_cando")
-                                                               :system t)
+                                                               :system system)
                              do (ninja:write-build output-stream :jupyter-kernel
                                                    :outputs (list output)
                                                    :inputs (list (build-name "cclasp"))
                                                    :name name
                                                    :bin-path name
                                                    :load-system 1
-                                                   :system 1
+                                                   :system (if system 1 0)
                                                    :clasp clasp)
                              collect output))))
         (ninja:write-build output-stream :install-file
@@ -700,11 +714,13 @@
                   (link (make-source name :package-bin))
                   (build-outputs (list executable symlink))
                   (install-outputs (list installed symlink-installed))
+                  (system (not (uiop:subpathp (share-path configuration)
+                                              (uiop:getenv-absolute-directory "HOME"))))
                   (kernel (jupyter-kernel-path configuration
                                                (if (equal name "dclasp")
                                                    "common-lisp_dclasp"
                                                    "cando_dcando")
-                                               :system t))
+                                               :system system))
                   (user-kernel (jupyter-kernel-path configuration
                                                     (format nil "~a_~a"
                                                             (if (equal name "dclasp")
@@ -765,7 +781,7 @@
                                     :name name
                                     :bin-path name
                                     :load-system 0
-                                    :system 1
+                                    :system (if system 1 0)
                                     :clasp executable)
                  (push kernel install-outputs)))
              (list build-outputs install-outputs user-kernel))))
