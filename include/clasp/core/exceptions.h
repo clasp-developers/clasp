@@ -298,13 +298,13 @@ class ATTR_WEAK Unwind {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
-  T_O *_Frame; // NOT GC'd use FIXNUM tagged_ptr
+  void *_Frame; // NOT GC'd use FIXNUM tagged_ptr
   size_t _Index;
 
 public:
-  ATTR_WEAK Unwind(T_O *frame, size_t index) : _Frame(frame), _Index(index){};
+  ATTR_WEAK Unwind(void *frame, size_t index) : _Frame(frame), _Index(index){};
   /*ATTR_WEAK*/ virtual ~Unwind(){};
-  T_O *getFrame() const { return this->_Frame; };
+  void *getFrame() const { return this->_Frame; };
   size_t index() const { return this->_Index; };
 };
 

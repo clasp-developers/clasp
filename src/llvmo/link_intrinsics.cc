@@ -597,9 +597,8 @@ struct BreakstepToggle {
   ~BreakstepToggle() { mthread->_Breakstep = old_breakstep; }
 };
 
-NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
+NOINLINE void cc_breakstep(core::T_O* source, void* frame) {
   unlikely_if (my_thread->_Breakstep) {
-    void* frame = lframe;
     void* bframe = my_thread->_BreakstepFrame;
     // If bframe is NULL, we are doing step-into.
     // Otherwise, we are doing step-over, and we need to check
@@ -636,9 +635,8 @@ NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
   }
 }
 
-NOINLINE void cc_breakstep_after(core::T_O* lframe) {
+NOINLINE void cc_breakstep_after(void* frame) {
   unlikely_if (my_thread->_Breakstep) {
-    void* frame = lframe;
     void* bframe = my_thread->_BreakstepFrame;
     // If we just stepped over, and are back after the call, switch back
     // into step-into mode. Otherwise do nothing.
@@ -1379,7 +1377,7 @@ void cc_load_all_values(size_t nvals, T_O** vector)
   NO_UNWIND_END();
 }
 
-void cc_unwind(T_O *targetFrame, size_t index) {
+void cc_unwind(void *targetFrame, size_t index) {
   // Signal an error if the frame we're trying to return to is no longer on the stack.
   // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
   // does so as well - twice - so we end up iterating three times.
@@ -1393,7 +1391,7 @@ void cc_unwind(T_O *targetFrame, size_t index) {
   throw unwind;
 }
 
-size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
+size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, void *thisFrame) {
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
   if (unwindP->getFrame() == thisFrame) {
     std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
