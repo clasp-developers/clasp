@@ -3,7 +3,7 @@
 ;;
 
 
-#+(or)
+;;#+(or)
 (llvm-sys:install-interpreter-trampoline)
 
 #+(or)
