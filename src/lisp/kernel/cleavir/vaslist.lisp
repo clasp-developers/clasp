@@ -33,7 +33,7 @@
 
 (defun vaslistablep (fname) (member fname *vaslistable*))
 
-(defun origin (origin)
+(defun origin-source (origin)
   (loop for org = origin then (cst:source org)
         while (typep org 'cst:cst)
         finally (return org)))
@@ -335,7 +335,7 @@
   (cond ((bir:unused-p argument)) ; don't bother
         ((datum-ok-p argument)
          #+(or)
-         (change-class argument 'cc-bmir:argument :rtype :vaslist)
+         (setf (cc-bmir:rtype argument) :vaslist)
          (rewrite-use (bir:use argument))
          t)
         (t nil)))
@@ -345,7 +345,7 @@
          (rest (second llrest)))
     (if rest
         (let ((*record-failures*
-                (cleavir-policy:policy-value
+                (policy:policy-value
                  (bir:policy function)
                  'clasp-cleavir::note-consing-&rest))
               (*failure-reasons* nil))
@@ -354,7 +354,7 @@
                  t)
                 (*record-failures*
                  (cmp:note 'consing-&rest
-                           :origin (origin (bir:origin function))
+                           :origin (origin-source (bir:origin function))
                            :parameter rest
                            :reasons *failure-reasons*))
                 (t nil)))

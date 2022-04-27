@@ -363,107 +363,13 @@ all functions."
     (delete-from-trace-list fname)
     (values)))
 
-(defparameter *step-level* 0)
-(defparameter *step-action* nil)
-(defparameter *step-form* nil)
-(defparameter *step-tag* (cons nil nil))
-(defparameter *step-functions* nil)
-(defconstant-equal step-commands
-  `("Stepper commands"
-     ((:newline) (step-next) :constant
-      "newline		Advance to the next form"
-      "newline						[Stepper command]~@
-	~@
-	Step to next form.~%")
-     ((:s :skip) step-skip nil
-      ":s(kip)         Skip current form or until function"
-      ":skip &optional arg                             [Stepper command]~@
-       :s &optional arg                                [Abbreviation]~@
-       ~@
-       Continue evaluation without stepping.  Without argument, resume~@
-       stepping after the current form.  With numeric argument (n),~@
-       resume stepping at the n-th level above.  With function name, resume~@
-       when given function is called.~%")
-     ((:pr :print) (step-print) :constant
-      ":pr(int)        Pretty print current form"
-      ":print                                          [Stepper command]~@
-       :pr                                             [Abbreviation]~@
-       ~@
-       Pretty print current form.~%")
-     ((:form) *step-form* :constant
-      ":form		Current form"
-      ":form						[Stepper command]~@
-	~@
-	Return the current form.  Nothing is done, but the current form~@
-	is returned as the value of this command.  As a consequence,~@
-	it is printed by the top level in the usual way and saved in~@
-	the variable *.  The main purpose of this command is to allow~@
-	the current form to be examined further by accessing *.~%")
-     ((:x :exit) (step-quit) :constant
-      ":x or :exit	Finish evaluation and exit stepper"
-      ":exit						[Stepper command]~@
-       :x						[Abbreviation]~@
-       ~@
-       Finish evaluation without stepping.~%")
-     ))
-
 (defmacro step (form)
 "Syntax: (step form)
-Evaluates FORM in the Stepper mode and returns all its values.  See ECL Report
-for Stepper mode commands."
-  `(step* ',form))
-
-(defun step* (form)
-  (let* ((*step-action* t)
-	 (*step-level* 0)
-	 (*step-functions* (make-hash-table :size 128 :test 'eq)))
-    (catch *step-tag*
-      (funcall core:*eval-with-env-hook* form nil))))
-
-(defun steppable-function (form)
-  (let ((*step-action* nil))
-    (or (gethash form *step-functions*)
-	(multiple-value-bind (f env name)
-	    (function-lambda-expression form)
-	  (if (and (not (trace-record name)) f)
-	      (setf (gethash form *step-functions*)
-                    (funcall core:*eval-with-env-hook* `(function ,f) env))
-	      form)))))
-
-(defun stepper (form)
-  (declare (special *tpl-level* *tpl-commands* break-commands))
-  (when (typep form '(or symbol function))
-    (return-from stepper (steppable-function (coerce form 'function))))
-  (let* ((*step-form* form)
-	 (*step-action* nil)
-	 (indent (min (* *tpl-level* 2) 20))
-	 prompt)
-    (setq prompt
-	  #'(lambda ()
-	      (format *debug-io* "~VT" indent)
-	      (write form :stream *debug-io* :pretty nil
-		     :level 2 :length 2)
-	      (princ #\space *debug-io*)
-	      (princ #\- *debug-io*)))
-    (when (catch *step-tag*
-	    (tpl :quiet t
-		 :commands (adjoin step-commands
-				   (adjoin break-commands *tpl-commands*))
-		 :broken-at 'stepper
-		 :prompt-hook prompt))
-      (throw *step-tag* t))))
-
-(defun step-next ()
-  (throw *step-tag* nil))
-
-(defun step-skip ()
-  (setf *step-action* 0)
-  (throw *step-tag* nil))
-
-(defun step-print ()
-  (write *step-form* :stream *debug-io* :pretty t :level nil :length nil)
-  (terpri)
-  (values))
-
-(defun step-quit ()
-  (throw *step-tag* t))
+Evaluates FORM in the Stepper mode and returns all its values."
+  `(unwind-protect
+        (progn
+          (core:set-breakstep)
+          (locally
+              #+cclasp (declare (optimize clasp-cleavir::insert-step-conditions))
+              ,form))
+     (core:unset-breakstep)))

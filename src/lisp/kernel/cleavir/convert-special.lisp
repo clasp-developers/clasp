@@ -97,7 +97,7 @@
   ;; unless the type is top in which case we do nothing.
   ;; NOTE that the type check doesn't check &optional and &rest. FIXME?
   (let ((insert-type-checks
-          (cleavir-policy:policy-value
+          (policy:policy-value
            (cleavir-env:policy (cleavir-env:optimize-info env))
            'insert-type-checks))
         (required (cleavir-ctype:values-required ctype system)))
@@ -128,7 +128,7 @@
   ;; on high safety, unless the type is top in which case we do nothing.
   ;; NOTE that the type check doesn't check &optional and &rest. FIXME?
   (let ((insert-type-checks
-          (cleavir-policy:policy-value
+          (policy:policy-value
            (cleavir-env:policy (cleavir-env:optimize-info env))
            'type-check-ftype-arguments))
         (required (cleavir-ctype:values-required ctype system)))

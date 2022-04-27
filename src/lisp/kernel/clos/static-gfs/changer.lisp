@@ -57,5 +57,6 @@
                      (maphash (lambda (k changer)
                                 (declare (ignore k))
                                 (changer-maybe-cut-wrt-class
-                                 changer invalidating-class)))))))
+                                 changer invalidating-class))
+                              table)))))
            *changer-cells*))

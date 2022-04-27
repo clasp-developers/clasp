@@ -127,105 +127,42 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   printf("%s:%d    _ExecutableDir = %s\n", __FILE__, __LINE__, this->_Directories->_ExecutableDir.string().c_str());
   printf("%s:%d    _StartupWorkingDir = %s\n", __FILE__, __LINE__, this->_Directories->_StartupWorkingDir.string().c_str());
 #endif
-  appDir = appDir.parent_path();
-  if (verbose) {
-    printf("%s:%d   Climb one level up from _ExecutablePath = %s\n", __FILE__, __LINE__, appDir.string().c_str());
+  // Check if there is a dev test directory in _ExecutableDir - if so we are building
+  std::filesystem::path devPath = this->_Directories->_ExecutableDir / CLASP_DEV_TEST_PATH;
+  char *homedir = getenv("CLASP_HOME");
+  if (std::filesystem::exists(devPath)) {
+    if (verbose) {
+      printf("%s:%d In development environment, found = %s\n", __FILE__, __LINE__, devPath.string().c_str());
+    }
+    this->_Directories->_SourceDir = (this->_Directories->_ExecutableDir / CLASP_DEV_SOURCE_PATH).lexically_normal();
+  } else if (homedir) {
+    if (verbose) {
+      printf("%s:%d Using the CLASP_HOME environment variable %s\n", __FILE__, __LINE__, homedir);
+    }
+    this->_Directories->_SourceDir = std::filesystem::path(homedir);
+  }
+  if (this->_Directories->_SourceDir.empty()) {
+    if (verbose) {
+      printf("%s:%d Using the configured installed directories\n", __FILE__, __LINE__);
+    }
+    this->_Directories->_SourceDir = CLASP_INSTALL_SOURCE_PATH;
+    this->_Directories->_BitcodeDir = CLASP_INSTALL_BITCODE_PATH;
+    this->_Directories->_FaslDir = CLASP_INSTALL_FASL_PATH;
+    this->_Directories->_GeneratedDir = CLASP_INSTALL_GENERATED_PATH;
+    this->_Directories->_StartupDir = CLASP_INSTALL_STARTUP_PATH;
+    this->_Directories->_IncludeDir = CLASP_INSTALL_INCLUDE_PATH;
+    this->_Directories->_LibDir = CLASP_INSTALL_LIB_PATH;
+    this->_Directories->_SysDir = CLASP_INSTALL_SYS_PATH;
+  } else {
+    this->_Directories->_BitcodeDir = (this->_Directories->_SourceDir / CLASP_DEV_BITCODE_PATH).lexically_normal();
+    this->_Directories->_FaslDir = (this->_Directories->_SourceDir / CLASP_DEV_FASL_PATH).lexically_normal();
+    this->_Directories->_GeneratedDir = (this->_Directories->_SourceDir / CLASP_DEV_GENERATED_PATH).lexically_normal();
+    this->_Directories->_StartupDir = (this->_Directories->_SourceDir / CLASP_DEV_STARTUP_PATH).lexically_normal();
+    this->_Directories->_IncludeDir = (this->_Directories->_SourceDir / CLASP_DEV_INCLUDE_PATH).lexically_normal();
+    this->_Directories->_LibDir = (this->_Directories->_SourceDir / CLASP_DEV_LIB_PATH).lexically_normal();
+    this->_Directories->_SysDir = (this->_Directories->_SourceDir / CLASP_DEV_SYS_PATH).lexically_normal();
   }
 
-      
-   
-  // Check if there is a 'src' directory in _ExecutableDir - if so we are building
-  std::filesystem::path srcPath = this->_Directories->_ExecutableDir / "src";
-  bool foundContents = false;
-  if (std::filesystem::exists(srcPath)) {
-    if (verbose) {
-      printf("%s:%d   In development environment - found src path = %s\n", __FILE__, __LINE__, srcPath.string().c_str());
-    }
-    this->_Directories->_InstallDir = this->_Directories->_ExecutableDir.parent_path();
-    this->_Directories->_ContentsDir = this->_Directories->_ExecutableDir.parent_path().parent_path();
-    foundContents = true;
-  } else {
-    if (verbose) {
-      printf("%s:%d   Did not find src dir\n", __FILE__, __LINE__ );
-    }
-#ifdef DEBUG_DESC_BUNDLE
-    printf("%s:%d Find Contents elsewhere\n", __FILE__, __LINE__ );
-#endif
-//  this->_Directories->_RootDir = appDir;
-    std::filesystem::path original_one_up_contents = this->_Directories->_ExecutableDir.parent_path();
-    this->_Directories->_InstallDir = original_one_up_contents;
-    std::filesystem::path one_up_contents = original_one_up_contents / "lib" / "clasp";
-    if (std::filesystem::exists(one_up_contents)) {
-      if (safe_is_directory(one_up_contents)) {
-        this->_Directories->_ContentsDir = one_up_contents;
-        if (verbose) {
-          printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
-        }
-        foundContents = true;
-      }
-    } else {
-      if (verbose) {
-        printf("%s:%d  Could not find the Contents/clasp library directory - searching...\n", __FILE__, __LINE__ );
-      }
-      char *homedir = getenv("CLASP_HOME");
-      if (homedir) {
-        if (verbose) printf("%s:%d  Using the CLASP_HOME directory %s\n", __FILE__, __LINE__, homedir);
-        this->_Directories->_InstallDir = std::filesystem::path(homedir);
-        this->_Directories->_ContentsDir = this->_Directories->_InstallDir / "lib" / "clasp";
-        if (!std::filesystem::exists(this->_Directories->_ContentsDir)) {
-          this->_Directories->_ContentsDir = this->_Directories->_InstallDir;
-        }
-        foundContents = true;
-      } else {
-        this->_Directories->_InstallDir = std::filesystem::path(std::string(PREFIX));
-        std::string install_path = std::string(PREFIX)+"/lib/clasp";
-        std::filesystem::path test_path(install_path);
-        if (std::filesystem::exists(test_path)) {
-          if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, install_path.c_str());
-          this->_Directories->_ContentsDir = test_path;
-          foundContents = true;
-        }
-        const char* paths[] = { "/usr/local/lib/clasp/Contents",
-                                "/usr/lib/clasp/Contents" };
-        if (!foundContents) {
-          for ( size_t i=0; i<sizeof(paths)/sizeof(paths[0]); ++i ) {
-            std::filesystem::path test_path(paths[i]);
-            if (std::filesystem::exists(test_path)) {
-              if (verbose) printf("%s:%d  Looking for %s\n", __FILE__, __LINE__, paths[i]);
-              this->_Directories->_ContentsDir = test_path;
-              foundContents = true;
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
-  if (foundContents) {
-    if (verbose) {
-      printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
-    }
-  } else {
-    printf("%s:%d The ContentsDir could not be found\n", __FILE__, __LINE__ );
-    abort();
-  }
-  this->_Directories->_LibDir = this->_Directories->_ContentsDir / "build" / VARIANT_DIR / "fasl";
-  if (verbose) {
-    printf("%s:%d   Set _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
-  }
-
-  this->_Directories->_SourceDir = this->_Directories->_ContentsDir;
-  if (verbose) printf("%s:%d Setting up _SourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_SourceDir.string().c_str());
-  this->_Directories->_IncludeDir = this->_Directories->_ContentsDir / "include";
-  if (verbose) printf("%s:%d Setting up _IncludeDir = %s\n", __FILE__, __LINE__, this->_Directories->_IncludeDir.string().c_str());
-  this->_Directories->_LispSourceDir = this->_Directories->_ContentsDir / "src" / "lisp";
-  if (verbose) printf("%s:%d Setting up _LispSourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_LispSourceDir.string().c_str());
-  this->_Directories->_GeneratedDir = this->_Directories->_ContentsDir / "build" / VARIANT_DIR / "generated";
-  if (verbose) {printf("%s:%d Setting up _GeneratedDir = %s\n", __FILE__, __LINE__, this->_Directories->_GeneratedDir.string().c_str());}
-  this->_Directories->_FaslDir = this->_Directories->_LibDir;
-  if (verbose) {printf("%s:%d Setting up _FaslDir = %s\n", __FILE__, __LINE__, this->_Directories->_FaslDir.string().c_str());}
-  this->_Directories->_BitcodeDir = this->_Directories->_LibDir;
-  if (verbose) {printf("%s:%d Setting up _BitcodeDir = %s\n", __FILE__, __LINE__, this->_Directories->_BitcodeDir.string().c_str());}
 #ifdef DEBUG_DESC_BUNDLE
   printf("%s\n", this->describe().c_str());
   printf("%s:%d Aborting for now\n", __FILE__, __LINE__ );
@@ -244,7 +181,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   } else {
     bool gotQuicklispPath = false;
     // Try "sys:modules;quicklisp;"
-    std::filesystem::path modules_quicklisp = this->_Directories->_LispSourceDir / "modules" / "quicklisp";
+    std::filesystem::path modules_quicklisp = this->_Directories->_SysDir / "modules" / "quicklisp";
     if (verbose) printf("%s:%d   Looking in modulesat %s\n", __FILE__, __LINE__, modules_quicklisp.string().c_str());
     if (std::filesystem::exists(modules_quicklisp)) {
       if (safe_is_directory(modules_quicklisp)) {
@@ -283,7 +220,6 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     printf("%s\n", this->describe().c_str());
   }
 }
-
 void Bundle::initializeStartupWorkingDirectory(bool verbose) {
   string cwd = "";
   std::filesystem::path curPath;
@@ -315,12 +251,6 @@ std::filesystem::path Bundle::findAppDir( const string &argv0, const string &cwd
   if (verbose) {
     printf("%s:%d In findAppDir argv0: %s\n", __FILE__, __LINE__, argv0.c_str() );
     printf("%s:%d In findAppDir cwd: %s\n", __FILE__, __LINE__, cwd.c_str() );
-    printf("%s:%d In findAppDir getenv(\"CLASP_HOME\"): %s\n", __FILE__, __LINE__, getenv("CLASP_HOME"));
-  }
-  char* claspHome = getenv("CLASP_HOME");
-  if (claspHome) {
-    std::filesystem::path claspHomePath(claspHome);
-    return claspHomePath.parent_path();
   }
   std::filesystem::path argv0Path(argv0);
   if (argv0Path.has_root_path()) {
@@ -368,22 +298,20 @@ std::filesystem::path Bundle::findAppDir( const string &argv0, const string &cwd
 }
 
 
-
 string Bundle::describe() {
   stringstream ss;
-  ss << "InstallDir:      " << this->_Directories->_InstallDir.string() << std::endl;
-  ss << "ExecutableDir:   " << this->_Directories->_ExecutableDir.string() << std::endl;
-  ss << "Lib dir:         " << this->_Directories->_LibDir.string() << std::endl;
-  ss << "Contents dir:    " << this->_Directories->_ContentsDir.string() << std::endl;
-  ss << "Resources dir:   " << this->_Directories->_ResourcesDir.string() << std::endl;
-  ss << "Lisp source dir: " << this->_Directories->_LispSourceDir.string() << std::endl;
-  ss << "Source dir:      " << this->_Directories->_SourceDir.string() << std::endl;
-  ss << "Generated dir:   " << this->_Directories->_GeneratedDir.string() << std::endl;
-  ss << "Include dir:     " << this->_Directories->_IncludeDir.string() << std::endl;
-  ss << "Fasl dir:        " << this->_Directories->_FaslDir.string() << std::endl;
-  ss << "Bitcode dir:     " << this->_Directories->_BitcodeDir.string() << std::endl;
-  ss << "Databases dir:   " << this->_Directories->_DatabasesDir.string() << std::endl;
-  ss << "Quicklisp dir:   " << this->_Directories->_QuicklispDir.string() << std::endl;
+  ss << "ExecutableDir: " << this->_Directories->_ExecutableDir.string() << std::endl
+     << "Lib dir:       " << this->_Directories->_LibDir.string() << std::endl
+     << "Resources dir: " << this->_Directories->_ResourcesDir.string() << std::endl
+     << "Sys dir:       " << this->_Directories->_SysDir.string() << std::endl
+     << "Source dir:    " << this->_Directories->_SourceDir.string() << std::endl
+     << "Generated dir: " << this->_Directories->_GeneratedDir.string() << std::endl
+     << "Startup dir:   " << this->_Directories->_StartupDir.string() << std::endl
+     << "Include dir:   " << this->_Directories->_IncludeDir.string() << std::endl
+     << "Fasl dir:      " << this->_Directories->_FaslDir.string() << std::endl
+     << "Bitcode dir:   " << this->_Directories->_BitcodeDir.string() << std::endl
+     << "Databases dir: " << this->_Directories->_DatabasesDir.string() << std::endl
+     << "Quicklisp dir: " << this->_Directories->_QuicklispDir.string() << std::endl;
   return ss.str();
 }
 
@@ -399,64 +327,47 @@ Pathname_sp generate_pathname(const std::filesystem::path& path)
   return cl__pathname(SimpleBaseString_O::make(ss.str()));
 }
 
-
-Pathname_sp Bundle::getIncludePathname() {
-  return generate_pathname(this->_Directories->_IncludeDir);
-}
-
-Pathname_sp Bundle::getAppContentsResourcesPathname() {
-  stringstream ss;
-  ASSERT(!this->_Directories->_ContentsDir.empty());
-  ss << this->_Directories->_ContentsDir.string();
-  ss << DIR_SEPARATOR;
-  ss << "lib";
-  ss << DIR_SEPARATOR;
-  ss << "**/*.*";
-  return cl__pathname(SimpleBaseString_O::make(ss.str()));
-}
-
 void Bundle::setup_pathname_translations()
 {
-      // setup the SYS logical-pathname-translations
-  if ( !this->_Directories->_LispSourceDir.empty() ) {
+  // setup the SYS logical-pathname-translations
+  if ( !this->_Directories->_SysDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
                          Cons_O::createList(SimpleBaseString_O::make("sys:**;*.*"),
-                                            generate_pathname(this->_Directories->_LispSourceDir))
+                                            generate_pathname(this->_Directories->_SysDir))
         /* ,  more here */
                          );
     core__pathname_translations(SimpleBaseString_O::make("sys"), _lisp->_true(), pts);
   }
-      // setup the LISP-SOURCE logical-pathname-translations
-  if ( !this->_Directories->_LispSourceDir.empty() ) {
-    Cons_sp pts =
-      Cons_O::createList(
-                         Cons_O::createList(SimpleBaseString_O::make("LISP-SOURCE:**;*.*"),
-                                            generate_pathname(this->_Directories->_LispSourceDir)));
-    core__pathname_translations(SimpleBaseString_O::make("LISP-SOURCE"), _lisp->_true(), pts);
-  }
   if ( !this->_Directories->_SourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(SimpleBaseString_O::make("SOURCE-DIR:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("source-dir:**;*.*"),
                                             generate_pathname(this->_Directories->_SourceDir)));
-    core__pathname_translations(SimpleBaseString_O::make("SOURCE-DIR"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("source-dir"), _lisp->_true(), pts);
   }
   if ( !this->_Directories->_GeneratedDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(SimpleBaseString_O::make("GENERATED:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("generated:**;*.*"),
                                             generate_pathname(this->_Directories->_GeneratedDir)));
-    core__pathname_translations(SimpleBaseString_O::make("GENERATED"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("generated"), _lisp->_true(), pts);
+  }
+  if ( !this->_Directories->_StartupDir.empty() ) {
+    Cons_sp pts =
+      Cons_O::createList(
+                         Cons_O::createList(SimpleBaseString_O::make("startup:**;*.*"),
+                                            generate_pathname(this->_Directories->_StartupDir)));
+    core__pathname_translations(SimpleBaseString_O::make("startup"), _lisp->_true(), pts);
   }
   if ( !this->_Directories->_LibDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(SimpleBaseString_O::make("LIB:**;*.*"),
+                         Cons_O::createList(SimpleBaseString_O::make("lib:**;*.*"),
                                             generate_pathname(this->_Directories->_LibDir)));
-    core__pathname_translations(SimpleBaseString_O::make("LIB"), _lisp->_true(), pts);
+    core__pathname_translations(SimpleBaseString_O::make("lib"), _lisp->_true(), pts);
   }
-    // setup the TMP logical-pathname-translations
+  // setup the TMP logical-pathname-translations
   Cons_sp entryTmp = Cons_O::createList(SimpleBaseString_O::make("tmp:**;*.*"),
                                         cl__pathname(SimpleBaseString_O::make("/tmp/**/*.*")));
   Cons_sp ptsTmp = Cons_O::createList(entryTmp
@@ -467,25 +378,19 @@ void Bundle::setup_pathname_translations()
   // Setup hostname pathname translations
   {
     Cons_sp appc =
-      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("install:**;*.*"),
-                                            generate_pathname(this->_Directories->_InstallDir)));
-    core__pathname_translations(SimpleBaseString_O::make("install"), _lisp->_true(), appc);
-  }
-  {
-    Cons_sp appc =
       Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-executable:**;*.*"),
                                             generate_pathname(this->_Directories->_ExecutableDir)));
     core__pathname_translations(SimpleBaseString_O::make("app-executable"), _lisp->_true(), appc);
   }
 
-            // setup the APP-FASL logical-pathname-translations
+  // setup the APP-FASL logical-pathname-translations
   {
     Cons_sp appc =
       Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-fasl:**;*.*"),
                                             generate_pathname(this->_Directories->_FaslDir)));
     core__pathname_translations(SimpleBaseString_O::make("app-fasl"), _lisp->_true(), appc);
   }
-            // setup the APP-BITCODE logical-pathname-translations
+  // setup the APP-BITCODE logical-pathname-translations
   {
     Cons_sp appc =
       Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-bitcode:**;*.*"),
@@ -493,13 +398,6 @@ void Bundle::setup_pathname_translations()
     core__pathname_translations(SimpleBaseString_O::make("app-bitcode"), _lisp->_true(), appc);
   }
   
-    // setup the APP-CONTENTS logical-pathname-translations
-  if ( !this->_Directories->_ContentsDir.empty() ) {
-    Cons_sp appc =
-      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-contents:**;*.*"),
-                                            generate_pathname(this->_Directories->_ContentsDir)));
-    core__pathname_translations(SimpleBaseString_O::make("app-contents"), _lisp->_true(), appc);
-  }
   if ( !this->_Directories->_ResourcesDir.empty() ) {
     Cons_sp appc =
       Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-resources:**;*.*"),

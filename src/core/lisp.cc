@@ -2153,6 +2153,30 @@ CL_DEFUN T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   return nil<T_O>();
 }
 
+CL_LAMBDA()
+CL_DECLARE();
+CL_DOCSTRING(R"dx(Turn on the stepper.)dx")
+DOCGROUP(clasp)
+CL_DEFUN void core__set_breakstep() {
+  my_thread->_Breakstep = true;
+}
+
+CL_LAMBDA()
+CL_DECLARE();
+CL_DOCSTRING(R"dx(Turn off the stepper.)dx")
+DOCGROUP(clasp)
+CL_DEFUN void core__unset_breakstep() {
+  my_thread->_Breakstep = false;
+}
+
+CL_LAMBDA ()
+CL_DECLARE();
+CL_DOCSTRING(R"dx(Return whether we are stepping or not.)dx")
+DOCGROUP(clasp)
+CL_DEFUN bool core__breakstepping_p() {
+  return my_thread->_Breakstep;
+}
+
 CL_LAMBDA(arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Return a string representation of the object)dx")
@@ -2512,8 +2536,9 @@ void LispHolder::startup(CommandLineOptions* global_options,
     globals_->_Argv.push_back(string(argv[i]));
   }
   // Call the initializers here so that they can edit the global_options structure
-  Bundle *bundle = new Bundle(argv0,global_options->_ResourceDir);
-  globals_->_Bundle = bundle;
+  if (!globals_->_Bundle) {
+    globals_->_Bundle = new Bundle(argv0,global_options->_ResourceDir);
+  }
   // Start up lisp
   this->lisp_->startupLispEnvironment();
 

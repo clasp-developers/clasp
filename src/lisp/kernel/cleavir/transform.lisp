@@ -84,18 +84,14 @@ Optimizations are available for any of:
 ;;; called in translate, not here, since transform-call may be called
 ;;; multiple times during meta-evaluation.
 (defun maybe-note-failed-transforms (call)
-  (when (cleavir-policy:policy-value (bir:policy call)
-                                     'note-untransformed-calls)
+  (when (policy:policy-value (bir:policy call) 'note-untransformed-calls)
     (let ((identities (cleavir-attributes:identities (bir:attributes call))))
       (dolist (id identities)
         (let ((trans (gethash id *bir-transformers*)))
           (when trans
             (cmp:note 'failed-transform
                       :call call :opname id :available trans
-                      :origin (loop for origin = (bir:origin call)
-                                      then (cst:source origin)
-                                    while (typep origin 'cst:cst)
-                                    finally (return origin)))))))))
+                      :origin (origin-source (bir:origin call)))))))))
 
 (defmacro %deftransformation (name)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -181,8 +177,8 @@ Optimizations are available for any of:
           (cstify-transformer
            (bir:origin ,csym)
            ;; double backquotes carefully designed piece by piece
-           (if (cleavir-policy:policy-value (bir:policy ,csym)
-                                            'insert-minimum-type-checks)
+           (if (policy:policy-value (bir:policy ,csym)
+                                    'insert-minimum-type-checks)
                `(lambda (,@',params)
                   (let (,@',insurances)
                     (declare (ignorable ,@',params))

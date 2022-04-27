@@ -578,6 +578,75 @@ void dumpLowLevelTrace(int numLowLevels) {
 
 extern "C" {
 
+void cc_set_breakstep() {
+  my_thread->_Breakstep = true;
+}
+void cc_unset_breakstep() {
+  my_thread->_Breakstep = false;
+}
+
+// RAII thing to toggle breakstep while respecting nonlocal exit.
+struct BreakstepToggle {
+  ThreadLocalState* mthread;
+  bool old_breakstep;
+  BreakstepToggle(ThreadLocalState* thread, bool new_breakstep) {
+    mthread = thread;
+    old_breakstep = thread->_Breakstep;
+    thread->_Breakstep = new_breakstep;
+  }
+  ~BreakstepToggle() { mthread->_Breakstep = old_breakstep; }
+};
+
+NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
+  unlikely_if (my_thread->_Breakstep) {
+    void* frame = lframe;
+    void* bframe = my_thread->_BreakstepFrame;
+    // If bframe is NULL, we are doing step-into.
+    // Otherwise, we are doing step-over, and we need to check
+    // if we've returned yet. bframe is the frame step-over was initiated
+    // from, and lframe/frame is the caller frame.
+    // We have to check here because a function being stepped over may
+    // nonlocally exit past the caller, and in that situation we want to
+    // resume stepping.
+    // FIXME: We assume stack growth direction here.
+    if (!bframe || (frame >= bframe)) {
+      // Make sure we don't invoke the stepper recursively,
+      // but can do so again once we're out of the Lisp interaction.
+      BreakstepToggle tog(my_thread, false);
+      T_sp res = core::eval::funcall(core::_sym_breakstep,
+                                     T_sp((gctools::Tagged)source));
+      if (res.fixnump()) {
+        switch (res.unsafe_fixnum()) {
+        case 0: goto stop_stepping;
+        case 1:
+            my_thread->_BreakstepFrame = NULL;
+            return;
+        case 2:
+            my_thread->_BreakstepFrame = frame;
+            return;
+        }
+      }
+      SIMPLE_ERROR(BF("BUG: Unknown return value from %s: %s")
+                   % _rep_(core::_sym_breakstep)
+                   % _rep_(res));
+    } else return;
+  stop_stepping: // outside the scope of tog
+    my_thread->_Breakstep = false;
+    return;
+  }
+}
+
+NOINLINE void cc_breakstep_after(core::T_O* lframe) {
+  unlikely_if (my_thread->_Breakstep) {
+    void* frame = lframe;
+    void* bframe = my_thread->_BreakstepFrame;
+    // If we just stepped over, and are back after the call, switch back
+    // into step-into mode. Otherwise do nothing.
+    if (bframe && (frame >= bframe))
+      my_thread->_BreakstepFrame = NULL;
+  }
+}
+
 // FIXME: This should be [[noreturn]], but I'm not sure how to communicate to clang that the
 // error calls won't return, so it complains if that's declared.
 NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,
