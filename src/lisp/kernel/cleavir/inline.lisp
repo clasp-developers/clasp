@@ -1247,7 +1247,7 @@
 ;;; that ,s is NIL without an understanding of control flow.
 ;;; FIXME: These should be done as transforms.
 (defun minimal-safety-p (env)
-  (cleavir-policy:policy-value
+  (policy:policy-value
    (env:policy (env:optimize-info env))
    'insert-minimum-type-checks))
 (defun list-check-form (form env)
@@ -1352,6 +1352,13 @@
 ;;; the same type-checking cooperation with the compiler that we do here.
 (define-cleavir-compiler-macro endp (&whole form list &environment env)
   `(if ,(list-check-form list env) nil t))
+
+(define-cleavir-compiler-macro core:set-breakstep (&whole form)
+  ;; Because the primop is for-effect, it must not be placed in a
+  ;; position where it's expected to return anything.
+  `(progn (core::primop core:set-breakstep) nil))
+(define-cleavir-compiler-macro core:unset-breakstep (&whole form)
+  `(progn (core::primop core:unset-breakstep) nil))
 
 (debug-inline "primop")
 

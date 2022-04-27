@@ -50,3 +50,8 @@
           (cst:keyword-rest '&rest)
           (keyword-va-rest 'core:&va-rest))
         entries))
+
+(defun origin-source (origin)
+  (loop while (typep origin 'cst:cst)
+        do (setf origin (cst:source origin)))
+  origin)

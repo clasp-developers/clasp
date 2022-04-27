@@ -141,7 +141,7 @@
     (message :emph "Configuring objcopy")
     (setf objcopy (configure-program "objcopy"
                                      (or objcopy #P"objcopy")
-                                     :required t))))
+                                     :required #-darwin t #+darwin nil))))
 
 (defmethod configure-unit (configuration (unit (eql :etags)))
   "Find the etags binary."
@@ -170,7 +170,10 @@
   (append-cflags configuration "-std=c++20" :type :cxxflags)
   #+darwin (append-cflags configuration "-stdlib=libc++" :type :cxxflags)
   #+darwin (append-cflags configuration "-I/usr/local/include/")
-  #+linux (append-cflags configuration "-stdlib=libstdc++" :type :cxxflags)
+  #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -stdlib=libstdc++"
+                                       :type :cxxflags)
+  #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+                                       :type :cflags)
   (when (address-sanitizer configuration)
     (append-cflags configuration "-fsanitize=address" :type :cxxflags)
     (append-ldflags configuration "-fsanitize=address"))
@@ -194,6 +197,26 @@
                   (make-source (gethash key app-config) :variant))
                 +scraper-lisp-sources+)))
 
+(defmethod configure-unit (configuration (unit (eql :default-target)))
+  "Configure default target."
+  (message :emph "Configuring the default target")
+  (with-accessors ((default-target default-target)
+                   (default-stage default-stage))
+      configuration
+    (unless default-target
+      (setf default-target
+            (if (member :cando (extensions configuration))
+                "dclasp-boehmprecise"
+                "cclasp-boehmprecise")))
+    (loop with bitcode-name = (subseq default-target (1+ (position #\- default-target)))
+          for variant in (variants configuration)
+          when (equal bitcode-name (variant-bitcode-name variant))
+           do (setf (variant-default variant) t))
+    (setf default-stage
+          (find (subseq default-target 0 (position #\- default-target))
+                '(:iclasp :aclasp :bclasp :cclasp :dclasp)
+                :test #'string-equal))))
+
 (defmethod configure-unit (configuration (unit (eql :cpu-count)))
   "Use sysctl or nproc to determine the number of CPU cores and set the job count if it
 has not been set."
@@ -208,3 +231,33 @@ has not been set."
                (return)
           finally (message :warn "Unknown number of cpu cores. Setting the number of jobs to ~a."
                            (setf (jobs configuration) 4))))) 
+
+(defmethod configure-unit (configuration (unit (eql :describe)))
+  "Update version number."
+  (with-accessors ((version version)
+                   (commit-short commit-short)
+                   (commit-full commit-full))
+      configuration
+    (cond ((git-working-tree-p configuration)
+           (message :emph "Updating version number.")
+           (setf version (git-describe configuration)
+                 commit-short (git-commit configuration :short t)
+                 commit-full (git-commit configuration)))
+          ((not version)
+           (message :err "Clasp version number is not defined and we are not in a git working tree!")))))
+
+(defmethod configure-unit (configuration (unit (eql :jupyter)))
+  "Configure Jupyter"
+  (let ((jupyter-path-env (uiop:getenvp "JUPYTER_PATH")))
+    (message :emph "Configuring Jupyter")
+    (cond ((jupyter-path configuration)
+           (message :info "Jupyter path already initialized."))
+          (jupyter-path-env
+           (message :info "Using JUPYTER_PATH environment variable to set Jupyter path.")
+           (setf (jupyter-path configuration)
+                 (uiop::ensure-directory-pathname jupyter-path-env)))
+          (t
+           (message :info "Deducing Jupyter path from share path.")
+           (setf (jupyter-path configuration)
+                 (merge-pathnames (make-pathname :directory '(:relative :up "jupyter"))
+                                  (share-path configuration)))))))

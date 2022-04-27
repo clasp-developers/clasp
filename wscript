@@ -309,7 +309,7 @@ def update_dependencies(cfg):
     fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
                        "https://github.com/s-expressionists/Cleavir",
                        label = "main",
-                       revision = "b6b610fc2ec6acf32a83bd636f94985e1be05950")
+                       revision = "59ddca1b49cb4c13c570085ee8f1cb81fd367343")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "4f01430c34f163356f3a2cfbf0a8a6963ff0e5ac")
@@ -337,6 +337,9 @@ def update_dependencies(cfg):
     fetch_git_revision("src/scraper/dependencies/esrap",
                        "https://github.com/scymtym/esrap.git",
                        "c99c33a33ff58ca85e8ba73912eba45d458eaa72")
+    fetch_git_revision("src/scraper/dependencies/trivial-gray-streams",
+                       "https://github.com/trivial-gray-streams/trivial-gray-streams.git",
+                       label = "master")
     fetch_git_revision("src/scraper/dependencies/trivial-with-current-source-form",
                        "https://github.com/scymtym/trivial-with-current-source-form.git",
                        "3898e09f8047ef89113df265574ae8de8afa31ac")
@@ -403,6 +406,7 @@ def analyze_test(cfg):
 def test(cfg):
     log.debug("Execute regression tests\n")
     run_program_echo("build/clasp",
+                     "--norc",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:regression-tests;run-all.lisp",
                      "--eval",    "(progn (format t \"~%Test done~%\")(core:quit))")
@@ -414,6 +418,7 @@ def tests(cfg):
 def test1(cfg):
     log.debug("Execute regression tests\n")
     run_program_echo("build/boehmprecise/iclasp-boehmprecise -t a",
+                     "--norc",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:regression-tests;run-one.lisp",
                      "--eval",    "(progn (format t \"~%Test done~%\")(core:quit))")
@@ -452,9 +457,26 @@ def configure_common(cfg,variant_obj):
     log.info("cfg.env.PREFIX is %s" % cfg.env.PREFIX)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
     cfg.define("APP_NAME",APP_NAME)
-    cfg.define("VARIANT_DIR",variant_obj.variant_dir())
+    cfg.define("CLASP_DEV_TEST_PATH", "src")
+    cfg.define("CLASP_DEV_SOURCE_PATH", "../..")
+    cfg.define("CLASP_DEV_BITCODE_PATH", "%s/%s/fasl/" % (out, variant_obj.bitcode_name()))
+    cfg.define("CLASP_DEV_FASL_PATH", "%s/%s/fasl/" % (out, variant_obj.bitcode_name()))
+    cfg.define("CLASP_DEV_LIB_PATH", "%s/%s/fasl/" % (out, variant_obj.bitcode_name()))
+    cfg.define("CLASP_DEV_GENERATED_PATH", "%s/%s/generated/" % (out, variant_obj.bitcode_name()))
+    cfg.define("CLASP_DEV_STARTUP_PATH", "%s/%s/extension-startup-loads/" % (out, variant_obj.bitcode_name()))
+    cfg.define("CLASP_DEV_INCLUDE_PATH", "include/")
+    cfg.define("CLASP_DEV_SYS_PATH", "src/lisp/")
+    cfg.define("CLASP_INSTALL_SOURCE_PATH", cfg.env.PREFIX)
+    cfg.define("CLASP_INSTALL_BITCODE_PATH", "%s/%s/%s/fasl/" % (cfg.env.PREFIX, out, variant_obj.bitcode_name()))
+    cfg.define("CLASP_INSTALL_FASL_PATH", "%s/%s/%s/fasl/" % (cfg.env.PREFIX, out, variant_obj.bitcode_name()))
+    cfg.define("CLASP_INSTALL_LIB_PATH", "%s/%s/%s/fasl/" % (cfg.env.PREFIX, out, variant_obj.bitcode_name()))
+    cfg.define("CLASP_INSTALL_GENERATED_PATH", "%s/%s/%s/generated/" % (cfg.env.PREFIX, out, variant_obj.bitcode_name()))
+    cfg.define("CLASP_INSTALL_STARTUP_PATH", "%s/bin/extension-startup-loads/" % (cfg.env.PREFIX))
+    cfg.define("CLASP_INSTALL_INCLUDE_PATH", "%s/include/" % (cfg.env.PREFIX))
+    cfg.define("CLASP_INSTALL_SYS_PATH","%s/src/lisp/" % (cfg.env.PREFIX))
     cfg.define("SNAPSHOT_START","_binary_extensions_cando_generated_cando_snapshot_start",quote=False)
     cfg.define("SNAPSHOT_END","_binary_extensions_cando_generated_cando_snapshot_end",quote=False)
+    cfg.define("SNAPSHOT_SIZE","_binary_extensions_cando_generated_cando_snapshot_size",quote=False)
     cfg.define("BITCODE_NAME",variant_obj.bitcode_name())
     cfg.define("VARIANT_NAME",variant_obj.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags_as_string(cfg.env.STLIB_ST,cfg.env.STLIB))
@@ -617,6 +639,11 @@ class variant(object):
         configure_common(cfg, self)
         print("Writing the config.h header")
         cfg.write_config_header("%s/config.h"%self.variant_dir(),remove=True)
+        cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
+        cfg.define("CLASP_GIT_FULL_COMMIT",get_git_full_commit(cfg))
+        cfg.define("CLASP_VERSION",get_clasp_version(cfg))
+        print("Writing the version.h header")
+        cfg.write_config_header("%s/version.h"%self.variant_dir(),remove=True)
 
 class boehm_base(variant):
     enable_mpi = False
@@ -1375,7 +1402,7 @@ def configure(cfg):
     cfg.extensions_names = sorted(cfg.extensions_names)
     log.debug("cfg.extensions_names after sort = %s", cfg.extensions_names)
     log.debug("cfg.extension_startup_loads = %s", cfg.extensions_startup_loads)
-    cfg.define("CLASP_EXTENSION_STARTUP_LOADS",cfg.extensions_startup_loads)
+    cfg.define("CLASP_EXTENSION_STARTUP_LOADS",','.join('startup:%s' % load for load in cfg.extensions_startup_loads))
     sif_files = [x.abspath() for x in cfg.extensions_sif_nodes ]
     cfg.env["CLASP_SIF_FILES"] = sif_files
     print("Created CLASP_SIF_FILES = %s" % cfg.env["CLASP_SIF_FILES"] )
@@ -1426,9 +1453,6 @@ def configure(cfg):
         cfg.env.append_value('INCLUDES',[mmtk_path.abspath()])
     cfg.define("PROGRAM_CLASP",1)
     cfg.define("CLASP_THREADS",1)
-    cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
-    cfg.define("CLASP_GIT_FULL_COMMIT",get_git_full_commit(cfg))
-    cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
     cfg.define("DEFINE_CL_SYMBOLS",1)
     cfg.define("USE_SOURCE_DATABASE",1)
@@ -2281,7 +2305,7 @@ class scraper_task(clasp_task):
     def scraper_command_line(self, extraCommands = [], scraperArgs = []):
         env = self.env
         bld = self.generator.bld
-        scraper_home = os.path.join(env.BUILD_ROOT, "src/scraper/")
+        scraper_home = os.path.join(env.BUILD_ROOT, "src/")
         fasl_dir = os.path.join(bld.path.abspath(), out, "host-fasl/")
         cmd = [] + env.SCRAPER_LISP + [
             "--eval", "(require :asdf)",

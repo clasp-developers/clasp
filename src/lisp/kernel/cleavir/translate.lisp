@@ -139,10 +139,7 @@
 (defgeneric translate-terminator (instruction abi next))
 
 (defun inst-source (inst)
-  (let ((origin (bir:origin inst)))
-    (loop while (typep origin 'cst:cst)
-          do (setf origin (cst:source origin)))
-    origin))
+  (origin-source (bir:origin inst)))
 
 ;;; Put in source info.
 (defmethod translate-simple-instruction :around
@@ -507,11 +504,51 @@
                 (bir:extent instruction))
        (bir:output instruction)))
 
+(defun maybe-insert-step-before (inst)
+  (when (policy:policy-value (bir:policy inst)
+                                     'insert-step-conditions)
+    (let ((origin (bir:origin inst)))
+      (when (typep origin 'cst:cst)
+        (let* ((frame (%intrinsic-call "llvm.frameaddress.p0i8"
+                                       (list (%i32 0)) "stepper-frame"))
+               (raw (cst:raw origin))
+               (index
+                 (handler-case (literal:reference-literal raw t)
+                   (serious-condition ()
+                     (literal:reference-literal
+                      "<error dumping form>" t))))
+               (lit
+                 (cmp:irc-load
+                  (cmp:irc-gep-variable (literal:ltv-global)
+                                        (list (%size_t 0) (%i64 index))
+                                        "step-source"))))
+          (%intrinsic-invoke-if-landing-pad-or-call
+           "cc_breakstep" (list lit frame)))))))
+
 (defmethod translate-simple-instruction :before
     ((instruction bir:abstract-call) abi)
-  (declare (ignore instruction abi))
+  (declare (ignore abi))
   ;; We must force all closure initializers to run before a call.
-  (force-initializers))
+  (force-initializers)
+  ;; Cooperation with the stepper
+  (maybe-insert-step-before instruction))
+
+(defun maybe-insert-step-after (inst)
+  (when (and (policy:policy-value (bir:policy inst)
+                                          'insert-step-conditions)
+             (typep (bir:origin inst) 'cst:cst))
+    ;; OK, we inserted a cc_breakstep call in the above method,
+    ;; so now we need to put in the cc_breakstep_after to support
+    ;; the step-over facility.
+    (%intrinsic-call "cc_breakstep_after"
+                     (list (%intrinsic-call "llvm.frameaddress.p0i8"
+                                            (list (%i32 0))
+                                            "stepper-frame")))))
+
+(defmethod translate-simple-instruction :after
+    ((instruction bir:abstract-call) abi)
+  (declare (ignore abi))
+  (maybe-insert-step-after instruction))
 
 ;; LETI is a subclass of WRITEVAR, so we use a :before to bind the var.
 (defmethod translate-simple-instruction :before ((instruction bir:leti) abi)
@@ -965,13 +1002,10 @@
              (some #'box-from-p inputrt)))))
 
 (defun maybe-note-box (policy name origin inputrt outputrt)
-  (when (cleavir-policy:policy-value policy 'note-boxing)
+  (when (policy:policy-value policy 'note-boxing)
     (cmp:note 'box-emitted
               :inputrt inputrt :outputrt outputrt
-              :name name :origin (loop for org = origin
-                                         then (cst:source org)
-                                       while (typep org 'cst:cst)
-                                       finally (return org)))))
+              :name name :origin (origin-source origin))))
 
 (defun translate-cast (inputv inputrt outputrt)
   ;; most of this is special casing crap due to 1-value values not being
@@ -1594,15 +1628,10 @@
 
 (defun function-source-pos-info (irfunction)
   (let ((origin (bir:origin irfunction)))
-    (loop while (typep origin 'cst:cst)
-          do (setf origin (cst:source origin)))
-    (ensure-origin (origin-spi origin) 999909)))
+    (ensure-origin (origin-spi (origin-source origin)) 999909)))
 
 (defun calculate-function-info (irfunction lambda-name)
-  (let* ((origin (loop for origin = (bir:origin irfunction)
-                         then (cst:source origin)
-                       while (typep origin 'cst:cst)
-                       finally (return origin)))
+  (let* ((origin (origin-source (bir:origin irfunction)))
          (spi (origin-spi origin)))
     (let ((cleavir-lambda-list-analysis (cmp:calculate-cleavir-lambda-list-analysis (bir:lambda-list irfunction))))
       (cmp:make-function-info
@@ -1734,7 +1763,7 @@
         (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
         (when (null (bir:returni function))
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-return))
-        (unless (cleavir-policy:policy-value (bir:policy function)
+        (unless (policy:policy-value (bir:policy function)
                                              'perform-optimization)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-no-inline)
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-optimize-none))
@@ -1796,7 +1825,7 @@
                   (when (null (bir:returni function))
                     (llvm-sys:add-fn-attr xep-arity-function
                                           'llvm-sys:attribute-no-return))
-                  (unless (cleavir-policy:policy-value (bir:policy function)
+                  (unless (policy:policy-value (bir:policy function)
                                                        'perform-optimization)
                     (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-no-inline)
                     (llvm-sys:add-fn-attr xep-arity-function 'llvm-sys:attribute-optimize-none))
@@ -1809,7 +1838,7 @@
                                (cmp:setup-calling-convention xep-arity-function
                                                              arity
                                                              :debug-on
-                                                             (cleavir-policy:policy-value
+                                                             (policy:policy-value
                                                               (bir:policy function)
                                                               'save-register-args)
                                                              :cleavir-lambda-list-analysis cleavir-lambda-list-analysis
@@ -1908,7 +1937,7 @@
   (signal condition)
   (let* ((cst (cst-to-ast:cst condition))
          (form (cst:raw cst))
-         (origin (cst:source cst)))
+         (origin (origin-source cst)))
     (invoke-restart 'cst-to-ast:substitute-cst
                     (cst:reconstruct
                      `(error 'cmp:compiled-program-error

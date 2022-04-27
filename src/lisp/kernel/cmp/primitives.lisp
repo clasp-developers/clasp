@@ -177,7 +177,10 @@
          (primitive         "debug_match_two_uintptr_t" :uintptr_t (list :uintptr_t :uintptr_t))
          (primitive         "lowLevelTrace" :void (list :i32))
          (primitive         "unreachableError" :void nil)
-    
+         (primitive         "cc_set_breakstep" :void nil)
+         (primitive         "cc_unset_breakstep" :void nil)
+         (primitive-unwinds "cc_breakstep" :void (list :t* :t*))
+         (primitive         "cc_breakstep_after" :void (list :t*))
          (primitive-unwinds "cc_wrong_number_of_arguments" :void (list :t* :size_t :size_t :size_t)
           :does-not-return t)
 

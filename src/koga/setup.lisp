@@ -62,13 +62,16 @@ The return value is handled the same as PRINT-TARGET-SOURCE."))
   (:documentation "Print the output associated with a variant target and its sources. The
 accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
 
-(defun map-variants (configuration func)
+(defun map-variants (configuration func
+                    &aux (root-paths *root-paths*)
+                         (build-path (root :build)))
   "Apply func to all variants in configuration."
   (loop for variant in (variants configuration)
         for *variant-gc* = (variant-gc variant)
         for *variant-precise* = (variant-precise variant)
         for *variant-prep* = (variant-prep variant)
         for *variant-debug* = (variant-debug variant)
+        for *variant-default* = (variant-default variant)
         for *variant-cflags* = (or (cflags variant) "")
         for *variant-cxxflags* = (or (cxxflags variant) "")
         for *variant-cppflags* = (or (cppflags variant) "")
@@ -77,9 +80,20 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
         for *variant-name* = (variant-name variant)
         for *variant-bitcode-name* = (variant-bitcode-name variant)
         for *variant-path* = (merge-pathnames (make-pathname :directory (list :relative *variant-bitcode-name*))
-                                              *build-path*)
-        for *install-variant-path* = (merge-pathnames (make-pathname :directory (list :relative "build" *variant-bitcode-name*))
-                                                      *install-clasp-path*)
+                                              build-path)
+        for variant-lib-path = (merge-pathnames (make-pathname :directory '(:relative "fasl"))
+                                                *variant-path*)
+        for variant-generated-path = (merge-pathnames (make-pathname :directory '(:relative "generated"))
+                                                      *variant-path*)
+        for variant-startup-path = (merge-pathnames (make-pathname :directory '(:relative "startup"))
+                                                    *variant-path*)
+        for *root-paths* = (list* :variant *variant-path*
+                                  :variant-lib variant-lib-path
+                                  :variant-fasl variant-lib-path
+                                  :variant-bitcode variant-lib-path
+                                  :variant-generated variant-generated-path
+                                  :variant-startup variant-startup-path
+                                  root-paths)
         do (funcall func)))
 
 (defun write-build-output (configuration name)
@@ -91,8 +105,9 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
       (ensure-directories-exist (resolve-source path))
       (let* ((output-path (resolve-source path))
              (stream (make-output-stream configuration name output-path))
-             (*build-path* #P"")
-             (*code-path* (make-pathname :directory '(:relative :up))))
+             (*root-paths* (list* :build #P""
+                                  :code (make-pathname :directory '(:relative :up))
+                                  *root-paths*)))
         (unwind-protect
             (progn
               (print-prologue configuration name stream)
@@ -126,13 +141,22 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
       (ensure-directories-exist (resolve-source path))
       (let* ((output-path (resolve-source path))
              (stream (make-output-stream configuration name output-path))
-             (*build-path* #P"")
              (*variant-path* (make-pathname :directory (list :relative *variant-bitcode-name*)))
-             (*install-variant-path* (merge-pathnames (make-pathname :directory (list :relative
-                                                                                      "build"
-                                                                                      *variant-bitcode-name*))
-                                                      *install-clasp-path*))
-             (*code-path* (make-pathname :directory '(:relative :up))))
+             (variant-lib-path (merge-pathnames (make-pathname :directory '(:relative "fasl"))
+                                                *variant-path*))
+             (variant-generated-path (merge-pathnames (make-pathname :directory '(:relative "generated"))
+                                                      *variant-path*))
+             (variant-startup-path (merge-pathnames (make-pathname :directory '(:relative "startup"))
+                                                    *variant-path*))
+             (*root-paths* (list* :build #P""
+                                  :code (make-pathname :directory '(:relative :up))
+                                  :variant *variant-path*
+                                  :variant-lib variant-lib-path
+                                  :variant-fasl variant-lib-path
+                                  :variant-bitcode variant-lib-path
+                                  :variant-generated variant-generated-path
+                                  :variant-startup variant-startup-path
+                                  *root-paths*)))
         (unwind-protect
             (progn
               (print-prologue configuration name stream)
@@ -148,19 +172,43 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
         (when (shebangp output-path)
           (run-program (list "chmod" "a+x" (namestring output-path))))))))
 
+(defun resolve-package-path (path)
+  (if (package-path *configuration*)
+      (merge-pathnames (uiop:relativize-pathname-directory path)
+                       (package-path *configuration*))
+      path))
+
 (defun setup (&rest initargs)
   "Setup the build by configuring the units, looking for and loading scripts and
 writing the build and variant outputs."
   (let* ((*configuration* (apply #'make-instance 'configuration initargs))
-         (*code-path* #P"")
-         (*build-path* (build-path *configuration*))
          (*script-path* #P"")
-         (prefix (if (package-path *configuration*)
-                     (merge-pathnames (uiop:relativize-pathname-directory (prefix *configuration*))
-                                      (package-path *configuration*))
-                     (prefix *configuration*)))
-         (*install-bin-path* (merge-pathnames #P"bin/" prefix))
-         (*install-clasp-path* (merge-pathnames #P"lib/clasp/" prefix)))
+         (install-generated (merge-pathnames (make-pathname :directory '(:relative "generated"))
+                                             (share-path *configuration*)))
+         (install-startup (merge-pathnames (make-pathname :directory '(:relative "startup"))
+                                           (share-path *configuration*)))
+         (*root-paths* (list* :build (build-path *configuration*)
+                              :code #P""
+                              :install-bin (bin-path *configuration*)
+                              :install-share (share-path *configuration*)
+                              :install-lib (lib-path *configuration*)
+                              :install-fasl (lib-path *configuration*)
+                              :install-bitcode (lib-path *configuration*)
+                              :install-generated install-generated
+                              :install-startup install-startup
+                              :package-bin (resolve-package-path (bin-path *configuration*))
+                              :package-share (resolve-package-path (share-path *configuration*))
+                              :package-lib (resolve-package-path (lib-path *configuration*))
+                              :package-fasl (resolve-package-path (lib-path *configuration*))
+                              :package-bitcode (resolve-package-path (lib-path *configuration*))
+                              :package-generated (resolve-package-path install-generated)
+                              :package-startup (resolve-package-path install-startup)
+                              *root-paths*)))
+    (when (clean *configuration*)
+      (message :emph "~%Cleaning up previous build")
+      (uiop:delete-directory-tree (build-path *configuration*)
+                                  :validate t
+                                  :if-does-not-exist :ignore))
     (ensure-directories-exist (build-path *configuration*))
     (message :emph "~%Configuring the build")
     (loop for unit in (units *configuration*)

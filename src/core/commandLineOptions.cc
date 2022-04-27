@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "clasp/core/lisp.h"
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/commandLineOptions.h>
+#include <version.h>
 
 namespace core {
 

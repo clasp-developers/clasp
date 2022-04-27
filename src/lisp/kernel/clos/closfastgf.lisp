@@ -473,6 +473,19 @@ FIXME!!!! This code will have problems with multithreading if a generic function
       (pushnew generic-function (specializer-call-history-generic-functions specializer)
                :test #'eq))))
 
+(defun check-long-call-history (generic-function)
+  #-debug-long-call-history
+  (declare (ignore generic-function))
+  #+debug-long-call-history
+  (when (> (length (generic-function-call-history generic-function)) 16384)
+    (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" generic-function (length (generic-function-call-history generic-function)))))
+
+(defun schgf-pushnew (memoized-key generic-function)
+  (loop for specializer across (the simple-vector memoized-key)
+        unless (eql-specializer-p specializer)
+          do (specializer-call-history-generic-functions-push-new
+              specializer generic-function)))
+
 (defun memoize-call (generic-function new-entry)
   "Add an entry to the generic function's call history based on a call.
 Return true iff a new entry was added; so for example it will return false if another thread has already added the entry."
@@ -487,26 +500,37 @@ Return true iff a new entry was added; so for example it will return false if an
       (mp:atomic-pushnew new-entry (safe-gf-call-history generic-function)
                          :key #'car
                          :test #'specializer-key-match)
-      (loop for idx from 0 below (length memoized-key)
-            for specializer = (svref memoized-key idx)
-            unless (eql-specializer-p specializer)
-              do (specializer-call-history-generic-functions-push-new
-                  specializer generic-function))
+      (schgf-pushnew memoized-key generic-function)
       #+debug-long-call-history
-      (when (> (length (generic-function-call-history generic-function)) 16384)
-        (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" generic-function (length (generic-function-call-history generic-function))))
+      (check-long-call-history generic-function)
       t)))
 
+(defun union-entries (old-call-history new-entries)
+  ;; We do this instead of UNION because the new entries can contain
+  ;; duplicates.
+  (loop for entry in new-entries
+        do (pushnew entry old-call-history
+                    :key #'car :test #'specializer-key-match))
+  old-call-history)
+
 (defun memoize-calls (generic-function new-entries)
-  (if new-entries
-      (loop with any = nil
-            for new-entry in new-entries
-            when (memoize-call generic-function new-entry)
-              do (setf any t)
-            finally (return any))
-      ;; If there are no new entries, the call history is not altered,
-      ;; so return false.
-      nil))
+  (cond
+    ;; If there are no new entries, the call history is not altered,
+    ;; so return false.
+    ((null new-entries) nil)
+    ((null (rest new-entries))
+     (memoize-call generic-function (first new-entries)))
+    (t
+     ;; Add all entries at once. Adding one entry at a time can lead to
+     ;; errors due to inconsistency, e.g. dispatchers being produced with
+     ;; some but not all relevant EQL specializers.
+     (mp:atomic-update (safe-gf-call-history generic-function)
+                       #'union-entries new-entries)
+     (loop for entry in new-entries
+           do (schgf-pushnew (car entry) generic-function))
+     #+debug-long-call-history
+     (check-long-call-history generic-function)
+     t)))
 
 (defun perform-outcome (outcome arguments)
   (cond

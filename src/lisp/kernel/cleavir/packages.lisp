@@ -8,7 +8,8 @@
                     (#:ast #:cleavir-ast)
                     (#:ctype #:cleavir-ctype)
                     (#:cst-to-ast #:cleavir-cst-to-ast)
-                    (#:env #:cleavir-env))
+                    (#:env #:cleavir-env)
+                    (#:policy #:cleavir-compilation-policy))
   (:export
    #:*use-cst*
    #:literal
@@ -114,7 +115,7 @@
   (:export #:memref2 #:offset #:load #:store #:cas)
   (:export #:cast #:unboxed-constant-reference
            #:mtf #:append-values #:fixed-mv-call #:fixed-mv-local-call)
-  (:export #:datum #:output #:phi #:variable #:argument)
+  (:export #:datum)
   (:export #:rtype)
   (:export #:cast-one))
 
@@ -123,7 +124,8 @@
   (:local-nicknames (#:bir #:cleavir-bir)
                     (#:ctype #:cleavir-ctype)
                     (#:set #:cleavir-set)
-                    (#:attributes #:cleavir-attributes))
+                    (#:attributes #:cleavir-attributes)
+                    (#:policy #:cleavir-compilation-policy))
   (:shadow #:values-list #:nth #:nthcdr #:last #:butlast)
   (:export #:values-list #:nth #:nthcdr #:last #:butlast #:nendp)
   (:export #:maybe-transform-module)

@@ -186,6 +186,7 @@ CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 
 
 void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager *scope, size_t nargs, T_O** args ) {
+//  ASSERT(NUMBER_OF_ENTRY_POINTS==1);
 #if 0
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();

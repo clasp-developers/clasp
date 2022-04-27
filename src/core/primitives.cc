@@ -81,7 +81,7 @@ THE SOFTWARE.
 #include <clasp/core/lispReader.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/wrappers.h>
-
+#include <version.h>
 
 #define DEBUG_LEVEL_NONE
 
@@ -281,6 +281,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(lispImplementationId - a fragment of the git commit hash code)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__lisp_implementation_id() {
+#ifdef CLASP_GIT_COMMIT
   string all = CLASP_GIT_COMMIT;
 #define RIGHT_CHARS 9
   string rightChars;
@@ -290,6 +291,9 @@ CL_DEFUN T_sp core__lisp_implementation_id() {
     rightChars = all;
   }
   return SimpleBaseString_O::make(rightChars);
+#else
+  return nil<T_O>();
+#endif
 };
 
 CL_LAMBDA()
@@ -297,8 +301,12 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(clasp-git-full-commit - the full git commit hash code)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__clasp_git_full_commit() {
+#ifdef CLASP_GIT_FULL_COMMIT
   string all = CLASP_GIT_FULL_COMMIT;
   return SimpleBaseString_O::make(all);
+#else
+  return nil<T_O>();
+#endif
 };
 
 CL_LAMBDA(obj)

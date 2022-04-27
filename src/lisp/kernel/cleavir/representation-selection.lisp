@@ -407,41 +407,39 @@
         (cleavir-set:doset (call local-calls rt)
           (setf rt (max-rtype rt (use-rtype (bir:output call))))))))
 
-(defgeneric maybe-assign-rtype (datum))
-(defmethod maybe-assign-rtype ((datum cc-bmir:output)))
-(defmethod maybe-assign-rtype ((datum cc-bmir:phi)))
-(defmethod maybe-assign-rtype ((datum cc-bmir:variable)))
-(defmethod maybe-assign-rtype ((datum bir:load-time-value)))
-(defmethod maybe-assign-rtype ((datum bir:constant)))
-(defmethod maybe-assign-rtype ((datum bir:output))
-  (let* ((source (definition-rtype datum))
-         (dest (use-rtype datum))
-         (rtype (min-rtype source dest)))
-    (change-class datum 'cc-bmir:output :rtype rtype)
-    rtype))
-(defmethod maybe-assign-rtype ((datum bir:phi))
-  (change-class datum 'cc-bmir:phi :rtype (phi-rtype datum)))
-(defmethod maybe-assign-rtype ((datum bir:variable))
+(defgeneric compute-rtype (datum))
+
+(defun maybe-assign-rtype (datum)
+  (let ((rt (cc-bmir:rtype datum)))
+    (if (eq rt :unassigned)
+        (setf (cc-bmir:rtype datum) (compute-rtype datum))
+        rt)))
+
+(defmethod compute-rtype ((datum bir:output))
+  (let ((source (definition-rtype datum))
+        (dest (use-rtype datum)))
+    (min-rtype source dest)))
+(defmethod compute-rtype ((datum bir:phi))
+  (phi-rtype datum))
+(defmethod compute-rtype ((datum bir:variable))
   ;; At the moment we can only have unboxed local variables.
   ;; TODO: Extend to unboxed DX variables. Indefinite would be harder, since
   ;; closure vectors are full of boxed data.
-  (change-class datum 'cc-bmir:variable
-                :rtype (if (eq (bir:extent datum) :local)
-                           (variable-rtype datum)
-                           '(:object))))
-(defmethod maybe-assign-rtype ((datum bir:argument))
-  (change-class datum 'cc-bmir:argument
-                :rtype (let* ((use (use-rtype datum))
-                              (def (definition-rtype datum))
-                              (rt (min-rtype use def)))
-                         ;; FIXME: We force arguments to be represented even
-                         ;; if they are unused. It would be possible, if a
-                         ;; bit convoluted, to in this case instead alter the
-                         ;; local function parameters to lack the argument
-                         ;; entirely.
-                         (if (null rt)
-                             '(:object)
-                             (min-rtype rt '(:object))))))
+  (if (eq (bir:extent datum) :local)
+      (variable-rtype datum)
+      '(:object)))
+(defmethod compute-rtype ((datum bir:argument))
+ (let* ((use (use-rtype datum))
+        (def (definition-rtype datum))
+        (rt (min-rtype use def)))
+   ;; FIXME: We force arguments to be represented even
+   ;; if they are unused. It would be possible, if a
+   ;; bit convoluted, to in this case instead alter the
+   ;; local function parameters to lack the argument
+   ;; entirely.
+   (if (null rt)
+       '(:object)
+       (min-rtype rt '(:object)))))
 
 (defun assign-instruction-rtypes (inst)
   (mapc #'maybe-assign-rtype (bir:outputs inst)))
@@ -473,7 +471,7 @@
 ;; for the sake of some instruction.
 (defun maybe-cast-before (inst datum needed-rtype)
   (unless (equal (cc-bmir:rtype datum) needed-rtype)
-    (let* ((new (make-instance 'cc-bmir:output
+    (let* ((new (make-instance 'bir:output
                   :rtype needed-rtype :derived-type (bir:ctype datum)))
            (cast (make-instance 'cc-bmir:cast
                    :origin (bir:origin inst) :policy (bir:policy inst)
@@ -491,7 +489,7 @@
               ;; Inserting a cast anyway can result in BIR verification
               ;; failure for certain special instructions; see #1224.
               (not (bir:use datum)))
-    (let* ((new (make-instance 'cc-bmir:output
+    (let* ((new (make-instance 'bir:output
                   :rtype actual-rtype :derived-type (bir:ctype datum)))
            (cast (make-instance 'cc-bmir:cast
                    :origin (bir:origin inst) :policy (bir:policy inst)
@@ -504,7 +502,7 @@
 ;;; This is different from above because MTF is not a cast, as mentioned
 ;;; in bmir.lisp where it's defined.
 (defun insert-mtf-before (inst datum target)
-  (let* ((new (make-instance 'cc-bmir:output
+  (let* ((new (make-instance 'bir:output
                 :rtype target :derived-type (bir:ctype datum)))
          (mtf (make-instance 'cc-bmir:mtf
                 :origin (bir:origin inst) :policy (bir:policy inst)
