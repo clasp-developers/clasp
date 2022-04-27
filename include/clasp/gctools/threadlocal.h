@@ -5,8 +5,6 @@
 #include <functional>
 #include <clasp/gctools/threadlocal.fwd.h>
 
-
-
 typedef core::T_O*(*T_OStartUp)(core::T_O*);
 typedef void(*voidStartUp)(void);
 
@@ -85,6 +83,10 @@ namespace core {
     bool              _Breakstep; // Should we check for breaks?
     // What frame are we stepping over? NULL means step-into mode.
     void*             _BreakstepFrame;
+    // Stuff for SJLJ unwinding
+    T_sp              _DynEnv;
+    T_sp              _UnwindDest;
+    size_t            _UnwindDestIndex;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

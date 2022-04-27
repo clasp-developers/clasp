@@ -145,6 +145,8 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   ,_BufferStrWNsPool()
   ,_Breakstep(false)
   ,_BreakstepFrame(NULL)
+  ,_DynEnv()
+  ,_UnwindDest()
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
@@ -173,11 +175,15 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
   if (this->_ObjectFiles.theObject) goto ERR;
   if (this->_BufferStr8NsPool.theObject) goto ERR;
   if (this->_BufferStrWNsPool.theObject) goto ERR;
+  if (this->_DynEnv.theObject) goto ERR;
+  if (this->_UnwindDest.theObject) goto ERR;
   this->_PendingInterrupts.theObject = theNilObject.theObject;
   this->_CatchTags.theObject = theNilObject.theObject;
   this->_ObjectFiles.theObject = theNilObject.theObject;
   this->_BufferStr8NsPool.theObject = theNilObject.theObject;
   this->_BufferStrWNsPool.theObject = theNilObject.theObject;
+  this->_DynEnv.theObject = theNilObject.theObject;
+  this->_UnwindDest.theObject = theNilObject.theObject;
   return;
  ERR:
   printf("%s:%d:%s one of the reinitialize symbols was already initialized\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -193,6 +199,8 @@ ThreadLocalState::ThreadLocalState() :
   , _CleanupFunctions(NULL)
   , _Breakstep(false)
   , _BreakstepFrame(NULL)
+  , _DynEnv(nil<core::T_O>())
+  , _UnwindDest(nil<core::T_O>())
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
