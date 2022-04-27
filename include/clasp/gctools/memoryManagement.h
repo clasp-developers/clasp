@@ -689,6 +689,21 @@ namespace gctools {
     bool preciseIsPolymorphic() const;
 #endif
   };
+
+template <class LispClass>
+struct StackAllocate {
+  Header_s  _Header;
+  LispClass _Object;
+
+  template <class...ARGS>
+  StackAllocate(ARGS&&...args) : _Header(Header_s::StampWtagMtag::make_Value<LispClass>()),
+                                _Object(std::forward<ARGS>(args)...) {};
+
+  smart_ptr<LispClass> asSmartPtr() {
+    return smart_ptr<LispClass>((LispClass*)&this->_Object);
+  }
+};
+
 };
 
 // ------------------------------------------------------------
