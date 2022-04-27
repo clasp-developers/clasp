@@ -258,17 +258,20 @@
                                               "clasp")
                                           :package-bin))
           (clasp-sh (make-source "clasp" :variant))
-          (clasp-sh-installed (make-source "clasp" :package-bin)))
-  (ninja:write-build output-stream :generate-headers
-                     :inputs (sort sifs
+          (clasp-sh-installed (make-source "clasp" :package-bin))
+          (filtered-sifs (if *variant-precise*
+                             (sort sifs
                                    (lambda (x y)
                                      (and (eq x :code)
                                           (eq y :variant)))
                                    :key #'source-root)
+                             (remove-if (lambda (x)
+                                          (eq :code (source-root x)))
+                                        sifs))))
+  (ninja:write-build output-stream :generate-headers
+                     :inputs filtered-sifs
                      :precise (if *variant-precise* "1" "0")
                      :variant-path *variant-path*
-                     :sources (format nil "~{~/ninja:escape/~^ ~}"
-                                      (mapcar #'source-path sifs))
                      :outputs generated)
   (ninja:write-build output-stream :phony
                      :outputs (list (build-name "generated"))
