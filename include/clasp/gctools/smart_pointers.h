@@ -128,7 +128,7 @@ public:
   bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
   bool no_keyp() const { return tagged_no_keyp(this->theObject); };
-  bool same_as_keyP() const { return tagged_same_as_keyP(this->theObject); };
+  bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
   claspCharacter unsafe_character() const { return untag_character(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type *>(this->theObject); };
@@ -356,7 +356,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool no_keyp() const { return tagged_no_keyp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
-  bool same_as_keyP() const { return tagged_same_as_keyP(this->theObject); };
+  bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
   bool fixnump() const { return tagged_fixnump(this->theObject); };
   Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
@@ -679,7 +679,7 @@ public:
   bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool no_keyp() const { return tagged_no_keyp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
-  bool same_as_keyP() const { return tagged_same_as_keyP(this->theObject); };
+  bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return (!this->nilp()); };
   bool isTrue() const { return !this->nilp(); };
@@ -889,7 +889,7 @@ public:
   bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool no_keyp() const { return tagged_no_keyp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
-  bool same_as_keyP() const { return tagged_same_as_keyP(this->theObject); };
+  bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
   claspCharacter unsafe_character() const { return untag_character(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type *>(this->theObject); };
@@ -1066,7 +1066,7 @@ public:
   bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool no_keyp() const { return tagged_no_keyp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
-  bool same_as_keyP() const { return tagged_same_as_keyP(this->theObject); };
+  bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
   claspCharacter unsafe_character() const { return untag_character(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type *>(this->theObject); };
@@ -1242,7 +1242,7 @@ public:
   bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool no_keyp() const { return tagged_no_keyp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
-  bool same_as_keyP() const { return tagged_same_as_keyP(this->theObject); };
+  bool same_as_keyP() const { return tagged_same_as_keyp(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
   claspCharacter unsafe_character() const { return untag_character(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type *>(this->theObject); };

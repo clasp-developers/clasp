@@ -238,21 +238,28 @@ static bool args_from_offset(size_t fi, void* ip, const char* string,
       args = largs.cons();
     } else {
       // for fixed arity entry points calculate the nargs from the arity_code
-      size_t nargs = (arity_code-1)+ENTRY_POINT_ARITY_BEGIN;
+      size_t arity_nargs = arity_code-1;
+      ASSERT(ENTRY_POINT_ARITY_BEGIN==0); // maybe in the future we may want to support something else
+      size_t nargs = arity_nargs + ENTRY_POINT_ARITY_BEGIN;
       D(printf("%s%s:%d:%s About to read %lu xep%lu args\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs, arity_code-1 ););
     // Get the first args from the register save area
       ql::list largs;
-      for (size_t i = 0; i < std::min(nargs, (size_t)LCC_ARGS_IN_REGISTERS); ++i) {
-        T_sp temp((gctools::Tagged)(register_save_area[i+1]));
+      size_t args_in_rsa = std::min(nargs, (size_t)(LCC_WORDS_IN_REGISTER_SAVE_AREA-1)); // -1 to remove closure arg
+      int args_on_stack = nargs-(LCC_WORDS_IN_REGISTER_SAVE_AREA-1);
+      for (size_t i = 0; i < args_in_rsa; ++i) {
+        T_sp temp((gctools::Tagged)(register_save_area[i+1])); // +1 to skip closure arg
         D(printf("%s%s:%d:%s     read xep%lu arg %lu -> %s\n", trace.spaces().c_str(), __FILE__, __LINE__, __FUNCTION__, nargs, i, _rep_(temp).c_str() ););
         largs << temp;
       }
-    // and the rest from the stack frame
-      if (LCC_ARGS_IN_REGISTERS<nargs) {
-//        printf("%s:%d:%s Check if extraction of arguments from the stack works properly\n", __FILE__, __LINE__, __FUNCTION__ );
-        for (size_t i = LCC_ARGS_IN_REGISTERS; i < nargs; ++i) {
-          T_O* rarg = ((T_O**)frameptr)[i + 2];
+    // and the rest from the stack frame if we support xepN functions that exhaust the available register arguments
+      if (args_on_stack>0) {
+        printf("%s:%d:%s Check if extraction of arguments from the stack works properly\n", __FILE__, __LINE__, __FUNCTION__ );
+        for (size_t i = 0; i < args_on_stack; ++i) {
+          T_O* rarg = ((T_O**)frameptr)[i + 2]; // +2 skips to where args are
           T_sp temp((gctools::Tagged)rarg);
+          if (((uintptr_t)temp.raw_() & UNBOUND_TAG) == UNBOUND_TAG) {
+            printf("%s:%d:%s And UNBOUND special value %p is leaking into a backtrace\n", __FILE__, __LINE__, __FUNCTION__, temp.raw_());
+          }
           largs << temp;
         }
       }
