@@ -172,10 +172,12 @@ CL_DEFUN T_mv core__sjlj_call_with_escape_continuation(Function_sp function) {
   } else {
     try {
       // Set up the block dynenv.
-      gctools::StackAllocate<BlockDynEnv_O> sa_bde(my_thread->_DynEnv, frame, &target);
-      DynEnvPusher dep(my_thread, sa_bde.asSmartPtr());
+      // Heap allocate, so that it can be used safely (signaling an error) if its
+      // extent ends.
+      BlockDynEnv_sp bde = BlockDynEnv_O::create(my_thread->_DynEnv, frame, &target);
+      DynEnvPusher dep(my_thread, bde);
       // Call the thunk and return its values.
-      return eval::funcall(function, my_thread->_DynEnv);
+      return eval::funcall(function, bde);
     } catch (Unwind& uw) {
       // whoops, c++ exception. are we here?
       if (uw.getFrame() == frame) { // here we are!

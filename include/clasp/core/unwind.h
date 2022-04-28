@@ -88,15 +88,22 @@ class BlockDynEnv_O : public DestDynEnv_O {
   LISP_CLASS(core, CorePkg, BlockDynEnv_O, "BlockDynEnv", DestDynEnv_O);
 public:
   using DestDynEnv_O::DestDynEnv_O; // inherit constructor
+  static BlockDynEnv_sp create(T_sp outer, void* frame, jmp_buf* target) {
+    return gctools::GC<BlockDynEnv_O>::allocate(outer, frame, target);
+  }
   virtual ~BlockDynEnv_O() {};
   virtual T_sp unwound_dynenv() { return outer; }
 };
 
 // Dynenv for a CL:TAGBODY.
+FORWARD(TagbodyDynEnv);
 class TagbodyDynEnv_O : public DestDynEnv_O {
   LISP_CLASS(core, CorePkg, TagbodyDynEnv_O, "TagbodyDynEnv", DestDynEnv_O);
 public:
   using DestDynEnv_O::DestDynEnv_O;
+  static TagbodyDynEnv_sp create(T_sp outer, void* frame, jmp_buf* target) {
+    return gctools::GC<TagbodyDynEnv_O>::allocate(outer, frame, target);
+  }
   virtual ~TagbodyDynEnv_O() {};
   virtual T_sp unwound_dynenv() { return this->asSmartPtr(); }
 };
