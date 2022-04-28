@@ -88,12 +88,18 @@
   (loop for source in (uiop:read-file-form #P"repos.sexp")
         for name = (getf source :name)
         for extension = (getf source :extension)
-        if (member name skip-sync)
+        if (or (eq t skip-sync)
+               (member name skip-sync))
           do (apply #'check-repo source)
         else if (or (not extension)
                     (member name extensions))
           do (apply #'sync-repo source)
         do (terpri))
+  (when (getf initargs :clean)
+    (format t "Cleaning up previous build~%~%")
+    (uiop:delete-directory-tree (truename build)
+                                :validate t
+                                :if-does-not-exist :ignore))
   ;; Do the absolute minimum to inform ASDF about the location of systems
   ;; in order to find the clasp root and the desired build directory.
   (asdf:initialize-source-registry
