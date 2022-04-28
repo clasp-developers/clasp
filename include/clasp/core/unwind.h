@@ -135,6 +135,18 @@ public:
   virtual void proceed(DestDynEnv_sp, size_t);
 };
 
+// RAII helper for augmenting the dynamic environment.
+struct DynEnvPusher {
+  ThreadLocalState* mthread;
+  T_sp outer;
+  DynEnvPusher(ThreadLocalState* thread, DynEnv_sp newde) {
+    mthread = thread;
+    outer = newde->outer;
+    thread->_DynEnv = newde;
+  }
+  ~DynEnvPusher() { mthread->_DynEnv = outer; }
+};
+
 // Functions
 
 /* Generally, unwinding proceeds in two steps, similar to the Itanium

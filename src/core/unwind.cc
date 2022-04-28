@@ -88,18 +88,20 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
 
 // Runtime interface.
 
-CL_DEFUN T_sp core__sjlj_current_dynenv() {
-  return my_thread->_DynEnv;
+CL_DEFUN T_mv core__sjlj_call_with_current_dynenv(Function_sp function) {
+  return eval::funcall(function, my_thread->_DynEnv);
 }
 
 // Returns the nth dynenv, where 0 is the current, 1 is its parent, etc.
 // If there is no dynenv that high up, returns NIL.
 // This is exposed instead of the parent field directly so that we hide
 // the details of how the dynenv stack is stored (i.e. in the dynenv or not).
-CL_DEFUN T_sp core__sjlj_nth_dynenv(size_t index) {
+CL_DEFUN T_mv core__sjlj_call_with_nth_dynenv(Function_sp function,
+                                              size_t index) {
   T_sp iter = my_thread->_DynEnv;
   while (true) {
-    if ((index == 0) || iter.nilp()) return iter;
+    if ((index == 0) || iter.nilp())
+      return eval::funcall(iter);
     else {
       iter = gc::As_unsafe<DynEnv_sp>(iter)->outer;
       --index;
@@ -134,17 +136,6 @@ CL_DEFUN int core__sjlj_dynenv_search(DestDynEnv_sp dest) {
   default: UNREACHABLE();
   }
 }
-
-struct DynEnvPusher {
-  ThreadLocalState* mthread;
-  T_sp outer;
-  DynEnvPusher(ThreadLocalState* thread, DynEnv_sp newde) {
-    mthread = thread;
-    outer = newde->outer;
-    thread->_DynEnv = newde;
-  }
-  ~DynEnvPusher() { mthread->_DynEnv = outer; }
-};
 
 CL_DEFUN T_mv core__sjlj_call_with_unknown_dynenv(Function_sp thunk) {
   gctools::StackAllocate<UnknownDynEnv_O> sa_ude(my_thread->_DynEnv);

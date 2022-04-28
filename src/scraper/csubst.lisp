@@ -90,6 +90,8 @@
         (setf wrapped-name (format nil "extern_~a" wrapped-name)))
     #l
     $extern-attribute LCC_RETURN $wrapped-name ($(format nil "~{core::T_O* in~a~^,~}" arg-indexes)) {
+    gctools::StackAllocate<core::UnknownDynEnv_O> sa_ude(my_thread->_DynEnv);
+    core::DynEnvPusher dep(my_thread, sa_ude.asSmartPtr());
     $(with-output-to-string (sout)
        (loop
          :for x in arg-indexes
