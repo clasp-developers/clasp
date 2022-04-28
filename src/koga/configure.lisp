@@ -546,6 +546,10 @@ is not compatible with snapshots.")
                    :initarg :update-version
                    :type boolean
                    :documentation "Use git describe to update the version and commit values in the config.sexp file and then exit.")
+   (extension-systems :accessor extension-systems
+                      :initform nil
+                      :type list
+                      :documentation "")
    (default-stage :accessor default-stage
                   :initform :cclasp
                   :type (member :iclasp :aclasp :bclasp :cclasp :dclasp)
@@ -577,22 +581,20 @@ is not compatible with snapshots.")
                                                          :static-analyzer
                                                          (list (make-source #P"static-analyzer.lisp" :variant))
                                                          :snapshot
-                                                         (list (make-source #P"snapshot.lisp" :build))
+                                                         (list (make-source #P"snapshot.lisp" :variant))
+                                                         :clasprc
+                                                         (list (make-source #P"clasprc.lisp" :variant))
                                                          :jupyter-kernel
-                                                         (list (make-source #P"jupyter-kernel.lisp" :build))
+                                                         (list (make-source #P"jupyter-kernel.lisp" :variant))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
-                                                               :bitcode :iclasp :aclasp :bclasp
-                                                               :cclasp :modules :extension-load
-                                                               :dclasp :install-code :clasp
-                                                               :regression-tests
-                                                               :static-analyzer :etags)
+                                                               :bitcode :iclasp :aclasp :bclasp :cclasp
+                                                               :modules :dclasp :install-code :clasp
+                                                               :regression-tests :static-analyzer :etags)
                                                          :config-h
-                                                         (list (make-source #P"config.h" :variant)
-                                                               :extension-load)
+                                                         (list (make-source #P"config.h" :variant))
                                                          :version-h
-                                                         (list (make-source #P"version.h" :variant)
-                                                               :extension-load)
+                                                         (list (make-source #P"version.h" :variant))
                                                          :compile-commands
                                                          (list (make-source #P"compile_commands.json" :variant)
                                                                :iclasp)))
@@ -849,6 +851,11 @@ the function to the overall configuration."
                              *root-paths*)))
     (append-cflags *configuration*
                    (format nil "~{-I~a~^ ~}" (mapcar #'resolve-source paths)))))
+
+(defun systems (&rest rest)
+  (setf (extension-systems *configuration*)
+        (append (extension-systems *configuration*)
+                rest)))
 
 (defun configure-program (name candidates &key major-version (version-flag "--version") required)
   "Configure a program by looking through a list of candidate and checking the version number

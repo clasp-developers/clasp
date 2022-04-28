@@ -42,9 +42,9 @@
            t)
 
 (defun strip-root (pn-dir)
-  "Remove the SOURCE-DIR: part of the path in l and then
+  "Remove the SYS: part of the path in l and then
 search for the string 'src', or 'generated' and return the rest of the list that starts with that"
-  (let ((rel (cdr (pathname-directory (enough-namestring (make-pathname :directory pn-dir) (translate-logical-pathname #P"SOURCE-DIR:"))))))
+  (let ((rel (cdr (pathname-directory (enough-namestring (make-pathname :directory pn-dir) (translate-logical-pathname #P"sys:"))))))
     (or (member "src" rel :test #'string=)
         (member "generated" rel :test #'string=)
         (error "Could not find \"src\" or \"generated\" in ~a" rel))))
@@ -673,8 +673,8 @@ Return files."
       (format fout ";;;; Generated in clasp-builder.lisp by generate-loader - do not edit - these fasls need to be loaded in the given order~%")
       (dolist (one-file all-compiled-files)
         (let* ((name (make-pathname :type "fasl" :defaults one-file))
-               (relative-name (enough-namestring name (translate-logical-pathname (make-pathname :host "app-fasl")))))
-          (format fout "(load #P\"app-fasl:~a\")~%" (namestring relative-name)))))))
+               (relative-name (enough-namestring name (translate-logical-pathname (make-pathname :host "fasl")))))
+          (format fout "(load #P\"fasl:~a\")~%" (namestring relative-name)))))))
 
 (defun link-modules (output-file all-modules)
   (format t "link-modules output-file: ~a  all-modules: ~a~%" output-file all-modules)

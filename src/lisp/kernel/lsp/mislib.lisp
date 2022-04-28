@@ -44,7 +44,7 @@ successfully, T is returned, else error."
            (ext:check-arguments-type))
   (unless (or (string-equal host "sys")
               (si::pathname-translations host))
-    (with-open-file (in-str (make-pathname :defaults "sys:translations;"
+    (with-open-file (in-str (make-pathname :defaults "sys:src;lisp;translations;"
                                            :name (string-downcase host)
                                            :type "translations"))
       (if *load-verbose*

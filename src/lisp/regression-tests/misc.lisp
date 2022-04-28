@@ -96,28 +96,28 @@
 
 (test-expect-error
  compile-1
- (compile-file "sys:regression-tests;I-do-not-exist.lisp")
+ (compile-file "sys:src;lisp;regression-tests;I-do-not-exist.lisp")
  :type file-error)
 
 (test compile-2
       (with-output-to-string (*standard-output*)
-        (compile-file "sys:regression-tests;test-compile-file.lisp" :verbose nil :print nil))
+        (compile-file "sys:src;lisp;regression-tests;test-compile-file.lisp" :verbose nil :print nil))
       (""))
 
 (test-true compile-4
            (not (string= ""
                          (with-output-to-string (*standard-output*)
-                           (compile-file "sys:regression-tests;test-compile-file.lisp" :verbose t :print nil)))))
+                           (compile-file "sys:src;lisp;regression-tests;test-compile-file.lisp" :verbose t :print nil)))))
 
 (test-true compile-4a
            (not (string= ""
                          (with-output-to-string (*standard-output*)
-                           (compile-file "sys:regression-tests;test-compile-file.lisp" :verbose nil :print t)))))
+                           (compile-file "sys:src;lisp;regression-tests;test-compile-file.lisp" :verbose nil :print t)))))
 
 (test-true compile-5
            (not (string= ""
                          (with-output-to-string (*standard-output*)
-                           (compile-file "sys:regression-tests;test-compile-file.lisp" :print t :verbose t)))))
+                           (compile-file "sys:src;lisp;regression-tests;test-compile-file.lisp" :print t :verbose t)))))
                  
 (defun %%blah (&key foo bar)
   (list foo bar))

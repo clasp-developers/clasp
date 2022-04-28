@@ -25,7 +25,7 @@ Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable
     "* Description
 Setup the compilation-tool-database."
     (let ((db (clang-tool:load-compilation-tool-database
-               "app-resources:build-databases;cando_compile_commands.json"
+               "compile_commands.json"
                :convert-relative-includes-to-absolute t)))
       (push #'translate-include (clang-tool:arguments-adjuster-list db))
       db))

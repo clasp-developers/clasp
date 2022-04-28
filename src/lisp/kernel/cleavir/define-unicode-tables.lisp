@@ -251,5 +251,5 @@
 
 #|
 (time
- (load (compile-file "sys:kernel;cleavir;define-unicode-tables.lisp")))
+ (load (compile-file "sys:src;lisp;kernel;cleavir;define-unicode-tables.lisp")))
 |#

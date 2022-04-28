@@ -1,7 +1,7 @@
 
 (format t "fork-server.lisp starting *features* -> ~s~%" *features*)
 (format t "fork-server.lisp - loading start-cando.lisp~%") 
-(load "source-dir:extensions;cando;src;lisp;start-cando.lisp")
+(load "sys:extensions;cando;src;lisp;start-cando.lisp")
 
 (in-package :cl-user)
 

@@ -1,4 +1,4 @@
-(load "sys:modules;clang-tool;clang-tool.lisp")
+(load "sys:src;lisp;modules;clang-tool;clang-tool.lisp")
 
 (progn
   (defun translate-include (args filename)
@@ -14,7 +14,7 @@ Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable
       args))
 
   (defun setup-db ()
-    (let ((db (clang-tool:load-compilation-tool-database "source-dir:build;preciseprep;compile_commands.json" )))
+    (let ((db (clang-tool:load-compilation-tool-database "sys:build;preciseprep;compile_commands.json" )))
       (setf (clang-tool:source-namestrings db) (list (find-if (lambda (x) (search "cons" x)) (clang-tool:source-namestrings db))))
       (push #'translate-include (clang-tool:arguments-adjuster-list db))
       db))

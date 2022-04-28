@@ -46,11 +46,6 @@ THE SOFTWARE.
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
 #endif
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_EXTERN
-#include PREGCSTARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_EXTERN
-#endif
 
 #if 0
 #define GCROOT_LOG(x) if (_sym_STARdebug_gcrootsSTAR&&_sym_STARdebug_gcrootsSTAR.boundp()&&_sym_STARdebug_gcrootsSTAR->symbolValue()&&_sym_STARdebug_gcrootsSTAR->symbolValue().notnilp()) { printf x;}

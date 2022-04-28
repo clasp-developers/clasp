@@ -70,8 +70,8 @@
 (eval-when (:execute)
   ;; Load the compiler and the file compiler in aclasp
   ;; lets see if that speeds up the compilation
-  (load "sys:kernel;cmp;compiler.lisp" :print t)
-  (load "sys:kernel;cmp;compilefile.lisp" :print t))
+  (load "sys:src;lisp;kernel;cmp;compiler.lisp" :print t)
+  (load "sys:src;lisp;kernel;cmp;compilefile.lisp" :print t))
 
 #+(or)
 (eval-when (:execute)

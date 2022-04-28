@@ -74,7 +74,7 @@
 To use
 (require :asdf)
 (load "~/quicklisp/setup.lisp")
-(asdf:load-asd (pathname "sys:modules;docs;clasp-docs.asd"))
+(asdf:load-asd (pathname "sys:src;lisp;modules;docs;clasp-docs.asd"))
 (asdf:register-immutable-system :eclector)
 (asdf:register-immutable-system :eclector-concrete-syntax-tree)
 (asdf:register-immutable-system :closer-mop)

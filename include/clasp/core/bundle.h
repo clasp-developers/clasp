@@ -41,14 +41,11 @@ namespace core {
 struct BundleDirectories {
   std::filesystem::path _StartupWorkingDir;
   std::filesystem::path _ExecutableDir;
-  std::filesystem::path _ResourcesDir;
   std::filesystem::path _SysDir;
   std::filesystem::path _GeneratedDir;
   std::filesystem::path _StartupDir;
-  std::filesystem::path _SourceDir;
   std::filesystem::path _IncludeDir;
   std::filesystem::path _LibDir;
-  std::filesystem::path _DatabasesDir;
   std::filesystem::path _FaslDir;
   std::filesystem::path _BitcodeDir;
   std::filesystem::path _QuicklispDir;
@@ -67,13 +64,12 @@ public:
   BundleDirectories* _Directories;
 
 private:
-  std::filesystem::path findAppDir(const string &argv0, const string &cwd, bool verbose=false);
+  void findExecutableDir(const string &argv0, bool verbose=false);
+  std::string deduceArgv0(const std::string& raw_argv0);
 
 public:
-  void initializeStartupWorkingDirectory(bool verbose=false);
-
   string describe();
-  Bundle(const string &argv0, const string &appPath);
+  Bundle(const string &argv0);
 
   void setup_pathname_translations();
   

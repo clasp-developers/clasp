@@ -43,13 +43,14 @@ typedef enum { cloDefault, cloImage, cloSnapshot } ImageTypeEnum;
 struct CommandLineOptions {
   CommandLineOptions(int argc, char *argv[]);
   process_arguments_callback _ProcessArguments;
-  int _EndArg;
   std::string _ExecutableName;
   bool _DontLoadImage;
   bool _DontLoadInitLsp;
   bool _DisableMpi {false};
   std::vector<std::string> _RawArguments;
-  std::vector<std::string> _Features;
+  std::vector<std::string> _KernelArguments;
+  std::vector<std::string> _LispArguments;
+  std::set<std::string> _Features;
   std::vector<pair<LoadEvalEnum, std::string>> _LoadEvalList;
   bool          _AddressesP;
   std::string   _AddressesFileName;
@@ -72,9 +73,6 @@ struct CommandLineOptions {
   std::string _RCFileName;
   bool _NoRc;
   bool _PauseForDebugger;
-  std::string _ResourceDir;
-  std::vector<std::string> _Args;
-  bool optionArgP(int& iarg,std::string& val, const std::string& default_);
 };
 
 

@@ -2,7 +2,7 @@
 (require :asdf)
 
 (progn
-  (asdf:load-asd (probe-file "source-dir:src;lisp;modules;clang-tool;clang-tool.asd"))
+  (asdf:load-asd (probe-file "sys:src;lisp;modules;clang-tool;clang-tool.asd"))
   (asdf:load-system :clang-tool))
 
 (progn

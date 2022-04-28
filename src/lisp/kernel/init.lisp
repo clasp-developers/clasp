@@ -407,7 +407,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   "Return the link flags and the library dir where libLTO.<library-extension> can be found and the library extension"
   (let ((stream (nth-value 2 (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t))))
     (let* ((ldflags (split-at-white-space (read-line stream)))
-           #+(or)(clasp-lib-dir (core:fmt nil "-L{}" (namestring (translate-logical-pathname "app-resources:lib;common;lib;"))))
            (libdir (read-line stream))
            (libdir-flag (list (core:fmt nil "-L{}" libdir)))
            (libs (split-at-white-space (read-line stream)))
@@ -517,7 +516,7 @@ a relative path from there."
       ((eq link-type :fasl)
        (translate-logical-pathname (core:fmt nil "lib:{}-{}-cxx.a" +bitcode-name+ name)))
       ((eq link-type :compile)
-       (translate-logical-pathname (core:fmt nil "app-bitcode:{}-{}-cxx.bc" +bitcode-name+ name)))
+       (translate-logical-pathname (core:fmt nil "bitcode:{}-{}-cxx.bc" +bitcode-name+ name)))
       ((eq link-type :executable)
        (translate-logical-pathname (core:fmt nil "lib:{}-all-cxx.a" +bitcode-name+)))
       (t (error "Provide a bitcode file for the link-type ~a" link-type)))))
@@ -605,17 +604,15 @@ the stage, the +application-name+ and the +bitcode-name+"
                                          :name (pathname-name module))
                                         (translate-logical-pathname "GENERATED:")))
                      (t
-                      (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
-                ((eq type :executable)
-                 (let* ((stage-char (default-target-stage))
-                        (filename (core:fmt nil "{}{}-{}" stage-char +application-name+ +bitcode-name+))
-                        (exec-pathname (merge-pathnames (make-pathname :name filename :type nil) (translate-logical-pathname "app-executable:") )))
-                   exec-pathname))
+                      (find-lisp-source module (translate-logical-pathname "sys:"))))))
+                ((and (null partial-pathname) (eq type :executable))
+                 (translate-logical-pathname (core:fmt nil "executable:{}{}-{}"
+                                                       (default-target-stage) +application-name+
+                                                       +bitcode-name+)))
                 ((and (null partial-pathname) (eq type :fasl))
-                 (let* ((stage-char (default-target-stage))
-                        (filename (core:fmt nil "{}{}-{}-image" stage-char +application-name+ +bitcode-name+))
-                        (exec-pathname (merge-pathnames (make-pathname :name filename :type "fasl") (translate-logical-pathname "app-fasl:"))))
-                   exec-pathname))
+                 (translate-logical-pathname (core:fmt nil "fasl:{}{}-{}.fasl"
+                                                       (default-target-stage) +application-name+
+                                                       +bitcode-name+)))
                 (t
                  (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
                                                    (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
@@ -675,28 +672,8 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun default-prologue-form (&optional features)
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
-     (if (core:is-interactive-lisp)
-         (core:fmt t "Starting {} ... loading image...%N" (lisp-implementation-version)))))
-
-(export '*extension-startup-loads*) ;; ADDED: frgo, 2016-08-10
-(defvar *extension-startup-loads* nil)
-
-(export 'process-extension-loads)
-(defun process-extension-loads ()
-  (if (not (member :ignore-extensions *features*))
-      (progn
-        (mapcar #'(lambda (entry)
-                    (if (eq (car entry) 'cl:load)
-                        (let ((file (cadr entry)))
-                          (if (probe-file file)
-                              (load file)
-                              (core:fmt t "Extension file {} not present.%N" file)))
-                        (let ((cmd (read-from-string (cdr entry))))
-                          (apply (car cmd) (cdr cmd)))))
-                core:*extension-startup-loads*)
-        (mapcar #'(lambda (entry)
-                    (funcall entry))
-                core:*extension-startup-evals*))))
+     (if (not (core:noinform-p))
+         (core:fmt t "Starting {}%N" (lisp-implementation-version)))))
 
 (export 'process-command-line-load-eval-sequence)
 (defun process-command-line-load-eval-sequence ()
@@ -711,10 +688,14 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun maybe-load-clasprc ()
   "Maybe load the users startup code"
   (if (not (core:no-rc-p))
-      (let ((clasprc (make-pathname :name (core:rc-file-name)
-                                    :defaults (user-homedir-pathname))))
+      (let ((clasprc (core:rc-file-name)))
         (if (probe-file clasprc)
-            (core:load-source clasprc)))))
+            (progn
+              (if (not (core:noinform-p))
+                  (core:fmt t "Loading resource file {}%N" clasprc))
+              (core:load-source clasprc))
+            (if (not (core:noinform-p))
+                (core:fmt t "Resource file {} not found, skipping loading of it.%N" clasprc))))))
 
 (defun tpl-default-pathname-defaults-command ()
   (print *default-pathname-defaults*))
@@ -732,7 +713,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 ;;; put it in clasp-builder.lisp
 
 (if (member :clasp-builder *features*)
-    (load "source-dir:src;lisp;kernel;clasp-builder.lisp"))
+    (load "sys:src;lisp;kernel;clasp-builder.lisp"))
 
 
 (defun tpl-hook (cmd)

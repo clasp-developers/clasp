@@ -264,7 +264,7 @@ A pathname.
 * Description
 Return the pathname of the directory that contains the main source file. This is where the project.dat and clasp_gc.cc file will be written."
   (declare (ignore compilation-tool-database))
-  (translate-logical-pathname #P"source-dir:src;main;"))
+  (translate-logical-pathname #P"sys:src;main;"))
 
 
 (defun select-source-namestrings (compilation-tool-database &optional (pattern nil))

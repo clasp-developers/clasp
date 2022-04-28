@@ -9,7 +9,7 @@
 ;;;  --- Testing defun-inline-hook
 (print "Starting")
 (progn
-  (load "sys:kernel;clasp-builder.lisp")
+  (load "sys:src;lisp;kernel;clasp-builder.lisp")
   (flet ((build-module (source-file)
            (core:compile-kernel-file source-file :force-recompile t)
            (cmp:llvm-link (core:build-pathname source-file :fasl)
@@ -39,7 +39,7 @@
   (setf *print-pretty* nil)
   (format t "Loading inline.lisp~%")
   (finish-output)
-  (load "sys:kernel;cleavir;inline.lisp" :print t)
+  (load "sys:src;lisp;kernel;cleavir;inline.lisp" :print t)
   (format t "Done loading inline.lisp~%"))
 
 
@@ -51,12 +51,12 @@
 
 (let ((clasp-cleavir::*save-compile-file-info* t))
 ;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp" :print nil))
+  (clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;ta.lisp" :print nil))
 
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;prologue.lisp")
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;kernel;lsp;prologue.lisp")
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;tc.lisp")
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;tc.lisp")
 
 
 clasp-cleavir::*saved-compile-file-info*
@@ -88,7 +88,7 @@ clasp-cleavir::*saved-compile-file-info*
 (let ((clasp-cleavir::*save-compile-file-info* t)
       (cst::*recursively-set-source* t))
 ;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp" :print t))
+  (clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;ta.lisp" :print t))
 
 (cleavir-ast-graphviz:draw-ast (second (car clasp-cleavir::*saved-compile-file-info*)) "/tmp/after.dot")
 
@@ -139,22 +139,22 @@ clasp-cleavir::*saved-compile-file-info*
 
 
 ;;; ------   Compile using forms
-(clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp")
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;ta.lisp")
 
 ;;; ------   Compile using CSTs
 (let ((clasp-cleavir::*interactive-debug* nil)
       (clasp-cleavir::*use-cst* t))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp"))
+  (clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;ta.lisp"))
 
 
 ;;; ------   Compile using CSTs
 (let ((clasp-cleavir::*interactive-debug* nil)
       (clasp-cleavir::*use-cst* t))
-  (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lisp"))
+  (clasp-cleavir:cleavir-compile-file "sys:src;lisp;kernel;lsp;foundation.lisp"))
 
 (let ((clasp-cleavir::*interactive-debug* nil)
       (clasp-cleavir::*use-cst* t))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;tc.lisp"))
+  (clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;tc.lisp"))
 
 
 (let ((clasp-cleavir::*interactive-debug* nil)
@@ -185,7 +185,7 @@ clasp-cleavir::*saved-compile-file-info*
 (trace cleavir-cst-to-ast:convert-code)
 (trace cleavir-cst-to-ast:convert)
 (trace cleavir-ast:make-load-time-value-ast)
-(defparameter *csts* (read-one-file-return-list-of-csts #P"sys:tests;ta.lisp"))
+(defparameter *csts* (read-one-file-return-list-of-csts #P"sys:src;lisp;tests;ta.lisp"))
 
 *csts*
 (length *csts*)
@@ -378,13 +378,13 @@ clasp-cleavir::*use-cst*
 
 
 (let ((*package* (find-package :clos)))
-  (read-one-file "sys:kernel;clos;hierarchy2.lisp"))
+  (read-one-file "sys:src;lisp;kernel;clos;hierarchy2.lisp"))
 
 (defun read-one-cst (pn)
   (with-open-file (fin pn)
     (eclector.concrete-syntax-tree:cst-read fin nil :eof)))
 
-(defparameter *cst* (read-one-cst "sys:tests;ta.lisp"))
+(defparameter *cst* (read-one-cst "sys:src;lisp;tests;ta.lisp"))
 (defun describe-source (cst)
   (let ((*print-pretty* nil))
     (describe-source-impl cst)))
@@ -524,10 +524,10 @@ clasp-cleavir::*use-cst*
 
 
 
-(load "sys:tests;tt-00001-preoptimize.ll")
+(load "sys:src;lisp;tests;tt-00001-preoptimize.ll")
 (core::foo)
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp")
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;ta.lisp")
 (trace clasp-cleavir::layout-procedure)
 (trace clasp-cleavir::layout-basic-block)
 (trace clasp-cleavir::translate-simple-instruction)
@@ -538,17 +538,17 @@ clasp-cleavir::*use-cst*
 
 
 (let ((cmp:*compile-file-debug-dump-module* t))
-  (clasp-cleavir:cleavir-compile-file "sys:tests;tt.lisp"
+  (clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;tt.lisp"
                                       :optimize nil))
 
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;mislib.lisp" :debug t)
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;kernel;lsp;mislib.lisp" :debug t)
 
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
 
 
 
-(time (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;predlib.lisp"))
+(time (clasp-cleavir:cleavir-compile-file "sys:src;lisp;kernel;lsp;predlib.lisp"))
 
 (let ((clos::*monitor-dispatch* t)
       (clos::*dispatch-log* nil))
@@ -584,15 +584,15 @@ clasp-cleavir::*use-cst*
 
 
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lisp" :print t)
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;kernel;lsp;pprint.lisp" :print t)
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lisp")
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;kernel;lsp;pprint.lisp")
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;tc.lisp")
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;tc.lisp")
 
 clasp-cleavir::*pvi*
-(let ((clasp-cleavir:*debug-cleavir* t) (compiler:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lisp"))
-(load "sys:tests;td.fasl")
+(let ((clasp-cleavir:*debug-cleavir* t) (compiler:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;td.lisp"))
+(load "sys:src;lisp;tests;td.fasl")
 (foo 0)
 
 
@@ -611,8 +611,8 @@ clasp-cleavir::*pvi*
 
 
 (apropos "compile-file-debug-dump")
-(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lisp"))
-(load "sys:tests;td.fasl")
+(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;td.lisp"))
+(load "sys:src;lisp;tests;td.fasl")
 
 (foo 123)
 
@@ -656,13 +656,13 @@ clasp-cleavir::*pvi*
 
 (time (asdf:load-system "clasp-cleavir"))
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;td.lisp")
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;td.lisp")
 
 
 (time (require :clasp-cleavir))
 
-(load "sys:kernel;cleavir;auto-compile.lisp")
-(load "sys:kernel;cleavir;inline.lisp")
+(load "sys:src;lisp;kernel;cleavir;auto-compile.lisp")
+(load "sys:src;lisp;kernel;cleavir;inline.lisp")
 
 
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
@@ -676,8 +676,8 @@ clasp-cleavir::*pvi*
 
 (foo 1 2)
 
-(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lisp"))
-(load "sys:tests;ta.fasl")
+(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;ta.lisp"))
+(load "sys:src;lisp;tests;ta.fasl")
 (foo)
 
 (trace clasp-cleavir-ast:hoist-load-time-value)
@@ -692,7 +692,7 @@ clasp-cleavir::*pvi*
 
 
 *features*
-(clasp-cleavir:cleavir-compile-file "sys:modules;asdf;build;asdf.lisp" :print t)
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;modules;asdf;build;asdf.lisp" :print t)
 (clasp-cleavir:cleavir-compile-file "~/Development/clasp/src/lisp/kernel/contrib/sicl/Code/Cleavir/Type-inference/type-descriptor.lisp" :print t)
 
 (print "Hello there")
@@ -745,7 +745,7 @@ clasp-cleavir::*hir-types*
                        20)))))
 
 
-(clasp-cleavir:cleavir-compile-file "sys:tests;tt.lisp" :print t)
+(clasp-cleavir:cleavir-compile-file "sys:src;lisp;tests;tt.lisp" :print t)
 
 
 

@@ -344,8 +344,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     core::dumpDebuggingLayouts(ss.str());
   }
   
-    // Create the one global CommandLineOptions object and do some minimal argument processing
-  core::global_options = new core::CommandLineOptions(argc, argv);
+  // Do some minimal argument processing
   (core::global_options->_ProcessArguments)(core::global_options);
   ::globals_ = new core::globals_t();
   globals_->_ExportedSymbolsAccumulate = core::global_options->_ExportedSymbolsAccumulate;
@@ -393,7 +392,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     //
     // Look around the local directories for source and fasl files.
     //
-  core::Bundle *bundle = new core::Bundle(argv0,core::global_options->_ResourceDir);
+  core::Bundle *bundle = new core::Bundle(argv0);
   globals_->_Bundle = bundle;
 
   //
@@ -455,8 +454,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
     asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
 
-    std::string progname = program_name();
-    lispHolder.startup(core::global_options, argc, argv, progname.c_str()); // was "CANDO_APP"
+    lispHolder.startup(*core::global_options);
 
     _lisp->installPackage(&GcToolsPkg);
     _lisp->installPackage(&ClbindPkg);

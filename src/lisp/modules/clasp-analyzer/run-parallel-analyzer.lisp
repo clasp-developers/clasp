@@ -5,8 +5,8 @@
 
 
 (require :asdf)
-(asdf:load-asd (probe-file "sys:modules;clang-tool;clang-tool.asd"))
-(asdf:load-asd (probe-file "sys:modules;clasp-analyzer;clasp-analyzer.asd"))
+(asdf:load-asd (probe-file "sys:src;lisp;modules;clang-tool;clang-tool.asd"))
+(asdf:load-asd (probe-file "sys:src;lisp;modules;clasp-analyzer;clasp-analyzer.asd"))
 (asdf:load-system :clasp-analyzer)
 
 (defparameter *compile-commands* "../build/preciseprep/compile_commands.json")

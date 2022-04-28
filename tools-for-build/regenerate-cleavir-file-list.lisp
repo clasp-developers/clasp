@@ -19,7 +19,7 @@
   (defparameter clasp-cleavir::*clasp-env* nil)
   (export '(cleavir-env::optimize cleavir-env::optimize-info) :cleavir-env)
   (export 'clasp-cleavir::*clasp-env* :clasp-cleavir)
-  (load "sys:modules;asdf;build;asdf.lisp"))
+  (load "sys:src;lisp;modules;asdf;build;asdf.lisp"))
 #+cclasp
 (require :asdf)
 
@@ -48,8 +48,8 @@
    `(:source-registry
      (:tree ,root-sys)
      :ignore-inherited-configuration))
-  (setf (logical-pathname-translations "source-dir")
-        `((#P"SOURCE-DIR:**;*.*"
+  (setf (logical-pathname-translations "sys")
+        `((#P"sys:**;*.*"
              ,(pathname (concatenate 'string (namestring root-clasp) "**/*.*")))))
   (flet ((fix-system (relative-directory-list system)
            (let ((directory (make-pathname :directory (append (butlast (pathname-directory here)) relative-directory-list) :defaults nil)))
@@ -68,7 +68,7 @@
       (fix-system (list "src" "lisp" "kernel" "contrib" "closer-mop")(asdf:find-system :closer-mop)))
     (unless (search (namestring root-sys) (namestring (asdf/component:component-pathname (asdf:find-system :clasp-cleavir))))
       (fix-system (list "src" "lisp" "kernel" "cleavir")(asdf:find-system :clasp-cleavir)))
-    (format t "Sourcedir is  ~a ~%" (translate-logical-pathname "source-dir:"))
+    (format t "Sourcedir is  ~a ~%" (translate-logical-pathname "sys:"))
     (load (make-pathname
            :name "asdf-system-groveler"
            :type "lisp"

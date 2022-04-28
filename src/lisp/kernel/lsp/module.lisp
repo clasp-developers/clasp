@@ -78,7 +78,7 @@ module."
                                           :name :wild
                                           :type :wild))))
 (setf (logical-pathname-translations "MODULES-SOURCE")
-      (list (list "**;*.*" (make-pathname :host "SOURCE-DIR"
+      (list (list "**;*.*" (make-pathname :host "SYS"
                                           :directory (list :absolute "src" "lisp" :wild-inferiors)
                                           :name :wild
                                           :type :wild))))
