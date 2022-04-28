@@ -84,6 +84,8 @@
    #:cl-docstring-long-tag
    #:docstring%
    #:docstring-long%
+   #:cl-unwind-coop-tag
+   #:coop%
    #:cl-priority-tag
    #:priority%
    #:maybe-priority
@@ -126,6 +128,7 @@
    #:maybe-lambda-list
    #:maybe-docstring
    #:maybe-docstring-long
+   #:maybe-unwind-coop
    #:maybe-declare)
   ;; Static analyzer tags
   (:export

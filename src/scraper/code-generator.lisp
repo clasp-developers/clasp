@@ -291,7 +291,8 @@ Convert colons to underscores"
             (generate-wrapped-function wrapped-name
                                        (namespace% func)
                                        (function-name% func)
-                                       return-type arg-types)))
+                                       return-type arg-types
+                                       :unwind-coop (unwind-coop% func))))
       (format c-code "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "//            Found at ~a~%-----------~%" (file-line func))
@@ -312,7 +313,8 @@ Convert colons to underscores"
             (generate-wrapped-function wrapped-name
                                        (namespace% func)
                                        (function-name% func)
-                                       return-type arg-types)))
+                                       return-type arg-types
+                                       :unwind-coop (unwind-coop% func))))
       (format c-code "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "//            Found at ~a~%-----------~%" (file-line func))
