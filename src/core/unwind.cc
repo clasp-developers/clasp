@@ -88,6 +88,7 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
 
 // Runtime interface.
 
+CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_call_with_current_dynenv(Function_sp function) {
   return eval::funcall(function, my_thread->_DynEnv);
 }
@@ -96,6 +97,7 @@ CL_DEFUN T_mv core__sjlj_call_with_current_dynenv(Function_sp function) {
 // If there is no dynenv that high up, returns NIL.
 // This is exposed instead of the parent field directly so that we hide
 // the details of how the dynenv stack is stored (i.e. in the dynenv or not).
+CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_call_with_nth_dynenv(Function_sp function,
                                               size_t index) {
   T_sp iter = my_thread->_DynEnv;
@@ -110,6 +112,7 @@ CL_DEFUN T_mv core__sjlj_call_with_nth_dynenv(Function_sp function,
 }
 
 // Check the search status for a single dynenv.
+CL_UNWIND_COOP(true);
 CL_DEFUN int core__sjlj_dynenv_search_one(T_sp tde) {
   if (tde.nilp()) return 2;
   else {
@@ -127,6 +130,7 @@ CL_DEFUN int core__sjlj_dynenv_search_one(T_sp tde) {
 
 /* Check the search status for a given exit (i.e. determine whether
  * we need to fall back to C++ unwinder, or it's out of extent, or what) */
+CL_UNWIND_COOP(true);
 CL_DEFUN int core__sjlj_dynenv_search(DestDynEnv_sp dest) {
   switch (sjlj_unwind_search(dest)) {
   case DynEnv_O::Proceed: return 1;
@@ -137,6 +141,7 @@ CL_DEFUN int core__sjlj_dynenv_search(DestDynEnv_sp dest) {
   }
 }
 
+CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_call_with_unknown_dynenv(Function_sp thunk) {
   gctools::StackAllocate<UnknownDynEnv_O> sa_ude(my_thread->_DynEnv);
   DynEnvPusher dep(my_thread, sa_ude.asSmartPtr());
@@ -154,6 +159,7 @@ struct SymbolValuePusher {
   ~SymbolValuePusher() { msym->set_threadLocalSymbolValue(old); }
 };
 
+CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_call_with_variable_bound(Symbol_sp sym, T_sp val,
                                                   Function_sp thunk) {
   T_sp old = sym->threadLocalSymbolValue();
@@ -163,6 +169,7 @@ CL_DEFUN T_mv core__sjlj_call_with_variable_bound(Symbol_sp sym, T_sp val,
   return eval::funcall(thunk);
 }
 
+CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_call_with_escape_continuation(Function_sp function) {
   jmp_buf target;
   void* frame = __builtin_frame_address(0);
@@ -191,6 +198,7 @@ CL_DEFUN T_mv core__sjlj_call_with_escape_continuation(Function_sp function) {
   }
 }
 
+CL_UNWIND_COOP(true);
 [[noreturn]] CL_DEFUN void core__sjlj_escape(BlockDynEnv_sp escape,
                                              Function_sp thunk) {
   // Call the thunk to get the return values.
@@ -201,6 +209,7 @@ CL_DEFUN T_mv core__sjlj_call_with_escape_continuation(Function_sp function) {
   sjlj_unwind(escape, 1);
 }
 
+CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_funwind_protect(Function_sp thunk,
                                          Function_sp cleanup) {
   jmp_buf target;

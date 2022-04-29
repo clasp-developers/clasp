@@ -1856,6 +1856,7 @@ CL_DEFUN T_sp core__mpi_size() {
 
 CL_LAMBDA(form &optional env)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(macroexpand_1)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
@@ -1880,6 +1881,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
 
 CL_LAMBDA(form &optional env)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(macroexpand)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
@@ -2002,6 +2004,7 @@ public:
 
 CL_LAMBDA(sequence predicate &key key)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Like CLHS: sort but does not support key)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {

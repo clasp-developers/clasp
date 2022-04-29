@@ -1288,6 +1288,7 @@ LCC_RETURN call_with_variable_bound(core::T_O* tsym, core::T_O* tval, core::T_O*
 namespace core {
 
 // try/catch approach does work
+CL_UNWIND_COOP(false);
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   T_mv result;
@@ -1324,6 +1325,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 
 CL_LAMBDA(function &rest thunks)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(multipleValueFuncall)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
@@ -1341,6 +1343,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
 
 CL_LAMBDA(tag func)
 CL_DECLARE();
+CL_UNWIND_COOP(false);
 CL_DOCSTRING(R"dx(catchFunction)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
@@ -1353,6 +1356,7 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
 
 CL_LAMBDA(tag result)
 CL_DECLARE();
+CL_UNWIND_COOP(false);
 CL_DOCSTRING(R"dx(Like CL:THROW, but takes a thunk)dx")
 DOCGROUP(clasp)
 CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
@@ -1366,6 +1370,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
 
 CL_LAMBDA(symbols values func)
 CL_DECLARE();
+CL_UNWIND_COOP(false);
 CL_DOCSTRING(R"dx(progvFunction)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {

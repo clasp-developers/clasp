@@ -165,6 +165,7 @@ setup_test(struct cl_test *t, T_sp item, T_sp test,
 /*! Duplicated from ECL rassoc */
 CL_LAMBDA(item a-list &key test test-not key)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS rassoc)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__rassoc(T_sp item, List_sp a_list, T_sp test, T_sp test_not, T_sp key) {

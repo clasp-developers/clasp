@@ -549,6 +549,7 @@ T_mv apply_inner_list(Function_sp func, size_t lenFixed, Vaslist_sp fixed, List_
 
 CL_LAMBDA(head core:&va-rest args)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(apply)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
@@ -573,6 +574,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
 
 CL_LAMBDA(func args)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
@@ -601,6 +603,7 @@ CL_DEFUN T_mv core__trace_apply0(Function_sp func, T_sp lastArg) {
 
 CL_LAMBDA(func args arg0)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a m) = (apply1 (coerce-fdesignator f) m a))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
@@ -614,6 +617,7 @@ CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
 
 CL_LAMBDA(func args arg0 arg1)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b m) = (apply2 (coerce-fdesignator f) m a b))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
@@ -629,6 +633,7 @@ CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
 
 CL_LAMBDA(func args arg0 arg1 arg2)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b c m) = (apply3 (coerce-fdesignator f) m a b c))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
@@ -643,6 +648,7 @@ CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
 
 CL_LAMBDA(func args arg0 arg1 arg2 arg3 core:&va-rest more)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
@@ -785,6 +791,7 @@ CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
 // fast funcall
 CL_LAMBDA(function-desig &rest args)
 CL_DECLARE((declare (dynamic-extent args)));
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS: funcall)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
