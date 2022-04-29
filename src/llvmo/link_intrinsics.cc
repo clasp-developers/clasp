@@ -908,13 +908,7 @@ void debugPrintI32(int i32)
 
 void debugPrint_blockFrame(core::T_O* handle)
 {NO_UNWIND_BEGIN();
-#if defined(DEBUG_FLOW_TRACKER)
-  Cons_sp frameHandleCons((gc::Tagged)handle);
-  Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
-  printf("%s:%d debugPrint_blockFrame handle %p   FlowCounter %" PFixnum "\n", __FILE__, __LINE__, handle, frameFlowCounter );
-#else
   printf("%s:%d debugPrint_blockFrame handle %p\n", __FILE__, __LINE__, handle );
-#endif
   fflush(stdout);
   NO_UNWIND_END();
 }
@@ -928,14 +922,6 @@ void debugPrint_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* hand
     fflush(stdout);
     return;
   }
-#if defined(DEBUG_FLOW_TRACKER)
-  Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
-  Cons_sp frameHandleCons((gc::Tagged)handle);
-  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-  Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
-  printf("%s:%d  continued  debugPrint_blockHandleReturnFrom return-from is looking for FlowCounter %" PFixnum " and it reached FlowCounter %" PFixnum "\n", __FILE__, __LINE__, throwFlowCounter, frameFlowCounter );
-  fflush(stdout);
-#endif
   NO_UNWIND_END();
 }
 
@@ -960,9 +946,6 @@ void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
   core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
   core::ReturnFrom returnFrom(handle.raw_());
-#if defined(DEBUG_FLOW_TRACKER)
-  flow_tracker_about_to_throw(CONS_CAR(handle).unsafe_fixnum());
-#endif
   my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
   throw returnFrom;
 }
@@ -979,27 +962,6 @@ gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP,
     my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return result;
   }
-#if defined(DEBUG_FLOW_TRACKER)
-  if (handle) {
-    Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
-    Cons_sp frameHandleCons((gc::Tagged)handle);
-    if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
-    if (!frameHandleCons.consp()) printf("%s:%d The frameHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)frameHandleCons.raw_() );
-    Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-    Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
-    if (throwFlowCounter > frameFlowCounter) {
-      printf("%s:%d A return-from has missed its target frame - the return-from is looking for FlowCounter %" PFixnum " and it reached FlowCounter %" PFixnum "\n", __FILE__, __LINE__, throwFlowCounter, frameFlowCounter );
-      flow_tracker_last_throw_backtrace_dump();
-      abort();
-    }
-  }
-#endif
-#if defined(DEBUG_FLOW_TRACKER)
-  Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
-  if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
-  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-  flow_tracker_about_to_throw(throwFlowCounter);
-#endif
   throw; // throw returnFrom;
 }
 
@@ -1010,12 +972,7 @@ extern "C" {
 core::T_O* initializeBlockClosure(core::T_O** afP)
 {NO_UNWIND_BEGIN();
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-#ifdef DEBUG_FLOW_TRACKER
-  Fixnum counter = next_flow_tracker_counter();
-  Cons_sp unique = Cons_O::create(make_fixnum(counter),nil<T_O>());
-#else
   Cons_sp unique = Cons_O::create(nil<T_O>(),nil<T_O>());
-#endif
   vf->operator[](0) = unique;
   return unique.raw_();
   NO_UNWIND_END();
@@ -1025,12 +982,7 @@ core::T_O* initializeTagbodyClosure(core::T_O *afP)
 {NO_UNWIND_BEGIN();
   core::T_sp tagbodyId((gctools::Tagged)afP);
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-#ifdef DEBUG_FLOW_TRACKER
-  Fixnum counter = next_flow_tracker_counter();
-  Cons_sp unique = Cons_O::create(make_fixnum(counter),nil<T_O>());
-#else
   Cons_sp unique = Cons_O::create(nil<T_O>(),nil<T_O>());
-#endif
   vf->operator[](0) = unique;
   return unique.raw_();
   NO_UNWIND_END();
@@ -1053,12 +1005,6 @@ void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
   T_O* handle = tagbody->operator[](0).raw_();
   core::DynamicGo dgo(handle, index);
-#if defined(DEBUG_FLOW_TRACKER)
-  Cons_sp throwHandleCons((gc::Tagged)dgo.getHandle());
-  if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
-  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-  flow_tracker_about_to_throw(throwFlowCounter);
-#endif
   my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
   throw dgo;
 }

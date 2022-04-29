@@ -236,7 +236,6 @@ DEBUG_OPTIONS = [
     "DEBUG_CACHE",      # Debug the dispatch caches - see cache.cc
     "DEBUG_BITUNIT_CONTAINER",  # prints debug info for bitunit containers
     "DEBUG_LEXICAL_DEPTH", # Generate tests for lexical closure depths
-    "DEBUG_FLOW_TRACKER",  # record small backtraces to track flow
     "DEBUG_DYNAMIC_BINDING_STACK",  # dynamic variable binding debugging
     "DEBUG_VALUES",   # turn on printing (values x y z) values when core:*debug-values* is not nil
     "DEBUG_IHS",

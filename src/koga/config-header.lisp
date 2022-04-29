@@ -51,7 +51,6 @@
                  "DEBUG_CACHE" (debug-cache configuration)
                  "DEBUG_BITUNIT_CONTAINER" (debug-bitunit-container configuration)
                  "DEBUG_LEXICAL_DEPTH" (debug-lexical-depth configuration)
-                 "DEBUG_FLOW_TRACKER" (debug-flow-tracker configuration)
                  "DEBUG_DYNAMIC_BINDING_STACK" (debug-dynamic-binding-stack configuration)
                  "DEBUG_VALUES" (debug-values configuration)
                  "DEBUG_IHS" (debug-ihs configuration)

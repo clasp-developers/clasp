@@ -47,74 +47,6 @@ int gcFunctions_after;
 #include <clasp/core/compiler.h>
 #include <clasp/core/wrappers.h>
 
-
-extern "C" {
-
-#ifdef DEBUG_FLOW_TRACKER
-FILE* global_flow_tracker_file;
-
-mp::Mutex global_flow_tracker_mutex;
-size_t global_flow_tracker_counter = 0;
-bool global_flow_tracker_on = false;
-#define FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE 4096
-void* global_flow_tracker_last_throw_backtrace[FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE];
-Fixnum global_flow_tracker_last_throw_tracker_counter = 0;
-size_t global_flow_tracker_last_throw_backtrace_size;
-void initialize_flow_tracker()
-{
-  stringstream ss;
-  ss << "/tmp/flowtracker-" << getpid() << ".dat";
-  global_flow_tracker_file = fopen(ss.str().c_str(),"w");
-  size_t stack_size = MAX_STACK_SIZE_FLOW_TRACKER;
-  fwrite(&stack_size,sizeof(size_t),1,global_flow_tracker_file);
-  global_flow_tracker_counter = 0;
-  global_flow_tracker_on = false;
-};
-
-void flow_tracker_about_to_throw(Fixnum tracker_counter) {
-  global_flow_tracker_last_throw_tracker_counter = tracker_counter;
-  global_flow_tracker_last_throw_backtrace_size = backtrace(global_flow_tracker_last_throw_backtrace,FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE);
-}
-
-void flow_tracker_last_throw_backtrace_dump() {
-  if (!global_flow_tracker_on) {
-    printf("!!!!! Turn the flow-tracker on   Use: (gctools:flow-tracker-on)\n");
-  }
-  printf("flow_tracker_last_throw_backtrace_dump %lu frames\n", global_flow_tracker_last_throw_backtrace_size);
-  printf("global_flow_tracker_last_throw_tracker_counter -> %lld\n", global_flow_tracker_last_throw_tracker_counter );
-  for ( int i=0; i<global_flow_tracker_last_throw_backtrace_size; ++i ) {
-    printf("dis -s %p\n", global_flow_tracker_last_throw_backtrace[i]);
-  }
-  fflush(stdout);
-}
-
-
-size_t next_flow_tracker_counter() {
-  size_t result = 0;
-  if (global_flow_tracker_on) {
-    global_flow_tracker_mutex.lock();
-    result = global_flow_tracker_counter++;
-    fwrite(&result,sizeof(size_t),1,global_flow_tracker_file);
-    void* buffer[MAX_STACK_SIZE_FLOW_TRACKER];
-    backtrace(buffer,MAX_STACK_SIZE_FLOW_TRACKER);
-    fwrite(buffer,sizeof(void*),MAX_STACK_SIZE_FLOW_TRACKER,global_flow_tracker_file);
-    global_flow_tracker_mutex.unlock();
-  }
-  return result;
-}
-
-void flow_tracker_flush() {
-  fflush(global_flow_tracker_file);
-}
-
-void flow_tracker_close() {
-  fclose(global_flow_tracker_file);
-}
-#endif
-
-};
-
-
 namespace gctools {
 std::atomic<double>   global_DiscriminatingFunctionCompilationSeconds = ATOMIC_VAR_INIT(0.0);
 
@@ -165,20 +97,6 @@ CL_DEFUN core::T_sp gctools__next_lexical_depth_counter() {
   core::T_sp result = core::make_fixnum(++global_lexical_depth_counter);
   return result;
 }
-
-#ifdef DEBUG_FLOW_TRACKER
-DOCGROUP(clasp)
-CL_DEFUN void gctools__flow_tracker_on() {
-  initialize_flow_tracker();
-  global_flow_tracker_on = true;
-}
-
-DOCGROUP(clasp)
-CL_DEFUN void gctools__flow_tracker_off() {
-  global_flow_tracker_on = false;
-  flow_tracker_close();
-}
-#endif
 
 DOCGROUP(clasp)
 CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
@@ -1193,15 +1111,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-BCLASP-LISP"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_BCLASP_LISP = %s\n") % (debug_bclasp_lisp ? "**DEFINED**" : "undefined") ).str();
-  
-  bool debug_flow_tracker = false;
-#ifdef DEBUG_FLOW_TRACKER
-  debug_flow_tracker = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FLOW-TRACKER"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_FLOW_TRACKER = %s\n") % (debug_flow_tracker ? "**DEFINED**" : "undefined") ).str();
-
 
   bool track_allocations = false;
 #ifdef DEBUG_TRACK_ALLOCATIONS

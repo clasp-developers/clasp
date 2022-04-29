@@ -294,11 +294,6 @@
                         :initform nil
                         :type boolean
                         :documentation "Generate tests for lexical closure depths")
-   (debug-flow-tracker :accessor debug-flow-tracker
-                       :initarg :debug-flow-tracker
-                       :initform nil
-                       :type boolean
-                       :documentation "Record small backtraces to track flow")
    (debug-dynamic-binding-stack :accessor debug-dynamic-binding-stack
                                 :initarg :debug-dynamic-binding-stack
                                 :initform nil
