@@ -11,6 +11,7 @@
                (:file "source")
                (:file "configure")
                (:file "setup")
+               (:file "help")
                (:file "target-sources")
                (:file "units")
                (:file "scripts")

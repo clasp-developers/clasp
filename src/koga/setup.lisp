@@ -223,5 +223,3 @@ writing the build and variant outputs."
                   (lambda ()
                     (loop for name being the hash-keys in (outputs *configuration*)
                           do (write-variant-output *configuration* name))))))
-
-
