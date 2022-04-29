@@ -1448,9 +1448,11 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
   ValueFrame_sp vframe = gc::As<ValueFrame_sp>(tagbodyEnv->getActivationFrame());
-  Cons_sp thandle = Cons_O::create(nil<T_O>(),nil<T_O>());
-  (*vframe)[0] = thandle;
-  T_O* handle = thandle.raw_();
+  // hack to make a void* into a lisp object easily.
+  // handle should, hopefully, given how addresses usually are, be a fixnum.
+  uintptr_t uhandle = (uintptr_t)(__builtin_frame_address(0));
+  T_sp handle = Integer_O::create(uhandle);
+  (*vframe)[0] = handle;
             //
             // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
             //
@@ -1470,10 +1472,9 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
     if ((tagOrForm).consp()) {
       try {
         eval::evaluate(tagOrForm, tagbodyEnv);
-      } catch (DynamicGo &dgo) {
-        if (dgo.getHandle() != handle) throw;
-        int index = dgo.index();
-        ip = tagbodyEnv->codePos(index);
+      } catch (Unwind &uw) {
+        if ((uintptr_t)(uw.getFrame()) != uhandle) throw;
+        ip = tagbodyEnv->codePos(uw.index());
       }
     }
     ip = CONS_CDR(ip);
@@ -1494,10 +1495,9 @@ T_mv sp_go(List_sp args, T_sp env) {
     SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
   }
   ValueFrame_sp af = gc::As<ValueFrame_sp>(Environment_O::clasp_getActivationFrame(env));
-  T_sp thandle = (*af)[0];
+  uintptr_t uhandle = clasp_to_integral<uintptr_t>((*af)[0]);
   T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
-  DynamicGo go(thandle.raw_(), index);
-  throw go;
+  throw Unwind((void*)uhandle, index);
 }
 };
 
@@ -1658,16 +1658,17 @@ T_mv sp_go(List_sp args, T_sp env) {
             Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
             BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
             ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-            Cons_sp handle = Cons_O::create(nil<T_O>(),nil<T_O>());
+            uintptr_t uhandle = (uintptr_t)(__builtin_frame_address(0));
+            T_sp handle = Integer_O::create(uhandle);
             vframe->operator[](0) = handle;
             LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__());
             T_mv result;
             try {
                 result = eval::sp_progn(oCdr(args), newEnvironment);
-            } catch (ReturnFrom &returnFrom) {
-                LOG(BF("Caught ReturnFrom with returnFrom.getBlockDepth() ==> %d") % returnFrom.getBlockDepth());
-                if (returnFrom.getHandle() != handle.raw_() ) {
-                    throw returnFrom;
+            } catch (Unwind &uw) {
+                LOG(BF("Caught Unwind with returnFrom.getBlockDepth() ==> %d") % returnFrom.getBlockDepth());
+                if ((uintptr_t)(uw.getFrame()) != uhandle) {
+                    throw uw;
                 }
                 result = gctools::multiple_values<T_O>::createFromValues(); // returnFrom.getReturnedObject();
             }
@@ -1686,8 +1687,9 @@ T_mv sp_go(List_sp args, T_sp env) {
             T_mv result = Values(nil<T_O>());
             if (oCdr(args).notnilp()) result = eval::evaluate(oCadr(args), environment);
             result.saveToMultipleValue0();
-            ReturnFrom returnFrom(gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0).raw_());
-            throw returnFrom;
+            T_sp handle = gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0);
+            uintptr_t uhandle = clasp_to_integral<uintptr_t>(handle);
+            throw Unwind((void*)uhandle, 1); // index irrelevant
         }
 
         T_mv sp_unwindProtect(List_sp args, T_sp environment) {
