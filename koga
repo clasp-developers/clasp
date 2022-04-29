@@ -96,7 +96,7 @@
                (member name skip-sync))
           do (apply #'check-repo source)
         else if (or (not extension)
-                    (member name extensions))
+                    (member extension extensions))
           do (apply #'sync-repo help source)
         unless help
           do (terpri))
