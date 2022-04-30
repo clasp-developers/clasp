@@ -233,6 +233,27 @@ T_mv call_with_escape(blockf&& block) {
     }
 }
 
+template <typename tagbodyf>
+void call_with_tagbody(tagbodyf&& tagbody) {
+  jmp_buf target;
+  void* frame = __builtin_frame_address(0);
+  TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(my_thread->_DynEnv, frame, &target);
+  DynEnvPusher dep(my_thread, env);
+  /* Per the standard, we can't store the result of setjmp in a variable or
+   * anything. So we kind of fake it via the dest index we set ourselves. */
+  size_t index = 0;
+  if (setjmp(target)) index = my_thread->_UnwindDestIndex;
+ again:
+  try { tagbody(env, index); }
+  catch (Unwind& uw) {
+    if (uw.getFrame() == frame) {
+      index = uw.index();
+      goto again;
+    }
+    else throw;
+  }
+}
+
 }; // namespace core
 
 #endif // core_Unwind_H guard

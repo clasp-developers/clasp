@@ -1,6 +1,7 @@
 #include <clasp/core/unwind.h>
 #include <clasp/core/exceptions.h> // UNREACHABLE, unwind, errors
 #include <clasp/core/evaluator.h> // eval::funcall
+#include <clasp/core/array.h> // simple vector stuff
 // for multiple value saving stuff
 #include <clasp/gctools/multiple_value_pointers.h>
 
@@ -177,6 +178,20 @@ CL_UNWIND_COOP(true);
   result.saveToMultipleValue0();
   // Go. Index is ignored for blocks.
   sjlj_unwind(escape, 1);
+}
+
+CL_UNWIND_COOP(true);
+CL_DEFUN T_sp core__sjlj_ftagbody(SimpleVector_sp functions) {
+  call_with_tagbody(
+                    [&](TagbodyDynEnv_sp tagbody, size_t index) {
+                      eval::funcall(gc::As<Function_sp>(functions->vref(index)), tagbody); });
+  return nil<T_O>();
+}
+
+CL_UNWIND_COOP(true);
+[[noreturn]] CL_DEFUN void core__sjlj_go(TagbodyDynEnv_sp tagbody,
+                                         size_t index) {
+  sjlj_unwind(tagbody, index);
 }
 
 CL_UNWIND_COOP(true);
