@@ -77,8 +77,6 @@ NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char* file, size_t line
       will assign the __attribute__((weak)) to the vtable of each of these classes
     */
 void CatchThrow::keyFunctionForVtable(){};
-void ReturnFrom::keyFunctionForVtable(){};
-void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
 CL_LAMBDA()

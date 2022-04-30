@@ -573,7 +573,12 @@ jump to blocks within this tagbody."
       (irc-t*-result instruction (irc-renv tagbody-env))
       (irc-low-level-trace :tagbody)
       (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
-      (let ((handle (irc-intrinsic "initializeTagbodyClosure" (irc-renv tagbody-env))))
+      (let* ((tagbody-renv (irc-renv tagbody-env))
+             ;; We cannot use llvm.frameaddress to get a handle, like we do in
+             ;; cclasp, because here each tagbody and block has its own switch
+             ;; encoding and they all share the frameaddress.
+             (vhandle (irc-bit-cast tagbody-renv %i8*%))
+             (handle (irc-intrinsic "initializeTagbodyClosure" tagbody-renv vhandle)))
         #+optimize-bclasp
         (setf (gethash tagbody-env *tagbody-frame-info*)
               (make-tagbody-frame-info :tagbody-environment tagbody-env
@@ -603,8 +608,8 @@ jump to blocks within this tagbody."
                     enumerated-tag-blocks))
           ;;        ((cleanup) (codegen-literal result nil env))
           ((cleanup) (irc-unwind-environment tagbody-env))
-          ((typeid-core-dynamic-go exception-ptr)
-           (let* ((go-index (irc-intrinsic "tagbodyHandleDynamicGoIndex_or_rethrow" exception-ptr handle))
+          ((typeid-core-unwind exception-ptr)
+           (let* ((go-index (irc-intrinsic "tagbodyHandleDynamicGoIndex_or_rethrow" exception-ptr vhandle))
                   (default-block (irc-basic-block-create "switch-default"))
                   (sw (irc-switch go-index default-block (length enumerated-tag-blocks))))
              (mapc #'(lambda (one) (irc-add-case sw (jit-constant-size_t (car one)) (cadr one)))
@@ -632,7 +637,9 @@ jump to blocks within this tagbody."
         (irc-t*-result instruction (irc-renv tagbody-env))
         (irc-low-level-trace :tagbody)
         (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
-        (let ((handle (irc-intrinsic "initializeTagbodyClosure" (irc-renv tagbody-env))))
+        (let* ((tagbody-renv (irc-renv tagbody-env))
+               (vhandle (irc-bit-cast tagbody-renv %i8*%))
+               (handle (irc-intrinsic "initializeTagbodyClosure" tagbody-renv vhandle)))
           #+optimize-bclasp
           (setf (gethash tagbody-env *tagbody-frame-info*)
                 (make-tagbody-frame-info :tagbody-environment tagbody-env
@@ -717,7 +724,9 @@ jump to blocks within this tagbody."
           (core:setf-local-return-value block-env result)
 	  (irc-br block-start "block-start")
 	  (irc-begin-block block-start)
-          (let ((handle (irc-intrinsic "initializeBlockClosure" (irc-renv block-env))))
+          (let* ((block-renv (irc-renv block-env))
+                 (vhandle (irc-bit-cast block-renv %i8*%))
+                 (handle (irc-intrinsic "initializeBlockClosure" block-renv vhandle)))
             #+optimize-bclasp
             (let ((info (make-block-frame-info :block-environment block-env
                                                :block-symbol block-symbol
@@ -733,8 +742,8 @@ jump to blocks within this tagbody."
                 (codegen-progn result body block-env)
               ((cleanup)
                (irc-unwind-environment block-env))
-              ((typeid-core-return-from exception-ptr)
-               (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom_or_rethrow" exception-ptr handle)))
+              ((typeid-core-unwind exception-ptr)
+               (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom_or_rethrow" exception-ptr vhandle)))
                  (irc-tmv-result handle-instruction result))))
             (irc-br after-return-block "after-return-block")
             (irc-begin-block nonlocal-return-block)

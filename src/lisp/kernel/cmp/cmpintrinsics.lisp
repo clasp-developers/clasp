@@ -1055,8 +1055,6 @@ and initialize it with an array consisting of one function pointer."
 (defvar *exceptions*
   '(
     (typeid-core-catch-throw "_ZTIN4core10CatchThrowE")
-    (typeid-core-dynamic-go  "_ZTIN4core9DynamicGoE")
-    (typeid-core-return-from "_ZTIN4core10ReturnFromE")
     (typeid-core-unwind      "_ZTIN4core6UnwindE")
     ))
 

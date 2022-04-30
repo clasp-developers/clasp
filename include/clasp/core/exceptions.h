@@ -267,33 +267,6 @@ public:
 
 [[noreturn]] void clasp_throw(T_sp);
 
-class ATTR_WEAK ReturnFrom //: public gctools::HeapRoot
-    {
-  virtual void keyFunctionForVtable() ATTR_WEAK; // MUST BE FIRST VIRTUAL FUNCTION
-private:
-  T_O* _Handle;
-public:
-  ReturnFrom(T_O* handle) {
-    this->_Handle = handle;
-  }
-  T_O* getHandle() const { return this->_Handle; };
-  /*ATTR_WEAK*/ virtual ~ReturnFrom(){};
-};
-
-class ATTR_WEAK DynamicGo //: public gctools::HeapRoot
-    {
-  virtual void keyFunctionForVtable() ATTR_WEAK;
-
-private:
-  T_O*   _Handle;
-  size_t _Index;
-public:
-  ATTR_WEAK DynamicGo(T_O* handle, size_t index) : _Handle(handle), _Index(index){};
-  /*ATTR_WEAK*/ virtual ~DynamicGo(){};
-  T_O* getHandle() const { return this->_Handle; };
-  size_t index() const { return this->_Index; };
-};
-
 class ATTR_WEAK Unwind {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 

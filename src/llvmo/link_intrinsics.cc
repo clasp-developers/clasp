@@ -525,8 +525,6 @@ LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
 extern "C" {
 
 const std::type_info &typeidCoreCatchThrow = typeid(core::CatchThrow);
-const std::type_info &typeidCoreDynamicGo = typeid(core::DynamicGo);
-const std::type_info &typeidCoreReturnFrom = typeid(core::ReturnFrom);
 const std::type_info &typeidCoreUnwind = typeid(core::Unwind);
 
 #define LOW_LEVEL_TRACE_QUEUE_SIZE 1024
@@ -913,11 +911,11 @@ void debugPrint_blockFrame(core::T_O* handle)
   NO_UNWIND_END();
 }
 
-void debugPrint_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle)
+void debugPrint_blockHandleReturnFrom(unsigned char *exceptionP, void* handle)
 {NO_UNWIND_BEGIN();
-  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  printf("%s:%d debugPrint_blockHandleReturnFrom return-from handle %p    block handle %p\n", __FILE__, __LINE__, returnFrom.getHandle(), handle );
-  if (returnFrom.getHandle() == handle) {
+  core::Unwind &returnFrom = *reinterpret_cast<core::Unwind *>(exceptionP);
+  printf("%s:%d debugPrint_blockHandleReturnFrom return-from handle %p    block handle %p\n", __FILE__, __LINE__, returnFrom.getFrame(), handle );
+  if (returnFrom.getFrame() == handle) {
     printf("%s:%d debugPrint_blockHandleReturnFrom handles match!\n", __FILE__, __LINE__ );
     fflush(stdout);
     return;
@@ -945,17 +943,17 @@ void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
   my_thread->_unwinds++;
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
   core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
-  core::ReturnFrom returnFrom(handle.raw_());
+  void* vhandle = (void*)clasp_to_integral<uintptr_t>(handle);
   my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  throw returnFrom;
+  throw core::Unwind(vhandle, 1); // index is unused here
 }
 };
 
 extern "C" {
 
-gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, core::T_O* handle) {
-  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  if (returnFrom.getHandle() == handle) {
+gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, void* handle) {
+  core::Unwind &returnFrom = *reinterpret_cast<core::Unwind *>(exceptionP);
+  if (returnFrom.getFrame() == handle) {
     core::MultipleValues &mv = core::lisp_multipleValues();
     gctools::return_type result(mv.operator[](0),mv.getSize());
     std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
@@ -969,20 +967,20 @@ gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP,
 
 extern "C" {
 
-core::T_O* initializeBlockClosure(core::T_O** afP)
+core::T_O* initializeBlockClosure(core::T_O** afP, void* handle)
 {NO_UNWIND_BEGIN();
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-  Cons_sp unique = Cons_O::create(nil<T_O>(),nil<T_O>());
+  T_sp unique = Integer_O::create((uintptr_t)handle);
   vf->operator[](0) = unique;
   return unique.raw_();
   NO_UNWIND_END();
 }
 
-core::T_O* initializeTagbodyClosure(core::T_O *afP)
+core::T_O* initializeTagbodyClosure(core::T_O *afP, void* handle)
 {NO_UNWIND_BEGIN();
   core::T_sp tagbodyId((gctools::Tagged)afP);
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-  Cons_sp unique = Cons_O::create(nil<T_O>(),nil<T_O>());
+  T_sp unique = Integer_O::create((uintptr_t)handle);
   vf->operator[](0) = unique;
   return unique.raw_();
   NO_UNWIND_END();
@@ -1003,15 +1001,15 @@ void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   my_thread->_unwinds++;
   T_sp af((gctools::Tagged)afP);
   ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
-  T_O* handle = tagbody->operator[](0).raw_();
-  core::DynamicGo dgo(handle, index);
+  T_sp handle = tagbody->operator[](0);
+  void* vhandle = (void*)clasp_to_integral<uintptr_t>(handle);
   my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  throw dgo;
+  throw core::Unwind(vhandle, index);
 }
 
-size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, T_O* handle) {
-  core::DynamicGo& goException = *reinterpret_cast<core::DynamicGo *>(exceptionP);
-  if (goException.getHandle() == handle) {
+size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, void* handle) {
+  core::Unwind& goException = *reinterpret_cast<core::Unwind *>(exceptionP);
+  if (goException.getFrame() == handle) {
     std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
     my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return goException.index();

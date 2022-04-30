@@ -172,7 +172,7 @@
          (primitive         "debugBreak" :void ())
          (primitive         "debugPrintI32" :void (list :i32))
          (primitive         "debugPrint_blockFrame" :void (list :t*))
-         (primitive         "debugPrint_blockHandleReturnFrom" :void (list :i8* :t*))
+         (primitive         "debugPrint_blockHandleReturnFrom" :void (list :i8* :i8*))
          (primitive         "debugPrint_size_t" :void (list :size_t))
          (primitive         "debug_match_two_uintptr_t" :uintptr_t (list :uintptr_t :uintptr_t))
          (primitive         "lowLevelTrace" :void (list :i32))
@@ -194,14 +194,14 @@
          (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
 
-         (primitive         "initializeBlockClosure" :t* (list :t**))
-         (primitive         "initializeTagbodyClosure" :t* (list :t**))
+         (primitive         "initializeBlockClosure" :t* (list :t** :i8*))
+         (primitive         "initializeTagbodyClosure" :t* (list :t** :i8*))
     
          (primitive-unwinds "throwReturnFrom" :void (list :size_t :t*) :does-not-return t)
          (primitive-unwinds "throwDynamicGo" :void (list :size_t :size_t :t*) :does-not-return t)
 
-         (primitive-unwinds "blockHandleReturnFrom_or_rethrow" :return-type (list :i8* :t*))
-         (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" :size_t (list :i8* :t*))
+         (primitive-unwinds "blockHandleReturnFrom_or_rethrow" :return-type (list :i8* :i8*))
+         (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" :size_t (list :i8* :i8*))
          (primitive-unwinds "throwIllegalSwitchValue" :void (list :size_t :size_t) :does-not-return t)
          (primitive-unwinds "cc_error_bugged_catch" :void (list :size_t) :does-not-return t)
     
