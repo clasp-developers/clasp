@@ -58,6 +58,14 @@
   :repository "https://github.com/Ravenbrook/mps.git"
   :directory "src/mps/"
   :commit "b8a05a3846430bc36c8200f24d248c8293801503")
+ (:name :bdwgc
+  :repository "https://github.com/ivmai/bdwgc.git"
+  :directory "src/bdwgc/"
+  :branch "release-8_2")
+ (:name :libatomic_ops
+  :repository "https://github.com/ivmai/libatomic_ops.git"
+  :directory "src/libatomic_ops/"
+  :branch "release-7_6")
  (:name :cando
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
