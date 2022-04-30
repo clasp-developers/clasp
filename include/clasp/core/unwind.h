@@ -169,6 +169,70 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest);
  * the main entry point. */
 [[noreturn]] void sjlj_unwind(DestDynEnv_sp dest, size_t index);
 
+/* Functional unwind protect. Provided as a template function to reduce
+ * runtime overhead by essentially inlining. Both thunks should accept no
+ * arguments, and protected_thunk should return a T_mv.
+ * See core__sjlj_funwind_protect for example usage. */
+template<typename protf, typename cleanupf>
+T_mv funwind_protect(protf&& protected_thunk, cleanupf&& cleanup_thunk) {
+  jmp_buf target;
+  T_mv result;
+  if (setjmp(target)) {
+    // We have longjmped here. Clean up.
+    // Remember to save return values, in case the cleanup thunk
+    // messes with them.
+    size_t nvals = lisp_multipleValues().getSize();
+    T_O* mv_temp[nvals];
+    multipleValuesSaveToTemp(nvals, mv_temp);
+    cleanup_thunk();
+    multipleValuesLoadFromTemp(nvals, mv_temp);
+    // Continue unwinding.
+    sjlj_unwind_proceed(gc::As_unsafe<DestDynEnv_sp>(my_thread->_UnwindDest),
+                        my_thread->_UnwindDestIndex);
+  } else {
+    // First time through. Set up the cleanup dynenv, then call
+    // the thunk, then save its values and call the cleanup.
+    try {
+      gctools::StackAllocate<UnwindProtectDynEnv_O> sa_upde(my_thread->_DynEnv, &target);
+      DynEnvPusher dep(my_thread, sa_upde.asSmartPtr());
+      result = protected_thunk();
+    } catch (...) { // C++ unwind. Do the same shit then rethrow
+      size_t nvals = lisp_multipleValues().getSize();
+      T_O* mv_temp[nvals];
+      multipleValuesSaveToTemp(nvals, mv_temp);
+      cleanup_thunk();
+      multipleValuesLoadFromTemp(nvals, mv_temp);
+      throw;
+    }
+    size_t nvals = result.number_of_values();
+    T_O* mv_temp[nvals];
+    returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
+    cleanup_thunk();
+    return returnTypeLoadFromTemp(nvals, mv_temp);
+  }
+}
+
+/* Similarly, BLOCK. Note that the use of __builtin_frame_address is a bit
+ * hairy here, and nesting this function without intervening frames may cause
+ * strange issues. thunkf should accept a BlockDynEnv_sp. */
+template <typename blockf>
+T_mv call_with_escape(blockf&& block) {
+  jmp_buf target;
+  void* frame = __builtin_frame_address(0);
+  if (setjmp(target)) return T_mv::createFromValues(); // abnormal return
+  else
+    try {
+      // the block dynenv is heap allocated, so that functions closing over it
+      // can escape, and get a nice out-of-extent if they use it.
+      BlockDynEnv_sp env = BlockDynEnv_O::create(my_thread->_DynEnv, frame, &target);
+      DynEnvPusher dep(my_thread, env);
+      return block(env);
+    } catch (Unwind& uw) {
+      if (uw.getFrame() == frame) return T_mv::createFromValues();
+      else throw;
+    }
+}
+
 }; // namespace core
 
 #endif // core_Unwind_H guard

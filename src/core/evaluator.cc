@@ -55,6 +55,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/ql.h>
+#include <clasp/core/unwind.h> // funwind_protect, etc
 
 namespace cl {
 extern core::Symbol_sp& _sym_or;
@@ -1693,32 +1694,8 @@ T_mv sp_go(List_sp args, T_sp env) {
         }
 
         T_mv sp_unwindProtect(List_sp args, T_sp environment) {
-            T_mv result;
-            try {
-                // Evaluate the protected form
-                result = eval::evaluate(oCar(args), environment);
-            } catch (...) {
-                // Abnormal exit
-                // Might be a return, so
-                // save the multiple values (from the vector)
-                size_t nvals = lisp_multipleValues().getSize();
-                T_O* mv_temp[nvals];
-                multipleValuesSaveToTemp(nvals, mv_temp);
-                eval::sp_progn(oCdr(args), environment);
-                multipleValuesLoadFromTemp(nvals, mv_temp);
-                throw;
-            }
-            // Normal exit
-            // Allocate a vector in which to save the return values.
-            // While VLAs aren't in C++, Clang has them.
-            size_t nvals = result.number_of_values();
-            T_O* mv_temp[nvals];
-            // Save the return values
-            returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
-            // Evaluate the cleanup forms --
-            eval::sp_progn(oCdr(args), environment);
-            // Restore the return values and return
-            return returnTypeLoadFromTemp(nvals, mv_temp);
+          return funwind_protect([&](){return eval::evaluate(oCar(args), environment);},
+                                 [&](){eval::sp_progn(oCdr(args), environment);});
         }
 
         T_mv sp_catch(List_sp args, T_sp environment) {

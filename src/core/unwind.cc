@@ -48,12 +48,6 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
   longjmp(*(dest->target), index);
 }
 
-// Convenience for calling from cleanups.
-[[noreturn]] void sjlj_continue_unwinding() {
-  sjlj_unwind_proceed(gc::As_unsafe<DestDynEnv_sp>(my_thread->_UnwindDest),
-                      my_thread->_UnwindDestIndex);
-}
-
 [[noreturn]] void UnwindProtectDynEnv_O::proceed(DestDynEnv_sp dest,
                                                  size_t index) {
   my_thread->_DynEnv = this->outer;
@@ -171,31 +165,7 @@ CL_DEFUN T_mv core__sjlj_call_with_variable_bound(Symbol_sp sym, T_sp val,
 
 CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_call_with_escape_continuation(Function_sp function) {
-  jmp_buf target;
-  void* frame = __builtin_frame_address(0);
-  if (setjmp(target)) {
-    // We've longjmped here. Return.
-    MultipleValues &mv = lisp_multipleValues();
-    size_t nret = mv.getSize();
-    return gctools::return_type((nret == 0) ? nil<T_O>().raw_() : mv[0], nret);
-  } else {
-    try {
-      // Set up the block dynenv.
-      // Heap allocate, so that it can be used safely (signaling an error) if its
-      // extent ends.
-      BlockDynEnv_sp bde = BlockDynEnv_O::create(my_thread->_DynEnv, frame, &target);
-      DynEnvPusher dep(my_thread, bde);
-      // Call the thunk and return its values.
-      return eval::funcall(function, bde);
-    } catch (Unwind& uw) {
-      // whoops, c++ exception. are we here?
-      if (uw.getFrame() == frame) { // here we are!
-        MultipleValues &mv = lisp_multipleValues();
-        size_t nret = mv.getSize();
-        return gctools::return_type((nret == 0) ? nil<T_O>().raw_() : mv[0], nret);
-      } else throw;
-    }
-  }
+  return call_with_escape([&](BlockDynEnv_sp env){return eval::funcall(function, env);});
 }
 
 CL_UNWIND_COOP(true);
@@ -212,39 +182,8 @@ CL_UNWIND_COOP(true);
 CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_funwind_protect(Function_sp thunk,
                                          Function_sp cleanup) {
-  jmp_buf target;
-  T_mv result;
-  if (setjmp(target)) {
-    // We have longjmped here. Clean up.
-    // Remember to save return values, in case the cleanup thunk
-    // messes with them.
-    size_t nvals = lisp_multipleValues().getSize();
-    T_O* mv_temp[nvals];
-    multipleValuesSaveToTemp(nvals, mv_temp);
-    eval::funcall(cleanup);
-    multipleValuesLoadFromTemp(nvals, mv_temp);
-    sjlj_continue_unwinding();
-  } else {
-    // First time through. Set up the cleanup dynenv, then call
-    // the thunk, then save its values and call the cleanup.
-    try {
-      gctools::StackAllocate<UnwindProtectDynEnv_O> sa_upde(my_thread->_DynEnv, &target);
-      DynEnvPusher dep(my_thread, sa_upde.asSmartPtr());
-      result = eval::funcall(thunk);
-    } catch (...) { // C++ unwind. Do the same shit then rethrow
-      size_t nvals = lisp_multipleValues().getSize();
-      T_O* mv_temp[nvals];
-      multipleValuesSaveToTemp(nvals, mv_temp);
-      eval::funcall(cleanup);
-      multipleValuesLoadFromTemp(nvals, mv_temp);
-      throw;
-    }
-    size_t nvals = result.number_of_values();
-    T_O* mv_temp[nvals];
-    returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
-    eval::funcall(cleanup);
-    return returnTypeLoadFromTemp(nvals, mv_temp);
-  }
+  return funwind_protect([&]() { return eval::funcall(thunk); },
+                         [&]() { eval::funcall(cleanup); });
 }
 
 }; // namespace core
