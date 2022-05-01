@@ -1232,7 +1232,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebug_dtree_interpreterSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_symbol_lookupSTAR->defparameter(nil<core::T_O>());
 #if defined(__x86_64__)
-# error "__x86_64__ is defined"
   SYMBOL_EXPORT_SC_(KeywordPkg, 64_bit);
   Symbol_sp address_model = kw::_sym_64_bit;
 

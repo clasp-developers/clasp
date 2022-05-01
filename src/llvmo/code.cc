@@ -40,11 +40,12 @@ void JITDataReadExecute() {
 #endif
 }
 
-void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& bl) {
+void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& BL) {
 #if defined(CLASP_APPLE_SILICON)
   // On Apple Silicon we turn off MEM_JIT memory write protect for this thread
   pthread_jit_write_protect_np(false);
 #else
+  size_t PageSize = getpagesize();
   auto rwxProt = llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE | llvm::sys::Memory::MF_EXEC;
   for (auto &KV : BL.segments()) {
     const auto &AG = KV.first;
@@ -59,8 +60,8 @@ void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& bl) {
 }
 
 void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
-#if defined(CLASP_APPLE_SILICON)
   size_t PageSize = getpagesize();
+#if defined(CLASP_APPLE_SILICON)
   pthread_jit_write_protect_np(true);
   for (auto &KV : BL.segments()) {
     const auto &AG = KV.first;
@@ -91,8 +92,11 @@ void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
     }
     sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Protecting memory from %p to %p with %x\n", __FILE__, __LINE__, __FUNCTION__, (void*)(Seg.WorkingMem), (void*)(Seg.WorkingMem+SegSize), Prot ));
-    if (auto EC = sys::Memory::protectMappedMemory(MB, Prot))
-      return errorCodeToError(EC);
+    if (auto EC = sys::Memory::protectMappedMemory(MB, Prot)) {
+      printf("%s:%d:%s There was an error returned by sys::Memory::protectMappedMemory -> %d\n",
+             __FILE__, __LINE__, __FUNCTION__, EC.value() ); // errorCodeToError(EC) );
+      abort();
+    }
     if (Prot & sys::Memory::MF_EXEC)
       sys::Memory::InvalidateInstructionCache(MB.base(), MB.allocatedSize());
   }
