@@ -1,26 +1,31 @@
 (in-package #:koga)
 
+(defmethod add-target-source (configuration target (source symbol))
+  (loop for file in (asdf-groveler:grovel-source-files (list source)
+                                                       :root-path (truename (root :code)))
+        do (add-target-source configuration target (make-source file :code))))
+
 ;; Sources that are added to iclasp also need to be installed and scanned for tags.
-(defmethod add-target-source :after (configuration (target (eql :iclasp)) source)
+(defmethod add-target-source :after (configuration (target (eql :iclasp)) (source source))
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
     (add-target-source configuration :etags source))
   (add-target-source configuration :dclasp source))
 
 ;; Sources that are added to aclasp also need to be installed and scanned for tags.
-(defmethod add-target-source :after (configuration (target (eql :aclasp)) source)
+(defmethod add-target-source :after (configuration (target (eql :aclasp)) (source source))
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
     (add-target-source configuration :etags source)))
 
 ;; Sources that are added to bclasp also need to be installed and scanned for tags.
-(defmethod add-target-source :after (configuration (target (eql :bclasp)) source)
+(defmethod add-target-source :after (configuration (target (eql :bclasp)) (source source))
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
     (add-target-source configuration :etags source)))
 
 ;; Sources that are added to cclasp also need to be installed and scanned for tags.
-(defmethod add-target-source :after (configuration (target (eql :cclasp)) source)
+(defmethod add-target-source :after (configuration (target (eql :cclasp)) (source source))
   (when (eq :code (source-root source))
     (add-target-source configuration :install-code source)
     (add-target-source configuration :etags source)))
