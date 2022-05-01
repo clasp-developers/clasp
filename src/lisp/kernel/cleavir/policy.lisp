@@ -2,27 +2,35 @@
 
 ;;; With this policy on, the compiler tries to treat type declarations as
 ;;; assertions. They will be checked carefully and somewhat slowly.
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'insert-type-checks))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
-  (> (cleavir-policy:optimize-value optimize 'safety)
-     (cleavir-policy:optimize-value optimize 'speed)))
+  (> (policy:optimize-value optimize 'safety)
+     (policy:optimize-value optimize 'speed)))
 
 ;;; This policy is used in transform.lisp to determine whether to insert
 ;;; type checks enforcing basic safety. Without these checks, low level
 ;;; operators that do not check their inputs will be used unprotected, so
 ;;; very bad problems can occur (segfaults, crashes, etc.)
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'insert-minimum-type-checks))
      optimize
      (environment clasp-global-environment))
-  (> (cleavir-policy:optimize-value optimize 'safety) 0))
+  (> (policy:optimize-value optimize 'safety) 0))
+
+;;; Should the compiler insert code to signal step conditions? This has
+;;; some overhead, so it's only done at debug 3.
+(defmethod policy:compute-policy-quality
+    ((quality (eql 'insert-step-conditions))
+     optimize
+     (environment clasp-global-environment))
+  (>= (policy:optimize-value optimize 'debug) 3))
 
 ;;; This policy indicates that the compiler should note calls that could be
 ;;; transformed (i.e. eliminated by inlining, replacement with a primop, etc.)
 ;;; but couldn't be due to lack of information.
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'note-untransformed-calls))
      optimize
      (environment clasp-global-environment))
@@ -33,24 +41,24 @@
   ;; as by (declare (optimize clasp-cleavir::note-untransformed-calls))
   nil
   #+(or)
-  (= (cleavir-policy:optimize-value optimize 'speed) 3))
+  (= (policy:optimize-value optimize 'speed) 3))
 
 ;;; This policy indicates that the compiler should note when it's forced
 ;;; to emit expensive boxing instructions. Note that this does not result
 ;;; in notes for calling functions that may box internally - FIXME?
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'note-boxing))
      optimize
      (environment clasp-global-environment))
   (declare (ignorable optimize))
   nil
   #+(or)
-  (= (cleavir-policy:optimize-value optimize 'speed) 3))
+  (= (policy:optimize-value optimize 'speed) 3))
 
 ;;; This policy tells the compiler to note when a &rest parameter must
 ;;; be consed into a list (i.e. the optimization in vaslist.lisp does not fire).
 ;;; It must also be specifically requested.
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'note-consing-&rest))
      optimize
      (environment clasp-global-environment))
@@ -58,27 +66,28 @@
   ;; Must be specifically requested. In the future, maybe note on SPACE 3?
   nil)
 
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'type-check-ftype-arguments))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
-  (= (cleavir-policy:optimize-value optimize 'safety) 3))
+  (= (policy:optimize-value optimize 'safety) 3))
 
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'type-check-ftype-return-values))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
-  (= (cleavir-policy:optimize-value optimize 'safety) 3))
+  (= (policy:optimize-value optimize 'safety) 3))
 
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     (quality optimize (environment null))
-    (cleavir-policy:compute-policy-quality quality optimize *clasp-env*))
+    (policy:compute-policy-quality quality optimize *clasp-env*))
 
-(defmethod cleavir-policy:policy-qualities append ((env clasp-global-environment))
+(defmethod policy:policy-qualities append ((env clasp-global-environment))
   '((save-register-args boolean t)
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (insert-step-conditions boolean t)
     (note-untransformed-calls boolean t)
     (note-boxing boolean t)
     (note-consing-&rest boolean t)
@@ -89,11 +98,12 @@
     (type-check-ftype-arguments boolean t)
     (type-check-ftype-return-values boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
-(defmethod cleavir-policy:policy-qualities append ((env null))
+(defmethod policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
     (perform-optimization boolean t)
     (insert-type-checks boolean t)
     (insert-minimum-type-checks boolean t)
+    (insert-step-conditions boolean t)
     (note-untransformed-calls boolean t)
     (note-boxing boolean t)
     (note-consing-&rest boolean t)
@@ -114,12 +124,12 @@
 ;;; is not inserted, so functions so compiled won't show up
 ;;; in backtraces.
 
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'save-register-args))
      optimize
      (environment clasp-global-environment))
-  #-debug-cclasp-lisp(= (cleavir-policy:optimize-value optimize 'debug) 3)
-  #+debug-cclasp-lisp (> (cleavir-policy:optimize-value optimize 'debug) 0))
+  #-debug-cclasp-lisp(= (policy:optimize-value optimize 'debug) 3)
+  #+debug-cclasp-lisp (> (policy:optimize-value optimize 'debug) 0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -129,11 +139,11 @@
 ;;; optimization. At present this just puts the "optnone" attribute
 ;;; on functions for LLVM.
 
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'perform-optimization))
      optimize
      (environment clasp-global-environment))
-  (< (cleavir-policy:optimize-value optimize 'debug) 3))
+  (< (policy:optimize-value optimize 'debug) 3))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -145,19 +155,19 @@
 ;;; If DO-DX-ANALYSIS is false no DX analysis is done.
 ;;; See MY-HIR-TRANSFORMATIONS for use.
 
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'do-type-inference))
      optimize
      (environment clasp-global-environment))
-  (> (cleavir-policy:optimize-value optimize 'speed)
-     (cleavir-policy:optimize-value optimize 'compilation-speed)))
+  (> (policy:optimize-value optimize 'speed)
+     (policy:optimize-value optimize 'compilation-speed)))
 
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'do-dx-analysis))
      optimize
      (environment clasp-global-environment))
-  (> (cleavir-policy:optimize-value optimize 'space)
-     (cleavir-policy:optimize-value optimize 'compilation-speed)))
+  (> (policy:optimize-value optimize 'space)
+     (policy:optimize-value optimize 'compilation-speed)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -166,11 +176,11 @@
 ;;; Should calls to aref and such do a bounds check?
 ;;; In CORE package so we can use it in earlier code.
 
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'core::insert-array-bounds-checks))
      optimize
      (environment clasp-global-environment))
-  (> (cleavir-policy:optimize-value optimize 'safety) 0))
+  (> (policy:optimize-value optimize 'safety) 0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -184,16 +194,16 @@
 ;;; existent type inference. Policies need a FIXME rethink
 ;;; once things are less broken.
 
-(defmethod cleavir-policy:compute-policy-quality
+(defmethod policy:compute-policy-quality
     ((quality (eql 'ext:assume-right-type))
      optimize
      (environment clasp-global-environment))
-  (let ((safety (cleavir-policy:optimize-value optimize 'safety)))
+  (let ((safety (policy:optimize-value optimize 'safety)))
     (and (zerop safety)
-         (> (cleavir-policy:optimize-value optimize 'speed) safety))))
+         (> (policy:optimize-value optimize 'speed) safety))))
 
 ;;;
 
 (defun environment-has-policy-p (environment quality)
-  (cleavir-policy:policy-value
+  (policy:policy-value
    (cleavir-env:policy (cleavir-env:optimize-info environment)) quality))

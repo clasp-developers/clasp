@@ -371,6 +371,8 @@
              #~"kernel/contrib/Cleavir/CST-to-AST/convert-primop.lisp"
              #~"kernel/contrib/Cleavir/CST-to-AST/convert-cst.lisp"
              #~"kernel/contrib/Cleavir/CST-to-AST/cst-to-ast.lisp"
+             #~"kernel/contrib/Cleavir/Stealth-mixins/packages.lisp"
+             #~"kernel/contrib/Cleavir/Stealth-mixins/stealth-mixins.lisp"
              #~"kernel/cleavir/packages.lisp"
              #~"kernel/cleavir/system.lisp"
              #~"kernel/cleavir/policy.lisp"

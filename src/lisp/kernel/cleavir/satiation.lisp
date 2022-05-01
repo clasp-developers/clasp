@@ -142,14 +142,14 @@
 
 ;;; cleavir-compilation-policy
 (eval-when (:load-toplevel)
-  (clos:satiate #'cleavir-compilation-policy:compute-policy
+  (clos:satiate #'policy:compute-policy
                 '(cons clasp-global-environment))
-  (clos:satiate #'cleavir-compilation-policy:policy-qualities
+  (clos:satiate #'policy:policy-qualities
                 '(clasp-global-environment) '(null)
                 '(cleavir-env:lexical-variable))
-  (clos:satiate #'cleavir-compilation-policy:normalize-optimize
+  (clos:satiate #'policy:normalize-optimize
                 '(cons clasp-global-environment))
-  (clos:satiate #'cleavir-compilation-policy:compute-policy-quality
+  (clos:satiate #'policy:compute-policy-quality
                 #+(or)
                 '((eql cleavir-kildall-type-inference:insert-type-checks) cons clasp-global-environment)
                 '((eql core::insert-array-bounds-checks) cons clasp-global-environment)

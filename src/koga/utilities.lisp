@@ -74,8 +74,14 @@ into a list of values and values that are lists will be appended."
 
 (defun git-describe (configuration)
   "Describe the current commit based on the most recent tag."
-  (run-program-capture (format nil "~A describe --always"
+  (run-program-capture (format nil "~A describe"
                                (git configuration))))
+
+(defun git-working-tree-p (configuration)
+  "Return non-NIL if we are inside a git repo."
+  (and (run-program-capture (format nil "~A rev-parse --is-inside-work-tree"
+                                    (git configuration)))
+       t))
 
 (defun hidden-component-p (component)
   "Return non-NIL if a filename component starts with a period."

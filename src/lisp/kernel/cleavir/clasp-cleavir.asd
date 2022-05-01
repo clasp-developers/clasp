@@ -15,7 +15,8 @@
                :cleavir-compilation-policy
                :cleavir-conditions
                :cleavir-attributes
-               :cleavir-ast-transformations)
+               :cleavir-ast-transformations
+               :cleavir-stealth-mixins)
   :serial t
   :components ((:file "packages")
                (:file "system")

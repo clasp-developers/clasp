@@ -317,7 +317,7 @@
   (format t "about to compute-policy~%"))
 
 (defvar *global-policy*
-  '#.(cleavir-policy:compute-policy *global-optimize* *clasp-env*))
+  '#.(policy:compute-policy *global-optimize* *clasp-env*))
 
 (defmethod env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
@@ -471,7 +471,5 @@
 (defmethod cmp:compiler-condition-origin
     ((condition cleavir-conditions:program-condition))
   ;; FIXME: ignore-errors is a bit paranoid
-  (let ((origin (cleavir-conditions:origin condition)))
-    (loop while (typep origin 'cst:cst)
-          do (setf origin (cst:source origin)))
+  (let ((source (origin-source (cleavir-conditions:origin condition))))
     (ignore-errors (if (consp origin) (car origin) origin))))

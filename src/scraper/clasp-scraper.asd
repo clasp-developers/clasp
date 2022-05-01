@@ -1,6 +1,6 @@
 (defsystem :clasp-scraper
   :description "A tool to scan C++ files for tags, and then generate binding code based on those tags that expose the C++ definitions to Clasp. It's used to bootstrap Clasp itself."
-  :depends-on (:alexandria :esrap)
+  :depends-on (:alexandria :esrap :ninja)
   :serial t
   :components
   ((:file "packages")

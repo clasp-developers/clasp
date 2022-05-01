@@ -1,29 +1,21 @@
 (in-package #:koga)
 
-(defparameter *build-path* nil)
-(defparameter *code-path* nil)
+(defparameter *root-paths* nil)
 (defparameter *script-path* nil)
 (defparameter *variant-path* nil)
-(defparameter *install-bin-path* nil)
-(defparameter *install-clasp-path* nil)
-(defparameter *install-variant-path* nil)
 
 (defclass source ()
   ((path :accessor source-path
          :initarg :path)
    (root :accessor source-root
          :initarg :root
-         :type (member :current :code :build :install-bin
-                       :install-clasp :install-variant :variant))))
+         :type keyword)))
+
+(defun root (root)
+  (getf *root-paths* root))
 
 (defun resolve-source-root (source)
-  (case (source-root source)
-    (:build *build-path*)
-    (:install-bin *install-bin-path*)
-    (:install-clasp *install-clasp-path*)
-    (:install-variant *install-variant-path*)
-    (:variant *variant-path*)
-    (:code *code-path*)))
+  (getf *root-paths* (source-root source)))
 
 (defun resolve-source (source)
   (let ((root (resolve-source-root source)))
@@ -78,12 +70,11 @@
                  :path path :root root))
 
 (defun make-source-output (source &key type root &allow-other-keys)
-  (let ((path (source-path source)))
-    (when root
-      (setf path (merge-pathnames path (uiop:parse-unix-namestring root))))
-    (when type
-      (setf path (merge-pathnames (make-pathname :type type) path)))
-    (make-source path :variant)))
+  (make-source (if type
+                   (merge-pathnames (make-pathname :type type)
+                                    (source-path source))
+                   (source-path source))
+               (or root :variant)))
 
 (defun make-source-outputs (sources &rest rest &key type root &allow-other-keys)
   (declare (ignore type root))
