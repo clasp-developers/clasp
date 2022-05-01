@@ -347,10 +347,10 @@ def update_dependencies(cfg):
                        "b8a05a3846430bc36c8200f24d248c8293801503")
     fetch_git_revision("src/bdwgc",
                        "https://github.com/ivmai/bdwgc.git",
-                       label = "release-8_2")
+                       label = "master", revision = "v8.2.0")
     fetch_git_revision("src/libatomic_ops",
                        "https://github.com/ivmai/libatomic_ops.git",
-                       label = "release-7_6")
+                       label = "master", revision = "v7.6.12")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
 #                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
