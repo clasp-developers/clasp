@@ -71,13 +71,6 @@ Find directories that look like them and replace the ones defined in the constan
 (defparameter *current-multitool* nil
   "Keep track of the current multitool")
 
-
-
-
-(defvar +isysroot+ 
-  #+target-os-darwin (second (core:split core:*build-cppflags* " ")) ;; something like "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk"
-  "Define the -isystem command line option for Clang compiler runs")
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
            (defparameter *externals-clasp-pathname* (make-pathname :directory (pathname-directory (pathname ext:*clasp-clang-path*))))
            #+(or target-os-linux target-os-freebsd) (defparameter *externals-clasp-include-dir* (namestring (car (directory (pathname (format nil "~a../lib/clang/*/" *externals-clasp-pathname*))))))
@@ -191,6 +184,13 @@ It converts relative -I../... arguments to absolute paths"
           (t #| do nothing |# ))))
     new-args))
 
+(defun isysroot ()
+  (let* ((args (core:split core:*build-cppflags* " "))
+         (pos (position "-isysroot" args :test #'equal)))
+    (if pos
+        (elt args (1+ pos))
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/")))
+
 (defun setup-default-arguments-adjusters (compilation-tool-database &key convert-relative-includes-to-absolute )
   "* Arguments
 - compilation-tool-database :: The compilation-tool-database to add the arguments adjusters to.
@@ -212,8 +212,8 @@ Setup the default arguments adjusters."
           (declare (ignore filename))
           (concatenate 'vector
                        args
-                       (vector #+target-os-darwin "-isysroot" #+target-os-darwin +isysroot+
-                               "-resource-dir" +resource-dir+)
+                       #+target-os-darwin (vector "-isysroot" (isysroot))
+                       (vector "-resource-dir" +resource-dir+)
                        +additional-arguments+))
         (arguments-adjuster-list compilation-tool-database))
   (cond
