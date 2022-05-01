@@ -252,7 +252,8 @@ typedef unsigned int  claspCharacter;
 #define STACKMAP_ARITY_CODE_MASK                 0x0000000F
 
 /*! Maximum number of arguments that can be passed */
-#define CALL_ARGUMENTS_LIMIT 136
+#define CALL_ARGUMENTS_LIMIT (2^32)
+#define MULTIPLE_VALUES_LIMIT 256
 
 #define CHAR_CODE_LIMIT 1114112
 

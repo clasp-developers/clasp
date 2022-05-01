@@ -34,7 +34,7 @@ namespace core {
 #pragma GCC visibility push(default)
 class MultipleValues {
 public: // ctor
-  static const int MultipleValuesLimit = CALL_ARGUMENTS_LIMIT;
+  static const int MultipleValuesLimit = MULTIPLE_VALUES_LIMIT;
 
 public: // instance variables here
   size_t _Size;
