@@ -1451,9 +1451,12 @@ def configure(cfg):
         cfg.env.append_value('INCLUDES',[mmtk_path.abspath()])
     else:
         # boehm includes
-        cfg.env.append_value('INCLUDES',"src/bdwgc/include")
-        cfg.env.append_value('INCLUDES',"src/bdwgc")
-        cfg.env.append_value('INCLUDES',"src/libatomic_ops/src")
+        bdwgc_path = cfg.path.find_node("src/bdwgc")
+        bdwgc_include_path = cfg.path.find_node("src/bdwgc/include")
+        libatomic_ops_src_path = cfg.path.find_node("src/libatomic_ops/src")
+        cfg.env.append_value('INCLUDES',[bdwgc_path.abspath()])
+        cfg.env.append_value('INCLUDES',[bdwgc_include_path.abspath()])
+        cfg.env.append_value('INCLUDES',[libatomic_ops_src_path.abspath()])
     if (cfg.env["ENABLE_MMTK"] == True):
         mmtk_path = cfg.path.find_node("src/mmtk-clasp/")
         cfg.env.append_value('INCLUDES',[mmtk_path.abspath()])
