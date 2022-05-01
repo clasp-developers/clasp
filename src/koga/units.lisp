@@ -151,6 +151,23 @@
     (setf etags (configure-program "etags"
                                    (or etags #P"etags")))))
 
+(defmethod configure-unit (configuration (unit (eql :xcode))
+                           &aux (env (uiop:getenv-absolute-directory "XCODE_SDK"))
+                                (def #P"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/"))
+  (message :emph "Configuring XCode SDK")
+  (with-accessors ((xcode-sdk xcode-sdk))
+      configuration
+    (when (and (not xcode-sdk)
+               env)
+      (message :info "Found XCODE_SDK environment variable, using that value.")
+      (setf xcode-sdk env))
+    (when (and (not xcode-sdk)
+               (probe-file def))
+      (message :info "Found XCode at the default path, using that value.")
+      (setf xcode-sdk def))
+    (when xcode-sdk
+      (append-cflags configuration (format nil "-isysroot ~a" xcode-sdk)))))
+
 (defmethod configure-unit (configuration (unit (eql :base))
                            &aux (app-config (cscrape:read-application-config #P"include/clasp/main/application.config")))
   "Add base cflags, ldflags and parse application.config to determine the scraper outputs."

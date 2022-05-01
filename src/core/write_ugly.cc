@@ -257,6 +257,14 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     clasp_write_string(">",stream);
   } else if (x.unboundp()) {
     clasp_write_string("#<UNBOUND>");
+  } else if (gctools::tagged_no_thread_local_bindingp(x.raw_())) {
+    clasp_write_string("#<UNBOUND-NO_THREAD_LOCAL_BINDING_UNBOUND_BYTE>");
+  } else if (gctools::tagged_deletedp(x.raw_())) {
+    clasp_write_string("#<UNBOUND-DELETED_UNBOUND_BYTE>");
+  } else if (gctools::tagged_no_keyp(x.raw_())) {
+    clasp_write_string("#<UNBOUND-NO_KEY_UNBOUND_BYTE>");
+  } else if (gctools::tagged_same_as_keyp(x.raw_())) {
+    clasp_write_string("#<UNBOUND-SAME_AS_KEY_UNBOUND_BYTE>");
   } else {
     write_bad_object(x);
   }
