@@ -1,6 +1,7 @@
 (asdf:defsystem #:koga
   :description "A lisp based metabuilder for Clasp."
   :depends-on (#:alexandria
+               #:asdf-groveler
                #:clasp-scraper
                #:ninja
                #:shasht
