@@ -1,6 +1,8 @@
 src/lisp/kernel/contrib/
 src/lisp/modules/asdf/
 src/mps/
+src/bdwgc/
+src/libatomic_ops/
 GPATH
 GRTAGS
 GTAGS
