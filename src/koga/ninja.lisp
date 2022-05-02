@@ -785,8 +785,8 @@
                  (push kernel install-outputs)))
              (list build-outputs install-outputs user-kernel))))
     (let ((outputs (if (member :cando (extensions configuration))
-                       (list (snapshot "dclasp" :ignore-extensions t)
-                             (snapshot "dcando"))
+                       (list (snapshot "dcando")
+                             (snapshot "dclasp" :ignore-extensions t))
                        (list (snapshot "dclasp")))))
       (ninja:write-build output-stream :phony
                          :inputs (list* (build-name :cclasp)
