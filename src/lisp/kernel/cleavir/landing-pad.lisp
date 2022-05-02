@@ -88,6 +88,7 @@
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "execute-protection")))
       (cmp:irc-begin-block bb)
+      (%intrinsic-call "cc_pop_dynenv" (list (dynenv-storage u-p-instruction)))
       (let ((thunk (in (first (cleavir-bir:inputs u-p-instruction))))
             (protection-dynenv (cleavir-bir:parent u-p-instruction)))
         ;; There is a subtle point here with regard to unwinding out of a cleanup

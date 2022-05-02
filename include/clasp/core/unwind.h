@@ -168,6 +168,11 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest);
  * Takes care of the search aspect and signaling errors, so this is
  * the main entry point. */
 [[noreturn]] void sjlj_unwind(DestDynEnv_sp dest, size_t index);
+/* Convenience function for use in unwind-protect cleanups. */
+[[noreturn]] inline void sjlj_continue_unwinding() {
+  sjlj_unwind_proceed(gc::As_unsafe<DestDynEnv_sp>(my_thread->_UnwindDest),
+                      my_thread->_UnwindDestIndex);
+}
 
 /* Functional unwind protect. Provided as a template function to reduce
  * runtime overhead by essentially inlining. Both thunks should accept no
@@ -187,8 +192,7 @@ T_mv funwind_protect(protf&& protected_thunk, cleanupf&& cleanup_thunk) {
     cleanup_thunk();
     multipleValuesLoadFromTemp(nvals, mv_temp);
     // Continue unwinding.
-    sjlj_unwind_proceed(gc::As_unsafe<DestDynEnv_sp>(my_thread->_UnwindDest),
-                        my_thread->_UnwindDestIndex);
+    sjlj_continue_unwinding();
   } else {
     // First time through. Set up the cleanup dynenv, then call
     // the thunk, then save its values and call the cleanup.

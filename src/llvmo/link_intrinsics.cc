@@ -67,6 +67,7 @@ extern "C" {
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
+#include <clasp/core/unwind.h>
 
 #if defined(_TARGET_OS_DARWIN)
 #include <mach-o/ldsyms.h>
@@ -988,6 +989,38 @@ core::T_O* initializeTagbodyClosure(core::T_O *afP, void* handle)
 };
 
 extern "C" {
+
+core::T_O* cc_initializeAndPushCleanupDynenv(void* space, jmp_buf* target)
+{NO_UNWIND_BEGIN();
+  ASSERT(((uintptr_t)(space)&0x7)==0); // copied from cc_stack_enclose
+  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(space);
+  const gctools::Header_s::StampWtagMtag upde_header = gctools::Header_s::StampWtagMtag::make_Value<core::UnwindProtectDynEnv_O>();
+#ifdef DEBUG_GUARD
+  size_t size = gctools::sizeof_with_header<UnwindProtectDynEnv_O>();
+  new (header) gctools::GCHeader<core::UnwindProtectDynEnv_O>::HeaderType(upde_header, size, 0, size);
+#else
+  new (header) gctools::GCHeader<core::UnwindProtectDynEnv_O>::HeaderType(upde_header);
+#endif
+  auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::UnwindProtectDynEnv_O>::Type>(space);
+  new (obj) (typename gctools::smart_ptr<core::UnwindProtectDynEnv_O>::Type)(my_thread->_DynEnv,
+                                                                             target);
+  gctools::smart_ptr<core::UnwindProtectDynEnv_O> dynenvoid = gctools::smart_ptr<core::UnwindProtectDynEnv_O>(obj);
+  my_thread->_DynEnv = dynenvoid;
+  return dynenvoid.raw_();
+  NO_UNWIND_END();
+}
+
+void cc_pop_dynenv(T_O* dynenv)
+{NO_UNWIND_BEGIN();
+  T_sp de((gctools::Tagged)dynenv);
+  // TODO: Once this is known to work, use As_unsafe instead.
+  my_thread->_DynEnv = gc::As<DynEnv_sp>(de)->outer;
+  NO_UNWIND_END();
+}
+
+[[noreturn]] void cc_sjlj_continue_unwinding () {
+  sjlj_continue_unwinding();
+}
 
 void throwIllegalSwitchValue(size_t val, size_t max) {
   SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
