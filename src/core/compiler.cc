@@ -74,6 +74,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/unwind.h> // funwind_protect
 
 
 namespace core {
@@ -1287,40 +1288,11 @@ LCC_RETURN call_with_variable_bound(core::T_O* tsym, core::T_O* tval, core::T_O*
 
 namespace core {
 
-// try/catch approach does work
-CL_UNWIND_COOP(false);
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
-  T_mv result;
-  try {
-    Closure_sp closure = gc::As_unsafe<Closure_sp>(protected_fn);
-    ASSERT(closure);
-    result = closure->entry_0()(closure.raw_());
-  }
-  catch (...)
-  {
-    // Abnormal exit
-    // Save return values, then cleanup, then continue exit
-    size_t nvals = lisp_multipleValues().getSize();
-    T_O* mv_temp[nvals];
-    multipleValuesSaveToTemp(nvals, mv_temp);
-    {
-      Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      closure->entry_0()(closure.raw_());
-    }
-    multipleValuesLoadFromTemp(nvals, mv_temp);
-    throw;  // __cxa_rethrow
-  }
-  // Normal exit
-  // Save return values, cleanup, return
-  size_t nvals = result.number_of_values();
-  T_O* mv_temp[nvals];
-  returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
-  {
-    Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-    closure->entry()(closure.raw_(),0,NULL);
-  }
-  return returnTypeLoadFromTemp(nvals, mv_temp);
+  return funwind_protect([&]() { return eval::funcall(protected_fn); },
+                         [&]() { eval::funcall(cleanup_fn); });
 }
 
 CL_LAMBDA(function &rest thunks)
