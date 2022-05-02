@@ -116,12 +116,12 @@
                     :description "Linking $out")
   (ninja:write-rule output-stream :jupyter-kernel
                     :command (format nil
-                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --non-interactive --load jupyter-kernel.lisp -- $name $bin-path $load-system $system"
+                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --no-rc~;$clasp~] --non-interactive --load jupyter-kernel.lisp -- $name $bin-path $load-system $system"
                                      clasp-quicklisp-directory)
                     :description "Installing jupyter kernel for $name")
   (ninja:write-rule output-stream :make-snapshot
                     :command (format nil
-                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --non-interactive $arguments --load snapshot.lisp -- $out"
+                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --no-rc~;$clasp~] --non-interactive $arguments --load snapshot.lisp -- $out"
                                      clasp-quicklisp-directory)
                     :pool "console"
                     :description "Creating snapshot $out"))
