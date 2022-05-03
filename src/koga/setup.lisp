@@ -204,11 +204,6 @@ writing the build and variant outputs."
                               :package-generated (resolve-package-path install-generated)
                               :package-startup (resolve-package-path install-startup)
                               *root-paths*)))
-    (when (clean *configuration*)
-      (message :emph "~%Cleaning up previous build")
-      (uiop:delete-directory-tree (build-path *configuration*)
-                                  :validate t
-                                  :if-does-not-exist :ignore))
     (ensure-directories-exist (build-path *configuration*))
     (message :emph "~%Configuring the build")
     (loop for unit in (units *configuration*)
@@ -228,5 +223,3 @@ writing the build and variant outputs."
                   (lambda ()
                     (loop for name being the hash-keys in (outputs *configuration*)
                           do (write-variant-output *configuration* name))))))
-
-

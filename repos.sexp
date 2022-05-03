@@ -1,4 +1,8 @@
-((:name :esrap
+((:name :ansi-test
+  :repository "https://gitlab.common-lisp.net/kpoeck/ansi-test.git"
+  :directory "dependencies/ansi-test/"
+  :branch "feature-clasp-changes")
+ (:name :esrap
   :repository "https://github.com/scymtym/esrap.git"
   :directory "dependencies/esrap/"
   :branch "master")
@@ -70,9 +74,14 @@
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
   :branch "main"
-  :extension t)
+  :extension :cando)
  (:name :seqan-clasp
   :repository "https://github.com/clasp-developers/seqan-clasp.git"
   :directory "extensions/seqan-clasp/"
   :branch "main"
-  :extension t))
+  :extension :seqan-clasp)
+ (:name :seqan
+  :repository "https://github.com/seqan/seqan.git"
+  :directory "extensions/seqan-clasp/seqan"
+  :branch "master"
+  :extension :seqan-clasp))

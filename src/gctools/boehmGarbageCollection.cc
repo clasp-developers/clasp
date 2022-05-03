@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/debugger.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/compiler.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 
 #ifdef USE_PRECISE_GC
 #include <gc/gc_mark.h>
@@ -431,7 +432,9 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   try {
     exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
   } catch (core::SaveLispAndDie& ee) {
-    gctools::save_lisp_and_die(ee._FileName);
+#ifdef USE_PRECISE_GC
+    snapshotSaveLoad::snapshot_save(ee);
+#endif
     exitCode = 0;
   }
     

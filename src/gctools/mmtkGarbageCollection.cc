@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/compiler.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 
 
 THREAD_LOCAL MMTk_Mutator my_mutator;
@@ -86,7 +87,9 @@ int initializeMmtk(MainFunctionType startupFn, int argc, char *argv[], bool mpiE
   try {
     exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
   } catch (core::SaveLispAndDie& ee) {
-    gctools::save_lisp_and_die(ee._FileName);
+#ifdef USE_PRECISE_GC
+    snapshotSaveLoad::snapshot_save(ee);
+#endif
     exitCode = 0;
   }
   return exitCode;

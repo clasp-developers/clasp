@@ -704,7 +704,8 @@ Return files."
     (t (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
     
-(export '(compile-aclasp link-fasl load-aclasp))
+(export '(load-aclasp compile-aclasp link-fasl))
+
 (defun compile-aclasp (&key clean
                          (output-file (build-common-lisp-bitcode-pathname))
                          (target-backend (default-target-backend))
