@@ -10,7 +10,7 @@
 
 (defun sync-repo (&key directory repository branch commit &allow-other-keys)
   (cond ((probe-file directory)
-         (format t "Fetching ~A~%" repository)
+         (format t "Fetching ~A to ~A~%" repository directory)
          (uiop:run-program (list *git* "fetch" "--quiet")
                            :output :interactive
                            :error-output :output
