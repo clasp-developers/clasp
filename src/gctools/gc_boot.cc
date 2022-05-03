@@ -7,8 +7,8 @@
 #include <clasp/core/numbers.h>
 #include <clasp/core/funcallableInstance.h>
 #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-#include <gc/gc.h>
-#include <gc/gc_mark.h>
+#include "src/bdwgc/include/gc.h"
+#include "src/bdwgc/include/gc_mark.h"
 #endif
 
 //#define DUMP_GC_BOOT 1
