@@ -1481,7 +1481,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
     ip = CONS_CDR(ip);
   }
   LOG(BF("Leaving sp_tagbody"));
-  return Values0<T_O>();
+  return Values(nil<T_O>());
 };
 
 T_mv sp_go(List_sp args, T_sp env) {
@@ -1655,26 +1655,16 @@ T_mv sp_go(List_sp args, T_sp env) {
         }
 
         T_mv sp_block(List_sp args, T_sp environment) {
-            ASSERT(environment.generalp());
-            Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
-            BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
-            ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-            uintptr_t uhandle = (uintptr_t)(__builtin_frame_address(0));
+          ASSERT(environment.generalp());
+          Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
+          BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
+          ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
+          return call_with_escape([&](BlockDynEnv_sp block) {
+            uintptr_t uhandle = (uintptr_t)(block->frame);
             T_sp handle = Integer_O::create(uhandle);
             vframe->operator[](0) = handle;
-            LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__());
-            T_mv result;
-            try {
-                result = eval::sp_progn(oCdr(args), newEnvironment);
-            } catch (Unwind &uw) {
-                LOG(BF("Caught Unwind with returnFrom.getBlockDepth() ==> %d") % returnFrom.getBlockDepth());
-                if ((uintptr_t)(uw.getFrame()) != uhandle) {
-                    throw uw;
-                }
-                result = gctools::multiple_values<T_O>::createFromValues(); // returnFrom.getReturnedObject();
-            }
-            LOG(BF("Leaving sp_block"));
-            return result;
+            return eval::sp_progn(oCdr(args), newEnvironment);
+          });
         }
 
         T_mv sp_returnFrom(List_sp args, T_sp environment) {

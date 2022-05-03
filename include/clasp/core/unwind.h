@@ -251,6 +251,9 @@ void call_with_tagbody(tagbodyf&& tagbody) {
   try { tagbody(env, index); }
   catch (Unwind& uw) {
     if (uw.getFrame() == frame) {
+      // The thrower may not be cooperative, so reset the dynenv.
+      // (DynEnvPusher takes care of this when we actually escape.)
+      my_thread->_DynEnv = env;
       index = uw.index();
       goto again;
     }
