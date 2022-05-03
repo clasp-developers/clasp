@@ -400,19 +400,14 @@ local-function - the lcl function that all of the xep functions call."
                                 (irc-intrinsic "activationFrameReferenceFromClosure" closure))
                               (irc-renv visible-ancestor-environment)))
          (parent-renv (irc-load parent-renv-ref))
-         (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv))
-         #+debug-lexical-depth(frame-unique-id (gctools:next-lexical-depth-counter))
-         #+debug-lexical-depth(set-frame-unique-id (progn 
-                                                     (irc-intrinsic "setFrameUniqueId" (jit-constant-size_t frame-unique-id) instr))))
+         (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv)))
     #+optimize-bclasp
     (setf (gethash new-env *make-value-frame-instructions*)
           (make-value-frame-maker-reference :instruction instr
                                             :new-env new-env
                                             :new-renv new-renv
                                             :parent-env visible-ancestor-environment
-                                            :parent-renv parent-renv
-                                            #+debug-lexical-depth :frame-unique-id #+debug-lexical-depth frame-unique-id
-                                            #+debug-lexical-depth :set-frame-unique-id #+debug-lexical-depth (list set-frame-unique-id (list (jit-constant-size_t frame-unique-id) instr))))
+                                            :parent-renv parent-renv))
     (irc-t*-result instr new-renv)
     instr))
 

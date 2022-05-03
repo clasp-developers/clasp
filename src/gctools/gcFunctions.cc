@@ -1120,14 +1120,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("TRACK_ALLOCATIONS = %s\n") % (track_allocations ? "**DEFINED**" : "undefined") ).str();
 
-    bool debug_lexical_depth = false;
-#ifdef DEBUG_LEXICAL_DEPTH
-  debug_lexical_depth = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LEXICAL-DEPTH"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_LEXICAL_DEPTH = %s\n") % (debug_lexical_depth ? "**DEFINED**" : "undefined") ).str();
-
   bool debug_dtree_interpreter = false;
 #ifdef DEBUG_DTREE_INTERPRETER
   debug_dtree_interpreter = true;

@@ -719,11 +719,6 @@ jump to blocks within this tagbody."
                                                :block-symbol block-symbol
                                                :make-block-frame-instruction (list make-block-frame-instruction  make-block-frame-instruction-arguments)
                                                :initialize-block-closure-instruction (list handle (list (irc-renv block-env))))))
-              #+debug-lexical-depth
-              (let* ((frame-unique-id (gctools:next-lexical-depth-counter))
-                     (set-frame-unique-id (irc-intrinsic "setFrameUniqueId" (jit-constant-size_t frame-unique-id) (irc-load (irc-renv block-env)))))
-                (setf (block-frame-info-frame-unique-id info) frame-unique-id)
-                (setf (block-frame-info-set-frame-unique-id info) (list set-frame-unique-id (list (jit-constant-size_t frame-unique-id) (irc-load (irc-renv block-env))))))
               (setf (gethash block-env *block-frame-info*) info))
             (with-try "TRY.block"
                 (codegen-progn result body block-env)
@@ -779,10 +774,7 @@ jump to blocks within this tagbody."
                 (codegen temp-mv-result return-form env)
                 (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
                 (irc-low-level-trace)
-                (let* (#+debug-lexical-depth (frame-info (gethash block-env *block-frame-info*))
-                       #+debug-lexical-depth (frame-unique-id (block-frame-info-frame-unique-id frame-info))
-                       #+debug-lexical-depth (ensure-frame-unique-id (irc-intrinsic "ensureFrameUniqueId" (jit-constant-size_t frame-unique-id) (jit-constant-size_t depth) (irc-load (irc-renv env))))
-                       (return-from-call (irc-intrinsic "throwReturnFrom" (jit-constant-size_t depth) (irc-load (irc-renv env))))
+                (let* ((return-from-call (irc-intrinsic "throwReturnFrom" (jit-constant-size_t depth) (irc-load (irc-renv env))))
                        (start-renv (irc-load (irc-renv env))))
                   #+optimize-bclasp
                   (push (make-throw-return-from :instruction return-from-call
@@ -790,10 +782,7 @@ jump to blocks within this tagbody."
                                                 :start-env env
                                                 :start-renv start-renv
                                                 :block-env block-env
-                                                :block-symbol block-symbol
-                                                #+debug-lexical-depth :ensure-frame-unique-id
-                                                #+debug-lexical-depth (list ensure-frame-unique-id
-                                                                            (list (jit-constant-size_t frame-unique-id) (jit-constant-size_t depth) (irc-load (irc-renv env)))))
+                                                :block-symbol block-symbol)
                         *throw-return-from-instructions*)))
               (let ((local-return-block (core:local-return-block block-env))
                     (local-return-value (core:local-return-value block-env)))

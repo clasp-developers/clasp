@@ -1119,28 +1119,6 @@ void popDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
 }
 };
 
-extern "C" {
-
-void setFrameUniqueId(size_t id, core::ActivationFrame_O* frameP) {
-#ifdef DEBUG_LEXICAL_DEPTH
-  ActivationFrame_sp src((gctools::Tagged)frameP);
-  src->_UniqueId = id;
-#endif
-}
-
-void ensureFrameUniqueId(size_t id, size_t depth, core::ActivationFrame_O* frameP) {
-#ifdef DEBUG_LEXICAL_DEPTH
-  ActivationFrame_sp src((gctools::Tagged)frameP);
-  ActivationFrame_sp dest = value_frame_lookup(src,depth);
-  if (dest->_UniqueId != id) {
-    printf("%s:%d Mismatch in frame UniqueId - expecting %lu - found %lu\n", __FILE__, __LINE__, id, dest->_UniqueId );
-    abort();
-  }
-#endif
-}
-
-};
-
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 // -----------------------------------------------------------
