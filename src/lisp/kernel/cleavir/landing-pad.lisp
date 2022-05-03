@@ -88,7 +88,10 @@
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "execute-protection")))
       (cmp:irc-begin-block bb)
-      (%intrinsic-call "cc_pop_dynenv" (list (dynenv-storage u-p-instruction)))
+      ;; If this is a complex catch, pop the dynenv.
+      (let ((dynenv (dynenv-storage u-p-instruction)))
+        (when dynenv
+          (%intrinsic-call "cc_pop_dynenv" (list dynenv))))
       (let ((thunk (in (first (cleavir-bir:inputs u-p-instruction))))
             (protection-dynenv (cleavir-bir:parent u-p-instruction)))
         ;; There is a subtle point here with regard to unwinding out of a cleanup
@@ -191,7 +194,12 @@
                (ndestinations (count-if #'has-entrances-p destinations))
                (next (maybe-entry-processor (cleavir-bir:parent dynenv) tags))
                (bb (cmp:irc-basic-block-create "catch"))
-               (_ (cmp:irc-begin-block bb))
+               (_0 (cmp:irc-begin-block bb))
+               (llde (dynenv-storage dynenv))
+               ;; Restore the dynenv, if there is one.
+               (_1 (when llde
+                     (%intrinsic-call "cc_unwind_dest_dynenv"
+                                      (list llde))))
                ;; Restore multiple values.
                ;; Note that we do this late, after any unwind-protect cleanups,
                ;; so that we get the correct values.
@@ -212,7 +220,7 @@
                              (t (error "BUG: Bad rtype ~a" rt))))))
                (go-index (cmp:irc-load *go-index.slot*))
                (sw (cmp:irc-switch go-index next ndestinations)))
-          (declare (ignore _))
+          (declare (ignore _0 _1))
           (loop for dest in destinations
                 for has-entrances-p = (has-entrances-p dest)
                 for jump-id = (when has-entrances-p (get-destination-id dest))
@@ -307,7 +315,7 @@
      (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
              (cleavir-bir-transformations:simple-unwinding-p
               dynenv *clasp-system*))
-         ;; SJLJ is orthogonal to landing pads
+         ;; simple unwinds are orthogonal to landing pads
          (dynenv-may-enter-p (cleavir-bir:parent dynenv))
          t))))
 

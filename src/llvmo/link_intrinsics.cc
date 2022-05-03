@@ -990,6 +990,20 @@ core::T_O* initializeTagbodyClosure(core::T_O *afP, void* handle)
 
 extern "C" {
 
+core::T_O* cc_createAndPushBlockDynenv(void* frame, jmp_buf* target) {
+  core::BlockDynEnv_sp block = BlockDynEnv_O::create(my_thread->_DynEnv,
+                                                     frame, target);
+  my_thread->_DynEnv = block;
+  return block.raw_();
+}
+
+core::T_O* cc_createAndPushTagbodyDynenv(void* frame, jmp_buf* target) {
+  core::TagbodyDynEnv_sp tb = TagbodyDynEnv_O::create(my_thread->_DynEnv,
+                                                      frame, target);
+  my_thread->_DynEnv = tb;
+  return tb.raw_();
+}
+
 core::T_O* cc_initializeAndPushCleanupDynenv(void* space, jmp_buf* target)
 {NO_UNWIND_BEGIN();
   ASSERT(((uintptr_t)(space)&0x7)==0); // copied from cc_stack_enclose
@@ -1015,6 +1029,14 @@ void cc_pop_dynenv(T_O* dynenv)
   T_sp de((gctools::Tagged)dynenv);
   // TODO: Once this is known to work, use As_unsafe instead.
   my_thread->_DynEnv = gc::As<DynEnv_sp>(de)->outer;
+  NO_UNWIND_END();
+}
+
+void cc_unwind_dest_dynenv(T_O* dynenv)
+{NO_UNWIND_BEGIN();
+  T_sp tde((gctools::Tagged)dynenv);
+  DestDynEnv_sp dde = gc::As<DestDynEnv_sp>(tde);
+  my_thread->_DynEnv = dde->unwound_dynenv();
   NO_UNWIND_END();
 }
 

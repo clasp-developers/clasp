@@ -201,8 +201,10 @@
   ;; Could undo stack allocated cells here
   (declare (ignore tmv)))
 (defmethod undo-dynenv ((dynenv bir:catch) tmv)
-  ;; ditto, and mark the continuation out of extent
-  (declare (ignore tmv)))
+  (declare (ignore tmv))
+  (let ((de (dynenv-storage dynenv)))
+    (when de
+      (%intrinsic-call "cc_pop_dynenv" (list de)))))
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
   (declare (ignore tmv))
   (%intrinsic-call "llvm.stackrestore" (list (dynenv-storage dynenv))))
@@ -338,24 +340,70 @@
                                                   immediate))
                                         dest)))))
 
-(defun translate-sjlj-catch (catch successors)
-  ;; Call setjmp, switch on the result.
-  (let ((normal-successor (first successors))
-        (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
-    (out (cmp:irc-bit-cast bufp cmp:%t*%) catch)
-    (multiple-value-bind (iblocks blocks successors)
-        ;; We only care about iblocks that are actually unwound to.
-        (loop for iblock in (rest (bir:next catch))
-              for successor in (rest successors)
-              when (has-entrances-p iblock)
-                collect iblock into iblocks
-                and collect (cmp:irc-basic-block-create "catch-restore")
-                      into blocks
-                and collect successor into successors
-              finally (return (values iblocks blocks successors)))
-      (let* ((sj (%intrinsic-call "_setjmp" (list bufp)))
-             (default (cmp:irc-basic-block-create "catch-default"))
+;;; Given a catch and the successor LLVM blocks,
+;;; return multiple values:
+;;; 1) The iblocks that can be unwound to.
+;;; 2) Their corresponding LLVM blocks.
+;;; 3) New LLVM blocks to place between the catch and the above blocks.
+;;; 4) A boolean indicating whether we need to use a BlockDynEnv.
+;;; (This last could alternately be kept from the original source?)
+(defun categorize-catch (catch successors)
+  ;; We only care about iblocks that are actually unwound to.
+  (loop with escp = nil
+        for iblock in (rest (bir:next catch))
+        for successor in (rest successors)
+        when (has-entrances-p iblock)
+          collect iblock into iblocks
+          and collect (cmp:irc-basic-block-create "catch-restore")
+                into blocks
+          and collect successor into successors
+          and do (unless (eq (bir:dynamic-environment iblock) catch)
+                   (setf escp t))
+        finally (return (values iblocks blocks successors escp))))
+
+(defun phi-out-for-catch (phi block)
+  (let ((mv (restore-multiple-value-0))
+        (rt (cc-bmir:rtype phi)))
+    (cond ((null rt))
+          ((equal rt '(:object))
+           (phi-out (cmp:irc-tmv-primary mv) phi block))
+          ((eq rt :multiple-values) (phi-out mv phi block))
+          ((every (lambda (x) (eq x :object)) rt)
+           (phi-out
+            (list* (cmp:irc-tmv-primary mv)
+                   (loop for i from 1 below (length rt)
+                         collect (cmp:irc-load
+                                  (return-value-elt i))))
+            phi block))
+          (t (error "BUG: Bad rtype ~a" rt)))))
+
+(defun translate-catch (catch successors)
+  (let* ((simplep (bir-transformations:simple-unwinding-p
+                   catch *clasp-system*))
+         (frame
+           (unless simplep
+             (%intrinsic-call "llvm.frameaddress.p0i8"
+                              (list (%i32 0)))))
+         (normal-successor (first successors))
+         (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "catch-jmp-buf")))
+    (out (if simplep (cmp:irc-bit-cast bufp cmp:%t*%) frame)
+         catch)
+    (multiple-value-bind (iblocks blocks successors blockp)
+        (categorize-catch catch successors)
+      (let* ((default (cmp:irc-basic-block-create "catch-default"))
+             (dynenv
+               (unless simplep
+                 (%intrinsic-invoke-if-landing-pad-or-call
+                  (if blockp
+                      "cc_createAndPushBlockDynenv"
+                      "cc_createAndPushTagbodyDynenv")
+                  (list frame bufp))))
+             (sj (%intrinsic-call "_setjmp" (list bufp)))
              (sw (cmp:irc-switch sj default (1+ (length iblocks)))))
+        ;; Set the dynenv storage. We explicitly put in NIL for
+        ;; simple unwinds, so that we can figure out if there is a
+        ;; dynenv later without dynenv-storage signaling an error.
+        (setf (dynenv-storage catch) (if simplep nil dynenv))
         (cmp:irc-begin-block default)
         (cmp:irc-unreachable)
         (cmp:irc-add-case sw (%i32 0) normal-successor)
@@ -363,43 +411,19 @@
               for block in blocks
               for iblock in iblocks
               for destination-id = (get-destination-id iblock)
-              for phi = (and (= (length (bir:inputs iblock)) 1)
-                             (first (bir:inputs iblock)))
-              ;; 1+ because we can't pass 0 to longjmp, as in unwind below.
+              ;; Note that the INPUTS can be NIL.
+              for phi = (first (bir:inputs iblock))
+              ;; 1+ because we can't pass 0 to longjmp.
               do (cmp:irc-add-case sw (%i32 (1+ destination-id)) block)
                  (cmp:irc-begin-block block)
-                 (when phi
-                   (let ((mv (restore-multiple-value-0))
-                         (rt (cc-bmir:rtype phi)))
-                     (cond ((null rt))
-                           ((equal rt '(:object))
-                            (phi-out (cmp:irc-tmv-primary mv) phi block))
-                           ((eq rt :multiple-values) (phi-out mv phi block))
-                           ((every (lambda (x) (eq x :object)) rt)
-                            (phi-out
-                             (list* (cmp:irc-tmv-primary mv)
-                                    (loop for i from 1 below (length rt)
-                                          collect (cmp:irc-load
-                                                   (return-value-elt i))))
-                             phi block))
-                           (t (error "BUG: Bad rtype ~a" rt)))))
+                 (when phi (phi-out-for-catch phi block))
                  (cmp:irc-br succ))))))
 
 (defmethod translate-terminator ((instruction bir:catch) abi next)
   (declare (ignore abi))
-  (cond
-    ((cleavir-set:empty-set-p (bir:unwinds instruction))
-     (cmp:irc-br (first next)))
-    ((bir-transformations:simple-unwinding-p instruction
-                                             *clasp-system*)
-     (translate-sjlj-catch instruction next))
-    (t
-     ;; Assign the catch the continuation.
-     (out (%intrinsic-call "llvm.frameaddress.p0i8" (list (%i32 0)) "frame")
-          instruction)
-     ;; Unconditional branch to the normal successor;
-     ;; dynamic environment stuff is handled in layout-iblock.
-     (cmp:irc-br (first next)))))
+  (if (cleavir-set:empty-set-p (bir:unwinds instruction))
+      (cmp:irc-br (first next))
+      (translate-catch instruction next)))
 
 (defmethod translate-terminator ((instruction bir:unwind) abi next)
   (declare (ignore abi next))
