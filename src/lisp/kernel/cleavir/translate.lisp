@@ -413,8 +413,7 @@
               for destination-id = (get-destination-id iblock)
               ;; Note that the INPUTS can be NIL.
               for phi = (first (bir:inputs iblock))
-              ;; 1+ because we can't pass 0 to longjmp.
-              do (cmp:irc-add-case sw (%i32 (1+ destination-id)) block)
+              do (cmp:irc-add-case sw (%i32 destination-id) block)
                  (cmp:irc-begin-block block)
                  (when phi (phi-out-for-catch phi block))
                  (cmp:irc-br succ))))))
@@ -452,13 +451,12 @@
     ;; unwind
     (if (bir-transformations:simple-unwinding-p
          (bir:catch instruction) *clasp-system*)
-        ;; SJLJ
+        ;; Simple SJLJ
         ;; (Note: No landing pad because in order for SJLJ to occur,
         ;;  the dynamic environment must just be the function.)
         (let ((bufp (cmp:irc-bit-cast cont cmp::%jmp-buf-tag*%)))
           (%intrinsic-invoke-if-landing-pad-or-call
-           ;; 1+ because we can't pass 0 to longjmp.
-           "_longjmp" (list bufp (%i32 (1+ destination-id)))))
+           "_longjmp" (list bufp (%i32 destination-id))))
         ;; C++ exception
         (cmp:with-landing-pad (never-entry-landing-pad
                                (bir:dynamic-environment instruction))
@@ -1954,8 +1952,9 @@
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
   ;; Create llvm IR functions for each BIR function.
   (bir:do-functions (function module)
-    ;; Assign IDs to unwind destinations.
-    (let ((i 0))
+    ;; Assign IDs to unwind destinations. We start from 1 to allow
+    ;; things to work with setjmp, which cannot return 0 from longjmp.
+    (let ((i 1))
       (cleavir-set:doset (entrance (bir:entrances function))
         (setf (gethash entrance *unwind-ids*) i)
         (incf i)))
