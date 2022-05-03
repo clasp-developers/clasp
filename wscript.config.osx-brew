@@ -1,7 +1,0 @@
-# This wscript.config works on OSX when llvm9 is installed via brew
-# (as opposed to Macports).
-
-LLVM_CONFIG_BINARY = '/usr/local/Cellar/llvm/9.0.1/bin/llvm-config'
-PREFIX = '/opt/clasp/'
-# set this to false if you have less than 16 GB of RAM
-USE_PARALLEL_BUILD = True

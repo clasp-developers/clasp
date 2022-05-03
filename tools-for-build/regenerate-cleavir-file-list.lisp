@@ -24,19 +24,6 @@
 (require :asdf)
 
 
-(defun save-file-list-as-python (filename file-list)
-  "Save the list of files in FILE-LIST to FILENAME as a python file."
-  (when (probe-file filename)
-    (rename-file filename (make-pathname :type "pyold" :defaults filename) :if-exists :supersede))
-  (format t "Saving file list to ~S~%" filename)
-  (with-open-file (fout filename :direction :output :if-exists :supersede)
-    (format fout "#~%# This is a generated file, editing it is extremely unwise - instead run regenerate-cleavir-file-list.lisp~%#~%")
-    (format fout "cleavir_file_list = [~%")
-    (format fout "~&    ~s" (namestring (car file-list)))
-    (dolist (one-file (cdr file-list))
-      (format fout ",~&    ~s" (namestring one-file)))
-    (format fout "~&]~%")))
-
 (defun save-file-list-as-common-lisp (filename file-list)
   "Save the list of files in FILE-LIST to FILENAME as a common-lisp file."
   (when (probe-file filename)
@@ -101,13 +88,6 @@
     ;;#P"src/lisp/kernel/tags/pre-auto"
     "src/lisp/kernel/cleavir/auto-compile"
     "src/lisp/kernel/cleavir/inline")))
-
-(save-file-list-as-python
- (merge-pathnames #P"cleavir_file_list.py"
-                  (or *load-truename*
-                      *compile-file-truename*
-                      (error "Both *LOAD-TRUENAME* and *COMPILE-FILE-TRUENAME* is NIL")))
- *file-list*)
 
 (save-file-list-as-common-lisp
  (merge-pathnames #P"cleavir-file-list.lisp"
