@@ -8,30 +8,32 @@
   (format t "~:[Did not find~;Found~] ~A clone in ~A, assuming everything is okay.~%"
           (probe-file directory) repository directory))
 
-(defun sync-repo (&key directory repository branch commit &allow-other-keys)
-  (cond ((probe-file directory)
-         (format t "Fetching ~A to ~A~%" repository directory)
-         (uiop:run-program (list *git* "fetch" "--quiet")
-                           :output :interactive
-                           :error-output :output
-                           :directory directory))
-       (t
-        (format t "Cloning ~A~%" repository)
-        (uiop:run-program (list *git* "clone" repository (namestring directory))
-                          :output :interactive
-                          :error-output :output)))
-  (when (or commit branch)
-    (format t "Checking out ~A from ~A~%" (or commit branch) repository)
-    (uiop:run-program (list *git* "checkout" "--quiet" (or commit branch))
-                      :output :interactive
-                      :error-output :output
-                      :directory directory))
-  (when (and branch (not commit))
-    (format t "Fast forwarding to origin/~A from ~A~%" branch repository)
-    (uiop:run-program (list *git* "merge" "--ff-only" (format nil "origin/~A" branch))
-                      :output :interactive
-                      :error-output :output
-                      :directory directory)))
+(defun sync-repo (help &key directory repository branch commit &allow-other-keys
+                  &aux (exists (probe-file directory)))
+  (unless (and help exists)
+    (cond (exists
+           (format t "Fetching ~A~%" repository)
+           (uiop:run-program (list *git* "fetch" "--quiet")
+                             :output :interactive
+                             :error-output :output
+                             :directory directory))
+         (t
+          (format t "Cloning ~A~%" repository)
+          (uiop:run-program (list *git* "clone" repository (namestring directory))
+                            :output :interactive
+                            :error-output :output)))
+    (when (or commit branch)
+      (format t "Checking out ~A from ~A~%" (or commit branch) repository)
+      (uiop:run-program (list *git* "checkout" "--quiet" (or commit branch))
+                        :output :interactive
+                        :error-output :output
+                        :directory directory))
+    (when (and branch (not commit))
+      (format t "Fast forwarding to origin/~A from ~A~%" branch repository)
+      (uiop:run-program (list *git* "merge" "--ff-only" (format nil "origin/~A" branch))
+                        :output :interactive
+                        :error-output :output
+                        :directory directory))))
 
 (defun split-keywords (value)
   (if (stringp value)
@@ -82,18 +84,28 @@
        (build (getf initargs :build-path "build/"))
        (extensions (getf initargs :extensions))
        (skip-sync (getf initargs :skip-sync))
+       (help (getf initargs :help))
        (code (uiop:getcwd)))
   ;; Get all the external dependencies
-  (format t "Synchronizing external repositories~%~%")
+  (unless help
+    (format t "Synchronizing external repositories~%~%"))
   (loop for source in (uiop:read-file-form #P"repos.sexp")
         for name = (getf source :name)
         for extension = (getf source :extension)
-        if (member name skip-sync)
+        if (or (eq t skip-sync)
+               (member name skip-sync))
           do (apply #'check-repo source)
         else if (or (not extension)
-                    (member name extensions))
-          do (apply #'sync-repo source)
-        do (terpri))
+                    (member extension extensions))
+          do (apply #'sync-repo help source)
+        unless help
+          do (terpri))
+  (when (and (not help)
+             (getf initargs :clean))
+    (format t "Cleaning up previous build~%~%")
+    (uiop:delete-directory-tree (truename build)
+                                :validate t
+                                :if-does-not-exist :ignore))
   ;; Do the absolute minimum to inform ASDF about the location of systems
   ;; in order to find the clasp root and the desired build directory.
   (asdf:initialize-source-registry
@@ -105,5 +117,5 @@
                                :implementation))
                            :inherit-configuration))
   (asdf:load-system :koga)
-  (apply #'uiop:symbol-call "KOGA" "SETUP" initargs))
+  (apply #'uiop:symbol-call "KOGA" (if help "HELP" "SETUP") initargs))
   

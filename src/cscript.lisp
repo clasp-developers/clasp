@@ -1,3 +1,7 @@
+(k:includes #~"bdwgc/"
+            #~"bdwgc/include/"
+            #~"libatomic_ops/src/")
+
 (k:recurse #P"gctools/"
            #P"clbind/"
            #P"serveEvent/"

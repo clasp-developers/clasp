@@ -134,7 +134,7 @@ private:
 
 
 
-void snapshot_save(const std::string& filename);
+void snapshot_save(core::SaveLispAndDie& data);
 int snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename);
 
 

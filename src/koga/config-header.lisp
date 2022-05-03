@@ -87,6 +87,8 @@
                  "SNAPSHOT_START" :|_binary_snapshot_start|
                  "SNAPSHOT_END" :|_binary_snapshot_end|
                  "SNAPSHOT_SIZE" :|_binary_snapshot_size|
+                 "SNAPSHOT_SEGMENT" "__CLASP"
+                 "SNAPSHOT_SECTION" "__clasp"
                  "BUILD_LIB" (string-trim " "
                                           (concatenate 'string
                                                        *variant-ldlibs*
@@ -133,6 +135,7 @@
                  "VARIANT_NAME" *variant-name*
                  "VARIANT_DIR" *variant-bitcode-name*
                  "CLASP_CLANG_PATH" (namestring (cc configuration))
+                 "CXX_BINARY" (namestring (cxx configuration))
                  "NM_BINARY" (namestring (nm configuration))
                  "OBJCOPY_BINARY" (and (objcopy configuration)
                                        (namestring (objcopy configuration))))

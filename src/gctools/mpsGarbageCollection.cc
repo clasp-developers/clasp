@@ -65,6 +65,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/lispStream.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 
 #ifdef USE_MPS
 
@@ -1183,7 +1184,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     try {
       exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
     } catch (core::SaveLispAndDie& ee) {
-      save_lisp_and_die(ee._FileName);
+#ifdef USE_PRECISE_GC
+      snapshotSaveLoad::snapshot_save(ee);
+#endif
       exit_code = 0;
     }
 #else

@@ -344,14 +344,13 @@ def update_dependencies(cfg):
                        "3898e09f8047ef89113df265574ae8de8afa31ac")
     fetch_git_revision("src/mps",
                        "https://github.com/Ravenbrook/mps.git",
-                       #DLM says this will be faster.
-#                       label = "master", revision = "b1cc9aa5f87f2619ff675c8756e83211865419de")
-                       # Very recent branch - may have problems
-#                       label = "master", revision = "b5be454728c2ac58b9cb2383360ed0366a7e4115")
-                       #First branch that supported fork
-#                       label = "master", revision = "46e0a8d77ac470282de7300f5eaf471ca2fbee05")
-                       # David set up this branch/2018-08-18/exp-strategy-2 for clasp
                        "b8a05a3846430bc36c8200f24d248c8293801503")
+    fetch_git_revision("src/bdwgc",
+                       "https://github.com/ivmai/bdwgc.git",
+                       label = "master", revision = "v8.2.0")
+    fetch_git_revision("src/libatomic_ops",
+                       "https://github.com/ivmai/libatomic_ops.git",
+                       label = "master", revision = "v7.6.12")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
 #                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
@@ -455,6 +454,7 @@ def configure_common(cfg,variant_obj):
     assert os.path.isdir(cfg.env.LLVM_BIN_DIR)
     log.info("cfg.env.PREFIX is %s" % cfg.env.PREFIX)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
+    cfg.define("CXX_BINARY", os.path.join(cfg.env.LLVM_BIN_DIR, "clang++"))
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("CLASP_DEV_TEST_PATH", "src")
     cfg.define("CLASP_DEV_SOURCE_PATH", "../..")
@@ -473,6 +473,8 @@ def configure_common(cfg,variant_obj):
     cfg.define("CLASP_INSTALL_STARTUP_PATH", "%s/bin/extension-startup-loads/" % (cfg.env.PREFIX))
     cfg.define("CLASP_INSTALL_INCLUDE_PATH", "%s/include/" % (cfg.env.PREFIX))
     cfg.define("CLASP_INSTALL_SYS_PATH","%s/src/lisp/" % (cfg.env.PREFIX))
+    cfg.define("SNAPSHOT_SEGMENT","__CLASP")
+    cfg.define("SNAPSHOT_SECTION","__clasp")
     cfg.define("SNAPSHOT_START","_binary_extensions_cando_generated_cando_snapshot_start",quote=False)
     cfg.define("SNAPSHOT_END","_binary_extensions_cando_generated_cando_snapshot_end",quote=False)
     cfg.define("SNAPSHOT_SIZE","_binary_extensions_cando_generated_cando_snapshot_size",quote=False)
@@ -655,10 +657,10 @@ class boehm_base(variant):
                 cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s_lib.lto.o' % self.executable_name())
         log.info("Setting up boehm library cfg.env.STLIB_BOEHM = %s ", cfg.env.STLIB_BOEHM)
         log.info("Setting up boehm library cfg.env.LIB_BOEHM = %s", cfg.env.LIB_BOEHM)
-        if (cfg.env.LIB_BOEHM == [] ):
-            cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
-        else:
-            cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
+#        if (cfg.env.LIB_BOEHM == [] ):
+#            cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
+#        else:
+#            cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
         self.common_setup(cfg)
 
 class boehm(boehm_base):
@@ -1221,6 +1223,11 @@ def configure(cfg):
     cfg.env["NM_BINARY"] = "%s/llvm-nm" % cfg.env.LLVM_BIN_DIR
     cfg.define("NM_BINARY", cfg.env["NM_BINARY"])
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
+    if (cfg.env['DEST_OS'] == DARWIN_OS ):
+        pass
+    else:
+        cfg.find_program("objcopy")
+        cfg.define("OBJCOPY_BINARY", cfg.env["OBJCOPY"])
     log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
     # apply the default
     if (cfg.env['CLASP_BUILD_MODE']==[]):
@@ -1335,10 +1342,10 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS',"--rtlib=libgcc")
     cfg.check_cxx(lib='gmpxx gmp'.split(), cxxflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cxxflags='-Wall', uselib_store='FFI')
-    try:
-        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
-    except ConfigurationError:
-        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+#    try:
+#        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
+#    except ConfigurationError:
+#        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
 
 #    if (cfg.env.ENABLE_MMTK==True):
 #        cfg.check_cxx(lib='mmtk_clasp', cflags='-Wall', linkflags="-L/opt/clasp/lib/", uselib_store='MMTK')
@@ -1447,6 +1454,17 @@ def configure(cfg):
         cfg.define("_TARGET_OS_FREEBSD",1);
     else:
         raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
+    if (cfg.env["ENABLE_MMTK"] == True):
+        mmtk_path = cfg.path.find_node("src/mmtk-clasp/")
+        cfg.env.append_value('INCLUDES',[mmtk_path.abspath()])
+    else:
+        # boehm includes
+        bdwgc_path = cfg.path.find_node("src/bdwgc")
+        bdwgc_include_path = cfg.path.find_node("src/bdwgc/include")
+        libatomic_ops_src_path = cfg.path.find_node("src/libatomic_ops/src")
+        cfg.env.append_value('INCLUDES',[bdwgc_path.abspath()])
+        cfg.env.append_value('INCLUDES',[bdwgc_include_path.abspath()])
+        cfg.env.append_value('INCLUDES',[libatomic_ops_src_path.abspath()])
     if (cfg.env["ENABLE_MMTK"] == True):
         mmtk_path = cfg.path.find_node("src/mmtk-clasp/")
         cfg.env.append_value('INCLUDES',[mmtk_path.abspath()])

@@ -36,10 +36,10 @@
 # ifdef CLASP_THREADS
 #  define GC_THREADS
 # endif
-# include <gc/gc.h>
-# include <gc/gc_mark.h>
+# include "src/bdwgc/include/gc.h"
+# include "src/bdwgc/include/gc_mark.h"
 extern "C" {
-# include <gc/gc_inline.h>
+# include "src/bdwgc/include/gc_inline.h"
 };
 #elif defined(USE_MMTK)
 # include <mmtk/api/mmtk.h>

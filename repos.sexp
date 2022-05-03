@@ -1,4 +1,8 @@
-((:name :esrap
+((:name :ansi-test
+  :repository "https://gitlab.common-lisp.net/kpoeck/ansi-test.git"
+  :directory "dependencies/ansi-test/"
+  :branch "feature-clasp-changes")
+ (:name :esrap
   :repository "https://github.com/scymtym/esrap.git"
   :directory "dependencies/esrap/"
   :branch "master")
@@ -58,13 +62,26 @@
   :repository "https://github.com/Ravenbrook/mps.git"
   :directory "src/mps/"
   :commit "b8a05a3846430bc36c8200f24d248c8293801503")
+ (:name :bdwgc
+  :repository "https://github.com/ivmai/bdwgc.git"
+  :directory "src/bdwgc/"
+  :commit "v8.2.0")
+ (:name :libatomic_ops
+  :repository "https://github.com/ivmai/libatomic_ops.git"
+  :directory "src/libatomic_ops/"
+  :commit "v7.6.12")
  (:name :cando
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
   :branch "main"
-  :extension t)
+  :extension :cando)
  (:name :seqan-clasp
   :repository "https://github.com/clasp-developers/seqan-clasp.git"
   :directory "extensions/seqan-clasp/"
   :branch "main"
-  :extension t))
+  :extension :seqan-clasp)
+ (:name :seqan
+  :repository "https://github.com/seqan/seqan.git"
+  :directory "extensions/seqan-clasp/seqan"
+  :branch "master"
+  :extension :seqan-clasp))

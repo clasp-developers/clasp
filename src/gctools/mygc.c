@@ -49,4 +49,13 @@ mps_res_t clasp_scan_area_tagged(mps_ss_t ss,
 
 
 #endif
+
+
+
+#ifdef USE_BOEHM
+// Configure Boehm GC
+#include "clasp/gctools/boehm_config.h"
+#include "extra/gc.c"
+#endif
+
 #endif // #ifndef RUNNING_GC_BUILDER
