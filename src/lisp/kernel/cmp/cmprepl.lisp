@@ -36,7 +36,7 @@
 (defun trace-compiler ()
   (format t "Turning on safe-trace of compiler functions~%")
   (core:safe-trace
-   cmp::irc-gep
+   cmp::irc-typed-gep
    literal::do-literal-table
    cmp::maybe-spill-to-register-save-area
    cmp::codegen-startup-shutdown
@@ -96,8 +96,8 @@
 ;;;   Don't add this feature if you want implicit compilation
 ;;;
 ;;; 
-#-(or cleavir no-implicit-compilation)
-(setq *implicit-compile-hook* #'bclasp-implicit-compile-repl-form)
+#-(or no-implicit-compilation)
+(setq *implicit-compile-hook* 'bclasp-implicit-compile-repl-form)
 
 ;;#+(and clasp-min (not no-implicit-compilation))
 #+(or)

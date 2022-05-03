@@ -35,10 +35,10 @@
   )
 
 
-#+(or)
+;;#+(or)
 (start-cleavir)
 
 ;;; Start cleavir with no inline
-(progn
+#+(or)(progn
   (load-cleavir-no-inline)
   (format t "!!!!!!!!!!! Cleavir loaded~%"))

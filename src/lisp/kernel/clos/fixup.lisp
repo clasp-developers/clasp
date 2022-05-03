@@ -415,10 +415,10 @@ and cannot be added to ~A." method other-gf gf)))
 ;;; Error messages
 
 (defgeneric no-applicable-method (gf &rest args)
-  (declare (optimize (debug 3))))
+  #+(or)(declare (optimize (debug 3))))
 
 (defmethod no-applicable-method (gf &rest args)
-  (declare (optimize (debug 3)))
+  #+(or)(declare (optimize (debug 3)))
   (error 'no-applicable-method-error :generic-function gf :arguments args))
 
 ;;; FIXME: use actual condition classes

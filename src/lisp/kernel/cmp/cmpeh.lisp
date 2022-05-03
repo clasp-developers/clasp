@@ -28,7 +28,7 @@
 
 #|
 For sbcl
-(sb-ext:restrict-compiler-policy 'debug 3)
+(sb-ext:restrict-compiler-policy '!debug 3)
 
 |#
 

@@ -506,7 +506,7 @@
 
 (defun maybe-insert-step-before (inst)
   (when (policy:policy-value (bir:policy inst)
-                                     'insert-step-conditions)
+                             'insert-step-conditions)
     (let ((origin (bir:origin inst)))
       (when (typep origin 'cst:cst)
         (let* ((frame (%intrinsic-call "llvm.frameaddress.p0i8"
@@ -518,10 +518,12 @@
                      (literal:reference-literal
                       "<error dumping form>" t))))
                (lit
-                 (cmp:irc-load
-                  (cmp:irc-gep-variable (literal:ltv-global)
-                                        (list (%size_t 0) (%i64 index))
-                                        "step-source"))))
+                 (multiple-value-bind (literals literals-type)
+                     (literal:ltv-global)
+                   (cmp:irc-t*-load
+                    (cmp:irc-typed-gep-variable literals-type literals
+                                                (list (%size_t 0) (%i64 index))
+                                                "step-source")))))
           (%intrinsic-invoke-if-landing-pad-or-call
            "cc_breakstep" (list lit frame)))))))
 
@@ -750,7 +752,7 @@
          (sw (cmp:irc-switch rnret mte (+ 1 nreq nopt)))
          (environment (environment callee-info)))
     (labels ((load-return-value (n)
-               (cmp:irc-t*-load (cmp:irc-gep cmp:%t*% rvalues (list n))))
+               (cmp:irc-t*-load (cmp:irc-typed-gep cmp:%t*% rvalues (list n))))
              (load-return-values (low high)
                (loop for i from low below high
                      collect (load-return-value i)))
@@ -806,7 +808,7 @@
              rest-phi
              (%intrinsic-invoke-if-landing-pad-or-call
               "cc_mvcGatherRest2"
-              (list (cmp:irc-gep cmp:%t*% rvalues (list nfixed))
+              (list (cmp:irc-typed-gep cmp:%t*% rvalues (list nfixed))
                     (cmp:irc-sub rnret (%size_t nfixed))))
            mte))
         (cmp:irc-br merge))
@@ -1278,7 +1280,7 @@
     ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
     ;; For layout of the vector, check simple-vector-llvm-type's definition.
     ;; untagged is the actual offset.
-    (cmp:irc-gep-variable type
+    (cmp:irc-typed-gep-variable type
                           cast
                           (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged)
                           "aref")))
@@ -1335,7 +1337,7 @@
             (let ((ls
                     (loop with vals = (cmp:irc-vaslist-values (in input))
                           for i below (bir:nvalues inst)
-                          for ptr = (cmp:irc-gep cmp:%t*% vals (list i))
+                          for ptr = (cmp:irc-typed-gep cmp:%t*% vals (list i))
                           collect (cmp:irc-t*-load ptr))))
               (if (= (bir:nvalues inst) 1)
                   (first ls)
@@ -1442,7 +1444,7 @@
                ;; LLVM type is t**, i.e. this is a pointer to the 0th value.
                (mvalues (%gep cmp:%t*[0]% (multiple-value-array-address)
                               '(0 0) "multiple-values"))
-               (sdest (cmp:irc-gep-variable cmp:%t*% valvec (list spos) "var-dest"))
+               (sdest (cmp:irc-typed-gep-variable cmp:%t*% valvec (list spos) "var-dest"))
                ;; Add one, since we store the primary separately
                (dest (%gep cmp:%t*% sdest '(1) "var-dest-subsequent"))
                (source (%gep cmp:%t*% mvalues '(1) "var-source-subsequent"))
@@ -1476,7 +1478,7 @@
     (loop for (key size extra) in data
           for startn = (%size_t 0) then finishn
           for finishn in partial-sums
-          for dest = (cmp:irc-gep-variable cmp:%t*% valvec (list startn) "dest")
+          for dest = (cmp:irc-typed-gep-variable cmp:%t*% valvec (list startn) "dest")
           do (ecase key
                ((:saved)
                 (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
@@ -1566,7 +1568,7 @@
              (multiple-value-bind (literals literals-type)
                  (literal:ltv-global)
                (cmp:irc-t*-load
-                (cmp:irc-gep-variable literals-type
+                (cmp:irc-typed-gep-variable literals-type
                                       literals
                                       (list (%size_t 0)
                                             (%i64 immediate-or-index))
