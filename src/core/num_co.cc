@@ -84,6 +84,7 @@ namespace core {
 
 CL_LAMBDA(x &optional y)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(float)dx")
 DOCGROUP(clasp)
 CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
@@ -124,6 +125,7 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(numerator)dx")
 DOCGROUP(clasp)
 CL_DEFUN Integer_sp cl__numerator(Rational_sp x) {
@@ -140,6 +142,7 @@ CL_DEFUN Integer_sp cl__numerator(Rational_sp x) {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(denominator)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__denominator(Rational_sp x) {
@@ -418,6 +421,7 @@ Real_mv clasp_floor2(Real_sp dividend, Real_sp divisor) {
 
 CL_LAMBDA(x &optional y)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(floor)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_mv cl__floor(Real_sp x, T_sp y) {
@@ -489,6 +493,7 @@ Real_mv clasp_ceiling2(Real_sp dividend, Real_sp divisor) {
 
 CL_LAMBDA(dividend &optional divisor)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(ceiling)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_mv cl__ceiling(Real_sp dividend, T_sp divisor) {
@@ -545,6 +550,7 @@ Real_mv clasp_truncate2(Real_sp x, Real_sp y) {
 
 CL_LAMBDA(dividend &optional divisor)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(truncate)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_mv cl__truncate(Real_sp dividend, T_sp divisor) {
@@ -674,6 +680,7 @@ Real_mv clasp_round2(Real_sp dividend, Real_sp divisor) {
 
 CL_LAMBDA(dividend &optional divisor)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(round)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_mv cl__round(Real_sp x, T_sp y) {
@@ -685,6 +692,7 @@ CL_DEFUN Number_mv cl__round(Real_sp x, T_sp y) {
 
 CL_LAMBDA(x y)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(mod)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_sp cl__mod(Real_sp dividend, Real_sp divisor) {
@@ -696,6 +704,7 @@ CL_DEFUN Real_sp cl__mod(Real_sp dividend, Real_sp divisor) {
 
 CL_LAMBDA(x y)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(rem)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_sp cl__rem(Real_sp dividend, Real_sp divisor) {
@@ -707,6 +716,7 @@ CL_DEFUN Real_sp cl__rem(Real_sp dividend, Real_sp divisor) {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(decodeFloat)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
@@ -772,6 +782,7 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
 
 CL_LAMBDA(x y)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(scaleFloat)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__scale_float(Number_sp x, Number_sp y) {
@@ -821,6 +832,7 @@ int clasp_signbit(Number_sp x) {
 
 CL_LAMBDA(x &optional (y x yp))
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(floatSign)dx")
 DOCGROUP(clasp)
 CL_DEFUN Float_sp cl__float_sign(Float_sp x, Float_sp y, T_sp yp) {
@@ -858,6 +870,7 @@ CL_DEFUN Float_sp cl__float_sign(Float_sp x, Float_sp y, T_sp yp) {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(floatDigits)dx")
 DOCGROUP(clasp)
 CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
@@ -882,6 +895,7 @@ CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
 
 CL_LAMBDA(value)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(floatPrecision)dx")
 DOCGROUP(clasp)
 CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
@@ -942,6 +956,7 @@ CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(integer_decode_float)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
@@ -1019,6 +1034,7 @@ CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
 
 CL_LAMBDA(r &optional (i 0))
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(complex)dx")
 DOCGROUP(clasp)
 CL_DEFUN Complex_sp cl__complex(Real_sp r, Real_sp i) {
@@ -1027,6 +1043,7 @@ CL_DEFUN Complex_sp cl__complex(Real_sp r, Real_sp i) {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(realpart)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_sp cl__realpart(Number_sp x) {
@@ -1049,6 +1066,7 @@ CL_DEFUN Real_sp cl__realpart(Number_sp x) {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(imagpart)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_sp cl__imagpart(Number_sp x) {

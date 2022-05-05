@@ -146,6 +146,7 @@ Number_sp clasp_make_complex (Real_sp r, Real_sp i) {
 
 CL_LAMBDA(num)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(zerop)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool cl__zerop(Number_sp num) {
@@ -154,6 +155,7 @@ CL_DEFUN bool cl__zerop(Number_sp num) {
 
 CL_LAMBDA()
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(fixnum_number_of_bits)dx")
 DOCGROUP(clasp)
 CL_DEFUN Fixnum_sp core__fixnum_number_of_bits() {
@@ -177,6 +179,7 @@ Real_sp clasp_min2(Real_sp x, Real_sp y) {
 
 CL_LAMBDA(min &rest nums)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(min)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
@@ -192,6 +195,7 @@ CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
 
 CL_LAMBDA(max &rest nums)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(max)dx")
 DOCGROUP(clasp)
 CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
@@ -204,12 +208,14 @@ CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
 }
 
 CL_NAME("TWO-ARG-+-FIXNUM-FIXNUM");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb) {
   return Integer_O::create(static_cast<gc::Fixnum>(fa + fb));
 }
 
 CL_NAME("TWO-ARG-+");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
@@ -330,6 +336,7 @@ CL_DEFUN Number_sp contagion_add(Number_sp na, Number_sp nb) {
 };
 
 CL_NAME("TWO-ARG--");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
@@ -444,6 +451,7 @@ CL_DEFUN Number_sp contagion_sub(Number_sp na, Number_sp nb) {
 }
 
 CL_NAME("TWO-ARG-*");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Number_sp contagion_mul(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
@@ -595,6 +603,7 @@ Number_sp complex_divide(Real_sp ar, Real_sp ai,
 }
 
 CL_NAME("TWO-ARG-/");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
@@ -687,6 +696,7 @@ CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
 }
 
 CL_LAMBDA(&rest numbers)
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl___PLUS_(List_sp numbers) {
   if (!numbers.consp())
@@ -700,6 +710,7 @@ CL_DEFUN Number_sp cl___PLUS_(List_sp numbers) {
 
 CL_LAMBDA(&rest numbers)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS: *)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl___TIMES_(List_sp numbers) {
@@ -714,6 +725,7 @@ CL_DEFUN Number_sp cl___TIMES_(List_sp numbers) {
 
 CL_LAMBDA(num &rest numbers)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS: +)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl___MINUS_(Number_sp num, List_sp numbers) {
@@ -728,6 +740,7 @@ CL_DEFUN Number_sp cl___MINUS_(Number_sp num, List_sp numbers) {
 }
 
 CL_LAMBDA(num &rest numbers)
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
   if (!numbers.consp()) {
@@ -995,30 +1008,35 @@ T_sp numbers_monotonic_vaslist(int s, int t, Vaslist_sp args) {
 };
 
 CL_NAME("TWO-ARG-<");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN bool two_arg__LT_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == -1;
 }
 
 CL_NAME("TWO-ARG-<=");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN bool two_arg__LE_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) != 1;
 }
 
 CL_NAME("TWO-ARG->");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN bool two_arg__GT_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == 1;
 }
 
 CL_NAME("TWO-ARG->=");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) != -1;
 }
 
 CL_LAMBDA(core:&va-rest args)
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___LT_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
@@ -1028,6 +1046,7 @@ CL_DEFUN T_sp cl___LT_(Vaslist_sp args) {
 };
 
 CL_LAMBDA(core:&va-rest args)
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___GT_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
@@ -1037,6 +1056,7 @@ CL_DEFUN T_sp cl___GT_(Vaslist_sp args) {
 };
 
 CL_LAMBDA(core:&va-rest args)
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___LE_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
@@ -1046,6 +1066,7 @@ CL_DEFUN T_sp cl___LE_(Vaslist_sp args) {
 };
 
 CL_LAMBDA(core:&va-rest args)
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___GE_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
@@ -1167,6 +1188,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
 }
 
 CL_NAME("TWO-ARG-=");
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
   return basic_equalp(x, y);
@@ -1174,6 +1196,7 @@ CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
 
 CL_LAMBDA(core:&va-rest args)
 CL_DECLARE();
+CL_UNWIND_COOP(True);
 CL_DOCSTRING(R"dx(NE)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___NE_(Vaslist_sp args) {
@@ -1225,6 +1248,7 @@ CL_DEFUN T_sp cl___NE_(Vaslist_sp args) {
 
 CL_LAMBDA(&rest args)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(_EQ_)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___EQ_(List_sp args) {
@@ -1325,6 +1349,7 @@ Rational_sp Rational_O::create(Integer_sp num, Integer_sp denom) {
 }
 
 CL_DOCSTRING(R"dx(Return a number that is NAN)dx")
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN DoubleFloat_sp core__nan() {
   DoubleFloat_sp rnan = DoubleFloat_O::create(NAN);
@@ -1944,6 +1969,7 @@ Number_sp Bignum_O::reciprocal_() const {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sqrt)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__sqrt(Number_sp x) {
@@ -2003,6 +2029,7 @@ Number_sp Complex_O::sin_() const {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sin)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__sin(Number_sp x) {
@@ -2059,6 +2086,7 @@ Number_sp Complex_O::cos_() const {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(cos)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__cos(Number_sp x) {
@@ -2121,6 +2149,7 @@ Number_sp Complex_O::tan_() const {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(tan)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__tan(Number_sp x) {
@@ -2178,6 +2207,7 @@ Number_sp Complex_O::sinh_() const {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(sinh)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__sinh(Number_sp x) {
@@ -2235,6 +2265,7 @@ Number_sp Complex_O::cosh_() const {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(cosh)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__cosh(Number_sp x) {
@@ -2285,6 +2316,7 @@ Number_sp Complex_O::tanh_() const {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(tanh)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__tanh(Number_sp x) {
@@ -2319,6 +2351,7 @@ Complex_sp Complex_O::conjugate() const {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(conjugate)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__conjugate(Number_sp x) {
@@ -2376,6 +2409,7 @@ Number_sp Complex_O::exp_() const {
 
 CL_LAMBDA(x)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(exp)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__exp(Number_sp x) {
@@ -2502,6 +2536,7 @@ clasp_expt(Number_sp x, Number_sp y) {
 
 CL_LAMBDA(x y)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(expt)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__expt(Number_sp x, Number_sp y) {
@@ -2650,6 +2685,7 @@ Number_sp clasp_atan1(Number_sp y) {
 
 CL_LAMBDA(x &optional y)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(atan)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y) {
@@ -2829,6 +2865,7 @@ Number_sp Complex_O::log1p_() const {
 
 CL_LAMBDA(number &optional base)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Calculate the log of (number) to base (base).)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__log(Number_sp number, T_sp base) {
@@ -2839,6 +2876,7 @@ CL_DEFUN Number_sp cl__log(Number_sp number, T_sp base) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(log1p)dx")
 DOCGROUP(clasp)
 CL_DEFUN Number_sp core__log1p(Number_sp arg) {
@@ -2851,6 +2889,7 @@ Integer_sp clasp_ash(Integer_sp x, int bits) {
 
 CL_LAMBDA(i)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(integerLength)dx")
 DOCGROUP(clasp)
 CL_DEFUN gc::Fixnum cl__integer_length(Integer_sp i) {
@@ -2859,6 +2898,7 @@ CL_DEFUN gc::Fixnum cl__integer_length(Integer_sp i) {
 
 CL_LAMBDA(i)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the number of bits in the 2's complement representation"
              "of I that are 'on', i.e. distinct from the sign bit.)dx")
 DOCGROUP(clasp)
@@ -2876,6 +2916,7 @@ CL_DEFUN gc::Fixnum cl__logcount(Integer_sp i) {
 
 CL_LAMBDA(i)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(doc(float-nan-p)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool ext__float_nan_p(Float_sp i) {
@@ -2884,6 +2925,7 @@ CL_DEFUN bool ext__float_nan_p(Float_sp i) {
 
 CL_LAMBDA(i)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(float-infinity-p)dx")
 DOCGROUP(clasp)
 CL_DEFUN bool ext__float_infinity_p(Float_sp i) {
@@ -3032,6 +3074,7 @@ LongFloat clasp_to_long_double(Number_sp x)
 
 CL_LAMBDA(singleFloat)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the IEEE754 binary32 (single) representation of a single float, as an integer.)dx")
 DOCGROUP(clasp)
 CL_DEFUN Integer_sp ext__single_float_to_bits(SingleFloat_sp singleFloat) {
@@ -3049,6 +3092,7 @@ CL_DEFUN Integer_sp ext__single_float_to_bits(SingleFloat_sp singleFloat) {
 
 CL_LAMBDA(bit-representation)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Convert an IEEE754 binary32 (single) representation, an integer, to a single float.)dx")
 DOCGROUP(clasp)
 CL_DEFUN SingleFloat_sp ext__bits_to_single_float(Fixnum_sp fixnum) {
@@ -3062,6 +3106,7 @@ CL_DEFUN SingleFloat_sp ext__bits_to_single_float(Fixnum_sp fixnum) {
 
 CL_LAMBDA(doubleFloat)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Return the IEEE754 binary64 (double) bit representation of a double float as an integer.)dx")
 DOCGROUP(clasp)
 CL_DEFUN Integer_sp ext__double_float_to_bits(DoubleFloat_sp doubleFloat) {
@@ -3075,6 +3120,7 @@ CL_DEFUN Integer_sp ext__double_float_to_bits(DoubleFloat_sp doubleFloat) {
 
 CL_LAMBDA(bit-representation)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Convert an IEEE754 binary64 (double) representation, an integer, to a double float.)dx")
 DOCGROUP(clasp)
 CL_DEFUN DoubleFloat_sp ext__bits_to_double_float(Integer_sp integer) {
@@ -3090,6 +3136,7 @@ CL_DEFUN DoubleFloat_sp ext__bits_to_double_float(Integer_sp integer) {
 
 namespace core {
 
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__rational(Real_sp num) {
   if (num.fixnump()) return num;
@@ -3098,6 +3145,7 @@ CL_DEFUN Number_sp cl__rational(Real_sp num) {
   TYPE_ERROR(num,cl::_sym_Real_O);
 };
 
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Number_sp cl__rationalize(Real_sp num) {
   return cl__rational(num);

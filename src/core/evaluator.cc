@@ -85,6 +85,7 @@ void errorApplyLastArgumentNotList(T_sp lastArg ) {
 namespace core {
 CL_LAMBDA(form &optional env stepping compiler-env-p (execute t))
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(compileFormAndEvalWithEnv)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp stepping, T_sp compiler_env_p, T_sp execute) {
