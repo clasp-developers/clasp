@@ -1444,16 +1444,10 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
 T_mv sp_step(List_sp args, T_sp env) {
   IMPLEMENT_ME();
 };
-
 T_mv sp_tagbody(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
   ValueFrame_sp vframe = gc::As<ValueFrame_sp>(tagbodyEnv->getActivationFrame());
-  // hack to make a void* into a lisp object easily.
-  // handle should, hopefully, given how addresses usually are, be a fixnum.
-  uintptr_t uhandle = (uintptr_t)(__builtin_frame_address(0));
-  T_sp handle = Integer_O::create(uhandle);
-  (*vframe)[0] = handle;
             //
             // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
             //
@@ -1466,20 +1460,22 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
     }
   }
   LOG(BF("sp_tagbody has extended the environment to: %s") % tagbodyEnv->__repr__());
-            // Start to evaluate the tagbody
-  List_sp ip = args;
-  while (ip.consp()) {
-    T_sp tagOrForm = CONS_CAR(ip);
-    if ((tagOrForm).consp()) {
-      try {
+            // Evaluate the tagbody
+  call_with_tagbody([&](TagbodyDynEnv_sp tb, size_t index) {
+    List_sp ip;
+    if (index == 0) { // initialize and run prefix
+      (*vframe)[0] = tb;
+      ip = args;
+    } else
+      // there was a +1 for setjmp in sp_go, so we undo that here.
+      ip = tagbodyEnv->codePos(index - 1);
+    while (ip.consp()) {
+      T_sp tagOrForm = CONS_CAR(ip);
+      if ((tagOrForm).consp())
         eval::evaluate(tagOrForm, tagbodyEnv);
-      } catch (Unwind &uw) {
-        if ((uintptr_t)(uw.getFrame()) != uhandle) throw;
-        ip = tagbodyEnv->codePos(uw.index());
-      }
+      ip = CONS_CDR(ip);
     }
-    ip = CONS_CDR(ip);
-  }
+  });
   LOG(BF("Leaving sp_tagbody"));
   return Values(nil<T_O>());
 };
@@ -1496,9 +1492,10 @@ T_mv sp_go(List_sp args, T_sp env) {
     SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
   }
   ValueFrame_sp af = gc::As<ValueFrame_sp>(Environment_O::clasp_getActivationFrame(env));
-  uintptr_t uhandle = clasp_to_integral<uintptr_t>((*af)[0]);
+  T_sp handle = (*af)[0];
+  TagbodyDynEnv_sp tde = gc::As_unsafe<TagbodyDynEnv_sp>(handle);
   T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
-  throw Unwind((void*)uhandle, index);
+  sjlj_unwind(tde, index + 1); // +1 for setjmp.
 }
 };
 
@@ -1660,9 +1657,7 @@ T_mv sp_go(List_sp args, T_sp env) {
           BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
           ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
           return call_with_escape([&](BlockDynEnv_sp block) {
-            uintptr_t uhandle = (uintptr_t)(block->frame);
-            T_sp handle = Integer_O::create(uhandle);
-            vframe->operator[](0) = handle;
+            vframe->operator[](0) = block;
             return eval::sp_progn(oCdr(args), newEnvironment);
           });
         }
@@ -1679,8 +1674,8 @@ T_mv sp_go(List_sp args, T_sp env) {
             if (oCdr(args).notnilp()) result = eval::evaluate(oCadr(args), environment);
             result.saveToMultipleValue0();
             T_sp handle = gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0);
-            uintptr_t uhandle = clasp_to_integral<uintptr_t>(handle);
-            throw Unwind((void*)uhandle, 1); // index irrelevant
+            BlockDynEnv_sp bde = gc::As_unsafe<BlockDynEnv_sp>(handle);
+            sjlj_unwind(bde, 1); // index irrelevant
         }
 
         T_mv sp_unwindProtect(List_sp args, T_sp environment) {
