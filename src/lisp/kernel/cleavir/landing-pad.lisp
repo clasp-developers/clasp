@@ -123,9 +123,25 @@
       (cmp:irc-br next)
       bb)))
 
+;;; Get the frame pointer for dynenv matching.
+;;; This is called late (i.e. while generating code) because it
+;;; may entail code generation itself.
+(defgeneric dynenv-frame (dynenv))
+
+(defmethod dynenv-frame ((dynenv bir:dynamic-environment))
+  ;; default: just grab the frame pointer
+  (%intrinsic-call "llvm.frameaddress.p0i8" (list (%i32 0))
+                   "frame"))
+
+(defmethod dynenv-frame ((dynenv bir:catch))
+  ;; catch: get it from the catch instruction
+  (if *new-unwind*
+      (%intrinsic-call "cc_dynenv_frame" (list (in dynenv)))
+      (in dynenv)))
+
 ;;; maybe-entry landing pads, for when we may be nonlocally entering this function.
 
-(defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p frame)
+(defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p dynenv)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((lp-block (cmp:irc-basic-block-create "maybe-entry-landing-pad"))
           (is-unwind-block (cmp:irc-basic-block-create "is-unwind")))
@@ -146,9 +162,10 @@
       ;; Now that we know it's the right type of exception, see if we're in the right frame,
       ;; and get the go index.
       (cmp:irc-begin-block is-unwind-block)
-      (let ((go-index (generate-match-unwind
-                       frame (generate-end-catch-landing-pad cleanup-block)
-                       *exn.slot*)))
+      (let* ((frame (dynenv-frame dynenv))
+             (go-index (generate-match-unwind
+                        frame (generate-end-catch-landing-pad cleanup-block)
+                        *exn.slot*)))
         (cmp:irc-store go-index *go-index.slot*)
         (cmp:irc-br next))
       lp-block)))
@@ -331,13 +348,15 @@
          (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
                  (cleavir-bir-transformations:simple-unwinding-p
                   dynenv *clasp-system*))
-             ;; SJLJ is orthogonal to landing pads
+             ;; simple SJLJ is orthogonal to landing pads,
+             ;; i.e. a simple unwind never goes through or to a
+             ;; landing pad.
              (maybe-entry-landing-pad (cleavir-bir:parent dynenv) tags)
              (generate-maybe-entry-landing-pad
               (maybe-entry-processor dynenv tags)
               (never-entry-processor dynenv)
               (dynenv-needs-cleanup-p dynenv)
-              (in dynenv))))
+              dynenv)))
         ((or cc-bir:bind cleavir-bir:values-save bir:values-collect
              cleavir-bir:leti cc-bir:unwind-protect
              cleavir-bir:function)
@@ -345,8 +364,7 @@
           (maybe-entry-processor dynenv tags)
           (never-entry-processor dynenv)
           (dynenv-needs-cleanup-p dynenv)
-          (%intrinsic-call
-           "llvm.frameaddress.p0i8" (list (%i32 0)) "frame"))))
+          dynenv)))
       (never-entry-landing-pad dynenv)))
 
 ;;; never-entry landing pads, for when we always end with a resume.

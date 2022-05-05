@@ -1027,17 +1027,29 @@ core::T_O* cc_initializeAndPushCleanupDynenv(void* space, jmp_buf* target)
 void cc_pop_dynenv(T_O* dynenv)
 {NO_UNWIND_BEGIN();
   T_sp de((gctools::Tagged)dynenv);
-  // TODO: Once this is known to work, use As_unsafe instead.
-  my_thread->_DynEnv = gc::As<DynEnv_sp>(de)->outer;
+  my_thread->_DynEnv = gc::As_unsafe<DynEnv_sp>(de)->outer;
   NO_UNWIND_END();
 }
 
 void cc_unwind_dest_dynenv(T_O* dynenv)
 {NO_UNWIND_BEGIN();
   T_sp tde((gctools::Tagged)dynenv);
-  DestDynEnv_sp dde = gc::As<DestDynEnv_sp>(tde);
+  DestDynEnv_sp dde = gc::As_unsafe<DestDynEnv_sp>(tde);
   my_thread->_DynEnv = dde->unwound_dynenv();
   NO_UNWIND_END();
+}
+
+void* cc_dynenv_frame(T_O* dynenv)
+{NO_UNWIND_BEGIN();
+  T_sp tde((gctools::Tagged)dynenv);
+  DestDynEnv_sp dde = gc::As_unsafe<DestDynEnv_sp>(tde);
+  return dde->frame;
+  NO_UNWIND_END();
+}
+
+[[noreturn]] void cc_sjlj_unwind(T_O* dde, size_t index) {
+  T_sp tde((gctools::Tagged)dde);
+  sjlj_unwind(gc::As<DestDynEnv_sp>(tde), index);
 }
 
 [[noreturn]] void cc_sjlj_continue_unwinding () {

@@ -345,6 +345,8 @@
          (primitive         "cc_initializeAndPushCleanupDynenv" :t* (list :i8* :jmp-buf-tag*))
          (primitive         "cc_pop_dynenv" :void (list :t*))
          (primitive         "cc_unwind_dest_dynenv" :void (list :t*))
+         (primitive         "cc_dynenv_frame" :i8* (list :t*))
+         (primitive-unwinds "cc_sjlj_unwind" :void (list :t* :size_t) :does-not-return t)
          (primitive-unwinds "cc_sjlj_continue_unwinding" :void nil :does-not-return t)
          (primitive         "cc_saveMultipleValue0" :void (list :tmv))
          (primitive         "cc_restoreMultipleValue0" :return-type nil)

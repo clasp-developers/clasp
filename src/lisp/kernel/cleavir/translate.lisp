@@ -377,6 +377,8 @@
             phi block))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
+(defvar *new-unwind* t)
+
 (defun translate-catch (catch successors)
   (let* ((simplep (bir-transformations:simple-unwinding-p
                    catch *clasp-system*))
@@ -386,8 +388,6 @@
                               (list (%i32 0)))))
          (normal-successor (first successors))
          (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "catch-jmp-buf")))
-    (out (if simplep (cmp:irc-bit-cast bufp cmp:%t*%) frame)
-         catch)
     (multiple-value-bind (iblocks blocks successors blockp)
         (categorize-catch catch successors)
       (let* ((default (cmp:irc-basic-block-create "catch-default"))
@@ -398,8 +398,16 @@
                       "cc_createAndPushBlockDynenv"
                       "cc_createAndPushTagbodyDynenv")
                   (list frame bufp))))
+             ;; Set the continuation for use by bir:unwind insts.
+             (_ (out
+                 (if simplep (cmp:irc-bit-cast bufp cmp:%t*%)
+                     (if *new-unwind*
+                         dynenv
+                         frame))
+                 catch))
              (sj (%intrinsic-call "_setjmp" (list bufp)))
              (sw (cmp:irc-switch sj default (1+ (length iblocks)))))
+        (declare (ignore _))
         ;; Set the dynenv storage. We explicitly put in NIL for
         ;; simple unwinds, so that we can figure out if there is a
         ;; dynenv later without dynenv-storage signaling an error.
@@ -457,11 +465,12 @@
         (let ((bufp (cmp:irc-bit-cast cont cmp::%jmp-buf-tag*%)))
           (%intrinsic-invoke-if-landing-pad-or-call
            "_longjmp" (list bufp (%i32 destination-id))))
-        ;; C++ exception
+        ;; Complex SJLJ
         (cmp:with-landing-pad (never-entry-landing-pad
                                (bir:dynamic-environment instruction))
           (%intrinsic-invoke-if-landing-pad-or-call
-           "cc_unwind" (list cont (%size_t destination-id))))))
+           (if *new-unwind* "cc_sjlj_unwind" "cc_unwind")
+           (list cont (%size_t destination-id))))))
   (cmp:irc-unreachable))
 
 (defmethod translate-terminator ((instruction cc-bir:unwind-protect) abi next)
