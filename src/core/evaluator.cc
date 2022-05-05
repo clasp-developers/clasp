@@ -2399,11 +2399,7 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif
             Vaslist valist_struct(nargs,callArgs);
             Vaslist_sp valist(&valist_struct); // = callArgs.setupVaslist(valist_struct);
-            try {
-              return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
-            } catch (core::ExitProgramException& ee) {
-              throw(ee);
-            }
+            return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
           }
           SIMPLE_ERROR(BF("Illegal form %s") % _rep_(exp));
         }
