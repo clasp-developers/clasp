@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <clasp/gctools/snapshotSaveLoad.h>
 
 #ifdef USE_PRECISE_GC
-#include <gc/gc_mark.h>
+#include "src/bdwgc/include/gc_mark.h"
 #endif // USE_PRECISE_GC
 
 
