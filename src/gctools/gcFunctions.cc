@@ -4,7 +4,7 @@ int gcFunctions_top;
 
 #include <boost/mpl/list.hpp>
 #ifdef USE_BOEHM
-#include <gc/gc_mark.h>
+#include "src/bdwgc/include/gc_mark.h"
 #endif
 int gcFunctions_before;
 #ifdef USE_MPS

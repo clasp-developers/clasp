@@ -1,4 +1,0 @@
-import os
-
-def build(bld):
-    bld.recurse('clasp')

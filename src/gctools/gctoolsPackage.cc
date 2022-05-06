@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #include <boost/mpl/list.hpp>
 #ifdef USE_BOEHM
-#include <clasp/gc/gc_mark.h>
+#include "src/bdwgc/include/gc_mark.h"
 #endif
 #ifdef USE_MPS
 extern "C" {
