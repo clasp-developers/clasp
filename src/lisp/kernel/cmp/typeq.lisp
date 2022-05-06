@@ -19,7 +19,7 @@
     (irc-begin-block header-check-br)
     (if *debug-typeq* (irc-intrinsic "debugPrintI32" (jit-constant-i32 10001)))
     (let* ((byte-ptr           (irc-bit-cast object-raw %i8*%))
-           (header-addr        (irc-gep %i8% byte-ptr (list (+ +header-stamp-offset+ (- (+ +header-size+ +general-tag+))))))
+           (header-addr        (irc-typed-gep %i8% byte-ptr (list (+ +header-stamp-offset+ (- (+ +header-size+ +general-tag+))))))
            (_ (if *debug-typeq* (irc-intrinsic "debugPointer" header-addr)))
            (header-stamp-ptr-type (cond
                                     ((= 4 +header-stamp-size+) %i32*%)

@@ -10,6 +10,7 @@
            #~"llvmoExpose.cc"
            #~"code.cc"
            #~"llvmoPackage.cc"
+           #~"runtimeJit.cc"
            #~"clbindLlvmExpose.cc")
 
 (k:sources :bitcode

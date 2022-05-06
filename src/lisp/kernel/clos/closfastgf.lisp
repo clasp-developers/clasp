@@ -741,7 +741,7 @@ Return true iff a new entry was added; so for example it will return false if an
 (defvar *dispatch-miss-recursion-check* nil)
 
 (defun invalidated-dispatch-function (generic-function vaslist-args)
-  (declare (optimize (debug 3)))
+  #+(or)(declare (optimize (debug 3)))
   #+debug-fastgf
   (when (find (cons generic-function (core:list-from-vaslist vaslist-args)) *dispatch-miss-recursion-check*
               :test #'equal)

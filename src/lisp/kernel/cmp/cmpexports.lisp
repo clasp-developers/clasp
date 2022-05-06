@@ -213,8 +213,8 @@
             irc-exception-typeid*
             irc-insert-value
             irc-extract-value
-            irc-gep
-            irc-gep-variable
+            irc-typed-gep
+            irc-typed-gep-variable
             irc-smart-ptr-extract
             irc-set-insert-point-basic-block
             irc-size_t-*current-source-pos-info*-filepos

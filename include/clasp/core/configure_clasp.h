@@ -233,7 +233,7 @@ typedef unsigned int  claspCharacter;
 #define CLASP_ARRAY_DIMENSION_LIMIT (1024 * 1024)
 #define CLASP_ARRAY_RANK_LIMIT 8
 
-/*! Pass four arguments in registers, the rest in memory */
+/*! For general entry point - pass four arguments in registers, the rest in memory */
 #define LCC_ARGS_IN_REGISTERS 4
 
 /*! Return 1 pointer in register */
@@ -242,7 +242,10 @@ typedef unsigned int  claspCharacter;
 /*! Range of fixed entry point aritys 
     This will be used for the calling convention.
     Arity from ENTRY_POINT_ARITY_BEGIN to (ENTRY_POINT_ARITY_END-1) are supported
+
+ENTRY_POINT_MAX_ARGS_IN_REGISTER_SAVE_AREA includes the closure
 */
+#define LCC_WORDS_IN_REGISTER_SAVE_AREA 6
 #define ENTRY_POINT_ARITY_BEGIN 0 // MUST ALWAYS BE ZERO - Or I need to fix a few places in the code
 #define ENTRY_POINT_ARITY_END 6   // Must be one past the highest arity entry point
 //! One entry point for each arity and one for general
@@ -252,7 +255,8 @@ typedef unsigned int  claspCharacter;
 #define STACKMAP_ARITY_CODE_MASK                 0x0000000F
 
 /*! Maximum number of arguments that can be passed */
-#define CALL_ARGUMENTS_LIMIT 136
+#define CALL_ARGUMENTS_LIMIT (2^32)
+#define MULTIPLE_VALUES_LIMIT 256
 
 #define CHAR_CODE_LIMIT 1114112
 

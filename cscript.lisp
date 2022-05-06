@@ -7,8 +7,6 @@
 
 (k:library "libffi" :required t :min-version #+bsd "3.3-rc1" #-bsd "3.0.0")
 
-(k:library "bdw-gc" :required t :min-version "7.0.0" :gc :boehm)
-
 (k:library "zlib" :required t :min-version "1.0.0")
 
 #-darwin (k:library "libelf" :required t :min-version #+bsd "0.8.13" #-bsd ".183")

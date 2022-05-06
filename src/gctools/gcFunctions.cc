@@ -581,79 +581,26 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 
 namespace gctools {
 
-CL_LAMBDA(&optional filename)
+CL_LAMBDA(filename &key executable)
+CL_DECLARE();
+CL_DOCSTRING(R"dx(Save a snapshot, i.e. enough information to restart a Lisp process
+later in the same state, in the file of the specified name. Only
+global state is preserved.
+
+The following &KEY arguments are defined:
+  :EXECUTABLE
+     If true, arrange to combine the Clasp runtime and the snapshot
+     to create a standalone executable.  If false (the default), the
+     snapshot will not be executable on its own.)dx")
 DOCGROUP(clasp)
-CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename) {
+CL_DEFUN void gctools__save_lisp_and_die(core::T_sp filename, core::T_sp executable) {
 #ifdef USE_PRECISE_GC
-  std::string sFilename = "";
-  if (filename.nilp()) {
-    sFilename = startup_snapshot_name(*globals_->_Bundle);
-    printf("%s:%d:%s Saving snapshot to %s\n", __FILE__, __LINE__, __FUNCTION__, sFilename.c_str());
-  } else {
-    sFilename = gc::As<core::String_sp>(filename)->get_std_string();
-  }
-  throw(core::SaveLispAndDie(sFilename));
+  throw(core::SaveLispAndDie(gc::As<core::String_sp>(filename)->get_std_string(), executable.notnilp(),
+    globals_->_Bundle->_Directories->_LibDir));
 #else
   SIMPLE_ERROR(BF("save-lisp-and-die only works for precise GC"));
 #endif
 }
-
-DOCGROUP(clasp)
-CL_DEFUN void gctools__slad() {
-  gctools__save_lisp_and_die(nil<core::T_O>());
-}
-
-void save_lisp_and_die(const std::string& filename)
-{
-  //
-  // For real save-lisp-and-die do the following (a simple 19 step plan)
-  //
-  // 1. Walk all objects in memory and sum their size
-  // 2. Allocate that amount of memory + space for roots -> intermediate-buffer
-  // 3. Walk all objects in memory
-  //     (a) copy them to next position in intermediate-buffer
-  //     (b) Set a forwarding pointer in the original object
-  // 4. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
-  // 5. Copy roots into intermediate-buffer
-  // 6. Fixup pointers in roots
-  //
-  //   Steps 7-14 are an attempt to eliminate objects that made it into the save-image
-  //      but are garbage.  I'm not sure the GC is cleaning up enough garbage.
-  //      It's basically a mark-and-sweep garbage collection cycle.
-  //      Steps 8-13 are identical to 1-6, they just walk different objects.
-  //
-  // 7. Mark objects in intermediate-buffer accessible from roots
-  // 
-  // 8. Walk all marked objects and sum their size
-  // 9. Allocate that amount of space + space-for roots -> save-buffer
-  // 10. Walk all marked objects from intermediate-buffer
-  //       (a) copy them to next position in save-buffer
-  //       (b) Set a forwarding pointer in the intermediate-buffer object
-  // 11. Fixup pointers in save-buffer
-  // 12. Copy roots into save-buffer
-  // 13. Fixup roots in save-buffer
-  //
-  //   C++-fixup bytecode fixes up things like std::string and std::vector that
-  //     have stuff stored in C++ malloc space.   It's better to eliminate these
-  //     as much as possible by redesigning the classes that contain them.
-  //     Change std::string to SimpleBaseString_sp and so on.
-  //     Every class that needs c++-fixup will provide a function that will generate
-  //     c++-fixup bytecode that when evaluated will create C++ objects in malloc memory
-  //     and write pointers to those objects into the loaded objects.
-  //     Every object except for Cons_O cells will need to have it's vtable pointer fixed up.
-  //
-  // 15. Generate c++-fixup bytecode for each object that needs it
-  // 17. Generate table of contents
-  // 18. Write table of contents and save-buffer
-  // 19. DIE
-
-#ifdef USE_PRECISE_GC
-  snapshotSaveLoad::snapshot_save(filename);
-#endif
-}
-
-  
-
 
 CL_LAMBDA(stamp)
 CL_DECLARE();

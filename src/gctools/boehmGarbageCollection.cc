@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/debugger.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/compiler.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 
 #ifdef USE_PRECISE_GC
 #include <gc/gc_mark.h>
@@ -431,7 +432,9 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   try {
     exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
   } catch (core::SaveLispAndDie& ee) {
-    gctools::save_lisp_and_die(ee._FileName);
+#ifdef USE_PRECISE_GC
+    snapshotSaveLoad::snapshot_save(ee);
+#endif
     exitCode = 0;
   }
     
@@ -491,11 +494,19 @@ void clasp_gc_room(std::ostringstream& OutputStream) {
 
 void clasp_gc_registerRoots(void* rootsStart, size_t numberOfRoots)
 {
+#ifdef USE_MMAP_CODEBLOCK
+  //
+  // This is experimental for Apple Silicon M1 chip
+  //
+  // It doesn't allow RWX memory - so we use GC_add_roots to add roots to boehm for code.
+  //   This runs into the hard limit of 8,192 root sets very quickly
+  //
   void* rootsEnd = (void*)((uintptr_t)rootsStart+numberOfRoots*sizeof(void*));
   if (rootsEnd != rootsStart) {
-//    printf("%s:%d:%s GC_add_roots %p to %p\n", __FILE__, __LINE__, __FUNCTION__, rootsStart, rootsEnd );
+    printf("%s:%d:%s GC_add_roots %p to %p\n", __FILE__, __LINE__, __FUNCTION__, rootsStart, rootsEnd );
     GC_add_roots(rootsStart,rootsEnd);
   }
+#endif
 }
 
 

@@ -1035,7 +1035,7 @@ jump to blocks within this tagbody."
 (defun gen-memref-address (tpointer offset)
   (irc-bit-cast
    ;; memref/set use byte addressing, so treat these as i8 arrays
-   (irc-gep-variable %i8%
+   (irc-typed-gep-variable %i8%
                      (irc-bit-cast tpointer %i8*%)
                      ;; llvm doesn't actually have signed types,
                      ;; so the u is a misnomer - don't sweat it.
@@ -1194,7 +1194,7 @@ jump to blocks within this tagbody."
     (irc-store nargs-- nargs*)
     (let* ((args* (irc-vaslist-args-address vaslist))
            (args (irc-t*-load args*))
-           (args++ (irc-gep %t***% args (list 1) "gen-vaslist-pop")))
+           (args++ (irc-typed-gep %t***% args (list 1) "gen-vaslist-pop")))
       ;; Increment
       (irc-store args++ args*)
       ;; va_arg.

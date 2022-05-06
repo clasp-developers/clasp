@@ -146,7 +146,7 @@ names to offsets."
   
 (defun c++-field-ptr (struct-info tagged-object field-name &optional (label ""))
   (let* ((tagged-object-i8* (irc-bit-cast tagged-object %i8*%))
-         (field* (irc-gep %i8% tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
+         (field* (irc-typed-gep %i8% tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
          (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
          (field-ptr (irc-bit-cast field* (funcall field-type-getter) label)))
     field-ptr))
@@ -646,7 +646,7 @@ Boehm and MPS use a single pointer"
   (let* ((args* (vaslist*-args* vaslist* "gvp-args*"))
          (args (irc-typed-load %t**% args* "gvp-args"))
          (val (irc-t*-load args "gvp-val"))
-         (args-next (irc-gep %t*% args (list 1)))
+         (args-next (irc-typed-gep %t*% args (list 1)))
          (nargs* (vaslist*-nargs* vaslist* "gvp-nargs*"))
          (nargs (irc-typed-load %i64% nargs*))
          (nargs-next (irc-sub nargs (jit-constant-i64 1))))
@@ -698,7 +698,7 @@ Boehm and MPS use a single pointer"
     (multiple-value-bind (words index)
         (irc-arity-info arity)
       (flet ((spill-reg (idx reg addr-name)
-               (let ((addr          (irc-gep (llvm-sys:array-type-get %t*% words) register-save-area* (list 0 idx) addr-name))
+               (let ((addr          (irc-typed-gep (llvm-sys:array-type-get %t*% words) register-save-area* (list 0 idx) addr-name))
                      (reg-i8*       (cond
                                       ((llvm-sys:type-equal (llvm-sys:get-type reg) %i64%)
                                        (irc-int-to-ptr reg %i8*% "nargs-i8*"))
@@ -1138,7 +1138,7 @@ and initialize it with an array consisting of one function pointer."
         (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
           (let ((start (if roots-array-or-nil
-                           (irc-gep array-type roots-array-or-nil (list 0 0))
+                           (irc-typed-gep array-type roots-array-or-nil (list 0 0))
                            (llvm-sys:constant-pointer-null-get %t**%))))
             (multiple-value-bind (function-vector-length function-vector function-vector-type)
                 (literal:setup-literal-machine-function-vectors cmp:*the-module*)
@@ -1151,7 +1151,7 @@ and initialize it with an array consisting of one function pointer."
                                                                             (jit-constant-size_t 0) ; transient_entries
                                                                             (jit-constant-size_t function-vector-length) ; function_pointer_count
                                                                             (irc-bit-cast
-                                                                             (cmp:irc-gep function-vector-type
+                                                                             (cmp:irc-typed-gep function-vector-type
                                                                                           function-vector
                                                                                           (list 0 0))
                                                                              %i8**%) ; fptrs

@@ -271,10 +271,10 @@ local-function - the lcl function that all of the xep functions call."
 
 (defun ensure-opaque-or-pointee-type-matches (ptr type)
   (unless (llvm-sys:is-opaque-or-pointee-type-matches (llvm-sys:get-type ptr) type)
-    (error "irc-gep is-opaque-or-pointee-type-matches failed for type -> ~a value -> ~a (llvm-sys:get-type value) -> ~a"
+    (error "irc-typed-gep is-opaque-or-pointee-type-matches failed for type -> ~a value -> ~a (llvm-sys:get-type value) -> ~a"
            type ptr (llvm-sys:get-type ptr))))
   
-(defun irc-gep (type ptr indices &optional (name "gep"))
+(defun irc-typed-gep (type ptr indices &optional (name "gep"))
   (ensure-opaque-or-pointee-type-matches ptr type)
   (let ((fixed-indices (irc-fix-gep-indices indices)))
     (llvm-sys:create-in-bounds-gep *irbuilder* type ptr fixed-indices name )))
@@ -288,7 +288,7 @@ local-function - the lcl function that all of the xep functions call."
   (let ((fixed-indices (irc-fix-gep-indices indices)))
     (llvm-sys:create-in-bounds-geptype *irbuilder* type ptr fixed-indices label)))
 
-(defun irc-gep-variable (type array indices &optional (label "gep"))
+(defun irc-typed-gep-variable (type array indices &optional (label "gep"))
   (irc-typed-in-bounds-gep type array indices label))
 
 (defun irc-exception-typeid** (name)
@@ -652,7 +652,7 @@ local-function - the lcl function that all of the xep functions call."
 
 (defun irc-untag-general (tagged-ptr &optional (type %t**%))
   #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
-               (ptr-untagged (irc-gep %i8*% ptr-i8* (list (- +general-tag+)))))
+               (ptr-untagged (irc-typed-gep %i8*% ptr-i8* (list (- +general-tag+)))))
           (irc-bit-cast ptr-untagged type))
   (irc-maybe-check-tag tagged-ptr +general-tag+)
   (let* ((ptr-int (irc-ptr-to-int tagged-ptr %uintptr_t%))
@@ -662,13 +662,13 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-untag-cons (tagged-ptr &optional (type %cons*%))
   (irc-maybe-check-tag tagged-ptr +cons-tag+)
   (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
-         (ptr-untagged (irc-gep %i8% ptr-i8* (list (- +cons-tag+)))))
+         (ptr-untagged (irc-typed-gep %i8% ptr-i8* (list (- +cons-tag+)))))
     (irc-bit-cast ptr-untagged type)))
 
 (defun irc-untag-vaslist (tagged-ptr &optional (type %vaslist*%))
   (irc-maybe-check-tag tagged-ptr +vaslist0-tag+)
   (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
-         (ptr-untagged (irc-gep %i8% ptr-i8* (list (- +vaslist0-tag+)))))
+         (ptr-untagged (irc-typed-gep %i8% ptr-i8* (list (- +vaslist0-tag+)))))
     (irc-bit-cast ptr-untagged type)))
 
 (defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
@@ -706,7 +706,7 @@ representing a tagged fixnum."
 (defun irc-tag-vaslist (ptr &optional (label "vaslist-v*"))
   "Given a word aligned ptr, add the vaslist tag"
   (let* ((ptr-i8* (irc-bit-cast ptr %i8*%))
-         (ptr-tagged (irc-gep %i8% ptr-i8* (list (jit-constant-i64 +vaslist0-tag+)) label)))
+         (ptr-tagged (irc-typed-gep %i8% ptr-i8* (list (jit-constant-i64 +vaslist0-tag+)) label)))
     ptr-tagged))
 
 ;;; NOTE: Unsafe. Cleavir inserts this only after type checks on safety > 0.
@@ -756,7 +756,7 @@ representing a tagged fixnum."
   (let* ((rack* (irc-untag-general rack-tagged %rack*%))
          ;; Address of the start of the data vector.
          (data0* (irc-struct-gep %rack% rack* +rack.data-index+)))
-    (irc-gep %t*[0]% data0* (list 0 index))))
+    (irc-typed-gep %t*[0]% data0* (list 0 index))))
 
 (defun irc-instance-slot-address (instance index)
   "Return a %t**% a pointer to a slot in the rack of an instance"
@@ -798,7 +798,7 @@ representing a tagged fixnum."
   "Return the nth cell of the value-frame"
   (let* ((value-frame* (irc-untag-general value-frame %value-frame*%))
          (data0tsp* (irc-struct-gep %value-frame% value-frame* +value-frame.data-index+))
-         (dataNtsp* (irc-gep %tsp[0]% data0tsp* (list 0 index)))
+         (dataNtsp* (irc-typed-gep %tsp[0]% data0tsp* (list 0 index)))
          (dataNt** (irc-struct-gep %tsp% dataNtsp* 0)))
     dataNt**))
 
@@ -843,14 +843,14 @@ representing a tagged fixnum."
 (defun irc-array-dimension (tarray axis)
   (let* ((dims (c++-field-ptr info.%mdarray% tarray :dimensions))
          (type (c++-field-pointee-type info.%mdarray% :dimensions))
-         (axisN* (irc-gep type dims (list 0 axis))))
+         (axisN* (irc-typed-gep type dims (list 0 axis))))
     (irc-typed-load-atomic %mdarray-dimensions-type% axisN*)))
 
 (defun irc-header-stamp (object)
   (let* ((object* (irc-untag-general object))
          (byte-ptr (irc-bit-cast object* %i8*%))
          (byte-addr
-           (irc-gep %i8% byte-ptr
+           (irc-typed-gep %i8% byte-ptr
                     (list (jit-constant-i64 (+ +header-stamp-offset+ (- +header-size+))))))
          (header-stamp-ptr-type (cond
                               ((= 4 +header-stamp-size+) %i32*%)
@@ -1175,7 +1175,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     (let ((null (irc-literal nil "NIL")))
       (irc-br merge)
       (irc-begin-block values)
-      (let ((primary (irc-t*-load (cmp:irc-gep %t*% (irc-vaslist-values vaslist) (list n)) "primary")))
+      (let ((primary (irc-t*-load (cmp:irc-typed-gep %t*% (irc-vaslist-values vaslist) (list n)) "primary")))
         (irc-br merge)
         (irc-begin-block merge)
         (let ((phi (irc-phi %t*% 2 label)))
@@ -1192,7 +1192,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
          (real-n (irc-intrinsic "llvm.umin.i64" n nvals))
          (new-nvals (irc-sub nvals real-n))
          (vals (irc-vaslist-values vaslist))
-         (new-vals (irc-gep %t*% vals (list real-n))))
+         (new-vals (irc-typed-gep %t*% vals (list real-n))))
     (irc-make-vaslist new-nvals new-vals label)))
 
 ;;; Ditto the above, but it's LAST instead of NTHCDR.
@@ -1201,7 +1201,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
          (new-nvals (irc-intrinsic "llvm.umin.i64" n nvals))
          (skip (irc-sub nvals new-nvals))
          (vals (irc-vaslist-values vaslist))
-         (new-vals (irc-gep vals (list skip))))
+         (new-vals (irc-typed-gep vals (list skip))))
     (irc-make-vaslist new-nvals new-vals label)))
 
 ;;; ...and finally, BUTLAST, which is actually the simplest.
@@ -1816,7 +1816,7 @@ function-description - for debugging."
          (ep-i8** (c++-field-ptr info.%global-entry-point% global-entry-point* :entry-points "ep-i8**"))
          (arity-index (irc-arity-index arity))
          (ep-bc (irc-bit-cast ep-i8** %i8**% "ep-bc"))
-         (ep-arity-i8** (irc-gep %i8*% ep-bc (list arity-index) (format nil "xep-~a-i8**" arity)))
+         (ep-arity-i8** (irc-typed-gep %i8*% ep-bc (list arity-index) (format nil "xep-~a-i8**" arity)))
          (ep-arity-i8*  (irc-typed-load %i8*% ep-arity-i8** (format nil "xep-~a-i8*" arity))))
     (cmp-log "Got ep-arity-i8* -> %s%N" ep-arity-i8*)
     (prog1 (irc-bit-cast ep-arity-i8* function-type "ep")
@@ -1838,7 +1838,7 @@ function-description - for debugging."
       (let ((arg-buffer (alloca-arguments (length arguments) "call-args"))
             (idx 0))
         (dolist (arg arguments)
-          (let ((arg-gep (irc-gep (llvm-sys:array-type-get %t*% (length arguments)) arg-buffer (list 0 idx))))
+          (let ((arg-gep (irc-typed-gep (llvm-sys:array-type-get %t*% (length arguments)) arg-buffer (list 0 idx))))
             (incf idx)
             (irc-store arg arg-gep)))
         (list closure (jit-constant-size_t (length arguments)) (irc-bit-cast arg-buffer %t**%)))

@@ -42,6 +42,9 @@
 #include <elf.h>
 #endif
 
+#define __EX(var) #var
+#define CXX_MACRO_STRING(var) __EX(var)
+
 namespace snapshotSaveLoad {
 
 size_t memory_test(bool dosleep, FILE* fout, const char* message = NULL );
@@ -1987,11 +1990,6 @@ void updateRelocationTableAfterLoad(ISLLibrary& curLib,SymbolLookup& symbolLooku
   }
 }
 
-struct Snapshot_save_data {
-  std::string filename_;
-  Snapshot_save_data(const std::string& fn) : filename_(fn) {};
-};
-
 void dump_test_results(FILE* fout, const gctools::GatherObjects& gather )
 {
   if (fout) {
@@ -2130,8 +2128,9 @@ CL_DEFUN size_t gctools__memory_test(core::T_sp filename)
 
 /* This is not allowed to do any allocations. */
 void* snapshot_save_impl(void* data) {
-  Snapshot_save_data* snapshot_data = (Snapshot_save_data*)data;
-  std::string filename = snapshot_data->filename_;
+  core::SaveLispAndDie* snapshot_data = (core::SaveLispAndDie*)data;
+  char buffer[L_tmpnam];
+  std::string filename = (snapshot_data->_Executable) ? std::tmpnam(buffer) : snapshot_data->_FileName;
   global_debugSnapshot = getenv("CLASP_DEBUG_SNAPSHOT")!=NULL;
 
   printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -2420,10 +2419,52 @@ void* snapshot_save_impl(void* data) {
   snapshot._Memory->write_to_stream(wf);
   snapshot._ObjectFiles->write_to_stream(wf);
   wf.close();
-  DBG_SLS(BF(" Done snapshot_save_impl\n"));
   
-  printf("%s:%d:%s Wrote file %s - leaving snapshot_save\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
+  printf("%s:%d:%s Wrote snapshot %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
 
+  if (snapshot_data->_Executable) {
+    std::string cmd;
+#ifdef _TARGET_OS_LINUX
+    std::string obj_filename = std::tmpnam(buffer);
+
+    std::string mangled_name = filename;
+    std::replace_if(mangled_name.begin(), mangled_name.end(),
+      [](unsigned char c){ return !std::isalnum(c); }, '_');
+
+    std::cout << "Creating binary object from snapshot..." << std::endl << std::flush;
+    cmd = OBJCOPY_BINARY " --input-target binary --output-target elf64-x86-64"
+      " --binary-architecture i386 " + filename + " " + obj_filename +
+      " --redefine-sym _binary_" + mangled_name + "_start=" CXX_MACRO_STRING(SNAPSHOT_START)
+      " --redefine-sym _binary_" + mangled_name + "_end=" CXX_MACRO_STRING(SNAPSHOT_END)
+      " --redefine-sym _binary_" + mangled_name + "_size=" CXX_MACRO_STRING(SNAPSHOT_SIZE);
+    if (system(cmd.c_str()) < 0) {
+      std::cerr << "Creation of binary object failed." << std::endl << std::flush;
+      return NULL;
+    }
+
+    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L" + snapshot_data->_LibDir +
+      " -o" + snapshot_data->_FileName + " " + obj_filename + 
+      " -Wl,-whole-archive -lclasp -Wl,-no-whole-archive " BUILD_LIB;
+#endif
+#ifdef _TARGET_OS_DARWIN
+    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -o" + snapshot_data->_FileName + 
+      " -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " " + filename +
+      " -Wl,-force_load," + snapshot_data->_LibDir + "/libclasp.a " BUILD_LIB;
+#endif
+
+    std::cout << "Linking executable..." << std::endl << std::flush;
+    if (system(cmd.c_str()) < 0) {
+      std::cerr << "Linking of executable failed." << std::endl << std::flush;
+      return NULL;
+    }
+
+#ifdef _TARGET_OS_LINUX
+    std::remove(obj_filename.c_str());
+#endif
+    std::remove(filename.c_str());
+ }
+
+  DBG_SLS(BF(" Done snapshot_save_impl\n"));
 #if 1
   if (getenv("CLASP_PAUSE_EXIT")) {
     printf("%s:%d PID = %d  Paused at exit - press enter to continue: \n", __FILE__, __LINE__, getpid() );
@@ -2443,7 +2484,49 @@ void* snapshot_save_impl(void* data) {
 }
 
   
-void snapshot_save(const std::string& filename) {
+void snapshot_save(core::SaveLispAndDie& data) {
+  //
+  // For real save-lisp-and-die do the following (a simple 19 step plan)
+  //
+  // 1. Walk all objects in memory and sum their size
+  // 2. Allocate that amount of memory + space for roots -> intermediate-buffer
+  // 3. Walk all objects in memory
+  //     (a) copy them to next position in intermediate-buffer
+  //     (b) Set a forwarding pointer in the original object
+  // 4. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
+  // 5. Copy roots into intermediate-buffer
+  // 6. Fixup pointers in roots
+  //
+  //   Steps 7-14 are an attempt to eliminate objects that made it into the save-image
+  //      but are garbage.  I'm not sure the GC is cleaning up enough garbage.
+  //      It's basically a mark-and-sweep garbage collection cycle.
+  //      Steps 8-13 are identical to 1-6, they just walk different objects.
+  //
+  // 7. Mark objects in intermediate-buffer accessible from roots
+  //
+  // 8. Walk all marked objects and sum their size
+  // 9. Allocate that amount of space + space-for roots -> save-buffer
+  // 10. Walk all marked objects from intermediate-buffer
+  //       (a) copy them to next position in save-buffer
+  //       (b) Set a forwarding pointer in the intermediate-buffer object
+  // 11. Fixup pointers in save-buffer
+  // 12. Copy roots into save-buffer
+  // 13. Fixup roots in save-buffer
+  //
+  //   C++-fixup bytecode fixes up things like std::string and std::vector that
+  //     have stuff stored in C++ malloc space.   It's better to eliminate these
+  //     as much as possible by redesigning the classes that contain them.
+  //     Change std::string to SimpleBaseString_sp and so on.
+  //     Every class that needs c++-fixup will provide a function that will generate
+  //     c++-fixup bytecode that when evaluated will create C++ objects in malloc memory
+  //     and write pointers to those objects into the loaded objects.
+  //     Every object except for Cons_O cells will need to have it's vtable pointer fixed up.
+  //
+  // 15. Generate c++-fixup bytecode for each object that needs it
+  // 17. Generate table of contents
+  // 18. Write table of contents and save-buffer
+  // 19. DIE or RETURN
+
   //
   // Clear out a few things
   //
@@ -2472,7 +2555,6 @@ void snapshot_save(const std::string& filename) {
   printf("%s:%d:%s Finished invoking cmp:invoke-save-hooks\n", __FILE__, __LINE__, __FUNCTION__ );
 
 #if defined(USE_BOEHM)
-  Snapshot_save_data data(filename);
   GC_call_with_alloc_lock( snapshot_save_impl, &data );
 #else
   MISSING_GC_SUPPORT();

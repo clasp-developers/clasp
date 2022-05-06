@@ -782,7 +782,7 @@ Return the index of the load-time-value"
                                                                   (core:bformat nil "startup-byte-code-%s" id))))
               (cmp:irc-intrinsic-call "cc_invoke_byte_code_interpreter"
                                       (list *gcroots-in-module*
-                                            (cmp:irc-bit-cast (cmp:irc-gep (llvm-sys:array-type-get cmp:%i8% (1+ byte-code-length))
+                                            (cmp:irc-bit-cast (cmp:irc-typed-gep (llvm-sys:array-type-get cmp:%i8% (1+ byte-code-length))
                                                                            byte-code-global (list 0 0))
                                                               cmp:%i8*%)
                                             (cmp:jit-constant-size_t byte-code-length)))
@@ -821,7 +821,7 @@ Return the index of the load-time-value"
                                                   (cmp:jit-constant-size_t transient-entries)
                                                   (cmp:jit-constant-size_t function-vector-length)
                                                   (cmp:irc-bit-cast
-                                                   (cmp:irc-gep function-vector-type function-vector
+                                                   (cmp:irc-typed-gep function-vector-type function-vector
                                                                 (list 0 0))
                                                    cmp:%i8**%)
                                                   )))))

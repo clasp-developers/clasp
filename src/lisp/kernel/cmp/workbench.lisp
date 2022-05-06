@@ -67,7 +67,7 @@
          cmp::layout-xep-function
          cmp::layout-xep-function*
          cmp::irc-create-call-wft
-         cmp::irc-gep
+         cmp::irc-typed-gep
          cmp::irc-bit-cast
          cmp::dbg-parameter-var
          cmp::%dbg-variable-value

@@ -103,6 +103,10 @@
                     :command "$clasp --norc --non-interactive --feature ignore-extensions --load \"sys:regression-tests;run-all.lisp\""
                     :description "Running regression tests"
                     :pool "console")
+  (ninja:write-rule output-stream :ansi-test
+                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
+                    :description "Running ANSI tests"
+                    :pool "console")
   (ninja:write-rule output-stream :link-fasl
                     :command "$clasp --norc --type image --disable-mpi --ignore-image --feature clasp-min --load link-fasl.lisp -- $out $in"
                     :restat 1
@@ -112,18 +116,15 @@
                     :description "Linking $out")
   (ninja:write-rule output-stream :jupyter-kernel
                     :command (format nil
-                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --non-interactive --load jupyter-kernel.lisp -- $name $bin-path $load-system $system"
+                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --no-rc~;$clasp~] --non-interactive --load jupyter-kernel.lisp -- $name $bin-path $load-system $system"
                                      clasp-quicklisp-directory)
                     :description "Installing jupyter kernel for $name")
   (ninja:write-rule output-stream :make-snapshot
                     :command (format nil
-                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --non-interactive $arguments --load snapshot.lisp -- $out"
+                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --no-rc~;$clasp~] --non-interactive $arguments --load snapshot.lisp -- $out"
                                      clasp-quicklisp-directory)
                     :pool "console"
-                    :description "Creating snapshot $out")
-  (ninja:write-rule output-stream :make-snapshot-object
-                    :command "$objcopy --input-target binary --output-target elf64-x86-64 --binary-architecture i386 $in $out --redefine-sym _binary_${mangled-name}_end=_binary_snapshot_end --redefine-sym _binary_${mangled-name}_start=_binary_snapshot_start --redefine-sym _binary_${mangled-name}_size=_binary_snapshot_size"
-                    :description "Creating object from snapshot $in"))
+                    :description "Creating snapshot $out"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :etags)) sources
@@ -249,6 +250,8 @@
                             generated))
           (exe (make-source (build-name target) :variant))
           (exe-installed (make-source (build-name target) :package-bin))
+          (lib (make-source "libclasp.a" :variant-lib))
+          (lib-installed (make-source "libclasp.a" :package-lib))
           (symlink (make-source (if (member :cando (extensions configuration))
                                     "cando"
                                     "clasp")
@@ -258,21 +261,27 @@
                                               "clasp")
                                           :package-bin))
           (clasp-sh (make-source "clasp" :variant))
-          (clasp-sh-installed (make-source "clasp" :package-bin)))
-  (ninja:write-build output-stream :generate-headers
-                     :inputs (sort sifs
+          (clasp-sh-installed (make-source "clasp" :package-bin))
+          (filtered-sifs (if *variant-precise*
+                             (sort sifs
                                    (lambda (x y)
                                      (and (eq x :code)
                                           (eq y :variant)))
                                    :key #'source-root)
+                             (remove-if (lambda (x)
+                                          (eq :code (source-root x)))
+                                        sifs))))
+  (ninja:write-build output-stream :generate-headers
+                     :inputs filtered-sifs
                      :precise (if *variant-precise* "1" "0")
                      :variant-path *variant-path*
-                     :sources (format nil "~{~/ninja:escape/~^ ~}"
-                                      (mapcar #'source-path sifs))
                      :outputs generated)
   (ninja:write-build output-stream :phony
                      :outputs (list (build-name "generated"))
                      :inputs generated)
+  (ninja:write-build output-stream :ar
+                     :inputs objects
+                     :outputs (list lib))
   (ninja:write-build output-stream :link
                      :variant-ldflags *variant-ldflags*
                      :variant-ldlibs *variant-ldlibs*
@@ -283,7 +292,7 @@
                      :target (file-namestring (source-path exe))
                      :outputs (list symlink))
   (ninja:write-build output-stream :phony
-                     :inputs (list* exe symlink
+                     :inputs (list* exe symlink lib
                                     (when (and *variant-default*
                                                (etags configuration))
                                       (list (make-source "TAGS" :code))))
@@ -297,6 +306,9 @@
     (ninja:write-build output-stream :install-binary
                        :inputs (list exe)
                        :outputs (list exe-installed))
+    (ninja:write-build output-stream :install-file
+                       :inputs (list lib)
+                       :outputs (list lib-installed))
     (ninja:write-build output-stream :symbolic-link
                        :inputs (list exe-installed)
                        :target (file-namestring (source-path exe-installed))
@@ -310,6 +322,7 @@
                                                            "install_code"
                                                            "install_load"
                                                            exe-installed
+                                                           lib-installed
                                                            symlink-installed)
                                                      (when (member :cando (extensions configuration))
                                                        (list clasp-sh-installed))
@@ -663,10 +676,17 @@
                      :clasp (make-source (build-name :iclasp) :variant)
                      :inputs (list (build-name "cclasp"))
                      :outputs (list (build-name "test")))
+  (ninja:write-build output-stream :ansi-test
+                     :clasp (make-source (build-name :iclasp) :variant)
+                     :inputs (list (build-name "cclasp"))
+                     :outputs (list (build-name "ansi-test")))
   (when *variant-default*
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "test"))
-                       :outputs (list "test"))))
+                       :outputs (list "test"))
+    (ninja:write-build output-stream :phony
+                       :inputs (list (build-name "ansi-test"))
+                       :outputs (list "ansi-test"))))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :static-analyzer)) sources
@@ -705,9 +725,7 @@
      &aux (cclasp (build-name :cclasp))
           (iclasp (make-source (build-name :iclasp) :variant)))
   (flet ((snapshot (name &key ignore-extensions)
-           (let* ((snapshot (make-source (format nil "generated/~a.snapshot" name) :variant))
-                  (object (make-source (format nil "generated/~a.o" name) :variant))
-                  (executable (make-source (build-name name) :variant))
+           (let* ((executable (make-source (build-name name) :variant))
                   (symlink (make-source name :variant))
                   (symlink-installed (make-source name :package-bin))
                   (installed (make-source (build-name name) :package-bin))
@@ -733,25 +751,6 @@
                                 :arguments (when ignore-extensions
                                              "--feature ignore-extensions")
                                 :inputs (list cclasp)
-                                :outputs (list snapshot))
-             #+darwin (ninja:write-build output-stream :link
-                                :variant-ldflags (format nil "-sectcreate __CLASP __clasp ~a ~a"
-                                                         snapshot
-                                                         *variant-ldflags*)
-                                :variant-ldlibs *variant-ldlibs*
-                                :inputs objects
-                                :implicit-inputs (list snapshot)
-                                :outputs (list executable))
-             #-darwin (ninja:write-build output-stream :make-snapshot-object
-                                         :mangled-name (substitute-if #\_
-                                                                      (complement #'alphanumericp)
-                                                                      (namestring (resolve-source snapshot)))
-                                         :inputs (list snapshot)
-                                         :outputs (list object))
-             #-darwin (ninja:write-build output-stream :link
-                                :variant-ldflags *variant-ldflags*
-                                :variant-ldlibs *variant-ldlibs*
-                                :inputs (cons object objects)
                                 :outputs (list executable))
              (ninja:write-build output-stream :symbolic-link
                                 :inputs (list executable)
@@ -786,8 +785,8 @@
                  (push kernel install-outputs)))
              (list build-outputs install-outputs user-kernel))))
     (let ((outputs (if (member :cando (extensions configuration))
-                       (list (snapshot "dclasp" :ignore-extensions t)
-                             (snapshot "dcando"))
+                       (list (snapshot "dcando")
+                             (snapshot "dclasp" :ignore-extensions t))
                        (list (snapshot "dclasp")))))
       (ninja:write-build output-stream :phony
                          :inputs (list* (build-name :cclasp)

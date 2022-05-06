@@ -123,11 +123,6 @@
                :initform #P"build/"
                :type pathname
                :documentation "The directory where build files are to be put.")
-   (clean :reader clean
-          :initarg :clean
-          :initform nil
-          :type boolean
-          :documentation "Clean up from previous builds before configuring the build.")
    (parallel-build :accessor parallel-build
                    :initarg :parallel-build
                    :initform t
@@ -526,6 +521,11 @@ is not compatible with snapshots.")
             :initarg :jupyter
             :type boolean
             :documentation "Enable Jupyter and create Jupyter kernels.")
+   (xcode-sdk :accessor xcode-sdk
+              :initform nil
+              :initarg :xcode-sdk
+              :type (or null pathname)
+              :documentation "XCode SDK Path")
    (default-target :accessor default-target
                    :initform nil
                    :initarg :default-target
@@ -556,8 +556,8 @@ is not compatible with snapshots.")
                   :type (member :iclasp :aclasp :bclasp :cclasp :dclasp)
                   :documentation "Default stage for installation")
    (units :accessor units
-          :initform '(:git :describe :cpu-count :base :default-target :pkg-config :clang :llvm :ar
-                      :cc :cxx :nm :etags :objcopy :jupyter)
+          :initform '(:git :describe :cpu-count #+darwin :xcode :base :default-target :pkg-config
+                      :clang :llvm :ar :cc :cxx :nm :etags :objcopy :jupyter)
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
@@ -656,6 +656,9 @@ is not compatible with snapshots.")
   (when (jupyter-path instance)
     (setf (jupyter-path instance)
           (uiop:ensure-directory-pathname (jupyter-path instance))))
+  (when (xcode-sdk instance)
+    (setf (xcode-sdk instance)
+          (uiop:ensure-directory-pathname (xcode-sdk instance))))
   (when (member :cando (extensions instance))
     (setf (gethash :clasp-sh (outputs instance))
           (list (make-source (make-pathname :name "clasp" :type :unspecific) :variant)))))

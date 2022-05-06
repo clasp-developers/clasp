@@ -259,10 +259,11 @@ Return files."
 (defun interpreter-iload (entry)
   (let* ((filename (entry-filename entry))
          (pathname (probe-file (build-pathname filename :lisp)))
-         (name (namestring pathname)))
-    (if cmp:*implicit-compile-hook*
-        (bformat t "Loading/compiling source: %s%N" (namestring name))
-        (bformat t "Loading/interpreting source: %s%N" (namestring name)))
+         (name (namestring pathname))
+         (lsp-path (namestring name)))
+    (if (eq cmp:*implicit-compile-hook* 'cmp:implicit-compile-hook-default)
+        (bformat t "Loading/interpreting source: %s%N" lsp-path)
+        (bformat t "Loading/compiling source: %s%N" lsp-path))
     (cmp::with-compiler-timer (:message "Compiler" :verbose t)
      (load pathname))))
 
@@ -285,9 +286,9 @@ Return files."
             (load-kernel-file bc-path :silent nil)))
         (if (probe-file lsp-path)
             (progn
-              (if cmp:*implicit-compile-hook*
-                  (bformat t "Loading/compiling source: %s%N" lsp-path)
-                  (bformat t "Loading/interpreting source: %s%N" lsp-path))
+              (if (eq cmp:*implicit-compile-hook* 'cmp:implicit-compile-hook-default)
+                  (bformat t "Loading/interpreting source: %s%N" lsp-path)
+                  (bformat t "Loading/compiling source: %s%N" lsp-path))
               (cmp::with-compiler-timer (:message "Compiler" :verbose t)
                (load lsp-path)))
             (bformat t "No interpreted or bitcode file for %s could be found%N" lsp-path)))))
@@ -703,7 +704,8 @@ Return files."
     (t (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
     
-(export '(compile-aclasp link-fasl))
+(export '(load-aclasp compile-aclasp link-fasl))
+
 (defun compile-aclasp (&key clean
                          (output-file (build-common-lisp-bitcode-pathname))
                          (target-backend (default-target-backend))

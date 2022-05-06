@@ -338,8 +338,7 @@ Return the **output-pathname**."
 
 (defun builder (kind destination &rest keywords)
   "This is used by ASDF to build fasl files."
-  (declare (optimize (debug 3))
-           (ignore kind))
+  (declare (ignore kind))
   (apply 'build-fasl destination keywords))
 
 (export '(builder))

@@ -65,7 +65,7 @@
 // comparing the least significant byte of a pointer to the following bytes.
 # define UNBOUND_MASK                         ((uintptr_t)0xFF)
 # define UNBOUND_BYTE                         ((uint8_t)(0x0|UNBOUND_TAG))
-# define NO_THREAD_LOCAL_BINDING_UNBOUND_BYTE ((uint8_t)(0x08|UNBOUND_TAG))
+# define NO_THREAD_LOCAL_BINDING_UNBOUND_BYTE ((uint8_t)(0x40|UNBOUND_TAG))
 # define NO_KEY_UNBOUND_BYTE                  ((uint8_t)(0x10|UNBOUND_TAG))
 # define DELETED_UNBOUND_BYTE                 ((uint8_t)(0x18|UNBOUND_TAG))
 # define SAME_AS_KEY_UNBOUND_BYTE             ((uint8_t)(0x20|UNBOUND_TAG))

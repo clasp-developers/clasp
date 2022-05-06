@@ -138,7 +138,7 @@
 (defun %gep (type object indices &optional (label "gep"))
   "Check the type against the object type and if they match return the GEP.
 And convert everything to JIT constants."
-    (cmp:irc-gep-variable type object indices label))
+    (cmp:irc-typed-gep-variable type object indices label))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

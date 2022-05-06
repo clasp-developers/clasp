@@ -306,7 +306,7 @@ inline bool tagged_no_keyp(T ptr) {
   return ((reinterpret_cast<uintptr_t>(ptr)&UNBOUND_MASK) == NO_KEY_UNBOUND_BYTE );
 }
 template <class T>
-inline bool tagged_same_as_keyP(T ptr) {
+inline bool tagged_same_as_keyp(T ptr) {
   return ((reinterpret_cast<uintptr_t>(ptr)&UNBOUND_MASK) == SAME_AS_KEY_UNBOUND_BYTE );
 }
 
@@ -467,7 +467,7 @@ inline T tag_no_thread_local_binding() {
       return std::string( tagged_deleted_str );
     }
 
-    if( tagged_same_as_keyP( tagged_obj )  )
+    if( tagged_same_as_keyp( tagged_obj )  )
     {
       return std::string( tagged_same_as_key_str );
     }
