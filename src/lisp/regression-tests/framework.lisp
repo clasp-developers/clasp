@@ -4,18 +4,20 @@
 
 (in-package #:clasp-tests)
 
-(defparameter *passes* 0)
-(defparameter *fails* 0)
-(defparameter *failed-tests* nil)
+(defparameter *expected-failed-tests* nil)
+(defparameter *unexpected-failed-tests* nil)
+(defparameter *expected-passed-tests* nil)
+(defparameter *unexpected-passed-tests* nil)
 (defparameter *expected-failures* nil)
 (defparameter *files-failed-to-compile* nil)
 (defparameter *test-marker-table* (make-hash-table))
 (defparameter *duplicate-tests* nil)
 
 (defun reset-clasp-tests ()
-  (setq *passes* 0
-        *fails* 0
-        *failed-tests* nil
+  (setq *expected-failed-tests* nil
+        *unexpected-failed-tests* nil
+        *expected-passed-tests* nil
+        *unexpected-passed-tests* nil
         *files-failed-to-compile* nil
         *test-marker-table* (make-hash-table)
         *duplicate-tests* nil))
@@ -26,60 +28,50 @@
          (warn "~%Duplicate test ~a~%" name))
         (t (setf (gethash name *test-marker-table*) t)))) 
 
-(defun note-test-finished ()
-  (setq *failed-tests* (nreverse *failed-tests*)))
-
 (defun note-compile-error (file&error)
   (push file&error *files-failed-to-compile*))
   
-(defun show-failed-tests ()
-  (cond (*failed-tests*
-         (format t "~%Failed tests ~a~%" *failed-tests*)
-         (show-unexpected-failures))
-        (t (format t "~%No tests failed~%")))
+(defun show-test-summary ()
+  (format t "~@[~%Failures:~%  ~/pprint-fill/~%~]~
+~@[~%Unexpected Successes:~%  ~/pprint-fill/~%~]~
+~@[~%Expected Failures:~%  ~/pprint-fill/~%~]
+Successes: ~d~%"
+          (reverse *unexpected-failed-tests*) (reverse *unexpected-passed-tests*)
+          (reverse *expected-failed-tests*) (length *expected-passed-tests*))
   (when *files-failed-to-compile*
     (dolist (file&error *files-failed-to-compile*)
       (format t "Compilation error for file ~a with error  ~a~%" (first file&error)(second file&error))))
   (when *duplicate-tests*
     (dolist (test *duplicate-tests*)
-      (format t "Duplicate test ~a~%" test))))
-
-(defun show-unexpected-failures ()
-  (let ((unexpected-failures nil))
-    (dolist (fail *failed-tests*)
-      (unless (member fail *expected-failures*)
-        (push fail unexpected-failures)))
-    (when unexpected-failures
-      (format t "~%unexpected failures ~a~%" (nreverse unexpected-failures)))
-    (let ((unexpected-successes nil))
-      (dolist (fail *expected-failures*)
-        (unless (member fail *failed-tests*)
-          (push fail unexpected-successes)))
-      (when unexpected-successes
-        (format t "~%unexpected success ~a~%" (nreverse unexpected-successes))))))
+      (format t "Duplicate test ~a~%" test)))
+  (not *unexpected-failed-tests*))
 
 (defvar *all-runtime-errors* nil)
 
 (defun %fail-test-with-error (name form expected error description)
   (declare (ignore expected)) ; maybe display later?
   (push (list name error) *all-runtime-errors*)
-  (incf *fails*)
-  (push name *failed-tests*)
+  (if (member name *expected-failures*)
+      (push name *expected-failed-tests*)
+      (push name *unexpected-failed-tests*))
   (format t "~&Failed ~s~%Unexpected error~%~t~a~%while evaluating~%~t~a~%"
           name error form)
   (when description (format t "~s~%" description)))
 
 (defun %fail-test (name form expected actual description test)
-  (incf *fails*)
-  (push name *failed-tests*)
+  (if (member name *expected-failures*)
+      (push name *expected-failed-tests*)
+      (push name *unexpected-failed-tests*))
   (format t "~&Failed ~s~%Wanted values ~s to~%~{~t~a~%~}but got~%~{~t~a~%~}"
           name test expected actual)
   (format t "while evaluating~%~t~a~%" form)
   (when description (format t "~s~%" description)))
 
 (defun %succeed-test (name)
-  (format t "~&Passed ~s~%" name)
-  (incf *passes*))
+  (if (member name *expected-failures*)
+      (push name *unexpected-passed-tests*)
+      (push name *expected-passed-tests*))
+  (format t "~&Passed ~s~%" name))
 
 (defun %test (name form thunk expected &key description (test 'equalp))
   (note-test name)

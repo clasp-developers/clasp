@@ -243,8 +243,13 @@ has not been set."
                          #-bsd '("nproc --all")
           for output = (run-program-capture command)
           when output
-            do (message :info "Found ~a cpu cores. Setting the number of jobs to this value."
-                        (setf (jobs configuration) (parse-integer output :junk-allowed t)))
+            do (let ((count (parse-integer output :junk-allowed t)))
+                 (message :info "Found ~a cpu cores. Setting the number of jobs to ~a."
+                          count
+                          (setf (jobs configuration)
+                                (cond ((< count 2) 2)
+                                      ((= count 2) 3)
+                                      (t (+ 2 count))))))
                (return)
           finally (message :warn "Unknown number of cpu cores. Setting the number of jobs to ~a."
                            (setf (jobs configuration) 4))))) 
@@ -257,9 +262,11 @@ has not been set."
       configuration
     (cond ((git-working-tree-p configuration)
            (message :emph "Updating version number.")
-           (setf version (git-describe configuration)
+           (setf version (or (git-describe configuration)
+                             version)
                  commit-short (git-commit configuration :short t)
-                 commit-full (git-commit configuration)))
+                 commit-full (git-commit configuration))
+           (message :info "Set version number to ~A" version))
           ((not version)
            (message :err "Clasp version number is not defined and we are not in a git working tree!")))))
 

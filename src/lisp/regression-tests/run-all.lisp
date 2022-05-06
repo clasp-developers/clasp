@@ -60,8 +60,4 @@
 ;;; system-construction should be last for now.
 ;;; When we have it before debug.lisp, debug.lisp will fail
 (load-if-compiled-correctly "sys:regression-tests;system-construction.lisp")
-(progn
-  (note-test-finished)
-  (format t "Passes: ~a~%" *passes*)
-  (format t "Fails:  ~a~%" *fails*)
-  (show-failed-tests))
+(sys:quit (if (show-test-summary) 0 1))
