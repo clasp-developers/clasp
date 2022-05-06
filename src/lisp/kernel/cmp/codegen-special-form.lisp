@@ -565,59 +565,63 @@ jump to blocks within this tagbody."
   (assert-result-isa-llvm-value result)
   (unless (and (car rest) (symbolp (car rest))) (push (gensym) rest)) ;; stick a dummy tag at the head if there isn't one
   (let* ((tagbody-env (irc-new-tagbody-environment env))
-	 (enumerated-tag-blocks (tagbody.enumerate-tag-blocks rest tagbody-env)))
-    ;; If the GO spec.ops. are in the same function we could use simple cleanup and branches for TAGBODY/GO
-    ;; so save the function
-    (let* ((renv (irc-load (irc-renv env)))
-           (instruction (irc-intrinsic "makeTagbodyFrameSetParent" renv)))
-      (irc-t*-result instruction (irc-renv tagbody-env))
-      (irc-low-level-trace :tagbody)
-      (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
-      (let* ((tagbody-renv (irc-renv tagbody-env))
-             ;; We cannot use llvm.frameaddress to get a handle, like we do in
-             ;; cclasp, because here each tagbody and block has its own switch
-             ;; encoding and they all share the frameaddress.
-             (vhandle (irc-bit-cast tagbody-renv %i8*%))
-             (handle (irc-intrinsic "initializeTagbodyClosure" tagbody-renv vhandle)))
-        #+optimize-bclasp
-        (setf (gethash tagbody-env *tagbody-frame-info*)
-              (make-tagbody-frame-info :tagbody-environment tagbody-env
-                                       :make-tagbody-frame-instruction (list instruction (list (irc-load (irc-renv env))))
-                                       :initialize-tagbody-closure (list handle (list (irc-renv tagbody-env)))))
-        (with-try "TRY.tagbody"
-            (progn
-              (let ((go-blocks nil))
-                (mapl #'(lambda (cur)
-                          (let* ((tag-begin (car cur))
-                                 (section-block (cadr tag-begin)))
-                            (push section-block go-blocks)))
-                      enumerated-tag-blocks)
-                (let ((go-vec (make-array (length go-blocks) :initial-contents (nreverse go-blocks))))
-                  (core:setf-local-blocks tagbody-env go-vec)))
-              (mapl #'(lambda (cur)
-                        (let* ((tag-begin (car cur))
-                               (tag-end (cadr cur))
-                               (section-block (cadr tag-begin))
-                               (section-next-block (cadr tag-end))
-                               (section (extract-section (caddr tag-begin) (caddr tag-end))))
-                          (irc-branch-if-no-terminator-inst section-block)
-                          (irc-begin-block section-block)
-                          (codegen-progn result section tagbody-env)
-                          (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))
-                          ))
-                    enumerated-tag-blocks))
-          ;;        ((cleanup) (codegen-literal result nil env))
-          ((cleanup) (irc-unwind-environment tagbody-env))
-          ((typeid-core-unwind exception-ptr)
-           (let* ((go-index (irc-intrinsic "tagbodyHandleDynamicGoIndex_or_rethrow" exception-ptr vhandle))
-                  (default-block (irc-basic-block-create "switch-default"))
-                  (sw (irc-switch go-index default-block (length enumerated-tag-blocks))))
-             (mapc #'(lambda (one) (irc-add-case sw (jit-constant-size_t (car one)) (cadr one)))
-                   enumerated-tag-blocks)
-             (irc-begin-block default-block)
-             (irc-intrinsic "throwIllegalSwitchValue"
-                            go-index (jit-constant-size_t (length enumerated-tag-blocks))))))
-        (codegen-literal result nil env)))))
+         (jmp-buf* (alloca %jmp-buf-tag% 1 "tagbody-jmp-buf"))
+	 (enumerated-tag-blocks (tagbody.enumerate-tag-blocks rest tagbody-env))
+         ;; If the GO spec.ops. are in the same function we could
+         ;; use simple cleanup and branches for TAGBODY/GO
+         ;; so save the function
+         (renv (irc-load (irc-renv env)))
+         (instruction (irc-intrinsic "makeTagbodyFrameSetParent" renv))
+         (go-blocks (mapcar #'cadr enumerated-tag-blocks))
+         (go-vec (make-array (length go-blocks)
+                             :initial-contents go-blocks)))
+    (irc-t*-result instruction (irc-renv tagbody-env))
+    (irc-low-level-trace :tagbody)
+    (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
+    (core:setf-local-blocks tagbody-env go-vec)
+    (let* ((tagbody-renv (irc-renv tagbody-env))
+           ;; We cannot use llvm.frameaddress to get a handle, like we do in
+           ;; cclasp, because here each tagbody and block has its own switch
+           ;; encoding and they all share the frameaddress.
+           (vhandle (irc-bit-cast tagbody-renv %i8*%))
+           #+(or)
+           (dynenv (irc-intrinsic "cc_createAndPushTagbodyDynenv"
+                                  vhandle jmp_buf*))
+           (handle (irc-intrinsic "initializeTagbodyClosure" tagbody-renv vhandle)))
+      #+optimize-bclasp
+      (setf (gethash tagbody-env *tagbody-frame-info*)
+            (make-tagbody-frame-info :tagbody-environment tagbody-env
+                                     :make-tagbody-frame-instruction instruction
+                                     :initialize-tagbody-closure handle))
+      (with-try "TRY.tagbody"
+        (mapl #'(lambda (cur)
+                  (let* ((tag-begin (car cur))
+                         (tag-end (cadr cur))
+                         (section-block (cadr tag-begin))
+                         (section-next-block (cadr tag-end))
+                         (section (extract-section (caddr tag-begin) (caddr tag-end))))
+                    (irc-branch-if-no-terminator-inst section-block)
+                    (irc-begin-block section-block)
+                    (codegen-progn result section tagbody-env)
+                    (when section-next-block
+                      (irc-branch-if-no-terminator-inst section-next-block))
+                    ))
+              enumerated-tag-blocks)
+        ;;        ((cleanup) (codegen-literal result nil env))
+        ((cleanup) (irc-unwind-environment tagbody-env))
+        ((typeid-core-unwind exception-ptr)
+         (let* ((go-index (irc-intrinsic "tagbodyHandleDynamicGoIndex_or_rethrow" exception-ptr vhandle))
+                (default-block (irc-basic-block-create "switch-default"))
+                (sw (irc-switch go-index default-block (length enumerated-tag-blocks))))
+           (mapc #'(lambda (one)
+                     (irc-add-case
+                      sw (jit-constant-size_t (car one))
+                      (cadr one)))
+                 enumerated-tag-blocks)
+           (irc-begin-block default-block)
+           (irc-intrinsic "throwIllegalSwitchValue"
+                          go-index (jit-constant-size_t (length enumerated-tag-blocks))))))
+      (codegen-literal result nil env))))
 
 
 (defun codegen-local-tagbody (result rest env)
@@ -633,9 +637,8 @@ jump to blocks within this tagbody."
       (irc-low-level-trace :tagbody)
       (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
       (let ((go-blocks nil))
-        (mapl #'(lambda (cur)
-                  (let* ((tag-begin (car cur))
-                         (section-block (cadr tag-begin)))
+        (mapc #'(lambda (tag-begin)
+                  (let ((section-block (cadr tag-begin)))
                     (push section-block go-blocks)))
               enumerated-tag-blocks)
         (let ((go-vec (make-array (length go-blocks) :initial-contents (nreverse go-blocks))))
@@ -700,41 +703,49 @@ jump to blocks within this tagbody."
          (body (cdr rest)))
     (or (symbolp block-symbol) (error "The block name ~a is not a symbol" block-symbol))
     (with-dbg-lexical-block ()
-      (multiple-value-bind (block-env make-block-frame-instruction make-block-frame-instruction-arguments)
+      (multiple-value-bind (block-env make-block-frame-instruction)
           (irc-make-block-environment-set-parent block-symbol env)
-	(let ((block-start (irc-basic-block-create
-			    (bformat nil "block-%s-start" (symbol-name block-symbol))))
-	      (nonlocal-return-block (irc-basic-block-create (bformat nil "nonlocal-return-%s-block" (symbol-name block-symbol))))
-	      (local-return-block (irc-basic-block-create (bformat nil "local-return-%s-block" (symbol-name block-symbol))))
-	      (after-return-block (irc-basic-block-create (bformat nil "after-return-%s-block" (symbol-name block-symbol)))))
+	(let* ((jmp-buf* (alloca %jmp-buf-tag% 1 "block-jmp-buf"))
+               (block-renv (irc-renv block-env))
+               (vhandle (irc-bit-cast block-renv %i8*%))
+               (dynenv (irc-intrinsic "cc_createAndPushBlockDynenv"
+                                      vhandle jmp-buf*))
+               (handle (irc-intrinsic "initializeBlockClosure" block-renv dynenv))
+               (sj (irc-intrinsic "_setjmp" jmp-buf*))
+               (block-start (irc-basic-block-create
+			     (bformat nil "block-%s-start" (symbol-name block-symbol))))
+	       (nonlocal-return-block (irc-basic-block-create (bformat nil "nonlocal-return-%s-block" (symbol-name block-symbol))))
+	       (local-return-block (irc-basic-block-create (bformat nil "local-return-%s-block" (symbol-name block-symbol))))
+	       (after-return-block (irc-basic-block-create (bformat nil "after-return-%s-block" (symbol-name block-symbol)))))
 	  (core:setf-local-return-block block-env local-return-block)
           (core:setf-local-return-value block-env result)
-	  (irc-br block-start "block-start")
+          (irc-cond-br (irc-icmp-eq sj (jit-constant-i32 0))
+                       block-start nonlocal-return-block)
 	  (irc-begin-block block-start)
-          (let* ((block-renv (irc-renv block-env))
-                 (vhandle (irc-bit-cast block-renv %i8*%))
-                 (handle (irc-intrinsic "initializeBlockClosure" block-renv vhandle)))
-            #+optimize-bclasp
-            (let ((info (make-block-frame-info :block-environment block-env
-                                               :block-symbol block-symbol
-                                               :make-block-frame-instruction (list make-block-frame-instruction  make-block-frame-instruction-arguments)
-                                               :initialize-block-closure-instruction (list handle (list (irc-renv block-env))))))
-              (setf (gethash block-env *block-frame-info*) info))
-            (with-try "TRY.block"
-                (codegen-progn result body block-env)
-              ((cleanup)
-               (irc-unwind-environment block-env))
-              ((typeid-core-unwind exception-ptr)
-               (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom_or_rethrow" exception-ptr vhandle)))
-                 (irc-tmv-result handle-instruction result))))
-            (irc-br after-return-block "after-return-block")
-            (irc-begin-block nonlocal-return-block)
-            (let ((val (irc-intrinsic "restoreFromMultipleValue0")))
-              (irc-tmv-result val result))
-            (irc-br after-return-block)
-            (irc-begin-block local-return-block)
-            (irc-br after-return-block)
-            (irc-begin-block after-return-block)))))))
+          #+optimize-bclasp
+          (let ((info (make-block-frame-info :block-environment block-env
+                                             :block-symbol block-symbol
+                                             :make-block-frame-instruction make-block-frame-instruction
+                                             :initialize-block-closure-instruction handle)))
+            (setf (gethash block-env *block-frame-info*) info))
+          (with-try "TRY.block"
+            (codegen-progn result body block-env)
+            ((cleanup)
+             ;; could unwind the dynenv here too, but that ought to
+             ;; be taken care of by the ultimate destination.
+             (irc-unwind-environment block-env))
+            ((typeid-core-unwind exception-ptr)
+             (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom_or_rethrow" exception-ptr vhandle)))
+               (irc-tmv-result handle-instruction result))))
+          (irc-br after-return-block "after-return-block")
+          (irc-begin-block nonlocal-return-block)
+          (let ((val (irc-intrinsic "restoreFromMultipleValue0")))
+            (irc-tmv-result val result))
+          (irc-br after-return-block)
+          (irc-begin-block local-return-block)
+          (irc-br after-return-block)
+          (irc-begin-block after-return-block)
+          (irc-intrinsic "cc_unwind_dest_dynenv" dynenv))))))
 
 (defun codegen-local-block (result rest env)
   "codegen-local-block for local return-froms only"

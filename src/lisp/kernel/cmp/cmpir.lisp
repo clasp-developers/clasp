@@ -370,7 +370,7 @@ local-function - the lcl function that all of the xep functions call."
          (instr (irc-intrinsic "makeBlockFrameSetParent" parent-renv)))
     (irc-store instr new-renv)
     (irc-set-renv block-env new-renv)
-    (values block-env instr (list parent-renv))))
+    (values block-env instr)))
 
 (defun irc-make-local-block-environment-set-parent (name parent-env)
   "This returns a block environment that is only good for local return-from's"

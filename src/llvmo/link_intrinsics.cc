@@ -944,9 +944,9 @@ void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
   my_thread->_unwinds++;
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
   core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
-  void* vhandle = (void*)clasp_to_integral<uintptr_t>(handle);
+  core::BlockDynEnv_sp bde = gc::As<BlockDynEnv_sp>(handle);
   my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  throw core::Unwind(vhandle, 1); // index is unused here
+  sjlj_unwind(bde, 1); // index is unused here
 }
 };
 
@@ -968,10 +968,10 @@ gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP,
 
 extern "C" {
 
-core::T_O* initializeBlockClosure(core::T_O** afP, void* handle)
+core::T_O* initializeBlockClosure(core::T_O** afP, core::T_O* handle)
 {NO_UNWIND_BEGIN();
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-  T_sp unique = Integer_O::create((uintptr_t)handle);
+  T_sp unique((gc::Tagged)handle);
   vf->operator[](0) = unique;
   return unique.raw_();
   NO_UNWIND_END();

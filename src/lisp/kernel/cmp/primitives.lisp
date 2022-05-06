@@ -190,7 +190,7 @@
          (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
 
-         (primitive         "initializeBlockClosure" :t* (list :t** :i8*))
+         (primitive         "initializeBlockClosure" :t* (list :t** :t*))
          (primitive         "initializeTagbodyClosure" :t* (list :t** :i8*))
     
          (primitive-unwinds "throwReturnFrom" :void (list :size_t :t*) :does-not-return t)

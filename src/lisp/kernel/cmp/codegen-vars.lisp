@@ -301,7 +301,7 @@
 
 
 
-(defvar *rewrite-blocks* t)
+(defvar *rewrite-blocks* nil)
 
 (defstruct (track-rewrites (:type vector) :named)
   (total 0)
@@ -328,10 +328,10 @@
                (unless (block-frame-info-needed block-info)
                  (atomic-incf-symbol-value '*block-rewrite-counter-removed*)
                  (core:set-invisible (block-frame-info-block-environment block-info) t)
-                 (let ((ibc-call (car (block-frame-info-initialize-block-closure-instruction block-info))))
+                 (let ((ibc-call (block-frame-info-initialize-block-closure-instruction block-info)))
                    (llvm-sys:replace-all-uses-with ibc-call (llvm-sys:constant-pointer-null-get %t*%))
                    (llvm-sys:instruction-erase-from-parent ibc-call))
-                 (let* ((mbf-call (car (block-frame-info-make-block-frame-instruction block-info)))
+                 (let* ((mbf-call (block-frame-info-make-block-frame-instruction block-info))
                         (mbf-arg0 (car (llvm-sys:call-or-invoke-get-argument-list mbf-call))))
                    (llvm-sys:replace-all-uses-with mbf-call mbf-arg0)
                    (llvm-sys:instruction-erase-from-parent mbf-call))))
@@ -356,10 +356,10 @@
                (unless (tagbody-frame-info-needed tagbody-info)
                  (atomic-incf-symbol-value '*tagbody-rewrite-counter-removed*)
                  (core:set-invisible (tagbody-frame-info-tagbody-environment tagbody-info) t)
-                 (let ((itc (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info))))
+                 (let ((itc (tagbody-frame-info-initialize-tagbody-closure tagbody-info)))
                    (llvm-sys:replace-all-uses-with itc (llvm-sys:constant-pointer-null-get %t*%))
                    (llvm-sys:instruction-erase-from-parent itc))
-                 (let* ((tfi (car (tagbody-frame-info-make-tagbody-frame-instruction tagbody-info)))
+                 (let* ((tfi (tagbody-frame-info-make-tagbody-frame-instruction tagbody-info))
                         (tfi-arg0 (car (llvm-sys:call-or-invoke-get-argument-list tfi))))
                    (llvm-sys:replace-all-uses-with tfi tfi-arg0)
                    (llvm-sys:instruction-erase-from-parent tfi))))
