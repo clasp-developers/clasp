@@ -563,7 +563,9 @@ tag symbols to code and llvm-ir basic-blocks. Store the alist in the symbol-to-b
 metadata of the tagbody-env. These can be accessed by (go XXXX) special operators to
 jump to blocks within this tagbody."
   (assert-result-isa-llvm-value result)
-  (unless (and (car rest) (symbolp (car rest))) (push (gensym) rest)) ;; stick a dummy tag at the head if there isn't one
+  ;; stick a dummy tag at the head if there isn't one
+  (unless (and (car rest) (symbolp (car rest)))
+    (push (gensym "PREFIX") rest))
   (let* ((tagbody-env (irc-new-tagbody-environment env))
          (jmp-buf* (alloca %jmp-buf-tag% 1 "tagbody-jmp-buf"))
 	 (enumerated-tag-blocks (tagbody.enumerate-tag-blocks rest tagbody-env))
@@ -584,43 +586,75 @@ jump to blocks within this tagbody."
            ;; cclasp, because here each tagbody and block has its own switch
            ;; encoding and they all share the frameaddress.
            (vhandle (irc-bit-cast tagbody-renv %i8*%))
-           #+(or)
            (dynenv (irc-intrinsic "cc_createAndPushTagbodyDynenv"
-                                  vhandle jmp_buf*))
-           (handle (irc-intrinsic "initializeTagbodyClosure" tagbody-renv vhandle)))
+                                  vhandle jmp-buf*))
+           (handle (irc-intrinsic "initializeTagbodyClosure" tagbody-renv dynenv))
+           (default-block (irc-basic-block-create "tagbody-default"))
+           ;; This block is jumped to both by the setjmp and by the
+           ;; code in the landing pad.
+           (switch-block (irc-basic-block-create "tagbody-switch"))
+           ;; This block is necessary because WITH-TRY generates a
+           ;; jump to a new block, and so must be called while we
+           ;; have a valid and yet-to-be-terminated block.
+           (main-block (irc-basic-block-create "tagbody-start"))
+           (before-block (irc-get-insert-block))
+           (sj (irc-intrinsic "_setjmp" jmp-buf*))
+           (_0 (irc-branch-to-and-begin-block switch-block))
+           (switch-phi (irc-phi %i32% 2 "tag"))
+           (sw (irc-switch switch-phi default-block
+                           (length enumerated-tag-blocks))))
+      (declare (ignore _0))
       #+optimize-bclasp
       (setf (gethash tagbody-env *tagbody-frame-info*)
             (make-tagbody-frame-info :tagbody-environment tagbody-env
                                      :make-tagbody-frame-instruction instruction
                                      :initialize-tagbody-closure handle))
+      (irc-phi-add-incoming switch-phi sj before-block)
+      (irc-add-case sw (jit-constant-i32 0) main-block)
+      (irc-begin-block main-block)
       (with-try "TRY.tagbody"
         (mapl #'(lambda (cur)
                   (let* ((tag-begin (car cur))
                          (tag-end (cadr cur))
+                         (index (car tag-begin))
                          (section-block (cadr tag-begin))
                          (section-next-block (cadr tag-end))
                          (section (extract-section (caddr tag-begin) (caddr tag-end))))
                     (irc-branch-if-no-terminator-inst section-block)
+                    ;; 1+ to deal with setjmp only returning 0 the
+                    ;; first time.
+                    (irc-add-case sw (jit-constant-i32 (1+ index))
+                                  section-block)
                     (irc-begin-block section-block)
                     (codegen-progn result section tagbody-env)
                     (when section-next-block
-                      (irc-branch-if-no-terminator-inst section-next-block))
-                    ))
+                      (irc-branch-if-no-terminator-inst section-next-block))))
               enumerated-tag-blocks)
-        ;;        ((cleanup) (codegen-literal result nil env))
         ((cleanup) (irc-unwind-environment tagbody-env))
         ((typeid-core-unwind exception-ptr)
-         (let* ((go-index (irc-intrinsic "tagbodyHandleDynamicGoIndex_or_rethrow" exception-ptr vhandle))
-                (default-block (irc-basic-block-create "switch-default"))
-                (sw (irc-switch go-index default-block (length enumerated-tag-blocks))))
-           (mapc #'(lambda (one)
-                     (irc-add-case
-                      sw (jit-constant-size_t (car one))
-                      (cadr one)))
-                 enumerated-tag-blocks)
+         (let ((go-index (irc-intrinsic
+                          "tagbodyHandleDynamicGoIndex_or_rethrow"
+                          exception-ptr vhandle))
+               (cur-block (irc-get-insert-block)))
+           (irc-phi-add-incoming switch-phi go-index cur-block)
+           ;; Reset the dynenv
+           (irc-intrinsic "cc_unwind_dest_dynenv" dynenv)
+           ;; End the catch and jump back into the main code
+           (cmp:with-landing-pad nil
+             (irc-intrinsic "__cxa_end_catch"))
+           ;; Go
+           (irc-br switch-block)
+           ;; We generate the default-block here for a cheap reason:
+           ;; WITH-TRY expects to be able to generate a call to
+           ;; __cxa_catch, even though we don't actually need to
+           ;; here. KLUDGE.
            (irc-begin-block default-block)
            (irc-intrinsic "throwIllegalSwitchValue"
-                          go-index (jit-constant-size_t (length enumerated-tag-blocks))))))
+                          switch-phi (jit-constant-size_t
+                                      (length enumerated-tag-blocks))))))
+      ;; We're finally out of the atgbody, so remove it from the
+      ;; dynamic environment.
+      (irc-intrinsic "cc_pop_dynenv" dynenv)
       (codegen-literal result nil env))))
 
 

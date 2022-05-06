@@ -191,14 +191,14 @@
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
 
          (primitive         "initializeBlockClosure" :t* (list :t** :t*))
-         (primitive         "initializeTagbodyClosure" :t* (list :t** :i8*))
+         (primitive         "initializeTagbodyClosure" :t* (list :t** :t*))
     
          (primitive-unwinds "throwReturnFrom" :void (list :size_t :t*) :does-not-return t)
          (primitive-unwinds "throwDynamicGo" :void (list :size_t :size_t :t*) :does-not-return t)
 
          (primitive-unwinds "blockHandleReturnFrom_or_rethrow" :return-type (list :i8* :i8*))
-         (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" :size_t (list :i8* :i8*))
-         (primitive-unwinds "throwIllegalSwitchValue" :void (list :size_t :size_t) :does-not-return t)
+         (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" :i32 (list :i8* :i8*))
+         (primitive-unwinds "throwIllegalSwitchValue" :void (list :i32 :size_t) :does-not-return t)
          (primitive-unwinds "cc_error_bugged_catch" :void (list :size_t) :does-not-return t)
     
          (primitive         "__gxx_personality_v0" :i32 nil :varargs t)

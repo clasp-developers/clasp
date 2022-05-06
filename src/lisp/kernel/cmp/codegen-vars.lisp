@@ -344,7 +344,7 @@
 (defvar *tagbody-rewrite-counter* (make-track-rewrites)
   "Keep track of tagbody special operators that were seen and those that were rewritten to be removed")
   
-(defvar *rewrite-tagbody* t)
+(defvar *rewrite-tagbody* nil)
 (defvar *tagbody-rewrite-counter-total* 0)
 (defvar *tagbody-rewrite-counter-removed* 0)
 

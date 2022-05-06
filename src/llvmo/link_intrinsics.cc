@@ -977,13 +977,13 @@ core::T_O* initializeBlockClosure(core::T_O** afP, core::T_O* handle)
   NO_UNWIND_END();
 }
 
-core::T_O* initializeTagbodyClosure(core::T_O *afP, void* handle)
+core::T_O* initializeTagbodyClosure(core::T_O *afP, core::T_O* handle)
 {NO_UNWIND_BEGIN();
   core::T_sp tagbodyId((gctools::Tagged)afP);
+  core::T_sp thandle((gctools::Tagged)handle);
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-  T_sp unique = Integer_O::create((uintptr_t)handle);
-  vf->operator[](0) = unique;
-  return unique.raw_();
+  vf->operator[](0) = thandle;
+  return handle;
   NO_UNWIND_END();
 }
 };
@@ -1056,7 +1056,7 @@ void* cc_dynenv_frame(T_O* dynenv)
   sjlj_continue_unwinding();
 }
 
-void throwIllegalSwitchValue(size_t val, size_t max) {
+void throwIllegalSwitchValue(int val, size_t max) {
   SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
 }
 
@@ -1069,12 +1069,14 @@ void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   T_sp af((gctools::Tagged)afP);
   ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
   T_sp handle = tagbody->operator[](0);
-  void* vhandle = (void*)clasp_to_integral<uintptr_t>(handle);
-  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  throw core::Unwind(vhandle, index);
+  TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(handle);
+  /* This index was passed to us zero-based, as it's stored in the
+   * lexical environment, but for setjmp compatibility it must be
+   * at least 1. */
+  sjlj_unwind(tde, index + 1);
 }
 
-size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, void* handle) {
+int tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, void* handle) {
   core::Unwind& goException = *reinterpret_cast<core::Unwind *>(exceptionP);
   if (goException.getFrame() == handle) {
     std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
