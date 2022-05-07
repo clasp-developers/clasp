@@ -188,7 +188,6 @@ namespace gctools {
   template <class TO, class FROM>
     multiple_values<TO> dynamic_pointer_cast(const multiple_values<FROM> &ptr) {
     smart_ptr<FROM> sp = ptr;
-//  return multiple_values<TO>(boost::dynamic_pointer_cast<TO>(sp), ptr.number_of_values());
     return multiple_values<TO>(dynamic_cast<TO>(sp), ptr.number_of_values());
   };
 #endif
