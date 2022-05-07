@@ -279,7 +279,7 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
       printf("  0x%p : 0x%" PRIuPTR "\n", (headerP+1), *(headerP+1));
       break;
   }
-#if DEBUG_GUARD
+#ifdef DEBUG_GUARD
   Header_s* header = (Header_s*)headerP;
   header->validate();
   printf("This object passed the validate() test\n");
