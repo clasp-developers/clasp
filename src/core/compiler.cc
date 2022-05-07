@@ -1274,18 +1274,6 @@ CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, Function_s
 
 }
 
-
-extern "C" {
-LCC_RETURN call_with_variable_bound(core::T_O* tsym, core::T_O* tval, core::T_O* tthunk) {
-  core::Symbol_sp sym((gctools::Tagged)tsym);
-  core::T_sp val((gctools::Tagged)tval);
-  core::Function_sp func((gctools::Tagged)tthunk);
-  core::DynamicScopeManager scope(sym, val);
-  return (func->entry_0())(func.raw_());
-}
-
-};
-
 namespace core {
 
 CL_UNWIND_COOP(true);
@@ -1342,22 +1330,21 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
 
 CL_LAMBDA(symbols values func)
 CL_DECLARE();
-CL_UNWIND_COOP(false);
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(progvFunction)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
   if (symbols.consp()) {
     if (values.consp()) {
-      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
-      return core__progv_function(CONS_CDR(symbols),oCdr(values),func);
+      return call_with_variable_bound(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values), [&]() {
+        return core__progv_function(CONS_CDR(symbols),oCdr(values),func);
+      });
     } else {
-      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),unbound<core::T_O>());
-      return core__progv_function(CONS_CDR(symbols),nil<core::T_O>(),func);
+      return call_with_variable_bound(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values), [&]() {
+        return core__progv_function(CONS_CDR(symbols),nil<core::T_O>(),func);
+      });
     }
-  } else {
-    T_mv result = func->entry_0()(func.raw_());
-    return result;
-  }
+  } else return eval::funcall(func);
 }
 
 DOCGROUP(clasp)
