@@ -296,6 +296,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("JMP-BUF-SIZE"),make_fixnum(sizeof(jmp_buf))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UNWIND-PROTECT-DYNENV-SIZE"),make_fixnum(gctools::sizeof_with_header<UnwindProtectDynEnv_O>())),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("BINDING-DYNENV-SIZE"),make_fixnum(gctools::sizeof_with_header<BindingDynEnv_O>())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,_EntryPoint))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GLOBAL-ENTRY-POINT-ENTRY-POINTS-OFFSET"),make_fixnum(offsetof(core::GlobalEntryPoint_O, _EntryPoints))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);

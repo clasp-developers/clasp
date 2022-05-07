@@ -343,6 +343,7 @@
          (primitive-unwinds "cc_createAndPushBlockDynenv" :t* (list :i8* :jmp-buf-tag*))
          (primitive-unwinds "cc_createAndPushTagbodyDynenv" :t* (list :i8* :jmp-buf-tag*))
          (primitive         "cc_initializeAndPushCleanupDynenv" :t* (list :i8* :jmp-buf-tag*))
+         (primitive         "cc_initializeAndPushBindingDynenv" :t* (list :i8* :t* :t*))
          (primitive         "cc_pop_dynenv" :void (list :t*))
          (primitive         "cc_unwind_dest_dynenv" :void (list :t*))
          (primitive         "cc_dynenv_frame" :i8* (list :t*))

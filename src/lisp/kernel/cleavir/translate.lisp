@@ -525,17 +525,25 @@
 
 (defmethod translate-terminator ((instruction cc-bir:bind) abi next)
   (declare (ignore abi))
-  (let* ((inputs (bir:inputs instruction))
+  (let* ((bde-mem (cmp:alloca-i8 cmp::+binding-dynenv-size+
+                                 :alignment cmp:+alignment+
+                                 :label "binding-dynenv-mem"))
+         (inputs (bir:inputs instruction))
          (sym (in (first inputs)))
-         (val (in (second inputs))))
-    (setf (dynenv-storage instruction)
-          (list sym (%intrinsic-call "cc_TLSymbolValue" (list sym))))
+         (val (in (second inputs)))
+         (old (%intrinsic-call "cc_TLSymbolValue" (list sym)))
+         (bde (%intrinsic-call "cc_initializeAndPushBindingDynenv"
+                               (list bde-mem sym old))))
+    (setf (dynenv-storage instruction) (list sym old bde))
     (%intrinsic-call "cc_setTLSymbolValue" (list sym val)))
   (cmp:irc-br (first next)))
 
 (defmethod undo-dynenv ((dynenv cc-bir:bind) tmv)
   (declare (ignore tmv))
-  (%intrinsic-call "cc_resetTLSymbolValue" (dynenv-storage dynenv)))
+  (let ((store (dynenv-storage dynenv)))
+    (%intrinsic-call "cc_resetTLSymbolValue"
+                     (list (first store) (second store)))
+    (%intrinsic-call "cc_pop_dynenv" (list (third store)))))
 
 (defmethod translate-terminator
     ((instruction cc-bir:header-stamp-case) abi next)
