@@ -5,6 +5,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/symbol.h>
+#include <clasp/core/arguments.h> // DynamicScopeManager
 
 namespace core {
 
@@ -178,8 +179,8 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest);
  * runtime overhead by essentially inlining. Both thunks should accept no
  * arguments, and protected_thunk should return a T_mv.
  * See core__sjlj_funwind_protect for example usage. */
-template<typename protf, typename cleanupf>
-T_mv funwind_protect(protf&& protected_thunk, cleanupf&& cleanup_thunk) {
+template<typename Protf, typename Cleanupf>
+T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
   jmp_buf target;
   T_mv result;
   if (setjmp(target)) {
@@ -219,8 +220,8 @@ T_mv funwind_protect(protf&& protected_thunk, cleanupf&& cleanup_thunk) {
 /* Similarly, BLOCK. Note that the use of __builtin_frame_address is a bit
  * hairy here, and nesting this function without intervening frames may cause
  * strange issues. thunkf should accept a BlockDynEnv_sp. */
-template <typename blockf>
-T_mv call_with_escape(blockf&& block) {
+template <typename Blockf>
+T_mv call_with_escape(Blockf&& block) {
   jmp_buf target;
   void* frame = __builtin_frame_address(0);
   if (setjmp(target)) return T_mv::createFromValues(); // abnormal return
@@ -237,8 +238,8 @@ T_mv call_with_escape(blockf&& block) {
     }
 }
 
-template <typename tagbodyf>
-void call_with_tagbody(tagbodyf&& tagbody) {
+template <typename Tagbodyf>
+void call_with_tagbody(Tagbodyf&& tagbody) {
   jmp_buf target;
   void* frame = __builtin_frame_address(0);
   TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(my_thread->_DynEnv, frame, &target);
@@ -259,6 +260,16 @@ void call_with_tagbody(tagbodyf&& tagbody) {
     }
     else throw;
   }
+}
+
+template <typename Boundf>
+auto call_with_variable_bound(Symbol_sp sym, T_sp val,
+                              Boundf&& bound) {
+  T_sp old = sym->threadLocalSymbolValue();
+  DynamicScopeManager scope(sym, val);
+  gctools::StackAllocate<BindingDynEnv_O> bde(my_thread->_DynEnv, sym, old);
+  DynEnvPusher dep(my_thread, bde.asSmartPtr());
+  return bound();
 }
 
 }; // namespace core

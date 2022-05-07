@@ -1344,8 +1344,14 @@ T_mv sp_loadTimeValue(List_sp args, T_sp environment) {
 T_mv do_progv(List_sp symbols, List_sp values, List_sp forms, T_sp environment)
 {
   if (symbols.notnilp()) {
-    DynamicScopeManager scope (gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
-    return do_progv(CONS_CDR(symbols),CONS_CDR(values),forms,environment);
+    return call_with_variable_bound(gc::As<Symbol_sp>(CONS_CAR(symbols)),
+                                    CONS_CAR(values),
+                                    [&]() {
+                                      return do_progv(CONS_CDR(symbols),
+                                                      CONS_CDR(values),
+                                                      forms,
+                                                      environment);
+                                    });
   } else {
     return sp_progn(forms, environment);
   }
@@ -1525,6 +1531,11 @@ T_mv sp_go(List_sp args, T_sp env) {
                 ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
             MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
             ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
+            /* KLUDGE: We cheap out and ban use of our unwinder
+             * through here. Would be more efficient to undo
+             * the VEDSM there, but that's complicated. */
+            gctools::StackAllocate<UnknownDynEnv_O> ude(my_thread->_DynEnv);
+            DynEnvPusher dep(my_thread, ude.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
             List_sp curExp = expressions;
@@ -1593,6 +1604,9 @@ T_mv sp_go(List_sp args, T_sp env) {
                 ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
             MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
             ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
+            // See KLUDGE in let, above.
+            gctools::StackAllocate<UnknownDynEnv_O> ude(my_thread->_DynEnv);
+            DynEnvPusher dep(my_thread, ude.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
             List_sp curExp = expressions;

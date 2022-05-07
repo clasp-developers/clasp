@@ -143,25 +143,12 @@ CL_DEFUN T_mv core__sjlj_call_with_unknown_dynenv(Function_sp thunk) {
   return eval::funcall(thunk);
 }
 
-struct SymbolValuePusher {
-  Symbol_sp msym;
-  T_sp old;
-  SymbolValuePusher(Symbol_sp sym, T_sp val) {
-    msym = sym;
-    old = sym->threadLocalSymbolValue();
-    msym->set_threadLocalSymbolValue(val);
-  }
-  ~SymbolValuePusher() { msym->set_threadLocalSymbolValue(old); }
-};
-
 CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_call_with_variable_bound(Symbol_sp sym, T_sp val,
                                                   Function_sp thunk) {
-  T_sp old = sym->threadLocalSymbolValue();
-  SymbolValuePusher svp(sym, val);
-  gctools::StackAllocate<BindingDynEnv_O> sa_bde(my_thread->_DynEnv, sym, old);
-  DynEnvPusher dep(my_thread, sa_bde.asSmartPtr());
-  return eval::funcall(thunk);
+  return call_with_variable_bound(sym, val, [&]() {
+    return eval::funcall(thunk);
+  });
 }
 
 CL_UNWIND_COOP(true);
