@@ -27,7 +27,6 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <type_traits>
-#include <boost/format.hpp>
 #include <fmt/core.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -234,20 +233,8 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, Li
     }
     return fmter.write(destination,output);
   }
-  catch (boost::io::bad_format_string &err) {
-    SIMPLE_ERROR(("bformat command error: bad format string: \"%s\"") , control);
-  }
-  catch (boost::io::too_few_args &err) {
-    SIMPLE_ERROR(("bformat command error: too few args in format string: \"%s\"") , control);
-  }
-  catch (boost::io::too_many_args &err) {
-    SIMPLE_ERROR(("bformat command error: too many args in format string: \"%s\"") , control);
-  }
-  catch (boost::io::out_of_range &err) {
-    SIMPLE_ERROR(("bformat command error: out of range in format string: \"%s\"") , control);
-  }
   catch (...) {
-    SIMPLE_ERROR(("Unknown bformat command error in format string: \"%s\""));
+    SIMPLE_ERROR(("Unknown bformat command error in format string: \"%s\""), original_control );
   }
 }
 
@@ -315,20 +302,8 @@ CL_DEFUN T_sp core__fmt(T_sp destination, const string &original_control, List_s
     }
     return fmter.write(destination,output);
   }
-  catch (boost::io::bad_format_string &err) {
-    SIMPLE_ERROR(("bformat command error: bad format string: \"%s\"") , control);
-  }
-  catch (boost::io::too_few_args &err) {
-    SIMPLE_ERROR(("bformat command error: too few args in format string: \"%s\"") , control);
-  }
-  catch (boost::io::too_many_args &err) {
-    SIMPLE_ERROR(("bformat command error: too many args in format string: \"%s\"") , control);
-  }
-  catch (boost::io::out_of_range &err) {
-    SIMPLE_ERROR(("bformat command error: out of range in format string: \"%s\"") , control);
-  }
   catch (...) {
-    SIMPLE_ERROR(("Unknown bformat command error in format string: \"%s\""));
+    SIMPLE_ERROR(("Unknown fmt command error in format string: \"%s\""), original_control);
   }
 }
 
@@ -395,7 +370,7 @@ CL_DEFUN T_sp core__bformat1(T_sp destination, const string &original_control, T
       str = fmt::sprintf( control, _rep_(fobj) );
     }
   } catch (...) {
-    SIMPLE_ERROR(("Unknown bformat1 command error in format string: \"%s\""));
+    SIMPLE_ERROR(("Unknown bformat1 command error in format string: \"%s\""), original_control);
   }
   if (output == _sym_printf) {
     printf("%s", str.c_str());
@@ -436,23 +411,23 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
       switch (*cur) {
       case 'c':
       case 'C':
-        tf << "%c";
+        tf << "{}";
         break;
       case 's':
       case 'S':
-        tf << "%s";
+        tf << "{}";
         break;
       case 'd':
       case 'D':
-        tf << "%d";
+        tf << "{}";
         break;
       case 'a':
       case 'A':
-        tf << "%s";
+        tf << "{}";
         break;
       case 'v':
       case 'V':
-        tf << "%s";
+        tf << "{}";
         break;
       case '&':
         tf << std::endl;
@@ -462,7 +437,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
         break;
       default: {
         success = false;
-        return core__bformat(destination,"Could not format %s %s", Cons_O::createList(control, args));
+        return core__fmt(destination,"Could not format {} {}", Cons_O::createList(control, args));
       } break;
       }
       ++cur;
@@ -475,9 +450,9 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
     }
   }
   if (!success) {
-    return core__bformat(destination,"(failed-format <stream> %s %s)", Cons_O::createList(control,args));
+    return core__fmt(destination,"(failed-format <stream> {} {})", Cons_O::createList(control,args));
   }
-  return core__bformat(destination, tf.str(), args);
+  return core__fmt(destination, tf.str(), args);
 };
 
   SYMBOL_SC_(CorePkg, bformat);

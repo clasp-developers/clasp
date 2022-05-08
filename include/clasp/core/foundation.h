@@ -39,16 +39,7 @@ THE SOFTWARE.
 #include <string>
 #include <filesystem>
 
-// We want to get rid of boost::format and replace it with std::format
-// as an intermediate step we are switching to fmt
-
-#if 0
-#include <boost/format.hpp>
-
-inline boost::format BF(const std::string& fmt) {
-  return boost::format(fmt);
-}
-#endif
+// We are using the fmt formatting library as an intermediate to std::format when it becomes available
 
 #include <fmt/printf.h>
 

@@ -30,8 +30,6 @@ THE SOFTWARE.
 //#include "clasp_gmpxx.h"
 #include <cstdint>
 
-#include <boost/format.hpp>
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/primitives.h> // core__list_from_vaslist
 #include <clasp/core/common.h>
