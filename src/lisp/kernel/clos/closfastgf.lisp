@@ -32,14 +32,14 @@
   (defvar *dispatch-history-dir*
     (let ((dir (core:monitor-directory)))
       (ensure-directories-exist dir)
-      (core:bformat *error-output* "!!!!  Created gf dispatch monitor directory: %s%N" dir)
-      (core:bformat *error-output* "!!!!     Run clasp with --feature fastgf-dump-module to write dispatchers to this directory%N")
-      (dolist (f (directory (core:bformat nil "%s/*.*" dir)))
+      (core:fmt *error-output* "!!!!  Created gf dispatch monitor directory: {}%N" dir)
+      (core:fmt *error-output* "!!!!     Run clasp with --feature fastgf-dump-module to write dispatchers to this directory%N")
+      (dolist (f (directory (core:fmt nil "{}/*.*" dir)))
         (delete-file f))
       dir))
   (defun lazy-initialize-debug-fastgf ()
     (unless core:*debug-fastgf*
-      (let ((filename (core:bformat nil "%s/debug-miss-thread%s.log"
+      (let ((filename (core:fmt nil "{}/debug-miss-thread{}.log"
                                     *dispatch-history-dir*
                                     (mp:thread-id mp:*current-process*))))
         (setf core:*debug-fastgf* (make-debug-fastgf-struct :stream (open filename :direction :output)
@@ -69,89 +69,89 @@
     (incf (debug-fastgf-struct-indent core:*debug-fastgf*) 2))
   (defun decf-debug-fastgf-indent ()
     (decf (debug-fastgf-struct-indent core:*debug-fastgf*) 2))
-  (defmacro bformat-noindent (fmt &rest args)
+  (defmacro fmt-noindent (fmt &rest args)
     `(progn
        (lazy-initialize-debug-fastgf)
-       (core:bformat (debug-fastgf-stream) ,fmt ,@args)))
-  (defmacro bformat-indent (fmt &rest args)
+       (core:fmt (debug-fastgf-stream) ,fmt ,@args)))
+  (defmacro fmt-indent (fmt &rest args)
     `(progn
        (lazy-initialize-debug-fastgf)
-       (core:bformat (debug-fastgf-stream) (subseq *dmspaces* 0 (min (length *dmspaces*) (debug-fastgf-indent))))
-       (core:bformat (debug-fastgf-stream) ,fmt ,@args)))
+       (core:fmt (debug-fastgf-stream) (subseq *dmspaces* 0 (min (length *dmspaces*) (debug-fastgf-indent))))
+       (core:fmt (debug-fastgf-stream) ,fmt ,@args)))
   (defun graph-call-history (generic-function output)
     (generate-dot-file generic-function output))
   (defun log-cmpgf-filename (gfname suffix extension)
-    (pathname (core:bformat nil "%s/dispatch-thread%s-%s%05d-%s.%s"
+    (pathname (core:fmt nil "{}/dispatch-thread{}-{:0>5d}-{}.{}"
                             *dispatch-history-dir*
                             (mp:thread-id mp:*current-process*)
                             suffix
                             (debug-fastgf-didx)
-                            (core:bformat nil "%s" gfname)
+                            (core:tostring gfname)
                             extension)))
   (defmacro gf-log-dispatch-graph (gf)
     `(graph-call-history ,gf (log-cmpgf-filename (clos::generic-function-name gf) "graph" "dot")))
   (defmacro gf-log-dispatch-miss-followup (msg &rest args)
     `(progn
-       (bformat-indent "------- ")
-       (bformat-noindent ,msg ,@args)))
+       (fmt-indent "------- ")
+       (fmt-noindent ,msg ,@args)))
   (defmacro gf-log-dispatch-miss-message (msg &rest args)
-    `(bformat-indent ,msg ,@args))
+    `(fmt-indent ,msg ,@args))
   (defmacro gf-log-sorted-roots (roots)
     `(progn
-       (bformat-indent ">>> sorted roots%N")
+       (fmt-indent ">>> sorted roots%N")
        (let ((x 0))
          (mapc (lambda (root)
-                 (bformat-indent "  root[%d]: %s%N" (prog1 x (incf x)) root))))))
+                 (fmt-indent "  root[{}]: {}%N" (prog1 x (incf x)) root))))))
   (defun pretty-selector-as-string (selector)
     (cond
       ((eql-specializer-p selector)
        (with-early-accessors (+eql-specializer-slots+)
-         (core:bformat nil "(EQL %s)" (eql-specializer-object selector))))
+         (core:fmt nil "(EQL {})" (eql-specializer-object selector))))
       ((null selector)
-       (core:bformat nil "NULL/(not-specialized?)"))
+       (core:fmt nil "NULL/(not-specialized?)"))
       ((classp selector)               ; A class
-       (core:bformat nil "[class %s/%d]" (class-name selector) (core:class-stamp-for-instances selector)))
+       (core:fmt nil "[class {}/{}]" (class-name selector) (core:class-stamp-for-instances selector)))
       (t                                ; This shouldn't happen
-       (core:bformat nil "!!!!!ILLEGAL-SELECTOR-IN-CALL-HISTORY-ENTRY-KEY!!!!!"))))
+       (core:fmt nil "!!!!!ILLEGAL-SELECTOR-IN-CALL-HISTORY-ENTRY-KEY!!!!!"))))
   (defmacro gf-print-entry (index entry)
     (let ((selector (gensym))
           (key (gensym)))
       `(progn
-         (bformat-indent "        entry#%3d: (" (prog1 ,index (incf ,index)))
+         (fmt-indent "        entry#{:3d}: (" (prog1 ,index (incf ,index)))
          (let ((,key (car ,entry)))
-           ;;(bformat-indent "          ----> %s%N" history-entry)
+           ;;(fmt-indent "          ----> {}%N" history-entry)
            (dolist (,selector (coerce ,key 'list))
-             (bformat-noindent " %s" (pretty-selector-as-string ,selector)))
-           (bformat-noindent ")%N")))))
+             (fmt-noindent " {}" (pretty-selector-as-string ,selector)))
+           (fmt-noindent ")%N")))))
   (defun %gf-log-dispatch-miss (msg gf args)
     (incf-debug-fastgf-didx)
     (incf-debug-fastgf-miss-count gf)
-    (bformat-indent "------- DIDX:%d %s%N" (debug-fastgf-didx) msg)
-    (bformat-indent "Dispatch miss #%d for %s%N" (debug-fastgf-miss-count gf)
+    (fmt-indent "------- DIDX:{} {}%N" (debug-fastgf-didx) msg)
+    (fmt-indent "Dispatch miss #{} for {}%N" (debug-fastgf-miss-count gf)
                     (generic-function-name gf))
        (let* ((call-history (mp:atomic (safe-gf-call-history gf)))
               (specializer-profile (safe-gf-specializer-profile gf)))
-         (bformat-indent "    args (num args -> %d):  %N" (length args))
+         (fmt-indent "    args (num args -> {}):  %N" (length args))
          (let ((arg-index -1))
            (dolist (arg args)
-             (bformat-indent "argument# %d: %s[%s/%d] %N"
+             (fmt-indent "argument# {}: {}[{}/{}] %N"
                              (incf arg-index) arg (class-of arg)
                              (core:instance-stamp arg))))
          (let ((index 0))
-           (bformat-indent " raw call-history (length -> %d):%N" (length call-history))
+           (fmt-indent " raw call-history (length -> {}):%N" (length call-history))
            (dolist (entry call-history)
              (gf-print-entry index entry)))
          (let* ((call-history (mp:atomic (safe-gf-call-history gf)))
                 (specializer-profile (safe-gf-specializer-profile gf))
                 (index 0))
-           (bformat-indent "    call-history (length -> %d):%N" (length call-history))
+           (fmt-indent "    call-history (length -> {}):%N" (length call-history))
            (dolist (entry call-history)
              (gf-print-entry index entry))))
        (finish-output (debug-fastgf-stream)))
   (defmacro gf-log-dispatch-miss (msg gf args)
     `(%gf-log-dispatch-miss ,msg ,gf ,args))
-  (defmacro gf-log (fmt &rest fmt-args) `(bformat-indent ,fmt ,@fmt-args))
-  (defmacro gf-log-noindent (fmt &rest fmt-args) `(bformat-noindent ,fmt ,@fmt-args))
+  (defmacro gf-log (fmt &rest fmt-args) `(fmt-indent ,fmt ,@fmt-args))
+  (defmacro gf-log-noindent (fmt &rest fmt-args) `(fmt-noindent ,fmt ,@fmt-args))
   (defmacro gf-do (&body code) `(progn ,@code)))
 
 #-debug-fastgf
@@ -188,10 +188,10 @@
             (class-stamp (core:class-stamp-for-instances
                           (core:instance-class instance))))
         (unless (= instance-stamp class-stamp)
-          (gf-log "   instance-stamp matches that of class -> %s%N"
+          (gf-log "   instance-stamp matches that of class -> {}%N"
                   (= instance-stamp class-stamp))
-          (gf-log "(core:instance-stamp i) -> %s%N" instance-stamp)
-          (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> %s%N"
+          (gf-log "(core:instance-stamp i) -> {}%N" instance-stamp)
+          (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> {}%N"
                   class-stamp)
           (update-instance instance)
           t)))))
@@ -384,7 +384,7 @@
                  ;; interpreter. See also, comment in combin.lisp.
                  ((and (consp em) (eq (first em) '%magic-no-required-method))
                   (gf-log "No-required-method as effective method%N")
-                  (gf-log "em: %s%N" em)
+                  (gf-log "em: {}%N" em)
                   (let ((group-name (second em)))
                     (make-effective-method-outcome
                      :methods methods :form em
@@ -394,7 +394,7 @@
                  (t
                   (gf-log "Using default effective method function%N")
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
-                  (gf-log "%s%N" em)
+                  (gf-log "{}%N" em)
                   (make-effective-method-outcome
                    :methods methods :form em
                    :function (effective-method-function
@@ -402,11 +402,11 @@
     #+debug-fastgf
     (progn
       (gf-log "vvv************************vvv%N")
-      (gf-log "compute-effective-method-function for %s%N" (generic-function-name generic-function))
-      (gf-log "There are %d methods...%N" (length methods))
+      (gf-log "compute-effective-method-function for {}%N" (generic-function-name generic-function))
+      (gf-log "There are {} methods...%N" (length methods))
       (dolist (m methods)
-        (gf-log "Method: %s %s %s%N" (clos::method-specializers m) (clos::method-qualifiers m) m))
-      (gf-log "Effective method function -> %s%N" optimized)
+        (gf-log "Method: {} {} {}%N" (clos::method-specializers m) (clos::method-qualifiers m) m))
+      (gf-log "Effective method function -> {}%N" optimized)
       (gf-log "^^^************************^^^%N"))
     optimized))
 
@@ -490,8 +490,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   "Add an entry to the generic function's call history based on a call.
 Return true iff a new entry was added; so for example it will return false if another thread has already added the entry."
   (let ((memoized-key (car new-entry)))
-    (gf-log "Specializers key: %s%N" memoized-key)
-    (gf-log "The specializer-profile: %s%N"
+    (gf-log "Specializers key: {}%N" memoized-key)
+    (gf-log "The specializer-profile: {}%N"
             (safe-gf-specializer-profile generic-function))
     (let ((specializer-profile (safe-gf-specializer-profile generic-function)))
       (unless (= (length memoized-key) (length specializer-profile))
@@ -573,7 +573,7 @@ Return true iff a new entry was added; so for example it will return false if an
   (let ((argument-classes (mapcar #'class-of arguments)))
     (multiple-value-bind (class-method-list ok)
         (compute-applicable-methods-using-classes generic-function argument-classes)
-      (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s%N"
+      (gf-log "Called compute-applicable-methods-using-classes - returned method-list: {}  ok: {}%N"
               class-method-list ok)
       (let* ((method-list (if ok
                               class-method-list
@@ -676,9 +676,9 @@ Return true iff a new entry was added; so for example it will return false if an
      ;; OK, real miss.
      #+debug-fastgf
      (progn
-       (gf-log "----{---- A dispatch-miss occurred[(1- (core:next-number))->%s]  -> %s  %N" (1- (core:next-number)) (clos::generic-function-name generic-function))
+       (gf-log "----{---- A dispatch-miss occurred[(1- (core:next-number))->{}]  -> {}  %N" (1- (core:next-number)) (clos::generic-function-name generic-function))
        (dolist (arg arguments)
-         (gf-log "%s[%s/%d] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
+         (gf-log "{}[{}/{}] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
        (gf-log-noindent "%N"))
      (let (#+debug-fastgf
            (*dispatch-miss-start-time* (get-internal-real-time)))
@@ -686,12 +686,12 @@ Return true iff a new entry was added; so for example it will return false if an
            (dispatch-miss-info generic-function arguments)
          (when (memoize-calls generic-function new-ch-entries)
            (force-dispatcher generic-function))
-         (gf-log "Performing outcome %s%N" outcome)
+         (gf-log "Performing outcome {}%N" outcome)
          #+debug-fastgf
          (let ((results (multiple-value-list
                          (perform-outcome outcome arguments))))
            (gf-log "+-+-+-+-+-+-+-+-+ dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
-           (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
+           (gf-log "----}---- Completed call to effective-method-function for {} results -> {}%N" (clos::generic-function-name generic-function) results)
            (values-list results))
          #-debug-fastgf
          (perform-outcome outcome arguments))))
@@ -724,7 +724,7 @@ Return true iff a new entry was added; so for example it will return false if an
       (if (eq (class-of generic-function) (find-class 'standard-generic-function))
           (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
             (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
-            (gf-log "Writing dispatcher to %s%N" log-output))
+            (gf-log "Writing dispatcher to {}%N" log-output))
           (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
       (incf-debug-fastgf-didx))
     (set-funcallable-instance-function generic-function
@@ -758,10 +758,10 @@ Return true iff a new entry was added; so for example it will return false if an
   ;;; If there is no call history then treat this like a dispatch-miss.
   #+debug-fastgf
   (if (eq (class-of generic-function) (find-class 'standard-generic-function))
-      (gf-log "Entered invalidated-dispatch-function for %s - avoiding generic function calls until return!!!%N"
+      (gf-log "Entered invalidated-dispatch-function for {} - avoiding generic function calls until return!!!%N"
               (core:low-level-standard-generic-function-name generic-function))
       (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!%N"))
-  (gf-log "Specializer profile is %s%N" (safe-gf-specializer-profile generic-function))
+  (gf-log "Specializer profile is {}%N" (safe-gf-specializer-profile generic-function))
   (if (mp:atomic (safe-gf-call-history generic-function))
       (progn
         (force-dispatcher generic-function)
@@ -813,10 +813,10 @@ Return true iff a new entry was added; so for example it will return false if an
 (defun generic-function-call-history-separate-entries-with-specializer
     (call-history gf specializer)
   (declare (ignorable gf))
-  (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: %s%N    specializers: %s%N" gf specializers)
+  (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: {}%N    specializers: {}%N" gf specializers)
   (loop for entry in call-history
         for key = (car entry)
-        do (gf-log "         check if entry key: %s   contains specializer: %s%N" key specializers)
+        do (gf-log "         check if entry key: {}   contains specializer: {}%N" key specializers)
         if (call-history-entry-key-contains-specializers-p key specializer)
           do (gf-log "       It does - removing entry%N")
           and collect entry into removed
@@ -828,14 +828,14 @@ Return true iff a new entry was added; so for example it will return false if an
 ;; Remove all call entries referring directly to a class, and invalidate or
 ;; force their discriminating functions.
 (defun invalidate-generic-functions-with-class-selector (class)
-  (gf-log "invalidate-generic-functions-with-class-selector %s%N" class)
+  (gf-log "invalidate-generic-functions-with-class-selector {}%N" class)
   (let ((generic-functions (specializer-call-history-generic-functions class)))
-    (gf-log "   for class %s there are %d generic functions%N"
+    (gf-log "   for class {} there are {} generic functions%N"
             class (length generic-functions))
-    (gf-log "         generic functions -> %s%N" generic-functions)
+    (gf-log "         generic functions -> {}%N" generic-functions)
     (loop for gf in generic-functions
-          do (gf-log "generic function: %s%N" (clos:generic-function-name gf))
-             (gf-log "    (clos:get-funcallable-instance-function gf) -> %s%N"
+          do (gf-log "generic function: {}%N" (clos:generic-function-name gf))
+             (gf-log "    (clos:get-funcallable-instance-function gf) -> {}%N"
                      (clos:get-funcallable-instance-function gf))
              (let ((new-call-history
                      (mp:atomic-update (safe-gf-call-history gf)
@@ -843,7 +843,7 @@ Return true iff a new entry was added; so for example it will return false if an
                                        gf class)))
                (declare (ignorable new-call-history))
                (gf-log "    edited call history%N")
-               (gf-log "%s%N" new-call-history)
+               (gf-log "{}%N" new-call-history)
                (gf-log "Invalidating discriminating function%N")
                ;; We don't force the dispatcher, because whena class with
                ;; subclasses is redefined, we may end up here repeatedly.

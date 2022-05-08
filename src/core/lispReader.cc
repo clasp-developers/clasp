@@ -219,7 +219,7 @@ List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
   T_sp readTable = _lisp->getCurrentReadTable();
   Symbol_sp syntax_type = core__syntax_type(readTable,c);
   if (syntax_type == kw::_sym_invalid) {
-    SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
+    SIMPLE_ERROR(("invalid-character-error: %s") , _rep_(c));
   } else if (syntax_type == kw::_sym_multiple_escape) {
     return nil<T_O>();
   } else if (syntax_type == kw::_sym_single_escape) {
@@ -239,7 +239,7 @@ List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
     T_sp readTable = _lisp->getCurrentReadTable();
     Symbol_sp syntax_type = core__syntax_type(readTable,c);
     if (syntax_type == kw::_sym_invalid) {
-      SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
+      SIMPLE_ERROR(("invalid-character-error: %s") , _rep_(c));
     } else if (syntax_type == kw::_sym_whitespace) {
       if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue()) {
         unread_ch(sin, c);
@@ -306,7 +306,7 @@ Character_sp lexeme_character(T_sp lexeme) {
   if (lexeme.fixnump()) {
     return core::clasp_make_character(CHR(lexeme));
   }
-  SIMPLE_ERROR(BF("Unknown lexeme %s") % _rep_(lexeme));
+  SIMPLE_ERROR(("Unknown lexeme %s") , _rep_(lexeme));
 }
 
 void make_str_upcase(StrNs_sp sout, List_sp cur_char) {
@@ -382,7 +382,7 @@ void make_str(StrNs_sp sout, List_sp cur_char) {
   } else if (case_ == kw::_sym_preserve) {
     make_str_preserve_case(sout,cur_char);
   } else {
-    SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(case_));
+    SIMPLE_ERROR(("Bad readtable case %s") , _rep_(case_));
   }
 }
 
@@ -400,7 +400,7 @@ string fix_exponent_char(const char *cur) {
         ss << "E";
         break;
       default:
-        SIMPLE_ERROR(BF("Illegal exponent character[%c]") % *cur);
+        SIMPLE_ERROR(("Illegal exponent character[%c]") , *cur);
         break;
       }
     } else
@@ -536,7 +536,7 @@ void apply_readtable_case(Token& token, size_t start, size_t end) {
   } else if (case_ == kw::_sym_preserve) {
     return;
   } else {
-    SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(case_));
+    SIMPLE_ERROR(("Bad readtable case %s") , _rep_(case_));
   }
 }
 
@@ -725,7 +725,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     case tsymbad:
       ELSE(tsymbad);
     default:
-      SIMPLE_ERROR(BF("unhandled state[%d] for token assignment") % state);
+      SIMPLE_ERROR(("unhandled state[%d] for token assignment") , state);
     }
   NEXT:
     ++cur;
@@ -738,7 +738,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       return sym;
     }
-    SIMPLE_ERROR(BF("There was no token!!!!"));
+    SIMPLE_ERROR(("There was no token!!!!"));
   case tsymdot:
       LOG_READ(BF("Returning sym_dot"));
     return _sym_dot;
@@ -818,7 +818,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
       return nil<T_O>();
     // interpret failed symbols
-    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % symbolTokenStr(sin,token, start - token.data(),token.size())->get_std_string());
+    SIMPLE_ERROR(("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") , _rep_(clasp_filename(sin,false)) , _rep_(clasp_file_position(sin)) , stateString(state) , symbolTokenStr(sin,token, start - token.data(),token.size())->get_std_string());
     break;
   case tintt:
   case tintp:
@@ -837,9 +837,9 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
           return Integer_O::create(num, read_base);
         }
       } catch (std::invalid_argument &arg) {
-        SIMPLE_ERROR(BF("Problem in mpz_class creation with %s error: %s") % num % arg.what());
+        SIMPLE_ERROR(("Problem in mpz_class creation with %s error: %s") , num , arg.what());
       }
-      SIMPLE_ERROR(BF("Problem while interpreting int from %s in reader") % num);
+      SIMPLE_ERROR(("Problem while interpreting int from %s in reader") , num);
     }
     break;
   case tratio: {
@@ -883,7 +883,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
           return LongFloat_O::create(l);
         }
         else {
-          SIMPLE_ERROR(BF("Handle *read-default-float-format* of %s") % _rep_(cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue()));
+          SIMPLE_ERROR(("Handle *read-default-float-format* of %s") , _rep_(cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue()));
         }
       }
       case float_exp: {
@@ -922,11 +922,11 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
 #endif
       }
       }
-      SIMPLE_ERROR(BF("Shouldn't get here - unhandled exponent type"));
+      SIMPLE_ERROR(("Shouldn't get here - unhandled exponent type"));
     }
   }
   LOG_READ(BF("Bad state %d") % state);
-  SIMPLE_ERROR(BF("create<ReaderError_O>(sin));"));
+  SIMPLE_ERROR(("create<ReaderError_O>(sin));"));
 }
 
 #if 0
@@ -1125,7 +1125,7 @@ step1:
     LOG_READ(BF("Handling single escape"));
     T_sp ty = cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     if ( !ty.characterp() ) {
-      SIMPLE_ERROR(BF("Expected character - hit end"));
+      SIMPLE_ERROR(("Expected character - hit end"));
     }
     y = gc::As<Character_sp>(ty);
     token.clear();
@@ -1181,7 +1181,7 @@ step8:
       goto step9;
     }
     if (y8_syntax_type == kw::_sym_invalid)
-      SIMPLE_ERROR(BF("ReaderError_O::create()"));
+      SIMPLE_ERROR(("ReaderError_O::create()"));
     if (y8_syntax_type == kw::_sym_terminating_macro) {
       LOG_READ(BF("UNREADING char y[%s]") % clasp_as_claspCharacter(y));
       clasp_unread_char(clasp_as_claspCharacter(y), sin);
@@ -1226,9 +1226,9 @@ step9:
       goto step8;
     }
     if (y9_syntax_type == kw::_sym_invalid) {
-      SIMPLE_ERROR(BF("ReaderError_O::create()"));
+      SIMPLE_ERROR(("ReaderError_O::create()"));
     }
-    SIMPLE_ERROR(BF("Should never get here"));
+    SIMPLE_ERROR(("Should never get here"));
   }
 step10:
   LOG_READ(BF("step10"));

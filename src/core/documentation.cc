@@ -141,7 +141,7 @@ CL_DOCSTRING(R"dx(Set the documentation of an object)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__set_documentation(T_sp object, T_sp doc_type, T_sp string) {
   if ( !(cl__stringp(string) || string.nilp()) ) {
-    SIMPLE_ERROR(BF("%s is not a valid documentation string") % _rep_(string));
+    SIMPLE_ERROR(("%s is not a valid documentation string") , _rep_(string));
   }
   T_sp key = cl::_sym_documentation;
   if (object.notnilp() && object.consp() && core__valid_function_name_p(object)) {

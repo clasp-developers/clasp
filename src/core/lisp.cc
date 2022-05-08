@@ -189,7 +189,7 @@ public:
     T_sp pos = core__search_string(this->_substr,0,this->_substr->length(),
                                    upcasedSymbolName,0,upcasedSymbolName->length());
     if (pos.notnilp()) {
-      LOG(BF("    It is apropos"));
+      LOG("    It is apropos");
       this->_symbols->setf_gethash(svalue, nil<T_O>());
     }
     return true;
@@ -267,7 +267,7 @@ string dump_instanceClass_info(Instance_sp co, LispPtr prog) {
   stringstream ss;
   ss << "------------------------------------- class" << _rep_(co->_className()) << std::endl;
   ;
-  LOG(BF("Dumping info: %s") % co->dumpInfo());
+  LOG("Dumping info: %s" , co->dumpInfo());
   ss << co->dumpInfo();
   return ss.str();
 }
@@ -317,7 +317,7 @@ LispPtr Lisp::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
   ::_lisp.thePointer = gctools::RootClassAllocator<Lisp>::allocate().thePointer;
   _lisp->initialize();
   _lisp->setupMpi(mpiEnabled, mpiRank, mpiSize);
-  LOG(BF("The lisp environment DebugStream has been created"));
+  LOG("The lisp environment DebugStream has been created");
   Lisp::finalizeSpecialSymbols();
   return _lisp;
 }
@@ -495,7 +495,7 @@ void Lisp::startupLispEnvironment() {
   }
   this->_EnvironmentInitialized = true;
   this->_BuiltInClassesInitialized = true;
-  //	LOG(BF("ALL CLASSES: %s")% this->dumpClasses() );
+  //	LOG("ALL CLASSES: %s"% this->dumpClasses() );
   //    this->createNils();
   {
     _BLOCK_TRACE("Dump of all BuiltInClass classes");
@@ -667,25 +667,11 @@ T_sp Lisp::getCurrentReadTable() {
 #if 0
 void Lisp::setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc) {
   _OF();
-  LOG(BF("Setting MakePackageCallback and ExportSymbolCallback"));
+  LOG("Setting MakePackageCallback and ExportSymbolCallback");
   this->_MakePackageCallback = mpc;
   this->_ExportSymbolCallback = esc;
 }
 #endif
-
-void Lisp::print(boost::format fmt) {
-  TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
-  if (cl::_sym_print->fboundp()) {
-    eval::funcall(cl::_sym_print, SimpleBaseString_O::make(fmt_str));
-  } else {
-    printf("%s\n", fmt.str().c_str());
-  }
-}
-
-void Lisp::prin1(boost::format fmt) {
-  TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
-  eval::funcall(cl::_sym_prin1, SimpleBaseString_O::make(fmt_str));
-}
 
 #ifdef CLASP_THREADS
 void Lisp::add_process(mp::Process_sp process) {
@@ -723,7 +709,7 @@ void Lisp::remove_process(mp::Process_sp process) {
       }
     }
   } // lock release
-  SIMPLE_ERROR(BF("Could not find process %s") % process);
+  SIMPLE_ERROR(("Could not find process %s") , process);
 }
 
 List_sp Lisp::processes() const {
@@ -764,12 +750,12 @@ Symbol_sp Lisp::errorUndefinedSymbol(const char *sym) {
   _OF();
   stringstream ss;
   ss << "Unknown symbol(" << sym << ")";
-  SIMPLE_ERROR(BF("%s") % ss.str());
+  SIMPLE_ERROR(("%s") , ss.str());
 }
 
 Symbol_sp Lisp::defineSpecialOperator(const string &packageName, const string &rawFormName, SpecialFormCallback cb, const string &argstring, const string &docstring) {
   _OF();
-  SIMPLE_ERROR(BF("Don't use this - hardcode special operators"));
+  SIMPLE_ERROR(("Don't use this - hardcode special operators"));
 #if 0  
   string formName = lispify_symbol_name(rawFormName);
   Symbol_sp sym = _lisp->internWithPackageName(packageName, formName);
@@ -795,7 +781,7 @@ T_sp Lisp::specialFormOrNil(Symbol_sp sym) {
 
 void Lisp::installPackage(const Exposer_O *pkg) {
   _OF();
-  LOG(BF("Installing package[%s]") % pkg->packageName());
+  LOG("Installing package[%s]" , pkg->packageName());
   int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
   ChangePackage change(pkg->package());
   {
@@ -827,7 +813,7 @@ void Lisp::installGlobalInitializationCallback(InitializationCallback c) {
 #if defined(XML_ARCHIVE)
 void Lisp::archive(::core::ArchiveP node) {
   _OF();
-  SIMPLE_ERROR(BF("Never archive Lisp objects"));
+  SIMPLE_ERROR(("Never archive Lisp objects"));
 }
 #endif // defined(XML_ARCHIVE)
 
@@ -845,7 +831,7 @@ void Lisp::addClassSymbol(Symbol_sp classSymbol,
                             Creator_sp alloc,
                             Symbol_sp base1ClassSymbol )
 {
-  LOG(BF("Lisp::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)") % _rep_(classSymbol) % base1ClassSymbol % base2ClassSymbol);
+  LOG("Lisp::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)" , _rep_(classSymbol) , base1ClassSymbol , base2ClassSymbol);
   Instance_sp cc = Instance_O::create(classSymbol,_lisp->_Roots._TheBuiltInClass,alloc);
   printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str());
   core__setf_find_class(cc, classSymbol);
@@ -867,7 +853,7 @@ void Lisp::mapNameToPackage(const string &name, Package_sp pkg) {
       }
     }
   }
-  SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % pkg->getName());
+  SIMPLE_ERROR(("Could not find package with (nick)name: %s") , pkg->getName());
 }
 
 void Lisp::unmapNameToPackage(const string &name) {
@@ -882,7 +868,7 @@ void Lisp::unmapNameToPackage(const string &name) {
     return;
   }
  package_unfound:
-  SIMPLE_ERROR(BF("Could not find package with (nick)name: %s") % name);
+  SIMPLE_ERROR(("Could not find package with (nick)name: %s") , name);
 }
 
 void Lisp::finishPackageSetup(const string &pkgname, list<string> const &nicknames, list<string> const &usePackages, list<std::string> const& shadow) {
@@ -950,7 +936,7 @@ Package_sp Lisp::makePackage(const string &name, list<string> const &nicknames, 
     }
     // Now we know that there is no conflict about the package name or
     // nicknames, so actually create the package
-    LOG(BF("Creating package with name[%s]") % name);
+    LOG("Creating package with name[%s]" , name);
     Package_sp newPackage = Package_O::create(name);
     int packageIndex = this->_Roots._Packages.size();
     {
@@ -983,14 +969,14 @@ Package_sp Lisp::makePackage(const string &name, list<string> const &nicknames, 
     for (list<string>::const_iterator jit = usePackages.begin();
          jit != usePackages.end(); jit++) {
       Package_sp usePkg = gc::As<Package_sp>(this->findPackage_no_lock(*jit, true));
-      LOG(BF("Using package[%s]") % usePkg->getName());
+      LOG("Using package[%s]" , usePkg->getName());
       newPackage->usePackage(usePkg);
     }
     if (globals_->_MakePackageCallback != NULL) {
-      LOG(BF("Calling _MakePackageCallback with package[%s]") % name);
+      LOG("Calling _MakePackageCallback with package[%s]" , name);
       globals_->_MakePackageCallback(name, _lisp);
     } else {
-      LOG(BF("_MakePackageCallback is NULL - not calling callback"));
+      LOG("_MakePackageCallback is NULL - not calling callback");
     }
     return newPackage;
   }
@@ -1081,7 +1067,7 @@ void Lisp::inPackage(const string &p) {
   SimpleBaseString_sp sname = SimpleBaseString_O::make(p);
   T_sp pi = this->_Roots._PackageNameIndexMap->gethash(sname);
   if (pi.nilp()) {
-    SIMPLE_ERROR(BF("I do not recognize package: %s") % p );
+    SIMPLE_ERROR(("I do not recognize package: %s") , p );
   }
   this->selectPackage(this->_Roots._Packages[pi.unsafe_fixnum()]);
 }
@@ -1104,7 +1090,7 @@ void Lisp::selectPackage(Package_sp pack) {
 void Lisp::throwIfBuiltInClassesNotInitialized() {
   if (this->_BuiltInClassesInitialized)
     return;
-  SIMPLE_ERROR(BF("Cpp-classes are not initialized"));
+  SIMPLE_ERROR(("Cpp-classes are not initialized"));
 }
 
 Path_sp Lisp::translateLogicalPathname(T_sp obj) {
@@ -1112,9 +1098,9 @@ Path_sp Lisp::translateLogicalPathname(T_sp obj) {
     String_sp logicalPathName = gc::As_unsafe<String_sp>(obj);
     string fileName = logicalPathName->get_std_string();
     return Path_O::create(fileName);
-    SIMPLE_ERROR(BF("include " + fileName + " error, file does not exist"));
+    SIMPLE_ERROR(("include " + fileName + " error, file does not exist"));
   } else {
-    SIMPLE_ERROR(BF("Finish implementing Lisp::translateLogicalPathname"));
+    SIMPLE_ERROR(("Finish implementing Lisp::translateLogicalPathname"));
   }
 }
 
@@ -1122,8 +1108,8 @@ Path_sp Lisp::translateLogicalPathnameUsingPaths(T_sp obj) {
   if (cl__stringp(obj)) {
     String_sp logicalPathName = gc::As_unsafe<String_sp>(obj);
     string fileName = logicalPathName->get_std_string();
-    LOG(BF("Looking for file: %s") % fileName.c_str());
-    LOG(BF("Looking in current directory"));
+    LOG("Looking for file: %s" , fileName.c_str());
+    LOG("Looking in current directory");
     std::filesystem::path onePath("./");
     onePath /= fileName;
     if (std::filesystem::exists(onePath)) {
@@ -1131,19 +1117,19 @@ Path_sp Lisp::translateLogicalPathnameUsingPaths(T_sp obj) {
     }
     Symbol_sp pathSym = _sym_STARPATHSTAR;
     List_sp pathList = pathSym->symbolValue();
-    LOG(BF("PATH variable = %s") % _rep_(pathList).c_str());
+    LOG("PATH variable = %s" , _rep_(pathList).c_str());
     while (pathList.notnilp()) {
       std::filesystem::path onePath(gc::As<String_sp>(oCar(pathList))->get_std_string());
       onePath /= fileName;
-      LOG(BF("Checking path[%s]") % onePath.string());
+      LOG("Checking path[%s]" , onePath.string());
       if (std::filesystem::exists(onePath)) {
         return Path_O::create(onePath.string());
       }
       pathList = oCdr(pathList);
     }
-    SIMPLE_ERROR(BF("include " + fileName + " error, file does not exist"));
+    SIMPLE_ERROR(("include " + fileName + " error, file does not exist"));
   } else {
-    SIMPLE_ERROR(BF("Finish implementing Lisp::translateLogicalPathname"));
+    SIMPLE_ERROR(("Finish implementing Lisp::translateLogicalPathname"));
   }
 }
 
@@ -1170,13 +1156,13 @@ void dumpDebuggingLayouts(const std::string& filename) {
 
 void Lisp::parseCommandLineArguments(int argc, char *argv[], const CommandLineOptions& options) {
   int endArg = options._EndArg;
-  LOG(BF("Parsing what is left over into lisp environment arguments"));
+  LOG("Parsing what is left over into lisp environment arguments");
   gctools::Vec0<T_sp> vargs;
   for (int j(endArg + 1); j < argc; ++j) {
     vargs.push_back(SimpleBaseString_O::make(argv[j]));
   }
   SimpleVector_sp args = SimpleVector_O::make(vargs);
-  LOG(BF(" Command line arguments are being set in Lisp to: %s") % _rep_(args));
+  LOG(" Command line arguments are being set in Lisp to: %s" , _rep_(args));
   SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineArgumentsSTAR);
   _sym_STARcommandLineArgumentsSTAR->defparameter(args);
 
@@ -1343,10 +1329,10 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
         if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
           suppress = "SUPPRESSED";
           if (expression.notnilp()) {
-            SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression));
+            SIMPLE_ERROR(("*read-suppress* is true but the following expression was read: %s") , _rep_(expression));
           }
         }
-        write_bf_stream(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
+        write_bf_stream(fmt::sprintf(";;--read-%s-------------\n#|\n%s\n----------|#\n" , suppress.c_str() , _rep_(expression)));
       }
       _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
       if (cl__keywordp(expression)) {
@@ -1743,7 +1729,7 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
   return newValue;
 #else
   if (!newValue.nilp() && !clos__classp(newValue)) {
-    SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
+    SIMPLE_ERROR(("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") , _rep_(name) , _rep_(newValue));
   }
   if (_lisp->bootClassTableIsValid()) {
     if (newValue.nilp()) {
@@ -1780,9 +1766,9 @@ CL_DOCSTRING(R"dx(findFileInLispPath)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__find_file_in_lisp_path(String_sp partialPath) {
   ASSERT(cl__stringp(partialPath));
-  LOG(BF("PartialPath=[%s]") % partialPath->get());
+  LOG("PartialPath=[%s]" , partialPath->get());
   Path_sp fullPath = _lisp->translateLogicalPathnameUsingPaths(partialPath);
-  LOG(BF("fullPath is %s") % fullPath->asString());
+  LOG("fullPath is %s" , fullPath->asString());
   return fullPath;
 }
 
@@ -1898,7 +1884,7 @@ CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
     expandedMacro |= sawAMacro;
     macroExpansionCount++;
     if (macroExpansionCount > 100) {
-      SIMPLE_ERROR(BF("Macro expansion happened %d times - You may have a macro expansion infinite loop") % macroExpansionCount);
+      SIMPLE_ERROR(("Macro expansion happened %d times - You may have a macro expansion infinite loop") , macroExpansionCount);
     }
   } while (sawAMacro);
   if (_sym_STARdebugMacroexpandSTAR->symbolValue().isTrue()) {
@@ -1910,7 +1896,7 @@ CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
 void searchForApropos(List_sp packages, SimpleString_sp insubstring, bool print_values) {
   SimpleString_sp substring = cl__string_upcase(insubstring);
   FindApropos apropos(substring);
-  LOG(BF("Searching for symbols apropos to(%s)") % substring);
+  LOG("Searching for symbols apropos to(%s)" , substring);
   for (auto cur : packages) {
     Package_sp pkg = gc::As<Package_sp>(oCar(cur));
     pkg->mapExternals(&apropos);
@@ -2007,11 +1993,11 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
   gctools::Vec0<T_sp> sorted;
   Function_sp sortProc = coerce::functionDesignator(predicate);
-  LOG(BF("Unsorted data: %s") % _rep_(sequence));
+  LOG("Unsorted data: %s" , _rep_(sequence));
   if (cl__length(sequence) == 0)
     return nil<T_O>();
   fillVec0FromCons(sorted, sequence);
-  LOG(BF("Sort function: %s") % _rep_(sortProc));
+  LOG("Sort function: %s" , _rep_(sortProc));
   OrderBySortFunction orderer(sortProc,gc::As<Function_sp>(key));
 //  sort::quickSort(sorted.begin(), sorted.end(), orderer);
   sort::quickSortVec0(sorted,0,sorted.size(),orderer);
@@ -2025,7 +2011,7 @@ CL_DOCSTRING(R"dx(debugLogOn)dx")
 DOCGROUP(clasp)
 CL_DEFUN void core__debug_log_on() {
   _lisp->debugLog().setSuppressMessages(false);
-  LOG(BF("Turning debugLogOn"));
+  LOG("Turning debugLogOn");
 }
 
 CL_LAMBDA()
@@ -2100,7 +2086,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(invokeInternalDebugger)dx")
 DOCGROUP(clasp)
 [[noreturn]] CL_DEFUN void core__invoke_internal_debugger(T_sp condition) {
-  write_bf_stream(BF("%s:%d core__invoke_internal_debugger --> %s\n") % __FILE__ % __LINE__ % _rep_(condition).c_str());
+  write_bf_stream(fmt::sprintf("%s:%d core__invoke_internal_debugger --> %s\n" , __FILE__ , __LINE__ , _rep_(condition).c_str()));
   early_debug(condition, false);
   printf("%s:%d Cannot continue\n", __FILE__, __LINE__);
   abort();
@@ -2111,7 +2097,7 @@ CL_DOCSTRING(R"dx(invokeInternalDebuggerFromGdb)dx")
 DOCGROUP(clasp)
 CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
   eval::funcall(_sym_invokeInternalDebugger);
-  SIMPLE_ERROR(BF("This should never happen"));
+  SIMPLE_ERROR(("This should never happen"));
 };
 
 
@@ -2141,7 +2127,7 @@ DOCGROUP(clasp)
     Function_sp fn = _sym_universalErrorHandler->symbolFunction();
     eval::funcall(fn, nil<T_O>(), datum, initializers);
   }
-  THROW_HARD_ERROR(BF("cl__error should never return because universal-error-handler should never return - but it did"));
+  THROW_HARD_ERROR("cl__error should never return because universal-error-handler should never return - but it did");
 }
 
 CL_LAMBDA(cformat eformat &rest arguments)
@@ -2234,16 +2220,16 @@ void Lisp::switchToClassNameHashTable() {
 void Lisp::parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName, bool &exported) const {
   _OF();
   packageDefined = true; // this will be true in most cases below
-  LOG(BF("Parsing string[%s] into package and symbol name") % name);
+  LOG("Parsing string[%s] into package and symbol name" , name);
   if (name[0] == ':') {
-    LOG(BF("It's a keyword"));
+    LOG("It's a keyword");
     package = this->_Roots._KeywordPackage;
     symbolName = name.substr(1, 99999);
     exported = true;
     return;
   }
   if (name[0] == '&') {
-    LOG(BF("It's an & symbol"));
+    LOG("It's an & symbol");
     package = this->_Roots._CorePackage;
     symbolName = name;
     exported = true;
@@ -2252,7 +2238,7 @@ void Lisp::parseStringIntoPackageAndSymbolName(const string &name, bool &package
   size_t colonPos = name.find_first_of(":");
   exported = true;
   if (colonPos == string::npos) {
-    LOG(BF("Package wasn't defined"));
+    LOG("Package wasn't defined");
     symbolName = name;
     packageDefined = false;
     return;
@@ -2260,17 +2246,17 @@ void Lisp::parseStringIntoPackageAndSymbolName(const string &name, bool &package
   bool doubleColon = false;
   size_t secondPart = colonPos + 1;
   if (name[secondPart] == ':') {
-    LOG(BF("It's a non-exported symbol"));
+    LOG("It's a non-exported symbol");
     exported = false;
     doubleColon = true;
     secondPart++;
     if (name.find_first_of(":", secondPart) != string::npos) {
-      SIMPLE_ERROR(BF("There can only be one ':' or '::' in a symbol name"));
+      SIMPLE_ERROR(("There can only be one ':' or '::' in a symbol name"));
     }
   }
   package = gc::As<Package_sp>(this->findPackage(name.substr(0, colonPos), true));
   symbolName = name.substr(secondPart, 99999);
-  LOG(BF("It's a packaged symbol (%s :: %s)") % package->getName() % symbolName);
+  LOG("It's a packaged symbol (%s :: %s)" , package->getName() , symbolName);
   return;
 }
 
@@ -2443,10 +2429,10 @@ int Lisp::run() {
       }
     } else if (globals_->_Interactive) {
       _BLOCK_TRACE("Interactive REPL");
-      this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
-      this->print(BF("Low level repl\n"));
+      write_bf_stream("Clasp (copyright Christian E. Schafmeister 2014)\n");
+      write_bf_stream("Low level repl\n");
       this->readEvalPrintInteractive();
-      this->print(BF("\n"));
+      write_bf_stream("\n");
     }
     exit_code = 0;
   } catch (core::ExitProgramException &ee) {
@@ -2499,7 +2485,7 @@ CL_DEFUN List_sp core__all_source_files() {
 
 void Lisp::mapClassNamesAndClasses(KeyValueMapper *mapper) {
   if (this->_BootClassTableIsValid) {
-    SIMPLE_ERROR(BF("What do I do here?"));
+    SIMPLE_ERROR(("What do I do here?"));
   } else {
     HashTable_sp ht = _lisp->_Roots._ClassTable;
     ht->lowLevelMapHash(mapper);

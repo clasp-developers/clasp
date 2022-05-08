@@ -37,14 +37,20 @@ THE SOFTWARE.
 #define FOUNDATION_H
 
 #include <string>
-#include <boost/format.hpp>
 #include <filesystem>
 
+// We want to get rid of boost::format and replace it with std::format
+// as an intermediate step we are switching to fmt
 
+#if 0
+#include <boost/format.hpp>
 
 inline boost::format BF(const std::string& fmt) {
   return boost::format(fmt);
 }
+#endif
+
+#include <fmt/printf.h>
 
 
 
@@ -58,20 +64,12 @@ inline boost::format BF(const std::string& fmt) {
 
 namespace core {
   [[noreturn]]void lisp_throwLispError(const std::string &str);
-  [[noreturn]]void lisp_throwLispError(const boost::format &fmt);
-  [[noreturn]]void errorFormatted(boost::format fmt);
-  void lisp_write(const boost::format &fmt, T_sp stream);
-  [[noreturn]]void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt);
-  void lisp_debugLogWrite(const char *fileName, const char *funcName, uint lineNumber, uint column, const boost::format &message, uint debugFlags = DEBUG_CPP_FUNCTION);
+//  [[noreturn]]void errorFormatted(boost::format fmt);
+//  void lisp_write(const boost::format &fmt, T_sp stream);
+  [[noreturn]]void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const string &fmt);
+  [[noreturn]]void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const std::string& str);
+  void lisp_debugLogWrite(const char *fileName, const char *funcName, uint lineNumber, uint column, const std::string &message, uint debugFlags = DEBUG_CPP_FUNCTION);
 };
-
-#define TRY_BOOST_FORMAT_STRING(__fmt, __fmt_str)                                                   \
-  string __fmt_str;                                                                                 \
-  try {                                                                                             \
-    __fmt_str = __fmt.str();                                                                        \
-  } catch (const std::exception &exc) {                                                             \
-    lisp_throwLispError(BF("Error - could not get string from boost::format --> %s") % exc.what()); \
-  }
 
 
 #endif //]

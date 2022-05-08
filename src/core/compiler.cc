@@ -377,7 +377,7 @@ DOCGROUP(clasp)
 CL_DEFUN void core__test_simple_error(T_sp msg) {
   core::String_sp smsg = gc::As<core::String_sp>(msg);
   std::string ss = smsg->get_std_string();
-  SIMPLE_ERROR(BF(ss));
+  SIMPLE_ERROR((ss));
 }
 
 
@@ -504,7 +504,7 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   } else if (mode == kw::_sym_fasl) {
     ss << ".lfasl";
   } else {
-    SIMPLE_ERROR(BF("Add support for *clasp-build-mode* = %s") % _rep_(mode));
+    SIMPLE_ERROR(("Add support for *clasp-build-mode* = %s") , _rep_(mode));
   }
   String_sp spath = SimpleBaseString_O::make(ss.str());
   Pathname_sp pn = cl__pathname(spath);
@@ -562,7 +562,7 @@ You can set the starting ObjectId using the keyword START-OBJECT-ID argument.)dx
 DOCGROUP(clasp)
 CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_object_id)
 {
-  //  write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(pathDesig) % cl__length(objectFiles));
+  //  write_bf_stream(fmt::sprintf("Writing FASO file to %s for %d object files\n" , _rep_(pathDesig) , cl__length(objectFiles)));
   pathDesig = cl__translate_logical_pathname(pathDesig);
   size_t start_object_id = 0;
   if (tstart_object_id.fixnump()) {
@@ -570,7 +570,7 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
       start_object_id = tstart_object_id.unsafe_fixnum();
       //      printf("%s:%d assigned start_object_id = %lu\n", __FILE__, __LINE__, start_object_id );
     } else {
-      SIMPLE_ERROR(BF("start-object-id must be a positive integer - got: %s") % _rep_(tstart_object_id).c_str());
+      SIMPLE_ERROR(("start-object-id must be a positive integer - got: %s") , _rep_(tstart_object_id).c_str());
     }
   }
 //  printf("%s:%d start_object_id = %lu\n", __FILE__, __LINE__, start_object_id );
@@ -591,11 +591,11 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
     nextPage += num_pages;
     header->_ObjectFiles[ii]._ObjectFileSize = cl__length(of);
 #if 0
-    write_bf_stream(BF("Object-file %d StartPage = %lu    _NumberOfPages: %lu  _ObjectFileSize: %lu\n")
-                    % ii
-                    % header->_ObjectFiles[ii]._StartPage
-                    % header->_ObjectFiles[ii]._NumberOfPages
-                    % header->_ObjectFiles[ii]._ObjectFileSize);
+    write_bf_stream(fmt::sprintf("Object-file %d StartPage = %lu    _NumberOfPages: %lu  _ObjectFileSize: %lu\n"
+                                 , ii
+                                 , header->_ObjectFiles[ii]._StartPage
+                                 , header->_ObjectFiles[ii]._NumberOfPages
+                                 , header->_ObjectFiles[ii]._ObjectFileSize));
 #endif
   }
   String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
@@ -603,11 +603,9 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
   // Write header
   size_t header_bytes = FasoHeader::calculateSize(header->_NumberOfObjectFiles);
   fwrite( (const void*)header,header_bytes,1,fout);
-  //  write_bf_stream(BF("Writing header %lu bytes\n") % header_bytes );
 
   // Fill out to the end of the page
   size_t pad_bytes = FasoHeader::calculateHeaderNumberOfPages(header->_NumberOfObjectFiles,header->_PageSize)*header->_PageSize-header_bytes;
-  //  write_bf_stream(BF("Padding header %lu bytes\n") % pad_bytes );
   char empty_byte(0xcc);
   for ( size_t ii=0; ii<pad_bytes; ++ii) {
     fwrite( (const void*)&empty_byte,1,1,fout);
@@ -616,12 +614,10 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
   List_sp ocur = objectFiles;
   for (size_t ofindex=0; ofindex<header->_NumberOfObjectFiles; ofindex++) {
     size_t of_bytes = header->_ObjectFiles[ofindex]._ObjectFileSize;
-    //    write_bf_stream(BF("Writing object file %d with %lu bytes\n") % ofindex % of_bytes );
     Array_sp of = gc::As<Array_sp>(oCar(ocur));
     ocur = oCdr(ocur);
     fwrite( (const void*)of->rowMajorAddressOfElement_(0),of_bytes,1,fout);
     size_t of_pad_bytes = header->_ObjectFiles[ofindex]._NumberOfPages*header->_PageSize-of_bytes;
-    //    write_bf_stream(BF("Padding object file %d with %lu bytes\n") % ofindex % of_pad_bytes );
     for (size_t of_padi=0; of_padi<of_pad_bytes; ++of_padi) {
       fwrite( (const void*)&empty_byte,1,1,fout);
     }
@@ -647,7 +643,7 @@ struct FasoObjectFileInfo {
   
 DOCGROUP(clasp)
 CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, bool verbose) {
-  if (verbose) write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(outputPathDesig) % cl__length(fasoFiles));
+  if (verbose) write_bf_stream(fmt::sprintf("Writing FASO file to %s for %d object files\n" , _rep_(outputPathDesig) , cl__length(fasoFiles)));
   std::vector<FasoObjectFileInfo> allObjectFiles;
   std::vector<MmapInfo> mmaps;
   List_sp cur = fasoFiles;
@@ -655,36 +651,36 @@ CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))CL_DEFUN voi
     String_sp filename = gc::As<String_sp>(cl__namestring(oCar(cur)));
     cur = oCdr(cur);
     int fd = open(filename->get_std_string().c_str(),O_RDONLY);
-    if (verbose) write_bf_stream(BF("mmap'ing file[%lu] %s\n") % ii % _rep_(filename)); 
+    if (verbose) write_bf_stream(fmt::sprintf("mmap'ing file[%lu] %s\n" , ii , _rep_(filename))); 
     off_t fsize = lseek(fd, 0, SEEK_END);
     lseek(fd,0,SEEK_SET);
     void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
     if (memory==MAP_FAILED) {
       close(fd);
-      SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(filename) % strerror(errno));
+      SIMPLE_ERROR(("Could not mmap %s because of %s") , _rep_(filename) , strerror(errno));
     }
     close(fd);
     FasoHeader* header = (FasoHeader*)memory;
     if (header->_Magic == FASO_MAGIC_NUMBER) {
       size_t object0_offset = (header->_HeaderPageCount*header->_PageSize);
-      if (verbose) write_bf_stream(BF("object0_offset %lu  fsize-object0_offset %lu bytes\n") % object0_offset % ((size_t)fsize-object0_offset) );
+      if (verbose) write_bf_stream(fmt::sprintf("object0_offset %lu  fsize-object0_offset %lu bytes\n" , object0_offset , ((size_t)fsize-object0_offset) ));
       mmaps.emplace_back(MmapInfo(fd,memory,object0_offset,(size_t)fsize-object0_offset));
       for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
         size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-        if (verbose) write_bf_stream(BF("%s:%d object file %lu id: %lu  length: %lu\n") % __FILE__ % __LINE__ % ofi % header->_ObjectFiles[ofi]._ObjectId % of_length);
+        if (verbose) write_bf_stream(fmt::sprintf("%s:%d object file %lu id: %lu  length: %lu\n" , __FILE__ , __LINE__ , ofi , header->_ObjectFiles[ofi]._ObjectId , of_length));
         FasoObjectFileInfo fofi(header->_ObjectFiles[ofi]._ObjectId,of_length);
         allObjectFiles.emplace_back(fofi);
-        if (verbose) write_bf_stream(BF("allObjectFiles.size() = %lu\n") % allObjectFiles.size());
+        if (verbose) write_bf_stream(fmt::sprintf("allObjectFiles.size() = %lu\n" , allObjectFiles.size()));
       }
     } else {
-      SIMPLE_ERROR(BF("Illegal and unknown file type - magic number: %X\n") % (size_t)header->_Magic);
+      SIMPLE_ERROR(("Illegal and unknown file type - magic number: %X\n") , (size_t)header->_Magic);
     }
   }
   FasoHeader* header = (FasoHeader*)malloc(FasoHeader::calculateSize(allObjectFiles.size()));
   setup_FasoHeader(header);
   header->_HeaderPageCount = FasoHeader::calculateHeaderNumberOfPages(allObjectFiles.size(),getpagesize());
   header->_NumberOfObjectFiles = allObjectFiles.size();
-  if (verbose) write_bf_stream(BF("Writing out all object files %lu\n") % allObjectFiles.size());
+  if (verbose) write_bf_stream(fmt::sprintf("Writing out all object files %lu\n" , allObjectFiles.size()));
   size_t nextPage = header->_HeaderPageCount;
   for (size_t ofi=0; ofi<allObjectFiles.size(); ofi++ ) {
     header->_ObjectFiles[ofi]._ObjectId = allObjectFiles[ofi]._ObjectId;
@@ -693,31 +689,31 @@ CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))CL_DEFUN voi
     header->_ObjectFiles[ofi]._NumberOfPages = num_pages;
     nextPage += num_pages;
     header->_ObjectFiles[ofi]._ObjectFileSize = allObjectFiles[ofi]._ObjectFileSize;
-    if (verbose) write_bf_stream(BF("object file %lu   _StartPage=%lu  _NumberOfPages=%lu   _ObjectFileSize=%lu\n")
-                                 % ofi
-                                 % header->_ObjectFiles[ofi]._StartPage
-                                 % header->_ObjectFiles[ofi]._NumberOfPages
-                                 % header->_ObjectFiles[ofi]._ObjectFileSize);
+    if (verbose) write_bf_stream(fmt::sprintf("object file %lu   _StartPage=%lu  _NumberOfPages=%lu   _ObjectFileSize=%lu\n"
+                                 , ofi
+                                 , header->_ObjectFiles[ofi]._StartPage
+                                 , header->_ObjectFiles[ofi]._NumberOfPages
+                                             , header->_ObjectFiles[ofi]._ObjectFileSize));
 
   }
   String_sp filename = gc::As<String_sp>(cl__namestring(outputPathDesig));
   
   FILE* fout = fopen(filename->get_std_string().c_str(),"w");
   if (!fout) {
-    SIMPLE_ERROR(BF("Could not open file %s") % _rep_(filename));
+    SIMPLE_ERROR(("Could not open file %s") , _rep_(filename));
   }
   if (verbose) {
-    write_bf_stream(BF("Writing file: %s\n") % _rep_(filename));
+    write_bf_stream(fmt::sprintf("Writing file: %s\n" , _rep_(filename)));
   }
   // Write header
   size_t header_bytes = FasoHeader::calculateSize(header->_NumberOfObjectFiles);
-  if (verbose) write_bf_stream(BF("Writing %lu bytes of header\n") % header_bytes );
+  if (verbose) write_bf_stream(fmt::sprintf("Writing %lu bytes of header\n" , header_bytes ));
   fwrite( (const void*)header,header_bytes,1,fout);
   
-  //  write_bf_stream(BF("Writing header %lu bytes\n") % header_bytes );
+  //  write_bf_stream(fmt::sprintf("Writing header %lu bytes\n" , header_bytes ));
   // Fill out to the end of the page
   size_t pad_bytes = FasoHeader::calculateHeaderNumberOfPages(header->_NumberOfObjectFiles,header->_PageSize)*header->_PageSize-header_bytes;
-  if (verbose) write_bf_stream(BF("Writing %lu bytes of header for padding\n") % pad_bytes );
+  if (verbose) write_bf_stream(fmt::sprintf("Writing %lu bytes of header for padding\n" , pad_bytes ));
   char empty_byte(0xcc);
   for ( size_t ii=0; ii<pad_bytes; ++ii) {
     fwrite( (const void*)&empty_byte,1,1,fout);
@@ -727,9 +723,9 @@ CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))CL_DEFUN voi
     size_t bytes_to_write = mmaps[mmi]._ObjectFileAreaSize;
     size_t page_size = getpagesize();
     size_t padding = (((size_t)(bytes_to_write+page_size-1)/page_size)*page_size - bytes_to_write);
-    if (verbose) write_bf_stream(BF("Writing %lu bytes of object files\n") % bytes_to_write );
+    if (verbose) write_bf_stream(fmt::sprintf("Writing %lu bytes of object files\n" , bytes_to_write ));
     fwrite( (const void*)((const char*)mmaps[mmi]._Memory+mmaps[mmi]._ObjectFileAreaStart), bytes_to_write,1,fout);
-    if (verbose) write_bf_stream(BF("Writing %lu bytes of padding\n") % padding );
+    if (verbose) write_bf_stream(fmt::sprintf("Writing %lu bytes of padding\n" , padding ));
     for ( size_t pi=0; pi<padding; ++pi ) {
       fwrite(&pad,1,1,fout);
     }
@@ -738,12 +734,12 @@ CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))CL_DEFUN voi
       + mmaps[mmi]._ObjectFileAreaSize;
     int res = munmap(mmaps[mmi]._Memory,mmap_size);
     if (res!=0) {
-      SIMPLE_ERROR(BF("Could not munmap memory"));
+      SIMPLE_ERROR(("Could not munmap memory"));
     }
   }
-  if (verbose) write_bf_stream(BF("Closing %s\n") % _rep_(filename));
+  if (verbose) write_bf_stream(fmt::sprintf("Closing %s\n" , _rep_(filename)));
   fclose(fout);
-  if (verbose) write_bf_stream(BF("Returning %s\n") % _rep_(filename));
+  if (verbose) write_bf_stream(fmt::sprintf("Returning %s\n" , _rep_(filename)));
 }
 
 
@@ -781,7 +777,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
   if (memory==MAP_FAILED) {
     close(fd);
-    SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
+    SIMPLE_ERROR(("Could not mmap %s because of %s") , _rep_(pathDesig) , strerror(errno));
   }
   close(fd); // Ok to close file descriptor after mmap
   llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
@@ -793,7 +789,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     }
     void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
-    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % fasoIndex);
+    if (print.notnilp()) write_bf_stream(fmt::sprintf("%s:%d Adding faso %s object file %d to jit\n" , __FILE__ , __LINE__ , filename , fasoIndex));
     llvm::StringRef sbuffer((const char*)of_start, of_length);
     std::string uniqueName = llvmo::uniqueMemoryBufferName("buffer",header->_ObjectFiles[fasoIndex]._ObjectId, fasoIndex);
     llvm::StringRef name(uniqueName);
@@ -819,21 +815,21 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
   if (memory==MAP_FAILED) {
     close(fd);
-    SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
+    SIMPLE_ERROR(("Could not mmap %s because of %s") , _rep_(pathDesig) , strerror(errno));
   }
   llvmo::ClaspJIT_sp jit = llvmo::llvm_sys__clasp_jit();
   FasoHeader* header = (FasoHeader*)memory;
-  write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
+  write_bf_stream(fmt::sprintf("NumberOfObjectFiles %d\n" , header->_NumberOfObjectFiles));
   for (size_t fasoIndex = 0; fasoIndex<header->_NumberOfObjectFiles; ++fasoIndex) {
     size_t fasoIndexd =  header->_ObjectFiles[fasoIndex]._ObjectId;
     void* of_start = (void*)((char*)header + header->_ObjectFiles[fasoIndex]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[fasoIndex]._ObjectFileSize;
-    //    write_bf_stream(BF("Adding faso %s object file %d to jit\n") % _rep_(filename) % fasoIndex);
-    write_bf_stream(BF("Object file %d  ObjectId: %lu start-page: %lu  bytes: %lu pages: %lu\n")
-                    % fasoIndex
-                    % header->_ObjectFiles[fasoIndex]._ObjectId
-                    % header->_ObjectFiles[fasoIndex]._StartPage
-                    % header->_ObjectFiles[fasoIndex]._ObjectFileSize % header->_ObjectFiles[fasoIndex]._NumberOfPages );
+    //    write_bf_stream(fmt::sprintf("Adding faso %s object file %d to jit\n" , _rep_(filename) , fasoIndex));
+    write_bf_stream(fmt::sprintf("Object file %d  ObjectId: %lu start-page: %lu  bytes: %lu pages: %lu\n"
+                    , fasoIndex
+                    , header->_ObjectFiles[fasoIndex]._ObjectId
+                    , header->_ObjectFiles[fasoIndex]._StartPage
+                                , header->_ObjectFiles[fasoIndex]._ObjectFileSize , header->_ObjectFiles[fasoIndex]._NumberOfPages ));
   }
   return _lisp->_true();
 }
@@ -841,7 +837,7 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
 void clasp_unpack_faso(const std::string& path_designator) {
   size_t pos = path_designator.find_last_of('.');
   if (pos==std::string::npos) {
-    SIMPLE_ERROR(BF("Could not find extension in path: %s") % path_designator);
+    SIMPLE_ERROR(("Could not find extension in path: %s") , path_designator);
   }
   std::string prefix = path_designator.substr(0,pos);
   int fd = open(path_designator.c_str(),O_RDONLY);
@@ -850,7 +846,7 @@ void clasp_unpack_faso(const std::string& path_designator) {
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
   if (memory==MAP_FAILED) {
     close(fd);
-    SIMPLE_ERROR(BF("Could not mmap %s because of %s") % path_designator % strerror(errno));
+    SIMPLE_ERROR(("Could not mmap %s because of %s") , path_designator , strerror(errno));
   }
   FasoHeader* header = (FasoHeader*)memory;
   printf("NumberOfObjectFiles %lu\n", header->_NumberOfObjectFiles);
@@ -900,13 +896,13 @@ CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp pri
       SimpleBaseString_sp sbspath = SimpleBaseString_O::make(name);
       tpath = cl__pathname(sbspath);
       if (cl__probe_file(tpath).nilp()) {
-        SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(sbspath));
+        SIMPLE_ERROR(("Could not find bundle %s") , _rep_(sbspath));
       }
     } else {
-      SIMPLE_ERROR(BF("Could not open %s as a fasl file") % name);
+      SIMPLE_ERROR(("Could not open %s as a fasl file") , name);
     }
   } else {
-    SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
+    SIMPLE_ERROR(("Could not find bundle %s") , _rep_(pathDesig));
   }
   return core__load_binary(tpath,verbose,print,external_format);
 }
@@ -923,7 +919,7 @@ CL_LAMBDA(&optional (id 0) prefix)CL_DEFUN T_mv core__startup_linkage_shutdown_n
     sstart << gc::As<String_sp>(prefix)->get_std_string() << "-";
     sshutdown << gc::As<String_sp>(prefix)->get_std_string() << "-";
   } else if (prefix.notnilp()) {
-    SIMPLE_ERROR(BF("Illegal prefix for startup function name: %s") % _rep_(prefix));
+    SIMPLE_ERROR(("Illegal prefix for startup function name: %s") , _rep_(prefix));
   }    
   sstart << MODULE_STARTUP_FUNCTION_NAME << "_" << id;
   sshutdown << MODULE_SHUTDOWN_FUNCTION_NAME << "_" << id;
@@ -952,7 +948,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
   DynamicScopeManager scope2(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   DynamicScopeManager scope3(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
-  if (pathDesig.nilp()) SIMPLE_ERROR(BF("load-binary was about to pass nil to pathname"));
+  if (pathDesig.nilp()) SIMPLE_ERROR(("load-binary was about to pass nil to pathname"));
   Pathname_sp path = cl__pathname(pathDesig);
   if (cl__probe_file(path).notnilp())
     goto LOAD;
@@ -971,7 +967,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   path->_Type = SimpleBaseString_O::make("so");
   if (cl__probe_file(path).notnilp())
     goto LOAD;
-  SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
+  SIMPLE_ERROR(("Could not find bundle %s") , _rep_(pathDesig));
  LOAD:
   String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
   string name = nameStr->get_std_string();
@@ -983,7 +979,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   void *handle = dlopen(name.c_str(), mode);
   if (handle == NULL) {
     string error = dlerror();
-    SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
+    SIMPLE_ERROR(("Error in dlopen: %s") , error);
     //    return (Values(nil<T_O>(), SimpleBaseString_O::make(error)));
   }
   // Static constructors must be available and they were run by dlopen
@@ -999,11 +995,11 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   DynamicScopeManager scope4(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {
     if (print.notnilp()) {
-      write_bf_stream(BF("Running startup_functions\n"));
+      write_bf_stream(fmt::sprintf("Running startup_functions\n"));
     }
     startup_functions_invoke(NULL);
   } else {
-    SIMPLE_ERROR(BF("This is not a proper FASL file - there are no startup functions waiting to be invoked"));
+    SIMPLE_ERROR(("This is not a proper FASL file - there are no startup functions waiting to be invoked"));
   }
   T_mv result;
   return (Values(Pointer_O::create(handle), nil<T_O>()));
@@ -1064,7 +1060,7 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
 
   int mode = RTLD_NOW | RTLD_GLOBAL;
   
-  if (pathDesig.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
+  if (pathDesig.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
   Pathname_sp path = cl__pathname(pathDesig);
   string ts0 = gc::As<String_sp>(cl__namestring(path))->get_std_string();
 
@@ -1101,7 +1097,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   void *handle = NULL;
   if (ohandle.nilp()) {
-    SIMPLE_ERROR(BF("Invalid ohandle passed -> nil"));
+    SIMPLE_ERROR(("Invalid ohandle passed -> nil"));
   } else if (Pointer_sp phandle = ohandle.asOrNull<Pointer_O>()) {
     handle = phandle->ptr();
   } else if (Symbol_sp sym = ohandle.asOrNull<Symbol_O>() ) {
@@ -1124,10 +1120,10 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
       handle = RTLD_MAIN_ONLY;
 #endif
     } else {
-      SIMPLE_ERROR(BF("Illegal keyword[%s] for dlsym - only :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(sym));
+      SIMPLE_ERROR(("Illegal keyword[%s] for dlsym - only :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") , _rep_(sym));
     }
   } else {
-    SIMPLE_ERROR(BF("Illegal handle argument[%s] for dlsym only a pointer or :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(ohandle));
+    SIMPLE_ERROR(("Illegal handle argument[%s] for dlsym only a pointer or :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") , _rep_(ohandle));
   }
   string ts = name->get_std_string();
   
@@ -1432,13 +1428,13 @@ CL_DEFUN T_sp core__run_init_mlf( T_sp object ) {
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__make_builtin_class( T_sp object ) {
   printf("%s:%d:%s  with %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(object).c_str());
-  SIMPLE_ERROR(BF("Add support for core__make_builtin_class"));
+  SIMPLE_ERROR(("Add support for core__make_builtin_class"));
 }
 
 
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__handle_creator( T_sp object ) {
-  SIMPLE_ERROR(BF("Handle-creator for %s") % _rep_(object).c_str());
+  SIMPLE_ERROR(("Handle-creator for %s") , _rep_(object).c_str());
 }
 
  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
@@ -1478,7 +1474,7 @@ char ll_read_char(T_sp stream, bool log, size_t& index)
 
 #if 0
 #define SELF_DOCUMENT(ty,stream,index) { char _xx = document<ty>(); clasp_write_char(_xx,stream); ++index; }
-#define SELF_CHECK(ty,stream,index) { char _xx = document<ty>(); claspCharacter _cc = ll_read_char(stream,log,index); ++index; if (_xx!=_cc) SIMPLE_ERROR(BF("Mismatch of ltvc read types read '%c' expected '%c'") % _cc % _xx );}
+#define SELF_CHECK(ty,stream,index) { char _xx = document<ty>(); claspCharacter _cc = ll_read_char(stream,log,index); ++index; if (_xx!=_cc) SIMPLE_ERROR(("Mismatch of ltvc read types read '%c' expected '%c'") , _cc , _xx );}
 #else
 #define SELF_DOCUMENT(ty,stream,index) {}
 #define SELF_CHECK(ty,stream,index) {}
@@ -1496,7 +1492,7 @@ CL_DEFUN size_t core__ltvc_write_char(T_sp object, T_sp stream, size_t index)
     clasp_write_char(object.unsafe_character(),stream);
     ++index;
   } else {
-    SIMPLE_ERROR(BF("Expected fixnum or character - got %s") % _rep_(object));
+    SIMPLE_ERROR(("Expected fixnum or character - got %s") , _rep_(object));
   }
   return index;
 }
@@ -1616,7 +1612,7 @@ CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index)
     clasp_write_characters((char*)&data,sizeof(data),stream);
     index += sizeof(data);
   } else {
-    SIMPLE_ERROR(BF("Expected single-float got %s") % _rep_(object));
+    SIMPLE_ERROR(("Expected single-float got %s") , _rep_(object));
   }
   return index;
 }
@@ -1676,7 +1672,7 @@ CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp
     compact_write_size_t(data,stream,index);
     return index;
   }
-  SIMPLE_ERROR(BF("tag must be 0, 1 or 2 - you passed %s") % _rep_(ttag));
+  SIMPLE_ERROR(("tag must be 0, 1 or 2 - you passed %s") , _rep_(ttag));
 }
 
 T_O* ltvc_read_object(gctools::GCRootsInModule* roots, T_sp stream, bool log, size_t& index)
@@ -1724,7 +1720,7 @@ T_O* ltvc_read_object(gctools::GCRootsInModule* roots, T_sp stream, bool log, si
     return (T_O*)val;
   }
   default: {
-    SIMPLE_ERROR(BF("Could not read an object for using tag %d data %p") % tag % data );
+    SIMPLE_ERROR(("Could not read an object for using tag %d data %p") , tag , data );
   };
   };
 }
@@ -1783,18 +1779,18 @@ void dump_byte_code(T_sp fin, size_t length, bool useFrom=false, size_t from=0) 
     from = sis->_InputPosition;
     peer = sis->peer(length);
   }
-  write_bf_stream(BF("%8lu: ") % from);
+  write_bf_stream(fmt::sprintf("%8lu: " , from));
   for (int i=0; i<peer.size(); ++i ) {
     unsigned char cc = (unsigned char)peer[i];
     if ( cc<32 ) {
-      write_bf_stream(BF("(\\%d)") % (int)cc);
+      write_bf_stream(fmt::sprintf("(\\%d)" , (int)cc));
     } else if (cc>=128) {
-      write_bf_stream(BF("(\\%d)") % (int)cc);
+      write_bf_stream(fmt::sprintf("(\\%d)" , (int)cc));
     } else {
-      write_bf_stream(BF("(%c\\%d)") % (char)cc % (int)cc);
+      write_bf_stream(fmt::sprintf("(%c\\%d)" , (char)cc , (int)cc));
     }
   }
-  write_bf_stream(BF("\n"));
+  write_bf_stream(fmt::sprintf("\n"));
 }
 
 
@@ -1834,7 +1830,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
         fasoFile = objectFile->_FasoName->get_std_string();
         fasoIndex = objectFile->_FasoIndex;
       }
-      SIMPLE_ERROR(BF("While loading the fasp file %s %d an illegal byte-code %d was detected. This usually happens when a fasp file is out of date and the byte code has changed in the meantime. ") % fasoFile % fasoIndex % (int)c );
+      SIMPLE_ERROR(("While loading the fasp file %s %d an illegal byte-code %d was detected. This usually happens when a fasp file is out of date and the byte code has changed in the meantime. ") , fasoFile , fasoIndex , (int)c );
     }
     }
   }
@@ -1897,14 +1893,14 @@ CL_DEFUN void core__call4(int x, int y, int z, int w) {
 void expect_offset(T_sp key, T_sp alist, size_t expected) {
   List_sp pair = core__alist_assoc_eq(alist,key);
   if (pair.nilp()) {
-    SIMPLE_ERROR(BF("Could not find key %s in alist %s") % _rep_(key) % _rep_(alist));
+    SIMPLE_ERROR(("Could not find key %s in alist %s") , _rep_(key) , _rep_(alist));
   }
   T_sp value = CONS_CDR(pair);
   if (!value.fixnump()) {
-    SIMPLE_ERROR(BF("The value %s in alist %s at key %s must be a fixnum") % _rep_(value) % _rep_(alist) % _rep_(key));
+    SIMPLE_ERROR(("The value %s in alist %s at key %s must be a fixnum") , _rep_(value) , _rep_(alist) , _rep_(key));
   }
   if (value.unsafe_fixnum()!=expected) {
-    SIMPLE_ERROR(BF("The value %s in alist %s at key %s must match the C++ tagged offset of %d") % _rep_(value) % _rep_(alist) % _rep_(key) % expected);
+    SIMPLE_ERROR(("The value %s in alist %s at key %s must match the C++ tagged offset of %d") , _rep_(value) , _rep_(alist) , _rep_(key) , expected);
   }
 }
 

@@ -41,7 +41,7 @@ CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   if (WrappedPointer_sp wp = ptr.asOrNull<WrappedPointer_O>()) {
     return Pointer_O::create(wp->pointerRelease());
   }
-  SIMPLE_ERROR(BF("Could not release pointer for %s") % _rep_(ptr));
+  SIMPLE_ERROR(("Could not release pointer for %s") , _rep_(ptr));
 }
 
 CL_LAMBDA(arg)
@@ -56,7 +56,7 @@ CL_DEFUN void core__pointer_delete(T_sp ptr) {
     wp->pointerDelete();
     return;
   }
-  SIMPLE_ERROR(BF("Could not release pointer for %s") % _rep_(ptr));
+  SIMPLE_ERROR(("Could not release pointer for %s") , _rep_(ptr));
 }
 
 
@@ -99,7 +99,7 @@ CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   if (WrappedPointer_sp wp = ptr.asOrNull<WrappedPointer_O>()) {
     return wp->address();
   }
-  SIMPLE_ERROR(BF("Could not get address of pointer for %s") % _rep_(ptr));
+  SIMPLE_ERROR(("Could not get address of pointer for %s") , _rep_(ptr));
 };
 
 DOCGROUP(clasp)
@@ -107,7 +107,7 @@ CL_DEFUN void core__verify_wrapped_pointer_layout(size_t stamp_offset)
 {
   size_t cxx_stamp_offset = offsetof(WrappedPointer_O,ShiftedStamp_);
   if (stamp_offset!=cxx_stamp_offset)
-    SIMPLE_ERROR(BF("stamp_offset %lu does not match cxx_stamp_offset %lu") % stamp_offset % cxx_stamp_offset );
+    SIMPLE_ERROR(("stamp_offset %lu does not match cxx_stamp_offset %lu") , stamp_offset , cxx_stamp_offset );
 }
 
 

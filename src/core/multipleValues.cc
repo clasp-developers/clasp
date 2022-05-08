@@ -71,7 +71,7 @@ core::T_mv ValuesFromCons(core::List_sp vals) {
   me.setSize(0);
   for (auto cur : (core::List_sp)oCdr(vals)) {
     if (i >= core::MultipleValues::MultipleValuesLimit) {
-      SIMPLE_ERROR(BF("Overflow when returning multiple values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % cl__length(vals));
+      SIMPLE_ERROR(("Overflow when returning multiple values - only %d are supported and you tried to return %d values") , core::MultipleValues::MultipleValuesLimit , cl__length(vals));
     }
     core::T_sp obj = oCar(cur);
     me.valueSet(i, obj);

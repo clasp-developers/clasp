@@ -49,7 +49,7 @@ namespace core {
 
 void handleWideCharactersError(claspCharacter cc)
 {
-  SIMPLE_ERROR(BF("A wide character with the value %d was encountered in a function that needed a base-char") % cc);
+  SIMPLE_ERROR(("A wide character with the value %d was encountered in a function that needed a base-char") , cc);
 }
 
 CL_LAMBDA(arg)
@@ -489,7 +489,7 @@ Character_sp clasp_character_create_from_name(string const &name) {
   else if ((ssup == "BELL") || (ssup == "Bell") || (ssup == "Bel"))
     ch = clasp_make_standard_character(BELL_CHAR);
   else {
-    SIMPLE_ERROR(BF("Unknown character name[%s]") % ssup);
+    SIMPLE_ERROR(("Unknown character name[%s]") , ssup);
   }
   return ch;
 }

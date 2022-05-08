@@ -109,10 +109,10 @@ void SymbolToEnumConverter_O::throwIfUnrecognizedEnumIndex(int ei) {
   _OF();
   if (!this->recognizesEnumIndex(ei)) {
     stringstream ss;
-    ss << (BF("I do not recognize the enum value(%d)") % ei).str() << std::endl;
+    ss << fmt::sprintf("I do not recognize the enum value(%d)\n", ei);
     ss << "Legal enum values/symbols are: " << std::endl;
     ss << this->legalEnumValuesAndSymbols() << std::endl;
-    SIMPLE_ERROR(BF(ss.str()));
+    SIMPLE_ERROR((ss.str()));
   }
 }
 

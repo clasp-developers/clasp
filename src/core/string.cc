@@ -640,19 +640,19 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
   Fixnum fstart1 = unbox_fixnum(start1);
   if (fstart1 < 0)
       // a negative start1 should error
-    SIMPLE_ERROR(BF("start1 %d out of bounds for string %s") % fstart1 % string1);
+    SIMPLE_ERROR(("start1 %d out of bounds for string %s") , fstart1 , string1);
   istart1 = MAX(fstart1, 0);
   if (istart1 > cl__length(string1)) {
-    SIMPLE_ERROR(BF("start1 %d out of bounds for string %s") % istart1 % string1);
+    SIMPLE_ERROR(("start1 %d out of bounds for string %s") , istart1 , string1);
   }
   iend1 = MIN(end1.nilp() ? cl__length(string1) : unbox_fixnum(gc::As<Fixnum_sp>(end1)), cl__length(string1));
   Fixnum fstart2 = unbox_fixnum(start2);
   if (fstart2 <0)
     // a negative start2 should error
-    SIMPLE_ERROR(BF("start2 %d out of bounds for string %s") % fstart2 % string2);
+    SIMPLE_ERROR(("start2 %d out of bounds for string %s") , fstart2 , string2);
   istart2 = MAX(fstart2, 0);
   if (istart2 > cl__length(string2)) {
-    SIMPLE_ERROR(BF("start2 %d out of bounds for string %s") % istart2 % string2);
+    SIMPLE_ERROR(("start2 %d out of bounds for string %s") , istart2 , string2);
   }
   iend2 = MIN(end2.nilp() ? cl__length(string2) : unbox_fixnum(gc::As<Fixnum_sp>(end2)), cl__length(string2));
 }
@@ -782,7 +782,7 @@ if (gc::IsA<SimpleString_sp>(_string1_) ) {			    \
     } \
   } \
  } \
- SIMPLE_ERROR(BF("Illegal combination of string arguments in TEMPLATE_STRING_DISPATCHER"));
+ SIMPLE_ERROR(("Illegal combination of string arguments in TEMPLATE_STRING_DISPATCHER"));
 
 
 
@@ -951,7 +951,7 @@ CL_DEFUN T_sp cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element
   }
   Fixnum sz = size.unsafe_fixnum();
   if (sz < 0 ) {
-    SIMPLE_ERROR(BF("Size must be >= 0"));
+    SIMPLE_ERROR(("Size must be >= 0"));
   }
   claspCharacter initial_element_cc = initial_element.unsafe_character();
   if ( element_type == cl::_sym_base_char ) {
@@ -1064,9 +1064,9 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
   cl_index cur = istart;
   while (1) {
     claspCharacter c = clasp_as_claspCharacter(gc::As_unsafe<Character_sp>(str->rowMajorAref(cur)));
-    LOG(BF("fsmInteger str[%d] -> c = [%d/%c]") % cur  % c % c );
+    LOG("fsmInteger str[%d] -> c = [%d/%c]" , cur  , c , c );
     switch (state) {
-      LOG(BF("  top state = %d") % state);
+      LOG("  top state = %d" , state);
     case iinit:
     case iwhite: {
       if (isspace(c)) {
@@ -1082,7 +1082,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
       } else if (isalnum(c)) {
         cl_index idigit = fsmIntegerDigit(c, radix);
         if (idigit < 0 || idigit >= radix) {
-          LOG(BF("Hit junk at %d\n") % cur);
+          LOG("Hit junk at %d\n" , cur);
           state = ijunk;
           break;
         }
@@ -1130,7 +1130,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
     case idone:
         break;
     }
-    LOG(BF("  bottom state = %d") % state);
+    LOG("  bottom state = %d" , state);
     if (state == idone)
       break;
     if (state == ijunk)
@@ -1145,7 +1145,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
     mpz_neg(nresult.get_mpz_t(), result.get_mpz_t());
     mpz_swap(nresult.get_mpz_t(), result.get_mpz_t());
   }
-  LOG(BF("Returning with cur=%d") % cur);
+  LOG("Returning with cur=%d" , cur);
   return cur;
 };
 
@@ -1171,7 +1171,7 @@ CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radi
     // normal exit
     if (numDigits > 0) {
       Integer_sp iresult = Integer_O::create(result);
-      LOG(BF("Returning parse-integer with result = %s  cur = %d") % _rep_(iresult) % cur );
+      LOG("Returning parse-integer with result = %s  cur = %d" , _rep_(iresult) , cur );
       return (Values(iresult, make_fixnum(cur)));
     } else {
       //If junk-allowed is false, an error of type parse-error is signaled if substring does not consist entirely of the representation
@@ -1452,7 +1452,7 @@ void StringPushStringCharStar(String_sp buffer, const char *cPtr) {
 string string_get_std_string(String_sp str) { return str->get_std_string(); };
 string string_get_std_string(T_sp str) {
   if (str.nilp()) {
-    SIMPLE_ERROR(BF("Could not convert nil to Str"));
+    SIMPLE_ERROR(("Could not convert nil to Str"));
   };
   return gc::As<String_sp>(str)->get_std_string();
 };
@@ -1530,7 +1530,7 @@ CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)
     for (size_t index(0); index < wx->length(); ++index ) {
       claspCharacter c = (*swx)[index+start];
       if (!clasp_base_char_p(c)) {
-        SIMPLE_ERROR(BF("Cannot coerce string %s to a base-string") % _rep_(x));
+        SIMPLE_ERROR(("Cannot coerce string %s to a base-string") , _rep_(x));
       }
       (*y)[index] = c;
     }
@@ -1542,7 +1542,7 @@ CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)
     for (size_t index(0); index < sx->length(); ++index ) {
       claspCharacter c = (*sx)[index];
       if (!clasp_base_char_p(c)) {
-        SIMPLE_ERROR(BF("Cannot coerce string %s to a base-string") % _rep_(x));
+        SIMPLE_ERROR(("Cannot coerce string %s to a base-string") , _rep_(x));
       }
       (*y)[index] = c;
     }
@@ -1559,7 +1559,7 @@ CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)
     memcpy(&(*y)[0],&(*swx)[start],sx->length());
     return y;
   }
-  SIMPLE_ERROR(BF("Could not copy %s to simple-base-string") % _rep_(x));
+  SIMPLE_ERROR(("Could not copy %s to simple-base-string") , _rep_(x));
 }
 
 

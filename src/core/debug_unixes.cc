@@ -102,7 +102,7 @@ const char* getExecutablePath() {
 std::atomic<bool> global_elf_initialized;
 void ensure_libelf_initialized() {
   if (!global_elf_initialized) {
-    if (elf_version(EV_CURRENT) == EV_NONE) SIMPLE_ERROR(BF("ELF library initializtion failed %s") % elf_errmsg(-1));
+    if (elf_version(EV_CURRENT) == EV_NONE) SIMPLE_ERROR(("ELF library initializtion failed %s") , elf_errmsg(-1));
     global_elf_initialized = true;
   }
 }
@@ -134,7 +134,7 @@ void walk_elf_symbol_table(struct dl_phdr_info *info,
   }
   if ((elf = elf_begin(fd, ELF_C_READ, NULL)) == NULL) {
     close(fd);
-    SIMPLE_ERROR(BF("Error with elf_begin for file %s - %s") % filename % elf_errmsg(-1));
+    SIMPLE_ERROR(("Error with elf_begin for file %s - %s") , filename , elf_errmsg(-1));
   }
   Elf_Scn     *scn = NULL;
   // Search the symbol tables for functions that contain the return address

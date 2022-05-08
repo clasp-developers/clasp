@@ -80,7 +80,7 @@ bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const {
 gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
   HashTable_O::sxhash_eql(hg, obj);
   gc::Fixnum hash = hg.hashBound(bound);
-  LOG(BF("HashTableEql_O::sxhashKey obj[%s] raw_hash[%s] bound[%d] hash[%d]") % _rep_(obj) % hg.asString() % bound % hash);
+  LOG("HashTableEql_O::sxhashKey obj[%s] raw_hash[%s] bound[%d] hash[%d]" , _rep_(obj) , hg.asString() , bound , hash);
   return hash;
 }
 

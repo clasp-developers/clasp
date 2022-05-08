@@ -95,7 +95,7 @@ private:
     for (const_iterator it = this->begin(); it != this->end(); ++it) {
       if (!(*it == 0 || *it == '\n' || *it == '\t' || (*it >= ' ' && *it < 128))) {
         printf("%s:%d Illegal character [%d/%c] in string at pos %ld from start %p\n", __FILE__, __LINE__, *it, *it, (it - this->begin()), ((void *)(this->begin())));
-        THROW_HARD_ERROR(BF("Illegal character [%c] in string at pos %ld from start %p") % *it % (it - this->begin()) % ((void *)(this->begin())));
+        THROW_HARD_ERROR("Illegal character [%c] in string at pos %ld from start %p", *it , (it - this->begin()) , ((void *)(this->begin())));
       }
     }
   }
@@ -192,10 +192,10 @@ public:
 
 private:
   T &errorEmpty() {
-    THROW_HARD_ERROR(BF("GCString had no contents"));
+    THROW_HARD_ERROR("GCString had no contents");
   };
   const T &errorEmpty() const {
-    THROW_HARD_ERROR(BF("GCString had no contents"));
+    THROW_HARD_ERROR("GCString had no contents");
   };
 
 public:

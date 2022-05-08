@@ -53,7 +53,7 @@ THE SOFTWARE.
 namespace boost {
 void assertion_failed_msg(char const *expr, char const *msg,
                           char const *function, char const *file, long line) {
-  THROW_HARD_ERROR(BF("boost::assertion_failed_msg was called with expr[%s] msg[%s] function[%s] file[%s] line[%d]") % expr % msg % function % file % line);
+  THROW_HARD_ERROR("boost::assertion_failed_msg was called with expr[%s] msg[%s] function[%s] file[%s] line[%d]", expr , msg , function , file , line);
 }
 } // namespace boost
 
@@ -76,17 +76,17 @@ int delete_all_files(Path_sp rpath) {
 void safeRename(Path_sp src, Path_sp dest) {
   // If the OriginalFilePath exists then create a backup
   if (dest->exists()) {
-    LOG(BF("destination file[%s] exists") % dest->asString());
+    LOG("destination file[%s] exists" , dest->asString());
     Path_sp destBackup = dest->copyPath();
     destBackup->appendToExtension("Backup");
     if (destBackup->exists()) {
-      LOG(BF("destination backup file[%s] exists - removing it") % destBackup->asString());
+      LOG("destination backup file[%s] exists - removing it" , destBackup->asString());
       delete_file(destBackup);
     }
-    LOG(BF("Renaming dest[%s] to destBackup[%s]") % dest->asString() % destBackup->asString());
+    LOG("Renaming dest[%s] to destBackup[%s]" , dest->asString() , destBackup->asString());
     rename_file(dest, destBackup);
   }
-  LOG(BF("Renaming src[%s] to dest[%s]") % src->asString() % dest->asString());
+  LOG("Renaming src[%s] to dest[%s]" , src->asString() , dest->asString());
   rename_file(src, dest);
 }
 
@@ -108,7 +108,7 @@ CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   try {
     std::filesystem::create_directories(parent);
   } catch (...) {
-    SIMPLE_ERROR(BF("Could not create_directories for path[%s]") % parent.string());
+    SIMPLE_ERROR(("Could not create_directories for path[%s]") , parent.string());
   }
   return (Values(pathspec, _lisp->_true()));
 }
@@ -175,7 +175,7 @@ CL_DEFMETHOD Integer_sp Path_O::last_write_time() const {
 CL_LISPIFY_NAME("path-append");
 CL_DEFMETHOD Path_sp Path_O::path_append(string const &pp) {
   _OF();
-  LOG(BF("Appending string[%s] to the path") % pp);
+  LOG("Appending string[%s] to the path" , pp);
   this->_Path._value /= pp;
   return this->sharedThis<Path_O>();
 }
@@ -316,7 +316,7 @@ DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
 	Path_sp path = coerce::pathDesignator(af_interpreter_lookup_variable(_sym_path,bargs));
 	if ( path.nilp() )
 	{
-	    SIMPLE_ERROR(BF("You must specify the path"));
+	    SIMPLE_ERROR(("You must specify the path"));
 	}
 	this->setPath(path);
 	this->first();
@@ -357,7 +357,7 @@ void DirectoryIterator_O::setupCurrentIterator() {
     this->_CurrentIterator._value = new std::filesystem::directory_iterator(this->_Path->getPath());
   }
   catch (std::filesystem::filesystem_error &err) {
-    SIMPLE_ERROR(BF("%s") % err.what());
+    SIMPLE_ERROR(("%s") , err.what());
   }
 }
 
@@ -382,10 +382,10 @@ T_sp DirectoryIterator_O::currentObject() {
   _OF();
   ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
-    LOG(BF("The directory iteratory is done - returning nil"));
+    LOG("The directory iteratory is done - returning nil");
     return nil<DirectoryEntry_O>();
   }
-  LOG(BF("Returning the next directory entry"));
+  LOG("Returning the next directory entry");
   DirectoryEntry_sp de = _lisp->create<DirectoryEntry_O>();
   de->setEntry(**(this->_CurrentIterator._value));
   return de;
@@ -426,7 +426,7 @@ void RecursiveDirectoryIterator_O::setupCurrentIterator() {
     this->_CurrentIterator._value = new std::filesystem::recursive_directory_iterator(this->_Path->getPath());
   }
   catch (std::filesystem::filesystem_error &err) {
-    SIMPLE_ERROR(BF("%s") % err.what());
+    SIMPLE_ERROR(("%s") , err.what());
   }
 }
 
@@ -451,10 +451,10 @@ T_sp RecursiveDirectoryIterator_O::currentObject() {
   _OF();
   ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
-    LOG(BF("The directory iteratory is done - returning nil"));
+    LOG("The directory iteratory is done - returning nil");
     return nil<DirectoryEntry_O>();
   }
-  LOG(BF("Returning the next directory entry"));
+  LOG("Returning the next directory entry");
   DirectoryEntry_sp de = _lisp->create<DirectoryEntry_O>();
   de->setEntry(**(this->_CurrentIterator._value));
   return de;
@@ -528,7 +528,7 @@ CL_DEFMETHOD bool FileStatus_O::isRegularFile() {
   try {
     return std::filesystem::is_regular_file(this->_FileStatus);
   } catch (...) {
-    SIMPLE_ERROR(BF("In %s std::filesystem signaled a c++ exception") % __FUNCTION__ );
+    SIMPLE_ERROR(("In %s std::filesystem signaled a c++ exception") , __FUNCTION__ );
   }
 }
 
@@ -538,7 +538,7 @@ CL_DEFMETHOD bool FileStatus_O::isDirectory() {
   try {
     return std::filesystem::is_directory(this->_FileStatus);
   } catch (...) {
-    SIMPLE_ERROR(BF("In %s std::filesystem signaled a c++ exception") % __FUNCTION__ );
+    SIMPLE_ERROR(("In %s std::filesystem signaled a c++ exception") , __FUNCTION__ );
   }
 }
 CL_LISPIFY_NAME("isSymlink");
@@ -547,7 +547,7 @@ CL_DEFMETHOD bool FileStatus_O::isSymlink() {
   try {
     return std::filesystem::is_symlink(this->_FileStatus);
   } catch (...) {
-    SIMPLE_ERROR(BF("In %s std::filesystem signaled a c++ exception") % __FUNCTION__ );
+    SIMPLE_ERROR(("In %s std::filesystem signaled a c++ exception") , __FUNCTION__ );
   }    
 }
 CL_LISPIFY_NAME("isOther");
@@ -556,7 +556,7 @@ CL_DEFMETHOD bool FileStatus_O::isOther() {
   try {
   return std::filesystem::is_other(this->_FileStatus);
   } catch (...) {
-    SIMPLE_ERROR(BF("In %s std::filesystem signaled a c++ exception") % __FUNCTION__ );
+    SIMPLE_ERROR(("In %s std::filesystem signaled a c++ exception") , __FUNCTION__ );
   }
 }
 
@@ -598,11 +598,11 @@ Pathname_sp homedirPathname(T_sp tuser) {
 #ifdef HAVE_PWD_H
     pwent = getpwnam(p);
     if (pwent == NULL) {
-      SIMPLE_ERROR(BF("Unknown user %s.") % p);
+      SIMPLE_ERROR(("Unknown user %s.") , p);
     }
     namestring = SimpleBaseString_O::make(pwent->pw_dir);
 #endif
-    SIMPLE_ERROR(BF("Unknown user %s.") % p);
+    SIMPLE_ERROR(("Unknown user %s.") , p);
   } else if ((h = getenv("HOME"))) {
     namestring = SimpleBaseString_O::make(h);
 #if 0 //defined(CLASP_MS_WINDOWS_HOST)
@@ -616,7 +616,7 @@ Pathname_sp homedirPathname(T_sp tuser) {
     namestring = SimpleBaseString_O::make("/");
   }
   if ((*namestring)[0] == '~') {
-    SIMPLE_ERROR(BF("Not a valid home pathname %s") % _rep_(namestring));
+    SIMPLE_ERROR(("Not a valid home pathname %s") , _rep_(namestring));
   }
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->rowMajorAref(i - 1).unsafe_character()))

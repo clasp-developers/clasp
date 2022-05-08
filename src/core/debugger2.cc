@@ -15,19 +15,19 @@
 namespace core {
 
 static void debugger_helpmsg() {
-  write_bf_stream(BF(":?      - help\n"));
-  write_bf_stream(BF(":h      - help\n"));
-  write_bf_stream(BF(":e sexp - evaluate sexp\n"));
-  write_bf_stream(BF("          (A sexp by itself also works)\n"));
-  write_bf_stream(BF(":c sexp - continue - return values of evaluating sexp\n"));
-  // write_bf_stream(BF(":v      - list local environment\n")); // TODO
-  write_bf_stream(BF(":x      - print current expression\n"));
-  write_bf_stream(BF(":b      - print backtrace\n"));
-  write_bf_stream(BF(":u      - goto caller frame\n"));
-  write_bf_stream(BF(":d      - goto callee frame\n"));
-  // write_bf_stream(BF(":D      - dissasemble current function\n")); // TODO?
-  write_bf_stream(BF(":a      - abort\n"));
-  write_bf_stream(BF(":g ##   - jump to frame ##\n"));
+  write_bf_stream(fmt::sprintf(":?      - help\n"));
+  write_bf_stream(fmt::sprintf(":h      - help\n"));
+  write_bf_stream(fmt::sprintf(":e sexp - evaluate sexp\n"));
+  write_bf_stream(fmt::sprintf("          (A sexp by itself also works)\n"));
+  write_bf_stream(fmt::sprintf(":c sexp - continue - return values of evaluating sexp\n"));
+  // write_bf_stream(fmt::sprintf(":v      - list local environment\n")); // TODO
+  write_bf_stream(fmt::sprintf(":x      - print current expression\n"));
+  write_bf_stream(fmt::sprintf(":b      - print backtrace\n"));
+  write_bf_stream(fmt::sprintf(":u      - goto caller frame\n"));
+  write_bf_stream(fmt::sprintf(":d      - goto callee frame\n"));
+  // write_bf_stream(fmt::sprintf(":D      - dissasemble current function\n")); // TODO?
+  write_bf_stream(fmt::sprintf(":a      - abort\n"));
+  write_bf_stream(fmt::sprintf(":g ##   - jump to frame ##\n"));
 
 }
 
@@ -133,9 +133,9 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
     case 'g': { // go to frame
       int new_frame_index;
       if (debugger_parse_integer(eline, new_frame_index)) {
-        write_bf_stream(BF("Switching to frame: %d\n") % new_frame_index);
+        write_bf_stream(fmt::sprintf("Switching to frame: %d\n" , new_frame_index));
         cur = debugger_frame_rel(cur, new_frame_index - frame_index, frame_index);
-      } else write_bf_stream(BF("You must provide a frame index\n"));
+      } else write_bf_stream(fmt::sprintf("You must provide a frame index\n"));
       break;
     }
     case 'u': // up
@@ -155,7 +155,7 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
     case 'c': // continue with given result
         if (can_continue)
           return _lisp->readEvalPrintString(eline, nil<T_O>(), true);
-        else write_bf_stream(BF("Cannot continue from this error\n"));
+        else write_bf_stream(fmt::sprintf("Cannot continue from this error\n"));
         break;
     case 'e': // evaluate
         try { _lisp->readEvalPrintString(eline, nil<T_O>(), true); }
@@ -163,7 +163,7 @@ T_mv early_debug_inner(DebuggerFrame_sp bot, bool can_continue) {
         // return here.
         catch (DebuggerSaysAbortToRepl &err) {}
         break;
-    default: write_bf_stream(BF("Unknown command[%c] - try ':?'\n") % cmd);
+    default: write_bf_stream(fmt::sprintf("Unknown command[%c] - try ':?'\n" , cmd));
     } // cmd switch
   } // read eval print loop
 }
@@ -187,8 +187,7 @@ T_mv early_debug(T_sp condition, bool can_continue) {
     printf("The low-level debugger was recursively entered too many times - exiting\n");
   }
   if (condition.notnilp()) {
-    write_bf_stream(BF("Debugger entered with condition: %s\n")
-                    % _rep_(condition));
+    write_bf_stream(fmt::sprintf("Debugger entered with condition: %s\n", _rep_(condition)));
   }
   return call_with_frame([=](auto frame){return early_debug_inner(frame, can_continue);});
 }

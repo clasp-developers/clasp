@@ -1217,7 +1217,7 @@ void ~a::expose_to_clasp() {
   (format stream "obj_finalize_STAMPWTAG_~a:
 {
     // stamp value ~a
-    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));
+    THROW_HARD_ERROR(\"Should never finalize ~a\");
 }~%"
           (build-enum-name (class-key% kind)) (stamp-value kind)
           (class-key% kind)))
@@ -1284,7 +1284,7 @@ static void* OBJ_FINALIZE_table[] = {~%")
   (format stream "obj_deallocate_unmanaged_instance_STAMPWTAG_~a:
 {
     // do nothing stamp value ~a
-    THROW_HARD_ERROR(BF(\"Should never deallocate object ~a\"));
+    THROW_HARD_ERROR(\"Should never deallocate object ~a\");
 }~%"
           (build-enum-name (class-key% kind)) (stamp-value kind)
           (class-key% kind)))

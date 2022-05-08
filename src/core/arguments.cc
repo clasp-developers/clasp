@@ -49,7 +49,7 @@ List_sp Argument::classified() const {
   } else if (this->_ArgTargetFrameIndex == UNDEFINED_TARGET) {
     return ((nil<List_V>()));
   }
-  SIMPLE_ERROR(BF("Illegal target"));
+  SIMPLE_ERROR(("Illegal target"));
 }
 
 LambdaListHandler_sp Argument::lambdaListHandler() const {
@@ -174,7 +174,7 @@ void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, 
 
 void ValueEnvironmentDynamicScopeManager::va_rest_binding(const Argument &argument) {
   if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
-    SIMPLE_ERROR(BF("You cannot bind &VA-REST argument to a special"));
+    SIMPLE_ERROR(("You cannot bind &VA-REST argument to a special"));
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
   Vaslist_sp valist(&this->valist());
@@ -195,7 +195,7 @@ void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp 
     this->new_special_binding(sym,val);
     return;
   }
-  SIMPLE_ERROR(BF("Illegal classified type: %s\n") % _rep_(classified));
+  SIMPLE_ERROR(("Illegal classified type: %s\n") , _rep_(classified));
 }
 
 void ValueEnvironmentDynamicScopeManager::new_special(List_sp classified) {
@@ -217,7 +217,7 @@ void StackFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp v
 
 void StackFrameDynamicScopeManager::va_rest_binding(const Argument &argument) {
   if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
-    SIMPLE_ERROR(BF("You cannot bind &VA-REST argument to a special"));
+    SIMPLE_ERROR(("You cannot bind &VA-REST argument to a special"));
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
   Vaslist_sp valist(&this->valist());

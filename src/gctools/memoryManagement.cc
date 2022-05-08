@@ -533,18 +533,12 @@ int handleFatalCondition() {
     // Do nothing
     printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
   } catch (core::CatchThrow &ee) {
-    _lisp->print(BF("%s:%d Uncaught THROW tag[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW") % __FILE__ % __LINE__ % ee.getTag());
+    core::write_bf_stream(fmt::sprintf("%s:%d Uncaught THROW tag[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW", __FILE__ , __LINE__ , ee.getTag()));
   } catch (core::Unwind &ee) {
-    _lisp->print(BF("At %s:%d - Unwind caught frame: %d index: %d") % __FILE__ % __LINE__ % ee.getFrame() % ee.index());
+    core::write_bf_stream(fmt::sprintf("At %s:%d - Unwind caught frame: %p index: %d", __FILE__ , __LINE__ , (void*)ee.getFrame() , ee.index()));
   } catch (HardError &ee) {
-    _lisp->print(BF("At %s:%d - HardError caught: %s") % __FILE__ % __LINE__ % ee.message());
+    core::write_bf_stream(fmt::sprintf("At %s:%d - HardError caught: %s", __FILE__ , __LINE__ , ee.message()));
   }
-#if 0
-  catch ( ... )
-  {
-    _lisp->print(BF("Unknown exception in main - everything should be caught lower down %s:%d") % __FILE__ % __LINE__);
-  }
-#endif
   return exitCode;
 }
 

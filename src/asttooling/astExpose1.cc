@@ -137,7 +137,7 @@ core::T_sp cast_decl(clang::Decl *d) {
   if (T *x = dyn_cast<T>(d)) {
     return clbind::Wrapper<T, T *>::make_wrapper(x, reg::registered_class<T>::id);
   }
-  SIMPLE_ERROR(BF("Could not cast Decl to known Decl"));
+  SIMPLE_ERROR(("Could not cast Decl to known Decl"));
 }
 
 template <typename T>
@@ -150,7 +150,7 @@ core::T_sp mostDerivedDecl(const clang::Decl *cd) {
   if (!cd) return nil<core::T_O>();
   clang::Decl *d = const_cast<clang::Decl *>(cd);
   if (!d) {
-    SIMPLE_ERROR(BF("Could not downcast clang::Decl @%p to most derived object") % (void *)(cd));
+    SIMPLE_ERROR(("Could not downcast clang::Decl @%p to most derived object") , (void *)(cd));
   }
   switch (d->getKind()) {
 #undef NAMED
@@ -166,14 +166,14 @@ core::T_sp mostDerivedDecl(const clang::Decl *cd) {
   default:
     break;
   };
-  SIMPLE_ERROR(BF("Could not cast Decl"));
+  SIMPLE_ERROR(("Could not cast Decl"));
 };
 
 core::T_sp mostDerivedStmt(const clang::Stmt *x) {
   if (!x) return nil<core::T_O>();
   clang::Stmt *s = const_cast<clang::Stmt *>(x);
   if (!s) {
-    SIMPLE_ERROR(BF("Could not downcast clang::Stmt @%p to most derived object") % (void *)(x));
+    SIMPLE_ERROR(("Could not downcast clang::Stmt @%p to most derived object") , (void *)(x));
   }
 
 #define STMT(_C_,_ignore_)                     \
@@ -189,9 +189,9 @@ core::T_sp mostDerivedStmt(const clang::Stmt *x) {
 #undef ABSTRACT_STMT
 #undef STMT
   default:
-    SIMPLE_ERROR(BF("Add a case for missing LLVM classes"));
+    SIMPLE_ERROR(("Add a case for missing LLVM classes"));
   }
-  SIMPLE_ERROR(BF("Could not cast Stmt"));
+  SIMPLE_ERROR(("Could not cast Stmt"));
 };
 
 template <typename T>
@@ -204,7 +204,7 @@ core::T_sp mostDerivedType(const clang::Type *x) {
   if (!x) return nil<core::T_O>();
   clang::Type *s = const_cast<clang::Type *>(x);
   if (!s) {
-    SIMPLE_ERROR(BF("Could not downcast clang::Type @%p to most derived object") % (void *)(x));
+    SIMPLE_ERROR(("Could not downcast clang::Type @%p to most derived object") , (void *)(x));
   }
   switch (s->getTypeClass()) {
     //
@@ -232,7 +232,7 @@ core::T_sp mostDerivedType(const clang::Type *x) {
   llvm::raw_string_ostream out(buf);
   clang::ASTDumper dumper(out,false);
   dumper.Visit(s);
-  SIMPLE_ERROR(BF("astExpose.cc>mostDerivedType. Could not cast clang::Type s->getTypeClass()-> %d. typename: %s ") % s->getTypeClass() % out.str() );
+  SIMPLE_ERROR(("astExpose.cc>mostDerivedType. Could not cast clang::Type s->getTypeClass()-> %d. typename: %s ") , s->getTypeClass() , out.str() );
 }
 
 
@@ -272,7 +272,7 @@ CL_DEFUN void cast__dump(core::T_sp obj, core::T_sp stream) {
     clang::ASTDumper P(ostream, /*ShowColors=*/false);
     P.Visit(*qtype);
   } else {
-    SIMPLE_ERROR(BF("%s:%d Handle unboxing of other node types in cast__dump") % __FILE__ % __LINE__);
+    SIMPLE_ERROR(("%s:%d Handle unboxing of other node types in cast__dump") , __FILE__ , __LINE__);
   }
   core::clasp_write_string(ostream.str().str(),stream);
 }
@@ -380,7 +380,7 @@ clang::QualType getPointeeType(clang::Type* type) {
   } else if (auto* mptr = llvm::dyn_cast<clang::MemberPointerType>(type) ) {
     return mptr->getPointeeType();
   }
-  SIMPLE_ERROR(BF("getPointeeType only accepts PointerType and MemberPointerType"));
+  SIMPLE_ERROR(("getPointeeType only accepts PointerType and MemberPointerType"));
 }
 
 

@@ -31041,7 +31041,7 @@ obj_finalize_STAMPWTAG_core__MDArray_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1515
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_int16_t_O:
 {
@@ -31056,7 +31056,7 @@ obj_finalize_STAMPWTAG_core__MDArray_int16_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1523
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_int8_t_O:
 {
@@ -31071,7 +31071,7 @@ obj_finalize_STAMPWTAG_core__MDArray_int8_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1531
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_int32_t_O:
 {
@@ -31086,7 +31086,7 @@ obj_finalize_STAMPWTAG_core__MDArray_int32_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1539
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_byte4_t_O:
 {
@@ -31101,7 +31101,7 @@ obj_finalize_STAMPWTAG_core__MDArray_byte4_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_:
 {
      // do nothing stamp value 1547
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_float_O:
 {
@@ -31116,7 +31116,7 @@ obj_finalize_STAMPWTAG_core__MDArray_float_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1555
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_size_t_O:
 {
@@ -31131,7 +31131,7 @@ obj_finalize_STAMPWTAG_core__MDArray_size_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1563
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_byte8_t_O:
 {
@@ -31146,7 +31146,7 @@ obj_finalize_STAMPWTAG_core__MDArray_byte8_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1571
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_int2_t_O:
 {
@@ -31161,7 +31161,7 @@ obj_finalize_STAMPWTAG_core__MDArray_int2_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_:
 {
      // do nothing stamp value 1579
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_fixnum_O:
 {
@@ -31176,7 +31176,7 @@ obj_finalize_STAMPWTAG_core__MDArray_fixnum_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_:
 {
      // do nothing stamp value 1587
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArrayBaseChar_O:
 {
@@ -31191,7 +31191,7 @@ obj_finalize_STAMPWTAG_core__MDArrayBaseChar_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1595
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_byte64_t_O:
 {
@@ -31206,7 +31206,7 @@ obj_finalize_STAMPWTAG_core__MDArray_byte64_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_geom__MDArrayCoordinate_O_geom__SimpleMDArrayCoordinate_O_geom__SimpleVectorCoordinate_O_core__MDArray_O_:
 {
      // do nothing stamp value 1603
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<geom::MDArrayCoordinate_O,geom::SimpleMDArrayCoordinate_O,geom::SimpleVectorCoordinate_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<geom::MDArrayCoordinate_O,geom::SimpleMDArrayCoordinate_O,geom::SimpleVectorCoordinate_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_geom__MDArrayCoordinate_O:
 {
@@ -31221,7 +31221,7 @@ obj_finalize_STAMPWTAG_geom__MDArrayCoordinate_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_:
 {
      // do nothing stamp value 1611
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArrayT_O:
 {
@@ -31246,7 +31246,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1623
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_int8_t_O:
 {
@@ -31261,7 +31261,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_int8_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1631
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_byte32_t_O:
 {
@@ -31276,7 +31276,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_byte32_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1639
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_int2_t_O:
 {
@@ -31291,7 +31291,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_int2_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1647
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_byte4_t_O:
 {
@@ -31306,7 +31306,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_byte4_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1655
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_int32_t_O:
 {
@@ -31321,7 +31321,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_int32_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1663
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_float_O:
 {
@@ -31336,7 +31336,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_float_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1671
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_int16_t_O:
 {
@@ -31351,7 +31351,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_int16_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1679
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_size_t_O:
 {
@@ -31366,7 +31366,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_size_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1687
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArrayCharacter_O:
 {
@@ -31381,7 +31381,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArrayCharacter_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1695
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_byte2_t_O:
 {
@@ -31396,7 +31396,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_byte2_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1703
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_byte16_t_O:
 {
@@ -31411,7 +31411,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_byte16_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1711
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArrayBaseChar_O:
 {
@@ -31426,7 +31426,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArrayBaseChar_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1719
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_byte64_t_O:
 {
@@ -31441,7 +31441,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_byte64_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1727
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_double_O:
 {
@@ -31456,7 +31456,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_double_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1735
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArrayT_O:
 {
@@ -31471,7 +31471,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArrayT_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1743
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_int4_t_O:
 {
@@ -31486,7 +31486,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_int4_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_geom__SimpleMDArrayCoordinate_O_geom__SimpleVectorCoordinate_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1751
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<geom::SimpleMDArrayCoordinate_O,geom::SimpleVectorCoordinate_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<geom::SimpleMDArrayCoordinate_O,geom::SimpleVectorCoordinate_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_geom__SimpleMDArrayCoordinate_O:
 {
@@ -31501,7 +31501,7 @@ obj_finalize_STAMPWTAG_geom__SimpleMDArrayCoordinate_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1759
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_fixnum_O:
 {
@@ -31516,7 +31516,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_fixnum_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1767
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArrayBit_O:
 {
@@ -31531,7 +31531,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArrayBit_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1775
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_byte8_t_O:
 {
@@ -31546,7 +31546,7 @@ obj_finalize_STAMPWTAG_core__SimpleMDArray_byte8_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1783
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleMDArray_int64_t_O:
 {
@@ -31571,7 +31571,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1795
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_double_O:
 {
@@ -31586,7 +31586,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_double_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1803
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_int8_t_O:
 {
@@ -31601,7 +31601,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_int8_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1811
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_T_O:
 {
@@ -31616,7 +31616,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_T_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1819
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_int32_t_O:
 {
@@ -31631,7 +31631,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_int32_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1827
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_byte16_t_O:
 {
@@ -31646,7 +31646,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_byte16_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_geom__ComplexVectorCoordinate_O_geom__SimpleVectorCoordinate_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1835
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<geom::ComplexVectorCoordinate_O,geom::SimpleVectorCoordinate_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<geom::ComplexVectorCoordinate_O,geom::SimpleVectorCoordinate_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_geom__ComplexVectorCoordinate_O:
 {
@@ -31661,7 +31661,7 @@ obj_finalize_STAMPWTAG_geom__ComplexVectorCoordinate_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1843
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_byte4_t_O:
 {
@@ -31676,7 +31676,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_byte4_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1851
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_byte64_t_O:
 {
@@ -31691,7 +31691,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_byte64_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1859
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_int2_t_O:
 {
@@ -31706,7 +31706,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_int2_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1867
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_float_O:
 {
@@ -31721,7 +31721,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_float_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1875
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_int16_t_O:
 {
@@ -31736,7 +31736,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_int16_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1883
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_int4_t_O:
 {
@@ -31751,7 +31751,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_int4_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1891
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_size_t_O:
 {
@@ -31766,7 +31766,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_size_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1899
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_byte2_t_O:
 {
@@ -31781,7 +31781,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_byte2_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1907
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_byte8_t_O:
 {
@@ -31796,7 +31796,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_byte8_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1915
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_byte32_t_O:
 {
@@ -31811,7 +31811,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_byte32_t_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1923
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__BitVectorNs_O:
 {
@@ -31836,7 +31836,7 @@ obj_finalize_STAMPWTAG_core__StrNs_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_:
 {
      // do nothing stamp value 1935
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>");
 }
 obj_finalize_STAMPWTAG_core__Str8Ns_O:
 {
@@ -31851,7 +31851,7 @@ obj_finalize_STAMPWTAG_core__Str8Ns_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_:
 {
      // do nothing stamp value 1943
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>");
 }
 obj_finalize_STAMPWTAG_core__StrWNs_O:
 {
@@ -31866,7 +31866,7 @@ obj_finalize_STAMPWTAG_core__StrWNs_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1951
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_fixnum_O:
 {
@@ -31881,7 +31881,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_fixnum_O:
 obj_finalize_STAMPWTAG_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1959
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>");
 }
 obj_finalize_STAMPWTAG_core__ComplexVector_int64_t_O:
 {
@@ -31896,7 +31896,7 @@ obj_finalize_STAMPWTAG_core__ComplexVector_int64_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1967
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_int64_t_O:
 {
@@ -31911,7 +31911,7 @@ obj_finalize_STAMPWTAG_core__MDArray_int64_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1975
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_byte32_t_O:
 {
@@ -31926,7 +31926,7 @@ obj_finalize_STAMPWTAG_core__MDArray_byte32_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1983
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_byte2_t_O:
 {
@@ -31941,7 +31941,7 @@ obj_finalize_STAMPWTAG_core__MDArray_byte2_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_:
 {
      // do nothing stamp value 1991
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArrayCharacter_O:
 {
@@ -31956,7 +31956,7 @@ obj_finalize_STAMPWTAG_core__MDArrayCharacter_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_:
 {
      // do nothing stamp value 1999
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArrayBit_O:
 {
@@ -31971,7 +31971,7 @@ obj_finalize_STAMPWTAG_core__MDArrayBit_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 2007
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_byte16_t_O:
 {
@@ -31986,7 +31986,7 @@ obj_finalize_STAMPWTAG_core__MDArray_byte16_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 2015
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_int4_t_O:
 {
@@ -32001,7 +32001,7 @@ obj_finalize_STAMPWTAG_core__MDArray_int4_t_O:
 obj_finalize_STAMPWTAG_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_:
 {
      // do nothing stamp value 2023
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>");
 }
 obj_finalize_STAMPWTAG_core__MDArray_double_O:
 {
@@ -32026,7 +32026,7 @@ obj_finalize_STAMPWTAG_core__AbstractSimpleVector_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2035
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_byte32_t_O:
 {
@@ -32041,7 +32041,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_byte32_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2043
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_size_t_O:
 {
@@ -32056,7 +32056,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_size_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2051
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_double_O:
 {
@@ -32071,7 +32071,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_double_O:
 obj_finalize_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_:
 {
      // do nothing stamp value 2059
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_int2_t_O:
 {
@@ -32086,7 +32086,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_int2_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2067
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_int64_t_O:
 {
@@ -32101,7 +32101,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_int64_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2075
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_int8_t_O:
 {
@@ -32116,7 +32116,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_int8_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_:
 {
      // do nothing stamp value 2083
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_byte4_t_O:
 {
@@ -32131,7 +32131,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_byte4_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_geom__SimpleVectorCoordinate_O_Vector3_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2091
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<geom::SimpleVectorCoordinate_O,Vector3,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<geom::SimpleVectorCoordinate_O,Vector3,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_geom__SimpleVectorCoordinate_O:
 {
@@ -32156,7 +32156,7 @@ obj_finalize_STAMPWTAG_core__SimpleString_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_:
 {
      // do nothing stamp value 2103
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleBaseString_O:
 {
@@ -32171,7 +32171,7 @@ obj_finalize_STAMPWTAG_core__SimpleBaseString_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleCharacterString_O_unsigned_int_core__SimpleString_O_:
 {
      // do nothing stamp value 2111
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleCharacterString_O,unsigned int,core::SimpleString_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleCharacterString_O,unsigned int,core::SimpleString_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleCharacterString_O:
 {
@@ -32186,7 +32186,7 @@ obj_finalize_STAMPWTAG_core__SimpleCharacterString_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2119
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_int16_t_O:
 {
@@ -32201,7 +32201,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_int16_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2127
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_byte16_t_O:
 {
@@ -32216,7 +32216,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_byte16_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_:
 {
      // do nothing stamp value 2135
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>");
 }
 obj_finalize_STAMPWTAG_core__SimpleBitVector_O:
 {
@@ -32231,7 +32231,7 @@ obj_finalize_STAMPWTAG_core__SimpleBitVector_O:
 obj_finalize_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_:
 {
      // do nothing stamp value 2143
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_int4_t_O:
 {
@@ -32246,7 +32246,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_int4_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2151
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_byte64_t_O:
 {
@@ -32261,7 +32261,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_byte64_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2159
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_fixnum_O:
 {
@@ -32276,7 +32276,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_fixnum_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2167
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_float_O:
 {
@@ -32291,7 +32291,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_float_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2175
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_O:
 {
@@ -32306,7 +32306,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2183
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_byte8_t_O:
 {
@@ -32321,7 +32321,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_byte8_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_:
 {
      // do nothing stamp value 2191
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_byte2_t_O:
 {
@@ -32336,7 +32336,7 @@ obj_finalize_STAMPWTAG_core__SimpleVector_byte2_t_O:
 obj_finalize_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2199
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>"));
+    THROW_HARD_ERROR("Should never finalize object core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>");
 }
 obj_finalize_STAMPWTAG_core__SimpleVector_int32_t_O:
 {
@@ -33721,638 +33721,638 @@ obj_finalize_STAMPWTAG_core__Lisp_O:
 obj_finalize_STAMPWTAG_gctools__GCContainer:
 {
      // do nothing stamp value 2755
-    THROW_HARD_ERROR(BF("Should never finalize object gctools::GCContainer"));
+    THROW_HARD_ERROR("Should never finalize object gctools::GCContainer");
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__BackboneDependentRotamerSet_O__:
 {
      // stamp value 2759
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::BackboneDependentRotamerSet_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::BackboneDependentRotamerSet_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__AtomicInfo_:
 {
      // stamp value 2763
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::AtomicInfo>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::AtomicInfo>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfoNode_O__:
 {
      // stamp value 2767
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfoNode_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfoNode_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_kinematics__Joint_O____:
 {
      // stamp value 2771
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyChiralRestraint_:
 {
      // stamp value 2775
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyChiralRestraint>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyChiralRestraint>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondToAtomTest_O__:
 {
      // stamp value 2779
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondToAtomTest_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondToAtomTest_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoConfiguration_O__:
 {
      // stamp value 2783
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_short_:
 {
      // stamp value 2787
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<short>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<short>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__:
 {
      // stamp value 2791
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_kinematics__Joint_O___:
 {
      // stamp value 2795
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_unsigned_long_:
 {
      // stamp value 2799
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<unsigned long>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<unsigned long>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__SmallOrderedSet_gctools__smart_ptr_chem__Atom_O___:
 {
      // stamp value 2803
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::SmallOrderedSet<gctools::smart_ptr<chem::Atom_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::SmallOrderedSet<gctools::smart_ptr<chem::Atom_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFTypeRule_O__:
 {
      // stamp value 2807
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFTypeRule_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFTypeRule_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_:
 {
      // stamp value 2811
-    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<4,0>"));
+    THROW_HARD_ERROR("Should never finalize gctools::GCBitUnitArray_moveable<4,0>");
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_:
 {
      // stamp value 2815
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolClassHolderPair>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<core::SymbolClassHolderPair>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___:
 {
      // stamp value 2819
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__FFNonbondCrossTerm_:
 {
      // stamp value 2823
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::FFNonbondCrossTerm>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::FFNonbondCrossTerm>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChainNode_O__:
 {
      // stamp value 2827
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChainNode_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChainNode_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedralRestraint_:
 {
      // stamp value 2831
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyDihedralRestraint>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyDihedralRestraint>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
      // stamp value 2835
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFNonbond_O__:
 {
      // stamp value 2839
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFNonbond_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFNonbond_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_char_:
 {
      // stamp value 2843
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned char>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<unsigned char>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Array_O___:
 {
      // stamp value 2847
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Array_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Array_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_int__:
 {
      // stamp value 2851
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<int>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<int>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___:
 {
      // stamp value 2855
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_:
 {
      // stamp value 2859
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
      // stamp value 2863
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAngle_:
 {
      // stamp value 2867
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAngle>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAngle>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__:
 {
      // stamp value 2871
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__:
 {
      // stamp value 2875
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__:
 {
      // stamp value 2879
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___:
 {
      // stamp value 2883
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__:
 {
      // stamp value 2887
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_:
 {
      // stamp value 2891
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::OptionalArgument>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<core::OptionalArgument>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__KeyEntry_:
 {
      // stamp value 2895
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::KeyEntry>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::KeyEntry>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_:
 {
      // stamp value 2899
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::KeywordArgument>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<core::KeywordArgument>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_chem__Stereoisomer_O___:
 {
      // stamp value 2903
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ReportBase_O__:
 {
      // stamp value 2907
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_Vector3_:
 {
      // stamp value 2911
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<Vector3>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<Vector3>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_:
 {
      // stamp value 2915
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAnchorRestraint>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAnchorRestraint>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__:
 {
      // stamp value 2919
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___:
 {
      // stamp value 2923
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__HybridizationInfo_:
 {
      // stamp value 2927
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::HybridizationInfo>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::HybridizationInfo>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__MonomerNode_O__:
 {
      // stamp value 2931
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::MonomerNode_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::MonomerNode_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__Residue_O___:
 {
      // stamp value 2935
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__:
 {
      // stamp value 2939
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_char_:
 {
      // stamp value 2943
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<char>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<char>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__:
 {
      // stamp value 2947
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__:
 {
      // stamp value 2951
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__:
 {
      // stamp value 2955
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_:
 {
      // stamp value 2959
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<clbind::detail::vertex>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<clbind::detail::vertex>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__:
 {
      // stamp value 2963
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___:
 {
      // stamp value 2967
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___:
 {
      // stamp value 2971
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__:
 {
      // stamp value 2975
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___:
 {
      // stamp value 2979
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__:
 {
      // stamp value 2983
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__:
 {
      // stamp value 2987
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_:
 {
      // stamp value 2991
-    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<2,0>"));
+    THROW_HARD_ERROR("Should never finalize gctools::GCBitUnitArray_moveable<2,0>");
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__:
 {
      // stamp value 2995
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__:
 {
      // stamp value 2999
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_:
 {
      // stamp value 3003
-    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<1,0>"));
+    THROW_HARD_ERROR("Should never finalize gctools::GCBitUnitArray_moveable<1,0>");
 }
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_:
 {
      // stamp value 3007
-    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<2,1>"));
+    THROW_HARD_ERROR("Should never finalize gctools::GCBitUnitArray_moveable<2,1>");
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__:
 {
      // stamp value 3011
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<char>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<char>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__:
 {
      // stamp value 3015
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_int_:
 {
      // stamp value 3019
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<int>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<int>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___:
 {
      // stamp value 3023
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__:
 {
      // stamp value 3027
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__:
 {
      // stamp value 3031
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_float_:
 {
      // stamp value 3035
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<float>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<float>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_:
 {
      // stamp value 3039
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<clbind::detail::edge>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<clbind::detail::edge>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__:
 {
      // stamp value 3043
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__:
 {
      // stamp value 3047
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___:
 {
      // stamp value 3051
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__T_O___:
 {
      // stamp value 3055
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<core::T_O *>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_:
 {
      // stamp value 3059
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyDihedral>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyDihedral>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___:
 {
      // stamp value 3063
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_:
 {
      // stamp value 3067
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned int>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<unsigned int>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__:
 {
      // stamp value 3071
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__:
 {
      // stamp value 3075
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_:
 {
      // stamp value 3079
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::RotamerAtom>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::RotamerAtom>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
      // stamp value 3083
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_double_:
 {
      // stamp value 3087
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<double>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<double>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__:
 {
      // stamp value 3091
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__:
 {
      // stamp value 3095
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___:
 {
      // stamp value 3099
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
      // stamp value 3103
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__:
 {
      // stamp value 3107
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<int,int>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<int,int>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_:
 {
      // stamp value 3111
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::AtomPdbRec>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::AtomPdbRec>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_:
 {
      // stamp value 3115
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergySketchStretch>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergySketchStretch>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_signed_char_:
 {
      // stamp value 3119
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<signed char>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<signed char>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_:
 {
      // stamp value 3123
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyOutOfZPlane>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyOutOfZPlane>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
      // stamp value 3127
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___:
 {
      // stamp value 3131
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__:
 {
      // stamp value 3135
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__:
 {
      // stamp value 3139
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_:
 {
      // stamp value 3143
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergySketchNonbond>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergySketchNonbond>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_:
 {
      // stamp value 3147
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::KeyValuePair>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<core::KeyValuePair>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
      // stamp value 3151
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__:
 {
      // stamp value 3155
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_:
 {
      // stamp value 3159
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::FixedNonbondRestraint>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::FixedNonbondRestraint>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__:
 {
      // stamp value 3163
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__:
 {
      // stamp value 3167
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___:
 {
      // stamp value 3171
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__:
 {
      // stamp value 3175
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_double_:
 {
      // stamp value 3179
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<double>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<double>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___:
 {
      // stamp value 3183
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___:
 {
      // stamp value 3187
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__:
 {
      // stamp value 3191
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__:
 {
      // stamp value 3195
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_:
 {
      // stamp value 3199
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::RequiredArgument>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<core::RequiredArgument>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__:
 {
      // stamp value 3203
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__:
 {
      // stamp value 3207
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_:
 {
      // stamp value 3211
-    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<4,1>"));
+    THROW_HARD_ERROR("Should never finalize gctools::GCBitUnitArray_moveable<4,1>");
 }
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_:
 {
      // stamp value 3215
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolStorage>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<core::SymbolStorage>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_:
 {
      // stamp value 3219
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___:
 {
      // stamp value 3223
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___:
 {
      // stamp value 3227
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__:
 {
      // stamp value 3231
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__:
 {
      // stamp value 3235
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___:
 {
      // stamp value 3239
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_:
 {
      // stamp value 3243
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__:
 {
      // stamp value 3247
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_:
 {
      // stamp value 3251
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned long>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<unsigned long>");}
 obj_finalize_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_:
 {
      // stamp value 3255
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArraySignedLength_moveable<unsigned long>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArraySignedLength_moveable<unsigned long>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_:
 {
      // stamp value 3259
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyNonbond>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyNonbond>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
      // stamp value 3263
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_:
 {
      // stamp value 3267
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::AtomInfo>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::AtomInfo>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__:
 {
      // stamp value 3271
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__:
 {
      // stamp value 3275
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_:
 {
      // stamp value 3279
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAtom>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAtom>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___:
 {
      // stamp value 3283
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_int_:
 {
      // stamp value 3287
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<int>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<int>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
      // stamp value 3291
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_:
 {
      // stamp value 3295
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_:
 {
      // stamp value 3299
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::ResidueOut>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::ResidueOut>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_long_:
 {
      // stamp value 3303
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<long>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<long>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__:
 {
      // stamp value 3307
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_:
 {
      // stamp value 3311
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::RigidBodyAtomInfo>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::RigidBodyAtomInfo>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___:
 {
      // stamp value 3315
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__:
 {
      // stamp value 3319
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
      // stamp value 3323
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_unsigned_int_:
 {
      // stamp value 3327
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<unsigned int>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<unsigned int>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_:
 {
      // stamp value 3331
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyStretch>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<chem::EnergyStretch>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__:
 {
      // stamp value 3335
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__:
 {
      // stamp value 3339
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____:
 {
      // stamp value 3343
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>");}
 obj_finalize_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_:
 {
      // stamp value 3347
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned short>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCArray_moveable<unsigned short>");}
 obj_finalize_STAMPWTAG_gctools__GCVector_moveable_float_:
 {
      // stamp value 3351
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<float>"));}
+    THROW_HARD_ERROR("Should never finalize containers gctools::GCVector_moveable<float>");}
 obj_finalize_STAMPWTAG_clang__FrontendAction:
 {
      // do nothing stamp value 3355
-    THROW_HARD_ERROR(BF("Should never finalize object clang::FrontendAction"));
+    THROW_HARD_ERROR("Should never finalize object clang::FrontendAction");
 }
 obj_finalize_STAMPWTAG_clang__ASTFrontendAction:
 {
      // do nothing stamp value 3359
-    THROW_HARD_ERROR(BF("Should never finalize object clang::ASTFrontendAction"));
+    THROW_HARD_ERROR("Should never finalize object clang::ASTFrontendAction");
 }
 obj_finalize_STAMPWTAG_clang__SyntaxOnlyAction:
 {
      // do nothing stamp value 3363
-    THROW_HARD_ERROR(BF("Should never finalize object clang::SyntaxOnlyAction"));
+    THROW_HARD_ERROR("Should never finalize object clang::SyntaxOnlyAction");
 }
 obj_finalize_STAMPWTAG_clang__tooling__ToolAction:
 {
      // do nothing stamp value 3367
-    THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::ToolAction"));
+    THROW_HARD_ERROR("Should never finalize object clang::tooling::ToolAction");
 }
 obj_finalize_STAMPWTAG_clang__tooling__FrontendActionFactory:
 {
      // do nothing stamp value 3371
-    THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::FrontendActionFactory"));
+    THROW_HARD_ERROR("Should never finalize object clang::tooling::FrontendActionFactory");
 }
 obj_finalize_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback:
 {
      // do nothing stamp value 3375
-    THROW_HARD_ERROR(BF("Should never finalize object clang::ast_matchers::MatchFinder::MatchCallback"));
+    THROW_HARD_ERROR("Should never finalize object clang::ast_matchers::MatchFinder::MatchCallback");
 }
 #endif // defined(GC_OBJ_FINALIZE)
 #if defined(GC_OBJ_FINALIZE_HELPERS)
@@ -37844,7 +37844,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1515
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int16_t_O:
 {
@@ -37856,7 +37856,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int16_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1523
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int8_t_O:
 {
@@ -37868,7 +37868,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int8_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1531
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int32_t_O:
 {
@@ -37880,7 +37880,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int32_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1539
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte4_t_O:
 {
@@ -37892,7 +37892,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte4_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_:
 {
      // do nothing stamp value 1547
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_float_O:
 {
@@ -37904,7 +37904,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_float_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1555
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_size_t_O:
 {
@@ -37916,7 +37916,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_size_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1563
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte8_t_O:
 {
@@ -37928,7 +37928,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte8_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1571
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int2_t_O:
 {
@@ -37940,7 +37940,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int2_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_:
 {
      // do nothing stamp value 1579
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_fixnum_O:
 {
@@ -37952,7 +37952,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_fixnum_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_:
 {
      // do nothing stamp value 1587
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArrayBaseChar_O:
 {
@@ -37964,7 +37964,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArrayBaseChar_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1595
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte64_t_O:
 {
@@ -37976,7 +37976,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte64_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_geom__MDArrayCoordinate_O_geom__SimpleMDArrayCoordinate_O_geom__SimpleVectorCoordinate_O_core__MDArray_O_:
 {
      // do nothing stamp value 1603
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<geom::MDArrayCoordinate_O,geom::SimpleMDArrayCoordinate_O,geom::SimpleVectorCoordinate_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<geom::MDArrayCoordinate_O,geom::SimpleMDArrayCoordinate_O,geom::SimpleVectorCoordinate_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_geom__MDArrayCoordinate_O:
 {
@@ -37988,7 +37988,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_geom__MDArrayCoordinate_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_:
 {
      // do nothing stamp value 1611
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArrayT_O:
 {
@@ -38007,7 +38007,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1623
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int8_t_O:
 {
@@ -38019,7 +38019,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int8_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1631
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte32_t_O:
 {
@@ -38031,7 +38031,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte32_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1639
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int2_t_O:
 {
@@ -38043,7 +38043,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int2_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1647
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte4_t_O:
 {
@@ -38055,7 +38055,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte4_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1655
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int32_t_O:
 {
@@ -38067,7 +38067,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int32_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1663
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_float_O:
 {
@@ -38079,7 +38079,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_float_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1671
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int16_t_O:
 {
@@ -38091,7 +38091,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int16_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1679
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_size_t_O:
 {
@@ -38103,7 +38103,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_size_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1687
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArrayCharacter_O:
 {
@@ -38115,7 +38115,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArrayCharacter_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1695
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte2_t_O:
 {
@@ -38127,7 +38127,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte2_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1703
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte16_t_O:
 {
@@ -38139,7 +38139,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte16_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1711
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArrayBaseChar_O:
 {
@@ -38151,7 +38151,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArrayBaseChar_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1719
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte64_t_O:
 {
@@ -38163,7 +38163,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte64_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1727
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_double_O:
 {
@@ -38175,7 +38175,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_double_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1735
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArrayT_O:
 {
@@ -38187,7 +38187,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArrayT_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1743
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int4_t_O:
 {
@@ -38199,7 +38199,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int4_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_geom__SimpleMDArrayCoordinate_O_geom__SimpleVectorCoordinate_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1751
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<geom::SimpleMDArrayCoordinate_O,geom::SimpleVectorCoordinate_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<geom::SimpleMDArrayCoordinate_O,geom::SimpleVectorCoordinate_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_geom__SimpleMDArrayCoordinate_O:
 {
@@ -38211,7 +38211,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_geom__SimpleMDArrayCoordinate_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1759
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_fixnum_O:
 {
@@ -38223,7 +38223,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_fixnum_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1767
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArrayBit_O:
 {
@@ -38235,7 +38235,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArrayBit_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1775
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte8_t_O:
 {
@@ -38247,7 +38247,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_byte8_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_:
 {
      // do nothing stamp value 1783
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleMDArray_int64_t_O:
 {
@@ -38266,7 +38266,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1795
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_double_O:
 {
@@ -38278,7 +38278,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_double_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1803
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int8_t_O:
 {
@@ -38290,7 +38290,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int8_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1811
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_T_O:
 {
@@ -38302,7 +38302,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_T_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1819
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int32_t_O:
 {
@@ -38314,7 +38314,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int32_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1827
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte16_t_O:
 {
@@ -38326,7 +38326,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte16_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_geom__ComplexVectorCoordinate_O_geom__SimpleVectorCoordinate_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1835
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<geom::ComplexVectorCoordinate_O,geom::SimpleVectorCoordinate_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<geom::ComplexVectorCoordinate_O,geom::SimpleVectorCoordinate_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_geom__ComplexVectorCoordinate_O:
 {
@@ -38338,7 +38338,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_geom__ComplexVectorCoordinate_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1843
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte4_t_O:
 {
@@ -38350,7 +38350,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte4_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1851
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte64_t_O:
 {
@@ -38362,7 +38362,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte64_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1859
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int2_t_O:
 {
@@ -38374,7 +38374,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int2_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1867
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_float_O:
 {
@@ -38386,7 +38386,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_float_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1875
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int16_t_O:
 {
@@ -38398,7 +38398,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int16_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1883
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int4_t_O:
 {
@@ -38410,7 +38410,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int4_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1891
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_size_t_O:
 {
@@ -38422,7 +38422,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_size_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1899
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte2_t_O:
 {
@@ -38434,7 +38434,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte2_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1907
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte8_t_O:
 {
@@ -38446,7 +38446,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte8_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1915
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte32_t_O:
 {
@@ -38458,7 +38458,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_byte32_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1923
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>"));
+    THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__BitVectorNs_O:
 {
@@ -38477,7 +38477,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__StrNs_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_:
 {
      // do nothing stamp value 1935
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__Str8Ns_O:
 {
@@ -38489,7 +38489,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__Str8Ns_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_:
 {
      // do nothing stamp value 1943
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__StrWNs_O:
 {
@@ -38501,7 +38501,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__StrWNs_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1951
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_fixnum_O:
 {
@@ -38513,7 +38513,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_fixnum_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_:
 {
      // do nothing stamp value 1959
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int64_t_O:
 {
@@ -38525,7 +38525,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__ComplexVector_int64_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1967
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int64_t_O:
 {
@@ -38537,7 +38537,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int64_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1975
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte32_t_O:
 {
@@ -38549,7 +38549,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte32_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 1983
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte2_t_O:
 {
@@ -38561,7 +38561,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte2_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_:
 {
      // do nothing stamp value 1991
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArrayCharacter_O:
 {
@@ -38573,7 +38573,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArrayCharacter_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_:
 {
      // do nothing stamp value 1999
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArrayBit_O:
 {
@@ -38585,7 +38585,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArrayBit_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 2007
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte16_t_O:
 {
@@ -38597,7 +38597,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_byte16_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_:
 {
      // do nothing stamp value 2015
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int4_t_O:
 {
@@ -38609,7 +38609,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_int4_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_:
 {
      // do nothing stamp value 2023
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__MDArray_double_O:
 {
@@ -38628,7 +38628,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__AbstractSimpleVector_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2035
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte32_t_O:
 {
@@ -38640,7 +38640,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte32_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2043
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_size_t_O:
 {
@@ -38652,7 +38652,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_size_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2051
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_double_O:
 {
@@ -38664,7 +38664,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_double_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_:
 {
      // do nothing stamp value 2059
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int2_t_O:
 {
@@ -38676,7 +38676,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int2_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2067
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int64_t_O:
 {
@@ -38688,7 +38688,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int64_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2075
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int8_t_O:
 {
@@ -38700,7 +38700,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int8_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_:
 {
      // do nothing stamp value 2083
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte4_t_O:
 {
@@ -38712,7 +38712,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte4_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_geom__SimpleVectorCoordinate_O_Vector3_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2091
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<geom::SimpleVectorCoordinate_O,Vector3,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<geom::SimpleVectorCoordinate_O,Vector3,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_geom__SimpleVectorCoordinate_O:
 {
@@ -38731,7 +38731,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleString_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_:
 {
      // do nothing stamp value 2103
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleBaseString_O:
 {
@@ -38743,7 +38743,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleBaseString_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleCharacterString_O_unsigned_int_core__SimpleString_O_:
 {
      // do nothing stamp value 2111
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleCharacterString_O,unsigned int,core::SimpleString_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleCharacterString_O,unsigned int,core::SimpleString_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleCharacterString_O:
 {
@@ -38755,7 +38755,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleCharacterString_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2119
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int16_t_O:
 {
@@ -38767,7 +38767,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int16_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2127
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte16_t_O:
 {
@@ -38779,7 +38779,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte16_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_:
 {
      // do nothing stamp value 2135
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleBitVector_O:
 {
@@ -38791,7 +38791,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleBitVector_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_:
 {
      // do nothing stamp value 2143
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int4_t_O:
 {
@@ -38803,7 +38803,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int4_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2151
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte64_t_O:
 {
@@ -38815,7 +38815,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte64_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2159
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_fixnum_O:
 {
@@ -38827,7 +38827,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_fixnum_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2167
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_float_O:
 {
@@ -38839,7 +38839,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_float_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2175
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_O:
 {
@@ -38851,7 +38851,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2183
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte8_t_O:
 {
@@ -38863,7 +38863,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte8_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_:
 {
      // do nothing stamp value 2191
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte2_t_O:
 {
@@ -38875,7 +38875,7 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_byte2_t_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_:
 {
      // do nothing stamp value 2199
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>"));
+  THROW_HARD_ERROR("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_core__SimpleVector_int32_t_O:
 {
@@ -39846,633 +39846,633 @@ obj_deallocate_unmanaged_instance_STAMPWTAG_core__Lisp_O:
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCContainer:
 {
      // do nothing stamp value 2755
-    THROW_HARD_ERROR(BF("Should never deallocate object gctools::GCContainer"));
+  THROW_HARD_ERROR("Should never deallocate object gctools::GCContainer");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__BackboneDependentRotamerSet_O__:
 {
      // stamp value 2759
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::BackboneDependentRotamerSet_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::BackboneDependentRotamerSet_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__AtomicInfo_:
 {
      // stamp value 2763
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::AtomicInfo>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::AtomicInfo>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfoNode_O__:
 {
      // stamp value 2767
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfoNode_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfoNode_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_kinematics__Joint_O____:
 {
      // stamp value 2771
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyChiralRestraint_:
 {
      // stamp value 2775
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyChiralRestraint>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyChiralRestraint>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondToAtomTest_O__:
 {
      // stamp value 2779
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondToAtomTest_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondToAtomTest_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoConfiguration_O__:
 {
      // stamp value 2783
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoConfiguration_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_short_:
 {
      // stamp value 2787
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<short>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<short>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Rotamer_O__:
 {
      // stamp value 2791
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Rotamer_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_kinematics__Joint_O___:
 {
      // stamp value 2795
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<kinematics::Joint_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_unsigned_long_:
 {
      // stamp value 2799
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<unsigned long>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<unsigned long>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__SmallOrderedSet_gctools__smart_ptr_chem__Atom_O___:
 {
      // stamp value 2803
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::SmallOrderedSet<gctools::smart_ptr<chem::Atom_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::SmallOrderedSet<gctools::smart_ptr<chem::Atom_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFTypeRule_O__:
 {
      // stamp value 2807
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFTypeRule_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFTypeRule_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_:
 {
      // stamp value 2811
-    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<4,0>"));}
+  THROW_HARD_ERROR("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<4,0>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_:
 {
      // stamp value 2815
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolClassHolderPair>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<core::SymbolClassHolderPair>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___:
 {
      // stamp value 2819
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__FFNonbondCrossTerm_:
 {
      // stamp value 2823
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::FFNonbondCrossTerm>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::FFNonbondCrossTerm>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChainNode_O__:
 {
      // stamp value 2827
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChainNode_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChainNode_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedralRestraint_:
 {
      // stamp value 2831
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyDihedralRestraint>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyDihedralRestraint>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
      // stamp value 2835
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFNonbond_O__:
 {
      // stamp value 2839
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFNonbond_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFNonbond_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_char_:
 {
      // stamp value 2843
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned char>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<unsigned char>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Array_O___:
 {
      // stamp value 2847
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Array_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Array_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_int__:
 {
      // stamp value 2851
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<int>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<int>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___:
 {
      // stamp value 2855
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyRigidBodyStaple_:
 {
      // stamp value 2859
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyRigidBodyStaple>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
      // stamp value 2863
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAngle_:
 {
      // stamp value 2867
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAngle>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAngle>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__SimpleBitVector_O__:
 {
      // stamp value 2871
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Monomer_O__:
 {
      // stamp value 2875
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Monomer_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDFragment_O__:
 {
      // stamp value 2879
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___:
 {
      // stamp value 2883
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__:
 {
      // stamp value 2887
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_:
 {
      // stamp value 2891
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::OptionalArgument>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<core::OptionalArgument>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__KeyEntry_:
 {
      // stamp value 2895
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::KeyEntry>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::KeyEntry>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_:
 {
      // stamp value 2899
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::KeywordArgument>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<core::KeywordArgument>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_chem__Stereoisomer_O___:
 {
      // stamp value 2903
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ReportBase_O__:
 {
      // stamp value 2907
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_Vector3_:
 {
      // stamp value 2911
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<Vector3>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<Vector3>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_:
 {
      // stamp value 2915
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAnchorRestraint>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAnchorRestraint>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__:
 {
      // stamp value 2919
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___:
 {
      // stamp value 2923
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__HybridizationInfo_:
 {
      // stamp value 2927
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::HybridizationInfo>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::HybridizationInfo>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__MonomerNode_O__:
 {
      // stamp value 2931
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::MonomerNode_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::MonomerNode_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__Residue_O___:
 {
      // stamp value 2935
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__:
 {
      // stamp value 2939
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_char_:
 {
      // stamp value 2943
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<char>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<char>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionBond_O__:
 {
      // stamp value 2947
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionBond_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Structure_Old_ListEntry_O__:
 {
      // stamp value 2951
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Structure_Old_ListEntry_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__:
 {
      // stamp value 2955
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__vertex_:
 {
      // stamp value 2959
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<clbind::detail::vertex>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<clbind::detail::vertex>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__:
 {
      // stamp value 2963
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__BondId_O___:
 {
      // stamp value 2967
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::BondId_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___:
 {
      // stamp value 2971
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Matter_O__:
 {
      // stamp value 2975
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___:
 {
      // stamp value 2979
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__:
 {
      // stamp value 2983
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__:
 {
      // stamp value 2987
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_:
 {
      // stamp value 2991
-    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,0>"));}
+  THROW_HARD_ERROR("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,0>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__ChiDihedral_O__:
 {
      // stamp value 2995
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChiDihedral_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__:
 {
      // stamp value 2999
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_:
 {
      // stamp value 3003
-    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<1,0>"));}
+  THROW_HARD_ERROR("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<1,0>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_:
 {
      // stamp value 3007
-    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,1>"));}
+  THROW_HARD_ERROR("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,1>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_char__:
 {
      // stamp value 3011
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<char>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<char>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Topology_O__:
 {
      // stamp value 3015
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Topology_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_int_:
 {
      // stamp value 3019
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<int>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<int>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___:
 {
      // stamp value 3023
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Stereoisomer_O__:
 {
      // stamp value 3027
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Mate_O__:
 {
      // stamp value 3031
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_float_:
 {
      // stamp value 3035
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<float>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<float>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_:
 {
      // stamp value 3039
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<clbind::detail::edge>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<clbind::detail::edge>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Atom_O__:
 {
      // stamp value 3043
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Bond_O__:
 {
      // stamp value 3047
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__smart_ptr_chem__Atom_O___:
 {
      // stamp value 3051
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__T_O___:
 {
      // stamp value 3055
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyDihedral_:
 {
      // stamp value 3059
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyDihedral>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyDihedral>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__MonomerNode_O___:
 {
      // stamp value 3063
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::MonomerNode_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_int_:
 {
      // stamp value 3067
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned int>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<unsigned int>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__BondList_O__:
 {
      // stamp value 3071
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::BondList_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__:
 {
      // stamp value 3075
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RotamerAtom_:
 {
      // stamp value 3079
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::RotamerAtom>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::RotamerAtom>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
      // stamp value 3083
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_double_:
 {
      // stamp value 3087
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<double>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<double>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Rotamer_O__:
 {
      // stamp value 3091
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Rotamer_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Residue_O__:
 {
      // stamp value 3095
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___:
 {
      // stamp value 3099
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
      // stamp value 3103
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_int__:
 {
      // stamp value 3107
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,int>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,int>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__AtomPdbRec_:
 {
      // stamp value 3111
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::AtomPdbRec>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::AtomPdbRec>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchStretch_:
 {
      // stamp value 3115
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergySketchStretch>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergySketchStretch>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_signed_char_:
 {
      // stamp value 3119
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<signed char>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<signed char>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyOutOfZPlane_:
 {
      // stamp value 3123
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyOutOfZPlane>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyOutOfZPlane>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
 {
      // stamp value 3127
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___:
 {
      // stamp value 3131
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__CDBond_O__:
 {
      // stamp value 3135
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__:
 {
      // stamp value 3139
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergySketchNonbond_:
 {
      // stamp value 3143
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergySketchNonbond>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergySketchNonbond>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_:
 {
      // stamp value 3147
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::KeyValuePair>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<core::KeyValuePair>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
 {
      // stamp value 3151
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__:
 {
      // stamp value 3155
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__FixedNonbondRestraint_:
 {
      // stamp value 3159
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::FixedNonbondRestraint>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::FixedNonbondRestraint>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_adapt__QDomNode_O__:
 {
      // stamp value 3163
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<adapt::QDomNode_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixInternal_O__:
 {
      // stamp value 3167
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixInternal_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___:
 {
      // stamp value 3171
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__Molecule_O__:
 {
      // stamp value 3175
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Molecule_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_double_:
 {
      // stamp value 3179
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<double>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<double>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___:
 {
      // stamp value 3183
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___:
 {
      // stamp value 3187
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__:
 {
      // stamp value 3191
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__PathMessage_O__:
 {
      // stamp value 3195
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::PathMessage_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_:
 {
      // stamp value 3199
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::RequiredArgument>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<core::RequiredArgument>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__:
 {
      // stamp value 3203
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ZMatrixEntry_O__:
 {
      // stamp value 3207
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ZMatrixEntry_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_:
 {
      // stamp value 3211
-    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<4,1>"));}
+  THROW_HARD_ERROR("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<4,1>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_:
 {
      // stamp value 3215
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolStorage>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<core::SymbolStorage>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__BeyondThresholdFixedNonbondRestraint_:
 {
      // stamp value 3219
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::BeyondThresholdFixedNonbondRestraint>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_int_gctools__smart_ptr_chem__CDNode_O___:
 {
      // stamp value 3223
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___:
 {
      // stamp value 3227
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__:
 {
      // stamp value 3231
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__int__:
 {
      // stamp value 3235
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_kinematics__RingClosingMonomerNode_O___:
 {
      // stamp value 3239
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<kinematics::RingClosingMonomerNode_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyNonbondCrossTerm_:
 {
      // stamp value 3243
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::RigidBodyNonbondCrossTerm>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__:
 {
      // stamp value 3247
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_long_:
 {
      // stamp value 3251
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned long>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<unsigned long>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_:
 {
      // stamp value 3255
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArraySignedLength_moveable<unsigned long>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArraySignedLength_moveable<unsigned long>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyNonbond_:
 {
      // stamp value 3259
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyNonbond>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyNonbond>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
      // stamp value 3263
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__AtomInfo_:
 {
      // stamp value 3267
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::AtomInfo>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::AtomInfo>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFVdw_O__:
 {
      // stamp value 3271
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConstitutionAtom_O__:
 {
      // stamp value 3275
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConstitutionAtom_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyAtom_:
 {
      // stamp value 3279
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAtom>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAtom>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___:
 {
      // stamp value 3283
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_int_:
 {
      // stamp value 3287
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<int>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<int>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
      // stamp value 3291
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_:
 {
      // stamp value 3295
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__ResidueOut_:
 {
      // stamp value 3299
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::ResidueOut>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::ResidueOut>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_long_:
 {
      // stamp value 3303
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<long>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<long>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__JointTemplate_O__:
 {
      // stamp value 3307
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::JointTemplate_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__RigidBodyAtomInfo_:
 {
      // stamp value 3311
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::RigidBodyAtomInfo>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::RigidBodyAtomInfo>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___:
 {
      // stamp value 3315
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtoms_O__:
 {
      // stamp value 3319
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtoms_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
      // stamp value 3323
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_unsigned_int_:
 {
      // stamp value 3327
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<unsigned int>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<unsigned int>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_chem__EnergyStretch_:
 {
      // stamp value 3331
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyStretch>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyStretch>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__:
 {
      // stamp value 3335
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_kinematics__Joint_O__:
 {
      // stamp value 3339
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<kinematics::Joint_O>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_gctools__Vec0_gctools__Vec0_gctools__smart_ptr_chem__Atom_O____:
 {
      // stamp value 3343
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<gctools::Vec0<gctools::Vec0<gctools::smart_ptr<chem::Atom_O>>>>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCArray_moveable_unsigned_short_:
 {
      // stamp value 3347
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned short>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCArray_moveable<unsigned short>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_float_:
 {
      // stamp value 3351
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<float>"));}
+  THROW_HARD_ERROR("Should never deallocate containers gctools::GCVector_moveable<float>");}
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__FrontendAction:
 {
      // do nothing stamp value 3355
-    THROW_HARD_ERROR(BF("Should never deallocate object clang::FrontendAction"));
+  THROW_HARD_ERROR("Should never deallocate object clang::FrontendAction");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ASTFrontendAction:
 {
      // do nothing stamp value 3359
-    THROW_HARD_ERROR(BF("Should never deallocate object clang::ASTFrontendAction"));
+  THROW_HARD_ERROR("Should never deallocate object clang::ASTFrontendAction");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__SyntaxOnlyAction:
 {
      // do nothing stamp value 3363
-    THROW_HARD_ERROR(BF("Should never deallocate object clang::SyntaxOnlyAction"));
+  THROW_HARD_ERROR("Should never deallocate object clang::SyntaxOnlyAction");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__ToolAction:
 {
      // do nothing stamp value 3367
-    THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::ToolAction"));
+  THROW_HARD_ERROR("Should never deallocate object clang::tooling::ToolAction");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__tooling__FrontendActionFactory:
 {
      // do nothing stamp value 3371
-    THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::FrontendActionFactory"));
+  THROW_HARD_ERROR("Should never deallocate object clang::tooling::FrontendActionFactory");
 }
 obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ast_matchers__MatchFinder__MatchCallback:
 {
      // do nothing stamp value 3375
-    THROW_HARD_ERROR(BF("Should never deallocate object clang::ast_matchers::MatchFinder::MatchCallback"));
+  THROW_HARD_ERROR("Should never deallocate object clang::ast_matchers::MatchFinder::MatchCallback");
 }
 #endif // defined(GC_OBJ_DEALLOCATOR)
 #if defined(GC_OBJ_DEALLOCATOR_HELPERS)

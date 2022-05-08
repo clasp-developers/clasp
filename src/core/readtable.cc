@@ -69,7 +69,7 @@ CL_DEFUN T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromCha
       tfromReadTable = core::_sym__PLUS_standardReadtable_PLUS_->symbolValue();
     } else {
       if (!gc::IsA<Readtable_sp>(tfromReadTable)) {
-        SIMPLE_ERROR(BF("read-tables are not both cl:readtable"));
+        SIMPLE_ERROR(("read-tables are not both cl:readtable"));
       }
     }
     Readtable_sp fromReadTable = gc::As<Readtable_sp>(tfromReadTable);
@@ -128,7 +128,7 @@ CL_DEFUN T_sp cl__copy_readtable(T_sp fromReadTable, T_sp toReadTable) {
   }
   if (gc::IsA<Readtable_sp>(fromReadTable)) {
     if (toReadTable.notnilp() && !gc::IsA<Readtable_sp>(toReadTable)) {
-      SIMPLE_ERROR(BF("Mismatch in readtable-type from-read-table %s and to-read-table %s") % _rep_(fromReadTable) % _rep_(toReadTable));
+      SIMPLE_ERROR(("Mismatch in readtable-type from-read-table %s and to-read-table %s") , _rep_(fromReadTable) , _rep_(toReadTable));
     }
     return gc::As_unsafe<Readtable_sp>(fromReadTable)->copyReadtable_(toReadTable);
   }
@@ -273,7 +273,7 @@ DOCGROUP(clasp)
 CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
   FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
   // FIXME: Use a real condition class.
-  // SIMPLE_ERROR(BF("Comma outside of backquote in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
+  // SIMPLE_ERROR(("Comma outside of backquote in file: %s line: %s") , info->fileName() , clasp_input_lineno(sin));
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
     READER_ERROR(SimpleBaseString_O::make("Comma outside of backquote in stream at line: ~a column ~a."),
@@ -395,7 +395,7 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
     sawnumarg = true;
     int cget = clasp_read_char(sin);
     if (cget == EOF) {
-      SIMPLE_ERROR(BF("Hit eof in sharp macro"));
+      SIMPLE_ERROR(("Hit eof in sharp macro"));
     }
     numarg *= 10;
     numarg += (cget - '0');
@@ -407,7 +407,7 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
   Character_sp subchar = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
   T_sp macro_func = cl__get_dispatch_macro_character(ch, subchar,_lisp->getCurrentReadTable());
   if (macro_func.nilp()){
-    //SIMPLE_ERROR(BF("Undefined reader macro for %s %s") % _rep_(ch) % _rep_(subchar));
+    //SIMPLE_ERROR(("Undefined reader macro for %s %s") , _rep_(ch) , _rep_(subchar));
     // Need to be a reader error
     FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
     string fn = info->fileName();	
@@ -447,7 +447,7 @@ CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
     } else {
       T_sp tch = eval::funcall(cl::_sym_name_char, sslexemes.string());
       if (tch.nilp())
-        SIMPLE_ERROR(BF("Unknown character name for [%s]") % _rep_(sslexemes.string()));
+        SIMPLE_ERROR(("Unknown character name for [%s]") , _rep_(sslexemes.string()));
       return Values(gc::As<Character_sp>(tch));
     }
   }
@@ -497,7 +497,7 @@ CL_DEFUN T_mv core__sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_s
     if (tnum.notnilp()) {
       Fixnum_sp num = gc::As<Fixnum_sp>(tnum);
       if (list_length > unbox_fixnum(num))
-        SIMPLE_ERROR(BF("vector is longer than specified length %s: %s") % unbox_fixnum(num) % _rep_(list));
+        SIMPLE_ERROR(("vector is longer than specified length %s: %s") , unbox_fixnum(num) , _rep_(list));
       int need_length = unbox_fixnum(num);
       if (list_length < need_length) {
         List_sp reversed = cl__nreverse(list);
@@ -535,7 +535,7 @@ CL_DEFUN T_mv core__sharp_foreign_data_reader(T_sp tsin, Character_sp ch, /*Fixn
     }
     return Values(nil<T_O>());
   }
-  SIMPLE_ERROR(BF("Error in #x{ x is %s") % _rep_(tnum).c_str());
+  SIMPLE_ERROR(("Error in #x{ x is %s") , _rep_(tnum).c_str());
 };
 
 CL_LAMBDA(stream ch num)
@@ -617,19 +617,19 @@ CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, T_sp nradix) {
     (void)object; // suppress warning
     return (Values(nil<T_O>()));
   } else if (nradix.nilp()) {
-    SIMPLE_ERROR(BF("Radix missing in #R reader macro"));
+    SIMPLE_ERROR(("Radix missing in #R reader macro"));
   } else {
     Fixnum_sp radix = gc::As<Fixnum_sp>(nradix);
     int iradix = unbox_fixnum(radix);
     if (iradix < 2 || iradix > 36) {
-      SIMPLE_ERROR(BF("Illegal radix for #R: %d") % iradix);
+      SIMPLE_ERROR(("Illegal radix for #R: %d") , iradix);
     }
     {
       Fixnum_sp oradix = make_fixnum(iradix);
       DynamicScopeManager scope(cl::_sym_STARread_baseSTAR, oradix);
       T_sp val = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
       if (!gc::IsA<Rational_sp>(val)) {
-        SIMPLE_ERROR(BF("#%s (base %d) is not a rational: %s") % _rep_(ch) % iradix % _rep_(val));
+        SIMPLE_ERROR(("#%s (base %d) is not a rational: %s") , _rep_(ch) , iradix , _rep_(val));
       }
       return (Values(val));
     }
@@ -670,7 +670,7 @@ CL_DEFUN T_mv core__sharp_c(T_sp sin, Character_sp ch, T_sp num) {
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     int list_length = cl__length(list);
     if (list_length != 2) {
-      SIMPLE_ERROR(BF("#C complex number needs two numbers"));
+      SIMPLE_ERROR(("#C complex number needs two numbers"));
     }
     Real_sp r = gc::As<Real_sp>(oCar(list));
     Real_sp i = gc::As<Real_sp>(oCadr(list));
@@ -709,10 +709,10 @@ CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
         }
         return Values(vec);
       }
-      SIMPLE_ERROR(BF("Add support for multidimensional #a"));
+      SIMPLE_ERROR(("Add support for multidimensional #a"));
     }
   }
-  SIMPLE_ERROR(BF("Add support for #a with argument"));
+  SIMPLE_ERROR(("Add support for #a with argument"));
 }
 
 CL_LAMBDA(stream ch num)
@@ -772,7 +772,7 @@ CL_DEFUN T_sp core__reader_feature_p(T_sp feature_test) {
       // Trivial case of #+(or) returns nil.
       return nil<T_O>();
     }
-    SIMPLE_ERROR(BF("Illegal feature test: %s") % _rep_(features_cons));
+    SIMPLE_ERROR(("Illegal feature test: %s") , _rep_(features_cons));
   }
 }
 
@@ -790,11 +790,11 @@ CL_DOCSTRING(R"dx(sharp_plus)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
   T_sp feat = read_feature_test(sin);
-  LOG(BF("feature[%s]") % _rep_(feat));
+  LOG("feature[%s]" , _rep_(feat));
   if (T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
-    LOG(BF("The feature test passed - reading lisp object"));
+    LOG("The feature test passed - reading lisp object");
     T_sp obj = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
-    LOG(BF("Read the object[%s]") % _rep_(obj));
+    LOG("Read the object[%s]" , _rep_(obj));
     return Values(obj);
   } else {
     _BLOCK_TRACEF(BF("Suppressing read for unsupported feature[%s]") % feat->__repr__());
@@ -810,14 +810,14 @@ CL_DOCSTRING(R"dx(sharp_minus)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__sharp_minus(T_sp sin, Character_sp ch, T_sp num) {
   T_sp feat = read_feature_test(sin);
-  LOG(BF("feature[%s]") % _rep_(feat));
+  LOG("feature[%s]" , _rep_(feat));
   if (!T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
-    LOG(BF("The feature test passed - reading lisp object"));
+    LOG("The feature test passed - reading lisp object");
     T_sp obj = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
-    LOG(BF("Read the object[%s]") % _rep_(obj));
+    LOG("Read the object[%s]" , _rep_(obj));
     return Values(obj);
   } else {
-    LOG(BF("The feature test failed - returning nil"));
+    LOG("The feature test failed - returning nil");
     DynamicScopeManager dynScopeManager(cl::_sym_STARread_suppressSTAR, _lisp->_true());
     cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     return Values0<T_O>();
@@ -957,7 +957,7 @@ clasp_readtable_case Readtable_O::getReadtableCaseAsEnum_() {
   } else if (ccase == kw::_sym_preserve) {
     return clasp_case_preserve;
   }
-  SIMPLE_ERROR(BF("Unknown readtable case: %s") % _rep_(this->Case_));
+  SIMPLE_ERROR(("Unknown readtable case: %s") , _rep_(this->Case_));
 }
 
 Symbol_sp Readtable_O::setf_readtable_case_(Symbol_sp newCase) {
@@ -1002,7 +1002,7 @@ string Readtable_O::__repr__() const {
 Symbol_sp Readtable_O::syntax_type_(Character_sp ch) const {
   _OF();
   Symbol_sp result = this->SyntaxTypes_->gethash(ch, kw::_sym_constituent);
-  LOG(BF("character[%s] syntax_type: %s") % _rep_(ch) % _rep_(result));
+  LOG("character[%s] syntax_type: %s" , _rep_(ch) , _rep_(result));
   return result;
 }
 
@@ -1029,7 +1029,7 @@ T_sp Readtable_O::set_dispatch_macro_character_(Character_sp disp_char, Characte
                                                T_sp new_func_desig) {
   T_sp tdispatch_table = this->DispatchMacroCharacters_->gethash(disp_char);
   if (!gc::IsA<HashTable_sp>(tdispatch_table)) {
-    SIMPLE_ERROR(BF("%s is not a dispatching macro character") % _rep_(disp_char));
+    SIMPLE_ERROR(("%s is not a dispatching macro character") , _rep_(disp_char));
   }
   HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
   ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
@@ -1045,7 +1045,7 @@ T_sp Readtable_O::set_dispatch_macro_character_(Character_sp disp_char, Characte
 T_sp Readtable_O::get_dispatch_macro_character_(Character_sp disp_char, Character_sp sub_char) {
   T_sp tdispatch_table = this->DispatchMacroCharacters_->gethash(disp_char);
   if (!gc::IsA<HashTable_sp>(tdispatch_table)) {
-    SIMPLE_ERROR(BF("%s is not a dispatching macro character") % _rep_(disp_char));
+    SIMPLE_ERROR(("%s is not a dispatching macro character") , _rep_(disp_char));
   }
   HashTable_sp dispatch_table = gc::As_unsafe<HashTable_sp>(tdispatch_table);
   Character_sp upcase_sub_char = clasp_make_character(claspCharacter_upcase(sub_char.unsafe_character()));
@@ -1062,9 +1062,9 @@ Character_sp Readtable_O::convert_case_(Character_sp cc) {
   } else if (this->Case_ == kw::_sym_preserve) {
     return cc;
   } else if (this->Case_ == kw::_sym_invert) {
-    SIMPLE_ERROR(BF("I can't handle invert yet, that has to be handled when the token is converted"));
+    SIMPLE_ERROR(("I can't handle invert yet, that has to be handled when the token is converted"));
   }
-  SIMPLE_ERROR(BF("Bad readtable case[%s]") % _rep_(this->Case_));
+  SIMPLE_ERROR(("Bad readtable case[%s]") , _rep_(this->Case_));
 }
 
 Readtable_sp Readtable_O::copyReadtable_(gc::Nilable<Readtable_sp> tdest) {

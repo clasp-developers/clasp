@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/lispStream.h>
 //#include <clasp/core/numbers.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gctoolsPackage.h>
@@ -35,7 +36,6 @@ THE SOFTWARE.
 #include <clasp/gctools/boehmGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/debugger.h>
-#include <clasp/core/lispStream.h>
 #include <clasp/core/compiler.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
@@ -471,17 +471,17 @@ size_t ReachableClass::print(const std::string& shortName) {
     } else {
       className << nm;
     }
-    clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-                        % shortName % this->totalSize % this->instances
-                        % (this->totalSize / this->instances) % className.str().c_str() % k).str()
-                       , cl::_sym_STARstandard_outputSTAR->symbolValue());
+    core::write_bf_stream(fmt::sprintf("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n"
+                                 , shortName , this->totalSize % this->instances
+                                 , (this->totalSize / this->instances) , className.str().c_str() , k)
+                    , cl::_sym_STARstandard_outputSTAR->symbolValue());
     core::clasp_finish_output_t();
     return this->totalSize;
   } else {
-    clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-                        % shortName % this->totalSize % this->instances
-                        % (this->totalSize / this->instances) % "UNKNOWN" % k).str()
-                       ,cl::_sym_STARstandard_outputSTAR->symbolValue());
+    core::write_bf_stream(fmt::sprintf("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n"
+                                       , shortName , this->totalSize , this->instances
+                                       , (this->totalSize / this->instances) , "UNKNOWN" , k)
+                          ,cl::_sym_STARstandard_outputSTAR->symbolValue());
     core::clasp_finish_output_t();
     return this->totalSize;
   }

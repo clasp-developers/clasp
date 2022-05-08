@@ -89,9 +89,9 @@ CL_DOCSTRING(R"dx(append as in clhs)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__backquote_append(Vaslist_sp lists) {
   ql::list list; // (lists);
-  LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
+  LOG("Carrying out append with arguments: %s" , _rep_(lists));
   unlikely_if (lists->total_nargs()==0) {
-    SIMPLE_ERROR(BF("backquote-append was called with zero arguments"));
+    SIMPLE_ERROR(("backquote-append was called with zero arguments"));
   }
   size_t nargs = lists->total_nargs();
   size_t fnargs = nargs-1;
@@ -117,7 +117,7 @@ CL_DOCSTRING(R"dx(append as in clhs)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__backquote_append_list(List_sp lists) {
   ql::list list; // (lists);
-  LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
+  LOG("Carrying out append with arguments: %s" , _rep_(lists));
   List_sp appendArg = lists;
   if (appendArg.consp()) {
     for (; CONS_CDR(appendArg).consp(); appendArg = CONS_CDR(appendArg)) {
@@ -179,9 +179,9 @@ CL_DEFUN T_sp core__backquote_process(T_sp ox) {
     result = oCadr(x);
     goto DONE;
   } else if (ax == _sym_unquote_splice) {
-    SIMPLE_ERROR(BF(",@%s after `") % _rep_(oCadr(x)));
+    SIMPLE_ERROR((",@%s after `") , _rep_(oCadr(x)));
   } else if (ax == _sym_unquote_nsplice) {
-    SIMPLE_ERROR(BF(",.%s after `") % _rep_(oCadr(x)));
+    SIMPLE_ERROR((",.%s after `") , _rep_(oCadr(x)));
   }
   p = x;
   q = nil<T_O>();
@@ -195,9 +195,9 @@ CL_DEFUN T_sp core__backquote_process(T_sp ox) {
       result = Cons_O::create(_sym_STARbq_appendSTAR, nreconc);
       goto DONE;
     } else if (head == _sym_unquote_splice) {
-      SIMPLE_ERROR(BF("Dotted ,@%s") % _rep_(p));
+      SIMPLE_ERROR(("Dotted ,@%s") , _rep_(p));
     } if ( head == _sym_unquote_nsplice) {
-      SIMPLE_ERROR(BF("Dotted ,.%s") % _rep_(p));
+      SIMPLE_ERROR(("Dotted ,.%s") , _rep_(p));
     }
 
     // Advance

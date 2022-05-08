@@ -102,7 +102,7 @@ CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, c
   ll_file = cl__merge_pathnames(ll_file,pfilename);
   T_sp found = cl__probe_file(ll_file);
   if (found.notnilp()) {
-    core::write_bf_stream(BF("Loading ll file %s\n") % _rep_(ll_file));
+    core::write_bf_stream(fmt::sprintf("Loading ll file %s\n" , _rep_(ll_file)));
     return llvm_sys__load_ll(ll_file,verbose,print,externalFormat,startup_name);
   }
   core::Pathname_sp bc_file = core::Pathname_O::makePathname(nil<core::T_O>(),nil<core::T_O>(),nil<core::T_O>(),
@@ -110,10 +110,10 @@ CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, c
   bc_file = cl__merge_pathnames(bc_file,pfilename);
   found = cl__probe_file(bc_file);
   if (found.notnilp()) {
-    core::write_bf_stream(BF("Loading bc file %s\n") % _rep_(bc_file));
+    core::write_bf_stream(fmt::sprintf("Loading bc file %s\n" , _rep_(bc_file)));
     return llvm_sys__load_bc(bc_file,verbose,print,externalFormat,startup_name);
   }
-  SIMPLE_ERROR(BF("Could not find llvm-ir file %s with .bc or .ll extension") % _rep_(filename));
+  SIMPLE_ERROR(("Could not find llvm-ir file %s with .bc or .ll extension") , _rep_(filename));
 }
 
 void loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname )
@@ -148,7 +148,7 @@ void loadModule(llvmo::Module_sp module, size_t startupID, const std::string& li
   engineBuilder->setTargetOptions(targetOptions);
   ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
   if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
-    SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
+    SIMPLE_ERROR(("The cmp:*load-time-value-holder-name* is nil"));
   }
   finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine,startup_name);
 #endif
@@ -161,11 +161,11 @@ CL_DEFUN bool llvm_sys__load_ll(core::Pathname_sp filename, bool verbose, bool p
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
-    SIMPLE_ERROR(BF("Could not get truename for %s") % _rep_(filename));
+    SIMPLE_ERROR(("Could not get truename for %s") , _rep_(filename));
   }
   core::T_sp tnamestring = cl__namestring(filename);
   if ( tnamestring.nilp() ) {
-    SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
+    SIMPLE_ERROR(("Could not create namestring for %s") , _rep_(filename));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
   LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
@@ -182,11 +182,11 @@ CL_DEFUN bool llvm_sys__load_bc(core::Pathname_sp filename, bool verbose, bool p
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
-    SIMPLE_ERROR(BF("Could not get truename for %s") % _rep_(filename));
+    SIMPLE_ERROR(("Could not get truename for %s") , _rep_(filename));
   }
   core::T_sp tnamestring = cl__namestring(filename);
   if ( tnamestring.nilp() ) {
-    SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
+    SIMPLE_ERROR(("Could not create namestring for %s") , _rep_(filename));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
   LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
@@ -354,51 +354,51 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
                                                         core::T_sp tFunctionDescriptionSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
-    SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
+    SIMPLE_ERROR(("Mismatch between tsp size[%d] and core::T_sp size[%d]") , unbox_fixnum(tspSize) , T_sp_size);
   }
   int T_mv_size = sizeof(core::T_mv);
   if (unbox_fixnum(tmvSize) != T_mv_size) {
-    SIMPLE_ERROR(BF("Mismatch between tmv size[%d] and core::T_mv size[%d]") % unbox_fixnum(tmvSize) % T_mv_size);
+    SIMPLE_ERROR(("Mismatch between tmv size[%d] and core::T_mv size[%d]") , unbox_fixnum(tmvSize) , T_mv_size);
   }
   int Symbol_O_size = sizeof(core::Symbol_O);
   if (unbox_fixnum(symbolSize) != Symbol_O_size) {
-    SIMPLE_ERROR(BF("Mismatch between symbol size[%d] and core::Symbol_O size[%d]") % unbox_fixnum(symbolSize) % Symbol_O_size);
+    SIMPLE_ERROR(("Mismatch between symbol size[%d] and core::Symbol_O size[%d]") , unbox_fixnum(symbolSize) , Symbol_O_size);
   }
   if (symbol_function_offset.unsafe_fixnum()!=offsetof(core::Symbol_O,_Function)) {
-    SIMPLE_ERROR(BF("Mismatch between symbol function offset[%d] and core::Symbol_O._Function offset[%d]") % symbol_function_offset.unsafe_fixnum() % offsetof(core::Symbol_O,_Function));
+    SIMPLE_ERROR(("Mismatch between symbol function offset[%d] and core::Symbol_O._Function offset[%d]") , symbol_function_offset.unsafe_fixnum() , offsetof(core::Symbol_O,_Function));
   }
   if (symbol_setf_function_offset.unsafe_fixnum()!=offsetof(core::Symbol_O,_SetfFunction)) {
-    SIMPLE_ERROR(BF("Mismatch between symbol setf function offset[%d] and core::Symbol_O._SetfFunction offset[%d]") % symbol_setf_function_offset.unsafe_fixnum() % offsetof(core::Symbol_O,_SetfFunction));
+    SIMPLE_ERROR(("Mismatch between symbol setf function offset[%d] and core::Symbol_O._SetfFunction offset[%d]") , symbol_setf_function_offset.unsafe_fixnum() , offsetof(core::Symbol_O,_SetfFunction));
   }
   
   int Function_O_size = sizeof(core::Function_O);
   if (unbox_fixnum(functionSize) != Function_O_size) {
-    SIMPLE_ERROR(BF("Mismatch between function size[%d] and core::Function_O size[%d]") % unbox_fixnum(functionSize) % Function_O_size);
+    SIMPLE_ERROR(("Mismatch between function size[%d] and core::Function_O size[%d]") , unbox_fixnum(functionSize) , Function_O_size);
   }
   if (function_description_offset.unsafe_fixnum()!=offsetof(core::GlobalEntryPoint_O,_FunctionDescription)) {
-    SIMPLE_ERROR(BF("Mismatch between function description offset[%d] and core::GlobalEntryPoint_O._FunctionDescription offset[%d]") % function_description_offset.unsafe_fixnum() % offsetof(core::GlobalEntryPoint_O,_FunctionDescription));
+    SIMPLE_ERROR(("Mismatch between function description offset[%d] and core::GlobalEntryPoint_O._FunctionDescription offset[%d]") , function_description_offset.unsafe_fixnum() , offsetof(core::GlobalEntryPoint_O,_FunctionDescription));
   }
   if ( gcRootsInModuleSize.notnilp() ) {
     int gcRootsInModule_size = sizeof(gctools::GCRootsInModule);
     if (gcRootsInModuleSize.fixnump()) {
       if (gcRootsInModule_size != gcRootsInModuleSize.unsafe_fixnum()) {
-        SIMPLE_ERROR(BF("GCRootsInModule size %d mismatch with Common Lisp code %d") % gcRootsInModule_size % gcRootsInModuleSize.unsafe_fixnum());
+        SIMPLE_ERROR(("GCRootsInModule size %d mismatch with Common Lisp code %d") , gcRootsInModule_size , gcRootsInModuleSize.unsafe_fixnum());
       }
     } else {
-      SIMPLE_ERROR(BF("gcRootsInModule keyword argument expects a fixnum"));
+      SIMPLE_ERROR(("gcRootsInModule keyword argument expects a fixnum"));
     }
   }
   if (tvaslistsize.fixnump()) {
     size_t vaslistsize = tvaslistsize.unsafe_fixnum();
     if (vaslistsize != sizeof(Vaslist)) {
-      SIMPLE_ERROR(BF("Vaslist size %d mismatch with Common Lisp code %d") % sizeof(Vaslist) % vaslistsize);
+      SIMPLE_ERROR(("Vaslist size %d mismatch with Common Lisp code %d") , sizeof(Vaslist) , vaslistsize);
     }
   }
   if (tFunctionDescriptionSize.fixnump()) {
     size_t functionDescriptionSize = tFunctionDescriptionSize.unsafe_fixnum();
 //    printf("%s:%d:%s Checked function-description size\n", __FILE__, __LINE__, __FUNCTION__ );
     if (functionDescriptionSize != sizeof(core::FunctionDescription_O)) {
-      SIMPLE_ERROR(BF("function-description size %lu mismatch with Common Lisp code %lu") % sizeof(core::FunctionDescription_O) % functionDescriptionSize );
+      SIMPLE_ERROR(("function-description size %lu mismatch with Common Lisp code %lu") , sizeof(core::FunctionDescription_O) , functionDescriptionSize );
     }
   }
 }

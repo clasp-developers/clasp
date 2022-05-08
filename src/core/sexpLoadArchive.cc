@@ -106,7 +106,7 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
     }
     return snode;
   }
-  SIMPLE_ERROR(BF("SexpLoadArchive - could not parse %s") % _rep_(obj));
+  SIMPLE_ERROR(("SexpLoadArchive - could not parse %s") , _rep_(obj));
 }
 
 
@@ -126,7 +126,7 @@ CL_DEFMETHOD void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   T_sp obj = cl__read(streamDesignator, _lisp->_true(), unbound<T_O>());
   if (obj.unboundp()) {
-    SIMPLE_ERROR(BF("Nothing could be read from stream"));
+    SIMPLE_ERROR(("Nothing could be read from stream"));
   }
   this->parseFromObject(obj);
 };

@@ -149,14 +149,14 @@
 
 #++
 (defmacro dbg-boot (fmt &rest fmt-args)
-  `(bformat t ,fmt ,@fmt-args))
+  `(core:fmt t ,fmt ,@fmt-args))
 
 
 (defmacro boot-hierarchy ()
   `(progn
      ,@(loop for (class . options) in +class-hierarchy+
           for direct-slots = (getf options :direct-slots)
-;;;          do (core:bformat t "boot-hierarchy  class->%s%N" class)
+;;;          do (core:fmt t "boot-hierarchy  class->{}%N" class)
           collect
             (if direct-slots
                 `(apply #'ensure-boot-class ',class

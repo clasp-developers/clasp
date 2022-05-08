@@ -43,7 +43,7 @@ int PASS_FUNCTION_REQUIRED(core::T_sp closure,
                            size_t arg_idx,
                            ScopeManager &scope) {
   // Fill required arguments
-  LOG(BF("There are %d required arguments") % reqs.size());
+  LOG("There are %d required arguments" , reqs.size());
   size_t length_args(PASS_ARGS_NUM);
   size_t reqs_size(reqs.size());
   if (length_args < reqs_size) {
@@ -58,7 +58,7 @@ int PASS_FUNCTION_REQUIRED(core::T_sp closure,
         printf("%s:%d required arg%lu %s\n", __FILE__, __LINE__, arg_idx, _rep_(value).c_str());
       }
 #endif      
-      LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
+      LOG("Binding value[%s] to target[%s]" , _rep_(value) , it->asString());
       scope.new_binding(*it, value);
       ++arg_idx;
     }
@@ -78,14 +78,14 @@ int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
                            ScopeManager &scope) {
   int num_args(PASS_ARGS_NUM);
   // Fill required arguments
-  LOG(BF("There are %d optional arguments") % optionals.size());
+  LOG("There are %d optional arguments" , optionals.size());
   gctools::Vec0<OptionalArgument>::const_iterator it = optionals.begin();
   {
     _BLOCK_TRACE("Assigning given optional arguments");
     for (; it != optionals.end(); it++) {
-      LOG(BF("Checking if it->_Target.nilp() = %d") % it->_ArgTarget.nilp());
+      LOG("Checking if it->_Target.nilp() = %d" , it->_ArgTarget.nilp());
       if (arg_idx == num_args) {
-        LOG(BF("We ran out of optional arguments - switching to filling with defaults"));
+        LOG("We ran out of optional arguments - switching to filling with defaults");
         break;
       }
       T_sp value = PASS_NEXT_ARG(arg_idx);
@@ -94,7 +94,7 @@ int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
         printf("%s:%d optional arg%lu %s\n", __FILE__, __LINE__, arg_idx, _rep_(value).c_str());
       }
 #endif      
-      LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
+      LOG("Binding value[%s] to target[%s]" , _rep_(value) , it->asString());
       scope.new_binding(*it, value);
       if (it->_Sensor.isDefined()) {
         scope.new_binding(it->_Sensor, _lisp->_true());
@@ -106,9 +106,9 @@ int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
     _BLOCK_TRACE("Assigning missing optional arguments with default values");
     for (; it != optionals.end(); it++) {
       T_sp init_form = it->_Default;
-      LOG(BF("Init form: %s") % _rep_(init_form));
+      LOG("Init form: %s" , _rep_(init_form));
       T_sp value = evaluate_lambda_list_form(init_form, scope.lexenv());
-      LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
+      LOG("Binding value[%s] to target[%s]" , _rep_(value) , it->asString());
       scope.new_binding(*it, value);
       if (it->_Sensor.isDefined()) {
         scope.new_binding(it->_Sensor, _lisp->_false());
@@ -165,7 +165,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
   bool *sawkeys = (bool *)(__builtin_alloca(sizeof(bool) * num_keyed_arguments));
   //  bool sawkeys[num_keyed_arguments];// CALL_ARGUMENTS_LIMIT];
   memset(sawkeys, 0, num_keyed_arguments);
-  LOG(BF(":allow-other-keywords --> %d") % passed_allow_other_keys);
+  LOG(":allow-other-keywords --> %d" , passed_allow_other_keys);
   T_sp first_illegal_keyword(nil<T_O>());
   {
     _BLOCK_TRACEF(BF("Copy passed keyword values to environment"));
@@ -175,7 +175,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
       T_sp value = PASS_NEXT_ARG(arg_idx);
       arg_idx++;
       if (keyword != kw::_sym_allow_other_keys) {
-        LOG(BF("Binding passed keyword[%s] value[%s]") % _rep_(keyword) % _rep_(value));
+        LOG("Binding passed keyword[%s] value[%s]" , _rep_(keyword) , _rep_(value));
         gctools::Vec0<KeywordArgument>::iterator fi;
         int ik(0);
         for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {
@@ -208,7 +208,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
     gctools::Vec0<KeywordArgument>::iterator fi;
     int ik(0);
     for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {
-      LOG(BF("Checking if keyword[%s] needs default value") % _rep_(fi->_Keyword));
+      LOG("Checking if keyword[%s] needs default value" , _rep_(fi->_Keyword));
       // If the value hasn't been filled in the ActivationFrame then fill it with a default value
       if (sawkeys[ik] == 0) {
         T_sp expr = fi->_Default;
