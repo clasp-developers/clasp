@@ -26,7 +26,7 @@
 ;;
 ;; Insert the compiler into the repl
 ;;
-;; Don't use FORMAT here use BFORMAT 
+;; Don't use FORMAT here use core:fmt 
 ;; otherwise you will have problems when format.lisp is bootstrapped
 
 (in-package :clasp-cleavir)

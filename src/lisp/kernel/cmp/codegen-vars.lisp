@@ -30,7 +30,7 @@
 #+(or)
 (progn
   (defmacro cv-log (fmt &rest fmt-args)
-    `(core:bformat *error-output* ,fmt ,@fmt-args))
+    `(core:fmt *error-output* ,fmt ,@fmt-args))
   (defmacro cv-log-do (&rest body)
     `(progn ,@body)))
     
@@ -517,7 +517,7 @@
 
 (defun codegen-special-var-lookup (result sym env)
   "Return IR code that returns the value cell of a special symbol"
-  (cmp-log "About to codegen-special-var-lookup symbol[%s]%N" sym)
+  (cmp-log "About to codegen-special-var-lookup symbol[{}]%N" sym)
   (if (eq sym 'nil)
       (codegen-literal result nil env)
       (let* ((global-symbol (irc-global-symbol sym env))
@@ -624,7 +624,7 @@
 (defun codegen-var-lookup (result sym src-env)
   "Return IR code thsym returns the value of a symbol that is either lexical or special"
   (let ((classified (variable-info src-env sym)))
-    (cmp-log "About to codegen-var-lookup for %s - classified as: %s  env->%s%N" sym classified src-env)
+    (cmp-log "About to codegen-var-lookup for {} - classified as: {}  env->{}%N" sym classified src-env)
     (cond
       ((eq (car classified) 'ext:special-var)
        (codegen-special-var-lookup result sym src-env))
@@ -643,15 +643,15 @@
       (t (error "Handle codegen-var-lookup with ~s" classified)))))
 
 (defun codegen-symbol-value (result symbol env)
-  (cmp-log "codegen-symbol-value  symbol -> %s%N" symbol)
+  (cmp-log "codegen-symbol-value  symbol -> {}%N" symbol)
   (if (keywordp symbol)
       (progn
-        (cmp-log "codegen-symbol-value - %s is a keyword%N" symbol)
+        (cmp-log "codegen-symbol-value - {} is a keyword%N" symbol)
         (irc-t*-result (irc-intrinsic "cc_safe_symbol_value" (irc-global-symbol symbol env)) result))
       (progn
         (cmp-log "About to macroexpand%N")
         (let ((expanded (macroexpand symbol env)))
-          (cmp-log "codegen-symbol-value - %s is not a keyword%N" symbol)
+          (cmp-log "codegen-symbol-value - {} is not a keyword%N" symbol)
           (if (eq expanded symbol)
               ;; The symbol is unchanged, look up its value
               (codegen-var-lookup result symbol env)
@@ -661,7 +661,7 @@
 
 (defun compile-save-if-special (env target)
   (when (eq (car target) 'ext:special-var)
-    (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it%N" target)
+    (cmp-log "compile-save-if-special - the target: {} is special - so I'm saving it%N" target)
     (let* ((target-symbol (cdr target))
            (irc-target (irc-global-symbol target-symbol env))
            (save-old-binding (alloca-t* "special")))
@@ -696,7 +696,7 @@ It then returns (values target-ref target-type target-symbol target-lexical-inde
 If target-type=='special-var then target-lexical-index will be nil.
 You don't want to only write into the target-reference because
 you need to also bind the target in the compile-time environment "
-  (cmp-log "compile-target-reference target[%s]%N" target)
+  (cmp-log "compile-target-reference target[{}]%N" target)
   (cond
     ((eq (car target) 'ext:lexical-var)
      (cmp-log "compiling as a ext:lexical-var%N")
@@ -711,7 +711,7 @@ you need to also bind the target in the compile-time environment "
   "Define the target within the ValueEnvironment in env.
 If the target is special then define-special-binding.
 If the target is lexical then define-lexical-binding."
-  (cmp-log "define-binding-in-value-environment for target: %s%N" target)
+  (cmp-log "define-binding-in-value-environment for target: {}%N" target)
   (cond
     ((eq (car target) 'ext:special-var)
      (let ((target-symbol (cdr target)))

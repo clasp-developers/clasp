@@ -286,7 +286,7 @@ exceptions to higher levels of the code and unwinding the stack.
                ,@(unless exception-clauses
                    `(,previous-exception-handler-cleanup-block-gs
                      ,previous-exception-clause-types-to-handle-gs))))
-             (cmp-log "====>> In TRY --> parent-cleanup-block: %s%N" ,parent-cleanup-block-gs)
+             (cmp-log "====>> In TRY --> parent-cleanup-block: {}%N" ,parent-cleanup-block-gs)
              (let ,(mapcar #'(lambda (var-name)
                                (list var-name `(irc-basic-block-create (concatenate 'base-string ,name "." ,(symbol-name var-name)))))
                     dispatcher-block-gensyms)

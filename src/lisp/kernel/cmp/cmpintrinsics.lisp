@@ -580,10 +580,10 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 
 (defun initialize-calling-convention (llvm-function arity &key debug-on cleavir-lambda-list-analysis rest-alloc)
-  (cmp-log "llvm-function: %s%N" llvm-function)
+  (cmp-log "llvm-function: {}%N" llvm-function)
   (let ((arguments (llvm-sys:get-argument-list llvm-function)))
-    (cmp-log "llvm-function arguments: %s%N" (llvm-sys:get-argument-list llvm-function))
-    (cmp-log "llvm-function isVarArg: %s%N" (llvm-sys:is-var-arg llvm-function))
+    (cmp-log "llvm-function arguments: {}%N" (llvm-sys:get-argument-list llvm-function))
+    (cmp-log "llvm-function isVarArg: {}%N" (llvm-sys:is-var-arg llvm-function))
     (let ((register-save-area* (when debug-on (alloca-register-save-area arity :label "register-save-area")))
           (closure (first arguments)))
       (cmp-log "A%N")
@@ -664,8 +664,8 @@ Boehm and MPS use a single pointer"
 
 ;; (Maybe) generate code to store registers in memory. Return value unspecified.  
 (defun maybe-spill-to-register-save-area (arity register-save-area* registers)
-  (cmp-log "maybe-spill-to-register-save-area register-save-area* -> %s%N" register-save-area*)
-  (cmp-log "maybe-spill-to-register-save-area registers -> %s%N" registers)
+  (cmp-log "maybe-spill-to-register-save-area register-save-area* -> {}%N" register-save-area*)
+  (cmp-log "maybe-spill-to-register-save-area registers -> {}%N" registers)
   (when register-save-area*
     (flet ((spill-reg (idx reg addr-name)
              (let ((addr          (irc-gep register-save-area* (list 0 idx) addr-name))
@@ -1210,7 +1210,7 @@ It has appending linkage.")
                               "-" name-suffix)
                        :type "ll"
                        :defaults full-directory)))
-    (cmp-log "Dumping module to %s%N" output-path)
+    (cmp-log "Dumping module to {}%N" output-path)
     (ensure-directories-exist output-path)
     output-path))
 
@@ -1257,7 +1257,7 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
-  (cmp-log "About to dump module - %s%N" name-modifier)
+  (cmp-log "About to dump module - {}%N" name-modifier)
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier *compile-file-debug-dump-module*)
       (compile-quick-module-dump module name-modifier *compile-debug-dump-module*)))

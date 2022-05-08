@@ -766,7 +766,7 @@ Return the index of the load-time-value"
         (cmp:*generate-compile-file-load-time-values* t)
         (real-name (next-value-table-holder-name (core:next-number))) ;; do we need to use a module-id???
         (*literal-machine* (make-literal-machine)))
-    (cmp:cmp-log "do-literal-table cmp:*load-time-value-holder-global-var* -> %s%N" cmp:*load-time-value-holder-global-var*)
+    (cmp:cmp-log "do-literal-table cmp:*load-time-value-holder-global-var* -> {}%N" cmp:*load-time-value-holder-global-var*)
     (llog "About to evaluate body-fn~%")
     (funcall body-fn)
     ;; Generate the run-all function here
@@ -805,7 +805,7 @@ Return the index of the load-time-value"
                                                                 "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
-            (cmp::cmp-log "Replaced all %s with %s%N" cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
+            (cmp::cmp-log "Replaced all {} with {}%N" cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
             (multiple-value-bind (function-vector-length function-vector)
                 (setup-literal-machine-function-vectors cmp:*the-module* :id id)
               (cmp:with-run-all-entry-codegen
@@ -850,7 +850,7 @@ Return the index of the load-time-value"
                                           (core:bformat nil "%s%d" core:+gcroots-in-module-name+ module-id)))
          (*run-time-coalesce* (make-similarity-table #'eq))
          (*literal-machine* (make-literal-machine)))
-    (cmp:cmp-log "do-rtv cmp:*load-time-value-holder-global-var* -> %s%N" cmp:*load-time-value-holder-global-var*)
+    (cmp:cmp-log "do-rtv cmp:*load-time-value-holder-global-var* -> {}%N" cmp:*load-time-value-holder-global-var*)
     (let* ((THE-REPL-FUNCTION (funcall body-fn))
            (run-time-values (coerce (literal-machine-run-all-objects *literal-machine*) 'list))
            (num-elements (length run-time-values))
@@ -870,7 +870,7 @@ Return the index of the load-time-value"
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-constant-table)
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
             (let ((cmp:*load-time-value-holder-global-var* bitcast-constant-table))
-              (cmp::cmp-log "do-rtv Replaced all %s with %s%N" cmp:*load-time-value-holder-global-var* bitcast-constant-table)
+              (cmp::cmp-log "do-rtv Replaced all {} with {}%N" cmp:*load-time-value-holder-global-var* bitcast-constant-table)
               (multiple-value-bind (startup-shutdown-id ordered-raw-constant-list)
                   (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
                 (values ordered-raw-constant-list constant-table startup-shutdown-id)))))))))
@@ -968,7 +968,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                                              :declares nil
                                                              :spi core:*current-source-pos-info*))
               ;; Map the function argument names
-              (cmp:cmp-log "Creating ltv thunk with name: %s%N" (llvm-sys:get-name local-fn))
+              (cmp:cmp-log "Creating ltv thunk with name: {}%N" (llvm-sys:get-name local-fn))
               (cmp:codegen fn-result form fn-env)
               (cmp:cmp-log-dump-function local-fn)
               (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function local-fn t)))))

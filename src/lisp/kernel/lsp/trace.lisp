@@ -292,9 +292,7 @@ all functions."
 (defun trace-safe-print (direction fname vals &rest extras)
   (let ((indent (min (* (1- *trace-level*) 2) *trace-max-indent*))
         (*print-circle* t))
-    (core:bformat
-     *trace-output*
-     "%s"
+    (core:fmt *trace-output* "{}"
      (with-output-to-string (*trace-output*)
        #+(or)(core:bformat *trace-output* "%N")
        (case direction

@@ -55,8 +55,8 @@
            (with-input-from-string (s "(defun foo())")
              (load s :print t :verbose t)))
 
-(test-true wots-bformat
-           (not (string= "" (with-output-to-string (*standard-output*)(core:bformat t "Foo")))))
+(test-true wots-fmt
+           (not (string= "" (with-output-to-string (*standard-output*)(core:fmt t "Foo")))))
 
 (test load-stream.3
       (length

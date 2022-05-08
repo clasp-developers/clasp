@@ -74,8 +74,8 @@
 
 ;;; defined analogously to WARN, etc.
 (defun coerce-compiler-message (datum args)
-  (cond ((stringp datum) ; it's a bformat string
-         (apply #'core:bformat nil datum args))
+  (cond ((stringp datum) ; it's a fmt string
+         (apply #'core:fmt nil datum args))
         ((null args) ; it's some kind of object, e.g. a condition
          (princ-to-string datum))
         (t (error "BUG: Bad arguments to compiler-warn/error/something: ~a ~a"
@@ -99,16 +99,16 @@
 ;;; conditions using actual format strings.
 
 (defun warn-undefined-global-variable (spi var)
-  (compiler-warn spi "Undefined variable %s" var))
+  (compiler-warn spi "Undefined variable {}" var))
 
 (defun warn-undefined-type (spi type)
-  (compiler-style-warn spi "Undefined type %s" type))
+  (compiler-style-warn spi "Undefined type {}" type))
 
 (defun warn-cannot-coerce (spi type)
-  (compiler-style-warn spi "Cannot coerce to type %s: unknown or not defined for coerce" type))
+  (compiler-style-warn spi "Cannot coerce to type {}: unknown or not defined for coerce" type))
 
 (defun warn-invalid-number-type (spi type)
-  (compiler-warn spi "Invalid number type: %s" type))
+  (compiler-warn spi "Invalid number type: {}" type))
 
 (defun warn-icsp-iesp-both-specified (spi)
   (compiler-warn
@@ -129,7 +129,7 @@
   (bformat nil "%s filepos: %d  lineno: %d" (namestring pathname) filepos lineno)))
 
 (defun print-compiler-message (c stream)
-  (let ((msg (core:bformat nil (compiler-message-format c) (compiler-message-message c))))
+  (let ((msg (core:fmt nil (compiler-message-format c) (compiler-message-message c))))
     (fresh-line stream)
     (bformat stream ";;; %s%N" msg)
     (bformat stream ";;;     at %s %N" (describe-source-location (compiler-message-source-pos-info c)))))
@@ -204,7 +204,7 @@
 
 ;;; Redefined in compiler-conditions.lisp
 (defun warn-redefined-function (name new-type new-origin old-type old-origin)
-  (compiler-warn new-origin "The %s %s was previously defined as a %s at %s%N"
+  (compiler-warn new-origin "The {} {} was previously defined as a {} at {}%N"
                  new-type name
                  old-type (describe-source-location old-origin)))
 

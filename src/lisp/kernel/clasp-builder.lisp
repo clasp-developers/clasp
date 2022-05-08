@@ -16,7 +16,7 @@
                            (let ((fmt (cadr whole))
                                  (args (cddr whole)))
                              `(progn
-                                (core:bformat *log* ,fmt ,@args)
+                                (core:fmt *log* ,fmt ,@args)
                                 (finish-output *log*))))
            t))
 
@@ -236,8 +236,7 @@ Return files."
                   (apply #'cmp::compile-file-serial compile-file-arguments)
                   (let ((after-ms (get-internal-run-time))
                         (after-bytes (gctools:bytes-allocated)))
-                    (core:bformat t
-                                  "Time run(%.3f secs) consed(%d bytes)%N"
+                    (core:bformat t "Time run(%.3f secs) consed(%d bytes)%N"
                                    (float (/ (- after-ms before-ms) internal-time-units-per-second))
                                   (- after-bytes before-bytes))))
                 (apply #'cmp::compile-file-serial compile-file-arguments))
@@ -366,28 +365,28 @@ Return files."
 
                             
 (defun wait-for-child-to-exit (jobs)
-  (mmsg "About to waitpid sigchld-count: %s%N"(core:sigchld-count))
+  (mmsg "About to waitpid sigchld-count: {}%N"(core:sigchld-count))
   (multiple-value-bind (wpid status)
       (core:wait)
-    (mmsg "Returned from waitpid with wpid: %s status:%s%N" wpid status)
+    (mmsg "Returned from waitpid with wpid: {} status:{}%N" wpid status)
     (if (not (= wpid 0))
         (progn
           (if (/= status 0)
               (core:bformat t "wpid -> %s  status -> %s%N" wpid status))
           (if (core:wifexited status)
               (progn
-                (mmsg "A child exited wpid: %s  status: %s%N" wpid status)
+                (mmsg "A child exited wpid: {}  status: {}%N" wpid status)
                 (return-from wait-for-child-to-exit (values wpid status nil))))
           (if (core:wifsignaled status)
               (let ((signal (core:wtermsig status)))
-                (mmsg "Child process with pid %s got signal %s%N" wpid signal)
+                (mmsg "Child process with pid {} got signal {}%N" wpid signal)
                 (warn "Child process with pid ~a got signal ~a" wpid signal)))))
     ;; If we drop through to here the child died for some reason - return and inform the parent
     (values wpid status t)))
 
 (defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) total-files (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 1) file-order)
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
-  (mmsg "compile-system-parallel files %s%N" files)
+  (mmsg "compile-system-parallel files {}%N" files)
   (let ((total (or total-files (length files)))
         (job-counter 0)
         (batch-size 0)
@@ -413,7 +412,7 @@ Return files."
                       (source-path (build-pathname filename :lisp)))
                  (format t "Finished [~d of ~d (child pid: ~d)] ~s output follows...~%" (1+ (entry-position entry)) total child-pid source-path)))
              (read-fd-into-buffer (fd)
-               (mmsg "in read-fd-into-buffer %s%N" fd)
+               (mmsg "in read-fd-into-buffer {}%N" fd)
                (let ((buffer (make-array 1024 :element-type 'base-char :adjustable nil))
                      (sout (make-string-output-stream)))
                  (core:lseek fd 0 :seek-set)
@@ -427,12 +426,12 @@ Return files."
                             (return-from readloop))
                         (if (< num-read 0)
                             (progn
-                              (mmsg "Three was an error reading the stream errno %d%N" errno)
+                              (mmsg "Three was an error reading the stream errno {}%N" errno)
                               (core:bformat t "There was an error reading the stream errno %d%N" errno)))
                         (if (> num-read 0)
                             (progn
                               (write-sequence buffer sout :start 0 :end num-read)
-                              (mmsg "Wrote <%s>%N" (subseq buffer 0 num-read)))))
+                              (mmsg "Wrote <{}>%N" (subseq buffer 0 num-read)))))
                       (go top)))
                  (mmsg "Returning with buffer%N")
                  (core:close-fd fd)
@@ -446,7 +445,7 @@ Return files."
                    (core:bformat t "--%d(%s)--> %s%N" pid name line)
                    (finish-output))))
              (report-child-exited (child-pid child-stdout child-stderr)
-               (mmsg "In report-child-exited: %s %s%N" child-stdout child-stderr)
+               (mmsg "In report-child-exited: {} {}%N" child-stdout child-stderr)
                (report-stream child-pid child-stdout "out")
                (report-stream child-pid child-stderr "err"))
              (finished-some (child-pid pjob)
@@ -511,7 +510,7 @@ Return files."
                          (progn
                            (error "A child died with wpid ~a status ~a" wpid status)
                            (core:exit 1))))))
-           (mmsg "child-count: %s%N" child-count)
+           (mmsg "child-count: {}%N" child-count)
            (if entries
                (let ((child-stdout (core:mkstemp-fd "clasp-build-stdout"))
                      (child-stderr (core:mkstemp-fd "clasp-build-stderr")))

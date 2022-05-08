@@ -38,7 +38,7 @@
   ;; cc is the calling-convention object.
   (dolist (req (cdr reqargs))
     (let ((arg (calling-convention-vaslist.va-arg cc)))
-      (cmp-log "(calling-convention-vaslist.va-arg cc) -> %s%N" arg)
+      (cmp-log "(calling-convention-vaslist.va-arg cc) -> {}%N" arg)
       (funcall *argument-out* arg req))))
 
 ;;; Unlike the other compile-*-arguments, this one returns a value-
@@ -418,7 +418,7 @@ a_p = a_p_temp; a = a_temp;
               ;; we could use it in the error check to save a subtraction, though.
               (compile-optional-arguments optargs nreq calling-conv iNIL iT))
             (when safep
-              (cmp-log "Last if-too-many-arguments %s %s" cmax nargs)
+              (cmp-log "Last if-too-many-arguments {} {}" cmax nargs)
               (compile-error-if-too-many-arguments wrong-nargs-block cmax nargs)))))))
 
 
@@ -549,7 +549,7 @@ a_p = a_p_temp; a = a_temp;
   ;; 2) optional arguments are (<lexical location> <lexical location>)
   ;; 3) keyword arguments are (<symbol> <lexical location> <lexical location>)
   ;; this lets us cheap out on parsing, except &rest and &allow-other-keys.
-  (cmp-log "calculate-cleavir-lambda-list-analysis lambda-list -> %s%n" lambda-list)
+  (cmp-log "calculate-cleavir-lambda-list-analysis lambda-list -> {}%N" lambda-list)
   (let (required optional rest-type rest key aok-p key-flag
                  (required-count 0) (optional-count 0) (key-count 0))
     (dolist (item lambda-list)
@@ -618,13 +618,13 @@ a_p = a_p_temp; a = a_temp;
 (defun compile-lambda-list-code (cleavir-lambda-list-analysis calling-conv arity
                                  &key argument-out (safep t))
   "Return T if arguments were processed and NIL if they were not"
-  (cmp-log "about to compile-lambda-list-code cleavir-lambda-list-analysis: %s%n" cleavir-lambda-list-analysis)
+  (cmp-log "about to compile-lambda-list-code cleavir-lambda-list-analysis: {}%N" cleavir-lambda-list-analysis)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
     (declare (ignore unused-auxs))
-    (cmp-log "    reqargs -> %s%N" reqargs)
-    (cmp-log "    optargs -> %s%N" optargs)
-    (cmp-log "    keyargs -> %s%N" keyargs)
+    (cmp-log "    reqargs -> {}%N" reqargs)
+    (cmp-log "    optargs -> {}%N" optargs)
+    (cmp-log "    keyargs -> {}%N" keyargs)
     (cond
       ((eq arity :general-entry)
        (compile-general-lambda-list-code reqargs 
@@ -703,22 +703,22 @@ a_p = a_p_temp; a = a_temp;
     ;; Create the register lexicals using allocas
     (let (bindings
           (index -1))
-      (cmp-log "Processing reqs -> %s%N" reqs)
+      (cmp-log "Processing reqs -> {}%N" reqs)
       (dolist (req (cdr reqs))
-        (cmp-log "Add req %s%N" req)
+        (cmp-log "Add req {}%N" req)
         (push (cons req (incf index)) bindings))
-      (cmp-log "Processing opts -> %s%N" opts)
+      (cmp-log "Processing opts -> {}%N" opts)
       (do* ((cur (cdr opts) (cdddr cur))
             (opt (car cur) (car cur))
             (optp (cadr cur) (cadr cur)))
            ((null cur))
-        (cmp-log "Add opt %s %s%N" opt optp)
+        (cmp-log "Add opt {} {}%N" opt optp)
         (push (cons opt (incf index)) bindings)
         (push (cons optp (incf index)) bindings))
-      (cmp-log "Processing rest -> %s%N" rest)
+      (cmp-log "Processing rest -> {}%N" rest)
       (when rest
         (push (cons rest (incf index)) bindings))
-      (cmp-log "Processing keys -> %s%N" keys)
+      (cmp-log "Processing keys -> {}%N" keys)
       (do* ((cur (cdr keys) (cddddr cur))
             (key (third cur) (third cur))
             (keyp (fourth cur) (fourth cur)))
@@ -736,12 +736,12 @@ a_p = a_p_temp; a = a_temp;
                      :number-of-arguments (length output-bindings)
                      :label "arguments-env")))
       (irc-make-value-frame-set-parent new-env (length output-bindings) fn-env)
-      (cmp-log "output-bindings: %s%N" output-bindings)
+      (cmp-log "output-bindings: {}%N" output-bindings)
       (mapc (lambda (ob)
-              (cmp-log "Adding to environment: %s%N" ob)
+              (cmp-log "Adding to environment: {}%N" ob)
               (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
             output-bindings)
-      (cmp-log "register-environment contents -> %s%N" new-env)
+      (cmp-log "register-environment contents -> {}%N" new-env)
       (compile-lambda-list-code
        cleavir-lambda-list-analysis
        callconv

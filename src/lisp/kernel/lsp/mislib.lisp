@@ -79,14 +79,12 @@ successfully, T is returned, else error."
             )
       (setf end-unwinds (gctools:thread-local-unwind-counter))
       (if (= interpreted-calls-end interpreted-calls-start)
-          (core:bformat *trace-output*
-                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) unwinds(%d)%N"
+          (core:bformat *trace-output* "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) unwinds(%d)%N"
                         (float (/ (- real-end real-start) internal-time-units-per-second))
                         (float (/ (- run-end run-start) internal-time-units-per-second))
                         (- clasp-bytes-end clasp-bytes-start)
                         (- end-unwinds start-unwinds))
-          (core:bformat *trace-output*
-                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d) unwinds(%d)%N"
+          (core:bformat *trace-output* "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d) unwinds(%d)%N"
                         (float (/ (- real-end real-start) internal-time-units-per-second))
                         (float (/ (- run-end run-start) internal-time-units-per-second))
                         (- clasp-bytes-end clasp-bytes-start)

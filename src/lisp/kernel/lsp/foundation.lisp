@@ -344,9 +344,9 @@ the corresponding VAR.  Returns NIL."
 (defun signal-type-error (datum expected-type)
   (error 'type-error :datum datum :expected-type expected-type))
 
-
+#+(or)
 (defun inform (fmt &rest args)
-  (apply #'bformat t fmt args))
+  (apply #'fmt t fmt args))
 
 (in-package :cl)
 

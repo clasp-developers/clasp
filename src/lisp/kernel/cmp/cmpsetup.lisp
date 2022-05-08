@@ -133,8 +133,8 @@ Options are :tagbody :go :all :eh-landing-pads
   (defmacro cmp-log (fmt &rest args)
       `(if (is-debug-compiler-on)
            (progn
-             (bformat t "CMP-LOG ")
-             (bformat t ,fmt ,@args))
+             (core:fmt t "CMP-LOG ")
+             (core:fmt t ,fmt ,@args))
            nil)))
 
 (defmacro cmp-log-compile-file-dump-module (module &optional (name-modifier ""))

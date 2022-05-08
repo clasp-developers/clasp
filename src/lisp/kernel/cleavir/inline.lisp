@@ -972,9 +972,9 @@
   #+(or)
   (defmacro debug-inline (msg &rest msg-args)
     `(progn
-       (core:bformat t "debug-inline>> ")
-       (core:bformat t ,msg ,@msg-args)
-       (core:bformat t "%N")
+       (core:fmt t "debug-inline>> ")
+       (core:fmt t ,msg ,@msg-args)
+       (core:fmt t "%N")
        (finish-output)))
   (defmacro debug-inline (msg &rest msg-args)
     (declare (ignore msg msg-args))

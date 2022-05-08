@@ -90,7 +90,7 @@
   (assert-result-isa-llvm-value result)
   (let* ((bclasp-llvm-function-info (compile-lambda-function lambda-or-lambda-block env))
          (xep-group (bclasp-llvm-function-info-xep-function bclasp-llvm-function-info)))
-    (cmp-log "codegen-closure xep-group %s%N" xep-group)
+    (cmp-log "codegen-closure xep-group {}%N" xep-group)
     (if result
         ;; TODO:   Here walk the source code in lambda-or-lambda-block and
         ;; get the line-number/column for makeCompiledFunction
@@ -133,7 +133,7 @@
   "Return IR code for a function or closure"
   (let ((name-or-lambda (car rest)))
     (assert-result-isa-llvm-value result)
-    (cmp-log "About to codegen-function for: %s%N" name-or-lambda)
+    (cmp-log "About to codegen-function for: {}%N" name-or-lambda)
     (cond
       ((and name-or-lambda (symbolp name-or-lambda))
        (codegen-function-symbol-lookup result name-or-lambda env))
@@ -150,7 +150,7 @@
 
 (defun codegen-progn (result forms env)
   "Evaluate forms discarding results but keep last one"
-  (cmp-log "About to codegen-progn with forms: %s%N" forms)
+  (cmp-log "About to codegen-progn with forms: {}%N" forms)
   (cmp-log "Dumping the module%N")
   (cmp-log-dump-module *the-module*)
   (if forms
@@ -268,12 +268,12 @@
 	      (cur-var (car cur) (car cur))
 	      (cur-expr (cadr cur) (cadr cur)))
 	     ((endp cur) nil)
-	  (cmp-log "Compiling setq for target[%s]%N" cur-var)
+	  (cmp-log "Compiling setq for target[{}]%N" cur-var)
 	  (let ((expanded (macroexpand cur-var env)))
 	    (if (eq expanded cur-var)
 		;; symbol was not macroexpanded use SETQ
 		(progn
-		  (cmp-log "The symbol[%s] was not macroexpanded - using SETQ to set it%N" cur-var)
+		  (cmp-log "The symbol[{}] was not macroexpanded - using SETQ to set it%N" cur-var)
 		  (let* ((classified (variable-info env cur-var)))
                     (cond
                       ((eq (car classified) 'ext:special-var)
@@ -301,7 +301,7 @@
                     ))
 		;; symbol was macroexpanded use SETF
 		(progn
-		  (cmp-log "The symbol[%s] was macroexpanded to result[%s] setting with SETF%N"
+		  (cmp-log "The symbol[{}] was macroexpanded to result[{}] setting with SETF%N"
                            cur-var expanded)
 		  (codegen temp-res `(setf ,expanded ,cur-expr) env))))
 	  (unless (cddr cur)
@@ -342,7 +342,7 @@ and put the values into the activation frame for new-env."
       (vector-push-extend temp temps)
       (codegen temp exp evaluate-env))
     ;; Now generate code for let
-    (cmp-log "About to generate code for exps: %s%N" exps)
+    (cmp-log "About to generate code for exps: {}%N" exps)
     (do* ((cur-req (cdr reqvars) (cdr cur-req))
           (classified-target (car cur-req) (car cur-req))
           (tempidx 0 (1+ tempidx)))
@@ -363,11 +363,11 @@ and put the values into the activation frame for new-env."
   "Evaluate each of the exps in the evaluate-env environment
 and put the values into the activation frame for new-env."
   (cmp-log "entered codegen-fill-let*-environment%N")
-  (cmp-log "   new-env -> %s%N" new-env)
-  (cmp-log "   parent-env -> %s%N" parent-env)
-  (cmp-log "   evaluate-env -> %s%N" evaluate-env)
+  (cmp-log "   new-env -> {}%N" new-env)
+  (cmp-log "   parent-env -> {}%N" parent-env)
+  (cmp-log "   evaluate-env -> {}%N" evaluate-env)
   ;; Now generate code for let
-  (cmp-log "About to generate code for exps: %s%N" exps)
+  (cmp-log "About to generate code for exps: {}%N" exps)
   (let ((temp-var (alloca-t* "special-save")))
     (do* ((cur-req (cdr reqvars) (cdr cur-req))
           (classified-target (car cur-req) (car cur-req))
@@ -465,7 +465,7 @@ and put the values into the activation frame for new-env."
            (let ((header-value-min-max (gethash type core:+type-header-value-map+)))
              (when (null header-value-min-max)
                (format t "typeq type = ~a~%" type)
-               (compiler-error nil "unknown type for typeq: %s" type))
+               (compiler-error nil "unknown type for typeq: {}" type))
              (compile-header-check header-value-min-max object-raw thenb elseb))))))))
 
 (defmacro define-tag-check (name mask tag)
@@ -572,7 +572,7 @@ jump to blocks within this tagbody."
            (instruction (irc-intrinsic "makeTagbodyFrameSetParent" renv)))
       (irc-t*-result instruction (irc-renv tagbody-env))
       (irc-low-level-trace :tagbody)
-      (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
+      (cmp-log "codegen-tagbody tagbody environment: {}%N" tagbody-env)
       (let ((handle (irc-intrinsic "initializeTagbodyClosure" (irc-renv tagbody-env))))
         #+optimize-bclasp
         (setf (gethash tagbody-env *tagbody-frame-info*)
@@ -631,7 +631,7 @@ jump to blocks within this tagbody."
              (instruction (irc-intrinsic "makeTagbodyFrameSetParent" renv)))
         (irc-t*-result instruction (irc-renv tagbody-env))
         (irc-low-level-trace :tagbody)
-        (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
+        (cmp-log "codegen-tagbody tagbody environment: {}%N" tagbody-env)
         (let ((handle (irc-intrinsic "initializeTagbodyClosure" (irc-renv tagbody-env))))
           #+optimize-bclasp
           (setf (gethash tagbody-env *tagbody-frame-info*)
@@ -690,7 +690,7 @@ jump to blocks within this tagbody."
       ((and classified-tag (eq (car classified-tag) 'local-go))
        (let ((index (caddr classified-tag))
 	     (tagbody-env (cadddr classified-tag)))
-	 (cmp-log "Target tagbody environment: %s  tag: %s%N" tagbody-env tag)
+	 (cmp-log "Target tagbody environment: {}  tag: {}%N" tagbody-env tag)
 	 (let* ((go-vec (core:local-blocks tagbody-env))
 		(go-block (elt go-vec index)))
 	   (irc-unwind-into-environment env tagbody-env)
@@ -960,7 +960,7 @@ jump to blocks within this tagbody."
 
 (defun codegen-load-time-value (result rest env)
   (declare (ignore env))
-  (cmp-log "Starting codegen-load-time-value rest: %s%N" rest)
+  (cmp-log "Starting codegen-load-time-value rest: {}%N" rest)
   (let* ((form (car rest))
 	 (read-only-p (cadr rest)))
     (declare (ignore read-only-p))
@@ -1511,7 +1511,7 @@ jump to blocks within this tagbody."
 
 #+(or)
 (defmacro blog (fmt &rest fargs)
-  `(core:bformat *error-output* ,fmt ,@fargs))
+  `(core:fmt *error-output* ,fmt ,@fargs))
 (defmacro blog (fmt &rest fargs)
   (declare (ignore fmt fargs))
   nil)
@@ -1521,13 +1521,13 @@ jump to blocks within this tagbody."
   (let ((lambda-list (first form))
         (vaslist     (second form))
         (body        (cddr form)))
-    (blog "evaluate-env -> %s%N" evaluate-env)
+    (blog "evaluate-env -> {}%N" evaluate-env)
     (multiple-value-bind (declares code)
         (process-declarations body t)
       (let ((canonical-declares (core:canonicalize-declarations declares)))
         (multiple-value-bind (cleavir-lambda-list-analysis new-body rest-alloc)
             (transform-lambda-parts lambda-list canonical-declares code)
-          (blog "got cleavir-lambda-list-analysis -> %s%N" cleavir-lambda-list-analysis)
+          (blog "got cleavir-lambda-list-analysis -> {}%N" cleavir-lambda-list-analysis)
           (let ((eval-vaslist (alloca-t* "bind-vaslist")))
             (codegen eval-vaslist vaslist evaluate-env)
             (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))

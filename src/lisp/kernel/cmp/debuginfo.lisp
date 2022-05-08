@@ -101,10 +101,10 @@
                                  "" ; 16 SDK
                                  )))
        (declare (ignorable ,dir-name)) ; cmp-log may expand empty
-       (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
-       (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
-       (cmp-log "with-dbg-compile-unit file-name: [%s]%N" ,file)
-       (cmp-log "with-dbg-compile-unit dir-name: [%s]%N" ,dir-name)
+       (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: {}%N" *dbg-compile-unit*)
+       (cmp-log "with-dbg-compile-unit source-pathname: {}%N" ,source-pathname)
+       (cmp-log "with-dbg-compile-unit file-name: [{}]%N" ,file)
+       (cmp-log "with-dbg-compile-unit dir-name: [{}]%N" ,dir-name)
        ,@body)))
 
 (defun make-file-metadata (pathname)

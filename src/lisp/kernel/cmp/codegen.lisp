@@ -30,8 +30,8 @@ Could return more functions that provide lambda-list for swank for example"
       (transform-lambda-parts lambda-list original-declares code)
     (let ((declares (core:canonicalize-declarations original-declares)))
       (cmp-log "generate-llvm-function-from-code%N")
-      (cmp-log "cleavir-lambda-list-analysis -> %s%N" cleavir-lambda-list-analysis)
-      (cmp-log "new-body -> %s%N" new-body)
+      (cmp-log "cleavir-lambda-list-analysis -> {}%N" cleavir-lambda-list-analysis)
+      (cmp-log "new-body -> {}%N" new-body)
 ;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
 ;;;    (bformat *error-output* "new-body -> %s%N" new-body)
       (let ((name (core:extract-lambda-name-from-declares
@@ -49,7 +49,7 @@ Could return more functions that provide lambda-list for swank for example"
                                                               :docstring docstring
                                                               :declares declares
                                                               :spi core:*current-source-pos-info*))
-                   (cmp-log "Starting new function name: %s%N" name)
+                   (cmp-log "Starting new function name: {}%N" name)
                    ;; The following injects a debugInspectT_sp at the start of the body
                    ;; it will print the address of the literal which must correspond to an entry in the
                    ;; load time values table
@@ -57,10 +57,10 @@ Could return more functions that provide lambda-list for swank for example"
                    (let* ((arguments      (llvm-sys:get-argument-list local-fn))
                           (callconv       :was-callconv ))
                      (declare (ignorable arguments) (ignore callconv))
-                     (cmp-log "argument-list %s%N" arguments)
-                     (cmp-log "fn-env -> %s%N" fn-env)
+                     (cmp-log "argument-list {}%N" arguments)
+                     (cmp-log "fn-env -> {}%N" fn-env)
                      (let ((new-env fn-env)) ; (irc-make-unbound-value-environment-of-size fn-env:was-new-env-codegen #+(or)(bclasp-compile-lambda-list-code fn-env callconv)))
-                       (cmp-log "Created new register environment -> %s%N" new-env)
+                       (cmp-log "Created new register environment -> {}%N" new-env)
                        ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
                        ;; in which case the (with-try ...) can be removed
                        ;; Christian Schafmeister June 2019
@@ -167,7 +167,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
             (values llvm-function-from-lambda :function env)))
       (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
       (potentially-save-module)
-      (cmp-log "fn --> %s%N" fn)
+      (cmp-log "fn --> {}%N" fn)
       (cmp-log-dump-module *the-module*)
       (values fn function-kind wrapped-env))))
 
@@ -238,10 +238,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     (codegen-call result (irc-load temp-closure) args env)))
 
 (defun codegen-special-operator (result head rest env)
-  (cmp-log "entered codegen-special-operator head: %s rest: %s%N" head rest)
+  (cmp-log "entered codegen-special-operator head: {} rest: {}%N" head rest)
   (assert-result-isa-llvm-value result)
   (cmp-log "About to set source pos%N")
-  (cmp-log "About to do case on head: %s%N" head)
+  (cmp-log "About to do case on head: {}%N" head)
   (let ((function (gethash head *special-operator-dispatch* 'nil)))
     (if function
 	(funcall function result rest env)
@@ -306,7 +306,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun codegen-cons (result form env)
   (let ((head (car form))
         (rest (cdr form)))
-    (cmp-log "About to codegen special-operator or application for: %s%N" form)
+    (cmp-log "About to codegen special-operator or application for: {}%N" form)
     (cond
       ;; special form
       ((treat-as-special-operator-p head)
@@ -339,8 +339,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun codegen (result form env)
 ;;;  (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result)
-  (cmp-log "codegen stack-used[%d bytes]%N" (stack-used))
-  (cmp-log "codegen evaluate-depth[%d]  %s%N" (evaluate-depth) form)
+  (cmp-log "codegen stack-used[{} bytes]%N" (stack-used))
+  (cmp-log "codegen evaluate-depth[{}]  {}%N" (evaluate-depth) form)
   ;;
   ;; If a *code-walker* is defined then invoke the code-walker
   ;; with the current form and environment
@@ -366,7 +366,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                                               :declares nil
                                                               :spi core:*current-source-pos-info*))
                             ;; Map the function argument names
-                            (cmp-log "Creating repl function with name: %s%N" (llvm-sys:get-name local-fn))
+                            (cmp-log "Creating repl function with name: {}%N" (llvm-sys:get-name local-fn))
                             ;;	(break "codegen repl form") 
                             (codegen result form fn-env))))
       (cmp-log "Dumping the repl function%N")
