@@ -428,7 +428,6 @@ public:
   DebugStream &writePtr(void *);
   DebugStream &writeLn();
   DebugStream &log(const string &msg);
-//  DebugStream &log(const boost::format &fmt);
 
   string nextPosition();
 
@@ -532,7 +531,7 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #define lisp_ASSERTP( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e));
 #define ASSERTP(x, e) lisp_ASSERTP(x, e)
 #define lisp_ASSERTF( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e).str().c_str());
-#define ASSERTF(x, f) lisp_ASSERTF(x, f)
+#define ASSERTF(x, ...) lisp_ASSERTF(x, fmt::sprintf(__VA_ARGS__))
 #define ASSERT_eq(x, y)                                                                           \
   if (!(x == y)) {                                                                                \
     SIMPLE_ERROR(("Assertion [%s==%s] failed values are (%s) and (%s)") , #x , #y , (x) , (y)); \
@@ -575,7 +574,7 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #define IF_DEBUG_ON(x)
 #define lisp_ASSERTF(l, x, f) \
   {}
-#define ASSERTF(x, f) \
+#define ASSERTF(x, ...) \
   {}
 #define ASSERT_eq(x, y) \
   {}
@@ -612,35 +611,12 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #ifdef CALLSTACK_ON //[
 #define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
 
-struct _StackTrace {
-  const char* _Filename;
-  _StackTrace(const char* filename, const char* kind, size_t line, size_t col, const boost::format& fmt) :_Filename(filename) {
-    if (core::lisp_debugIsOn(filename)) { 
-      lisp_debugLog()->beginNode(DEBUG_CPP_BLOCK,filename,kind,line,col,fmt.str());
-    } 
-  }
-  ~_StackTrace() {
-    if (core::lisp_debugIsOn(this->_Filename)) {
-      lisp_debugLog()->endNode(DEBUG_CPP_BLOCK);
-    } 
-  }
-};
-
 #define _G()                     \
   LOG_CXX_FUNCTION_INVOCATION(); 
 #define _OF() _G();
-#define _lisp_BLOCK_TRACEF(__f) core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,__f)
-#define _lisp_BLOCK_TRACE(__s) _lisp_BLOCK_TRACEF(BF("%s") % (__s))
-#define _BLOCK_TRACEF(f) _lisp_BLOCK_TRACEF(f)
-#define _BLOCK_TRACE(s) _lisp_BLOCK_TRACEF(BF("%s") % (s))
 #else //][
 #define _G() 
 #define _OF()
-#define _lisp_BLOCK_TRACEF(__f)
-#define _lisp_BLOCK_TRACE(__s)
-#define _BLOCK_TRACE(f)
-#define _BLOCK_TRACEF(f)
-#define _lisp_BLOCK_TRACEF(__f)
 #endif //]
 
 string debugFlagsAsNodeName(uint flags);

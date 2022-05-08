@@ -797,7 +797,6 @@ CL_DEFUN T_mv core__sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
     LOG("Read the object[%s]" , _rep_(obj));
     return Values(obj);
   } else {
-    _BLOCK_TRACEF(BF("Suppressing read for unsupported feature[%s]") % feat->__repr__());
     DynamicScopeManager dynScopeManager(cl::_sym_STARread_suppressSTAR, _lisp->_true());
     cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     return Values0<T_O>();

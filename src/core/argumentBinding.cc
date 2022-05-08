@@ -50,7 +50,6 @@ int PASS_FUNCTION_REQUIRED(core::T_sp closure,
     throwTooFewArgumentsError(closure,length_args, reqs_size);
   }
   if (reqs.size()>0) {
-    _BLOCK_TRACE("Assigning required arguments");
     for (gctools::Vec0<RequiredArgument>::const_iterator it = reqs.begin(); it != reqs.end(); ++it) {
       T_sp value = PASS_NEXT_ARG(arg_idx);
 #ifdef DEBUG_EVALUATE
@@ -81,7 +80,6 @@ int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
   LOG("There are %d optional arguments" , optionals.size());
   gctools::Vec0<OptionalArgument>::const_iterator it = optionals.begin();
   {
-    _BLOCK_TRACE("Assigning given optional arguments");
     for (; it != optionals.end(); it++) {
       LOG("Checking if it->_Target.nilp() = %d" , it->_ArgTarget.nilp());
       if (arg_idx == num_args) {
@@ -103,7 +101,6 @@ int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
     }
   }
   {
-    _BLOCK_TRACE("Assigning missing optional arguments with default values");
     for (; it != optionals.end(); it++) {
       T_sp init_form = it->_Default;
       LOG("Init form: %s" , _rep_(init_form));
@@ -168,7 +165,6 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
   LOG(":allow-other-keywords --> %d" , passed_allow_other_keys);
   T_sp first_illegal_keyword(nil<T_O>());
   {
-    _BLOCK_TRACEF(BF("Copy passed keyword values to environment"));
     for (int i(arg_idx), iEnd(num_args); i < iEnd; i += 2) {
       T_sp keyword = T_sp(PASS_NEXT_ARG(arg_idx));
       arg_idx++;
@@ -204,7 +200,6 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
   }
   // Now fill in the default values for the missing parameters
   {
-    _BLOCK_TRACEF(BF("Add missing keyword default init-form values to ActivationFrame"));
     gctools::Vec0<KeywordArgument>::iterator fi;
     int ik(0);
     for (fi = keyed_args.begin(); fi != keyed_args.end(); fi++) {

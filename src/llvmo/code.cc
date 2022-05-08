@@ -8,6 +8,7 @@
 #define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
+#include <unistd.h>
 #include <dlfcn.h>
 #include <iomanip>
 #include <cstdint>

@@ -596,7 +596,6 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
     return Values(val, kw::_sym_internal);
   }
   {
-    _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
     for (auto it = this->_UsingPackages.begin();
          it != this->_UsingPackages.end(); it++) {
       Package_sp upkg = *it;
@@ -1011,7 +1010,6 @@ bool Package_O::unintern(Symbol_sp sym) {
       // same name.
       // We check for this before doing anything, because uninterning must be
       // all or nothing.
-      _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
       // This is a list of symbols with the same name as the symbol
       // being uninterned that are exported by packages this package uses.
       for (auto it = this->_UsingPackages.begin();

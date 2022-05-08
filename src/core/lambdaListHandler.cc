@@ -613,7 +613,6 @@ void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, ScopeManager
   LOG("There are %d aux variables" , auxs.size());
   gctools::Vec0<AuxArgument>::iterator ci;
   {
-    _BLOCK_TRACE("Assigning aux variables");
     for (ci = auxs.begin(); ci != auxs.end(); ci++) {
       T_sp expr = ci->_Expression;
       if (expr.notnilp()) {
@@ -848,7 +847,6 @@ BADMODE:
 NEWMODE:
   LOG("Switched to mode: %s" , argument_mode_as_string(mode));
   {
-    _BLOCK_TRACEF(BF("Checking if mode[%s] is valid for context[%s]") % argument_mode_as_string(mode) % context->__repr__());
     switch (mode) {
     case keyword:
       key_flag = _lisp->_true();

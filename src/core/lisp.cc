@@ -478,7 +478,6 @@ void Lisp::startupLispEnvironment() {
   //
   CoreExposer_sp coreExposer;
   {
-    _BLOCK_TRACE("Initialize core classes");
     initialize_clasp();
     _lisp->_Roots._CorePackage = gc::As<Package_sp>(_lisp->findPackage(CorePkg));
     _lisp->_Roots._KeywordPackage = gc::As<Package_sp>(_lisp->findPackage(KeywordPkg));
@@ -498,7 +497,6 @@ void Lisp::startupLispEnvironment() {
   //	LOG("ALL CLASSES: %s"% this->dumpClasses() );
   //    this->createNils();
   {
-    _BLOCK_TRACE("Dump of all BuiltInClass classes");
 #ifdef DEBUG_ON
 //    rootClassManager().debugDump();
 #endif
@@ -511,7 +509,6 @@ void Lisp::startupLispEnvironment() {
 #endif
   this->_Roots._CommandLineArguments = nil<T_O>();
   {
-    _BLOCK_TRACE("Initialize other code"); // needs _TrueObject
     initialize_Lisp();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
@@ -555,7 +552,6 @@ void Lisp::startupLispEnvironment() {
   coreExposer->expose(_lisp, Exposer_O::candoFunctions);
   coreExposer->expose(_lisp, Exposer_O::candoGlobals);
   {
-    _BLOCK_TRACE("Call global initialization callbacks");
     for (vector<InitializationCallback>::iterator ic = globals_->_GlobalInitializationCallbacks.begin();
          ic != globals_->_GlobalInitializationCallbacks.end(); ic++) {
       (*ic)(_lisp);
@@ -563,7 +559,6 @@ void Lisp::startupLispEnvironment() {
   }
   this->switchToClassNameHashTable();
   {
-    _BLOCK_TRACE("Setup system values");
     FILE *null_out = fopen("/dev/null", "w");
     this->_Roots._NullStream = IOStreamStream_O::makeIO("/dev/null", null_out);
     this->_Roots._RehashSize = DoubleFloat_O::create(2.0);
@@ -785,20 +780,16 @@ void Lisp::installPackage(const Exposer_O *pkg) {
   int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
   ChangePackage change(pkg->package());
   {
-    _BLOCK_TRACE("Initializing classes");
     pkg->expose(_lisp, Exposer_O::candoClasses);
   }
   {
-    _BLOCK_TRACE("Initializing functions");
     pkg->expose(_lisp, Exposer_O::candoFunctions);
   }
   {
-    _BLOCK_TRACE("Initializing globals");
     pkg->expose(_lisp, Exposer_O::candoGlobals);
   }
 
   {
-    _BLOCK_TRACE("Call global initialization callbacks");
     for (vector<InitializationCallback>::iterator ic = globals_->_GlobalInitializationCallbacks.begin() + firstNewGlobalCallback;
          ic != globals_->_GlobalInitializationCallbacks.end(); ic++) {
       (*ic)(_lisp);
@@ -1334,7 +1325,6 @@ T_mv Lisp::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prom
         }
         write_bf_stream(fmt::sprintf(";;--read-%s-------------\n#|\n%s\n----------|#\n" , suppress.c_str() , _rep_(expression)));
       }
-      _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
       if (cl__keywordp(expression)) {
         ql::list tplCmd;
         tplCmd << expression;
@@ -2416,7 +2406,6 @@ int Lisp::run() {
     // we want an interactive script
     //
       {
-        _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_InitFileName);
         Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(globals_->_InitFileName));
         if (!global_options->_SilentStartup) {
           printf("Loading image %s\n", _rep_(initPathname).c_str() );
@@ -2428,7 +2417,6 @@ int Lisp::run() {
         }
       }
     } else if (globals_->_Interactive) {
-      _BLOCK_TRACE("Interactive REPL");
       write_bf_stream("Clasp (copyright Christian E. Schafmeister 2014)\n");
       write_bf_stream("Low level repl\n");
       this->readEvalPrintInteractive();

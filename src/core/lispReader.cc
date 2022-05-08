@@ -1092,7 +1092,6 @@ step1:
   }
   //    step4:
   if ((xxx_syntax_type == kw::_sym_terminating_macro) || (xxx_syntax_type == kw::_sym_non_terminating_macro)) {
-    _BLOCK_TRACEF(BF("Processing macro character x[%s]") % clasp_as_claspCharacter(xxx));
     LOG_READ(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % clasp_as_claspCharacter(xxx));
     T_sp reader_macro;
     reader_macro = cl__get_macro_character(xxx,readTable);

@@ -55,8 +55,6 @@ THE SOFTWARE.
 
 namespace core {
   [[noreturn]]void lisp_throwLispError(const std::string &str);
-//  [[noreturn]]void errorFormatted(boost::format fmt);
-//  void lisp_write(const boost::format &fmt, T_sp stream);
   [[noreturn]]void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const string &fmt);
   [[noreturn]]void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const std::string& str);
   void lisp_debugLogWrite(const char *fileName, const char *funcName, uint lineNumber, uint column, const std::string &message, uint debugFlags = DEBUG_CPP_FUNCTION);

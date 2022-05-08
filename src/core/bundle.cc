@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 //#define DEBUG_DESC_BUNDLE
 
-
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -2101,7 +2101,6 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif
                 return Values(exp);
             } else if (Symbol_sp sym = exp.asOrNull<Symbol_O>()) {
-                _BLOCK_TRACEF(BF("Evaluating symbol: %s") % exp->__repr__());
                 if (sym->isKeywordSymbol()) {
 #ifdef DEBUG_EVALUATE
               if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
@@ -2445,7 +2444,6 @@ T_mv sp_go(List_sp args, T_sp env) {
             }
             LOG("Arguments before evaluateList: %s" , _rep_(args));
             {
-                _BLOCK_TRACE("Evaluating...");
                 int idx = 0;
                 // Iterate through each car in exp and
                 // evaluate it (handling Nil objects and results)
@@ -2472,7 +2470,6 @@ T_mv sp_go(List_sp args, T_sp env) {
             }
             LOG("Arguments before evaluateList: %s" , args->__repr__());
             {
-                _BLOCK_TRACE("Evaluating...");
                 // Iterate through each car in exp and
                 // evaluate it (handling Nil objects and results)
                 // and string the results into a linked list

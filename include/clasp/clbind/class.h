@@ -49,6 +49,10 @@ THE SOFTWARE.
 #ifndef CLBIND_CLASS_HPP_INCLUDED
 #define CLBIND_CLASS_HPP_INCLUDED
 
+#include <boost/type_traits.hpp>
+#include <boost/type_traits/is_base_of.hpp>
+#include <boost/mpl/vector.hpp>
+
 /*
 	ISSUES:
 	------------------------------------------------------
