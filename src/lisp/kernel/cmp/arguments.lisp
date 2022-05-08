@@ -93,7 +93,7 @@ switch (nargs) {
       ;; Generate a block for each case.
       (do ((i nreq (1+ i)))
           ((= i nfixed))
-        (let ((new (irc-basic-block-create (core:bformat nil "supplied-%d-arguments" i))))
+        (let ((new (irc-basic-block-create (core:fmt nil "supplied-{}-arguments" i))))
           (llvm-sys:add-case sw (irc-size_t i) new)
           (irc-phi-add-incoming nremaining zero new)
           (irc-begin-block new)
@@ -186,13 +186,13 @@ a_p = a_p_temp; a = a_temp;
          ;; NOTE: We might save a bit of time by moving this out of the loop.
          ;; Or maybe LLVM can handle it. I don't know.
          (key-const (irc-literal keyword keystring))
-         (match (irc-basic-block-create (core:bformat nil "matched-%s" keystring)))
-         (mismatch (irc-basic-block-create (core:bformat nil "not-%s" keystring))))
+         (match (irc-basic-block-create (core:fmt nil "matched-{}" keystring)))
+         (mismatch (irc-basic-block-create (core:fmt nil "not-{}" keystring))))
     (let ((test (irc-icmp-eq key-arg key-const)))
       (irc-cond-br test match mismatch))
     (irc-begin-block match)
-    (let* ((new (irc-basic-block-create (core:bformat nil "new-%s" keystring)))
-           (old (irc-basic-block-create (core:bformat nil "old-%s" keystring))))
+    (let* ((new (irc-basic-block-create (core:fmt nil "new-{}" keystring)))
+           (old (irc-basic-block-create (core:fmt nil "old-{}" keystring))))
       (let ((test (irc-icmp-eq suppliedp-phi false)))
         (irc-cond-br test new old))
       (irc-begin-block new) (irc-br cont-block)
@@ -253,7 +253,7 @@ a_p = a_p_temp; a = a_temp;
         (irc-phi-add-incoming sbkw (jit-constant-false) start)
         (irc-phi-add-incoming bad-keyword undef start)
         (do-keys (key)
-          (let ((var-phi (irc-phi %t*% 2 (core:bformat nil "%s-top" (string key)))))
+          (let ((var-phi (irc-phi %t*% 2 (core:fmt nil "{}-top" (string key)))))
             (push var-phi top-param-phis)
             ;; If we're paying attention to :allow-other-keys, track it specially
             ;; and initialize it to NIL.
@@ -261,7 +261,7 @@ a_p = a_p_temp; a = a_temp;
                    (irc-phi-add-incoming var-phi false start)
                    (setf allow-other-keys var-phi))
                   (t (irc-phi-add-incoming var-phi undef start))))
-          (let ((suppliedp-phi (irc-phi %t*% 2 (core:bformat nil "%s-suppliedp-top" (string key)))))
+          (let ((suppliedp-phi (irc-phi %t*% 2 (core:fmt nil "{}-suppliedp-top" (string key)))))
             (push suppliedp-phi top-suppliedp-phis)
             (irc-phi-add-incoming suppliedp-phi false start)))
         (setf top-param-phis (nreverse top-param-phis)
@@ -487,7 +487,7 @@ a_p = a_p_temp; a = a_temp;
               ;; each case
               (dotimes (i nopt)
                 (let* ((opti (+ i nreq))
-                       (blck (irc-basic-block-create (core:bformat nil "supplied-%d-arguments" opti))))
+                       (blck (irc-basic-block-create (core:fmt nil "supplied-{}-arguments" opti))))
                   (llvm-sys:add-case sw (irc-size_t opti) blck)
                   (do ((var-phis var-phis (cdr var-phis))
                        (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))

@@ -257,8 +257,8 @@
 
 #+(or)
 (defun codegen-special-var-reference (var &optional env)
-  (core::bformat t "In codegen-special-var-reference for %s%N" var)
-  (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
+  (core::fmt t "In codegen-special-var-reference for {}%N" var)
+  (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (core:fmt nil "<special-var:{}>" (symbol-name var) )))
 
 (defun codegen-setq (result setq-pairs env)
   "Carry out setq for a collection of pairs"
@@ -412,7 +412,7 @@ and put the values into the activation frame for new-env."
                     (with-try "TRY.let/let*"
                       (progn
                         (irc-branch-to-and-begin-block (irc-basic-block-create
-                                                        (bformat nil "%s-start" (symbol-name operator-symbol))))
+                                                        (core:fmt nil "{}-start" (symbol-name operator-symbol))))
                         (irc-make-value-frame-set-parent new-env number-of-lexical-vars env)
                         ;; Save all special variables
                         (do* ((cur-req (cdr reqvars) (cdr cur-req))
@@ -428,7 +428,7 @@ and put the values into the activation frame for new-env."
                        (irc-unwind-environment new-env)))
                     (progn
                       (irc-branch-to-and-begin-block (irc-basic-block-create
-                                                      (bformat nil "%s-start" (symbol-name operator-symbol))))
+                                                      (core:fmt nil "{}-start" (symbol-name operator-symbol))))
                       (irc-make-value-frame-set-parent new-env number-of-lexical-vars env)
                       (if (eq operator-symbol 'let)
                           (codegen-fill-let-environment new-env reqvars expressions env evaluate-env)
@@ -551,7 +551,7 @@ and put the values into the activation frame for new-env."
     (mapl #'(lambda (x)
 	      (if (and (car x) (symbolp (car x)))
 		  (progn
-                    (setq result (cons (list index (irc-basic-block-create (bformat nil "tagbody-%s-%s" (car x) index)) x) result))
+                    (setq result (cons (list index (irc-basic-block-create (core:fmt nil "tagbody-{}-{}" (car x) index)) x) result))
                     (add-tag tagbody-env (car x) result)
                     (setq index (+ 1 index)))))
           code)
@@ -709,10 +709,10 @@ jump to blocks within this tagbody."
       (multiple-value-bind (block-env make-block-frame-instruction make-block-frame-instruction-arguments)
           (irc-make-block-environment-set-parent block-symbol env)
 	(let ((block-start (irc-basic-block-create
-			    (bformat nil "block-%s-start" (symbol-name block-symbol))))
-	      (nonlocal-return-block (irc-basic-block-create (bformat nil "nonlocal-return-%s-block" (symbol-name block-symbol))))
-	      (local-return-block (irc-basic-block-create (bformat nil "local-return-%s-block" (symbol-name block-symbol))))
-	      (after-return-block (irc-basic-block-create (bformat nil "after-return-%s-block" (symbol-name block-symbol)))))
+			    (core:fmt nil "block-{}-start" (symbol-name block-symbol))))
+	      (nonlocal-return-block (irc-basic-block-create (core:fmt nil "nonlocal-return-{}-block" (symbol-name block-symbol))))
+	      (local-return-block (irc-basic-block-create (core:fmt nil "local-return-{}-block" (symbol-name block-symbol))))
+	      (after-return-block (irc-basic-block-create (core:fmt nil "after-return-{}-block" (symbol-name block-symbol)))))
 	  (core:setf-local-return-block block-env local-return-block)
           (core:setf-local-return-value block-env result)
 	  (irc-br block-start "block-start")
@@ -754,9 +754,9 @@ jump to blocks within this tagbody."
       (multiple-value-bind (block-env)
           (irc-make-local-block-environment-set-parent block-symbol env)
 	(let ((block-start (irc-basic-block-create
-			    (bformat nil "block-%s-start" (symbol-name block-symbol))))
-	      (local-return-block (irc-basic-block-create (bformat nil "local-return-%s-block" (symbol-name block-symbol))))
-	      (after-return-block (irc-basic-block-create (bformat nil "after-return-%s-block" (symbol-name block-symbol)))))
+			    (core:fmt nil "block-{}-start" (symbol-name block-symbol))))
+	      (local-return-block (irc-basic-block-create (core:fmt nil "local-return-{}-block" (symbol-name block-symbol))))
+	      (after-return-block (irc-basic-block-create (core:fmt nil "after-return-{}-block" (symbol-name block-symbol)))))
 	  (core:setf-local-return-block block-env local-return-block)
           (core:setf-local-return-value block-env result)
 	  (irc-br block-start "block-start")
@@ -862,7 +862,7 @@ jump to blocks within this tagbody."
 			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol))))
               (*notinlines* (new-notinlines declares)))
 	  (irc-branch-to-and-begin-block (irc-basic-block-create
-					  (bformat nil "%s-start"
+					  (core:fmt nil "{}-start"
 						   (symbol-name operator-symbol))))
 	  (codegen-fill-function-frame operator-symbol function-env functions env evaluate-env)
 	  (codegen-progn result code function-env))))))
@@ -1552,7 +1552,7 @@ jump to blocks within this tagbody."
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
-  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s%N" form)
+  ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen form: {}%N" form)
   (let* ((intrinsic-name (car form))
          args
          (temp-result (alloca-t*)))
@@ -1562,7 +1562,7 @@ jump to blocks within this tagbody."
           (exp (car cur-exp) (car cur-exp))
           (i 0 (+ 1 i)))
          ((endp cur-exp) nil)
-      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d%N" i exp)
+      ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen arg[{}] -> {}%N" i exp)
       (codegen temp-result exp evaluate-env)
       (push (irc-load temp-result) args))
     (let* ((func (or (llvm-sys:get-function *the-module* intrinsic-name)
@@ -1596,7 +1596,7 @@ jump to blocks within this tagbody."
           (type (car type-cur) (car type-cur))
           (i 0 (+ 1 i)))
          ((endp cur-exp) nil)
-      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d%N" i exp)
+      ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen arg[{}] -> {}%N" i exp)
       (codegen temp-result exp evaluate-env)
       (push (irc-intrinsic-call (clasp-ffi::from-translator-name type)
                              (list (irc-load temp-result))) args))
@@ -1606,7 +1606,7 @@ jump to blocks within this tagbody."
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
-  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s%N" form)
+  ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen form: {}%N" form)
   (let* ((foreign-types (first form))
          (intrinsic-name (second form))
          (fargs (cddr form))
@@ -1673,7 +1673,7 @@ jump to blocks within this tagbody."
     (error "BUG: Callback function parameters and types have a length mismatch"))
 ;;; Generate a variable and put the closure in it.
   (let* ((closure-literal-slot-index (literal:new-table-index))
-         (closure-var-name (core:bformat nil "%s_closure_var" c-name)))
+         (closure-var-name (core:fmt nil "{}_closure_var" c-name)))
     #+(or)(progn
             (format t "gen-defcallback - the (literal::literal-machine-table-index literal::*literal-machine*) -> ~d~%" (literal::literal-machine-table-index literal::*literal-machine*))
             (format t "gen-defcallback cmp:*load-time-value-holder-global-var* -> ~a~%" cmp:*load-time-value-holder-global-var*)
@@ -1724,7 +1724,7 @@ jump to blocks within this tagbody."
                    ;; here we don't need the store/load values dance.
                    ;; (The C function only gets/needs/wants the primary value.)
                    (cl-result (irc-funcall-results-in-registers
-                               closure-to-call cl-args (core:bformat nil "%s_closure" c-name))))
+                               closure-to-call cl-args (core:fmt nil "{}_closure" c-name))))
               ;; Now generate a call the translator for the return value if applicable, then return.
               ;; NOTE: (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro
               (if (string= return-translator-name "from_object_void")

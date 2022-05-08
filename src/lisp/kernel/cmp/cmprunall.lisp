@@ -39,7 +39,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 
 
 (defun do-make-new-run-all (body name-suffix)
-  (let ((run-all-fn (irc-simple-function-create (core:bformat nil "%s%s" core:+run-all-function-name+ name-suffix)
+  (let ((run-all-fn (irc-simple-function-create (core:fmt nil "{}{}" core:+run-all-function-name+ name-suffix)
                                                     %fn-start-up%
                                                     'llvm-sys:internal-linkage
                                                     *the-module*

@@ -120,7 +120,7 @@
 
 (defun general-entry-point-redirect-name (arity)
   "Return the name of the wrong-number-of-arguments function for the arity"
-  (core:bformat nil "general_entry_point_redirect_%s" arity))
+  (core:fmt nil "general_entry_point_redirect_{}" arity))
 
 (defmacro primitives-macro ()
   "ltvc functions are used to construct the byte-code interpreter"

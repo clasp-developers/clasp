@@ -540,7 +540,7 @@
          (element-size              (cdr (assoc :value-frame-element-size cmp::+cxx-data-structures-info+)))
          (offset                    (+ element0-offset (* element-size index)))
          (entry-uintptr_t           (llvm-sys:create-add cmp:*irbuilder* no-tag-uintptr_t (jit-constant-uintptr_t offset)))
-         (entry-ptr                 (irc-int-to-ptr entry-uintptr_t %tsp*% (core:bformat nil "frame[%s]-ptr" index))))
+         (entry-ptr                 (irc-int-to-ptr entry-uintptr_t %tsp*% (core:fmt nil "frame[{}]-ptr" index))))
     entry-ptr))
 
 #+(or)
@@ -575,7 +575,7 @@
                *lexical-var-reference-counter*)
       (let ((counts (sort results #'< :key #'car)))
         (dolist (entry counts)
-          (core:bformat t "Depth %d -> %d references%N" (car entry) (cdr entry)))))))
+          (core:fmt t "Depth {} -> {} references%N" (car entry) (cdr entry)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

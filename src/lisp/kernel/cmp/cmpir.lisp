@@ -495,7 +495,7 @@ local-function - the lcl function that all of the xep functions call."
              (declare (ignore cmd))
              (cmp-log "popDynamicBinding of {}%N" symbol)
              (irc-intrinsic "popDynamicBinding" (irc-global-symbol symbol env) alloca)))
-	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))))))
+	  (t (error (core:fmt nil "Unknown cleanup code: {}" cc))))))))
 
 (defun irc-unwind-environment (env)
   (cmp-log "in irc-unwind-environment with: {} u-p-e?: {}%N" (type-of env) (unwind-protect-environment-p env))
@@ -945,7 +945,7 @@ Otherwise do a variable shift."
   ;; another reasonably common issue.
   (let ((val-type (llvm-sys:get-type val))
         (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
-    ;;(bformat t "irc-store val-type: %s    dest-contained-type: %s%N" val-type dest-contained-type)
+    ;;(core:fmt t "irc-store val-type: {}    dest-contained-type: {}%N" val-type dest-contained-type)
     (cond ((llvm-sys:type-equal val-type dest-contained-type)
            (llvm-sys:create-store *irbuilder* val destination is-volatile))
           ((llvm-sys:llvmcontext-equal
@@ -1405,7 +1405,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 (defun function-description-name (function)
   (let ((function-name (llvm-sys:get-name function)))
-    (core:bformat nil "%s^DESC" function-name)))
+    (core:fmt nil "{}^DESC" function-name)))
 
 (defun irc-function-create (function-type linkage function-name module
                             &key
@@ -1572,7 +1572,7 @@ function-description - for debugging."
   (llvm-sys:create-bit-cast *irbuilder* from totype label))
 
 (defun irc-irbuilder-status (&optional (irbuilder *irbuilder*) (label "current *irbuilder*"))
-    (bformat t "%s -> %s%N" label irbuilder))
+    (core:fmt t "{} -> {}%N" label irbuilder))
 
 #+(or)
 (defun irc-constant-string-ptr (global-string-var)
@@ -1594,9 +1594,9 @@ function-description - for debugging."
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,irbuilder))
-     (cmp-log "Switching to irbuilder --> {}%N" (bformat nil "{}" *irbuilder*))
+     (cmp-log "Switching to irbuilder --> {}%N" (core:fmt nil "{}" *irbuilder*))
      (multiple-value-prog1 (progn ,@code)
-       (cmp-log "Leaving irbuilder --> {}%N" (bformat nil "{}" *irbuilder*)))))
+       (cmp-log "Leaving irbuilder --> {}%N" (core:fmt nil "{}" *irbuilder*)))))
 
 ;;; ALLOCA functions
 
@@ -1787,7 +1787,7 @@ function-description - for debugging."
 
 (defun irc-funcall-results-in-registers (closure args &optional (label ""))
   (declare (ignore label))
-  ;; (bformat t "irc-funcall-results-in-register-wft closure: %s%N" closure)
+  ;; (core:fmt t "irc-funcall-results-in-register-wft closure: {}%N" closure)
   (let ((call-info (irc-calculate-call-info closure args)))
     (let ((result-in-registers (irc-call-or-invoke (call-info-function-type call-info)
                                                    (call-info-entry-point call-info)
@@ -1844,7 +1844,7 @@ function-description - for debugging."
           required-args-ty passed-args-ty args)))
 
 (defun irc-create-invoke-wft (function-type entry-point args unwind-dest &optional (label ""))
-  ;;(bformat t "irc-create-invoke-wft entry-point: %s%N" entry-point)
+  ;;(core:fmt t "irc-create-invoke-wft entry-point: {}%N" entry-point)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (unless (null (stringp entry-point)) (error "entry-point for irc-create-invoke cannot be a string - it is ~a" entry-point))
   (let ((normal-dest (irc-basic-block-create "normal-dest")))
@@ -1865,7 +1865,7 @@ function-description - for debugging."
 
 (defun irc-create-call-wft (function-type entry-point args &optional (label ""))
   ;;(throw-if-mismatched-arguments function-name args)
-  (if *debug-create-call* (bformat t "irc-create-call-wft function-type: %s entry-point: %s args: %s%N" function-type entry-point args ))
+  (if *debug-create-call* (core:fmt t "irc-create-call-wft function-type: {} entry-point: {} args: {}%N" function-type entry-point args ))
   (llvm-sys:create-call-function-pointer *irbuilder* function-type entry-point args label nil))
 
 (defun irc-create-invoke-default-unwind (function-name args &optional (label ""))
@@ -1935,11 +1935,11 @@ function-description - for debugging."
         (llvm-sys:verify-function fn)
       (if failed-verify
           (progn
-            (bformat t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!%N")
-            (bformat t "---------------- dumping function to assist in debugging%N")
+            (core:fmt t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!%N")
+            (core:fmt t "---------------- dumping function to assist in debugging%N")
             (cmp:dump-function fn)
-            (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!%N")
-            (bformat t "llvm::verifyFunction error[%s]%N" error-msg)
+            (core:fmt t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!%N")
+            (core:fmt t "llvm::verifyFunction error[{}]%N" error-msg)
             (if continue
                 (break "Error when trying to verify-function")
                 (error "Failed function verify")))
@@ -1964,7 +1964,7 @@ function-description - for debugging."
                                              dispatch-name
                                              module
                                              :function-attributes function-attributes)))
-      #+(or)(bformat t "Created function: %s arg-ty: %s%N" function argument-types)
+      #+(or)(core:fmt t "Created function: {} arg-ty: {}%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)
           (llvm-sys:add-return-attr function attribute)))
@@ -1977,13 +1977,13 @@ function-description - for debugging."
 
 (defun get-or-declare-function-or-error (module name)
   (let ((info (gethash name (get-primitives))))
-    #++(bformat t "   --> %s%N" info)
+    #++(core:fmt t "   --> {}%N" info)
     (unless info (error "Could not find function ~a in *primitives*" name))
     (let ((dispatch-name name))
       (let ((func (llvm-sys:get-function module dispatch-name)))
         (unless func
           (setf func (declare-function-in-module module dispatch-name info)))
-        #++(bformat t "     FUNCTION -> %s%N" func)
+        #++(core:fmt t "     FUNCTION -> {}%N" func)
         (values func info)))))
 
 (defun irc-global-symbol (sym env)

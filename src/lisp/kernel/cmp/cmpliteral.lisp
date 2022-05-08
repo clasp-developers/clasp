@@ -47,8 +47,8 @@
 
 (defun next-value-table-holder-name (module-id &optional suffix)
   (if suffix
-      (bformat nil "%s-%s%d" suffix core:+literals-name+ module-id)
-      (bformat nil "%s%d" core:+literals-name+ module-id)))
+      (core:fmt nil "{}-{}{}" suffix core:+literals-name+ module-id)
+      (core:fmt nil "{}{}" core:+literals-name+ module-id)))
 
 (defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
 (defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
@@ -118,7 +118,7 @@
   "Find the highest index and return 1+ that"
   (let ((highest-index -1))
     (dolist (node nodes)
-      #+(or)(bformat t "generate-run-all-code  generating node: %s%N" node)
+      #+(or)(core:fmt t "generate-run-all-code  generating node: {}%N" node)
       (when (literal-node-creator-p node)
         (let* ((datum (literal-dnode-datum node))
                (raw-index (datum-index datum)))
@@ -586,8 +586,8 @@ rewrite the slot in the literal table to store a closure."
 (defun lookup-arg (creator)
   (labels ((object-label (creator idx &optional (prefix core:+literals-name+))
              (if (literal-node-creator-literal-name creator)
-                 (bformat nil "%s[%d]/%s" prefix idx (literal-node-creator-literal-name creator))
-                 (bformat nil "%s[%d]%t*" prefix idx))))
+                 (core:fmt nil "{}[{}]/{}" prefix idx (literal-node-creator-literal-name creator))
+                 (core:fmt nil "{}[{}]%t*" prefix idx))))
     (ensure-creator-llvm-value creator)
     (let ((datum (literal-dnode-datum creator)))
       (multiple-value-bind (index tag kind)
@@ -743,7 +743,7 @@ Return the index of the load-time-value"
                                                                (mapcar (lambda (fn)
                                                                          (cmp:irc-bit-cast fn cmp:%opaque-fn-prototype*%))
                                                                        (coerce (literal-machine-function-vector *literal-machine*) 'list)))
-                                  (core:bformat nil "function-vector-%s" id))))
+                                  (core:fmt nil "function-vector-{}" id))))
     (values function-vector-length function-vector-global)))
 
 (defun do-literal-table (id body-fn)
@@ -754,7 +754,7 @@ Return the index of the load-time-value"
                                          nil ; isConstant
                                          'llvm-sys:internal-linkage
                                          (cmp:gcroots-in-module-initial-value)
-                                         (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number))))
+                                         (core:fmt nil "{}{}" core:+gcroots-in-module-name+ (core:next-number))))
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[DUMMY]% ; type
@@ -779,7 +779,7 @@ Return the index of the load-time-value"
             (let* ((byte-code-string (write-literal-nodes-byte-code ordered-run-all-nodes))
                    (byte-code-length (length byte-code-string))
                    (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string
-                                                                  (core:bformat nil "startup-byte-code-%s" id))))
+                                                                  (core:fmt nil "startup-byte-code-{}" id))))
               (cmp:irc-intrinsic-call "cc_invoke_byte_code_interpreter"
                                       (list *gcroots-in-module*
                                             (cmp:irc-bit-cast (cmp:irc-gep byte-code-global (list 0 0))
@@ -847,7 +847,7 @@ Return the index of the load-time-value"
                                           nil ; isConstant
                                           'llvm-sys:internal-linkage
                                           (cmp:gcroots-in-module-initial-value)
-                                          (core:bformat nil "%s%d" core:+gcroots-in-module-name+ module-id)))
+                                          (core:fmt nil "{}{}" core:+gcroots-in-module-name+ module-id)))
          (*run-time-coalesce* (make-similarity-table #'eq))
          (*literal-machine* (make-literal-machine)))
     (cmp:cmp-log "do-rtv cmp:*load-time-value-holder-global-var* -> {}%N" cmp:*load-time-value-holder-global-var*)
@@ -917,11 +917,11 @@ and  return the sorted values and the constant-table or (values nil nil)."
 
 (defun pretty-load-time-name (object ltv-idx)
   (cond
-    ((symbolp object) (bformat nil "SYMBOL->%s" object))
+    ((symbolp object) (core:fmt nil "SYMBOL->{}" object))
     ((consp object) "CONS")
     ((arrayp object) "ARRAY")
     ((numberp object) (format nil "NUMBER->~a" object))
-    (t (subseq (bformat nil "ltv-idx_%d_val->%s" ltv-idx object) 0 30))))
+    (t (subseq (core:fmt nil "ltv-idx_{}_val->{}" ltv-idx object) 0 30))))
 
 ;;;---------------------------------------------------------------------
 ;;;
@@ -1159,8 +1159,8 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 
 (defun constants-table-reference (index &optional (holder cmp:*load-time-value-holder-global-var*) literal-name)
   (let ((label (if literal-name
-                   (bformat nil "values-table[%d]/%s" index literal-name)
-                   (bformat nil "values-table[%d]" index))))
+                   (core:fmt nil "values-table[{}]/{}" index literal-name)
+                   (core:fmt nil "values-table[{}]" index))))
     (llvm-sys:create-const-gep2-64 cmp:*irbuilder* holder 0 index label)))
 
 (defun constants-table-value (index &optional (holder cmp:*load-time-value-holder-global-var*))

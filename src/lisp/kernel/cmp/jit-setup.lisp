@@ -56,7 +56,7 @@
   )
 
 (defun thread-local-llvm-context ()
-  ;; (core:bformat t "*thread-safe-context* -> %s%N" *thread-safe-context*)
+  ;; (core:fmt t "*thread-safe-context* -> {}%N" *thread-safe-context*)
   (llvm-sys:thread-local-llvm-context))
 
 (export 'thread-local-llvm-context)
@@ -128,10 +128,10 @@
     ((eq clasp-build-mode :bitcode)
      (if *use-human-readable-bitcode*
          (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
-           (if print (core:bformat t "Loading %s%N" input-name))
+           (if print (core:fmt t "Loading {}%N" input-name))
            (llvm-sys:load-ll input-name (thread-local-llvm-context)))
          (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
-           (if print (core:bformat t "Loading %s%N" input-name))
+           (if print (core:fmt t "Loading {}%N" input-name))
            (llvm-sys:load-bc input-name (thread-local-llvm-context)))))
     (t (error "Add support for load-bitcode with clasp-build-mode of ~a" clasp-build-mode))))
 
@@ -139,18 +139,18 @@
   ;; Load a module from a bitcode or .ll file
   (cond
     ((eq clasp-build-mode :fasobc)
-     (if print (core:bformat t "Loading %s%N" filename))
+     (if print (core:fmt t "Loading {}%N" filename))
      (llvm-sys:parse-bitcode-file filename context))
     ((eq clasp-build-mode :fasoll)
-     (if print (core:bformat t "Loading %s%N" filename))
+     (if print (core:fmt t "Loading {}%N" filename))
      (llvm-sys:parse-irfile filename context))
     ((eq clasp-build-mode :bitcode)
      (if *use-human-readable-bitcode*
          (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
-           (if print (core:bformat t "Loading %s%N" input-name))
+           (if print (core:fmt t "Loading {}%N" input-name))
            (llvm-sys:parse-irfile input-name context))
          (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
-           (if print (core:bformat t "Loading %s%N" input-name))
+           (if print (core:fmt t "Loading {}%N" input-name))
            (llvm-sys:parse-bitcode-file input-name context))))
     (t (error "Add support for clasp-build-mode ~a" clasp-build-mode))))
 
@@ -238,7 +238,7 @@
 (defun next-run-time-module-name ()
   "Return the next module name"
   (prog1
-      (bformat nil "module%s" *run-time-module-counter*)
+      (core:fmt nil "module{}" *run-time-module-counter*)
     (setq *run-time-module-counter* (+ 1 *run-time-module-counter*))))
 
 #+(or)(defvar *the-system-data-layout*)
@@ -380,7 +380,7 @@ No DIBuilder is defined for the default module")
   (or *the-module* (error "jit-constant-unique-string-ptr *the-module* is NIL"))
   (let* ((str-gv (llvm-sys:get-or-create-uniqued-string-global-variable
                  *the-module* str
-                 (bformat nil "str-%s" str))))
+                 (core:fmt nil "str-{}" str))))
     (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 label)))
 
 
@@ -390,7 +390,7 @@ No DIBuilder is defined for the default module")
   (or *the-module* (error "module-make-global-string-ptr *the-module* is NIL"))
   (let* ((unique-string-global-variable
           (llvm-sys:get-or-create-uniqued-string-global-variable
-           *the-module* str (bformat nil ":::global-str-%s" str))))
+           *the-module* str (core:fmt nil ":::global-str-{}" str))))
     unique-string-global-variable))
 
 (defun search* (sym list)
@@ -480,7 +480,7 @@ No DIBuilder is defined for the default module")
       (let ((lineno (core:source-pos-info-lineno *current-source-pos-info*)))
         (cond
           (*compile-file-pathname*
-           (core:bformat nil "___LAMBDA___%s.%s-%s^%d^%d"
+           (core:fmt nil "___LAMBDA___{}.{}-{}^{}^{}"
                          (pathname-name *compile-file-pathname*)
                          (pathname-type *compile-file-pathname*)
                          *compile-file-unique-symbol-prefix*
@@ -488,17 +488,17 @@ No DIBuilder is defined for the default module")
                          (sys:next-number)))
           ;; Is this even possible?
           (*load-pathname*
-           (core:bformat nil "%s.%s^%d^TOP-LOAD-%d"
+           (core:fmt nil "{}.{}^{}^TOP-LOAD-{}"
                          (pathname-name *load-pathname*)
                          (pathname-type *load-pathname*)
                          lineno
                          (sys:next-number)))
           (t
-           (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" lineno))))
+           (core:fmt nil "UNKNOWN^{}^TOP-UNKNOWN" lineno))))
       "UNKNOWN??LINE^TOP-UNKNOWN"))
 
 (defun jit-repl-function-name ()
-  (sys:bformat nil "JITREPL-%d" (sys:next-number)))
+  (sys:fmt nil "JITREPL-{}" (sys:next-number)))
   
 (defun jit-startup-shutdown-function-names (module-id)
   (multiple-value-bind (startup-name linkage shutdown-name)
@@ -506,8 +506,8 @@ No DIBuilder is defined for the default module")
     (declare (ignore linkage))
     (values module-id startup-name shutdown-name))
   #+(or)(values module-id
-                (sys:bformat nil "%s-%d" sys:*module-startup-function-name* module-id)
-                (sys:bformat nil "%s-%d" sys:*module-shutdown-function-name* module-id)))
+                (sys:fmt nil "{}-{}" sys:*module-startup-function-name* module-id)
+                (sys:fmt nil "{}-{}" sys:*module-shutdown-function-name* module-id)))
 
 (export '(jit-startup-shutdown-function-names jit-repl-function-name))
 
@@ -515,7 +515,7 @@ No DIBuilder is defined for the default module")
   "Depending on the type of LNAME an actual LLVM name is generated"
   ;;  (break "Check backtrace")
   (cond
-    ((pathnamep lname) (bformat nil "MAIN-%s" (string-upcase (pathname-name lname))))
+    ((pathnamep lname) (core:fmt nil "MAIN-{}" (string-upcase (pathname-name lname))))
     ((stringp lname)
      (cond
        ((string= lname core:+run-all-function-name+) lname) ; this one is ok
@@ -544,7 +544,7 @@ No DIBuilder is defined for the default module")
               (escape-and-join-jit-name (list sym-name pkg-name "FN"))))))
     ;; (SETF symbol)
     ((and (consp lname) (eq (car lname) 'setf) (symbolp (second lname)))
-;;;     (core:bformat t "jit-function-name handling SETF: %s%N" lname)
+;;;     (core:fmt t "jit-function-name handling SETF: {}%N" lname)
      (let* ((sn (cadr lname))
             (sym-pkg (symbol-package sn))
             (sym-name (symbol-name sn))
@@ -554,7 +554,7 @@ No DIBuilder is defined for the default module")
        (escape-and-join-jit-name (list sym-name pkg-name "SETF"))))
     ;; (SETF (symbol ...))
     ((and (consp lname) (eq (car lname) 'setf) (consp (second lname)))
-;;;     (core:bformat t "jit-function-name handling SETFCONS: %s%N" lname)
+;;;     (core:fmt t "jit-function-name handling SETFCONS: {}%N" lname)
      (let* ((sn (second lname))
             (sn-sym (first sn))
             (sym-pkg (symbol-package sn-sym))
@@ -571,7 +571,7 @@ No DIBuilder is defined for the default module")
                       (string (package-name sym-pkg))
                       "UNINTERNED"))
            (name (symbol-name symbol))
-           (specializers (core:bformat nil "%s" (cddr lname))))
+           (specializers (core:fmt nil "{}" (cddr lname))))
        (escape-and-join-jit-name (list name pkg-name specializers "METHOD"))))
     ;; (METHOD (SETF symbol) . specializer-list): a method function
     ((and (consp lname) (eq (car lname) 'method) (consp (second lname)) (eq (car (second lname)) 'setf))
@@ -582,7 +582,7 @@ No DIBuilder is defined for the default module")
             (pkg-name (if pkg-symbol
                           (string (package-name pkg-symbol))
                           "UNINTERNED"))
-            (specializers (core:bformat nil "%s" (cddr lname))))
+            (specializers (core:fmt nil "{}" (cddr lname))))
        (escape-and-join-jit-name (list (string setf-name-symbol) pkg-name specializers "SETFMETHOD"))))
     ;; (LAMBDA lambda-list): an anonymous function
     ((and (consp lname) (eq (car lname) 'cl:lambda))
@@ -594,9 +594,9 @@ No DIBuilder is defined for the default module")
      (jit-function-name (second lname)))
     #+(or) ;; uncomment this to be more forgiving
     ((consp lname)
-     (core:bformat t "jit-function-name handling UNKNOWN: %s%N" lname)
+     (core:fmt t "jit-function-name handling UNKNOWN: {}%N" lname)
      ;; What is this????
-     (bformat nil "%s_CONS-LNAME?" lname))
+     (core:fmt nil "{}_CONS-LNAME?" lname))
     (t (error "Illegal lisp function name[~a]" lname))))
 (export '(jit-function-name unescape-and-split-jit-name escape-and-join-jit-name))
 
@@ -648,7 +648,7 @@ No DIBuilder is defined for the default module")
   (declare (type (or null llvm-sys:module) module))
   (when (> *optimization-level* 0)
     #++(let ((call-sites (call-sites-to-always-inline module)))
-      (bformat t "Call-sites -> %s%N" call-sites))
+      (core:fmt t "Call-sites -> {}%N" call-sites))
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
@@ -757,8 +757,8 @@ No DIBuilder is defined for the default module")
                ;; If this is the first process to generate a symbol then create the master symbol file
                ((not (boundp '*jit-pid*))
                 (setq *jit-pid* (core:getpid))
-                (let ((filename (core:bformat nil "/tmp/perf-%s.map" (core:getpid))))
-                  (core:bformat t "Writing jitted symbols to %s%N" filename)
+                (let ((filename (core:fmt nil "/tmp/perf-{}.map" (core:getpid))))
+                  (core:fmt t "Writing jitted symbols to {}%N" filename)
                   (setq *jit-log-stream* (open filename :direction :output))))
                ;; If we are in a forked child then we need to create a new clasp-symbols-<pid> file and
                ;; refer to the parent clasp-symbols-<ppid> file.
@@ -811,10 +811,10 @@ No DIBuilder is defined for the default module")
                    (progn
                      (if *dump-compile-module*
                          (progn
-                           (core:bformat t "About to dump module%N")
+                           (core:fmt t "About to dump module%N")
                            (llvm-sys:dump-module module)
-                           (core:bformat t "startup-name |%s|%N" startup-name)
-                           (core:bformat t "Done dump module%N")
+                           (core:fmt t "startup-name |{}|%N" startup-name)
+                           (core:fmt t "Done dump module%N")
                            ))
                      (mp:get-lock *jit-lock*)
                      #+(or)(llvm-sys:dump-module module)

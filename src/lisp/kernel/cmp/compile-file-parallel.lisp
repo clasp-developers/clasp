@@ -339,7 +339,7 @@ Compile a lisp source file into an LLVM module."
     (declare (ignore clasp-source))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
-        (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
+        (core:fmt t "; Compiling file parallel: {}%N" (namestring given-input-pathname)))
       (let ((intermediate-output-type (case output-type
                                         #+(or)(:fasl :object)
                                         (:fasl :in-memory-object)

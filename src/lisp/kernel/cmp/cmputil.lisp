@@ -38,11 +38,11 @@
 (defvar *warnings-p*)
 (defvar *failure-p*)
 
-(core:defconstant-equal +note-format+        "Note:          %s")
-(core:defconstant-equal +style-warn-format+  "Style warning: %s")
-(core:defconstant-equal +warn-format+        "Warning:       %s")
-(core:defconstant-equal +error-format+       "Error:         %s")
-(core:defconstant-equal +fatal-format+       "Fatal-error:   %s")
+(core:defconstant-equal +note-format+        "Note:          {}")
+(core:defconstant-equal +style-warn-format+  "Style warning: {}")
+(core:defconstant-equal +warn-format+        "Warning:       {}")
+(core:defconstant-equal +error-format+       "Error:         {}")
+(core:defconstant-equal +fatal-format+       "Fatal-error:   {}")
 
 (defstruct (compiler-message (:type vector))
   (format +note-format+)
@@ -126,13 +126,13 @@
          (filepos (source-pos-info-filepos spi))
          (file-scope (file-scope spi))
          (pathname (file-scope-pathname file-scope)))
-  (bformat nil "%s filepos: %d  lineno: %d" (namestring pathname) filepos lineno)))
+  (core:fmt nil "{} filepos: {}  lineno: {}" (namestring pathname) filepos lineno)))
 
 (defun print-compiler-message (c stream)
   (let ((msg (core:fmt nil (compiler-message-format c) (compiler-message-message c))))
     (fresh-line stream)
-    (bformat stream ";;; %s%N" msg)
-    (bformat stream ";;;     at %s %N" (describe-source-location (compiler-message-source-pos-info c)))))
+    (core:fmt stream ";;; {}%N" msg)
+    (core:fmt stream ";;;     at {} %N" (describe-source-location (compiler-message-source-pos-info c)))))
 
 ;;; (setq core::*echo-repl-read* t)
 
@@ -179,7 +179,7 @@
                          (gethash name *global-function-defs*))
                (dolist (ref references)
                  (pushnew (make-compiler-style-warning
-                           :message (core:bformat nil "Undefined function %s" name)
+                           :message (core:fmt nil "Undefined function {}" name)
                            :source-pos-info (global-function-ref-source-pos-info ref))
                           messages :test #'equalp))))
            *global-function-refs*)

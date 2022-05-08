@@ -10,7 +10,7 @@
       (literal:reference-literal value read-only-p)
     (unless in-array
       (error "%literal-ref of immediate value ~s is illegal" value))
-    (let* ((literal-label (bformat nil "values-table[%d]" index))
+    (let* ((literal-label (core:fmt nil "values-table[{}]" index))
            (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
                                                (literal:ltv-global)
                                                0 index
@@ -31,7 +31,7 @@
          (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
                                              (literal:ltv-global)
                                              0 index
-                                             (bformat nil "values-table[%d]" index))))
+                                             (core:fmt nil "values-table[{}]" index))))
     gep))
 
 (defun %closurette-value (function)

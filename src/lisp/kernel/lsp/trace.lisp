@@ -294,26 +294,26 @@ all functions."
         (*print-circle* t))
     (core:fmt *trace-output* "{}"
      (with-output-to-string (*trace-output*)
-       #+(or)(core:bformat *trace-output* "%N")
+       #+(or)(core:fmt *trace-output* "%N")
        (case direction
          (ENTER
           (multiple-value-bind (bars rem)
               (floor indent 4)
-            (dotimes (i bars) (core:bformat *trace-output* "%s" (if (< i 10) "|   " "|    ")))
-            (when (plusp rem) (core:bformat *trace-output* " | ")))
-          (core:bformat *trace-output* "%s> (%s . %s)%N" *trace-level* fname vals))
+            (dotimes (i bars) (core:fmt *trace-output* "{}" (if (< i 10) "|   " "|    ")))
+            (when (plusp rem) (core:fmt *trace-output* " | ")))
+          (core:fmt *trace-output* "{}> ({} . {})%N" *trace-level* fname vals))
          (EXIT
           (multiple-value-bind (bars rem)
               (floor indent 4)
-            (dotimes (i bars) (core:bformat *trace-output* "|   "))
-            (when (plusp rem) (core:bformat *trace-output* " | ")))
-          (core:bformat *trace-output* "<%s (%s . %s)%N" *trace-level* fname vals)))
+            (dotimes (i bars) (core:fmt *trace-output* "|   "))
+            (when (plusp rem) (core:fmt *trace-output* " | ")))
+          (core:fmt *trace-output* "<{} ({} . {})%N" *trace-level* fname vals)))
        (when extras
          (multiple-value-bind (bars rem)
              (floor indent 4)
-           (dotimes (i bars) (core:bformat *trace-output* "|   " ))
-           (when (plusp rem) (core:bformat *trace-output* " | ")))
-         (core:bformat *trace-output* " %s " extras))
+           (dotimes (i bars) (core:fmt *trace-output* "|   " ))
+           (when (plusp rem) (core:fmt *trace-output* " | ")))
+         (core:fmt *trace-output* " {} " extras))
        *trace-output*)
      )))
 

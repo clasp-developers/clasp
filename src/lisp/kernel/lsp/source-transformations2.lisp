@@ -39,7 +39,7 @@
 
 
 (defun find-two-arg-function (name)
-  (let ((full-name (bformat nil "TWO-ARG-%s" (string name))))
+  (let ((full-name (core:fmt nil "TWO-ARG-{}" (string name))))
     (multiple-value-bind (sym foundp)
         (find-symbol full-name :core)
       (if foundp

@@ -32,8 +32,8 @@ Could return more functions that provide lambda-list for swank for example"
       (cmp-log "generate-llvm-function-from-code%N")
       (cmp-log "cleavir-lambda-list-analysis -> {}%N" cleavir-lambda-list-analysis)
       (cmp-log "new-body -> {}%N" new-body)
-;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
-;;;    (bformat *error-output* "new-body -> %s%N" new-body)
+;;;    (core:fmt *error-output* "old  -> {} {} {} {}%N" lambda-list-handler declares docstring code)
+;;;    (core:fmt *error-output* "new-body -> {}%N" new-body)
       (let ((name (core:extract-lambda-name-from-declares
                    declares (or given-name
                                 `(cl:lambda ,(lambda-list-for-name lambda-list))))))
@@ -137,17 +137,17 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	 (env (closed-environment fn)))
     (when docstring (setq docstring (list docstring)))
     #+(or)(progn
-	    (bformat t "lambda-list = %s%N" lambda-list)
-	    #+(or)(bformat t "declares    = %s%N" declares)
-	    (bformat t "docstring   = %s%N" docstring)
-	    (bformat t "code        = %s%N" code)
-	    (bformat t "env         = %s%N" env))
+	    (core:fmt t "lambda-list = {}%N" lambda-list)
+	    #+(or)(core:fmt t "declares    = {}%N" declares)
+	    (core:fmt t "docstring   = {}%N" docstring)
+	    (core:fmt t "code        = {}%N" code)
+	    (core:fmt t "env         = {}%N" env))
     (values `(lambda ,lambda-list ,@docstring #| (declare ,@declares)|# ,@code) env)))
 
 (defun function-name-from-lambda (name)
     (cond
       ((symbolp name) (symbol-name name))
-      ((consp name) (bformat nil "%s" name))
+      ((consp name) (core:fmt nil "{}" name))
       (t (error "Add support for function-name-from-lambda with ~a as arg" name))))
 
 (defun potentially-save-module ()
@@ -187,7 +187,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                         &key (linkage 'llvm-sys:internal-linkage) name)
   "Compile the definition using the bclasp compiler"
   (when core:*debug-startup*
-    (core:monitor-write (core:bformat nil "startup bclasp-compile* form: %s%N" definition)))
+    (core:monitor-write (core:fmt nil "startup bclasp-compile* form: {}%N" definition)))
   (multiple-value-bind (fn function-kind wrapped-env ordered-raw-constants-list constants-table startup-shutdown-id)
       (compile-to-module-with-run-time-table
        :definition definition

@@ -97,9 +97,9 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
           (t (values function warnp failp)))))
 
 (defun compiler-stats ()
-  (bformat t "Accumulated finalization time %s%N" llvm-sys:*accumulated-llvm-finalization-time*)
-  (bformat t "Most recent finalization time %s%N" llvm-sys:*most-recent-llvm-finalization-time*)
-  (bformat t "Number of compilations %s%N" llvm-sys:*number-of-llvm-finalizations*))
+  (core:fmt t "Accumulated finalization time {}%N" llvm-sys:*accumulated-llvm-finalization-time*)
+  (core:fmt t "Most recent finalization time {}%N" llvm-sys:*most-recent-llvm-finalization-time*)
+  (core:fmt t "Number of compilations {}%N" llvm-sys:*number-of-llvm-finalizations*))
 
 (export 'compiler-stats)
 
