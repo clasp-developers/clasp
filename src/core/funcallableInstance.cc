@@ -26,15 +26,6 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
-#pragma clang diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-//#pragma GCC diagnostic ignored "-Wunused-local-typedef"
-#include <boost/graph/vector_as_graph.hpp>
-#include <boost/graph/topological_sort.hpp>
-#pragma clang diagnostic pop
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>

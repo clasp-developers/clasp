@@ -471,14 +471,14 @@ size_t ReachableClass::print(const std::string& shortName) {
     } else {
       className << nm;
     }
-    core::write_bf_stream(fmt::sprintf("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n"
-                                 , shortName , this->totalSize % this->instances
-                                 , (this->totalSize / this->instances) , className.str().c_str() , k)
+    core::write_bf_stream(fmt::format("{}: total_size: {:10d} count: {:8d} avg.sz: {:8d} kind: {}/{}\n"
+                                      , shortName , this->totalSize , this->instances
+                                      , (this->totalSize / this->instances) , className.str().c_str() , k)
                     , cl::_sym_STARstandard_outputSTAR->symbolValue());
     core::clasp_finish_output_t();
     return this->totalSize;
   } else {
-    core::write_bf_stream(fmt::sprintf("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n"
+    core::write_bf_stream(fmt::format("{}: total_size: {:10d} count: {:8d} avg.sz: {:8d} kind: {}/{}\n"
                                        , shortName , this->totalSize , this->instances
                                        , (this->totalSize / this->instances) , "UNKNOWN" , k)
                           ,cl::_sym_STARstandard_outputSTAR->symbolValue());
