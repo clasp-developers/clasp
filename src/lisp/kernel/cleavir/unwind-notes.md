@@ -1,14 +1,21 @@
-"Unwinding" means usually nonlocal exits out of a function, but also local exits when more complicated than changing the instruction pointer. In Common Lisp the RETURN-FROM, GO, and THROW special operators do this. SIGNAL (and WARN and ERROR) do as well, but in Clasp and most other implementations those are implemented with the special operators. In C++ nonlocal exits are done with the `throw` operator.
+"Unwinding" means usually nonlocal exits out of a function, but also local exits when more complicated than changing the instruction pointer. In Common Lisp the RETURN-FROM, GO, and THROW special operators do this. SIGNAL (and WARN and ERROR) do as well, but in Clasp and most other implementations those are implemented in terms of the special operators. In C++ nonlocal exits are done with the `throw` operator.
 
 Clasp's problem is to implement Common Lisp semantics while respecting C++ semantics. This means that:
 
 * If a C++ function unwinds, and between the throw and the handler there are Lisp frames, any UNWIND-PROTECT cleanup forms must be executed, and special variable bindings undone.
 * If a Lisp function unwinds, and there are C++ frames in between, any automatic variables' destructors must be executed, as well as `catch (...)` blocks.
 
-Implementation intro
---------------------
+# Implementation intro
 
-Clasp accomplishes this by implementing CL semantics in terms of C++ semantics, i.e. throwing and catching. Because C++ semantics are like ERROR/HANDLER-CASE with additional concerns due to static typing and manual memory allocation, this is kind of harrowing. This file is supposed to walk you through it.
+Clasp accomplishes this with two implementations of unwinding. First, there is the comprehensive implementation in terms of C++ semantics, i.e. throwing and catching. Secondly, we have our own unwinder, built on top of C setjmp/longjmp. Because the C++ unwinder has extremely poor performance characteristics for our purposes, we use our own unwinder whenever possible, i.e. whenever we do not need to worry about frames between the entry and exit containing uncooperative C++ code.
+
+Specifically, the C++ unwinder works, generally, by the unwinder finding and using information tables in the executable to determine what cleanups and catches exist in each frame. This entails looking at the executable file and running the DWARF virtual machine to get the information, which can cause enormous slowdowns - in some cases I have seen the C++ unwinder work thousands of times slower than the SJLJ unwinder. On Linux, this additionally causes inter-thread contention, as the GNU C++ runtime uses a global flag to make sure this process does not take place concurrently with dlopen.
+
+Our unwinder works by storing information about the dynamic context (i.e. live exit points, unwind-protect cleanups, and special variable bindings) in a thread local variable, _DynEnv (part of the ThreadLocalState). Upon entry to a new dynamic context, we must push a new dynamic environment onto the stack stored therein, and we must clean this dynamic environment up upon exit. This entails a runtime cost (unlike C++), but means that the unwinder has much less work to do, as it merely consults the _DynEnv.
+
+In order to support both unwinders, we generate code for both all the time (with an exception for "simple" unwinds, explained below).
+
+# CL semantics review
 
 First, CL semantics: RETURN-FROM/BLOCK and GO/TAGBODY are very similar, being lexical; when RETURN-FROM/BLOCK is being referred to below, GO/TAGBODY works pretty much the same way. THROW/CATCH are instead dynamic. What this means is that a THROW will unwind _to the nearest dynamically enclosing CATCH_, whereas a RETURN-FROM or GO will unwind _to the lexically corresponding BLOCK or TAGBODY_. A function that evaluates a RETURN-FROM or GO to some BLOCK not in the same function is a closure, over an implicit variable marking where to return to. This means, for example, that in
 
@@ -20,29 +27,43 @@ First, CL semantics: RETURN-FROM/BLOCK and GO/TAGBODY are very similar, being le
   (print "hello world"))
 ```
 
-a call like `(foo n)` will print nothing, for any positive `n`: The outermost FOO block is returned from, since that's what the function closes over.
+a call like `(foo n)` will print nothing, for any positive `n` greater than zero: The outermost FOO block is returned from, since that's what the function closes over.
 
-This is not like C++ exceptions, so it presents most of the problem. The only way to do that in C++ is call setjmp, carry the jmp_buf around, and eventually longjmp. But we can't use setjmp/longjmp since they don't execute destructors.
+# Role of the compiler
 
-Lisp THROW/CATCH, by contrast, is pretty close to C++. Since it's also rare in Lisp, we just implement these in Lisp. We expand `(throw ...)` and `(catch ...)` forms into calls to `core:throw-function` and `core:catch-function`, respectively, and these take thunks as arguments. THROW will perform a C++ throw of an exception of type CatchThrow, and CATCH catches it. See core/compiler.cc and core/exceptions.h CLASP_BEGIN_CATCH and CLASP_END_CATCH macros for more details.
+Cleavir is intelligent enough to distinguish local and nonlocal unwinds. An unwind is "nonlocal" essentially if it crosses a function boundary, so for example `(block nil (return 4))` can be local as there is no function boundary between the BLOCK and RETURN-FROM. These local unwinds are represented as simple JUMP instructions that do not implicate the runtime and are not further describe here.
+
+Additionally, in some cases Cleavir can identify "simple" nonlocal unwinds. These cross function boundaries, but the dynamic contexts between the entry and exit point are statically understood by the compiler. For example, in `(block nil (mapcar (lambda (x) (if x ... (return x))) ...)`, there is a nonlocal exit, but the compiler can tell that there are never any interposed cleanups or special variable bindings. These "simple" unwinds are handled as simple setjmp-longjmp pairs that do not further interact with the runtime here; they do not require unwind tables to be generated, or even an addition to the dynamic environment object to be made. Simplicity determination is done by `cleavir-bir-transformations:simple-unwinding-p`. Check the definition of that function in Cleavir for more information.
+
+# Our unwinder
+
+As described above, our unwinder works by storing information about the dynamic context in a frame local variable. The implementation lives in src/core/unwind.cc and include/clasp/core/unwind.h.
+
+Dynamic environments are Lisp-accessible objects, essentially for the purpose of debugging. UNWIND-PROTECT cleanup and special variable binding dynamic environments are allocated on the stack for efficiency; BLOCK and RETURN-FROM environments are allocated on the heap, so that out of extent unwinds can hopefully be detected (more on those below).
+
+The main entry points to the unwinder are defined in unwind.h. `sjlj_unwind` initializes an unwinding, and `sjlj_continue_unwinding` continues an already-preceding unwind operation after an UNWIND-PROTECT cleanup has executed. Cleavir uses intrinsics with similar names which essentially just call those functions.
+
+A special dynamic environment object, the `UnknownDynEnv_O`, is an indication that there is uncooperative C++ code on the stack. Unwinding can only be safely completed through these frames (dynamic environments) by reverting to the C++ unwinder. `sjlj_unwind` searches for these dynamic environments before it jumps, and if it finds any, reverts to the C++ unwinder by executing a C++ `throw` operation.
+
+# C++ unwinder
+
+Because C++ semantics are like ERROR/HANDLER-CASE with additional concerns due to static typing and manual memory allocation, the unwinding system is kind of harrowing.
+
+CL semantics are not like C++ exceptions, which presents most of the problem. Lisp THROW/CATCH, by contrast, is pretty close to C++. Since it's also rare in Lisp, we just implement these in Lisp. We expand `(throw ...)` and `(catch ...)` forms into calls to `core:throw-function` and `core:catch-function`, respectively, and these take thunks as arguments. THROW will perform a C++ throw of an exception of type CatchThrow, and CATCH catches it. See core/compiler.cc and core/exceptions.h CLASP_BEGIN_CATCH and CLASP_END_CATCH macros for more details.
 
 So, RETURN-FROM/BLOCK. Besides that these don't match C++ semantics, we put more effort into their performance, since they're fairly ubiquitous in Lisp.
-
-First, the compiler (Cleavir) can recognize RETURN-FROM/BLOCK that don't actually exit a function. These will be represented as a LOCAL-UNWIND instruction. The comparatively rarer actual exits have an UNWIND instruction instead.
 
 Now for actual nonlocal unwinds. When we hit a BLOCK for one, at runtime, we save the current frame pointer using `llvm.frameaddress`. This is stored as what any closures RETURN-FROM-ing to the BLOCK use to find the correct frame. We also coordinate between the BLOCK and RETURN-FROM at compile time a small integer, the "go index", indicating where in the function to go upon returning; this is actually only relevant for TAGBODY, since returning "to" the same TAGBODY could put you at multiple different go tags.
 
 When we run the RETURN-FROM, we call the intrinsic `cc_unwind`. This constructs an exception of type Unwind that stores the frame pointer and go index, and then `throw`s it.
 
-Cleanups
---------
+## Cleanups
 
 Sometimes we want to run code that executes during unwinding. In Lisp this is the case with UNWIND-PROTECT and with special variable bindings, which must be undone on the way out. We represent these with an UNWIND-PROTECT and BIND instructions, respectively.
 
 Because UNWIND-PROTECT can execute arbitrary code, during unwinding we may want to execute arbitrary Lisp code. This code can of course itself unwind - and this unwinding can either be constrained to the cleanup code by handlers, or exit as well. This must be kept in mind: more than one unwinding can be in progress simultaneously, within the same thread.
 
-LLVM and Landing pads
----------------------
+## LLVM and Landing pads
 
 LLVM represents exception handling constructs in a very C++ centered way. If a call could unwind, and in such a way that the caller might want to handle the exception, you have to use an `invoke` instruction rather than a `call`. The `invoke` has a second basic block to which the runtime will pass control during unwinding. This block must begin with a `landingpad` instruction, which indicates which types it handles. Calling a function with an actual `call` tells LLVM that the unwinder runtime can ignore this frame as it unwinds from that function.
 
@@ -60,8 +81,7 @@ In a bit more detail. If the exception is not an Unwind we resume it without fur
 
 Convoluted. All this is in landing-pad.lisp.
 
-Itanium ABI
------------
+## Itanium ABI
 
 C++ runtimes generally follow the so-called Itanium ABI for exception handling, and use a "zero cost" implementation. This "zero cost" means that, as long as you don't actually throw exceptions, your C++ code will be just as fast as if there was no exception code whatsover. For example, entering a `try` block, or exiting it normally without unwinding, has no runtime cost. The downside of this is that if you do actually throw an exception, it will be slow.
 
@@ -77,10 +97,11 @@ The exception must be heap-allocated, or at least allocated outside the control 
 
 When we have a BLOCK or TAGBODY, our landing pad checks the type, then calls __cxa_begin_catch, then matches the frame pointer. If it matches, we get the go index, call __cxa_end_catch, then jump into the function and we're done unwinding. If it doesn't, we rethrow to a landing pad that calls __cxa_end_catch.
 
-Out of extent returns
----------------------
+# Out of extent returns
 
 An out-of-extent return is a RETURN-FROM or GO in which the corresponding BLOCK or TAGBODY has already exited. In the Lisp standard, this is undefined behavior. We would like to be nice and signal an error from the frame in which the exit was attempted.
+
+In our unwinder, this situation can be detected simply by checking whether the destination dynamic environment is still present on the stack. In C++, it is more complicated.
 
 The Itanium ABI documentation mentions the possibility of a "resumptive" exception handling regime, in which the runtime decides to cease throwing an exception before doing so. This sounds ideal for our purpose here. Unfortunately, this is not actually possible to implement due to C++ semantics. As mentioned, the C++ throw operator we use terminates the program if it cannot find a handler, so you might think if we just use the ABI more directly we can avoid this. Technically true, but the problem is the semantics of `catch (...)` blocks in C++. A C++ frame that catches any exception will catch Lisp exceptions - fine so far - but then if it rethrows them, it will again terminate if it can't find a handler. Itanium considers `catch (...)` a handler, so we can't detect the case of not having an actual handler through Itanium. Great.
 
