@@ -1137,24 +1137,6 @@ gctools::return_type restoreFromMultipleValue0()
 
 };
 
-extern "C" {
-
-void pushDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
-{NO_UNWIND_BEGIN();
-  core::Symbol_sp sym((gctools::Tagged)tsymbolP);
-  *alloca = sym->threadLocalSymbolValue().raw_();
-  NO_UNWIND_END();
-}
-
-void popDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
-{NO_UNWIND_BEGIN();
-  core::Symbol_sp sym((gctools::Tagged)tsymbolP);
-  core::T_sp val((gctools::Tagged)*alloca);
-  sym->set_threadLocalSymbolValue(val);
-  NO_UNWIND_END();
-}
-};
-
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 // -----------------------------------------------------------

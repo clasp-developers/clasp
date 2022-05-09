@@ -622,16 +622,19 @@
               (codegen result expanded env)
               )))))
 
-(defun compile-save-if-special (env target)
-  (when (eq (car target) 'ext:special-var)
-    (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it%N" target)
-    (let* ((target-symbol (cdr target))
-           (irc-target (irc-global-symbol target-symbol env))
-           (save-old-binding (alloca-t* "special")))
-      (irc-intrinsic "pushDynamicBinding" irc-target save-old-binding)
-      (irc-push-unwind env `(symbolValueRestore ,target-symbol ,save-old-binding))
-      ;; Make the variable locally special
-      (value-environment-define-special-binding env target-symbol))))
+(defun compile-save-special (env target dynenv-mem)
+  (cmp-log "compile-save-special - the target: %s is special - so I'm saving it%N" target)
+  (let* ((target-symbol (cdr target))
+         (irc-target (irc-global-symbol target-symbol env))
+         (old (irc-intrinsic "cc_TLSymbolValue" irc-target))
+         (bde
+           ;;#+(or)
+           (irc-intrinsic "cc_initializeAndPushBindingDynenv"
+                          dynenv-mem irc-target old)))
+    (irc-push-unwind env `(symbolValueRestore ,target-symbol ,old))
+    ;; Make the variable locally special
+    (value-environment-define-special-binding env target-symbol)
+    bde))
 
 
 (defmacro with-target-reference-do ((target-ref target env) &rest body)

@@ -486,10 +486,11 @@ local-function - the lcl function that all of the xep functions call."
       (let ((head (car cc)))
 	(cond
 	  ((eq head 'symbolValueRestore)
-           (destructuring-bind (cmd symbol alloca) cc
+           (destructuring-bind (cmd symbol old) cc
              (declare (ignore cmd))
              (cmp-log "popDynamicBinding of %s%N" symbol)
-             (irc-intrinsic "popDynamicBinding" (irc-global-symbol symbol env) alloca)))
+             (irc-intrinsic "cc_resetTLSymbolValue"
+                            (irc-global-symbol symbol env) old)))
 	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))))))
 
 (defun irc-unwind-environment (env)

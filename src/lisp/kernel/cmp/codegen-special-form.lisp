@@ -403,38 +403,54 @@ and put the values into the activation frame for new-env."
                  (evaluate-env (cond
                                  ((eq operator-symbol 'let) env) ;;; This is a problem right here
                                  ((eq operator-symbol 'let*) new-env)
-                                 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol)))))
-            (multiple-value-bind (reqvars)
-                (process-lambda-list-handler lambda-list-handler)
-              (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
-                    (*notinlines* (new-notinlines declares)))
-                (if (core:special-variables lambda-list-handler)
-                    (with-try "TRY.let/let*"
-                      (progn
-                        (irc-branch-to-and-begin-block (irc-basic-block-create
-                                                        (bformat nil "%s-start" (symbol-name operator-symbol))))
-                        (irc-make-value-frame-set-parent new-env number-of-lexical-vars env)
-                        ;; Save all special variables
-                        (do* ((cur-req (cdr reqvars) (cdr cur-req))
-                              (classified-target (car cur-req) (car cur-req)))
-                             ((endp cur-req) nil)
-                          (compile-save-if-special new-env classified-target))
-                        (if (eq operator-symbol 'let)
-                            (codegen-fill-let-environment new-env reqvars expressions env evaluate-env)
-                            (codegen-fill-let*-environment new-env reqvars expressions env evaluate-env))
-                        (cmp-log "About to evaluate codegen-progn%N")
-                        (codegen-progn result code new-env))
-                      ((cleanup)
-                       (irc-unwind-environment new-env)))
-                    (progn
-                      (irc-branch-to-and-begin-block (irc-basic-block-create
-                                                      (bformat nil "%s-start" (symbol-name operator-symbol))))
-                      (irc-make-value-frame-set-parent new-env number-of-lexical-vars env)
-                      (if (eq operator-symbol 'let)
-                          (codegen-fill-let-environment new-env reqvars expressions env evaluate-env)
-                          (codegen-fill-let*-environment new-env reqvars expressions env evaluate-env))
-                      (cmp-log "About to evaluate codegen-progn%N")
-                      (codegen-progn result code new-env))))))))))
+                                 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
+                 (reqvars
+                   (process-lambda-list-handler lambda-list-handler))
+                 (number-of-lexical-vars
+                   (number-of-lexical-variables lambda-list-handler))
+                 (dynenv-mems nil)
+                 (dynenvs nil)
+                 (*notinlines* (new-notinlines declares)))
+            ;; alloca dynenv space for each special.
+            (dolist (target (rest reqvars))
+              (when (eq (car target) 'ext:special-var)
+                (push (alloca-i8 +binding-dynenv-size+
+                                 :alignment +alignment+
+                                 :label "binding-dynenv-mem")
+                      dynenv-mems)))
+            ;; get binding.
+            (flet ((bind ()
+                     (irc-branch-to-and-begin-block
+                      (irc-basic-block-create
+                       (bformat nil "%s-start"
+                                (symbol-name operator-symbol))))
+                     (irc-make-value-frame-set-parent
+                      new-env number-of-lexical-vars env)
+                     ;; Save all special variables
+                     (do* ((cur-req (cdr reqvars) (cdr cur-req))
+                           (target (car cur-req) (car cur-req))
+                           (dynenv-mems dynenv-mems))
+                          ((endp cur-req) nil)
+                       (when (eq (car target) 'ext:special-var)
+                         (push (compile-save-special new-env target
+                                                     (pop dynenv-mems))
+                               dynenvs)))
+                     (if (eq operator-symbol 'let)
+                         (codegen-fill-let-environment
+                          new-env reqvars expressions env evaluate-env)
+                         (codegen-fill-let*-environment
+                          new-env reqvars expressions env evaluate-env))
+                     (cmp-log "About to evaluate codegen-progn%N")
+                     (codegen-progn result code new-env)))
+              (if dynenv-mems ; we are binding specials
+                  (with-try "TRY.let/let*"
+                    (bind)
+                    ((cleanup)
+                     (irc-unwind-environment new-env)
+                     ;;#+(or)
+                     (irc-intrinsic "cc_pop_dynenv"
+                                    (first (last dynenvs)))))
+                  (bind))))))))
   (cmp-log "Done codegen-let/let*%N"))
 
 (defun codegen-let (result rest env)

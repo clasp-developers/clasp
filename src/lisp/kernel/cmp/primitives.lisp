@@ -280,9 +280,6 @@
          (primitive         "cc_save_all_values" :void (list :size_t :t**))
          (primitive         "cc_load_all_values" :void (list :size_t :t**))
     
-         (primitive         "pushDynamicBinding" :void (list :t* :t**))
-         (primitive         "popDynamicBinding" :void (list :t* :t**))
-    
          ;; Primitives for Cleavir code
 
          (primitive         "cm_check_index" :return-type (list :t* :t* :t*))
