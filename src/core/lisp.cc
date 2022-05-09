@@ -133,6 +133,7 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/readtable.h>
+#include <clasp/core/unwind.h> // call_with_variable_bound
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -2125,16 +2126,24 @@ CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
 
 CL_LAMBDA(datum &rest arguments)
 CL_DECLARE((optimize (debug 3)));
+CL_UNWIND_COOP(true);
 NEVER_OPTIMIZE
 DOCGROUP(clasp)
   CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
+  // These are volatile in an effort to make them available to debuggers.
   volatile T_sp saved_datum = datum;
   volatile List_sp saved_initializers = initializers;
-  int nestedErrorDepth = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARnestedErrorDepthSTAR->symbolValue()));
+  T_sp objErrorDepth = _sym_STARnestedErrorDepthSTAR->symbolValue();
+  int nestedErrorDepth;
+  /* *nested-error-depth* should be a fixnum, but if it's not we can't signal
+   * an error without infinite regression. As sort of a KLUDGE, we just bind
+   * it to zero instead. This does mean that if nested error handlers
+   * repeatedly reset it to some non-fixnum, unchecked infinite error depth
+   * could occur. FIXME. */
+  if (gc::IsA<Fixnum_sp>(objErrorDepth))
+    nestedErrorDepth = unbox_fixnum(objErrorDepth);
+  else nestedErrorDepth = 0;
   if (nestedErrorDepth > 10) {
-    // TODO: Disable this code once error handling and conditions work properly
-    // It's only here to identify errors that would cause infinite looping
-    // as we get error handling and conditions working properly
     printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
     if (initializers.notnilp()) {
       printf("               initializers: %s\n", _rep_(initializers).c_str());
@@ -2143,17 +2152,20 @@ DOCGROUP(clasp)
     dbg_safe_backtrace();
     asm("int $03");
   }
-  ++nestedErrorDepth;
-  DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth));
-  if (_sym_universalErrorHandler->fboundp()) {
-    Function_sp fn = _sym_universalErrorHandler->symbolFunction();
-    eval::funcall(fn, nil<T_O>(), datum, initializers);
-  }
-  THROW_HARD_ERROR(BF("cl__error should never return because universal-error-handler should never return - but it did"));
+  call_with_variable_bound(_sym_STARnestedErrorDepthSTAR,
+                           make_fixnum(nestedErrorDepth + 1),
+                           [&]() {
+                             if (_sym_universalErrorHandler->fboundp()) {
+                               Function_sp fn = _sym_universalErrorHandler->symbolFunction();
+                               eval::funcall(fn, nil<T_O>(), datum, initializers);
+                             }
+                             THROW_HARD_ERROR(BF("cl__error should never return because universal-error-handler should never return - but it did"));
+                           });
 }
 
 CL_LAMBDA(cformat eformat &rest arguments)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS cerror)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
