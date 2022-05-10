@@ -8,33 +8,38 @@
 namespace core {
 
 DynEnv_O::SearchStatus sjlj_unwind_search(LexDynEnv_sp dest) {
+  DynEnv_O::SearchStatus status = DynEnv_O::Proceed;
   for (T_sp iter = my_thread->_DynEnv; iter != dest;) {
     if (iter.notnilp()) {
       DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(iter);
-      auto status = diter->search();
-      if (status != DynEnv_O::Continue) return status;
+      auto dstatus = diter->search();
+      /* If we get a FallBack, we don't want to return that
+       * immediately, since if we're out of extent that's more
+       * important. */
+      if (dstatus != DynEnv_O::Continue) status = dstatus;
       iter = diter->outer;
     } else return DynEnv_O::OutOfExtent;
   }
 #ifdef UNWIND_INVALIDATE_STRICT
   if (!(dest->valid)) return DynEnv_O::Abandoned;
 #endif
-  return DynEnv_O::Proceed;
+  return status;
 }
 
 DynEnv_O::SearchStatus sjlj_throw_search(T_sp tag, CatchDynEnv_sp& dest) {
+  DynEnv_O::SearchStatus status = DynEnv_O::Proceed;
   for (T_sp iter = my_thread->_DynEnv;;) {
     if (iter.nilp()) return DynEnv_O::OutOfExtent;
     else if (gc::IsA<CatchDynEnv_sp>(iter)) {
       CatchDynEnv_sp catc = gc::As_unsafe<CatchDynEnv_sp>(iter);
       if (tag == catc->tag) {
         dest = catc;
-        return DynEnv_O::Proceed;
+        return status;
       }
     }
     DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(iter);
-    auto status = diter->search();
-    if (status != DynEnv_O::Continue) return status;
+    auto nstatus = diter->search();
+    if (nstatus != DynEnv_O::Continue) status = nstatus;
     iter = diter->outer;
   }
   UNREACHABLE();

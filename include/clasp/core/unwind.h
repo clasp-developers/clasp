@@ -256,6 +256,10 @@ T_mv call_with_escape(Blockf&& block) {
     try {
       // the block dynenv is heap allocated, so that functions closing over it
       // can escape, and get a nice out-of-extent if they use it.
+      // FIXME? An out-of-extent lexical dynenv may still have
+      // pointers into the stack for stack allocated dynenvs which are
+      // no longer live. This may present a problem for a precise
+      // garbage collector.
       BlockDynEnv_sp env = BlockDynEnv_O::create(my_thread->_DynEnv, frame, &target);
       DynEnvPusher dep(my_thread, env);
       return block(env);
