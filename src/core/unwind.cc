@@ -1,3 +1,4 @@
+#include <chrono> // clock for unwind timing
 #include <clasp/core/unwind.h>
 #include <clasp/core/exceptions.h> // UNREACHABLE, unwind, errors
 #include <clasp/core/evaluator.h> // eval::funcall
@@ -90,6 +91,8 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
 #ifdef UNWIND_INVALIDATE_STRICT
       sjlj_unwind_invalidate(dest);
 #endif
+      my_thread->_unwinds++;
+      my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
       throw Unwind(dest->frame, index);
 #ifdef UNWIND_INVALIDATE_STRICT
   case DynEnv_O::Abandoned:
@@ -110,12 +113,20 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
   case DynEnv_O::OutOfExtent:
       NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
   case DynEnv_O::FallBack:
+#ifdef UNWIND_INVALIDATE_STRICT
+      sjlj_unwind_invalidate(dest);
+#endif
+      my_thread->_unwinds++;
+      my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
       throw CatchThrow(tag);
 #ifdef UNWIND_INVALIDATE_STRICT
   case DynEnv_O::Abandoned:
       NO_INITIALIZERS_ERROR(core::_sym_abandonedUnwind);
 #endif
   case DynEnv_O::Proceed:
+#ifdef UNWIND_INVALIDATE_STRICT
+      sjlj_unwind_invalidate(dest);
+#endif
       sjlj_unwind_proceed(dest, 1); // 1 irrelevant
   default: UNREACHABLE();
   }

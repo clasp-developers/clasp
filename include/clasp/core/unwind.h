@@ -150,7 +150,7 @@ public:
 
 // Dynenv for a special variable binding.
 class BindingDynEnv_O : public DynEnv_O {
-  LISP_CLASS(core, CorePkg, BindingDynEnv_O, "BindingDynEnv_O", DynEnv_O);
+  LISP_CLASS(core, CorePkg, BindingDynEnv_O, "BindingDynEnv", DynEnv_O);
 public:
   BindingDynEnv_O(T_sp outer, Symbol_sp a_sym, T_sp a_old)
     : DynEnv_O(outer), sym(a_sym), old(a_old) {};
