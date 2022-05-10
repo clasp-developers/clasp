@@ -83,7 +83,7 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
   vector<int>::reverse_iterator di;
   int digitIdx;
   curIndex = index;
-  LOG(BF("*starting index=%20lld") % curIndex);
+  LOG("*starting index=%20lld" , curIndex);
   ASSERT(bases.size() >= 1);
   digits.resize(bases.size());
   digitIdx = digits.size() - 1;
@@ -91,9 +91,9 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
     Bignum bb = (curIndex % (*bi));
     *di = bb.get_si();
     curIndex /= *bi;
-    LOG(BF("*di=%d  *bi=%d curIndex=%20lld") % *di % *bi % curIndex);
+    LOG("*di=%d  *bi=%d curIndex=%20lld" , *di , *bi , curIndex);
   }
-  LOG(BF("digits[0] = %d") % digits[0]);
+  LOG("digits[0] = %d" , digits[0]);
   return digits;
 }
 

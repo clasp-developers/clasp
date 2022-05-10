@@ -1217,7 +1217,7 @@ void walkRoots(RootWalkCallback callback, void* userData);
  *
  *  The static analyzer will generate an entry in the clasp_gc_xxx.cc file
  *  for this that looks like...
- *    {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(boost::posix_time::ptime),
+ *    {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(std::posix_time::ptime),
  *          __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTime_O),_Time),
  *          "_Time" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
  *

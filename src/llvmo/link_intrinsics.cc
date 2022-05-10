@@ -94,11 +94,11 @@ namespace llvmo {
     }
     break;
   case couldNotCoerceToClosure:
-      SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
+      SIMPLE_ERROR((" symbol %s") , _rep_(arg0));
   case destinationMustBeActivationFrame:
-      SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
+      SIMPLE_ERROR(("Destination must be ActivationFrame"));
   case invalidIndexForFunctionFrame:
-      SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
+      SIMPLE_ERROR(("Invalid index[%d] for FunctionFrame(size=%d)") , _rep_(arg0) , _rep_(arg1));
   case unboundSymbolValue:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
@@ -112,14 +112,14 @@ namespace llvmo {
   case unboundSymbolSetfFunction:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR(BF("The symbol %s has no setf function bound to it") % sym->fullName() );
+      SIMPLE_ERROR(("The symbol %s has no setf function bound to it") , sym->fullName() );
     }
   case badCell:
     {
-      SIMPLE_ERROR(BF("The object with pointer %p is not a cell") % arg0.raw_());
+      SIMPLE_ERROR(("The object with pointer %p is not a cell") , (void*)arg0.raw_());
     }
   default:
-      SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
+      SIMPLE_ERROR(("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") , err , _rep_(arg0) , _rep_(arg1) , _rep_(arg2));
   };
 };
 
@@ -382,7 +382,7 @@ LtvcReturnVoid ltvc_make_function_description(gctools::GCRootsInModule* holder, 
                                                                    filepos);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::FunctionDescription_sp>(val)) {
-    SIMPLE_ERROR(BF("The object is not a FunctionDescription %s") % core::_rep_(val));
+    SIMPLE_ERROR(("The object is not a FunctionDescription %s") , core::_rep_(val));
   }
 #if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s FunctionDescription_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_()));
@@ -401,7 +401,7 @@ LtvcReturnVoid ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, cha
   core::LocalEntryPoint_sp entryPoint = core::makeLocalEntryPoint(fdesc,llvm_func);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::LocalEntryPoint_sp>(entryPoint)) {
-    SIMPLE_ERROR(BF("The object is not a LocalEntryPoint %s") % core::_rep_(entryPoint));
+    SIMPLE_ERROR(("The object is not a LocalEntryPoint %s") , core::_rep_(entryPoint));
   }
 #if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
@@ -423,7 +423,7 @@ LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, ch
   core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,xep,localEntryPoint);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
-    SIMPLE_ERROR(BF("The object is not a GlobalEntryPoint %s") % core::_rep_(entryPoint));
+    SIMPLE_ERROR(("The object is not a GlobalEntryPoint %s") , core::_rep_(entryPoint));
   }
 #if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
@@ -626,9 +626,9 @@ NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
             return;
         }
       }
-      SIMPLE_ERROR(BF("BUG: Unknown return value from %s: %s")
-                   % _rep_(core::_sym_breakstep)
-                   % _rep_(res));
+      SIMPLE_ERROR(("BUG: Unknown return value from %s: %s")
+                   , _rep_(core::_sym_breakstep)
+                   , _rep_(res));
     } else return;
   stop_stepping: // outside the scope of tog
     my_thread->_Breakstep = false;
@@ -729,9 +729,9 @@ void badKeywordArgumentError(core::T_sp keyword, core::T_sp functionName,
                              core::T_sp lambdaList)
 {
   if (functionName.nilp()) {
-    SIMPLE_ERROR(BF("When calling an unnamed function with the lambda list %s the bad keyword argument %s was passed") % _rep_(lambdaList) % _rep_(keyword));
+    SIMPLE_ERROR(("When calling an unnamed function with the lambda list %s the bad keyword argument %s was passed") , _rep_(lambdaList) , _rep_(keyword));
   }
-  SIMPLE_ERROR(BF("When calling %s with the lambda-list %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(lambdaList) % _rep_(keyword));
+  SIMPLE_ERROR(("When calling %s with the lambda-list %s the bad keyword argument %s was passed") , _rep_(functionName) , _rep_(lambdaList) , _rep_(keyword));
 }
 
 void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
@@ -1042,11 +1042,11 @@ core::T_O* initializeTagbodyClosure(core::T_O *afP)
 extern "C" {
 
 void throwIllegalSwitchValue(size_t val, size_t max) {
-  SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
+  SIMPLE_ERROR(("Illegal switch value %d - max value is %d") , val , max);
 }
 
 void cc_error_bugged_catch(size_t id) {
-  SIMPLE_ERROR(BF("BUG: Nonlocal entry frame could not match go-index %d") % id);
+  SIMPLE_ERROR(("BUG: Nonlocal entry frame could not match go-index %d") , id);
 }
 
 void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
@@ -1307,9 +1307,9 @@ void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
   T_sp functionName = closure->functionName();
   if (functionName.nilp())
-    SIMPLE_ERROR(BF("Odd number of keyword arguments"));
+    SIMPLE_ERROR(("Odd number of keyword arguments"));
   else
-    SIMPLE_ERROR(BF("In call to %s with lambda-list %s - got odd number of keyword arguments") % _rep_(functionName) % _rep_(closure->lambdaList()));
+    SIMPLE_ERROR(("In call to %s with lambda-list %s - got odd number of keyword arguments") , _rep_(functionName) , _rep_(closure->lambdaList()));
 }
 
 T_O **cc_multipleValuesArrayAddress()

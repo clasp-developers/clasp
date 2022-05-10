@@ -7,9 +7,9 @@
 namespace core {
 #if 0
 #define DEBUG_RECORD 1
-#define RECORD_LOG(abf) printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, (abf).str().c_str());
+#define RECORD_LOG(...) printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, (fmt::sprintf(__VA_ARGS__).c_str()));
 #else
-#define RECORD_LOG(abf)
+#define RECORD_LOG(...)
 #endif
 
 T_sp record_circle_subst(Record_sp record, T_sp tree);

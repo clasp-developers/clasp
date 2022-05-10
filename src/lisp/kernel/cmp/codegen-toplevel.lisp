@@ -18,11 +18,11 @@
 	(body (cdr rest)))
     (when (or (member 'cl:compile situations) (member :compile-toplevel situations))
       (cmp-log "Performing eval-when :compile-toplevel side-effects%N")
-      (cmp-log "Evaluating: %s%N" body)
+      (cmp-log "Evaluating: {}%N" body)
       (funcall core:*eval-with-env-hook* `(progn ,@body) env)
       (cmp-log "Done eval-when compile-toplevel side-effects%N"))
     (when (or (member 'cl:load situations) (member :load-toplevel situations))
-      (cmp-log "Compiling body due to :load-toplevel --> %s%N" body)
+      (cmp-log "Compiling body due to :load-toplevel --> {}%N" body)
       ;; Each subform is a top-level form
       (dolist (subform body)
 	(t1expr subform env))
@@ -79,7 +79,7 @@
 
 
 (defun t1expr (form &optional env)
-  (cmp-log "t1expr-> %s%N" form)
+  (cmp-log "t1expr-> {}%N" form)
   (let ((head (if (atom form) form (car form))))
     (cond
       ((eq head 'cl:eval-when) (t1eval-when (cdr form) env))

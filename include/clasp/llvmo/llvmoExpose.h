@@ -805,7 +805,7 @@ template <>
   DeclareType _v;
   from_object(T_P object) {
     if (object.nilp()) {
-//      SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+//      SIMPLE_ERROR(("You must pass a valid RelocModel"));
     }
     if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
       if ( so == llvmo::_sym_RelocModel_undefined ) {

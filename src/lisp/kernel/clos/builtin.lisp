@@ -25,7 +25,7 @@
 
 (defmethod ensure-class-using-class ((class null) name core:&va-rest rest)
   (clos::gf-log "In ensure-class-using-class (class null)%N")
-  (clos::gf-log "     class -> %s%N" name)
+  (clos::gf-log "     class -> {}%N" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (declare (ignore direct-superclasses))

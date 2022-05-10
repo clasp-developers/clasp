@@ -367,7 +367,7 @@ CL_DEFMETHOD DINodeArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements
       llvm::MDNode *mdnode = di->operator llvm::MDNode *();
       vector_values.push_back(mdnode);
     } else {
-      SIMPLE_ERROR(BF("Handle conversion of %s to llvm::Value*") % _rep_(oCar(cur)));
+      SIMPLE_ERROR(("Handle conversion of %s to llvm::Value*") , _rep_(oCar(cur)));
     }
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
@@ -392,7 +392,7 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
       llvm::MDNode *mdnode = di->operator llvm::MDNode *();
       vector_values.push_back(mdnode);
     } else {
-      SIMPLE_ERROR(BF("Handle conversion of %s to llvm::Value*") % _rep_(oCar(cur)));
+      SIMPLE_ERROR(("Handle conversion of %s to llvm::Value*") , _rep_(oCar(cur)));
     }
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
@@ -415,17 +415,17 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
   lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
 
   if (verbose) {
-    core::write_bf_stream(BF("Entered %s %s %s\n") % __FILE__ % __LINE__ % __FUNCTION__ );
-    core::write_bf_stream(BF("  DIContext* %p  SectionedAddress: %p %p\n") % (void*)dicontext % (void*)addr.SectionIndex % (void*)addr.Address );
+    core::write_bf_stream(fmt::sprintf("Entered %s %s %s\n" , __FILE__ , __LINE__ , __FUNCTION__ ));
+    core::write_bf_stream(fmt::sprintf("  DIContext* %p  SectionedAddress: %p %p\n" , (void*)dicontext , (void*)addr.SectionIndex , (void*)addr.Address ));
   }
   llvm::DILineInfo info = dicontext->getLineInfoForAddress(addr, lispec);
   if (info.FileName == info.BadString) {
   if (verbose) {
-    core::write_bf_stream(BF("info.Filename is info.BadString:  %s\n") % info.FileName );
-    core::write_bf_stream(BF("Source %s\n") % _rep_(source) );
-    core::write_bf_stream(BF("info.Line %lu\n") % info.Line );
-    core::write_bf_stream(BF("info.Column %lu\n") % info.Column );
-    core::write_bf_stream(BF("info.StartLine %lu\n") % info.StartLine );
+    core::write_bf_stream(fmt::sprintf("info.Filename is info.BadString:  %s\n" , info.FileName ));
+    core::write_bf_stream(fmt::sprintf("Source %s\n" , _rep_(source) ));
+    core::write_bf_stream(fmt::sprintf("info.Line %lu\n" , info.Line ));
+    core::write_bf_stream(fmt::sprintf("info.Column %lu\n" , info.Column ));
+    core::write_bf_stream(fmt::sprintf("info.StartLine %lu\n" , info.StartLine ));
   }
     return nil<core::T_O>();
   }
@@ -433,11 +433,11 @@ core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::
     source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
   else source = nil<core::T_O>();
   if (verbose) {
-    core::write_bf_stream(BF("info.Filename %s\n") % info.FileName );
-    core::write_bf_stream(BF("Source %s\n") % _rep_(source) );
-    core::write_bf_stream(BF("info.Line %lu\n") % info.Line );
-    core::write_bf_stream(BF("info.Column %lu\n") % info.Column );
-    core::write_bf_stream(BF("info.StartLine %lu\n") % info.StartLine );
+    core::write_bf_stream(fmt::sprintf("info.Filename %s\n" , info.FileName ));
+    core::write_bf_stream(fmt::sprintf("Source %s\n" , _rep_(source) ));
+    core::write_bf_stream(fmt::sprintf("info.Line %lu\n" , info.Line ));
+    core::write_bf_stream(fmt::sprintf("info.Column %lu\n" , info.Column ));
+    core::write_bf_stream(fmt::sprintf("info.StartLine %lu\n" , info.StartLine ));
   }
   
   return Values(core::SimpleBaseString_O::make(info.FileName),
@@ -542,8 +542,8 @@ CL_DEFUN DWARFContext_sp DWARFContext_O::createDWARFContext(ObjectFile_sp ofi) {
     std::unique_ptr<llvm::DWARFContext> uptr = llvm::DWARFContext::create(*obj.release());
     return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
   }
-  SIMPLE_ERROR(BF("Could not get ObjectFile:\n%s")
-               % llvm::toString(std::move(errOrObj.takeError())));
+  SIMPLE_ERROR(("Could not get ObjectFile:\n%s")
+               , llvm::toString(std::move(errOrObj.takeError())));
 }
 
 CL_DEFMETHOD size_t DWARFContext_O::getNumCompileUnits() const {
@@ -566,17 +566,17 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
     ObjectFile_sp object_file = gc::As<ObjectFile_sp>(object_info.second());
     DWARFContext_sp context = DWARFContext_O::createDWARFContext(object_file);
     if (verbose){
-      core::write_bf_stream(BF("Address: %p\n") % address );
-      core::write_bf_stream(BF("ObjectFile: %s SectionedAddress: %s DWARFContext: %s\n") % _rep_(object_file) % _rep_(sectioned_address) % _rep_(context));
+      core::write_bf_stream(fmt::sprintf("Address: %p\n" , address ));
+      core::write_bf_stream(fmt::sprintf("ObjectFile: %s SectionedAddress: %s DWARFContext: %s\n"  , _rep_(object_file)  , _rep_(sectioned_address)  , _rep_(context)));
       Code_sp code = object_file->_Code;
-      core::write_bf_stream(BF("Code object: %s\n") % _rep_(code));
-      core::write_bf_stream(BF("Code _text start: %p   end: %p\n") % code->_TextSectionStart % code->_TextSectionEnd );
-      core::write_bf_stream(BF("address (%p) - _TextSectionStart(%p) -> %ld\n") % (void*)address % (void*)code->_TextSectionStart % (intptr_t)((uintptr_t)address - (uintptr_t)code->_TextSectionStart ));
+      core::write_bf_stream(fmt::sprintf("Code object: %s\n"  , _rep_(code)));
+      core::write_bf_stream(fmt::sprintf("Code _text start: %p   end: %p\n"  , code->_TextSectionStart  , code->_TextSectionEnd ));
+      core::write_bf_stream(fmt::sprintf("address (%p) - _TextSectionStart(%p) -> %ld\n"  , (void*)address  , (void*)code->_TextSectionStart  , (intptr_t)((uintptr_t)address - (uintptr_t)code->_TextSectionStart )));
     }
     return getLineInfoForAddress_(context,sectioned_address, verbose);
   }
   if (verbose){
-    core::write_bf_stream(BF("Could not find ObjectFile\n"));
+    core::write_bf_stream(fmt::sprintf("Could not find ObjectFile\n"));
   }
   return Values(nil<core::T_O>());
 }

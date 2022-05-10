@@ -75,7 +75,7 @@ CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
     ++it;
   }
   if (it != end)
-    SIMPLE_ERROR(BF("type_error_plist %s") % _rep_(place));
+    SIMPLE_ERROR(("type_error_plist %s") , _rep_(place));
   place = Cons_O::create(value, place);
   place = Cons_O::create(indicator, place);
   return place;
@@ -233,7 +233,7 @@ struct Tester {
     this->_test_pass = true;
     if (testNot.notnilp()) {
       if (test.notnilp()) {
-        SIMPLE_ERROR(BF("both test and test-not were defined"));
+        SIMPLE_ERROR(("both test and test-not were defined"));
       }
       this->_test_func = coerce::functionDesignator(testNot);
       this->_test_pass = false;
@@ -281,7 +281,7 @@ List_sp Cons_O::memberEql(T_sp item) const {
 List_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   Tester t(item, key, test, testNot, false);
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur));
+    LOG("Testing for member with item=%s entry = %s" , item , oCar(cur));
     T_sp obj = CONS_CAR(cur);
     if (t.test(obj)) return ((cur));
   }
@@ -294,7 +294,7 @@ List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   _OF();
   Tester t(item, key, test, testNot, true);
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur));
+    LOG("Testing for member with item=%s entry = %s" , item , oCar(cur));
     T_sp obj = CONS_CAR(cur);
     if (t.test(obj)) return ((cur));
   }
@@ -305,7 +305,7 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   _OF();
   Tester t(item, key, test, testNot, false);
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    LOG(BF("Testing for assoc with item=%s entry = %s") % item % oCar(cur));
+    LOG("Testing for assoc with item=%s entry = %s" , item , oCar(cur));
     T_sp obj = CONS_CAR(cur);
     if (!obj.nilp()) {
       if (obj.consp()) {
@@ -448,7 +448,7 @@ List_sp Cons_O::nreconc(T_sp tail) {
 T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
   _OF();
   if (index >= (int)this->length()) {
-    SIMPLE_ERROR(BF("Index[%d] is beyond the length[%d] of the cons") % index % this->length());
+    SIMPLE_ERROR(("Index[%d] is beyond the length[%d] of the cons") , index , this->length());
   }
   List_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < index; i++)
@@ -531,7 +531,7 @@ T_sp Cons_O::last(cl_index n) const {
     ;
   if (r == l) {
     if (!cl__listp(r)) {
-      SIMPLE_ERROR(BF("Type not list"));
+      SIMPLE_ERROR(("Type not list"));
     }
     while ((r).consp()) {
       r = oCdr(r);
@@ -651,7 +651,7 @@ string Cons_O::__repr__() const {
 }
 
  void not_alist_error(T_sp obj) {
-   SIMPLE_ERROR(BF("Not an alist -> %s") % _rep_(obj));
+   SIMPLE_ERROR(("Not an alist -> %s") , _rep_(obj));
  }
  
 DOCGROUP(clasp)
@@ -696,11 +696,11 @@ SYMBOL_EXPORT_SC_(ClPkg, make_list);
 DOCGROUP(clasp)
 CL_DEFUN void core__verify_cons_layout(size_t cons_size, size_t cons_car_offset, size_t cons_cdr_offset)
 {
-  if (cons_size!=sizeof(Cons_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lisp cons_size %lu does not match sizeof(Cons_O) %lu") % cons_size % sizeof(Cons_O));
+  if (cons_size!=sizeof(Cons_O)) SIMPLE_ERROR(("The cmpintrinsics.lisp cons_size %lu does not match sizeof(Cons_O) %lu") , cons_size , sizeof(Cons_O));
    if (cons_car_offset!=offsetof(Cons_O,_Car))
-     SIMPLE_ERROR(BF("cons_rack_offset %lu does not match offsetof(_Car,Cons_O) %lu") % cons_car_offset % offsetof(Cons_O,_Car));
+     SIMPLE_ERROR(("cons_rack_offset %lu does not match offsetof(_Car,Cons_O) %lu") , cons_car_offset , offsetof(Cons_O,_Car));
    if (cons_cdr_offset!=offsetof(Cons_O,_Cdr))
-     SIMPLE_ERROR(BF("cons_rack_offset %lu does not match offsetof(_Cdr,Cons_O) %lu") % cons_cdr_offset % offsetof(Cons_O,_Cdr));
+     SIMPLE_ERROR(("cons_rack_offset %lu does not match offsetof(_Cdr,Cons_O) %lu") , cons_cdr_offset , offsetof(Cons_O,_Cdr));
 }
 
 };

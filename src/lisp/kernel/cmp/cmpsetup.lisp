@@ -99,7 +99,7 @@ Options are :tagbody :go :all :eh-landing-pads
 (when *debug-compiler*
   (setq *compile-file-debug-dump-module* t)
   (setq *compile-debug-dump-module* t)
-  (bformat t "!%N!%N!\n!  Turning on compiler debugging\n!\n!\n!\n"))
+  (core:fmt t "!%N!%N!\n!  Turning on compiler debugging\n!\n!\n!\n"))
 
 
 ;;#+(or)
@@ -123,7 +123,7 @@ Options are :tagbody :go :all :eh-landing-pads
 #+(or)
 (progn
   (eval-when (:compile-toplevel :load-toplevel :execute)
-    (core:bformat *error-output* "!%N!%N!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lisp\n!\n!\n!\n"))
+    (core:fmt *error-output* "!%N!%N!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lisp\n!\n!\n!\n"))
   (defun is-debug-compiler-on ()
     *debug-compiler*)
   (defmacro debug-print-i32 (num)
@@ -133,8 +133,8 @@ Options are :tagbody :go :all :eh-landing-pads
   (defmacro cmp-log (fmt &rest args)
       `(if (is-debug-compiler-on)
            (progn
-             (bformat t "CMP-LOG ")
-             (bformat t ,fmt ,@args))
+             (core:fmt t "CMP-LOG ")
+             (core:fmt t ,fmt ,@args))
            nil)))
 
 (defmacro cmp-log-compile-file-dump-module (module &optional (name-modifier ""))

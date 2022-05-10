@@ -45,7 +45,7 @@ CL_DEFUN void serve_event_internal__ll_fd_zero(clasp_ffi::ForeignData_sp fdset) 
 
 DOCGROUP(clasp)
 CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp fdset) {
-  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 so I'm commenting it out for now"));
+  SIMPLE_ERROR(("FD_SET causes problems with Xcode 11.4 so I'm commenting it out for now"));
 #if 0
  FD_SET(fd, fdset->data<fd_set *>());
 #endif
@@ -53,7 +53,7 @@ CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp 
 
 DOCGROUP(clasp)
 CL_DEFUN int serve_event_internal__ll_fd_isset(int fd, clasp_ffi::ForeignData_sp fdset) {
-  SIMPLE_ERROR(BF("FD_ISSET causes problems with Xcode 11.4 so I'm commenting it out for now"));
+  SIMPLE_ERROR(("FD_ISSET causes problems with Xcode 11.4 so I'm commenting it out for now"));
 #if 0
   return FD_ISSET(fd, fdset->data<fd_set *>());
 #endif
@@ -73,7 +73,7 @@ CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventNoTimeout(clasp_ffi
 DOCGROUP(clasp)
 CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventWithTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd, int maxfdp1, double seconds) {
   if (seconds < 0.0) {
-    SIMPLE_ERROR(BF("Illegal timeout %lf seconds") % seconds);
+    SIMPLE_ERROR(("Illegal timeout %lf seconds") , seconds);
   }
   struct timeval tv;
   tv.tv_sec = seconds;

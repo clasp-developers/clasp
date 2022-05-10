@@ -165,7 +165,7 @@
 (defmacro with-memory-ramp ((&key (pattern 'gctools:ramp)) &body body)
   `(if (member :disable-memory-ramp *features*)
        (progn
-         (core:bformat t "Compiling with memory-ramp DISABLED%N")
+         (core:fmt t "Compiling with memory-ramp DISABLED%N")
          (funcall (lambda () (progn ,@body))))
        (do-memory-ramp (lambda () (progn ,@body)) ,pattern)))
 
@@ -208,9 +208,9 @@
     `(let ((,msg (format nil ,fmt ,@args)))
        (unwind-protect
             (progn
-              (core:monitor-write (core:bformat nil "{{{ ;;; %s%N" ,msg))
+              (core:monitor-write (core:fmt nil "((( ;;; {}%N" ,msg))
               ,@body)
-         (core:monitor-write (core:bformat nil "}}} ;;; %s%N" ,msg)))))
+         (core:monitor-write (core:fmt nil "))) ;;; {}%N" ,msg)))))
   #-debug-monitor
   nil)
 
@@ -218,7 +218,7 @@
   #-debug-monitor
   (declare (ignore fmt args))
   #+debug-monitor
-  `(sys:monitor-write (core:bformat nil "%s%N" (format nil ,fmt ,@args)))
+  `(sys:monitor-write (core:fmt nil "{}%N" (format nil ,fmt ,@args)))
   #-debug-monitor
   nil)
 
@@ -239,7 +239,7 @@
             ,args))
         `(let ((,fun ))
            (core:multiple-value-foreign-call
-            ,(bformat nil "fast_apply%d" (length args))
+            ,(core:fmt nil "fast_apply{}" (length args))
             (if (typep ,fun 'function)
                 ,fun
                 (if (typep ,fun 'symbol)

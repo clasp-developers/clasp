@@ -127,7 +127,7 @@ public:
 
 template <typename T>
 struct format_descriptor {
-  static std::string format() { SIMPLE_ERROR(BF("subclass for the type T")); };
+  static std::string format() { SIMPLE_ERROR(("subclass for the type T")); };
 };
 
 template <>
@@ -158,7 +158,7 @@ struct buffer_info {
     : ptr(ptr), itemsize(itemsize), size(1), format(format), ndim(ndim),
       shape(std::move(shape_in)), strides(std::move(strides_in)), readonly(readonly) {
         if (ndim != (ssize_t) shape.size() || ndim != (ssize_t) strides.size())
-          SIMPLE_ERROR(BF("buffer_info: ndim doesn't match shape and/or strides length"));
+          SIMPLE_ERROR(("buffer_info: ndim doesn't match shape and/or strides length"));
         for (size_t i = 0; i < (size_t) ndim; ++i)
             size *= shape[i];
     }

@@ -141,7 +141,7 @@ fields at the same offset as Instance_O.
   // Accessors
    CodeEntryPoint_O(FunctionDescription_sp fdesc, llvmo::CodeBase_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
  public:
-   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(BF("Subclass must implement")); };
+   virtual void fixupInternalsForSnapshotSaveLoad( snapshotSaveLoad::Fixup* fixup) { SIMPLE_ERROR(("Subclass must implement")); };
    void fixupOneCodePointer(snapshotSaveLoad::Fixup* fixup, void** ptr);
    CL_DEFMETHOD llvmo::CodeBase_sp EntryPoint_code() const { return this->_Code; };
  };

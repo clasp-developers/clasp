@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 //#define DEBUG_DESC_BUNDLE
 
-
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,7 +56,7 @@ bool safe_is_directory(const std::filesystem::path& path) {
   try {
     return std::filesystem::is_directory(path);
   } catch (...) {
-    SIMPLE_ERROR(BF("The std::filesystem::is_directory(%s) call threw a C++ exception") % path.string().c_str() );
+    SIMPLE_ERROR(("The std::filesystem::is_directory(%s) call threw a C++ exception") , path.string().c_str() );
   }
 }
 
@@ -230,7 +230,7 @@ void Bundle::initializeStartupWorkingDirectory(bool verbose) {
            __FILE__, __LINE__, e.what());
     printf("     This appears to be a problem with std::filesystem\n");
     printf("     - see https://svn.boost.org/trac/boost/ticket/4688\n");
-    SIMPLE_ERROR(BF("There is a problem with std::filesystem"));
+    SIMPLE_ERROR(("There is a problem with std::filesystem"));
   }
   cwd = curPath.string();
   this->_Directories->_StartupWorkingDir = std::filesystem::path(cwd);
@@ -270,7 +270,7 @@ std::filesystem::path Bundle::findAppDir( const string &argv0, const string &cwd
   // Search PATH.
   char *pc = getenv("PATH");
   if (pc == NULL) {
-    THROW_HARD_ERROR(BF("PATH environment variable must be defined"));
+    THROW_HARD_ERROR("PATH environment variable must be defined");
   }
   string pathList = pc;
   VectorStrings pathParts;
@@ -294,7 +294,7 @@ std::filesystem::path Bundle::findAppDir( const string &argv0, const string &cwd
       return onePath.parent_path();
     }
   }
-  THROW_HARD_ERROR(BF("Could not determine absolute path to executable: %s") % argv0 );
+  THROW_HARD_ERROR("Could not determine absolute path to executable: %s", argv0 );
 }
 
 

@@ -217,7 +217,7 @@ struct to_object<gc::Nilable<gctools::smart_ptr<T>>> {
 
 #define STREAMIO(classo)                                                     \
   std::ostream &operator<<(std::ostream &os, gctools::smart_ptr<classo> p) { \
-    THROW_HARD_ERROR(boost::format("Illegal operator<<"));                   \
+    THROW_HARD_ERROR("Illegal operator<<");                                  \
     return os;                                                               \
   }
 

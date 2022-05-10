@@ -559,10 +559,6 @@ public:
   void sprint(T_sp obj, T_sp sout);
 #endif // defined(XML_ARCHIVE)
 public:
-  void print(boost::format fmt);
-  void prin1(boost::format fmt);
-
-public:
   /*! Create a setfDefinition */
   //	void set_setfDefinition(Symbol_sp fnName, Function_sp fnDef);
   /*! Return the function or nil if not found */

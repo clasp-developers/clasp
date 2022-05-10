@@ -75,7 +75,7 @@ If type is :IR then dump the LLVM-IR for all of the associated functions.
                desig))
        ((:asm) (disassemble-function-to-asm desig))))
     ((or symbol (cons (eql setf) (cons symbol null))) ; function name
-     (bformat t "Disassembling function: %s%N" desig)
+     (core:fmt t "Disassembling function: {}%N" desig)
      ;; This will (correctly) signal an error if the name is unbound.
      (disassemble (fdefinition desig) :type type))
     ((or (cons (eql lambda)) ; lambda expression (roughly)

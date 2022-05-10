@@ -253,7 +253,6 @@ namespace core {
     };
   public:
     static Str8Ns_sp create(const string &nm);
-//  static Str8Ns_sp create(const boost::format &nm);
     static Str8Ns_sp create(const char *nm, size_t numChars);
     static Str8Ns_sp create(const char *nm);
     static Str8Ns_sp create(size_t numChars);

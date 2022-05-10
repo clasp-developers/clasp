@@ -8,6 +8,7 @@
 #define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
+#include <unistd.h>
 #include <dlfcn.h>
 #include <iomanip>
 #include <cstdint>
@@ -63,7 +64,7 @@ llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> ObjectFile_O::getObjec
 CL_DEFMETHOD
 void* Code_O::absoluteAddress(SectionedAddress_sp sa) {
   if (sa->_value.SectionIndex != this->_TextSectionId) {
-    SIMPLE_ERROR(BF("The sectioned-address section-index %lu does not match the code section-index %lu") % sa->_value.SectionIndex % this->_TextSectionId);
+    SIMPLE_ERROR(("The sectioned-address section-index %lu does not match the code section-index %lu") , sa->_value.SectionIndex , this->_TextSectionId);
   }
   return (void*)((char*)this->_TextSectionStart + sa->_value.Address);
 }
@@ -176,7 +177,7 @@ void* Code_O::allocateHead(uintptr_t size, uint32_t align) {
   head = (const unsigned char*)gctools::AlignUp((uintptr_t)head,align);
   uintptr_t headOffset = (uintptr_t)head-(uintptr_t)this->_DataCode.data()+size;
   if (headOffset > this->_TailOffset) {
-    SIMPLE_ERROR(BF("There is not enough memory in the Code_O object - current size: %lu and we are over by %lu\n") % this->_DataCode.size() % (headOffset-this->_TailOffset));
+    SIMPLE_ERROR(("There is not enough memory in the Code_O object - current size: %lu and we are over by %lu\n") , this->_DataCode.size() , (headOffset-this->_TailOffset));
   }
   const unsigned char* tail = this->_DataCode.data()+this->_TailOffset;
   if (tail<head) {
@@ -191,7 +192,7 @@ void* Code_O::allocateTail(uintptr_t size, uint32_t align) {
   tail = (const unsigned char*)gctools::AlignDown((uintptr_t)tail,align);
   uintptr_t tailOffset = (uintptr_t)tail-(uintptr_t)this->_DataCode.data();
   if (this->_HeadOffset > tailOffset) {
-    SIMPLE_ERROR(BF("There is not enough memory in the Code_O object - current size: %lu and we are over by %lu\n") % this->_DataCode.size() % (this->_HeadOffset-tailOffset));
+    SIMPLE_ERROR(("There is not enough memory in the Code_O object - current size: %lu and we are over by %lu\n") , this->_DataCode.size() , (this->_HeadOffset-tailOffset));
   }
   this->_TailOffset = tailOffset;
   const unsigned char* head = this->_DataCode.data()+this->_HeadOffset;
@@ -205,7 +206,7 @@ void* Code_O::allocateTail(uintptr_t size, uint32_t align) {
 
 void Code_O::describe() const
 {
-  core::write_bf_stream(BF("Code start: %p  stop: %p  size: %lu\n") % (void*)this % (void*)&this->_DataCode[this->_DataCode.size()] % (uintptr_t)((char*)&this->_DataCode[this->_DataCode.size()]-(char*)this));
+  core::write_bf_stream(fmt::sprintf("Code start: %p  stop: %p  size: %lu\n" , (void*)this , (void*)&this->_DataCode[this->_DataCode.size()] , (uintptr_t)((char*)&this->_DataCode[this->_DataCode.size()]-(char*)this)));
 };
 
 CL_DOCSTRING(R"dx(Return the count of literals in the given Code object)dx")
@@ -303,7 +304,7 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   
   //
   // 4. We have hit an unidentifiable entry_point - what is it
-  SIMPLE_ERROR(BF("We have hit an unidentifiable entry_point at %p - figure out what it is") % (void*)entry_point);
+  SIMPLE_ERROR(("We have hit an unidentifiable entry_point at %p - figure out what it is") , (void*)entry_point);
 }
 
 };
@@ -391,8 +392,8 @@ CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_poi
   SectionedAddress_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
       // now the object file
   if (verbose) {
-    core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % ofi->_FasoName % ofi->_FasoIndex % ofi->_ObjectId);
-    core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % ofi->_FasoIndex % offset );
+    core::write_bf_stream(fmt::sprintf("faso-file: %s  object-file-position: %lu  objectID: %lu\n" , _rep_(ofi->_FasoName) , ofi->_FasoIndex , ofi->_ObjectId));
+    core::write_bf_stream(fmt::sprintf("SectionID: %lu    memory offset: %lu\n" , ofi->_FasoIndex , offset ));
   }
   return sectioned_address;
 }
@@ -410,7 +411,7 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
   size_t count;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, (char*)instruction_pointer, cur.raw_()));
   if ((cur.nilp()) && verbose){
-    core::write_bf_stream(BF("No object files registered - cannot find object file for address %p\n") % (void*)instruction_pointer);
+    core::write_bf_stream(fmt::sprintf("No object files registered - cannot find object file for address %p\n" , (void*)instruction_pointer));
   }
   while (cur.consp()) {
     core::T_sp car = CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur));
@@ -443,7 +444,7 @@ CL_LISPIFY_NAME(release_object_files);
 DOCGROUP(clasp)
 CL_DEFUN void release_object_files() {
   _lisp->_Roots._AllObjectFiles.store(nil<core::T_O>());
-  core::write_bf_stream(BF("ObjectFiles have been released\n"));
+  core::write_bf_stream(fmt::sprintf("ObjectFiles have been released\n"));
 }
 
 CL_LISPIFY_NAME(number_of_object_files);
@@ -529,7 +530,7 @@ DOCGROUP(clasp)
 CL_DEFUN void ext__generate_perf_map() {
   stringstream ss;
   ss << "/tmp/perf-" << getpid() << ".map";
-  core::write_bf_stream(BF("Writing to %s\n") % ss.str());
+  core::write_bf_stream(fmt::sprintf("Writing to %s\n" , ss.str()));
   FILE* fout = fopen(ss.str().c_str(),"w");
   jit_code_entry* jce = __jit_debug_descriptor.first_entry;
   ql::list ll;
@@ -565,10 +566,10 @@ CL_DEFUN void describe_code() {
   while (cur.consp()) {
     ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(cur));
     Code_sp code = ofi->_Code;
-    core::write_bf_stream(BF("ObjectFile start: %p  size: %lu\n") % (void*)ofi->_MemoryBuffer->getBufferStart() % ofi->_MemoryBuffer->getBufferSize());
+    core::write_bf_stream(fmt::sprintf("ObjectFile start: %p  size: %lu\n" , (void*)ofi->_MemoryBuffer->getBufferStart() , ofi->_MemoryBuffer->getBufferSize()));
     uintptr_t codeStart = (uintptr_t)&code->_DataCode[0];
     uintptr_t codeEnd = (uintptr_t)&code->_DataCode[code->_DataCode.size()];
-    core::write_bf_stream(BF("   corresponding Code_O object: %p  code range: %p - %p\n") % (void*)code.raw_() % (void*)codeStart % (void*)codeEnd );
+    core::write_bf_stream(fmt::sprintf("   corresponding Code_O object: %p  code range: %p - %p\n" , (void*)code.raw_() , (void*)codeStart , (void*)codeEnd ));
     uintptr_t stackmapStart = (uintptr_t)code->_StackmapStart;
     uintptr_t stackmapEnd = (uintptr_t)code->_StackmapStart+code->_StackmapSize;
     if (stackmapStart<=stackmapEnd) {
@@ -577,21 +578,21 @@ CL_DEFUN void describe_code() {
         if (header->_version == 3 && header->_reserved0 == 0 && header->_reserved1 == 0 ) {
           goodStackmaps++;
         }
-        core::write_bf_stream(BF("      The stackmap %p %p is within the code region\n") % (void*)stackmapStart % (void*)stackmapEnd );
+        core::write_bf_stream(fmt::sprintf("      The stackmap %p %p is within the code region\n" , (void*)stackmapStart , (void*)stackmapEnd ));
       } else {
-        core::write_bf_stream(BF(" ERROR     The stackmap %p %p is NOT within the code region\n") % (void*)stackmapStart % (void*)stackmapEnd );
+        core::write_bf_stream(fmt::sprintf(" ERROR     The stackmap %p %p is NOT within the code region\n" , (void*)stackmapStart , (void*)stackmapEnd ));
       }
     } else {
-      core::write_bf_stream(BF(" ERROR     The stackmap %p %p is not a real memory region\n") % (void*)stackmapStart % (void*)stackmapEnd );
+      core::write_bf_stream(fmt::sprintf(" ERROR     The stackmap %p %p is not a real memory region\n" , (void*)stackmapStart , (void*)stackmapEnd ));
     }      
     code->describe();
     sz += ofi->_MemoryBuffer->getBufferSize();
     count++;
     cur = CONS_CDR(cur);
   }
-  core::write_bf_stream(BF("Total number of object files: %lu\n") % count);
-  core::write_bf_stream(BF("  Total size of object files: %lu\n") % sz);
-  core::write_bf_stream(BF("             Valid stackmaps: %lu\n") % goodStackmaps );
+core::write_bf_stream(fmt::sprintf("Total number of object files: %lu\n" , count));
+core::write_bf_stream(fmt::sprintf("  Total size of object files: %lu\n" , sz));
+core::write_bf_stream(fmt::sprintf("             Valid stackmaps: %lu\n" , goodStackmaps ));
 }
 
 };

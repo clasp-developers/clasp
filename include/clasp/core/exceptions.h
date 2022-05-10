@@ -65,19 +65,17 @@ extern core::Symbol_sp& _sym_name;
     lisp_error( _type_, nil<core::Cons_O>()); \
     THROW_NEVER_REACH();                                                                  \
   }
-#define FUNCTION_DESCRIPTION_ERROR() SIMPLE_ERROR(BF("Do something about function-description"));
-#define SIMPLE_WARN(_boost_fmt_) core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()))
+#define FUNCTION_DESCRIPTION_ERROR() SIMPLE_ERROR("Do something about function-description");
+#define SIMPLE_WARN(...) core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make(fmt::sprintf(__VA_ARGS__)))
 #define ERROR(_type_, _initializers_) lisp_error( _type_, _initializers_)
 #define SIMPLE_ERROR_SPRINTF(...) ::core::lisp_error_sprintf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
-#define SIMPLE_ERROR(_boost_fmt_) ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_)
+#define SIMPLE_ERROR(...) ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, fmt::sprintf(__VA_ARGS__))
 #define NOT_ENVIRONMENT_ERROR(_e_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                                      \
         core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a bclasp environment"), \
                               kw::_sym_format_arguments, core::lisp_createList(_e_),                  \
                               kw::_sym_expected_type, core::_sym_Environment_O, \
                               kw::_sym_datum, _e_));
-#define SIMPLE_ERROR_BF(_str_) SIMPLE_ERROR(BF(_str_))
-
 /*! Error for when an index is out of range - eg: beyond the end of a string */
 #define TYPE_ERROR_INDEX(_seq_, _idx_) \
   ERROR(cl::_sym_simpleTypeError, \
@@ -179,7 +177,7 @@ extern core::Symbol_sp& _sym_name;
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
 #define UNBOUND_VARIABLE_ERROR(name) ERROR(::cl::_sym_unboundVariable, core::lisp_createList(kw::_sym_name, name))
-#define KEY_NOT_FOUND_ERROR(_key_) SIMPLE_ERROR(BF("Key %s not found") % _key_)
+#define KEY_NOT_FOUND_ERROR(_key_) SIMPLE_ERROR("Key %s not found", _key_)
 #define CONTROL_ERROR() NO_INITIALIZERS_ERROR(cl::_sym_controlError);
 
 #define WRONG_TYPE_ARG(_datum_, _expectedType_) core__wrong_type_argument(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _datum_, _expectedType_)
@@ -344,25 +342,24 @@ struct CxxFunctionInvocationLogger {
 // Make it easier to find "try" statements
 #define TRY() try
 
-#define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement function %s:%d %s") % __FILE__ % __LINE__ % __FUNCTION__)
-#define IMPLEMENT_MEF(msg) SIMPLE_ERROR(BF("Implement function %s:%s %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % msg)
+#define IMPLEMENT_ME() SIMPLE_ERROR("Implement function %s:%d %s", __FILE__ , __LINE__ , __FUNCTION__)
+#define IMPLEMENT_MEF(msg) SIMPLE_ERROR("Implement function %s:%s %s %s", __FILE__ , __LINE__ , __FUNCTION__ , msg)
 
 #define WARN_IMPLEMENT_ME() printf("%s:%d:%s Implement function\n", __FILE__, __LINE__, __FUNCTION__ );
 #define WARN_IMPLEMENT_MEF(msg) printf("%s\n", (BF("Implement function %s:%s %s %s") % __FILE__ % __LINE__ % __FUNCTION__ % (msg).str().c_str()).str().c_str());
 
-#define NOT_SUPPORTED() SIMPLE_ERROR(BF("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)") % this->className() % __FUNCTION__ % __FILE__ % __LINE__);
+#define NOT_SUPPORTED() SIMPLE_ERROR("Subclass(%s) does not support the function(%s) file(%s) lineNumber(%d)", this->className() , __FUNCTION__ , __FILE__ , __LINE__);
 
 
-#define HALT(bfmsg) THROW_HARD_ERROR(BF("%s:%d HALTED --- %s\n") % __FILE__ % __LINE__ % (bfmsg).str());
 #define NOT_APPLICABLE() throw_hard_error_not_applicable_method(__FUNCTION__);
 #define N_A_() NOT_APPLICABLE()
-#define INCOMPLETE(bf) SIMPLE_ERROR(BF("Finish implementing me!!!! function(%s) file(%s) lineNumber(%s): %s") % __FUNCTION__ % __FILE__ % __LINE__ % (bf).str())
-#define FIX_ME() SIMPLE_ERROR(BF("Fix me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
-#define DEPRECATED() SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__);
+#define INCOMPLETE(bf) SIMPLE_ERROR(("Finish implementing me!!!! function(%s) file(%s) lineNumber(%s): %s") , __FUNCTION__ , __FILE__ , __LINE__ , (bf).str())
+#define FIX_ME() SIMPLE_ERROR(("Fix me!!! function(%s) file(%s) lineNumber(%s)") , __FUNCTION__ , __FILE__ , __LINE__);
+#define DEPRECATED() SIMPLE_ERROR(("Depreciated!!! function(%s) file(%s) lineNumber(%d)") , __FUNCTION__ , __FILE__ , __LINE__);
 #define STUB() printf("%s:%d>%s  stub\n", __FILE__, __LINE__, __FUNCTION__ )
 
 #define MAY_BE_DEPRECATED() printf("%s\n", (BF("May be depreciated!!! function(%s) file(%s) lineNumber(%d)") % __FUNCTION__ % __FILE__ % __LINE__).str().c_str());
-#define DEPRECATEDP(s) SIMPLE_ERROR(BF("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") % __FUNCTION__ % __FILE__ % __LINE__ % (s));
+#define DEPRECATEDP(s) SIMPLE_ERROR(("Depreciated!!! function(%s) file(%s) lineNumber(%d) %s") , __FUNCTION__ , __FILE__ , __LINE__ , (s));
 
 FORWARD(Cons);
 
@@ -431,7 +428,6 @@ public:
   DebugStream &writePtr(void *);
   DebugStream &writeLn();
   DebugStream &log(const string &msg);
-//  DebugStream &log(const boost::format &fmt);
 
   string nextPosition();
 
@@ -491,7 +487,7 @@ extern bool stackmap_log;
       core::lisp_debugLogWrite(__FILE__, __FUNCTION__, __LINE__, 0, ___fmt); \
     }                                                                        \
   }
-#define LOG(___fmt) lisp_LOG(___fmt)
+#define LOG(...) lisp_LOG(fmt::sprintf(__VA_ARGS__))
 
 #define lisp_SHOUT(___fmt)                                                   \
   {                                                                          \
@@ -504,7 +500,7 @@ extern bool stackmap_log;
 #else //DEBUG_ON
 #define HARD_BREAK_POINT() \
   {}
-#define LOG(___fmt) \
+#define LOG(...) \
   {}
 #define lisp_LOG(___fmt) \
   {}
@@ -535,19 +531,19 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #define lisp_ASSERTP( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e));
 #define ASSERTP(x, e) lisp_ASSERTP(x, e)
 #define lisp_ASSERTF( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e).str().c_str());
-#define ASSERTF(x, f) lisp_ASSERTF(x, f)
+#define ASSERTF(x, ...) lisp_ASSERTF(x, fmt::sprintf(__VA_ARGS__))
 #define ASSERT_eq(x, y)                                                                           \
   if (!(x == y)) {                                                                                \
-    SIMPLE_ERROR(BF("Assertion [%s==%s] failed values are (%s) and (%s)") % #x % #y % (x) % (y)); \
+    SIMPLE_ERROR(("Assertion [%s==%s] failed values are (%s) and (%s)") , #x , #y , (x) , (y)); \
   }
 #define ASSERT_lessThan(x, y)                                                                    \
   if (!(x < y)) {                                                                                \
-    SIMPLE_ERROR(BF("Assertion [%s<%s] failed values are (%s) and (%s)") % #x % #y % (x) % (y)); \
+    SIMPLE_ERROR(("Assertion [%s<%s] failed values are (%s) and (%s)") , #x , #y , (x) , (y)); \
   }
 #define ASSERT_lt(x, y) ASSERT_lessThan(x, y)
 #define ASSERT_greaterThan(x, y)                                                                 \
   if (!(x > y)) {                                                                                \
-    SIMPLE_ERROR(BF("Assertion [%s>%s] failed values are (%s) and (%s)") % #x % #y % (x) % (y)); \
+    SIMPLE_ERROR(("Assertion [%s>%s] failed values are (%s) and (%s)") , #x , #y , (x) , (y)); \
   }
 #define ASSERT_gt(x, y) ASSERT_greaterThan(x, y)
 #define FATAL_ASSERTP(x, e)                                                                             \
@@ -558,7 +554,7 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #if DEBUG_TRAP_NULLS == 1
 #define ASSERTNOTNULLP(x, e)                                                      \
   if (!(x)) {                                                                     \
-    SIMPLE_ERROR(BF("Assertion failed! (shared_ptr: %s is NULL) %s") % #x % (e)); \
+    SIMPLE_ERROR(("Assertion failed! (shared_ptr: %s is NULL) %s") , #x , (e)); \
   };
 #else
 #define ASSERTNOTNULLP(x, e)
@@ -578,7 +574,7 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #define IF_DEBUG_ON(x)
 #define lisp_ASSERTF(l, x, f) \
   {}
-#define ASSERTF(x, f) \
+#define ASSERTF(x, ...) \
   {}
 #define ASSERT_eq(x, y) \
   {}
@@ -615,35 +611,12 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #ifdef CALLSTACK_ON //[
 #define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
 
-struct _StackTrace {
-  const char* _Filename;
-  _StackTrace(const char* filename, const char* kind, size_t line, size_t col, const boost::format& fmt) :_Filename(filename) {
-    if (core::lisp_debugIsOn(filename)) { 
-      lisp_debugLog()->beginNode(DEBUG_CPP_BLOCK,filename,kind,line,col,fmt.str());
-    } 
-  }
-  ~_StackTrace() {
-    if (core::lisp_debugIsOn(this->_Filename)) {
-      lisp_debugLog()->endNode(DEBUG_CPP_BLOCK);
-    } 
-  }
-};
-
 #define _G()                     \
   LOG_CXX_FUNCTION_INVOCATION(); 
 #define _OF() _G();
-#define _lisp_BLOCK_TRACEF(__f) core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,__f)
-#define _lisp_BLOCK_TRACE(__s) _lisp_BLOCK_TRACEF(BF("%s") % (__s))
-#define _BLOCK_TRACEF(f) _lisp_BLOCK_TRACEF(f)
-#define _BLOCK_TRACE(s) _lisp_BLOCK_TRACEF(BF("%s") % (s))
 #else //][
 #define _G() 
 #define _OF()
-#define _lisp_BLOCK_TRACEF(__f)
-#define _lisp_BLOCK_TRACE(__s)
-#define _BLOCK_TRACE(f)
-#define _BLOCK_TRACEF(f)
-#define _lisp_BLOCK_TRACEF(__f)
 #endif //]
 
 string debugFlagsAsNodeName(uint flags);

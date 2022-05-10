@@ -33,6 +33,8 @@ THE SOFTWARE.
 //  See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt
 
+#error "deprecated"
+#if 0
 #if (defined(__SUNPRO_CC) && BOOST_WORKAROUND(__SUNPRO_CC, < 0x570)) || defined(__CINT__)
 
 operator bool() const {
@@ -78,3 +80,4 @@ bool operator!() const // never throws
 {
   return px == 0;
 }
+#endif

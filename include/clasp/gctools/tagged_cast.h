@@ -12,7 +12,7 @@ namespace gctools {
         } else if (tagged_consp(client)) {
           return FromConsCast<ToType>::isA((core::Cons_O*)untag_cons<FromType>(client));
         }
-        return false; //THROW_HARD_ERROR(BF("An immediate should never be isA tested by this function - it should have a specialized version")); // Must be specialized
+        return false; //THROW_HARD_ERROR(("An immediate should never be isA tested by this function - it should have a specialized version")); // Must be specialized
       }
       inline static ToType castOrNULL(FromType client) {
         if (tagged_generalp(client)) {

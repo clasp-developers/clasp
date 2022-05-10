@@ -197,13 +197,13 @@ void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get_poin
       obj->_setInstanceClassUsingSymbol(classSymbol);
       return obj;
     }
-    SIMPLE_ERROR(BF("In make_wrapper for a class class_id %d\n"
-                    "  the classSymbol could not be identified\n"
-                    "  this probably means that you are trying to wrap an unexposed class\n"
-                    "  OR you don't have an appropriate to_object translator for the type\n"
-                    "  that corresponds to this class_id.\n"
-                    "  Connect a debugger and check if:\n"
-                    "  struct to_object<T &, translate::dont_adopt_pointer> is on the stack") % dynamic_id );
+    SIMPLE_ERROR("In make_wrapper for a class class_id %d\n"
+                 "  the classSymbol could not be identified\n"
+                 "  this probably means that you are trying to wrap an unexposed class\n"
+                 "  OR you don't have an appropriate to_object translator for the type\n"
+                 "  that corresponds to this class_id.\n"
+                 "  Connect a debugger and check if:\n"
+                 "  struct to_object<T &, translate::dont_adopt_pointer> is on the stack",  dynamic_id );
   }
 
   static gctools::smart_ptr<WrapperType> make_wrapper(const OT &val, class_id dynamic_id ) {
@@ -539,7 +539,7 @@ public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   static core::T_sp convert(const T &val) {
-    HARD_IMPLEMENT_MEF(BF("This doesn't make sense - copy but don't adopt pointer???"));
+    HARD_IMPLEMENT_MEF("This doesn't make sense - copy but don't adopt pointer???");
     T *ptr = new T(val);
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
     return wrapper;
@@ -629,9 +629,9 @@ struct from_object<T *> {
         std::string demangled;
         bool success = core::maybe_demangle(expectedType,demangled);
         if (success) {
-          SIMPLE_ERROR(BF("Incorrect object %s passed to function - expected type %s") % _rep_(o).c_str() % demangled);
+          SIMPLE_ERROR(("Incorrect object %s passed to function - expected type %s") , _rep_(o).c_str() , demangled);
         } else {
-          SIMPLE_ERROR(BF("Incorrect object %s passed to function - expected type %s") % _rep_(o).c_str() % typeid(T).name());
+          SIMPLE_ERROR(("Incorrect object %s passed to function - expected type %s") , _rep_(o).c_str() , typeid(T).name());
         }
       }
       ASSERT(v_alien);
@@ -687,7 +687,7 @@ T& safe_deref(T* ptr) {
   if (ptr) {
     return *ptr;
   }
-  SIMPLE_ERROR(BF("Passing NULL to a from_object that dereferences - this probably means that NIL was passed to a clbind wrapped function that expects a real object"));
+  SIMPLE_ERROR(("Passing NULL to a from_object that dereferences - this probably means that NIL was passed to a clbind wrapped function that expects a real object"));
 }
 
 template <typename T>

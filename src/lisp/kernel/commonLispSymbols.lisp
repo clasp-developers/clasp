@@ -1283,19 +1283,19 @@
 (defun summarize-cl-coverage (&optional verbose)
   (multiple-value-bind (found missing)
       (identify-cl-symbols-for-import '(:core :clos))
-    (bformat t "COMMON-LISP symbols defined: %d    missing: %d%N" (length found) (length missing))
+    (core:fmt t "COMMON-LISP symbols defined: {}    missing: {}%N" (length found) (length missing))
     (if verbose
 	(progn
-	  (bformat t "Symbols defined: %s%N" found)
-	  (bformat t "--------------------------%N")
-	  (bformat t "Symbols missing: %s%N" missing))
-	(bformat t "Use: (summarize-cl-coverage t) for all symbols%N")))
-  (bformat t "--------------------------%N")
+	  (core:fmt t "Symbols defined: {}%N" found)
+	  (core:fmt t "--------------------------%N")
+	  (core:fmt t "Symbols missing: {}%N" missing))
+	(core:fmt t "Use: (summarize-cl-coverage t) for all symbols%N")))
+  (core:fmt t "--------------------------%N")
   (let ((symbols (identify-cl-symbols-for-export-from-package :core)))
-    (bformat t "Symbols missing from :core  --> %s%N" symbols))
-  (bformat t "--------------------------%N")
+    (core:fmt t "Symbols missing from :core  --> {}%N" symbols))
+  (core:fmt t "--------------------------%N")
   (let ((symbols (identify-cl-symbols-for-export-from-package :clos)))
-    (bformat t "Symbols missing from :clos  --> %s%N" symbols))
+    (core:fmt t "Symbols missing from :clos  --> {}%N" symbols))
   )
 
 

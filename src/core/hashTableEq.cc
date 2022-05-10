@@ -70,7 +70,7 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
       for (int j(0); nilTerminatedValidKeywords[j].notnilp(); ++j) {
         ss << " " << _rep_(nilTerminatedValidKeywords[j]);
       }
-      SIMPLE_ERROR(BF("Illegal keyword %s valid keywords: %s") % _rep_(key) % ss.str());
+      SIMPLE_ERROR(("Illegal keyword %s valid keywords: %s") , _rep_(key) , ss.str());
     } else {
       ht->setf_gethash(key, val);
     }

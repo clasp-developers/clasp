@@ -109,7 +109,7 @@ names to offsets."
           (format t "field-type-getters-list -> ~s~%" field-type-getters-list))
         (let ((final `(progn
                         ,define-symbol-macro
-                        (defparameter ,(intern (core:bformat nil "INFO.%s" (string name)))
+                        (defparameter ,(intern (core:fmt nil "INFO.{}" (string name)))
                           (make-c++-struct :name ,name
                                            :tag ,tag
                                            :type-getter (lambda () (progn ,name))
@@ -580,10 +580,10 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 
 (defun initialize-calling-convention (llvm-function arity &key debug-on cleavir-lambda-list-analysis rest-alloc)
-  (cmp-log "llvm-function: %s%N" llvm-function)
+  (cmp-log "llvm-function: {}%N" llvm-function)
   (let ((arguments (llvm-sys:get-argument-list llvm-function)))
-    (cmp-log "llvm-function arguments: %s%N" (llvm-sys:get-argument-list llvm-function))
-    (cmp-log "llvm-function isVarArg: %s%N" (llvm-sys:is-var-arg llvm-function))
+    (cmp-log "llvm-function arguments: {}%N" (llvm-sys:get-argument-list llvm-function))
+    (cmp-log "llvm-function isVarArg: {}%N" (llvm-sys:is-var-arg llvm-function))
     (let ((register-save-area* (when debug-on (alloca-register-save-area arity :label "register-save-area")))
           (closure (first arguments)))
       (cmp-log "A%N")
@@ -664,8 +664,8 @@ Boehm and MPS use a single pointer"
 
 ;; (Maybe) generate code to store registers in memory. Return value unspecified.  
 (defun maybe-spill-to-register-save-area (arity register-save-area* registers)
-  (cmp-log "maybe-spill-to-register-save-area register-save-area* -> %s%N" register-save-area*)
-  (cmp-log "maybe-spill-to-register-save-area registers -> %s%N" registers)
+  (cmp-log "maybe-spill-to-register-save-area register-save-area* -> {}%N" register-save-area*)
+  (cmp-log "maybe-spill-to-register-save-area registers -> {}%N" registers)
   (when register-save-area*
     (flet ((spill-reg (idx reg addr-name)
              (let ((addr          (irc-gep register-save-area* (list 0 idx) addr-name))
@@ -848,7 +848,7 @@ Boehm and MPS use a single pointer"
 have it call the main-function"
   #+(or)(unless (eql module (llvm-sys:get-parent main-function))
           (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
-;;;  (core::bformat t "add-global-ctor-function position: %s%N" position)
+;;;  (core::fmt t "add-global-ctor-function position: {}%N" position)
   (multiple-value-bind (startup-function-name startup-function-linkage)
       (core:startup-linkage-shutdown-names position)
     (let* ((*the-module* module)
@@ -870,8 +870,8 @@ have it call the main-function"
                              (jit-constant-size_t position) bc-main-function)
               (irc-ret-void))))
         ;;(llvm-sys:dump fn)
-        #+(or)(let* ((function-name "_claspObjectFileStartUp") ; (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
-                     #+(or)(_ (core:bformat t "add-global-ctor-function name: %s%N" function-name))
+        #+(or)(let* ((function-name "_claspObjectFileStartUp") ; (core:fmt nil "ObjectFileStartUp-{}" (core:next-number)))
+                     #+(or)(_ (core:fmt t "add-global-ctor-function name: {}%N" function-name))
                      (outer-fn (irc-simple-function-create
                                 function-name
                                 %fn-ctor%
@@ -1192,7 +1192,7 @@ It has appending linkage.")
 (defvar *gv-current-function-name* nil "Store the global value in the module of the current function name ")
 
 (defun compile-file-quick-module-pathname (file-name-modifier &optional (cfo-pathname *compile-file-output-pathname*))
-  (let* ((name-suffix (bformat nil "%05d-%s" (core:next-number) file-name-modifier))
+  (let* ((name-suffix (core:fmt nil "{:05d}-{}" (core:next-number) file-name-modifier))
          (cfo-directory0 (pathname-directory cfo-pathname))
          (cfo-directory (make-pathname :directory
                                        (cond
@@ -1210,7 +1210,7 @@ It has appending linkage.")
                               "-" name-suffix)
                        :type "ll"
                        :defaults full-directory)))
-    (cmp-log "Dumping module to %s%N" output-path)
+    (cmp-log "Dumping module to {}%N" output-path)
     (ensure-directories-exist output-path)
     output-path))
 
@@ -1225,7 +1225,7 @@ It has appending linkage.")
             (close fout))))))
 
 (defun compile-quick-module-pathname (file-name-modifier)
-  (let* ((name-suffix (bformat nil "module-%05d-%s" (core:next-number) file-name-modifier))
+  (let* ((name-suffix (core:fmt nil "module-{:05d}-{}" (core:next-number) file-name-modifier))
          (output-path (make-pathname
                        :name name-suffix
                        :type "ll"
@@ -1257,7 +1257,7 @@ they are dumped into /tmp"
   "If called under COMPILE-FILE the modules are dumped into the
 same directory as the COMPILE-FILE output.  If called under COMPILE
 they are dumped into /tmp"
-  (cmp-log "About to dump module - %s%N" name-modifier)
+  (cmp-log "About to dump module - {}%N" name-modifier)
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier *compile-file-debug-dump-module*)
       (compile-quick-module-dump module name-modifier *compile-debug-dump-module*)))
@@ -1267,10 +1267,10 @@ they are dumped into /tmp"
 is dumped to a file before the block and after the block."
   `(progn
      (llvm-sys:sanity-check-module *the-module* 2)
-     (quick-module-dump *the-module* ,(bformat nil "%s-begin" info))
+     (quick-module-dump *the-module* ,(core:fmt nil "{}-begin" info))
      (multiple-value-prog1 (progn ,@body)
        (llvm-sys:sanity-check-module *the-module* 2)
-       (quick-module-dump *the-module* ,(bformat nil "%s-end" info)))))
+       (quick-module-dump *the-module* ,(core:fmt nil "{}-end" info)))))
 
 
 (defun module-report (module)

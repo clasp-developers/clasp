@@ -38,8 +38,7 @@ THE SOFTWARE.
 
 #include <sstream>
 #include <type_traits>
-#include <boost/config.hpp>
-#include <boost/utility/binary.hpp>
+
 
 
 extern "C" {

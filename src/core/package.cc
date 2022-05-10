@@ -435,7 +435,7 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
     ss->fillPointerSet(fillPointer);
     --tries;
     if (tries==0) {
-      SIMPLE_ERROR(BF("gentemp tried %d times to generate a unique symbol and then gave up") % GENTEMP_TRIES);
+      SIMPLE_ERROR(("gentemp tried %d times to generate a unique symbol and then gave up") , GENTEMP_TRIES);
     }
   }
 };
@@ -582,7 +582,7 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
   bool foundp = ei.second().isTrue();
   if (foundp) {
 //    client_validate(val->_Name);
-    LOG(BF("Found it in the _ExternalsSymbols list - returning[%s]") % (_rep_(val)));
+    LOG("Found it in the _ExternalsSymbols list - returning[%s]" , (_rep_(val)));
     return Values(val, kw::_sym_external);
   }
   // There is no need to look further if this is the keyword package
@@ -592,20 +592,19 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
   val = gc::As<Symbol_sp>(ej);
   foundp = ej.second().isTrue();
   if (foundp) {
-    LOG(BF("Found it in the _InternalSymbols list - returning[%s]") % (_rep_(first)));
+    LOG("Found it in the _InternalSymbols list - returning[%s]" , (_rep_(first)));
     return Values(val, kw::_sym_internal);
   }
   {
-    _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
     for (auto it = this->_UsingPackages.begin();
          it != this->_UsingPackages.end(); it++) {
       Package_sp upkg = *it;
-      LOG(BF("Looking in package[%s]") % _rep_(upkg));
+      LOG("Looking in package[%s]" , _rep_(upkg));
       T_mv eu = upkg->_ExternalSymbols->gethash(nameKey, nil<T_O>());
       val = gc::As<Symbol_sp>(eu);
       foundp = ei.second().isTrue();
       if (foundp) {
-        LOG(BF("Found it in the _ExternalsSymbols list - returning[%s]") % (_rep_(val)));
+        LOG("Found it in the _ExternalsSymbols list - returning[%s]" , (_rep_(val)));
         return Values(val, kw::_sym_inherited);
       }
     }
@@ -710,20 +709,20 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
   if (foundp.notnilp() && mine != svalue) {
     // If mine is in my shadowing list then it's not a conflict
     if ( this->_me->_Shadowing->contains(mine) ) return true;
-    LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]") % _rep_(mine) % _rep_(svalue));
+    LOG("usePackage conflict - my symbol[%s] : usePackage symbol[%s]" , _rep_(mine) , _rep_(svalue));
     this->_conflicts = Cons_O::create(svalue, this->_conflicts);
   }
   return true;
 }
 
 bool Package_O::usePackage(Package_sp usePackage) {
-  LOG(BF("In usePackage this[%s]  using package[%s]") % this->getName() % usePackage->getName());
+  LOG("In usePackage this[%s]  using package[%s]" , this->getName() , usePackage->getName());
   while (true) {
     FindConflicts findConflicts(this->asSmartPtr());
     {
       WITH_PACKAGE_READ_LOCK(this);
       if (this->usingPackageP_no_lock(usePackage)) {
-        LOG(BF("You are already using that package"));
+        LOG("You are already using that package");
         return true;
       }
       usePackage->_ExternalSymbols->lowLevelMapHash(&findConflicts);
@@ -757,7 +756,7 @@ bool Package_O::unusePackage_no_outer_lock(Package_sp usePackage) {
           return true;
         }
       }
-      SIMPLE_ERROR(BF("The unusePackage argument %s is not used by my package %s") % usePackage->getName() % this->getName());
+      SIMPLE_ERROR(("The unusePackage argument %s is not used by my package %s") , usePackage->getName() , this->getName());
     }
   }
   return true;
@@ -778,7 +777,7 @@ bool Package_O::unusePackage_no_inner_lock(Package_sp usePackage) {
           return true;
         }
       }
-      SIMPLE_ERROR(BF("The unusePackage argument %s is not used by my package %s") % usePackage->getName() % this->getName());
+      SIMPLE_ERROR(("The unusePackage argument %s is not used by my package %s") , usePackage->getName() , this->getName());
     }
   }
   return true;
@@ -868,7 +867,7 @@ bool Package_O::shadow(String_sp ssymbolName) {
     shadowSym = Symbol_O::create(symbolName);
     shadowSym->makunbound();
     shadowSym->setPackage(this->sharedThis<Package_O>());
-    LOG(BF("Created symbol<%s>") % _rep_(shadowSym));
+    LOG("Created symbol<%s>" , _rep_(shadowSym));
     this->add_symbol_to_package_no_lock(shadowSym->symbolName(), shadowSym, false);
   }
   this->_Shadowing->setf_gethash(shadowSym, _lisp->_true());
@@ -954,7 +953,7 @@ T_mv Package_O::intern(SimpleString_sp name) {
     sym->makunbound();
     status = nil<Symbol_O>();
     sym->setPackage(this->sharedThis<Package_O>());
-    LOG(BF("Created symbol<%s>") % _rep_(sym));
+    LOG("Created symbol<%s>" , _rep_(sym));
     this->add_symbol_to_package_no_lock(sym->symbolName(), sym, false);
   }
   if (this->actsLikeKeywordPackage()) {
@@ -962,7 +961,7 @@ T_mv Package_O::intern(SimpleString_sp name) {
   }
 
   //	trapSymbol(this,sym,name);
-  LOG(BF("Symbol[%s] interned as[%s]@%p") % name % _rep_(sym) % sym.get());
+  LOG("Symbol[%s] interned as[%s]@%p" , name , _rep_(sym) , sym.get());
   return Values(sym, status);
 }
 
@@ -1011,7 +1010,6 @@ bool Package_O::unintern(Symbol_sp sym) {
       // same name.
       // We check for this before doing anything, because uninterning must be
       // all or nothing.
-      _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
       // This is a list of symbols with the same name as the symbol
       // being uninterned that are exported by packages this package uses.
       for (auto it = this->_UsingPackages.begin();
@@ -1056,7 +1054,7 @@ bool Package_O::isExported(Symbol_sp sym) {
   SimpleString_sp nameKey = sym->_Name;
   T_mv values = this->_ExternalSymbols->gethash(nameKey, nil<T_O>());
   T_sp presentp = values.valueGet_(1);
-  LOG(BF("isExported test of symbol[%s] isExported[%d]") % sym->symbolNameAsString() % presentp.isTrue());
+  LOG("isExported test of symbol[%s] isExported[%d]" , sym->symbolNameAsString() , presentp.isTrue());
   return (presentp.isTrue());
 }
 

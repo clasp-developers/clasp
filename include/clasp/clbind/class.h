@@ -49,6 +49,10 @@ THE SOFTWARE.
 #ifndef CLBIND_CLASS_HPP_INCLUDED
 #define CLBIND_CLASS_HPP_INCLUDED
 
+#include <boost/type_traits.hpp>
+#include <boost/type_traits/is_base_of.hpp>
+#include <boost/mpl/vector.hpp>
+
 /*
 	ISSUES:
 	------------------------------------------------------
@@ -104,9 +108,6 @@ THE SOFTWARE.
 #pragma GCC diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/bind.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
-#include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_member_object_pointer.hpp>
 #include <boost/mpl/apply.hpp>

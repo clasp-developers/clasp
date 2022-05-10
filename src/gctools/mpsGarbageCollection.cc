@@ -315,7 +315,7 @@ void mps_register_roots(void* roots_begin, size_t num_roots) {
                                     gctools::ptag_mask,  // #b111
                                     0 ); // DLM says this will be ignored
   if ( res != MPS_RES_OK ) {
-    SIMPLE_ERROR(BF("Could not mps_root_create_area_tagged - error: %d") % res );
+    SIMPLE_ERROR(("Could not mps_root_create_area_tagged - error: %d") , res );
   }
   // Save the root list in a linked list
   root_list* rl = new root_list(mps_root, global_root_list);
@@ -388,7 +388,7 @@ void searchMemoryForAddress(mps_addr_t addr) {
 #define GC_RESULT_ERROR(res, msg)                                     \
   {                                                                   \
     string error = gcResultToString(res);                             \
-    THROW_HARD_ERROR(BF("GC_RESULT error: %s   %s\n") % error % msg); \
+    THROW_HARD_ERROR("GC_RESULT error: %s   %s\n", error , msg); \
   }
 
 #define ADDR_T mps_addr_t
@@ -564,7 +564,7 @@ void mpsAllocateStack(gctools::GCStack *stack) {
     MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, stack_frame_pad);
     res = mps_fmt_create_k(&stack->_ObjectFormat, global_arena, args);
     if (res != MPS_RES_OK)
-      THROW_HARD_ERROR(BF("Couldn't create stack frame format"));
+      THROW_HARD_ERROR("Couldn't create stack frame format");
   }
   MPS_ARGS_END(args);
 
@@ -572,7 +572,7 @@ void mpsAllocateStack(gctools::GCStack *stack) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, stack->_ObjectFormat);
     res = mps_pool_create_k(&stack->_Pool, global_arena, mps_class_snc(), args);
     if (res != MPS_RES_OK)
-      THROW_HARD_ERROR(BF("Couldn't create stack frame pool"));
+      THROW_HARD_ERROR("Couldn't create stack frame pool");
   }
   MPS_ARGS_END(args);
 
@@ -580,7 +580,7 @@ void mpsAllocateStack(gctools::GCStack *stack) {
     MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
     res = mps_ap_create_k(&stack->_AllocationPoint, stack->_Pool, args);
     if (res != MPS_RES_OK)
-      THROW_HARD_ERROR(BF("Couldn't create stack frame allocation point"));
+      THROW_HARD_ERROR("Couldn't create stack frame allocation point");
   }
   MPS_ARGS_END(args);
   stack->_IsActive = true;
@@ -588,7 +588,7 @@ void mpsAllocateStack(gctools::GCStack *stack) {
 
 void mpsDeallocateStack(gctools::GCStack *stack) {
   if (stack->_TotalSize != 0) {
-    THROW_HARD_ERROR(BF("mpsDeallocateStack called on a stack that is not completely empty - it contains %u bytes") % stack->_TotalSize);
+    THROW_HARD_ERROR("mpsDeallocateStack called on a stack that is not completely empty - it contains %u bytes", stack->_TotalSize);
   }
   stack->_IsActive = false;
   mps_arena_park(global_arena);
@@ -1329,10 +1329,10 @@ void ThreadLocalAllocationPoints::destroyAllocationPoints() {
 
 size_t ReachableMPSObject::print(const std::string &shortName,const vector<std::string> stampNames) {
   if (this->instances > 0) {
-    clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-                        % shortName % this->totalMemory % this->instances % (this->totalMemory/this->instances)
-                        % stampNames[this->stamp] % this->stamp).str(),
-                       cl::_sym_STARstandard_outputSTAR->symbolValue());
+    core::write_bf_stream(fmt::sprintf("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n"
+                                       , shortName , this->totalMemory , this->instances , (this->totalMemory/this->instances)
+                                       , stampNames[this->stamp] , this->stamp)
+                          , cl::_sym_STARstandard_outputSTAR->symbolValue());
     core::clasp_finish_output_t();
   }
   return this->totalMemory;

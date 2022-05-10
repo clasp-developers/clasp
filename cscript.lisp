@@ -3,6 +3,8 @@
 
 (k:includes #~"")
 
+(k:library "fmt" :required t :min-version "7.1.0")
+
 (k:library "gmpxx" :required t :min-version "6.0.0")
 
 (k:library "libffi" :required t :min-version #+bsd "3.3-rc1" #-bsd "3.0.0")

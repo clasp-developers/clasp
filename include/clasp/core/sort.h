@@ -99,7 +99,6 @@ void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer
       _RandomAccessIterator i = m + 1;
       _RandomAccessIterator j = n;
       while (i <= j) {
-        _BLOCK_TRACEF(BF("Top of while i(%d) <= j(%d)") % (i - m) % (j - m));
         while ((i <= n) && (comparer(*i, *m))) {
           LOG(BF("skipping lower bin index: %d value: %s") % (i - m) % _rep_((*i)));
           i++;
@@ -175,7 +174,6 @@ void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en,
       _RandomAccessIterator i = m + 1;
       _RandomAccessIterator j = n;
       while (i <= j) {
-        _BLOCK_TRACEF(BF("Top of while i(%d) <= j(%d)") % (i - m) % (j - m));
         while ((i <= n) && (comparer(*i, *m))) {
           LOG(BF("skipping lower bin index: %d value: %s") % (i - m) % _rep_((*i)));
           i++;

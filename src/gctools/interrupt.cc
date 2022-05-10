@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <signal.h>
 #include <xmmintrin.h>
 #include <llvm/Support/ErrorHandling.h>

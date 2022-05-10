@@ -50,7 +50,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
       const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(GENERAL_PTR_TO_HEADER_PTR(client));
       const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
       stamp_index = header._stamp_wtag_mtag.stamp_();
-      LOG(BF("obj_scan client=%p stamp=%lu\n") % (void*)client % stamp_index );
+      LOG("obj_scan client=%p stamp=%lu\n" , (void*)client , stamp_index );
       if (header._stamp_wtag_mtag.stampP()) {
 #ifdef DEBUG_VALIDATE_GUARD
         header->validate();
@@ -231,7 +231,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
       }
     }
   } SCAN_END(ss);
-  LOG(BF("obj_scan ENDING client=%p\n") % (void*)client );
+  LOG("obj_scan ENDING client=%p\n", (void*)client );
   return RESULT_OK;
 }
 #endif // OBJECT_SCAN
@@ -245,8 +245,8 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
   const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
 #ifdef DEBUG_ON
   if (dbg) {
-    LOG(BF("obj_scan_debug mtag = %d  AlignUp(size + sizeof(Header_s)) -> %lu + header.tail_size())-> %lu\n")
-        % mtag % (AlignUp(sizeof(Header_s))) % header.tail_size() );
+    LOG("obj_scan_debug mtag = %d  AlignUp(size + sizeof(Header_s)) -> %lu + header.tail_size())-> %lu\n"
+        , mtag , (AlignUp(sizeof(Header_s))) , header.tail_size() );
   }
 #endif
   if (header._stamp_wtag_mtag.stampP()) {
@@ -257,13 +257,13 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
     size_t stamp_index = header._stamp_wtag_mtag.stamp_();
 #ifdef DEBUG_ON
     if (dbg) {
-      LOG(BF("stamp_wtag = %lu stamp_index=%lu\n") % (size_t)stamp_wtag % stamp_index);
+      LOG("stamp_wtag = %lu stamp_index=%lu\n" , (size_t)stamp_wtag , stamp_index);
     }
 #endif
     if ( stamp_wtag == gctools::STAMPWTAG_core__DerivableCxxObject_O ) {
 #ifdef DEBUG_ON
       if (dbg) {
-        LOG(BF("DerivableCxxObject\n"));
+        LOG("DerivableCxxObject\n");
       }
 #endif
         // If this is true then I think we need to call virtual functions on the client
@@ -273,7 +273,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
     const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
     unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleBitVector_O ) {
 #ifdef DEBUG_ON
-      if (dbg) {LOG(BF("SimpleBitVector\n"));}
+      if (dbg) {LOG("SimpleBitVector\n");}
 #endif
       size_t capacity = std::abs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
       obj_size = gctools::AlignUp(core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
@@ -282,7 +282,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
     }
     unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_byte2_t_O ) {
 #ifdef DEBUG_ON
-      if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte2_t_O"));}
+      if (dbg) {LOG("STAMP_core__SimpleVector_byte2_t_O");}
 #endif
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
       obj_size = gctools::AlignUp(core::SimpleVector_byte2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
@@ -290,7 +290,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
     }
     unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_int2_t_O ) {
 #ifdef DEBUG_ON
-      if (dbg) {LOG(BF("STAMPWTAG_core__SimpleVector_int2_t_O"));}
+      if (dbg) {LOG("STAMPWTAG_core__SimpleVector_int2_t_O");}
 #endif
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
       obj_size = gctools::AlignUp(core::SimpleVector_int2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
@@ -298,7 +298,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
     }
     unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_byte4_t_O ) {
 #ifdef DEBUG_ON
-      if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte4_t_O"));}
+      if (dbg) {LOG("STAMP_core__SimpleVector_byte4_t_O");}
 #endif
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
       obj_size = gctools::AlignUp(core::SimpleVector_byte4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
@@ -306,7 +306,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
     }
     unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_int4_t_O ) {
 #ifdef DEBUG_ON
-      if (dbg) {LOG(BF("STAMP_core__SimpleVector_int4_t_O"));}
+      if (dbg) {LOG("STAMP_core__SimpleVector_int4_t_O");}
 #endif
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
       obj_size = gctools::AlignUp(core::SimpleVector_int4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
@@ -314,7 +314,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
     }
     unlikely_if (stamp_wtag == gctools::STAMPWTAG_core__SimpleBaseString_O) {
 #ifdef DEBUG_ON
-      if (dbg) {LOG(BF("SimpleBaseString\n"));}
+      if (dbg) {LOG("SimpleBaseString\n");}
 #endif
         // Account for the SimpleBaseString additional byte for \0
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
@@ -326,7 +326,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       gctools::Container_layout** vvv = &container_layoutP;
       if ( container_layoutP ) {
 #ifdef DEBUG_ON
-        if (dbg) {LOG(BF("container_layout\n"));}
+        if (dbg) {LOG("container_layout\n");}
 #endif
         // special cases
         if (stamp_wtag == gctools::STAMPWTAG_llvmo__Code_O) {
@@ -343,12 +343,12 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       } else {
         if (stamp_layout.layout_op == gctools::templated_op) {
 #ifdef DEBUG_ON
-          if (dbg) {LOG(BF("templatedSizeof\n"));}
+          if (dbg) {LOG("templatedSizeof\n");}
 #endif
           obj_size = gctools::AlignUp(((core::General_O*)client)->templatedSizeof());
         } else {
 #ifdef DEBUG_ON
-          if (dbg) {LOG(BF("stamp_layout.size = %lu\n") % stamp_layout.size);}
+          if (dbg) {LOG("stamp_layout.size = %lu\n" , stamp_layout.size);}
 #endif
           obj_size = gctools::AlignUp(stamp_layout.size);
         }
@@ -393,7 +393,7 @@ static void OBJECT_FWD(ADDR_T old_client, ADDR_T new_client) {
   ADDR_T limit = OBJECT_SKIP_IN_OBJECT_FWD(old_client,false,obj_size);
   size_t size = (char *)limit - (char *)old_client;
   if (size < gctools::global_sizeof_fwd) {
-    THROW_HARD_ERROR(BF("obj_fwd needs size >= %u") % gctools::global_sizeof_fwd);
+    THROW_HARD_ERROR("obj_fwd needs size >= %u", gctools::global_sizeof_fwd);
   }
   gctools::Header_s *header = (gctools::Header_s*)(GENERAL_PTR_TO_HEADER_PTR(old_client));
   header->_stamp_wtag_mtag.setFwdSize(size);

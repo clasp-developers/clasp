@@ -57,7 +57,7 @@
                      (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
                      (link-time llvm-sys:*accumulated-clang-link-time*))
                  (let* ((link-string (if report-link-time
-                                        (core:bformat nil " link(%.1f)" link-time)
+                                        (core:fmt nil " link({:.1f})" link-time)
                                         ""))
                         (total-llvm-time (+ llvm-finalization-time (if report-link-time
                                                                        link-time
@@ -67,9 +67,9 @@
                                                (* 100.0 (/ total-llvm-time compiler-real-time))))
                         (percent-time-string
                           (if report-link-time
-                              (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
-                              (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
-                   (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
+                              (core:fmt nil "(llvm+link)/real({:1.0f}%)" percent-llvm-time)
+                              (core:fmt nil "llvm/real({:2.0f}%)" percent-llvm-time))))
+                   (core:fmt t "   {} seconds real({:.1f}) run({:.1f}) llvm({:.1f}){} {}%N"
                                  message
                                  compiler-real-time
                                  compiler-run-time
@@ -142,7 +142,7 @@
 (defun cf-module-name (type pathname)
   "Create a module name from the TYPE (either :user or :kernel)
 and the pathname of the source file - this will also be used as the module initialization function name"
-  (string-downcase (bformat nil "___%s_%s" (string type) (pathname-name pathname))))
+  (string-downcase (core:fmt nil "___{}_{}" (string type) (pathname-name pathname))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -207,7 +207,7 @@ and the pathname of the source file - this will also be used as the module initi
             (return nil)
             (progn
               (when *compile-print* (describe-form form))
-              (when *debug-compile-file* (bformat t "compile-file: cf%d -> %s%N" (incf *debug-compile-file-counter*) form))
+              (when *debug-compile-file* (core:fmt t "compile-file: cf{} -> {}%N" (incf *debug-compile-file-counter*) form))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
                 (t1expr form))))))))
 
@@ -248,7 +248,7 @@ Compile a lisp source file into an LLVM module."
     (or module (error "module is NIL"))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
-	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
+	(core:fmt t "; Compiling file: {}%N" (namestring input-pathname)))
       (let (run-all-name)
         (cmp-log "About to with-module%N")
         (with-module (:module module
@@ -406,7 +406,7 @@ Compile a lisp source file into an LLVM module."
 (defun output-kernel-fasl (output-file input-file output-type)
   (let ((fasl-output-file (make-pathname :type "fasl" :defaults output-file)))
     (when *compile-verbose*
-      (bformat t "Writing %s kernel fasl file to: %s%N" output-type fasl-output-file)
+      (core:fmt t "Writing {} kernel fasl file to: {}%N" output-type fasl-output-file)
       (finish-output))
     (llvm-link fasl-output-file :input-files (list input-file) :input-type :bitcode)))
 
@@ -418,11 +418,11 @@ Compile a lisp source file into an LLVM module."
                                                     :output-file output-file :output-type :bitcode)))
       (ensure-directories-exist temp-bitcode-file)
       (when *compile-verbose*
-        (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+        (core:fmt t "Writing temporary bitcode file to: {}%N" temp-bitcode-file))
       (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
                       :output-type :object)))
   (when *compile-verbose*
-    (bformat t "Writing faso file to: %s%N" output-file)
+    (core:fmt t "Writing faso file to: {}%N" output-file)
     (finish-output))
   (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
                                          'llvm-sys:code-gen-file-type-object-file
@@ -437,13 +437,13 @@ Compile a lisp source file into an LLVM module."
   (cond
     ((eq output-type :object)
      (when *compile-verbose*
-       (bformat t "Writing object to: %s%N" (core:coerce-to-filename output-path)))
+       (core:fmt t "Writing object to: {}%N" (core:coerce-to-filename output-path)))
      ;; save the bitcode so we can look at it.
      (let ((temp-bitcode-file
              (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
        (ensure-directories-exist temp-bitcode-file)
        (when *compile-verbose*
-         (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+         (core:fmt t "Writing temporary bitcode file to: {}%N" temp-bitcode-file))
        (output-bitcode module temp-bitcode-file
                        :output-type (default-library-type output-type))
        (prog1
@@ -457,7 +457,7 @@ Compile a lisp source file into an LLVM module."
                                          :position position :output-bitcode output-bitcode))
     ((eq output-type :bitcode)
      (when *compile-verbose*
-       (bformat t "Writing bitcode to: %s%N" (core:coerce-to-filename output-path)))
+       (core:fmt t "Writing bitcode to: {}%N" (core:coerce-to-filename output-path)))
      (prog1 (output-bitcode module (core:coerce-to-filename output-path)
                             :output-type (default-library-type output-type))
        (when (eq type :kernel)
@@ -467,11 +467,11 @@ Compile a lisp source file into an LLVM module."
                                                      :output-file output-file :output-type :bitcode)))
        (ensure-directories-exist temp-bitcode-file)
        (when *compile-verbose*
-         (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+         (core:fmt t "Writing temporary bitcode file to: {}%N" temp-bitcode-file))
        (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
                        :output-type :object)
        (when *compile-verbose*
-         (bformat t "Writing faso file to: %s%N" output-file)
+         (core:fmt t "Writing faso file to: {}%N" output-file)
          (finish-output))
        (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
                                               'llvm-sys:code-gen-file-type-object-file
@@ -497,11 +497,11 @@ Compile a lisp source file into an LLVM module."
                                                      :output-file output-file :output-type :bitcode)))
        (ensure-directories-exist temp-bitcode-file)
        (when *compile-verbose*
-         (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+         (core:fmt t "Writing temporary bitcode file to: {}%N" temp-bitcode-file))
        (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
                        :output-type :object)
        (when *compile-verbose*
-         (bformat t "Writing fasl file to: %s%N" output-file)
+         (core:fmt t "Writing fasl file to: {}%N" output-file)
          (finish-output))
        (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
     (t ;; Unknown

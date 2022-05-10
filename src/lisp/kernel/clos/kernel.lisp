@@ -197,21 +197,21 @@
                                      (values nil nil)))
                                  nil)
                                 ((si::subclassp class spec))))))
-      (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s%N" gf classes)
+      (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf classes)
       (let ((result (sort-applicable-methods
                      gf
                      (loop for method in (generic-function-methods gf)
                            when (applicable-method-p method classes)
                              collect method)
                      classes)))
-        (mlog "  result -> %s%N" result)
+        (mlog "  result -> {}%N" result)
         (values result t)))))
 
 #-mlog
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors (+eql-specializer-slots+ +standard-generic-function-slots+)
-    (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s%N" gf classes)
+    (mlog "std-compute-applicable-methods-using-classes gf -> {} classes -> {}%N" gf classes)
     (flet ((applicable-method-p (method classes)
 	     (loop for spec in (safe-method-specializers method)
 		for class in classes

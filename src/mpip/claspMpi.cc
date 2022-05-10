@@ -214,7 +214,7 @@ Mpi_sp Mpi_O::mpiCommWorld() {
   _G();
   if (!_MpiWorldInitialized) {
     _MpiWorldInitialized = true;
-    LOG(BF("_MpiWorld creating")); // vp0(( "_MpiWorld creating" ));
+    LOG("_MpiWorld creating"); // vp0(( "_MpiWorld creating" ));
     _lisp->_Roots._MpiWorld = Mpi_O::create();
   }
   return _lisp->_Roots._MpiWorld;
@@ -278,7 +278,7 @@ CL_DEFMETHOD core::T_sp Mpi_O::prim_Send(int dest, int tag, core::T_sp obj) {
   archive->put(KW("only"), obj);
   core::StringOutStream_sp sos = core::StringOutStream_O::make();
   archive->sexpSaveArchiveWrite(sos);
-  LOG(BF("About to call MPI_Send\n%s\n") % sos->str());
+  LOG("About to call MPI_Send\n%s\n" , sos->str());
   this->_Communicator.send(dest, tag, sos->str());
 #endif
 #endif
@@ -297,11 +297,11 @@ CL_DEFMETHOD core::T_mv Mpi_O::prim_Recv(int source, int tag) {
 #ifdef USE_MPI
   IMPLEMENT_ME();
 #if 0
-  LOG(BF("About to call MPI_Probe")); // vp0(("About to call MPI_Probe"));
+  LOG("About to call MPI_Probe"); // vp0(("About to call MPI_Probe"));
   boost::mpi::status stat = this->_Communicator.probe(source, tag);
   this->_Source = stat.source();
   this->_Tag = stat.tag();
-  LOG(BF("Probe command returned source %d") % this->_Source); // vp0(("Probe command returned source %d", this->_Source ));
+  LOG("Probe command returned source %d" , this->_Source); // vp0(("Probe command returned source %d", this->_Source ));
   string buffer;
   this->_Communicator.recv(source, tag, buffer);
   core::StringInputStream_sp sis = core::StringInputStream_O::create(buffer);
@@ -353,7 +353,7 @@ void Mpi_O::initializeGlobals(core::LispPtr lisp) {
 #if 0
 void Mpi_O::exposeCando(core::LispPtr lisp) {
   _G();
-  LOG(BF("Exposing Mpi_O")); // vp0(("Exposing Mpi_O"));
+  LOG("Exposing Mpi_O"); // vp0(("Exposing Mpi_O"));
   core::af_def(MpiPkg, "world", &Mpi_O::mpiCommWorld);
   core::class_<Mpi_O>()
       .def("size", &Mpi_O::Get_size)

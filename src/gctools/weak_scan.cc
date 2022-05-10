@@ -74,7 +74,7 @@ RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit  EXTRA_ARGUM
         client = (ADDR_T)((char *)client + sizeof(gctools::WeakPointer) + sizeof(gctools::Header_s));
       } break;
       default:
-          THROW_HARD_ERROR(BF("handle other weak kind %d") % header._stamp_wtag_mtag._value);
+          THROW_HARD_ERROR("handle other weak kind %d", header._stamp_wtag_mtag._value);
       }
     };
   }
@@ -85,38 +85,38 @@ RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit  EXTRA_ARGUM
 
 #ifdef WEAK_SKIP
 ADDR_T WEAK_SKIP(ADDR_T client, bool dbg, size_t& objectSize) {
-  GCWEAK_LOG(BF("weak_obj_skip client=%p") % ((void *)client));
+  GCWEAK_LOG(fmt::sprintf("weak_obj_skip client=%p" , ((void *)client)));
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(WEAK_PTR_TO_HEADER_PTR(client));
   if (header._stamp_wtag_mtag.weakObjectP()) {
     switch (header._stamp_wtag_mtag._value) {
     case gctools::Header_s::WeakBucketKind: {
       gctools::WeakBucketsObjectType *obj = reinterpret_cast<gctools::WeakBucketsObjectType *>(client);
-      GCWEAK_LOG(BF("WeakBucketKind sizeof(WeakBucketsObjectType)=%d + sizeof(typename WeakBucketsObjectType::value_type)=%d * obj->length()=%d") % sizeof(WeakBucketsObjectType) % sizeof(typename WeakBucketsObjectType::value_type) % obj->length());
+      GCWEAK_LOG(fmt::sprintf("WeakBucketKind sizeof(WeakBucketsObjectType)=%d + sizeof(typename WeakBucketsObjectType::value_type)=%d * obj->length()=%d" , sizeof(WeakBucketsObjectType) , sizeof(typename WeakBucketsObjectType::value_type) , obj->length()));
       objectSize = gctools::AlignUp(sizeof(gctools::WeakBucketsObjectType) + sizeof(typename gctools::WeakBucketsObjectType::value_type) * obj->length());
     } break;
     case gctools::Header_s::StrongBucketKind: {
       gctools::StrongBucketsObjectType *obj = reinterpret_cast<gctools::StrongBucketsObjectType *>(client);
-      GCWEAK_LOG(BF("StrongBucketKind sizeof(StrongBucketsObjectType)=%d + sizeof(typename StrongBucketsObjectType::value_type)=%d * obj->length()=%d") % sizeof(StrongBucketsObjectType) % sizeof(typename StrongBucketsObjectType::value_type) % obj->length());
+      GCWEAK_LOG(fmt::sprintf("StrongBucketKind sizeof(StrongBucketsObjectType)=%d + sizeof(typename StrongBucketsObjectType::value_type)=%d * obj->length()=%d" , sizeof(StrongBucketsObjectType) , sizeof(typename StrongBucketsObjectType::value_type) , obj->length()));
       objectSize = gctools::AlignUp(sizeof(gctools::StrongBucketsObjectType) + sizeof(typename gctools::StrongBucketsObjectType::value_type) * obj->length());
     } break;
     case gctools::Header_s::WeakMappingKind: {
-      GCWEAK_LOG(BF("WeakMappingKind"));
+      GCWEAK_LOG(fmt::sprintf("WeakMappingKind"));
       objectSize = gctools::AlignUp(sizeof(gctools::WeakMappingObjectType));
     } break;
     case gctools::Header_s::StrongMappingKind: {
-      GCWEAK_LOG(BF("StrongMappingKind"));
+      GCWEAK_LOG(fmt::sprintf("StrongMappingKind"));
       objectSize = gctools::AlignUp(sizeof(gctools::StrongMappingObjectType));
     } break;
     case gctools::Header_s::WeakPointerKind: {
-      GCWEAK_LOG(BF("WeakPointerKind"));
+      GCWEAK_LOG(fmt::sprintf("WeakPointerKind"));
       objectSize = gctools::AlignUp(sizeof(gctools::WeakPointer));
     } break;
     }
   } else {
-    THROW_HARD_ERROR(BF("Handle weak_obj_skip other weak kind %d") % header._stamp_wtag_mtag._value);
+    THROW_HARD_ERROR("Handle weak_obj_skip other weak kind %d", header._stamp_wtag_mtag._value);
   }
   client = (ADDR_T)((char *)client + objectSize + sizeof(gctools::Header_s));
-  GCWEAK_LOG(BF("weak_obj_skip returning client=%p") % ((void *)client));
+  GCWEAK_LOG(fmt::sprintf("weak_obj_skip returning client=%p" , ((void *)client)));
   return client;
 };
 #endif

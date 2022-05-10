@@ -82,10 +82,10 @@ safe_buffer_pointer(core::T_sp x, uint size) {
     address = svb8->rowMajorAddressOfElement_(0);
   }
   else {
-    SIMPLE_ERROR(BF("Add support for buffer %s") % _rep_(x));
+    SIMPLE_ERROR(("Add support for buffer %s") , _rep_(x));
   }
   if (!ok) {
-    SIMPLE_ERROR(BF("Lisp object does not have enough space to be a valid socket buffer: %s") % _rep_(x));
+    SIMPLE_ERROR(("Lisp object does not have enough space to be a valid socket buffer: %s") , _rep_(x));
   }
   return address;
 }
@@ -636,7 +636,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string &name,  /
       direction = core::clasp_smm_io;
     break;
   default: {
-    SIMPLE_ERROR(BF("Illegal stream mode %d") % streamMode);
+    SIMPLE_ERROR(("Illegal stream mode %d") , streamMode);
   }
   }
   core::Stream_sp stream = gc::As_unsafe<core::Stream_sp>(core::IOFileStream_O::make(name, fd, direction, elementType, externalFormat));
@@ -829,7 +829,7 @@ CL_DEFUN void sockets_internal__fdset_zero(core::Pointer_sp p)
 
 DOCGROUP(clasp)
 CL_DEFUN void sockets_internal__fdset_set(gc::Fixnum fd, core::Pointer_sp fdset) {
-  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this error message once it's working again"));
+  SIMPLE_ERROR(("FD_SET causes problems with Xcode 11.4 - remove this error message once it's working again"));
 #if 0
   FD_SET(fd,(fd_set*)fdset->ptr());
 #endif
@@ -837,7 +837,7 @@ CL_DEFUN void sockets_internal__fdset_set(gc::Fixnum fd, core::Pointer_sp fdset)
 
 DOCGROUP(clasp)
 CL_DEFUN void sockets_internal__fdset_clr(gc::Fixnum fd, core::Pointer_sp fdset) {
-  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this error message once it's working again"));
+  SIMPLE_ERROR(("FD_SET causes problems with Xcode 11.4 - remove this error message once it's working again"));
 #if 0
   FD_CLR(fd,(fd_set*)fdset->ptr());
 #endif
@@ -845,7 +845,7 @@ CL_DEFUN void sockets_internal__fdset_clr(gc::Fixnum fd, core::Pointer_sp fdset)
 
 DOCGROUP(clasp)
 CL_DEFUN bool sockets_internal__fdset_isset(gc::Fixnum fd, core::Pointer_sp fdset) {
-  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this error message once it's working again"));
+  SIMPLE_ERROR(("FD_SET causes problems with Xcode 11.4 - remove this error message once it's working again"));
 #if 0
   return FD_ISSET(fd,(fd_set*)fdset->ptr());
 #endif

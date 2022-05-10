@@ -71,7 +71,7 @@ void CodeEntryPoint_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void
     uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
     snapshotSaveLoad::decodeEntryPoint(fixup,ptrptr,this->_Code);
   } else {
-    SIMPLE_ERROR(BF("Illegal image save/load operation"));
+    SIMPLE_ERROR(("Illegal image save/load operation"));
   }
 #endif
 }
@@ -353,11 +353,11 @@ GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp entryPoint,
 
 LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp original, void** entry_points) {
   if (!original->_entry_point_indices.consp()){
-    SIMPLE_ERROR(BF("The LocalEntryPoint %s does not have entry-points") % _rep_(original));
+    SIMPLE_ERROR(("The LocalEntryPoint %s does not have entry-points") , _rep_(original));
   }
   T_sp firstEntryPoint = CONS_CAR(original->_entry_point_indices);
   if (!firstEntryPoint.fixnump()) {
-    SIMPLE_ERROR(BF("The FunctionDescriptionGenerator %s does not have entry-points indices") % _rep_(original));
+    SIMPLE_ERROR(("The FunctionDescriptionGenerator %s does not have entry-points indices") , _rep_(original));
   }
   size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
   ClaspLocalFunction entry_point = (ClaspLocalFunction)(entry_points[entryPointIndex]);
@@ -372,7 +372,7 @@ LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp 
 
 GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp original, gctools::GCRootsInModule* roots, void** entry_points ) {
   if (!original->_entry_point_indices.consp()){
-    SIMPLE_ERROR(BF("The GlobalEntryPoint %s does not have entry-points") % _rep_(original));
+    SIMPLE_ERROR(("The GlobalEntryPoint %s does not have entry-points") , _rep_(original));
   }
   List_sp epIndices = gc::As<List_sp>(original->_entry_point_indices);
   size_t num = cl__length(epIndices);
@@ -386,7 +386,7 @@ GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_
   for ( auto entry : epIndices ) {
     T_sp oneEntryPointIndex = CONS_CAR(entry);
     if (!oneEntryPointIndex.fixnump()) {
-      SIMPLE_ERROR(BF("The FunctionDescriptionGenerator %s does not have entry-points indices") % _rep_(original));
+      SIMPLE_ERROR(("The FunctionDescriptionGenerator %s does not have entry-points indices") , _rep_(original));
     }
     size_t entryPointIndex = oneEntryPointIndex.unsafe_fixnum();
     ClaspXepAnonymousFunction entry_point = (ClaspXepAnonymousFunction)(entry_points[entryPointIndex]);
@@ -601,15 +601,15 @@ void validateFunctionDescription(const char* filename, size_t lineno, Function_s
 
 extern "C" void dumpFunctionDescription(core::FunctionDescription_sp fdesc)
 {
-  core::write_bf_stream(BF("FunctionDescription@%p\n") % (void*)fdesc.raw_());
-  core::write_bf_stream(BF("sourcePathname = %s\n") % _rep_(fdesc->sourcePathname()) );
-  core::write_bf_stream(BF("functionName = %s\n") % _rep_(fdesc->functionName()));
-  core::write_bf_stream(BF("lambdaList = %s\n") % _rep_(fdesc->lambdaList()));
-  core::write_bf_stream(BF("docstring = %s\n") % _rep_(fdesc->docstring()));
-  core::write_bf_stream(BF("declares = %s\n") % _rep_(fdesc->declares()));
-  core::write_bf_stream(BF("lineno = %lu\n") % fdesc->lineno);
-  core::write_bf_stream(BF("column = %lu\n") % fdesc->column);
-  core::write_bf_stream(BF("filepos = %lu\n") % fdesc->filepos);
+  core::write_bf_stream(fmt::sprintf("FunctionDescription@%p\n" , (void*)fdesc.raw_()));
+  core::write_bf_stream(fmt::sprintf("sourcePathname = %s\n" , _rep_(fdesc->sourcePathname()) ));
+  core::write_bf_stream(fmt::sprintf("functionName = %s\n" , _rep_(fdesc->functionName())));
+  core::write_bf_stream(fmt::sprintf("lambdaList = %s\n" , _rep_(fdesc->lambdaList())));
+  core::write_bf_stream(fmt::sprintf("docstring = %s\n" , _rep_(fdesc->docstring())));
+  core::write_bf_stream(fmt::sprintf("declares = %s\n" , _rep_(fdesc->declares())));
+  core::write_bf_stream(fmt::sprintf("lineno = %lu\n" , fdesc->lineno));
+  core::write_bf_stream(fmt::sprintf("column = %lu\n" , fdesc->column));
+  core::write_bf_stream(fmt::sprintf("filepos = %lu\n" , fdesc->filepos));
 } ;
 
 namespace core {
@@ -623,7 +623,7 @@ CL_DEFUN void core__dumpFunctionDescription(T_sp func)
   } else if (gc::IsA<FunctionDescription_sp>(func)) {
     dumpFunctionDescription(gc::As<FunctionDescription_sp>(func));
   } else {
-    SIMPLE_ERROR(BF("You can only dump function-descriptions from functions or function-descriptions"));
+    SIMPLE_ERROR(("You can only dump function-descriptions from functions or function-descriptions"));
   }
 }
 
@@ -777,7 +777,7 @@ T_sp ClosureWithSlots_O::interpretedSourceCode() {
   if (this->closureType==interpretedClosure) {
     return (*this)[INTERPRETED_CLOSURE_FORM_SLOT];
   };
-  SIMPLE_ERROR(BF("Source code is only available for interpreted functions"));
+  SIMPLE_ERROR(("Source code is only available for interpreted functions"));
 }
 
 /* This function is used (currently exclusively) in funcallableInstance.cc.
@@ -905,7 +905,7 @@ T_sp ClosureWithSlots_O::code() const {
   if (this->interpretedP()) {
     return (*this)[INTERPRETED_CLOSURE_FORM_SLOT];
   }
-  SIMPLE_ERROR(BF("Tried to get code for a non interpreted closure"));
+  SIMPLE_ERROR(("Tried to get code for a non interpreted closure"));
 }
 
 
@@ -954,21 +954,21 @@ CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
         }
         if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
           if ( index >= tvf->length() ) {
-            SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % tvf->length() );
+            SIMPLE_ERROR(("Out of bounds closure reference - there are only %d slots") , tvf->length() );
           }
           return (*tvf)[index];
         }
-        SIMPLE_ERROR(BF("Out of bounds closure reference - there are no slots"));
+        SIMPLE_ERROR(("Out of bounds closure reference - there are no slots"));
       }
       break;
     case ClosureWithSlots_O::cclaspClosure:
         if ( index >= closure->_Slots.length() ) {
-          SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots.length() );
+          SIMPLE_ERROR(("Out of bounds closure reference - there are only %d slots") , closure->_Slots.length() );
         }
         return closure->_Slots[index];
     }
   }
-  SIMPLE_ERROR(BF("Out of bounds closure reference - there are no slots"));
+  SIMPLE_ERROR(("Out of bounds closure reference - there are no slots"));
 }
 
 DOCGROUP(clasp)
@@ -1008,7 +1008,7 @@ void BuiltinClosure_O::fixupOneCodePointer( snapshotSaveLoad::Fixup* fixup, void
       snapshotSaveLoad::decodeEntryPointInLibrary(fixup,(uintptr_t*)&funcPtr[0]);
     }
   } else {
-    SIMPLE_ERROR(BF("Illegal image save/load operation"));
+    SIMPLE_ERROR(("Illegal image save/load operation"));
   }
 #endif
 }

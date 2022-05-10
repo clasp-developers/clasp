@@ -30,8 +30,6 @@ THE SOFTWARE.
 //#include "clasp_gmpxx.h"
 #include <cstdint>
 
-#include <boost/format.hpp>
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/primitives.h> // core__list_from_vaslist
 #include <clasp/core/common.h>
@@ -73,8 +71,8 @@ core::Fixnum not_fixnum_error( core::T_sp o )
     else
       nbclass = nb->_instanceClass()->_classNameAsString();
     
-    SIMPLE_ERROR(BF("Numbers of class %s and %s are not commensurable, or operation is unimplemented")
-                 % naclass % nbclass);
+    SIMPLE_ERROR(("Numbers of class %s and %s are not commensurable, or operation is unimplemented")
+                 , naclass , nbclass);
 }
 
 void clasp_report_divide_by_zero(Number_sp x) {
@@ -1022,7 +1020,7 @@ CL_LAMBDA(core:&va-rest args)
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___LT_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
-    SIMPLE_ERROR(BF("< needs at least one argument"));
+    SIMPLE_ERROR(("< needs at least one argument"));
   }
   return numbers_monotonic_vaslist(-1, 1, args);
 };
@@ -1031,7 +1029,7 @@ CL_LAMBDA(core:&va-rest args)
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___GT_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
-    SIMPLE_ERROR(BF("> needs at least one argument"));
+    SIMPLE_ERROR(("> needs at least one argument"));
   }
   return numbers_monotonic_vaslist(1, 1, args);
 };
@@ -1040,7 +1038,7 @@ CL_LAMBDA(core:&va-rest args)
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___LE_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
-    SIMPLE_ERROR(BF("> needs at least one argument"));
+    SIMPLE_ERROR(("> needs at least one argument"));
   }
   return numbers_monotonic_vaslist(-1, 0, args);
 };
@@ -1049,7 +1047,7 @@ CL_LAMBDA(core:&va-rest args)
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl___GE_(Vaslist_sp args) {
   if (args->remaining_nargs()<1) {
-    SIMPLE_ERROR(BF(">= needs at least one argument"));
+    SIMPLE_ERROR((">= needs at least one argument"));
   }
   return numbers_monotonic_vaslist(1, 0, args);
 };

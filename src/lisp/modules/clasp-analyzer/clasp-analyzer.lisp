@@ -2697,14 +2697,14 @@ so that they don't have to be constantly recalculated"
   (declare (ignore anal))
   (with-jump-table (fout dest stamp)
     (format fout "     // do nothing stamp value ~a~%" (stamp-value% stamp))
-    (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize object ~a\"));~%" (stamp-key stamp)))
+    (format fout "    THROW_HARD_ERROR(\"Should never finalize object ~a\");~%" (stamp-key stamp)))
   nil)
 
 (defun deallocator-for-abstract-species (dest stamp anal)
   (declare (ignore anal))
   (with-jump-table (fout dest stamp)
     (format fout "     // do nothing stamp value ~a~%" (stamp-value% stamp))
-    (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate object ~a\"));~%" (stamp-key stamp)))
+    (format fout "    THROW_HARD_ERROR(\"Should never deallocate object ~a\");~%" (stamp-key stamp)))
   nil)
 
 (defun scanner-for-lispallocs (dest stamp anal)
@@ -2813,7 +2813,7 @@ so that they don't have to be constantly recalculated"
     (let ((fh (destination-helper-stream dest)))
       (if (cxxrecord-ctype-p decl)
           (progn
-            (format fh "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
+            (format fh "    THROW_HARD_ERROR(\"Should never scan ~a\");~%" (cxxrecord-ctype-key decl)))
           (progn
             (let* ((class-node (gethash key (project-classes (analysis-project anal))))
                    (layout (class-layout class-node anal))
@@ -2832,13 +2832,13 @@ so that they don't have to be constantly recalculated"
     (if (cxxrecord-ctype-p decl)
         (progn
           (format fout "     // stamp value ~a~%" (stamp-value% stamp))
-          (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))
+          (format fout "    THROW_HARD_ERROR(\"Should never finalize ~a\");~%" (record-ctype-key decl)))
         (let* ((parms (class-template-specialization-ctype-arguments decl))
                (parm0 (car parms))
                (parm0-ctype (gc-template-argument-ctype parm0)))
 ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
           (format fout "     // stamp value ~a~%" (stamp-value% stamp))
-          (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize containers ~a\"));" (record-ctype-key decl)))))))
+          (format fout "    THROW_HARD_ERROR(\"Should never finalize containers ~a\");" (record-ctype-key decl)))))))
 
 (defun deallocator-for-gccontainer (dest stamp anal)
   (declare (ignore anal))
@@ -2852,12 +2852,12 @@ so that they don't have to be constantly recalculated"
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (if (cxxrecord-ctype-p decl)
           (progn
-            (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate ~a\"));~%" (record-ctype-key decl)))
+            (format fout "    THROW_HARD_ERROR(\"Should never deallocate ~a\");~%" (record-ctype-key decl)))
           (let* ((parms (class-template-specialization-ctype-arguments decl))
                  (parm0 (car parms))
                  (parm0-ctype (gc-template-argument-ctype parm0)))
             ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-            (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate containers ~a\"));" (record-ctype-key decl))))
+            (format fout "    THROW_HARD_ERROR(\"Should never deallocate containers ~a\");" (record-ctype-key decl))))
       )))
 
 (defun scanner-for-gcbitunit (dest stamp anal)
@@ -2882,7 +2882,7 @@ so that they don't have to be constantly recalculated"
          (stamp-name (get-stamp-name stamp)))
     (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
-      (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))))
+      (format fout "    THROW_HARD_ERROR(\"Should never finalize ~a\");~%" (record-ctype-key decl)))))
 
 (defun deallocator-for-gcbitunit (dest stamp anal)
   (declare (ignore anal))
@@ -2893,7 +2893,7 @@ so that they don't have to be constantly recalculated"
          (stamp-name (get-stamp-name stamp)))
     (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
-      (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate gcbitunits ~a\"));" (record-ctype-key decl)))))
+      (format fout "    THROW_HARD_ERROR(\"Should never deallocate gcbitunits ~a\");" (record-ctype-key decl)))))
 
 
 (defun string-left-matches (str sub)

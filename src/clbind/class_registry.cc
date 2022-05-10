@@ -168,8 +168,7 @@ core::Integer_sp type_id_toClassRegistryKey(type_id const &info) {
 
 void ClassRegistry_O::add_class(type_id const &info, ClassRep_sp crep) {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
-  ASSERTF(!this->m_classes->contains(key),
-          BF("You are trying to register the class %s twice") % info.name());
+  ASSERTF(!this->m_classes->contains(key), BF("You are trying to register the class %s twice") % info.name());
   this->m_classes->setf_gethash(key, crep);
 }
 
@@ -177,7 +176,7 @@ ClassRep_sp ClassRegistry_O::find_class(type_id const &info) const {
   core::Integer_sp key = type_id_toClassRegistryKey(info);
   core::T_sp value = this->m_classes->gethash(key,nil<core::T_O>());
   if ( value.nilp() ) {
-    SIMPLE_ERROR(BF("Could not find class for typeid: %s name: %s") % _rep_(key) % info.name());
+    SIMPLE_ERROR(("Could not find class for typeid: %s name: %s") , _rep_(key) , info.name());
   }
   return gc::As<ClassRep_sp>(value);
 }

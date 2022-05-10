@@ -33,7 +33,7 @@ THE SOFTWARE.
 #define _GC_RESERVE_GET_BASE(_class_, _kind_, _obj_)                                                                       \
   mps_res_t __gc_res = mps_reserve(&__reserve_addr, gctools::_global_obj_allocation_point, sizeof_with_header<_class_>()); \
   if (__gc_res != MPS_RES_OK)                                                                                              \
-    THROW_HARD_ERROR(BF("Could not allocate %s") % #_class_);                                                              \
+    THROW_HARD_ERROR("Could not allocate %s", #_class_);                                                              \
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(__reserve_addr);                                       \
   header->kind._Kind = (gctools::GcKindEnum)(_kind_);                                                                      \
   void *__obj_addr = BASE_TO_OBJ_PTR(__reserve_addr);                                                                      \
