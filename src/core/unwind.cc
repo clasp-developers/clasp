@@ -111,7 +111,8 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
   CatchDynEnv_sp dest;
   switch (sjlj_throw_search(tag, dest)) {
   case DynEnv_O::OutOfExtent:
-      NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
+      ERROR(core::_sym_noCatchTag,
+            core::lisp_createList(kw::_sym_tag, tag));
   case DynEnv_O::FallBack:
 #ifdef UNWIND_INVALIDATE_STRICT
       sjlj_unwind_invalidate(dest);
