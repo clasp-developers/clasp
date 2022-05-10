@@ -247,26 +247,6 @@ public:
   /*ATTR_WEAK*/ virtual ~CatchThrow(){};
 };
 
-/* Macros for implementing CL:CATCH, like ECL_CATCH_BEGIN.
- * res is a T_mv variable the results of a throw will be stored in;
- * for the normal return you have to do that manually. */
-// Use destructors to keep the list of valid catch tags correct.
-#define CLASP_BEGIN_CATCH(tg) {               \
-    CatchTagPusher tags_dummy(my_thread, tg); \
-    try
-#define CLASP_END_CATCH(tg, res)                               \
-  catch (CatchThrow &catchThrow) {                             \
-    if (catchThrow.getTag() != tg)                             \
-      throw catchThrow;                                        \
-    else {                                                     \
-      std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now(); \
-      my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind); \
-      res = gctools::multiple_values<T_O>::createFromValues(); \
-    }                                                          \
-  }}
-
-[[noreturn]] void clasp_throw(T_sp);
-
 class ATTR_WEAK Unwind {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 

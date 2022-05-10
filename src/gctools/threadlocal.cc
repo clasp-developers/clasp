@@ -139,7 +139,6 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   _unwinds(0)
   , _CleanupFunctions(NULL)
   ,_PendingInterrupts()
-  ,_CatchTags()
   ,_ObjectFiles()
   ,_BufferStr8NsPool()
   ,_BufferStrWNsPool()
@@ -171,14 +170,12 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
   // Reinitialize all threadlocal lists once NIL is defined
   // We work with theObject here directly because it's very early in the bootstrapping
   if (this->_PendingInterrupts.theObject) goto ERR;
-  if (this->_CatchTags.theObject) goto ERR;
   if (this->_ObjectFiles.theObject) goto ERR;
   if (this->_BufferStr8NsPool.theObject) goto ERR;
   if (this->_BufferStrWNsPool.theObject) goto ERR;
   if (this->_DynEnv.theObject) goto ERR;
   if (this->_UnwindDest.theObject) goto ERR;
   this->_PendingInterrupts.theObject = theNilObject.theObject;
-  this->_CatchTags.theObject = theNilObject.theObject;
   this->_ObjectFiles.theObject = theNilObject.theObject;
   this->_BufferStr8NsPool.theObject = theNilObject.theObject;
   this->_BufferStrWNsPool.theObject = theNilObject.theObject;
@@ -194,7 +191,6 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
 ThreadLocalState::ThreadLocalState() :
   _unwinds(0)
   , _PendingInterrupts(nil<core::T_O>())
-  , _CatchTags(nil<core::T_O>())
   , _ObjectFiles(nil<core::T_O>())
   , _CleanupFunctions(NULL)
   , _Breakstep(false)
@@ -298,14 +294,8 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
    this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
 #endif
   this->_PendingInterrupts = nil<T_O>();
-  this->_CatchTags = nil<T_O>();
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),nil<T_O>());
 };
-
-// Push a tag onto the list of active catches.
-void ThreadLocalState::pushCatchTag(T_sp tag) {
-  this->_CatchTags = Cons_O::create(tag, this->_CatchTags);
-}
 
 };
 

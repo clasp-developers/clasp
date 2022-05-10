@@ -79,30 +79,6 @@ NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char* file, size_t line
 void CatchThrow::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
-CL_LAMBDA()
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Returns the list of active CL:CATCH tags. Strictly for debugging.)dx")
-DOCGROUP(clasp)
-CL_DEFUN List_sp core__active_catch_tags() {
-  return my_thread->catchTags();
-}
-
-// The control transfer part of CL:THROW
-[[noreturn]] void clasp_throw(T_sp tag) {
-  // Check the list of catches in place to make sure the tag is there.
-  bool found = false;
-  for (auto tag_cons : my_thread->catchTags()) {
-    if (tag == oCar(tag_cons)) {
-      found = true;
-      break;
-    }
-  }
-  if (!found) CONTROL_ERROR();
-  my_thread->_unwinds++;
-  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  throw CatchThrow(tag);
-}
-
 SYMBOL_EXPORT_SC_(KeywordPkg,called_function);
 void throwTooFewArgumentsError(core::T_sp closure, size_t given, size_t required) {
   lisp_error(core::_sym_wrongNumberOfArguments,

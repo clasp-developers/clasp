@@ -1699,25 +1699,17 @@ T_mv sp_go(List_sp args, T_sp env) {
         }
 
         T_mv sp_catch(List_sp args, T_sp environment) {
-            ASSERT(environment.generalp());
-            T_sp mytag = eval::evaluate(oCar(args), environment);
-            T_mv result;
-            CLASP_BEGIN_CATCH(mytag) {
-                result = eval::sp_progn(oCdr(args), environment);
-            } CLASP_END_CATCH(mytag, result);
-            return result;
+          ASSERT(environment.generalp());
+          return call_with_catch(eval::evaluate(oCar(args), environment),
+                                 [&]() { return eval::sp_progn(oCdr(args), environment); });
         }
 
         T_mv sp_throw(List_sp args, T_sp environment) {
-            ASSERT(environment.generalp());
-            T_sp throwTag = eval::evaluate(oCar(args), environment);
-            T_mv result = Values(nil<T_O>());
-            result = eval::evaluate(oCadr(args), environment);
-            // The first return value needs to be saved in MultipleValues
-            result.saveToMultipleValue0();
-            // I should search for the Catch frame for throwTag and
-            // invoke an error if it doesn't exist
-            clasp_throw(throwTag);
+          ASSERT(environment.generalp());
+          T_sp throwTag = eval::evaluate(oCar(args), environment);
+          T_mv result = eval::evaluate(oCadr(args), environment);
+          result.saveToMultipleValue0();
+          sjlj_throw(throwTag);
         }
 
         T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {

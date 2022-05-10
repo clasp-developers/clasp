@@ -1303,29 +1303,22 @@ CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
 
 CL_LAMBDA(tag func)
 CL_DECLARE();
-CL_UNWIND_COOP(false);
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(catchFunction)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
-  T_mv result;
-  CLASP_BEGIN_CATCH(tag) {
-    result = thunk->entry_0()(thunk.raw_());
-  } CLASP_END_CATCH(tag, result);
-  return result;
+  return call_with_catch(tag, [&]() { return eval::funcall(thunk); });
 }
 
 CL_LAMBDA(tag result)
 CL_DECLARE();
-CL_UNWIND_COOP(false);
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Like CL:THROW, but takes a thunk)dx")
 DOCGROUP(clasp)
-CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
-  T_mv result;
-  Closure_sp closure = result_form.asOrNull<Closure_O>();
-  ASSERT(closure);
-  result = closure->entry_0()(closure.raw_());
+CL_DEFUN void core__throw_function(T_sp tag, Function_sp result_form) {
+  T_mv result = eval::funcall(result_form);
   result.saveToMultipleValue0();
-  clasp_throw(tag);
+  sjlj_throw(tag);
 }
 
 CL_LAMBDA(symbols values func)

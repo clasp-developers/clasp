@@ -64,49 +64,74 @@ public:
 class DestDynEnv_O : public DynEnv_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, DestDynEnv_O, "DestDynEnv", DynEnv_O);
 public:
-  void* frame; // for fallback
   jmp_buf* target;
 #ifdef UNWIND_INVALIDATE_STRICT
   bool valid = true;
 #endif
   DestDynEnv_O() : DynEnv_O() {};
-  DestDynEnv_O(T_sp outer, void* a_frame, jmp_buf* a_target) :
-    DynEnv_O(outer), frame(a_frame), target(a_target) {};
+  DestDynEnv_O(T_sp outer, jmp_buf* a_target)
+    : DynEnv_O(outer), target(a_target) {};
   virtual ~DestDynEnv_O() {};
   virtual SearchStatus search() const { return Continue; };
+  virtual void proceed(DestDynEnv_sp dest, size_t index) {};
 #ifdef UNWIND_INVALIDATE_STRICT
   virtual void invalidate() { valid = false; }
 #endif
-  virtual void proceed(DestDynEnv_sp dest, size_t index) {};
   /* This function returns the new dynamic environment that will be in
    * place after unwinding to this destination. */
   virtual T_sp unwound_dynenv() = 0;
 };
 
+// Abstract class of lexical destinations.
+FORWARD(LexDynEnv);
+class LexDynEnv_O : public DestDynEnv_O {
+  LISP_ABSTRACT_CLASS(core, CorePkg, LexDynEnv_O, "LexDynEnv", DestDynEnv_O);
+public:
+  void* frame; // for fallback
+  LexDynEnv_O() : DestDynEnv_O() {};
+  LexDynEnv_O(T_sp outer, void* a_frame, jmp_buf* target)
+    : DestDynEnv_O(outer, target), frame(a_frame) {};
+  virtual ~LexDynEnv_O() {};
+};
+
 // Dynenv for a CL:BLOCK.
 FORWARD(BlockDynEnv);
-class BlockDynEnv_O : public DestDynEnv_O {
-  LISP_CLASS(core, CorePkg, BlockDynEnv_O, "BlockDynEnv", DestDynEnv_O);
+class BlockDynEnv_O : public LexDynEnv_O {
+  LISP_CLASS(core, CorePkg, BlockDynEnv_O, "BlockDynEnv", LexDynEnv_O);
 public:
-  using DestDynEnv_O::DestDynEnv_O; // inherit constructor
+  using LexDynEnv_O::LexDynEnv_O; // inherit constructor
   static BlockDynEnv_sp create(T_sp outer, void* frame, jmp_buf* target) {
     return gctools::GC<BlockDynEnv_O>::allocate(outer, frame, target);
   }
   virtual ~BlockDynEnv_O() {};
-  virtual T_sp unwound_dynenv() { return outer; }
+  virtual T_sp unwound_dynenv() { return this->outer; }
 };
 
 // Dynenv for a CL:TAGBODY.
 FORWARD(TagbodyDynEnv);
-class TagbodyDynEnv_O : public DestDynEnv_O {
-  LISP_CLASS(core, CorePkg, TagbodyDynEnv_O, "TagbodyDynEnv", DestDynEnv_O);
+class TagbodyDynEnv_O : public LexDynEnv_O {
+  LISP_CLASS(core, CorePkg, TagbodyDynEnv_O, "TagbodyDynEnv", LexDynEnv_O);
 public:
-  using DestDynEnv_O::DestDynEnv_O;
+  using LexDynEnv_O::LexDynEnv_O;
   static TagbodyDynEnv_sp create(T_sp outer, void* frame, jmp_buf* target) {
     return gctools::GC<TagbodyDynEnv_O>::allocate(outer, frame, target);
   }
   virtual ~TagbodyDynEnv_O() {};
   virtual T_sp unwound_dynenv() { return this->asSmartPtr(); }
+};
+
+FORWARD(CatchDynEnv);
+class CatchDynEnv_O : public DestDynEnv_O {
+  LISP_CLASS(core, CorePkg, CatchDynEnv_O, "CatchDynEnv", DestDynEnv_O);
+public:
+  T_sp tag;
+  CatchDynEnv_O(T_sp outer, jmp_buf* target, T_sp a_tag)
+    : DestDynEnv_O(outer, target), tag(a_tag) {}
+  virtual ~CatchDynEnv_O() {};
+public:
+  virtual SearchStatus search() const { return Continue; };
+  virtual void proceed(DestDynEnv_sp dest, size_t index) {};
+  virtual T_sp unwound_dynenv() { return this->outer; }
 };
 
 // Dynenv for a CL:UNWIND-PROTECT cleanup.
@@ -168,7 +193,9 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest);
 /* Carry out an unwinding to the given destination.
  * Takes care of the search aspect and signaling errors, so this is
  * the main entry point. */
-[[noreturn]] void sjlj_unwind(DestDynEnv_sp dest, size_t index);
+[[noreturn]] void sjlj_unwind(LexDynEnv_sp dest, size_t index);
+/* Carry out an unwinding to the given tag. */
+[[noreturn]] void sjlj_throw(T_sp tag);
 /* Convenience function for use in unwind-protect cleanups. */
 [[noreturn]] inline void sjlj_continue_unwinding() {
   sjlj_unwind_proceed(gc::As_unsafe<DestDynEnv_sp>(my_thread->_UnwindDest),
@@ -260,6 +287,22 @@ void call_with_tagbody(Tagbodyf&& tagbody) {
     }
     else throw;
   }
+}
+
+template <typename Catchf>
+T_mv call_with_catch(T_sp tag, Catchf&& cf) {
+  jmp_buf target;
+  if (setjmp(target))
+    return T_mv::createFromValues(); // abnormal return
+  else
+    try {
+      gctools::StackAllocate<CatchDynEnv_O> env(my_thread->_DynEnv, &target, tag);
+      DynEnvPusher dep(my_thread, env.asSmartPtr());
+      return cf();
+    } catch (CatchThrow& ct) {
+      if (ct.getTag() != tag) throw;
+      else return T_mv::createFromValues();
+    }
 }
 
 template <typename Boundf>

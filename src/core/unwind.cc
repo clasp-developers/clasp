@@ -7,7 +7,7 @@
 
 namespace core {
 
-DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest) {
+DynEnv_O::SearchStatus sjlj_unwind_search(LexDynEnv_sp dest) {
   for (T_sp iter = my_thread->_DynEnv; iter != dest;) {
     if (iter.notnilp()) {
       DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(iter);
@@ -20,6 +20,24 @@ DynEnv_O::SearchStatus sjlj_unwind_search(DestDynEnv_sp dest) {
   if (!(dest->valid)) return DynEnv_O::Abandoned;
 #endif
   return DynEnv_O::Proceed;
+}
+
+DynEnv_O::SearchStatus sjlj_throw_search(T_sp tag, CatchDynEnv_sp& dest) {
+  for (T_sp iter = my_thread->_DynEnv;;) {
+    if (iter.nilp()) return DynEnv_O::OutOfExtent;
+    else if (gc::IsA<CatchDynEnv_sp>(iter)) {
+      CatchDynEnv_sp catc = gc::As_unsafe<CatchDynEnv_sp>(iter);
+      if (tag == catc->tag) {
+        dest = catc;
+        return DynEnv_O::Proceed;
+      }
+    }
+    DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(iter);
+    auto status = diter->search();
+    if (status != DynEnv_O::Continue) return status;
+    iter = diter->outer;
+  }
+  UNREACHABLE();
 }
 
 #ifdef UNWIND_INVALIDATE_STRICT
@@ -59,7 +77,7 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
   this->sym->set_threadLocalSymbolValue(this->old);
 }
 
-[[noreturn]] void sjlj_unwind(DestDynEnv_sp dest, size_t index) {
+[[noreturn]] void sjlj_unwind(LexDynEnv_sp dest, size_t index) {
   switch (sjlj_unwind_search(dest)) {
   case DynEnv_O::OutOfExtent:
       NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
@@ -77,6 +95,23 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
       sjlj_unwind_invalidate(dest);
 #endif
       sjlj_unwind_proceed(dest, index);
+  default: UNREACHABLE();
+  }
+}
+
+[[noreturn]] void sjlj_throw(T_sp tag) {
+  CatchDynEnv_sp dest;
+  switch (sjlj_throw_search(tag, dest)) {
+  case DynEnv_O::OutOfExtent:
+      NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
+  case DynEnv_O::FallBack:
+      throw CatchThrow(tag);
+#ifdef UNWIND_INVALIDATE_STRICT
+  case DynEnv_O::Abandoned:
+      NO_INITIALIZERS_ERROR(core::_sym_abandonedUnwind);
+#endif
+  case DynEnv_O::Proceed:
+      sjlj_unwind_proceed(dest, 1); // 1 irrelevant
   default: UNREACHABLE();
   }
 }
@@ -126,7 +161,7 @@ CL_DEFUN int core__sjlj_dynenv_search_one(T_sp tde) {
 /* Check the search status for a given exit (i.e. determine whether
  * we need to fall back to C++ unwinder, or it's out of extent, or what) */
 CL_UNWIND_COOP(true);
-CL_DEFUN int core__sjlj_dynenv_search(DestDynEnv_sp dest) {
+CL_DEFUN int core__sjlj_dynenv_search(LexDynEnv_sp dest) {
   switch (sjlj_unwind_search(dest)) {
   case DynEnv_O::Proceed: return 1;
   case DynEnv_O::OutOfExtent: return 2;
@@ -186,6 +221,18 @@ CL_DEFUN T_mv core__sjlj_funwind_protect(Function_sp thunk,
                                          Function_sp cleanup) {
   return funwind_protect([&]() { return eval::funcall(thunk); },
                          [&]() { eval::funcall(cleanup); });
+}
+
+CL_UNWIND_COOP(true);
+CL_DEFUN T_mv core__sjlj_catch_function(T_sp tag, Function_sp thunk) {
+  return call_with_catch(tag, [&]() { return eval::funcall(thunk); });
+}
+
+CL_UNWIND_COOP(true);
+[[noreturn]] CL_DEFUN void core__sjlj_throw(T_sp tag, Function_sp thunk) {
+  T_mv result = eval::funcall(thunk);
+  result.saveToMultipleValue0();
+  sjlj_throw(tag);
 }
 
 }; // namespace core

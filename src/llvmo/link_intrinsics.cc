@@ -1064,7 +1064,7 @@ void cc_unwind_dest_dynenv(T_O* dynenv)
 void* cc_dynenv_frame(T_O* dynenv)
 {NO_UNWIND_BEGIN();
   T_sp tde((gctools::Tagged)dynenv);
-  DestDynEnv_sp dde = gc::As_unsafe<DestDynEnv_sp>(tde);
+  LexDynEnv_sp dde = gc::As_unsafe<LexDynEnv_sp>(tde);
   return dde->frame;
   NO_UNWIND_END();
 }
