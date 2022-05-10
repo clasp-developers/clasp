@@ -640,19 +640,19 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
   Fixnum fstart1 = unbox_fixnum(start1);
   if (fstart1 < 0)
       // a negative start1 should error
-    SIMPLE_ERROR(("start1 %d out of bounds for string %s") , fstart1 , string1);
+    SIMPLE_ERROR(("start1 %d out of bounds for string %s") , fstart1 , _rep_(string1));
   istart1 = MAX(fstart1, 0);
   if (istart1 > cl__length(string1)) {
-    SIMPLE_ERROR(("start1 %d out of bounds for string %s") , istart1 , string1);
+    SIMPLE_ERROR(("start1 %d out of bounds for string %s") , istart1 , _rep_(string1));
   }
   iend1 = MIN(end1.nilp() ? cl__length(string1) : unbox_fixnum(gc::As<Fixnum_sp>(end1)), cl__length(string1));
   Fixnum fstart2 = unbox_fixnum(start2);
   if (fstart2 <0)
     // a negative start2 should error
-    SIMPLE_ERROR(("start2 %d out of bounds for string %s") , fstart2 , string2);
+    SIMPLE_ERROR(("start2 %d out of bounds for string %s") , fstart2 , core::_rep_(string2));
   istart2 = MAX(fstart2, 0);
   if (istart2 > cl__length(string2)) {
-    SIMPLE_ERROR(("start2 %d out of bounds for string %s") , istart2 , string2);
+    SIMPLE_ERROR(("start2 %d out of bounds for string %s") , istart2 , core::_rep_(string2));
   }
   iend2 = MIN(end2.nilp() ? cl__length(string2) : unbox_fixnum(gc::As<Fixnum_sp>(end2)), cl__length(string2));
 }

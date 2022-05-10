@@ -704,7 +704,7 @@ void Lisp::remove_process(mp::Process_sp process) {
       }
     }
   } // lock release
-  SIMPLE_ERROR(("Could not find process %s") , process);
+  SIMPLE_ERROR("Could not find process %s" , _rep_(process));
 }
 
 List_sp Lisp::processes() const {

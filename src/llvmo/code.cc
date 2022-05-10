@@ -392,7 +392,7 @@ CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_poi
   SectionedAddress_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
       // now the object file
   if (verbose) {
-    core::write_bf_stream(fmt::sprintf("faso-file: %s  object-file-position: %lu  objectID: %lu\n" , ofi->_FasoName , ofi->_FasoIndex , ofi->_ObjectId));
+    core::write_bf_stream(fmt::sprintf("faso-file: %s  object-file-position: %lu  objectID: %lu\n" , _rep_(ofi->_FasoName) , ofi->_FasoIndex , ofi->_ObjectId));
     core::write_bf_stream(fmt::sprintf("SectionID: %lu    memory offset: %lu\n" , ofi->_FasoIndex , offset ));
   }
   return sectioned_address;

@@ -402,7 +402,7 @@ CL_DEFUN void mp__process_start(Process_sp process)
   if (process->_Phase == Nascent) {
     _lisp->add_process(process);
     process->startProcess();
-  } else SIMPLE_ERROR(("The process %s has already started.") , process);
+  } else SIMPLE_ERROR(("The process %s has already started.") , core::_rep_(process));
 };
 
 CL_DOCSTRING(R"dx(Convenience function that creates a process and then immediately starts it. Arguments are as in MAKE-PROCESS; the ARGUMENTS parameter is always NIL.)dx")
@@ -469,7 +469,7 @@ CL_DEFUN void mp__process_suspend(Process_sp process) {
   if (process->_Phase == Active)
     mp__interrupt_process(process,_sym_suspend_loop);
   else
-    SIMPLE_ERROR(("Cannot suspend inactive process %s") , process);
+    SIMPLE_ERROR(("Cannot suspend inactive process %s") , core::_rep_(process));
 };
 
 CL_DOCSTRING(R"dx(Restart execution in a suspended process.)dx")
@@ -481,7 +481,7 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
     if (!(process->_SuspensionCV._value.signal()))
       SIMPLE_ERROR(("BUG: pthread_cond_signal ran into an error"));
   } else
-    SIMPLE_ERROR(("Cannot resume a process (%s) that has not been suspended") , process);
+    SIMPLE_ERROR(("Cannot resume a process (%s) that has not been suspended") , core::_rep_(process));
 };
 
 CL_DOCSTRING(R"dx(Inform the scheduler that the current process doesn't need control for the moment. It may or may not use this information. Returns no values.)dx")

@@ -111,7 +111,12 @@ struct formatter {
   void format(const T& obj) {
     static_assert(FMT==1);
     const std::string& ctl = this->_controls[this->_pos];
+#if (FMT_VERSION>80000)
+    this->_results.push_back(fmt::format(fmt::runtime(ctl),obj));
+#else
+    // FMT version less than 8.0.0 ... 80000
     this->_results.push_back(fmt::format(ctl,obj));
+#endif
     this->_pos++;
   }
 
