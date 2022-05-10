@@ -340,7 +340,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 ;;;  (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result)
   (cmp-log "codegen stack-used[%d bytes]%N" (stack-used))
-  (cmp-log "codegen evaluate-depth[%d]  %s%N" (evaluate-depth) form)
   ;;
   ;; If a *code-walker* is defined then invoke the code-walker
   ;; with the current form and environment

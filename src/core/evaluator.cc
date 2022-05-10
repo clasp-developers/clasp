@@ -66,7 +66,6 @@ extern core::Symbol_sp& _sym_Cons_O;
 namespace core {
 namespace eval {
 int _evaluateVerbosity = 0;
-int _evaluateDepth = 0;
 
 T_mv t1Evaluate(T_sp exp, T_sp environment);
 
@@ -769,6 +768,7 @@ gctools::return_type fast_apply8(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O
 
 CL_LAMBDA(form)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(eval)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__eval(T_sp form) {
@@ -784,6 +784,7 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
 
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Interpret FORM in the interpreter environment ENV.)dx")
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
   return eval::evaluate(form, env);
@@ -817,6 +818,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(coerce_to_function)dx")
 DOCGROUP(clasp)
 CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
@@ -1006,14 +1008,6 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
   return Values(tclassified, make_fixnum((int)indicesSize), make_fixnum(totalSpecials));
 }
 
-CL_LAMBDA()
-CL_DECLARE();
-CL_DOCSTRING(R"dx(evaluateDepth)dx")
-DOCGROUP(clasp)
-CL_DEFUN int core__evaluate_depth() {
-  return eval::_evaluateDepth;
-};
-
 CL_LAMBDA(arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(evaluateVerbosity)dx")
@@ -1024,6 +1018,7 @@ CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) {
 
 CL_LAMBDA(form &optional env)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Evaluate the form in the environment using the interpreter)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) {
@@ -2047,26 +2042,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             ASSERT(gc::IsA<Function_sp>(functionDesignator));
             return functionDesignator;
         }
-
-
-        /*!
-         * This method:
-         * 1) evaluates the arguments
-         * 2) Looks up the method using the methodCall and the first argument
-         * 3) evaluates the method
-         * Can return MultipleValues
-         */
-
-
-        struct EvaluateDepthUpdater {
-            EvaluateDepthUpdater() {
-                ++_evaluateDepth;
-            }
-            ~EvaluateDepthUpdater() {
-                --_evaluateDepth;
-            }
-        };
-
+    
         T_mv evaluate_atom(T_sp exp, T_sp environment) {
             T_mv result;
             LOG(BF("Evaluating atom: %s") % exp->__repr__());
@@ -2266,10 +2242,6 @@ T_mv sp_go(List_sp args, T_sp env) {
           List_sp form;
           T_sp head;
           core__stack_monitor();
-          EvaluateDepthUpdater evaluateDepthUpdater;
-          if (_evaluateVerbosity > 0) {
-            printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
-          }
           if (!exp.consp()) {
             T_sp result = evaluate_atom(exp, environment);
 #ifdef DEBUG_EVALUATE
@@ -2582,7 +2554,6 @@ SYMBOL_EXPORT_SC_(ClPkg, eval);
     //	    SYMBOL_SC_(CorePkg,extractDeclaresDocstringCode);
     //	    Defun(extractDeclaresDocstringCode);
 SYMBOL_SC_(CorePkg, evaluateVerbosity);
-SYMBOL_SC_(CorePkg, evaluateDepth);
 SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
 SYMBOL_EXPORT_SC_(ClPkg, apply);
 SYMBOL_EXPORT_SC_(ClPkg, funcall);
