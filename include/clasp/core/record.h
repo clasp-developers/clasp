@@ -7,7 +7,7 @@
 namespace core {
 #if 0
 #define DEBUG_RECORD 1
-#define RECORD_LOG(...) printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, (fmt::sprintf(__VA_ARGS__).c_str()));
+#define RECORD_LOG(...) fmt::printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__); fmt::printf(__VA_ARGS__);
 #else
 #define RECORD_LOG(...)
 #endif
@@ -76,11 +76,11 @@ public:
 
   template <typename ST>
   void field(Symbol_sp name, ST &value) {
-    RECORD_LOG(BF("field(Symbol_sp name, ST& value ) name: %s") % _rep_(name));
+    RECORD_LOG(("field(Symbol_sp name, ST& value ) name: %s") , _rep_(name));
     switch (this->stage()) {
     case saving: {
       core::Cons_sp entry = core::Cons_O::create(name, translate::to_object<ST>::convert(value));
-      RECORD_LOG(BF("saving entry: %s") % _rep_(entry));
+      RECORD_LOG(("saving entry: %s") , _rep_(entry));
       this->_alist = core::Cons_O::create(entry, this->_alist);
     } break;
     case initializing:
@@ -89,7 +89,7 @@ public:
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (find.consp()) {
-        RECORD_LOG(BF("find apair %s\n") % _rep_(find));
+        RECORD_LOG(("find apair %s\n") , _rep_(find));
         value = translate::from_object<ST>(CONS_CDR(find))._v;
         if (this->stage() == initializing) this->flagSeen(gc::As_unsafe<Cons_sp>(find));
       } else {
@@ -104,11 +104,11 @@ public:
 
   template <typename OT>
   void field(Symbol_sp name, gc::smart_ptr<OT> &value) {
-    RECORD_LOG(BF("field(Symbol_sp name, gc::smart_ptr<OT>& value ) name: %s") % _rep_(name));
+    RECORD_LOG(("field(Symbol_sp name, gc::smart_ptr<OT>& value ) name: %s") , _rep_(name));
     switch (this->stage()) {
     case saving: {
       core::Cons_sp apair = core::Cons_O::create(name, value);
-      RECORD_LOG(BF("saving apair: %s") % _rep_(apair));
+      RECORD_LOG(("saving apair: %s") , _rep_(apair));
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
     case initializing: {
@@ -116,14 +116,14 @@ public:
       if (!find.consp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("init/load find apair %s\n") % _rep_(apair));
+      RECORD_LOG(("init/load find apair %s\n") , _rep_(apair));
       // Set the value and ignore its type!!!!!! This is to allow placeholders
       T_sp v = CONS_CDR(apair);
       if (!gc::IsA<gc::smart_ptr<OT>>(v)) {
         class_id expected_typ = reg::registered_class<OT>::id;
         lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(v.raw_()));
       }
-      RECORD_LOG(BF("init/load v: %s v.raw_=%p\n") % _rep_(v) % (void*)v.raw_());
+      RECORD_LOG(("init/load v: %s v.raw_=%p\n") , _rep_(v) , (void*)v.raw_());
       value.setRaw_(reinterpret_cast<gc::Tagged>(v.raw_()));
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -133,10 +133,10 @@ public:
       if (!find.consp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("init/load find apair %s\n") % _rep_(apair));
+      RECORD_LOG(("init/load find apair %s\n") , _rep_(apair));
       // Set the value and ignore its type!!!!!! This is to allow placeholders
       T_sp v = CONS_CDR(apair);
-      RECORD_LOG(BF("init/load v: %s v.raw_=%p\n") % _rep_(v) % (void*)v.raw_());
+      RECORD_LOG(("init/load v: %s v.raw_=%p\n") , _rep_(v) , (void*)v.raw_());
       value.setRaw_(reinterpret_cast<gc::Tagged>(v.raw_()));
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -145,7 +145,7 @@ public:
       gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
       T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
       if (patch != orig) {
-        RECORD_LOG(BF("Patching orig@%p: %s --> new@%p: %s\n") % (void *)(orig.raw_()) % _rep_(orig) % (void *)(patch.raw_()) % _rep_(patch) );
+        RECORD_LOG(("Patching orig@%p: %s --> new@%p: %s\n") , (void *)(orig.raw_()) , _rep_(orig) , (void *)(patch.raw_()) , _rep_(patch) );
         value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
       }
       break;
@@ -154,14 +154,14 @@ public:
 
   template <typename OT>
   void field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>> &value) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s") % _rep_(name));
+    RECORD_LOG(("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s") , _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->rowMajorAset(idx++,it);
-      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      RECORD_LOG(("saving entry: %s") , _rep_(vec_value));
       Cons_sp apair = core::Cons_O::create(name, vec_value);
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
@@ -173,25 +173,25 @@ public:
       if (!find.consp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
-      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      RECORD_LOG(("vec_value: %s") , _rep_(vec_value));
       value.resize(cl__length(vec_value));
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n") , i , (void *)(val.raw_()) , _rep_(val));
         value[i].rawRef_() = reinterpret_cast<OT *>(val.raw_());
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
     } break;
     case patching: {
-      RECORD_LOG(BF("Patching"));
+      RECORD_LOG(("Patching"));
       for (size_t i(0), iEnd(value.size()); i < iEnd; ++i) {
         gc::smart_ptr<T_O> orig((gc::Tagged)value[i].raw_());
         T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % _rep_(orig) % (void *)(orig.raw_()) % _rep_(patch) % (void *)(patch.raw_()));
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") , i , _rep_(orig) , (void *)(orig.raw_()) , _rep_(patch) , (void *)(patch.raw_()));
           value[i].rawRef_() = reinterpret_cast<OT *>(patch.raw_());
         }
       }
@@ -201,14 +201,14 @@ public:
 
   template <typename OT>
   void field(Symbol_sp name, gctools::Vec0_uncopyable<gc::smart_ptr<OT>> &value) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s") % _rep_(name));
+    RECORD_LOG(("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s") , _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->rowMajorAset(idx++,it);
-      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      RECORD_LOG(("saving entry: %s") , _rep_(vec_value));
       Cons_sp apair = core::Cons_O::create(name, vec_value);
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
@@ -220,25 +220,25 @@ public:
       if (!find.consp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
-      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      RECORD_LOG(("vec_value: %s") , _rep_(vec_value));
       value.resize(cl__length(vec_value));
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n") , i , (void *)(val.raw_()) , _rep_(val));
         value[i].rawRef_() = reinterpret_cast<OT *>(val.raw_());
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
     } break;
     case patching: {
-      RECORD_LOG(BF("Patching"));
+      RECORD_LOG(("Patching"));
       for (size_t i(0), iEnd(value.size()); i < iEnd; ++i) {
         gc::smart_ptr<T_O> orig((gc::Tagged)value[i].raw_());
         T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % _rep_(orig) % (void *)(orig.raw_()) % _rep_(patch) % (void *)(patch.raw_()));
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") , i , _rep_(orig) , (void *)(orig.raw_()) , _rep_(patch) , (void *)(patch.raw_()));
           value[i].rawRef_() = reinterpret_cast<OT *>(patch.raw_());
         }
       }
@@ -248,14 +248,14 @@ public:
   
   template <typename SC>
       void field(Symbol_sp name, gctools::Vec0<SC> &value) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<SC& value ) name: %s") % _rep_(name));
+    RECORD_LOG(("field(Symbol_sp name, gctools::Vec0<SC& value ) name: %s") , _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->rowMajorAset(idx++,translate::to_object<SC>::convert(it));
-      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      RECORD_LOG(("saving entry: %s") , _rep_(vec_value));
       Cons_sp apair = core::Cons_O::create(name, vec_value);
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
@@ -267,25 +267,25 @@ public:
       if (!find.consp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
-      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      RECORD_LOG(("vec_value: %s") , _rep_(vec_value));
       value.resize(cl__length(vec_value));
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n") , i , (void *)(val.raw_()) , _rep_(val));
         value[i] = translate::from_object<SC>(val)._v;
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
     } break;
     case patching: {
-      RECORD_LOG(BF("Patching"));
+      RECORD_LOG(("Patching"));
       for (size_t i(0), iEnd(value.size()); i < iEnd; ++i) {
         gc::smart_ptr<T_O> orig((gc::Tagged)translate::to_object<SC>::convert(value[i]).raw_());
         T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % _rep_(orig) % (void *)(orig.raw_()) % _rep_(patch) % (void *)(patch.raw_()));
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") , i , _rep_(orig) , (void *)(orig.raw_()) , _rep_(patch) , (void *)(patch.raw_()));
           value[i] = translate::from_object<SC>(patch)._v;
         }
       }
@@ -295,14 +295,14 @@ public:
 
   template <typename OT>
   void field(Symbol_sp name, gctools::SmallOrderedSet<gc::smart_ptr<OT>> &value) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s") % _rep_(name));
+    RECORD_LOG(("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s") , _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->rowMajorAset(idx++,it);
-      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      RECORD_LOG(("saving entry: %s") , _rep_(vec_value));
       Cons_sp apair = core::Cons_O::create(name, vec_value);
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
@@ -314,25 +314,25 @@ public:
       if (!find.consp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
-      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      RECORD_LOG(("vec_value: %s") , _rep_(vec_value));
       value.resize(cl__length(vec_value));
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n") , i , (void *)(val.raw_()) , _rep_(val));
         value[i].rawRef_() = reinterpret_cast<OT *>(val.raw_());
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
     } break;
     case patching: {
-      RECORD_LOG(BF("Patching"));
+      RECORD_LOG(("Patching"));
       for (size_t i(0), iEnd(value.size()); i < iEnd; ++i) {
         gc::smart_ptr<T_O> orig((gc::Tagged)value[i].raw_());
         T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % _rep_(orig) % (void *)(orig.raw_()) % _rep_(patch) % (void *)(patch.raw_()));
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") , i , _rep_(orig) , (void *)(orig.raw_()) , _rep_(patch) , (void *)(patch.raw_()));
           value[i].rawRef_() = reinterpret_cast<OT *>(patch.raw_());
         }
       }
@@ -342,14 +342,14 @@ public:
   
   template <typename K, typename SV>
     void field(Symbol_sp name, gctools::SmallMap<K,gctools::smart_ptr<SV>>& value ) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::SmallMap<K,gctools::smart_ptr<SV>>& value ) name: %s") % _rep_(name));
+    RECORD_LOG(("field(Symbol_sp name, gctools::SmallMap<K,gctools::smart_ptr<SV>>& value ) name: %s") , _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->rowMajorAset(idx++,Cons_O::create(translate::to_object<K>::convert(it.first), it.second));
-      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      RECORD_LOG(("saving entry: %s") , _rep_(vec_value));
       Cons_sp apair = core::Cons_O::create(name, vec_value);
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
@@ -361,13 +361,13 @@ public:
       if (!find.consp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
-      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      RECORD_LOG(("vec_value: %s") , _rep_(vec_value));
       value.clear();
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n") , i , (void *)(val.raw_()) , _rep_(val));
         value.push_back(std::make_pair<K,gctools::smart_ptr<SV>>(translate::from_object<K>(oCar(val))._v,
                                                                  gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
       }
@@ -375,13 +375,13 @@ public:
         this->flagSeen(apair);
     } break;
     case patching: {
-      RECORD_LOG(BF("Patching"));
+      RECORD_LOG(("Patching"));
       size_t i = 0;
       for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig = pairi.second;
         T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig) {
-          RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % (void *)(orig.raw_()) % _rep_(orig) % (void *)(patch.raw_()) % _rep_(patch) );
+          RECORD_LOG(("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") , i , (void *)(orig.raw_()) , _rep_(orig) , (void *)(patch.raw_()) , _rep_(patch) );
           pairi.second = gc::As_unsafe<gctools::smart_ptr<SV>>(patch);
         }
         ++i;
@@ -392,14 +392,14 @@ public:
 
   template <typename SK, typename SV>
     void field(Symbol_sp name, gctools::SmallMap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>>& value ) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::SmallMap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s") % _rep_(name));
+    RECORD_LOG(("field(Symbol_sp name, gctools::SmallMap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s") , _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->rowMajorAset(idx++,Cons_O::create(it.first, it.second));
-      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      RECORD_LOG(("saving entry: %s") , _rep_(vec_value));
       Cons_sp apair = core::Cons_O::create(name, vec_value);
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
@@ -411,13 +411,13 @@ public:
       if (!find.consp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
-      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      RECORD_LOG(("vec_value: %s") , _rep_(vec_value));
       value.clear();
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n") , i , (void *)(val.raw_()) , _rep_(val));
         value.push_back(std::make_pair<gctools::smart_ptr<SK>,
                         gctools::smart_ptr<SV>>(gc::As_unsafe<gctools::smart_ptr<SK>>(oCar(val)),
                                                 gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
@@ -426,7 +426,7 @@ public:
         this->flagSeen(apair);
     } break;
     case patching: {
-      RECORD_LOG(BF("Patching"));
+      RECORD_LOG(("Patching"));
       for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig_key = pairi.first;
         gc::smart_ptr<T_O> orig_value = pairi.second;
@@ -441,14 +441,14 @@ public:
 
   template <typename SK, typename SV, typename CMP>
   void field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>,CMP>& value ) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s") % _rep_(name));
+    RECORD_LOG(("field(Symbol_sp name, gctools::SmallMultimap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s") , _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->rowMajorAset(idx++,Cons_O::create(it.first, it.second));
-      RECORD_LOG(BF("saving entry: %s") % _rep_(vec_value));
+      RECORD_LOG(("saving entry: %s") , _rep_(vec_value));
       Cons_sp apair = core::Cons_O::create(name, vec_value);
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
@@ -460,13 +460,13 @@ public:
       if (!find.consp())
         SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
       Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
-      RECORD_LOG(BF("loading find: %s") % _rep_(apair));
+      RECORD_LOG(("loading find: %s") , _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(CONS_CDR(apair));
-      RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
+      RECORD_LOG(("vec_value: %s") , _rep_(vec_value));
       value.clear();
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
-        RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
+        RECORD_LOG(("Loading vec0[%d] new@%p: %s\n") , i , (void *)(val.raw_()) , _rep_(val));
         value.push_back(std::make_pair<gctools::smart_ptr<SK>,
                         gctools::smart_ptr<SV>>(gc::As_unsafe<gctools::smart_ptr<SK>>(oCar(val)),
                                                 gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
@@ -475,7 +475,7 @@ public:
         this->flagSeen(apair);
     } break;
     case patching: {
-      RECORD_LOG(BF("Patching"));
+      RECORD_LOG(("Patching"));
       for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig_key = pairi.first;
         gc::smart_ptr<T_O> orig_value = pairi.second;

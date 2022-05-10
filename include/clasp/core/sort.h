@@ -81,9 +81,9 @@ void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer
     typedef typename _RandomAccessIterator::value_type _ValueType;
     if (m < n) {
 #ifdef DEBUG_SORT
-      LOG(BF("Sorting list at start"));
+      LOG(("Sorting list at start"));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
       }
 #endif
       ssize_t half = (n - m);
@@ -91,42 +91,42 @@ void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer
       k = m + half; // pivot
       swap<_ValueType>(*m, *k);
 #ifdef DEBUG_SORT
-      LOG(BF("Sorting list pivot is now first element: "));
+      LOG(("Sorting list pivot is now first element: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
       }
 #endif
       _RandomAccessIterator i = m + 1;
       _RandomAccessIterator j = n;
       while (i <= j) {
         while ((i <= n) && (comparer(*i, *m))) {
-          LOG(BF("skipping lower bin index: %d value: %s") % (i - m) % _rep_((*i)));
+          LOG(("skipping lower bin index: %d value: %s") , (i - m) , _rep_((*i)));
           i++;
         }
         while ((j >= i) && (!comparer(*j, *m))) {
-          LOG(BF("skipping upper bin index: %d value: %s") % (j - m) % _rep_((*j)));
+          LOG(("skipping upper bin index: %d value: %s") , (j - m) , _rep_((*j)));
           j--;
         }
         if (i < j) {
-          LOG(BF("swapping value lower index: %d value: %s") % (i - m) % _rep_((*i)));
-          LOG(BF("swapping value upper index: %d value: %s") % (j - m) % _rep_((*j)));
+          LOG(("swapping value lower index: %d value: %s") , (i - m) , _rep_((*i)));
+          LOG(("swapping value upper index: %d value: %s") , (j - m) , _rep_((*j)));
           swap<_ValueType>(*i, *j);
         }
       }
       swap<_ValueType>(*m, *j);
 #ifdef DEBUG_SORT
-      LOG(BF("After pivot list is now: "));
+      LOG(("After pivot list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
       }
 #endif
-      LOG(BF("element at j -- index: %d value: %s") % (j - m) % _rep_((*j)));
+      LOG(("element at j -- index: %d value: %s") , (j - m) , _rep_((*j)));
       work.emplace_back(m,j);
       work.emplace_back(j+1,n+1);
 #ifdef DEBUG_SORT
-      LOG(BF("After sort list is now: "));
+      LOG(("After sort list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
       }
 #endif
     }
@@ -156,9 +156,9 @@ void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en,
     typedef typename _RandomAccessIterator::value_type _ValueType;
     if (m < n) {
 #ifdef DEBUG_SORT
-      LOG(BF("Sorting list at start"));
+      LOG(("Sorting list at start"));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
       }
 #endif
       ssize_t half = (n - m);
@@ -166,44 +166,44 @@ void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en,
       k = m + half; // pivot
       swap<_ValueType>(*m, *k);
 #ifdef DEBUG_SORT
-      LOG(BF("Sorting list pivot is now first element: "));
+      LOG(("Sorting list pivot is now first element: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
       }
 #endif
       _RandomAccessIterator i = m + 1;
       _RandomAccessIterator j = n;
       while (i <= j) {
         while ((i <= n) && (comparer(*i, *m))) {
-          LOG(BF("skipping lower bin index: %d value: %s") % (i - m) % _rep_((*i)));
+          LOG(("skipping lower bin index: %d value: %s") , (i - m) , _rep_((*i)));
           i++;
         }
         while ((j >= i) && (!comparer(*j, *m))) {
-          LOG(BF("skipping upper bin index: %d value: %s") % (j - m) % _rep_((*j)));
+          LOG(("skipping upper bin index: %d value: %s") , (j - m) , _rep_((*j)));
           j--;
         }
         if (i < j) {
-          LOG(BF("swapping value lower index: %d value: %s") % (i - m) % _rep_((*i)));
-          LOG(BF("swapping value upper index: %d value: %s") % (j - m) % _rep_((*j)));
+          LOG(("swapping value lower index: %d value: %s") , (i - m) , _rep_((*i)));
+          LOG(("swapping value upper index: %d value: %s") , (j - m) , _rep_((*j)));
           swap<_ValueType>(*i, *j);
         }
       }
       swap<_ValueType>(*m, *j);
 #ifdef DEBUG_SORT
-      LOG(BF("After pivot list is now: "));
+      LOG(("After pivot list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
       }
 #endif
-      LOG(BF("element at j -- index: %d value: %s") % (j - m) % _rep_((*j)));
+      LOG(("element at j -- index: %d value: %s") , (j - m) , _rep_((*j)));
       work.emplace_back(m,j);
       work.emplace_back(j+1,n+1);
       // quickSortFirstCheckOrder(m, j, comparer, start, debug );
       //quickSortFirstCheckOrder(j + 1, n + 1, comparer, start, debug);
 #ifdef DEBUG_SORT
-      LOG(BF("After sort list is now: "));
+      LOG(("After sort list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-        LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+        LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
       }
 #endif
     }
@@ -226,9 +226,9 @@ void quickSortDebugDepth(_RandomAccessIterator m, _RandomAccessIterator en, Ocom
   typedef typename _RandomAccessIterator::value_type _ValueType;
   if (m < n) {
 #ifdef DEBUG_SORT
-    LOG(BF("Sorting list at start"));
+    LOG(("Sorting list at start"));
     for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-      LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+      LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
     }
 #endif
     ssize_t half = (n - m);
@@ -236,9 +236,9 @@ void quickSortDebugDepth(_RandomAccessIterator m, _RandomAccessIterator en, Ocom
     k = m + half; // pivot
     swap<_ValueType>(*m, *k);
 #ifdef DEBUG_SORT
-    LOG(BF("Sorting list pivot is now first element: "));
+    LOG(("Sorting list pivot is now first element: "));
     for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-      LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+      LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
     }
 #endif
     _RandomAccessIterator i = m + 1;
@@ -246,33 +246,33 @@ void quickSortDebugDepth(_RandomAccessIterator m, _RandomAccessIterator en, Ocom
     while (i <= j) {
       _BLOCK_TRACEF(BF("Top of while i(%d) <= j(%d)") % (i - m) % (j - m));
       while ((i <= n) && (comparer(*i, *m))) {
-        LOG(BF("skipping lower bin index: %d value: %s") % (i - m) % _rep_((*i)));
+        LOG(("skipping lower bin index: %d value: %s") , (i - m) , _rep_((*i)));
         i++;
       }
       while ((j >= i) && (!comparer(*j, *m))) {
-        LOG(BF("skipping upper bin index: %d value: %s") % (j - m) % _rep_((*j)));
+        LOG(("skipping upper bin index: %d value: %s") , (j - m) , _rep_((*j)));
         j--;
       }
       if (i < j) {
-        LOG(BF("swapping value lower index: %d value: %s") % (i - m) % _rep_((*i)));
-        LOG(BF("swapping value upper index: %d value: %s") % (j - m) % _rep_((*j)));
+        LOG(("swapping value lower index: %d value: %s") , (i - m) , _rep_((*i)));
+        LOG(("swapping value upper index: %d value: %s") , (j - m) , _rep_((*j)));
         swap<_ValueType>(*i, *j);
       }
     }
     swap<_ValueType>(*m, *j);
 #ifdef DEBUG_SORT
-    LOG(BF("After pivot list is now: "));
+    LOG(("After pivot list is now: "));
     for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-      LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+      LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
     }
 #endif
-    LOG(BF("element at j -- index: %d value: %s") % (j - m) % _rep_((*j)));
+    LOG(("element at j -- index: %d value: %s") , (j - m) , _rep_((*j)));
     quickSortDebugDepth(m, j, comparer,depth-1);
     quickSortDebugDepth(j + 1, n + 1, comparer,depth-1);
 #ifdef DEBUG_SORT
-    LOG(BF("After sort list is now: "));
+    LOG(("After sort list is now: "));
     for (_RandomAccessIterator ii = m; ii <= n; ii++) {
-      LOG(BF("element %d = %s") % (ii - m) % (*ii)->__repr__());
+      LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
     }
 #endif
   }
