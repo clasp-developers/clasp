@@ -377,8 +377,6 @@
             phi block))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
-(defvar *new-unwind* t)
-
 (defun translate-catch (catch successors)
   (let* ((simplep (bir-transformations:simple-unwinding-p
                    catch *clasp-system*))
@@ -400,10 +398,7 @@
                   (list frame bufp))))
              ;; Set the continuation for use by bir:unwind insts.
              (_ (out
-                 (if simplep (cmp:irc-bit-cast bufp cmp:%t*%)
-                     (if *new-unwind*
-                         dynenv
-                         frame))
+                 (if simplep (cmp:irc-bit-cast bufp cmp:%t*%) dynenv)
                  catch))
              (sj (%intrinsic-call "_setjmp" (list bufp)))
              (sw (cmp:irc-switch sj default (1+ (length iblocks)))))
@@ -469,7 +464,7 @@
         (cmp:with-landing-pad (never-entry-landing-pad
                                (bir:dynamic-environment instruction))
           (%intrinsic-invoke-if-landing-pad-or-call
-           (if *new-unwind* "cc_sjlj_unwind" "cc_unwind")
+           "cc_sjlj_unwind"
            (list cont (%size_t destination-id))))))
   (cmp:irc-unreachable))
 

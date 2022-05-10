@@ -55,7 +55,7 @@ So, RETURN-FROM/BLOCK. Besides that these don't match C++ semantics, we put more
 
 Now for actual nonlocal unwinds. When we hit a BLOCK for one, at runtime, we save the current frame pointer using `llvm.frameaddress`. This is stored as what any closures RETURN-FROM-ing to the BLOCK use to find the correct frame. We also coordinate between the BLOCK and RETURN-FROM at compile time a small integer, the "go index", indicating where in the function to go upon returning; this is actually only relevant for TAGBODY, since returning "to" the same TAGBODY could put you at multiple different go tags.
 
-When we run the RETURN-FROM, we call the intrinsic `cc_unwind`. This constructs an exception of type Unwind that stores the frame pointer and go index, and then `throw`s it.
+When we run the RETURN-FROM, we call the intrinsic `cc_sjlj_unwind`. This (in the c++ case) constructs an exception of type Unwind that stores the frame pointer and go index, and then `throw`s it.
 
 ## Cleanups
 

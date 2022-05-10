@@ -1372,20 +1372,6 @@ void cc_load_all_values(size_t nvals, T_O** vector)
   NO_UNWIND_END();
 }
 
-void cc_unwind(void *targetFrame, size_t index) {
-  // Signal an error if the frame we're trying to return to is no longer on the stack.
-  // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
-  // does so as well - twice - so we end up iterating three times.
-  // The correct thing to do would probably be to use the Itanium EH ABI (which we already
-  // rely on the C++ part of) and write our own throw, that signals an error instead of
-  // calling std::terminate in the event no handler is present.
-  my_thread->_unwinds++;
-  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  core::frame_check((uintptr_t)targetFrame);
-  core::Unwind unwind(targetFrame, index);
-  throw unwind;
-}
-
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, void *thisFrame) {
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
   if (unwindP->getFrame() == thisFrame) {

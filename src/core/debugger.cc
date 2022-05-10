@@ -292,29 +292,6 @@ bool lookup_address(uintptr_t address, const char*& symbol,
   } else return false; // no ranges available
 }
 
-bool check_for_frame(uintptr_t frame) {
-  // We only actually do a check if we have libunwind capabilities.
-#ifdef USE_LIBUNWIND
-  unw_context_t context; unw_cursor_t cursor;
-  unw_word_t sp;
-  unw_word_t csp = (unw_word_t)frame;
-  unw_getcontext(&context);
-  unw_init_local(&cursor, &context);
-  while (unw_step(&cursor) > 0) {
-    unw_get_reg(&cursor, UNW_X86_64_RBP, &sp);
-    if (sp == csp) return true;
-  }
-  return false;
-#else
-  return true;
-#endif
-}
-
-void frame_check(uintptr_t frame) {
-  if (!check_for_frame(frame))
-    NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
-}
-
 SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
 SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
 SYMBOL_EXPORT_SC_(KeywordPkg,closure);

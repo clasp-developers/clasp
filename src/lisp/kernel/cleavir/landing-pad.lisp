@@ -136,9 +136,7 @@
 
 (defmethod dynenv-frame ((dynenv bir:catch))
   ;; catch: get it from the catch instruction
-  (if *new-unwind*
-      (%intrinsic-call "cc_dynenv_frame" (list (in dynenv)))
-      (in dynenv)))
+  (%intrinsic-call "cc_dynenv_frame" (list (in dynenv))))
 
 ;;; maybe-entry landing pads, for when we may be nonlocally entering this function.
 
