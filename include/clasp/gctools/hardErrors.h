@@ -39,7 +39,6 @@ class HardError {
  private:
   string _Message;
  public:
-    //HardError(const char *sourceFile, const char *functionName, uint lineNumber, const boost::format &fmt);
   HardError(const std::string& msg);
   HardError(const char* file, const char* func, int lineno, const char* msg);
   string message();

@@ -38,8 +38,6 @@
 #ifndef _core__pointer_tagging_H
 #define _core__pointer_tagging_H
 
-//#include <boost/utility/binary.hpp>
-
 #include <iostream>
 #include <cstring>
 
