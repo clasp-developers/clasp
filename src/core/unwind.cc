@@ -138,7 +138,7 @@ CL_DEFUN T_mv core__sjlj_call_with_nth_dynenv(Function_sp function,
   T_sp iter = my_thread->_DynEnv;
   while (true) {
     if ((index == 0) || iter.nilp())
-      return eval::funcall(iter);
+      return eval::funcall(function, iter);
     else {
       iter = gc::As_unsafe<DynEnv_sp>(iter)->outer;
       --index;
