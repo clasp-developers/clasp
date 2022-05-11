@@ -243,12 +243,6 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
   const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(GENERAL_PTR_TO_HEADER_PTR(client));
   const gctools::Header_s& header = *header_ptr;
   const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-#ifdef DEBUG_ON
-  if (dbg) {
-    LOG("obj_scan_debug mtag = %d  AlignUp(size + sizeof(Header_s)) -> %lu + header.tail_size())-> %lu\n"
-        , mtag , (AlignUp(sizeof(Header_s))) , header.tail_size() );
-  }
-#endif
   if (header._stamp_wtag_mtag.stampP()) {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();

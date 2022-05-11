@@ -174,7 +174,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 #endif
 
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(GeneralPtrToHeaderPtr(client));
-  ASSERTF(header->_stamp_wtag_mtag.stampP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
+  ASSERTF(header->_stamp_wtag_mtag.stampP(), ("obj_deallocate_unmanaged_instance called without a valid object"));
   gctools::GCStampEnum stamp = (GCStampEnum)(header->_stamp_wtag_mtag.stamp_());
 #ifndef RUNNING_PRECISEPREP
 #if defined(USE_MPS) || defined(USE_PRECISE_GC)

@@ -369,15 +369,15 @@ FORWARD(Cons);
     core::errorFormatted("HARD_ASSERT failed");                                          \
     abort(); \
   };
-#define HARD_ASSERTF(t, fmt) \
+#define HARD_ASSERTF(t, ... ) \
   if (!(t)) { \
-    core::errorFormatted(fmt); \
+    core::errorFormatted(fmt::sprintf(__VA_ARGS__)); \
     abort(); \
   };
 #else
 #define HARD_ASSERT(t) \
   {}
-#define HARD_ASSERTF(t, f) \
+#define HARD_ASSERTF(t, ...) \
   {}
 #endif
 
@@ -530,7 +530,7 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
 #ifdef DEBUG_ASSERT
 #define lisp_ASSERTP( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e));
 #define ASSERTP(x, e) lisp_ASSERTP(x, e)
-#define lisp_ASSERTF( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e).str().c_str());
+#define lisp_ASSERTF( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e).c_str());
 #define ASSERTF(x, ...) lisp_ASSERTF(x, fmt::sprintf(__VA_ARGS__))
 #define ASSERT_eq(x, y)                                                                           \
   if (!(x == y)) {                                                                                \

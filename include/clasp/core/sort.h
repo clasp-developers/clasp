@@ -175,16 +175,12 @@ void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en,
       _RandomAccessIterator j = n;
       while (i <= j) {
         while ((i <= n) && (comparer(*i, *m))) {
-          LOG(("skipping lower bin index: %d value: %s") , (i - m) , _rep_((*i)));
           i++;
         }
         while ((j >= i) && (!comparer(*j, *m))) {
-          LOG(("skipping upper bin index: %d value: %s") , (j - m) , _rep_((*j)));
           j--;
         }
         if (i < j) {
-          LOG(("swapping value lower index: %d value: %s") , (i - m) , _rep_((*i)));
-          LOG(("swapping value upper index: %d value: %s") , (j - m) , _rep_((*j)));
           swap<_ValueType>(*i, *j);
         }
       }
@@ -195,7 +191,6 @@ void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en,
         LOG(("element %d = %s") , (ii - m) , (*ii)->__repr__());
       }
 #endif
-      LOG(("element at j -- index: %d value: %s") , (j - m) , _rep_((*j)));
       work.emplace_back(m,j);
       work.emplace_back(j+1,n+1);
       // quickSortFirstCheckOrder(m, j, comparer, start, debug );
