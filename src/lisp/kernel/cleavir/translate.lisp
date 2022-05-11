@@ -423,9 +423,12 @@
 
 (defmethod translate-terminator ((instruction bir:catch) abi next)
   (declare (ignore abi))
-  (if (cleavir-set:empty-set-p (bir:unwinds instruction))
-      (cmp:irc-br (first next))
-      (translate-catch instruction next)))
+  (cond ((cleavir-set:empty-set-p (bir:unwinds instruction))
+         ;; Make sure undo-dynenv can correctly determine that it
+         ;; doesn't need to do anything for us.
+         (setf (dynenv-storage instruction) nil)
+         (cmp:irc-br (first next)))
+        (t (translate-catch instruction next))))
 
 (defmethod translate-terminator ((instruction bir:unwind) abi next)
   (declare (ignore abi next))
