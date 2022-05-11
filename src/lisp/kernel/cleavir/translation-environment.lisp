@@ -128,10 +128,8 @@
 ;;; But I'm not sure.
 ;;; Non-volatility seems to be the cause of #1183.
 (defun needs-volatile-loads-p (function)
-  (cleavir-set:some
-   (lambda (inst)
-     (bir-transformations:simple-unwinding-p inst *clasp-system*))
-   (bir:catches function)))
+  (cleavir-set:some (lambda (inst) (not (null (bir:unwinds inst))))
+                    (bir:catches function)))
 
 (defun variable-in (variable)
   (check-type variable bir:variable)

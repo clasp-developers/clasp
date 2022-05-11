@@ -74,6 +74,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/unwind.h> // funwind_protect
 
 
 namespace core {
@@ -1269,57 +1270,18 @@ CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, Function_s
 
 }
 
-
-extern "C" {
-LCC_RETURN call_with_variable_bound(core::T_O* tsym, core::T_O* tval, core::T_O* tthunk) {
-  core::Symbol_sp sym((gctools::Tagged)tsym);
-  core::T_sp val((gctools::Tagged)tval);
-  core::Function_sp func((gctools::Tagged)tthunk);
-  core::DynamicScopeManager scope(sym, val);
-  return (func->entry_0())(func.raw_());
-}
-
-};
-
 namespace core {
 
-// try/catch approach does work
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
-  T_mv result;
-  try {
-    Closure_sp closure = gc::As_unsafe<Closure_sp>(protected_fn);
-    ASSERT(closure);
-    result = closure->entry_0()(closure.raw_());
-  }
-  catch (...)
-  {
-    // Abnormal exit
-    // Save return values, then cleanup, then continue exit
-    size_t nvals = lisp_multipleValues().getSize();
-    T_O* mv_temp[nvals];
-    multipleValuesSaveToTemp(nvals, mv_temp);
-    {
-      Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      closure->entry_0()(closure.raw_());
-    }
-    multipleValuesLoadFromTemp(nvals, mv_temp);
-    throw;  // __cxa_rethrow
-  }
-  // Normal exit
-  // Save return values, cleanup, return
-  size_t nvals = result.number_of_values();
-  T_O* mv_temp[nvals];
-  returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
-  {
-    Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-    closure->entry()(closure.raw_(),0,NULL);
-  }
-  return returnTypeLoadFromTemp(nvals, mv_temp);
+  return funwind_protect([&]() { return eval::funcall(protected_fn); },
+                         [&]() { eval::funcall(cleanup_fn); });
 }
 
 CL_LAMBDA(function &rest thunks)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(multipleValueFuncall)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
@@ -1337,46 +1299,41 @@ CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
 
 CL_LAMBDA(tag func)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(catchFunction)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
-  T_mv result;
-  CLASP_BEGIN_CATCH(tag) {
-    result = thunk->entry_0()(thunk.raw_());
-  } CLASP_END_CATCH(tag, result);
-  return result;
+  return call_with_catch(tag, [&]() { return eval::funcall(thunk); });
 }
 
 CL_LAMBDA(tag result)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Like CL:THROW, but takes a thunk)dx")
 DOCGROUP(clasp)
-CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
-  T_mv result;
-  Closure_sp closure = result_form.asOrNull<Closure_O>();
-  ASSERT(closure);
-  result = closure->entry_0()(closure.raw_());
+CL_DEFUN void core__throw_function(T_sp tag, Function_sp result_form) {
+  T_mv result = eval::funcall(result_form);
   result.saveToMultipleValue0();
-  clasp_throw(tag);
+  sjlj_throw(tag);
 }
 
 CL_LAMBDA(symbols values func)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(progvFunction)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
   if (symbols.consp()) {
     if (values.consp()) {
-      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
-      return core__progv_function(CONS_CDR(symbols),oCdr(values),func);
+      return call_with_variable_bound(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values), [&]() {
+        return core__progv_function(CONS_CDR(symbols),oCdr(values),func);
+      });
     } else {
-      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),unbound<core::T_O>());
-      return core__progv_function(CONS_CDR(symbols),nil<core::T_O>(),func);
+      return call_with_variable_bound(gc::As<Symbol_sp>(CONS_CAR(symbols)),unbound<T_O>(), [&]() {
+        return core__progv_function(CONS_CDR(symbols),nil<core::T_O>(),func);
+      });
     }
-  } else {
-    T_mv result = func->entry_0()(func.raw_());
-    return result;
-  }
+  } else return eval::funcall(func);
 }
 
 DOCGROUP(clasp)

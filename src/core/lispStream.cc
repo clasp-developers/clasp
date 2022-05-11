@@ -212,6 +212,7 @@ CL_DEFUN StringOutputStream_sp core__thread_local_write_to_string_output_stream(
 }
 
 DOCGROUP(clasp)
+CL_UNWIND_COOP(true)
 CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(StringOutputStream_sp my_stream)
 {
   // This is like get-string-output-stream-string but it checks the size of the
@@ -1840,6 +1841,7 @@ const FileOps str_out_ops = {
 
 CL_LAMBDA(s)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make_string_output_stream_from_string)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
@@ -1887,6 +1889,7 @@ T_sp clasp_make_string_output_stream(cl_index line_length, bool extended) {
 
 CL_LAMBDA("&key (element-type 'character)")
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(makeStringOutputStream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__make_string_output_stream(Symbol_sp elementType) {
@@ -1912,6 +1915,7 @@ CL_DEFUN T_sp cl__make_string_output_stream(Symbol_sp elementType) {
 
 CL_LAMBDA(strm)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(get_output_stream_string)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__get_output_stream_string(T_sp strm) {
@@ -2057,6 +2061,7 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
 
 CL_LAMBDA(file_descriptor &key direction)
 CL_DOCSTRING(R"dx(Create a file from a file descriptor and direction)dx")
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction)
 {
@@ -2071,6 +2076,7 @@ CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction)
   
 CL_LAMBDA(strng &optional (istart 0) iend)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make_string_input_stream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend) {
@@ -2221,6 +2227,7 @@ const FileOps two_way_ops = {
 
 CL_LAMBDA(istrm ostrm)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make-two-way-stream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__make_two_way_stream(T_sp istrm, T_sp ostrm) {
@@ -2240,6 +2247,7 @@ CL_DEFUN T_sp cl__make_two_way_stream(T_sp istrm, T_sp ostrm) {
 
 CL_LAMBDA(strm)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(two-way-stream-input-stream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__two_way_stream_input_stream(T_sp strm) {
@@ -2251,6 +2259,7 @@ CL_DEFUN T_sp cl__two_way_stream_input_stream(T_sp strm) {
 
 CL_LAMBDA(strm)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(two-way-stream-output-stream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__two_way_stream_output_stream(T_sp strm) {
@@ -2397,6 +2406,7 @@ const FileOps broadcast_ops = {
 
 CL_LAMBDA(&rest ap)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(makeBroadcastStream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
@@ -2423,6 +2433,7 @@ CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
 
 CL_LAMBDA(strm)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(broadcast-stream-streams)dx")
 DOCGROUP(clasp)
 CL_DEFUN
@@ -2576,6 +2587,7 @@ const FileOps echo_ops = {
 
 CL_LAMBDA(strm1 strm2)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make-echo-stream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__make_echo_stream(T_sp strm1, T_sp strm2) {
@@ -2595,6 +2607,7 @@ CL_DEFUN T_sp cl__make_echo_stream(T_sp strm1, T_sp strm2) {
 
 CL_LAMBDA(strm)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(echo-stream-input-stream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__echo_stream_input_stream(T_sp strm) {
@@ -2605,6 +2618,7 @@ CL_DEFUN T_sp cl__echo_stream_input_stream(T_sp strm) {
 
 CL_LAMBDA(strm)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(echo-stream-output-stream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__echo_stream_output_stream(T_sp strm) {
@@ -2732,6 +2746,7 @@ const FileOps concatenated_ops = {
 
 CL_LAMBDA(&rest ap)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(makeConcatenatedStream)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__make_concatenated_stream(List_sp ap) {

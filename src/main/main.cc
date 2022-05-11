@@ -260,9 +260,6 @@ static void clasp_terminate_handler( void )
 
   if( abort_flag() )
     abort();
-#if DEBUG_FLOW_TRACKER
-  flow_tracker_last_throw_backtrace_dump();
-#endif
   try { throw; }
   catch (const std::exception& e) {
       fprintf(stderr, "%s:%d There was an unhandled std::exception in process [pid: %d] e.what()=[%s] - do something about it.\n", __FILE__, __LINE__, getpid(), e.what()  );

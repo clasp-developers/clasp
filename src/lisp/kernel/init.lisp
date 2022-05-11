@@ -65,19 +65,6 @@
 
 (setq cmp:*default-object-type* core:*clasp-build-mode*)
 
-
-;;; ------------------------------------------------------------
-;;;
-;;;   Turn on flow tracker
-;;;
-
-#+debug-flow-tracker
-(if (member :flow-tracker *features*)
-    (progn
-      (core:fmt t "Turning flow-tracker on%N")
-      (gctools:flow-tracker-on)))
-
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;;   Sanity check that stamps are working properly

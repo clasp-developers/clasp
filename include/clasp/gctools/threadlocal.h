@@ -5,8 +5,6 @@
 #include <functional>
 #include <clasp/gctools/threadlocal.fwd.h>
 
-
-
 typedef core::T_O*(*T_OStartUp)(core::T_O*);
 typedef void(*voidStartUp)(void);
 
@@ -67,7 +65,6 @@ namespace core {
     /*! Save CONS records so we don't need to do allocations
         to add to _PendingInterrupts */
     List_sp               _SparePendingInterruptRecords; // signal_queue on ECL
-    List_sp               _CatchTags;
     List_sp               _BufferStr8NsPool;
     List_sp               _BufferStrWNsPool;
     StringOutputStream_sp _BFormatStringOutputStream;
@@ -85,6 +82,10 @@ namespace core {
     bool              _Breakstep; // Should we check for breaks?
     // What frame are we stepping over? NULL means step-into mode.
     void*             _BreakstepFrame;
+    // Stuff for SJLJ unwinding
+    T_sp              _DynEnv;
+    T_sp              _UnwindDest;
+    size_t            _UnwindDestIndex;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
@@ -112,10 +113,6 @@ namespace core {
     void finish_initialization_main_thread(core::T_sp theNilObject);
     ThreadLocalState();
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
-    void pushCatchTag(T_sp);
-
-    inline List_sp catchTags() { return this->_CatchTags; };
-    inline void setCatchTags(List_sp tags) { this->_CatchTags = tags; };
 
     uint32_t random();
 
@@ -126,20 +123,6 @@ namespace core {
     
     ~ThreadLocalState();
   };
-
-
-// Thing to maintain the list of valid catch tags correctly.
-  struct CatchTagPusher {
-    ThreadLocalState* mthread;
-    List_sp catch_tag_state;
-    CatchTagPusher(ThreadLocalState* thread, T_sp tag) {
-      mthread = thread;
-      catch_tag_state = thread->catchTags();
-      thread->pushCatchTag(tag);
-    }
-    ~CatchTagPusher() { mthread->setCatchTags(this->catch_tag_state); }
-  };
-
 
   void thread_local_register_cleanup(const std::function<void(void)>& cleanup);
   void thread_local_invoke_and_clear_cleanup();

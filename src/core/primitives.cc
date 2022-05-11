@@ -1242,6 +1242,7 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
 
 CL_LAMBDA(predicate &rest sequences)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS for every)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__every_list(T_sp predicate, List_sp sequences) {
@@ -1253,6 +1254,7 @@ CL_DEFUN T_sp core__every_list(T_sp predicate, List_sp sequences) {
 
 CL_LAMBDA(predicate &rest sequences)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS for some)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__some_list(T_sp predicate, List_sp sequences) {
@@ -1266,6 +1268,7 @@ CL_DEFUN T_sp core__some_list(T_sp predicate, List_sp sequences) {
 
 CL_LAMBDA(predicate &rest sequences)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS for notany)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__notany_list(T_sp predicate, List_sp sequences) {
@@ -1283,6 +1286,7 @@ SYMBOL_EXPORT_SC_(ClPkg, mapcar);
 
 CL_LAMBDA(func-desig &rest lists)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS for mapcar)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
@@ -1317,6 +1321,7 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
 */
 CL_LAMBDA(op &rest lists)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS mapc)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
@@ -1348,6 +1353,7 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
 
 CL_LAMBDA(func-desig &rest lists)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS maplist)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
@@ -1378,6 +1384,7 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
 
 CL_LAMBDA(op &rest lists)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS maplist)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {

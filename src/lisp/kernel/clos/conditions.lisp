@@ -724,6 +724,13 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ()
   (:report "Attempted to return or go to an expired block or tagbody tag."))
 
+(define-condition core:no-catch-tag (control-error)
+  ((%tag :initarg :tag :reader no-catch-tag-tag))
+  (:report
+   (lambda (condition stream)
+     (format stream "Attempted to throw to unestablished catch tag ~a"
+             (no-catch-tag-tag condition)))))
+
 (define-condition invalid-restart (control-error)
   ((%restart :initarg :restart :reader invalid-restart-restart))
   (:report

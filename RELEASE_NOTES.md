@@ -18,6 +18,8 @@
 ## Optimizations
 * Arguments to and return values from local functions (e.g. from FLET) are 
   passed unboxed in some common cases.
+* Nonlocal exits are much faster in most cases, the exception being when
+  the exit goes through uncooperative C++ code.
   
 ## Fixes
 * Replace hard coded paths to `nm` in snapshot code with NM_BINARY macro value

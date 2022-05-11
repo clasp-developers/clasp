@@ -55,6 +55,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/ql.h>
+#include <clasp/core/unwind.h> // funwind_protect, etc
 
 namespace cl {
 extern core::Symbol_sp& _sym_or;
@@ -65,7 +66,6 @@ extern core::Symbol_sp& _sym_Cons_O;
 namespace core {
 namespace eval {
 int _evaluateVerbosity = 0;
-int _evaluateDepth = 0;
 
 T_mv t1Evaluate(T_sp exp, T_sp environment);
 
@@ -84,6 +84,7 @@ void errorApplyLastArgumentNotList(T_sp lastArg ) {
 namespace core {
 CL_LAMBDA(form &optional env stepping compiler-env-p (execute t))
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(compileFormAndEvalWithEnv)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp stepping, T_sp compiler_env_p, T_sp execute) {
@@ -549,6 +550,7 @@ T_mv apply_inner_list(Function_sp func, size_t lenFixed, Vaslist_sp fixed, List_
 
 CL_LAMBDA(head core:&va-rest args)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(apply)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
@@ -573,6 +575,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
 
 CL_LAMBDA(func args)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
@@ -601,6 +604,7 @@ CL_DEFUN T_mv core__trace_apply0(Function_sp func, T_sp lastArg) {
 
 CL_LAMBDA(func args arg0)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a m) = (apply1 (coerce-fdesignator f) m a))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
@@ -614,6 +618,7 @@ CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
 
 CL_LAMBDA(func args arg0 arg1)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b m) = (apply2 (coerce-fdesignator f) m a b))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
@@ -629,6 +634,7 @@ CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
 
 CL_LAMBDA(func args arg0 arg1 arg2)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b c m) = (apply3 (coerce-fdesignator f) m a b c))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
@@ -643,6 +649,7 @@ CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
 
 CL_LAMBDA(func args arg0 arg1 arg2 arg3 core:&va-rest more)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
@@ -761,6 +768,7 @@ gctools::return_type fast_apply8(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O
 
 CL_LAMBDA(form)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(eval)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__eval(T_sp form) {
@@ -776,6 +784,7 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
 
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Interpret FORM in the interpreter environment ENV.)dx")
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
   return eval::evaluate(form, env);
@@ -785,6 +794,7 @@ CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
 // fast funcall
 CL_LAMBDA(function-desig &rest args)
 CL_DECLARE((declare (dynamic-extent args)));
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS: funcall)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
@@ -808,6 +818,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(coerce_to_function)dx")
 DOCGROUP(clasp)
 CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
@@ -997,14 +1008,6 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
   return Values(tclassified, make_fixnum((int)indicesSize), make_fixnum(totalSpecials));
 }
 
-CL_LAMBDA()
-CL_DECLARE();
-CL_DOCSTRING(R"dx(evaluateDepth)dx")
-DOCGROUP(clasp)
-CL_DEFUN int core__evaluate_depth() {
-  return eval::_evaluateDepth;
-};
-
 CL_LAMBDA(arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(evaluateVerbosity)dx")
@@ -1015,6 +1018,7 @@ CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) {
 
 CL_LAMBDA(form &optional env)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Evaluate the form in the environment using the interpreter)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) {
@@ -1335,8 +1339,14 @@ T_mv sp_loadTimeValue(List_sp args, T_sp environment) {
 T_mv do_progv(List_sp symbols, List_sp values, List_sp forms, T_sp environment)
 {
   if (symbols.notnilp()) {
-    DynamicScopeManager scope (gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
-    return do_progv(CONS_CDR(symbols),CONS_CDR(values),forms,environment);
+    return call_with_variable_bound(gc::As<Symbol_sp>(CONS_CAR(symbols)),
+                                    CONS_CAR(values),
+                                    [&]() {
+                                      return do_progv(CONS_CDR(symbols),
+                                                      CONS_CDR(values),
+                                                      forms,
+                                                      environment);
+                                    });
   } else {
     return sp_progn(forms, environment);
   }
@@ -1436,14 +1446,10 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
 T_mv sp_step(List_sp args, T_sp env) {
   IMPLEMENT_ME();
 };
-
 T_mv sp_tagbody(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
   ValueFrame_sp vframe = gc::As<ValueFrame_sp>(tagbodyEnv->getActivationFrame());
-  Cons_sp thandle = Cons_O::create(nil<T_O>(),nil<T_O>());
-  (*vframe)[0] = thandle;
-  T_O* handle = thandle.raw_();
             //
             // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
             //
@@ -1457,22 +1463,24 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   }
   LOG("sp_tagbody has extended the environment to: %s" , tagbodyEnv->__repr__());
             // Start to evaluate the tagbody
-  List_sp ip = args;
-  while (ip.consp()) {
-    T_sp tagOrForm = CONS_CAR(ip);
-    if ((tagOrForm).consp()) {
-      try {
+            // Evaluate the tagbody
+  call_with_tagbody([&](TagbodyDynEnv_sp tb, size_t index) {
+    List_sp ip;
+    if (index == 0) { // initialize and run prefix
+      (*vframe)[0] = tb;
+      ip = args;
+    } else
+      // there was a +1 for setjmp in sp_go, so we undo that here.
+      ip = tagbodyEnv->codePos(index - 1);
+    while (ip.consp()) {
+      T_sp tagOrForm = CONS_CAR(ip);
+      if ((tagOrForm).consp())
         eval::evaluate(tagOrForm, tagbodyEnv);
-      } catch (DynamicGo &dgo) {
-        if (dgo.getHandle() != handle) throw;
-        int index = dgo.index();
-        ip = tagbodyEnv->codePos(index);
-      }
+      ip = CONS_CDR(ip);
     }
-    ip = CONS_CDR(ip);
-  }
+  });
   LOG("Leaving sp_tagbody");
-  return Values0<T_O>();
+  return Values(nil<T_O>());
 };
 
 T_mv sp_go(List_sp args, T_sp env) {
@@ -1487,10 +1495,10 @@ T_mv sp_go(List_sp args, T_sp env) {
     SIMPLE_ERROR(("Could not find tag[%s] in the lexical environment: %s") , _rep_(tag) , _rep_(env));
   }
   ValueFrame_sp af = gc::As<ValueFrame_sp>(Environment_O::clasp_getActivationFrame(env));
-  T_sp thandle = (*af)[0];
+  T_sp handle = (*af)[0];
+  TagbodyDynEnv_sp tde = gc::As_unsafe<TagbodyDynEnv_sp>(handle);
   T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
-  DynamicGo go(thandle.raw_(), index);
-  throw go;
+  sjlj_unwind(tde, index + 1); // +1 for setjmp.
 }
 };
 
@@ -1519,6 +1527,11 @@ T_mv sp_go(List_sp args, T_sp env) {
                 ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
             MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
             ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
+            /* KLUDGE: We cheap out and ban use of our unwinder
+             * through here. Would be more efficient to undo
+             * the VEDSM there, but that's complicated. */
+            gctools::StackAllocate<UnknownDynEnv_O> ude(my_thread->_DynEnv);
+            DynEnvPusher dep(my_thread, ude.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
             List_sp curExp = expressions;
@@ -1587,6 +1600,9 @@ T_mv sp_go(List_sp args, T_sp env) {
                 ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
             MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
             ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
+            // See KLUDGE in let, above.
+            gctools::StackAllocate<UnknownDynEnv_O> ude(my_thread->_DynEnv);
+            DynEnvPusher dep(my_thread, ude.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
             List_sp curExp = expressions;
@@ -1647,25 +1663,14 @@ T_mv sp_go(List_sp args, T_sp env) {
         }
 
         T_mv sp_block(List_sp args, T_sp environment) {
-            ASSERT(environment.generalp());
-            Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
-            BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
-            ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-            Cons_sp handle = Cons_O::create(nil<T_O>(),nil<T_O>());
-            vframe->operator[](0) = handle;
-            LOG("sp_block has extended the environment to: %s" , newEnvironment->__repr__());
-            T_mv result;
-            try {
-                result = eval::sp_progn(oCdr(args), newEnvironment);
-            } catch (ReturnFrom &returnFrom) {
-                LOG("Caught ReturnFrom with returnFrom.getBlockDepth() ==> %d" , returnFrom.getBlockDepth());
-                if (returnFrom.getHandle() != handle.raw_() ) {
-                    throw returnFrom;
-                }
-                result = gctools::multiple_values<T_O>::createFromValues(); // returnFrom.getReturnedObject();
-            }
-            LOG("Leaving sp_block");
-            return result;
+          ASSERT(environment.generalp());
+          Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
+          BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
+          ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
+          return call_with_escape([&](BlockDynEnv_sp block) {
+            vframe->operator[](0) = block;
+            return eval::sp_progn(oCdr(args), newEnvironment);
+          });
         }
 
         T_mv sp_returnFrom(List_sp args, T_sp environment) {
@@ -1679,59 +1684,28 @@ T_mv sp_go(List_sp args, T_sp env) {
             T_mv result = Values(nil<T_O>());
             if (oCdr(args).notnilp()) result = eval::evaluate(oCadr(args), environment);
             result.saveToMultipleValue0();
-            ReturnFrom returnFrom(gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0).raw_());
-            throw returnFrom;
+            T_sp handle = gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0);
+            BlockDynEnv_sp bde = gc::As_unsafe<BlockDynEnv_sp>(handle);
+            sjlj_unwind(bde, 1); // index irrelevant
         }
 
         T_mv sp_unwindProtect(List_sp args, T_sp environment) {
-            T_mv result;
-            try {
-                // Evaluate the protected form
-                result = eval::evaluate(oCar(args), environment);
-            } catch (...) {
-                // Abnormal exit
-                // Might be a return, so
-                // save the multiple values (from the vector)
-                size_t nvals = lisp_multipleValues().getSize();
-                T_O* mv_temp[nvals];
-                multipleValuesSaveToTemp(nvals, mv_temp);
-                eval::sp_progn(oCdr(args), environment);
-                multipleValuesLoadFromTemp(nvals, mv_temp);
-                throw;
-            }
-            // Normal exit
-            // Allocate a vector in which to save the return values.
-            // While VLAs aren't in C++, Clang has them.
-            size_t nvals = result.number_of_values();
-            T_O* mv_temp[nvals];
-            // Save the return values
-            returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
-            // Evaluate the cleanup forms --
-            eval::sp_progn(oCdr(args), environment);
-            // Restore the return values and return
-            return returnTypeLoadFromTemp(nvals, mv_temp);
+          return funwind_protect([&](){return eval::evaluate(oCar(args), environment);},
+                                 [&](){eval::sp_progn(oCdr(args), environment);});
         }
 
         T_mv sp_catch(List_sp args, T_sp environment) {
-            ASSERT(environment.generalp());
-            T_sp mytag = eval::evaluate(oCar(args), environment);
-            T_mv result;
-            CLASP_BEGIN_CATCH(mytag) {
-                result = eval::sp_progn(oCdr(args), environment);
-            } CLASP_END_CATCH(mytag, result);
-            return result;
+          ASSERT(environment.generalp());
+          return call_with_catch(eval::evaluate(oCar(args), environment),
+                                 [&]() { return eval::sp_progn(oCdr(args), environment); });
         }
 
         T_mv sp_throw(List_sp args, T_sp environment) {
-            ASSERT(environment.generalp());
-            T_sp throwTag = eval::evaluate(oCar(args), environment);
-            T_mv result = Values(nil<T_O>());
-            result = eval::evaluate(oCadr(args), environment);
-            // The first return value needs to be saved in MultipleValues
-            result.saveToMultipleValue0();
-            // I should search for the Catch frame for throwTag and
-            // invoke an error if it doesn't exist
-            clasp_throw(throwTag);
+          ASSERT(environment.generalp());
+          T_sp throwTag = eval::evaluate(oCar(args), environment);
+          T_mv result = eval::evaluate(oCadr(args), environment);
+          result.saveToMultipleValue0();
+          sjlj_throw(throwTag);
         }
 
         T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
@@ -2069,26 +2043,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             ASSERT(gc::IsA<Function_sp>(functionDesignator));
             return functionDesignator;
         }
-
-
-        /*!
-         * This method:
-         * 1) evaluates the arguments
-         * 2) Looks up the method using the methodCall and the first argument
-         * 3) evaluates the method
-         * Can return MultipleValues
-         */
-
-
-        struct EvaluateDepthUpdater {
-            EvaluateDepthUpdater() {
-                ++_evaluateDepth;
-            }
-            ~EvaluateDepthUpdater() {
-                --_evaluateDepth;
-            }
-        };
-
+    
         T_mv evaluate_atom(T_sp exp, T_sp environment) {
             T_mv result;
             LOG("Evaluating atom: %s" , exp->__repr__());
@@ -2287,10 +2242,6 @@ T_mv sp_go(List_sp args, T_sp env) {
           List_sp form;
           T_sp head;
           core__stack_monitor();
-          EvaluateDepthUpdater evaluateDepthUpdater;
-          if (_evaluateVerbosity > 0) {
-            printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
-          }
           if (!exp.consp()) {
             T_sp result = evaluate_atom(exp, environment);
 #ifdef DEBUG_EVALUATE
@@ -2427,11 +2378,7 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif
             Vaslist valist_struct(nargs,callArgs);
             Vaslist_sp valist(&valist_struct); // = callArgs.setupVaslist(valist_struct);
-            try {
-              return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
-            } catch (core::ExitProgramException& ee) {
-              throw(ee);
-            }
+            return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
           }
           SIMPLE_ERROR(("Illegal form %s") , _rep_(exp));
         }
@@ -2605,7 +2552,6 @@ SYMBOL_EXPORT_SC_(ClPkg, eval);
     //	    SYMBOL_SC_(CorePkg,extractDeclaresDocstringCode);
     //	    Defun(extractDeclaresDocstringCode);
 SYMBOL_SC_(CorePkg, evaluateVerbosity);
-SYMBOL_SC_(CorePkg, evaluateDepth);
 SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
 SYMBOL_EXPORT_SC_(ClPkg, apply);
 SYMBOL_EXPORT_SC_(ClPkg, funcall);

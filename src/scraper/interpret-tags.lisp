@@ -28,6 +28,7 @@
    (declare% :initform nil :initarg :declare% :accessor declare%)
    (docstring% :initform nil :initarg :docstring% :accessor docstring%)
    (docstring-long% :initform nil :initarg :docstring-long% :accessor docstring-long%)
+   (unwind-coop% :initarg :unwind-coop% :accessor unwind-coop%)
    (priority% :initform tags::*default-priority* :initarg :priority% :accessor priority%)))
 
 (defclass package-to-create ()
@@ -303,6 +304,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
   (cur-name nil)
   (cur-docstring nil)
   (cur-docstring-long nil)
+  (cur-unwind-coop nil)
   (cur-declare nil)
   (cur-package-nickname-tags nil)
   (cur-package-use-tags nil)
@@ -367,6 +369,8 @@ Compare the symbol against previous definitions of symbols - if there is a misma
   (setf (state-cur-docstring state) tag))
 (defmethod interpret-tag ((tag tags:cl-docstring-long-tag) state)
   (setf (state-cur-docstring-long state) tag))
+(defmethod interpret-tag ((tag tags:cl-unwind-coop-tag) state)
+  (setf (state-cur-unwind-coop state) tag))
 (defmethod interpret-tag ((tag tags:cl-priority-tag) state)
   (setf (state-cur-priority state) tag))
 (defmethod interpret-tag ((tag tags:package-nickname-tag) state)
@@ -398,6 +402,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
            (declare-form (tags:maybe-declare (state-cur-declare state)))
            (docstring (tags:maybe-docstring (state-cur-docstring state)))
            (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))
+           (unwind-coop (tags:maybe-unwind-coop (state-cur-unwind-coop state)))
            (priority (tags:maybe-priority (state-cur-priority state))))
       (multiple-value-bind (function-name full-function-name simple-function)
           (extract-function-name-from-signature signature-text tag)
@@ -413,6 +418,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                    :declare% declare-form
                    :docstring% docstring
                    :docstring-long% docstring-long
+                   :unwind-coop% unwind-coop
                    :priority% priority
                    :provide-declaration% simple-function
                    :signature% signature)
@@ -423,6 +429,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
             (state-cur-declare state) nil
             (state-cur-docstring state) nil
             (state-cur-docstring-long state) nil
+            (state-cur-unwind-coop state) nil
             (state-cur-priority state) nil
             (state-cur-name state) nil))))
 
@@ -449,6 +456,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
            (declare-form (tags:maybe-declare (state-cur-declare state)))
            (docstring (tags:maybe-docstring (state-cur-docstring state)))
            (docstring-long (tags:maybe-docstring-long (state-cur-docstring-long state)))
+           (unwind-coop (tags:maybe-unwind-coop (state-cur-unwind-coop state)))
            (priority (tags:maybe-priority (state-cur-priority state))))
       (multiple-value-bind (function-name full-function-name simple-function)
           (extract-function-name-from-signature signature-text tag)
@@ -464,6 +472,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
                    :declare% declare-form
                    :docstring% docstring
                    :docstring-long% docstring-long
+                   :unwind-coop% unwind-coop
                    :priority% priority
                    :provide-declaration% simple-function
                    :signature% signature)
@@ -474,6 +483,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
             (state-cur-declare state) nil
             (state-cur-docstring state) nil
             (state-cur-docstring-long state) nil
+            (state-cur-unwind-coop state) nil
             (state-cur-priority state) nil
             (state-cur-name state) nil))))
 

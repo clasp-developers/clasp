@@ -133,6 +133,7 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/readtable.h>
+#include <clasp/core/unwind.h> // call_with_variable_bound
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -352,6 +353,7 @@ std::string ensure_monitor_directory_exists_no_lock() {
 #endif
 
 #ifdef DEBUG_MONITOR_SUPPORT
+CL_UNWIND_COOP(true); // ok since e_m_d_e_n_l does not lisp-unwind
 DOCGROUP(clasp)
 CL_DEFUN std::string core__monitor_directory() {
   WITH_READ_WRITE_LOCK(globals_->_MonitorMutex);
@@ -406,12 +408,13 @@ void monitor_message(const std::string& msg)
 #endif
 }
 
-
+CL_UNWIND_COOP(true); // ok since monitor_message doesn't lisp-unwind
 DOCGROUP(clasp)
 CL_DEFUN void core__monitor_write(const std::string& msg) {
   monitor_message(msg);
 }
 
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN void core__set_debug_byte_code(T_sp on)
 {
@@ -1589,6 +1592,7 @@ CL_DEFUN List_sp cl__acons(T_sp key, T_sp val, T_sp alist) {
 
 CL_LAMBDA(item alist &key key test test-not)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(assoc)dx")
 DOCGROUP(clasp)
 CL_DEFUN List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test, T_sp test_not) {
@@ -1599,6 +1603,7 @@ CL_DEFUN List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test, T_sp t
 
 CL_LAMBDA(item list &key key test test-not)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS member)dx")
 DOCGROUP(clasp)
 CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp test_not)
@@ -1614,6 +1619,7 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
 
 CL_LAMBDA(item list test test-not key)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1)dx")
 DOCGROUP(clasp)
 CL_DEFUN List_sp core__member1(T_sp item, List_sp list, T_sp test, T_sp test_not, T_sp key) {
@@ -1832,6 +1838,7 @@ CL_DEFUN T_sp core__mpi_size() {
 
 CL_LAMBDA(form &optional env)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(macroexpand_1)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
@@ -1856,6 +1863,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
 
 CL_LAMBDA(form &optional env)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(macroexpand)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
@@ -1978,6 +1986,7 @@ public:
 
 CL_LAMBDA(sequence predicate &key key)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Like CLHS: sort but does not support key)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
@@ -2093,16 +2102,24 @@ CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
 
 CL_LAMBDA(datum &rest arguments)
 CL_DECLARE((optimize (debug 3)));
+CL_UNWIND_COOP(true);
 NEVER_OPTIMIZE
 DOCGROUP(clasp)
   CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
+  // These are volatile in an effort to make them available to debuggers.
   volatile T_sp saved_datum = datum;
   volatile List_sp saved_initializers = initializers;
-  int nestedErrorDepth = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARnestedErrorDepthSTAR->symbolValue()));
+  T_sp objErrorDepth = _sym_STARnestedErrorDepthSTAR->symbolValue();
+  int nestedErrorDepth;
+  /* *nested-error-depth* should be a fixnum, but if it's not we can't signal
+   * an error without infinite regression. As sort of a KLUDGE, we just bind
+   * it to zero instead. This does mean that if nested error handlers
+   * repeatedly reset it to some non-fixnum, unchecked infinite error depth
+   * could occur. FIXME. */
+  if (gc::IsA<Fixnum_sp>(objErrorDepth))
+    nestedErrorDepth = unbox_fixnum(objErrorDepth);
+  else nestedErrorDepth = 0;
   if (nestedErrorDepth > 10) {
-    // TODO: Disable this code once error handling and conditions work properly
-    // It's only here to identify errors that would cause infinite looping
-    // as we get error handling and conditions working properly
     printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
     if (initializers.notnilp()) {
       printf("               initializers: %s\n", _rep_(initializers).c_str());
@@ -2111,17 +2128,20 @@ DOCGROUP(clasp)
     dbg_safe_backtrace();
     asm("int $03");
   }
-  ++nestedErrorDepth;
-  DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth));
-  if (_sym_universalErrorHandler->fboundp()) {
-    Function_sp fn = _sym_universalErrorHandler->symbolFunction();
-    eval::funcall(fn, nil<T_O>(), datum, initializers);
-  }
-  THROW_HARD_ERROR("cl__error should never return because universal-error-handler should never return - but it did");
+  call_with_variable_bound(_sym_STARnestedErrorDepthSTAR,
+                           make_fixnum(nestedErrorDepth + 1),
+                           [&]() {
+                             if (_sym_universalErrorHandler->fboundp()) {
+                               Function_sp fn = _sym_universalErrorHandler->symbolFunction();
+                               eval::funcall(fn, nil<T_O>(), datum, initializers);
+                             }
+                             THROW_HARD_ERROR("cl__error should never return because universal-error-handler should never return - but it did");
+                           });
 }
 
 CL_LAMBDA(cformat eformat &rest arguments)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS cerror)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {

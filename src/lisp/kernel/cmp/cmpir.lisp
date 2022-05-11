@@ -370,7 +370,7 @@ local-function - the lcl function that all of the xep functions call."
          (instr (irc-intrinsic "makeBlockFrameSetParent" parent-renv)))
     (irc-store instr new-renv)
     (irc-set-renv block-env new-renv)
-    (values block-env instr (list parent-renv))))
+    (values block-env instr)))
 
 (defun irc-make-local-block-environment-set-parent (name parent-env)
   "This returns a block environment that is only good for local return-from's"
@@ -400,19 +400,14 @@ local-function - the lcl function that all of the xep functions call."
                                 (irc-intrinsic "activationFrameReferenceFromClosure" closure))
                               (irc-renv visible-ancestor-environment)))
          (parent-renv (irc-load parent-renv-ref))
-         (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv))
-         #+debug-lexical-depth(frame-unique-id (gctools:next-lexical-depth-counter))
-         #+debug-lexical-depth(set-frame-unique-id (progn 
-                                                     (irc-intrinsic "setFrameUniqueId" (jit-constant-size_t frame-unique-id) instr))))
+         (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv)))
     #+optimize-bclasp
     (setf (gethash new-env *make-value-frame-instructions*)
           (make-value-frame-maker-reference :instruction instr
                                             :new-env new-env
                                             :new-renv new-renv
                                             :parent-env visible-ancestor-environment
-                                            :parent-renv parent-renv
-                                            #+debug-lexical-depth :frame-unique-id #+debug-lexical-depth frame-unique-id
-                                            #+debug-lexical-depth :set-frame-unique-id #+debug-lexical-depth (list set-frame-unique-id (list (jit-constant-size_t frame-unique-id) instr))))
+                                            :parent-renv parent-renv))
     (irc-t*-result instr new-renv)
     instr))
 
@@ -491,11 +486,12 @@ local-function - the lcl function that all of the xep functions call."
       (let ((head (car cc)))
 	(cond
 	  ((eq head 'symbolValueRestore)
-           (destructuring-bind (cmd symbol alloca) cc
+           (destructuring-bind (cmd symbol old) cc
              (declare (ignore cmd))
              (cmp-log "popDynamicBinding of {}%N" symbol)
-             (irc-intrinsic "popDynamicBinding" (irc-global-symbol symbol env) alloca)))
-	  (t (error (core:fmt nil "Unknown cleanup code: {}" cc))))))))
+             (irc-intrinsic "cc_resetTLSymbolValue"
+                            (irc-global-symbol symbol env) old)))
+	  (t (error (core:fmt nil "Unknown cleanup code: %s" cc))))))))
 
 (defun irc-unwind-environment (env)
   (cmp-log "in irc-unwind-environment with: {} u-p-e?: {}%N" (type-of env) (unwind-protect-environment-p env))

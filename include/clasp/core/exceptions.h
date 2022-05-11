@@ -247,64 +247,17 @@ public:
   /*ATTR_WEAK*/ virtual ~CatchThrow(){};
 };
 
-/* Macros for implementing CL:CATCH, like ECL_CATCH_BEGIN.
- * res is a T_mv variable the results of a throw will be stored in;
- * for the normal return you have to do that manually. */
-// Use destructors to keep the list of valid catch tags correct.
-#define CLASP_BEGIN_CATCH(tg) {               \
-    CatchTagPusher tags_dummy(my_thread, tg); \
-    try
-#define CLASP_END_CATCH(tg, res)                               \
-  catch (CatchThrow &catchThrow) {                             \
-    if (catchThrow.getTag() != tg)                             \
-      throw catchThrow;                                        \
-    else {                                                     \
-      std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now(); \
-      my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind); \
-      res = gctools::multiple_values<T_O>::createFromValues(); \
-    }                                                          \
-  }}
-
-[[noreturn]] void clasp_throw(T_sp);
-
-class ATTR_WEAK ReturnFrom //: public gctools::HeapRoot
-    {
-  virtual void keyFunctionForVtable() ATTR_WEAK; // MUST BE FIRST VIRTUAL FUNCTION
-private:
-  T_O* _Handle;
-public:
-  ReturnFrom(T_O* handle) {
-    this->_Handle = handle;
-  }
-  T_O* getHandle() const { return this->_Handle; };
-  /*ATTR_WEAK*/ virtual ~ReturnFrom(){};
-};
-
-class ATTR_WEAK DynamicGo //: public gctools::HeapRoot
-    {
-  virtual void keyFunctionForVtable() ATTR_WEAK;
-
-private:
-  T_O*   _Handle;
-  size_t _Index;
-public:
-  ATTR_WEAK DynamicGo(T_O* handle, size_t index) : _Handle(handle), _Index(index){};
-  /*ATTR_WEAK*/ virtual ~DynamicGo(){};
-  T_O* getHandle() const { return this->_Handle; };
-  size_t index() const { return this->_Index; };
-};
-
 class ATTR_WEAK Unwind {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
-  T_O *_Frame; // NOT GC'd use FIXNUM tagged_ptr
+  void *_Frame; // NOT GC'd use FIXNUM tagged_ptr
   size_t _Index;
 
 public:
-  ATTR_WEAK Unwind(T_O *frame, size_t index) : _Frame(frame), _Index(index){};
+  ATTR_WEAK Unwind(void *frame, size_t index) : _Frame(frame), _Index(index){};
   /*ATTR_WEAK*/ virtual ~Unwind(){};
-  T_O *getFrame() const { return this->_Frame; };
+  void *getFrame() const { return this->_Frame; };
   size_t index() const { return this->_Index; };
 };
 
