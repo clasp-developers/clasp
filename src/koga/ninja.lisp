@@ -701,7 +701,10 @@
                        :implicit-inputs (list (build-name "cclasp")
                                               (build-name "generated" :prep t :gc :mps))
                        :outputs (list (build-name "analyze"))
-                       :sif (make-source "src/clasp_gc.sif" :code))
+                       :sif (make-source (if (member :cando (extensions configuration))
+                                             "extensions/cando/src/clasp_gc_cando.sif"
+                                             "src/clasp_gc.sif")
+                                         :code))
     (unless *variant-debug*
       (ninja:write-build output-stream :phony
                          :inputs (list (build-name "analyze"))
