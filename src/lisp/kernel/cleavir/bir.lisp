@@ -1,30 +1,5 @@
 (in-package #:cc-bir)
 
-(defclass bind (bir:dynamic-environment bir:no-output bir:terminator1) ())
-
-(defmethod ast-to-bir:compile-ast ((ast cc-ast:bind-ast) inserter system)
-  (ast-to-bir:with-compiled-asts (args ((cleavir-ast:name-ast ast)
-                                        (cleavir-ast:value-ast ast))
-                                       inserter system)
-    (let* ((during (ast-to-bir:make-iblock inserter))
-           (ode (ast-to-bir:dynamic-environment inserter))
-           (bind (make-instance 'bind :inputs args :next (list during))))
-      (setf (bir:dynamic-environment during) bind)
-      (ast-to-bir:terminate inserter bind)
-      (ast-to-bir:begin inserter during)
-      (let ((rv (ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
-                                        inserter system)))
-        (cond ((eq rv :no-return) :no-return)
-              (t
-               (let ((next (ast-to-bir:make-iblock
-                            inserter :dynamic-environment ode)))
-                 (ast-to-bir:terminate
-                  inserter
-                  (make-instance 'bir:jump
-                    :inputs () :outputs () :next (list next)))
-                 (ast-to-bir:begin inserter next))
-               rv))))))
-
 (defclass mv-foreign-call (bir:one-output bir:instruction)
   ((%function-name :initarg :function-name :reader function-name)))
 

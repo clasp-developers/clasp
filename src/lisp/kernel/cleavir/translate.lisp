@@ -521,7 +521,7 @@
           (%intrinsic-call "cc_load_values" (list nvals mv-temp)))
         (cleanup))))
 
-(defmethod translate-terminator ((instruction cc-bir:bind) abi next)
+(defmethod translate-terminator ((instruction bir:bind) abi next)
   (declare (ignore abi))
   (let* ((bde-mem (cmp:alloca-i8 cmp::+binding-dynenv-size+
                                  :alignment cmp:+alignment+
@@ -536,7 +536,7 @@
     (%intrinsic-call "cc_setTLSymbolValue" (list sym val)))
   (cmp:irc-br (first next)))
 
-(defmethod undo-dynenv ((dynenv cc-bir:bind) tmv)
+(defmethod undo-dynenv ((dynenv bir:bind) tmv)
   (declare (ignore tmv))
   (let ((store (dynenv-storage dynenv)))
     (%intrinsic-call "cc_resetTLSymbolValue"

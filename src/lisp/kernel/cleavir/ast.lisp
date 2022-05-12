@@ -380,28 +380,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class BIND-AST
-;;;
-;;; Represents a special variable binding.
-;;;
-
-(defclass bind-ast (ast:ast)
-  ((%name :initarg :name-ast :reader ast:name-ast)
-   (%value :initarg :value-ast :reader ast:value-ast)
-   (%body :initarg :body-ast :reader ast:body-ast)))
-
-(cleavir-io:define-save-info bind-ast
-    (:name-ast ast:name-ast)
-  (:value-ast ast:value-ast)
-  (:body-ast ast:body-ast))
-
-(defmethod cleavir-ast-graphviz::label ((ast bind-ast)) "bind")
-
-(ast:define-children bind-ast
-    (ast:name-ast ast:value-ast ast:body-ast))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Class BIND-VASLIST-AST
 ;;;
 ;;; Bind variables according to an ordinary lambda list based on a vaslist.

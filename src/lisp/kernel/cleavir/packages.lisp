@@ -79,7 +79,6 @@
    #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast
    #:atomic-vref-ast #:atomic-vset-ast #:vcas-ast
    #:atomic-rack-read-ast #:atomic-rack-write-ast #:cas-rack-ast #:rack-ast
-   #:bind-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
    #:introduce-invoke
    ))
@@ -89,7 +88,7 @@
   (:nicknames #:cc-bir)
   (:local-nicknames (#:bir #:cleavir-bir)
                     (#:ast-to-bir #:cleavir-ast-to-bir))
-  (:export #:bind #:header-stamp-case
+  (:export #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
            #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name

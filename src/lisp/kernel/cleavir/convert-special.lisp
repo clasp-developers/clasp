@@ -539,19 +539,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Bind special variables.
-;;;
-
-(defmethod cst-to-ast:convert-special-binding
-    (variable-cst value-ast next-ast env (system clasp-cleavir:clasp))
-  (make-instance 'cc-ast:bind-ast
-    :name-ast (cst-to-ast:convert-constant variable-cst env system)
-    :value-ast value-ast
-    :body-ast next-ast
-    :origin variable-cst))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Enhance source locations.
 
 ;;; Called by ext::special-operator-source-locations in source-location.lisp
