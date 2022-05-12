@@ -1082,7 +1082,7 @@ void throwIllegalSwitchValue(size_t val, size_t max) {
   SIMPLE_ERROR(("Illegal switch value %d - max value is %d") , val , max);
 }
 
-void cc_error_bugged_catch(size_t id) {
+void cc_error_bugged_come_from(size_t id) {
   SIMPLE_ERROR(("BUG: Nonlocal entry frame could not match go-index %d") , id);
 }
 

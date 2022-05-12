@@ -222,7 +222,7 @@ Optimizations are available for any of:
                                                       *clasp-system*)))
     ;; Run the first few transformations.
     ;; FIXME: Use a pass manager/reoptimize flags/something smarter.
-    (bir-transformations:eliminate-catches bir)
+    (bir-transformations:eliminate-come-froms bir)
     (bir-transformations:find-module-local-calls module)
     (bir-transformations:function-optimize-variables bir)
     bir))
