@@ -104,7 +104,7 @@
                     :description "Running regression tests"
                     :pool "console")
   (ninja:write-rule output-stream :ansi-test
-                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\" | tee >&2 2| grep -s \"No unexpected failures\""
+                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
                     :description "Running ANSI tests"
                     :pool "console")
   (ninja:write-rule output-stream :link-fasl
@@ -197,7 +197,6 @@
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :iclasp))
      (source c-source))
-  (declare (ignore configuration))
   (let ((o (make-source-output source :type "o")))
     (ninja:write-build output-stream :cc
                        :variant-cflags *variant-cflags*
@@ -213,8 +212,7 @@
      (source cc-source))
   (let ((pp (make-source-output source :type "pp"))
         (sif (make-source-output source :type "sif"))
-        (o (make-source-output source :type "o"))
-        (flags (format nil "-I~a" *variant-path*)))
+        (o (make-source-output source :type "o")))
     (ninja:write-build output-stream :scrape-pp
                        :variant-cppflags *variant-cppflags*
                        :inputs (list source)
@@ -659,8 +657,7 @@
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :modules)) sources
-     &key outputs install-outputs &allow-other-keys
-     &aux (executable (build-name :cclasp)))
+     &key outputs install-outputs &allow-other-keys)
   (ninja:write-build output-stream :phony
                      :inputs outputs
                      :outputs (list (build-name "modules")))
@@ -727,12 +724,12 @@
      &key objects &allow-other-keys
      &aux (cclasp (build-name :cclasp))
           (iclasp (make-source (build-name :iclasp) :variant)))
+  (declare (ignore objects))
   (flet ((snapshot (name &key ignore-extensions)
            (let* ((executable (make-source (build-name name) :variant))
                   (symlink (make-source name :variant))
                   (symlink-installed (make-source name :package-bin))
                   (installed (make-source (build-name name) :package-bin))
-                  (link (make-source name :package-bin))
                   (build-outputs (list executable symlink))
                   (install-outputs (list installed symlink-installed))
                   (system (not (uiop:subpathp (share-path configuration)
@@ -748,7 +745,6 @@
                                                                 "common-lisp"
                                                                 "cando")
                                                             (build-name name)))))
-             (declare (ignorable object))
              (ninja:write-build output-stream :make-snapshot
                                 :clasp iclasp
                                 :arguments (when ignore-extensions

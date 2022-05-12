@@ -16,4 +16,3 @@
 (k:library "ncurses" :required t :min-version "5.7.0")
 
 #-bsd (k:library "libbsd" :required t :min-version "0.10.0")
-

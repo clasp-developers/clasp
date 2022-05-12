@@ -101,7 +101,6 @@
  :output-file (pathname (elt core:*command-line-arguments* 0)))"))
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
-  (declare (ignore configuration))
   (when (jupyter configuration)
     (format output-stream "(unless (find-package \"QL\")
   (load \"quicklisp:setup.lisp\"))
@@ -122,7 +121,6 @@ CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
           (build-name :iclasp)))
 
 (defmethod print-prologue (configuration (name (eql :jupyter-kernel)) output-stream)
-  (declare (ignore configuration))
   (let ((candop (member :cando (extensions configuration))))
     (format output-stream "
 ~:[~;#+ignore-extensions~] (require :asdf)
@@ -139,7 +137,8 @@ CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
     :bin-path (if system
                   bin-path
                   (merge-pathnames bin-path (uiop:getcwd)))
-    :prefix (when system ~s) :jupyter (when system ~s) :load-system load-system))"
+    :prefix (when system ~s) :jupyter (when system ~s) :load-system load-system))
+(sys:quit)"
             candop
             candop
             candop

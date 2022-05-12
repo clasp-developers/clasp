@@ -281,7 +281,7 @@
       (read-char sis)
       (handler-case
           (handler-bind
-              ((SB-INT:SIMPLE-READER-PACKAGE-ERROR
+              (#+sbcl (SB-INT:SIMPLE-READER-PACKAGE-ERROR
                  (lambda (err) 
                    (use-value (find-package :keyword) err))))
             (read-delimited-list #\) sis))
