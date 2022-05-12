@@ -632,7 +632,9 @@ is not compatible with snapshots.")
                              (make-instance 'variant :gc :mps :prep t)
                              (make-instance 'variant :gc :mps :debug t :prep t))
              :type list
-             :documentation "A list of the variants"))
+             :documentation "A list of the variants")
+   (scripts :accessor scripts
+            :initform nil))
   (:documentation "A class to encapsulate the configuration state."))
 
 (defmethod initialize-instance :after ((instance configuration) &rest initargs &key &allow-other-keys)
@@ -788,9 +790,8 @@ the function to the overall configuration."
         do (message :info "Looking for configure scripts in ~a" path)
            (loop for subpath in (directory (merge-pathnames (merge-pathnames "cscript.lisp" path) script-path))
                  for script = (uiop:subpathp subpath (uiop:getcwd))
-                 for *script-path* = (uiop:pathname-directory-pathname script)
-                 do (message :info "Loading script ~a" script)
-                    (load script))))
+                 do (message :info "Found script ~a" script)
+                    (push script (scripts *configuration*)))))
 
 (defgeneric configure-unit (configuration unit)
   (:documentation "Configure a specific unit"))

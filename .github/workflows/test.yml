@@ -42,7 +42,7 @@ jobs:
     - name: Install MacOS dependencies
       if: matrix.os == 'macos-latest'
       run: |
-        brew install boost fmt gmp llvm@13 ninja pkg-config sbcl
+        brew install boost fmt gmp llvm@13 ninja pkg-config sbcl ecl
 
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -63,7 +63,7 @@ jobs:
     - name: Build Clasp (koga/MacOS)
       if: matrix.os == 'macos-latest'
       run: |
-        ./koga
+        sbcl --no-userinit --load koga.lisp --quit
 
     - name: Build Clasp (ninja)
       run: |

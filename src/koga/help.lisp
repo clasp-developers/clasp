@@ -1,6 +1,7 @@
 (in-package #:koga)
 
-(defun help (&rest initarg)
+(defun help (&rest initargs)
+  (declare (ignore initargs))
   (write-line "USAGE: ./koga [options]
 
 OPTIONS:")
