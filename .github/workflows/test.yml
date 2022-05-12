@@ -1,0 +1,78 @@
+name: Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - macos-latest
+        - ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Install Ubuntu dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
+        sudo apt-get update
+        sudo apt install -y binutils-gold libbsd-dev clang-13 libclang-13-dev llvm-13 llvm-13-dev libelf-dev libgmp-dev libncurses-dev libunwind-dev ninja-build sbcl zlib1g-dev
+        wget https://github.com/fmtlib/fmt/releases/download/8.1.1/fmt-8.1.1.zip
+        unzip fmt-8.1.1.zip
+        cd fmt-8.1.1
+        mkdir build
+        cd build
+        cmake ..
+        make
+        sudo make install
+
+    - name: Install MacOS dependencies
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install boost fmt gmp llvm@13 ninja pkg-config sbcl
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2.3.0
+      if: matrix.os == 'ubuntu-latest'
+      id: install-boost
+      with:
+        boost_version: 1.79.0
+        platform_version: 20.04
+
+    - name: Build Clasp (koga/Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        ./koga --no-clang-cpp --ldlibs=-ldl --cflags=-I${{steps.install-boost.outputs.BOOST_ROOT}}/include --cppflags=-I${{steps.install-boost.outputs.BOOST_ROOT}}/include --cxxflags=-I${{steps.install-boost.outputs.BOOST_ROOT}}/include
+
+    - name: Build Clasp (koga/MacOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        ./koga
+
+    - name: Build Clasp (ninja)
+      run: |
+        ninja -C build
+
+    - name: Run regression tests
+      run: |
+        ninja -C build test
+
+    - name: Run ANSI tests
+      run: |
+        ninja -C build ansi-test

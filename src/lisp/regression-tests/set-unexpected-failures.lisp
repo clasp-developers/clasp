@@ -1,13 +1,11 @@
 (in-package #:clasp-tests)
 
 (setq *expected-failures*
-      '(
-        LOOP-FIXNUM-1 LOOP-FINALLY-1 LOOP-FINALLY-2 LOOP-FINALLY-3 LOOP-FINALLY-4
+      '(loop-fixnum-1 loop-finally-1 loop-finally-2 loop-finally-3 loop-finally-4
         random-short random-double random-long
         test-issue-950
         compile-file-no-unwind
-        TYPES-CLASSES-10
-        SBCL-CROSS-COMPILE-4 ;;;not important
-        INCLUDE-LEVEL-2A INCLUDE-LEVEL-2B INCLUDE-LEVEL-3 ;;; a problem for sbcl x-compiling
-        frame-function
-  ))
+        types-classes-10
+        sbcl-cross-compile-4 ;;;not important
+        include-level-2a include-level-2b include-level-3 ;;; a problem for sbcl x-compiling
+        frame-function))
