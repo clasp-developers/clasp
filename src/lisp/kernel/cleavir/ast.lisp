@@ -402,32 +402,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class UNWIND-PROTECT-AST
-;;;
-;;; Represents CL:UNWIND-PROTECT.
-;;;
-;;; NOTE: The cleanup forms are stored as a thunk. This could be changed
-;;; so that the actual code is run, avoiding the overhead of allocating a
-;;; closure, and calling and so on. For now I'm assuming it's unimportant.
-;;;
-
-(defclass unwind-protect-ast (ast:ast)
-  ((%body :initarg :body-ast :reader ast:body-ast)
-   ;; This will be a FUNCTION-AST.
-   (%cleanup :initarg :cleanup-ast :reader cleanup-ast)))
-
-(cleavir-io:define-save-info unwind-protect-ast
-    (:body-ast ast:body-ast)
-  (:cleanup-ast cleanup-ast))
-
-(defmethod cleavir-ast-graphviz::label ((ast unwind-protect-ast))
-  "unwind-protect")
-
-(ast:define-children unwind-protect-ast
-    (ast:body-ast cleanup-ast))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Class BIND-VASLIST-AST
 ;;;
 ;;; Bind variables according to an ordinary lambda list based on a vaslist.

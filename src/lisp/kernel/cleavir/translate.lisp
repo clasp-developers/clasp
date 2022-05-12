@@ -471,7 +471,7 @@
            (list cont (%size_t destination-id))))))
   (cmp:irc-unreachable))
 
-(defmethod translate-terminator ((instruction cc-bir:unwind-protect) abi next)
+(defmethod translate-terminator ((instruction bir:unwind-protect) abi next)
   (declare (ignore abi))
   (let* ((cleanup (cmp:irc-basic-block-create "unwind-protect-cleanup"))
          (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "unwind-protect-buf"))
@@ -502,7 +502,7 @@
   #+(or)
   (cmp:irc-br (first next)))
 
-(defmethod undo-dynenv ((dynenv cc-bir:unwind-protect) tmv)
+(defmethod undo-dynenv ((dynenv bir:unwind-protect) tmv)
   (flet ((cleanup ()
            ;; This is maybe-entry for the sake of e.g.
            ;; (block nil (unwind-protect (... (return ...)) ... (return ...)))
@@ -734,8 +734,6 @@
                            :multiple-values outputrt))
           (t
            ;; Call directly.
-           ;; Note that Cleavir doesn't make local-calls if there's an
-           ;; argcount mismatch, so we don't need to sweat that.
            (multiple-value-bind (req opt rest-var key-flag keyargs aok aux
                                  varest-p)
                (cmp:process-bir-lambda-list (bir:lambda-list callee))

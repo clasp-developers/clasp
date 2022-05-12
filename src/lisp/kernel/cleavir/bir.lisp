@@ -1,37 +1,5 @@
 (in-package #:cc-bir)
 
-(defclass unwind-protect (bir:dynamic-environment bir:one-input bir:no-output
-                          bir:terminator1)
-  ())
-
-(defmethod ast-to-bir:compile-ast ((ast cc-ast:unwind-protect-ast)
-                                   inserter system)
-  (ast-to-bir:with-compiled-ast (fu (cc-ast:cleanup-ast ast) inserter system)
-    (let* ((uw (make-instance 'unwind-protect :inputs fu))
-           (ode (ast-to-bir:dynamic-environment inserter))
-           (during (ast-to-bir:make-iblock
-                    inserter :dynamic-environment uw)))
-      (setf (bir:next uw) (list during))
-      (ast-to-bir:terminate inserter uw)
-      (ast-to-bir:begin inserter during)
-      (let ((rv (ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
-                                        inserter system)))
-        (if (eq rv :no-return)
-            :no-return
-            ;; We need to pass the values through a phi so that
-            ;; unwind-dynenv can deal with them. KLUDGEy?
-            (let* ((next (ast-to-bir:make-iblock
-                          inserter :dynamic-environment ode))
-                   (phi (make-instance 'bir:phi
-                          :iblock next)))
-              (setf (bir:inputs next) (list phi))
-              (ast-to-bir:terminate
-               inserter
-               (make-instance 'bir:jump
-                 :inputs rv :outputs (list phi) :next (list next)))
-              (ast-to-bir:begin inserter next)
-              (list phi)))))))
-
 (defclass bind (bir:dynamic-environment bir:no-output bir:terminator1) ())
 
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:bind-ast) inserter system)

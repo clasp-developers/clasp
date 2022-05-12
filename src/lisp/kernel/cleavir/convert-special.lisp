@@ -444,23 +444,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting UNWIND-PROTECT
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'cl:unwind-protect)) cst env (system clasp-cleavir:clasp))
-  (cst:db origin (protected . cleanup) (cst:rest cst)
-    (make-instance 'cc-ast:unwind-protect-ast
-      :body-ast (cst-to-ast:convert protected env system)
-      :cleanup-ast (cst-to-ast:convert
-                    (cst:quasiquote (cst:source cleanup)
-                                    (lambda ()
-                                      (cst:unquote-splicing cleanup)))
-                    env system)
-      :origin cst)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Converting CORE::BIND-VASLIST
 ;;;
 
