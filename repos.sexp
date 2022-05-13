@@ -41,7 +41,7 @@
  (:name :cleavir
   :repository "https://github.com/s-expressionists/Cleavir.git"
   :directory "src/lisp/kernel/contrib/Cleavir/"
-  :commit "59ddca1b49cb4c13c570085ee8f1cb81fd367343")
+  :commit "cbb5f9f672b2ead2157678c7a0430d6f57743be1")
  (:name :closer-mop
   :repository "https://github.com/pcostanza/closer-mop.git"
   :directory "src/lisp/kernel/contrib/closer-mop/"

@@ -49,3 +49,6 @@ debhelper-build-stamp
 clasp.substvars
 debian/clasp
 debian/files
+src/lisp/regression-tests/*.txt
+src/lisp/regression-tests/*.bc
+src/lisp/regression-tests/*.newfasl

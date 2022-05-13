@@ -198,7 +198,7 @@
          (primitive-unwinds "blockHandleReturnFrom_or_rethrow" :return-type (list :i8* :i8*))
          (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" :i32 (list :i8* :i8*))
          (primitive-unwinds "throwIllegalSwitchValue" :void (list :i32 :size_t) :does-not-return t)
-         (primitive-unwinds "cc_error_bugged_catch" :void (list :size_t) :does-not-return t)
+         (primitive-unwinds "cc_error_bugged_come_from" :void (list :size_t) :does-not-return t)
     
          (primitive         "__gxx_personality_v0" :i32 nil :varargs t)
          (primitive         "__cxa_begin_catch" :i8* (list :i8*) )

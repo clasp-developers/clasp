@@ -1357,20 +1357,6 @@ void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) {
   TYPE_ERROR(datum, typeSym);
 }
 
-size_t global_error_simple_depth = 0;
-struct ErrorSimpleDepthCounter {
-  ErrorSimpleDepthCounter(const std::string msg) {
-    ++global_error_simple_depth;
-    if ( global_error_simple_depth > 20 ) {
-      printf("%s:%d %s", __FILE__, __LINE__, msg.c_str());
-    }
-  }
-  ~ErrorSimpleDepthCounter() {
-    --global_error_simple_depth;
-  }
-};
-
-
 #define MAX_SPRINTF_BUFFER 1024
 [[noreturn]]void lisp_error_sprintf(const char* fileName, int lineNumber, const char* functionName, const char* fmt, ... ) {
   va_list args;
@@ -1381,7 +1367,6 @@ struct ErrorSimpleDepthCounter {
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
   ss << buffer;
-  ErrorSimpleDepthCounter counter(ss.str());
   if (!_sym_signalSimpleError) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     throw(HardError("System starting up - debugger not available yet: "+ss.str()));
@@ -1407,7 +1392,6 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
   ss << fmt;
-  ErrorSimpleDepthCounter counter(ss.str());
   if (!_sym_signalSimpleError) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     throw(HardError("System starting up - debugger not available yet: "+ss.str()));

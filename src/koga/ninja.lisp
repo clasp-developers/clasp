@@ -104,7 +104,7 @@
                     :description "Running regression tests"
                     :pool "console")
   (ninja:write-rule output-stream :ansi-test
-                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\""
+                    :command "$clasp --norc --feature ignore-extensions --load \"../dependencies/ansi-test/doit-clasp.lsp\" | tee >&2 2| grep -s \"No unexpected failures\""
                     :description "Running ANSI tests"
                     :pool "console")
   (ninja:write-rule output-stream :link-fasl

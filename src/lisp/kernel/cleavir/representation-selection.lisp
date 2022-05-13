@@ -649,19 +649,25 @@
           (t
            (cast-inputs instruction :vaslist (rest (bir:inputs instruction)))
            (cast-local-call-output instruction)))))
+(defun fixed-mv-local-call-input-rtype (lambda-list ninputs)
+  ;; FIXME: Yet another reparsing of the lambda list.
+  (multiple-value-bind (req opt rest keyf)
+      (cmp:process-bir-lambda-list lambda-list)
+    (let ((nreq (first req)) (nopt (first opt)))
+      (if (or (> nreq ninputs)
+              (and (not rest) (not keyf) (< (+ nreq nopt) ninputs)))
+          ;; call is an error
+          (make-list ninputs :initial-element :object)
+          ;; As above (argument-definition-rtype), only required parameters
+          ;; can be unboxed.
+          (append (mapcar (lambda (a) (first (cc-bmir:rtype a))) (rest req))
+                  (make-list (- ninputs nreq) :initial-element :object))))))
 (defmethod insert-casts ((instruction cc-bmir:fixed-mv-local-call))
   (let* ((args (second (bir:inputs instruction)))
          (args-rtype (cc-bmir:rtype args))
          (nvalues (bir:nvalues instruction))
-         (target
-           (loop with requiredp = t
-                 repeat nvalues
-                 for item in (bir:lambda-list (bir:callee instruction))
-                 unless (typep item 'bir:argument)
-                   do (setf requiredp nil)
-                 collect (if requiredp
-                             (first (cc-bmir:rtype item))
-                             :object))))
+         (target (fixed-mv-local-call-input-rtype
+                  (bir:lambda-list (bir:callee instruction)) nvalues)))
     (cond ((listp args-rtype)
            (assert (= (length args-rtype) nvalues))
            (maybe-cast-before instruction args target))

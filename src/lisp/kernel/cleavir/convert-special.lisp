@@ -444,23 +444,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting UNWIND-PROTECT
-;;;
-
-(defmethod cst-to-ast:convert-special
-    ((symbol (eql 'cl:unwind-protect)) cst env (system clasp-cleavir:clasp))
-  (cst:db origin (protected . cleanup) (cst:rest cst)
-    (make-instance 'cc-ast:unwind-protect-ast
-      :body-ast (cst-to-ast:convert protected env system)
-      :cleanup-ast (cst-to-ast:convert
-                    (cst:quasiquote (cst:source cleanup)
-                                    (lambda ()
-                                      (cst:unquote-splicing cleanup)))
-                    env system)
-      :origin cst)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Converting CORE::BIND-VASLIST
 ;;;
 
@@ -553,19 +536,6 @@
     `(let ((,ig ,instance) (,ing ,index) (,vg ,value))
        (cleavir-primop:slot-write ,ig ,ing ,vg)
        ,vg)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Bind special variables.
-;;;
-
-(defmethod cst-to-ast:convert-special-binding
-    (variable-cst value-ast next-ast env (system clasp-cleavir:clasp))
-  (make-instance 'cc-ast:bind-ast
-    :name-ast (cst-to-ast:convert-constant variable-cst env system)
-    :value-ast value-ast
-    :body-ast next-ast
-    :origin variable-cst))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
