@@ -208,6 +208,10 @@
   #+(or)(maphash (lambda (k v) (setf (gethash k (project-local-variables union)) v)) (project-local-variables one))
 )
 
+(defun summarize-project (project)
+  (format t "project-classes ~a~%" (project-classes project))
+)
+
 (defclass stamp-value-generator ()
   ((unused-builtin-stamps :initform (let ((ht (make-hash-table :test #'equal)))
                                       (loop for (name . stamp) in (gctools:get-stamp-name-map)
@@ -890,7 +894,6 @@ to expose."
              (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
              (expose-it (and #+(or)fixable
                              good-name))
-             (base (base one)) ;; The outermost class that contains this offset
              (*print-pretty* nil))
         (let ((idx 0))
           (dolist (iv (fields one))
@@ -1173,8 +1176,7 @@ to expose to C++.
 - elements :: A list of the fields to expose in element-type.
 * Description
 Generate offsets for every array element that exposes the fields in elements."
-  (let ((number-of-elements (constant-array-ctype-array-size array))
-        entries)
+  (let ((number-of-elements (constant-array-ctype-array-size array)))
     (loop :for index :below number-of-elements
        :append (loop :for element :in elements
                   :collect (let ((element-copy (copy-offset element)))
@@ -1312,15 +1314,13 @@ This avoids the prefixing of 'class ' and 'struct ' to the names of classes and 
     (cast:enum-decl
      (values (decl-name decl-node) nil))
     (cast:class-template-specialization-decl
-     (let* ((decl-name (safe-get-name-decl decl-node)) 
-            (template-args (cast:get-template-args decl-node))
+     (let* ((template-args (cast:get-template-args decl-node))
             (template-args-as-list (loop :for i :from 0 :below (cast:size template-args)
                                         :collect (let* ((template-arg (cast:template-argument-list-get template-args i)))
                                                    (template-arg-as-string template-arg)))))
        (values (format nil "~a<~{~a~^,~}>" (decl-name decl-node) template-args-as-list) t)))
     (cast:class-template-partial-specialization-decl
-     (let* ((decl-name (decl-name decl-node))
-            (template-args (cast:get-template-args decl-node))
+     (let* ((template-args (cast:get-template-args decl-node))
             (template-args-as-list (loop :for i :from 0 :below (cast:size template-args)
                                       :for template-arg = (cast:template-argument-list-get template-args i)
                                       :for type-name = (template-arg-as-string template-arg)
@@ -1381,8 +1381,7 @@ can be saved and reloaded within the project for later analysis"
        (let ((args (cast:get-template-args decl)))
          (cond
            ((and (string= name "atomic")
-                 (let* ((arg (cast:template-argument-list-get args 0))
-                        (classified-args (classify-template-args decl)))
+                 (let* ((classified-args (classify-template-args decl)))
                    (gclog "          Found an atomic object~%")
                    (format t "ATOMIC - what do I do with decl-key: ~s  classified-args: ~s decl: ~s~%" decl-key classified-args decl)
                    (cond
@@ -1409,40 +1408,28 @@ can be saved and reloaded within the project for later analysis"
               (gclog "          Found a tagged_pointer~%")
               (make-tagged-pointer-ctype :key decl-key :specializer (cast:get-as-string qtarg))))
            ((string= name "GCVector_moveable")
-            (let* ((arg (cast:template-argument-list-get args 0))
-                   (qtarg (cast:get-as-type arg)))
+            (let* ()
               (gclog "          Found a GCVector_moveable~%")
               (make-gcvector-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
            ((string= name "GCVector_atomic")
-            (let* ((arg (cast:template-argument-list-get args 0))
-                   (qtarg (cast:get-as-type arg)))
+            (let* ()
               (gclog "          Found a GCVector_atomic~%")
               (make-gcvector-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
            ((string= name "GCBitUnitArray_moveable")
-            (let* ((arg (cast:template-argument-list-get args 0))
-                   (qtarg (cast:get-as-type arg))
-                   (classified-args (classify-template-args decl)))
+            (let* ((classified-args (classify-template-args decl)))
               (format t "Recognized GCBitUnitArray_moveable  decl: ~s classified-args: ~s~%" decl classified-args)
               (make-gcbitunitarray-moveable-ctype :key decl-key :name name :arguments classified-args)))
            ((string= name "GCArray_moveable")
-            (let* ((arg (cast:template-argument-list-get args 0))
-                   (qtarg (cast:get-as-type arg)))
-              (gclog "          Found a GCArray_moveable~%")
-              (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+            (gclog "          Found a GCArray_moveable~%")
+            (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl)))
            ((string= name "GCArraySignedLength_moveable")
-            (let* ((arg (cast:template-argument-list-get args 0))
-                   (qtarg (cast:get-as-type arg)))
-              (gclog "          Found a GCArraySignedLength_moveable~%")
-              (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+            (gclog "          Found a GCArraySignedLength_moveable~%")
+            (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl)))
            ((string= name "GCArray_atomic")
-            (let* ((arg (cast:template-argument-list-get args 0))
-                   (qtarg (cast:get-as-type arg)))
               (gclog "          Found a GCArray_atomic~%")
-              (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+              (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl)))
            ((string= name "GCString_moveable")
-            (let* ((arg (cast:template-argument-list-get args 0))
-                   (qtarg (cast:get-as-type arg)))
-              (make-gcstring-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+            (make-gcstring-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl)))
            ((string= name "map")
             (make-std-map-ctype :key decl-key :name name))
            ((string= name "basic_string")
@@ -1464,14 +1451,11 @@ can be saved and reloaded within the project for later analysis"
                                                       )))))
       (cast:cxxrecord-decl
        (cond
-         ((string= name "SharedMutex")
-          (make-shared-mutex-ctype :key decl-key :name name))
-         (t (make-cxxrecord-ctype :key decl-key :name name))))
-      (cast:cxxrecord-decl
-       (cond
          ((string= name "Mutex")
           (format t "Making a mutex-ctype name: ~s~%" name)
           (make-mutex-ctype :key decl-key :name name))
+         ((string= name "SharedMutex")
+          (make-shared-mutex-ctype :key decl-key :name name))
          (t (make-cxxrecord-ctype :key decl-key :name name))))
       (cast:record-decl
        (warn "classify-decl found ~a decl-key: ~a name: ~a - this means that the mostDerivedType code isn't working!!!!" (type-of decl) decl-key name)
@@ -1593,6 +1577,7 @@ can be saved and reloaded within the project for later analysis"
   (make-pathname :name project-name :type project-type :defaults (clang-tool:main-pathname)))
 
 (defun save-data (run pathname)
+  (format t "Saving data to ~a~%" pathname)
   (let ((*print-readably* t)
         (*print-array* t)
         (*print-circle* nil)
@@ -1705,9 +1690,7 @@ can be saved and reloaded within the project for later analysis"
                  (match-info class-node record-key template-specializer)
                (declare (core:lambda-name %%new-class-callback))
                (gclog "Entered %%new-class-callback~%")
-               (let ((cname (clang-tool:mtag-name match-info :whole))
-                     (record-decl (clang-tool:mtag-node match-info :whole))
-                     bases vbases fields method-names metadata )
+               (let (bases vbases fields method-names metadata )
                  (gclog "In let~%")
                  ;;
                  ;; Run a matcher to find the base classes and their namespaces
@@ -1764,8 +1747,7 @@ can be saved and reloaded within the project for later analysis"
                     (lambda (minfo)
                       (declare (core:lambda-name %%class-base-callback.lambda))
                       (format t "In clasp-base-submatcher callback~%")
-                      (let* ((typedef-node (clang-tool:mtag-node minfo :ClaspBase))
-                             (base-type (clang-tool:mtag-node minfo :BaseType)))
+                      (let* ((base-type (clang-tool:mtag-node minfo :BaseType)))
                         (format t "Clasp Base class for ~s is ~s  ->" record-key base-type)
                         (let ((name (cond
                                       ((typep base-type 'cast:record-type)
@@ -1801,11 +1783,10 @@ can be saved and reloaded within the project for later analysis"
                                      :location loc
                                      :field-name (clang-tool:mtag-name minfo :field)
                                      :access (clang-ast:get-access (clang-tool:mtag-node minfo :field))
-                                     :ctype (let ((*debug-info* (make-debug-info :name (clang-tool:mtag-name minfo :field)
-                                                                                 :location loc)))
-                                              (classify-ctype (to-canonical-type type))))
+                                     :ctype (classify-ctype (to-canonical-type type)))
                                     fields))
                           (unsupported-type (err)
+                            (declare (ignore err))
                             (error "Add support for classifying type: ~a (type-of type): ~a  source: ~a"
                                    type (type-of type) (clang-tool:mtag-source minfo :field)))))))
                    ;;
@@ -1828,8 +1809,7 @@ can be saved and reloaded within the project for later analysis"
                     (clang-tool:ast-context match-info)
                     (lambda (minfo)
                       (declare (core:lambda-name %%new-class-callback-*metadata-submatcher*.lambda))
-                      (let* ((metadata-node (clang-tool:mtag-node minfo :metadata))
-                             (metadata-name (string-upcase (clang-tool:mtag-name minfo :metadata))))
+                      (let* ((metadata-name (string-upcase (clang-tool:mtag-name minfo :metadata))))
                         (push (intern metadata-name :keyword) metadata))))
                    (setf (gethash record-key results)
                          (make-cclass :key record-key
@@ -1903,7 +1883,6 @@ and the inheritance hierarchy that the garbage collector will need"
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key tsty-new))
                     (classified (classify-ctype tsty-new))
-                    (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
                     (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
@@ -1957,7 +1936,6 @@ and the inheritance hierarchy that the garbage collector will need"
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key tsty-new))
                     (classified (classify-ctype tsty-new))
-                    (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
                     (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
@@ -2011,7 +1989,6 @@ and the inheritance hierarchy that the garbage collector will need"
                     (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key tsty-new))
                     (classified (classify-ctype tsty-new))
-                    (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
                     (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
@@ -2055,10 +2032,6 @@ and the inheritance hierarchy that the garbage collector will need"
              (declare (core:lambda-name %%containeralloc-matcher-callback.lambda))
              "This function can only be called as a ASTMatcher callback"
              (let* ((decl (clang-tool:mtag-node match-info :whole))
-                    (args (cast:get-template-args decl))
-                    (arg (cast:template-argument-list-get args 0))
-                    (qtarg (cast:get-as-type arg))
-                    (tsty-new (cast:get-type-ptr-or-null qtarg))
                     (class-key (record-key decl))
                     (classified (classify-decl decl))
                     (class-location (clang-tool:mtag-loc-start match-info :whole)))
@@ -2129,7 +2102,7 @@ and the inheritance hierarchy that the garbage collector will need"
                    (or var-node (error "var-node is nil"))
                    (let* ((qtype (cast:get-type var-node))
                           (type (cast:get-type-ptr-or-null qtype))
-                          (classified-type (let ((*debug-info* (make-debug-info :name varname :location location)))
+                          (classified-type (let ()
                                              (classify-ctype (to-canonical-type type)))))
                      (when (eq var-kind :global)
                        (setf (gethash key hash-table)
@@ -2677,16 +2650,14 @@ so that they don't have to be constantly recalculated"
 
 
 (defun field-data (key instance-var &optional (prefix "fixed_field_fix"))
-  (let ((type (car (last instance-var)))
-        names)
+  (let (names)
     (dolist (field (butlast instance-var))
       (push (instance-variable-field-name field) names))
     (let ((reverse-names (nreverse names)))
-      (format nil " { ~a, __builtin_offsetof(MACRO_SAFE_TYPE(~a),~{~a~^.~}), ~s }"
+      (format nil " { ~a, __builtin_offsetof(SAFE_MACRO_TYPE(~a),~{~a~^.~}), ~s }"
               prefix
               key
               reverse-names
-              0
               (format nil "~{~a~^.~}" reverse-names)))))
 
 (defun scanner-for-abstract-species (dest stamp anal)
@@ -2710,21 +2681,18 @@ so that they don't have to be constantly recalculated"
 (defun scanner-for-lispallocs (dest stamp anal)
   (assert (simple-stamp-p stamp))
   (let* ((alloc (simple-stamp-alloc stamp))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
+         (key (alloc-key alloc)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (let ((fh (destination-helper-stream dest)))
-      (let* ((class-node (gethash key (project-classes (analysis-project anal))))
-             (layout (class-layout class-node anal))
-             (definition-data (cclass-definition-data class-node)))
-        (codegen-lisp-layout dest stamp key layout definition-data anal)))))
+    (let* ((class-node (gethash key (project-classes (analysis-project anal))))
+           (layout (class-layout class-node anal))
+           (definition-data (cclass-definition-data class-node)))
+      (codegen-lisp-layout dest stamp key layout definition-data anal))))
 
 (defun finalizer-for-lispallocs (dest stamp anal)
   (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout dest stamp)
@@ -2743,10 +2711,7 @@ so that they don't have to be constantly recalculated"
   (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp))
-         (ns-cn key)
-         (cn (strip-all-namespaces-from-name ns-cn)))
+         (key (alloc-key alloc)))
     (with-jump-table (fout dest stamp)
       (gclog "build-mps-deallocator-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
@@ -2761,42 +2726,37 @@ so that they don't have to be constantly recalculated"
   (assert (templated-stamp-p stamp))
   (let* ((key (stamp-key stamp))
          (stamp-name (get-stamp-name stamp)))
+    (declare (ignorable stamp-name))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-;;    (with-jump-table (fout dest stamp "goto SCAN_ADVANCE")
-      (let ((fh (destination-helper-stream dest)))
-        (let* ((class-node (gethash key (project-classes (analysis-project anal))))
-               (layout (class-layout class-node anal))
-               (definition-data (cclass-definition-data class-node))                       )
-          (codegen-templated-layout dest stamp key layout definition-data anal))
-        (progn
-          #+(or)(format fh "{ templated_class_kind, ~d, ~s },~%" stamp-name key))
-        #+(or)(format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-        #+(or)(let ((all-instance-variables (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
-                (dolist (instance-var all-instance-variables)
-                  (scanner-code-for-instance-var fout +ptr-name+ instance-var)))
-        #+(or)(format fout "    size = ~a->templatedSizeof();" +ptr-name+))))
+    ;;    (with-jump-table (fout dest stamp "goto SCAN_ADVANCE")
+    (let* ((class-node (gethash key (project-classes (analysis-project anal))))
+           (layout (class-layout class-node anal))
+           (definition-data (cclass-definition-data class-node))                       )
+      (codegen-templated-layout dest stamp key layout definition-data anal))
+    (progn
+      #+(or)(format fh "{ templated_class_kind, ~d, ~s },~%" stamp-name key))
+    #+(or)(format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+    #+(or)(let ((all-instance-variables (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
+            (dolist (instance-var all-instance-variables)
+              (scanner-code-for-instance-var fout +ptr-name+ instance-var)))
+    #+(or)(format fout "    size = ~a->templatedSizeof();" +ptr-name+)))
 
 (defun finalizer-for-templated-lispallocs (dest stamp anal)
   (declare (ignore anal))
   (assert (templated-stamp-p stamp))
   (let* ((key (stamp-key stamp))
-         (stamp-name (get-stamp-name stamp))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-      ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
       (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
       )))
 
 (defun deallocator-for-templated-lispallocs (dest stamp anal)
   (declare (ignore anal))
   (assert (templated-stamp-p stamp))
-  (let* ((key (stamp-key stamp))
-         (stamp-name (get-stamp-name stamp))
-         (ns-cn key)
-         (cn (strip-all-namespaces-from-name ns-cn)))
+  (let ((key (stamp-key stamp)))
     (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
@@ -2808,8 +2768,7 @@ so that they don't have to be constantly recalculated"
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
          (decl (containeralloc-ctype alloc))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
+         (key (alloc-key alloc)))
     (let ((fh (destination-helper-stream dest)))
       (if (cxxrecord-ctype-p decl)
           (progn
@@ -2824,62 +2783,48 @@ so that they don't have to be constantly recalculated"
   (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
-         (decl (containeralloc-ctype alloc))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
+         (decl (containeralloc-ctype alloc)))
     (with-jump-table (fout dest stamp)
-;;    (format fout "// processing ~a~%" alloc)
-    (if (cxxrecord-ctype-p decl)
-        (progn
-          (format fout "     // stamp value ~a~%" (stamp-value% stamp))
-          (format fout "    THROW_HARD_ERROR(\"Should never finalize ~a\");~%" (record-ctype-key decl)))
-        (let* ((parms (class-template-specialization-ctype-arguments decl))
-               (parm0 (car parms))
-               (parm0-ctype (gc-template-argument-ctype parm0)))
-;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-          (format fout "     // stamp value ~a~%" (stamp-value% stamp))
-          (format fout "    THROW_HARD_ERROR(\"Should never finalize containers ~a\");" (record-ctype-key decl)))))))
+      ;;    (format fout "// processing ~a~%" alloc)
+      (if (cxxrecord-ctype-p decl)
+          (progn
+            (format fout "     // stamp value ~a~%" (stamp-value% stamp))
+            (format fout "    THROW_HARD_ERROR(\"Should never finalize ~a\");~%" (record-ctype-key decl)))
+          (progn
+            (format fout "     // stamp value ~a~%" (stamp-value% stamp))
+            (format fout "    THROW_HARD_ERROR(\"Should never finalize containers ~a\");" (record-ctype-key decl)))))))
 
 (defun deallocator-for-gccontainer (dest stamp anal)
   (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
-         (decl (containeralloc-ctype alloc))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
+         (decl (containeralloc-ctype alloc)))
     (with-jump-table (fout dest stamp)
       ;;    (format fout "// processing ~a~%" alloc)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (if (cxxrecord-ctype-p decl)
           (progn
             (format fout "    THROW_HARD_ERROR(\"Should never deallocate ~a\");~%" (record-ctype-key decl)))
-          (let* ((parms (class-template-specialization-ctype-arguments decl))
-                 (parm0 (car parms))
-                 (parm0-ctype (gc-template-argument-ctype parm0)))
-            ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+          (progn
             (format fout "    THROW_HARD_ERROR(\"Should never deallocate containers ~a\");" (record-ctype-key decl))))
       )))
 
 (defun scanner-for-gcbitunit (dest stamp anal)
   (assert (simple-stamp-p stamp))
   (let* ((alloc (simple-stamp-alloc stamp))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
+         (key (alloc-key alloc)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     ;;(with-jump-table (fout jump-table-index dest stamp "goto SCAN_ADVANCE")
-    (let ((fh (destination-helper-stream dest)))
-      (let* ((class-node (gethash key (project-classes (analysis-project anal))))
-             (layout (class-layout class-node anal))
-             (definition-data (cclass-definition-data class-node)))
-        (codegen-bitunit-container-layout dest stamp key layout definition-data anal)))))
+    (let* ((class-node (gethash key (project-classes (analysis-project anal))))
+           (layout (class-layout class-node anal))
+           (definition-data (cclass-definition-data class-node)))
+      (codegen-bitunit-container-layout dest stamp key layout definition-data anal))))
 
 (defun finalizer-for-gcbitunit (dest stamp anal)
   (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
-         (decl (containeralloc-ctype alloc))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
+         (decl (containeralloc-ctype alloc)))
     (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    THROW_HARD_ERROR(\"Should never finalize ~a\");~%" (record-ctype-key decl)))))
@@ -2888,9 +2833,7 @@ so that they don't have to be constantly recalculated"
   (declare (ignore anal))
   (check-type stamp simple-stamp)
   (let* ((alloc (simple-stamp-alloc stamp))
-         (decl (containeralloc-ctype alloc))
-         (key (alloc-key alloc))
-         (stamp-name (get-stamp-name stamp)))
+         (decl (containeralloc-ctype alloc)))
     (with-jump-table (fout dest stamp)
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    THROW_HARD_ERROR(\"Should never deallocate gcbitunits ~a\");" (record-ctype-key decl)))))
@@ -3080,8 +3023,7 @@ so that they don't have to be constantly recalculated"
 
 
 (defun generate-one-gckind-for-stamp (stream stamp)
-  (let* ((stamp-name (get-stamp-name stamp))
-         (species (stamp-species stamp)))
+  (let* ((stamp-name (get-stamp-name stamp)))
     (cond
       ((simple-stamp-p stamp)
 ;;       (format stream "//GCKind for ~a~%" stamp)
@@ -3974,17 +3916,19 @@ Run searches in *tools* on the source files in the compilation database."
             for id = (parallel-job-id one-job)
             for filename = (parallel-job-filename one-job)
             do (progn
-                 (format *terminal-io* "Running search on ~a ~a~%" id filename)
-                 (format t "Running search on ~a ~a~%" id filename)
+                 (format *terminal-io* "Static analysis of ~a ~a~%" id filename)
+                 (format t "Static analysis of ~a ~a~%" id filename)
                  (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list filename)))))
     (close log-file)
-    (close err-file)))
+    (close err-file)
+    tools))
 
+(defparameter *tools* nil)
 (defun parallel-search-all-threaded (compilation-tool-database
-                            &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
-                              (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
-                              (save-project t)
-                              (jobs 4))
+                                     &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
+                                       (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
+                                       (save-project t)
+                                       (jobs 4))
   (declare (ignorable output-file save-project))
   "* Arguments
 - test :: A list of files to run the search on, or NIL for all of them.
@@ -3995,17 +3939,18 @@ Run searches in *tools* on the source files in the compilation database."
   (let ((all-jobs source-namestrings)
         (job-groups (loop for idx from 0 below jobs
                           collect (make-instance 'job-group))))
-;; Distribute the jobs to the job-groups
-(loop for job in all-jobs
-      for job-index from 0
-      for job-group-index = (mod job-index jobs)
-      for job-group = (elt job-groups job-group-index)
-      for job-info = (make-parallel-job :id job-index :filename job)
-      do (push job-info (jobs job-group)))
+    ;; Distribute the jobs to the job-groups
+    (loop for job in all-jobs
+          for job-index from 0
+          for job-group-index = (mod job-index jobs)
+          for job-group = (elt job-groups job-group-index)
+          for job-info = (make-parallel-job :id job-index :filename job)
+          do (push job-info (jobs job-group)))
 
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
     (format t "Starting processes~%")
+    (setf *tools* nil)
     (let ((processes (loop for job-group-index from 0 below jobs
                            for job-group = (elt job-groups job-group-index)
                            do (format t "loop for process ~a~%" job-group-index)
@@ -4013,15 +3958,24 @@ Run searches in *tools* on the source files in the compilation database."
                                        (mp:process-run-function
                                         nil
                                         (lambda ()
-                                          (one-search-process compilation-tool-database job-group-index job-group)))
-                                  (sleep 2)))))
+                                          (let ((tool (one-search-process compilation-tool-database job-group-index job-group)))
+                                            (mp:atomic-push tool *tools*))))
+                                     (sleep 0.5)))))
       (loop for process in processes
-           do (mp:process-join process))
-      (format t "All processes done  merge everything here~%")
-      #+(or)(when save-project
-        (let ((project (clang-tool:multitool-results tools)))
-          (save-data project output-file)
-          (values project output-file))))))
+            do (mp:process-join process))
+      (format t "All processes done merge everything here~%")
+      (when save-project
+        (format t "Getting results~%")
+        (let* ((projects (loop for tool in *tools*
+                               collect (clang-tool:multitool-results tool)))
+               (merged-project (first projects)))
+          (loop for project in (rest projects)
+                do (summarize-project project)
+                do (merge-projects merged-project project)
+                do (format t "After merge merged-project~%")
+                do (summarize-project merged-project))
+          (save-data merged-project output-file)
+          (values merged-project output-file))))))
 
 (defun translate-include (args filename)
   (declare (ignore filename))
@@ -4086,8 +4040,12 @@ If the source location of a match contains the string source-path-identifier the
     *project*))
 
 (defun parallel-search/generate-code (compilation-tool-database
-                                      &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
+                                      &key
+                                        source-namestrings
+                                        (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
                                         pjobs)
+  (unless source-namestrings
+    (setf source-namestrings (clang-tool:source-namestrings compilation-tool-database)))
   (let ((pjobs (or pjobs (let ((pj (ext:getenv "PJOBS")))
                            (if pj
                                (parse-integer pj)
@@ -4096,6 +4054,7 @@ If the source location of a match contains the string source-path-identifier the
         compilation-tool-database
       (setf *project* (parallel-search-all-threaded
                        compilation-tool-database
+                       :source-namestrings source-namestrings
                        :output-file output-file
                        :jobs pjobs))
       (let ((analysis (analyze-project *project*)))
