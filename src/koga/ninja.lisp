@@ -124,7 +124,9 @@
                                      "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --no-rc~;$clasp~] --non-interactive $arguments --load snapshot.lisp -- $out"
                                      clasp-quicklisp-directory)
                     :pool "console"
-                    :description "Creating snapshot $out"))
+                    :description "Creating snapshot $out")
+  (ninja:write-rule output-stream :update-unicode
+                    :command "$lisp --script update-unicode.lisp $source"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :etags)) sources
@@ -551,7 +553,8 @@
                                                                   (source-path source)))
                                                sources))
                        :inputs sources
-                       :implicit-inputs (list iclasp bimage)
+                       :implicit-inputs (list iclasp bimage
+                                              (make-source "tools-for-build/character-names.sexp" :code))
                        :outputs (make-source-outputs sources
                                                      :type (file-faso-extension configuration)
                                                      :root :variant-stage-bitcode))
@@ -807,6 +810,11 @@
                            :outputs (list "install_dclasp"))))))
 
 (defmethod print-epilogue (configuration (name (eql :ninja)) output-stream)
+  (ninja:write-build output-stream :update-unicode
+                     :source (format nil "~a ~a" 
+                                     (make-source "src/core/character-generated.cc" :code)
+                                     (make-source "tools-for-build/character-names.sexp" :code))
+                     :outputs (list "update-unicode"))
   (ninja:write-build output-stream :phony
                      :inputs (list (format nil "install_~(~a~)" (default-stage configuration)))
                      :outputs (list "install"))

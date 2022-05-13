@@ -560,6 +560,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"generate-sif.lisp" :build))
                                                          :generate-headers
                                                          (list (make-source #P"generate-headers.lisp" :build))
+                                                         :update-unicode
+                                                         (list (make-source #P"update-unicode.lisp" :build))
                                                          :run-aclasp
                                                          (list (make-source #P"run-aclasp.lisp" :build))
                                                          :compile-aclasp

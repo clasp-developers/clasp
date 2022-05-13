@@ -583,7 +583,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj) {
     return;
   } else if (obj.characterp()) {
     if (hg.isFilling()) 
-      hg.addValue(claspCharacter_upcase(clasp_as_claspCharacter(gc::As<Character_sp>(obj))));
+      hg.addValue(clasp_toupper(clasp_as_claspCharacter(gc::As<Character_sp>(obj))));
     return;
   } else if (obj.consp()) {
     Cons_sp cobj = gc::As_unsafe<Cons_sp>(obj);
