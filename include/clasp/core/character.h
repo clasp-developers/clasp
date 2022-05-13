@@ -127,21 +127,9 @@ inline bool clasp_invalid_base_char_p(claspCharacter c) {
 
 const std::locale locale_us = std::locale("en_US.UTF-8");
  
-inline claspCharacter claspCharacter_upcase(claspCharacter code) {
-  // https://en.cppreference.com/w/cpp/locale/toupper
-  if (code <= 255)
-    return toupper(code);
-  else
-    return static_cast<claspCharacter>(std::toupper(static_cast<wchar_t>(code), locale_us));
-}
+claspCharacter clasp_toupper(claspCharacter code);
 
-inline claspCharacter claspCharacter_downcase(claspCharacter code) {
-  // see https://en.cppreference.com/w/cpp/locale/tolower
-  if (code <= 255)
-    return tolower(code);
-  else
-    return static_cast<claspCharacter>(std::tolower(static_cast<wchar_t>(code), locale_us));
-}
+claspCharacter clasp_tolower(claspCharacter code);
 
 inline bool clasp_alphanumericp(claspCharacter i) {
   return isalnum(i);
@@ -155,27 +143,19 @@ inline bool clasp_alphanumericp(claspCharacter i) {
 }
 #endif
 
- inline bool clasp_base_char_p(claspCharacter c) {
-   return c<=255;
- }
+inline bool clasp_base_char_p(claspCharacter c) {
+  return c<=255;
+}
 
- inline bool clasp_base_char_p(Character_sp c) {
-   return c.unsafe_character()>=0 && c.unsafe_character()<=255;
- }
+inline bool clasp_base_char_p(Character_sp c) {
+  return c.unsafe_character()>=0 && c.unsafe_character()<=255;
+}
 
- inline bool clasp_isupper(claspCharacter cc) {
-   if (cc>255) {
-     return clasp_isupper_wide(cc);
-   }
-   else return isupper(cc);
- }
+bool clasp_isupper(claspCharacter cc);
 
-inline bool clasp_islower(claspCharacter cc) {
-   if (cc>255) {
-     return clasp_islower_wide(cc);
-   }
-   else return islower(cc);
- }
+bool clasp_islower(claspCharacter cc);
+
+bool clasp_isboth(claspCharacter cc);
 
 inline Character_sp clasp_make_standard_character(claspCharacter c) {
   return gc::make_tagged_character(c);

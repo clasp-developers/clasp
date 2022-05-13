@@ -14,6 +14,10 @@
   :repository "https://github.com/yitzchak/shasht.git"
   :directory "dependencies/shasht/"
   :branch "master")
+ (:name :split-sequence
+  :repository "https://github.com/sharplispers/split-sequence.git"
+  :directory "dependencies/split-sequence/"
+  :branch "master")
  (:name :trivial-do
   :repository "https://github.com/yitzchak/trivial-do.git"
   :directory "dependencies/trivial-do/"
@@ -26,9 +30,17 @@
   :repository "https://github.com/trivial-gray-streams/trivial-gray-streams.git"
   :directory "dependencies/trivial-gray-streams/"
   :branch "master")
+ (:name :trivial-http
+  :repository "https://github.com/gwkkwg/trivial-http.git"
+  :directory "dependencies/trivial-http/"
+  :branch "master")
  (:name :trivial-with-current-source-form
   :repository "https://github.com/scymtym/trivial-with-current-source-form.git"
   :directory "dependencies/trivial-with-current-source-form/"
+  :branch "master")
+ (:name :usocket
+  :repository "https://github.com/usocket/usocket.git"
+  :directory "dependencies/usocket/"
   :branch "master")
  (:name :acclimation
   :repository "https://github.com/robert-strandh/Acclimation.git"

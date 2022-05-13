@@ -113,7 +113,7 @@ CL_DEFUN SimpleString_sp cl__string_upcase(T_sp arg) {
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     T_sp cc = str->rowMajorAref(i);
     claspCharacter c = cc.unsafe_character();
-    claspCharacter u = claspCharacter_upcase(c);
+    claspCharacter u = clasp_toupper(c);
     Character_sp cu = clasp_make_character(u);
     result->rowMajorAset(i,clasp_make_character(u));
   }
@@ -130,7 +130,7 @@ CL_DEFUN SimpleString_sp cl__string_downcase(T_sp arg) {
   SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->element_type(),str->length(),false));
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     claspCharacter c = str->rowMajorAref(i).unsafe_character();
-    claspCharacter u = claspCharacter_downcase(c);
+    claspCharacter u = clasp_tolower(c);
     result->rowMajorAset(i,clasp_make_character(u));
   }
   return (result);
@@ -143,7 +143,7 @@ CL_DOCSTRING(R"dx(nstring_upcase)dx")
 DOCGROUP(clasp)
 CL_DEFUN String_sp cl__nstring_upcase(String_sp arg) {
   for ( cl_index i(0), iEnd(arg->length()); i<iEnd; ++i ) {
-    arg->rowMajorAset(i,clasp_make_character(claspCharacter_upcase(arg->rowMajorAref(i).unsafe_character())));
+    arg->rowMajorAset(i,clasp_make_character(clasp_toupper(arg->rowMajorAref(i).unsafe_character())));
   }
   return arg;
 };
@@ -154,7 +154,7 @@ CL_DOCSTRING(R"dx(nstring_downcase)dx")
 DOCGROUP(clasp)
 CL_DEFUN String_sp cl__nstring_downcase(String_sp arg) {
   for ( cl_index i(0), iEnd(arg->length()); i<iEnd; ++i ) {
-    arg->rowMajorAset(i,clasp_make_character(claspCharacter_downcase(arg->rowMajorAref(i).unsafe_character())));
+    arg->rowMajorAset(i,clasp_make_character(clasp_tolower(arg->rowMajorAref(i).unsafe_character())));
   }
   return arg;
 };

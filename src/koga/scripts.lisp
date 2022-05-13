@@ -27,6 +27,11 @@
   (loop for system in systems
         do (pprint `(asdf:load-system ,system) output-stream)))
 
+(defmethod print-prologue (configuration (name (eql :update-unicode)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream t :unicode-data)
+  (pprint '(apply #'uiop:symbol-call "UNICODE-DATA" "GENERATE" (uiop:command-line-arguments)) output-stream))
+
 (defmethod print-prologue (configuration (name (eql :generate-sif)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream t :clasp-scraper)
