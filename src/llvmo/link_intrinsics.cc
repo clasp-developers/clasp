@@ -1071,7 +1071,7 @@ void* cc_dynenv_frame(T_O* dynenv)
 
 [[noreturn]] void cc_sjlj_unwind(T_O* dde, size_t index) {
   T_sp tde((gctools::Tagged)dde);
-  sjlj_unwind(gc::As<DestDynEnv_sp>(tde), index);
+  sjlj_unwind(gc::As<LexDynEnv_sp>(tde), index);
 }
 
 [[noreturn]] void cc_sjlj_continue_unwinding () {
