@@ -1204,7 +1204,7 @@ if not possible."
       (core:abstract-simple-vector (simple-array * (*)))
       (core:simple-mdarray (%simple-mdarray *))
       (core:complex-vector (complex-array * (*)))
-      (core:mdarray (%complex-mdarray * *))
+      (core:mdarray (%complex-mdarray *))
 
       (STRING (ARRAY CHARACTER (*)))
       #+unicode
