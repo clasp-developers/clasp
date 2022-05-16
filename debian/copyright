@@ -1,5 +1,5 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: clasp
+Upstream-Name: clasp-cl
 Upstream-Contact: Christian E. Schafmeister <meister@temple.edu>
 Source: https://github.com/clasp-developers/clasp
 

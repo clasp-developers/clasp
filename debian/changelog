@@ -1,4 +1,4 @@
-clasp (1.0.0) impish; urgency=medium
+clasp-cl (1.0.0) bookworm jammy; urgency=medium
 
   * Initial release
 

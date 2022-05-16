@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include <iostream>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <boost/program_options.hpp>
 #include "clasp/core/compiler.h"
 #include "clasp/core/ql.h"
 #include "clasp/core/lisp.h"
