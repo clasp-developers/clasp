@@ -144,6 +144,16 @@ typedef bool _Bool;
 #undef GC_INTERFACE_INCLUDES
 #endif
 
+//
+// TODO: Generate everything in project_headers.h through scraping
+//
+
+#ifdef BUILD_EXTENSION
+#define GC_INTERFACE_INCLUDES
+#include <cando/main/project_headers.h>
+#undef GC_INTERFACE_INCLUDES
+#endif
+
 #define NAMESPACE_gctools
 #define NAMESPACE_core
 #include <clasp/gctools/gc_interface.h>
