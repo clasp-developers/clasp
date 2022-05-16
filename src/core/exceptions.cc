@@ -808,6 +808,14 @@ void FEcannot_open(T_sp fileName) {
   cl__error(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, fileName));
 }
 
+void FEdoes_not_exist(T_sp fileName) {
+  cl__error(core::_sym_fileDoesNotExist, Cons_O::createList(kw::_sym_pathname, fileName));
+}
+
+void FEexists(T_sp fileName) {
+  cl__error(core::_sym_fileExists, Cons_O::createList(kw::_sym_pathname, fileName));
+}
+
 T_sp CEerror(T_sp c, const char *err, int narg, ...) {
   va_list args;
   va_start(args, narg);

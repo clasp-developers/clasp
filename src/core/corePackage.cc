@@ -234,6 +234,8 @@ SYMBOL_EXPORT_SC_(ClPkg, floatingPointUnderflow);
 SYMBOL_EXPORT_SC_(ClPkg, divisionByZero);
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadable);
 SYMBOL_EXPORT_SC_(ClPkg, fileError);
+SYMBOL_EXPORT_SC_(CorePkg, fileDoesNotExist);
+SYMBOL_EXPORT_SC_(CorePkg, fileExists);
 SYMBOL_EXPORT_SC_(ClPkg, streamError);
 SYMBOL_EXPORT_SC_(ClPkg, endOfFile);
 SYMBOL_EXPORT_SC_(ClPkg, parseError);

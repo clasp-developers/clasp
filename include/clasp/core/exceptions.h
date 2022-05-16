@@ -612,7 +612,9 @@ T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp fo
 [[noreturn]] void FEerror(const string &fmt, int numArgs, ...);
 void FEtype_error_list(T_sp thing);
 void FElibc_error(const char *fmt, int nargs, ...);
-void FEcannot_open(T_sp fn);
+void FEcannot_open(T_sp fname);
+void FEdoes_not_exist(T_sp fname);
+void FEexists(T_sp fname);
 void FEargument_number_error(T_sp supplied, T_sp min, T_sp max);
 T_sp CEerror(T_sp c, const char *fmt, int numArgs, ...);
 

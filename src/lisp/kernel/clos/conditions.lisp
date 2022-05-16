@@ -825,6 +825,18 @@ due to error:~%  ~:*~a~]"
 
 (define-condition core:simple-file-error (simple-condition file-error) ())
 
+(define-condition core:file-does-not-exist (file-error)
+  ()
+  (:report (lambda (condition stream)
+             (format stream "The file ~s does not exist."
+                     (file-error-pathname condition)))))
+
+(define-condition core:file-exists (file-error)
+  ()
+  (:report (lambda (condition stream)
+             (format stream "The file ~s already exists."
+                     (file-error-pathname condition)))))
+
 (define-condition package-error (error)
   ((package :INITARG :PACKAGE :READER package-error-package))
   (:report (lambda (condition stream)

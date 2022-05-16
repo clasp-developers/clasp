@@ -5395,7 +5395,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
   if (smm == clasp_smm_input || smm == clasp_smm_probe) {
     if (!exists) {
       if (if_does_not_exist == kw::_sym_error) {
-        FEcannot_open(fn);
+        FEdoes_not_exist(fn);
       } else if (if_does_not_exist == kw::_sym_create) {
         f = safe_open(fname.c_str(), O_WRONLY | O_CREAT, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
@@ -5418,7 +5418,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
     }
     if (exists) {
       if (if_exists == kw::_sym_error) {
-        FEcannot_open(fn);
+        FEexists(fn);
       } else if (if_exists == kw::_sym_rename) {
         f = clasp_backup_open(fname.c_str(), base | O_CREAT, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
@@ -5438,7 +5438,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
       }
     } else {
       if (if_does_not_exist == kw::_sym_error) {
-        FEcannot_open(fn);
+        FEdoes_not_exist(fn);
       } else if (if_does_not_exist == kw::_sym_create) {
         f = safe_open(fname.c_str(), base | O_CREAT | O_TRUNC, mode);
         unlikely_if(f < 0) FEcannot_open(fn);
