@@ -63,7 +63,7 @@ jobs:
     - name: Build Clasp (koga/MacOS)
       if: matrix.os == 'macos-latest'
       run: |
-        sbcl --no-userinit --load koga.lisp --quit
+        ./koga
 
     - name: Build Clasp (ninja)
       run: |
