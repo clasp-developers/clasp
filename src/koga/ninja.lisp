@@ -126,7 +126,8 @@
                     :pool "console"
                     :description "Creating snapshot $out")
   (ninja:write-rule output-stream :update-unicode
-                    :command "$lisp --script update-unicode.lisp $source"))
+                    :command "$lisp --script update-unicode.lisp $source"
+                    :description "Updating unicode tables"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :etags)) sources

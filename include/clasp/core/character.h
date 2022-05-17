@@ -62,8 +62,6 @@ int clasp_string_case(String_sp s);
 Fixnum clasp_digitp(claspCharacter ch, int basis);
 
 bool cl__standard_char_p(Character_sp ch);
-bool clasp_islower_wide(claspCharacter code);
-bool clasp_isupper_wide(claspCharacter code);
 
 class Character_dummy_O : public General_O {
   LISP_ABSTRACT_CLASS(core, ClPkg, Character_dummy_O, "character",core::General_O);
@@ -125,8 +123,6 @@ inline bool clasp_invalid_base_char_p(claspCharacter c) {
   return (c <= 32) || (c == 127);
 }
 
-const std::locale locale_us = std::locale("en_US.UTF-8");
- 
 claspCharacter clasp_toupper(claspCharacter code);
 
 claspCharacter clasp_tolower(claspCharacter code);

@@ -2,7 +2,6 @@
 ;;;; command: ninja -C build update-unicode
 ;;;; url: http://unicode.org/Public/UNIDATA/UnicodeData.txt
 ;;;; last modified: Tue, 06 Jul 2021 17:31:05 GMT
-
 ((#x20 . "SPACE")
  (#x21 . "EXCLAMATION_MARK")
  (#x22 . "QUOTATION_MARK")
