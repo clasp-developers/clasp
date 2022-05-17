@@ -2,7 +2,12 @@
 
 (declaim (optimize (safety 3)))
 
-(load (compile-file "sys:regression-tests;framework.lisp"))
+(let ((compiled-file
+        (compile-file "sys:regression-tests;framework.lisp")))
+  (if compiled-file
+       (load compiled-file)
+       (error "Could not compile ~s~%" "sys:regression-tests;framework.lisp")))
+
 (load "sys:regression-tests;set-unexpected-failures.lisp")
 
 (in-package #:clasp-tests)
@@ -60,4 +65,5 @@
 ;;; system-construction should be last for now.
 ;;; When we have it before debug.lisp, debug.lisp will fail
 (load-if-compiled-correctly "sys:regression-tests;system-construction.lisp")
+(load-if-compiled-correctly "sys:regression-tests;extensions.lisp")
 (sys:quit (if (show-test-summary) 0 1))
