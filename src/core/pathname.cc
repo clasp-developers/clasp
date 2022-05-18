@@ -1347,8 +1347,10 @@ NO_DIRECTORY:
   } else if (!logical && !x->_Type.nilp()) {
     /* #P".txt" is :NAME = ".txt" :TYPE = NIL and
 	       hence :NAME = NIL and :TYPE != NIL does not have
-	       a printed representation */
-    return nil<T_O>();
+	       a printed representation.
+       In Clasp I want :name = NIL and :TYPE != NIL to have the
+       printed representation .<type> */
+    //return nil<T_O>();
   }
   y = x->_Type;
   if (y == kw::_sym_unspecific) {
