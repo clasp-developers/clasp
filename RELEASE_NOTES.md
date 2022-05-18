@@ -3,6 +3,13 @@
 ## Added
 * Lisp based koga metabuilder that outputs Ninja build files.
 * basic Debian packaging files.
+* `core:*extension-systems*`, `core:*initialize-hooks*` and
+  `core:*terminate-hooks` dynamic variables have been added to support new
+  extension loading method. `core:*extension-systems*` is a list of keywords
+  that name extension systems to load after Clasp starts and before `--load`
+  and `--eval` command line options are processed. The remaining two variables
+  are lists of functions that are called to do initialization before a REPL is
+  started and termination after the REPL exits.
 
 ## Changed
 * `core:lisp-implementation-id` and `core:clasp-git-full-commit` only return
@@ -10,6 +17,23 @@
 * `upper-case-p`, `lower-case-p`, `both-case-p`, `char-upcase` and 
   `char-downcase` now no longer depend on C++ locale functions and are now
   generated directly from the Unicode character tables.
+* Loading of extensions such as Cando no longer uses startup scripts via LOAD.
+  Instead the systems associated with each extension are loaded via QL:QUICKLOAD
+  or as a fallback ASDF:LOAD-SYSTEM.
+* Behavior of `--rc` command line option has changed. Relative paths passed via
+  this option are no longer assumed to be located in the user's home directory.
+* The logical hosts used by Clasp to locate source code and other components of
+  Clasp has been changed. The SOURCE-DIR and APP-RESOURCES logical hosts have
+  been removed. The SYS logical host which used to point to `src/lisp/` in the
+  Clasp source directory now points to directly to the source code directory,
+  which is usually `/usr/clasp/share/`. The APP-BITCODE, APP-EXECUTABLE and
+  APP-FASL hosts have been renamed BITCODE, EXECUTABLE and FASL respectively.
+
+## Removed
+* `core:*extensions-startup-loads*` and `core:*extensions-startup-evals*`
+  dynamic variables have been removed since they are no longer used.
+* The `--resources-dir` command line option has been removed. Equivalent
+  behavior is achieved with the `CLASP_HOME` environment variable.
 
 ## Enhancements
 * `make-instance` and CLOS slot access functions can be used with structure 
