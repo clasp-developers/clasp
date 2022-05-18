@@ -1,5 +1,6 @@
 ---
 Language: Cpp
 BasedOnStyle: LLVM
-ColumnLimit: 0
+ColumnLimit: 132
+SortIncludes: false
 ...
