@@ -393,7 +393,11 @@ NEVER_OPTIMIZE void Symbol_O::symbolUnboundError() const {
 }
 
 void Symbol_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling()) this->getPackage().unsafe_general()->sxhash_(hg);
+  // clhs 18.2.14 sxhash
+  // Although similarity is defined for symbols in terms of both the symbol's name and the packages
+  // in which the symbol is accessible, item 3 disallows using package information to compute the hash
+  // code, since changes to the package status of a symbol are not visible to equal.
+  // if (hg.isFilling()) this->getPackage().unsafe_general()->sxhash_(hg);
   if (hg.isFilling()) this->_Name->sxhash_(hg);
 }
 
