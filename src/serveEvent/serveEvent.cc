@@ -45,18 +45,12 @@ CL_DEFUN void serve_event_internal__ll_fd_zero(clasp_ffi::ForeignData_sp fdset) 
 
 DOCGROUP(clasp)
 CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp fdset) {
-  SIMPLE_ERROR(("FD_SET causes problems with Xcode 11.4 so I'm commenting it out for now"));
-#if 0
  FD_SET(fd, fdset->data<fd_set *>());
-#endif
 }
 
 DOCGROUP(clasp)
 CL_DEFUN int serve_event_internal__ll_fd_isset(int fd, clasp_ffi::ForeignData_sp fdset) {
-  SIMPLE_ERROR(("FD_ISSET causes problems with Xcode 11.4 so I'm commenting it out for now"));
-#if 0
   return FD_ISSET(fd, fdset->data<fd_set *>());
-#endif
 }
 
 DOCGROUP(clasp)
