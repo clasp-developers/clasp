@@ -141,7 +141,7 @@
 
 (defun source-location-impl (name kind)
   "* Arguments
-- name : A symbol.
+- name : A symbol or (setf symbol)
 - kind : A symbol (:function :method :class)
 Return the source-location for the name/kind pair"
   (labels ((fix-paths-and-make-source-locations (rels)
@@ -153,7 +153,14 @@ Return the source-location for the name/kind pair"
                                                  :offset pos
                                                  ;; FIXME
                                                  :definer 'defmethod)))
-                       rels))))
+                       rels)))
+           (get-source-info-for-function-object (func)
+             (cond ((core:single-dispatch-generic-function-p func)
+                      (source-location name :method))
+                     ((typep func 'generic-function)
+                      (generic-function-source-locations func))
+                     (t ; normal function
+                      (function-source-locations func)))))
     (case kind
       (:class
        (let ((class (find-class name nil)))
@@ -165,16 +172,14 @@ Return the source-location for the name/kind pair"
             (fix-paths-and-make-source-locations source-loc)))
       (:function
        (when (fboundp name)
-         (if (special-operator-p name)
-             (special-operator-source-locations name)
-             (let ((func (or (macro-function name)
-                             (fdefinition name))))
-               (cond ((core:single-dispatch-generic-function-p func)
-                      (source-location name :method))
-                     ((typep func 'generic-function)
-                      (generic-function-source-locations func))
-                     (t ; normal function
-                      (function-source-locations func)))))))
+         (if (symbolp name)
+             (if (special-operator-p name)
+                 (special-operator-source-locations name)
+                 (let ((func (or (macro-function name)
+                                 (fdefinition name))))
+                   (get-source-info-for-function-object func)))
+             ;name is (setf sym)
+             (get-source-info-for-function-object (fdefinition name)))))
       (:compiler-macro
        (when (fboundp name)
          (let ((cmf (compiler-macro-function name)))
