@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -39,7 +39,7 @@ namespace core {
 
 bool global_debug_byte_code = false;
 
-const char* help = R"dx(Usage: clasp <options>
+const char *help = R"dx(Usage: clasp <options>
 Options:
   -I, --ignore-image
       Don't load the boot image/start with init.lisp
@@ -198,13 +198,11 @@ Environment variables:
                    <nurseryMortalityPercent> <generation1Kb>
                    <generation1MortalityPercent> <keyExtendByKb>)dx";
 
-void process_clasp_arguments(CommandLineOptions* options)
-{
-  std::set<std::string> parameter_required = {
-    "-i", "--image", "-T", "--type", "-L", "--llvm-debug", "-t", "--stage", "-d", "--describe", 
-    "-a", "--addresses", "-e", "--eval", "-l", "--load", "-y", "--snapshot-symbols", "--rc", 
-    "-S", "--seed", "-f", "--feature"
-  };
+void process_clasp_arguments(CommandLineOptions *options) {
+  std::set<std::string> parameter_required = {"-i",   "--image", "-T",     "--type",     "-L",       "--llvm-debug",
+                                              "-t",   "--stage", "-d",     "--describe", "-a",       "--addresses",
+                                              "-e",   "--eval",  "-l",     "--load",     "-y",       "--snapshot-symbols",
+                                              "--rc", "-S",      "--seed", "-f",         "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
     if (parameter_required.contains(*arg) && (arg + 1) == end) {
       std::cerr << "Missing parameter for " << *arg << " option." << std::endl;
@@ -222,22 +220,21 @@ void process_clasp_arguments(CommandLineOptions* options)
       std::cout << "-mps-";
 #endif
 #if defined(USE_BOEHM)
-# ifdef USE_PRECISE_GC 
+#ifdef USE_PRECISE_GC
       std::cout << "-boehmprecise-";
-# else
+#else
       std::cout << "-boehm-";
-# endif
+#endif
 #elif defined(USE_MMTK)
-# ifdef USE_PRECISE_GC 
+#ifdef USE_PRECISE_GC
       std::cout << "-mmtkprecise-";
-# else
+#else
       std::cout << "-mmtk-";
-# endif
+#endif
 #endif
       std::cout << CLASP_VERSION << std::endl;
       exit(0);
-    }
-    else if (*arg == "-a" || *arg == "--addresses") {
+    } else if (*arg == "-a" || *arg == "--addresses") {
       options->_AddressesP = true;
       options->_AddressesFileName = *++arg;
     } else if (*arg == "-I" || *arg == "--ignore-image") {
@@ -255,11 +252,11 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_Interactive = false;
     } else if (*arg == "-T" || *arg == "--type") {
       std::string type = *++arg;
-      if (type == "default" || type == "DEFAULT" || type == "Default" ) {
+      if (type == "default" || type == "DEFAULT" || type == "Default") {
         options->_DefaultStartupType = cloDefault;
-      } else if (type == "snapshot" || type == "SNAPSHOT" || type == "Snapshot" ) {
+      } else if (type == "snapshot" || type == "SNAPSHOT" || type == "Snapshot") {
         options->_DefaultStartupType = cloSnapshot;
-      } else if (type == "image" || type == "IMAGE" || type == "Image" ) {
+      } else if (type == "image" || type == "IMAGE" || type == "Image") {
         options->_DefaultStartupType = cloImage;
       } else {
         options->_DefaultStartupType = cloDefault;
@@ -286,19 +283,19 @@ void process_clasp_arguments(CommandLineOptions* options)
     } else if (*arg == "-i" || *arg == "--image") {
       options->_StartupFileP = true;
       options->_StartupFile = *++arg;
-      if (options->_StartupFile.compare(options->_StartupFile.length()-9,9,".snapshot")==0) {
+      if (options->_StartupFile.compare(options->_StartupFile.length() - 9, 9, ".snapshot") == 0) {
         options->_StartupFileType = cloSnapshot;
       } else {
         options->_StartupFileType = cloImage;
       }
     } else if (*arg == "-L" || *arg == "--llvm-debug") {
-      const char* bogus_args[3];
+      const char *bogus_args[3];
       bogus_args[0] = "clasp";
       bogus_args[1] = "--debug-only";
-      char* opt = (char*)malloc((++arg)->size()+1);
-      strcpy(opt,arg->c_str());
+      char *opt = (char *)malloc((++arg)->size() + 1);
+      strcpy(opt, arg->c_str());
       bogus_args[2] = opt;
-      printf("%s:%d:%s Passing arguments: <%s>\n", __FILE__, __LINE__, __FUNCTION__, bogus_args[2] );
+      printf("%s:%d:%s Passing arguments: <%s>\n", __FILE__, __LINE__, __FUNCTION__, bogus_args[2]);
       llvm::cl::ParseCommandLineOptions(3, bogus_args, "clasp");
     } else if (*arg == "-g" || *arg == "--debug") {
       options->_HasDescribeFile = true;
@@ -320,30 +317,13 @@ void process_clasp_arguments(CommandLineOptions* options)
   }
 }
 
-
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
-  : _ProcessArguments(process_clasp_arguments),
-    _DontLoadImage(false),
-    _DontLoadInitLsp(false),
-    _DisableMpi(false),
-    _AddressesP(false),
-    _StartupFileP(false),
-    _StartupFileType(cloDefault),
-    _HasDescribeFile(false),
-    _Stage('c'),
-    _StartupFile(""),
-    _DefaultStartupType(cloDefault),
-    _ExportedSymbolsAccumulate(false),
-    _RandomNumberSeed(0),
-    _NoInform(false),
-    _NoPrint(false),
-    _DebuggerDisabled(false),
-    _Interactive(true),
-    _Version(false),
-    _SilentStartup(true),
-    _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), // FIXME should be initialized later with user-homedir-pathname?
-    _NoRc(false),
-    _PauseForDebugger(false)
+    : _ProcessArguments(process_clasp_arguments), _DontLoadImage(false), _DontLoadInitLsp(false), _DisableMpi(false),
+      _AddressesP(false), _StartupFileP(false), _StartupFileType(cloDefault), _HasDescribeFile(false), _Stage('c'),
+      _StartupFile(""), _DefaultStartupType(cloDefault), _ExportedSymbolsAccumulate(false), _RandomNumberSeed(0), _NoInform(false),
+      _NoPrint(false), _DebuggerDisabled(false), _Interactive(true), _Version(false), _SilentStartup(true),
+      _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), // FIXME should be initialized later with user-homedir-pathname?
+      _NoRc(false), _PauseForDebugger(false)
 
 {
   if (argc == 0) {
@@ -352,7 +332,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     bool lisp_arg = false;
     for (int i = 0; i < argc; ++i) {
       this->_RawArguments.push_back(argv[i]);
-      if (i == 0) continue;
+      if (i == 0)
+        continue;
       if (lisp_arg) {
         this->_LispArguments.push_back(argv[i]);
       } else if (this->_RawArguments[i] == "--") {
@@ -363,9 +344,9 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     }
   }
   this->_ExecutableName = this->_RawArguments[0];
-  const char* environment_features = getenv("CLASP_FEATURES");
+  const char *environment_features = getenv("CLASP_FEATURES");
   if (environment_features) {
-    vector<string> features = core::split(std::string(environment_features)," ,");
+    vector<string> features = core::split(std::string(environment_features), " ,");
     for (auto feature : features) {
       if (!feature.empty()) {
         this->_Features.insert(core::lispify_symbol_name(feature));
@@ -373,9 +354,6 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     }
   }
 }
-
-
-
 
 DOCGROUP(clasp)
 CL_DEFUN List_sp core__command_line_load_eval_sequence() {
@@ -392,16 +370,15 @@ CL_DEFUN List_sp core__command_line_load_eval_sequence() {
   return cl__nreverse(loadEvals);
 }
 
-
-void maybeHandleAddressesOption(CommandLineOptions* options) {
+void maybeHandleAddressesOption(CommandLineOptions *options) {
   if (options->_AddressesP) {
-    FILE* fout = fopen(options->_AddressesFileName.c_str(),"w");
-    fprintf(fout, "# Generating addresses from %s\n", __FUNCTION__ );
+    FILE *fout = fopen(options->_AddressesFileName.c_str(), "w");
+    fprintf(fout, "# Generating addresses from %s\n", __FUNCTION__);
     snapshotSaveLoad::SymbolLookup lookup;
     lookup.addAllLibraries(fout);
-      // snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
+    // snapshotSaveLoad::loadExecutableSymbolLookup(lookup, fout);
     fclose(fout);
   }
 }
 
-};
+}; // namespace core

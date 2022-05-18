@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -51,7 +51,6 @@ struct BundleDirectories {
   std::filesystem::path _QuicklispDir;
 };
 
-  
 /*! Maintains the file paths to the different directories of the Cando bundle
  */
 class Bundle {
@@ -61,20 +60,20 @@ class Bundle {
 
 public:
   bool _Initialized;
-  BundleDirectories* _Directories;
+  BundleDirectories *_Directories;
 
 private:
-  void findExecutableDir(const string &argv0, bool verbose=false);
-  std::string deduceArgv0(const std::string& raw_argv0);
+  void findExecutableDir(const string &argv0, bool verbose = false);
+  std::string deduceArgv0(const std::string &raw_argv0);
 
 public:
   string describe();
   Bundle(const string &argv0);
 
   void setup_pathname_translations();
-  
+
   virtual ~Bundle(){};
 };
 
-};
+};     // namespace core
 #endif //]

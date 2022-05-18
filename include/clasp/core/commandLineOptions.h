@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -31,12 +31,11 @@ namespace core {
 
 class CommandLineOptions;
 
-typedef void (*process_arguments_callback)(CommandLineOptions*);
+typedef void (*process_arguments_callback)(CommandLineOptions *);
 
 extern bool global_debug_byte_code;
 
-typedef enum { cloLoad,
-               cloEval } LoadEvalEnum;
+typedef enum { cloLoad, cloEval } LoadEvalEnum;
 
 typedef enum { cloDefault, cloImage, cloSnapshot } ImageTypeEnum;
 
@@ -46,17 +45,17 @@ struct CommandLineOptions {
   std::string _ExecutableName;
   bool _DontLoadImage;
   bool _DontLoadInitLsp;
-  bool _DisableMpi {false};
+  bool _DisableMpi{false};
   std::vector<std::string> _RawArguments;
   std::vector<std::string> _KernelArguments;
   std::vector<std::string> _LispArguments;
   std::set<std::string> _Features;
   std::vector<pair<LoadEvalEnum, std::string>> _LoadEvalList;
-  bool          _AddressesP;
-  std::string   _AddressesFileName;
-  bool          _StartupFileP;
+  bool _AddressesP;
+  std::string _AddressesFileName;
+  bool _StartupFileP;
   ImageTypeEnum _StartupFileType;
-  std::string   _StartupFile;
+  std::string _StartupFile;
   ImageTypeEnum _DefaultStartupType;
   bool _HasDescribeFile;
   std::string _DescribeFile;
@@ -75,8 +74,7 @@ struct CommandLineOptions {
   bool _PauseForDebugger;
 };
 
+void maybeHandleAddressesOption(CommandLineOptions *options);
 
-void maybeHandleAddressesOption(CommandLineOptions* options);
-
-};
+}; // namespace core
 #endif

@@ -138,7 +138,8 @@ Bundle::Bundle(const string &raw_argv0) {
       if (safe_is_directory(modules_quicklisp)) {
         if (!getenv("ASDF_OUTPUT_TRANSLATIONS")) {
           if (!global_options->_SilentStartup) {
-            printf("%s:%d Found %s so setting ASDF_OUTPUT_TRANSLATIONS to /:\n", __FILE__, __LINE__, modules_quicklisp.string().c_str());
+            printf("%s:%d Found %s so setting ASDF_OUTPUT_TRANSLATIONS to /:\n", __FILE__, __LINE__,
+                   modules_quicklisp.string().c_str());
           }
           //          setenv("ASDF_OUTPUT_TRANSLATIONS","/:",1);
         }
@@ -174,7 +175,7 @@ Bundle::Bundle(const string &raw_argv0) {
   }
 }
 
-std::string Bundle::deduceArgv0(const std::string& raw_argv0) {
+std::string Bundle::deduceArgv0(const std::string &raw_argv0) {
   pid_t pid = getpid();
   // fixme, cracauer.  This should be passed in from main()
   // /proc lookup can fail.  /proc is not always mounted or available,
@@ -285,13 +286,12 @@ string Bundle::describe() {
   return ss.str();
 }
 
-void create_logical_host(const std::string &name,
-                         const std::filesystem::path &path) {
+void create_logical_host(const std::string &name, const std::filesystem::path &path) {
   if (!path.empty()) {
-    core__pathname_translations(SimpleBaseString_O::make(name), _lisp->_true(),
-                                Cons_O::createList(Cons_O::createList(
-                                    SimpleBaseString_O::make(name + ":**;*.*"),
-                                    cl__pathname(SimpleBaseString_O::make(path / "**" / "*.*")))));
+    core__pathname_translations(
+        SimpleBaseString_O::make(name), _lisp->_true(),
+        Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make(name + ":**;*.*"),
+                                              cl__pathname(SimpleBaseString_O::make(path / "**" / "*.*")))));
   }
 }
 
@@ -308,4 +308,3 @@ void Bundle::setup_pathname_translations() {
 }
 
 }; // namespace core
-
