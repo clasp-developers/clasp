@@ -130,8 +130,31 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core:select-package :ext))
 
+;;; Imports
+(import 'core:quit :ext)
+(import 'core:getpid :ext)
+(import 'core:argc :ext)
+(import 'core:argv :ext)
+(import 'core:rmdir :ext)
+(import 'core:mkstemp :ext)
+(import 'core:weak-pointer-value :ext)
+(import 'core:make-weak-pointer :ext)
+(import 'core:weak-pointer-valid :ext)
+(import 'core:hash-table-weakness :ext)
+(import 'cmp::muffle-note :ext)
+
 (eval-when (:execute :compile-toplevel :load-toplevel)
-  (export '(array-index
+  (export '(*module-provider-functions*
+            *source-location-kinds*
+            current-source-location
+            source-location
+            source-location-pathname
+            source-location-offset
+            source-location-definer
+            source-location-description
+            compiled-function-name
+            compiled-function-file
+            array-index
             byte8
             integer8
             byte16
@@ -145,6 +168,23 @@
             all-encodings
             make-encoding
             assume-right-type
+            assert-error
+            float-nan-p
+            float-infinity-p
+            character-coding-error
+            character-encoding-error
+            character-decoding-error
+            stream-encoding-error
+            stream-decoding-error
+            generate-encoding-hashtable
+            quit
+            with-float-traps-masked
+            enable-interrupt default-interrupt ignore-interrupt
+            get-signal-handler set-signal-handler
+            *ed-functions*
+            ;;; for asdf and slime and trivial-garbage to use ext:
+            getpid argc argv rmdir mkstemp weak-pointer-value
+            make-weak-pointer weak-pointer-valid hash-table-weakness
             compiler-note
             muffle-note
             segmentation-violation
@@ -157,11 +197,9 @@
             unix-signal-received-code
             unix-signal-received-handler
             interactive-interrupt
-            compiled-function-file
             getcwd
             chdir
             +process-standard-input+
-            compiled-function-name
             system
             float-nan-string
             float-infinity-string

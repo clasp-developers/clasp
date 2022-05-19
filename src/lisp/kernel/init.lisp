@@ -176,62 +176,10 @@
 
 ;;; Setup a few things for the EXT package
 
-;;; Imports
-(import 'core:quit :ext)
-(import 'core:getpid :ext)
-(import 'core:argc :ext)
-(import 'core:argv :ext)
-(import 'core:rmdir :ext)
-(import 'core:mkstemp :ext)
-(import 'core:weak-pointer-value :ext)
-(import 'core:make-weak-pointer :ext)
-(import 'core:weak-pointer-valid :ext)
-(import 'core:hash-table-weakness :ext)
-
-;;; EXT exports
+;;; EXT exports are now in packages.lisp
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
 
-(export '(*module-provider-functions*
-          *source-location-kinds*
-          current-source-location
-          source-location
-          source-location-pathname
-          source-location-offset
-          source-location-definer
-          source-location-description
-          compiled-function-name
-          compiled-function-file
-          array-index
-          byte8
-          integer8
-          byte16
-          integer16
-          byte32
-          integer32
-          byte64
-          integer64
-          assume-no-errors
-          sequence-stream
-          all-encodings
-          make-encoding
-          assume-right-type
-          assert-error
-          float-nan-p
-          float-infinity-p
-          character-coding-error
-          character-encoding-error
-          character-decoding-error
-          stream-encoding-error
-          stream-decoding-error
-          generate-encoding-hashtable
-          quit
-          with-float-traps-masked
-          enable-interrupt default-interrupt ignore-interrupt
-          get-signal-handler set-signal-handler
-          *ed-functions*
-          ;;; for asdf and slime and trivial-garbage to use ext:
-          getpid argc argv rmdir mkstemp weak-pointer-value make-weak-pointer weak-pointer-valid hash-table-weakness))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
