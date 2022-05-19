@@ -4,6 +4,10 @@
   nil
   "The current configuration")
 
+(defparameter *extensions*
+  nil
+  "The current extensions")
+
 (defparameter *variant-gc*
   nil
   "The garbage collector of the current variant.")
@@ -876,3 +880,4 @@ if provided."
                          "Unable to find ~a program~@[ compatible with major version ~a~]."
                          name major-version)
                 (values nil nil)))
+

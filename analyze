@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+NINJA_OPTIONS=""
+
+for i in "$@"; do
+  if [[ $i == --jobs=* ]]; then
+    NINJA_OPTIONS="-j ${i#*=}"
+  fi
+done
+
+./koga --build-path=build-analysis --clean --no-extensions --no-jupyter "$@"
+ninja -C build-analysis $NINJA_OPTIONS analyze
+
+./koga --build-path=build-analysis --clean --extensions=cando --no-jupyter "$@"
+ninja -C build-analysis $NINJA_OPTIONS analyze
+
+rm -rf build-analysis

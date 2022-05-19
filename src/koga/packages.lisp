@@ -3,6 +3,7 @@
   (:nicknames #:k)
   (:documentation "A lisp based metabuilder for Clasp.")
   (:export #:configure
+           #:*extensions*
            #:help
            #:includes
            #:library

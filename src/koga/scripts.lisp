@@ -97,13 +97,18 @@
                   :system (cdr args)))
 (core:quit)" output-stream))
 
+;;; TODO The parallel analyzer is disabled below. Enable it once it works.
 (defmethod print-prologue (configuration (name (eql :static-analyzer)) output-stream)
   (declare (ignore configuration))
   (print-asdf-stub output-stream nil :clasp-analyzer)
-  (format output-stream "~%(clasp-analyzer::serial-search/generate-code
-  (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
-    (pathname (elt core:*command-line-arguments* 1)))
- :output-file (pathname (elt core:*command-line-arguments* 0)))"))
+  (let ((log-path (resolve-source (make-source "analyzer-logs/" :variant))))
+    (format output-stream "
+(setq core::*number-of-jobs* ~a)
+(uiop:delete-directory-tree ~s :validate t :if-does-not-exist :ignore)
+(clasp-analyzer:search-and-generate-code (pathname (elt core:*command-line-arguments* 0))
+                                         (pathname (elt core:*command-line-arguments* 1))
+                                         :log-path ~s :parallel ~s)"
+            (jobs configuration) log-path log-path nil #+(or)(parallel-build configuration))))
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
   (when (jupyter configuration)
