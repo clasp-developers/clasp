@@ -7,6 +7,9 @@
 ## Changed
 * `core:lisp-implementation-id` and `core:clasp-git-full-commit` only return
   non-`NIL` values if Clasp was built in a git working tree.
+* `upper-case-p`, `lower-case-p`, `both-case-p`, `char-upcase` and 
+  `char-downcase` now no longer depend on C++ locale functions and are now
+  generated directly from the Unicode character tables.
 
 ## Enhancements
 * `make-instance` and CLOS slot access functions can be used with structure 
