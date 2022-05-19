@@ -290,7 +290,13 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(ll_getProtocolByName)dx")
 DOCGROUP(clasp)
 CL_DEFUN int sockets_internal__ll_getProtocolByName(const string &name) {
-  return getprotobyname(name.c_str())->p_proto;
+  struct protoent * proto = getprotobyname(name.c_str());
+
+  if (proto == NULL) {
+    SIMPLE_ERROR("Unknown protocol %s passed to sockets:ll-get-protocol-by-name", name.c_str());
+  }
+
+  return proto->p_proto;
 }
 
 CL_LAMBDA(port ip0 ip1 ip2 ip3 socketFileDescriptor)
