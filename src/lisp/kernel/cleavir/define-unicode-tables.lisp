@@ -195,7 +195,7 @@
   (gethash char *mapping-char-code-to-char-names*))
 
 (defun process-unicode-file ()
-  (with-open-file (stream #P"source-dir:tools-for-build;character-names.sexp"
+  (with-open-file (stream #P"sys:tools-for-build;character-names.sexp"
                    :element-type 'character :direction :input :external-format :utf-8)
     (loop for (code . name) in (read stream nil)
           when (>= code #xA0)
