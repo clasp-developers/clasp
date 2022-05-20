@@ -1258,19 +1258,6 @@ void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
   globals_->_IgnoreInitImage = options._DontLoadImage;
   globals_->_IgnoreInitLsp = options._DontLoadInitLsp;
 
-  SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineLoadEvalSequenceSTAR);
-  List_sp loadEvals = nil<T_O>();
-  for (auto it : options._LoadEvalList) {
-    Cons_sp one;
-    if (it.first == cloEval) {
-      one = Cons_O::create(kw::_sym_eval, SimpleBaseString_O::make(it.second));
-    } else {
-      one = Cons_O::create(kw::_sym_load, SimpleBaseString_O::make(it.second));
-    }
-    loadEvals = Cons_O::create(one, loadEvals);
-  }
-  _sym_STARcommandLineLoadEvalSequenceSTAR->defparameter(cl__nreverse(loadEvals));
-
   globals_->_NoInform = options._NoInform;
   globals_->_NoPrint = options._NoPrint;
   globals_->_DebuggerDisabled = options._DebuggerDisabled;

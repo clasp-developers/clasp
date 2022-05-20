@@ -680,8 +680,9 @@ the stage, the +application-name+ and the +bitcode-name+"
   (mapcar #'(lambda (entry)
               (if (eq (car entry) :load)
                   (load (cdr entry))
-                  (let ((cmd (read-from-string (cdr entry))))
-                    (eval cmd))))
+                  (if (eq (car entry) :script)
+                    (core:load-source (cdr entry) nil nil nil t)
+                    (eval (read-from-string (cdr entry))))))
           (core:command-line-load-eval-sequence)))
 
 (export 'maybe-load-clasprc)

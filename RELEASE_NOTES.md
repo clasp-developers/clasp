@@ -10,6 +10,9 @@
   and `--eval` command line options are processed. The remaining two variables
   are lists of functions that are called to do initialization before a REPL is
   started and termination after the REPL exits.
+* `--script <file>` command line option which equivalent to passing `--norc`,
+  `--noinform` and `--non-interactive`. Any shebang in `<file>` will also be 
+  skipped.
 
 ## Changed
 * `core:lisp-implementation-id` and `core:clasp-git-full-commit` only return

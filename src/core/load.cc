@@ -70,11 +70,11 @@ T_sp load_stream(T_sp strm, bool print) {
   return _lisp->_true();
 }
 
-CL_LAMBDA(source &optional verbose print external-format)
+CL_LAMBDA(source &optional verbose print external-format skip-shebang)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(loadSource)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_sp externalFormat) {
+CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_sp externalFormat, bool skipShebang) {
   T_sp strm;
   if (source.nilp()) {
     SIMPLE_ERROR(("%s was called with NIL as the source filename") , __FUNCTION__);
@@ -101,6 +101,18 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
   DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, pathname);
   DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
+
+  if (skipShebang) {
+    if (clasp_peek_char(strm) == '#') {
+      clasp_read_char(strm);
+      if (clasp_peek_char(strm) == '!') {
+        cl__read_line(strm);
+      } else {
+        clasp_unread_char('#', strm);
+      }
+    }
+  }
+
   return load_stream(strm, print);
 }
 
@@ -209,7 +221,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
     DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
     ok = eval::funcall(function, filename, verbose, print, external_format);
   } else {
-    ok = core__load_source(filename, verbose.isTrue(), print.isTrue(), external_format );
+    ok = core__load_source(filename, verbose.isTrue(), print.isTrue(), external_format, false);
   }
   if (ok.nilp()) {
     SIMPLE_ERROR(("LOAD: Could not load file %s") , _rep_(filename));
@@ -235,3 +247,4 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
   SYMBOL_EXPORT_SC_(CorePkg, loadSource);
 
 };
+
