@@ -14,6 +14,10 @@ Vcs-Git: https://github.com/clasp-developers/clasp.git
 Rules-Requires-Root: no
 
 Package: clasp-cl
+Section: lisp
+Priority: optional
+Conflicts: cando
+Provides: lisp-compiler
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libbsd0, libelf1, libffi-dev,
 	libgmp10, libgmpxx4ldbl, libncurses6, llvm-13, clang-13, zlib1g, libclang-cpp13
@@ -27,6 +31,10 @@ Description: Common Lisp implementation that brings Common Lisp and C++ Together
 	capabilities that make it a powerful language.
 
 Package: cando
+Section: lisp
+Priority: optional
+Conflicts: clasp-cl
+Provides: lisp-compiler, clasp-cl
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libbsd0, libelf1, libffi-dev,
 	libgmp10, libgmpxx4ldbl, libncurses6, llvm-13, clang-13, zlib1g, libclang-cpp13,

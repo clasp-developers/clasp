@@ -2,42 +2,52 @@ name: Nightly Packaging
 
 on:
   push:
-    branches: [ ext-load ]
+    branches: [ nightly ]
+  schedule:
+    - cron: '0 5 * * *'
 
 jobs:
   clasp_ubuntu_jammy:
     name: Clasp on Ubuntu Jammy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: jtdor/build-deb-action@v1
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Update version
+        run: |
+          ./tools-for-build/nightly
+      - name: Build Ubuntu packages
+        uses: jtdor/build-deb-action@v1
         with:
           buildpackage-opts: --build=binary --no-sign
           docker-image: ubuntu:jammy
-          extra-build-deps: ca-certificates
-      - uses: actions/upload-artifact@v3
+          extra-build-deps: ca-certificates netbase
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
         with:
-          name: clasp-cl_1.0.0_amd64_ubuntu_jammy.deb
-          path: debian/artifacts/clasp-cl_1.0.0_amd64.deb
-      - uses: actions/upload-artifact@v3
-        with:
-          name: cando_1.0.0_amd64_ubuntu_jammy.deb
-          path: debian/artifacts/cando_1.0.0_amd64.deb
+          name: ubuntu-jammy
+          path: debian/artifacts/*.deb
   clasp_debian_bookworm:
     name: Clasp on Debian Bookworm
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: jtdor/build-deb-action@v1
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Update version
+        run: |
+          ./tools-for-build/nightly
+      - name: Build Debian packages
+        uses: jtdor/build-deb-action@v1
         with:
           buildpackage-opts: --build=binary --no-sign
           docker-image: debian:bookworm
-          extra-build-deps: ca-certificates
-      - uses: actions/upload-artifact@v3
+          extra-build-deps: ca-certificates netbase
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
         with:
-          name: clasp-cl_1.0.0_amd64_debian_bookworm.deb
-          path: debian/artifacts/clasp-cl_1.0.0_amd64.deb
-      - uses: actions/upload-artifact@v3
-        with:
-          name: cando_1.0.0_amd64_debian_bookworm.deb
-          path: debian/artifacts/cando_1.0.0_amd64.deb          
+          name: debian-bookworm
+          path: debian/artifacts/*.deb

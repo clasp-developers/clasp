@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# This script updates the version numbers for nightly builds
+
+echo -e "clasp-cl ($(git describe | sed "s/-/~/g")) bookworm jammy; urgency=medium\n\n  * Nightly release\n\n -- Tarn W. Burton <twburton@gmail.com>  $(date -R)\n\n$(cat debian/changelog)" > debian/changelog
