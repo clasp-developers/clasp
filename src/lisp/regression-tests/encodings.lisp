@@ -10,13 +10,13 @@
 ;;; using :default or utf-8, this should give string length 1 with char char-code 955 for lambda
 (test encoding-default
       (let ()
-        (load #P"sys:modules;asdf;test;lambda.lisp")
+        (load #P"sys:src;lisp;modules;asdf;test;lambda.lisp")
         (%string-char-codes  asdf-test::*LAMBDA-STRING*))
       ((955)))
 
 (test encoding-utf-8
       (let ()
-        (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :utf-8)
+        (load #P"sys:src;lisp;modules;asdf;test;lambda.lisp" :external-format :utf-8)
         (%string-char-codes  asdf-test::*LAMBDA-STRING*))
       ((955)))
 
@@ -24,24 +24,24 @@
 
 (test encoding-latin-1
       (let ()
-        (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :latin-1)
+        (load #P"sys:src;lisp;modules;asdf;test;lambda.lisp" :external-format :latin-1)
         (%string-char-codes  asdf-test::*LAMBDA-STRING*))
       ((206 187)))
 
 (test encoding-ISO-8859-1
       (let ()
-        (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :iso-8859-1)
+        (load #P"sys:src;lisp;modules;asdf;test;lambda.lisp" :external-format :iso-8859-1)
         (%string-char-codes  asdf-test::*LAMBDA-STRING*))
       ((206 187)))
 
 ;;; using us-ascii, the should be an encoding-error
 (test-expect-error encoding-ascii-error
-                   (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :us-ascii)
+                   (load #P"sys:src;lisp;modules;asdf;test;lambda.lisp" :external-format :us-ascii)
                    :type ext:stream-decoding-error)
 
 (test encoding-all-encodings-plain
       (let ((char (code-char 65))
-            (filename "sys:regression-tests;encoding-test.txt")
+            (filename "sys:src;lisp;regression-tests;encoding-test.txt")
             (bad nil))
         (unwind-protect
              (dolist (encoding (ext:all-encodings) bad)
@@ -63,7 +63,7 @@
       (nil))
 
 (test encoding-latin-2-plain
-      (with-open-file (stream "sys:regression-tests;latin-2-file.txt"
+      (with-open-file (stream "sys:src;lisp;regression-tests;latin-2-file.txt"
                               :direction :output
                               :if-exists :overwrite
                               :if-does-not-exist :create
@@ -73,23 +73,23 @@
 
 (test encoding-latin-2-lambda
       (let ()
-        (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :latin-2)
+        (load #P"sys:src;lisp;modules;asdf;test;lambda.lisp" :external-format :latin-2)
         (%string-char-codes  asdf-test::*LAMBDA-STRING*))
       ((206 357)))
 
 (test encoding-iso-8859-2-lambda
       (let ()
-        (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :ISO-8859-2)
+        (load #P"sys:src;lisp;modules;asdf;test;lambda.lisp" :external-format :ISO-8859-2)
         (%string-char-codes  asdf-test::*LAMBDA-STRING*))
       ((206 357)))
 
 (test-true compile-file-with-lambda
       (let ()
-        (cmp::compile-file-serial #P"sys:regression-tests;latin2-check.lisp" :external-format :iso-8859-1)
-        (cmp::compile-file-parallel #P"sys:regression-tests;latin2-check.lisp" :external-format :iso-8859-1)))
+        (cmp::compile-file-serial #P"sys:src;lisp;regression-tests;latin2-check.lisp" :external-format :iso-8859-1)
+        (cmp::compile-file-parallel #P"sys:src;lisp;regression-tests;latin2-check.lisp" :external-format :iso-8859-1)))
 
 (test-expect-error compile-file-with-lambda-default-encoding
-                   (compile-file #P"sys:regression-tests;latin2-check.lisp" :external-format :us-ascii)
+                   (compile-file #P"sys:src;lisp;regression-tests;latin2-check.lisp" :external-format :us-ascii)
                    :type ext:stream-decoding-error)
 ;;; clean-up
 (delete-package (find-package :asdf-test))

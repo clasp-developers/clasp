@@ -10,5 +10,6 @@
            #:make-source-output
            #:recurse
            #:source-path
-           #:sources))
+           #:sources
+           #:systems))
 

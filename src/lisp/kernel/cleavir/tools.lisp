@@ -1,4 +1,4 @@
-(load "sys:kernel;asdf;build;asdf.bundle")
+(load "sys:src;lisp;kernel;asdf;build;asdf.bundle")
 
 (asdf:load-system :cleavir-generate-ast)
 

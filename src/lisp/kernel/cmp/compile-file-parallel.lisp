@@ -333,7 +333,7 @@ multithreaded performance that we should explore."
 Compile a lisp source file into an LLVM module."
   (let* ((*package* *package*)
          (*readtable* *readtable*)
-         (clasp-source-root (translate-logical-pathname "source-dir:"))
+         (clasp-source-root (translate-logical-pathname "sys:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
          (source-sin (open given-input-pathname :direction :input :external-format (or external-format :default))))
     (declare (ignore clasp-source))

@@ -9,7 +9,7 @@
 
 (defun print-asdf-stub (output-stream host &rest systems)
   "Print the commands to initialize ASDF and load required systems."
-  (pprint '(require :asdf) output-stream)
+  (format output-stream "#-asdf (require :asdf)~%")
   (pprint `(asdf:initialize-source-registry
              (list :source-registry
                 (list :tree (merge-pathnames ,(root :code) (uiop:getcwd)))
@@ -64,34 +64,34 @@
 
 (defmethod print-prologue (configuration (name (eql :compile-aclasp)) output-stream)
   (format output-stream "(setq *features* (cons :aclasp *features*))
-(load #P\"sys:kernel;clasp-builder.lisp\")
+(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
 (core:compile-aclasp)
 (core:quit)" (jobs configuration)))
 
 (defmethod print-prologue (configuration (name (eql :run-aclasp)) output-stream)
-  (format output-stream "(load #P\"sys:kernel;clasp-builder.lisp\")
+  (format output-stream "(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
 (core:load-aclasp)" (jobs configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-bclasp)) output-stream)
   (format output-stream "(setq *features* (cons :bclasp *features*))
-(load #P\"sys:kernel;clasp-builder.lisp\")
+(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
 (core:compile-bclasp)
 (core:quit)" (jobs configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-cclasp)) output-stream)
   (format output-stream "(setq *features* (cons :cclasp *features*))
-(load #P\"sys:kernel;clasp-builder.lisp\")
+(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
 (setq core::*number-of-jobs* ~a)
 (core:compile-cclasp)
 (core:quit)" (jobs configuration)))
 
 (defmethod print-prologue (configuration (name (eql :link-fasl)) output-stream)
   (write-string "(setq *features* (cons :aclasp *features*))
-(load #P\"sys:kernel;clasp-builder.lisp\")
-(load #P\"sys:kernel;cmp;jit-setup.lisp\")
+(load #P\"sys:src;lisp;kernel;clasp-builder.lisp\")
+(load #P\"sys:src;lisp;kernel;cmp;jit-setup.lisp\")
 (let ((args (core:command-line-arguments-as-list)))
   (core:link-fasl :output-file (car args)
                   :system (cdr args)))
@@ -107,14 +107,11 @@
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
   (when (jupyter configuration)
-    (format output-stream "(unless (find-package \"QL\")
-  (load \"quicklisp:setup.lisp\"))
-(uiop/package:symbol-call \"QL\" \"QUICKLOAD\"~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)~%"
+    (format output-stream "#+quicklisp (ql:quickload ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)
+#-quicklisp (asdf:load-system ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)"
+            (member :cando (extensions configuration))
             (member :cando (extensions configuration))))
-  (format output-stream "(setf ext:*snapshot-save-load-startup*
-      ~:[~;#-ignore-extensions 'cl-user:start-cando-user-from-snapshot
-      #+ignore-extensions ~]'sys::cclasp-snapshot-load-top-level)
-(clos:compile-all-generic-functions)
+  (format output-stream "(clos:compile-all-generic-functions)
 (gctools:save-lisp-and-die (elt core:*command-line-arguments* 0) :executable t)
 (core:quit)"
           (member :cando (extensions configuration))))
@@ -127,16 +124,13 @@ CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
 
 (defmethod print-prologue (configuration (name (eql :jupyter-kernel)) output-stream)
   (let ((candop (member :cando (extensions configuration))))
-    (format output-stream "
-~:[~;#+ignore-extensions~] (require :asdf)
-(let ((name (first (uiop:command-line-arguments)))
+    (format output-stream "(let ((name (first (uiop:command-line-arguments)))
       (bin-path (second (uiop:command-line-arguments)))
       (load-system (equal \"1\" (third (uiop:command-line-arguments))))
       (system (equal \"1\" (fourth (uiop:command-line-arguments)))))
   (when load-system
-    (unless (find-package \"QL\")
-      (load \"quicklisp:setup.lisp\"))
-    (uiop/package:symbol-call \"QL\" \"QUICKLOAD\" ~:[~;#-ignore-extensions :cando-jupyter #+ignore-extensions ~]:common-lisp-jupyter))
+    #+quicklisp (ql:quickload ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter)
+    #-quicklisp (asdf:load-system ~:[~; #-ignore-extensions :cando-jupyter #+ignore-extensions~] :common-lisp-jupyter))
   (uiop/package:symbol-call ~:[~;#-ignore-extensions \"CANDO-JUPYTER\" #+ignore-extensions ~]\"CL-JUPYTER\" \"INSTALL\"
     :system system :local ~s :implementation name
     :bin-path (if system
@@ -151,3 +145,10 @@ CLASP_FEATURES=ignore-extensions exec $(dirname \"$0\")/~a \"$@\""
             (package-path configuration)
             (jupyter-path configuration))))
 
+(defmethod print-prologue (configuration (name (eql :clasprc)) output-stream)
+  (declare (ignore configuration))
+  (print-asdf-stub output-stream nil)
+  (format output-stream "~%(load #P\"quicklisp:setup.lisp\")
+(unless (ql-dist:find-dist \"quickclasp\")
+  (sleep 2) ; ensure that the sequence number if quickclasp is higher
+  (ql-dist:install-dist \"http://thirdlaw.tech/quickclasp/quickclasp.txt\" :prompt nil))"))

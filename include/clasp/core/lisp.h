@@ -833,7 +833,7 @@ public:
 	 * Cons of code if code was provided on the command line or through a script file
 	 * Otherwise return nil
 	 */
-  void parseCommandLineArguments(int argc, char *argv[], const CommandLineOptions& options );
+  void parseCommandLineArguments(const CommandLineOptions& options);
 
   List_sp getCommandLineArguments() { return this->_Roots._CommandLineArguments; };
 
@@ -909,8 +909,7 @@ public:
   /*! Pass the mpiProcess rank in (rank) or set to 0 if there is only one process */
   LispHolder(bool mpiEnabled, int mpiRank, int mpiSize);
 
-      virtual void startup(CommandLineOptions* options,
-                           int argc, char *argv[], const string &appPathEnvironmentVariable);
+  virtual void startup(const CommandLineOptions& options);
 
   virtual ~LispHolder();
 };

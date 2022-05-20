@@ -89,11 +89,11 @@
            (let ((file (let* ((part-name
                                 (enough-namestring
                                  (asdf/component:component-pathname x)
-                                 (translate-logical-pathname #P"SOURCE-DIR:")))
+                                 (translate-logical-pathname #P"sys:")))
                               (no-type
                                 (make-pathname :directory (pathname-directory part-name)
                                                :name (pathname-name part-name))))
-                         (enough-namestring (pathname (namestring no-type)) (translate-logical-pathname "source-dir:")))))
+                         (enough-namestring (pathname (namestring no-type)) (translate-logical-pathname "sys:")))))
              (format t "x -> ~a   file -> ~a~%" x file)
              (push file source))))
        *all-source-files*)

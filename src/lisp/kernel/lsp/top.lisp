@@ -335,13 +335,13 @@ Clasp specific.
 The top-level loop of Clasp. It is called by default when Clasp is invoked."
   (catch *quit-tag*
     (let* ((*debugger-hook* nil)
-	   + ++ +++ - * ** *** / // ///)
+           + ++ +++ - * ** *** / // ///)
 
       (when set-package
         (in-package "CL-USER"))
 
       (let ((*tpl-level* -1))
-	(tpl :noprint noprint))
+            (tpl :noprint noprint))
       0)))
 
 #+threads

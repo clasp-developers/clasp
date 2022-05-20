@@ -168,7 +168,7 @@ core::globals_t* globals_;
 
 namespace core {
 
-CommandLineOptions *global_options;
+CommandLineOptions *global_options = NULL;
 bool global_initialize_builtin_classes = false;
 
 const int Lisp::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
@@ -1148,12 +1148,11 @@ void dumpDebuggingLayouts(const std::string& filename) {
 #endif
 }
 
-void Lisp::parseCommandLineArguments(int argc, char *argv[], const CommandLineOptions& options) {
-  int endArg = options._EndArg;
+void Lisp::parseCommandLineArguments(const CommandLineOptions& options) {
   LOG("Parsing what is left over into lisp environment arguments");
   gctools::Vec0<T_sp> vargs;
-  for (int j(endArg + 1); j < argc; ++j) {
-    vargs.push_back(SimpleBaseString_O::make(argv[j]));
+  for (auto arg : options._LispArguments) {
+    vargs.push_back(SimpleBaseString_O::make(arg));
   }
   SimpleVector_sp args = SimpleVector_O::make(vargs);
   LOG(" Command line arguments are being set in Lisp to: %s" , _rep_(args));
@@ -1167,17 +1166,8 @@ void Lisp::parseCommandLineArguments(int argc, char *argv[], const CommandLineOp
   }
 
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
-  const char* environment_features = getenv("CLASP_FEATURES");
-  if (environment_features) {
-    vector<string> features_vector = split(std::string(environment_features)," ,");
-    for ( auto feature_name : features_vector ) {
-      if (feature_name != "") {
-        features = Cons_O::create(_lisp->internKeyword(feature_name),features);
-      }
-    }
-  }
-  for (int i = 0; i < options._Features.size(); ++i) {
-    features = Cons_O::create(_lisp->internKeyword(lispify_symbol_name(options._Features[i])), features);
+  for (auto feature : options._Features) {
+    features = Cons_O::create(_lisp->internKeyword(feature), features);
   }
   features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
   features = Cons_O::create(_lisp->internKeyword("COMMON-LISP"), features);
@@ -1263,7 +1253,7 @@ void Lisp::parseCommandLineArguments(int argc, char *argv[], const CommandLineOp
   }
 
   //	this->_FunctionName = execName;
-  globals_->_InitFileName = "sys:" KERNEL_NAME ";init.lisp";
+  globals_->_InitFileName = "sys:src;lisp;" KERNEL_NAME ";init.lisp";
 
   globals_->_IgnoreInitImage = options._DontLoadImage;
   globals_->_IgnoreInitLsp = options._DontLoadInitLsp;
@@ -2518,20 +2508,14 @@ LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->lisp_ = Lisp::createLispEnvironment(mpiEnabled, mpiRank, mpiSize);
 }
 
-void LispHolder::startup(CommandLineOptions* global_options,
-                         int argc, char *argv[], const string &appPathEnvironmentVariable) {
+void LispHolder::startup(const CommandLineOptions& options) {
   ::_lisp = this->lisp_;
 
-  const char *argv0 = "./";
-  if (argc > 0)
-    argv0 = argv[0];
-  globals_->_Argc = argc;
-  for (int i = 0; i < argc; ++i) {
-    globals_->_Argv.push_back(string(argv[i]));
-  }
-  // Call the initializers here so that they can edit the global_options structure
+  globals_->_Argc = options._RawArguments.size();
+  globals_->_Argv = options._RawArguments;
+
   if (!globals_->_Bundle) {
-    globals_->_Bundle = new Bundle(argv0,global_options->_ResourceDir);
+    globals_->_Bundle = new Bundle(options._ExecutableName);
   }
   // Start up lisp
   this->lisp_->startupLispEnvironment();
@@ -2543,8 +2527,7 @@ void LispHolder::startup(CommandLineOptions* global_options,
 # undef ALL_INITIALIZERS_CALLS
 #endif
 
-  // The initializers may have changed the function that processes global_options
-  _lisp->parseCommandLineArguments(argc, argv, *global_options);
+  _lisp->parseCommandLineArguments(options);
 }
 
 LispHolder::~LispHolder() {

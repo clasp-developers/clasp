@@ -39,6 +39,12 @@ THE SOFTWARE.
 #include <clasp/gctools/snapshotSaveLoad.h>
 
 
+#ifndef SCRAPING
+#define ALL_PREGCSTARTUPS_EXTERN
+#include PREGCSTARTUP_INC_H
+#undef ALL_PREGCSTARTUPS_EXTERN
+#endif
+
 THREAD_LOCAL MMTk_Mutator my_mutator;
 
 namespace gctools {
@@ -63,13 +69,12 @@ int initializeMmtk(MainFunctionType startupFn, int argc, char *argv[], bool mpiE
   GC_register_my_thread(&gc_stack_base);
 #endif
 
+  core::global_options = new core::CommandLineOptions(argc, argv);
 
-#if 0
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS
 #include PREGCSTARTUP_INC_H
 #undef ALL_PREGCSTARTUPS_CALLS
-#endif
 
 
   //

@@ -65,7 +65,7 @@
 ;;; format per line :ISO-8859-2;0;0;
 (defun process-encodings-file ()
   (setq *encoding-data* nil *encoding-cache* (make-hash-table))
-  (let ((file (translate-logical-pathname #P"SOURCE-DIR:tools-for-build;encodingdata.txt"))
+  (let ((file (translate-logical-pathname #P"sys:tools-for-build;encodingdata.txt"))
         (old-encoding nil)
         (alist nil))
     (with-open-file (stream file :element-type 'character :direction :input :external-format :utf-8)

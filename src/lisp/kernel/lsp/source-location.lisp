@@ -28,7 +28,7 @@
         (let ((src-directory (pathname-directory src-pathname))
               (filepos pos))
           (let ((pn (if (eq (car src-directory) :relative)
-                        (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
+                        (merge-pathnames src-pathname (translate-logical-pathname "sys:"))
                         src-pathname)))
             (values pn filepos lineno))))
       (progn
@@ -145,11 +145,11 @@
 - kind : A symbol (:function :method :class)
 Return the source-location for the name/kind pair"
   (labels ((fix-paths-and-make-source-locations (rels)
-             (let ((source-dir (translate-logical-pathname #P"source-dir:")))
+             (let ((sys-dir (translate-logical-pathname #P"sys:")))
                (mapcar (lambda (dir-pos)
                          (let ((dir (first dir-pos))
                                (pos (second dir-pos)))
-                           (make-source-location :pathname (merge-pathnames dir source-dir)
+                           (make-source-location :pathname (merge-pathnames dir sys-dir)
                                                  :offset pos
                                                  ;; FIXME
                                                  :definer 'defmethod)))

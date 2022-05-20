@@ -382,6 +382,12 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
 
 };
 
+#ifndef SCRAPING
+#define ALL_PREGCSTARTUPS_EXTERN
+#include PREGCSTARTUP_INC_H
+#undef ALL_PREGCSTARTUPS_EXTERN
+#endif
+
 namespace gctools {
 __attribute__((noinline))
 int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
@@ -407,7 +413,7 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   GC_get_stack_base(&gc_stack_base);
   GC_register_my_thread(&gc_stack_base);
 #endif
-
+  core::global_options = new core::CommandLineOptions(argc, argv);
  
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS

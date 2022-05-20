@@ -190,6 +190,12 @@ extern mps_addr_t cons_skip(mps_addr_t client);
 extern mps_addr_t weak_obj_skip(mps_addr_t client);
 };
 
+#ifndef SCRAPING
+#define ALL_PREGCSTARTUPS_EXTERN
+#include PREGCSTARTUP_INC_H
+#undef ALL_PREGCSTARTUPS_EXTERN
+#endif
+
 namespace gctools {
 
 THREAD_LOCAL ThreadLocalAllocationPoints my_thread_allocation_points;
@@ -1099,6 +1105,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
+  core::global_options = new core::CommandLineOptions(argc, argv);
 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS
