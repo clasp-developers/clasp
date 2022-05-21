@@ -148,6 +148,9 @@
                       (make-array (list -13)))
                    :type type-error)
 
+(test-true issue-1253
+           (numberp (bit #*100000011011 11)))
+
 (test-true issue-1253-a
            (numberp (bit #*100000011011 4)))
 
