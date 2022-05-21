@@ -321,6 +321,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, cst);
 SYMBOL_EXPORT_SC_(KeywordPkg, bclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, load);
 SYMBOL_EXPORT_SC_(KeywordPkg, eval);
+SYMBOL_EXPORT_SC_(KeywordPkg, script);
 SYMBOL_EXPORT_SC_(KeywordPkg, clasp_min);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_mps);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_boehmdc);

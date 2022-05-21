@@ -35,7 +35,7 @@ typedef void (*process_arguments_callback)(CommandLineOptions *);
 
 extern bool global_debug_byte_code;
 
-typedef enum { cloLoad, cloEval } LoadEvalEnum;
+typedef enum { cloLoad, cloEval, cloScript } LoadEvalEnum;
 
 typedef enum { cloDefault, cloImage, cloSnapshot } ImageTypeEnum;
 

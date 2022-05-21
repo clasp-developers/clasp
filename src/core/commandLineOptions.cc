@@ -89,6 +89,9 @@ Options:
       Evaluate a <form>
   -l, --load <file>
       LOAD the <file>
+  --script <file>
+      LOAD the <file> and skip any leading shebang. This also adds the --norc,
+      --noinform and --non-interactive options.
   --rc <file>
       Specify name of the RC file (default .clasprc)
   -r, --norc
@@ -199,10 +202,30 @@ Environment variables:
                    <generation1MortalityPercent> <keyExtendByKb>)dx";
 
 void process_clasp_arguments(CommandLineOptions *options) {
-  std::set<std::string> parameter_required = {"-i",   "--image", "-T",     "--type",     "-L",       "--llvm-debug",
-                                              "-t",   "--stage", "-d",     "--describe", "-a",       "--addresses",
-                                              "-e",   "--eval",  "-l",     "--load",     "-y",       "--snapshot-symbols",
-                                              "--rc", "-S",      "--seed", "-f",         "--feature"};
+  std::set<std::string> parameter_required = {"-i",
+                                              "--image",
+                                              "-T",
+                                              "--type",
+                                              "-L",
+                                              "--llvm-debug",
+                                              "-t",
+                                              "--stage",
+                                              "-d",
+                                              "--describe",
+                                              "-a",
+                                              "--addresses",
+                                              "-e",
+                                              "--eval",
+                                              "-l",
+                                              "--load",
+                                              "--script",
+                                              "-y",
+                                              "--snapshot-symbols",
+                                              "--rc",
+                                              "-S",
+                                              "--seed",
+                                              "-f",
+                                              "--feature"};
   for (auto arg = options->_KernelArguments.cbegin(), end = options->_KernelArguments.cend(); arg != end; ++arg) {
     if (parameter_required.contains(*arg) && (arg + 1) == end) {
       std::cerr << "Missing parameter for " << *arg << " option." << std::endl;
@@ -309,6 +332,12 @@ void process_clasp_arguments(CommandLineOptions *options) {
       options->_LoadEvalList.push_back(pair<LoadEvalEnum, std::string>(std::make_pair(cloEval, *++arg)));
     } else if (*arg == "-l" || *arg == "--load") {
       options->_LoadEvalList.push_back(pair<LoadEvalEnum, std::string>(std::make_pair(cloLoad, *++arg)));
+    } else if (*arg == "--script") {
+      options->_NoInform = true;
+      options->_NoRc = true;
+      options->_DebuggerDisabled = true;
+      options->_Interactive = false;
+      options->_LoadEvalList.push_back(pair<LoadEvalEnum, std::string>(std::make_pair(cloScript, *++arg)));
     } else if (*arg == "-S" || *arg == "--seed") {
       options->_RandomNumberSeed = atoi((*++arg).c_str());
     } else {
@@ -360,10 +389,19 @@ CL_DEFUN List_sp core__command_line_load_eval_sequence() {
   List_sp loadEvals = nil<T_O>();
   for (auto it : global_options->_LoadEvalList) {
     Cons_sp one;
-    if (it.first == cloEval) {
+    switch (it.first) {
+    case cloEval:
       one = Cons_O::create(kw::_sym_eval, SimpleBaseString_O::make(it.second));
-    } else {
+      break;
+    case cloLoad:
       one = Cons_O::create(kw::_sym_load, SimpleBaseString_O::make(it.second));
+      break;
+    case cloScript:
+      one = Cons_O::create(kw::_sym_script, SimpleBaseString_O::make(it.second));
+      break;
+    default:
+      SIMPLE_ERROR("Unknown load type %d for %s%N", it.first, it.second);
+      break;
     }
     loadEvals = Cons_O::create(one, loadEvals);
   }
