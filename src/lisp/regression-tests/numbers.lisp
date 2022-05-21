@@ -732,3 +732,6 @@
                  (declare (fixnum integer-factor))
                  (the fixnum (* integer-factor end))))
              13)))
+
+(test-true issue-1253
+           (numberp (bit #*100000011011 11)))

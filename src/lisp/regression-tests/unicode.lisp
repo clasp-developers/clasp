@@ -9,7 +9,7 @@
       (#\CYRILLIC_CAPITAL_LETTER_IE_WITH_GRAVE))
 
 (test char-upcase.2
-      (loop for i from 0 below (min 65536 char-code-limit)
+      (loop for i from 0 below char-code-limit
             for x = (code-char i)
             unless (or (not x)
                        (let ((u (char-upcase x)))
@@ -19,13 +19,31 @@
               collect (list i (char-name x)))
       (nil))
 
+(test char-upcase.2a
+      (loop for i from 0 below char-code-limit
+            for x = (code-char i)
+            when 
+               (and x (lower-case-p x)
+                          (char= x (char-upcase x)))
+            collect (list i x (char-name x)))
+      (nil))
+
 (test char-downcase.2
-      (loop for i from 0 below (min 65536 char-code-limit)
+      (loop for i from 0 below char-code-limit
             for x = (code-char i)
             unless (or (not x)
                        (let ((u (char-downcase x)))
                          (and
                           (or (upper-case-p x) (char= u x))
                           (char= u (char-downcase u)))))
-              collect (list i (char-name x)))
+              collect (list i x (char-name x)))
+      (nil))
+
+(test char-downcase.2a
+      (loop for i from 0 below char-code-limit
+            for x = (code-char i)
+            when 
+               (and x (upper-case-p x)
+                          (char= x (char-downcase x)))
+            collect (list i x (char-name x)))
       (nil))
