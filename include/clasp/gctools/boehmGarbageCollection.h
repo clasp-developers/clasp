@@ -127,7 +127,7 @@ struct ReachableClass {
   gctools::GCStampEnum _Kind;
   size_t instances;
   size_t totalSize;
-  size_t print(const std::string &shortName);
+  size_t print(std::ostringstream& output);
 };
 
 
@@ -149,7 +149,8 @@ struct FindOwner {
 /*!
  * claspgc_room - the GC specific implementation of ROOM
  */
-void clasp_gc_room(std::ostringstream& OutputStream);
+typedef enum {room_max, room_default, room_min } RoomVerbosity;
+void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity);
 
 };
 

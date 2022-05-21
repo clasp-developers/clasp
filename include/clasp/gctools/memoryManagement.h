@@ -88,6 +88,7 @@ extern size_t _global_stack_max_size;
 #define MASK_MTAG           0b111
 #define DO_SHIFT_STAMP(unshifted_stamp) ((unshifted_stamp<<gctools::Header_s::general_mtag_shift)|gctools::Header_s::general_mtag)
 
+#define STAMP_UNSHIFT_WTAG(stampwtag) (((size_t)stampwtag)>>gctools::Header_s::wtag_width)
 #define STAMP_UNSHIFT_MTAG(unshifted_stamp) (((size_t)unshifted_stamp)>>gctools::Header_s::general_mtag_shift)
 // ADJUST_STAMP values are left unshifted
 #define ADJUST_STAMP(unshifted_stamp) (unshifted_stamp) // (unshifted_stamp<<STAMP_PARTIAL_SHIFT_REST_FIXNUM)|STAMP_MTAG)

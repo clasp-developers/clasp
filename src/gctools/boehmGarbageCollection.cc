@@ -63,17 +63,14 @@ static size_t invalidHeaderTotalSize = 0;
 extern "C" {
 void callback_reachable_object( gctools::Header_s* ptr, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
-  if (!valid_stamp(stamp)) {
-    printf("%s:%d:%s Invalid stamp\n", __FILE__, __LINE__, __FUNCTION__ );
-#if 0
-    if (h->_stamp_wtag_mtag.consP()) {
-      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
-//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
-    } else {
-      stamp = (gctools::GCStampEnum)0; // unknown uses 0
+  gctools::GCStampEnum stamp;
+  if (h->_stamp_wtag_mtag.consObjectP()) {
+    stamp = (gctools::GCStampEnum)STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_CONS);
+  } else {
+    stamp = h->_stamp_wtag_mtag.stamp_();
+    if (!valid_stamp(stamp)) {
+      printf("%s:%d:%s Invalid stamp\n", __FILE__, __LINE__, __FUNCTION__ );
     }
-#endif
   }
   size_t sz = objectSize(h);
   gctools::ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
@@ -140,7 +137,7 @@ void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *cli
 
 
 template <typename T>
-size_t dumpResults(const std::string &name, const std::string &shortName, T *data) {
+size_t dumpResults(const std::string &name, T *data, std::ostringstream& OutputStream ) {
   typedef typename T::value_type::second_type value_type;
   vector<value_type> values;
   for (auto it : *data) {
@@ -155,7 +152,7 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
   size_t numCons = 0;
   for (auto it : values) {
     // Does that print? If so should go to the OutputStream
-    size_t sz = it.print(shortName);
+    size_t sz = it.print(OutputStream);
     totalSize += sz;
     if (sz < 1) break;
     idx += 1;
@@ -166,6 +163,48 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
 #endif
   }
   return totalSize;
+}
+
+struct Summary {
+  size_t    _consTotalSize;
+  size_t    _consCount;
+  size_t    _otherTotalSize;
+  size_t    _otherCount;
+  Summary() :
+      _consTotalSize(0),
+      _consCount(0),
+      _otherTotalSize(0),
+      _otherCount(0) {};
+};
+
+template <typename T>
+size_t summarizeResults(T *data, Summary& summary ) {
+  typedef typename T::value_type::second_type value_type;
+  vector<value_type> values;
+  for (auto it : *data) {
+    values.push_back(it.second);
+  }
+  size_t idx = 0;
+  size_t totalCons = 0;
+  size_t totalSize = 0;
+  size_t numCons = 0;
+  for (auto it : values) {
+    // Does that print? If so should go to the OutputStream
+    Fixnum k = it._Kind;
+    size_t sz = it.totalSize;
+    if ( k == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__Cons_O)) {
+      summary._consCount += it.instances;
+      summary._consTotalSize += sz;
+    } else {
+      summary._otherCount += it.instances;
+      summary._otherTotalSize += sz;
+    }
+    totalSize += sz;
+    if (sz < 1) break;
+    idx += 1;
+  }
+  return totalSize;
+
 }
 
 
@@ -466,49 +505,71 @@ void walkRoots( RootWalkCallback callback, void* data ) {
 
 
 
-size_t ReachableClass::print(const std::string& shortName) {
+size_t ReachableClass::print(std::ostringstream& OutputStream ) {
   Fixnum k = this->_Kind;
-  stringstream className;
+  string className;
   if (k <= gctools::STAMPWTAG_max) {
-//      printf("%s:%d searching for name for this->_Kind: %u\n", __FILE__, __LINE__, this->_Kind);
     const char* nm = obj_name(k);
-    if (!nm) {
-      className << "NULL-NAME";
+    if (k == 0) {
+      className = "UNKNOWN";
     } else {
-      className << nm;
+      if (!nm) {
+        className = "NULL-NAME";
+      } else {
+        className = nm;
+        if (className.size()>10) {
+          className = className.substr(10);
+        }
+      }
     }
-    core::write_bf_stream(fmt::format("{}: total_size: {:10d} count: {:8d} avg.sz: {:8d} kind: {}/{}\n"
-                                      , shortName , this->totalSize , this->instances
-                                      , (this->totalSize / this->instances) , className.str().c_str() , k)
-                    , cl::_sym_STARstandard_outputSTAR->symbolValue());
-    core::clasp_finish_output_t();
+    OutputStream << fmt::format("total_size: {:10d} count: {:8d} avg.sz: {:8d} {}/{}\n"
+                                , this->totalSize , this->instances
+                                , (this->totalSize / this->instances)
+                                , className , k);
     return this->totalSize;
-  } else {
-    core::write_bf_stream(fmt::format("{}: total_size: {:10d} count: {:8d} avg.sz: {:8d} kind: {}/{}\n"
-                                       , shortName , this->totalSize , this->instances
-                                       , (this->totalSize / this->instances) , "UNKNOWN" , k)
-                          ,cl::_sym_STARstandard_outputSTAR->symbolValue());
-    core::clasp_finish_output_t();
+  } else  {
+    OutputStream << fmt::format("total_size: {:10d} count: {:8d} avg.sz: {:8d} {}/{}\n"
+                                , this->totalSize , this->instances
+                                , (this->totalSize / this->instances) , "UNKNOWN" , k);
     return this->totalSize;
   }
 }
 
-void clasp_gc_room(std::ostringstream& OutputStream) {
+void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
   GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
-  OutputStream << "Walked LispKinds\n" ;
   size_t totalSize(0);
-  OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
-  totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
-  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
-  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
-  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
-
+  if (verbosity == room_max) {
+    OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
+    totalSize += dumpResults("Reachable ClassKinds", static_ReachableClassKinds, OutputStream );
+    OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
+  }
+  if ( verbosity == room_default ) {
+    Summary summary;
+    totalSize += summarizeResults(static_ReachableClassKinds,summary);
+    OutputStream << fmt::format("Walk of memory found {} different classes.\n", static_cast<uintptr_t>(static_ReachableClassKinds->size()));
+    OutputStream << fmt::sprintf("There are %lu cons objects occupying %lu bytes using %4.1f%% of memory.\n",
+                                summary._consCount,
+                                summary._consTotalSize,
+                                (float)summary._consTotalSize/totalSize*100.0 );
+    OutputStream << fmt::sprintf("sprintf: There are %lu other objects occupying %lu bytes %4.1f%% of memory.\n",
+                                summary._otherCount,
+                                summary._otherTotalSize,
+                                (float)summary._otherTotalSize/totalSize*100.0 );
+    OutputStream << fmt::format("format: There are {} other objects occupying {} bytes {:4.1f}% of memory.\n",
+                                summary._otherCount,
+                                summary._otherTotalSize,
+                                (float)summary._otherTotalSize/totalSize*100.0 );
+  }
+  if (invalidHeaderTotalSize>0) {
+    OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  }
+  OutputStream << "Total object memory usage (bytes): " << std::setw(12) << totalSize << '\n';
+  OutputStream << "Total GC_get_heap_size():          " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << "Total GC_get_free_bytes():         " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << "Total GC_get_bytes_since_gc():     " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << "Total GC_get_total_bytes():        " <<  std::setw(12) << GC_get_total_bytes() << '\n';
   delete static_ReachableClassKinds;
 }
 

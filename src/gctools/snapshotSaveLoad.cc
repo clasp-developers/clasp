@@ -2516,7 +2516,7 @@ void snapshot_save(core::SaveLispAndDie& data) {
   //
   gctools::gctools__garbage_collect();
   gctools::gctools__garbage_collect();
-  gctools::cl__room(nil<core::T_O>());
+  gctools::cl__room(nil<core::Symbol_O>());
   //
   // Test the memory before we do snapshot_save
   //

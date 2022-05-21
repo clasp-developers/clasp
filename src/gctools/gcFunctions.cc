@@ -45,6 +45,7 @@ int gcFunctions_after;
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
 namespace gctools {
@@ -479,21 +480,29 @@ CL_DEFUN void gctools__copy_memory() {
 }
 #endif // USE_MPS
 
-CL_LAMBDA(&optional x)
+CL_LAMBDA(&optional (x :default))
 CL_DECLARE();
-CL_DOCSTRING(R"dx(room - Return info about the reachable objects in memory. x can be T, nil, :default.)dx")
+CL_DOCSTRING(R"dx(room - Return info about the reachable objects in memory. x can be T, nil, :default and they control the amount of output produced.)dx")
 DOCGROUP(clasp)
-CL_DEFUN core::T_mv cl__room(core::T_sp x) {
+CL_DEFUN core::T_mv cl__room(core::Symbol_sp x) {
   std::ostringstream OutputStream;
-  gctools__garbage_collect();
-  gctools__garbage_collect();
+  RoomVerbosity verb;
+  if (x == cl::_sym_T) {
+    verb = room_max;
+  } else if (x == kw::_sym_default) {
+    verb = room_default;
+  } else if (x.nilp()) {
+    verb = room_min;
+  } else {
+    SIMPLE_ERROR("You must provide t, nil or :default");
+  }
 #if defined(USE_BOEHM) || defined(USE_MPS)
-  clasp_gc_room(OutputStream);
+  clasp_gc_room( OutputStream, verb );
 #else
   MISSING_GC_SUPPORT();
 #endif
   clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
-  return Values(nil<core::T_O>());
+  return Values0<core::T_O>();
 };
 };
 

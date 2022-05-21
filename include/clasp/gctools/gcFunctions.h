@@ -17,7 +17,7 @@ void initialize_gc_functions();
 
 core::T_mv gctools__ensure_valid_object(core::T_mv obj);
 
-core::T_mv cl__room(core::T_sp x);
+core::T_mv cl__room(core::Symbol_sp x);
 
 
 };
