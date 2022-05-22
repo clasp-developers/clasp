@@ -780,6 +780,9 @@ Use special code 0 to cancel this operation.")
   (error "tpl-document-command doesn't work because clasp doesn't supply help")
   #+(or)(when symbol (help symbol)))
 
+(defun step* (form)
+  (funcall (compile nil `(lambda () (step ,form)))))
+
 (defun tpl-step-command (&optional form)
   (when form (step* form)))
 
