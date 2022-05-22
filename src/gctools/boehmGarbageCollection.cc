@@ -536,6 +536,10 @@ size_t ReachableClass::print(std::ostringstream& OutputStream ) {
 }
 
 void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
+#ifdef USE_PRECISE_GC
+  //
+  // We only get good info when building with USE_PRECISE_GC
+  //
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
   GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
@@ -550,13 +554,13 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
     totalSize += summarizeResults(static_ReachableClassKinds,summary);
     OutputStream << fmt::format("Walk of memory found {} different classes.\n", static_cast<uintptr_t>(static_ReachableClassKinds->size()));
     OutputStream << fmt::sprintf("There are %lu cons objects occupying %lu bytes using %4.1f%% of memory.\n",
-                                summary._consCount,
-                                summary._consTotalSize,
-                                (float)summary._consTotalSize/totalSize*100.0 );
+                                 summary._consCount,
+                                 summary._consTotalSize,
+                                 (float)summary._consTotalSize/totalSize*100.0 );
     OutputStream << fmt::sprintf("sprintf: There are %lu other objects occupying %lu bytes %4.1f%% of memory.\n",
-                                summary._otherCount,
-                                summary._otherTotalSize,
-                                (float)summary._otherTotalSize/totalSize*100.0 );
+                                 summary._otherCount,
+                                 summary._otherTotalSize,
+                                 (float)summary._otherTotalSize/totalSize*100.0 );
     OutputStream << fmt::format("format: There are {} other objects occupying {} bytes {:4.1f}% of memory.\n",
                                 summary._otherCount,
                                 summary._otherTotalSize,
@@ -566,6 +570,7 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
     OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
   }
   OutputStream << "Total object memory usage (bytes): " << std::setw(12) << totalSize << '\n';
+#endif
   OutputStream << "Total GC_get_heap_size():          " << std::setw(12) << GC_get_heap_size() << '\n';
   OutputStream << "Total GC_get_free_bytes():         " << std::setw(12) << GC_get_free_bytes() << '\n';
   OutputStream << "Total GC_get_bytes_since_gc():     " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
