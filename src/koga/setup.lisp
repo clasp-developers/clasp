@@ -221,10 +221,13 @@ writing the build and variant outputs."
           while script
           do (message :info "Loading script ~a" script)
              (load script))
-    (message :emph "~%Writing build files")
-    (loop for name being the hash-keys in (outputs *configuration*)
-          do (write-build-output *configuration* name))
-    (map-variants *configuration*
-                  (lambda ()
-                    (loop for name being the hash-keys in (outputs *configuration*)
-                          do (write-variant-output *configuration* name))))))
+    (let ((*root-paths* (list* :install-jupyter (jupyter-path *configuration*)
+                               :package-jupyter (resolve-package-path (jupyter-path *configuration*))
+                               *root-paths*)))
+      (message :emph "~%Writing build files")
+      (loop for name being the hash-keys in (outputs *configuration*)
+            do (write-build-output *configuration* name))
+      (map-variants *configuration*
+                    (lambda ()
+                      (loop for name being the hash-keys in (outputs *configuration*)
+                            do (write-variant-output *configuration* name)))))))
