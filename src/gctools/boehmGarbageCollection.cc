@@ -540,28 +540,27 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
   invalidHeaderTotalSize = 0;
   GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
   size_t totalSize(0);
-  if (verbosity == room_max) {
+  if ( verbosity == room_max ) {
     OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
     totalSize += dumpResults("Reachable ClassKinds", static_ReachableClassKinds, OutputStream );
     OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
-  }
-  if ( verbosity == room_default ) {
+  } else if ( verbosity == room_default ) {
     Summary summary;
     totalSize += summarizeResults(static_ReachableClassKinds,summary);
     OutputStream << fmt::format("Walk of memory found {} different classes.\n", static_cast<uintptr_t>(static_ReachableClassKinds->size()));
-    OutputStream << fmt::sprintf("There are %lu cons objects occupying %lu bytes using %4.1f%% of memory.\n",
+    OutputStream << fmt::format("There are {} cons objects occupying {} bytes {:4.1f}% of memory.\n",
                                 summary._consCount,
                                 summary._consTotalSize,
                                 (float)summary._consTotalSize/totalSize*100.0 );
-    OutputStream << fmt::sprintf("sprintf: There are %lu other objects occupying %lu bytes %4.1f%% of memory.\n",
+    OutputStream << fmt::format("There are {} other objects occupying {} bytes {:4.1f}% of memory.\n",
                                 summary._otherCount,
                                 summary._otherTotalSize,
                                 (float)summary._otherTotalSize/totalSize*100.0 );
-    OutputStream << fmt::format("format: There are {} other objects occupying {} bytes {:4.1f}% of memory.\n",
-                                summary._otherCount,
-                                summary._otherTotalSize,
-                                (float)summary._otherTotalSize/totalSize*100.0 );
+  } else if ( verbosity == room_min ) {
+    Summary summary;
+    totalSize += summarizeResults(static_ReachableClassKinds,summary);
   }
+
   if (invalidHeaderTotalSize>0) {
     OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
   }
