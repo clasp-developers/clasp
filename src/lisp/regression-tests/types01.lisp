@@ -66,3 +66,7 @@
 (test-true issue-1252a
            (let ((name :abort))
              (typep name 'gesture-name)))
+
+(test-true issue-1308
+           (let ()
+             (null (typep #() '(array * nil)))))
