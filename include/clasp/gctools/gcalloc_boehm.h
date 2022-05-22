@@ -26,15 +26,15 @@ template <typename Cons, typename...ARGS>
 inline Cons* do_boehm_cons_allocation(size_t size,ARGS&&... args)
 { RAII_DISABLE_INTERRUPTS();
 #ifdef USE_PRECISE_GC
-  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),size,global_cons_kind,&global_cons_kind));
+  ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),size,global_cons_kind,&global_cons_kind));
 # ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons );
 # endif
 #else
-  Header_s::StampWtagMtag* header = reinterpret_cast<Header_s::StampWtagMtag*>(ALIGNED_GC_MALLOC(size));
+  ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC(size));
 #endif
   Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
-  new (header) Header_s::StampWtagMtag(cons);
+  new (header) ConsHeader_s(cons);
   new (cons) Cons(std::forward<ARGS>(args)...);
   return cons;
 }
