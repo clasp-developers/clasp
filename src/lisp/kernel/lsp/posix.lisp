@@ -1,3 +1,35 @@
+
+;; Define these functions to the start to avoid compiler style-warnings
+(in-package :core)
+
+(defparameter *signal-to-function* nil)
+(defparameter *cache-signal-alist* nil)
+
+;;; For Signal see https://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
+(defun external-to-int-signal (signal)
+  (let* ((signal-alist (if *cache-signal-alist* *cache-signal-alist* (setq *cache-signal-alist* (core:signal-code-alist))))
+         (found (Assoc signal signal-alist)))
+    (if found
+        (cdr found)
+        nil)))
+
+(defun note-signal-handler (signal function)
+  (setf (getf *signal-to-function* signal) function))
+
+(defun forget-signal-handler (signal)
+  (when *signal-to-function*
+    (remf *signal-to-function* signal)))
+
+(defun get-signal-handler (signal)
+  (getf *signal-to-function* signal))
+
+(defun call-lisp-symbol-handler (signal-as-fixnum)
+  (let ((function (get-signal-handler signal-as-fixnum)))
+    (if function
+        (funcall function signal-as-fixnum)
+        (error 'ext:unix-signal-received :code signal-as-fixnum))))
+
+
 (defpackage "CLASP-POSIX"
   (:use)
   (:import-from "CORE"
@@ -78,34 +110,4 @@
 (defun set-signal-handler (signal handler)
   "Set a lisp handler handler for signal"
   (enable-interrupt signal :lisp handler))
-
-(in-package :core)
-
-(defparameter *signal-to-function* nil)
-(defparameter *cache-signal-alist* nil)
-
-;;; For Signal see https://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
-(defun external-to-int-signal (signal)
-  (let* ((signal-alist (if *cache-signal-alist* *cache-signal-alist* (setq *cache-signal-alist* (core:signal-code-alist))))
-         (found (Assoc signal signal-alist)))
-    (if found
-        (cdr found)
-        nil)))
-
-(defun note-signal-handler (signal function)
-  (setf (getf *signal-to-function* signal) function))
-
-(defun forget-signal-handler (signal)
-  (when *signal-to-function*
-    (remf *signal-to-function* signal)))
-
-(defun get-signal-handler (signal)
-  (getf *signal-to-function* signal))
-
-(defun call-lisp-symbol-handler (signal-as-fixnum)
-  (let ((function (get-signal-handler signal-as-fixnum)))
-    (if function
-        (funcall function signal-as-fixnum)
-        (error 'ext:unix-signal-received :code signal-as-fixnum))))
-
 
