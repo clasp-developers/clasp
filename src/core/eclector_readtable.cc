@@ -49,3 +49,13 @@ SYMBOL_EXPORT_SC_(EclectorReadtablePkg,setf_readtable_case);
 SYMBOL_EXPORT_SC_(EclectorReadtablePkg,set_syntax_from_char);
 SYMBOL_EXPORT_SC_(EclectorReadtablePkg,readtablep);
 };
+
+
+namespace core {
+
+CL_DEFUN void core__set_eclector_reader_readmacros( T_sp readtable ) {
+  SIMPLE_ERROR("This function needs to be redefined in cleavir");
+}
+
+
+};
