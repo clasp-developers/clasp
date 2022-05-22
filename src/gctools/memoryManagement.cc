@@ -355,12 +355,33 @@ size_t random_tail_size() {
   return ts;
 }
 
-void Header_s::signal_invalid_object(const Header_s* header, const char* msg)
+void BaseHeader_s::signal_invalid_object(const BaseHeader_s* header, const char* msg)
 {
   printf("%s:%d  Invalid object with header @ %p message: %s\n", __FILE__, __LINE__, (void*)header, msg);
   abort();
 }
 
+
+void BaseHeader_s::validate() const {
+  if (((uintptr_t)this&ptag_mask)!=0) {
+    printf("%s:%d The header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
+  if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
+  if ( this->_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
+  if ( this->_stamp_wtag_mtag.stampP() ) {
+#if defined(USE_PRECISE_GC)
+    uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
+    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
+      printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
+      signal_invalid_object(this,"stamp out of range in header");
+    }
+#endif // USE_PRECISE_GC
+    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
+  } else {
+    signal_invalid_object(this,"Not a normal object");
+  }
+}
 
 void Header_s::validate() const {
   if (((uintptr_t)this&ptag_mask)!=0) {
@@ -405,7 +426,7 @@ void Header_s::validate() const {
 
 //
 // Return true if the object represented by this header is polymorphic
-bool Header_s::preciseIsPolymorphic() const {
+bool BaseHeader_s::preciseIsPolymorphic() const {
   if (this->_stamp_wtag_mtag.stampP()) {
     uintptr_t stamp = this->_stamp_wtag_mtag.stamp();
     return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;

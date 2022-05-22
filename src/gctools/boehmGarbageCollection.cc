@@ -536,6 +536,10 @@ size_t ReachableClass::print(std::ostringstream& OutputStream ) {
 }
 
 void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
+#ifdef USE_PRECISE_GC
+  //
+  // We only get good info when building with USE_PRECISE_GC
+  //
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
   GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
@@ -565,6 +569,7 @@ void clasp_gc_room(std::ostringstream& OutputStream, RoomVerbosity verbosity) {
     OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
   }
   OutputStream << "Total object memory usage (bytes): " << std::setw(12) << totalSize << '\n';
+#endif
   OutputStream << "Total GC_get_heap_size():          " << std::setw(12) << GC_get_heap_size() << '\n';
   OutputStream << "Total GC_get_free_bytes():         " << std::setw(12) << GC_get_free_bytes() << '\n';
   OutputStream << "Total GC_get_bytes_since_gc():     " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
