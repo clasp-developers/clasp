@@ -54,7 +54,7 @@ LightTimer::LightTimer(LightProfiler *profiler) : _Profiler(profiler), _Id(0), _
   if (err == 0) {
     this->_DarwinConversion = 1.0e-9 * (double)info.numer / (double)info.denom;
   } else {
-    THROW_HARD_ERROR(BF("Could not determine clock conversion"));
+    THROW_HARD_ERROR("Could not determine clock conversion");
   }
 #else
 // #error "What initialization needs to be done for LightTimer on non DARWIN systems"
@@ -86,7 +86,7 @@ void LightTimer::stop() {
   clock_t end;
 #endif
   if (!this->_IsOn) {
-    THROW_HARD_ERROR(boost::format("Timer %s is not on") % this->_Description);
+    THROW_HARD_ERROR("Timer %s is not on", this->_Description);
   }
   this->_IsOn = false;
 #ifdef DARWIN_CLOCK
@@ -130,11 +130,11 @@ LightTimer*	LightProfiler::getTimer(uint id)
 {
 LightTimer	*timer;
     if ( id >= this->_Timers.size() ) {
-	SIMPLE_ERROR(BF("Illegal timer id" ));
+	SIMPLE_ERROR(("Illegal timer id" ));
     }
     timer = this->_Timers[id];
     if ( timer == NULL ) {
-	SIMPLE_ERROR(BF("Undefined timer" ));
+	SIMPLE_ERROR(("Undefined timer" ));
     }
     return timer;
 }
@@ -223,7 +223,7 @@ void LightProfiler::dump() {
 
   root = 1;
   if (!root) {
-    THROW_HARD_ERROR(BF("There is no root timer!!!!!"));
+    THROW_HARD_ERROR("There is no root timer!!!!!");
   }
   //
   // Find the root timer

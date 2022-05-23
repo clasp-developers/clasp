@@ -1,5 +1,5 @@
 
-(load "sys:modules;clang-tool;clang-tool.lisp")
+(load "sys:src;lisp;modules;clang-tool;clang-tool.lisp")
 
 
 

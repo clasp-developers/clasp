@@ -57,6 +57,7 @@ List_sp coerce_to_list(T_sp o) {
 
 CL_LAMBDA(plist value indicator)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(putF)dx")
 DOCGROUP(clasp)
 CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
@@ -75,7 +76,7 @@ CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
     ++it;
   }
   if (it != end)
-    SIMPLE_ERROR(BF("type_error_plist %s") % _rep_(place));
+    SIMPLE_ERROR(("type_error_plist %s") , _rep_(place));
   place = Cons_O::create(value, place);
   place = Cons_O::create(indicator, place);
   return place;
@@ -83,6 +84,7 @@ CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
 
 CL_LAMBDA(plist indicator &optional default-value)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(getf)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
@@ -93,6 +95,7 @@ CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
 
 CL_LAMBDA(plist indicator)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
@@ -117,6 +120,7 @@ CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
 CL_LAMBDA(object1 object2)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(cons)dx")
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
   return Cons_O::create(obj1, obj2);
@@ -124,6 +128,7 @@ CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
 
 CL_LAMBDA(c o)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx()dx")
 DOCGROUP(clasp)
 CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
@@ -132,6 +137,7 @@ CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
 
 CL_LAMBDA(c o)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx()dx")
 DOCGROUP(clasp)
 CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
@@ -140,6 +146,7 @@ CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
 
 CL_LAMBDA(osize &key initial-element)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make_list)dx")
 DOCGROUP(clasp)
 CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
@@ -159,6 +166,7 @@ CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   }
 };
 
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN size_t core__cons_size() {
   return gctools::ConsSizeCalculator<gctools::RuntimeStage,Cons_O,gctools::DontRegister>::value();
@@ -203,6 +211,7 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
 
 CL_LAMBDA(l1 l2)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(append2 - append l2 to l1 by copying l1 and pointing the end of it to l2)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
@@ -233,7 +242,7 @@ struct Tester {
     this->_test_pass = true;
     if (testNot.notnilp()) {
       if (test.notnilp()) {
-        SIMPLE_ERROR(BF("both test and test-not were defined"));
+        SIMPLE_ERROR(("both test and test-not were defined"));
       }
       this->_test_func = coerce::functionDesignator(testNot);
       this->_test_pass = false;
@@ -281,7 +290,7 @@ List_sp Cons_O::memberEql(T_sp item) const {
 List_sp Cons_O::member(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   Tester t(item, key, test, testNot, false);
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur));
+    LOG("Testing for member with item=%s entry = %s" , item , oCar(cur));
     T_sp obj = CONS_CAR(cur);
     if (t.test(obj)) return ((cur));
   }
@@ -294,7 +303,7 @@ List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   _OF();
   Tester t(item, key, test, testNot, true);
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    LOG(BF("Testing for member with item=%s entry = %s") % item % oCar(cur));
+    LOG("Testing for member with item=%s entry = %s" , item , oCar(cur));
     T_sp obj = CONS_CAR(cur);
     if (t.test(obj)) return ((cur));
   }
@@ -305,7 +314,7 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   _OF();
   Tester t(item, key, test, testNot, false);
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    LOG(BF("Testing for assoc with item=%s entry = %s") % item % oCar(cur));
+    LOG("Testing for assoc with item=%s entry = %s" , item , oCar(cur));
     T_sp obj = CONS_CAR(cur);
     if (!obj.nilp()) {
       if (obj.consp()) {
@@ -387,6 +396,7 @@ List_sp Cons_O::reverse() {
   return ((reversed));
 }
 
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN List_sp core__list_reverse(List_sp list) {
   if (list.nilp()) return list;
@@ -407,6 +417,7 @@ List_sp Cons_O::nreverse() {
   return ((reversed));
 }
 
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN List_sp core__list_nreverse(List_sp list) {
   if (list.nilp()) return list;
@@ -448,7 +459,7 @@ List_sp Cons_O::nreconc(T_sp tail) {
 T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
   _OF();
   if (index >= (int)this->length()) {
-    SIMPLE_ERROR(BF("Index[%d] is beyond the length[%d] of the cons") % index % this->length());
+    SIMPLE_ERROR(("Index[%d] is beyond the length[%d] of the cons") , index , this->length());
   }
   List_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < index; i++)
@@ -531,7 +542,7 @@ T_sp Cons_O::last(cl_index n) const {
     ;
   if (r == l) {
     if (!cl__listp(r)) {
-      SIMPLE_ERROR(BF("Type not list"));
+      SIMPLE_ERROR(("Type not list"));
     }
     while ((r).consp()) {
       r = oCdr(r);
@@ -603,6 +614,7 @@ List_sp Cons_O::copyTreeCar() const {
   return ((rootCopy));
 }
 
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN size_t core__cons_length(Cons_sp cons) {
   size_t sz = 1;
@@ -651,9 +663,10 @@ string Cons_O::__repr__() const {
 }
 
  void not_alist_error(T_sp obj) {
-   SIMPLE_ERROR(BF("Not an alist -> %s") % _rep_(obj));
+   SIMPLE_ERROR(("Not an alist -> %s") , _rep_(obj));
  }
- 
+
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
   if (alist.consp()) {
@@ -669,6 +682,7 @@ CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
   return nil<T_O>();
 }
 
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
   if (alist.consp()) {
@@ -692,15 +706,15 @@ SYMBOL_EXPORT_SC_(ClPkg, make_list);
   SYMBOL_EXPORT_SC_(CorePkg, rem_f);
   SYMBOL_SC_(CorePkg, put_f);
 
-
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN void core__verify_cons_layout(size_t cons_size, size_t cons_car_offset, size_t cons_cdr_offset)
 {
-  if (cons_size!=sizeof(Cons_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lisp cons_size %lu does not match sizeof(Cons_O) %lu") % cons_size % sizeof(Cons_O));
+  if (cons_size!=sizeof(Cons_O)) SIMPLE_ERROR(("The cmpintrinsics.lisp cons_size %lu does not match sizeof(Cons_O) %lu") , cons_size , sizeof(Cons_O));
    if (cons_car_offset!=offsetof(Cons_O,_Car))
-     SIMPLE_ERROR(BF("cons_rack_offset %lu does not match offsetof(_Car,Cons_O) %lu") % cons_car_offset % offsetof(Cons_O,_Car));
+     SIMPLE_ERROR(("cons_rack_offset %lu does not match offsetof(_Car,Cons_O) %lu") , cons_car_offset , offsetof(Cons_O,_Car));
    if (cons_cdr_offset!=offsetof(Cons_O,_Cdr))
-     SIMPLE_ERROR(BF("cons_rack_offset %lu does not match offsetof(_Cdr,Cons_O) %lu") % cons_cdr_offset % offsetof(Cons_O,_Cdr));
+     SIMPLE_ERROR(("cons_rack_offset %lu does not match offsetof(_Cdr,Cons_O) %lu") , cons_cdr_offset , offsetof(Cons_O,_Cdr));
 }
 
 };

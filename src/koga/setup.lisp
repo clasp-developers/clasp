@@ -216,6 +216,11 @@ writing the build and variant outputs."
           when (and extension (member name (extensions *configuration*)))
             do (recurse directory))
     (recurse #P"")
+    (loop for script = (pop (scripts *configuration*))
+          for *script-path* = (when script (uiop:pathname-directory-pathname script))
+          while script
+          do (message :info "Loading script ~a" script)
+             (load script))
     (message :emph "~%Writing build files")
     (loop for name being the hash-keys in (outputs *configuration*)
           do (write-build-output *configuration* name))

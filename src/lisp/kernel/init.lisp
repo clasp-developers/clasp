@@ -68,19 +68,6 @@
 
 (setq cmp:*default-object-type* core:*clasp-build-mode*)
 
-
-;;; ------------------------------------------------------------
-;;;
-;;;   Turn on flow tracker
-;;;
-
-#+debug-flow-tracker
-(if (member :flow-tracker *features*)
-    (progn
-      (core:bformat t "Turning flow-tracker on%N")
-      (gctools:flow-tracker-on)))
-
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;;   Sanity check that stamps are working properly
@@ -93,26 +80,26 @@
          (map-stamp (gethash (core:name-of-class (core:instance-class obj)) core:+type-header-value-map+)))
     (if (not (numberp stamp))
         (progn
-          (core:bformat t "Sanity check failure stamp %s must be a number%N" stamp)
+          (core:fmt t "Sanity check failure stamp {} must be a number%N" stamp)
           (core:cabort))
         (if (not (numberp class-stamp))
             (progn
-              (core:bformat t "Sanity check failure class-stamp %s must be a number%N" class-stamp)
+              (core:fmt t "Sanity check failure class-stamp {} must be a number%N" class-stamp)
               (core:cabort))
             (if (not (numberp map-stamp))
                 (progn
-                  (core:bformat t "Sanity check failure map-stamp %s must be a number%N" map-stamp)
+                  (core:fmt t "Sanity check failure map-stamp {} must be a number%N" map-stamp)
                   (finish-output)
                   (core:cabort)))))
     (if (not (= stamp class-stamp))
         (progn
-          (core:bformat t "For object %s there is a mismatch between the stamp %s and the class-stamp %s%N"
+          (core:fmt t "For object {} there is a mismatch between the stamp {} and the class-stamp {}%N"
                         obj stamp class-stamp)
           (finish-output)
           (core:cabort))
         (if (not (= stamp map-stamp))
             (progn
-              (core:bformat t "For object %s there is a mismatch between the stamp %s and the class-stamp %s%N"
+              (core:fmt t "For object {} there is a mismatch between the stamp {} and the class-stamp {}%N"
                             obj stamp class-stamp)
               (finish-output)
               (core:cabort))))))
@@ -192,62 +179,10 @@
 
 ;;; Setup a few things for the EXT package
 
-;;; Imports
-(import 'core:quit :ext)
-(import 'core:getpid :ext)
-(import 'core:argc :ext)
-(import 'core:argv :ext)
-(import 'core:rmdir :ext)
-(import 'core:mkstemp :ext)
-(import 'core:weak-pointer-value :ext)
-(import 'core:make-weak-pointer :ext)
-(import 'core:weak-pointer-valid :ext)
-(import 'core:hash-table-weakness :ext)
-
-;;; EXT exports
+;;; EXT exports are now in packages.lisp
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
 
-(export '(*module-provider-functions*
-          *source-location-kinds*
-          current-source-location
-          source-location
-          source-location-pathname
-          source-location-offset
-          source-location-definer
-          source-location-description
-          compiled-function-name
-          compiled-function-file
-          array-index
-          byte8
-          integer8
-          byte16
-          integer16
-          byte32
-          integer32
-          byte64
-          integer64
-          assume-no-errors
-          sequence-stream
-          all-encodings
-          make-encoding
-          assume-right-type
-          assert-error
-          float-nan-p
-          float-infinity-p
-          character-coding-error
-          character-encoding-error
-          character-decoding-error
-          stream-encoding-error
-          stream-decoding-error
-          generate-encoding-hashtable
-          quit
-          with-float-traps-masked
-          enable-interrupt default-interrupt ignore-interrupt
-          get-signal-handler set-signal-handler
-          *ed-functions*
-          ;;; for asdf and slime and trivial-garbage to use ext:
-          getpid argc argv rmdir mkstemp weak-pointer-value make-weak-pointer weak-pointer-valid hash-table-weakness))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
@@ -412,7 +347,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
                        (declare (ignore rest))
                        (if decl (setq decl (list (cons 'declare decl))))
                        (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,(si::function-block-name name) ,@body))))
-                         ;;(bformat t "PRIMITIVE DEFUN defun --> %s%N" func )
+                         ;;(core:fmt t "PRIMITIVE DEFUN defun --> {}%N" func )
                           `(progn (eval-when (:compile-toplevel)
                                     (cmp::register-global-function-def 'defun ',name))
                                   (si:fset ',name ,func nil ',lambda-list)))))
@@ -475,9 +410,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   "Return the link flags and the library dir where libLTO.<library-extension> can be found and the library extension"
   (let ((stream (nth-value 2 (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t))))
     (let* ((ldflags (split-at-white-space (read-line stream)))
-           #+(or)(clasp-lib-dir (bformat nil "-L%s" (namestring (translate-logical-pathname "app-resources:lib;common;lib;"))))
            (libdir (read-line stream))
-           (libdir-flag (list (bformat nil "-L%s" libdir)))
+           (libdir-flag (list (core:fmt nil "-L{}" libdir)))
            (libs (split-at-white-space (read-line stream)))
            (build-lib (split-at-white-space *build-lib*))
            (build-stlib (split-at-white-space *build-stlib*))
@@ -530,7 +464,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                     stage
                     (default-target-stage)))
          (type-modified-host-suffix (build-configuration))
-         (bitcode-host (bformat nil "%s%s-bitcode" stage type-modified-host-suffix)))
+         (bitcode-host (core:fmt nil "{}{}-bitcode" stage type-modified-host-suffix)))
     bitcode-host))
 
 (defun default-target-stage ()
@@ -557,12 +491,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                    "boehm"))
               (t (error "Unknown clasp configuration"))))
         (mpi (if (member :use-mpi *features*) "-mpi" "")))
-    (bformat nil "%s-%s%s" (lisp-implementation-type) gc mpi)))
+    (core:fmt nil "{}-{}{}" (lisp-implementation-type) gc mpi)))
 
 (defun ensure-relative-pathname (input)
   "If the input pathname is absolute then search for src, or generated and return
 a relative path from there."
-  #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s%N" input sys-pn)
+  #+(or)(core:fmt t "ensure-relative-pathname input = {}   sys-pn = {}%N" input sys-pn)
   (let ((result
          (cond
            ((eq :relative (car (pathname-directory input)))
@@ -572,7 +506,7 @@ a relative path from there."
             (make-pathname :directory (cons :relative (strip-root (pathname-directory input)))
                            :name (pathname-name input)))
            (t (error "ensure-relative-pathname could not handle ~a" input)))))
-    #+(or)(bformat t "ensure-relative-pathname result = %s%N" result)
+    #+(or)(core:fmt t "ensure-relative-pathname result = {}%N" result)
     result))
 
 
@@ -583,15 +517,15 @@ a relative path from there."
                 (t (error "illegal filetype - only :intrinsics or :builtins allowed")))))
     (cond
       ((eq link-type :fasl)
-       (translate-logical-pathname (bformat nil "lib:%s-%s-cxx.a" +bitcode-name+ name)))
+       (translate-logical-pathname (core:fmt nil "lib:{}-{}-cxx.a" +bitcode-name+ name)))
       ((eq link-type :compile)
-       (translate-logical-pathname (bformat nil "app-bitcode:%s-%s-cxx.bc" +bitcode-name+ name)))
+       (translate-logical-pathname (core:fmt nil "bitcode:{}-{}-cxx.bc" +bitcode-name+ name)))
       ((eq link-type :executable)
-       (translate-logical-pathname (bformat nil "lib:%s-all-cxx.a" +bitcode-name+)))
+       (translate-logical-pathname (core:fmt nil "lib:{}-all-cxx.a" +bitcode-name+)))
       (t (error "Provide a bitcode file for the link-type ~a" link-type)))))
 
 (defun build-common-lisp-bitcode-pathname ()
-  (translate-logical-pathname (pathname (bformat nil "lib:%sclasp-%s-common-lisp.bc" (default-target-stage) +variant-name+))))
+  (translate-logical-pathname (pathname (core:fmt nil "lib:{}clasp-{}-common-lisp.bc" (default-target-stage) +variant-name+))))
 (export '(build-inline-bitcode-pathname build-common-lisp-bitcode-pathname))
 #+(or)
 (progn
@@ -658,9 +592,9 @@ the stage, the +application-name+ and the +bitcode-name+"
             (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
     (let ((target-host "lib")
           (target-dir (build-target-dir type stage)))
-      #+dbg-print(bformat t "DBG-PRINT build-pathname module: %s%N" module)
-      #+dbg-print(bformat t "DBG-PRINT build-pathname target-host: %s%N" target-host)
-      #+dbg-print(bformat t "DBG-PRINT build-pathname target-dir: %s%N" target-dir)
+      #+dbg-print(core:fmt t "DBG-PRINT build-pathname module: {}%N" module)
+      #+dbg-print(core:fmt t "DBG-PRINT build-pathname target-host: {}%N" target-host)
+      #+dbg-print(core:fmt t "DBG-PRINT build-pathname target-dir: {}%N" target-dir)
       (let ((result
               (cond
                 ((eq type :lisp)
@@ -673,17 +607,15 @@ the stage, the +application-name+ and the +bitcode-name+"
                                          :name (pathname-name module))
                                         (translate-logical-pathname "GENERATED:")))
                      (t
-                      (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
-                ((eq type :executable)
-                 (let* ((stage-char (default-target-stage))
-                        (filename (bformat nil "%s%s-%s" stage-char +application-name+ +bitcode-name+))
-                        (exec-pathname (merge-pathnames (make-pathname :name filename :type nil) (translate-logical-pathname "app-executable:") )))
-                   exec-pathname))
+                      (find-lisp-source module (translate-logical-pathname "sys:"))))))
+                ((and (null partial-pathname) (eq type :executable))
+                 (translate-logical-pathname (core:fmt nil "executable:{}{}-{}"
+                                                       (default-target-stage) +application-name+
+                                                       +bitcode-name+)))
                 ((and (null partial-pathname) (eq type :fasl))
-                 (let* ((stage-char (default-target-stage))
-                        (filename (bformat nil "%s%s-%s-image" stage-char +application-name+ +bitcode-name+))
-                        (exec-pathname (merge-pathnames (make-pathname :name filename :type "fasl") (translate-logical-pathname "app-fasl:"))))
-                   exec-pathname))
+                 (translate-logical-pathname (core:fmt nil "fasl:{}{}-{}.fasl"
+                                                       (default-target-stage) +application-name+
+                                                       +bitcode-name+)))
                 (t
                  (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
                                                    (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
@@ -712,7 +644,7 @@ the stage, the +application-name+ and the +bitcode-name+"
     (if (probe-file bitcode-path)
         (if really-delete
             (progn
-              (bformat t "     Deleting bitcode: %s%N" bitcode-path)
+              (core:fmt t "     Deleting bitcode: {}%N" bitcode-path)
               (delete-file bitcode-path))))))
 
 
@@ -722,7 +654,7 @@ the stage, the +application-name+ and the +bitcode-name+"
                     given-stage
                     (default-target-stage)))
          (garbage-collector (build-configuration))
-         (target-backend (bformat nil "%s%s" stage garbage-collector)))
+         (target-backend (core:fmt nil "{}{}" stage garbage-collector)))
     target-backend))
 (export 'default-target-backend)
 
@@ -742,46 +674,31 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun default-prologue-form (&optional features)
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
-     (if (core:is-interactive-lisp)
-         (bformat t "Interpreter starting %s ... loading image...%N" (lisp-implementation-version)))))
-
-(export '*extension-startup-loads*) ;; ADDED: frgo, 2016-08-10
-(defvar *extension-startup-loads* nil)
-
-(export 'process-extension-loads)
-(defun process-extension-loads ()
-  (if (not (member :ignore-extensions *features*))
-      (progn
-        (mapcar #'(lambda (entry)
-                    (if (eq (car entry) 'cl:load)
-                        (let ((file (cadr entry)))
-                          (if (probe-file file)
-                              (load file)
-                              (bformat t "Extension file %s not present.%N" file)))
-                        (let ((cmd (read-from-string (cdr entry))))
-                          (apply (car cmd) (cdr cmd)))))
-                core:*extension-startup-loads*)
-        (mapcar #'(lambda (entry)
-                    (funcall entry))
-                core:*extension-startup-evals*))))
+     (if (not (core:noinform-p))
+         (core:fmt t "Starting {}%N" (lisp-implementation-version)))))
 
 (export 'process-command-line-load-eval-sequence)
 (defun process-command-line-load-eval-sequence ()
   (mapcar #'(lambda (entry)
               (if (eq (car entry) :load)
                   (load (cdr entry))
-                  (let ((cmd (read-from-string (cdr entry))))
-                    (eval cmd))))
+                  (if (eq (car entry) :script)
+                    (core:load-source (cdr entry) nil nil nil t)
+                    (eval (read-from-string (cdr entry))))))
           (core:command-line-load-eval-sequence)))
 
 (export 'maybe-load-clasprc)
 (defun maybe-load-clasprc ()
   "Maybe load the users startup code"
   (if (not (core:no-rc-p))
-      (let ((clasprc (make-pathname :name (core:rc-file-name)
-                                    :defaults (user-homedir-pathname))))
+      (let ((clasprc (core:rc-file-name)))
         (if (probe-file clasprc)
-            (core:load-source clasprc)))))
+            (progn
+              (if (not (core:noinform-p))
+                  (core:fmt t "Loading resource file {}%N" clasprc))
+              (core:load-source clasprc))
+            (if (not (core:noinform-p))
+                (core:fmt t "Resource file {} not found, skipping loading of it.%N" clasprc))))))
 
 (defun tpl-default-pathname-defaults-command ()
   (print *default-pathname-defaults*))
@@ -799,14 +716,14 @@ the stage, the +application-name+ and the +bitcode-name+"
 ;;; put it in clasp-builder.lisp
 
 (if (member :clasp-builder *features*)
-    (load "source-dir:src;lisp;kernel;clasp-builder.lisp"))
+    (load "sys:src;lisp;kernel;clasp-builder.lisp"))
 
 
 (defun tpl-hook (cmd)
   (cond
     ((eq (car cmd) :pwd) (tpl-default-pathname-defaults-command))
     ((eq (car cmd) :cd) (tpl-change-default-pathname-defaults-dir-command (cadr cmd)))
-    (t (bformat t "Unknown command %s%N" cmd))))
+    (t (core:fmt t "Unknown command {}%N" cmd))))
 
 (setq *top-level-command-hook* #'tpl-hook)
 
@@ -822,9 +739,9 @@ the stage, the +application-name+ and the +bitcode-name+"
   (process-command-line-load-eval-sequence)
   (if (core:noinform-p)
       nil
-      (bformat t "Low level repl - in init.lisp%N"))
+      (core:fmt t "Low level repl - in init.lisp%N"))
   (core:low-level-repl))
 
 #-(or bclasp cclasp)
 (eval-when (:execute :load-top-level)
-  (bformat t "init.lisp  %N!\n!\n! Hello from the bottom of init.lisp - for some reason execution is passing through here\n!\n!\n"))
+  (core:fmt t "init.lisp  %N!\n!\n! Hello from the bottom of init.lisp - for some reason execution is passing through here\n!\n!\n"))

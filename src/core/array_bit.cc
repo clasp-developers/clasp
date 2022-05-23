@@ -10,7 +10,7 @@
 
 namespace core {
 void bitVectorDoesntSupportError() {
-  SIMPLE_ERROR(BF("You tried to invoke a method that bit-vector doesn't support on a bit-vector"));
+  SIMPLE_ERROR(("You tried to invoke a method that bit-vector doesn't support on a bit-vector"));
 }
 
 bool ranged_bit_vector_EQ_(const SimpleBitVector_O& bvx,const SimpleBitVector_O& bvy, size_t startx, size_t endx, size_t starty, size_t endy) {
@@ -156,22 +156,22 @@ CL_DEFUN T_sp core__sbv_position_one(SimpleBitVector_sp v) {
 void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   size_t len = x->length();
   if (len != y->length())
-    SIMPLE_ERROR(BF("BitVectors aren't the same length for in place or - lengths are %d and %d")
-                 % len % y->length());
+    SIMPLE_ERROR(("BitVectors aren't the same length for in place or - lengths are %d and %d")
+                 , len , y->length());
   core__sbv_bit_ior(x, y, x, len);
 }
 
 void SimpleBitVector_inPlaceAnd(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   size_t len = x->length();
   if (len != y->length())
-    SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
+    SIMPLE_ERROR(("BitVectors aren't the same length for operation"));
   core__sbv_bit_and(x, y, x, len);
 }
 
 void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   size_t len = x->length();
   if (len != y->length())
-    SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
+    SIMPLE_ERROR(("BitVectors aren't the same length for operation"));
   core__sbv_bit_xor(x, y, x, len);
 }
 

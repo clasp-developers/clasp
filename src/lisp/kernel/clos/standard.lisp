@@ -539,7 +539,7 @@ because it contains a reference to the undefined class~%  ~A"
                                        &allow-other-keys)
   (declare (ignore direct-default-initargs direct-slots))
   (clos::gf-log "In ensure-class-using-class (class class) %N")
-  (clos::gf-log "     name -> %s%N" name)
+  (clos::gf-log "     name -> {}%N" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (declare (ignore direct-superclasses))

@@ -423,8 +423,6 @@ namespace core {
 
 /*! Class registration code - each registered class gets a unique number associated with it */
 
-//#include <boost/operators.hpp>
-
 namespace gctools {
 /*! Inheriting from this class indicates that the derived class
       includes smart_ptr's but is only ever instantiated on the stack.

@@ -196,7 +196,7 @@ void executablePath(std::string& name) {
       return;
     }
   }
-  SIMPLE_ERROR(BF("Could not find the executablePath"));
+  SIMPLE_ERROR(("Could not find the executablePath"));
 }  
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
@@ -208,7 +208,7 @@ void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_p
       return;
     }
   }
-  SIMPLE_ERROR(BF("Could not find the executableVtableSectionRange"));
+  SIMPLE_ERROR(("Could not find the executableVtableSectionRange"));
 }
 
 void executableTextSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
@@ -221,7 +221,7 @@ void executableTextSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr
       return;
     }
   }
-  SIMPLE_ERROR(BF("Could not find the executableVtableSectionRange"));
+  SIMPLE_ERROR(("Could not find the executableVtableSectionRange"));
 }
 
 
@@ -290,29 +290,6 @@ bool lookup_address(uintptr_t address, const char*& symbol,
     end = code_start + ranges[0].HighPC;
     return true; // success!
   } else return false; // no ranges available
-}
-
-bool check_for_frame(uintptr_t frame) {
-  // We only actually do a check if we have libunwind capabilities.
-#ifdef USE_LIBUNWIND
-  unw_context_t context; unw_cursor_t cursor;
-  unw_word_t sp;
-  unw_word_t csp = (unw_word_t)frame;
-  unw_getcontext(&context);
-  unw_init_local(&cursor, &context);
-  while (unw_step(&cursor) > 0) {
-    unw_get_reg(&cursor, UNW_X86_64_RBP, &sp);
-    if (sp == csp) return true;
-  }
-  return false;
-#else
-  return true;
-#endif
-}
-
-void frame_check(uintptr_t frame) {
-  if (!check_for_frame(frame))
-    NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
@@ -449,10 +426,10 @@ void dbg_describeTPtr(uintptr_t raw) {
 void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   core::T_sp sout = cl::_sym_STARstandard_outputSTAR->symbolValue();
   T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
-  clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);
+  write_bf_stream(fmt::sprintf("dbg_printTPtr Raw pointer value: %p\n", (void *)obj.raw_()));
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());
   DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
-  clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(lisp_instance_class(obj)->_className())).str(), sout);
+  write_bf_stream(fmt::sprintf("dbg_printTPtr object class --> %s\n", _rep_(lisp_instance_class(obj)->_className())), sout);
   fflush(stdout);
   write_ugly_object(obj, sout);
   clasp_force_output(sout);

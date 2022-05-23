@@ -7,7 +7,7 @@ namespace telemetry {
 
 void throw_if_invalid_global_telemetry_search() {
   if (global_telemetry_search == NULL) {
-    SIMPLE_ERROR(BF("No global_telemetry_search has been defined - use telemetry-open"));
+    SIMPLE_ERROR(("No global_telemetry_search has been defined - use telemetry-open"));
   }
 }
 
@@ -16,7 +16,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx()dx")
 DOCGROUP(clasp)
 CL_DEFUN void core__telemetry_open(core::T_sp tpathname) {
-  if (tpathname.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
+  if (tpathname.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
   core::Pathname_sp pathname = core::cl__pathname(tpathname);
   core::String_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();
@@ -43,7 +43,7 @@ CL_DEFUN void core__telemetry_search(core::List_sp addresses) {
   for (auto it : addresses) {
     core::T_sp address = oCar(it);
     if (!address.fixnump()) {
-      SIMPLE_ERROR(BF("Inputs must all be fixnums"));
+      SIMPLE_ERROR(("Inputs must all be fixnums"));
     }
     tests.push_back(address.unsafe_fixnum() & (~0x7));
   }
@@ -84,7 +84,7 @@ CL_DEFUN void core__telemetry_search_labels(core::List_sp labels) {
   for (auto it : labels) {
     core::T_sp address = oCar(it);
     if (!address.fixnump()) {
-      SIMPLE_ERROR(BF("Inputs must all be fixnums"));
+      SIMPLE_ERROR(("Inputs must all be fixnums"));
     }
     tests.push_back(address.unsafe_fixnum() & (~0x7));
   }
@@ -124,7 +124,7 @@ CL_DEFUN void core__telemetry_follow(core::T_sp address) {
   std::vector<std::string> results;
   std::vector<Word> tests;
   if (!address.fixnump()) {
-    SIMPLE_ERROR(BF("Input must be fixnum"));
+    SIMPLE_ERROR(("Input must be fixnum"));
   }
   tests.push_back(address.unsafe_fixnum() & (~0x7));
   Handle label;
@@ -177,7 +177,7 @@ DOCGROUP(clasp)
 CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
   throw_if_invalid_global_telemetry_search();
   if (!begin.fixnump()) {
-    SIMPLE_ERROR(BF("begin must be a FIXNUM"));
+    SIMPLE_ERROR(("begin must be a FIXNUM"));
   }
   core::Fixnum fn_begin = begin.unsafe_fixnum();
   core::Fixnum fn_end;
@@ -186,7 +186,7 @@ CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
   } else if (end.fixnump()) {
     fn_end = end.unsafe_fixnum();
   } else {
-    SIMPLE_ERROR(BF("Illegal value for end"));
+    SIMPLE_ERROR(("Illegal value for end"));
   }
   global_telemetry_search->seek0();
   size_t cur;

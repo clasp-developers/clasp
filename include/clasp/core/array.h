@@ -369,8 +369,7 @@ namespace core {
     void fillPointerSet(size_t idx) override {
       // This better not be bigger than the vector size (must be a vector)
       if (idx > this->_ArrayTotalSize)
-           SIMPLE_ERROR(BF("Attempt to set fill-pointer %d past vector size %d")
-                 % idx % this->_ArrayTotalSize);
+           SIMPLE_ERROR(("Attempt to set fill-pointer %d past vector size %d") , idx , this->_ArrayTotalSize);
       this->_FillPointerOrLengthOrDummy = idx;
     };
     size_t fillPointer() const override {

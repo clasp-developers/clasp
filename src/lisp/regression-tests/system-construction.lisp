@@ -36,13 +36,13 @@
 ;;; if output-file is passed, repsect the extension and don't overwrite it 
 (test-true compile-file-parallel
  (let ((cmp::*compile-file-parallel* t)
-       (file "sys:regression-tests;framework.lisp"))
+       (file "sys:src;lisp;regression-tests;framework.lisp"))
    (let ((fasl (compile-file file :output-file (make-pathname :type "newfasl" :defaults file) :verbose nil :print nil)))
      (and (probe-file fasl) (string-equal (pathname-type fasl) "newfasl")))))
 
 (test-true compile-file-serial
  (let ((cmp::*compile-file-parallel* nil)
-       (file "sys:regression-tests;framework.lisp"))
+       (file "sys:src;lisp;regression-tests;framework.lisp"))
    (let ((fasl (compile-file file :output-file (make-pathname :type "newfasl" :defaults file) :verbose nil :print nil)))
      (and (probe-file fasl) (string-equal (pathname-type fasl) "newfasl")))))
 
@@ -50,7 +50,7 @@
 (test-true compile-file-serial-no-faso
  (let ((cmp::*compile-file-parallel* nil)
        (core:*clasp-build-mode* :faso)
-       (file "sys:regression-tests;framework.lisp"))
+       (file "sys:src;lisp;regression-tests;framework.lisp"))
    (let ((fasl (compile-file file :output-file (make-pathname :type "newfasl" :defaults file) :verbose nil :print nil)))
      (and (probe-file fasl) (string-equal (pathname-type fasl) "newfasl")))))
 
@@ -58,5 +58,5 @@
 (test COMPILE-FILE.1.simplified
       (with-output-to-string
           (*standard-output*)
-        (compile-file "sys:regression-tests;framework.lisp" :verbose nil :print nil))
+        (compile-file "sys:src;lisp;regression-tests;framework.lisp" :verbose nil :print nil))
       (""))

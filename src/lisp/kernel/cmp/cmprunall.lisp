@@ -41,7 +41,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 
 
 (defun do-make-new-run-all (body name-suffix)
-  (let ((run-all-fn (irc-simple-function-create (core:bformat nil "%s%s" core:+run-all-function-name+ name-suffix)
+  (let ((run-all-fn (irc-simple-function-create (core:fmt nil "{}{}" core:+run-all-function-name+ name-suffix)
                                                     %fn-start-up%
                                                     'llvm-sys:internal-linkage
                                                     *the-module*
@@ -77,7 +77,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
                   (irc-ret-null-t*))))))))
     (values run-all-fn)))
 
-(defmacro with-make-new-run-all ((run-all-fn &optional (name-suffix '(core:bformat nil "*%d" (core:next-number)))) &body body)
+(defmacro with-make-new-run-all ((run-all-fn &optional (name-suffix '(core:fmt nil "*{}" (core:next-number)))) &body body)
   "Set up a run-all function in the current module, return the run-all-fn"
   `(do-make-new-run-all (lambda (,run-all-fn)
                           (declare (ignorable ,run-all-fn))

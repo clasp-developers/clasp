@@ -333,13 +333,13 @@ multithreaded performance that we should explore."
 Compile a lisp source file into an LLVM module."
   (let* ((*package* *package*)
          (*readtable* *readtable*)
-         (clasp-source-root (translate-logical-pathname "source-dir:"))
+         (clasp-source-root (translate-logical-pathname "sys:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
          (source-sin (open given-input-pathname :direction :input :external-format (or external-format :default))))
     (declare (ignore clasp-source))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
-        (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
+        (core:fmt t "; Compiling file parallel: {}%N" (namestring given-input-pathname)))
       (let ((intermediate-output-type (case output-type
                                         #+(or)(:fasl :object)
                                         (:fasl :in-memory-object)

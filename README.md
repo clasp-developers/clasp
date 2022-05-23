@@ -20,14 +20,14 @@ see the [Release Notes][].
 ### Building Clasp
 
 At the moment, Clasp is supported on Linux, Mac OS X and FreeBSD. On these 
-systems, you should be able to build it from source. See [Build Instructions][]
-for more information.
+systems, you should be able to build it from source and you may be able to
+install using a package manager. See the [Wiki][] for more information.
 
 In case things go wrong, the quickest way to get help is to either 
 [file an issue](#reporting-problems), or to [chat with us directly](#irc).
 
 Building takes a lot of resources.  In parallel mode
-(`USE_PARALLEL_BUILD = True` in wscript.config) you need more than 8 GB of RAM 
+(`:parallel-build t` in config.sexp) you need more than 8 GB of RAM 
 and it will be 1-2 hours build time. If you have 8 GB of RAM you can turn off 
 the parallel build which will then run for a day or so.  Make sure to have some 
 paging space ("swapfile") configured.
@@ -66,7 +66,7 @@ you should have the following pieces handy in order for us to be able to help
 you out as quickly and painlessly as possible:
 
 * Your operating system name and version.
-* The branches that you're using of Clasp and Externals-Clasp.
+* The branch that you're using of Clasp.
 * A paste of the build log or failure point that you reached.
 * Patience.
 
@@ -96,7 +96,7 @@ Clasp was supported by:
 * The National Institutes of Health (NIH/NIGMS Grant number: 2R01GM067866-07A2) 
 * The National Science Foundation (Grant number: 1300231)
 
-[Build Instructions]: https://github.com/clasp-developers/clasp/wiki/Build-Instructions
+[Wiki]: https://github.com/clasp-developers/clasp/wiki/
 [Cando Docker]: https://hub.docker.com/r/thirdlaw/cando
 [#clasp]: irc://irc.libera.chat/#clasp
 [Clasp Manual]: https://github.com/clasp-developers/clasp/wiki/Manual
@@ -108,4 +108,3 @@ Clasp was supported by:
 [New Issue]: https://github.com/clasp-developers/clasp/issues/new
 [Release Notes]: https://github.com/clasp-developers/clasp/blob/main/RELEASE_NOTES.md
 [Releases]: https://github.com/clasp-developers/clasp/releases
-

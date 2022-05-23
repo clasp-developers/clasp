@@ -33,15 +33,6 @@
 #include <limits.h>
 #pragma GCC diagnostic push
 //#pragma GCC diagnostic ignored "-Wunused-local-typedef"
-#if 0
-#include <boost/archive/tmpdir.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/utility.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/assume_abstract.hpp>
-#endif
 #pragma GCC diagnostic pop
 
 #include <clasp/core/object.h>

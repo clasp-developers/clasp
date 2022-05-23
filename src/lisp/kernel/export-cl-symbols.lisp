@@ -487,6 +487,6 @@
 (export '(identify-symbols-for-export create-export-file))
 
 
-(create-export-file (bformat nil "%s/exportcl.lisp" ( :core)
+(create-export-file (core:fmt nil "{}/exportcl.lisp" ( :core)
 
 ||#

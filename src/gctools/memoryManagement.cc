@@ -46,11 +46,6 @@ THE SOFTWARE.
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
 #endif
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_EXTERN
-#include PREGCSTARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_EXTERN
-#endif
 
 #if 0
 #define GCROOT_LOG(x) if (_sym_STARdebug_gcrootsSTAR&&_sym_STARdebug_gcrootsSTAR.boundp()&&_sym_STARdebug_gcrootsSTAR->symbolValue()&&_sym_STARdebug_gcrootsSTAR->symbolValue().notnilp()) { printf x;}
@@ -279,7 +274,7 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
       printf("  0x%p : 0x%" PRIuPTR "\n", (headerP+1), *(headerP+1));
       break;
   }
-#if DEBUG_GUARD
+#ifdef DEBUG_GUARD
   Header_s* header = (Header_s*)headerP;
   header->validate();
   printf("This object passed the validate() test\n");
@@ -358,12 +353,33 @@ size_t random_tail_size() {
   return ts;
 }
 
-void Header_s::signal_invalid_object(const Header_s* header, const char* msg)
+void BaseHeader_s::signal_invalid_object(const BaseHeader_s* header, const char* msg)
 {
   printf("%s:%d  Invalid object with header @ %p message: %s\n", __FILE__, __LINE__, (void*)header, msg);
   abort();
 }
 
+
+void BaseHeader_s::validate() const {
+  if (((uintptr_t)this&ptag_mask)!=0) {
+    printf("%s:%d The header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
+  if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
+  if ( this->_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
+  if ( this->_stamp_wtag_mtag.stampP() ) {
+#if defined(USE_PRECISE_GC)
+    uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
+    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
+      printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
+      signal_invalid_object(this,"stamp out of range in header");
+    }
+#endif // USE_PRECISE_GC
+    if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
+  } else {
+    signal_invalid_object(this,"Not a normal object");
+  }
+}
 
 void Header_s::validate() const {
   if (((uintptr_t)this&ptag_mask)!=0) {
@@ -408,7 +424,7 @@ void Header_s::validate() const {
 
 //
 // Return true if the object represented by this header is polymorphic
-bool Header_s::preciseIsPolymorphic() const {
+bool BaseHeader_s::preciseIsPolymorphic() const {
   if (this->_stamp_wtag_mtag.stampP()) {
     uintptr_t stamp = this->_stamp_wtag_mtag.stamp();
     return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;
@@ -533,18 +549,12 @@ int handleFatalCondition() {
     // Do nothing
     printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
   } catch (core::CatchThrow &ee) {
-    _lisp->print(BF("%s:%d Uncaught THROW tag[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW") % __FILE__ % __LINE__ % ee.getTag());
+    core::write_bf_stream(fmt::sprintf("%s:%d Uncaught THROW tag[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW", __FILE__ , __LINE__ , ee.getTag()));
   } catch (core::Unwind &ee) {
-    _lisp->print(BF("At %s:%d - Unwind caught frame: %d index: %d") % __FILE__ % __LINE__ % ee.getFrame() % ee.index());
+    core::write_bf_stream(fmt::sprintf("At %s:%d - Unwind caught frame: %p index: %d", __FILE__ , __LINE__ , (void*)ee.getFrame() , ee.index()));
   } catch (HardError &ee) {
-    _lisp->print(BF("At %s:%d - HardError caught: %s") % __FILE__ % __LINE__ % ee.message());
+    core::write_bf_stream(fmt::sprintf("At %s:%d - HardError caught: %s", __FILE__ , __LINE__ , ee.message()));
   }
-#if 0
-  catch ( ... )
-  {
-    _lisp->print(BF("Unknown exception in main - everything should be caught lower down %s:%d") % __FILE__ % __LINE__);
-  }
-#endif
   return exitCode;
 }
 

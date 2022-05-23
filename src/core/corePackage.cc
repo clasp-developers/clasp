@@ -234,6 +234,8 @@ SYMBOL_EXPORT_SC_(ClPkg, floatingPointUnderflow);
 SYMBOL_EXPORT_SC_(ClPkg, divisionByZero);
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadable);
 SYMBOL_EXPORT_SC_(ClPkg, fileError);
+SYMBOL_EXPORT_SC_(CorePkg, fileDoesNotExist);
+SYMBOL_EXPORT_SC_(CorePkg, fileExists);
 SYMBOL_EXPORT_SC_(ClPkg, streamError);
 SYMBOL_EXPORT_SC_(ClPkg, endOfFile);
 SYMBOL_EXPORT_SC_(ClPkg, parseError);
@@ -271,8 +273,9 @@ SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 SYMBOL_EXPORT_SC_(ClPkg, subseq);
 
 SYMBOL_EXPORT_SC_(CorePkg, setf_subseq);
-SYMBOL_EXPORT_SC_(CorePkg, STARextension_startup_loadsSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARextension_startup_evalsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARextension_systemsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARinitialize_hooksSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARterminate_hooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, multiple_value_foreign_call);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call_pointer);
@@ -318,6 +321,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, cst);
 SYMBOL_EXPORT_SC_(KeywordPkg, bclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, load);
 SYMBOL_EXPORT_SC_(KeywordPkg, eval);
+SYMBOL_EXPORT_SC_(KeywordPkg, script);
 SYMBOL_EXPORT_SC_(KeywordPkg, clasp_min);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_mps);
 SYMBOL_EXPORT_SC_(KeywordPkg, use_boehmdc);
@@ -578,6 +582,8 @@ SYMBOL_EXPORT_SC_(ClPkg, printObject);
 SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
 SYMBOL_EXPORT_SC_(CorePkg, outOfExtentUnwind);
+SYMBOL_EXPORT_SC_(CorePkg, noCatchTag);
+SYMBOL_EXPORT_SC_(KeywordPkg, tag);
 SYMBOL_EXPORT_SC_(KeywordPkg, print);
 SYMBOL_EXPORT_SC_(KeywordPkg, pathname);
 SYMBOL_SC_(CorePkg, setThrowPosition);
@@ -902,17 +908,6 @@ void testFeatures() {
 }
 
 
-List_sp generateStartupLoads(std::string str) {
-  vector<string> parts = split(str,",");
-  ql::list result;
-  for ( auto part : parts ) {
-    ql::list one;
-    one << cl::_sym_load << SimpleBaseString_O::make(part);
-    result << one.result();
-  }
-  return result.result();
-}
-
 CoreExposer_O::CoreExposer_O(LispPtr lisp) : Exposer_O(lisp, CorePkg) {
 };
 
@@ -954,7 +949,6 @@ void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpose what) const {
 void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   {
     this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
-    _BLOCK_TRACEF(BF("Exporting symbols in lisp"));
 #define CorePkg_EXPORT
 #define DO_SYMBOL( ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
 #ifndef SCRAPING
@@ -1173,9 +1167,9 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARbacktraceSTAR->defparameter(nil<T_O>());
   _sym_STARfunctions_to_inlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
-//  printf("%s:%d:%s Initializing *extension-startup-loads* -> %s\n", __FILE__, __LINE__, __FUNCTION__, CLASP_EXTENSION_STARTUP_LOADS );
-  _sym_STARextension_startup_loadsSTAR->defparameter(generateStartupLoads(CLASP_EXTENSION_STARTUP_LOADS));
-  _sym_STARextension_startup_evalsSTAR->defparameter(nil<core::T_O>());
+  _sym_STARextension_systemsSTAR->defparameter(EXTENSION_SYSTEMS);
+  _sym_STARinitialize_hooksSTAR->defparameter(nil<T_O>());
+  _sym_STARterminate_hooksSTAR->defparameter(nil<T_O>());
   SimpleBaseString_sp sbsr1 = SimpleBaseString_O::make("SYSPMNR");
   SimpleBaseString_sp sbsw1 = SimpleBaseString_O::make("SYSPMNW");
   _lisp->_Roots._Finalizers = WeakKeyHashTable_O::create();

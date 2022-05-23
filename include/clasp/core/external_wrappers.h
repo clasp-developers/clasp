@@ -262,7 +262,7 @@ public:
     //
     T_sp theClass = lisp_boot_findClassBySymbolOrNil(OT::static_classSymbol());
     if (theClass.nilp()) {
-      LOG(BF("Adding class(%s) to environment") % OT::static_className());
+      LOG(("Adding class(%s) to environment") , OT::static_className());
       lisp_addClassSymbol(OT::static_classSymbol(),
                           OT::staticCreator(),
                           OT::Bases::baseClass1Id() );

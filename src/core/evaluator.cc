@@ -55,6 +55,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/ql.h>
+#include <clasp/core/unwind.h> // funwind_protect, etc
 
 namespace cl {
 extern core::Symbol_sp& _sym_or;
@@ -65,16 +66,15 @@ extern core::Symbol_sp& _sym_Cons_O;
 namespace core {
 namespace eval {
 int _evaluateVerbosity = 0;
-int _evaluateDepth = 0;
 
 T_mv t1Evaluate(T_sp exp, T_sp environment);
 
 void errorApplyZeroArguments() {
-  SIMPLE_ERROR(BF("Illegal to have zero arguments for APPLY"));
+  SIMPLE_ERROR(("Illegal to have zero arguments for APPLY"));
 }
 
 void errorApplyLastArgumentNotList(T_sp lastArg ) {
-  SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame - passed %s") % _rep_(lastArg));
+  SIMPLE_ERROR(("Last argument of APPLY is not a list/frame/activation-frame - passed %s") , _rep_(lastArg));
 }
 
 
@@ -84,6 +84,7 @@ void errorApplyLastArgumentNotList(T_sp lastArg ) {
 namespace core {
 CL_LAMBDA(form &optional env stepping compiler-env-p (execute t))
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(compileFormAndEvalWithEnv)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp stepping, T_sp compiler_env_p, T_sp execute) {
@@ -549,6 +550,7 @@ T_mv apply_inner_list(Function_sp func, size_t lenFixed, Vaslist_sp fixed, List_
 
 CL_LAMBDA(head core:&va-rest args)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(apply)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
@@ -573,6 +575,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, Vaslist_sp args) {
 
 CL_LAMBDA(func args)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f m) = (apply0 (coerce-fdesignator f) m))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply0(Function_sp func, T_sp lastArg) {
@@ -601,6 +604,7 @@ CL_DEFUN T_mv core__trace_apply0(Function_sp func, T_sp lastArg) {
 
 CL_LAMBDA(func args arg0)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a m) = (apply1 (coerce-fdesignator f) m a))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
@@ -614,6 +618,7 @@ CL_DEFUN T_mv core__apply1(Function_sp func, T_sp lastArg, T_sp arg0) {
 
 CL_LAMBDA(func args arg0 arg1)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b m) = (apply2 (coerce-fdesignator f) m a b))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
@@ -629,6 +634,7 @@ CL_DEFUN T_mv core__apply2(Function_sp func, T_sp lastArg,
 
 CL_LAMBDA(func args arg0 arg1 arg2)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b c m) = (apply3 (coerce-fdesignator f) m a b c))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
@@ -643,6 +649,7 @@ CL_DEFUN T_mv core__apply3(Function_sp func, T_sp lastArg,
 
 CL_LAMBDA(func args arg0 arg1 arg2 arg3 core:&va-rest more)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx((apply f a b c d ... m) = (apply4 (coerce-fdesignator f) m a b c d ...))dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__apply4(Function_sp func, T_sp lastArg,
@@ -761,6 +768,7 @@ gctools::return_type fast_apply8(T_O* function_tagged, T_O* arg0, T_O* arg1, T_O
 
 CL_LAMBDA(form)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(eval)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__eval(T_sp form) {
@@ -776,6 +784,7 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
 
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Interpret FORM in the interpreter environment ENV.)dx")
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
   return eval::evaluate(form, env);
@@ -785,6 +794,7 @@ CL_DEFUN T_mv core__interpret(T_sp form, T_sp env) {
 // fast funcall
 CL_LAMBDA(function-desig &rest args)
 CL_DECLARE((declare (dynamic-extent args)));
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS: funcall)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
@@ -794,9 +804,9 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
     ERROR_UNDEFINED_FUNCTION(function_desig);
   }
   if (func.unboundp()) {
-    if (function_desig.nilp()) SIMPLE_ERROR(BF("The function designator was NIL"));
-    if (function_desig.unboundp()) SIMPLE_ERROR(BF("The function designator was UNBOUND"));
-    SIMPLE_ERROR(BF("The function %s was unbound") % _rep_(function_desig));
+    if (function_desig.nilp()) SIMPLE_ERROR(("The function designator was NIL"));
+    if (function_desig.unboundp()) SIMPLE_ERROR(("The function designator was UNBOUND"));
+    SIMPLE_ERROR(("The function %s was unbound") , _rep_(function_desig));
   }
   size_t nargs = cl__length(args);
   MAKE_STACK_FRAME( fargs, nargs );
@@ -808,6 +818,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(coerce_to_function)dx")
 DOCGROUP(clasp)
 CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
@@ -815,14 +826,14 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
     return fnobj;
   } else if (Symbol_sp sym = arg.asOrNull<Symbol_O>()) {
     if (!sym->fboundp())
-      SIMPLE_ERROR(BF("Function value for %s is unbound") % _rep_(sym));
+      SIMPLE_ERROR(("Function value for %s is unbound") , _rep_(sym));
     return sym->symbolFunction();
   } else if (Cons_sp carg = arg.asOrNull<Cons_O>()) {
     T_sp head = oCar(carg);
     if (head == cl::_sym_setf) {
       Symbol_sp sym = oCadr(carg).as<Symbol_O>();
       if (!sym->fboundp_setf()) {
-        SIMPLE_ERROR(BF("SETF function value for %s is unbound") % _rep_(sym));
+        SIMPLE_ERROR(("SETF function value for %s is unbound") , _rep_(sym));
       }
       return sym->getSetfFdefinition();
     } else if (head == cl::_sym_lambda) {
@@ -833,7 +844,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       return gc::As<Function_sp>(cl__eval(arg));
     }
   }
-  SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(arg));
+  SIMPLE_ERROR(("Illegal function designator %s") , _rep_(arg));
 };
 
 CL_LAMBDA(body &optional expectDocString)
@@ -997,14 +1008,6 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
   return Values(tclassified, make_fixnum((int)indicesSize), make_fixnum(totalSpecials));
 }
 
-CL_LAMBDA()
-CL_DECLARE();
-CL_DOCSTRING(R"dx(evaluateDepth)dx")
-DOCGROUP(clasp)
-CL_DEFUN int core__evaluate_depth() {
-  return eval::_evaluateDepth;
-};
-
 CL_LAMBDA(arg)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(evaluateVerbosity)dx")
@@ -1015,6 +1018,7 @@ CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) {
 
 CL_LAMBDA(form &optional env)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(Evaluate the form in the environment using the interpreter)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) {
@@ -1064,7 +1068,7 @@ namespace core {
         if (sym->specialP() || sym->boundP()) {
             return sym->symbolValue();
         }
-        SIMPLE_ERROR(BF("Could not find variable %s in lexical/global environment") % _rep_(sym));
+        SIMPLE_ERROR(("Could not find variable %s in lexical/global environment") , _rep_(sym));
     };
 
     Function_sp interpreter_lookup_function_or_error(T_sp name, T_sp env) {
@@ -1082,7 +1086,7 @@ namespace core {
                 if (sym->fboundp_setf()) {
                     return sym->getSetfFdefinition();
                 }
-                SIMPLE_ERROR(BF("SETF function value for %s is unbound") % _rep_(sym));
+                SIMPLE_ERROR(("SETF function value for %s is unbound") , _rep_(sym));
             }
         }
         if (gc::IsA<Symbol_sp>(name)) {
@@ -1090,7 +1094,7 @@ namespace core {
             return sname->symbolFunction();
 #if 0    
             if (sname->fboundp()) return sname->symbolFunction();
-            SIMPLE_ERROR(BF("Could not find special-operator/macro/function(%s) in the lexical/dynamic environment") % _rep_(name) );
+            SIMPLE_ERROR(("Could not find special-operator/macro/function(%s) in the lexical/dynamic environment") , _rep_(name) );
 #endif
         }
         ASSERT(gc::IsA<Function_sp>(name));
@@ -1163,7 +1167,7 @@ namespace core {
             T_sp keyform = oCar(args);
             List_sp clauses = oCdr(args);
             T_sp test_key = eval::evaluate(keyform, environment);
-            LOG(BF("Evaluated test_key = %s\n") % _rep_(test_key));
+            LOG("Evaluated test_key = %s\n" , _rep_(test_key));
             for (auto cur : clauses) {
                 T_sp oclause = oCar(cur);
                 if ((oclause).consp()) {
@@ -1173,7 +1177,7 @@ namespace core {
                     SYMBOL_EXPORT_SC_(ClPkg, otherwise);
                     if (keys == cl::_sym_otherwise || keys == _lisp->_true()) {
                         if (oCdr(cur).notnilp()) {
-                            SIMPLE_ERROR(BF("otherwise-clause must be the last clause of case - it is not"));
+                            SIMPLE_ERROR(("otherwise-clause must be the last clause of case - it is not"));
                         }
                         return eval::sp_progn(forms, environment);
                     } else if (cl__atom(keys)) {
@@ -1189,7 +1193,7 @@ namespace core {
                         }
                     }
                 } else {
-                    SIMPLE_ERROR(BF("Bad case clause: %s") % _rep_(oclause));
+                    SIMPLE_ERROR(("Bad case clause: %s") , _rep_(oclause));
                 }
             }
             return (Values(nil<T_O>()));
@@ -1198,7 +1202,7 @@ namespace core {
         void setq_symbol_value(Symbol_sp symbol, T_sp value, T_sp environment) {
             if (symbol->specialP() || Environment_O::clasp_lexicalSpecialP(environment, symbol)) {
                 if (symbol->getReadOnly())
-                    SIMPLE_ERROR(BF("Cannot modify value of constant %s") % _rep_(symbol));
+                    SIMPLE_ERROR(("Cannot modify value of constant %s") , _rep_(symbol));
                 symbol->setf_symbolValue(value);
                 return;
             } else  {
@@ -1265,7 +1269,7 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
   specials = nil<T_O>();
   for (; body.notnilp(); body = oCdr(body)) {
     if (!cl__listp(body)) {
-      SIMPLE_ERROR(BF("Bad input to processDeclares: %s") % _rep_(inputBody));
+      SIMPLE_ERROR(("Bad input to processDeclares: %s") , _rep_(inputBody));
     }
     T_sp form = oCar(body);
                 // If we are expecting docstring and we hit a string, then we hit a possible docstring
@@ -1297,7 +1301,7 @@ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declar
           T_sp v = oCar(sentence);
           sentence = oCdr(sentence);
           if (!cl__symbolp(v)) {
-            SIMPLE_ERROR(BF("Illegal object[%s] in declare special") % _rep_(v));
+            SIMPLE_ERROR(("Illegal object[%s] in declare special") , _rep_(v));
           }
           specials = Cons_O::create(v, specials);
         }
@@ -1316,7 +1320,7 @@ void extract_declares_code(List_sp args, List_sp &declares, List_sp &code) {
 }
 
 void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<String_sp> &docstring, List_sp &code) {
-  LOG(BF("Parsing lambda body: %s") % body->__repr__());
+  LOG("Parsing lambda body: %s" , body->__repr__());
   List_sp specials;
   extract_declares_docstring_code_specials(body, declares, true, docstring, code, specials);
 }
@@ -1335,8 +1339,14 @@ T_mv sp_loadTimeValue(List_sp args, T_sp environment) {
 T_mv do_progv(List_sp symbols, List_sp values, List_sp forms, T_sp environment)
 {
   if (symbols.notnilp()) {
-    DynamicScopeManager scope (gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
-    return do_progv(CONS_CDR(symbols),CONS_CDR(values),forms,environment);
+    return call_with_variable_bound(gc::As<Symbol_sp>(CONS_CAR(symbols)),
+                                    CONS_CAR(values),
+                                    [&]() {
+                                      return do_progv(CONS_CDR(symbols),
+                                                      CONS_CDR(values),
+                                                      forms,
+                                                      environment);
+                                    });
   } else {
     return sp_progn(forms, environment);
   }
@@ -1347,7 +1357,7 @@ T_mv sp_progv(List_sp args, T_sp environment) {
   List_sp symbols = eval::evaluate(oCar(args), environment);
   List_sp values = eval::evaluate(oCadr(args), environment);
   if (cl__length(symbols) != cl__length(values)) {
-    SIMPLE_ERROR(BF("PROGV number of symbols don't match the number of values"));
+    SIMPLE_ERROR(("PROGV number of symbols don't match the number of values"));
   }
   List_sp forms = oCddr(args);
   return do_progv(symbols,values,forms,environment);
@@ -1422,7 +1432,7 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
            sit == cl::_sym_load ||
            sit == kw::_sym_compile_toplevel ||
            sit == cl::_sym_compile ) ) {
-      SIMPLE_ERROR(BF("Illegal eval-when situation %s") % _rep_(sit) );
+      SIMPLE_ERROR(("Illegal eval-when situation %s") , _rep_(sit) );
     }
   }
   List_sp body = oCdr(args);
@@ -1436,14 +1446,10 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
 T_mv sp_step(List_sp args, T_sp env) {
   IMPLEMENT_ME();
 };
-
 T_mv sp_tagbody(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
   ValueFrame_sp vframe = gc::As<ValueFrame_sp>(tagbodyEnv->getActivationFrame());
-  Cons_sp thandle = Cons_O::create(nil<T_O>(),nil<T_O>());
-  (*vframe)[0] = thandle;
-  T_O* handle = thandle.raw_();
             //
             // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
             //
@@ -1455,24 +1461,26 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
       tagbodyEnv->addTag(tag, cur);
     }
   }
-  LOG(BF("sp_tagbody has extended the environment to: %s") % tagbodyEnv->__repr__());
+  LOG("sp_tagbody has extended the environment to: %s" , tagbodyEnv->__repr__());
             // Start to evaluate the tagbody
-  List_sp ip = args;
-  while (ip.consp()) {
-    T_sp tagOrForm = CONS_CAR(ip);
-    if ((tagOrForm).consp()) {
-      try {
+            // Evaluate the tagbody
+  call_with_tagbody([&](TagbodyDynEnv_sp tb, size_t index) {
+    List_sp ip;
+    if (index == 0) { // initialize and run prefix
+      (*vframe)[0] = tb;
+      ip = args;
+    } else
+      // there was a +1 for setjmp in sp_go, so we undo that here.
+      ip = tagbodyEnv->codePos(index - 1);
+    while (ip.consp()) {
+      T_sp tagOrForm = CONS_CAR(ip);
+      if ((tagOrForm).consp())
         eval::evaluate(tagOrForm, tagbodyEnv);
-      } catch (DynamicGo &dgo) {
-        if (dgo.getHandle() != handle) throw;
-        int index = dgo.index();
-        ip = tagbodyEnv->codePos(index);
-      }
+      ip = CONS_CDR(ip);
     }
-    ip = CONS_CDR(ip);
-  }
-  LOG(BF("Leaving sp_tagbody"));
-  return Values0<T_O>();
+  });
+  LOG("Leaving sp_tagbody");
+  return Values(nil<T_O>());
 };
 
 T_mv sp_go(List_sp args, T_sp env) {
@@ -1484,13 +1492,13 @@ T_mv sp_go(List_sp args, T_sp env) {
   T_sp tagbodyEnv;
   bool foundTag = Environment_O::clasp_findTag(env, tag, depth, index, interFunction, tagbodyEnv);
   if (!foundTag) {
-    SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
+    SIMPLE_ERROR(("Could not find tag[%s] in the lexical environment: %s") , _rep_(tag) , _rep_(env));
   }
   ValueFrame_sp af = gc::As<ValueFrame_sp>(Environment_O::clasp_getActivationFrame(env));
-  T_sp thandle = (*af)[0];
+  T_sp handle = (*af)[0];
+  TagbodyDynEnv_sp tde = gc::As_unsafe<TagbodyDynEnv_sp>(handle);
   T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
-  DynamicGo go(thandle.raw_(), index);
-  throw go;
+  sjlj_unwind(tde, index + 1); // +1 for setjmp.
 }
 };
 
@@ -1503,14 +1511,14 @@ T_mv sp_go(List_sp args, T_sp env) {
             List_sp variables = coerce_to_list(pairOfLists);
             List_sp expressions = pairOfLists.valueGet_(1);
             List_sp body = oCdr(args);
-            //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
-            //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
+            //    LOG("Extended the environment - result -->\n%s" , newEnvironment->__repr__() );
+            //    LOG("Evaluating code in this new lexical environment: %s" , body->__repr__() );
             List_sp declares;
             gc::Nilable<String_sp> docstring;
             List_sp code;
             List_sp declaredSpecials;
             extract_declares_docstring_code_specials(body, declares, false, docstring, code, declaredSpecials);
-            LOG(BF("Assignment part=%s") % assignments->__repr__());
+            LOG("Assignment part=%s" , assignments->__repr__());
             T_mv classifiedAndCount = core__classify_let_variables_and_declares(variables, declaredSpecials);
             size_t totalSpecials = classifiedAndCount.third().unsafe_fixnum();
             List_sp classified = coerce_to_list(classifiedAndCount);
@@ -1519,6 +1527,11 @@ T_mv sp_go(List_sp args, T_sp env) {
                 ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
             MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
             ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
+            /* KLUDGE: We cheap out and ban use of our unwinder
+             * through here. Would be more efficient to undo
+             * the VEDSM there, but that's complicated. */
+            gctools::StackAllocate<UnknownDynEnv_O> ude(my_thread->_DynEnv);
+            DynEnvPusher dep(my_thread, ude.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
             List_sp curExp = expressions;
@@ -1537,7 +1550,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                     T_sp expr = oCar(curExp);
                     T_sp result = eval::evaluate(expr, evaluateEnvironment);
                     if (valueIndex >= numTemps) {
-                        SIMPLE_ERROR(BF("Overflow in LET temporary variables only %d available") % numTemps);
+                        SIMPLE_ERROR(("Overflow in LET temporary variables only %d available") , numTemps);
                     }
                     tempValues[valueIndex] = result.raw_();
                     ++valueIndex;
@@ -1551,7 +1564,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                 Symbol_sp shead = gc::As<Symbol_sp>(oCar(classified));
                 if (shead == ext::_sym_specialVar || shead == ext::_sym_lexicalVar) {
                     if (valueIndex >= numTemps) {
-                        SIMPLE_ERROR(BF("Overflow in LET temporary variables only %d available") % numTemps);
+                        SIMPLE_ERROR(("Overflow in LET temporary variables only %d available") , numTemps);
                     }
                     result = gctools::smart_ptr<T_O>((gc::Tagged)tempValues[valueIndex]);
                     ++valueIndex;
@@ -1571,14 +1584,14 @@ T_mv sp_go(List_sp args, T_sp env) {
             List_sp variables = coerce_to_list(pairOfLists);
             List_sp expressions = pairOfLists.valueGet_(1);
             List_sp body = oCdr(args);
-            //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
-            //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
+            //    LOG("Extended the environment - result -->\n%s" , newEnvironment->__repr__() );
+            //    LOG("Evaluating code in this new lexical environment: %s" , body->__repr__() );
             List_sp declares;
             gc::Nilable<String_sp> docstring;
             List_sp code;
             List_sp declaredSpecials;
             extract_declares_docstring_code_specials(body, declares, false, docstring, code, declaredSpecials);
-            LOG(BF("Assignment part=%s") % assignments->__repr__());
+            LOG("Assignment part=%s" , assignments->__repr__());
             T_mv classifiedAndCount = core__classify_let_variables_and_declares(variables, declaredSpecials);
             size_t totalSpecials = classifiedAndCount.third().unsafe_fixnum();
             List_sp classified = coerce_to_list(classifiedAndCount);
@@ -1587,6 +1600,9 @@ T_mv sp_go(List_sp args, T_sp env) {
                 ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
             MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
             ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
+            // See KLUDGE in let, above.
+            gctools::StackAllocate<UnknownDynEnv_O> ude(my_thread->_DynEnv);
+            DynEnvPusher dep(my_thread, ude.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
             List_sp curExp = expressions;
@@ -1613,7 +1629,7 @@ T_mv sp_go(List_sp args, T_sp env) {
         T_mv sp_if(List_sp args, T_sp environment) {
             ASSERT(environment.generalp());
             if (oCdddr(args).notnilp()) {
-                SIMPLE_ERROR(BF("Illegal if has too many expressions: %s") % _rep_(args));
+                SIMPLE_ERROR(("Illegal if has too many expressions: %s") , _rep_(args));
             }
             T_sp res = eval::evaluate(oCar(args), environment);
             if (res.isTrue()) {
@@ -1656,26 +1672,14 @@ T_mv sp_go(List_sp args, T_sp env) {
       }
     };
         T_mv sp_block(List_sp args, T_sp environment) {
-            ASSERT(environment.generalp());
-            Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
-            BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
-            ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
-            Cons_sp handle = Cons_O::create(nil<T_O>(),nil<T_O>());
-            // MonitorBlock mb(handle.raw_()); // For debugging BLOCK/RETURN-FROM
-            vframe->operator[](0) = handle;
-            LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__());
-            T_mv result;
-            try {
-                result = eval::sp_progn(oCdr(args), newEnvironment);
-            } catch (ReturnFrom &returnFrom) {
-                LOG(BF("Caught ReturnFrom with returnFrom.getBlockDepth() ==> %d") % returnFrom.getBlockDepth());
-                if (returnFrom.getHandle() != handle.raw_() ) {
-                    throw returnFrom;
-                }
-                result = gctools::multiple_values<T_O>::createFromValues(); // returnFrom.getReturnedObject();
-            }
-            LOG(BF("Leaving sp_block"));
-            return result;
+          ASSERT(environment.generalp());
+          Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
+          BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
+          ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
+          return call_with_escape([&](BlockDynEnv_sp block) {
+            vframe->operator[](0) = block;
+            return eval::sp_progn(oCdr(args), newEnvironment);
+          });
         }
 
         T_mv sp_returnFrom(List_sp args, T_sp environment) {
@@ -1689,61 +1693,28 @@ T_mv sp_go(List_sp args, T_sp env) {
             T_mv result = Values(nil<T_O>());
             if (oCdr(args).notnilp()) result = eval::evaluate(oCadr(args), environment);
             result.saveToMultipleValue0();
-            T_O* tag = gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0).raw_();
-//            printf("%s:%d:%s returnPtr -> %p\n", __FILE__, __LINE__, __FUNCTION__, tag );
-            ReturnFrom returnFrom(tag);
-            throw returnFrom;
+            T_sp handle = gc::As_unsafe<ValueFrame_sp>(blockEnv->getActivationFrame())->operator[](0);
+            BlockDynEnv_sp bde = gc::As_unsafe<BlockDynEnv_sp>(handle);
+            sjlj_unwind(bde, 1); // index irrelevant
         }
 
         T_mv sp_unwindProtect(List_sp args, T_sp environment) {
-            T_mv result;
-            try {
-                // Evaluate the protected form
-                result = eval::evaluate(oCar(args), environment);
-            } catch (...) {
-                // Abnormal exit
-                // Might be a return, so
-                // save the multiple values (from the vector)
-                size_t nvals = lisp_multipleValues().getSize();
-                T_O* mv_temp[nvals];
-                multipleValuesSaveToTemp(nvals, mv_temp);
-                eval::sp_progn(oCdr(args), environment);
-                multipleValuesLoadFromTemp(nvals, mv_temp);
-                throw;
-            }
-            // Normal exit
-            // Allocate a vector in which to save the return values.
-            // While VLAs aren't in C++, Clang has them.
-            size_t nvals = result.number_of_values();
-            T_O* mv_temp[nvals];
-            // Save the return values
-            returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
-            // Evaluate the cleanup forms --
-            eval::sp_progn(oCdr(args), environment);
-            // Restore the return values and return
-            return returnTypeLoadFromTemp(nvals, mv_temp);
+          return funwind_protect([&](){return eval::evaluate(oCar(args), environment);},
+                                 [&](){eval::sp_progn(oCdr(args), environment);});
         }
 
         T_mv sp_catch(List_sp args, T_sp environment) {
-            ASSERT(environment.generalp());
-            T_sp mytag = eval::evaluate(oCar(args), environment);
-            T_mv result;
-            CLASP_BEGIN_CATCH(mytag) {
-                result = eval::sp_progn(oCdr(args), environment);
-            } CLASP_END_CATCH(mytag, result);
-            return result;
+          ASSERT(environment.generalp());
+          return call_with_catch(eval::evaluate(oCar(args), environment),
+                                 [&]() { return eval::sp_progn(oCdr(args), environment); });
         }
 
         T_mv sp_throw(List_sp args, T_sp environment) {
-            ASSERT(environment.generalp());
-            T_sp throwTag = eval::evaluate(oCar(args), environment);
-            T_mv result = Values(nil<T_O>());
-            result = eval::evaluate(oCadr(args), environment);
-            // The first return value needs to be saved in MultipleValues
-            result.saveToMultipleValue0();
-            // I should search for the Catch frame for throwTag and
-            // invoke an error if it doesn't exist
-            clasp_throw(throwTag);
+          ASSERT(environment.generalp());
+          T_sp throwTag = eval::evaluate(oCar(args), environment);
+          T_mv result = eval::evaluate(oCadr(args), environment);
+          result.saveToMultipleValue0();
+          sjlj_throw(throwTag);
         }
 
         T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
@@ -1804,17 +1775,17 @@ T_mv sp_go(List_sp args, T_sp env) {
             gc::Nilable<String_sp> docstring;
             List_sp form;
             parse_lambda_body(body, declares, docstring, form);
-            LOG(BF("lambda is closing over environment\n%s") % env->__repr__());
+            LOG("lambda is closing over environment\n%s" , env->__repr__());
             LambdaListHandler_sp llh;
             if (lambda_list.nilp()) {
                 llh = lisp_function_lambda_list_handler(nil<List_V>(), declares);
             } else if ((lambda_list).consp()) {
                 llh = lisp_function_lambda_list_handler(lambda_list, declares);
-                LOG(BF("Passed lambdaList: %s") % lambda_list->__repr__());
+                LOG("Passed lambdaList: %s" , lambda_list->__repr__());
             } else if (core__lambda_list_handler_p(lambda_list)) {
                 llh = gc::As<LambdaListHandler_sp>(lambda_list);
             } else {
-                SIMPLE_ERROR(BF("Illegal object for lambda-list you can "
+                SIMPLE_ERROR(("Illegal object for lambda-list you can "
                                 "only pass a Cons or LambdaListHandler"));
             }
             // If the name is NIL then check if the form has the form (BLOCK XXX ...)
@@ -1845,9 +1816,9 @@ T_mv sp_go(List_sp args, T_sp env) {
             if (arg.nilp()) {
                 WRONG_TYPE_ARG(arg, Cons_O::createList(cl::_sym_or, cl::_sym_Symbol_O, cl::_sym_Cons_O));
             } else if (Symbol_sp fnSymbol = arg.asOrNull<Symbol_O>()) {
-                LOG(BF("In sp_function - looking up for for[%s]") % fnSymbol->__repr__());
+                LOG("In sp_function - looking up for for[%s]" , fnSymbol->__repr__());
                 T_sp fn = interpreter_lookup_function_or_error(fnSymbol, environment);
-                LOG(BF("     Found form: %s") % fn->__repr__());
+                LOG("     Found form: %s" , fn->__repr__());
                 return (Values(fn));
             } else if (Cons_sp cconsArg = arg.asOrNull<Cons_O>()) {
                 List_sp consArg = cconsArg;
@@ -1855,7 +1826,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                 if (head == cl::_sym_setf) {
                     T_sp fn = af_interpreter_lookup_setf_function(consArg, environment);
                     if (fn.nilp()) {
-                        SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(consArg) % _rep_(args));
+                        SIMPLE_ERROR(("Could not find function %s args: %s") , _rep_(consArg) , _rep_(args));
                     }
                     return (Values(fn));
                 } else if (head == cl::_sym_lambda || head == ext::_sym_lambda_block) {
@@ -1885,7 +1856,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                     return (Values(lambdaFunction));
                 }
             }
-            SIMPLE_ERROR(BF("Illegal argument[%s] for function") % _rep_(arg));
+            SIMPLE_ERROR(("Illegal argument[%s] for function") , _rep_(arg));
         }
 
         T_mv sp_quote(List_sp args, T_sp environment) {
@@ -1903,7 +1874,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                 T_sp target = oCar(pairs);
                 if (Symbol_sp symbol = target.asOrNull<Symbol_O>()) {
                     if (oCdr(pairs).nilp()) {
-                        SIMPLE_ERROR(BF("Missing value for setq of target[%s] - body of setq: %s") % _rep_(target) % _rep_(args));
+                        SIMPLE_ERROR(("Missing value for setq of target[%s] - body of setq: %s") , _rep_(target) , _rep_(args));
                     }
                     T_sp expr = oCadr(pairs);
                     T_sp texpr = cl__macroexpand(symbol, environment);
@@ -1917,7 +1888,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                     }
                     pairs = oCddr(pairs);
                 } else {
-                    SIMPLE_ERROR(BF("Illegal target[%s] for setq - body of setq: %s") % _rep_(target) % _rep_(args));
+                    SIMPLE_ERROR(("Illegal target[%s] for setq - body of setq: %s") , _rep_(target) , _rep_(args));
                 }
             }
             return (Values(result));
@@ -1930,7 +1901,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             FunctionValueEnvironment_sp newEnvironment = FunctionValueEnvironment_O::createForEntries(cl__length(functions), environment);
             List_sp body = oCdr(args);
             List_sp cur = functions;
-            LOG(BF("functions part=%s") % functions->__repr__());
+            LOG("functions part=%s" , functions->__repr__());
             while (cur.notnilp()) {
                 List_sp oneDef = oCar(cur);
                 functionName = oCar(oneDef);
@@ -1952,13 +1923,13 @@ T_mv sp_go(List_sp args, T_sp env) {
             List_sp functions = oCar(args);
             List_sp body = oCdr(args);
             List_sp cur = functions;
-            LOG(BF("functions part=%s") % functions->__repr__());
+            LOG("functions part=%s" , functions->__repr__());
             FunctionValueEnvironment_sp newEnvironment = FunctionValueEnvironment_O::createForEntries(cl__length(functions), environment);
             while (cur.notnilp()) {
                 List_sp oneDef = oCar(cur);
                 name = oCar(oneDef);
                 Function_sp func = lambda(name, true, oCadr(oneDef) /*lambda-list*/, oCddr(oneDef) /*body with decls/docstring*/, newEnvironment);
-                LOG(BF("func = %s") % func->__repr__());
+                LOG("func = %s" , func->__repr__());
                 newEnvironment->bind_function(name, func);
                 cur = oCdr(cur);
             }
@@ -1978,7 +1949,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             MacroletEnvironment_sp newEnv(MacroletEnvironment_O::make(env));
             List_sp body = oCdr(args);
             List_sp cur = macros;
-            LOG(BF("macros part=%s") % macros->__repr__());
+            LOG("macros part=%s" , macros->__repr__());
             while (cur.notnilp()) {
                 List_sp oneDef = oCar(cur);
                 //		printf( "%s:%d  oneDef = %s\n", __FILE__, __LINE__, _rep_(oneDef).c_str());
@@ -2010,7 +1981,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                 //    printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
                 ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name, kw::_sym_macro, outer_ll, outer_llh, declares, docstring, code, newEnv, SOURCE_POS_INFO_FIELDS(nil<T_O>()));
                 outer_func = ic;
-                LOG(BF("func = %s") % ic->__repr__());
+                LOG("func = %s" , ic->__repr__());
                 newEnv->addMacro(name, outer_func);
                 //		newEnv->bind_function(name,outer_func);
                 cur = oCdr(cur);
@@ -2040,7 +2011,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             SymbolMacroletEnvironment_sp newEnv(SymbolMacroletEnvironment_O::make(env));
             List_sp body = oCdr(args);
             List_sp cur = macros;
-            LOG(BF("macros part=%s") % macros->__repr__());
+            LOG("macros part=%s" , macros->__repr__());
             SYMBOL_SC_(CorePkg, whole);
             SYMBOL_SC_(CorePkg, env);
             List_sp outer_ll = Cons_O::createList(_sym_whole, _sym_env);
@@ -2081,29 +2052,10 @@ T_mv sp_go(List_sp args, T_sp env) {
             ASSERT(gc::IsA<Function_sp>(functionDesignator));
             return functionDesignator;
         }
-
-
-        /*!
-         * This method:
-         * 1) evaluates the arguments
-         * 2) Looks up the method using the methodCall and the first argument
-         * 3) evaluates the method
-         * Can return MultipleValues
-         */
-
-
-        struct EvaluateDepthUpdater {
-            EvaluateDepthUpdater() {
-                ++_evaluateDepth;
-            }
-            ~EvaluateDepthUpdater() {
-                --_evaluateDepth;
-            }
-        };
-
+    
         T_mv evaluate_atom(T_sp exp, T_sp environment) {
             T_mv result;
-            LOG(BF("Evaluating atom: %s") % exp->__repr__());
+            LOG("Evaluating atom: %s" , exp->__repr__());
             if (exp.fixnump() || exp.characterp() || exp.single_floatp()) {
 #ifdef DEBUG_EVALUATE
               if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
@@ -2113,7 +2065,6 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif
                 return Values(exp);
             } else if (Symbol_sp sym = exp.asOrNull<Symbol_O>()) {
-                _BLOCK_TRACEF(BF("Evaluating symbol: %s") % exp->__repr__());
                 if (sym->isKeywordSymbol()) {
 #ifdef DEBUG_EVALUATE
               if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
@@ -2148,7 +2099,7 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif                
                 return (result);
             }
-            LOG(BF(" Its the self returning object: %s") % exp->__repr__());
+            LOG(" Its the self returning object: %s" , exp->__repr__());
 #ifdef DEBUG_EVALUATE
           if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
             printf("%s:%d evaluate return  %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
@@ -2303,10 +2254,6 @@ T_mv sp_go(List_sp args, T_sp env) {
           List_sp form;
           T_sp head;
           core__stack_monitor();
-          EvaluateDepthUpdater evaluateDepthUpdater;
-          if (_evaluateVerbosity > 0) {
-            printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
-          }
           if (!exp.consp()) {
             T_sp result = evaluate_atom(exp, environment);
 #ifdef DEBUG_EVALUATE
@@ -2320,7 +2267,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             //
             // If it reached here then exp is a cons
             //
-            //	    LOG(BF("Evaluating cons[%s]") % exp->__repr__() );
+            //	    LOG("Evaluating cons[%s]" , exp->__repr__() );
             //	    printf("    Evaluating: %s\n", _rep_(exp).c_str() );
             //	    printf("    In env: %s\n", _rep_(environment).c_str() );
           Cons_sp cform((gctools::Tagged)exp.raw_());
@@ -2336,7 +2283,7 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif
               return core::eval::evaluate(Cons_O::create(cl::_sym_funcall,exp),environment);
             }
-            SIMPLE_ERROR(BF("Illegal head of form %s") % _rep_(head));
+            SIMPLE_ERROR(("Illegal head of form %s") , _rep_(head));
           } else if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
                 // ------------------------------------------------------------
                 //
@@ -2416,7 +2363,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                 // It is a form and its head is a symbol,
                 // evaluate the arguments and apply the function bound to the head to them
                 //
-                //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
+                //		LOG("Symbol[%s] is a normal form - evaluating arguments" , head->__repr__() );
 #ifdef DEBUG_EVALUATE
             if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
               printf("%s:%d %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
@@ -2443,24 +2390,19 @@ T_mv sp_go(List_sp args, T_sp env) {
 #endif
             Vaslist valist_struct(nargs,callArgs);
             Vaslist_sp valist(&valist_struct); // = callArgs.setupVaslist(valist_struct);
-            try {
-              return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
-            } catch (core::ExitProgramException& ee) {
-              throw(ee);
-            }
+            return funcall_general<core::Function_O>(headFunc.tagged_(), valist_struct._nargs, valist_struct._args );
           }
-          SIMPLE_ERROR(BF("Illegal form %s") % _rep_(exp));
+          SIMPLE_ERROR(("Illegal form %s") , _rep_(exp));
         }
     
         void evaluateIntoActivationFrame(ActivationFrame_sp af,
                                          List_sp args, T_sp environment) {
             if (args.nilp()) {
-                LOG(BF("Arguments before evaluateList: Nil ---> returning Nil"));
+                LOG("Arguments before evaluateList: Nil ---> returning Nil");
                 return;
             }
-            LOG(BF("Arguments before evaluateList: %s") % _rep_(args));
+            LOG("Arguments before evaluateList: %s" , _rep_(args));
             {
-                _BLOCK_TRACE("Evaluating...");
                 int idx = 0;
                 // Iterate through each car in exp and
                 // evaluate it (handling Nil objects and results)
@@ -2469,25 +2411,24 @@ T_mv sp_go(List_sp args, T_sp env) {
                 for (auto p : args) {
                     T_sp inObj = oCar(p);
                     T_sp result = eval::evaluate(inObj, environment);
-                    LOG(BF("After evaluation result = %s") % _rep_(result));
+                    LOG("After evaluation result = %s" , _rep_(result));
                     ValueFrame_sp vf = gctools::As_unsafe<ValueFrame_sp>(af);
                     vf->set_entry(idx, result);
                     ++idx;
                 }
             }
-            LOG(BF("Arguments after evaluateList: %s") % _rep_(af));
+            LOG("Arguments after evaluateList: %s" , _rep_(af));
         }
 
         List_sp evaluateList(List_sp args, T_sp environment) {
             Cons_sp firstCons = Cons_O::create(nil<T_O>(),nil<T_O>());
             Cons_sp curCons = firstCons;
             if (args.nilp()) {
-                LOG(BF("Arguments before evaluateList: Nil ---> returning Nil"));
+                LOG("Arguments before evaluateList: Nil ---> returning Nil");
                 return nil<T_O>();
             }
-            LOG(BF("Arguments before evaluateList: %s") % args->__repr__());
+            LOG("Arguments before evaluateList: %s" , args->__repr__());
             {
-                _BLOCK_TRACE("Evaluating...");
                 // Iterate through each car in exp and
                 // evaluate it (handling Nil objects and results)
                 // and string the results into a linked list
@@ -2495,7 +2436,7 @@ T_mv sp_go(List_sp args, T_sp env) {
                     T_sp inObj = oCar(p);
                     T_sp result = eval::evaluate(inObj, environment);
                     ASSERTNOTNULL(result);
-                    LOG(BF("After evaluation result = %s @ %X") % result->__repr__() % (void *)(result.get()));
+                    LOG("After evaluation result = %s @ %X" , result->__repr__() , (void *)(result.get()));
                     Cons_sp outCons = Cons_O::create(result,nil<T_O>());
                     curCons->setCdr(outCons);
                     curCons = outCons;
@@ -2505,11 +2446,11 @@ T_mv sp_go(List_sp args, T_sp env) {
             List_sp tempCons = firstCons->cdr();
             while (tempCons.notnilp()) {
                 T_sp zobj = oCar(tempCons);
-                LOG(BF("Argument after evaluateList in order: %s @ %X") % zobj->__repr__() % (void *)(zobj.get()));
+                LOG("Argument after evaluateList in order: %s @ %X" , zobj->__repr__() , (void *)(zobj.get()));
                 tempCons = tempCons->cdr();
             }
 #endif
-            LOG(BF("Arguments after evaluateList: %s") % _rep_(oCdr(firstCons)));
+            LOG("Arguments after evaluateList: %s" , _rep_(oCdr(firstCons)));
             return oCdr(firstCons);
         }
 
@@ -2623,7 +2564,6 @@ SYMBOL_EXPORT_SC_(ClPkg, eval);
     //	    SYMBOL_SC_(CorePkg,extractDeclaresDocstringCode);
     //	    Defun(extractDeclaresDocstringCode);
 SYMBOL_SC_(CorePkg, evaluateVerbosity);
-SYMBOL_SC_(CorePkg, evaluateDepth);
 SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
 SYMBOL_EXPORT_SC_(ClPkg, apply);
 SYMBOL_EXPORT_SC_(ClPkg, funcall);

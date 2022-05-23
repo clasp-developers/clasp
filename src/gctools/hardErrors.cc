@@ -53,13 +53,13 @@
 }
 
 [[noreturn]] void throw_hard_error_mps_bad_result(int result) {
-  throw_hard_error((BF("MPS returned a bad result -> %d") % result).str());
+  throw_hard_error(fmt::sprintf("MPS returned a bad result -> %d", result));
 }
 [[noreturn]] void throw_hard_error_bad_layout_command(int cmd) {
-  throw_hard_error((BF("The Layout_code table contained an illegal command -> %d") % cmd).str());
+  throw_hard_error(fmt::sprintf("The Layout_code table contained an illegal command -> %d", cmd));
 }
 [[noreturn]] void throw_hard_error_mps_bad_result(const char* method) {
-  throw_hard_error((BF("Method is not applicable %s") % method).str());
+  throw_hard_error(fmt::sprintf("Method is not applicable %s" , method));
 }
 
 

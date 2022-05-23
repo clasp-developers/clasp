@@ -105,7 +105,7 @@ struct from_object<clang::tooling::CommandLineArguments> {
         return;
       }
     }
-    SIMPLE_ERROR(BF("Conversion of %s to clang::tooling::CommandLineArguments not supported yet") % _rep_(o));
+    SIMPLE_ERROR(("Conversion of %s to clang::tooling::CommandLineArguments not supported yet") , _rep_(o));
   }
 };
 
@@ -118,7 +118,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
   from_object(core::T_sp o) {
     // printf("%s:%d Entered from_object<clang::tooling::ArgumentsAdjuster> with arg: %s@%p\n", __FILE__, __LINE__, _rep_(o).c_str(), (void*)o.tagged_());
     if (o.nilp()) {
-      SIMPLE_ERROR(BF("You cannot pass nil as a function"));
+      SIMPLE_ERROR(("You cannot pass nil as a function"));
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
       void* function_address = (void*)func->entry();
       // printf("%s:%d   intermediate from_object<clang::tooling::ArgumentsAdjuster> with Function arg: %s@%p - function_address: %p\n", __FILE__, __LINE__, _rep_(o).c_str(), (void*)o.tagged_(), function_address);
@@ -136,7 +136,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
       this->_v = *argAdj;
       return;
     }
-    SIMPLE_ERROR(BF("Cannot convert %s into a clang::tooling::ArgumentsAdjuster") % _rep_(o));
+    SIMPLE_ERROR(("Cannot convert %s into a clang::tooling::ArgumentsAdjuster") , _rep_(o));
   }
 };
 };
@@ -553,13 +553,13 @@ core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
       } else if (const clang::TypeLoc *typeLocType = dtn.get<clang::TypeLoc>()) {
         value = translate::to_object<clang::TypeLoc>::convert(*typeLocType);
       } else {
-        SIMPLE_ERROR(BF("%s:%d Handle boxing of other node types in ast_tooling__IDToNodeMap") % __FILE__ % __LINE__);
+        SIMPLE_ERROR(("%s:%d Handle boxing of other node types in ast_tooling__IDToNodeMap") , __FILE__ , __LINE__);
       }
       ht->hash_table_setf_gethash(_lisp->internKeyword(key), value);
     }
     return ht;
   }
-  SIMPLE_ERROR(BF("Wrong argument type for IDToNodeMap"));
+  SIMPLE_ERROR(("Wrong argument type for IDToNodeMap"));
 }
 
 void ast_tooling__match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext) {
@@ -577,7 +577,7 @@ void ast_tooling__match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp ta
   } else if (clang::TypeLoc *typeloc = wp_node->castOrNull<clang::TypeLoc>()) {
     matchFinder->match(*typeloc, *astContext);
   } else {
-    SIMPLE_ERROR(BF("%s:%d Handle unboxing of other node types in ast_tooling__match") % __FILE__ % __LINE__);
+    SIMPLE_ERROR(("%s:%d Handle unboxing of other node types in ast_tooling__match") , __FILE__ , __LINE__);
   }
 };
 
@@ -596,7 +596,7 @@ core::T_sp ast_tooling__newFrontendActionFactory(core::T_sp consumerFactory) {
 #endif
     return sp;
   }
-  SIMPLE_ERROR(BF("Implement newFrontendActionFactory for %s") % _rep_(consumerFactory));
+  SIMPLE_ERROR(("Implement newFrontendActionFactory for %s") , _rep_(consumerFactory));
 };
 
 core::List_sp ast_tooling__ReplacementsAsList(clang::tooling::RefactoringTool& refactoringTool ) {
@@ -620,13 +620,13 @@ void ast_tooling__RefactoringToolReplacementsAdd(clang::tooling::RefactoringTool
     clang::tooling::Replacements repls;
     auto res = repls.add(replacement);
     if (res) {
-      SIMPLE_ERROR(BF("Error adding replacement"));
+      SIMPLE_ERROR(("Error adding replacement"));
     }
     mapReplacements[filePath.str()] =repls;
   } else {
     auto res = ii->second.add(replacement);
     if (res) {
-      SIMPLE_ERROR(BF("Error adding replacement to existing replacements"));
+      SIMPLE_ERROR(("Error adding replacement to existing replacements"));
     }
   }
 #if 0  
@@ -740,7 +740,7 @@ struct from_object<clang::tooling::JSONCommandLineSyntax> {
       this->_v = clang::tooling::JSONCommandLineSyntax::AutoDetect;
       return;
     }
-    SIMPLE_ERROR(BF("syntax parameter must be one of :auto-detect, :gnu, or :windows - was passed %s") % _rep_(o));
+    SIMPLE_ERROR(("syntax parameter must be one of :auto-detect, :gnu, or :windows - was passed %s") , _rep_(o));
   };
 };
 };
@@ -1000,7 +1000,7 @@ CL_DEFUN core::T_sp ast_tooling__parse_dynamic_matcher(const string& matcher)
   llvm::Optional<clang::ast_matchers::dynamic::DynTypedMatcher> Matcher =
     clang::ast_matchers::dynamic::Parser::parseMatcherExpression(matchersr, NULL, NULL, &error);
   if (!Matcher) {
-    SIMPLE_ERROR(BF("Could not parse expression %s") % matcher);
+    SIMPLE_ERROR(("Could not parse expression %s") , matcher);
   }
   return translate::to_object<clang::ast_matchers::dynamic::DynTypedMatcher>::convert(*Matcher);
 };

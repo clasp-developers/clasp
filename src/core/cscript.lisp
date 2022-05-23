@@ -68,6 +68,7 @@
            #~"pathname.cc"
            #~"commandLineOptions.cc"
            #~"exceptions.cc"
+           #~"unwind.cc"
            #~"commonLispUserPackage.cc"
            #~"metaClass.cc"
            #~"multipleValues.cc"

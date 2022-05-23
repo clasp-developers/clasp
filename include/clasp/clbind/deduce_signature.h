@@ -40,9 +40,6 @@ THE SOFTWARE.
 #else
 #include <boost/mpl/vector/vector50.hpp>
 #endif
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/iteration/iterate.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
 
 namespace clbind {
 namespace detail {

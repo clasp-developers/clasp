@@ -142,7 +142,7 @@ struct weak_pad1_s : public WeakObject {
 template <class T, class U>
 struct BucketsBase : public WeakObject {
  BucketsBase(int l) : _length(gctools::make_tagged_fixnum<core::Fixnum_I>(l)), _used(gctools::make_tagged_fixnum<core::Fixnum_I>(0)), _deleted(gctools::make_tagged_fixnum<core::Fixnum_I>(0)) {
-    GCWEAK_LOG(BF("Created BucketsBase with length: %d") % this->length());
+   GCWEAK_LOG(fmt::sprintf("Created BucketsBase with length: %d" , this->length()));
     for (size_t i(0); i < l; ++i) {
       this->bucket[i] = T((gctools::Tagged)gctools::tag_unbound<typename T::Type *>());
     }
@@ -215,7 +215,7 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
       }
     }
 #else
-    THROW_HARD_ERROR(BF("Add support for other GCs"));
+    THROW_HARD_ERROR("Add support for other GCs");
 #endif
   }
 
@@ -246,10 +246,10 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
     }
     if (base) GC_general_register_disappearing_link(reinterpret_cast<void **>(&this->bucket[idx].rawRef_()), base );
 #elif defined(USE_MPS)
-    GCWEAK_LOG(BF("Setting Buckets<T,U,WeakLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));
+    GCWEAK_LOG(fmt::sprintf("Setting Buckets<T,U,WeakLinks> idx=%d  address=%p" , idx , ((void *)(val.raw_()))));
     this->bucket[idx] = val;
 #elif defined(USE_MMTK)
-    THROW_HARD_ERROR(BF("Add support for mmtk"));
+    THROW_HARD_ERROR("Add support for mmtk");
 #endif
   }
 };
@@ -263,7 +263,7 @@ struct Buckets<T, U, StrongLinks> : public BucketsBase<T, U> {
   }
   virtual ~Buckets() {}
   void set(size_t idx, const value_type &val) {
-    GCWEAK_LOG(BF("Setting Buckets<T,U,StrongLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));
+    GCWEAK_LOG(fmt::sprintf("Setting Buckets<T,U,StrongLinks> idx=%d  address=%p" , idx , ((void *)(val.raw_()))));
     this->bucket[idx] = val;
   }
 };
@@ -517,7 +517,7 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
       GC_general_register_disappearing_link(reinterpret_cast<void **>(&this->bucket.rawRef_()), reinterpret_cast<void *>(this->bucket.rawRef_()));
     }
 #else
-    THROW_HARD_ERROR(BF("Add support for new GC"));
+    THROW_HARD_ERROR("Add support for new GC");
 #endif
   };
 

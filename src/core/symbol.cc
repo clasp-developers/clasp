@@ -356,7 +356,7 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
 Symbol_sp Symbol_O::makunbound() {
   if (this->getReadOnly())
     // would be a nice extension to make this a continuable error
-    SIMPLE_ERROR(BF("Cannot make constant %s unbound") % this->__repr__());
+    SIMPLE_ERROR(("Cannot make constant %s unbound") , this->__repr__());
   setf_symbolValue(unbound<T_O>());
   return this->asSmartPtr();
 }
@@ -393,7 +393,11 @@ NEVER_OPTIMIZE void Symbol_O::symbolUnboundError() const {
 }
 
 void Symbol_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling()) this->getPackage().unsafe_general()->sxhash_(hg);
+  // clhs 18.2.14 sxhash
+  // Although similarity is defined for symbols in terms of both the symbol's name and the packages
+  // in which the symbol is accessible, item 3 disallows using package information to compute the hash
+  // code, since changes to the package status of a symbol are not visible to equal.
+  // if (hg.isFilling()) this->getPackage().unsafe_general()->sxhash_(hg);
   if (hg.isFilling()) this->_Name->sxhash_(hg);
 }
 
@@ -439,9 +443,9 @@ bool Symbol_O::isKeywordSymbol() {
 void Symbol_O::serialize(serialize::SNode node) {
   _OF();
   if (node->loading()) {
-    SIMPLE_ERROR(BF("You can't load symbols with serialize!!"));
+    SIMPLE_ERROR(("You can't load symbols with serialize!!"));
   } else {
-    SIMPLE_ERROR(BF("You can't save symbols with serialize!!!"));
+    SIMPLE_ERROR(("You can't save symbols with serialize!!!"));
   }
 }
 #endif
@@ -449,7 +453,7 @@ void Symbol_O::serialize(serialize::SNode node) {
 #if defined(XML_ARCHIVE)
 void Symbol_O::archiveBase(ArchiveP node) {
   if (node->loading()) {
-    SIMPLE_ERROR(BF("You can't load symbols with archiveBase!! See Dumb_Node::createYourSymbol"));
+    SIMPLE_ERROR(("You can't load symbols with archiveBase!! See Dumb_Node::createYourSymbol"));
   } else {
     string name = this->formattedName(true);
     node->attribute("_sym", name);
@@ -616,7 +620,7 @@ Symbol_sp Symbol_O::exportYourself(bool doit) {
   if (doit) {
     if (!this->isExported()) {
       if (this->getPackage().nilp())
-        SIMPLE_ERROR(BF("Cannot export - no package"));
+        SIMPLE_ERROR(("Cannot export - no package"));
       Package_sp pkg = gc::As<Package_sp>(this->getPackage());
       if (!pkg->isKeywordPackage()) {
         pkg->_export2(this->asSmartPtr());

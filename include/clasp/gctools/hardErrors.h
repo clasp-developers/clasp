@@ -39,7 +39,6 @@ class HardError {
  private:
   string _Message;
  public:
-    //HardError(const char *sourceFile, const char *functionName, uint lineNumber, const boost::format &fmt);
   HardError(const std::string& msg);
   HardError(const char* file, const char* func, int lineno, const char* msg);
   string message();
@@ -64,9 +63,9 @@ class HardError {
 #define SUBIMP() SUBCLASS_MUST_IMPLEMENT();
 
 #if 1 
-#define THROW_HARD_ERROR(fmt)                                        \
+#define THROW_HARD_ERROR(...)                                        \
   {                                                                  \
-    std::string str = (fmt).str(); \
+    std::string str = fmt::sprintf(__VA_ARGS__); \
     dbg_hook(str.c_str());                                   \
     ::core::errorFormatted(str);                                     \
   }

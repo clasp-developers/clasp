@@ -44,7 +44,7 @@ successfully, T is returned, else error."
            (ext:check-arguments-type))
   (unless (or (string-equal host "sys")
               (si::pathname-translations host))
-    (with-open-file (in-str (make-pathname :defaults "sys:translations;"
+    (with-open-file (in-str (make-pathname :defaults "sys:src;lisp;translations;"
                                            :name (string-downcase host)
                                            :type "translations"))
       (if *load-verbose*
@@ -79,14 +79,12 @@ successfully, T is returned, else error."
             )
       (setf end-unwinds (gctools:thread-local-unwind-counter))
       (if (= interpreted-calls-end interpreted-calls-start)
-          (core:bformat *trace-output*
-                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) unwinds(%d)%N"
+          (core:fmt *trace-output* "Time real({:.3f} secs) run({:.3f} secs) consed({} bytes) unwinds({})%N"
                         (float (/ (- real-end real-start) internal-time-units-per-second))
                         (float (/ (- run-end run-start) internal-time-units-per-second))
                         (- clasp-bytes-end clasp-bytes-start)
                         (- end-unwinds start-unwinds))
-          (core:bformat *trace-output*
-                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d) unwinds(%d)%N"
+          (core:fmt *trace-output* "Time real({:.3f} secs) run({:.3f} secs) consed({} bytes) interps({}) unwinds({})%N"
                         (float (/ (- real-end real-start) internal-time-units-per-second))
                         (float (/ (- run-end run-start) internal-time-units-per-second))
                         (- clasp-bytes-end clasp-bytes-start)
@@ -309,9 +307,9 @@ hash table; otherwise it signals that we have reached the end of the hash table.
                 (push (list allocs (svref stamp-names i) i) allocs-stamp-name))))
           (setf allocs-stamp-name (sort allocs-stamp-name #'< :key #'car))
           (terpri *trace-output*)
-          (core:bformat *trace-output* "Allocations  Stamp-name/Stamp%N")
+          (core:fmt *trace-output* "Allocations  Stamp-name/Stamp%N")
           (dolist (part allocs-stamp-name)
-            (core:bformat *trace-output* "%10d %s/%d%N"
+            (core:fmt *trace-output* "{:10d} {}/{}%N"
                           (first part)
                           (second part)
                           (third part))))))))

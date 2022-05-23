@@ -83,7 +83,7 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
   vector<int>::reverse_iterator di;
   int digitIdx;
   curIndex = index;
-  LOG(BF("*starting index=%20lld") % curIndex);
+  LOG("*starting index=%20lld" , curIndex);
   ASSERT(bases.size() >= 1);
   digits.resize(bases.size());
   digitIdx = digits.size() - 1;
@@ -91,14 +91,15 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
     Bignum bb = (curIndex % (*bi));
     *di = bb.get_si();
     curIndex /= *bi;
-    LOG(BF("*di=%d  *bi=%d curIndex=%20lld") % *di % *bi % curIndex);
+    LOG("*di=%d  *bi=%d curIndex=%20lld" , *di , *bi , curIndex);
   }
-  LOG(BF("digits[0] = %d") % digits[0]);
+  LOG("digits[0] = %d" , digits[0]);
   return digits;
 }
 
 CL_LAMBDA()
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(getUniversalTime)dx")
 DOCGROUP(clasp)
 CL_DEFUN Integer_sp cl__get_universal_time() {
@@ -127,6 +128,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(asin)dx")
 DOCGROUP(clasp)
 CL_DEFUN double core__num_op_asin(double x) {
@@ -135,6 +137,7 @@ CL_DEFUN double core__num_op_asin(double x) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(num-op-acos)dx")
 DOCGROUP(clasp)
 CL_DEFUN double core__num_op_acos(double x) {
@@ -143,6 +146,7 @@ CL_DEFUN double core__num_op_acos(double x) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(asinh)dx")
 DOCGROUP(clasp)
 CL_DEFUN double core__num_op_asinh(double x) {
@@ -151,6 +155,7 @@ CL_DEFUN double core__num_op_asinh(double x) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(num_op_acosh)dx")
 DOCGROUP(clasp)
 CL_DEFUN double core__num_op_acosh(double x) {
@@ -159,6 +164,7 @@ CL_DEFUN double core__num_op_acosh(double x) {
 
 CL_LAMBDA(arg)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(atanh)dx")
 DOCGROUP(clasp)
 CL_DEFUN double core__num_op_atanh(double x) {

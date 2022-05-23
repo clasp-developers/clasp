@@ -27,6 +27,12 @@ THE SOFTWARE.
 #ifndef clbind_policies_H
 #define clbind_policies_H
 
+
+#include <boost/mpl/if.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/not.hpp>
+#include <boost/mpl/bool.hpp>
+
 //----------------------------------------------------------------------
 //
 // Policies

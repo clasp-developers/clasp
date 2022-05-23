@@ -45,8 +45,8 @@ cl_index clasp_print_base(void) {
   T_sp object = cl::_sym_STARprint_baseSTAR->symbolValue();
   cl_index base;
   if (!core__fixnump(object) || (base = unbox_fixnum(gc::As<Fixnum_sp>(object))) < 2 || base > 36) {
-    SIMPLE_ERROR(BF("The value of *PRINT-BASE*\n %s\n"
-                    "is not of the expected type (INTEGER 2 36)") %
+    SIMPLE_ERROR(("The value of *PRINT-BASE*\n %s\n"
+                  "is not of the expected type (INTEGER 2 36)") ,
                  _rep_(object));
   }
   return base;
@@ -67,9 +67,9 @@ cl_index clasp_print_level(void) {
         // Bind *print-level* to something valid so that we don't get
         // recursive errors while printing error messages.
         DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, nil<T_O>());
-        SIMPLE_ERROR(BF("The value of *PRINT-LEVEL*\n %s\n"
+        SIMPLE_ERROR(("The value of *PRINT-LEVEL*\n %s\n"
                         "is not of the expected type (OR NULL (INTEGER 0))")
-                     % _rep_(object));
+                     , _rep_(object));
       }
     }
   } else if (core__bignump(object)) {
@@ -98,9 +98,9 @@ cl_index clasp_print_length(void) {
     ERROR:
       {
         DynamicScopeManager scope(cl::_sym_STARprint_lengthSTAR, nil<T_O>());
-        SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
+        SIMPLE_ERROR(("The value of *PRINT-LENGTH*\n %s\n"
                         "is not of the expected type (OR NULL (INTEGER 0))")
-                     % _rep_(object));
+                     , _rep_(object));
       }
     }
   } else if (core__bignump(object)) {
@@ -186,7 +186,7 @@ CL_DEFUN T_sp core__print_unreadable_object_function(T_sp object, T_sp output_st
   if (clasp_print_readably()) {
     PRINT_NOT_READABLE_ERROR(object);
   } else if (object.unboundp()) {
-    SIMPLE_ERROR(BF("Error! printUnreadableObjectFunction object is Unbound"));
+    SIMPLE_ERROR(("Error! printUnreadableObjectFunction object is Unbound"));
   } else {
     stringstream ss;
     ss << "#<";

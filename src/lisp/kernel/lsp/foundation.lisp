@@ -280,28 +280,28 @@ the corresponding VAR.  Returns NIL."
         (hash 0))
     (labels ((advance-hash-table-iterator ()
                (declare (core:lambda-name advance-hash-table-iterator))
-               #+(or)(core:bformat t "Starting with hash -> %d%N" hash)
+               #+(or)(core:fmt t "Starting with hash -> {}%N" hash)
                (tagbody
                 top
                   (let ((entry (core:hash-table-bucket hash-table hash)))
-                    #+(or)(core:bformat t "  entry -> %s%N" entry)
+                    #+(or)(core:fmt t "  entry -> {}%N" entry)
                     (if (and (null entry) (< hash number-of-buckets))
                         (progn
-                          #+(or)(core:bformat t "Empty - incrementing hash%N")
+                          #+(or)(core:fmt t "Empty - incrementing hash%N")
                           (incf hash)
                           (if (< hash number-of-buckets)
                               (go top))
-                          #+(or)(core:bformat t "a-h-t-i returning NIL%N")
+                          #+(or)(core:fmt t "a-h-t-i returning NIL%N")
                           (return-from advance-hash-table-iterator nil))
                         (progn
-                          #+(or)(core:bformat t "expr was nil entry -> %s%N" entry)
+                          #+(or)(core:fmt t "expr was nil entry -> {}%N" entry)
                           (incf hash)
                           (return-from advance-hash-table-iterator entry)))))))
       (function (lambda ()
         (if (>= hash number-of-buckets)
             nil
             (let ((entry (advance-hash-table-iterator)))
-              #+(or)(core:bformat t " returned entry -> %s%N" entry)
+              #+(or)(core:fmt t " returned entry -> {}%N" entry)
               (if entry
                   (values t (car entry) (cdr entry))
                   nil))))))))
@@ -344,9 +344,9 @@ the corresponding VAR.  Returns NIL."
 (defun signal-type-error (datum expected-type)
   (error 'type-error :datum datum :expected-type expected-type))
 
-
+#+(or)
 (defun inform (fmt &rest args)
-  (apply #'bformat t fmt args))
+  (apply #'fmt t fmt args))
 
 (in-package :cl)
 
@@ -368,7 +368,7 @@ the corresponding VAR.  Returns NIL."
            t)
 
 (defun warn (x &rest args)
-  (core:bformat t "WARN: %s %s%N" x args))
+  (core:fmt t "WARN: {} {}%N" x args))
 
 
 (defun class-name (x)

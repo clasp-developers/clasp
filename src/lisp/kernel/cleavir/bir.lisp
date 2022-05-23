@@ -1,62 +1,5 @@
 (in-package #:cc-bir)
 
-(defclass unwind-protect (bir:dynamic-environment bir:one-input bir:no-output
-                          bir:terminator1)
-  ())
-
-(defmethod ast-to-bir:compile-ast ((ast cc-ast:unwind-protect-ast)
-                                   inserter system)
-  (ast-to-bir:with-compiled-ast (fu (cc-ast:cleanup-ast ast) inserter system)
-    (let* ((uw (make-instance 'unwind-protect :inputs fu))
-           (ode (ast-to-bir:dynamic-environment inserter))
-           (during (ast-to-bir:make-iblock
-                    inserter :dynamic-environment uw)))
-      (setf (bir:next uw) (list during))
-      (ast-to-bir:terminate inserter uw)
-      (ast-to-bir:begin inserter during)
-      (let ((rv (ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
-                                        inserter system)))
-        (if (eq rv :no-return)
-            :no-return
-            ;; We need to pass the values through a phi so that
-            ;; unwind-dynenv can deal with them. KLUDGEy?
-            (let* ((next (ast-to-bir:make-iblock
-                          inserter :dynamic-environment ode))
-                   (phi (make-instance 'bir:phi
-                          :iblock next)))
-              (setf (bir:inputs next) (list phi))
-              (ast-to-bir:terminate
-               inserter
-               (make-instance 'bir:jump
-                 :inputs rv :outputs (list phi) :next (list next)))
-              (ast-to-bir:begin inserter next)
-              (list phi)))))))
-
-(defclass bind (bir:dynamic-environment bir:no-output bir:terminator1) ())
-
-(defmethod ast-to-bir:compile-ast ((ast cc-ast:bind-ast) inserter system)
-  (ast-to-bir:with-compiled-asts (args ((cleavir-ast:name-ast ast)
-                                        (cleavir-ast:value-ast ast))
-                                       inserter system)
-    (let* ((during (ast-to-bir:make-iblock inserter))
-           (ode (ast-to-bir:dynamic-environment inserter))
-           (bind (make-instance 'bind :inputs args :next (list during))))
-      (setf (bir:dynamic-environment during) bind)
-      (ast-to-bir:terminate inserter bind)
-      (ast-to-bir:begin inserter during)
-      (let ((rv (ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
-                                        inserter system)))
-        (cond ((eq rv :no-return) :no-return)
-              (t
-               (let ((next (ast-to-bir:make-iblock
-                            inserter :dynamic-environment ode)))
-                 (ast-to-bir:terminate
-                  inserter
-                  (make-instance 'bir:jump
-                    :inputs () :outputs () :next (list next)))
-                 (ast-to-bir:begin inserter next))
-               rv))))))
-
 (defclass mv-foreign-call (bir:one-output bir:instruction)
   ((%function-name :initarg :function-name :reader function-name)))
 
@@ -427,9 +370,9 @@
   (cleavir-bir-transformations:simple-dynenv-p
    (bir:parent dynenv) dest system))
 
-;;; longjmping through different catches is also no problem.
+;;; longjmping through different come-froms is also no problem.
 (defmethod cleavir-bir-transformations:simple-dynenv-p
-    ((dynenv bir:catch) (dest bir:dynamic-environment)
+    ((dynenv bir:come-from) (dest bir:dynamic-environment)
      (system clasp-cleavir:clasp))
   (or (call-next-method) ; if this is the overall destination, stop
       (cleavir-bir-transformations:simple-dynenv-p

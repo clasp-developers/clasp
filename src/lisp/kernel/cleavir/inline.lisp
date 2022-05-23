@@ -972,9 +972,9 @@
   #+(or)
   (defmacro debug-inline (msg &rest msg-args)
     `(progn
-       (core:bformat t "debug-inline>> ")
-       (core:bformat t ,msg ,@msg-args)
-       (core:bformat t "%N")
+       (core:fmt t "debug-inline>> ")
+       (core:fmt t ,msg ,@msg-args)
+       (core:fmt t "%N")
        (finish-output)))
   (defmacro debug-inline (msg &rest msg-args)
     (declare (ignore msg msg-args))
@@ -1600,7 +1600,7 @@
                             collect `((simple-array ,type (*))
                                       (cleavir-primop:aref array index ,type t ,boxed)))
                     (t
-                     (core:bformat t "vref array-element-type: %s%N" (array-element-type array))
+                     (core:fmt t "vref array-element-type: {}%N" (array-element-type array))
                      (error "BUG: vref unknown vector ~a" array)))))
       (mycase (t t) (base-char nil) (character nil)
               (double-float nil) (single-float nil)

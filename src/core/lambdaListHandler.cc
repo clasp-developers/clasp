@@ -240,7 +240,7 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
     }
   }
 #endif
-  LOG(BF("About to createBindingsInScopeVaslist with\n llh->%s\n    Vaslist->%s") % _rep_(llh) % _rep_(lcc_vargs));
+  LOG("About to createBindingsInScopeVaslist with\n llh->%s\n    Vaslist->%s" , _rep_(llh) , _rep_(lcc_vargs));
   llh->createBindingsInScope(closure, nargs, args, *scope);
   return;
 }
@@ -293,7 +293,7 @@ void throw_if_not_destructuring_context(T_sp context) {
   if (context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
       || context == cl::_sym_destructuring_bind)
     return;
-  SIMPLE_ERROR(BF("Lambda list is destructuring_bind but context does not support it context[%s]") % _rep_(context));
+  SIMPLE_ERROR(("Lambda list is destructuring_bind but context does not support it context[%s]") , _rep_(context));
 }
 
 CL_LISPIFY_NAME("LambdaListHandler-lambdaList");
@@ -386,7 +386,7 @@ CL_DEFMETHOD void LambdaListHandler_O::add_missing_sensors() {
 
 HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecifierList) {
   HashTableEq_sp specials(HashTableEq_O::create_default());
-  LOG(BF("Processing declareSpecifierList: %s") % _rep_(declareSpecifierList));
+  LOG("Processing declareSpecifierList: %s" , _rep_(declareSpecifierList));
   if (declareSpecifierList.notnilp()) {
     ASSERTF(oCar(declareSpecifierList) != cl::_sym_declare, BF("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") % _rep_(declareSpecifierList));
     for (auto cur : declareSpecifierList) {
@@ -398,7 +398,7 @@ HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecif
       }
     }
   }
-  LOG(BF("Returning symbolSet: %s") % specials->__repr__());
+  LOG("Returning symbolSet: %s" , specials->__repr__());
   return specials;
 }
 
@@ -610,10 +610,9 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
 #undef PASS_NEXT_ARG
 
 void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, ScopeManager &scope) {
-  LOG(BF("There are %d aux variables") % auxs.size());
+  LOG("There are %d aux variables" , auxs.size());
   gctools::Vec0<AuxArgument>::iterator ci;
   {
-    _BLOCK_TRACE("Assigning aux variables");
     for (ci = auxs.begin(); ci != auxs.end(); ci++) {
       T_sp expr = ci->_Expression;
       if (expr.notnilp()) {
@@ -683,10 +682,10 @@ string argument_mode_as_string(ArgumentMode mode) {
 }
 
 bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_sp &key_flag) {
-  LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % _rep_(symbol) % symbol.get());
+  LOG("In switch_add_argument_mode argument is a symbol: %s %X" , _rep_(symbol) , symbol.get());
   switch (mode) {
   case required:
-      LOG(BF("Was in required mode"));
+      LOG("Was in required mode");
       if (symbol == cl::_sym_AMPoptional) {
         mode = optional;
         goto NEWMODE;
@@ -710,7 +709,7 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       }
       break;
   case optional:
-      LOG(BF("Was in optional mode"));
+      LOG("Was in optional mode");
       if (symbol == cl::_sym_AMPoptional) {
         goto BADMODE;
       } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
@@ -733,7 +732,7 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       }
       break;
   case rest:
-      LOG(BF("Was in rest mode"));
+      LOG("Was in rest mode");
       if (symbol == cl::_sym_AMPoptional) {
         goto BADMODE;
       } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
@@ -754,7 +753,7 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       }
       break;
   case va_rest:
-      LOG(BF("Was in va_rest mode"));
+      LOG("Was in va_rest mode");
       if (symbol == cl::_sym_AMPoptional) {
         goto BADMODE;
       } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
@@ -775,7 +774,7 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       }
       break;
   case keyword:
-      LOG(BF("Was in keyword mode"));
+      LOG("Was in keyword mode");
       if (symbol == cl::_sym_AMPoptional) {
         goto BADMODE;
       } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
@@ -793,7 +792,7 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       }
       break;
   case allowOtherKeys:
-      LOG(BF("Did not recognize symbol(%s)") % _rep_(symbol));
+      LOG("Did not recognize symbol(%s)" , _rep_(symbol));
       if (symbol == cl::_sym_AMPoptional) {
         goto BADMODE;
       } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
@@ -810,7 +809,7 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       }
       break;
   case aux:
-      LOG(BF("Was in aux mode"));
+      LOG("Was in aux mode");
       if (symbol == cl::_sym_AMPoptional) {
         goto BADMODE;
       } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
@@ -844,11 +843,10 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
   };
   return false;
 BADMODE:
-  SIMPLE_ERROR(BF("While in lambda-list mode %s encountered illegal symbol[%s]") % argument_mode_as_string(mode) % _rep_(symbol));
+  SIMPLE_ERROR(("While in lambda-list mode %s encountered illegal symbol[%s]") , argument_mode_as_string(mode) , _rep_(symbol));
 NEWMODE:
-  LOG(BF("Switched to mode: %s") % argument_mode_as_string(mode));
+  LOG("Switched to mode: %s" , argument_mode_as_string(mode));
   {
-    _BLOCK_TRACEF(BF("Checking if mode[%s] is valid for context[%s]") % argument_mode_as_string(mode) % context->__repr__());
     switch (mode) {
     case keyword:
       key_flag = _lisp->_true();
@@ -871,7 +869,7 @@ NEWMODE:
   }
   return true;
 ILLEGAL_MODE:
-  SIMPLE_ERROR(BF("Illegal mode %s for context[%s]") % argument_mode_as_string(mode) % _rep_(context));
+  SIMPLE_ERROR(("Illegal mode %s for context[%s]") , argument_mode_as_string(mode) , _rep_(context));
 }
 
 void throw_if_invalid_context(T_sp context) {
@@ -882,7 +880,7 @@ void throw_if_invalid_context(T_sp context) {
     return;
   printf("%s:%d context.raw_= %p     cl::_sym_destructuring_bind.raw_=%p\n",
          __FILE__, __LINE__, context.raw_(), cl::_sym_destructuring_bind.raw_());
-  SIMPLE_ERROR(BF("Illegal parse_lambda_list context[%s]") % _rep_(context));
+  SIMPLE_ERROR(("Illegal parse_lambda_list context[%s]") , _rep_(context));
 }
 
 bool contextSupportsWhole(T_sp context) {
@@ -907,7 +905,7 @@ bool contextSupportsEnvironment(T_sp context) {
  */
 void checkTargetArgument(T_sp arg) {
   if (arg== cl::_sym_T) {
-    SIMPLE_ERROR(BF("The argument in a lambda list cannot be T"));
+    SIMPLE_ERROR(("The argument in a lambda list cannot be T"));
   }
 }
 
@@ -967,12 +965,12 @@ bool parse_lambda_list(List_sp original_lambda_list,
     defaultDefault = Cons_O::createList(cl::_sym_quote, cl::_sym__TIMES_);
   else defaultDefault = nil<T_O>();
   List_sp arguments = cl__copy_list(original_lambda_list);
-  LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % _rep_(arguments));
+  LOG("Argument handling mode starts in (required) - interpreting: %s" , _rep_(arguments));
   ArgumentMode add_argument_mode = required;
   restarg.clear();
   List_sp cur = arguments;
   while (cur.notnilp()) {
-    LOG(BF("Handing argument: %s") % _rep_(oCar(cur)));
+    LOG("Handing argument: %s" , _rep_(oCar(cur)));
     T_sp oarg = oCar(cur);
     if (cl__symbolp(oarg)) {
       T_sp sym = oarg;
@@ -1000,27 +998,27 @@ bool parse_lambda_list(List_sp original_lambda_list,
       T_sp supplied = nil<T_O>();
       if ((oarg).consp()) {
         List_sp carg = oarg;
-        LOG(BF("Optional argument is a Cons: %s") % _rep_(carg));
+        LOG("Optional argument is a Cons: %s" , _rep_(carg));
         sarg = oCar(carg);
         if (oCdr(carg).notnilp()) {
           defaultValue = oCadr(carg);
           if (oCddr(carg).notnilp())
             supplied = oCaddr(carg);
         }
-        LOG(BF("Optional argument was a Cons_O[%s] with parts - symbol[%s] default[%s] supplied[%s]") % _rep_(carg) % _rep_(sarg) % _rep_(defaultValue) % _rep_(supplied));
+        LOG("Optional argument was a Cons_O[%s] with parts - symbol[%s] default[%s] supplied[%s]" , _rep_(carg) , _rep_(sarg) , _rep_(defaultValue) , _rep_(supplied));
       } else {
         sarg = oarg;
-        LOG(BF("Optional argument was a Symbol_O[%s]") % _rep_(sarg));
+        LOG("Optional argument was a Symbol_O[%s]" , _rep_(sarg));
       }
       checkTargetArgument(sarg);
-      LOG(BF("Saving _OptionalArgument(%s) default(%s) supplied(%s)") % _rep_(sarg) % _rep_(defaultValue) % _rep_(supplied));
+      LOG("Saving _OptionalArgument(%s) default(%s) supplied(%s)" , _rep_(sarg) , _rep_(defaultValue) , _rep_(supplied));
       OptionalArgument optional(sarg, defaultValue, supplied);
       optionals.push_back(optional);
       break;
     }
     case rest: {
       if (restarg.isDefined()) {
-        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: %s") % restarg.asString());
+        SIMPLE_ERROR(("Only one name is allowed after &rest - you have already defined: %s") , restarg.asString());
       }
       checkTargetArgument(oarg);
       restarg.setTarget(oarg);
@@ -1029,7 +1027,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
     case va_rest: {
       if (restarg.isDefined()) {
-        SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: %s") % restarg.asString());
+        SIMPLE_ERROR(("Only one name is allowed after &rest - you have already defined: %s") , restarg.asString());
       }
       checkTargetArgument(oarg);
       restarg.setTarget(oarg);
@@ -1038,7 +1036,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
     case dot_rest: {
       if (oCdr(cur).notnilp()) {
-        SIMPLE_ERROR(BF("Lambda list dot followed by more than one argument"));
+        SIMPLE_ERROR(("Lambda list dot followed by more than one argument"));
       }
       checkTargetArgument(oarg);
       restarg.setTarget(oarg);
@@ -1073,16 +1071,16 @@ bool parse_lambda_list(List_sp original_lambda_list,
           }
         }
       } else {
-        SIMPLE_ERROR(BF("key arguments must be symbol or cons"));
+        SIMPLE_ERROR(("key arguments must be symbol or cons"));
       }
-      LOG(BF("Saving keyword(%s) local(%s) default(%s) sensor(%s)") % _rep_(keySymbol) % _rep_(localTarget) % _rep_(defaultValue) % _rep_(sensorSymbol));
+      LOG("Saving keyword(%s) local(%s) default(%s) sensor(%s)" , _rep_(keySymbol) , _rep_(localTarget) , _rep_(defaultValue) , _rep_(sensorSymbol));
       checkTargetArgument(keySymbol);
       KeywordArgument keyed(keySymbol, localTarget, defaultValue, sensorSymbol);
       keys.push_back(keyed);
       break;
     }
     case allowOtherKeys:
-      SIMPLE_ERROR(BF("&allow-other-keys must be processed just after switch_add_argument_mode"));
+      SIMPLE_ERROR(("&allow-other-keys must be processed just after switch_add_argument_mode"));
       break;
     case aux: {
       T_sp localSymbol = nil<T_O>();
@@ -1117,7 +1115,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     break;
   }
 DONE:
-  LOG(BF("Returning from parse_lambda_list"));
+  LOG("Returning from parse_lambda_list");
   return true;
 }
 
@@ -1317,10 +1315,10 @@ CL_DEFMETHOD int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp targ
       if (ri.symbol() == target)
         return ri.targetFrameIndex();
     } else {
-      SIMPLE_ERROR(BF("Required arguments of single dispatch generic functions must be symbols - I got: %s") % ri.asString());
+      SIMPLE_ERROR(("Required arguments of single dispatch generic functions must be symbols - I got: %s") , ri.asString());
     }
   }
-  SIMPLE_ERROR(BF("Could not find single dispatch target symbol[%s]") % _rep_(target));
+  SIMPLE_ERROR(("Could not find single dispatch target symbol[%s]") , _rep_(target));
 #if 0
 	// Slide all the frameIndexPointers up one
 	for ( int i=0; i<arguments.size()-1; i++ )

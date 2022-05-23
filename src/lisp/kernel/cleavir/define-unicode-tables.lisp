@@ -194,40 +194,12 @@
 (defun map-char-to-char-name (char)
   (gethash char *mapping-char-code-to-char-names*))
 
-(defconstant-equal
-    +hex-char-mapper+ `((#\0 0) (#\1 1) (#\2 2) (#\3 3) (#\4 4) (#\5 5)  
-                                (#\6 6) (#\7 7) (#\8 8) (#\9 9)
-                                (#\A 10) (#\B 11) (#\C 12) (#\D 13) (#\E 14) (#\F 15)
-                                (#\a 10) (#\b 11) (#\c 12) (#\d 13) (#\e 14) (#\f 15)))
-
-(defun quick-hex-to-integer (hex-string)
-  (let* ((multiplier 1)
-        (result 0)
-        (length (length hex-string))
-        (index (1- length)))
-    (dotimes (x length result)
-      (let ((char (char hex-string index)))
-        (setq result (+ result
-                        (* multiplier (second (assoc char +hex-char-mapper+ :test #'char= :test #'first))) )
-              multiplier (* 16 multiplier)
-              index (1- index))))))
-  
 (defun process-unicode-file ()
-  (let ((file (merge-pathnames #P"UnicodeData.txt" (translate-logical-pathname #P"SOURCE-DIR:tools-for-build;"))))
-    (with-open-file (stream file :element-type 'character :direction :input :external-format :utf-8)
-      (loop
-         (let ((line (read-line stream nil :end)))
-           (when (eq line :end)
-             (return))
-           (let* ((pos-semicolon-1 (position #\; line :test #'char=))
-                  (hex-string (subseq line 0 pos-semicolon-1))
-                  (pos-semicolon-2 (position #\; line :test #'char= :start (1+ pos-semicolon-1)))
-                  (char-name (subseq line (1+ pos-semicolon-1) pos-semicolon-2)))
-             (unless (char= (char char-name 0) #\<)
-               (let ((char-code-decimal (quick-hex-to-integer hex-string)))
-                 (when (>= char-code-decimal #XA0)
-                   (let ((final-name (substitute #\_ #\Space char-name)))
-                     (note-mapping-code char-code-decimal final-name))))))))))
+  (with-open-file (stream #P"sys:tools-for-build;character-names.sexp"
+                   :element-type 'character :direction :input :external-format :utf-8)
+    (loop for (code . name) in (read stream nil)
+          when (>= code #xA0)
+            do (note-mapping-code code name)))
   (setq *unicode-file-read* t))
 
 (defun minimal-unicode-name (char)
@@ -279,5 +251,5 @@
 
 #|
 (time
- (load (compile-file "sys:kernel;cleavir;define-unicode-tables.lisp")))
+ (load (compile-file "sys:src;lisp;kernel;cleavir;define-unicode-tables.lisp")))
 |#

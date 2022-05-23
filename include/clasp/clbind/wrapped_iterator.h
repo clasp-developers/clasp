@@ -55,20 +55,20 @@ size_t distance(core::T_sp other) const {
         IT& otherIterator = io.get()->_Iterator;
         return std::distance(this->_Iterator,otherIterator);
     }
-    SIMPLE_ERROR(BF("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") % _rep_(this->asSmartPtr()) % _rep_(other) % _rep_(core::instance_class(other)));
+    SIMPLE_ERROR(("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") , _rep_(this->asSmartPtr()) , _rep_(other) , _rep_(core::instance_class(other)));
   }
 bool operator==(core::T_sp other) const {
     if (gctools::smart_ptr<Iterator> io = other.asOrNull<Iterator<IT>>()) {
         IT& otherIterator = io->_Iterator;
         return this->_Iterator == otherIterator;
     }
-    SIMPLE_ERROR(BF("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") % _rep_(this->asSmartPtr()) % _rep_(other) % _rep_(core::instance_class(other)));
+    SIMPLE_ERROR(("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") , _rep_(this->asSmartPtr()) , _rep_(other) , _rep_(core::instance_class(other)));
   }
   bool operator<(core::T_sp other) {
     if (Iterator<IT> *io = gc::As<gc::smart_ptr<Iterator<IT>>>(other)) {
         return this->_Iterator < (*io)._Iterator;
     }
-    SIMPLE_ERROR(BF("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") % _rep_(this->asSmartPtr()) % _rep_(other) % _rep_(core::instance_class(other)));
+    SIMPLE_ERROR(("You tried to compare an iterator %s to an object %s of class %s and the isA relationship failed") , _rep_(this->asSmartPtr()) , _rep_(other) , _rep_(core::instance_class(other)));
   }
 };
 };

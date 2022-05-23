@@ -37,11 +37,11 @@ namespace core {
 
   void error_frame_range(const char* type, int index, int capacity )
   {
-    SIMPLE_ERROR(BF("Index %d out of range for %s with capacity %d") % type % index % capacity );
+    SIMPLE_ERROR(("Index %d out of range for %s with capacity %d") , type , index , capacity );
   }
   void error_end_of_frame_list(const char* message)
   {
-    SIMPLE_ERROR(BF("Reached end of ActivationFrame list for %s") % message);
+    SIMPLE_ERROR(("Reached end of ActivationFrame list for %s") , message);
   }
 
 void watchTriggered(T_sp *ptr) {
@@ -211,11 +211,11 @@ CL_DEFUN void core__verify_value_frame_layout(size_t parent_offset, size_t lengt
   size_t cxx_length_offset = offsetof(ValueFrame_O,_Objects._MaybeSignedLength);
   size_t cxx_data_offset = offsetof(ValueFrame_O,_Objects._Data);
   if (parent_offset!=cxx_parent_offset)
-    SIMPLE_ERROR(BF("parent_offset %lu does not match cxx_parent_offset %lu") % parent_offset % cxx_parent_offset );
+    SIMPLE_ERROR(("parent_offset %lu does not match cxx_parent_offset %lu") , parent_offset , cxx_parent_offset );
   if (length_offset!=cxx_length_offset)
-    SIMPLE_ERROR(BF("length_offset %lu does not match cxx_length_offset %lu") % length_offset % cxx_length_offset );
+    SIMPLE_ERROR(("length_offset %lu does not match cxx_length_offset %lu") , length_offset , cxx_length_offset );
   if (data_offset!=cxx_data_offset)
-    SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset );
+    SIMPLE_ERROR(("data_offset %lu does not match cxx_data_offset %lu") , data_offset , cxx_data_offset );
 }
 
 };

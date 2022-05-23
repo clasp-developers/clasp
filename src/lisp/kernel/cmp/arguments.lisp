@@ -38,7 +38,7 @@
   ;; cc is the calling-convention object.
   (dolist (req (cdr reqargs))
     (let ((arg (calling-convention-vaslist.va-arg cc)))
-      (cmp-log "(calling-convention-vaslist.va-arg cc) -> %s%N" arg)
+      (cmp-log "(calling-convention-vaslist.va-arg cc) -> {}%N" arg)
       (funcall *argument-out* arg req))))
 
 ;;; Unlike the other compile-*-arguments, this one returns a value-
@@ -93,7 +93,7 @@ switch (nargs) {
       ;; Generate a block for each case.
       (do ((i nreq (1+ i)))
           ((= i nfixed))
-        (let ((new (irc-basic-block-create (core:bformat nil "supplied-%d-arguments" i))))
+        (let ((new (irc-basic-block-create (core:fmt nil "supplied-{}-arguments" i))))
           (llvm-sys:add-case sw (irc-size_t i) new)
           (irc-phi-add-incoming nremaining zero new)
           (irc-begin-block new)
@@ -186,13 +186,13 @@ a_p = a_p_temp; a = a_temp;
          ;; NOTE: We might save a bit of time by moving this out of the loop.
          ;; Or maybe LLVM can handle it. I don't know.
          (key-const (irc-literal keyword keystring))
-         (match (irc-basic-block-create (core:bformat nil "matched-%s" keystring)))
-         (mismatch (irc-basic-block-create (core:bformat nil "not-%s" keystring))))
+         (match (irc-basic-block-create (core:fmt nil "matched-{}" keystring)))
+         (mismatch (irc-basic-block-create (core:fmt nil "not-{}" keystring))))
     (let ((test (irc-icmp-eq key-arg key-const)))
       (irc-cond-br test match mismatch))
     (irc-begin-block match)
-    (let* ((new (irc-basic-block-create (core:bformat nil "new-%s" keystring)))
-           (old (irc-basic-block-create (core:bformat nil "old-%s" keystring))))
+    (let* ((new (irc-basic-block-create (core:fmt nil "new-{}" keystring)))
+           (old (irc-basic-block-create (core:fmt nil "old-{}" keystring))))
       (let ((test (irc-icmp-eq suppliedp-phi false)))
         (irc-cond-br test new old))
       (irc-begin-block new) (irc-br cont-block)
@@ -253,7 +253,7 @@ a_p = a_p_temp; a = a_temp;
         (irc-phi-add-incoming sbkw (jit-constant-false) start)
         (irc-phi-add-incoming bad-keyword undef start)
         (do-keys (key)
-          (let ((var-phi (irc-phi %t*% 2 (core:bformat nil "%s-top" (string key)))))
+          (let ((var-phi (irc-phi %t*% 2 (core:fmt nil "{}-top" (string key)))))
             (push var-phi top-param-phis)
             ;; If we're paying attention to :allow-other-keys, track it specially
             ;; and initialize it to NIL.
@@ -261,7 +261,7 @@ a_p = a_p_temp; a = a_temp;
                    (irc-phi-add-incoming var-phi false start)
                    (setf allow-other-keys var-phi))
                   (t (irc-phi-add-incoming var-phi undef start))))
-          (let ((suppliedp-phi (irc-phi %t*% 2 (core:bformat nil "%s-suppliedp-top" (string key)))))
+          (let ((suppliedp-phi (irc-phi %t*% 2 (core:fmt nil "{}-suppliedp-top" (string key)))))
             (push suppliedp-phi top-suppliedp-phis)
             (irc-phi-add-incoming suppliedp-phi false start)))
         (setf top-param-phis (nreverse top-param-phis)
@@ -418,7 +418,7 @@ a_p = a_p_temp; a = a_temp;
               ;; we could use it in the error check to save a subtraction, though.
               (compile-optional-arguments optargs nreq calling-conv iNIL iT))
             (when safep
-              (cmp-log "Last if-too-many-arguments %s %s" cmax nargs)
+              (cmp-log "Last if-too-many-arguments {} {}" cmax nargs)
               (compile-error-if-too-many-arguments wrong-nargs-block cmax nargs)))))))
 
 
@@ -487,7 +487,7 @@ a_p = a_p_temp; a = a_temp;
               ;; each case
               (dotimes (i nopt)
                 (let* ((opti (+ i nreq))
-                       (blck (irc-basic-block-create (core:bformat nil "supplied-%d-arguments" opti))))
+                       (blck (irc-basic-block-create (core:fmt nil "supplied-{}-arguments" opti))))
                   (llvm-sys:add-case sw (irc-size_t opti) blck)
                   (do ((var-phis var-phis (cdr var-phis))
                        (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
@@ -549,7 +549,7 @@ a_p = a_p_temp; a = a_temp;
   ;; 2) optional arguments are (<lexical location> <lexical location>)
   ;; 3) keyword arguments are (<symbol> <lexical location> <lexical location>)
   ;; this lets us cheap out on parsing, except &rest and &allow-other-keys.
-  (cmp-log "calculate-cleavir-lambda-list-analysis lambda-list -> %s%n" lambda-list)
+  (cmp-log "calculate-cleavir-lambda-list-analysis lambda-list -> {}%N" lambda-list)
   (let (required optional rest-type rest key aok-p key-flag
                  (required-count 0) (optional-count 0) (key-count 0))
     (dolist (item lambda-list)
@@ -618,13 +618,13 @@ a_p = a_p_temp; a = a_temp;
 (defun compile-lambda-list-code (cleavir-lambda-list-analysis calling-conv arity
                                  &key argument-out (safep t))
   "Return T if arguments were processed and NIL if they were not"
-  (cmp-log "about to compile-lambda-list-code cleavir-lambda-list-analysis: %s%n" cleavir-lambda-list-analysis)
+  (cmp-log "about to compile-lambda-list-code cleavir-lambda-list-analysis: {}%N" cleavir-lambda-list-analysis)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list-analysis cleavir-lambda-list-analysis)
     (declare (ignore unused-auxs))
-    (cmp-log "    reqargs -> %s%N" reqargs)
-    (cmp-log "    optargs -> %s%N" optargs)
-    (cmp-log "    keyargs -> %s%N" keyargs)
+    (cmp-log "    reqargs -> {}%N" reqargs)
+    (cmp-log "    optargs -> {}%N" optargs)
+    (cmp-log "    keyargs -> {}%N" keyargs)
     (cond
       ((eq arity :general-entry)
        (compile-general-lambda-list-code reqargs 
@@ -703,22 +703,22 @@ a_p = a_p_temp; a = a_temp;
     ;; Create the register lexicals using allocas
     (let (bindings
           (index -1))
-      (cmp-log "Processing reqs -> %s%N" reqs)
+      (cmp-log "Processing reqs -> {}%N" reqs)
       (dolist (req (cdr reqs))
-        (cmp-log "Add req %s%N" req)
+        (cmp-log "Add req {}%N" req)
         (push (cons req (incf index)) bindings))
-      (cmp-log "Processing opts -> %s%N" opts)
+      (cmp-log "Processing opts -> {}%N" opts)
       (do* ((cur (cdr opts) (cdddr cur))
             (opt (car cur) (car cur))
             (optp (cadr cur) (cadr cur)))
            ((null cur))
-        (cmp-log "Add opt %s %s%N" opt optp)
+        (cmp-log "Add opt {} {}%N" opt optp)
         (push (cons opt (incf index)) bindings)
         (push (cons optp (incf index)) bindings))
-      (cmp-log "Processing rest -> %s%N" rest)
+      (cmp-log "Processing rest -> {}%N" rest)
       (when rest
         (push (cons rest (incf index)) bindings))
-      (cmp-log "Processing keys -> %s%N" keys)
+      (cmp-log "Processing keys -> {}%N" keys)
       (do* ((cur (cdr keys) (cddddr cur))
             (key (third cur) (third cur))
             (keyp (fourth cur) (fourth cur)))
@@ -736,12 +736,12 @@ a_p = a_p_temp; a = a_temp;
                      :number-of-arguments (length output-bindings)
                      :label "arguments-env")))
       (irc-make-value-frame-set-parent new-env (length output-bindings) fn-env)
-      (cmp-log "output-bindings: %s%N" output-bindings)
+      (cmp-log "output-bindings: {}%N" output-bindings)
       (mapc (lambda (ob)
-              (cmp-log "Adding to environment: %s%N" ob)
+              (cmp-log "Adding to environment: {}%N" ob)
               (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
             output-bindings)
-      (cmp-log "register-environment contents -> %s%N" new-env)
+      (cmp-log "register-environment contents -> {}%N" new-env)
       (compile-lambda-list-code
        cleavir-lambda-list-analysis
        callconv

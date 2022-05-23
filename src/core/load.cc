@@ -58,11 +58,11 @@ T_sp load_stream(T_sp strm, bool print) {
     T_sp x = cl__read(strm, nil<T_O>(), _sym_eof, nil<T_O>());
     if (x == _sym_eof ) break;
     if (echoReplRead) {
-      write_bf_stream(BF("Read: %s\n") % _rep_(x));
+      write_bf_stream(fmt::sprintf("Read: %s\n" , _rep_(x)));
     }
     if (x.number_of_values() > 0) {
       if (print)
-        write_bf_stream(BF(";; -read- %s\n") % _rep_(x));
+        write_bf_stream(fmt::sprintf(";; -read- %s\n" , _rep_(x)));
       eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, nil<T_O>());
     }
   }
@@ -70,14 +70,14 @@ T_sp load_stream(T_sp strm, bool print) {
   return _lisp->_true();
 }
 
-CL_LAMBDA(source &optional verbose print external-format)
+CL_LAMBDA(source &optional verbose print external-format skip-shebang)
 CL_DECLARE();
 CL_DOCSTRING(R"dx(loadSource)dx")
 DOCGROUP(clasp)
-CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_sp externalFormat) {
+CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_sp externalFormat, bool skipShebang) {
   T_sp strm;
   if (source.nilp()) {
-    SIMPLE_ERROR(BF("%s was called with NIL as the source filename") % __FUNCTION__);
+    SIMPLE_ERROR(("%s was called with NIL as the source filename") , __FUNCTION__);
   }
   T_sp final_format;
   if (externalFormat.nilp())
@@ -94,13 +94,25 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   if (strm.nilp())
     return nil<T_O>();
   
-  if (source.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
+  if (source.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
   Pathname_sp pathname = cl__pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
   Pathname_sp truename = cl__truename(source);
   ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
   DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, pathname);
   DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
+
+  if (skipShebang) {
+    if (clasp_peek_char(strm) == '#') {
+      clasp_read_char(strm);
+      if (clasp_peek_char(strm) == '!') {
+        cl__read_line(strm);
+      } else {
+        clasp_unread_char('#', strm);
+      }
+    }
+  }
+
   return load_stream(strm, print);
 }
 
@@ -115,7 +127,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   T_sp msource = lsource;
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
   if (verbose.notnilp()) {
-    write_bf_stream(BF(";;; Loading %s\n") % _rep_(lsource));
+    write_bf_stream(fmt::sprintf(";;; Loading %s\n" , _rep_(lsource)));
   }
 
   /* If source is a stream, read source from it. Don't rebind load-truename or anything.
@@ -126,11 +138,11 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   // lsource must be a pathname, so
   msource = cl__merge_pathnames(lsource);
   if (msource.nilp()) {
-    SIMPLE_ERROR(BF("About to call core__coerce_to_file_pathname with NIL which was returned from cl__merge_pathnames when passed %s") % _rep_(lsource));
+    SIMPLE_ERROR(("About to call core__coerce_to_file_pathname with NIL which was returned from cl__merge_pathnames when passed %s") , _rep_(lsource));
   }
   pathname = core__coerce_to_file_pathname(msource);
   if (pathname.nilp()) {
-    SIMPLE_ERROR(BF("core__coerce_to_file_pathname returned NIL for %s") % _rep_(lsource));
+    SIMPLE_ERROR(("core__coerce_to_file_pathname returned NIL for %s") , _rep_(lsource));
   }
   
   pntype = pathname->_Type;
@@ -155,7 +167,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
   if (kind == kw::_sym_directory) {
     ok = core__load_binary_directory(filename,verbose,print,external_format);
     if (ok.nilp()) {
-      SIMPLE_ERROR(BF("LOAD: Could not load file %s") % _rep_(filename));
+      SIMPLE_ERROR(("LOAD: Could not load file %s") , _rep_(filename));
     }
     return _lisp->_true();
   }
@@ -164,7 +176,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
 	       that the file exists */
     // Test if pathname is nil is above
     if (pathname.nilp()) {
-      SIMPLE_ERROR(BF("In %s - about to pass NIL to core__coerce_to_file_pathname from %s") % __FUNCTION__ % _rep_(lsource));
+      SIMPLE_ERROR(("In %s - about to pass NIL to core__coerce_to_file_pathname from %s") , __FUNCTION__ , _rep_(lsource));
     }
     filename = core__coerce_to_file_pathname(pathname);
     if (kind != kw::_sym_file && kind != kw::_sym_special) {
@@ -209,10 +221,10 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
     DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
     ok = eval::funcall(function, filename, verbose, print, external_format);
   } else {
-    ok = core__load_source(filename, verbose.isTrue(), print.isTrue(), external_format );
+    ok = core__load_source(filename, verbose.isTrue(), print.isTrue(), external_format, false);
   }
   if (ok.nilp()) {
-    SIMPLE_ERROR(BF("LOAD: Could not load file %s") % _rep_(filename));
+    SIMPLE_ERROR(("LOAD: Could not load file %s") , _rep_(filename));
   }
   return _lisp->_true();
 }
@@ -235,3 +247,4 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
   SYMBOL_EXPORT_SC_(CorePkg, loadSource);
 
 };
+

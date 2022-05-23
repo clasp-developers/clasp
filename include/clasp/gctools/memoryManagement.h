@@ -88,6 +88,7 @@ extern size_t _global_stack_max_size;
 #define MASK_MTAG           0b111
 #define DO_SHIFT_STAMP(unshifted_stamp) ((unshifted_stamp<<gctools::Header_s::general_mtag_shift)|gctools::Header_s::general_mtag)
 
+#define STAMP_UNSHIFT_WTAG(stampwtag) (((size_t)stampwtag)>>gctools::Header_s::wtag_width)
 #define STAMP_UNSHIFT_MTAG(unshifted_stamp) (((size_t)unshifted_stamp)>>gctools::Header_s::general_mtag_shift)
 // ADJUST_STAMP values are left unshifted
 #define ADJUST_STAMP(unshifted_stamp) (unshifted_stamp) // (unshifted_stamp<<STAMP_PARTIAL_SHIFT_REST_FIXNUM)|STAMP_MTAG)
@@ -301,7 +302,7 @@ namespace gctools {
                 invalidates it - this is only used by the MPS GC when it's ok to invalidate the object.
     */
 
-  class Header_s {
+  class BaseHeader_s {
   public:
     static const size_t mtag_shift = 3;  // mtags are 3 bits wide
     static const tagged_stamp_t mask_general_mtag = 0b011;
@@ -444,7 +445,7 @@ namespace gctools {
         return is_derivable_shifted_stamp(shift_unshifted_stamp(header_word));
       }
       static ShiftedStamp shift_unshifted_stamp(UnshiftedStamp us) {
-        return ((us<<Header_s::general_mtag_shift)|Header_s::general_mtag);
+        return ((us<<BaseHeader_s::general_mtag_shift)|BaseHeader_s::general_mtag);
       }
       static size_t make_nowhere_stamp(UnshiftedStamp us) {
         // Remove the where part of the unshifted stamp
@@ -456,7 +457,7 @@ namespace gctools {
         return (size_t)((us&where_mask)>>general_mtag_shift);
       }
       static UnshiftedStamp unshift_shifted_stamp(ShiftedStamp us) {
-        return ((us>>Header_s::general_mtag_shift));
+        return ((us>>BaseHeader_s::general_mtag_shift));
       }
       template <typename T>
       static StampWtagMtag::Value make_Value()
@@ -541,19 +542,12 @@ namespace gctools {
     
     
   public:
-    static void signal_invalid_object(const Header_s* header, const char* msg);
+    static void signal_invalid_object(const BaseHeader_s* header, const char* msg);
   public:
     void validate() const;
     void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE
       if ( this->stampP() ) {
-#ifdef DEBUG_GUARD    
-        if (this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
-        if (this->_tail_size>0) {
-          const unsigned char* tail = (const unsigned char*)this+this->_tail_start;
-          if ((*tail) != 0xcc) signal_invalid_object(this,"bad tail not 0xcc");
-        }
-#endif
         if ( !is_unshifted_stamp(this->unshifted_stamp())) signal_invalid_object(this,"bad kind");
       }
 #else
@@ -561,95 +555,20 @@ namespace gctools {
 #endif
     }
   public:
-#define GUARD_BACKTRACE_LEVELS 8
     // The header contains the stamp_wtag_mtag value.
     StampWtagMtag _stamp_wtag_mtag;  // This MUST be the first word of the guard.
-#ifdef DEBUG_GUARD
-    int _tail_start;
-    int _tail_size;
-    uintptr_t _guard;
-    uintptr_t _source;
-    uint _guard2;
-#endif
-#ifdef DEBUG_GUARD_BACKTRACE
-    void* _backtrace[GUARD_BACKTRACE_LEVELS];
-#endif
-#ifdef DEBUG_GUARD
-    // The last word of the guard must be a copy of the first.
-    //  this is so that we can get the stamp_wtag_mtag by subtracting
-    //  from the client pointer AND we can get it from a header pointer.
-    StampWtagMtag _dup_stamp_wtag_mtag; // This MUST be the last word of the guard.
-#endif
   public:
-#ifdef DEBUG_GUARD_BACKTRACE
-    inline void maybe_fill_backtrace(tagged_stamp_t k) {
-      void** bp = (void**)__builtin_frame_address(0);
-      void** bpnew;
-      void* pc;
-      for ( size_t ii = 0; ii<GUARD_BACKTRACE_LEVELS; ++ ii ) {
-        pc = *(void**)(bp+1);
-        bpnew = (void**)*(void**)bp;
-        if ((uintptr_t)bpnew<(uintptr_t)bp) break;
-        if (bpnew>my_thread_low_level->_StackTop) break;
-        bp = bpnew;
-        this->_backtrace[ii] = pc;
-      }
-    };
-#endif
-#ifdef DEBUG_GUARD
-    inline void fill_tail() {
-      if (this->_tail_size) memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);
-    };
-#endif
-#if !defined(DEBUG_GUARD)
-    Header_s(const StampWtagMtag& k ) :
+    BaseHeader_s(const StampWtagMtag& k ) :
         _stamp_wtag_mtag(k)
     {
     }
-    Header_s(Header_s* headptr) :
+    BaseHeader_s(BaseHeader_s* headptr) :
       _stamp_wtag_mtag(headptr->_stamp_wtag_mtag)
     {};
-#endif
-#if defined(DEBUG_GUARD)
-#define GUARD1 0xFEEAFEEBDEADBEE0
-#define GUARD2 0xC0FFEEE0
-
-  Header_s(const StampWtagMtag& k, size_t tstart=0, size_t tsize=0, size_t total_size=sizeof(Header_s)) 
-    : _stamp_wtag_mtag(k), 
-      _guard(GUARD1),
-      _tail_start(tstart),
-      _tail_size(tsize),
-      _source((uintptr_t)this),
-      _guard2(GUARD2),
-      _dup_stamp_wtag_mtag(k)
-    {
-#ifdef DEBUG_GUARD_BACKTRACE
-      this->maybe_fill_backtrace(k._value);
-#endif
-      this->fill_tail();
-    };
-
-
-    Header_s(Header_s* headptr) :
-      _stamp_wtag_mtag(headptr->_stamp_wtag_mtag), 
-      _guard(GUARD1),
-      _tail_start(0),
-      _tail_size(0),
-      _source(headptr->_source),
-      _guard2(GUARD2),
-      _dup_stamp_wtag_mtag(headptr->_stamp_wtag_mtag)
-    {
-    };
-    
-#endif
     static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)(StampWtagMtag::unshift_shifted_stamp(value)); };
   public:
     size_t mtag() const { return (size_t)(this->_stamp_wtag_mtag._value & mtag_mask);};
-#ifdef DEBUG_GUARD
-    size_t tail_size() const { return this->_tail_size; };
-#else
     constexpr size_t tail_size() const { return 0; };
-#endif
 
     ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_stamp_wtag_mtag.shifted_stamp()); };
 
@@ -691,6 +610,121 @@ namespace gctools {
 #endif
   };
 
+class ConsHeader_s : public BaseHeader_s {
+public:
+  ConsHeader_s(const StampWtagMtag& k) : BaseHeader_s(k) {};
+public:
+  static constexpr size_t size() { return sizeof(ConsHeader_s); };
+};
+
+
+  
+class Header_s : public BaseHeader_s {
+public:
+#ifdef DEBUG_GUARD
+    int _tail_start;
+    int _tail_size;
+    uintptr_t _guard;
+    uintptr_t _source;
+    uint _guard2;
+#endif
+#ifdef DEBUG_GUARD_BACKTRACE
+    void* _backtrace[GUARD_BACKTRACE_LEVELS];
+#endif
+#ifdef DEBUG_GUARD
+    // The last word of the guard must be a copy of the first.
+    //  this is so that we can get the stamp_wtag_mtag by subtracting
+    //  from the client pointer AND we can get it from a header pointer.
+    StampWtagMtag _dup_stamp_wtag_mtag; // This MUST be the last word of the guard.
+#endif
+
+public:
+  void validate() const;
+  void quick_validate() const {
+#ifdef DEBUG_QUICK_VALIDATE
+    if ( this->stampP() ) {
+#ifdef DEBUG_GUARD    
+      if (this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
+      if (this->_tail_size>0) {
+        const unsigned char* tail = (const unsigned char*)this+this->_tail_start;
+        if ((*tail) != 0xcc) signal_invalid_object(this,"bad tail not 0xcc");
+      }
+#endif
+      if ( !is_unshifted_stamp(this->unshifted_stamp())) signal_invalid_object(this,"bad kind");
+    }
+#else
+    this->validate();
+#endif
+  }
+
+#define GUARD_BACKTRACE_LEVELS 8
+#ifdef DEBUG_GUARD_BACKTRACE
+    inline void maybe_fill_backtrace(tagged_stamp_t k) {
+      void** bp = (void**)__builtin_frame_address(0);
+      void** bpnew;
+      void* pc;
+      for ( size_t ii = 0; ii<GUARD_BACKTRACE_LEVELS; ++ ii ) {
+        pc = *(void**)(bp+1);
+        bpnew = (void**)*(void**)bp;
+        if ((uintptr_t)bpnew<(uintptr_t)bp) break;
+        if (bpnew>my_thread_low_level->_StackTop) break;
+        bp = bpnew;
+        this->_backtrace[ii] = pc;
+      }
+    };
+#endif
+#ifdef DEBUG_GUARD
+    inline void fill_tail() {
+      if (this->_tail_size) memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);
+    };
+#endif
+
+#if !defined(DEBUG_GUARD)
+  Header_s(const StampWtagMtag& k) : BaseHeader_s(k) {};
+  Header_s(Header_s* headerptr) :
+      BaseHeader_s(headerptr->_stamp_wtag_mtag) {};
+#else
+#define GUARD1 0xFEEAFEEBDEADBEE0
+#define GUARD2 0xC0FFEEE0
+
+  Header_s(const StampWtagMtag& k, size_t tstart=0, size_t tsize=0, size_t total_size=sizeof(Header_s)) 
+      : BaseHeader_s(k),
+        _guard(GUARD1),
+        _tail_start(tstart),
+        _tail_size(tsize),
+        _source((uintptr_t)this),
+        _guard2(GUARD2),
+        _dup_stamp_wtag_mtag(k)
+  {
+#ifdef DEBUG_GUARD_BACKTRACE
+    this->maybe_fill_backtrace(k._value);
+#endif
+    this->fill_tail();
+  };
+
+
+  Header_s(Header_s* headerptr) :
+      BaseHeader_s(headerptr->_stamp_wtag_mtag), 
+      _guard(GUARD1),
+      _tail_start(0),
+      _tail_size(0),
+      _source(headerptr->_source),
+      _guard2(GUARD2),
+      _dup_stamp_wtag_mtag(headerptr->_stamp_wtag_mtag)
+  {
+  };
+    
+#endif
+
+#ifdef DEBUG_GUARD
+  size_t tail_size() const { return this->_tail_size; };
+#endif
+
+
+};
+
+
+
 template <class LispClass>
 struct StackAllocate {
   Header_s  _Header;
@@ -704,6 +738,8 @@ struct StackAllocate {
     return smart_ptr<LispClass>((LispClass*)&this->_Object);
   }
 };
+
+
 
 };
 
@@ -835,7 +871,7 @@ namespace gctools {
     return ptr;
   }
 
-  inline constexpr size_t SizeofConsHeader() { return sizeof(gctools::Header_s::StampWtagMtag); };
+inline constexpr size_t SizeofConsHeader() { return ConsHeader_s::size(); };
 
   inline const void *ConsPtrToHeaderPtr(const void *client) {
     const void *ptr = reinterpret_cast<const char *>(client) - SizeofConsHeader();
@@ -1218,7 +1254,7 @@ void walkRoots(RootWalkCallback callback, void* userData);
  *
  *  The static analyzer will generate an entry in the clasp_gc_xxx.cc file
  *  for this that looks like...
- *    {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(boost::posix_time::ptime),
+ *    {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(std::posix_time::ptime),
  *          __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTime_O),_Time),
  *          "_Time" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
  *

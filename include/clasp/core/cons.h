@@ -337,6 +337,25 @@ namespace core {
         return *this;
     }
   };
+};
+
+namespace gctools {
+template <>
+struct StackAllocate<core::Cons_O> {
+  ConsHeader_s  _Header;
+  core::Cons_O  _Object;
+
+  template <class...ARGS>
+  StackAllocate(ARGS&&...args) : _Header(ConsHeader_s::StampWtagMtag::make_Value<core::Cons_O>()),
+                                 _Object(std::forward<ARGS>(args)...) {};
+
+  smart_ptr<core::Cons_O> asSmartPtr() {
+    return smart_ptr<core::Cons_O>((core::Cons_O*)&this->_Object);
+  }
+};
+
+};
+namespace core {
 
 CL_PKG_NAME(ClPkg,car);
  DOCGROUP(clasp)

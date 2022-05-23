@@ -108,7 +108,7 @@ static T_sp normalize_case(T_sp path, T_sp cas) {
   } else if (cas == kw::_sym_common || cas == kw::_sym_downcase || cas == kw::_sym_upcase) {
     return cas;
   } else {
-    SIMPLE_ERROR(BF("Not a valid pathname case :\n%s") % _rep_(cas));
+    SIMPLE_ERROR(("Not a valid pathname case :\n%s") , _rep_(cas));
   }
 }
 
@@ -351,7 +351,7 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
     x = version;
     component = kw::_sym_version;
   ERROR : {
-    SIMPLE_ERROR(BF("%s is not a valid pathname-%s component") % _rep_(x) % _rep_(component));
+    SIMPLE_ERROR(("%s is not a valid pathname-%s component") , _rep_(x) , _rep_(component));
   }
   }
 
@@ -679,7 +679,7 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
     len = cl__length(host);
     parse_word(host, is_null, WORD_LOGICAL, 0, len, &parsed_len);
     if (UNLIKELY(parsed_len < len)) {
-      SIMPLE_ERROR(BF("Wrong host syntax %s") % _rep_(host));
+      SIMPLE_ERROR(("Wrong host syntax %s") , _rep_(host));
     }
   /* Find its translation list */
     if (cl::_sym_assoc->fboundp()) {
@@ -1153,7 +1153,7 @@ CL_DEFUN bool cl__wild_pathname_p(T_sp tpathname, T_sp component) {
     }
   }
   if (checked == 0) {
-    SIMPLE_ERROR(BF("%s is not a valid pathname component") % _rep_(component));
+    SIMPLE_ERROR(("%s is not a valid pathname component") , _rep_(component));
   }
   return false;
 };
@@ -1227,29 +1227,29 @@ CL_DEFUN String_sp core__coerce_to_filename(T_sp pathname_orig) {
 	 * cl__namestring() always outputs a fresh new string */
   ASSERT(pathname_orig);
   if (pathname_orig.nilp()) {
-    SIMPLE_ERROR(BF("About to pass nil to core__coerce_to_file_pathname"));
+    SIMPLE_ERROR(("About to pass nil to core__coerce_to_file_pathname"));
   }
   pathname = core__coerce_to_file_pathname(pathname_orig);
   if (cl__wild_pathname_p(pathname, nil<T_O>())) {
     ERROR(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, pathname_orig));
   }
-  if (pathname.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
+  if (pathname.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
   T_sp tnamestring = clasp_namestring(pathname,
                                       CLASP_NAMESTRING_TRUNCATE_IF_ERROR |
                                       CLASP_NAMESTRING_FORCE_BASE_STRING);
   if (tnamestring.nilp()) {
-    SIMPLE_ERROR(BF("Pathname without a physical namestring:"
-                    "\n :HOST %s"
-                    "\n :DEVICE %s"
-                    "\n :DIRECTORY %s"
-                    "\n :NAME %s"
-                    "\n :TYPE %s"
-                    "\n :VERSION %s") %
-                 _rep_(pathname->_Host) % _rep_(pathname->_Device) % _rep_(pathname->_Directory) % _rep_(pathname->_Name) % _rep_(pathname->_Type) % _rep_(pathname->_Version));
+    SIMPLE_ERROR(("Pathname without a physical namestring:"
+                  "\n :HOST %s"
+                  "\n :DEVICE %s"
+                  "\n :DIRECTORY %s"
+                  "\n :NAME %s"
+                  "\n :TYPE %s"
+                  "\n :VERSION %s") ,
+                 _rep_(pathname->_Host) , _rep_(pathname->_Device) , _rep_(pathname->_Directory) , _rep_(pathname->_Name) , _rep_(pathname->_Type) , _rep_(pathname->_Version));
   }
   if (globals_->_PathMax != -1 &&
       cl__length(tnamestring) >= globals_->_PathMax - 16)
-    SIMPLE_ERROR(BF("Too long filename: %s.") % gc::As<String_sp>(tnamestring)->get_std_string());
+    SIMPLE_ERROR(("Too long filename: %s.") , gc::As<String_sp>(tnamestring)->get_std_string());
   return gc::As<String_sp>(tnamestring);
 }
 
@@ -1347,8 +1347,10 @@ NO_DIRECTORY:
   } else if (!logical && !x->_Type.nilp()) {
     /* #P".txt" is :NAME = ".txt" :TYPE = NIL and
 	       hence :NAME = NIL and :TYPE != NIL does not have
-	       a printed representation */
-    return nil<T_O>();
+	       a printed representation.
+       In Clasp I want :name = NIL and :TYPE != NIL to have the
+       printed representation .<type> */
+    //return nil<T_O>();
   }
   y = x->_Type;
   if (y == kw::_sym_unspecific) {
@@ -1418,7 +1420,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(namestring)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__namestring(T_sp x) {
-  if (x.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
+  if (x.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
   return clasp_namestring(x, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 }
 
@@ -1461,10 +1463,10 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
     }
   }
   if (output.nilp()) {
-    SIMPLE_ERROR(BF("output is nil"));
+    SIMPLE_ERROR(("output is nil"));
   }
   if (host.notnilp() && !cl__equal(gc::As<Pathname_sp>(output)->_Host,host)) {
-    SIMPLE_ERROR(BF("The pathname %s does not contain the required host %s.") % _rep_(thing) % _rep_(host));
+    SIMPLE_ERROR(("The pathname %s does not contain the required host %s.") , _rep_(thing) , _rep_(host));
   }
 OUTPUT:
   return Values(output, start);
@@ -1702,7 +1704,7 @@ CL_DEFUN T_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
                                      kw::_sym_local);
   ASSERTF(core__logical_pathname_p(newpath) == core__logical_pathname_p(path),
           BF("Mismatch between the newpath and path - they must be the same kind and it is the responsibility of makePathname to ensure that they are the same kind"));
-  if (newpath.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
+  if (newpath.nilp()) SIMPLE_ERROR(("%s is about to pass NIL to clasp_namestring") , __FUNCTION__);
   return clasp_namestring(newpath, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 };
 #undef EN_MATCH
@@ -1789,7 +1791,7 @@ path_item_match(T_sp a, T_sp mask) {
   if (!cl__stringp(a) || mask.nilp())
     return (a == mask);
   if (!cl__stringp(mask)) {
-    SIMPLE_ERROR(BF("%s is not supported as mask for pathname-match-p") % _rep_(mask));
+    SIMPLE_ERROR(("%s is not supported as mask for pathname-match-p") , _rep_(mask));
   }
   return clasp_stringMatch(a, 0, cl__length(a),
                            mask, 0, cl__length(mask));
@@ -1877,7 +1879,7 @@ coerce_to_from_pathname(T_sp x, T_sp host) {
       return pnx;
     }
   }
-  SIMPLE_ERROR(BF("%s is not a valid from-pathname translation") % _rep_(x));
+  SIMPLE_ERROR(("%s is not a valid from-pathname translation") , _rep_(x));
 }
 
 
@@ -2120,9 +2122,9 @@ CL_DEFUN Pathname_sp cl__translate_pathname(T_sp tsource, T_sp tfrom, T_sp tto, 
   return Pathname_O::makePathname(host, device, directory, name, type,
                                   version, tocase);
 error:
-  SIMPLE_ERROR(BF("%s is not a specialization of path %s") % _rep_(source) % _rep_(from));
+  SIMPLE_ERROR(("%s is not a specialization of path %s") , _rep_(source) , _rep_(from));
 error2:
-  SIMPLE_ERROR(BF("Number of wildcards in %s do not match  %s") % _rep_(from) % _rep_(to));
+  SIMPLE_ERROR(("Number of wildcards in %s do not match  %s") , _rep_(from) , _rep_(to));
 }
 
 CL_LAMBDA(source &key)
@@ -2151,7 +2153,7 @@ begin:
       goto begin;
     }
   }
-  SIMPLE_ERROR(BF("%s admits no logical pathname translations") % _rep_(pathname));
+  SIMPLE_ERROR(("%s admits no logical pathname translations") , _rep_(pathname));
 }
 
 

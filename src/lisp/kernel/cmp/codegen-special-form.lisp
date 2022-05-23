@@ -90,7 +90,7 @@
   (assert-result-isa-llvm-value result)
   (let* ((bclasp-llvm-function-info (compile-lambda-function lambda-or-lambda-block env))
          (xep-group (bclasp-llvm-function-info-xep-function bclasp-llvm-function-info)))
-    (cmp-log "codegen-closure xep-group %s%N" xep-group)
+    (cmp-log "codegen-closure xep-group {}%N" xep-group)
     (if result
         ;; TODO:   Here walk the source code in lambda-or-lambda-block and
         ;; get the line-number/column for makeCompiledFunction
@@ -133,7 +133,7 @@
   "Return IR code for a function or closure"
   (let ((name-or-lambda (car rest)))
     (assert-result-isa-llvm-value result)
-    (cmp-log "About to codegen-function for: %s%N" name-or-lambda)
+    (cmp-log "About to codegen-function for: {}%N" name-or-lambda)
     (cond
       ((and name-or-lambda (symbolp name-or-lambda))
        (codegen-function-symbol-lookup result name-or-lambda env))
@@ -150,7 +150,7 @@
 
 (defun codegen-progn (result forms env)
   "Evaluate forms discarding results but keep last one"
-  (cmp-log "About to codegen-progn with forms: %s%N" forms)
+  (cmp-log "About to codegen-progn with forms: {}%N" forms)
   (cmp-log "Dumping the module%N")
   (cmp-log-dump-module *the-module*)
   (if forms
@@ -257,8 +257,8 @@
 
 #+(or)
 (defun codegen-special-var-reference (var &optional env)
-  (core::bformat t "In codegen-special-var-reference for %s%N" var)
-  (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
+  (core::fmt t "In codegen-special-var-reference for {}%N" var)
+  (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (core:fmt nil "<special-var:{}>" (symbol-name var) )))
 
 (defun codegen-setq (result setq-pairs env)
   "Carry out setq for a collection of pairs"
@@ -268,12 +268,12 @@
 	      (cur-var (car cur) (car cur))
 	      (cur-expr (cadr cur) (cadr cur)))
 	     ((endp cur) nil)
-	  (cmp-log "Compiling setq for target[%s]%N" cur-var)
+	  (cmp-log "Compiling setq for target[{}]%N" cur-var)
 	  (let ((expanded (macroexpand cur-var env)))
 	    (if (eq expanded cur-var)
 		;; symbol was not macroexpanded use SETQ
 		(progn
-		  (cmp-log "The symbol[%s] was not macroexpanded - using SETQ to set it%N" cur-var)
+		  (cmp-log "The symbol[{}] was not macroexpanded - using SETQ to set it%N" cur-var)
 		  (let* ((classified (variable-info env cur-var)))
                     (cond
                       ((eq (car classified) 'ext:special-var)
@@ -301,7 +301,7 @@
                     ))
 		;; symbol was macroexpanded use SETF
 		(progn
-		  (cmp-log "The symbol[%s] was macroexpanded to result[%s] setting with SETF%N"
+		  (cmp-log "The symbol[{}] was macroexpanded to result[{}] setting with SETF%N"
                            cur-var expanded)
 		  (codegen temp-res `(setf ,expanded ,cur-expr) env))))
 	  (unless (cddr cur)
@@ -342,7 +342,7 @@ and put the values into the activation frame for new-env."
       (vector-push-extend temp temps)
       (codegen temp exp evaluate-env))
     ;; Now generate code for let
-    (cmp-log "About to generate code for exps: %s%N" exps)
+    (cmp-log "About to generate code for exps: {}%N" exps)
     (do* ((cur-req (cdr reqvars) (cdr cur-req))
           (classified-target (car cur-req) (car cur-req))
           (tempidx 0 (1+ tempidx)))
@@ -363,11 +363,11 @@ and put the values into the activation frame for new-env."
   "Evaluate each of the exps in the evaluate-env environment
 and put the values into the activation frame for new-env."
   (cmp-log "entered codegen-fill-let*-environment%N")
-  (cmp-log "   new-env -> %s%N" new-env)
-  (cmp-log "   parent-env -> %s%N" parent-env)
-  (cmp-log "   evaluate-env -> %s%N" evaluate-env)
+  (cmp-log "   new-env -> {}%N" new-env)
+  (cmp-log "   parent-env -> {}%N" parent-env)
+  (cmp-log "   evaluate-env -> {}%N" evaluate-env)
   ;; Now generate code for let
-  (cmp-log "About to generate code for exps: %s%N" exps)
+  (cmp-log "About to generate code for exps: {}%N" exps)
   (let ((temp-var (alloca-t* "special-save")))
     (do* ((cur-req (cdr reqvars) (cdr cur-req))
           (classified-target (car cur-req) (car cur-req))
@@ -403,38 +403,52 @@ and put the values into the activation frame for new-env."
                  (evaluate-env (cond
                                  ((eq operator-symbol 'let) env) ;;; This is a problem right here
                                  ((eq operator-symbol 'let*) new-env)
-                                 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol)))))
-            (multiple-value-bind (reqvars)
-                (process-lambda-list-handler lambda-list-handler)
-              (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
-                    (*notinlines* (new-notinlines declares)))
-                (if (core:special-variables lambda-list-handler)
-                    (with-try "TRY.let/let*"
-                      (progn
-                        (irc-branch-to-and-begin-block (irc-basic-block-create
-                                                        (bformat nil "%s-start" (symbol-name operator-symbol))))
-                        (irc-make-value-frame-set-parent new-env number-of-lexical-vars env)
-                        ;; Save all special variables
-                        (do* ((cur-req (cdr reqvars) (cdr cur-req))
-                              (classified-target (car cur-req) (car cur-req)))
-                             ((endp cur-req) nil)
-                          (compile-save-if-special new-env classified-target))
-                        (if (eq operator-symbol 'let)
-                            (codegen-fill-let-environment new-env reqvars expressions env evaluate-env)
-                            (codegen-fill-let*-environment new-env reqvars expressions env evaluate-env))
-                        (cmp-log "About to evaluate codegen-progn%N")
-                        (codegen-progn result code new-env))
-                      ((cleanup)
-                       (irc-unwind-environment new-env)))
-                    (progn
-                      (irc-branch-to-and-begin-block (irc-basic-block-create
-                                                      (bformat nil "%s-start" (symbol-name operator-symbol))))
-                      (irc-make-value-frame-set-parent new-env number-of-lexical-vars env)
-                      (if (eq operator-symbol 'let)
-                          (codegen-fill-let-environment new-env reqvars expressions env evaluate-env)
-                          (codegen-fill-let*-environment new-env reqvars expressions env evaluate-env))
-                      (cmp-log "About to evaluate codegen-progn%N")
-                      (codegen-progn result code new-env))))))))))
+                                 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
+                 (reqvars
+                   (process-lambda-list-handler lambda-list-handler))
+                 (number-of-lexical-vars
+                   (number-of-lexical-variables lambda-list-handler))
+                 (dynenv-mems nil)
+                 (dynenvs nil)
+                 (*notinlines* (new-notinlines declares)))
+            ;; alloca dynenv space for each special.
+            (dolist (target (rest reqvars))
+              (when (eq (car target) 'ext:special-var)
+                (push (alloca-i8 +binding-dynenv-size+
+                                 :alignment +alignment+
+                                 :label "binding-dynenv-mem")
+                      dynenv-mems)))
+            ;; get binding.
+            (flet ((bind ()
+                     (irc-branch-to-and-begin-block
+                      (irc-basic-block-create
+                       (core:fmt nil "{}-start" (symbol-name operator-symbol))))
+                     (irc-make-value-frame-set-parent
+                      new-env number-of-lexical-vars env)
+                     ;; Save all special variables
+                     (do* ((cur-req (cdr reqvars) (cdr cur-req))
+                           (target (car cur-req) (car cur-req))
+                           (dynenv-mems dynenv-mems))
+                          ((endp cur-req) nil)
+                       (when (eq (car target) 'ext:special-var)
+                         (push (compile-save-special new-env target
+                                                     (pop dynenv-mems))
+                               dynenvs)))
+                     (if (eq operator-symbol 'let)
+                         (codegen-fill-let-environment
+                          new-env reqvars expressions env evaluate-env)
+                         (codegen-fill-let*-environment
+                          new-env reqvars expressions env evaluate-env))
+                     (cmp-log "About to evaluate codegen-progn%N")
+                     (codegen-progn result code new-env)))
+              (if dynenv-mems ; we are binding specials
+                  (with-try "TRY.let/let*"
+                    (bind)
+                    ((cleanup)
+                     (irc-unwind-environment new-env)
+                     (irc-intrinsic "cc_pop_dynenv"
+                                    (first (last dynenvs)))))
+                  (bind))))))))
   (cmp-log "Done codegen-let/let*%N"))
 
 (defun codegen-let (result rest env)
@@ -465,7 +479,7 @@ and put the values into the activation frame for new-env."
            (let ((header-value-min-max (gethash type core:+type-header-value-map+)))
              (when (null header-value-min-max)
                (format t "typeq type = ~a~%" type)
-               (compiler-error nil "unknown type for typeq: %s" type))
+               (compiler-error nil "unknown type for typeq: {}" type))
              (compile-header-check header-value-min-max object-raw thenb elseb))))))))
 
 (defmacro define-tag-check (name mask tag)
@@ -551,7 +565,7 @@ and put the values into the activation frame for new-env."
     (mapl #'(lambda (x)
 	      (if (and (car x) (symbolp (car x)))
 		  (progn
-                    (setq result (cons (list index (irc-basic-block-create (bformat nil "tagbody-%s-%s" (car x) index)) x) result))
+                    (setq result (cons (list index (irc-basic-block-create (core:fmt nil "tagbody-{}-{}" (car x) index)) x) result))
                     (add-tag tagbody-env (car x) result)
                     (setq index (+ 1 index)))))
           code)
@@ -563,57 +577,99 @@ tag symbols to code and llvm-ir basic-blocks. Store the alist in the symbol-to-b
 metadata of the tagbody-env. These can be accessed by (go XXXX) special operators to
 jump to blocks within this tagbody."
   (assert-result-isa-llvm-value result)
-  (unless (and (car rest) (symbolp (car rest))) (push (gensym) rest)) ;; stick a dummy tag at the head if there isn't one
+  ;; stick a dummy tag at the head if there isn't one
+  (unless (and (car rest) (symbolp (car rest)))
+    (push (gensym "PREFIX") rest))
   (let* ((tagbody-env (irc-new-tagbody-environment env))
-	 (enumerated-tag-blocks (tagbody.enumerate-tag-blocks rest tagbody-env)))
-    ;; If the GO spec.ops. are in the same function we could use simple cleanup and branches for TAGBODY/GO
-    ;; so save the function
-    (let* ((renv (irc-t*-load (irc-renv env)))
-           (instruction (irc-intrinsic "makeTagbodyFrameSetParent" renv)))
-      (irc-t*-result instruction (irc-renv tagbody-env))
-      (irc-low-level-trace :tagbody)
-      (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
-      (let ((handle (irc-intrinsic "initializeTagbodyClosure" (irc-renv tagbody-env))))
-        #+optimize-bclasp
-        (setf (gethash tagbody-env *tagbody-frame-info*)
-              (make-tagbody-frame-info :tagbody-environment tagbody-env
-                                       :make-tagbody-frame-instruction (list instruction (list (irc-t*-load (irc-renv env))))
-                                       :initialize-tagbody-closure (list handle (list (irc-renv tagbody-env)))))
-        (with-try "TRY.tagbody"
-            (progn
-              (let ((go-blocks nil))
-                (mapl #'(lambda (cur)
-                          (let* ((tag-begin (car cur))
-                                 (section-block (cadr tag-begin)))
-                            (push section-block go-blocks)))
-                      enumerated-tag-blocks)
-                (let ((go-vec (make-array (length go-blocks) :initial-contents (nreverse go-blocks))))
-                  (core:setf-local-blocks tagbody-env go-vec)))
-              (mapl #'(lambda (cur)
-                        (let* ((tag-begin (car cur))
-                               (tag-end (cadr cur))
-                               (section-block (cadr tag-begin))
-                               (section-next-block (cadr tag-end))
-                               (section (extract-section (caddr tag-begin) (caddr tag-end))))
-                          (irc-branch-if-no-terminator-inst section-block)
-                          (irc-begin-block section-block)
-                          (codegen-progn result section tagbody-env)
-                          (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))
-                          ))
-                    enumerated-tag-blocks))
-          ;;        ((cleanup) (codegen-literal result nil env))
-          ((cleanup) (irc-unwind-environment tagbody-env))
-          ((typeid-core-dynamic-go exception-ptr)
-           (let* ((go-index (irc-intrinsic "tagbodyHandleDynamicGoIndex_or_rethrow" exception-ptr handle))
-                  (default-block (irc-basic-block-create "switch-default"))
-                  (sw (irc-switch go-index default-block (length enumerated-tag-blocks))))
-             (mapc #'(lambda (one) (irc-add-case sw (jit-constant-size_t (car one)) (cadr one)))
-                   enumerated-tag-blocks)
-             (irc-begin-block default-block)
-             (irc-intrinsic "throwIllegalSwitchValue"
-                            go-index (jit-constant-size_t (length enumerated-tag-blocks))))))
-        (codegen-literal result nil env)))))
-
+         (jmp-buf* (alloca %jmp-buf-tag% 1 "tagbody-jmp-buf"))
+	 (enumerated-tag-blocks (tagbody.enumerate-tag-blocks rest tagbody-env))
+         ;; If the GO spec.ops. are in the same function we could
+         ;; use simple cleanup and branches for TAGBODY/GO
+         ;; so save the function
+         (renv (irc-t*-load (irc-renv env)))
+         (instruction (irc-intrinsic "makeTagbodyFrameSetParent" renv))
+         (go-blocks (mapcar #'cadr enumerated-tag-blocks))
+         (go-vec (make-array (length go-blocks)
+                             :initial-contents go-blocks)))
+    (irc-t*-result instruction (irc-renv tagbody-env))
+    (irc-low-level-trace :tagbody)
+    (cmp-log "codegen-tagbody tagbody environment: {}%N" tagbody-env)
+    (core:setf-local-blocks tagbody-env go-vec)
+    (let* ((tagbody-renv (irc-renv tagbody-env))
+           ;; We cannot use llvm.frameaddress to get a handle, like we do in
+           ;; cclasp, because here each tagbody and block has its own switch
+           ;; encoding and they all share the frameaddress.
+           (vhandle (irc-bit-cast tagbody-renv %i8*%))
+           (dynenv (irc-intrinsic "cc_createAndPushTagbodyDynenv"
+                                  vhandle jmp-buf*))
+           (handle (irc-intrinsic "initializeTagbodyClosure" tagbody-renv dynenv))
+           (default-block (irc-basic-block-create "tagbody-default"))
+           ;; This block is jumped to both by the setjmp and by the
+           ;; code in the landing pad.
+           (switch-block (irc-basic-block-create "tagbody-switch"))
+           ;; This block is necessary because WITH-TRY generates a
+           ;; jump to a new block, and so must be called while we
+           ;; have a valid and yet-to-be-terminated block.
+           (main-block (irc-basic-block-create "tagbody-start"))
+           (before-block (irc-get-insert-block))
+           (sj (irc-intrinsic "_setjmp" jmp-buf*))
+           (_0 (irc-branch-to-and-begin-block switch-block))
+           (switch-phi (irc-phi %i32% 2 "tag"))
+           (sw (irc-switch switch-phi default-block
+                           (length enumerated-tag-blocks))))
+      (declare (ignore _0))
+      #+optimize-bclasp
+      (setf (gethash tagbody-env *tagbody-frame-info*)
+            (make-tagbody-frame-info :tagbody-environment tagbody-env
+                                     :make-tagbody-frame-instruction instruction
+                                     :initialize-tagbody-closure handle))
+      (irc-phi-add-incoming switch-phi sj before-block)
+      (irc-add-case sw (jit-constant-i32 0) main-block)
+      (irc-begin-block main-block)
+      (with-try "TRY.tagbody"
+        (mapl #'(lambda (cur)
+                  (let* ((tag-begin (car cur))
+                         (tag-end (cadr cur))
+                         (index (car tag-begin))
+                         (section-block (cadr tag-begin))
+                         (section-next-block (cadr tag-end))
+                         (section (extract-section (caddr tag-begin) (caddr tag-end))))
+                    (irc-branch-if-no-terminator-inst section-block)
+                    ;; 1+ to deal with setjmp only returning 0 the
+                    ;; first time.
+                    (irc-add-case sw (jit-constant-i32 (1+ index))
+                                  section-block)
+                    (irc-begin-block section-block)
+                    (codegen-progn result section tagbody-env)
+                    (when section-next-block
+                      (irc-branch-if-no-terminator-inst section-next-block))))
+              enumerated-tag-blocks)
+        ((cleanup) (irc-unwind-environment tagbody-env))
+        ((typeid-core-unwind exception-ptr)
+         (let ((go-index (irc-intrinsic
+                          "tagbodyHandleDynamicGoIndex_or_rethrow"
+                          exception-ptr vhandle))
+               (cur-block (irc-get-insert-block)))
+           (irc-phi-add-incoming switch-phi go-index cur-block)
+           ;; Reset the dynenv
+           (irc-intrinsic "cc_unwind_dest_dynenv" dynenv)
+           ;; End the catch and jump back into the main code
+           (cmp:with-landing-pad nil
+             (irc-intrinsic "__cxa_end_catch"))
+           ;; Go
+           (irc-br switch-block)
+           ;; We generate the default-block here for a cheap reason:
+           ;; WITH-TRY expects to be able to generate a call to
+           ;; __cxa_catch, even though we don't actually need to
+           ;; here. KLUDGE.
+           (irc-begin-block default-block)
+           (irc-intrinsic "throwIllegalSwitchValue"
+                          switch-phi (jit-constant-size_t
+                                      (length enumerated-tag-blocks))))))
+      ;; We're finally out of the atgbody, so remove it from the
+      ;; dynamic environment.
+      (irc-intrinsic "cc_pop_dynenv" dynenv)
+      (codegen-literal result nil env))))
 
 (defun codegen-local-tagbody (result rest env)
   "For local go's only. Extract tags and code from (rest) and create an alist that maps
@@ -625,39 +681,27 @@ jump to blocks within this tagbody."
   (let ((tagbody-env (irc-new-tagbody-environment env)))
     (core:set-invisible tagbody-env t) ; Local tagbody-env doesn't generate a renv so it's 'invisible' 
     (let ((enumerated-tag-blocks (tagbody.enumerate-tag-blocks rest tagbody-env)))
-      ;; If the GO spec.ops. are in the same function we could use simple cleanup and branches for TAGBODY/GO
-      ;; so save the function
-      (let* ((renv (irc-t*-load (irc-renv env)))
-             (instruction (irc-intrinsic "makeTagbodyFrameSetParent" renv)))
-        (irc-t*-result instruction (irc-renv tagbody-env))
-        (irc-low-level-trace :tagbody)
-        (cmp-log "codegen-tagbody tagbody environment: %s%N" tagbody-env)
-        (let ((handle (irc-intrinsic "initializeTagbodyClosure" (irc-renv tagbody-env))))
-          #+optimize-bclasp
-          (setf (gethash tagbody-env *tagbody-frame-info*)
-                (make-tagbody-frame-info :tagbody-environment tagbody-env
-                                         :make-tagbody-frame-instruction (list instruction (list (irc-t*-load (irc-renv env))))
-                                         :initialize-tagbody-closure (list handle (list (irc-renv tagbody-env)))))
-          (let ((go-blocks nil))
-            (mapl #'(lambda (cur)
-                      (let* ((tag-begin (car cur))
-                             (section-block (cadr tag-begin)))
-                        (push section-block go-blocks)))
-                  enumerated-tag-blocks)
-            (let ((go-vec (make-array (length go-blocks) :initial-contents (nreverse go-blocks))))
-              (core:setf-local-blocks tagbody-env go-vec)))
-          (mapl #'(lambda (cur)
-                    (let* ((tag-begin (car cur))
-                           (tag-end (cadr cur))
-                           (section-block (cadr tag-begin))
-                           (section-next-block (cadr tag-end))
-                           (section (extract-section (caddr tag-begin) (caddr tag-end))))
-                      (irc-branch-if-no-terminator-inst section-block)
-                      (irc-begin-block section-block)
-                      (codegen-progn result section tagbody-env)
-                      (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))))
-                enumerated-tag-blocks)
-          (codegen-literal result nil env))))))
+      (irc-low-level-trace :tagbody)
+      (cmp-log "codegen-tagbody tagbody environment: {}%N" tagbody-env)
+      (let ((go-blocks nil))
+        (mapc #'(lambda (tag-begin)
+                  (let ((section-block (cadr tag-begin)))
+                    (push section-block go-blocks)))
+              enumerated-tag-blocks)
+        (let ((go-vec (make-array (length go-blocks) :initial-contents (nreverse go-blocks))))
+          (core:setf-local-blocks tagbody-env go-vec)))
+      (mapl #'(lambda (cur)
+                (let* ((tag-begin (car cur))
+                       (tag-end (cadr cur))
+                       (section-block (cadr tag-begin))
+                       (section-next-block (cadr tag-end))
+                       (section (extract-section (caddr tag-begin) (caddr tag-end))))
+                  (irc-branch-if-no-terminator-inst section-block)
+                  (irc-begin-block section-block)
+                  (codegen-progn result section tagbody-env)
+                  (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))))
+            enumerated-tag-blocks)
+      (codegen-literal result nil env))))
 
 (defun codegen-go (result rest env)
   (declare (ignore result))
@@ -690,7 +734,7 @@ jump to blocks within this tagbody."
       ((and classified-tag (eq (car classified-tag) 'local-go))
        (let ((index (caddr classified-tag))
 	     (tagbody-env (cadddr classified-tag)))
-	 (cmp-log "Target tagbody environment: %s  tag: %s%N" tagbody-env tag)
+	 (cmp-log "Target tagbody environment: {}  tag: {}%N" tagbody-env tag)
 	 (let* ((go-vec (core:local-blocks tagbody-env))
 		(go-block (elt go-vec index)))
 	   (irc-unwind-into-environment env tagbody-env)
@@ -706,44 +750,49 @@ jump to blocks within this tagbody."
          (body (cdr rest)))
     (or (symbolp block-symbol) (error "The block name ~a is not a symbol" block-symbol))
     (with-dbg-lexical-block ()
-      (multiple-value-bind (block-env make-block-frame-instruction make-block-frame-instruction-arguments)
+      (multiple-value-bind (block-env make-block-frame-instruction)
           (irc-make-block-environment-set-parent block-symbol env)
-	(let ((block-start (irc-basic-block-create
-			    (bformat nil "block-%s-start" (symbol-name block-symbol))))
-	      (nonlocal-return-block (irc-basic-block-create (bformat nil "nonlocal-return-%s-block" (symbol-name block-symbol))))
-	      (local-return-block (irc-basic-block-create (bformat nil "local-return-%s-block" (symbol-name block-symbol))))
-	      (after-return-block (irc-basic-block-create (bformat nil "after-return-%s-block" (symbol-name block-symbol)))))
+	(let* ((jmp-buf* (alloca %jmp-buf-tag% 1 "block-jmp-buf"))
+               (block-renv (irc-renv block-env))
+               (vhandle (irc-bit-cast block-renv %i8*%))
+               (dynenv (irc-intrinsic "cc_createAndPushBlockDynenv"
+                                      vhandle jmp-buf*))
+               (handle (irc-intrinsic "initializeBlockClosure" block-renv dynenv))
+               (sj (irc-intrinsic "_setjmp" jmp-buf*))
+               (block-start (irc-basic-block-create
+			     (core:fmt nil "block-{}-start" (symbol-name block-symbol))))
+	       (nonlocal-return-block (irc-basic-block-create (core:fmt nil "nonlocal-return-{}-block" (symbol-name block-symbol))))
+	       (local-return-block (irc-basic-block-create (core:fmt nil "local-return-{}-block" (symbol-name block-symbol))))
+	       (after-return-block (irc-basic-block-create (core:fmt nil "after-return-{}-block" (symbol-name block-symbol)))))
 	  (core:setf-local-return-block block-env local-return-block)
           (core:setf-local-return-value block-env result)
-	  (irc-br block-start "block-start")
+          (irc-cond-br (irc-icmp-eq sj (jit-constant-i32 0))
+                       block-start nonlocal-return-block)
 	  (irc-begin-block block-start)
-          (let ((handle (irc-intrinsic "initializeBlockClosure" (irc-renv block-env))))
-            #+optimize-bclasp
-            (let ((info (make-block-frame-info :block-environment block-env
-                                               :block-symbol block-symbol
-                                               :make-block-frame-instruction (list make-block-frame-instruction  make-block-frame-instruction-arguments)
-                                               :initialize-block-closure-instruction (list handle (list (irc-renv block-env))))))
-              #+debug-lexical-depth
-              (let* ((frame-unique-id (gctools:next-lexical-depth-counter))
-                     (set-frame-unique-id (irc-intrinsic "setFrameUniqueId" (jit-constant-size_t frame-unique-id) (irc-t*-load (irc-renv block-env)))))
-                (setf (block-frame-info-frame-unique-id info) frame-unique-id)
-                (setf (block-frame-info-set-frame-unique-id info) (list set-frame-unique-id (list (jit-constant-size_t frame-unique-id) (irc-t*-load (irc-renv block-env))))))
-              (setf (gethash block-env *block-frame-info*) info))
-            (with-try "TRY.block"
-                (codegen-progn result body block-env)
-              ((cleanup)
-               (irc-unwind-environment block-env))
-              ((typeid-core-return-from exception-ptr)
-               (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom_or_rethrow" exception-ptr handle)))
-                 (irc-tmv-result handle-instruction result))))
-            (irc-br after-return-block "after-return-block")
-            (irc-begin-block nonlocal-return-block)
-            (let ((val (irc-intrinsic "restoreFromMultipleValue0")))
-              (irc-tmv-result val result))
-            (irc-br after-return-block)
-            (irc-begin-block local-return-block)
-            (irc-br after-return-block)
-            (irc-begin-block after-return-block)))))))
+          #+optimize-bclasp
+          (let ((info (make-block-frame-info :block-environment block-env
+                                             :block-symbol block-symbol
+                                             :make-block-frame-instruction make-block-frame-instruction
+                                             :initialize-block-closure-instruction handle)))
+            (setf (gethash block-env *block-frame-info*) info))
+          (with-try "TRY.block"
+            (codegen-progn result body block-env)
+            ((cleanup)
+             ;; could unwind the dynenv here too, but that ought to
+             ;; be taken care of by the ultimate destination.
+             (irc-unwind-environment block-env))
+            ((typeid-core-unwind exception-ptr)
+             (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom_or_rethrow" exception-ptr vhandle)))
+               (irc-tmv-result handle-instruction result))))
+          (irc-br after-return-block "after-return-block")
+          (irc-begin-block nonlocal-return-block)
+          (let ((val (irc-intrinsic "restoreFromMultipleValue0")))
+            (irc-tmv-result val result))
+          (irc-br after-return-block)
+          (irc-begin-block local-return-block)
+          (irc-br after-return-block)
+          (irc-begin-block after-return-block)
+          (irc-intrinsic "cc_unwind_dest_dynenv" dynenv))))))
 
 (defun codegen-local-block (result rest env)
   "codegen-local-block for local return-froms only"
@@ -754,9 +803,9 @@ jump to blocks within this tagbody."
       (multiple-value-bind (block-env)
           (irc-make-local-block-environment-set-parent block-symbol env)
 	(let ((block-start (irc-basic-block-create
-			    (bformat nil "block-%s-start" (symbol-name block-symbol))))
-	      (local-return-block (irc-basic-block-create (bformat nil "local-return-%s-block" (symbol-name block-symbol))))
-	      (after-return-block (irc-basic-block-create (bformat nil "after-return-%s-block" (symbol-name block-symbol)))))
+			    (core:fmt nil "block-{}-start" (symbol-name block-symbol))))
+	      (local-return-block (irc-basic-block-create (core:fmt nil "local-return-{}-block" (symbol-name block-symbol))))
+	      (after-return-block (irc-basic-block-create (core:fmt nil "after-return-{}-block" (symbol-name block-symbol)))))
 	  (core:setf-local-return-block block-env local-return-block)
           (core:setf-local-return-value block-env result)
 	  (irc-br block-start "block-start")
@@ -783,10 +832,7 @@ jump to blocks within this tagbody."
                 (codegen temp-mv-result return-form env)
                 (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
                 (irc-low-level-trace)
-                (let* (#+debug-lexical-depth (frame-info (gethash block-env *block-frame-info*))
-                       #+debug-lexical-depth (frame-unique-id (block-frame-info-frame-unique-id frame-info))
-                       #+debug-lexical-depth (ensure-frame-unique-id (irc-intrinsic "ensureFrameUniqueId" (jit-constant-size_t frame-unique-id) (jit-constant-size_t depth) (irc-t*-load (irc-renv env))))
-                       (return-from-call (irc-intrinsic "throwReturnFrom" (jit-constant-size_t depth) (irc-t*-load (irc-renv env))))
+                (let* ((return-from-call (irc-intrinsic "throwReturnFrom" (jit-constant-size_t depth) (irc-t*-load (irc-renv env))))
                        (start-renv (irc-t*-load (irc-renv env))))
                   #+optimize-bclasp
                   (push (make-throw-return-from :instruction return-from-call
@@ -794,10 +840,7 @@ jump to blocks within this tagbody."
                                                 :start-env env
                                                 :start-renv start-renv
                                                 :block-env block-env
-                                                :block-symbol block-symbol
-                                                #+debug-lexical-depth :ensure-frame-unique-id
-                                                #+debug-lexical-depth (list ensure-frame-unique-id
-                                                                            (list (jit-constant-size_t frame-unique-id) (jit-constant-size_t depth) (irc-t*-load (irc-renv env)))))
+                                                :block-symbol block-symbol)
                         *throw-return-from-instructions*)))
               (let ((local-return-block (core:local-return-block block-env))
                     (local-return-value (core:local-return-value block-env)))
@@ -862,7 +905,7 @@ jump to blocks within this tagbody."
 			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol))))
               (*notinlines* (new-notinlines declares)))
 	  (irc-branch-to-and-begin-block (irc-basic-block-create
-					  (bformat nil "%s-start"
+					  (core:fmt nil "{}-start"
 						   (symbol-name operator-symbol))))
 	  (codegen-fill-function-frame operator-symbol function-env functions env evaluate-env)
 	  (codegen-progn result code function-env))))))
@@ -960,7 +1003,7 @@ jump to blocks within this tagbody."
 
 (defun codegen-load-time-value (result rest env)
   (declare (ignore env))
-  (cmp-log "Starting codegen-load-time-value rest: %s%N" rest)
+  (cmp-log "Starting codegen-load-time-value rest: {}%N" rest)
   (let* ((form (car rest))
 	 (read-only-p (cadr rest)))
     (declare (ignore read-only-p))
@@ -1513,7 +1556,7 @@ jump to blocks within this tagbody."
 
 #+(or)
 (defmacro blog (fmt &rest fargs)
-  `(core:bformat *error-output* ,fmt ,@fargs))
+  `(core:fmt *error-output* ,fmt ,@fargs))
 (defmacro blog (fmt &rest fargs)
   (declare (ignore fmt fargs))
   nil)
@@ -1523,13 +1566,13 @@ jump to blocks within this tagbody."
   (let ((lambda-list (first form))
         (vaslist     (second form))
         (body        (cddr form)))
-    (blog "evaluate-env -> %s%N" evaluate-env)
+    (blog "evaluate-env -> {}%N" evaluate-env)
     (multiple-value-bind (declares code)
         (process-declarations body t)
       (let ((canonical-declares (core:canonicalize-declarations declares)))
         (multiple-value-bind (cleavir-lambda-list-analysis new-body rest-alloc)
             (transform-lambda-parts lambda-list canonical-declares code)
-          (blog "got cleavir-lambda-list-analysis -> %s%N" cleavir-lambda-list-analysis)
+          (blog "got cleavir-lambda-list-analysis -> {}%N" cleavir-lambda-list-analysis)
           (let ((eval-vaslist (alloca-t* "bind-vaslist")))
             (codegen eval-vaslist vaslist evaluate-env)
             (let* ((lvaslist (irc-t*-load eval-vaslist "lvaslist"))
@@ -1555,7 +1598,7 @@ jump to blocks within this tagbody."
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
-  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s%N" form)
+  ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen form: {}%N" form)
   (let* ((intrinsic-name (car form))
          args
          (temp-result (alloca-t*)))
@@ -1565,7 +1608,7 @@ jump to blocks within this tagbody."
           (exp (car cur-exp) (car cur-exp))
           (i 0 (+ 1 i)))
          ((endp cur-exp) nil)
-      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d%N" i exp)
+      ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen arg[{}] -> {}%N" i exp)
       (codegen temp-result exp evaluate-env)
       (push (irc-t*-load temp-result) args))
     (let* ((func (or (llvm-sys:get-function *the-module* intrinsic-name)
@@ -1599,7 +1642,7 @@ jump to blocks within this tagbody."
           (type (car type-cur) (car type-cur))
           (i 0 (+ 1 i)))
          ((endp cur-exp) nil)
-      ;;(bformat t "In codegen-multiple-value-foreign-call codegen arg[%d] -> %d%N" i exp)
+      ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen arg[{}] -> {}%N" i exp)
       (codegen temp-result exp evaluate-env)
       (push (irc-intrinsic-call (clasp-ffi::from-translator-name type)
                              (list (irc-t*-load temp-result))) args))
@@ -1609,7 +1652,7 @@ jump to blocks within this tagbody."
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
-  ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s%N" form)
+  ;;(core:fmt t "In codegen-multiple-value-foreign-call codegen form: {}%N" form)
   (let* ((foreign-types (first form))
          (intrinsic-name (second form))
          (fargs (cddr form))
@@ -1676,7 +1719,7 @@ jump to blocks within this tagbody."
     (error "BUG: Callback function parameters and types have a length mismatch"))
 ;;; Generate a variable and put the closure in it.
   (let* ((closure-literal-slot-index (literal:new-table-index))
-         (closure-var-name (core:bformat nil "%s_closure_var" c-name)))
+         (closure-var-name (core:fmt nil "{}_closure_var" c-name)))
     #+(or)(progn
             (format t "gen-defcallback - the (literal::literal-machine-table-index literal::*literal-machine*) -> ~d~%" (literal::literal-machine-table-index literal::*literal-machine*))
             (format t "gen-defcallback cmp:*load-time-value-holder-global-var* -> ~a~%" cmp:*load-time-value-holder-global-var*)
@@ -1727,7 +1770,7 @@ jump to blocks within this tagbody."
                    ;; here we don't need the store/load values dance.
                    ;; (The C function only gets/needs/wants the primary value.)
                    (cl-result (irc-funcall-results-in-registers
-                               closure-to-call cl-args (core:bformat nil "%s_closure" c-name))))
+                               closure-to-call cl-args (core:fmt nil "{}_closure" c-name))))
               ;; Now generate a call the translator for the return value if applicable, then return.
               ;; NOTE: (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro
               (if (string= return-translator-name "from_object_void")

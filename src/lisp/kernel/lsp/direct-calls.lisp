@@ -32,7 +32,7 @@
              (core:set-source-pos-info (fdefinition ',lisp-name)
                                        pathname pos lineno column))
           `(unless core:*silent-startup*
-             (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))
+             (core:fmt t "Will not generate wrapper for {} - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))
 
 ;; identical to the above but with a setf name. FIXME cleanliness, but magic-intern is pretty magical.
 (defmacro wrap-c++-function-setf (raw-lisp-name declare-forms lambda-list c-name)
@@ -59,4 +59,4 @@
              (core:set-source-pos-info (fdefinition ',lisp-name)
                                        pathname pos lineno column))
           `(unless core:*silent-startup*
-             (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))
+             (core:fmt t "Will not generate wrapper for {} - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))

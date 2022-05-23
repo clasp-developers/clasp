@@ -1,9 +1,9 @@
 ;;; Set up everything to start cleavir
 
 (progn
-  (load "sys:kernel;clasp-builder.lisp")
+  (load "sys:src;lisp;kernel;clasp-builder.lisp")
   (defun cleavir-system ()
-    (with-open-file (fin "source-dir:tools-for-build;cleavir-file-list.lisp" :direction :input)
+    (with-open-file (fin "sys:tools-for-build;cleavir-file-list.lisp" :direction :input)
       (read fin)))
   (defun load-cleavir ()
     (let* ((system (cleavir-system))
@@ -25,7 +25,7 @@
   (defun compile-stuff ()
     (dotimes (i 50)
       (format t "Compilation #~a~%" i)
-      (compile-file "sys:kernel;lsp;setf.lisp" :output-file "/tmp/setf.fasl")))
+      (compile-file "sys:src;lisp;kernel;lsp;setf.lisp" :output-file "/tmp/setf.fasl")))
 
 
   (defun cleavir-compile-file (&rest args)

@@ -100,7 +100,7 @@
                     :command "$clasp --non-interactive --norc --type image --disable-mpi --image $image --feature ignore-extensions --load compile-module.lisp -- $out $in"
                     :description "Compiling module $in")
   (ninja:write-rule output-stream :regression-tests
-                    :command "$clasp --norc --non-interactive --feature ignore-extensions --load \"sys:regression-tests;run-all.lisp\""
+                    :command "$clasp --norc --non-interactive --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
                     :description "Running regression tests"
                     :pool "console")
   (ninja:write-rule output-stream :ansi-test
@@ -114,17 +114,23 @@
   (ninja:write-rule output-stream "link-fasl-abc"
                     :command "$cxx $variant-ldflags $ldflags $ldflags-fasl -o$out $in $variant-ldlibs $ldlibs"
                     :description "Linking $out")
-  (ninja:write-rule output-stream :jupyter-kernel
+  (ninja:write-rule output-stream :jupyter-system-kernel
                     :command (format nil
-                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --no-rc~;$clasp~] --non-interactive --load jupyter-kernel.lisp -- $name $bin-path $load-system $system"
+                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --rc ${variant-path}clasprc.lisp --non-interactive --load ${variant-path}jupyter-kernel.lisp -- $name $bin-path $load-system 1"
                                      clasp-quicklisp-directory)
+                    :description "Installing jupyter kernel for $name")
+  (ninja:write-rule output-stream :jupyter-user-kernel
+                    :command "$clasp --non-interactive --load ${variant-path}jupyter-kernel.lisp -- $name $bin-path $load-system 0"
                     :description "Installing jupyter kernel for $name")
   (ninja:write-rule output-stream :make-snapshot
                     :command (format nil
-                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client $clasp --no-rc~;$clasp~] --non-interactive $arguments --load snapshot.lisp -- $out"
+                                     "~:[CLASP_QUICKLISP_DIRECTORY=$quicklisp-client ~;~]$clasp --rc ${variant-path}clasprc.lisp --non-interactive $arguments --load ${variant-path}snapshot.lisp -- $out"
                                      clasp-quicklisp-directory)
                     :pool "console"
-                    :description "Creating snapshot $out"))
+                    :description "Creating snapshot $out")
+  (ninja:write-rule output-stream :update-unicode
+                    :command "$lisp --script update-unicode.lisp $source"
+                    :description "Updating unicode tables"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :etags)) sources
@@ -161,43 +167,9 @@
                      :inputs outputs
                      :outputs (list "install_code")))
 
-(defmethod print-target-source
-    (configuration (name (eql :ninja)) output-stream (target (eql :extension-load)) source
-     &aux (output (make-source (file-namestring (source-path source)) :package-startup)))
-  (declare (ignore configuration))
-  (ninja:write-build output-stream :install-file
-                     :inputs (list source)
-                     :outputs (list output))
-  (list :outputs output))
-
-(defmethod print-target-sources
-    (configuration (name (eql :ninja)) output-stream (target (eql :extension-load)) sources
-     &key outputs &allow-other-keys)
-  (declare (ignore configuration sources))
-  (ninja:write-build output-stream :phony
-                     :inputs outputs
-                     :outputs (list "install_load")))
-
-(defmethod print-variant-target-source
-    (configuration (name (eql :ninja)) output-stream (target (eql :extension-load)) source
-     &aux (output (make-source (file-namestring (source-path source)) :variant-startup)))
-  (declare (ignore configuration))
-  (ninja:write-build output-stream :install-file
-                     :inputs (list source)
-                     :outputs (list output))
-  (list :loads output))
-
-(defmethod print-variant-target-sources
-    (configuration (name (eql :ninja)) output-stream (target (eql :extension-load)) sources
-     &key loads &allow-other-keys)
-  (ninja:write-build output-stream :phony
-                     :inputs loads
-                     :outputs (list (build-name "load"))))
-
 (defmethod print-variant-target-source
     (configuration (name (eql :ninja)) output-stream (target (eql :iclasp))
      (source c-source))
-  (declare (ignore configuration))
   (let ((o (make-source-output source :type "o")))
     (ninja:write-build output-stream :cc
                        :variant-cflags *variant-cflags*
@@ -213,8 +185,7 @@
      (source cc-source))
   (let ((pp (make-source-output source :type "pp"))
         (sif (make-source-output source :type "sif"))
-        (o (make-source-output source :type "o"))
-        (flags (format nil "-I~a" *variant-path*)))
+        (o (make-source-output source :type "o")))
     (ninja:write-build output-stream :scrape-pp
                        :variant-cppflags *variant-cppflags*
                        :inputs (list source)
@@ -262,6 +233,8 @@
                                           :package-bin))
           (clasp-sh (make-source "clasp" :variant))
           (clasp-sh-installed (make-source "clasp" :package-bin))
+          (cleap-symlink (make-source "cleap" :variant))
+          (cleap-symlink-installed (make-source "cleap" :package-bin))
           (filtered-sifs (if *variant-precise*
                              (sort sifs
                                    (lambda (x y)
@@ -291,11 +264,18 @@
                      :inputs (list exe)
                      :target (file-namestring (source-path exe))
                      :outputs (list symlink))
+  (when (member :cando (extensions configuration))
+    (ninja:write-build output-stream :symbolic-link
+                       :inputs (list exe)
+                       :target (file-namestring (source-path exe))
+                       :outputs (list cleap-symlink)))
   (ninja:write-build output-stream :phony
-                     :inputs (list* exe symlink lib
-                                    (when (and *variant-default*
-                                               (etags configuration))
-                                      (list (make-source "TAGS" :code))))
+                     :inputs (append (list exe symlink lib)
+                                     (when (member :cando (extensions configuration))
+                                       (list cleap-symlink))
+                                     (when (and *variant-default*
+                                                (etags configuration))
+                                       (list (make-source "TAGS" :code))))
                      :outputs (list (build-name target)))
   (when *variant-default*
     (loop for input in generated
@@ -314,18 +294,21 @@
                        :target (file-namestring (source-path exe-installed))
                        :outputs (list symlink-installed))
     (when (member :cando (extensions configuration))
+      (ninja:write-build output-stream :symbolic-link
+                         :inputs (list exe-installed)
+                         :target (file-namestring (source-path exe-installed))
+                         :outputs (list cleap-symlink-installed))
       (ninja:write-build output-stream :install-binary
                                        :inputs (list clasp-sh)
                                        :outputs (list clasp-sh-installed)))
     (ninja:write-build output-stream :phony
                                      :inputs (append (list "install_bitcode"
                                                            "install_code"
-                                                           "install_load"
                                                            exe-installed
                                                            lib-installed
                                                            symlink-installed)
                                                      (when (member :cando (extensions configuration))
-                                                       (list clasp-sh-installed))
+                                                       (list clasp-sh-installed cleap-symlink-installed))
                                                      products)
                                      :outputs (list "install_iclasp"))))
 
@@ -553,7 +536,8 @@
                                                                   (source-path source)))
                                                sources))
                        :inputs sources
-                       :implicit-inputs (list iclasp bimage)
+                       :implicit-inputs (list iclasp bimage
+                                              (make-source "tools-for-build/character-names.sexp" :code))
                        :outputs (make-source-outputs sources
                                                      :type (file-faso-extension configuration)
                                                      :root :variant-stage-bitcode))
@@ -571,8 +555,7 @@
                        :outputs (list cimage))
     (ninja:write-build output-stream :phony
                        :inputs (list (build-name "bclasp")
-                                     (build-name "modules")
-                                     (build-name "load"))
+                                     (build-name "modules"))
                        :outputs (list (build-name "cclasp")))
     (when (jupyter configuration)
       (let ((kernels (loop for name in (if (member :cando (extensions configuration))
@@ -586,13 +569,13 @@
                                                                          "common-lisp"
                                                                          "cando")
                                                                      build-name))
-                           do (ninja:write-build output-stream :jupyter-kernel
+                           do (ninja:write-build output-stream :jupyter-user-kernel
                                                  :outputs (list output)
                                                  :inputs (list (build-name "cclasp"))
+                                                 :variant-path *variant-path*
                                                  :name build-name
                                                  :bin-path clasp
                                                  :load-system 1
-                                                 :system 0
                                                  :clasp clasp)
                            collect output)))
         (ninja:write-build output-stream :phony
@@ -615,13 +598,15 @@
                                                                    "common-lisp_clasp"
                                                                    "cando_cando")
                                                                :system system)
-                             do (ninja:write-build output-stream :jupyter-kernel
+                             do (ninja:write-build output-stream (if system
+                                                                     :jupyter-system-kernel
+                                                                     :jupyter-user-kernel)
                                                    :outputs (list output)
                                                    :inputs (list (build-name "cclasp"))
                                                    :name name
+                                                   :variant-path *variant-path*
                                                    :bin-path name
                                                    :load-system 1
-                                                   :system (if system 1 0)
                                                    :clasp clasp)
                              collect output))))
         (ninja:write-build output-stream :install-file
@@ -659,8 +644,7 @@
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :modules)) sources
-     &key outputs install-outputs &allow-other-keys
-     &aux (executable (build-name :cclasp)))
+     &key outputs install-outputs &allow-other-keys)
   (ninja:write-build output-stream :phony
                      :inputs outputs
                      :outputs (list (build-name "modules")))
@@ -701,7 +685,10 @@
                        :implicit-inputs (list (build-name "cclasp")
                                               (build-name "generated" :prep t :gc :mps))
                        :outputs (list (build-name "analyze"))
-                       :sif (make-source "src/clasp_gc.sif" :code))
+                       :sif (make-source (if (member :cando (extensions configuration))
+                                             "extensions/cando/src/clasp_gc_cando.sif"
+                                             "src/clasp_gc.sif")
+                                         :code))
     (unless *variant-debug*
       (ninja:write-build output-stream :phony
                          :inputs (list (build-name "analyze"))
@@ -724,12 +711,14 @@
      &key objects &allow-other-keys
      &aux (cclasp (build-name :cclasp))
           (iclasp (make-source (build-name :iclasp) :variant)))
+  (declare (ignore objects))
   (flet ((snapshot (name &key ignore-extensions)
            (let* ((executable (make-source (build-name name) :variant))
                   (symlink (make-source name :variant))
                   (symlink-installed (make-source name :package-bin))
+                  (dcleap-symlink (make-source "dcleap" :variant))
+                  (dcleap-symlink-installed (make-source "dcleap" :package-bin))
                   (installed (make-source (build-name name) :package-bin))
-                  (link (make-source name :package-bin))
                   (build-outputs (list executable symlink))
                   (install-outputs (list installed symlink-installed))
                   (system (not (uiop:subpathp (share-path configuration)
@@ -745,25 +734,31 @@
                                                                 "common-lisp"
                                                                 "cando")
                                                             (build-name name)))))
-             (declare (ignorable object))
              (ninja:write-build output-stream :make-snapshot
                                 :clasp iclasp
                                 :arguments (when ignore-extensions
                                              "--feature ignore-extensions")
+                                :variant-path *variant-path*
                                 :inputs (list cclasp)
                                 :outputs (list executable))
              (ninja:write-build output-stream :symbolic-link
                                 :inputs (list executable)
                                 :target (file-namestring (source-path executable))
                                 :outputs (list symlink))
+             (when (equal name "dcando")
+               (ninja:write-build output-stream :symbolic-link
+                                  :inputs (list executable)
+                                  :target (file-namestring (source-path executable))
+                                  :outputs (list dcleap-symlink))
+               (push dcleap-symlink build-outputs))
              (when (jupyter configuration)
-               (ninja:write-build output-stream :jupyter-kernel
+               (ninja:write-build output-stream :jupyter-user-kernel
                                                 :outputs (list user-kernel)
                                                 :inputs (list executable)
                                                 :name (build-name name)
+                                                :variant-path *variant-path*
                                                 :bin-path symlink
                                                 :load-system 0
-                                                :system 0
                                                 :clasp executable))
              (when *variant-default*
                (ninja:write-build output-stream :install-binary
@@ -773,14 +768,22 @@
                                   :inputs (list installed)
                                   :target (file-namestring (source-path installed))
                                   :outputs (list symlink-installed))
+               (when (equal name "dcando")
+                 (ninja:write-build output-stream :symbolic-link
+                                    :inputs (list installed)
+                                    :target (file-namestring (source-path executable))
+                                    :outputs (list dcleap-symlink-installed))
+                 (push dcleap-symlink-installed install-outputs))
                (when (jupyter configuration)
-                 (ninja:write-build output-stream :jupyter-kernel
+                 (ninja:write-build output-stream (if system
+                                                      :jupyter-system-kernel
+                                                      :jupyter-user-kernel)
                                     :outputs (list kernel)
                                     :implicit-inputs (list executable)
                                     :name name
                                     :bin-path name
+                                    :variant-path *variant-path*
                                     :load-system 0
-                                    :system (if system 1 0)
                                     :clasp executable)
                  (push kernel install-outputs)))
              (list build-outputs install-outputs user-kernel))))
@@ -808,6 +811,11 @@
                            :outputs (list "install_dclasp"))))))
 
 (defmethod print-epilogue (configuration (name (eql :ninja)) output-stream)
+  (ninja:write-build output-stream :update-unicode
+                     :source (format nil "~a ~a" 
+                                     (make-source "src/core/character-generated.cc" :code)
+                                     (make-source "tools-for-build/character-names.sexp" :code))
+                     :outputs (list "update-unicode"))
   (ninja:write-build output-stream :phony
                      :inputs (list (format nil "install_~(~a~)" (default-stage configuration)))
                      :outputs (list "install"))

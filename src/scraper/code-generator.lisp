@@ -291,7 +291,8 @@ Convert colons to underscores"
             (generate-wrapped-function wrapped-name
                                        (namespace% func)
                                        (function-name% func)
-                                       return-type arg-types)))
+                                       return-type arg-types
+                                       :unwind-coop (unwind-coop% func))))
       (format c-code "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "//            Found at ~a~%-----------~%" (file-line func))
@@ -312,7 +313,8 @@ Convert colons to underscores"
             (generate-wrapped-function wrapped-name
                                        (namespace% func)
                                        (function-name% func)
-                                       return-type arg-types)))
+                                       return-type arg-types
+                                       :unwind-coop (unwind-coop% func))))
       (format c-code "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "//            Found at ~a~%-----------~%" (file-line func))
@@ -1019,21 +1021,21 @@ void ~a::expose_to_clasp() {
     (dolist (i startups)
       (push i (gethash (namespace% i) startups-by-namespace)))
     (with-output-to-string (sout)
-      (format sout "#ifdef ALL_STARTUPS_EXTERN~%")
+      (format sout "#ifdef ALL_PREGCSTARTUPS_EXTERN~%")
       (maphash (lambda (ns init-list)
                  (format sout "namespace ~a {~%" ns)
                  (dolist (ii init-list)
                    (format sout "   extern void ~a();~%" (function-name% ii)))
                  (format sout "};~%"))
                startups-by-namespace)
-      (format sout "#endif // ALL_STARTUPS_EXTERN~%")
-      (format sout "#ifdef ALL_STARTUPS_CALLS~%")
+      (format sout "#endif // ALL_PREGCSTARTUPS_EXTERN~%")
+      (format sout "#ifdef ALL_PREGCSTARTUPS_CALLS~%")
       (maphash (lambda (ns init-list)
-                 (declare (ignore ns))
+                 (declare (ignore ns))1
                  (dolist (ii init-list)
                    (format sout "    ~a::~a();~%" (namespace% ii) (function-name% ii))))
                startups-by-namespace)
-      (format sout "#endif // ALL_STARTUPS_CALL~%"))))
+      (format sout "#endif // ALL_PREGCSTARTUPS_CALLS~%"))))
 
 (defun generate-code-for-initializers (initializers)
   (declare (optimize (speed 3)))
@@ -1217,7 +1219,7 @@ void ~a::expose_to_clasp() {
   (format stream "obj_finalize_STAMPWTAG_~a:
 {
     // stamp value ~a
-    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));
+    THROW_HARD_ERROR(\"Should never finalize ~a\");
 }~%"
           (build-enum-name (class-key% kind)) (stamp-value kind)
           (class-key% kind)))
@@ -1284,7 +1286,7 @@ static void* OBJ_FINALIZE_table[] = {~%")
   (format stream "obj_deallocate_unmanaged_instance_STAMPWTAG_~a:
 {
     // do nothing stamp value ~a
-    THROW_HARD_ERROR(BF(\"Should never deallocate object ~a\"));
+    THROW_HARD_ERROR(\"Should never deallocate object ~a\");
 }~%"
           (build-enum-name (class-key% kind)) (stamp-value kind)
           (class-key% kind)))
@@ -1366,8 +1368,28 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
       (generate-deallocator-table s sorted-classes gc-managed-types)
       (generate-gc-globals s))))
 
+(defun generate-class-header-includes (classes)
+  (format t "generate-class-header-includes~%")
+  (let ((headers-ht (make-hash-table :test 'equal)))
+    (maphash (lambda (k v)
+               (unless (eq (class-name (class-of v)) 'kind)
+                 (let ((file (cscrape::file% v)))
+                   (setf (gethash file headers-ht) t))))
+             classes)
+    (format t "generate-class-header-includes headers-ht: ~a~%" headers-ht)
+    (let ((header-list nil))
+      (maphash (lambda (key val)
+                 (declare (ignore val))
+                 (push key header-list))
+               headers-ht)
+      (let ((sorted-header-list (sort header-list #'string<)))
+        (with-output-to-string (sout)
+          (loop for header in sorted-header-list
+                do (format sout "#include \"~a\"~%" header)))))))
+
 (defun generate-code (packages-to-create functions symbols classes gc-managed-types enums startups initializers exposes terminators build-path app-config forwards &key use-precise)
-  (let ((init-functions (generate-code-for-init-functions functions))
+  (let ((header-includes (generate-class-header-includes classes))
+        (init-functions (generate-code-for-init-functions functions))
         (init-classes-and-methods (generate-code-for-init-classes-and-methods classes gc-managed-types))
         (source-info (generate-code-for-source-info functions classes))
         (symbol-info (generate-code-for-symbols packages-to-create symbols))
@@ -1377,6 +1399,7 @@ static void* OBJ_DEALLOCATOR_table[] = {~%")
         (exposes-info (generate-code-for-exposes exposes))
         (terminators-info (generate-code-for-terminators terminators))
         (gc-code-info (when use-precise (generate-gc-code classes gc-managed-types forwards))))
+    (write-if-changed header-includes build-path (safe-app-config :header_includes_inc_h app-config))
     (write-if-changed init-functions build-path (safe-app-config :init_functions_inc_h app-config))
     (write-if-changed init-classes-and-methods build-path (safe-app-config :init_classes_inc_h app-config))
     (write-if-changed source-info build-path (safe-app-config :source_info_inc_h app-config))

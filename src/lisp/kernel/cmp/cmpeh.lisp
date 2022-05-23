@@ -268,21 +268,21 @@ exceptions to higher levels of the code and unwinding the stack.
       (or cleanup-clause-body (warn "You should include a cleanup-clause otherwise eh may - catch clauses: ~a" catch-clauses))
       (let* ((my-clause-types (mapcar #'caar exception-clauses))
 	     (dispatcher-block-gensyms
-               (mapcar #'(lambda (x) (gensym (bformat nil "dispatch-%s-" (symbol-name (caar x)))))
+               (mapcar #'(lambda (x) (gensym (core:fmt nil "dispatch-{}-" (symbol-name (caar x)))))
                        exception-clauses))
 	     (first-dispatcher-block-gs (car dispatcher-block-gensyms)))
 	;;	     (cleanup-clause-list (cons cleanup-clause-body (make-list (- (length exception-clauses) 1)))))
 	`(progn
-           (irc-branch-to-and-begin-block (irc-basic-block-create (bformat nil "%s.top" ,name)))
+           (irc-branch-to-and-begin-block (irc-basic-block-create (core:fmt nil "{}.top" ,name)))
            (let* ((,all-clause-types-gs ,(if my-clause-types
                                             `(append ',my-clause-types *exception-clause-types-to-handle*)
                                             '*exception-clause-types-to-handle*))
                   (,previous-exception-clause-types-to-handle-gs *exception-clause-types-to-handle*)
                   (*exception-clause-types-to-handle* ,all-clause-types-gs)
                   (,parent-cleanup-block-gs *exception-handler-cleanup-block*)
-                  (,landing-pad-block-gs (irc-basic-block-create (core:bformat nil "%s.landing-pad" ,name)))
-                  (,dispatch-header-gs (irc-basic-block-create (core:bformat nil "%s.dispatch-header" ,name)))
-                  (,cont-block-gs (irc-basic-block-create (core:bformat nil "%s.try-cont" ,name)))
+                  (,landing-pad-block-gs (irc-basic-block-create (core:fmt nil "{}.landing-pad" ,name)))
+                  (,dispatch-header-gs (irc-basic-block-create (core:fmt nil "{}.dispatch-header" ,name)))
+                  (,cont-block-gs (irc-basic-block-create (core:fmt nil "{}.try-cont" ,name)))
                   (,previous-exception-handler-cleanup-block-gs *exception-handler-cleanup-block*)
                   (*exception-handler-cleanup-block* ,dispatch-header-gs ))
              (declare
@@ -290,7 +290,7 @@ exceptions to higher levels of the code and unwinding the stack.
                ,@(unless exception-clauses
                    `(,previous-exception-handler-cleanup-block-gs
                      ,previous-exception-clause-types-to-handle-gs))))
-             (cmp-log "====>> In TRY --> parent-cleanup-block: %s%N" ,parent-cleanup-block-gs)
+             (cmp-log "====>> In TRY --> parent-cleanup-block: {}%N" ,parent-cleanup-block-gs)
              (let ,(mapcar #'(lambda (var-name)
                                (list var-name `(irc-basic-block-create (concatenate 'base-string ,name "." ,(symbol-name var-name)))))
                     dispatcher-block-gensyms)
@@ -299,7 +299,7 @@ exceptions to higher levels of the code and unwinding the stack.
                      ,code)
                  ,(when cleanup-clause-body
                     `(progn
-                       (irc-branch-to-and-begin-block (irc-basic-block-create (core:bformat nil "%s.normal-cleanup" ,name)))
+                       (irc-branch-to-and-begin-block (irc-basic-block-create (core:fmt nil "{}.normal-cleanup" ,name)))
                        ,@cleanup-clause-body))
                  (irc-branch-if-no-terminator-inst ,cont-block-gs)
                  (irc-begin-landing-pad-block ,landing-pad-block-gs)

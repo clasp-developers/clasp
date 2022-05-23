@@ -380,54 +380,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class BIND-AST
-;;;
-;;; Represents a special variable binding.
-;;;
-
-(defclass bind-ast (ast:ast)
-  ((%name :initarg :name-ast :reader ast:name-ast)
-   (%value :initarg :value-ast :reader ast:value-ast)
-   (%body :initarg :body-ast :reader ast:body-ast)))
-
-(cleavir-io:define-save-info bind-ast
-    (:name-ast ast:name-ast)
-  (:value-ast ast:value-ast)
-  (:body-ast ast:body-ast))
-
-(defmethod cleavir-ast-graphviz::label ((ast bind-ast)) "bind")
-
-(ast:define-children bind-ast
-    (ast:name-ast ast:value-ast ast:body-ast))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class UNWIND-PROTECT-AST
-;;;
-;;; Represents CL:UNWIND-PROTECT.
-;;;
-;;; NOTE: The cleanup forms are stored as a thunk. This could be changed
-;;; so that the actual code is run, avoiding the overhead of allocating a
-;;; closure, and calling and so on. For now I'm assuming it's unimportant.
-;;;
-
-(defclass unwind-protect-ast (ast:ast)
-  ((%body :initarg :body-ast :reader ast:body-ast)
-   ;; This will be a FUNCTION-AST.
-   (%cleanup :initarg :cleanup-ast :reader cleanup-ast)))
-
-(cleavir-io:define-save-info unwind-protect-ast
-    (:body-ast ast:body-ast)
-  (:cleanup-ast cleanup-ast))
-
-(defmethod cleavir-ast-graphviz::label ((ast unwind-protect-ast))
-  "unwind-protect")
-
-(ast:define-children unwind-protect-ast
-    (ast:body-ast cleanup-ast))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Class BIND-VASLIST-AST
 ;;;
 ;;; Bind variables according to an ordinary lambda list based on a vaslist.

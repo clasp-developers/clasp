@@ -50,7 +50,6 @@ THE SOFTWARE.
 #define CLBIND_CLASS_REP_HPP_INCLUDED
 
 #include <boost/limits.hpp>
-#include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
 
 #include <string>
 #include <utility>

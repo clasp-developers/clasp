@@ -257,7 +257,7 @@ Not a valid documentation object ~A"
        (generic-function-class (class-of gfun) gfcp)
        (delete-methods nil)
        &allow-other-keys)
-  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> {}  name -> {} args -> {}%N" gfun name args)
   ;; modify the existing object
   (setf args (copy-list args))
   (remf args :generic-function-class)
@@ -292,7 +292,7 @@ Not a valid documentation object ~A"
                                    (delete-methods nil)
                                    &allow-other-keys)
   (declare (ignore delete-methods gfun))
-  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> {}  name -> {} args -> {}%N" gfun name args)
   ;; else create a new generic function object
   (setf args (copy-list args))
   (remf args :generic-function-class)

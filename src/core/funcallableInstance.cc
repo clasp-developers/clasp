@@ -26,15 +26,6 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
-#pragma clang diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-//#pragma GCC diagnostic ignored "-Wunused-local-typedef"
-#include <boost/graph/vector_as_graph.hpp>
-#include <boost/graph/topological_sort.hpp>
-#pragma clang diagnostic pop
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -231,10 +222,10 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
 
 void FuncallableInstance_O::describe(T_sp stream) {
   stringstream ss;
-  ss << (BF("FuncallableInstance\n")).str();
-  ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
+  ss << (fmt::sprintf("FuncallableInstance\n"));
+  ss << (fmt::sprintf("_Class: %s\n", _rep_(this->_Class) ));
   for (int i(1); i < rack()->length(); ++i) {
-    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(rack(), i)).c_str()).str();
+    ss << fmt::sprintf("_Rack[%d]: %s\n", i , _rep_(low_level_instanceRef(rack(), i)) );
   }
   clasp_write_string(ss.str(), stream);
 }
@@ -251,7 +242,7 @@ CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     return iobj->setFuncallableInstanceFunction(func);
   }
-  SIMPLE_ERROR(BF("You can only setFuncallableInstanceFunction on funcallable instances - you tried to set it on a: %s") % _rep_(obj));
+  SIMPLE_ERROR(("You can only setFuncallableInstanceFunction on funcallable instances - you tried to set it on a: %s") , _rep_(obj));
 };
  
 };
@@ -279,10 +270,10 @@ CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_
 namespace core {
 
 #if 0 // for debugging
-#define DTILOG(x) { FILE* fout= monitor_file("dtree-interp"); fprintf( fout, "%s", (x).str().c_str()); fflush(fout); }
+#define DTILOG(...) { FILE* fout= monitor_file("dtree-interp"); fprintf( fout, "%s", (fmt::sprintf(__VA_ARGS__).c_str())); fflush(fout); }
 #define DTIDO(x) do { x; } while(0)
 #else
-#define DTILOG(x)
+#define DTILOG(...)
 #define DTIDO(x) do {} while(0)
 #endif
 
@@ -437,15 +428,16 @@ SYMBOL_EXPORT_SC_(ClosPkg, compile_discriminating_function);
 #define COMPILE_TRIGGER 1024 // completely arbitrary
 
 CL_LAMBDA(program gf args)
+CL_UNWIND_COOP(true);
 DOCGROUP(clasp)
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
                                             Vaslist_sp pass_args) {
-  DTILOG(BF("=============================== Entered clos__interpret_dtree_program\n"));
-  DTILOG(BF("---- generic function: %s\n") % _safe_rep_(generic_function));
-  DTILOG(BF("---- program length: %d\n") % program->length());
+  DTILOG("=============================== Entered clos__interpret_dtree_program\n");
+  DTILOG("---- generic function: %s\n" , _safe_rep_(generic_function));
+  DTILOG("---- program length: %d\n" , program->length());
   DTIDO(
       for ( size_t i=0; i<program->length(); ++i ) {
-          DTILOG(BF("[%3d] : %s\n") % i % _safe_rep_((*program)[i]));
+          DTILOG("[%3d] : %s\n" , i , _safe_rep_((*program)[i]));
       });
   size_t argi(0);
   
@@ -463,11 +455,11 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   
   // Regardless of whether we triggered the compile, we next
   // Dispatch
-  DTILOG(BF("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n"));
+  DTILOG("About to dump incoming pass_args Vaslist and then copy to dispatch_args\n");
   DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
   Vaslist valist_copy(*pass_args);
   Vaslist_sp dispatch_args(&valist_copy);
-  DTILOG(BF("About to dump copied dispatch_args Vaslist\n"));
+  DTILOG("About to dump copied dispatch_args Vaslist\n");
   DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
   T_sp arg;
   uintptr_t stamp;
@@ -475,49 +467,49 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   size_t nargs = dispatch_args->remaining_nargs(); // used in error signalling
   while (1) {
     size_t op = (*program)[ip].unsafe_fixnum();
-    DTILOG(BF("ip[%lu]: %lu/%s\n") % ip % op % dtree_op_name(op));
+    DTILOG("ip[%lu]: %lu/%s\n" , ip , op , dtree_op_name(op));
     switch (op) {
     case DTREE_OP_MISS:
         goto DISPATCH_MISS;
     case DTREE_OP_ADVANCE: {
-      DTILOG(BF("About to read arg dispatch_args-> %p\n") % dispatch_args.raw_());
-      DTILOG(BF("About to dump dispatch_args Vaslist\n"));
+      DTILOG("About to read arg dispatch_args-> %p\n" , dispatch_args.raw_());
+      DTILOG("About to dump dispatch_args Vaslist\n");
       DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
       if (dispatch_args->remaining_nargs() == 0)
           // we use an intermediate function, in lisp, to get a nice error message.
         return core::eval::funcall(clos::_sym_interp_wrong_nargs,
                                    generic_function, make_fixnum(nargs));
       arg = dispatch_args->next_arg();
-      DTILOG(BF("Got arg@%p %s\n") % arg.raw_() % _safe_rep_(arg));
+      DTILOG("Got arg@%p %s\n" , arg.raw_() , _safe_rep_(arg));
       ++ip;
     }
         break;
     case DTREE_OP_TAG_TEST:
-        DTILOG(BF("tag-test: "));
+        DTILOG("tag-test: ");
         if (arg.fixnump()) {
-          DTILOG(BF("fixnum\n"));
+          DTILOG("fixnum\n");
           ip = (*program)[ip+DTREE_FIXNUM_TAG_OFFSET].unsafe_fixnum();
           break;
         } else if (arg.consp()) {
-          DTILOG(BF("cons\n"));
+          DTILOG("cons\n");
           ip = (*program)[ip+DTREE_CONS_TAG_OFFSET].unsafe_fixnum();
           break;
         } else if (arg.single_floatp()) {
-          DTILOG(BF("single-float\n"));
+          DTILOG("single-float\n");
           ip = (*program)[ip+DTREE_SINGLE_FLOAT_TAG_OFFSET].unsafe_fixnum();
           break;
         } else if (arg.characterp()) {
-          DTILOG(BF("character\n"));
+          DTILOG("character\n");
           ip = (*program)[ip+DTREE_CHARACTER_TAG_OFFSET].unsafe_fixnum();
           break;
         } else if (arg.generalp()) {
-          DTILOG(BF("general\n"));
+          DTILOG("general\n");
           ip += DTREE_GENERAL_TAG_OFFSET;
           break;
         }
-        DTILOG(BF("unknown\n"));
+        DTILOG("unknown\n");
         // FIXME: We should be able to specialize on class valist and stuff.
-        SIMPLE_ERROR(BF("unknown tag for arg %s") % arg);
+        SIMPLE_ERROR(("unknown tag for arg %s") , arg);
         goto DISPATCH_MISS;
     case DTREE_OP_STAMP_READ:
       {
@@ -537,14 +529,14 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
             stamp = (uintptr_t)(llvmo::template_read_derived_stamp(client_ptr));
             ip += DTREE_READ_OTHER_OFFSET; break;
         }
-        DTILOG(BF(" stamp read: %lu\n") % stamp );
+        DTILOG(" stamp read: %lu\n" , stamp );
         break;
       }
     case DTREE_OP_LT_BRANCH:
       {
         // The stamps are from Common Lisp, so they're tagged fixnums. Don't untag.
         uintptr_t pivot = (*program)[ip+DTREE_LT_PIVOT_OFFSET].tagged_();
-        DTILOG(BF("testing < pivot %s\n") % pivot);
+        DTILOG("testing < pivot %s\n" , pivot);
         if (stamp < pivot)
           ip = (*program)[ip+DTREE_LT_LEFT_OFFSET].unsafe_fixnum();
         else ip += DTREE_LT_RIGHT_OFFSET;
@@ -553,7 +545,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
     case DTREE_OP_EQ_CHECK:
       {
         uintptr_t pivot = (*program)[ip+DTREE_EQ_PIVOT_OFFSET].tagged_();
-        DTILOG(BF("testing - pivot %s  stamp: %s EQ -> %d\n") % pivot % stamp % (stamp == pivot) );
+        DTILOG("testing - pivot %s  stamp: %s EQ -> %d\n" , pivot , stamp , (stamp == pivot) );
         if (stamp != pivot) goto DISPATCH_MISS;
         ip += DTREE_EQ_NEXT_OFFSET;
         break;
@@ -562,7 +554,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
       {
         uintptr_t min = (*program)[ip+DTREE_RANGE_MIN_OFFSET].tagged_();
         uintptr_t max = (*program)[ip+DTREE_RANGE_MAX_OFFSET].tagged_();
-        DTILOG(BF("testing > %s and < %s\n") % min % max);
+        DTILOG("testing > %s and < %s\n" , min , max);
         if (stamp < min || stamp > max) goto DISPATCH_MISS;
         ip += DTREE_RANGE_NEXT_OFFSET;
         break;
@@ -577,18 +569,18 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
       }
     case DTREE_OP_SLOT_READ:
       {
-        DTILOG(BF("reading slot: "));
+        DTILOG("reading slot: ");
         T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
         T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
         size_t index = location.unsafe_fixnum();
-        DTILOG(BF("About to dump pass_args Vaslist\n"));
+        DTILOG("About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         T_sp tinstance = pass_args->next_arg();
-        DTILOG(BF("Got tinstance@%p %s\n") % tinstance.raw_() % _safe_rep_(tinstance));
-        DTILOG(BF("About to dump pass_args Vaslist AFTER next_arg\n"));
+        DTILOG("Got tinstance@%p %s\n" , tinstance.raw_() , _safe_rep_(tinstance));
+        DTILOG("About to dump pass_args Vaslist AFTER next_arg\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         Instance_sp instance((gc::Tagged)tinstance.raw_());
-        DTILOG(BF("instance %p index %s\n") % instance.raw_() % index);
+        DTILOG("instance %p index %s\n" , instance.raw_() , index);
         T_sp value = instance->instanceRef(index);
         if (value.unboundp())
           return core::eval::funcall(cl::_sym_slot_unbound,
@@ -598,13 +590,13 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
       }
     case DTREE_OP_CAR:
       {
-        DTILOG(BF("class cell\n"));
+        DTILOG("class cell\n");
         T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
         T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
-        DTILOG(BF("About to dump pass_args Vaslist\n"));
+        DTILOG("About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         Instance_sp instance = gc::As_unsafe<Instance_sp>(pass_args->next_arg());
-        DTILOG(BF("Got instance@%p %s\n") % instance.raw_() % _safe_rep_(instance));
+        DTILOG("Got instance@%p %s\n" , instance.raw_() , _safe_rep_(instance));
         Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
         T_sp value = CONS_CAR(cell);
         if (value.unboundp())
@@ -615,50 +607,50 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
       }
     case DTREE_OP_SLOT_WRITE:
       {
-        DTILOG(BF("writing slot: "));
+        DTILOG("writing slot: ");
         T_sp location = (*program)[ip+DTREE_SLOT_WRITER_INDEX_OFFSET];
         size_t index = location.unsafe_fixnum();
-        DTILOG(BF("index %s\n") % index);
-        DTILOG(BF("About to dump pass_args Vaslist\n"));
+        DTILOG("index %s\n" , index);
+        DTILOG("About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         T_sp value((gc::Tagged)pass_args->next_arg_raw());
-        DTILOG(BF("About to dump pass_args Vaslist\n"));
+        DTILOG("About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         T_sp tinstance = pass_args->next_arg();
-        DTILOG(BF("Got tinstance@%p %s\n") % tinstance.raw_() % _safe_rep_(tinstance));
+        DTILOG("Got tinstance@%p %s\n" , tinstance.raw_() , _safe_rep_(tinstance));
         Instance_sp instance((gc::Tagged)tinstance.raw_());
         instance->instanceSet(index,value);
         return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_RPLACA:
       {
-        DTILOG(BF("class cell\n"));
+        DTILOG("class cell\n");
         T_sp location = (*program)[ip+DTREE_SLOT_WRITER_INDEX_OFFSET];
         size_t index = location.unsafe_fixnum();
         Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-        DTILOG(BF("About to dump pass_args Vaslist\n"));
+        DTILOG("About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         T_sp value((gc::Tagged)pass_args->next_arg());
-        DTILOG(BF("Got value@%p %s\n") % value.raw_() % _safe_rep_(value));
+        DTILOG("Got value@%p %s\n" , value.raw_() , _safe_rep_(value));
         cell->rplaca(value);
         return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_EFFECTIVE_METHOD:
       {
-        DTILOG(BF("effective method call\n"));
+        DTILOG("effective method call\n");
         T_sp tfunc = (*program)[ip+DTREE_EFFECTIVE_METHOD_OFFSET];
         Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
         // Use the pass_args here because it points to the original arguments
-        DTILOG(BF("About to dump pass_args Vaslist\n"));
+        DTILOG("About to dump pass_args Vaslist\n");
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*pass_args));
         return func->entry()(func.raw_(), pass_args->_nargs, pass_args->_args);
       }
     default:
-        SIMPLE_ERROR(BF("%zu is not a valid dtree opcode") % op);
+        SIMPLE_ERROR(("%zu is not a valid dtree opcode") , op);
     }
   }
  DISPATCH_MISS:
-  DTILOG(BF("dispatch miss. arg %s stamp %s\n") % arg % stamp);
+  DTILOG("dispatch miss. arg %s stamp %s\n" , arg , stamp);
   return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,pass_args);
 }
 
@@ -668,9 +660,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg,generic_function_name);
 DOCGROUP(clasp)
 CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset)
   {
-    if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lisp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O) %lu") % funcallableInstance_size % sizeof(FuncallableInstance_O));
+    if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(("The cmpintrinsics.lisp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O) %lu") , funcallableInstance_size , sizeof(FuncallableInstance_O));
     if (funcallableInstance_rack_offset!=offsetof(FuncallableInstance_O,_Rack))
-      SIMPLE_ERROR(BF("funcallableInstance_rack_offset %lu does not match offsetof(_Rack,FuncallableInstance_O) %lu") % funcallableInstance_rack_offset % offsetof(FuncallableInstance_O,_Rack));
+      SIMPLE_ERROR(("funcallableInstance_rack_offset %lu does not match offsetof(_Rack,FuncallableInstance_O) %lu") , funcallableInstance_rack_offset , offsetof(FuncallableInstance_O,_Rack));
   }
 
 };

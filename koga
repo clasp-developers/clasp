@@ -1,5 +1,13 @@
 #!/usr/bin/env -S sbcl --script
 
+#+sbcl
+(progn
+  (in-package "SB-IMPL")
+  (sb-ext:without-package-locks
+    (let ((old (fdefinition 'sb-impl::make-fd-stream)))
+      (defun sb-impl::make-fd-stream (fd &rest rest)
+        (apply old fd :auto-close nil rest)))))
+
 (require :asdf)
 
 (defparameter *git* nil)
@@ -84,8 +92,7 @@
        (build (getf initargs :build-path "build/"))
        (extensions (getf initargs :extensions))
        (skip-sync (getf initargs :skip-sync))
-       (help (getf initargs :help))
-       (code (uiop:getcwd)))
+       (help (getf initargs :help)))
   ;; Get all the external dependencies
   (unless help
     (format t "Synchronizing external repositories~%~%"))
@@ -118,4 +125,3 @@
                            :inherit-configuration))
   (asdf:load-system :koga)
   (apply #'uiop:symbol-call "KOGA" (if help "HELP" "SETUP") initargs))
-  

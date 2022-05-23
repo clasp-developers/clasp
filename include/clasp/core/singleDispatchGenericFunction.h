@@ -108,7 +108,10 @@ public:
         }
       }
     }
-    SIMPLE_ERROR(BF("This single dispatch generic function %s does not recognize argument class %s") % _rep_(closure->asSmartPtr()) % _rep_(dispatchArgClass));
+    SIMPLE_ERROR(("This single dispatch generic function %s does not recognize argument class %s  arg %s")
+                 , _rep_(closure->asSmartPtr())
+                 , _rep_(dispatchArgClass)
+                 , _rep_(dispatchArg).c_str());
   }
     static inline LISP_ENTRY_0() {
     return entry_point_n(lcc_closure,0,NULL);

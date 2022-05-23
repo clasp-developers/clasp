@@ -78,7 +78,7 @@ CL_DEFUN int core__environment_length(T_sp frame) {
   else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
     return af->length();
   }
-  SIMPLE_ERROR(BF("Trying to get environment-length of something not an activation-frame"));
+  SIMPLE_ERROR(("Trying to get environment-length of something not an activation-frame"));
 }
 
 CL_LAMBDA(frame)
@@ -93,7 +93,7 @@ CL_DEFUN T_sp core__environment_debug_names(T_sp frame) {
   } else if (gc::IsA<ActivationFrame_sp>(frame)) {
     return nil<T_O>();
   }
-  SIMPLE_ERROR(BF("Trying to get environment-debug-names of something not an activation-frame: %s") % _rep_(frame));
+  SIMPLE_ERROR(("Trying to get environment-debug-names of something not an activation-frame: %s") , _rep_(frame));
 }
 
 CL_LAMBDA(frame)
@@ -117,7 +117,7 @@ CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
   } else if (gc::IsA<ActivationFrame_sp>(frame)) {
     return nil<T_O>();
   }
-  SIMPLE_ERROR(BF("Trying to get environment-debug-values of something not an activation-frame: %s") % _rep_(frame));
+  SIMPLE_ERROR(("Trying to get environment-debug-values of something not an activation-frame: %s") , _rep_(frame));
 }
 
 CL_LAMBDA(name env)
@@ -208,7 +208,7 @@ CL_DEFUN T_sp core__runtime_environment(T_sp tenv) {
   if (Environment_sp env = tenv.asOrNull<Environment_O>()) {
     return env->runtimeEnvironment();
   }
-  SIMPLE_ERROR(BF("No runtime environment available for %s") % _rep_(tenv));
+  SIMPLE_ERROR(("No runtime environment available for %s") , _rep_(tenv));
 };
 
 
@@ -235,11 +235,11 @@ bool Environment_O::findValueEnvironmentAtDepth(int searchDepth, int& depth, boo
 
 CL_LISPIFY_NAME("setRuntimeEnvironment");
 CL_DEFMETHOD void Environment_O::setRuntimeEnvironment(T_sp renv) {
-  SIMPLE_ERROR(BF("Only RuntimeVisibleEnvironments support runtime environments"));
+  SIMPLE_ERROR(("Only RuntimeVisibleEnvironments support runtime environments"));
 }
 
 T_sp Environment_O::runtimeEnvironment() const {
-  SIMPLE_ERROR(BF("Only RuntimeVisibleEnvironments support runtime environments"));
+  SIMPLE_ERROR(("Only RuntimeVisibleEnvironments support runtime environments"));
 }
 
 CL_LISPIFY_NAME("getParentEnvironment");
@@ -248,7 +248,7 @@ CL_DEFMETHOD T_sp Environment_O::getParentEnvironment() const {
 }
 
 T_mv Environment_O::clasp_lookupMetadata(T_sp env, Symbol_sp key) {
-  IMPLEMENT_MEF(BF("Checkout Environment_O::lookupMetadata - it doesn't look like we do much yet"));
+  IMPLEMENT_MEF(fmt::sprintf("Checkout Environment_O::lookupMetadata - it doesn't look like we do much yet"));
 }
 
 T_sp Environment_O::clasp_getActivationFrame(T_sp tenv) {
@@ -341,7 +341,7 @@ CL_DEFUN void core__environment_dump(T_sp env)
     e->dump();
     return;
   }
-  SIMPLE_ERROR(BF("The argument %s was not an environment") % _rep_(env));
+  SIMPLE_ERROR(("The argument %s was not an environment") , _rep_(env));
 }
 
 List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key) {
@@ -382,7 +382,7 @@ string Environment_O::__repr__() const {
 
 bool Environment_O::_updateValue(Symbol_sp sym, T_sp obj) {
   if (this->getParentEnvironment().nilp()) {
-    SIMPLE_ERROR(BF("Could not update local symbol(%s) because it was not defined") % _rep_(sym));
+    SIMPLE_ERROR(("Could not update local symbol(%s) because it was not defined") , _rep_(sym));
   }
   return clasp_updateValue(this->getParentEnvironment(), sym, obj);
 }
@@ -476,7 +476,7 @@ CL_DEFUN T_sp core__find_function_container_environment(T_sp env) {
 
 T_sp Environment_O::clasp_find_current_code_environment(T_sp env) {
   if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not find FunctionContainerEnvironment"));
+    SIMPLE_ERROR(("Could not find FunctionContainerEnvironment"));
   }
   return gc::As<Environment_sp>(env)->find_current_code_environment();
 }
@@ -493,7 +493,7 @@ T_mv Environment_O::clasp_recognizesBlockSymbol(T_sp env, Symbol_sp sym, bool &i
 int Environment_O::clasp_getBlockSymbolFrame(T_sp env, Symbol_sp sym) {
   DEPRECATED();
   if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not find block symbol frame for %s") % _rep_(sym));
+    SIMPLE_ERROR(("Could not find block symbol frame for %s") , _rep_(sym));
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->getBlockSymbolFrame(sym);
   }
@@ -502,7 +502,7 @@ int Environment_O::clasp_getBlockSymbolFrame(T_sp env, Symbol_sp sym) {
 
 T_sp Environment_O::clasp_find_unwindable_environment(T_sp env) {
   if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not find unwindable environment"));
+    SIMPLE_ERROR(("Could not find unwindable environment"));
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->find_unwindable_environment();
   }
@@ -511,7 +511,7 @@ T_sp Environment_O::clasp_find_unwindable_environment(T_sp env) {
 
 T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag) {
   if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not find environment with tag[%s]") % _rep_(tag));
+    SIMPLE_ERROR(("Could not find environment with tag[%s]") , _rep_(tag));
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->find_tagbody_tag_environment(tag);
   }
@@ -521,7 +521,7 @@ T_sp Environment_O::clasp_find_tagbody_tag_environment(T_sp env, Symbol_sp tag) 
 T_sp Environment_O::clasp_find_block_named_environment(T_sp env, Symbol_sp blockName) {
   DEPRECATED();
   if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not find block named environment with name[%s]") % _rep_(blockName));
+    SIMPLE_ERROR(("Could not find block named environment with name[%s]") , _rep_(blockName));
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     return eenv->find_block_named_environment(blockName);
   }
@@ -601,7 +601,7 @@ CL_DEFMETHOD List_sp Environment_O::classifyTag(Symbol_sp tag) {
       return Cons_O::createList(_sym_localGo, make_fixnum(depth), make_fixnum(index), tagbodyEnv);
     }
   }
-  SIMPLE_ERROR(BF("Could not find tag %s") % _rep_(tag));
+  SIMPLE_ERROR(("Could not find tag %s") , _rep_(tag));
 }
 
 CL_LISPIFY_NAME("classifyFunctionLookup");
@@ -620,7 +620,7 @@ CL_DEFMETHOD List_sp Environment_O::classifyFunctionLookup(T_sp functionName) co
 T_sp Environment_O::find_current_code_environment() const {
   _OF();
   if (this->getParentEnvironment().nilp()) {
-    SIMPLE_ERROR(BF("Could not find current code environment"));
+    SIMPLE_ERROR(("Could not find current code environment"));
   }
   return Environment_O::clasp_find_current_code_environment(this->getParentEnvironment());
 }
@@ -642,7 +642,7 @@ CL_DEFUN size_t core__calculateRuntimeVisibleEnvironmentDepth(T_sp env, T_sp sea
   if (Environment_O::clasp_calculateRuntimeVisibleEnvironmentDepth(env,searchEnv,depth)) {
     return depth;
   } else {
-    SIMPLE_ERROR(BF("Could not find environment"));
+    SIMPLE_ERROR(("Could not find environment"));
   }
 };
 
@@ -696,7 +696,7 @@ CL_LISPIFY_NAME("find_block_named_environment");
 CL_DEFMETHOD T_sp Environment_O::find_block_named_environment(Symbol_sp blockName) const {
   T_sp parent = this->getParentEnvironment();
   if (parent.nilp()) {
-    SIMPLE_ERROR(BF("Could not find block with name[%s]") % _rep_(blockName));
+    SIMPLE_ERROR(("Could not find block with name[%s]") , _rep_(blockName));
   }
   return gc::As<Environment_sp>(parent)->find_block_named_environment(blockName);
 }
@@ -852,7 +852,7 @@ bool RuntimeVisibleEnvironment_O::_findValue(T_sp sym, int &depth, int &index, b
 
 bool RuntimeVisibleEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &func, T_sp& functionEnv) const {
   T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment(),false);
-  LOG(BF("Moving down a level"));
+  LOG("Moving down a level");
   if (!this->_Invisible) ++depth;
   return clasp_findFunction(parent, functionName, depth, index, func, functionEnv);
 }
@@ -928,8 +928,8 @@ bool ValueEnvironment_O::findValueEnvironmentAtDepth(int searchDepth, int &depth
 
 
 bool ValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const {
-  LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym));
-  //    LOG(BF("The frame stack is %d deep") % this->depth() );
+  LOG("Looking for binding for symbol(%s)" , _rep_(sym));
+  //    LOG("The frame stack is %d deep" , this->depth() );
   
   List_sp fi = this->find(sym);
 #ifdef DEBUG_ENVIRONMENTS
@@ -948,7 +948,7 @@ bool ValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool& cros
       }
       valueKind = lexicalValue;
       env = this->asSmartPtr();
-      LOG(BF(" Found binding %s") % _rep_(entry));
+      LOG(" Found binding %s" , _rep_(entry));
       ValueFrame_sp vframe = this->_ActivationFrame;
       value = vframe->entry(index);
       return true;
@@ -963,10 +963,10 @@ bool ValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool& cros
         value = entry;
         return true;
       } else {
-        SIMPLE_ERROR(BF("Handle ValueEnvironment_O entryKind of %s in %s") % _rep_(entryKind) % this->summaryOfContents());
+        SIMPLE_ERROR(("Handle ValueEnvironment_O entryKind of %s in %s") , _rep_(entryKind) , this->summaryOfContents());
       }
     } else {
-      SIMPLE_ERROR(BF("Handle ValueEnvironment_O entry of %s in %s") % _rep_(fi) % this->summaryOfContents());
+      SIMPLE_ERROR(("Handle ValueEnvironment_O entry of %s in %s") , _rep_(fi) , this->summaryOfContents());
     }
   }
 #ifdef DEBUG_ENVIRONMENTS
@@ -978,8 +978,8 @@ bool ValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool& cros
 }
 
 bool ValueEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &fn) const {
-  LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym));
-  //    LOG(BF("The frame stack is %d deep") % this->depth() );
+  LOG("Looking for binding for symbol(%s)" , _rep_(sym));
+  //    LOG("The frame stack is %d deep" , this->depth() );
   List_sp fi = this->find(sym);
   if (fi.consp()) {
     T_sp entry = CONS_CDR(fi);
@@ -1031,7 +1031,7 @@ ValueEnvironment_sp ValueEnvironment_O::createSingleTopLevelEnvironment(size_t n
 CL_LISPIFY_NAME(makeValueEnvironmentForLocallySpecialEntries);
 DOCGROUP(clasp)
 CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(List_sp specials, T_sp parent) {
-  LOG(BF("specials -> %s parent -> %s\n") % _rep_(specials) % _rep_(parent));
+  LOG("specials -> %s parent -> %s\n" , _rep_(specials) , _rep_(parent));
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->setupParent(parent);
   env->_Invisible = true; // What do we do with the activation frame?
@@ -1095,7 +1095,7 @@ string ValueEnvironment_O::summaryOfContents() const {
         ss << "( " << _rep_(key) << " . " << _rep_(value) << " )" << std::endl;
       }
     } else {
-      SIMPLE_ERROR(BF("A ValueEnvironment is not an alist"));
+      SIMPLE_ERROR(("A ValueEnvironment is not an alist"));
     }
   }
   ss << string(tab,' ') << "Number of entries " << numEntries << std::endl;
@@ -1115,7 +1115,7 @@ List_sp ValueEnvironment_O::allLocalNamesAsCons() const {
         result = Cons_O::create(Cons_O::create(key,val), result);
       }
     } else {
-      SIMPLE_ERROR(BF("The ValueEnvironment is not an alist!!"));
+      SIMPLE_ERROR(("The ValueEnvironment is not an alist!!"));
     }
   }
   return result;
@@ -1135,7 +1135,7 @@ bool ValueEnvironment_O::_updateValue(Symbol_sp sym, T_sp obj) {
   if (it.nilp()) {
     T_sp parent = this->getParentEnvironment();
     if (parent.nilp()) {
-      SIMPLE_ERROR(BF("Could not update local symbol(%s) because it was not defined") % _rep_(sym));
+      SIMPLE_ERROR(("Could not update local symbol(%s) because it was not defined") , _rep_(sym));
     }
     return clasp_updateValue(clasp_currentVisibleEnvironment(parent,false), sym, obj);
   }
@@ -1162,7 +1162,7 @@ T_sp ValueEnvironment_O::new_binding(Symbol_sp sym, int idx, T_sp obj) {
   ASSERT(idx>=0);
 #if 0
   if (this->find(sym).notnilp()) {
-    SIMPLE_ERROR(BF("The symbol[%s] is already in the environment") % _rep_(sym));
+    SIMPLE_ERROR(("The symbol[%s] is already in the environment") , _rep_(sym));
   }
 #endif
 #if 0 // def DEBUG_ASSERT
@@ -1188,8 +1188,8 @@ T_sp FunctionValueEnvironment_O::getActivationFrame() const {
 };
 
 bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &value, T_sp& functionEnv) const {
-  LOG(BF("Looking for binding for function name[%s]") % _rep_(functionName));
-  //    LOG(BF("The frame stack is %d deep") % this->depth() );
+  LOG("Looking for binding for function name[%s]" , _rep_(functionName));
+  //    LOG("The frame stack is %d deep" , this->depth() );
   T_mv mv = this->_FunctionIndices->gethash(functionName, nil<T_O>());
   T_sp val = mv;
   bool foundp = mv.valueGet_(1).isTrue();
@@ -1197,7 +1197,7 @@ bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, in
     return this->Base::_findFunction(functionName, depth, index, value, functionEnv );
   index = unbox_fixnum(gc::As<Fixnum_sp>(val));
   functionEnv = this->asSmartPtr();
-  LOG(BF(" Found binding %d") % index);
+  LOG(" Found binding %d" , index);
   T_sp tvalue = this->_FunctionFrame->entry(index);
   ASSERT(tvalue.notnilp());
   value = gc::As<Function_sp>(tvalue);
@@ -1362,7 +1362,7 @@ CL_DEFUN BlockEnvironment_sp BlockEnvironment_O::make(Symbol_sp blockSymbol, T_s
 string BlockEnvironment_O::summaryOfContents() const {
   int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
   stringstream ss;
-  ss << string(tab, ' ') << (BF("    :block-name %s\n") % _rep_(this->getBlockSymbol())).str();
+  ss << string(tab, ' ') << fmt::sprintf("    :block-name %s\n" , _rep_(this->getBlockSymbol()));
   ss << this->Base::summaryOfContents();
   return ss.str();
 }
@@ -1676,13 +1676,13 @@ string MacroletEnvironment_O::summaryOfContents() const {
 }
 
 bool MacroletEnvironment_O::_findMacro(Symbol_sp sym, int &depth, int &index, Function_sp &value) const {
-  LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym));
-  //    LOG(BF("The frame stack is %d deep") % this->depth() );
+  LOG("Looking for binding for symbol(%s)" , _rep_(sym));
+  //    LOG("The frame stack is %d deep" , this->depth() );
   T_mv fi = this->_Macros->gethash(sym);
   if (fi.second().nilp()) {
     return this->Base::_findMacro(sym, depth, index, value);
   }
-  LOG(BF(" Found binding %s") % _rep_(fi));
+  LOG(" Found binding %s" , _rep_(fi));
   value = gc::As<Function_sp>(fi);
   return true;
 }
@@ -1701,13 +1701,13 @@ CL_DEFUN SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(T_sp par
 }
 
 bool SymbolMacroletEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &value) const {
-  LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym));
-  //    LOG(BF("The frame stack is %d deep") % this->depth() );
+  LOG("Looking for binding for symbol(%s)" , _rep_(sym));
+  //    LOG("The frame stack is %d deep" , this->depth() );
   T_mv fi = this->_Macros->gethash(sym);
   if (fi.second().nilp()) {
     return this->Base::_findSymbolMacro(sym, depth, index, shadowed, value);
   }
-  LOG(BF(" Found binding %s") % _rep_(fi));
+  LOG(" Found binding %s" , _rep_(fi));
   value = gc::As<Function_sp>(fi);
   shadowed = false;
   return true;

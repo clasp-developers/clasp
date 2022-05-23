@@ -102,9 +102,6 @@ THE SOFTWARE.
 #include <cassert>
 
 #include <boost/bind.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/enum_params_with_a_default.hpp>
-#include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_member_object_pointer.hpp>
 #include <boost/mpl/apply.hpp>
@@ -343,7 +340,7 @@ public:
                                     string const &declares = "",
                                     string const &docstring = "") {
     if (isDerivableCxxClass<T>(0)) {
-      THROW_HARD_ERROR(BF("ERROR - The derivable class %s should not have other constructors") % this->name());
+      THROW_HARD_ERROR("ERROR - The derivable class %s should not have other constructors", this->name());
     }
     return this->def_constructor_(name, &sig, policies<>(), arguments, declares, docstring);
   }
@@ -356,7 +353,7 @@ public:
                                     string const &declares = "",
                                     string const &docstring = "") {
     if (isDerivableCxxClass<T>(0)) {
-      THROW_HARD_ERROR(BF("ERROR - The derivable class %s should not have other constructors with policies") % this->name());
+      THROW_HARD_ERROR( "ERROR - The derivable class %s should not have other constructors with policies", this->name());
     }
     return this->def_constructor_(name, &sig, policies, arguments, declares, docstring);
   }
@@ -557,9 +554,9 @@ private:
     typedef typename boost::mpl::if_<detail::is_bases<bases_t>, bases_t, bases<bases_t>>::type Base;
 
     if (!hasConstructor && isDerivableCxxClass<T>(0)) {
-      THROW_HARD_ERROR(BF("ERROR - The derivable class %s must have a default constructor"
-                          " - otherwise how can you create instances of their derived classes?\n") %
-                       this->name());
+      THROW_HARD_ERROR("ERROR - The derivable class %s must have a default constructor"
+                          " - otherwise how can you create instances of their derived classes?\n"
+                       , this->name());
     }
     derivable_class_base::init(
                                typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id, isDerivableCxxClass<T>(0));

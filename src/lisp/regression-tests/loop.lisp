@@ -97,3 +97,22 @@
                        return :bad)
              :bad)
       (:good))
+
+;;; did segfault previously
+(test-expect-error
+ issue-1212
+ (loop for x in '(a . b) collect x)
+ :type type-error)
+
+;;; did segfault previously
+(test-expect-error
+ issue-1239
+ (loop for x in (random 42)
+        do (format t "x = ~a~%" x))
+ :type type-error)
+
+(test-expect-error
+ issue-1239a
+ (loop for x in (make-hash-table)
+        do (format t "x = ~a~%" x))
+ :type type-error)

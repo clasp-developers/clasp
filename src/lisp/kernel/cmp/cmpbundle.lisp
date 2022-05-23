@@ -41,7 +41,7 @@
   (with-output-to-string (sout)
     (princ (car list-of-args) sout)
     (dolist (c (cdr list-of-args))
-      (bformat sout " %s" c))))
+      (core:fmt sout " {}" c))))
 
 (defvar *safe-system-echo* nil)
 (defvar *safe-system-max-retries* 4)
@@ -50,7 +50,7 @@
 
 (defun safe-system (cmd-list &key output-file-name)
   (if *safe-system-echo*
-      (bformat t "safe-system: %s%N" cmd-list))
+      (core:fmt t "safe-system: {}%N" cmd-list))
 
   (multiple-value-bind (retval error-message)
       (ext:vfork-execvp cmd-list)
@@ -67,7 +67,7 @@
                 (error "The file ~a was not created by shell command: ~a" output-file-name (as-shell-command cmd-list))
                 (progn
                   (if *safe-system-echo*
-                      (bformat t "safe-system: Retry count = %d of %d%N" n *safe-system-max-retries*))
+                      (core:fmt t "safe-system: Retry count = {} of {}%N" n *safe-system-max-retries*))
                   (core::sleep sleep-time)
                   (setq sleep-time (* 2 sleep-time)))))))))
 
@@ -158,16 +158,16 @@
                (clang-args (cond
                              ((member :target-os-darwin *features*)
                               (let* ((object-lto-pathname (make-pathname :type "o"
-                                                                         :name (sys:bformat nil "%s-lto" (pathname-name bundle-file))
+                                                                         :name (sys:fmt nil "{}-lto" (pathname-name bundle-file))
                                                                          :defaults bundle-file))
                                      (clang-args `( "-flto"
-                                                    ,(sys:bformat nil "-Wl,-object_path_lto,%s" (namestring object-lto-pathname))
+                                                    ,(sys:fmt nil "-Wl,-object_path_lto,{}" (namestring object-lto-pathname))
                                                     ,@options
                                                     ;; Disable the BranchFolding optimization that
                                                     ;; merges tails of branches as they join
                                                     ;; and was messing up debug source location info.
                                                     "-Wl,-mllvm,-enable-tail-merge=false"
-                                                    ,(core:bformat nil "-O%d" *optimization-level*)
+                                                    ,(core:fmt nil "-O{}" *optimization-level*)
                                                     ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
                                                     "-flat_namespace"
@@ -177,7 +177,7 @@
                                                     #+(or)"-Wl,-save-temps"
                                                     ,output-flag
 ;;;                        ,@link-flags
-;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
+;;;                        ,(core:fmt nil "-Wl,-object_path_lto,{}.lto.o" exec-file)
                                                     "-o"
                                                     ,temp-bundle-file)))
                                 clang-args))
@@ -187,7 +187,7 @@
                               ;; FreeBSD might
                               (let ((clang-args `(#+(or)"-v"
                                                     ,@options
-                                                    ,(core:bformat nil "-O%d" *optimization-level*) 
+                                                    ,(core:fmt nil "-O{}" *optimization-level*) 
                                                     ,@all-object-files
                                                     "-flto"
                                                     "-fuse-ld=gold"
@@ -240,11 +240,11 @@
     (cond
       ((member :target-os-darwin *features*)
        (ext:run-clang `(,@options
-                        ,(core:bformat nil "-O%d" *optimization-level*)
+                        ,(core:fmt nil "-O{}" *optimization-level*)
                         ,@all-names
                         #+(or)"-v"
                         ,@link-flags
-                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
+                        ,(core:fmt nil "-Wl,-object_path_lto,{}.lto.o" exec-file)
                         "-o"
                         ,exec-file)
                       :output-file-name exec-file))
@@ -253,7 +253,7 @@
        ;; Linux needs to use clang to link
        ;; FreeBSD might
        (ext:run-clang `(,@options
-                        ,(core:bformat nil "-O%d" *optimization-level*)
+                        ,(core:fmt nil "-O{}" *optimization-level*)
                         ,@all-names
                         ,@link-flags
                         "-o"
@@ -319,11 +319,11 @@ Return the **output-pathname**."
        (when (eq input-type :bitcode)
          (push (core:build-inline-bitcode-pathname link-type :builtins) input-files))
        (when (member :debug-run-clang *features*)
-         (bformat t "In llvm-link -> link-type :fasl input-files -> %s%N" input-files))
+         (core:fmt t "In llvm-link -> link-type :fasl input-files -> {}%N" input-files))
        (execute-link-fasl output-pathname input-files))
       ((eq link-type :object)
        (when (member :debug-run-clang *features*)
-         (bformat t "In llvm-link -> link-type :object input-files -> %s%N" input-files))
+         (core:fmt t "In llvm-link -> link-type :object input-files -> {}%N" input-files))
        (execute-link-object output-pathname input-files))
       ((eq link-type :bitcode)
        (link-bitcode-modules output-pathname input-files :clasp-build-mode :bitcode))
@@ -354,7 +354,7 @@ NOTE: On Linux it looks like we MUST link all of the bitcode files first into on
 This is to ensure that the RUN-ALL functions are evaluated in the correct order."
   ;; fixme cracauer - figure out what FreeBSD needs here
   (declare (ignore init-name))
-  ;;  (bformat t "cmpbundle.lisp:build-fasl  building fasl for %s from files: %s%N" out-file lisp-files)
+  ;;  (core:fmt t "cmpbundle.lisp:build-fasl  building fasl for {} from files: {}%N" out-file lisp-files)
   (with-compiler-timer (:message "build-fasl" :report-link-time t :verbose t)
     (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
                                  lisp-files))

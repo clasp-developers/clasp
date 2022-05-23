@@ -26,7 +26,7 @@
 ;;
 ;; Insert the compiler into the repl
 ;;
-;; Don't use FORMAT here use BFORMAT 
+;; Don't use FORMAT here use core:fmt
 ;; otherwise you will have problems when format.lisp is bootstrapped
 
 #+(or)
@@ -75,9 +75,9 @@
 (defun bclasp-implicit-compile-repl-form (form &optional environment)
   (declare (core:lambda-name cmp-repl-implicit-compile))
   (when *print-implicit-compile-form* 
-    (bformat t "Compiling form: %s%N" form)
-    (bformat t "*active-protection* --> %s%N" cmp::*active-protection*))
-  (let ((repl-name (intern (core:bformat nil "repl-form-%d" (core:next-number)) :core)))
+    (core:fmt t "Compiling form: {}%N" form)
+    (core:fmt t "*active-protection* --> {}%N" cmp::*active-protection*))
+  (let ((repl-name (intern (core:fmt nil "repl-form-{}" (core:next-number)) :core)))
     (funcall
      (core:with-memory-ramp (:pattern 'gctools:ramp)
        (compile-in-env `(lambda ()
@@ -104,12 +104,12 @@
 (eval-when (:execute)
   ;; Load the compiler and the file compiler in aclasp
   ;; lets see if that speeds up the compilation
-  (load "sys:kernel;cmp;compiler.lisp" :print t)
-  (load "sys:kernel;cmp;compilefile.lisp" :print t))
+  (load "sys:src;lisp;kernel;cmp;compiler.lisp" :print t)
+  (load "sys:src;lisp;kernel;cmp;compilefile.lisp" :print t))
 
 #+(or)
 (eval-when (:execute)
-  (bformat t "!%N!%N!\n! cmprepl.lisp has (setq cmp:*debug-dump-module* t)\n!\n!\n!  TURN IT OFF AGAIN\n!\n")
+  (core:fmt t "!%N!%N!\n! cmprepl.lisp has (setq cmp:*debug-dump-module* t)\n!\n!\n!  TURN IT OFF AGAIN\n!\n")
   (setq cmp:*debug-dump-module* t)
   )
 

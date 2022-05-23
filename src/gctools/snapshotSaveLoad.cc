@@ -639,7 +639,7 @@ void encodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
   } else if (gc::IsA<llvmo::Library_sp>(codebase)) {
     encodeEntryPointInLibrary(fixup,ptrptr);
   } else {
-    SIMPLE_ERROR(BF("The codebase must be a Code_sp or a Library_sp it is %s") % _rep_(codebase) );
+    SIMPLE_ERROR(("The codebase must be a Code_sp or a Library_sp it is %s") , _rep_(codebase) );
   }
 }
 
@@ -655,7 +655,7 @@ void decodeEntryPoint(Fixup* fixup, uintptr_t* ptrptr, core::T_sp codebase) {
     llvmo::Library_sp library = gc::As_unsafe<llvmo::Library_sp>(codebase);
     decodeEntryPointInLibrary(fixup,ptrptr);
   } else {
-    SIMPLE_ERROR(BF("The codebase must be a Code_sp or a Library_sp it is %s") % _rep_(codebase) );
+    SIMPLE_ERROR(("The codebase must be a Code_sp or a Library_sp it is %s") , _rep_(codebase) );
   }
 }
 
@@ -1268,14 +1268,14 @@ ISLHeader_s* ISLHeader_s::next(ISLKind k) const {
   } else if (k==Weak) {
     headerSize = sizeof(ISLWeakHeader_s);
   } else {
-    SIMPLE_ERROR(BF("Add support to calculate size of ISLKind %d") % k );
+    SIMPLE_ERROR(("Add support to calculate size of ISLKind %d") , k );
   }
   return (ISLHeader_s*)((char*)this + headerSize + this->_Size);
 }
 
 
 #define ISL_ERROR(_fmt_) { \
-    printf("%s:%d:%s  %s\n", __FILE__, __LINE__, __FUNCTION__, (_fmt_).str().c_str()); \
+    printf("%s:%d:%s  %s\n", __FILE__, __LINE__, __FUNCTION__, (_fmt_).c_str()); \
     abort(); \
   }
 
@@ -1487,19 +1487,10 @@ struct copy_objects_t : public walker_callback_t {
                );
         size_t generalSize;
         gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart,false,generalSize);
-        if (generalSize==0) ISL_ERROR(BF("A zero size general at %p was encountered") % (void*)clientStart );
-
-//      printf("%s:%d:%s !!!!!!!!! REALLY DANGEROUS CODE - I AM NOT CALCULATING THE SIZE OF ObjectFile_O objects as I SHOULD BE\n", __FILE__, __LINE__, __FUNCTION__ );
-        //
-        // Calculate the size of a ObjectFile_O object keeping only the literals vector
-        //
+        if (generalSize==0) ISL_ERROR(fmt::sprintf("A zero size general at %p was encountered", (void*)clientStart ));
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)clientStart;
-
-        //
-        // Generate the new ObjectFile in the buffer
-        //
         ISLGeneralHeader_s islheader( General, code->frontSize()+code->literalsSize(), header );
-        char* islh = this->_objects->write_buffer( (char*)&islheader, sizeof(ISLGeneralHeader_s));
+        char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLGeneralHeader_s)); 
         char* new_client = this->_objects->write_buffer((char*)clientStart, code->frontSize() );
         llvmo::ObjectFile_O* newObjectFile = (llvmo::ObjectFile_O*)new_client;
         DBG_OF(
@@ -1546,7 +1537,7 @@ struct copy_objects_t : public walker_callback_t {
       //
         size_t generalSize;
         gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart,false,generalSize);
-        if (generalSize==0) ISL_ERROR(BF("A zero size general at %p was encountered") % (void*)clientStart );
+        if (generalSize==0) ISL_ERROR(fmt::sprintf("A zero size general at %p was encountered", (void*)clientStart ));
         gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
         ISLGeneralHeader_s islheader( General, clientEnd-clientStart, header );
         char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLGeneralHeader_s)); 
@@ -1560,7 +1551,7 @@ struct copy_objects_t : public walker_callback_t {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
       size_t consSize;
       isl_cons_skip(client,consSize);
-      if (consSize==0) ISL_ERROR(BF("A zero size cons at %p was encountered") % (void*)client );
+      if (consSize==0) ISL_ERROR(fmt::sprintf("A zero size cons at %p was encountered" , (void*)client ));
       ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O), header->_stamp_wtag_mtag );
       char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLConsHeader_s));
       char* new_addr = this->_objects->write_buffer((char*)client, consSize);
@@ -1575,7 +1566,7 @@ struct copy_objects_t : public walker_callback_t {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       size_t weakSize;
       gctools::clasp_ptr_t dummyNextClient = isl_weak_skip(clientStart,false,weakSize);
-      if (weakSize==0) ISL_ERROR(BF("A zero size weak object at %p was encountered") % (void*)clientStart );
+      if (weakSize==0) ISL_ERROR(fmt::sprintf("A zero size weak object at %p was encountered" , (void*)clientStart ));
       gctools::clasp_ptr_t clientEnd = clientStart + weakSize;
       ISLWeakHeader_s islheader( Weak, clientEnd-clientStart, header );
       char* islh = this->_objects->write_buffer( (char*)&islheader , sizeof(ISLWeakHeader_s)); 
@@ -1713,7 +1704,7 @@ struct fixup_vtables_t : public walker_callback_t {
     } else {
       new_vtable = decodeVtable( this->_fixup, (uintptr_t*)client, (uintptr_t)this->_vtableRegionStart );
       if (new_vtable < this->_vtableRegionStart || this->_vtableRegionEnd <= new_vtable)
-        ISL_ERROR(BF("new_vtable %lu is outside of the allowed range %p - %p") % (void*)new_vtable % (void*)this->_vtableRegionStart % (void*)this->_vtableRegionEnd );
+        ISL_ERROR(fmt::sprintf("new_vtable %lu is outside of the allowed range %p - %p" , (void*)new_vtable , (void*)this->_vtableRegionStart , (void*)this->_vtableRegionEnd ));
       *(uintptr_t*)client = new_vtable;
     }
   }
@@ -2107,10 +2098,10 @@ CL_DEFUN size_t gctools__memory_test(core::T_sp filename)
       std::string fname = sfilename->get_std_string();
       fout = fopen(fname.c_str(),"w");
       if (!fout) {
-        SIMPLE_ERROR(BF("Could not open %s") % fname);
+        SIMPLE_ERROR(("Could not open %s") , fname);
       }
     } else {
-      SIMPLE_ERROR(BF("filename must be a string"));
+      SIMPLE_ERROR(("filename must be a string"));
     }
   }
   //
@@ -2235,16 +2226,15 @@ void* snapshot_save_impl(void* data) {
   prepare_for_snapshot_save_t prepare(&islInfo);
   walk_gathered_objects( prepare, allObjects );
 #endif
-  
-  DBG_SL(BF("4 Sum size of all objects\n"));
+  DBG_SLS(BF("4. Sum size of all objects\n"));
   calculate_size_t calc_size(&islInfo);
   walk_gathered_objects( calc_size, allObjects );
-  printf("%s", (BF("   size = %lu\n") % calc_size._TotalSize).str().c_str());
-  printf("%s", (BF("   general_count = %lu\n") % calc_size._general_count ).str().c_str());
-  printf("%s", (BF("   cons_count = %lu\n") % calc_size._cons_count ).str().c_str());
-  printf("%s", (BF("   weak_count = %lu\n") % calc_size._weak_count ).str().c_str());
-  printf("%s", (BF("   ObjectFileCount = %lu\n") % calc_size._ObjectFileCount ).str().c_str());
-  printf("%s", (BF("   CodeCount = %lu\n") % calc_size._CodeCount ).str().c_str());
+  fmt::printf("   size = %lu\n", calc_size._TotalSize);
+  fmt::printf("   general_count = %lu\n" , calc_size._general_count );
+  fmt::printf("   cons_count = %lu\n" , calc_size._cons_count );
+  fmt::printf("   weak_count = %lu\n" , calc_size._weak_count );
+  fmt::printf("   ObjectFileCount = %lu\n" , calc_size._ObjectFileCount );
+  fmt::printf("   CodeCount = %lu\n" , calc_size._CodeCount );
 
   //
   // 2. Allocate that amount of memory + space for roots -> intermediate-buffer
@@ -2532,7 +2522,7 @@ void snapshot_save(core::SaveLispAndDie& data) {
   //
   gctools::gctools__garbage_collect();
   gctools::gctools__garbage_collect();
-  gctools::cl__room(nil<core::T_O>());
+  gctools::cl__room(nil<core::Symbol_O>());
   //
   // Test the memory before we do snapshot_save
   //
@@ -2704,7 +2694,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       memory = mmap(NULL, fsize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FILE, fd, 0);
       if (memory==MAP_FAILED) {
         close(fd);
-        SIMPLE_ERROR(BF("Could not mmap %s because of %s") % filename % strerror(errno));
+        SIMPLE_ERROR(("Could not mmap %s because of %s") , filename , strerror(errno));
       }
     } else if (maybeStartOfSnapshot && maybeEndOfSnapshot && (maybeStartOfSnapshot<maybeEndOfSnapshot)) {
       size_t size = (uintptr_t)maybeEndOfSnapshot - (uintptr_t)maybeStartOfSnapshot;
@@ -3529,7 +3519,7 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
 //  printf("%s:%d:%s munmap'ing loaded snapshot - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
     if (maybeStartOfSnapshot==NULL) {
       int res = munmap( memory, fsize );
-      if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
+      if (res!=0) SIMPLE_ERROR("Could not munmap memory");
     } else {
     // It's a copy of the embedded snapshot
       free(memory);
@@ -3573,11 +3563,11 @@ int snapshot_load( void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       core::T_sp fn = ext::_sym_STARsnapshot_save_load_startupSTAR->symbolValue();
       core::eval::funcall(fn);
     } else {
-      _lisp->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
-      _lisp->print(BF("ext:*snapshot-save-load-startup* is nil so dropping into a simple repl\n"));
-      _lisp->print(BF("Low level repl\n"));
+      core::write_bf_stream(fmt::sprintf("Clasp (copyright Christian E. Schafmeister 2014)\n"));
+      core::write_bf_stream(fmt::sprintf("ext:*snapshot-save-load-startup* is nil so dropping into a simple repl\n"));
+      core::write_bf_stream(fmt::sprintf("Low level repl\n"));
       _lisp->readEvalPrintInteractive();
-      _lisp->print(BF("\n"));
+      core::write_bf_stream(fmt::sprintf("\n"));
     }
   } catch (core::ExitProgramException &ee) {
     exitCode = ee.getExitResult();

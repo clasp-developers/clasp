@@ -8,6 +8,7 @@
 
 #ifndef code_H //[
 #define code_H
+#include <unistd.h>
 #include <clasp/core/common.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <llvm/ExecutionEngine/JITLink/JITLinkMemoryManager.h>
@@ -414,7 +415,7 @@ inline void allocateInCodeBlock( BasicLayout& BL, CodeBlock_sp& codeBlock ) {
     _lisp->_Roots._AllCodeBlocks.store(core::Cons_O::createAtStage<Stage>(codeBlock,_lisp->_Roots._AllCodeBlocks.load()));
     fits = codeBlock->calculate(BL);
     if (!fits) {
-      SIMPLE_ERROR(BF("Could not allocate enough space for code %lu") % size );
+      SIMPLE_ERROR("Could not allocate enough space for code %lu", size );
     }
   }
   //

@@ -4,4 +4,4 @@ export CLASP_HOME=${PWD%}
 
 echo CLASP_HOME = $CLASP_HOME
 
-/opt/clasp/bin/lldb -p `cat /tmp/clasp_pid_$USER`
+lldb -p `cat /tmp/clasp_pid_$USER`

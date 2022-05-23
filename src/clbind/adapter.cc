@@ -38,5 +38,5 @@ size_t len(core::T_sp object) {
   if (gc::IsA<core::SimpleVector_sp>(object)) {
     return core::cl__length(object);
   }
-  SIMPLE_ERROR(BF("Add support to adaptor.cc::len for object of type %s") % _rep_(object));
+  SIMPLE_ERROR(("Add support to adaptor.cc::len for object of type %s") , _rep_(object));
 }

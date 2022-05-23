@@ -228,7 +228,7 @@ CL_DEFUN T_mv core__startup_source() {
     kind = kw::_sym_snapshot_memory;
     simpleSource = "snapshot";
   } else {
-    SIMPLE_ERROR(BF("Illegal global_startupEnum value %d") % global_startupEnum );
+    SIMPLE_ERROR("Illegal global_startupEnum value %d", global_startupEnum );
   }
   SimpleBaseString_sp source = SimpleBaseString_O::make(global_startupSourceName);
   SimpleBaseString_sp simpleSourceT = SimpleBaseString_O::make(simpleSource);
@@ -334,7 +334,7 @@ CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
     T_sp value((gctools::Tagged)val);
     return value;
   }
-  SIMPLE_ERROR(BF("Value must fit in fixnum"));
+  SIMPLE_ERROR(("Value must fit in fixnum"));
 }
 
 CL_LAMBDA()
@@ -417,7 +417,7 @@ CL_DOCSTRING(R"dx(set)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   if (sym->getReadOnly())
-    SIMPLE_ERROR(BF("Cannot modify value of constant %s") % _rep_(sym));
+    SIMPLE_ERROR(("Cannot modify value of constant %s") , _rep_(sym));
   sym->setf_symbolValue(val);
   return val;
 };
@@ -478,7 +478,7 @@ CL_DEFUN gctools::Fixnum core__from_tagged_fixnum(T_sp val) {
   if (val.fixnump()) {
     return val.unsafe_fixnum();
   }
-  SIMPLE_ERROR(BF("Not a fixnum"));
+  SIMPLE_ERROR(("Not a fixnum"));
 };
 
 CL_LAMBDA(arg)
@@ -514,7 +514,7 @@ CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
   } else if (obj.consp()) {
     obj.unsafe_cons()->describe(stream);
   }
-  SIMPLE_ERROR(BF("Use the CL facilities to describe this object"));
+  SIMPLE_ERROR(("Use the CL facilities to describe this object"));
 };
 
 CL_LAMBDA(arg)
@@ -563,7 +563,7 @@ CL_DEFUN T_mv cl__values(Vaslist_sp vargs) {
   SUPPRESS_GC();
 #ifdef DEBUG_VALUES
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
-    SIMPLE_ERROR(BF("Too many arguments to values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % nargs );
+    SIMPLE_ERROR(("Too many arguments to values - only %d are supported and you tried to return %d values") , core::MultipleValues::MultipleValuesLimit , nargs );
   }
   if (_sym_STARdebug_valuesSTAR &&
       _sym_STARdebug_valuesSTAR->boundP() &&
@@ -636,7 +636,7 @@ CL_DEFUN Symbol_sp core__function_block_name(T_sp functionName) {
   bool correct;
   Symbol_sp output = functionBlockName(functionName, &correct);
   if (!correct) {
-    SIMPLE_ERROR(BF("Invalid function name: %s") % _rep_(functionName));
+    SIMPLE_ERROR(("Invalid function name: %s") , _rep_(functionName));
   }
   return output;
 }
@@ -673,10 +673,10 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
         firsts << oCar(pair);
         seconds << oCadr(pair);
       } else {
-        SIMPLE_ERROR(BF("Expected one or two element list got: %s") % _rep_(pair));
+        SIMPLE_ERROR(("Expected one or two element list got: %s") , _rep_(pair));
       }
     } else {
-      SIMPLE_ERROR(BF("Expected single object or 2-element list - got: %s") % _rep_(element));
+      SIMPLE_ERROR(("Expected single object or 2-element list - got: %s") , _rep_(element));
     }
   }
   T_sp tfirsts = firsts.cons();
@@ -860,7 +860,7 @@ CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
       if (clasp_zerop (integer))
         return integer;
         // result will not fit in memory, giveup
-      else SIMPLE_ERROR(BF("ash for bignum count not implemented"));
+      else SIMPLE_ERROR(("ash for bignum count not implemented"));
     } else if (clasp_minusp (count)) {
         // Count is a negative bignum, so all digits are gone.
       if (clasp_minusp(integer))
@@ -1165,7 +1165,7 @@ CL_DEFUN List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_des
 	// I think it is safe to ignore recursive_p
   if ( recursive_p.isTrue() )
   {
-    SIMPLE_ERROR(BF("Currently I don't handle recursive-p[true] for read_delimited_list"));
+    SIMPLE_ERROR(("Currently I don't handle recursive-p[true] for read_delimited_list"));
   }
 #endif
   List_sp result = read_list(sin, clasp_as_claspCharacter(chr), true);
@@ -1271,6 +1271,7 @@ bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, b
 
 CL_LAMBDA(predicate &rest sequences)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS for every)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__every_list(T_sp predicate, List_sp sequences) {
@@ -1282,6 +1283,7 @@ CL_DEFUN T_sp core__every_list(T_sp predicate, List_sp sequences) {
 
 CL_LAMBDA(predicate &rest sequences)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS for some)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__some_list(T_sp predicate, List_sp sequences) {
@@ -1295,6 +1297,7 @@ CL_DEFUN T_sp core__some_list(T_sp predicate, List_sp sequences) {
 
 CL_LAMBDA(predicate &rest sequences)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS for notany)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp core__notany_list(T_sp predicate, List_sp sequences) {
@@ -1312,6 +1315,7 @@ SYMBOL_EXPORT_SC_(ClPkg, mapcar);
 
 CL_LAMBDA(func-desig &rest lists)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS for mapcar)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
@@ -1346,6 +1350,7 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
 */
 CL_LAMBDA(op &rest lists)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS mapc)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
@@ -1377,6 +1382,7 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
 
 CL_LAMBDA(func-desig &rest lists)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS maplist)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
@@ -1407,6 +1413,7 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
 
 CL_LAMBDA(op &rest lists)
 CL_DECLARE();
+CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(See CLHS maplist)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
@@ -1470,7 +1477,7 @@ CL_DOCSTRING(R"dx(append as in clhs)dx")
 DOCGROUP(clasp)
 CL_DEFUN T_sp cl__append(Vaslist_sp args) {
   ql::list list;
-  LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
+  LOG("Carrying out append with arguments: %s" , _rep_(lists));
   size_t lenArgs = args->total_nargs();
   unlikely_if (lenArgs==0) return nil<T_O>();
   T_O* lastArg = (*args)[lenArgs-1];
@@ -1614,7 +1621,7 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
       return (Values(cl::_sym_Readtable_O));
     return Values(gx->__class()->_className());
   }
-  SIMPLE_ERROR(BF("Add core__type_to_symbol support for type: %s") % cl__class_of(x)->_classNameAsString());
+  SIMPLE_ERROR(("Add core__type_to_symbol support for type: %s") , cl__class_of(x)->_classNameAsString());
 #pragma clang diagnostic pop
 }
 
@@ -1864,7 +1871,7 @@ CL_DEFUN SimpleVector_byte8_t_sp core__base_string_to_octets(T_sp tarray)
     SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end-start),0,false,(end-start),&(*sbs)[start]);
     return result;
   }
-  SIMPLE_ERROR(BF("Don't get here"));
+  SIMPLE_ERROR(("Don't get here"));
 }
 
 DOCGROUP(clasp)
@@ -1891,9 +1898,15 @@ CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string
     }
     return result;
   }
-  SIMPLE_ERROR(BF("Handle Don't get here"));
+  SIMPLE_ERROR(("Handle Don't get here"));
 }
 
+
+
+CL_DEFUN void core__test_write_stream()
+{
+  write_bf_stream(fmt::sprintf("This is a test %d %d", 1, 2, T_sp() ));
+}
 
 CL_LAMBDA(filename &optional (max-lines 0))
 CL_DOCSTRING(R"dx(Count number of lines in text file up to max-lines if max-lines is not 0)dx")
@@ -1937,7 +1950,7 @@ CL_DEFUN T_mv core__countLinesInFile(const std::string& filename, size_t maxLine
     }
     return Values(make_fixnum(numberOfLines),make_fixnum(currentFilePos),make_fixnum(sizeOfFile));
   }
-  SIMPLE_ERROR(BF("Could not open file %s") % filename);
+  SIMPLE_ERROR(("Could not open file %s") , filename);
 }
 };
 
@@ -2133,6 +2146,13 @@ void crc32(const void *data, size_t n_bytes, uint32_t* crc) {
 
 
 namespace core {
+
+CL_DEFUN void core__withStackCons(T_sp car, T_sp cdr, T_sp fn) {
+  gc::StackAllocate<Cons_O> cons(car,cdr);
+  printf("%s:%d:%s The cons size is %lu\n", __FILE__, __LINE__, __FUNCTION__, sizeof(cons));
+  printf("%s:%d:%s The ConsSizeCalculator<Cons_O> size is %lu\n", __FILE__, __LINE__, __FUNCTION__, gctools::ConsSizeCalculator<gctools::RuntimeStage,Cons_O>::value());
+  eval::funcall(fn,cons.asSmartPtr());
+}
 
 DOCGROUP(clasp)
 CL_DEFUN core::Test_sp core__makeTest() {

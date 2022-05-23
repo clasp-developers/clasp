@@ -24,20 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
 #ifndef Class_H
 #define Class_H
 
 #include <list>
-#pragma clang diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-//#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#include <boost/iterator_adaptors.hpp>
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/topological_sort.hpp>
-#pragma clang diagnostic pop
 #include <clasp/core/array.h>
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/numbers.fwd.h>
@@ -92,9 +83,6 @@ namespace core {
 /*!Return true if low is a subclass of high */
 bool core__subclassp(T_sp low, T_sp high);
 
-/*! Return true if the object is of the class _class */
-bool af_ofClassP(T_sp object, T_sp _class);
-
-
 };
 #endif
+

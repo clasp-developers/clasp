@@ -172,7 +172,7 @@ CL_DEFUN void llvm_sys__debugObjectFiles(core::Symbol_sp sym) {
   } else if (sym==llvmo::_sym_debugObjectFilesPrintSave) {
     globalDebugObjectFiles = DebugObjectFilesPrintSave;
   } else {
-    SIMPLE_ERROR(BF("Argument must be one of %s in the llvm-sys package") % _rep_(core::Cons_O::createList(llvmo::_sym_debugObjectFilesOff,llvmo::_sym_debugObjectFilesPrint,llvmo::_sym_debugObjectFilesPrintSave)));
+    SIMPLE_ERROR(("Argument must be one of %s in the llvm-sys package") , _rep_(core::Cons_O::createList(llvmo::_sym_debugObjectFilesOff,llvmo::_sym_debugObjectFilesPrint,llvmo::_sym_debugObjectFilesPrintSave)));
   }
 }
 
@@ -213,7 +213,7 @@ llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream,llvm::SmallString<1024>& 
     core::Symbol_sp sym = sstr->_SynonymSymbol;
     return llvm_stream(sym->symbolValue(),stringOutput,stringOutputStream);
   } else {
-    SIMPLE_ERROR(BF("Illegal file type %s for llvm_stream") % _rep_(stream));
+    SIMPLE_ERROR(("Illegal file type %s for llvm_stream") , _rep_(stream));
   }
   return ostreamP;
 }
@@ -569,7 +569,7 @@ CL_DEFUN TargetPassConfig_sp llvm_sys__createPassConfig(TargetMachine_sp targetM
   llvm::TargetMachine* tm = targetMachine->wrappedPtr();
   llvm::LLVMTargetMachine* ltm = dynamic_cast<llvm::LLVMTargetMachine*>(tm);
   if (ltm==NULL) {
-    SIMPLE_ERROR(BF("Could not get LLVMTargetMachine"));
+    SIMPLE_ERROR(("Could not get LLVMTargetMachine"));
   }
   llvm::TargetPassConfig* tpc = ltm->createPassConfig(*pmb->wrappedPtr());
   TargetPassConfig_sp tpcsp = gc::As_unsafe<TargetPassConfig_sp>(translate::to_object<llvm::TargetPassConfig*>::convert(tpc));
@@ -607,7 +607,7 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
                                                                               llvm::CodeGenFileType FileType,
                                                                               Module_sp module) {
   if (stream.nilp()) {
-    SIMPLE_ERROR(BF("You must pass a valid stream"));
+    SIMPLE_ERROR(("You must pass a valid stream"));
   }
   Safe_raw_pwrite_stream ostream;
   llvm::SmallString<1024> stringOutput;
@@ -624,7 +624,7 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
     FILE *f = iostr->file();
     ostream.set_stream(new llvm::raw_fd_ostream(fileno(f), false, true));
   } else {
-    SIMPLE_ERROR(BF("Illegal file type %s for addPassesToEmitFileAndRunPassManager") % _rep_(stream));
+    SIMPLE_ERROR(("Illegal file type %s for addPassesToEmitFileAndRunPassManager") , _rep_(stream));
   }
   llvm::SmallString<1024> dwo_stringOutput;
   Safe_raw_pwrite_stream dwo_ostream;
@@ -641,10 +641,10 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
   } else if (dwo_stream.nilp()) {
     // nothing
   } else {
-    SIMPLE_ERROR(BF("Illegal file type %s for addPassesToEmitFileAndRunPassManager") % _rep_(dwo_stream));
+    SIMPLE_ERROR(("Illegal file type %s for addPassesToEmitFileAndRunPassManager") , _rep_(dwo_stream));
   }
   if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), *ostream.get_stream(), dwo_ostream.get_stream(), FileType, true, nullptr)) {
-    SIMPLE_ERROR(BF("Could not generate file type"));
+    SIMPLE_ERROR(("Could not generate file type"));
   }
   passManager->wrappedPtr()->run(*module->wrappedPtr());
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
@@ -653,7 +653,7 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
     SYMBOL_EXPORT_SC_(KeywordPkg,simple_vector_byte8);
     core::SimpleVector_byte8_t_sp vector_byte8 = core::SimpleVector_byte8_t_O::make(stringOutput.size(),0,false,stringOutput.size(),(const unsigned char*)stringOutput.data());
     if (dwo_stream.notnilp()) {
-      SIMPLE_ERROR(BF("dwo_stream must be nil"));
+      SIMPLE_ERROR(("dwo_stream must be nil"));
     }
     return vector_byte8;
   }
@@ -1100,7 +1100,7 @@ CL_DEFUN void llvm_sys__writeIrToFile(Module_sp module, core::String_sp path) {
   string pathName = path->get_std_string();
   llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::OF_None);
   if (errcode) {
-    SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % errcode.message());
+    SIMPLE_ERROR(("Could not write bitcode to %s - problem: %s") , pathName , errcode.message());
   }
   llvm::AssemblyAnnotationWriter *aaw = new llvm::AssemblyAnnotationWriter();
   module->wrappedPtr()->print(OS, aaw);
@@ -1114,7 +1114,7 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
   std::error_code errcode;
   llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::OF_None);
   if (errcode) {
-    SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message());
+    SIMPLE_ERROR(("Could not write bitcode to file[%s] - error: %s") , pn , errcode.message());
   }
   if (useThinLTO) {
     llvm::ProfileSummaryInfo PSI(*module->wrappedPtr());
@@ -1125,14 +1125,13 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
   }
 };
 
-
+#if 0
 DOCGROUP(clasp)
-CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp context) {
-  if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
-  core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
-  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(spathname->get_std_string());
+CL_DEFUN Module_sp llvm_sys__parseIRString(core::T_sp llvm_ir_string, LLVMContext_sp context) {
+  core::String_sp source = gc::As<core::String_sp>(llvm_ir_string);
+  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getMemBufferCopy(source->get_std_string());
   if (std::error_code ec = eo_membuf.getError()) {
-    SIMPLE_ERROR(BF("Could not read the file %s - error: %s") % spathname->get_std_string() % ec.message());
+    SIMPLE_ERROR(("Could not read the string %s - error: %s") , source->get_std_string() , ec.message());
   }
   llvm::SMDiagnostic smd;
   std::unique_ptr<llvm::Module> module =
@@ -1140,7 +1139,29 @@ CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp co
   llvm::Module* m = module.release();
   if (!m) {
     std::string message = smd.getMessage().str();
-    SIMPLE_ERROR(BF("Could not load llvm-ir for file %s - error: %s") % spathname->get_std_string() % message );
+    SIMPLE_ERROR(("Could not load llvm-ir from string %s - error: %s") , source->get_std_string() , message );
+  }
+  Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
+  return omodule;
+};
+
+#endif
+DOCGROUP(clasp)
+
+CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp context) {
+  if (tfilename.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
+  core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
+  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(spathname->get_std_string());
+  if (std::error_code ec = eo_membuf.getError()) {
+    SIMPLE_ERROR(("Could not read the file %s - error: %s") , spathname->get_std_string() , ec.message());
+  }
+  llvm::SMDiagnostic smd;
+  std::unique_ptr<llvm::Module> module =
+    llvm::parseIR(eo_membuf.get()->getMemBufferRef(), smd, *(context->wrappedPtr()));
+  llvm::Module* m = module.release();
+  if (!m) {
+    std::string message = smd.getMessage().str();
+    SIMPLE_ERROR(("Could not load llvm-ir for file %s - error: %s") , spathname->get_std_string() , message );
   }
   Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
   return omodule;
@@ -1150,7 +1171,7 @@ DOCGROUP(clasp)
 CL_DEFUN Module_sp llvm_sys__parseIRString(const std::string& llCode, LLVMContext_sp context, const std::string& bufferName ) {
   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getMemBuffer(llCode, bufferName );
   if (std::error_code ec = eo_membuf.getError()) {
-    SIMPLE_ERROR(BF("Could not construct a memory buffer for the string %s error: %s") % llCode % ec.message());
+    SIMPLE_ERROR("Could not construct a memory buffer for the string %s error: %s", llCode , ec.message());
   }
   llvm::SMDiagnostic smd;
   std::unique_ptr<llvm::Module> module =
@@ -1158,7 +1179,7 @@ CL_DEFUN Module_sp llvm_sys__parseIRString(const std::string& llCode, LLVMContex
   llvm::Module* m = module.release();
   if (!m) {
     std::string message = smd.getMessage().str();
-    SIMPLE_ERROR(BF("Could not load llvm-ir for string %s - error: %s") % llCode % message );
+    SIMPLE_ERROR("Could not load llvm-ir for string %s - error: %s" , llCode , message );
   }
   Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
   return omodule;
@@ -1167,18 +1188,18 @@ CL_DEFUN Module_sp llvm_sys__parseIRString(const std::string& llCode, LLVMContex
 CL_LAMBDA("filename context")
 DOCGROUP(clasp)
 CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::T_sp tfilename, LLVMContext_sp context) {
-  if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
+  if (tfilename.nilp()) SIMPLE_ERROR(("%s was about to pass nil to pathname") , __FUNCTION__);
   core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(spathname->get_std_string());
   if (std::error_code ec = eo_membuf.getError()) {
-    SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % spathname->get_std_string() % ec.message());
+    SIMPLE_ERROR(("Could not load bitcode for file %s - error: %s") , spathname->get_std_string() , ec.message());
   }
   llvm::Expected<std::unique_ptr<llvm::Module>> eom =
     llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
   if (!eom)
-    SIMPLE_ERROR(BF("Could not parse bitcode for file %s - there was an error\n%s")
-                 % spathname->get_std_string()
-                 % llvm::toString(std::move(eom.takeError())));
+    SIMPLE_ERROR(("Could not parse bitcode for file %s - there was an error\n%s")
+                 , spathname->get_std_string()
+                 , llvm::toString(std::move(eom.takeError())));
   Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>((*eom).release());
   return omodule;
 };
@@ -1342,7 +1363,7 @@ CL_DEFUN bool llvm_sys__valid(core::T_sp value) {
   else if (Value_sp val = gc::As<Value_sp>(value)) {
     return val->valid();
   }
-  SIMPLE_ERROR(BF("Illegal argument for VALID: %s") % _rep_(value));
+  SIMPLE_ERROR(("Illegal argument for VALID: %s") , _rep_(value));
 }
 };
 
@@ -1544,7 +1565,7 @@ CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(
   }
   if (gc::As<core::String_sp>(oCar(it))->get_std_string() != value)
   {
-    SIMPLE_ERROR(BF("You tried to getOrCreateUniquedStringGlobalVariable with name[%s] and value[%s] - there was already a StringGlobalVariable with that name but it has a different value!!!! value[%s]") % name % value % gc::As<core::String_sp>(oCar(it))->get_std_string());
+    SIMPLE_ERROR(("You tried to getOrCreateUniquedStringGlobalVariable with name[%s] and value[%s] - there was already a StringGlobalVariable with that name but it has a different value!!!! value[%s]") , name , value , gc::As<core::String_sp>(oCar(it))->get_std_string());
   }
   return gc::As<GlobalVariable_sp>(oCdr(it)); // it->second._LlvmValue;
 }
@@ -1585,7 +1606,7 @@ void ExecutionEngine_O::addNamedModule(const string &name, Module_sp module) {
   core::SimpleBaseString_sp key = core::SimpleBaseString_O::make(name);
   if (this->_DependentModules->contains(key)) {
     //	if ( this->_DependentModules.count(name) != 0 )
-    SIMPLE_ERROR(BF("A module named %s is already in this ExecutionEngine - remove it first before adding another") % name);
+    SIMPLE_ERROR(("A module named %s is already in this ExecutionEngine - remove it first before adding another") , name);
   }
   this->_DependentModules->setf_gethash(key, module);
   //	this->_DependentModules[name] = module;
@@ -1607,7 +1628,7 @@ void ExecutionEngine_O::removeNamedModule(const string &name) {
   //	core::StringMap<Module_O>::iterator mi = this->_DependentModules.find(name);
   if (mi.valueGet_(1).nilp()) // == this->_DependentModules.end() )
   {
-    SIMPLE_ERROR(BF("Could not find named module %s") % name);
+    SIMPLE_ERROR(("Could not find named module %s") , name);
   }
   Module_sp mod = gc::As<Module_sp>(mi);
   this->wrappedPtr()->clearGlobalMappingsFromModule(mod->wrappedPtr());
@@ -1801,7 +1822,7 @@ CL_DEFMETHOD void EngineBuilder_O::setEngineKind(core::Symbol_sp kind) {
     ss << "Engine kind can only be ";
     ss << _sym_interpreter->fullName() << " or ";
     ss << _sym_jit->fullName() << " - you gave: " << kind->fullName();
-    SIMPLE_ERROR(BF("%s") % ss.str());
+    SIMPLE_ERROR(("%s") , ss.str());
   }
 }
 
@@ -1821,7 +1842,7 @@ CL_DEFMETHOD ExecutionEngine_sp EngineBuilder_O::createExecutionEngine() {
   llvm::ExecutionEngine *ee = this->wrappedPtr()->create();
   ExecutionEngine_sp eeo = core::RP_Create_wrapped<ExecutionEngine_O, llvm::ExecutionEngine *>(ee);
   if (!eeo) {
-    SIMPLE_ERROR(BF("Could not create the execution-engine - got NULL"));
+    SIMPLE_ERROR(("Could not create the execution-engine - got NULL"));
   }
   return eeo;
 }
@@ -1949,7 +1970,7 @@ DOCGROUP(clasp)
 CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList) {
   auto  res = gctools::GC<Constant_O>::allocate_with_default_constructor();
   if (element_type==NULL) {
-    SIMPLE_ERROR(BF("You must provide a type for ConstantExpr_O::getInBoundsGetElementPtr"));
+    SIMPLE_ERROR(("You must provide a type for ConstantExpr_O::getInBoundsGetElementPtr"));
   }
   vector<llvm::Constant *> vector_IdxList;
   for (auto cur : idxList) {
@@ -2219,7 +2240,7 @@ CL_DEFMETHOD void AllocaInst_O::setAlignment(core::T_sp align) {
     this->wrappedPtr()->setAlignment(a);
     return;
   }
-  SIMPLE_ERROR(BF("%s is an invalid argument for setAlignment") % _rep_(align) );
+  SIMPLE_ERROR(("%s is an invalid argument for setAlignment") , _rep_(align) );
 }
 
 
@@ -2263,7 +2284,7 @@ CL_DEFMETHOD void StoreInst_O::setAlignment(core::T_sp align) {
     this->wrappedPtr()->setAlignment(a);
     return;
   }
-  SIMPLE_ERROR(BF("%s is an invalid argument for setAlignment") % _rep_(align) );
+  SIMPLE_ERROR(("%s is an invalid argument for setAlignment") , _rep_(align) );
 }
 CL_LISPIFY_NAME(set_atomic);
 CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAtomic);
@@ -2279,7 +2300,7 @@ CL_DEFMETHOD void LoadInst_O::setAlignment(core::T_sp align) {
     this->wrappedPtr()->setAlignment(a);
     return;
   }
-  SIMPLE_ERROR(BF("%s is an invalid argument for setAlignment") % _rep_(align) );
+  SIMPLE_ERROR(("%s is an invalid argument for setAlignment") , _rep_(align) );
 }
 
 
@@ -2455,7 +2476,7 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
   if (value.fixnump()) {
     Fixnum fixnum_value = value.unsafe_fixnum();
     if (!sign && fixnum_value < 0) {
-      SIMPLE_ERROR(BF("You tried to create an unsigned APInt32 with the negative value: %d") % fixnum_value);
+      SIMPLE_ERROR(("You tried to create an unsigned APInt32 with the negative value: %d") , fixnum_value);
     }
     apint = llvm::APInt(width, fixnum_value, sign);
     numbits = gc::fixnum_bits;
@@ -3711,7 +3732,7 @@ CL_DEFUN bool indexValid(Type_sp type, unsigned idx) {
   if (st)
     return st->indexValid(idx);
   else
-    SIMPLE_ERROR(BF("Could not cast %s to struct type") % _rep_(type));
+    SIMPLE_ERROR(("Could not cast %s to struct type") , _rep_(type));
 }
 
 ;
@@ -3734,7 +3755,7 @@ CL_DEFUN ArrayType_sp ArrayType_O::get(Type_sp elementType, uint64_t numElements
 CL_DEFUN size_t llvm_sys__getNumElements(Type_sp ty) {
   llvm::ArrayType* array = dyn_cast<llvm::ArrayType>(ty->wrappedPtr());
   if (!array) {
-    SIMPLE_ERROR(BF("Could not cast %s to array") % _rep_(ty));
+    SIMPLE_ERROR("Could not cast %s to array" , _rep_(ty));
   }
   return array->getNumElements();
 }
@@ -3819,12 +3840,12 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
     } else if (startup_name.nilp()) {
       engine->runStaticConstructorsDestructors(false);
     } else {
-      SIMPLE_ERROR(BF("Only NIL or a function name are allowed as the startup_name - you provided %s") % _rep_(startup_name));
+      SIMPLE_ERROR(("Only NIL or a function name are allowed as the startup_name - you provided %s") , _rep_(startup_name));
     }
     if ( core::startup_functions_are_waiting() ) {
       core::startup_functions_invoke(NULL);
     } else {
-      SIMPLE_ERROR(BF("There were no startup functions to invoke\n"));
+      SIMPLE_ERROR(("There were no startup functions to invoke\n"));
     }
 #ifdef DEBUG_STARTUP
     printf("%s:%d Leaving %s\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -4351,8 +4372,6 @@ SYMBOL_EXPORT_SC_(LlvmoPkg,library);
 
 namespace llvmo {
 
-
-
 DOCGROUP(clasp)
 CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
   printf("%s:%d:%s ptr = %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
@@ -4519,7 +4538,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
 #ifdef DEBUG_MONITOR  
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction startupName-> %s\n") % startupName);
+    MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction startupName-> %s\n") , startupName);
   }
 #endif
   void* replPtrRaw;
@@ -4566,7 +4585,7 @@ CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp d
   void* ptr;
   bool found = jit->do_lookup(dylib,cxxName,ptr);
   if (!found) {
-    SIMPLE_ERROR(BF("Could not find function %s") % cxxName );
+    SIMPLE_ERROR(("Could not find function %s") , cxxName );
   }
   voidStartUp startup = reinterpret_cast<voidStartUp>(ptr);
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);

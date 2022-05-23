@@ -82,7 +82,7 @@
 
 (defun read-code-path (stream char n)
   (declare (ignore char n))
-  (let ((path (uiop:parse-unix-namestring (read stream))))
+  (let ((path (uiop:parse-unix-namestring (read stream :recursive-p t))))
     (make-source (if *script-path*
                      (merge-pathnames path *script-path*)
                      path)
@@ -92,7 +92,7 @@
 
 (defun read-variant-path (stream char n)
   (declare (ignore char n))
-  (let ((path (uiop:parse-unix-namestring (read stream))))
+  (let ((path (uiop:parse-unix-namestring (read stream :recursive-p t))))
     (make-source (if *script-path*
                      (merge-pathnames path *script-path*)
                      path)

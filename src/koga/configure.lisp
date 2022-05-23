@@ -289,11 +289,6 @@
                         :initform nil
                         :type boolean
                         :documentation "Generate tests for lexical closure depths")
-   (debug-flow-tracker :accessor debug-flow-tracker
-                       :initarg :debug-flow-tracker
-                       :initform nil
-                       :type boolean
-                       :documentation "Record small backtraces to track flow")
    (debug-dynamic-binding-stack :accessor debug-dynamic-binding-stack
                                 :initarg :debug-dynamic-binding-stack
                                 :initform nil
@@ -551,6 +546,10 @@ is not compatible with snapshots.")
                    :initarg :update-version
                    :type boolean
                    :documentation "Use git describe to update the version and commit values in the config.sexp file and then exit.")
+   (extension-systems :accessor extension-systems
+                      :initform nil
+                      :type list
+                      :documentation "")
    (default-stage :accessor default-stage
                   :initform :cclasp
                   :type (member :iclasp :aclasp :bclasp :cclasp :dclasp)
@@ -565,6 +564,8 @@ is not compatible with snapshots.")
                                                          (list (make-source #P"generate-sif.lisp" :build))
                                                          :generate-headers
                                                          (list (make-source #P"generate-headers.lisp" :build))
+                                                         :update-unicode
+                                                         (list (make-source #P"update-unicode.lisp" :build))
                                                          :run-aclasp
                                                          (list (make-source #P"run-aclasp.lisp" :build))
                                                          :compile-aclasp
@@ -580,22 +581,20 @@ is not compatible with snapshots.")
                                                          :static-analyzer
                                                          (list (make-source #P"static-analyzer.lisp" :variant))
                                                          :snapshot
-                                                         (list (make-source #P"snapshot.lisp" :build))
+                                                         (list (make-source #P"snapshot.lisp" :variant))
+                                                         :clasprc
+                                                         (list (make-source #P"clasprc.lisp" :variant))
                                                          :jupyter-kernel
-                                                         (list (make-source #P"jupyter-kernel.lisp" :build))
+                                                         (list (make-source #P"jupyter-kernel.lisp" :variant))
                                                          :ninja
                                                          (list (make-source #P"build.ninja" :build)
-                                                               :bitcode :iclasp :aclasp :bclasp
-                                                               :cclasp :modules :extension-load
-                                                               :dclasp :install-code :clasp
-                                                               :regression-tests
-                                                               :static-analyzer :etags)
+                                                               :bitcode :iclasp :aclasp :bclasp :cclasp
+                                                               :modules :dclasp :install-code :clasp
+                                                               :regression-tests :static-analyzer :etags)
                                                          :config-h
-                                                         (list (make-source #P"config.h" :variant)
-                                                               :extension-load)
+                                                         (list (make-source #P"config.h" :variant))
                                                          :version-h
-                                                         (list (make-source #P"version.h" :variant)
-                                                               :extension-load)
+                                                         (list (make-source #P"version.h" :variant))
                                                          :compile-commands
                                                          (list (make-source #P"compile_commands.json" :variant)
                                                                :iclasp)))
@@ -637,7 +636,9 @@ is not compatible with snapshots.")
                              (make-instance 'variant :gc :mps :prep t)
                              (make-instance 'variant :gc :mps :debug t :prep t))
              :type list
-             :documentation "A list of the variants"))
+             :documentation "A list of the variants")
+   (scripts :accessor scripts
+            :initform nil))
   (:documentation "A class to encapsulate the configuration state."))
 
 (defmethod initialize-instance :after ((instance configuration) &rest initargs &key &allow-other-keys)
@@ -793,9 +794,8 @@ the function to the overall configuration."
         do (message :info "Looking for configure scripts in ~a" path)
            (loop for subpath in (directory (merge-pathnames (merge-pathnames "cscript.lisp" path) script-path))
                  for script = (uiop:subpathp subpath (uiop:getcwd))
-                 for *script-path* = (uiop:pathname-directory-pathname script)
-                 do (message :info "Loading script ~a" script)
-                    (load script))))
+                 do (message :info "Found script ~a" script)
+                    (push script (scripts *configuration*)))))
 
 (defgeneric configure-unit (configuration unit)
   (:documentation "Configure a specific unit"))
@@ -851,6 +851,11 @@ the function to the overall configuration."
                              *root-paths*)))
     (append-cflags *configuration*
                    (format nil "~{-I~a~^ ~}" (mapcar #'resolve-source paths)))))
+
+(defun systems (&rest rest)
+  (setf (extension-systems *configuration*)
+        (append (extension-systems *configuration*)
+                rest)))
 
 (defun configure-program (name candidates &key major-version (version-flag "--version") required)
   "Configure a program by looking through a list of candidate and checking the version number

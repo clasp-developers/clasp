@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -41,20 +41,16 @@ namespace core {
 struct BundleDirectories {
   std::filesystem::path _StartupWorkingDir;
   std::filesystem::path _ExecutableDir;
-  std::filesystem::path _ResourcesDir;
   std::filesystem::path _SysDir;
   std::filesystem::path _GeneratedDir;
   std::filesystem::path _StartupDir;
-  std::filesystem::path _SourceDir;
   std::filesystem::path _IncludeDir;
   std::filesystem::path _LibDir;
-  std::filesystem::path _DatabasesDir;
   std::filesystem::path _FaslDir;
   std::filesystem::path _BitcodeDir;
   std::filesystem::path _QuicklispDir;
 };
 
-  
 /*! Maintains the file paths to the different directories of the Cando bundle
  */
 class Bundle {
@@ -64,21 +60,20 @@ class Bundle {
 
 public:
   bool _Initialized;
-  BundleDirectories* _Directories;
+  BundleDirectories *_Directories;
 
 private:
-  std::filesystem::path findAppDir(const string &argv0, const string &cwd, bool verbose=false);
+  void findExecutableDir(const string &argv0, bool verbose = false);
+  std::string deduceArgv0(const std::string &raw_argv0);
 
 public:
-  void initializeStartupWorkingDirectory(bool verbose=false);
-
   string describe();
-  Bundle(const string &argv0, const string &appPath);
+  Bundle(const string &argv0);
 
   void setup_pathname_translations();
-  
+
   virtual ~Bundle(){};
 };
 
-};
+};     // namespace core
 #endif //]

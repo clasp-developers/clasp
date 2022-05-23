@@ -65,45 +65,19 @@ bool stackmap_log = true;
 NEVER_OPTIMIZE void assert_failure(const char* file, size_t line, const char* func, const char* msg)
 {
   printf("%s:%lu:%s Assertion failure msg: %s\n", file, line, func, msg );
-  SIMPLE_ERROR(BF("%s:%lu:%s  Assertion failure: %s") % file % line % func % msg);
+  SIMPLE_ERROR(("%s:%lu:%s  Assertion failure: %s") , file , line , func , msg);
 }
 
 NEVER_OPTIMIZE void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y)
 {
-  SIMPLE_ERROR(BF("%s:%d:%s  Assertion failure: bounds error - %s must be less than %s") % file % line % func % x % y);
+  SIMPLE_ERROR(("%s:%d:%s  Assertion failure: bounds error - %s must be less than %s") , file , line , func , x , y);
 }
 
 /*! These are here just so that the clang compiler
       will assign the __attribute__((weak)) to the vtable of each of these classes
     */
 void CatchThrow::keyFunctionForVtable(){};
-void ReturnFrom::keyFunctionForVtable(){};
-void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
-
-CL_LAMBDA()
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Returns the list of active CL:CATCH tags. Strictly for debugging.)dx")
-DOCGROUP(clasp)
-CL_DEFUN List_sp core__active_catch_tags() {
-  return my_thread->catchTags();
-}
-
-// The control transfer part of CL:THROW
-[[noreturn]] void clasp_throw(T_sp tag) {
-  // Check the list of catches in place to make sure the tag is there.
-  bool found = false;
-  for (auto tag_cons : my_thread->catchTags()) {
-    if (tag == oCar(tag_cons)) {
-      found = true;
-      break;
-    }
-  }
-  if (!found) CONTROL_ERROR();
-  my_thread->_unwinds++;
-  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  throw CatchThrow(tag);
-}
 
 SYMBOL_EXPORT_SC_(KeywordPkg,called_function);
 void throwTooFewArgumentsError(core::T_sp closure, size_t given, size_t required) {
@@ -350,9 +324,9 @@ string DebugStream::nextPosition() {
 
 DebugStream &DebugStream::beginNode(uint debugFlags) {
   if (this->DebugLogAsXml) {
-    this->writeRaw((BF("<%s>\n") % debugFlagsAsNodeName(debugFlags)).str());
+    this->writeRaw(fmt::sprintf("<%s>\n", debugFlagsAsNodeName(debugFlags)));
   } else {
-    this->writeRaw((BF("%s%s%s\n") % DebugOpenLeft % debugFlagsAsNodeName(debugFlags) % DebugOpenRight).str());
+    this->writeRaw(fmt::sprintf("%s%s%s\n", DebugOpenLeft , debugFlagsAsNodeName(debugFlags) , DebugOpenRight));
   }
   return *this;
 }
@@ -367,12 +341,12 @@ DebugStream &DebugStream::beginNode(uint debugFlags,
   if (shortSourceFile == NULL)
     shortSourceFile = "-begin-node-no-file-";
   if (this->DebugLogAsXml) {
-    string stuff = (BF("<%s s=\"%s\" f=\"%s\" l=\"%d\">\n") % debugFlagsAsNodeName(debugFlags) % shortSourceFile % cPfunctionName % lineNumber).str();
+    string stuff = fmt::sprintf("<%s s=\"%s\" f=\"%s\" l=\"%d\">\n", debugFlagsAsNodeName(debugFlags) , shortSourceFile , cPfunctionName , lineNumber);
     this->writeRaw(stuff);
     if (message != "")
       this->writeTextCr(message);
   } else {
-    string stuff = (BF("%s%s {%s:%s:%d}%s") % DebugOpenLeft % debugFlagsAsNodeName(debugFlags) % cPfunctionName % shortSourceFile % lineNumber % DebugOpenRight).str();
+    string stuff = fmt::sprintf("%s%s {%s:%s:%d}%s" , DebugOpenLeft , debugFlagsAsNodeName(debugFlags) , cPfunctionName , shortSourceFile , lineNumber , DebugOpenRight);
     this->writeRaw(stuff);
     this->writeTextCr(message);
   }
@@ -381,10 +355,10 @@ DebugStream &DebugStream::beginNode(uint debugFlags,
 
 DebugStream &DebugStream::endNode(uint flags) {
   if (this->DebugLogAsXml) {
-    string stuff = (BF("</%s>\n") % debugFlagsAsNodeName(flags)).str();
+    string stuff = fmt::sprintf("</%s>\n", debugFlagsAsNodeName(flags));
     this->writeRaw(stuff);
   } else {
-    string stuff = (BF("%s\n") % DebugClose).str();
+    string stuff = fmt::sprintf("%s\n", DebugClose);
     this->writeRaw(stuff);
   }
   return *this;
@@ -544,7 +518,7 @@ void DebugStream::setSuppressMessages(bool s) {
     stateName = "OFF";
   else
     stateName = "ON";
-  this->writeRaw((BF("<DebugMessages state=\"%s\"/>\n") % stateName).str());
+  this->writeRaw(fmt::sprintf("<DebugMessages state=\"%s\"/>\n", stateName));
   this->_SuppressMessages = s;
 }
 
@@ -553,7 +527,7 @@ char *internalPrintf(const LispPtr &lisp, const char *fmt, va_list arg_ptr) {
   int n;
   n = vasprintf(&outBuffer, fmt, arg_ptr);
   if (outBuffer == NULL) {
-    SIMPLE_ERROR(BF("Could not allocate a large enough internalPrintf buffer"));
+    SIMPLE_ERROR(("Could not allocate a large enough internalPrintf buffer"));
   }
   return outBuffer;
 }
@@ -834,6 +808,14 @@ void FEcannot_open(T_sp fileName) {
   cl__error(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, fileName));
 }
 
+void FEdoes_not_exist(T_sp fileName) {
+  cl__error(core::_sym_fileDoesNotExist, Cons_O::createList(kw::_sym_pathname, fileName));
+}
+
+void FEexists(T_sp fileName) {
+  cl__error(core::_sym_fileExists, Cons_O::createList(kw::_sym_pathname, fileName));
+}
+
 T_sp CEerror(T_sp c, const char *err, int narg, ...) {
   va_list args;
   va_start(args, narg);
@@ -886,7 +868,7 @@ void Warn(T_sp datum, List_sp arguments) {
 
 void clasp_internal_error(const char *msg) {
   printf("%s:%d %s\n", __FILE__, __LINE__, msg);
-  SIMPLE_ERROR(BF("Internal error: %s\n") % msg);
+  SIMPLE_ERROR(("Internal error: %s\n") , msg);
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, signalSimpleError);

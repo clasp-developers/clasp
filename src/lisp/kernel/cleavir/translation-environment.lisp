@@ -99,7 +99,7 @@
 (defun variable-as-argument (variable)
   (let ((value/cell (or (gethash variable *datum-values*)
                         (error "BUG: Variable or cell missing: ~a" variable))))
-    (if (or (typep variable 'bir:catch)
+    (if (or (typep variable 'bir:come-from)
             (bir:immutablep variable))
         value/cell
         (ecase (bir:extent variable)
@@ -128,10 +128,8 @@
 ;;; But I'm not sure.
 ;;; Non-volatility seems to be the cause of #1183.
 (defun needs-volatile-loads-p (function)
-  (cleavir-set:some
-   (lambda (inst)
-     (bir-transformations:simple-unwinding-p inst *clasp-system*))
-   (bir:catches function)))
+  (cleavir-set:some (lambda (inst) (not (null (bir:unwinds inst))))
+                    (bir:come-froms function)))
 
 (defun variable-in (variable)
   (check-type variable bir:variable)

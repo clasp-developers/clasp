@@ -827,7 +827,7 @@ template <>
   DeclareType _v;
   from_object(T_P object) {
     if (object.nilp()) {
-//      SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+//      SIMPLE_ERROR(("You must pass a valid RelocModel"));
     }
     if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
       if ( so == llvmo::_sym_RelocModel_undefined ) {
@@ -4549,9 +4549,9 @@ struct from_object<llvm::CmpInst::Predicate, std::true_type> {
 namespace llvmo {
 void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp startup_name);
 
-  Module_sp llvm_sys__parseBitcodeFile(core::T_sp filename, LLVMContext_sp context);
-  Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
-  Module_sp llvm_sys__parseIRString( const std::string& llCode, LLVMContext_sp context, const std::string& bufferName );
+Module_sp llvm_sys__parseBitcodeFile(core::T_sp filename, LLVMContext_sp context);
+Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
+Module_sp llvm_sys__parseIRString(const std::string& llCode, LLVMContext_sp context, const std::string& bufferName );
 
 void initialize_llvmo_expose();
 

@@ -58,12 +58,12 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
          ;; Recover the lambda-expression from the interpreted-function
          (multiple-value-bind (lambda-expression wrapped-env)
              (generate-lambda-expression-from-interpreted-function definition)
-           (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s%N" name lambda-expression wrapped-env)
-           (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:internal-linkage name)))
+           (cmp-log "About to compile  name: {}  lambda-expression: {} wrapped-env: {}%N" name lambda-expression wrapped-env)
+           (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage name)))
         ((functionp definition)
          (error "COMPILE doesn't know how to handle this type of function"))
         ((and (consp definition) (eq (car definition) 'lambda))
-         (cmp-log "compile form: %s%N" definition)
+         (cmp-log "compile form: {}%N" definition)
          (compile-in-env definition nil *cleavir-compile-hook* 'llvm-sys:internal-linkage name))
         ((null definition)
          (let ((func (cond ((fboundp name) (fdefinition name))
@@ -74,7 +74,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               ;; Recover the lambda-expression from the interpreted-function
               (multiple-value-bind (lambda-expression wrapped-env)
                   (generate-lambda-expression-from-interpreted-function func)
-                (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s%N" name lambda-expression wrapped-env)
+                (cmp-log "About to compile  name: {}  lambda-expression: {} wrapped-env: {}%N" name lambda-expression wrapped-env)
                 (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:internal-linkage name)))
              ((compiled-function-p func)
               (values func nil nil))
@@ -97,9 +97,9 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
           (t (values function warnp failp)))))
 
 (defun compiler-stats ()
-  (bformat t "Accumulated finalization time %s%N" llvm-sys:*accumulated-llvm-finalization-time*)
-  (bformat t "Most recent finalization time %s%N" llvm-sys:*most-recent-llvm-finalization-time*)
-  (bformat t "Number of compilations %s%N" llvm-sys:*number-of-llvm-finalizations*))
+  (core:fmt t "Accumulated finalization time {}%N" llvm-sys:*accumulated-llvm-finalization-time*)
+  (core:fmt t "Most recent finalization time {}%N" llvm-sys:*most-recent-llvm-finalization-time*)
+  (core:fmt t "Number of compilations {}%N" llvm-sys:*number-of-llvm-finalizations*))
 
 (export 'compiler-stats)
 

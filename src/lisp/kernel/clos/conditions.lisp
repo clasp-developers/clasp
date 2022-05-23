@@ -724,6 +724,13 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ()
   (:report "Attempted to return or go to an expired block or tagbody tag."))
 
+(define-condition core:no-catch-tag (control-error)
+  ((%tag :initarg :tag :reader no-catch-tag-tag))
+  (:report
+   (lambda (condition stream)
+     (format stream "Attempted to throw to unestablished catch tag ~a"
+             (no-catch-tag-tag condition)))))
+
 (define-condition invalid-restart (control-error)
   ((%restart :initarg :restart :reader invalid-restart-restart))
   (:report
@@ -817,6 +824,18 @@ due to error:~%  ~:*~a~]"
   (error 'type-error :datum instance :expected-type 'file-error))
 
 (define-condition core:simple-file-error (simple-condition file-error) ())
+
+(define-condition core:file-does-not-exist (file-error)
+  ()
+  (:report (lambda (condition stream)
+             (format stream "The file ~s does not exist."
+                     (file-error-pathname condition)))))
+
+(define-condition core:file-exists (file-error)
+  ()
+  (:report (lambda (condition stream)
+             (format stream "The file ~s already exists."
+                     (file-error-pathname condition)))))
 
 (define-condition package-error (error)
   ((package :INITARG :PACKAGE :READER package-error-package))

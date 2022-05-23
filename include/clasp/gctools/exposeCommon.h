@@ -113,6 +113,7 @@ typedef bool _Bool;
 #include <clasp/core/pathname.h>
 #include <clasp/core/sharpEqualWrapper.h>
 #include <clasp/core/weakHashTable.h>
+#include <clasp/core/unwind.h>
 #include <clasp/core/fli.h>
 #include <clasp/gctools/gc_boot.h>
 
@@ -138,6 +139,16 @@ typedef bool _Bool;
 #ifdef BUILD_EXTENSION
 #define GC_INTERFACE_INCLUDES
 #include <project_headers.h>
+#undef GC_INTERFACE_INCLUDES
+#endif
+
+//
+// TODO: Generate everything in project_headers.h through scraping
+//
+
+#ifdef BUILD_EXTENSION
+#define GC_INTERFACE_INCLUDES
+#include <cando/main/project_headers.h>
 #undef GC_INTERFACE_INCLUDES
 #endif
 

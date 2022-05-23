@@ -3,22 +3,25 @@
 CXXFLAGS=
 CPPFLAGS=
 CFLAGS=
-DEB_BUILD_MAINT_OPTIONS=nocheck nostrip
+DEB_BUILD_OPTIONS=nocheck nostrip
 
 %:
 	dh $@
 
 override_dh_auto_clean:
-	rm -rf build
+	rm -rf clasp-build && rm -rf cando-build
 
 override_dh_auto_test:
 	echo ninja -C build test-boehmprecise
 
 override_dh_auto_configure:
-	./koga --package-path=$$(pwd)/debian/clasp/
+	./koga --build-path=clasp-build/ --ldlibs=-ldl --package-path=$$(pwd)/debian/clasp-cl/ --skip-sync=ansi-test,mps --bin-path=/usr/bin/ --share-path=/usr/share/clasp/ --lib-path=/usr/lib/clasp/
+	./koga --build-path=cando-build/ --extensions=cando,seqan-clasp --jupyter --ldlibs=-ldl --package-path=$$(pwd)/debian/cando/ --skip-sync=ansi-test,mps --bin-path=/usr/bin/ --share-path=/usr/share/clasp/ --lib-path=/usr/lib/clasp/
 
 override_dh_auto_build:
-	ninja -C build
+	ninja -C clasp-build
+	ninja -C cando-build
 
 override_dh_auto_install:
-	ninja -C build install
+	ninja -C clasp-build install
+	ninja -C cando-build install

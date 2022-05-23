@@ -112,6 +112,14 @@
       (docstring-long% tag)
       "\"\""))
 
+(defclass tags:cl-unwind-coop-tag (tag)
+  ((coop% :initarg :coop% :reader tags:coop%)))
+
+(defun maybe-unwind-coop (tag)
+  (if tag
+      (coop% tag)
+      :unknown))
+
 (defclass tags:cl-priority-tag (tag)
   ((priority% :initarg :priority% :reader tags:priority%)))
 
@@ -275,7 +283,7 @@
       (read-char sis)
       (handler-case
           (handler-bind
-              ((SB-INT:SIMPLE-READER-PACKAGE-ERROR
+              (#+sbcl (SB-INT:SIMPLE-READER-PACKAGE-ERROR
                  (lambda (err) 
                    (use-value (find-package :keyword) err))))
             (read-delimited-list #\) sis))
@@ -331,6 +339,10 @@
     :docstring% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
   (define-tag-handler cl-docstring-long-tag "CL_DOCSTRING_LONG_TAG" tags:cl-docstring-long-tag
     :docstring-long% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
+  (define-tag-handler cl-unwind-coop-tag "CL_UNWIND_COOP_TAG" tags:cl-unwind-coop-tag
+    :coop% (cond ((string-equal (getf plist :coop) "true") :cooperative)
+                 ((string-equal (getf plist :coop) "false") :uncooperative)
+                 (t :unknown)))
   (define-tag-handler cl-priority-tag "CL_PRIORITY_TAG" tags:cl-priority-tag
     :priority% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
   (define-tag-handler cl-declare-tag "CL_DECLARE_TAG" tags:cl-declare-tag

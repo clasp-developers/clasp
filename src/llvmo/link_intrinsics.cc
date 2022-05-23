@@ -67,6 +67,7 @@ extern "C" {
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
+#include <clasp/core/unwind.h>
 
 #if defined(_TARGET_OS_DARWIN)
 #include <mach-o/ldsyms.h>
@@ -94,11 +95,11 @@ namespace llvmo {
     }
     break;
   case couldNotCoerceToClosure:
-      SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
+      SIMPLE_ERROR((" symbol %s") , _rep_(arg0));
   case destinationMustBeActivationFrame:
-      SIMPLE_ERROR(BF("Destination must be ActivationFrame"));
+      SIMPLE_ERROR(("Destination must be ActivationFrame"));
   case invalidIndexForFunctionFrame:
-      SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
+      SIMPLE_ERROR(("Invalid index[%d] for FunctionFrame(size=%d)") , _rep_(arg0) , _rep_(arg1));
   case unboundSymbolValue:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
@@ -112,14 +113,14 @@ namespace llvmo {
   case unboundSymbolSetfFunction:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR(BF("The symbol %s has no setf function bound to it") % sym->fullName() );
+      SIMPLE_ERROR(("The symbol %s has no setf function bound to it") , sym->fullName() );
     }
   case badCell:
     {
-      SIMPLE_ERROR(BF("The object with pointer %p is not a cell") % arg0.raw_());
+      SIMPLE_ERROR(("The object with pointer %p is not a cell") , (void*)arg0.raw_());
     }
   default:
-      SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
+      SIMPLE_ERROR(("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") , err , _rep_(arg0) , _rep_(arg1) , _rep_(arg2));
   };
 };
 
@@ -384,7 +385,7 @@ LtvcReturnVoid ltvc_make_function_description(gctools::GCRootsInModule* holder, 
                                                                    filepos);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::FunctionDescription_sp>(val)) {
-    SIMPLE_ERROR(BF("The object is not a FunctionDescription %s") % core::_rep_(val));
+    SIMPLE_ERROR(("The object is not a FunctionDescription %s") , core::_rep_(val));
   }
 #if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s FunctionDescription_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_()));
@@ -403,7 +404,7 @@ LtvcReturnVoid ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, cha
   core::LocalEntryPoint_sp entryPoint = core::makeLocalEntryPoint(fdesc,llvm_func);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::LocalEntryPoint_sp>(entryPoint)) {
-    SIMPLE_ERROR(BF("The object is not a LocalEntryPoint %s") % core::_rep_(entryPoint));
+    SIMPLE_ERROR(("The object is not a LocalEntryPoint %s") , core::_rep_(entryPoint));
   }
 #if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
@@ -425,7 +426,7 @@ LtvcReturnVoid ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, ch
   core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,xep,localEntryPoint);
 //  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
   if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
-    SIMPLE_ERROR(BF("The object is not a GlobalEntryPoint %s") % core::_rep_(entryPoint));
+    SIMPLE_ERROR(("The object is not a GlobalEntryPoint %s") , core::_rep_(entryPoint));
   }
 #if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
@@ -527,8 +528,6 @@ LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
 extern "C" {
 
 const std::type_info &typeidCoreCatchThrow = typeid(core::CatchThrow);
-const std::type_info &typeidCoreDynamicGo = typeid(core::DynamicGo);
-const std::type_info &typeidCoreReturnFrom = typeid(core::ReturnFrom);
 const std::type_info &typeidCoreUnwind = typeid(core::Unwind);
 
 #define LOW_LEVEL_TRACE_QUEUE_SIZE 1024
@@ -599,9 +598,8 @@ struct BreakstepToggle {
   ~BreakstepToggle() { mthread->_Breakstep = old_breakstep; }
 };
 
-NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
+NOINLINE void cc_breakstep(core::T_O* source, void* frame) {
   unlikely_if (my_thread->_Breakstep) {
-    void* frame = lframe;
     void* bframe = my_thread->_BreakstepFrame;
     // If bframe is NULL, we are doing step-into.
     // Otherwise, we are doing step-over, and we need to check
@@ -628,9 +626,9 @@ NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
             return;
         }
       }
-      SIMPLE_ERROR(BF("BUG: Unknown return value from %s: %s")
-                   % _rep_(core::_sym_breakstep)
-                   % _rep_(res));
+      SIMPLE_ERROR(("BUG: Unknown return value from %s: %s")
+                   , _rep_(core::_sym_breakstep)
+                   , _rep_(res));
     } else return;
   stop_stepping: // outside the scope of tog
     my_thread->_Breakstep = false;
@@ -638,9 +636,8 @@ NOINLINE void cc_breakstep(core::T_O* source, core::T_O* lframe) {
   }
 }
 
-NOINLINE void cc_breakstep_after(core::T_O* lframe) {
+NOINLINE void cc_breakstep_after(void* frame) {
   unlikely_if (my_thread->_Breakstep) {
-    void* frame = lframe;
     void* bframe = my_thread->_BreakstepFrame;
     // If we just stepped over, and are back after the call, switch back
     // into step-into mode. Otherwise do nothing.
@@ -731,9 +728,9 @@ void badKeywordArgumentError(core::T_sp keyword, core::T_sp functionName,
                              core::T_sp lambdaList)
 {
   if (functionName.nilp()) {
-    SIMPLE_ERROR(BF("When calling an unnamed function with the lambda list %s the bad keyword argument %s was passed") % _rep_(lambdaList) % _rep_(keyword));
+    SIMPLE_ERROR(("When calling an unnamed function with the lambda list %s the bad keyword argument %s was passed") , _rep_(lambdaList) , _rep_(keyword));
   }
-  SIMPLE_ERROR(BF("When calling %s with the lambda-list %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(lambdaList) % _rep_(keyword));
+  SIMPLE_ERROR(("When calling %s with the lambda-list %s the bad keyword argument %s was passed") , _rep_(functionName) , _rep_(lambdaList) , _rep_(keyword));
 }
 
 void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
@@ -912,34 +909,20 @@ void debugPrintI32(int i32)
 
 void debugPrint_blockFrame(core::T_O* handle)
 {NO_UNWIND_BEGIN();
-#if defined(DEBUG_FLOW_TRACKER)
-  Cons_sp frameHandleCons((gc::Tagged)handle);
-  Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
-  printf("%s:%d debugPrint_blockFrame handle %p   FlowCounter %" PFixnum "\n", __FILE__, __LINE__, handle, frameFlowCounter );
-#else
   printf("%s:%d debugPrint_blockFrame handle %p\n", __FILE__, __LINE__, handle );
-#endif
   fflush(stdout);
   NO_UNWIND_END();
 }
 
-void debugPrint_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle)
+void debugPrint_blockHandleReturnFrom(unsigned char *exceptionP, void* handle)
 {NO_UNWIND_BEGIN();
-  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  printf("%s:%d debugPrint_blockHandleReturnFrom return-from handle %p    block handle %p\n", __FILE__, __LINE__, returnFrom.getHandle(), handle );
-  if (returnFrom.getHandle() == handle) {
+  core::Unwind &returnFrom = *reinterpret_cast<core::Unwind *>(exceptionP);
+  printf("%s:%d debugPrint_blockHandleReturnFrom return-from handle %p    block handle %p\n", __FILE__, __LINE__, returnFrom.getFrame(), handle );
+  if (returnFrom.getFrame() == handle) {
     printf("%s:%d debugPrint_blockHandleReturnFrom handles match!\n", __FILE__, __LINE__ );
     fflush(stdout);
     return;
   }
-#if defined(DEBUG_FLOW_TRACKER)
-  Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
-  Cons_sp frameHandleCons((gc::Tagged)handle);
-  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-  Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
-  printf("%s:%d  continued  debugPrint_blockHandleReturnFrom return-from is looking for FlowCounter %" PFixnum " and it reached FlowCounter %" PFixnum "\n", __FILE__, __LINE__, throwFlowCounter, frameFlowCounter );
-  fflush(stdout);
-#endif
   NO_UNWIND_END();
 }
 
@@ -970,47 +953,23 @@ void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
   my_thread->_unwinds++;
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
   core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
-  core::ReturnFrom returnFrom(handle.raw_());
-#if defined(DEBUG_FLOW_TRACKER)
-  flow_tracker_about_to_throw(CONS_CAR(handle).unsafe_fixnum());
-#endif
+  core::BlockDynEnv_sp bde = gc::As<BlockDynEnv_sp>(handle);
   my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  throw returnFrom;
+  sjlj_unwind(bde, 1); // index is unused here
 }
 };
 
 extern "C" {
 
-gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, core::T_O* handle) {
-  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  if (returnFrom.getHandle() == handle) {
+gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, void* handle) {
+  core::Unwind &returnFrom = *reinterpret_cast<core::Unwind *>(exceptionP);
+  if (returnFrom.getFrame() == handle) {
     core::MultipleValues &mv = core::lisp_multipleValues();
     gctools::return_type result(mv.operator[](0),mv.getSize());
     std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
     my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return result;
   }
-#if defined(DEBUG_FLOW_TRACKER)
-  if (handle) {
-    Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
-    Cons_sp frameHandleCons((gc::Tagged)handle);
-    if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
-    if (!frameHandleCons.consp()) printf("%s:%d The frameHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)frameHandleCons.raw_() );
-    Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-    Fixnum frameFlowCounter = CONS_CAR(frameHandleCons).unsafe_fixnum();
-    if (throwFlowCounter > frameFlowCounter) {
-      printf("%s:%d A return-from has missed its target frame - the return-from is looking for FlowCounter %" PFixnum " and it reached FlowCounter %" PFixnum "\n", __FILE__, __LINE__, throwFlowCounter, frameFlowCounter );
-      flow_tracker_last_throw_backtrace_dump();
-      abort();
-    }
-  }
-#endif
-#if defined(DEBUG_FLOW_TRACKER)
-  Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
-  if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
-  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-  flow_tracker_about_to_throw(throwFlowCounter);
-#endif
   throw; // throw returnFrom;
 }
 
@@ -1018,65 +977,139 @@ gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP,
 
 extern "C" {
 
-core::T_O* initializeBlockClosure(core::T_O** afP)
+core::T_O* initializeBlockClosure(core::T_O** afP, core::T_O* handle)
 {NO_UNWIND_BEGIN();
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-#ifdef DEBUG_FLOW_TRACKER
-  Fixnum counter = next_flow_tracker_counter();
-  Cons_sp unique = Cons_O::create(make_fixnum(counter),nil<T_O>());
-#else
-  Cons_sp unique = Cons_O::create(nil<T_O>(),nil<T_O>());
-#endif
+  T_sp unique((gc::Tagged)handle);
   vf->operator[](0) = unique;
   return unique.raw_();
   NO_UNWIND_END();
 }
 
-core::T_O* initializeTagbodyClosure(core::T_O *afP)
+core::T_O* initializeTagbodyClosure(core::T_O *afP, core::T_O* handle)
 {NO_UNWIND_BEGIN();
   core::T_sp tagbodyId((gctools::Tagged)afP);
+  core::T_sp thandle((gctools::Tagged)handle);
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
-#ifdef DEBUG_FLOW_TRACKER
-  Fixnum counter = next_flow_tracker_counter();
-  Cons_sp unique = Cons_O::create(make_fixnum(counter),nil<T_O>());
-#else
-  Cons_sp unique = Cons_O::create(nil<T_O>(),nil<T_O>());
-#endif
-  vf->operator[](0) = unique;
-  return unique.raw_();
+  vf->operator[](0) = thandle;
+  return handle;
   NO_UNWIND_END();
 }
 };
 
 extern "C" {
 
-void throwIllegalSwitchValue(size_t val, size_t max) {
-  SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
+core::T_O* cc_createAndPushBlockDynenv(void* frame, jmp_buf* target) {
+  core::BlockDynEnv_sp block = BlockDynEnv_O::create(my_thread->_DynEnv,
+                                                     frame, target);
+  my_thread->_DynEnv = block;
+  return block.raw_();
 }
 
-void cc_error_bugged_catch(size_t id) {
-  SIMPLE_ERROR(BF("BUG: Nonlocal entry frame could not match go-index %d") % id);
+core::T_O* cc_createAndPushTagbodyDynenv(void* frame, jmp_buf* target) {
+  core::TagbodyDynEnv_sp tb = TagbodyDynEnv_O::create(my_thread->_DynEnv,
+                                                      frame, target);
+  my_thread->_DynEnv = tb;
+  return tb.raw_();
+}
+
+core::T_O* cc_initializeAndPushCleanupDynenv(void* space, jmp_buf* target)
+{NO_UNWIND_BEGIN();
+  ASSERT(((uintptr_t)(space)&0x7)==0); // copied from cc_stack_enclose
+  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(space);
+  const gctools::Header_s::StampWtagMtag upde_header = gctools::Header_s::StampWtagMtag::make_Value<core::UnwindProtectDynEnv_O>();
+#ifdef DEBUG_GUARD
+  size_t size = gctools::sizeof_with_header<UnwindProtectDynEnv_O>();
+  new (header) gctools::GCHeader<core::UnwindProtectDynEnv_O>::HeaderType(upde_header, size, 0, size);
+#else
+  new (header) gctools::GCHeader<core::UnwindProtectDynEnv_O>::HeaderType(upde_header);
+#endif
+  auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::UnwindProtectDynEnv_O>::Type>(space);
+  new (obj) (typename gctools::smart_ptr<core::UnwindProtectDynEnv_O>::Type)(my_thread->_DynEnv,
+                                                                             target);
+  gctools::smart_ptr<core::UnwindProtectDynEnv_O> dynenvoid = gctools::smart_ptr<core::UnwindProtectDynEnv_O>(obj);
+  my_thread->_DynEnv = dynenvoid;
+  return dynenvoid.raw_();
+  NO_UNWIND_END();
+}
+
+core::T_O* cc_initializeAndPushBindingDynenv(void* space, core::T_O* sym, core::T_O* old)
+{NO_UNWIND_BEGIN();
+  ASSERT(((uintptr_t)(space)&0x7)==0); // copied from cc_stack_enclose
+  core::T_sp told((gc::Tagged)old);
+  core::T_sp tsym((gc::Tagged)sym);
+  core::Symbol_sp rsym = gc::As_unsafe<Symbol_sp>(tsym);
+  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(space);
+  const gctools::Header_s::StampWtagMtag bde_header = gctools::Header_s::StampWtagMtag::make_Value<core::BindingDynEnv_O>();
+#ifdef DEBUG_GUARD
+  size_t size = gctools::sizeof_with_header<BindingDynEnv_O>();
+  new (header) gctools::GCHeader<core::BindingDynEnv_O>::HeaderType(bde_header, size, 0, size);
+#else
+  new (header) gctools::GCHeader<core::BindingDynEnv_O>::HeaderType(bde_header);
+#endif
+  auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::BindingDynEnv_O>::Type>(space);
+  new (obj) (typename gctools::smart_ptr<core::BindingDynEnv_O>::Type)(my_thread->_DynEnv, rsym, told);
+  gctools::smart_ptr<core::BindingDynEnv_O> dynenvoid = gctools::smart_ptr<core::BindingDynEnv_O>(obj);
+  my_thread->_DynEnv = dynenvoid;
+  return dynenvoid.raw_();
+  NO_UNWIND_END();
+}
+
+void cc_pop_dynenv(T_O* dynenv)
+{NO_UNWIND_BEGIN();
+  T_sp de((gctools::Tagged)dynenv);
+  my_thread->_DynEnv = gc::As_unsafe<DynEnv_sp>(de)->outer;
+  NO_UNWIND_END();
+}
+
+void cc_unwind_dest_dynenv(T_O* dynenv)
+{NO_UNWIND_BEGIN();
+  T_sp tde((gctools::Tagged)dynenv);
+  DestDynEnv_sp dde = gc::As_unsafe<DestDynEnv_sp>(tde);
+  my_thread->_DynEnv = dde->unwound_dynenv();
+  NO_UNWIND_END();
+}
+
+void* cc_dynenv_frame(T_O* dynenv)
+{NO_UNWIND_BEGIN();
+  T_sp tde((gctools::Tagged)dynenv);
+  LexDynEnv_sp dde = gc::As_unsafe<LexDynEnv_sp>(tde);
+  return dde->frame;
+  NO_UNWIND_END();
+}
+
+[[noreturn]] void cc_sjlj_unwind(T_O* dde, size_t index) {
+  T_sp tde((gctools::Tagged)dde);
+  sjlj_unwind(gc::As<LexDynEnv_sp>(tde), index);
+}
+
+[[noreturn]] void cc_sjlj_continue_unwinding () {
+  sjlj_continue_unwinding();
+}
+
+void throwIllegalSwitchValue(size_t val, size_t max) {
+  SIMPLE_ERROR(("Illegal switch value %d - max value is %d") , val , max);
+}
+
+void cc_error_bugged_come_from(size_t id) {
+  SIMPLE_ERROR(("BUG: Nonlocal entry frame could not match go-index %d") , id);
 }
 
 void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   my_thread->_unwinds++;
   T_sp af((gctools::Tagged)afP);
   ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
-  T_O* handle = tagbody->operator[](0).raw_();
-  core::DynamicGo dgo(handle, index);
-#if defined(DEBUG_FLOW_TRACKER)
-  Cons_sp throwHandleCons((gc::Tagged)dgo.getHandle());
-  if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
-  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
-  flow_tracker_about_to_throw(throwFlowCounter);
-#endif
-  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  throw dgo;
+  T_sp handle = tagbody->operator[](0);
+  TagbodyDynEnv_sp tde = gc::As<TagbodyDynEnv_sp>(handle);
+  /* This index was passed to us zero-based, as it's stored in the
+   * lexical environment, but for setjmp compatibility it must be
+   * at least 1. */
+  sjlj_unwind(tde, index + 1);
 }
 
-size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, T_O* handle) {
-  core::DynamicGo& goException = *reinterpret_cast<core::DynamicGo *>(exceptionP);
-  if (goException.getHandle() == handle) {
+int tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, void* handle) {
+  core::Unwind& goException = *reinterpret_cast<core::Unwind *>(exceptionP);
+  if (goException.getFrame() == handle) {
     std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
     my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return goException.index();
@@ -1109,46 +1142,6 @@ gctools::return_type restoreFromMultipleValue0()
   gctools::return_type result(mv.operator[](0),mv.getSize());
   return result;
   NO_UNWIND_END();
-}
-
-};
-
-extern "C" {
-
-void pushDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
-{NO_UNWIND_BEGIN();
-  core::Symbol_sp sym((gctools::Tagged)tsymbolP);
-  *alloca = sym->threadLocalSymbolValue().raw_();
-  NO_UNWIND_END();
-}
-
-void popDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
-{NO_UNWIND_BEGIN();
-  core::Symbol_sp sym((gctools::Tagged)tsymbolP);
-  core::T_sp val((gctools::Tagged)*alloca);
-  sym->set_threadLocalSymbolValue(val);
-  NO_UNWIND_END();
-}
-};
-
-extern "C" {
-
-void setFrameUniqueId(size_t id, core::ActivationFrame_O* frameP) {
-#ifdef DEBUG_LEXICAL_DEPTH
-  ActivationFrame_sp src((gctools::Tagged)frameP);
-  src->_UniqueId = id;
-#endif
-}
-
-void ensureFrameUniqueId(size_t id, size_t depth, core::ActivationFrame_O* frameP) {
-#ifdef DEBUG_LEXICAL_DEPTH
-  ActivationFrame_sp src((gctools::Tagged)frameP);
-  ActivationFrame_sp dest = value_frame_lookup(src,depth);
-  if (dest->_UniqueId != id) {
-    printf("%s:%d Mismatch in frame UniqueId - expecting %lu - found %lu\n", __FILE__, __LINE__, id, dest->_UniqueId );
-    abort();
-  }
-#endif
 }
 
 };
@@ -1316,9 +1309,9 @@ void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
   T_sp functionName = closure->functionName();
   if (functionName.nilp())
-    SIMPLE_ERROR(BF("Odd number of keyword arguments"));
+    SIMPLE_ERROR(("Odd number of keyword arguments"));
   else
-    SIMPLE_ERROR(BF("In call to %s with lambda-list %s - got odd number of keyword arguments") % _rep_(functionName) % _rep_(closure->lambdaList()));
+    SIMPLE_ERROR(("In call to %s with lambda-list %s - got odd number of keyword arguments") , _rep_(functionName) , _rep_(closure->lambdaList()));
 }
 
 T_O **cc_multipleValuesArrayAddress()
@@ -1388,21 +1381,7 @@ void cc_load_all_values(size_t nvals, T_O** vector)
   NO_UNWIND_END();
 }
 
-void cc_unwind(T_O *targetFrame, size_t index) {
-  // Signal an error if the frame we're trying to return to is no longer on the stack.
-  // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
-  // does so as well - twice - so we end up iterating three times.
-  // The correct thing to do would probably be to use the Itanium EH ABI (which we already
-  // rely on the C++ part of) and write our own throw, that signals an error instead of
-  // calling std::terminate in the event no handler is present.
-  my_thread->_unwinds++;
-  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
-  core::frame_check((uintptr_t)targetFrame);
-  core::Unwind unwind(targetFrame, index);
-  throw unwind;
-}
-
-size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
+size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, void *thisFrame) {
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
   if (unwindP->getFrame() == thisFrame) {
     std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();

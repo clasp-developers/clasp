@@ -40,8 +40,8 @@
 
 (defun function-to-method (name lambda-list specializers
                            &optional satiation-specializers (function (fdefinition name)))
-  (mlog "function-to-method: name -> %s specializers -> %s  lambda-list -> %s%N" name specializers lambda-list)
-  (mlog "function-to-method:  function -> %s%N" function)
+  (mlog "function-to-method: name -> {} specializers -> {}  lambda-list -> {}%N" name specializers lambda-list)
+  (mlog "function-to-method:  function -> {}%N" function)
   ;; since we still have method.lisp's add-method in place, it will try to add
   ;; the function-to-method-temp entry to *early-methods*. but then we unbind
   ;; that, so things are a bit screwy. We do it more manually.
@@ -181,15 +181,15 @@
 ;;; so after this they will do generic function calls.
 
 (defun ensure-generic-function (name &rest args &key &allow-other-keys)
-  (mlog "ensure-generic-function  name -> %s  args -> %s %N" name args)
-  (mlog "(not (fboundp name)) -> %s%N" (not (fboundp name)))
+  (mlog "ensure-generic-function  name -> {}  args -> {} %N" name args)
+  (mlog "(not (fboundp name)) -> {}%N" (not (fboundp name)))
   (let ((gfun (si::traced-old-definition name)))
     (cond ((not (legal-generic-function-name-p name))
 	   (simple-program-error "~A is not a valid generic function name" name))
           ((not (fboundp name))
-           (mlog "A gfun -> %s name -> %s  args -> %s%N" gfun name args)
+           (mlog "A gfun -> {} name -> {}  args -> {}%N" gfun name args)
            ;;           (break "About to setf (fdefinition name)")
-           (mlog "#'ensure-generic-function-using-class -> %s%N" #'ensure-generic-function-using-class )
+           (mlog "#'ensure-generic-function-using-class -> {}%N" #'ensure-generic-function-using-class )
 	   (setf (fdefinition name)
 		 (apply #'ensure-generic-function-using-class gfun name args)))
           ((si::instancep (or gfun (setf gfun (fdefinition name))))

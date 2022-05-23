@@ -234,7 +234,7 @@
        collect (parse-traversal-matcher-line (substitute-colons line)))))
 
 (let ((rules-suffix "-13"))
-  (setf *default-pathname-defaults* (truename "sys:modules;clang-tool;"))
+  (setf *default-pathname-defaults* (truename "sys:src;lisp;modules;clang-tool;"))
   (with-open-file (fout (pathname (format nil "./rules~a.lisp" rules-suffix)) :direction :output :if-exists :supersede)
     (let* ((node-matcher-rules (parse-node-matcher-rules (pathname (format nil "node-matchers~a.txt" rules-suffix))))
            (narrowing-matcher-rules (parse-narrowing-matcher-rules (pathname (format nil "narrowing-matchers~a.txt" rules-suffix))))

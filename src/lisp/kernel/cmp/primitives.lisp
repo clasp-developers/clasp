@@ -55,7 +55,6 @@
 ;;; + primitive means that the intrinsic doesn't ever throw an exception
 ;;;     and nothing that it calls throws an exception
 ;;; + primitive-unwinds means that the intrinsic can throw an exception and should be called with INVOKE
-;;; + unless it is cc_throw or cc_unwind - then it should be called with CALL.
 ;;;
 (defun primitive-unwinds (name return-ty args-ty &key varargs does-not-return returns-twice ltvc )
   "Define primitives that can unwind the stack, either directly or through transitive calls"
@@ -120,7 +119,7 @@
 
 (defun general-entry-point-redirect-name (arity)
   "Return the name of the wrong-number-of-arguments function for the arity"
-  (core:bformat nil "general_entry_point_redirect_%s" arity))
+  (core:fmt nil "general_entry_point_redirect_{}" arity))
 
 (defmacro primitives-macro ()
   "ltvc functions are used to construct the byte-code interpreter"
@@ -146,10 +145,6 @@
          (primitive         "makeTagbodyFrameSetParent" :t* (list :t*))
 
 ;;;         (primitive         "cc_validate_tagged_pointer" :void (list :t*))
-
-         (primitive         "setFrameUniqueId" :void (list :size_t :t*))
-         (primitive         "ensureFrameUniqueId" :void (list :size_t :size_t :t*))
-
          (primitive-unwinds "makeFunctionFrame" :t* (list :i32 :t*))
          (primitive-unwinds "functionFrameReference" :t** (list :t* :i32))
     
@@ -172,14 +167,14 @@
          (primitive         "debugBreak" :void ())
          (primitive         "debugPrintI32" :void (list :i32))
          (primitive         "debugPrint_blockFrame" :void (list :t*))
-         (primitive         "debugPrint_blockHandleReturnFrom" :void (list :i8* :t*))
+         (primitive         "debugPrint_blockHandleReturnFrom" :void (list :i8* :i8*))
          (primitive         "debugPrint_size_t" :void (list :size_t))
          (primitive         "debug_match_two_uintptr_t" :uintptr_t (list :uintptr_t :uintptr_t))
          (primitive         "lowLevelTrace" :void (list :i32))
          (primitive         "unreachableError" :void nil)
          (primitive         "cc_set_breakstep" :void nil)
          (primitive         "cc_unset_breakstep" :void nil)
-         (primitive-unwinds "cc_breakstep" :void (list :t* :t*))
+         (primitive-unwinds "cc_breakstep" :void (list :t* :i8*))
          (primitive         "cc_breakstep_after" :void (list :t*))
          (primitive-unwinds "cc_wrong_number_of_arguments" :void (list :t* :size_t :size_t :size_t)
           :does-not-return t)
@@ -194,16 +189,16 @@
          (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
 
-         (primitive         "initializeBlockClosure" :t* (list :t**))
-         (primitive         "initializeTagbodyClosure" :t* (list :t**))
+         (primitive         "initializeBlockClosure" :t* (list :t** :t*))
+         (primitive         "initializeTagbodyClosure" :t* (list :t** :t*))
     
          (primitive-unwinds "throwReturnFrom" :void (list :size_t :t*) :does-not-return t)
          (primitive-unwinds "throwDynamicGo" :void (list :size_t :size_t :t*) :does-not-return t)
 
-         (primitive-unwinds "blockHandleReturnFrom_or_rethrow" :return-type (list :i8* :t*))
-         (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" :size_t (list :i8* :t*))
-         (primitive-unwinds "throwIllegalSwitchValue" :void (list :size_t :size_t) :does-not-return t)
-         (primitive-unwinds "cc_error_bugged_catch" :void (list :size_t) :does-not-return t)
+         (primitive-unwinds "blockHandleReturnFrom_or_rethrow" :return-type (list :i8* :i8*))
+         (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" :i32 (list :i8* :i8*))
+         (primitive-unwinds "throwIllegalSwitchValue" :void (list :i32 :size_t) :does-not-return t)
+         (primitive-unwinds "cc_error_bugged_come_from" :void (list :size_t) :does-not-return t)
     
          (primitive         "__gxx_personality_v0" :i32 nil :varargs t)
          (primitive         "__cxa_begin_catch" :i8* (list :i8*) )
@@ -284,9 +279,6 @@
          (primitive         "cc_save_all_values" :void (list :size_t :t**))
          (primitive         "cc_load_all_values" :void (list :size_t :t**))
     
-         (primitive         "pushDynamicBinding" :void (list :t* :t**))
-         (primitive         "popDynamicBinding" :void (list :t* :t**))
-    
          ;; Primitives for Cleavir code
 
          (primitive         "cm_check_index" :return-type (list :t* :t* :t*))
@@ -344,12 +336,20 @@
          ;; - Bike, who's spent a solid two days staring at IR incomprehendingly
          (primitive         "_setjmp" :i32 (list :jmp-buf-tag*) :returns-twice t)
          (primitive-unwinds "_longjmp" :void (list :jmp-buf-tag* :i32) :does-not-return t)
-         (primitive-unwinds "cc_unwind" :void (list :t* :size_t) :does-not-return t)
-;;         (primitive-unwinds "cc_throw" :void (list :t*) :does-not-return t)
+         ;;         (primitive-unwinds "cc_throw" :void (list :t*) :does-not-return t)
+         (primitive-unwinds "cc_createAndPushBlockDynenv" :t* (list :i8* :jmp-buf-tag*))
+         (primitive-unwinds "cc_createAndPushTagbodyDynenv" :t* (list :i8* :jmp-buf-tag*))
+         (primitive         "cc_initializeAndPushCleanupDynenv" :t* (list :i8* :jmp-buf-tag*))
+         (primitive         "cc_initializeAndPushBindingDynenv" :t* (list :i8* :t* :t*))
+         (primitive         "cc_pop_dynenv" :void (list :t*))
+         (primitive         "cc_unwind_dest_dynenv" :void (list :t*))
+         (primitive         "cc_dynenv_frame" :i8* (list :t*))
+         (primitive-unwinds "cc_sjlj_unwind" :void (list :t* :size_t) :does-not-return t)
+         (primitive-unwinds "cc_sjlj_continue_unwinding" :void nil :does-not-return t)
          (primitive         "cc_saveMultipleValue0" :void (list :tmv))
          (primitive         "cc_restoreMultipleValue0" :return-type nil)
-         (primitive         "llvm.frameaddress.p0i8" :t* (list :i32))
-         (primitive-unwinds "cc_landingpadUnwindMatchFrameElseRethrow" :size_t (list :i8* :t*))
+         (primitive         "llvm.frameaddress.p0i8" :i8* (list :i32))
+         (primitive-unwinds "cc_landingpadUnwindMatchFrameElseRethrow" :size_t (list :i8* :i8*))
 
          ;; Compiler translators (calls generated by Cleavir)
 

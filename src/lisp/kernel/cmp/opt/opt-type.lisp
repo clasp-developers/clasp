@@ -131,8 +131,15 @@
                 `(if (cleavir-primop:typeq object ,simple)
                      ,if-simple ,if-no))
                ((complex-array)
-                `(if (cleavir-primop:typeq object ,complex)
-                     ,if-complex ,if-no))
+                ;; KLUDGE: Because simple-mdarray is a subtype of mdarray,
+                ;; to test for complex arrays we have to actually rule out
+                ;; the simple. This means we do a redudant test for vectors,
+                ;; though, since this confusion isn't in place for the
+                ;; vector classes.
+                `(if (cleavir-primop:typeq object ,simple)
+                     nil
+                     (if (cleavir-primop:typeq object ,complex)
+                         ,if-complex ,if-no)))
                ((array)
                 `(if (cleavir-primop:typeq object ,simple)
                      ,if-simple

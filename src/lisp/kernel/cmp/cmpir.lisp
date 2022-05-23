@@ -394,7 +394,7 @@ local-function - the lcl function that all of the xep functions call."
          (instr (irc-intrinsic "makeBlockFrameSetParent" parent-renv)))
     (irc-store instr new-renv)
     (irc-set-renv block-env new-renv)
-    (values block-env instr (list parent-renv))))
+    (values block-env instr)))
 
 (defun irc-make-local-block-environment-set-parent (name parent-env)
   "This returns a block environment that is only good for local return-from's"
@@ -412,7 +412,7 @@ local-function - the lcl function that all of the xep functions call."
 	  (cmp-log "Returning non-nil renv%N")
 	  renv)
 	(let ((nil-renv (literal:compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
-	  (cmp-log "Returning nil renv: %s%N" nil-renv)
+	  (cmp-log "Returning nil renv: {}%N" nil-renv)
 	  nil-renv))))
 
 (defun irc-make-value-frame-set-parent (new-env fnsize parent-env)
@@ -424,19 +424,14 @@ local-function - the lcl function that all of the xep functions call."
                                 (irc-intrinsic "activationFrameReferenceFromClosure" closure))
                               (irc-renv visible-ancestor-environment)))
          (parent-renv (irc-t*-load parent-renv-ref))
-         (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv))
-         #+debug-lexical-depth(frame-unique-id (gctools:next-lexical-depth-counter))
-         #+debug-lexical-depth(set-frame-unique-id (progn 
-                                                     (irc-intrinsic "setFrameUniqueId" (jit-constant-size_t frame-unique-id) instr))))
+         (instr (irc-intrinsic "makeValueFrameSetParent" size parent-renv)))
     #+optimize-bclasp
     (setf (gethash new-env *make-value-frame-instructions*)
           (make-value-frame-maker-reference :instruction instr
                                             :new-env new-env
                                             :new-renv new-renv
                                             :parent-env visible-ancestor-environment
-                                            :parent-renv parent-renv
-                                            #+debug-lexical-depth :frame-unique-id #+debug-lexical-depth frame-unique-id
-                                            #+debug-lexical-depth :set-frame-unique-id #+debug-lexical-depth (list set-frame-unique-id (list (jit-constant-size_t frame-unique-id) instr))))
+                                            :parent-renv parent-renv))
     (irc-t*-result instr new-renv)
     instr))
 
@@ -462,7 +457,7 @@ local-function - the lcl function that all of the xep functions call."
 	  (cmp-log "Returning non-nil renv%N")
 	  renv)
 	(let ((nil-renv (literal:compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
-	  (cmp-log "Returning nil renv: %s%N" nil-renv)
+	  (cmp-log "Returning nil renv: {}%N" nil-renv)
 	  nil-renv))))
 
 (defun irc-size_t (num)
@@ -509,20 +504,21 @@ local-function - the lcl function that all of the xep functions call."
 
 (defun irc-do-unwind-environment (env)
   "Unwind the environment and return whatever was unwound"
-  (cmp-log "irc-do-unwind-environment for: %s%N" env)
+  (cmp-log "irc-do-unwind-environment for: {}%N" env)
   (let ((unwind (local-metadata env :unwind)))
     (dolist (cc unwind)
       (let ((head (car cc)))
 	(cond
 	  ((eq head 'symbolValueRestore)
-           (destructuring-bind (cmd symbol alloca) cc
+           (destructuring-bind (cmd symbol old) cc
              (declare (ignore cmd))
-             (cmp-log "popDynamicBinding of %s%N" symbol)
-             (irc-intrinsic "popDynamicBinding" (irc-global-symbol symbol env) alloca)))
-	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))))))
+             (cmp-log "popDynamicBinding of {}%N" symbol)
+             (irc-intrinsic "cc_resetTLSymbolValue"
+                            (irc-global-symbol symbol env) old)))
+	  (t (error (core:fmt nil "Unknown cleanup code: %s" cc))))))))
 
 (defun irc-unwind-environment (env)
-  (cmp-log "in irc-unwind-environment with: %s u-p-e?: %s%N" (type-of env) (unwind-protect-environment-p env))
+  (cmp-log "in irc-unwind-environment with: {} u-p-e?: {}%N" (type-of env) (unwind-protect-environment-p env))
   (when (unwind-protect-environment-p env)
     (irc-unwind-unwind-protect-environment env))
   (irc-do-unwind-environment env)
@@ -905,7 +901,7 @@ representing a tagged fixnum."
 (defun irc-prev-inst-terminator-inst-p ()
   (let ((cur-block (irc-get-insert-block)))
     (cmp-log "irc-prev-inst-terminator-inst-p dumping current block:%N")
-    (cmp-log "    cur-block -> %s%N" cur-block)
+    (cmp-log "    cur-block -> {}%N" cur-block)
     (if cur-block
 	(if (= (llvm-sys:basic-block-size cur-block) 0)
 	    nil
@@ -1017,7 +1013,7 @@ Otherwise do a variable shift."
   ;; another reasonably common issue.
   (let ((val-type (llvm-sys:get-type val))
         (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
-    ;;(bformat t "irc-store val-type: %s    dest-contained-type: %s%N" val-type dest-contained-type)
+    ;;(core:fmt t "irc-store val-type: {}    dest-contained-type: {}%N" val-type dest-contained-type)
     (cond ((llvm-sys:type-equal val-type dest-contained-type)
            (llvm-sys:create-store *irbuilder* val destination is-volatile))
           ((llvm-sys:llvmcontext-equal
@@ -1230,12 +1226,12 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (let* ((local-function (xep-group-local-function xep-group))
          (cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info))
          (variables (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis)))
-    (cmp-log "lambda list variables = %s%N" variables)
+    (cmp-log "lambda list variables = {}%N" variables)
     (let ((rev-output-bindings '()))
       (with-irbuilder (*irbuilder-function-alloca*)
         (dolist (var variables)
           (push (cons var (alloca-t* (string var))) rev-output-bindings))
-        (cmp-log "output-bindings = %s%N" rev-output-bindings))
+        (cmp-log "output-bindings = {}%N" rev-output-bindings))
       (let ((output-bindings (nreverse rev-output-bindings)))
         ;; Parse lambda list.
         (with-irbuilder (*irbuilder-function-body*)
@@ -1244,7 +1240,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                             calling-convention
                             arity
                             :argument-out (lambda (value datum)
-                                            (cmp-log "argument-out: %s %s%N" value datum)
+                                            (cmp-log "argument-out: {} {}%N" value datum)
                                             (let ((alloca (cdr (assoc datum output-bindings))))
                                               (irc-t*-result value alloca))))))
             (cond
@@ -1275,23 +1271,23 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                    (let ((call-args (nreverse rev-call-args)))
                      (cmp:irc-ret
                       (let ((function-type (llvm-sys:get-function-type local-function)))
-                        (cmp-log "(length variables) %s%N" (length variables))
-                        (cmp-log "variables: %s%N" variables)
-                        (cmp-log "function-type %s%N" function-type)
-                        (cmp-log "local-function %s%N" local-function)
-                        (cmp-log "length call-args: %s%N" (length call-args))
-                        (cmp-log "call-args: %s%N" call-args)
+                        (cmp-log "(length variables) {}%N" (length variables))
+                        (cmp-log "variables: {}%N" variables)
+                        (cmp-log "function-type {}%N" function-type)
+                        (cmp-log "local-function {}%N" local-function)
+                        (cmp-log "length call-args: {}%N" (length call-args))
+                        (cmp-log "call-args: {}%N" call-args)
                         (cmp:irc-create-call-wft
                          function-type
                          local-function
                          call-args)))))
                  (cmp-log-dump-module *the-module*)
-                 (cmp-log "layout-xep-group* xep-group: %s%N" xep-group))))))))))
+                 (cmp-log "layout-xep-group* xep-group: {}%N" xep-group))))))))))
 
 (defun layout-xep-function (xep-arity function-info xep-group function-name parent-env)
   (let* ((arity (xep-arity-arity xep-arity))
          (xep-fn (xep-arity-function-or-placeholder xep-arity)))
-    (cmp-log "xep-fn = %s%N" xep-fn)
+    (cmp-log "xep-fn = {}%N" xep-fn)
     (if (literal:general-entry-placeholder-p xep-fn)
         (progn
           ;;(format t "layout-xep-function skipping arity ~a for ~a~%" arity xep-fn)
@@ -1303,7 +1299,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
               (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
               (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
               (entry-bb (irc-basic-block-create "entry" xep-fn)))
-          (cmp-log "entry-bb = %s%N" entry-bb)
+          (cmp-log "entry-bb = {}%N" entry-bb)
           (irc-set-insert-point-basic-block entry-bb irbuilder-cur)
           ;; Setup exception handling and cleanup landing pad
           (irc-set-function-for-environment func-env xep-fn)
@@ -1331,10 +1327,10 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                                        core:*current-source-pos-info*))
                   (with-irbuilder (irbuilder-body)
                     (let ((*current-unwind-landing-pad-dest* nil))
-                      (cmp-log "xep-fn2 = %s%N" xep-fn)
+                      (cmp-log "xep-fn2 = {}%N" xep-fn)
                       (let ((arguments      (llvm-sys:get-argument-list xep-fn)))
                         (declare (ignorable arguments))
-                        (cmp-log "arguments -> %s%N" arguments)
+                        (cmp-log "arguments -> {}%N" arguments)
                         (let* ((rest-alloc     (alloca-t* "rest"))
                                (callconv       (setup-calling-convention
                                                 xep-fn
@@ -1342,7 +1338,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                                 :debug-on core::*debug-bclasp*
                                                 :cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info)
                                                 :rest-alloc rest-alloc)))
-                          (cmp-log "Setup the lambda-list handler and callconf %s%N" callconv)
+                          (cmp-log "Setup the lambda-list handler and callconf {}%N" callconv)
                           (layout-xep-function* arity function-info xep-group callconv func-env)))))))))))))
 
 
@@ -1354,8 +1350,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun do-new-function (body-fn function-symbol parent-env function-attributes linkage return-void function-info)
   (declare (ignore function-attributes))
   (let ((cleavir-lambda-list-analysis (function-info-cleavir-lambda-list-analysis function-info)))
-    (cmp-log "Entered do-new-function %s%N" (function-info-cleavir-lambda-list-analysis function-info))
-    (cmp-log "     (lambda-list-arguments cleavir-lambda-list) -> %s%N" (cleavir-lambda-list-analysis-lambda-list-arguments (function-info-cleavir-lambda-list-analysis function-info)))
+    (cmp-log "Entered do-new-function {}%N" (function-info-cleavir-lambda-list-analysis function-info))
+    (cmp-log "     (lambda-list-arguments cleavir-lambda-list) -> {}%N" (cleavir-lambda-list-analysis-lambda-list-arguments (function-info-cleavir-lambda-list-analysis function-info)))
     (let* ((argument-names (list* "closure" (mapcar (lambda (sym) (string sym)) (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis))))
            (num-args (length argument-names))
            (local-function-type (llvm-sys:function-type-get
@@ -1364,8 +1360,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
            (function-name (jit-function-name (jit-function-name function-symbol)))
            (function-description (irc-make-function-description function-info function-name))
            )
-      (cmp-log "argument-names: %s%N" argument-names)
-      (cmp-log "local-function-type: %s%N" local-function-type)
+      (cmp-log "argument-names: {}%N" argument-names)
+      (cmp-log "local-function-type: {}%N" local-function-type)
       (multiple-value-bind (local-fn local-entry-point)
           (irc-local-function-create local-function-type linkage function-name *the-module* function-description)
         (llvm-sys:set-personality-fn local-fn (irc-personality-function))
@@ -1407,8 +1403,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                         (cmp-log "with-landing-pad around body%N")
                         (let* ((function-arguments (rest (llvm-sys:get-argument-list local-fn)))
                                (cleavir-arguments (cleavir-lambda-list-analysis-lambda-list-arguments cleavir-lambda-list-analysis)))
-                          (cmp-log "function-arguments: %s%N" function-arguments)
-                          (cmp-log "cleavir-arguments: %s%N" cleavir-arguments)
+                          (cmp-log "function-arguments: {}%N" function-arguments)
+                          (cmp-log "cleavir-arguments: {}%N" cleavir-arguments)
                           (let ((output-bindings (mapcar (lambda (name var) (cons name (cons 'ext:llvm-register-var var))) cleavir-arguments function-arguments))
                                 (new-env (irc-new-unbound-value-environment-of-size
                                           func-env
@@ -1416,7 +1412,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                           :label "arguments-env")))
                             (irc-make-value-frame-set-parent new-env (length output-bindings) func-env)
                             (mapc (lambda (ob)
-                                    (cmp-log "Adding to environment: %s%N" ob)
+                                    (cmp-log "Adding to environment: {}%N" ob)
                                     (core:value-environment-define-lexical-binding new-env (car ob) (cdr ob)))
                                   output-bindings)
                             (funcall body-fn local-fn new-env result)))
@@ -1434,7 +1430,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                                      function-description
                                                      local-fn
                                                      local-entry-point)))
-            (cmp-log "xep-group = %s%N" xep-group)
+            (cmp-log "xep-group = {}%N" xep-group)
             (layout-xep-group function-info xep-group function-name parent-env)
             xep-group))))))
   
@@ -1481,7 +1477,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 (defun function-description-name (function)
   (let ((function-name (llvm-sys:get-name function)))
-    (core:bformat nil "%s^DESC" function-name)))
+    (core:fmt nil "{}^DESC" function-name)))
 
 (defun irc-function-create (function-type linkage function-name module
                             &key
@@ -1603,7 +1599,7 @@ function-description - for debugging."
   ;; MULTIPLE-ENTRY-POINT first return value is list of entry points
   (let ((rev-xep-aritys '()))
     (dolist (arity (list* :general-entry (subseq (list 0 1 2 3 4 5 6 7 8) +entry-point-arity-begin+ +entry-point-arity-end+)))
-      (cmp-log "Creating xep function for %s%N" arity)
+      (cmp-log "Creating xep function for {}%N" arity)
       (let* ((xep-function-name (concatenate 'string function-name (format nil "-xep~a" (if (eq arity :general-entry) "" arity))))
              (fn (if (generate-function-for-arity-p arity cleavir-lambda-list-analysis)
                      (let* ((function-type (fn-prototype arity))
@@ -1629,7 +1625,7 @@ function-description - for debugging."
                                              :arities xep-aritys
                                              :entry-point-reference entry-point-reference
                                              :local-function local-function)))
-      (cmp-log "Created entry-point-info %s%N" entry-point-info)
+      (cmp-log "Created entry-point-info {}%N" entry-point-info)
       entry-point-info)))
 
 (defun irc-verify-no-function-environment-cleanup (env)
@@ -1648,7 +1644,7 @@ function-description - for debugging."
   (llvm-sys:create-bit-cast *irbuilder* from totype label))
 
 (defun irc-irbuilder-status (&optional (irbuilder *irbuilder*) (label "current *irbuilder*"))
-    (bformat t "%s -> %s%N" label irbuilder))
+    (core:fmt t "{} -> {}%N" label irbuilder))
 
 #+(or)
 (defun irc-constant-string-ptr (global-string-var)
@@ -1670,9 +1666,9 @@ function-description - for debugging."
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,irbuilder))
-     (cmp-log "Switching to irbuilder --> %s%N" (bformat nil "%s" *irbuilder*))
+     (cmp-log "Switching to irbuilder --> {}%N" (core:fmt nil "{}" *irbuilder*))
      (multiple-value-prog1 (progn ,@code)
-       (cmp-log "Leaving irbuilder --> %s%N" (bformat nil "%s" *irbuilder*)))))
+       (cmp-log "Leaving irbuilder --> {}%N" (core:fmt nil "{}" *irbuilder*)))))
 
 ;;; ALLOCA functions
 
@@ -1818,7 +1814,7 @@ function-description - for debugging."
          (ep-bc (irc-bit-cast ep-i8** %i8**% "ep-bc"))
          (ep-arity-i8** (irc-typed-gep %i8*% ep-bc (list arity-index) (format nil "xep-~a-i8**" arity)))
          (ep-arity-i8*  (irc-typed-load %i8*% ep-arity-i8** (format nil "xep-~a-i8*" arity))))
-    (cmp-log "Got ep-arity-i8* -> %s%N" ep-arity-i8*)
+    (cmp-log "Got ep-arity-i8* -> {}%N" ep-arity-i8*)
     (prog1 (irc-bit-cast ep-arity-i8* function-type "ep")
       (cmp-log-dump-module *the-module*))))
 
@@ -1870,7 +1866,7 @@ function-description - for debugging."
 
 (defun irc-funcall-results-in-registers (closure args &optional (label ""))
   (declare (ignore label))
-  ;; (bformat t "irc-funcall-results-in-register-wft closure: %s%N" closure)
+  ;; (core:fmt t "irc-funcall-results-in-register-wft closure: {}%N" closure)
   (let ((call-info (irc-calculate-call-info closure args)))
     (let ((result-in-registers (irc-call-or-invoke (call-info-function-type call-info)
                                                    (call-info-entry-point call-info)
@@ -1927,7 +1923,7 @@ function-description - for debugging."
           required-args-ty passed-args-ty args)))
 
 (defun irc-create-invoke-wft (function-type entry-point args unwind-dest &optional (label ""))
-  ;;(bformat t "irc-create-invoke-wft entry-point: %s%N" entry-point)
+  ;;(core:fmt t "irc-create-invoke-wft entry-point: {}%N" entry-point)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (unless (null (stringp entry-point)) (error "entry-point for irc-create-invoke cannot be a string - it is ~a" entry-point))
   (let ((normal-dest (irc-basic-block-create "normal-dest")))
@@ -1948,7 +1944,7 @@ function-description - for debugging."
 
 (defun irc-create-call-wft (function-type entry-point args &optional (label ""))
   ;;(throw-if-mismatched-arguments function-name args)
-  (if *debug-create-call* (bformat t "irc-create-call-wft function-type: %s entry-point: %s args: %s%N" function-type entry-point args ))
+  (if *debug-create-call* (core:fmt t "irc-create-call-wft function-type: {} entry-point: {} args: {}%N" function-type entry-point args ))
   (llvm-sys:create-call-function-pointer *irbuilder* function-type entry-point args label nil))
 
 (defun irc-create-invoke-default-unwind (function-name args &optional (label ""))
@@ -2018,11 +2014,11 @@ function-description - for debugging."
         (llvm-sys:verify-function fn)
       (if failed-verify
           (progn
-            (bformat t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!%N")
-            (bformat t "---------------- dumping function to assist in debugging%N")
+            (core:fmt t "!!!!!!!!!!! Function in module failed to verify !!!!!!!!!!!!!!!!!!!%N")
+            (core:fmt t "---------------- dumping function to assist in debugging%N")
             (cmp:dump-function fn)
-            (bformat t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!%N")
-            (bformat t "llvm::verifyFunction error[%s]%N" error-msg)
+            (core:fmt t "!!!!!!!!!!! ------- see above ------- !!!!!!!!!!!!!!!!!!!%N")
+            (core:fmt t "llvm::verifyFunction error[{}]%N" error-msg)
             (if continue
                 (break "Error when trying to verify-function")
                 (error "Failed function verify")))
@@ -2047,7 +2043,7 @@ function-description - for debugging."
                                              dispatch-name
                                              module
                                              :function-attributes function-attributes)))
-      #+(or)(bformat t "Created function: %s arg-ty: %s%N" function argument-types)
+      #+(or)(core:fmt t "Created function: {} arg-ty: {}%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)
           (llvm-sys:add-return-attr function attribute)))
@@ -2060,13 +2056,13 @@ function-description - for debugging."
 
 (defun get-or-declare-function-or-error (module name)
   (let ((info (gethash name (get-primitives))))
-    #++(bformat t "   --> %s%N" info)
+    #++(core:fmt t "   --> {}%N" info)
     (unless info (error "Could not find function ~a in *primitives*" name))
     (let ((dispatch-name name))
       (let ((func (llvm-sys:get-function module dispatch-name)))
         (unless func
           (setf func (declare-function-in-module module dispatch-name info)))
-        #++(bformat t "     FUNCTION -> %s%N" func)
+        #++(core:fmt t "     FUNCTION -> {}%N" func)
         (values func info)))))
 
 (defun irc-global-symbol (sym env)
