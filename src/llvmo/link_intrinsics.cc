@@ -988,6 +988,22 @@ core::T_O* initializeTagbodyClosure(core::T_O *afP, core::T_O* handle)
 }
 };
 
+template<typename Ty_O, class...ARGS>
+gctools::smart_ptr<Ty_O> InitObject(void* space, ARGS&&...args) {
+  ASSERT(((uintptr_t)(space)&0x7)==0); // copied from cc_stack_enclose
+  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(space);
+  const gctools::Header_s::StampWtagMtag c_header = gctools::Header_s::StampWtagMtag::make_Value<Ty_O>();
+#ifdef DEBUG_GUARD
+  size_t size = gctools::sizeof_with_header<Ty_O>();
+  new (header) (typename gctools::GCHeader<Ty_O>::HeaderType)(c_header, size, 0, size);
+#else
+  new (header) (typename gctools::GCHeader<Ty_O>::HeaderType)(c_header);
+#endif
+  auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<Ty_O>::Type>(space);
+  new (obj) (typename gctools::smart_ptr<Ty_O>::Type)(std::forward<ARGS>(args)...);
+  return gctools::smart_ptr<Ty_O>(obj);
+}
+
 extern "C" {
 
 core::T_O* cc_createAndPushBlockDynenv(void* frame, jmp_buf* target) {
@@ -1006,43 +1022,20 @@ core::T_O* cc_createAndPushTagbodyDynenv(void* frame, jmp_buf* target) {
 
 core::T_O* cc_initializeAndPushCleanupDynenv(void* space, jmp_buf* target)
 {NO_UNWIND_BEGIN();
-  ASSERT(((uintptr_t)(space)&0x7)==0); // copied from cc_stack_enclose
-  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(space);
-  const gctools::Header_s::StampWtagMtag upde_header = gctools::Header_s::StampWtagMtag::make_Value<core::UnwindProtectDynEnv_O>();
-#ifdef DEBUG_GUARD
-  size_t size = gctools::sizeof_with_header<UnwindProtectDynEnv_O>();
-  new (header) gctools::GCHeader<core::UnwindProtectDynEnv_O>::HeaderType(upde_header, size, 0, size);
-#else
-  new (header) gctools::GCHeader<core::UnwindProtectDynEnv_O>::HeaderType(upde_header);
-#endif
-  auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::UnwindProtectDynEnv_O>::Type>(space);
-  new (obj) (typename gctools::smart_ptr<core::UnwindProtectDynEnv_O>::Type)(my_thread->_DynEnv,
-                                                                             target);
-  gctools::smart_ptr<core::UnwindProtectDynEnv_O> dynenvoid = gctools::smart_ptr<core::UnwindProtectDynEnv_O>(obj);
-  my_thread->_DynEnv = dynenvoid;
-  return dynenvoid.raw_();
+  auto newde = InitObject<core::UnwindProtectDynEnv_O>(space, my_thread->_DynEnv, target);
+  my_thread->_DynEnv = newde;
+  return newde.raw_();
   NO_UNWIND_END();
 }
 
 core::T_O* cc_initializeAndPushBindingDynenv(void* space, core::T_O* sym, core::T_O* old)
 {NO_UNWIND_BEGIN();
-  ASSERT(((uintptr_t)(space)&0x7)==0); // copied from cc_stack_enclose
   core::T_sp told((gc::Tagged)old);
   core::T_sp tsym((gc::Tagged)sym);
   core::Symbol_sp rsym = gc::As_unsafe<Symbol_sp>(tsym);
-  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(space);
-  const gctools::Header_s::StampWtagMtag bde_header = gctools::Header_s::StampWtagMtag::make_Value<core::BindingDynEnv_O>();
-#ifdef DEBUG_GUARD
-  size_t size = gctools::sizeof_with_header<BindingDynEnv_O>();
-  new (header) gctools::GCHeader<core::BindingDynEnv_O>::HeaderType(bde_header, size, 0, size);
-#else
-  new (header) gctools::GCHeader<core::BindingDynEnv_O>::HeaderType(bde_header);
-#endif
-  auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::BindingDynEnv_O>::Type>(space);
-  new (obj) (typename gctools::smart_ptr<core::BindingDynEnv_O>::Type)(my_thread->_DynEnv, rsym, told);
-  gctools::smart_ptr<core::BindingDynEnv_O> dynenvoid = gctools::smart_ptr<core::BindingDynEnv_O>(obj);
-  my_thread->_DynEnv = dynenvoid;
-  return dynenvoid.raw_();
+  auto newde = InitObject<core::BindingDynEnv_O>(space, my_thread->_DynEnv, rsym, told);
+  my_thread->_DynEnv = newde;
+  return newde.raw_();
   NO_UNWIND_END();
 }
 
