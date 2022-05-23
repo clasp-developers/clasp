@@ -1039,18 +1039,16 @@ core::T_O* cc_initializeAndPushBindingDynenv(void* space, core::T_O* sym, core::
   NO_UNWIND_END();
 }
 
-void cc_pop_dynenv(T_O* dynenv)
+T_O* cc_get_dynenv_stack()
 {NO_UNWIND_BEGIN();
-  T_sp de((gctools::Tagged)dynenv);
-  my_thread->_DynEnv = gc::As_unsafe<DynEnv_sp>(de)->outer;
+  return my_thread->_DynEnv.raw_();
   NO_UNWIND_END();
 }
 
-void cc_unwind_dest_dynenv(T_O* dynenv)
+void cc_set_dynenv_stack(T_O* dynenv)
 {NO_UNWIND_BEGIN();
-  T_sp tde((gctools::Tagged)dynenv);
-  DestDynEnv_sp dde = gc::As_unsafe<DestDynEnv_sp>(tde);
-  my_thread->_DynEnv = dde->unwound_dynenv();
+  T_sp de((gctools::Tagged)dynenv);
+  my_thread->_DynEnv = gc::As_unsafe<DynEnv_sp>(de);
   NO_UNWIND_END();
 }
 
