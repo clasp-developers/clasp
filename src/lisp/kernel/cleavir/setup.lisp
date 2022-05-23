@@ -472,4 +472,4 @@
     ((condition cleavir-conditions:program-condition))
   ;; FIXME: ignore-errors is a bit paranoid
   (let ((source (origin-source (cleavir-conditions:origin condition))))
-    (ignore-errors (if (consp origin) (car origin) origin))))
+    (ignore-errors (if (consp source) (car source) source))))
