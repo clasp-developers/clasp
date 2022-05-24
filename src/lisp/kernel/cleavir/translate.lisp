@@ -392,13 +392,17 @@
              (old-de-stack
                (unless simplep
                  (%intrinsic-call "cc_get_dynenv_stack" nil)))
+             (dcons-space
+               (unless simplep
+                 (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                :label "come-from-dynenv-cons")))
              (dynenv
                (unless simplep
                  (%intrinsic-invoke-if-landing-pad-or-call
                   (if blockp
                       "cc_createAndPushBlockDynenv"
                       "cc_createAndPushTagbodyDynenv")
-                  (list frame bufp))))
+                  (list dcons-space frame bufp))))
              (de-stack
                (unless simplep
                  (if blockp old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))))
@@ -485,12 +489,14 @@
   (declare (ignore abi))
   (let* ((cleanup (cmp:irc-basic-block-create "unwind-protect-cleanup"))
          (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "unwind-protect-buf"))
-         (upde-mem (cmp:alloca-i8 cmp::+unwind-protect-dynenv-size+
+         (de-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                     :label "upde-cons-mem"))
+         (upde-mem (cmp:alloca-i8 cmp:+unwind-protect-dynenv-size+
                                   :alignment cmp:+alignment+
                                   :label "unwind-protect-dynenv-mem"))
          (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
          (upde (%intrinsic-call "cc_initializeAndPushCleanupDynenv"
-                                (list upde-mem bufp)
+                                (list upde-mem de-cons-mem bufp)
                                 "unwind-protect-dynenv"))
          (sj (%intrinsic-call "_setjmp" (list bufp))))
     (declare (ignore upde))
@@ -535,7 +541,9 @@
 
 (defmethod translate-terminator ((instruction bir:bind) abi next)
   (declare (ignore abi))
-  (let* ((bde-mem (cmp:alloca-i8 cmp::+binding-dynenv-size+
+  (let* ((bde-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
+                                      :label "binding-dynenv-cons-mem"))
+         (bde-mem (cmp:alloca-i8 cmp:+binding-dynenv-size+
                                  :alignment cmp:+alignment+
                                  :label "binding-dynenv-mem"))
          (inputs (bir:inputs instruction))
@@ -544,7 +552,7 @@
          (old (%intrinsic-call "cc_TLSymbolValue" (list sym)))
          (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil)))
     (%intrinsic-call "cc_initializeAndPushBindingDynenv"
-                     (list bde-mem sym old))
+                     (list bde-mem bde-cons-mem sym old))
     (setf (dynenv-storage instruction) (list sym old old-de-stack))
     (%intrinsic-call "cc_setTLSymbolValue" (list sym val)))
   (cmp:irc-br (first next)))

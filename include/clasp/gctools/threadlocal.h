@@ -83,7 +83,7 @@ namespace core {
     // What frame are we stepping over? NULL means step-into mode.
     void*             _BreakstepFrame;
     // Stuff for SJLJ unwinding
-    T_sp              _DynEnv;
+    List_sp           _DynEnvStack;
     T_sp              _UnwindDest;
     size_t            _UnwindDestIndex;
 #ifdef DEBUG_IHS

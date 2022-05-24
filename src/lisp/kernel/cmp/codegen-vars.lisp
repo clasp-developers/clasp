@@ -622,14 +622,14 @@
               (codegen result expanded env)
               )))))
 
-(defun compile-save-special (env target dynenv-mem)
+(defun compile-save-special (env target dynenv-mem dynenv-cons-mem)
   (cmp-log "compile-save-special - the target: {} is special - so I'm saving it%N" target)
   (let* ((target-symbol (cdr target))
          (irc-target (irc-global-symbol target-symbol env))
          (old (irc-intrinsic "cc_TLSymbolValue" irc-target))
          (bde
            (irc-intrinsic "cc_initializeAndPushBindingDynenv"
-                          dynenv-mem irc-target old)))
+                          dynenv-mem dynenv-cons-mem irc-target old)))
     (irc-push-unwind env `(symbolValueRestore ,target-symbol ,old))
     ;; Make the variable locally special
     (value-environment-define-special-binding env target-symbol)

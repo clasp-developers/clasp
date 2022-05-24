@@ -84,6 +84,9 @@
             +wrapped-where-tag+
             +header-where-tag+
             +literal-tag-char-code+
+            +cons-size+
+            +unwind-protect-dynenv-size+
+            +binding-dynenv-size+
             *startup-primitives-as-list*
             %void%
             %i1%

@@ -86,6 +86,7 @@
           +general-tag+ +vaslist-size+ +vaslist-alignment+ +void*-size+ +alignment+ ))
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
+(defvar +cons-size+ (get-cxx-data-structure-info :cons-size))
 (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
 (defvar +t-size+ (get-cxx-data-structure-info 'core:tsp))
 (defvar +simple-vector._length-offset+ (get-cxx-data-structure-info :simple-vector._length-offset))

@@ -144,7 +144,7 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   ,_BufferStrWNsPool()
   ,_Breakstep(false)
   ,_BreakstepFrame(NULL)
-  ,_DynEnv()
+  ,_DynEnvStack()
   ,_UnwindDest()
 {
   my_thread = this;
@@ -173,13 +173,13 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
   if (this->_ObjectFiles.theObject) goto ERR;
   if (this->_BufferStr8NsPool.theObject) goto ERR;
   if (this->_BufferStrWNsPool.theObject) goto ERR;
-  if (this->_DynEnv.theObject) goto ERR;
+  if (this->_DynEnvStack.theObject) goto ERR;
   if (this->_UnwindDest.theObject) goto ERR;
   this->_PendingInterrupts.theObject = theNilObject.theObject;
   this->_ObjectFiles.theObject = theNilObject.theObject;
   this->_BufferStr8NsPool.theObject = theNilObject.theObject;
   this->_BufferStrWNsPool.theObject = theNilObject.theObject;
-  this->_DynEnv.theObject = theNilObject.theObject;
+  this->_DynEnvStack.theObject = theNilObject.theObject;
   this->_UnwindDest.theObject = theNilObject.theObject;
   return;
  ERR:
@@ -195,7 +195,7 @@ ThreadLocalState::ThreadLocalState() :
   , _CleanupFunctions(NULL)
   , _Breakstep(false)
   , _BreakstepFrame(NULL)
-  , _DynEnv(nil<core::T_O>())
+  , _DynEnvStack(nil<core::T_O>())
   , _UnwindDest(nil<core::T_O>())
 {
   my_thread = this;
