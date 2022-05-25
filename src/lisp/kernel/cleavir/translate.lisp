@@ -347,12 +347,15 @@
 ;;; 3) New LLVM blocks to place between the come-from and the above blocks.
 ;;; 4) A boolean indicating whether we need to use a BlockDynEnv.
 ;;; (This last could alternately be kept from the original source?)
-(defun categorize-come-from (come-from successors)
+(defun categorize-come-from (come-from asuccessors)
   ;; We only care about iblocks that are actually unwound to.
   (loop with escp = nil
         for iblock in (rest (bir:next come-from))
-        for successor in (rest successors)
-        when (has-entrances-p iblock)
+        for successor in (rest asuccessors)
+        when (and (has-entrances-p iblock)
+                  ;; See bug #1321: Sometimes we have duplicates, in which case
+                  ;; only the one entry is needed.
+                  (not (member iblock iblocks :test #'eq)))
           collect iblock into iblocks
           and collect (cmp:irc-basic-block-create "come-from-restore")
                 into blocks
@@ -428,7 +431,8 @@
          ;; doesn't need to do anything for us.
          (setf (dynenv-storage instruction) nil)
          (cmp:irc-br (first next)))
-        (t (translate-come-from instruction next))))
+        (t
+         (translate-come-from instruction next))))
 
 (defmethod translate-terminator ((instruction bir:unwind) abi next)
   (declare (ignore abi next))
