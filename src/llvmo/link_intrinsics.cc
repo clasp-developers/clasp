@@ -1051,7 +1051,8 @@ T_O* cc_get_dynenv_stack()
 void cc_set_dynenv_stack(T_O* dynenv_stack)
 {NO_UNWIND_BEGIN();
   T_sp destack((gctools::Tagged)dynenv_stack);
-  my_thread->_DynEnvStack = destack;
+  List_sp cdestack = gc::As<List_sp>(destack);
+  my_thread->_DynEnvStack = cdestack;
   NO_UNWIND_END();
 }
 
