@@ -19,6 +19,7 @@ Priority: optional
 Conflicts: cando
 Provides: lisp-compiler
 Architecture: any
+Build-Profiles: <!noclasp>
 Depends: ${shlibs:Depends}, ${misc:Depends}, libbsd0, libelf1, libffi-dev,
 	libgmp10, libgmpxx4ldbl, libncurses6, llvm-13, clang-13, zlib1g, libclang-cpp13
 Description: Common Lisp implementation that brings Common Lisp and C++ Together
@@ -36,6 +37,7 @@ Priority: optional
 Conflicts: clasp-cl
 Provides: lisp-compiler, clasp-cl
 Architecture: any
+Build-Profiles: <!nocando>
 Depends: ${shlibs:Depends}, ${misc:Depends}, libbsd0, libelf1, libffi-dev,
 	libgmp10, libgmpxx4ldbl, libncurses6, llvm-13, clang-13, zlib1g, libclang-cpp13,
 	libnetcdf19, libczmq4

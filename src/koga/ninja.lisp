@@ -509,7 +509,7 @@
                                   :name "kernel"
                                   :type "json")
                    (if system
-                       (jupyter-path configuration)
+                       (root :package-jupyter)
                        #+darwin (merge-pathnames (make-pathname :directory '(:relative "Library" "Jupyter"))
                                                  (uiop:getenv-pathname "HOME" :ensure-directory t))
                        #-darwin (merge-pathnames (make-pathname :directory '(:relative "jupyter"))
