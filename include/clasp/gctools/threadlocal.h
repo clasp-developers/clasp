@@ -83,7 +83,7 @@ namespace core {
     // What frame are we stepping over? NULL means step-into mode.
     void*             _BreakstepFrame;
     // Stuff for SJLJ unwinding
-    List_sp           _DynEnvStack;
+    List_sp           _DynEnvStackBottom;
     T_sp              _UnwindDest;
     size_t            _UnwindDestIndex;
 #ifdef DEBUG_IHS
@@ -114,6 +114,17 @@ namespace core {
     ThreadLocalState();
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
 
+    void dynEnvStackTest(core::T_sp val) const;
+    void dynEnvStackSet(core::T_sp val) {
+#ifdef DEBUG_DYN_ENV_STACK
+      this->dynEnvStackTest(val);
+#endif
+      this->_DynEnvStackBottom = val;
+    }
+    core::T_sp dynEnvStackGet() const {
+      return this->_DynEnvStackBottom;
+    }
+    
     uint32_t random();
 
     llvmo::ObjectFile_sp topObjectFile();

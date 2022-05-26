@@ -1008,23 +1008,23 @@ extern "C" {
 
 core::T_O* cc_createAndPushBlockDynenv(void* cspace, void* frame, jmp_buf* target) {
   core::BlockDynEnv_sp block = BlockDynEnv_O::create(frame, target);
-  auto newstack = InitObject<core::Cons_O>(cspace, block, my_thread->_DynEnvStack);
-  my_thread->_DynEnvStack = newstack;
+  auto newstack = InitObject<core::Cons_O>(cspace, block, my_thread->dynEnvStackGet());
+  my_thread->dynEnvStackSet(newstack);
   return block.raw_();
 }
 
 core::T_O* cc_createAndPushTagbodyDynenv(void* cspace, void* frame, jmp_buf* target) {
   core::TagbodyDynEnv_sp tb = TagbodyDynEnv_O::create(frame, target);
-  auto newstack = InitObject<core::Cons_O>(cspace, tb, my_thread->_DynEnvStack);
-  my_thread->_DynEnvStack = newstack;
+  auto newstack = InitObject<core::Cons_O>(cspace, tb, my_thread->dynEnvStackGet());
+  my_thread->dynEnvStackSet(newstack);
   return tb.raw_();
 }
 
 core::T_O* cc_initializeAndPushCleanupDynenv(void* space, void* cspace, jmp_buf* target)
 {NO_UNWIND_BEGIN();
   auto newde = InitObject<core::UnwindProtectDynEnv_O>(space, target);
-  auto newstack = InitObject<core::Cons_O>(cspace, newde, my_thread->_DynEnvStack);
-  my_thread->_DynEnvStack = newstack;
+  auto newstack = InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
+  my_thread->dynEnvStackSet(newstack);
   return newde.raw_();
   NO_UNWIND_END();
 }
@@ -1036,22 +1036,22 @@ core::T_O* cc_initializeAndPushBindingDynenv(void* space, void* cspace,
   core::T_sp tsym((gc::Tagged)sym);
   core::Symbol_sp rsym = gc::As_unsafe<Symbol_sp>(tsym);
   auto newde = InitObject<core::BindingDynEnv_O>(space, rsym, told);
-  auto newstack = InitObject<core::Cons_O>(cspace, newde, my_thread->_DynEnvStack);
-  my_thread->_DynEnvStack = newstack;
+  auto newstack = InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
+  my_thread->dynEnvStackSet(newstack);
   return newde.raw_();
   NO_UNWIND_END();
 }
 
 T_O* cc_get_dynenv_stack()
 {NO_UNWIND_BEGIN();
-  return my_thread->_DynEnvStack.raw_();
+  return my_thread->dynEnvStackGet().raw_();
   NO_UNWIND_END();
 }
 
 void cc_set_dynenv_stack(T_O* dynenv_stack)
 {NO_UNWIND_BEGIN();
   T_sp destack((gctools::Tagged)dynenv_stack);
-  my_thread->_DynEnvStack = destack;
+  my_thread->dynEnvStackSet(destack);
   NO_UNWIND_END();
 }
 

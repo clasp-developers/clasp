@@ -159,10 +159,10 @@ struct DynEnvPusher {
   List_sp stack;
   DynEnvPusher(ThreadLocalState* thread, List_sp newstack) {
     mthread = thread;
-    stack = thread->_DynEnvStack;
-    thread->_DynEnvStack = newstack;
+    stack = thread->dynEnvStackGet();
+    thread->dynEnvStackSet(newstack);
   }
-  ~DynEnvPusher() { mthread->_DynEnvStack = stack; }
+  ~DynEnvPusher() { mthread->dynEnvStackSet(stack); }
 };
 
 // Functions
@@ -218,7 +218,7 @@ T_mv funwind_protect(Protf&& protected_thunk, Cleanupf&& cleanup_thunk) {
     // the thunk, then save its values and call the cleanup.
     try {
       gctools::StackAllocate<UnwindProtectDynEnv_O> sa_upde(&target);
-      gctools::StackAllocate<Cons_O> sa_ec(sa_upde.asSmartPtr(), my_thread->_DynEnvStack);
+      gctools::StackAllocate<Cons_O> sa_ec(sa_upde.asSmartPtr(), my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       result = protected_thunk();
     } catch (...) { // C++ unwind. Do the same shit then rethrow
@@ -254,7 +254,7 @@ T_mv call_with_escape(Blockf&& block) {
       // no longer live. This may present a problem for a precise
       // garbage collector.
       BlockDynEnv_sp env = BlockDynEnv_O::create(frame, &target);
-      gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->_DynEnvStack);
+      gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       return block(env);
     } catch (Unwind& uw) {
@@ -268,7 +268,7 @@ void call_with_tagbody(Tagbodyf&& tagbody) {
   jmp_buf target;
   void* frame = __builtin_frame_address(0);
   TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
-  gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->_DynEnvStack);
+  gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
   DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
   /* Per the standard, we can't store the result of setjmp in a variable or
    * anything. So we kind of fake it via the dest index we set ourselves. */
@@ -280,7 +280,7 @@ void call_with_tagbody(Tagbodyf&& tagbody) {
     if (uw.getFrame() == frame) {
       // The thrower may not be cooperative, so reset the dynenv.
       // (DynEnvPusher takes care of this when we actually escape.)
-      my_thread->_DynEnvStack = sa_ec.asSmartPtr();
+      my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
       index = uw.index();
       goto again;
     }
@@ -296,7 +296,7 @@ T_mv call_with_catch(T_sp tag, Catchf&& cf) {
   else
     try {
       gctools::StackAllocate<CatchDynEnv_O> env(&target, tag);
-      gctools::StackAllocate<Cons_O> sa_ec(env.asSmartPtr(), my_thread->_DynEnvStack);
+      gctools::StackAllocate<Cons_O> sa_ec(env.asSmartPtr(), my_thread->dynEnvStackGet());
       DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
       return cf();
     } catch (CatchThrow& ct) {
@@ -311,7 +311,7 @@ auto call_with_variable_bound(Symbol_sp sym, T_sp val,
   T_sp old = sym->threadLocalSymbolValue();
   DynamicScopeManager scope(sym, val);
   gctools::StackAllocate<BindingDynEnv_O> bde(sym, old);
-  gctools::StackAllocate<Cons_O> sa_ec(bde.asSmartPtr(), my_thread->_DynEnvStack);
+  gctools::StackAllocate<Cons_O> sa_ec(bde.asSmartPtr(), my_thread->dynEnvStackGet());
   DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
   return bound();
 }

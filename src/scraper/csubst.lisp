@@ -95,7 +95,7 @@
          (format sout
                  #l
                  gctools::StackAllocate<core::UnknownDynEnv_O> sa_ude;
-                 gctools::StackAllocate<core::Cons_O> sa_ec(sa_ude.asSmartPtr(), my_thread->_DynEnvStack);
+                 gctools::StackAllocate<core::Cons_O> sa_ec(sa_ude.asSmartPtr(), my_thread->dynEnvStackGet());
                  core::DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
                  l#)))
     $(with-output-to-string (sout)

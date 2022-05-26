@@ -1531,7 +1531,7 @@ T_mv sp_go(List_sp args, T_sp env) {
              * through here. Would be more efficient to undo
              * the VEDSM there, but that's complicated. */
             gctools::StackAllocate<UnknownDynEnv_O> ude;
-            gctools::StackAllocate<Cons_O> sa_ec(ude.asSmartPtr(), my_thread->_DynEnvStack);
+            gctools::StackAllocate<Cons_O> sa_ec(ude.asSmartPtr(), my_thread->dynEnvStackGet());
             DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
@@ -1603,7 +1603,7 @@ T_mv sp_go(List_sp args, T_sp env) {
             ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
             // See KLUDGE in let, above.
             gctools::StackAllocate<UnknownDynEnv_O> ude;
-            gctools::StackAllocate<Cons_O> sa_ec(ude.asSmartPtr(), my_thread->_DynEnvStack);
+            gctools::StackAllocate<Cons_O> sa_ec(ude.asSmartPtr(), my_thread->dynEnvStackGet());
             DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
             ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
             // Figure out which environment to evaluate in
