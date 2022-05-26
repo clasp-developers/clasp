@@ -353,6 +353,12 @@ class Vaslist:
             val = self._debugger.read_memory(rgp,8)
             out.write("     farg%d = 0x%x\n" % (index,val))
         return out.getvalue()
+    def consp(self):
+        return False
+    def generalp(self):
+        return False
+    def fixnump(self):
+        return False
     
 class T_O:
     def consp(self):
@@ -376,12 +382,7 @@ class Cons_O(T_O):
     def cdr(self):
         return self._debugger.read_memory(self._address+8,8) 
     def __repr__(self):
-        car = translate_tagged_ptr(self._debugger,self.car())
-        cdr = translate_tagged_ptr(self._debugger,self.cdr())
-        if (cdr.consp()):
-            return ("(%s %s)" % ( car, cdr ))
-        else:
-            return ("(%s . %s )" % ( car, cdr))
+        return ( "(0x%x . 0x%x )" % (self.car(), self.cdr()))
         
 class General_O(T_O):
     def __init__(self,debugger,tclient):
