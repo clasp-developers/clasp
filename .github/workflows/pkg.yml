@@ -27,7 +27,7 @@ jobs:
       - name: Upload artifacts
         run: |
           gpg --armor --output key.gpg --export ${{ steps.import_gpg.outputs.keyid }}
-          rsync -e ssh key.gpg tools-for-build/deb-cando.sh tools-for-build/deb-clasp.sh tools-for-build/arch-cando.sh tools-for-build/arch-clasp.sh ${{ secrets.WWW_USERNAME }}@www.thirdlaw.tech:/usr/local/www/apache24/data/pkg/
+          rsync -e ssh key.gpg tools-for-build/cando.sh tools-for-build/clasp.sh tools-for-build/deb-cando.sh tools-for-build/deb-clasp.sh tools-for-build/arch-cando.sh tools-for-build/arch-clasp.sh ${{ secrets.WWW_USERNAME }}@www.thirdlaw.tech:/usr/local/www/apache24/data/pkg/
   jammy_clasp:
     name: Build Jammy Clasp
     runs-on: ubuntu-latest
