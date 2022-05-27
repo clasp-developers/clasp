@@ -1652,7 +1652,7 @@ void maybe_register_symbol_using_dladdr_ep(void* functionPointer, size_t size, c
     printf("%s:%d:%s name = |%s:%lu|  functionPointer = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), arityCode, functionPointer );
   }
 #endif
-  if (globals_->_ExportedSymbolsAccumulate) {
+  if (core::global_options->_ExportedSymbolsAccumulate) {
     if (!global_SymbolLookup) {
       global_SymbolLookup = new snapshotSaveLoad::SymbolLookup();
       global_SymbolLookup->addAllLibraries();

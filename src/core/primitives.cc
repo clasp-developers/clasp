@@ -370,7 +370,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(argc)dx")
 DOCGROUP(clasp)
 CL_DEFUN int core__argc() {
-  return globals_->_Argc;
+  return global_options->_RawArguments.size();
 };
 
 CL_LAMBDA(idx)
@@ -378,7 +378,7 @@ CL_DECLARE();
 CL_DOCSTRING(R"dx(argv)dx")
 DOCGROUP(clasp)
 CL_DEFUN SimpleBaseString_sp core__argv(int idx) {
-  if ( idx < globals_->_Argc ) return SimpleBaseString_O::make(globals_->_Argv[idx]);
+  if ( idx < global_options->_RawArguments.size() ) return SimpleBaseString_O::make(global_options->_RawArguments[idx]);
   return SimpleBaseString_O::make("");
 };
 
