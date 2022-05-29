@@ -85,7 +85,7 @@
  (:name :cando
   :repository "https://github.com/cando-developers/cando.git"
   :directory "extensions/cando/"
-  :branch "analyzer"
+  :branch "main"
   :extension :cando)
  (:name :seqan-clasp
   :repository "https://github.com/clasp-developers/seqan-clasp.git"
