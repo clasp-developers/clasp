@@ -54,7 +54,7 @@
                     :restat 1
                     :description "Creating headers from sif files")
   (ninja:write-rule output-stream :static-analyzer
-                    :command "$clasp --non-interactive --feature ignore-extensions --load ${variant-path}static-analyzer.lisp -- $sif $in"
+                    :command "$clasp --norc --non-interactive --feature ignore-extensions --load ${variant-path}static-analyzer.lisp -- $sif $in"
                     :description "Analyzing clasp"
                     :restat 1
                     :pool "console")
@@ -686,8 +686,8 @@
                                               (build-name "generated" :prep t :gc :mps))
                        :outputs (list (build-name "analyze"))
                        :sif (make-source (if (member :cando (extensions configuration))
-                                             "extensions/cando/src/clasp_gc_cando.sif"
-                                             "src/clasp_gc.sif")
+                                             "src/analysis/clasp_gc_cando.sif"
+                                             "src/analysis/clasp_gc.sif")
                                          :code))
     (unless *variant-debug*
       (ninja:write-build output-stream :phony

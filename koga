@@ -89,7 +89,7 @@
                         (ignore-errors (uiop:read-file-form #P"config.sexp"))
                         (ignore-errors (uiop:read-file-form #P"version.sexp"))))
        (*git* (getf initargs :git "git"))
-       (build (getf initargs :build-path "build/"))
+       (build (uiop:ensure-directory-pathname (getf initargs :build-path "build/")))
        (extensions (getf initargs :extensions))
        (skip-sync (getf initargs :skip-sync))
        (help (getf initargs :help)))
@@ -110,7 +110,7 @@
   (when (and (not help)
              (getf initargs :clean))
     (format t "Cleaning up previous build~%~%")
-    (uiop:delete-directory-tree (truename build)
+    (uiop:delete-directory-tree build
                                 :validate t
                                 :if-does-not-exist :ignore))
   ;; Do the absolute minimum to inform ASDF about the location of systems

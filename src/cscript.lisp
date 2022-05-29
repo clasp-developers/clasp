@@ -2,7 +2,8 @@
             #~"bdwgc/include/"
             #~"libatomic_ops/src/")
 
-(k:recurse #P"gctools/"
+(k:recurse #P"analysis/"
+           #P"gctools/"
            #P"clbind/"
            #P"serveEvent/"
            #P"sockets/"
@@ -12,6 +13,3 @@
            #P"main/"
            #P"core/"
            #P"lisp/")
-
-(k:sources :iclasp
-           #~"clasp_gc.sif")

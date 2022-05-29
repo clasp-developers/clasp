@@ -14,4 +14,5 @@
    #:parallel-search-all-threaded
    #:analyze-project
    #:generate-code
+   #:search-and-generate-code
    #:build-arguments-adjuster))

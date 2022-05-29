@@ -19,11 +19,14 @@
    #:parallel-search-all-threaded
    #:analyze-project
    #:generate-code
+   #:search-and-generate-code
    #:build-arguments-adjuster))
 
 (require :clang-tool)
 
 (in-package #:clasp-analyzer)
+
+(defparameter *log-path* nil)
 
 (defun ensure-list (x)
   (unless (listp x)
@@ -3902,26 +3905,25 @@ Run searches in *tools* on the source files in the compilation database."
   ((jobs :initform nil :accessor jobs)
    (results :initform (make-project) :accessor results)))
 
-
-(defun one-search-process (compilation-tool-database job-group-index job-group)
-  (let* ((tools (setup-tools compilation-tool-database))
-         (log-file (open (format nil "/tmp/process~a-output.log" job-group-index) :direction :output :if-exists :supersede))
-         (err-file (open (format nil "/tmp/process~a-error.log" job-group-index) :direction :output :if-exists :supersede))
-         (*standard-output* log-file)
-         (*error-output* err-file))
-    (format t "Starting process ~a~%" job-group-index)
-    (setf (clang-tool:multitool-results tools) (results job-group))
-    (clang-tool:with-compilation-tool-database compilation-tool-database
-      (loop for one-job in (jobs job-group)
-            for id = (parallel-job-id one-job)
-            for filename = (parallel-job-filename one-job)
-            do (progn
-                 (format *terminal-io* "Static analysis of ~a ~a~%" id filename)
+(defun one-search-process (compilation-tool-database job-group-index job-group log-path)
+  (with-open-file (*standard-output* (merge-pathnames (format nil "process~a-output.log" job-group-index)
+                                                      log-path)
+                   :direction :output :if-exists :supersede :if-does-not-exist :create)
+    (with-open-file (*error-output* (merge-pathnames (format nil "process~a-error.log" job-group-index)
+                                                             log-path)
+                     :direction :output :if-exists :supersede :if-does-not-exist :create)
+      (clang-tool:with-compilation-tool-database compilation-tool-database
+        (loop with tools = (setup-tools compilation-tool-database)
+              initially (format t "Starting process ~a~%" job-group-index)
+                        (setf (clang-tool:multitool-results tools) (results job-group))
+              finally (return tools)
+              for one-job in (jobs job-group)
+              for id = (parallel-job-id one-job)
+              for filename = (parallel-job-filename one-job)
+              do (format *terminal-io* "Static analysis of ~a ~a~%" id filename)
                  (format t "Static analysis of ~a ~a~%" id filename)
-                 (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list filename)))))
-    (close log-file)
-    (close err-file)
-    tools))
+                 (clang-tool:batch-run-multitool tools compilation-tool-database
+                                                 :source-namestrings (list filename)))))))
 
 (defparameter *tools* nil)
 (defun parallel-search-all-threaded (compilation-tool-database
@@ -3958,7 +3960,7 @@ Run searches in *tools* on the source files in the compilation database."
                                        (mp:process-run-function
                                         nil
                                         (lambda ()
-                                          (let ((tool (one-search-process compilation-tool-database job-group-index job-group)))
+                                          (let ((tool (one-search-process compilation-tool-database job-group-index job-group *log-path*)))
                                             (mp:atomic-push tool *tools*))))
                                      (sleep 0.5)))))
       (loop for process in processes
@@ -4046,19 +4048,26 @@ If the source location of a match contains the string source-path-identifier the
                                         pjobs)
   (unless source-namestrings
     (setf source-namestrings (clang-tool:source-namestrings compilation-tool-database)))
-  (let ((pjobs (or pjobs (let ((pj (ext:getenv "PJOBS")))
-                           (if pj
-                               (parse-integer pj)
-                               2)))))
-    (clang-tool:with-compilation-tool-database
-        compilation-tool-database
-      (setf *project* (parallel-search-all-threaded
-                       compilation-tool-database
-                       :source-namestrings source-namestrings
-                       :output-file output-file
-                       :jobs pjobs))
-      (let ((analysis (analyze-project *project*)))
-        (setq *analysis* analysis)
-        (setf (analysis-inline analysis) '("core::Cons_O"))
-        (generate-code analysis :output-file (make-pathname :type "cc" :defaults output-file)))
-      *project*)))
+  (clang-tool:with-compilation-tool-database compilation-tool-database
+    (setf *project* (parallel-search-all-threaded compilation-tool-database
+                                                  :source-namestrings source-namestrings
+                                                  :output-file output-file
+                                                  :jobs core::*number-of-jobs*)
+          *analysis* (analyze-project *project*)
+          (analysis-inline *analysis*) '("core::Cons_O"))
+    (generate-code *analysis* :output-file (make-pathname :type "cc" :defaults output-file))
+    *project*))
+
+(defun search-and-generate-code (output-path database-path
+                                 &key log-path parallel
+                                      (selection-pattern nil selection-pattern-p))
+  (ensure-directories-exist log-path)
+  (setf *log-path* log-path)
+  (let ((database (if selection-pattern
+                      (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                        (pathname database-path) :selection-pattern selection-pattern)
+                      (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                        (pathname database-path)))))
+    (if parallel
+        (parallel-search/generate-code database :output-file output-path)
+        (serial-search/generate-code database :output-file output-path))))
