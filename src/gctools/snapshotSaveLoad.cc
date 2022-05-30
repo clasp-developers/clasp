@@ -1882,6 +1882,17 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       const char* myName = (const char*)&this->_Library._SymbolBuffer[symbolOffset];
       uintptr_t mysymStart = (uintptr_t)lookup.lookupSymbol(myName);
       uintptr_t dlsymStart = (uintptr_t) dlsym(RTLD_DEFAULT,myName);
+#if 1
+      if (mysymStart) {
+        // do nothing - keep going
+      } else if (dlsymStart) {
+        // we got a dlsymStart - use it
+        mysymStart = dlsymStart;
+      } else {
+        printf("%s:%d:%s Could not resolve address with loopup.lookupSymbol or dlsym for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
+        abort();
+      }
+#else
       if (dlsymStart !=0 && mysymStart != dlsymStart) {
         printf("%s:%d:%s Mismatch between mysymStart %p and dlsymStart %p for symbol %s - lookupSymbol with verbose=true\n", __FILE__, __LINE__, __FUNCTION__, (void*)mysymStart, (void*)dlsymStart, myName );
         lookup.lookupSymbol(myName,true);
@@ -1890,9 +1901,8 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       if (!mysymStart) {
         printf("%s:%d:%s Could not resolve address with dlsym for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
         abort();
-      } else {
-//        printf("%s:%d:%s Resolved address[%lu] %p for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, ii, (void*)dlsymStart, ss.str().c_str() );
       }
+#endif
       this->_Library._GroupedPointers[gpindex]._address = mysymStart;
 #if 0
       printf("%s:%d:%s GroupedPointers[%lu] restored address %p  offset: %lu saved symbol address %p @%p\n     name: %s\n",
