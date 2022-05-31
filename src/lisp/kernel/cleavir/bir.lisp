@@ -369,11 +369,3 @@
      (system clasp-cleavir:clasp))
   (cleavir-bir-transformations:simple-dynenv-p
    (bir:parent dynenv) dest system))
-
-;;; longjmping through different come-froms is also no problem.
-(defmethod cleavir-bir-transformations:simple-dynenv-p
-    ((dynenv bir:come-from) (dest bir:dynamic-environment)
-     (system clasp-cleavir:clasp))
-  (or (call-next-method) ; if this is the overall destination, stop
-      (cleavir-bir-transformations:simple-dynenv-p
-       (bir:parent dynenv) dest system)))

@@ -652,15 +652,15 @@ jump to blocks within this tagbody."
                     (when section-next-block
                       (irc-branch-if-no-terminator-inst section-next-block))))
               enumerated-tag-blocks)
-        ((cleanup) (irc-unwind-environment tagbody-env))
+        ((cleanup)
+         (irc-intrinsic "cc_set_dynenv_stack" new-de-stack)
+         (irc-unwind-environment tagbody-env))
         ((typeid-core-unwind exception-ptr)
          (let ((go-index (irc-intrinsic
                           "tagbodyHandleDynamicGoIndex_or_rethrow"
                           exception-ptr vhandle))
                (cur-block (irc-get-insert-block)))
            (irc-phi-add-incoming switch-phi go-index cur-block)
-           ;; Reset the dynenv
-           (irc-intrinsic "cc_set_dynenv_stack" new-de-stack)
            ;; End the catch and jump back into the main code
            (cmp:with-landing-pad nil
              (irc-intrinsic "__cxa_end_catch"))
@@ -789,8 +789,7 @@ jump to blocks within this tagbody."
           (with-try "TRY.block"
             (codegen-progn result body block-env)
             ((cleanup)
-             ;; could unwind the dynenv here too, but that ought to
-             ;; be taken care of by the ultimate destination.
+             (irc-intrinsic "cc_set_dynenv_stack" old-de-stack)
              (irc-unwind-environment block-env))
             ((typeid-core-unwind exception-ptr)
              (let ((handle-instruction (irc-intrinsic "blockHandleReturnFrom_or_rethrow" exception-ptr vhandle)))
