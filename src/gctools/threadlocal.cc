@@ -144,7 +144,7 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   ,_BufferStrWNsPool()
   ,_Breakstep(false)
   ,_BreakstepFrame(NULL)
-  ,_DynEnv()
+  ,_DynEnvStackBottom()
   ,_UnwindDest()
 {
   my_thread = this;
@@ -173,13 +173,13 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
   if (this->_ObjectFiles.theObject) goto ERR;
   if (this->_BufferStr8NsPool.theObject) goto ERR;
   if (this->_BufferStrWNsPool.theObject) goto ERR;
-  if (this->_DynEnv.theObject) goto ERR;
+  if (this->_DynEnvStackBottom.theObject) goto ERR;
   if (this->_UnwindDest.theObject) goto ERR;
   this->_PendingInterrupts.theObject = theNilObject.theObject;
   this->_ObjectFiles.theObject = theNilObject.theObject;
   this->_BufferStr8NsPool.theObject = theNilObject.theObject;
   this->_BufferStrWNsPool.theObject = theNilObject.theObject;
-  this->_DynEnv.theObject = theNilObject.theObject;
+  this->_DynEnvStackBottom.theObject = theNilObject.theObject;
   this->_UnwindDest.theObject = theNilObject.theObject;
   return;
  ERR:
@@ -195,7 +195,7 @@ ThreadLocalState::ThreadLocalState() :
   , _CleanupFunctions(NULL)
   , _Breakstep(false)
   , _BreakstepFrame(NULL)
-  , _DynEnv(nil<core::T_O>())
+  , _DynEnvStackBottom(nil<core::T_O>())
   , _UnwindDest(nil<core::T_O>())
 {
   my_thread = this;
@@ -211,6 +211,34 @@ ThreadLocalState::ThreadLocalState() :
   this->_xorshf_z = rand();
 }
 
+void ThreadLocalState::dynEnvStackTest(core::T_sp val) const {
+  if (val.consp()) {
+    Cons_sp cval = gc::As_unsafe<Cons_sp>(val);
+    T_sp cvalcdr = CONS_CDR(cval);
+    if (cvalcdr.consp()) {
+      if ((uintptr_t)cval.raw_() <= (uintptr_t)(__builtin_frame_address(0))) {
+        printf("%s:%d:%s The DynEnvStack is out of order\n", __FILE__, __LINE__, __FUNCTION__ );
+        size_t level=0;
+        intptr_t prev = 0;
+        for (T_sp iter = val;;) {
+          if (level>1000) break;
+          if (iter.consp()) {
+            printf(" level %3lu  %p", level, iter.raw_() );
+            if (prev != 0) {
+              printf( " [delta %ld]\n", (intptr_t)iter.raw_()-prev);
+            } else {
+              printf(" \n");
+            }
+            prev = (intptr_t)iter.raw_();
+          } else break;
+          level++;
+          iter = CONS_CDR(iter);
+        }
+        abort();
+      }
+    }
+  }
+}
 uint32_t ThreadLocalState::random() {
   unsigned long t;
   // This random number generator is ONLY used to initialize

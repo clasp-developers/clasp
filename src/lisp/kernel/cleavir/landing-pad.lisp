@@ -75,13 +75,13 @@
 (defun alloca-go-index.slot ()
   (cmp:alloca-size_t "go-index.slot"))
 
-(defun generate-unbind (symbol old-value bde next)
+(defun generate-unbind (symbol old-value de-stack next)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "unbind-special-variable")))
       (cmp:irc-begin-block bb)
       ;; These functions cannot throw, so no landing pad needed
       (%intrinsic-call "cc_setTLSymbolValue" (list symbol old-value))
-      (%intrinsic-call "cc_pop_dynenv" (list bde))
+      (%intrinsic-call "cc_set_dynenv_stack" (list de-stack))
       (cmp:irc-br next)
       bb)))
 
@@ -89,10 +89,9 @@
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "execute-protection")))
       (cmp:irc-begin-block bb)
-      ;; If this is a complex come-from pop the dynenv.
-      (let ((dynenv (dynenv-storage u-p-instruction)))
-        (when dynenv
-          (%intrinsic-call "cc_pop_dynenv" (list dynenv))))
+      ;; pop the dynenv.
+      (let ((de-stack (dynenv-storage u-p-instruction)))
+        (%intrinsic-call "cc_set_dynenv_stack" (list de-stack)))
       (let ((thunk (in (first (cleavir-bir:inputs u-p-instruction))))
             (protection-dynenv (cleavir-bir:parent u-p-instruction)))
         ;; There is a subtle point here with regard to unwinding out of a cleanup
@@ -214,8 +213,8 @@
                (llde (dynenv-storage dynenv))
                ;; Restore the dynenv, if there is one.
                (_1 (when llde
-                     (%intrinsic-call "cc_unwind_dest_dynenv"
-                                      (list llde))))
+                     (%intrinsic-call "cc_set_dynenv_stack"
+                                      (list (second llde)))))
                ;; Restore multiple values.
                ;; Note that we do this late, after any unwind-protect cleanups,
                ;; so that we get the correct values.
@@ -266,8 +265,8 @@
           bb))))
 
 (defmethod compute-maybe-entry-processor ((instruction bir:bind) tags)
-  (destructuring-bind (symbol old-value bde) (dynenv-storage instruction)
-    (generate-unbind symbol old-value bde
+  (destructuring-bind (symbol old-value de-stack) (dynenv-storage instruction)
+    (generate-unbind symbol old-value de-stack
                      (maybe-entry-processor
                       (cleavir-bir:parent instruction) tags))))
 
@@ -406,8 +405,8 @@
   (never-entry-processor (cleavir-bir:parent dynenv)))
 
 (defmethod compute-never-entry-processor ((instruction bir:bind))
-  (destructuring-bind (symbol old-value bde) (dynenv-storage instruction)
-    (generate-unbind symbol old-value bde
+  (destructuring-bind (symbol old-value de-stack) (dynenv-storage instruction)
+    (generate-unbind symbol old-value de-stack
                      (compute-never-entry-processor
                       (cleavir-bir:parent instruction)))))
 

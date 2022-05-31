@@ -10,16 +10,19 @@ namespace core {
 
 DynEnv_O::SearchStatus sjlj_unwind_search(LexDynEnv_sp dest) {
   DynEnv_O::SearchStatus status = DynEnv_O::Proceed;
-  for (T_sp iter = my_thread->_DynEnv; iter != dest;) {
-    if (iter.notnilp()) {
-      DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(iter);
+  for (T_sp iter = my_thread->dynEnvStackGet();;) {
+    if (iter.nilp()) return DynEnv_O::OutOfExtent;
+    else {
+      Cons_sp c = gc::As<Cons_sp>(iter);
+      DynEnv_sp diter = gc::As<DynEnv_sp>(ENSURE_VALID_OBJECT(CONS_CAR(c)));
+      if (diter == dest) break;
       auto dstatus = diter->search();
       /* If we get a FallBack, we don't want to return that
        * immediately, since if we're out of extent that's more
        * important. */
       if (dstatus != DynEnv_O::Continue) status = dstatus;
-      iter = diter->outer;
-    } else return DynEnv_O::OutOfExtent;
+      iter = CONS_CDR(iter);
+    }
   }
 #ifdef UNWIND_INVALIDATE_STRICT
   if (!(dest->valid)) return DynEnv_O::Abandoned;
@@ -29,53 +32,60 @@ DynEnv_O::SearchStatus sjlj_unwind_search(LexDynEnv_sp dest) {
 
 DynEnv_O::SearchStatus sjlj_throw_search(T_sp tag, CatchDynEnv_sp& dest) {
   DynEnv_O::SearchStatus status = DynEnv_O::Proceed;
-  for (T_sp iter = my_thread->_DynEnv;;) {
+  for (T_sp iter = my_thread->dynEnvStackGet();;) {
     if (iter.nilp()) return DynEnv_O::OutOfExtent;
-    else if (gc::IsA<CatchDynEnv_sp>(iter)) {
-      CatchDynEnv_sp catc = gc::As_unsafe<CatchDynEnv_sp>(iter);
-      if (tag == catc->tag) {
-        dest = catc;
-        return status;
+    else {
+      Cons_sp c = gc::As<Cons_sp>(iter);
+      DynEnv_sp diter = gc::As<DynEnv_sp>(CONS_CAR(c));
+      if (gc::IsA<CatchDynEnv_sp>(diter)) {
+        CatchDynEnv_sp catc = gc::As_unsafe<CatchDynEnv_sp>(diter);
+        if (tag == catc->tag) {
+          dest = catc;
+          return status;
+        }
       }
+      auto nstatus = diter->search();
+      if (nstatus != DynEnv_O::Continue) status = nstatus;
+      iter = CONS_CDR(iter);
     }
-    DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(iter);
-    auto nstatus = diter->search();
-    if (nstatus != DynEnv_O::Continue) status = nstatus;
-    iter = diter->outer;
   }
   UNREACHABLE();
 }
 
 #ifdef UNWIND_INVALIDATE_STRICT
 void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
-  for (T_sp iter = my_thread->_DynEnv;
-       (iter != dest) && iter.notnilp();
-       iter = gc::As_unsafe<DynEnv_sp>(iter)->outer)
+  for (T_sp iter = my_thread->dynEnvStackGet();
+       iter.notnilp() && (iter->ocar() != dest);
+       iter = CONS_CDR(iter))
     iter->invalidate();
 }
 #endif
 
 [[noreturn]] void sjlj_unwind_proceed(DestDynEnv_sp dest, size_t index) {
   ThreadLocalState* thread = my_thread;
-  T_sp here = thread->_DynEnv;
+  T_sp here = thread->dynEnvStackGet();
   thread->_UnwindDest = dest;
   thread->_UnwindDestIndex = index;
-  for (T_sp iter = here; iter != dest;) {
-    // We must have already searched, so we know this is a dynenv
-    // and not the NIL sentinel.
-    DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(iter);
-    diter->proceed(dest, index);
-    iter = diter->outer;
+  // We must have already searched, so we know this is a dynenv
+  // and not the NIL sentinel.
+  for (T_sp iter = here; ; iter = CONS_CDR(iter)) {
+    DynEnv_sp diter = gc::As<DynEnv_sp>(CONS_CAR(iter));
+    if (diter == dest) {
+      // Now actually jump. We need to replace the dynEnvStackGet(), but what we
+      // switch it to depends on whether it's a tagbody or block.
+      if (dest->unwound_dynenv_p()) thread->dynEnvStackSet(CONS_CDR(iter));
+      else thread->dynEnvStackSet(iter);
+      longjmp(*(dest->target), index);
+    } else {
+      thread->dynEnvStackSet(iter);
+      diter->proceed(dest, index);
+    }
   }
-  // Now actually jump. We need to replace the _DynEnv, but what we
-  // switch it to depends on whether it's a tagbody or block.
-  thread->_DynEnv = dest->unwound_dynenv();
-  longjmp(*(dest->target), index);
 }
 
 [[noreturn]] void UnwindProtectDynEnv_O::proceed(DestDynEnv_sp dest,
                                                  size_t index) {
-  my_thread->_DynEnv = this->outer;
+  my_thread->dynEnvStackSet(CONS_CDR(my_thread->dynEnvStackGet()));
   longjmp(*(this->target) , 1); // 1 irrelevant
 }
 
@@ -137,41 +147,20 @@ void BindingDynEnv_O::proceed(DestDynEnv_sp dest, size_t index) {
 
 CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_call_with_current_dynenv(Function_sp function) {
-  return eval::funcall(function, my_thread->_DynEnv);
-}
-
-// Returns the nth dynenv, where 0 is the current, 1 is its parent, etc.
-// If there is no dynenv that high up, returns NIL.
-// This is exposed instead of the parent field directly so that we hide
-// the details of how the dynenv stack is stored (i.e. in the dynenv or not).
-CL_UNWIND_COOP(true);
-CL_DEFUN T_mv core__sjlj_call_with_nth_dynenv(Function_sp function,
-                                              size_t index) {
-  T_sp iter = my_thread->_DynEnv;
-  while (true) {
-    if ((index == 0) || iter.nilp())
-      return eval::funcall(function, iter);
-    else {
-      iter = gc::As_unsafe<DynEnv_sp>(iter)->outer;
-      --index;
-    }
-  }
+  return eval::funcall(function, my_thread->dynEnvStackGet());
 }
 
 // Check the search status for a single dynenv.
 CL_UNWIND_COOP(true);
 CL_DEFUN int core__sjlj_dynenv_search_one(T_sp tde) {
-  if (tde.nilp()) return 2;
-  else {
-    DynEnv_sp de = gc::As<DynEnv_sp>(tde);
-    switch (de->search()) {
-    case DynEnv_O::Continue: return 0;
-    case DynEnv_O::Proceed: return 1;
-    case DynEnv_O::OutOfExtent: return 2;
-    case DynEnv_O::Abandoned: return 3;
-    case DynEnv_O::FallBack: return 4;
-    default: UNREACHABLE();
-    }
+  DynEnv_sp de = gc::As<DynEnv_sp>(tde);
+  switch (de->search()) {
+  case DynEnv_O::Continue: return 0;
+  case DynEnv_O::Proceed: return 1;
+  case DynEnv_O::OutOfExtent: return 2;
+  case DynEnv_O::Abandoned: return 3;
+  case DynEnv_O::FallBack: return 4;
+  default: UNREACHABLE();
   }
 }
 
@@ -190,8 +179,9 @@ CL_DEFUN int core__sjlj_dynenv_search(LexDynEnv_sp dest) {
 
 CL_UNWIND_COOP(true);
 CL_DEFUN T_mv core__sjlj_call_with_unknown_dynenv(Function_sp thunk) {
-  gctools::StackAllocate<UnknownDynEnv_O> sa_ude(my_thread->_DynEnv);
-  DynEnvPusher dep(my_thread, sa_ude.asSmartPtr());
+  gctools::StackAllocate<UnknownDynEnv_O> sa_ude;
+  gctools::StackAllocate<Cons_O> sa_ec(sa_ude.asSmartPtr(), my_thread->dynEnvStackGet());
+  DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
   return eval::funcall(thunk);
 }
 
