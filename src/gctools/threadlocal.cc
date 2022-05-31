@@ -216,7 +216,7 @@ void ThreadLocalState::dynEnvStackTest(core::T_sp val) const {
     Cons_sp cval = gc::As_unsafe<Cons_sp>(val);
     T_sp cvalcdr = CONS_CDR(cval);
     if (cvalcdr.consp()) {
-      if ((uintptr_t)cval.raw_() >= (uintptr_t)cvalcdr.raw_()) {
+      if ((uintptr_t)cval.raw_() <= (uintptr_t)(__builtin_frame_address(0))) {
         printf("%s:%d:%s The DynEnvStack is out of order\n", __FILE__, __LINE__, __FUNCTION__ );
         size_t level=0;
         intptr_t prev = 0;
