@@ -157,8 +157,8 @@
  "chem::IterateAtoms_O"
  "core::LongFloat_O"
  "core::ComplexVector_int4_t_O"
- "llvmo::DILocalVariable_O"
  "chem::DirectionalCoupling_O"
+ "llvmo::DILocalVariable_O"
  "chem::FFPtorDb_O"
  "llvmo::TargetLibraryInfoWrapperPass_O"
  "asttooling::QualType_O"
@@ -184,9 +184,9 @@
  "core::Complex_O"
  "core::TagbodyDynEnv_O"
  "chem::ConformationCollectionEntry_O"
- "chem::RingClosingMate_O"
- "llvmo::ValueAsMetadata_O"
  "geom::OMatrix_O"
+ "llvmo::ValueAsMetadata_O"
+ "chem::RingClosingMate_O"
  "chem::EnergyDihedral"
  "llvmo::ConstantExpr_O"
  "llvmo::ConstantPointerNull_O"
@@ -482,8 +482,8 @@
  "chem::FFNonbondCrossTermTable_O"
  "kinematics::MonomerBaseNode_O"
  "llvmo::Type_O"
- "chem::StereoConfiguration_O"
  "chem::Command_O"
+ "chem::StereoConfiguration_O"
  "llvmo::JITDylib_O"
  "core::Pointer_O"
  "llvmo::UnreachableInst_O"
@@ -673,33 +673,24 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::LambdaListHandler_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_LexicalVariableNamesForDebugging")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_llvmo__AttributeSet_O")(TAGS:STAMP-KEY . "llvmo::AttributeSet_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__DynEnv_O")(TAGS:STAMP-KEY . "core::DynEnv_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::DynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "outer")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__UnwindProtectDynEnv_O")(TAGS:STAMP-KEY . "core::UnwindProtectDynEnv_O")(TAGS:PARENT-CLASS . "core::DynEnv_O")(TAGS:LISP-CLASS-BASE . "core::DynEnv_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::UnwindProtectDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "outer")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::UnwindProtectDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "target")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__DestDynEnv_O")(TAGS:STAMP-KEY . "core::DestDynEnv_O")(TAGS:PARENT-CLASS . "core::DynEnv_O")(TAGS:LISP-CLASS-BASE . "core::DynEnv_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::DestDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "outer")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::DestDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "target")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__CatchDynEnv_O")(TAGS:STAMP-KEY . "core::CatchDynEnv_O")(TAGS:PARENT-CLASS . "core::DestDynEnv_O")(TAGS:LISP-CLASS-BASE . "core::DestDynEnv_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::CatchDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "outer")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::CatchDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "target")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::CatchDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "tag")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__LexDynEnv_O")(TAGS:STAMP-KEY . "core::LexDynEnv_O")(TAGS:PARENT-CLASS . "core::DestDynEnv_O")(TAGS:LISP-CLASS-BASE . "core::DestDynEnv_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::LexDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "outer")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::LexDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "target")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::LexDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "frame")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BlockDynEnv_O")(TAGS:STAMP-KEY . "core::BlockDynEnv_O")(TAGS:PARENT-CLASS . "core::LexDynEnv_O")(TAGS:LISP-CLASS-BASE . "core::LexDynEnv_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BlockDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "outer")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::BlockDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "target")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::BlockDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "frame")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__TagbodyDynEnv_O")(TAGS:STAMP-KEY . "core::TagbodyDynEnv_O")(TAGS:PARENT-CLASS . "core::LexDynEnv_O")(TAGS:LISP-CLASS-BASE . "core::LexDynEnv_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::TagbodyDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "outer")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::TagbodyDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "target")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "RAW_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "UnknownType")( TAGS:OFFSET-BASE-CTYPE . "core::TagbodyDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "frame")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__UnknownDynEnv_O")(TAGS:STAMP-KEY . "core::UnknownDynEnv_O")(TAGS:PARENT-CLASS . "core::DynEnv_O")(TAGS:LISP-CLASS-BASE . "core::DynEnv_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::UnknownDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "outer")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__BindingDynEnv_O")(TAGS:STAMP-KEY . "core::BindingDynEnv_O")(TAGS:PARENT-CLASS . "core::DynEnv_O")(TAGS:LISP-CLASS-BASE . "core::DynEnv_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
-{ TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BindingDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "outer")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Symbol_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BindingDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "sym")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::T_O>")( TAGS:OFFSET-BASE-CTYPE . "core::BindingDynEnv_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "old")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_core__Pointer_O")(TAGS:STAMP-KEY . "core::Pointer_O")(TAGS:PARENT-CLASS . "core::General_O")(TAGS:LISP-CLASS-BASE . "core::General_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
@@ -1901,10 +1892,10 @@
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<geom::ComplexVectorCoordinate_O>")( TAGS:OFFSET-BASE-CTYPE . "chem::SuperposeSelectedAtoms_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_MoveableCoordinates")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<chem::Matter_O>")( TAGS:OFFSET-BASE-CTYPE . "chem::SuperposeSelectedAtoms_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Matter")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "TAGGED_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>")( TAGS:OFFSET-BASE-CTYPE . "chem::SuperposeSelectedAtoms_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_SuperposeAtoms._Vector._Contents")) }
-{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_chem__Command_O")(TAGS:STAMP-KEY . "chem::Command_O")(TAGS:PARENT-CLASS . "core::CxxObject_O")(TAGS:LISP-CLASS-BASE . "core::CxxObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_chem__StereoConfiguration_O")(TAGS:STAMP-KEY . "chem::StereoConfiguration_O")(TAGS:PARENT-CLASS . "core::CxxObject_O")(TAGS:LISP-CLASS-BASE . "core::CxxObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Symbol_O>")( TAGS:OFFSET-BASE-CTYPE . "chem::StereoConfiguration_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_AtomName")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "SMART_PTR_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::smart_ptr<core::Symbol_O>")( TAGS:OFFSET-BASE-CTYPE . "chem::StereoConfiguration_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Configuration")) }
+{ TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_chem__Command_O")(TAGS:STAMP-KEY . "chem::Command_O")(TAGS:PARENT-CLASS . "core::CxxObject_O")(TAGS:LISP-CLASS-BASE . "core::CxxObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_kinematics__MonomerBaseNode_O")(TAGS:STAMP-KEY . "kinematics::MonomerBaseNode_O")(TAGS:PARENT-CLASS . "core::CxxObject_O")(TAGS:LISP-CLASS-BASE . "core::CxxObject_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:CLASS-KIND ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)(TAGS:STAMP-NAME . "STAMPWTAG_kinematics__AggregateNode_O")(TAGS:STAMP-KEY . "kinematics::AggregateNode_O")(TAGS:PARENT-CLASS . "kinematics::MonomerBaseNode_O")(TAGS:LISP-CLASS-BASE . "kinematics::MonomerBaseNode_O")(TAGS:ROOT-CLASS . "core::T_O")(TAGS:STAMP-WTAG . 3)(TAGS:DEFINITION-DATA . "IS_POLYMORPHIC")) }
 { TAGS:FIXED-FIELD ((TAGS:FILE% . "-unknown-") (TAGS:LINE% . 0)( TAGS:OFFSET-TYPE-CXX-IDENTIFIER . "TAGGED_POINTER_OFFSET")( TAGS:OFFSET-CTYPE . "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<kinematics::ChainNode_O>>>")( TAGS:OFFSET-BASE-CTYPE . "kinematics::AggregateNode_O")( TAGS:LAYOUT-OFFSET-FIELD-NAMES . "_Chains._Vector._Contents")) }
