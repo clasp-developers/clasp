@@ -39,7 +39,7 @@ THE SOFTWARE.
 //#define DEBUG_VASLIST 1
 //#define DEBUG_EVALUATE 1
 //#define DEBUG_DTORS 1
-#define DEBUG_DYN_ENV_STACK 1
+//#define DEBUG_DYN_ENV_STACK 1
 // If ANY flags above are set - then set this one to print a message at startup
 #define DEBUG_FLAGS_SET 1
 #else
